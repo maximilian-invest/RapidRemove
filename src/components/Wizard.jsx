@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
@@ -481,7 +482,7 @@ function Wizard({ initialName, onExit }) {
     <div className="wz">
       <div className="wz-top">
         <div className="wz-top-inner">
-          <img className="logo" src="/assets/rapidremove-logo-full.png" alt="RapidRemove" onClick={onExit} />
+          <img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={onExit} />
           <div className="wz-secure"><Icon.lock /> {w.secure}</div>
           <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
         </div>

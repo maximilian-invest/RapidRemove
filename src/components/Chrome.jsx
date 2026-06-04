@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
@@ -105,7 +106,7 @@ function Nav({ onNav, onStart, onBlog, active }) {
     <React.Fragment>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
         <div className="container nav-inner">
-          <img className="nav-logo" src="/assets/rapidremove-logo-full.png" alt="RapidRemove" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+          <img className="nav-logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
           <div className="nav-links">
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
           </div>
@@ -145,7 +146,7 @@ function Footer({ onStart, onBlog }) {
       <div className="container">
         <div className="foot-grid">
           <div className="foot-brand">
-            <img className="foot-logo" src="/assets/rapidremove-logo-white.png" alt="RapidRemove" />
+            <img className="foot-logo" src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
             <p>{t.footer.tagline}</p>
             <div className="addr">{t.footer.addr}</div>
           </div>

@@ -4,13 +4,15 @@ import "@/styles/app.css";
 import "@/styles/wizard.css";
 import "@/styles/blog.css";
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata = {
   metadataBase: new URL("https://rapid-remove.com"),
   title: "RapidRemove — Google-Unternehmensprofil löschen lassen",
   description:
     "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon — dauerhaft, legal, in 24 Stunden. Inklusive aller Bewertungen. Bezahlung erst nach erfolgreicher Löschung.",
   applicationName: "RapidRemove",
-  icons: { icon: "/assets/rapidremove-icon.png", apple: "/assets/rapidremove-icon.png" },
+  icons: { icon: `${BASE}/assets/rapidremove-icon.png`, apple: `${BASE}/assets/rapidremove-icon.png` },
   openGraph: {
     title: "RapidRemove — Google-Unternehmensprofil löschen lassen",
     description:

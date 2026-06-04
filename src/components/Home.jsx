@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
@@ -226,7 +227,7 @@ function Why({ id }) {
             <div className="cmp-row cmp-head">
               <div className="cmp-cell"></div>
               <div className="cmp-cell cmp-col-rr">
-                <span className="lg"><img src="/assets/rapidremove-logo-white.png" alt="RapidRemove" /></span>
+                <span className="lg"><img src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" /></span>
               </div>
               <div className="cmp-cell">{t.why.cols[2]}</div>
               <div className="cmp-cell">{t.why.cols[3]}</div>
