@@ -3,5 +3,6 @@ import en from "@/lib/articles/translations/en";
 import es from "@/lib/articles/translations/es";
 import fr from "@/lib/articles/translations/fr";
 import it from "@/lib/articles/translations/it";
+import nl from "@/lib/articles/translations/nl";
 
-export const TRANSLATIONS = { en, es, fr, it };
+export const TRANSLATIONS = { en, es, fr, it, nl };
