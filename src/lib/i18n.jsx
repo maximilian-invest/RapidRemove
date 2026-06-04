@@ -6,6 +6,7 @@ import React from "react";
 import { PRICES } from "@/lib/pricing";
 import { es, fr } from "@/lib/i18n-locales";
 import { it, nl, pt } from "@/lib/i18n-locales2";
+import { ja, sv, da, no } from "@/lib/i18n-locales3";
 
 const I18N = {
   /* ===================== GERMAN ===================== */
@@ -565,6 +566,6 @@ const I18N = {
   },
 };
 
-Object.assign(I18N, { es, fr, it, nl, pt });
+Object.assign(I18N, { es, fr, it, nl, pt, ja, sv, da, no });
 
 export { I18N };

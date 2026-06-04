@@ -34,4 +34,8 @@ export const LANGS = [
   { code: "it", native: "Italiano",   region: "Italia" },
   { code: "nl", native: "Nederlands", region: "NL · BE" },
   { code: "pt", native: "Português",  region: "PT · Brasil" },
+  { code: "ja", native: "日本語",      region: "日本" },
+  { code: "sv", native: "Svenska",     region: "Sverige" },
+  { code: "da", native: "Dansk",       region: "Danmark" },
+  { code: "no", native: "Norsk",       region: "Norge" },
 ];

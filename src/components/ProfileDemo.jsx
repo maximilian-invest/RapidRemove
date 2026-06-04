@@ -56,6 +56,37 @@ const DEMO_COPY = {
     rev: [{ n: "Anónimo", t: "Mal-educados e caros. Nunca mais!" }, { n: "K. B.", t: "Horas à espera. Um desastre." }] },
 };
 
+Object.assign(DEMO_COPY, {
+  ja: { eyebrow: "ご自分の目で", title: "こうしてプロフィールは消えます ― 永久に。", sub: "あなたのビジネスプロフィールはすべての口コミとともにGoogleから完全に削除されます。「閉業」でも残りカスでもなく ― ただ消えます。",
+    closed: "悪い口コミ", removed: "プロフィール削除", removedSub: "Googleから完全に消滅", chip: "すべての口コミを削除",
+    phaseFull: "Googleで公開中", phaseDel: "削除中 …", phaseDone: "削除済み ✓", replay: "もう一度見る",
+    name: "ミュラー歯科医院", cat: "歯科", addr: "Hauptstraße 24, 10178 ベルリン", reviews: "47 件のレビュー",
+    actions: ["ルート", "保存", "電話", "ウェブサイト"],
+    g: { tabs: ["すべて", "地図", "画像", "ニュース", "ショッピング"], results: "約 1,240 件（0.38 秒）", orgTitle: "ミュラー歯科医院 ― ベルリンのあなたの歯科医院", orgDom: "mueller-zahnarzt.de", orgSnippet: "ミュラー歯科医院へようこそ。オンライン予約 ― 最新の治療、ベルリン中心部の好立地。", hours: "営業中", hoursSub: "· 18:00 に閉店", phaseSearch: "Googleで検索中 …", phaseType: "入力中 …" },
+    rev: [{ n: "匿名", t: "無愛想で高すぎる。二度と行かない！" }, { n: "K. B.", t: "何時間も待たされた。最悪。" }] },
+  sv: { eyebrow: "Se det själv", title: "Så här försvinner din profil – för gott.", sub: "Din företagsprofil och alla omdömen tas bort helt från Google. Inget «stängt», inga rester – bara borta.",
+    closed: "Dåliga omdömen", removed: "Profil borttagen", removedSub: "Helt borta från Google", chip: "Alla omdömen raderade",
+    phaseFull: "Live på Google", phaseDel: "Tar bort …", phaseDone: "Borttagen ✓", replay: "Se igen",
+    name: "Müller Tandvård", cat: "Tandläkare", addr: "Hauptstraße 24, 10178 Berlin", reviews: "47 omdömen",
+    actions: ["Vägbeskrivning", "Spara", "Ring", "Webbplats"],
+    g: { tabs: ["Alla", "Maps", "Bilder", "Nyheter", "Shopping"], results: "Ungefär 1 240 resultat (0,38 sekunder)", orgTitle: "Müller Tandvård – din tandläkare i Berlin", orgDom: "mueller-dental.se", orgSnippet: "Välkommen till Müller Tandvård. Boka online – modern vård, centralt läge i Berlin.", hours: "Öppet", hoursSub: "· stänger 18:00", phaseSearch: "Söker på Google …", phaseType: "Skriver …" },
+    rev: [{ n: "Anonym", t: "Otrevligt och överprisat. Aldrig mer!" }, { n: "K. B.", t: "Väntade i timmar. En katastrof." }] },
+  da: { eyebrow: "Se det selv", title: "Sådan forsvinder din profil – for altid.", sub: "Din virksomhedsprofil og alle anmeldelser fjernes helt fra Google. Intet «lukket», ingen rester – bare væk.",
+    closed: "Dårlige anmeldelser", removed: "Profil fjernet", removedSub: "Helt væk fra Google", chip: "Alle anmeldelser slettet",
+    phaseFull: "Live på Google", phaseDel: "Fjerner …", phaseDone: "Fjernet ✓", replay: "Se igen",
+    name: "Müller Tandlæge", cat: "Tandlæge", addr: "Hauptstraße 24, 10178 Berlin", reviews: "47 anmeldelser",
+    actions: ["Rute", "Gem", "Ring", "Websted"],
+    g: { tabs: ["Alle", "Maps", "Billeder", "Nyheder", "Shopping"], results: "Cirka 1.240 resultater (0,38 sekunder)", orgTitle: "Müller Tandlæge – din tandlæge i Berlin", orgDom: "mueller-dental.dk", orgSnippet: "Velkommen hos Müller Tandlæge. Book online – moderne behandling, central beliggenhed i Berlin.", hours: "Åbent", hoursSub: "· lukker 18:00", phaseSearch: "Søger på Google …", phaseType: "Skriver …" },
+    rev: [{ n: "Anonym", t: "Uvenligt og overpris. Aldrig igen!" }, { n: "K. B.", t: "Ventede i timevis. En katastrofe." }] },
+  no: { eyebrow: "Se det selv", title: "Slik forsvinner profilen din – for godt.", sub: "Bedriftsprofilen din og alle omtaler fjernes helt fra Google. Ingen «stengt», ingen rester – bare borte.",
+    closed: "Dårlige omtaler", removed: "Profil fjernet", removedSub: "Helt borte fra Google", chip: "Alle omtaler slettet",
+    phaseFull: "Live på Google", phaseDel: "Fjerner …", phaseDone: "Fjernet ✓", replay: "Se igjen",
+    name: "Müller Tannlege", cat: "Tannlege", addr: "Hauptstraße 24, 10178 Berlin", reviews: "47 omtaler",
+    actions: ["Rute", "Lagre", "Ring", "Nettsted"],
+    g: { tabs: ["Alle", "Maps", "Bilder", "Nyheter", "Shopping"], results: "Omtrent 1 240 resultater (0,38 sekunder)", orgTitle: "Müller Tannlege – tannlegen din i Berlin", orgDom: "mueller-dental.no", orgSnippet: "Velkommen til Müller Tannlege. Bestill time online – moderne behandling, sentral beliggenhet i Berlin.", hours: "Åpent", hoursSub: "· stenger 18:00", phaseSearch: "Søker på Google …", phaseType: "Skriver …" },
+    rev: [{ n: "Anonym", t: "Uvennlig og overpriset. Aldri igjen!" }, { n: "K. B.", t: "Ventet i timevis. En katastrofe." }] },
+});
+
 const RedStar = ({ size = 14 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="#e23b3b"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
 );

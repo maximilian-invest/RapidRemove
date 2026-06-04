@@ -6,7 +6,7 @@ export const DEFAULT_LOCALE = "de";
 
 // Locales that have full translations AND their own statically-exported page.
 // German lives at "/"; every other locale at "/<code>".
-export const LOCALES = ["de", "en", "es", "fr", "it", "nl", "pt"];
+export const LOCALES = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
 export const NON_DEFAULT_LOCALES = LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 
 export const localePath = (l) => (l === DEFAULT_LOCALE ? "/" : `/${l}/`);

@@ -18,6 +18,13 @@ const TEAM_COPY = {
   pt: { title: "Uma equipa inteira trata do seu caso.", sub: "Especialistas em reputação online e direito — em mais de 30 países, disponíveis 24 horas.", stats: ["40+ especialistas", "30+ países", "Resposta em minutos"], more: "+35" },
 };
 
+Object.assign(TEAM_COPY, {
+  ja: { title: "チーム全体があなたのケースを担当します。", sub: "オンライン評判と法律の専門家 ― 30か国以上で、24時間対応。", stats: ["40+ スペシャリスト", "30+ か国", "数分で返信"], more: "+35" },
+  sv: { title: "Ett helt team tar hand om ditt ärende.", sub: "Specialister på online-rykte och juridik – i 30+ länder, dygnet runt.", stats: ["40+ specialister", "30+ länder", "Svar inom minuter"], more: "+35" },
+  da: { title: "Et helt team tager sig af din sag.", sub: "Specialister i online-omdømme og jura – i 30+ lande, døgnet rundt.", stats: ["40+ specialister", "30+ lande", "Svar inden for minutter"], more: "+35" },
+  no: { title: "Et helt team tar seg av saken din.", sub: "Spesialister på nettomdømme og juss – i 30+ land, døgnet rundt.", stats: ["40+ spesialister", "30+ land", "Svar i løpet av minutter"], more: "+35" },
+});
+
 const HERO_FLOAT = {
   de: { done: "Profil gelöscht", sub: "Alle Bewertungen entfernt" },
   en: { done: "Profile deleted", sub: "All reviews removed" },
@@ -65,6 +72,29 @@ const WP_COPY = {
     wholeH: "Remover o perfil inteiro", badge: "O nosso caminho", whole: ["Em 24 horas, com garantia de sucesso", "Todas as avaliações fora de uma vez", "Permanente, sem reaparecer"],
     note: ["Por isso removemos de propósito o ", "perfil completo com todas as avaliações", ". Definitivo, não aos bocados."] }
 };
+
+Object.assign(WP_COPY, {
+  ja: { eyebrow: "私たちのアプローチ", title: "個別の口コミではなく、プロフィール全体を削除します。",
+    lead: "個別の口コミを消すのは手間がかかり不確実です。Googleはしばしば拒否し、削除しても新たな口コミが現れます。私たちは問題を根本から解決します。",
+    singleH: "個別の口コミを削除", single: ["何週間も ― そしてしばしば拒否される", "1件消えても新たに増える", "口コミごとに申請が必要"],
+    wholeH: "プロフィール全体を削除", badge: "私たちの方法", whole: ["24時間で、成功保証付き", "すべての口コミが一度に消える", "永久 ― 再表示なし"],
+    note: ["だからこそ私たちはあえて", "すべての口コミを含むプロフィール全体", "を削除します。継ぎはぎではなく、完全に。"] },
+  sv: { eyebrow: "Vår metod", title: "Vi tar inte bort enskilda omdömen – utan hela profilen.",
+    lead: "Att ta bort enskilda omdömen är mödosamt och osäkert: Google nekar ofta, och för varje borttaget omdöme dyker nya upp. Vi angriper problemet vid roten.",
+    singleH: "Ta bort ett enskilt omdöme", single: ["Veckor – och ofta nekat", "Ett borta, nya tillkommer", "En begäran per omdöme"],
+    wholeH: "Ta bort hela profilen", badge: "Vår väg", whole: ["På 24 timmar, med framgångsgaranti", "Alla omdömen borta på en gång", "Permanent – ingen återkomst"],
+    note: ["Därför tar vi medvetet bort ", "hela profilen med alla omdömen", ". Slutgiltigt, inte styckevis."] },
+  da: { eyebrow: "Vores tilgang", title: "Vi fjerner ikke enkelte anmeldelser – men hele profilen.",
+    lead: "At fjerne enkelte anmeldelser er besværligt og usikkert: Google afviser ofte, og for hver fjernet anmeldelse dukker nye op. Vi angriber problemet ved roden.",
+    singleH: "Fjern en enkelt anmeldelse", single: ["Ugevis – og ofte afvist", "Én væk, nye kommer til", "Én anmodning pr. anmeldelse"],
+    wholeH: "Fjern hele profilen", badge: "Vores vej", whole: ["På 24 timer, med succesgaranti", "Alle anmeldelser væk på én gang", "Permanent – ingen genkomst"],
+    note: ["Derfor fjerner vi bevidst ", "hele profilen med alle anmeldelser", ". Endeligt, ikke stykkevis."] },
+  no: { eyebrow: "Vår tilnærming", title: "Vi fjerner ikke enkeltomtaler – men hele profilen.",
+    lead: "Å fjerne enkeltomtaler er møysommelig og usikkert: Google avslår ofte, og for hver fjernet omtale dukker nye opp. Vi angriper problemet ved roten.",
+    singleH: "Fjern en enkelt omtale", single: ["Ukevis – og ofte avslått", "Én borte, nye kommer til", "Én forespørsel per omtale"],
+    wholeH: "Fjern hele profilen", badge: "Vår vei", whole: ["På 24 timer, med suksessgaranti", "Alle omtaler borte på én gang", "Permanent – ingen gjenkomst"],
+    note: ["Derfor fjerner vi bevisst ", "hele profilen med alle omtaler", ". Endelig, ikke stykkevis."] },
+});
 
 /* ============ HERO ============ */
 function Hero({ onStart }) {
