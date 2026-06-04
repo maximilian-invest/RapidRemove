@@ -7,5 +7,6 @@ import nl from "@/lib/articles/translations/nl";
 import pt from "@/lib/articles/translations/pt";
 import ja from "@/lib/articles/translations/ja";
 import sv from "@/lib/articles/translations/sv";
+import da from "@/lib/articles/translations/da";
 
-export const TRANSLATIONS = { en, es, fr, it, nl, pt, ja, sv };
+export const TRANSLATIONS = { en, es, fr, it, nl, pt, ja, sv, da };
