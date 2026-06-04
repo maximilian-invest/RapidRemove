@@ -89,7 +89,7 @@ function LangToggle() {
 }
 
 /* ---- Navigation ---- */
-function Nav({ onNav, onStart, onBlog, active }) {
+function Nav({ onNav, onStart, onBlog, onAbout, active }) {
   const { t } = useLang();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -99,9 +99,9 @@ function Nav({ onNav, onStart, onBlog, active }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   const links = [
-    ["how", t.nav.how], ["why", t.nav.why], ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["faq", t.nav.faq],
+    ["how", t.nav.how], ["why", t.nav.why], ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about], ["faq", t.nav.faq],
   ];
-  const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else { onNav(id); } };
+  const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else if (id === "about") { onAbout && onAbout(); } else { onNav(id); } };
   return (
     <React.Fragment>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
@@ -134,10 +134,11 @@ function Nav({ onNav, onStart, onBlog, active }) {
 }
 
 /* ---- Footer ---- */
-function Footer({ onStart, onBlog }) {
+function Footer({ onStart, onBlog, onAbout }) {
   const { t } = useLang();
   const linkAction = (l) => {
     if (/Magazin|Magazine|Blog/.test(l)) return onBlog;
+    if (/Über uns|About us|Quiénes somos|À propos|Chi siamo|Over ons|Sobre nós/.test(l)) return onAbout;
     if (/check|Check|prüfen/.test(l)) return onStart;
     return undefined;
   };

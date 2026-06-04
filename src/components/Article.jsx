@@ -334,9 +334,9 @@ export default function Article() {
   const nav = (path) => { window.location.href = asset(path); };
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} active="magazin" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={() => nav("/ueber-uns/")} active="magazin" />
       <ArticleBody />
-      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} />
+      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={() => nav("/ueber-uns/")} />
       <WhatsAppFloat />
     </LangContext.Provider>
   );

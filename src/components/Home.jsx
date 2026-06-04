@@ -583,7 +583,7 @@ function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
   };
   return (
     <React.Fragment>
-      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} />
+      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <Hero onStart={onStart} />
       <TrustBar />
       <Problem id="problem" />
@@ -596,7 +596,7 @@ function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
       <Pricing id="pricing" onStart={onStart} />
       <FAQ id="faq" />
       <FinalCTA onStart={onStart} />
-      <Footer onStart={() => onStart()} onBlog={onBlog} />
+      <Footer onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <StickyCTA onStart={() => onStart()} />
       <WhatsAppFloat />
     </React.Fragment>);

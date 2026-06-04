@@ -4,6 +4,7 @@ import "@/styles/app.css";
 import "@/styles/wizard.css";
 import "@/styles/blog.css";
 import "@/styles/article.css";
+import "@/styles/about.css";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 

@@ -11,7 +11,7 @@ import { PRICES } from "@/lib/pricing";
     code: "es",
     riskReversal: "Cero riesgo · Paga solo tras la eliminación con éxito",
     riskShort: "Pagas SOLO tras la eliminación con éxito",
-    nav: { how: "Cómo funciona", why: "Por qué nosotros", pricing: "Precios", reviews: "Opiniones", faq: "FAQ", magazin: "Revista", login: "Portal de cliente", cta: "Análisis gratis" },
+    nav: { how: "Cómo funciona", why: "Por qué nosotros", pricing: "Precios", reviews: "Opiniones", faq: "FAQ", magazin: "Revista", about: "Quiénes somos", login: "Portal de cliente", cta: "Análisis gratis" },
     hero: {
       chip: "Conforme al RGPD · Servidores en la UE · 100 % legal",
       h1a: "Elimina tu perfil de empresa de Google:",
@@ -215,7 +215,7 @@ import { PRICES } from "@/lib/pricing";
     code: "fr",
     riskReversal: "Zéro risque · Paiement seulement après suppression réussie",
     riskShort: "Vous payez UNIQUEMENT après la suppression réussie",
-    nav: { how: "Comment ça marche", why: "Pourquoi nous", pricing: "Tarifs", reviews: "Avis", faq: "FAQ", magazin: "Magazine", login: "Espace client", cta: "Analyse gratuite" },
+    nav: { how: "Comment ça marche", why: "Pourquoi nous", pricing: "Tarifs", reviews: "Avis", faq: "FAQ", magazin: "Magazine", about: "À propos", login: "Espace client", cta: "Analyse gratuite" },
     hero: {
       chip: "Conforme au RGPD · Serveurs dans l'UE · 100 % légal",
       h1a: "Supprimez votre fiche d'établissement Google :",

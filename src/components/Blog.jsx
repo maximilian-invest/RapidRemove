@@ -48,7 +48,7 @@ function Blog({ onStart, onGoHome }) {
 
   return (
     <div className="mag">
-      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} active="magazin" />
+      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} active="magazin" />
 
       {/* hero */}
       <section className="mag-hero">
@@ -177,7 +177,7 @@ function Blog({ onStart, onGoHome }) {
         </div>
       </section>
 
-      <Footer onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+      <Footer onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <WhatsAppFloat />
     </div>
   );

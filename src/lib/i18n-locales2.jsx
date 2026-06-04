@@ -9,7 +9,7 @@ import { PRICES } from "@/lib/pricing";
     code: "it",
     riskReversal: "Rischio zero · Paghi solo dopo la rimozione riuscita",
     riskShort: "Paghi SOLO dopo la rimozione riuscita",
-    nav: { how: "Come funziona", why: "Perché noi", pricing: "Prezzi", reviews: "Recensioni", faq: "FAQ", magazin: "Magazine", login: "Area clienti", cta: "Analisi gratis" },
+    nav: { how: "Come funziona", why: "Perché noi", pricing: "Prezzi", reviews: "Recensioni", faq: "FAQ", magazin: "Magazine", about: "Chi siamo", login: "Area clienti", cta: "Analisi gratis" },
     hero: {
       chip: "Conforme al GDPR · Server nell'UE · 100 % legale",
       h1a: "Elimina il tuo profilo aziendale Google:",
@@ -213,7 +213,7 @@ import { PRICES } from "@/lib/pricing";
     code: "nl",
     riskReversal: "Geen risico · Betaal pas na succesvolle verwijdering",
     riskShort: "U betaalt ALLEEN na succesvolle verwijdering",
-    nav: { how: "Hoe het werkt", why: "Waarom wij", pricing: "Prijzen", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", login: "Klantportaal", cta: "Gratis check" },
+    nav: { how: "Hoe het werkt", why: "Waarom wij", pricing: "Prijzen", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "Over ons", login: "Klantportaal", cta: "Gratis check" },
     hero: {
       chip: "AVG-conform · Servers in de EU · 100 % legaal",
       h1a: "Verwijder uw Google-bedrijfsprofiel:",
@@ -417,7 +417,7 @@ import { PRICES } from "@/lib/pricing";
     code: "pt",
     riskReversal: "Risco zero · Pague apenas após a remoção bem-sucedida",
     riskShort: "Você paga APENAS após a remoção bem-sucedida",
-    nav: { how: "Como funciona", why: "Porquê nós", pricing: "Preços", reviews: "Avaliações", faq: "FAQ", magazin: "Revista", login: "Portal do cliente", cta: "Análise grátis" },
+    nav: { how: "Como funciona", why: "Porquê nós", pricing: "Preços", reviews: "Avaliações", faq: "FAQ", magazin: "Revista", about: "Sobre nós", login: "Portal do cliente", cta: "Análise grátis" },
     hero: {
       chip: "Conforme o RGPD · Servidores na UE · 100 % legal",
       h1a: "Elimine o seu perfil de empresa do Google:",
