@@ -2,5 +2,6 @@
    and its localized pages + hreflang appear automatically. */
 import en from "@/lib/articles/translations/en";
 import es from "@/lib/articles/translations/es";
+import fr from "@/lib/articles/translations/fr";
 
-export const TRANSLATIONS = { en, es };
+export const TRANSLATIONS = { en, es, fr };
