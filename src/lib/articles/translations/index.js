@@ -8,5 +8,6 @@ import pt from "@/lib/articles/translations/pt";
 import ja from "@/lib/articles/translations/ja";
 import sv from "@/lib/articles/translations/sv";
 import da from "@/lib/articles/translations/da";
+import no from "@/lib/articles/translations/no";
 
-export const TRANSLATIONS = { en, es, fr, it, nl, pt, ja, sv, da };
+export const TRANSLATIONS = { en, es, fr, it, nl, pt, ja, sv, da, no };
