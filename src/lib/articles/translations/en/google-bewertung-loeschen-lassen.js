@@ -1,8 +1,5 @@
-/* RapidRemove — English translations of the cluster articles.
-   Keyed by the canonical German slug; each holds a localized slug + content.
-   Block ids/types mirror the German source so anchors/TOC stay in sync. */
-const en = {
-  "google-bewertung-loeschen-lassen": {
+/* EN — google-bewertung-loeschen-lassen */
+const article = {
     category: "Reputation",
     meta: {
       slug: "remove-google-reviews",
@@ -99,6 +96,5 @@ const en = {
       { label: "Remove a 1-star review without text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
       { label: "Lawyer or technical removal – what's really worth it?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     ],
-  },
 };
-export default en;
+export default article;
