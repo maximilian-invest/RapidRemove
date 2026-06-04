@@ -507,6 +507,7 @@ const VIDEO_COPY = {
 };
 function VideoSection() {
   const { lang } = useLang();
+  if (lang !== "de") return null; // explainer video runs on the German site only
   const v = VIDEO_COPY[lang] || VIDEO_COPY.en;
   return (
     <section className="band tint">

@@ -7,6 +7,7 @@ import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
 import { LangContext } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
+import { localePath } from "@/lib/locales-meta";
 import { FAQ, ARTICLE_META } from "@/lib/article-google-profil";
 
 const SECTIONS = [
@@ -328,7 +329,7 @@ export default function Article() {
   const setLang = (l) => {
     setLangState(l);
     try { localStorage.setItem("rr_lang", l); } catch (e) {}
-    window.location.href = asset("/");
+    window.location.href = asset(localePath(l));
   };
   const t = I18N[lang] || I18N.de;
   const nav = (path) => { window.location.href = asset(path); };

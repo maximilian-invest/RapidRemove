@@ -6,6 +6,7 @@ import { Nav, Footer, WhatsAppFloat, useReveal, CountUp } from "@/components/Chr
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
+import { localePath } from "@/lib/locales-meta";
 
 const ABOUT_COPY = {
   de: {
@@ -281,9 +282,8 @@ export default function About() {
     try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {}
   }, []);
   const setLang = (l) => {
-    setLangState(l);
     try { localStorage.setItem("rr_lang", l); } catch (e) {}
-    document.documentElement.lang = l;
+    window.location.href = asset(localePath(l));
   };
   const t = I18N[lang] || I18N.de;
   return (

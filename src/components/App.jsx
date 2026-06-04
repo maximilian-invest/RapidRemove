@@ -1,26 +1,22 @@
 "use client";
-/* RapidRemove — App root: routing + language context */
+/* RapidRemove — App root: per-language routing + in-page view state */
 import React from "react";
 import { I18N } from "@/lib/i18n";
 import { LangContext } from "@/lib/lang-context";
+import { asset } from "@/lib/base";
+import { localePath } from "@/lib/locales-meta";
 import { Home } from "@/components/Home";
 import { Blog } from "@/components/Blog";
 import { Wizard } from "@/components/Wizard";
 
-export default function App() {
-  const [lang, setLangState] = React.useState("de");
+export default function App({ initialLang = "de" }) {
+  const lang = I18N[initialLang] ? initialLang : "de";
   const [route, setRoute] = React.useState("home"); // home | wizard | blog
   const [seed, setSeed] = React.useState("");
   const [homeScroll, setHomeScroll] = React.useState(null);
 
-  // Load the persisted language + handle deep links from article pages
-  // (?start=1 -> wizard, ?view=magazin -> blog, #section -> scroll). Runs after
-  // mount so SSR + first paint stay deterministic.
+  // Deep links from other pages: ?start=1 -> wizard, ?view=magazin -> blog, #section -> scroll.
   React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem("rr_lang");
-      if (saved && I18N[saved] && saved !== lang) setLangState(saved);
-    } catch (e) {}
     try {
       const params = new URLSearchParams(window.location.search);
       if (params.get("start") === "1") setRoute("wizard");
@@ -28,15 +24,16 @@ export default function App() {
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
       if (hash) setHomeScroll(hash);
     } catch (e) {}
+    try { localStorage.setItem("rr_lang", lang); } catch (e) {}
+    document.documentElement.lang = lang;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Switching language navigates to that locale's own URL (real, crawlable pages).
   const setLang = (l) => {
-    setLangState(l);
     try { localStorage.setItem("rr_lang", l); } catch (e) {}
-    document.documentElement.lang = l;
+    window.location.href = asset(localePath(l));
   };
-  React.useEffect(() => { document.documentElement.lang = lang; }, [lang]);
 
   const t = I18N[lang] || I18N.de;
 
