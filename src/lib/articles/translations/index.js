@@ -1,7 +1,7 @@
-/* Registry of per-language article translations. Add a language module here
-   and its localized pages + hreflang appear automatically. */
+/* Registry of per-language article translations. */
 import en from "@/lib/articles/translations/en";
 import es from "@/lib/articles/translations/es";
 import fr from "@/lib/articles/translations/fr";
+import it from "@/lib/articles/translations/it";
 
-export const TRANSLATIONS = { en, es, fr };
+export const TRANSLATIONS = { en, es, fr, it };
