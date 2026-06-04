@@ -15,8 +15,9 @@ export const ARTICLE_META = {
     "Google lässt Sie Ihr Unternehmensprofil nicht einfach löschen. Diese Anleitung zeigt Schritt für Schritt, welche Wege es 2026 wirklich gibt, warum „dauerhaft geschlossen“ keine Löschung ist – und wie Sie das Profil samt aller Bewertungen dauerhaft und legal entfernen.",
   datePublished: "2026-05-12",
   dateModified: "2026-06-04",
-  author: "Matthias K.",
+  author: "Maximilian Hölzl",
   authorRole: "Gründer & Reputations-Experte, RapidRemove",
+  authorImage: "/assets/maximilian-hoelzl.jpg",
   readingMin: 11,
   keywords: [
     "Google Unternehmensprofil löschen",

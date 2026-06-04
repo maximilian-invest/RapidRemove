@@ -168,7 +168,7 @@ import { PRICES } from "@/lib/pricing";
       authorityEyebrow: "El líder mundial en cifras",
       authorityTitle: "Una escala que habla por sí sola.",
       authStats: [
-        { v: 50000, suf: "+", l: "perfiles eliminados" },
+        { v: 1000, suf: "+", l: "perfiles eliminados" },
         { v: 30, suf: "+", l: "países en el mundo" },
         { v: 1, suf: "", pre: "Nº ", l: "líder global del mercado" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "valoración media" },
@@ -372,7 +372,7 @@ import { PRICES } from "@/lib/pricing";
       authorityEyebrow: "Le leader mondial en chiffres",
       authorityTitle: "Une échelle qui parle d'elle-même.",
       authStats: [
-        { v: 50000, suf: "+", l: "fiches supprimées" },
+        { v: 1000, suf: "+", l: "fiches supprimées" },
         { v: 30, suf: "+", l: "pays dans le monde" },
         { v: 1, suf: "", pre: "N° ", l: "leader mondial" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "note moyenne client" },

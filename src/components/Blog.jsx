@@ -62,7 +62,7 @@ function Blog({ onStart, onGoHome }) {
           <p className="mag-lead reveal d2">{b.lead}</p>
           <div className="leader-ribbon reveal d3">
             <span className="lr-badge"><Icon.star size={14} /> {b.ribbonBadge}</span>
-            <span className="lr-txt">{b.ribbonText("50.000")}</span>
+            <span className="lr-txt">{b.ribbonText("1.000")}</span>
           </div>
 
           {/* featured */}

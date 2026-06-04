@@ -70,7 +70,7 @@ function ArticleBody() {
           <h1>{ARTICLE_META.h1}</h1>
           <p className="art-dek">{ARTICLE_META.description}</p>
           <div className="art-meta">
-            <span className="am-ava">{ARTICLE_META.author[0]}</span>
+            <img className="am-ava" src={asset(ARTICLE_META.authorImage)} alt={ARTICLE_META.author} style={{ objectFit: "cover" }} />
             <span className="am-author">{ARTICLE_META.author}</span>
             <span className="am-dot" />
             <span><Icon.clock />{ARTICLE_META.readingMin} Min. Lesezeit</span>
@@ -292,7 +292,7 @@ function ArticleBody() {
           <div className="art-updated"><Icon.checkCircle /> Zuletzt aktualisiert: Juni 2026 · juristisch geprüft</div>
 
           <div className="art-author">
-            <div className="aa-ava">{ARTICLE_META.author[0]}</div>
+            <img className="aa-ava" src={asset(ARTICLE_META.authorImage)} alt={ARTICLE_META.author} style={{ objectFit: "cover" }} />
             <div>
               <div className="aa-name">{ARTICLE_META.author}</div>
               <div className="aa-role">{ARTICLE_META.authorRole}</div>

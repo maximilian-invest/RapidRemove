@@ -166,7 +166,7 @@ import { PRICES } from "@/lib/pricing";
       authorityEyebrow: "Il leader mondiale in cifre",
       authorityTitle: "Una scala che parla da sé.",
       authStats: [
-        { v: 50000, suf: "+", l: "profili rimossi" },
+        { v: 1000, suf: "+", l: "profili rimossi" },
         { v: 30, suf: "+", l: "Paesi nel mondo" },
         { v: 1, suf: "", pre: "N° ", l: "leader globale" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "valutazione media" },
@@ -370,7 +370,7 @@ import { PRICES } from "@/lib/pricing";
       authorityEyebrow: "De wereldmarktleider in cijfers",
       authorityTitle: "Een schaal die voor zich spreekt.",
       authStats: [
-        { v: 50000, suf: "+", l: "profielen verwijderd" },
+        { v: 1000, suf: "+", l: "profielen verwijderd" },
         { v: 30, suf: "+", l: "landen wereldwijd" },
         { v: 1, suf: "", pre: "Nr. ", l: "wereldwijd marktleider" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "gem. klantbeoordeling" },
@@ -574,7 +574,7 @@ import { PRICES } from "@/lib/pricing";
       authorityEyebrow: "O líder mundial em números",
       authorityTitle: "Uma escala que fala por si.",
       authStats: [
-        { v: 50000, suf: "+", l: "perfis removidos" },
+        { v: 1000, suf: "+", l: "perfis removidos" },
         { v: 30, suf: "+", l: "países no mundo" },
         { v: 1, suf: "", pre: "N.º ", l: "líder global de mercado" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "avaliação média" },

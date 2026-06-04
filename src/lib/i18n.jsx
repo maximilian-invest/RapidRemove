@@ -170,7 +170,7 @@ const I18N = {
       authorityEyebrow: "Weltmarktführer in Zahlen",
       authorityTitle: "Eine Größenordnung, die für sich spricht.",
       authStats: [
-        { v: 50000, suf: "+", l: "entfernte Profile" },
+        { v: 1000, suf: "+", l: "entfernte Profile" },
         { v: 30, suf: "+", l: "Länder weltweit" },
         { v: 1, suf: "", pre: "Nr. ", l: "Marktführer global" },
         { v: 49, suf: "", fmt: "49->4,9 ★", l: "Ø Kundenbewertung" },
@@ -448,7 +448,7 @@ const I18N = {
       authorityEyebrow: "The world leader in numbers",
       authorityTitle: "A scale that speaks for itself.",
       authStats: [
-        { v: 50000, suf: "+", l: "profiles removed" },
+        { v: 1000, suf: "+", l: "profiles removed" },
         { v: 30, suf: "+", l: "countries worldwide" },
         { v: 1, suf: "", pre: "No. ", l: "market leader globally" },
         { v: 49, suf: "", fmt: "49->4.9 ★", l: "avg. client rating" },
