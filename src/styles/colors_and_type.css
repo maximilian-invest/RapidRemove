@@ -1,0 +1,197 @@
+/* ============================================================
+   RapidRemove — Colors & Type Foundations
+   Brand: orange rocket. "Wir löschen Google Unternehmensprofile."
+   Single accent (orange) on warm-white surfaces. Friendly, fast,
+   reassuring. Rounded geometric display + humanist body.
+   ============================================================ */
+
+/* ---- Fonts -------------------------------------------------
+   Plus Jakarta Sans → display / headings (warm, professional)
+   Hanken Grotesk    → body / UI / labels (clear, full ä ö ü ß)
+   The active brand pairing. Swap for licensed faces if available.
+   ------------------------------------------------------------ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* ===== Brand orange scale ===== */
+  --orange-50:  #fff4e8;
+  --orange-100: #ffe6cc;
+  --orange-200: #ffcd99;
+  --orange-300: #ffb366;
+  --orange-400: #ff9933;
+  --orange-500: #ff8000;  /* BRAND — sampled from logo (rgb 255,128,0) */
+  --orange-600: #e67000;  /* hover / press-darker */
+  --orange-700: #cc6300;
+  --orange-800: #a34f00;
+  --orange-900: #7a3b00;
+
+  /* ===== Warm neutral scale ===== */
+  --white:      #ffffff;
+  --neutral-50: #faf8f6;  /* soft warm-white surface */
+  --neutral-100:#f4f0ec;
+  --neutral-200:#e9e3dd;  /* hairline / border */
+  --neutral-300:#d6cec6;
+  --neutral-400:#b0a79f;
+  --neutral-500:#8a817a;
+  --neutral-600:#6b635c;  /* secondary text */
+  --neutral-700:#4a443f;
+  --neutral-800:#2e2a26;
+  --neutral-900:#1c1916;  /* ink — strongest text */
+
+  /* ===== Semantic ===== */
+  --success:      #16a34a;  /* "Profil gelöscht" / removed */
+  --success-soft: #e8f7ee;
+  --warning:      #f59e0b;  /* "in Bearbeitung" */
+  --warning-soft: #fff4e0;
+  --danger:       #e23b3b;  /* errors / negative profile */
+  --danger-soft:  #fdecec;
+  --info:         #2b7fff;
+  --info-soft:    #eaf2ff;
+
+  /* ===== Semantic role tokens (light, the default surface) ===== */
+  --primary:        var(--orange-500);
+  --primary-hover:  var(--orange-600);
+  --primary-active: var(--orange-700);
+  --on-primary:     #ffffff;          /* white text on orange */
+  --primary-soft:   var(--orange-50); /* tinted callout surfaces */
+
+  --canvas:         var(--white);     /* page floor */
+  --surface:        var(--neutral-50);/* cards / sections */
+  --surface-2:      var(--neutral-100);
+  --hairline:       var(--neutral-200);
+  --hairline-strong:var(--neutral-300);
+
+  --fg:        var(--neutral-900);  /* primary text */
+  --fg-2:      var(--neutral-600);  /* secondary text */
+  --fg-muted:  var(--neutral-500);  /* captions / meta */
+  --fg-on-dark:#ffffff;
+
+  /* Dark / inverted surface (footer, CTA bands) */
+  --ink-canvas:   #1a1512;          /* warm near-black */
+  --ink-surface:  #241d18;
+  --ink-hairline: #38302a;
+
+  /* ===== Type families ===== */
+  --font-display: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body:    'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono:    'SFMono-Regular', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+
+  /* ===== Radius (rounded, friendly) ===== */
+  --r-xs:  6px;
+  --r-sm:  10px;
+  --r-md:  14px;   /* buttons, inputs */
+  --r-lg:  20px;   /* cards */
+  --r-xl:  28px;   /* hero panels, big cards */
+  --r-2xl: 36px;
+  --r-pill:9999px; /* pills, primary CTAs in marketing */
+  --r-full:50%;
+
+  /* ===== Spacing (4px base) ===== */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+  --s-9: 96px;     /* section rhythm */
+
+  /* ===== Shadows (soft, warm-tinted) ===== */
+  --shadow-xs: 0 1px 2px rgba(28,25,22,0.06);
+  --shadow-sm: 0 2px 8px rgba(28,25,22,0.06);
+  --shadow-md: 0 8px 24px rgba(28,25,22,0.08);
+  --shadow-lg: 0 18px 48px rgba(28,25,22,0.12);
+  --shadow-orange: 0 10px 28px rgba(255,128,0,0.30);  /* glow under orange CTAs */
+
+  /* ===== Motion ===== */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);  /* gentle ease-out */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 360ms;
+}
+
+/* ============================================================
+   Base element styles (semantic). Opt-in via .rr-type or use
+   the variables directly in component CSS.
+   ============================================================ */
+.rr-type {
+  font-family: var(--font-body);
+  color: var(--fg);
+  background: var(--canvas);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.rr-type h1, .rr-h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 1.05;
+  letter-spacing: -0.5px;
+  color: var(--fg);
+  margin: 0;
+}
+.rr-type h2, .rr-h2 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(30px, 4vw, 44px);
+  line-height: 1.1;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+.rr-type h3, .rr-h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 28px;
+  line-height: 1.2;
+  margin: 0;
+}
+.rr-type h4, .rr-h4 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.3;
+  margin: 0;
+}
+.rr-eyebrow {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.rr-type p, .rr-body {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--fg-2);
+  margin: 0;
+}
+.rr-lead {
+  font-size: 19px;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+.rr-small, .rr-caption {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+.rr-label {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--fg);
+}
+.rr-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+a { color: var(--primary); text-decoration: none; }
