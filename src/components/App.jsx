@@ -13,11 +13,20 @@ export default function App() {
   const [seed, setSeed] = React.useState("");
   const [homeScroll, setHomeScroll] = React.useState(null);
 
-  // Load the persisted language after mount (keeps SSR + first paint deterministic).
+  // Load the persisted language + handle deep links from article pages
+  // (?start=1 -> wizard, ?view=magazin -> blog, #section -> scroll). Runs after
+  // mount so SSR + first paint stay deterministic.
   React.useEffect(() => {
     try {
       const saved = localStorage.getItem("rr_lang");
       if (saved && I18N[saved] && saved !== lang) setLangState(saved);
+    } catch (e) {}
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("start") === "1") setRoute("wizard");
+      else if (params.get("view") === "magazin") setRoute("blog");
+      const hash = window.location.hash ? window.location.hash.slice(1) : "";
+      if (hash) setHomeScroll(hash);
     } catch (e) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

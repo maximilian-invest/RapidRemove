@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { asset } from "@/lib/base";
+import { ARTICLE_SLUG } from "@/lib/article-google-profil";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { useReveal, CountUp, Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
@@ -64,7 +66,7 @@ function Blog({ onStart, onGoHome }) {
           </div>
 
           {/* featured */}
-          <div className="feat-article reveal d2">
+          <a className="feat-article reveal d2" href={t.code === "de" ? asset("/" + ARTICLE_SLUG + "/") : undefined} style={{ textDecoration: "none", color: "inherit", cursor: t.code === "de" ? "pointer" : "default" }}>
             <div className={"feat-thumb " + featured.thm}>
               <span className="ft-icon"><FeatIcon /></span>
               <span className="ft-cat"><Icon.star size={13} /> {b.featuredTag}</span>
@@ -75,7 +77,7 @@ function Blog({ onStart, onGoHome }) {
               <p>{featured.excerpt}</p>
               <ArticleMeta a={featured} t={t} />
             </div>
-          </div>
+          </a>
         </div>
       </section>
 

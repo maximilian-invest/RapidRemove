@@ -3,6 +3,7 @@ import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
 import "@/styles/blog.css";
+import "@/styles/article.css";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
