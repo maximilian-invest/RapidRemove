@@ -2,6 +2,7 @@
 import React from "react";
 import { asset } from "@/lib/base";
 import { ARTICLE_SLUG } from "@/lib/article-google-profil";
+import { CLUSTER_CARDS } from "@/lib/articles/registry";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { useReveal, CountUp, Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
@@ -43,7 +44,9 @@ function Blog({ onStart, onGoHome }) {
 
   const featured = b.articles[0];
   const rest = b.articles.slice(1);
-  const filtered = cat === b.cats[0] ? rest : rest.filter((a) => a.cat === cat);
+  // German magazine surfaces the real SEO cluster; other locales keep the sample grid.
+  const gridSource = t.code === "de" ? CLUSTER_CARDS : rest;
+  const filtered = cat === b.cats[0] ? gridSource : gridSource.filter((a) => a.cat === cat);
   const FeatIcon = Icon[featured.icon] || Icon.star;
 
   return (
@@ -118,8 +121,8 @@ function Blog({ onStart, onGoHome }) {
           <div className="art-grid">
             {filtered.map((a, i) => {
               const I = Icon[a.icon] || Icon.star;
-              return (
-                <article className={"art-card reveal d" + ((i % 3) + 1)} key={a.title}>
+              const inner = (
+                <React.Fragment>
                   <div className={"art-thumb " + a.thm}>
                     <span className="at-icon"><I /></span>
                     <span className="at-cat">{a.cat}</span>
@@ -129,8 +132,12 @@ function Blog({ onStart, onGoHome }) {
                     <p>{a.excerpt}</p>
                     <ArticleMeta a={a} t={t} />
                   </div>
-                </article>
+                </React.Fragment>
               );
+              const cls = "art-card reveal d" + ((i % 3) + 1);
+              return a.slug
+                ? <a className={cls} href={asset("/" + a.slug + "/")} key={a.slug} style={{ textDecoration: "none", color: "inherit" }}>{inner}</a>
+                : <article className={cls} key={a.title}>{inner}</article>;
             })}
           </div>
         </div>

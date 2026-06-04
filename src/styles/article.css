@@ -125,3 +125,13 @@
 .art-back{margin:40px 0 0;}
 .art-updated{font-size:13.5px;color:var(--fg-muted);font-weight:700;margin:30px 0 0;display:flex;align-items:center;gap:8px;}
 .art-updated svg{width:15px;height:15px;color:var(--success);}
+
+/* blockquote (example answers / pull quotes) */
+.prose .art-quote{margin:0 0 26px;padding:16px 22px;border-left:4px solid var(--primary);background:var(--orange-50);border-radius:0 var(--r-md) var(--r-md) 0;font-size:16.5px;line-height:1.6;color:var(--neutral-800);font-style:italic;}
+/* related-articles list */
+.prose ul.art-related{margin:6px 0 26px;}
+.prose ul.art-related li{padding:0 0 12px 0;}
+.prose ul.art-related li::before{display:none;}
+.prose ul.art-related a{display:inline-flex;align-items:center;gap:9px;font-weight:700;text-decoration:none;}
+.prose ul.art-related a:hover{text-decoration:underline;}
+.prose ul.art-related svg{color:var(--primary);flex:none;}
