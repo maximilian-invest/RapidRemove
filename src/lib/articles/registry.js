@@ -88,3 +88,23 @@ export function buildJsonLd(meta, faq) {
     ],
   };
 }
+
+// ---- Article localization ------------------------------------------------
+// Locales the cluster is being translated into (German lives at root).
+export const ARTICLE_LOCALES = ["en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
+
+// Editorial-chrome strings per language (the bits not covered by the article data).
+export const UI = {
+  de: { bcStart: "Start", bcMagazin: "Magazin", reading: "Min. Lesezeit", updated: "Aktualisiert: Juni 2026", faqHeading: "Häufig gestellte Fragen", tocTitle: "Inhalt", tocFaq: "Häufige Fragen", tocCta: "Gratis-Check", related: "Weiterlesen", back: "Zurück zum Magazin", lastUpdated: "Zuletzt aktualisiert: Juni 2026 · keine Rechtsberatung", ctaBtn: "Gratis prüfen" },
+  en: { bcStart: "Home", bcMagazin: "Magazine", reading: "min read", updated: "Updated: June 2026", faqHeading: "Frequently asked questions", tocTitle: "Contents", tocFaq: "FAQ", tocCta: "Free check", related: "Read more", back: "Back to the magazine", lastUpdated: "Last updated: June 2026 · not legal advice", ctaBtn: "Check for free" },
+  es: { bcStart: "Inicio", bcMagazin: "Revista", reading: "min de lectura", updated: "Actualizado: junio de 2026", faqHeading: "Preguntas frecuentes", tocTitle: "Contenido", tocFaq: "Preguntas frecuentes", tocCta: "Análisis gratis", related: "Seguir leyendo", back: "Volver a la revista", lastUpdated: "Última actualización: junio de 2026 · sin asesoramiento jurídico", ctaBtn: "Comprobar gratis" },
+  fr: { bcStart: "Accueil", bcMagazin: "Magazine", reading: "min de lecture", updated: "Mis à jour : juin 2026", faqHeading: "Questions fréquentes", tocTitle: "Sommaire", tocFaq: "FAQ", tocCta: "Analyse gratuite", related: "À lire aussi", back: "Retour au magazine", lastUpdated: "Dernière mise à jour : juin 2026 · pas un conseil juridique", ctaBtn: "Analyser gratuitement" },
+  it: { bcStart: "Home", bcMagazin: "Magazine", reading: "min di lettura", updated: "Aggiornato: giugno 2026", faqHeading: "Domande frequenti", tocTitle: "Indice", tocFaq: "FAQ", tocCta: "Analisi gratis", related: "Continua a leggere", back: "Torna al magazine", lastUpdated: "Ultimo aggiornamento: giugno 2026 · non è consulenza legale", ctaBtn: "Analizza gratis" },
+  nl: { bcStart: "Start", bcMagazin: "Magazine", reading: "min leestijd", updated: "Bijgewerkt: juni 2026", faqHeading: "Veelgestelde vragen", tocTitle: "Inhoud", tocFaq: "FAQ", tocCta: "Gratis check", related: "Verder lezen", back: "Terug naar het magazine", lastUpdated: "Laatst bijgewerkt: juni 2026 · geen juridisch advies", ctaBtn: "Gratis checken" },
+  pt: { bcStart: "Início", bcMagazin: "Revista", reading: "min de leitura", updated: "Atualizado: junho de 2026", faqHeading: "Perguntas frequentes", tocTitle: "Índice", tocFaq: "FAQ", tocCta: "Análise grátis", related: "Continue a ler", back: "Voltar à revista", lastUpdated: "Última atualização: junho de 2026 · não é aconselhamento jurídico", ctaBtn: "Verificar grátis" },
+  ja: { bcStart: "ホーム", bcMagazin: "マガジン", reading: "分で読めます", updated: "更新：2026年6月", faqHeading: "よくある質問", tocTitle: "目次", tocFaq: "よくある質問", tocCta: "無料チェック", related: "関連記事", back: "マガジンに戻る", lastUpdated: "最終更新：2026年6月・法的助言ではありません", ctaBtn: "無料でチェック" },
+  sv: { bcStart: "Hem", bcMagazin: "Magasin", reading: "min läsning", updated: "Uppdaterad: juni 2026", faqHeading: "Vanliga frågor", tocTitle: "Innehåll", tocFaq: "Vanliga frågor", tocCta: "Gratis koll", related: "Läs vidare", back: "Tillbaka till magasinet", lastUpdated: "Senast uppdaterad: juni 2026 · ingen juridisk rådgivning", ctaBtn: "Kolla gratis" },
+  da: { bcStart: "Hjem", bcMagazin: "Magasin", reading: "min læsning", updated: "Opdateret: juni 2026", faqHeading: "Ofte stillede spørgsmål", tocTitle: "Indhold", tocFaq: "FAQ", tocCta: "Gratis tjek", related: "Læs videre", back: "Tilbage til magasinet", lastUpdated: "Senest opdateret: juni 2026 · ingen juridisk rådgivning", ctaBtn: "Tjek gratis" },
+  no: { bcStart: "Hjem", bcMagazin: "Magasin", reading: "min lesing", updated: "Oppdatert: juni 2026", faqHeading: "Ofte stilte spørsmål", tocTitle: "Innhold", tocFaq: "FAQ", tocCta: "Gratis sjekk", related: "Les videre", back: "Tilbake til magasinet", lastUpdated: "Sist oppdatert: juni 2026 · ingen juridisk rådgivning", ctaBtn: "Sjekk gratis" },
+};
+export const uiFor = (lang) => UI[lang] || UI.en;

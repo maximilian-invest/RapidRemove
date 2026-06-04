@@ -1,0 +1,111 @@
+/* RapidRemove — article catalog: German sources + translations + i18n helpers.
+   Server-side only (heavy). Used by the article route pages, not the renderer. */
+import { SITE_URL } from "@/lib/article-google-profil";
+import { TRANSLATIONS } from "@/lib/articles/translations";
+
+import a1 from "@/lib/articles/google-bewertung-loeschen-lassen";
+import a2 from "@/lib/articles/fake-google-bewertung-melden-loeschen";
+import a3 from "@/lib/articles/negative-google-bewertung-anwalt-oder-technische-loeschung";
+import a4 from "@/lib/articles/schlechte-google-bewertungen-was-tun";
+import a5 from "@/lib/articles/1-stern-bewertung-ohne-text-loeschen";
+import a6 from "@/lib/articles/google-rezension-loeschen-lassen";
+import a7 from "@/lib/articles/google-maps-eintrag-loeschen";
+
+const DE_LIST = [a1, a2, a3, a4, a5, a6, a7];
+export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a]));
+export { TRANSLATIONS };
+
+const FLAGSHIP_SLUG = "google-unternehmensprofil-loeschen-wie-geht-das";
+const FLAGSHIP_PATH = "/magazin/google-unternehmensprofil-loeschen/";
+
+export const homeBase = (lang) => (lang === "de" ? "/" : `/${lang}/`);
+export const tFor = (lang, deSlug) => (TRANSLATIONS[lang] || {})[deSlug];
+
+// On-site path for an article in a given language (null if not translated).
+export function localizedPath(lang, deSlug) {
+  if (lang === "de") return `/${deSlug}/`;
+  const t = tFor(lang, deSlug);
+  return t ? `/${lang}/${t.meta.slug}/` : null;
+}
+
+// [lang]/[aslug] params for every translated article.
+export function articleParams() {
+  const out = [];
+  for (const lang of Object.keys(TRANSLATIONS)) {
+    for (const deSlug of Object.keys(TRANSLATIONS[lang])) {
+      out.push({ lang, aslug: TRANSLATIONS[lang][deSlug].meta.slug });
+    }
+  }
+  return out;
+}
+
+// Resolve a (lang, localized-slug) pair back to its data.
+export function resolveLocalized(lang, aslug) {
+  const map = TRANSLATIONS[lang] || {};
+  for (const deSlug of Object.keys(map)) {
+    if (map[deSlug].meta.slug === aslug) return { deSlug, t: map[deSlug], de: DE_ARTICLES[deSlug] };
+  }
+  return null;
+}
+
+// hreflang alternates (absolute URLs) for all language versions of an article.
+export function hreflangForArticle(deSlug) {
+  const m = { de: `${SITE_URL}/${deSlug}` };
+  for (const lang of Object.keys(TRANSLATIONS)) {
+    const t = TRANSLATIONS[lang][deSlug];
+    if (t) m[lang] = `${SITE_URL}/${lang}/${t.meta.slug}`;
+  }
+  m["x-default"] = `${SITE_URL}/${deSlug}`;
+  return m;
+}
+
+// Root-relative URLs per language for the in-page language switcher.
+export function langUrlsForArticle(deSlug) {
+  const m = { de: `/${deSlug}/` };
+  for (const lang of Object.keys(TRANSLATIONS)) {
+    const t = TRANSLATIONS[lang][deSlug];
+    if (t) m[lang] = `/${lang}/${t.meta.slug}/`;
+  }
+  return m;
+}
+
+// Resolve an article's "related" list to same-language on-site links (de fallback).
+export function resolveRelated(lang, relatedList) {
+  return (relatedList || []).map((r) => {
+    const slug = r.url.replace(/^https?:\/\/rapid-remove\.com\//, "").replace(/\/$/, "");
+    let href = null;
+    if (slug === FLAGSHIP_SLUG) href = FLAGSHIP_PATH;
+    else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug) || `/${slug}/`;
+    return href ? { label: r.label, href } : null;
+  }).filter(Boolean);
+}
+
+// Localized Article + BreadcrumbList + FAQPage JSON-LD.
+export function buildArticleJsonLd(meta, faq, lang, ui, url) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: meta.h1 || meta.title,
+        description: meta.description,
+        datePublished: meta.date,
+        dateModified: meta.date,
+        inLanguage: lang,
+        author: { "@type": "Person", name: meta.author },
+        publisher: { "@type": "Organization", name: "RapidRemove", logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/rapidremove-logo-full.png` } },
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        keywords: (meta.keywords || []).join(", "),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: ui.bcStart, item: `${SITE_URL}${homeBase(lang)}` },
+          { "@type": "ListItem", position: 2, name: ui.bcMagazin, item: `${SITE_URL}${homeBase(lang)}?view=magazin` },
+          { "@type": "ListItem", position: 3, name: meta.h1 || meta.title, item: url },
+        ],
+      },
+      { "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+    ],
+  };
+}
