@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat } from "@/components/Chrome";
+import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 
 
 const TEAM_COPY = {
@@ -588,6 +589,7 @@ function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
       <TrustBar />
       <Problem id="problem" />
       <How id="how" onStart={onStart} />
+      <ProfileDissolveDemo />
       <VideoSection />
       <Why id="why" />
       <WholeProfile />
