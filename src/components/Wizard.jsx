@@ -5,6 +5,21 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 
+/* ---- mandatory privacy / terms consent label, per locale ---- */
+const AGB_CONSENT = {
+  de: { pre: "Ich habe die ", link: "Datenschutzerklärung & AGB", post: " gelesen und stimme zu.", err: "Bitte bestätigen Sie die Datenschutzerklärung." },
+  en: { pre: "I have read and agree to the ", link: "Privacy Policy & Terms", post: ".", err: "Please confirm the privacy policy." },
+  es: { pre: "He leído y acepto la ", link: "Política de Privacidad y los Términos", post: ".", err: "Confirme la política de privacidad." },
+  fr: { pre: "J'ai lu et j'accepte la ", link: "politique de confidentialité et les CGV", post: ".", err: "Veuillez confirmer la politique de confidentialité." },
+  it: { pre: "Ho letto e accetto l'", link: "Informativa sulla privacy e i Termini", post: ".", err: "Conferma l'informativa sulla privacy." },
+  nl: { pre: "Ik heb het ", link: "privacybeleid & de voorwaarden", post: " gelezen en ga akkoord.", err: "Bevestig het privacybeleid." },
+  pt: { pre: "Li e aceito a ", link: "Política de Privacidade e os Termos", post: ".", err: "Confirme a política de privacidade." },
+  ja: { pre: "", link: "プライバシーポリシーと利用規約", post: "を読み、同意します。", err: "プライバシーポリシーに同意してください。" },
+  sv: { pre: "Jag har läst och godkänner ", link: "integritetspolicyn och villkoren", post: ".", err: "Bekräfta integritetspolicyn." },
+  da: { pre: "Jeg har læst og accepterer ", link: "privatlivspolitikken og vilkårene", post: ".", err: "Bekræft privatlivspolitikken." },
+  no: { pre: "Jeg har lest og godtar ", link: "personvernerklæringen og vilkårene", post: ".", err: "Bekreft personvernerklæringen." },
+};
+
 
 /* ---- plausible profile candidates from a typed business name ---- */
 function makeCandidates(rawName, lang) {
@@ -155,6 +170,7 @@ function Wizard({ initialName, onExit }) {
   const [contact, setContact] = React.useState({ name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
+  const [agbOk, setAgbOk] = React.useState(false);
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const bodyRef = React.useRef(null);
 
@@ -191,6 +207,7 @@ function Wizard({ initialName, onExit }) {
     const er = {};
     if (!contact.name.trim()) er.name = w.s5.errName;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)) er.email = w.s5.errEmail;
+    if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
     setErrors(er);
     if (Object.keys(er).length) return;
     setProcessing(true);
@@ -368,6 +385,7 @@ function Wizard({ initialName, onExit }) {
   function StepCheckout() {
     const [pm, setPm] = React.useState("PayPal");
     const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
+    const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
     if (processing) {
       return (
         <div className="wz-card">
@@ -417,7 +435,20 @@ function Wizard({ initialName, onExit }) {
               ))}
             </div>
           </div>
-          <button className="btn btn-primary btn-block lg" style={{ marginTop: 22 }} onClick={submit}>
+          <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
+            <input type="checkbox" checked={agbOk}
+              onChange={(e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }}
+              style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
+            <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
+              {ag.pre}
+              <a href={asset("/rapidremove-agb-datenschutz.pdf")} target="_blank" rel="noopener noreferrer"
+                style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
+                onClick={(e) => e.stopPropagation()}>{ag.link}</a>
+              {ag.post}
+            </span>
+          </label>
+          {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
+          <button className="btn btn-primary btn-block lg" style={{ marginTop: 16 }} onClick={submit}>
             <Icon.lock size={18} /> {w.s5.button}
           </button>
           <div className="risk-banner lg" style={{ marginTop: 14 }}><Icon.shieldCheck /> {t.riskReversal}</div>
