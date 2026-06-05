@@ -2,13 +2,11 @@
  * Microsoft 365 / Exchange Online E-Mail-Versand über Microsoft Graph (app-only).
  * Nutzt die bestehende Azure-App-Registrierung (Permission: Mail.Send).
  * Kein SDK – nur fetch (Node 20+).
+ *
+ * Wichtig: Zugangsdaten werden LAZY gelesen (erst beim Senden), damit der
+ * Server auch ohne gesetzte Variablen startet (Vorschau braucht sie nicht).
  */
 import "dotenv/config";
-
-const TENANT = req("M365_TENANT_ID");
-const CLIENT = req("M365_CLIENT_ID");
-const SECRET = req("M365_CLIENT_SECRET");
-const DEFAULT_FROM = process.env.MAIL_FROM || "info@rapid-remove.com";
 
 function req(name: string): string {
   const v = process.env[name];
@@ -20,12 +18,13 @@ let cache: { token: string; exp: number } | null = null;
 
 async function token(): Promise<string> {
   if (cache && cache.exp > Date.now() + 60_000) return cache.token;
-  const res = await fetch(`https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`, {
+  const tenant = req("M365_TENANT_ID");
+  const res = await fetch(`https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: CLIENT,
-      client_secret: SECRET,
+      client_id: req("M365_CLIENT_ID"),
+      client_secret: req("M365_CLIENT_SECRET"),
       scope: "https://graph.microsoft.com/.default",
       grant_type: "client_credentials",
     }),
@@ -51,7 +50,7 @@ const addr = (e: string) => ({ emailAddress: { address: e } });
 
 /** Versendet eine HTML-Mail über das angegebene (oder Standard-)Postfach. */
 export async function sendMail(args: SendArgs): Promise<void> {
-  const from = args.from || DEFAULT_FROM;
+  const from = args.from || process.env.MAIL_FROM || "info@rapid-remove.com";
   const message: Record<string, unknown> = {
     subject: args.subject,
     body: { contentType: "HTML", content: args.html },
