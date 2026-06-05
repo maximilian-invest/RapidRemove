@@ -6,9 +6,13 @@ import * as React from "react";
 import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
+import stripeWebhook from "./webhooks/stripe";
 
 const app = Fastify({ logger: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+
+// Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
+app.register(stripeWebhook);
 
 app.get("/health", async () => ({ ok: true }));
 
