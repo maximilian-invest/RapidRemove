@@ -4,6 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
+import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 
 
 /* ---- Scroll reveal hook ---- */
@@ -89,25 +90,53 @@ function LangToggle() {
 }
 
 /* ---- Navigation ---- */
-function Nav({ onNav, onStart, onBlog, onAbout, active }) {
+function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   const { t } = useLang();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const [ddOpen, setDdOpen] = React.useState(false);
+  const ddRef = React.useRef(null);
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+  React.useEffect(() => {
+    const onDoc = (e) => { if (ddRef.current && !ddRef.current.contains(e.target)) setDdOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
   const links = [
     ["how", t.nav.how], ["why", t.nav.why], ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about], ["faq", t.nav.faq],
   ];
   const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else if (id === "about") { onAbout && onAbout(); } else { onNav(id); } };
+  const sv = SVC[t.code] || SVC.en;
+  const svLabel = SVC_NAV_LABEL[t.code] || SVC_NAV_LABEL.en;
+  const svcAct = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex() };
+  const svcIcon = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shield);
   return (
     <React.Fragment>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
         <div className="container nav-inner">
           <img className="nav-logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
           <div className="nav-links">
+            {(onOrm || onDeindex) && (
+              <div className={"nav-dd" + (ddOpen ? " open" : "")} ref={ddRef}>
+                <button className="nav-dd-btn" onClick={() => setDdOpen((o) => !o)}>{svLabel} <Icon.chevronDown /></button>
+                <div className="nav-dd-pop">
+                  {sv.cards.map((c) => {
+                    const I = svcIcon(c.ic);
+                    return (
+                      <button className={"nav-dd-item" + (c.id === "core" ? " core" : "")} key={c.id}
+                        onClick={() => { setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
+                        <span className="nav-dd-ic"><I size={20} /></span>
+                        <span className="nav-dd-tx"><span className="t">{c.t} {c.id === "core" && <span className="pin">{c.tag}</span>}</span><span className="d">{c.d}</span></span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
           </div>
           <div className="nav-right">
@@ -124,6 +153,8 @@ function Nav({ onNav, onStart, onBlog, onAbout, active }) {
             <LangToggle />
             <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
           </div>
+          {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
+          {(onOrm || onDeindex) && sv.cards.map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a onClick={() => goTo("portal")}>{t.nav.login}</a>
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>

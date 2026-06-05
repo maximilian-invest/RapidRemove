@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat } from "@/components/Chrome";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
+import { ServicesTrio } from "@/components/ServicePages";
 
 
 const TEAM_COPY = {
@@ -594,7 +595,7 @@ function WholeProfile() {
 }
 
 /* ============ HOME ROOT ============ */
-function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
+function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
   useReveal();
   React.useEffect(() => {
     if (!scrollTarget) return;
@@ -615,7 +616,7 @@ function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
   };
   return (
     <React.Fragment>
-      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
+      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <Hero onStart={onStart} />
       <TrustBar />
       <Problem id="problem" />
@@ -624,6 +625,7 @@ function Home({ onStart, onBlog, scrollTarget, onScrolled }) {
       <VideoSection />
       <Why id="why" />
       <WholeProfile />
+      <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} />
       <TrustSecurity id="trust" />
       <Social id="reviews" />
       <Pricing id="pricing" onStart={onStart} />

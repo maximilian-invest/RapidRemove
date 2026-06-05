@@ -8,19 +8,23 @@ import { localePath } from "@/lib/locales-meta";
 import { Home } from "@/components/Home";
 import { Blog } from "@/components/Blog";
 import { Wizard } from "@/components/Wizard";
+import { OrmPage, DeindexPage } from "@/components/ServicePages";
 
 export default function App({ initialLang = "de" }) {
   const lang = I18N[initialLang] ? initialLang : "de";
-  const [route, setRoute] = React.useState("home"); // home | wizard | blog
+  const [route, setRoute] = React.useState("home"); // home | wizard | blog | orm | deindex
   const [seed, setSeed] = React.useState("");
   const [homeScroll, setHomeScroll] = React.useState(null);
 
-  // Deep links from other pages: ?start=1 -> wizard, ?view=magazin -> blog, #section -> scroll.
+  // Deep links: ?start=1 -> wizard, ?view=magazin|reputation|presse -> view, #section -> scroll.
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
+      const view = params.get("view");
       if (params.get("start") === "1") setRoute("wizard");
-      else if (params.get("view") === "magazin") setRoute("blog");
+      else if (view === "magazin") setRoute("blog");
+      else if (view === "reputation") setRoute("orm");
+      else if (view === "presse") setRoute("deindex");
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
       if (hash) setHomeScroll(hash);
     } catch (e) {}
@@ -44,15 +48,22 @@ export default function App({ initialLang = "de" }) {
   };
   const exitWizard = () => { setRoute("home"); window.scrollTo({ top: 0 }); };
   const openBlog = () => { setRoute("blog"); window.scrollTo({ top: 0 }); };
-  const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); };
+  const openOrm = () => { setRoute("orm"); window.scrollTo({ top: 0 }); };
+  const openDeindex = () => { setRoute("deindex"); window.scrollTo({ top: 0 }); };
+  const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); window.scrollTo({ top: 0 }); };
+  const onAbout = () => { window.location.href = asset("/ueber-uns/"); };
 
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       {route === "home"
-        ? <Home onStart={startWizard} onBlog={openBlog} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
+        ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
         : route === "blog"
-          ? <Blog onStart={startWizard} onGoHome={goHome} />
-          : <Wizard key={seed + lang} initialName={seed} onExit={exitWizard} />}
+          ? <Blog onStart={startWizard} onGoHome={goHome} onOrm={openOrm} onDeindex={openDeindex} />
+          : route === "orm"
+            ? <OrmPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
+            : route === "deindex"
+              ? <DeindexPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
+              : <Wizard key={seed + lang} initialName={seed} onExit={exitWizard} />}
     </LangContext.Provider>
   );
 }
