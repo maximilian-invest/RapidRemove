@@ -1,6 +1,15 @@
 /* RapidRemove — additional services copy: homepage trio, ORM ("Reputation
    verdrängen") + De-Index ("Presse auslisten") landing pages, nav dropdown.
-   DE + EN authored; other locales fall back to EN (matches the design). */
+   DE + EN authored here; the other 9 locales live in ./services-i18n/. */
+import es from "@/lib/services-i18n/es";
+import fr from "@/lib/services-i18n/fr";
+import it from "@/lib/services-i18n/it";
+import nl from "@/lib/services-i18n/nl";
+import pt from "@/lib/services-i18n/pt";
+import ja from "@/lib/services-i18n/ja";
+import sv from "@/lib/services-i18n/sv";
+import da from "@/lib/services-i18n/da";
+import no from "@/lib/services-i18n/no";
 
 export const SVC = {
   de: {
@@ -155,11 +164,12 @@ export const DEIDX = {
   },
 };
 
-/* Non-DE locales fall back to the English service copy. */
-for (const k of ["es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"]) {
-  if (!SVC[k]) SVC[k] = SVC.en;
-  if (!ORM[k]) ORM[k] = ORM.en;
-  if (!DEIDX[k]) DEIDX[k] = DEIDX.en;
+/* Merge in the other 9 locales (full translations; EN as last-resort safety). */
+const EXTRA = { es, fr, it, nl, pt, ja, sv, da, no };
+for (const [k, m] of Object.entries(EXTRA)) {
+  SVC[k] = (m && m.svc) || SVC.en;
+  ORM[k] = (m && m.orm) || ORM.en;
+  DEIDX[k] = (m && m.deidx) || DEIDX.en;
 }
 
 /* Localized "Services" nav label. */
