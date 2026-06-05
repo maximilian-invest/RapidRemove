@@ -5,17 +5,19 @@
  *
  * Wichtig: nutzt die **Places API (New)** direkt aus dem Browser. Das ist die
  * einzige Places-Variante, die mit einem **Referrer-beschränkten** Browser-Key
- * funktioniert (CORS + Referer-Prüfung). Der Schlüssel kommt aus der
- * Build-Variable NEXT_PUBLIC_GOOGLE_MAPS_API_KEY und ist – wie bei Google Maps
- * üblich – bewusst öffentlich; abgesichert wird er über die erlaubten Referrer
- * in der Google-Cloud-Console.
+ * funktioniert (CORS + Referer-Prüfung). Solche Maps-Browser-Keys sind bewusst
+ * öffentlich (sie stehen ohnehin im ausgelieferten JS); abgesichert werden sie
+ * über die erlaubten HTTP-Referrer in der Google-Cloud-Console – NICHT über
+ * Geheimhaltung. Darum darf der Key hier als Default stehen. Überschreiben
+ * lässt er sich jederzeit per Build-Variable NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.
  *
  * Voraussetzungen in der Cloud-Console:
  *  - „Places API (New)“ aktiviert
  *  - der Schlüssel auf die Auslieferungs-Domain(s) eingeschränkt (HTTP-Referrer)
+ *  - ein Tages-/Kostenlimit (Quota) als Missbrauchsschutz empfohlen
  */
 
-const KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+const KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "AIzaSyA1T047gDmDSUlc68hv-ooNOf996r46-3g";
 const ENDPOINT = "https://places.googleapis.com/v1/places:searchText";
 const FIELD_MASK = [
   "places.id",
