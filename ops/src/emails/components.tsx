@@ -64,11 +64,11 @@ export function NoteBox({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function CtaButton({ href, children }: { href: string; children: React.ReactNode }) {
+export function CtaButton({ href, children, full = false }: { href: string; children: React.ReactNode; full?: boolean }) {
   return (
     <REButton
       href={href}
-      style={{ background: brand.accent, color: "#fff", fontWeight: 700, fontSize: 15, padding: "13px 22px", borderRadius: 8, textDecoration: "none", display: "inline-block" }}
+      style={{ background: brand.accent, color: "#fff", fontWeight: 700, fontSize: 15, padding: "14px 24px", borderRadius: 8, textDecoration: "none", display: "inline-block", textAlign: "center", ...(full ? { width: "100%" } : {}) }}
     >
       {children}
     </REButton>

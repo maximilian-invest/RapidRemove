@@ -1,18 +1,23 @@
-/* Rendert die Auftragsbestätigung und sendet sie als echte Test-Mail über M365.
-   Aufruf:  npm run email:test -- du@example.com
-   (oder TEST_TO in .env setzen:  npm run email:test) */
+/* Rendert ein Template und sendet es als echte Test-Mail über M365.
+   Aufruf:  npm run email:test -- du@example.com [templateKey]
+   (Standard-Template: auftragsbestaetigung) */
 import "dotenv/config";
 import { render } from "@react-email/render";
 import * as React from "react";
-import Auftragsbestaetigung, { subject } from "./emails/Auftragsbestaetigung";
+import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 
 const to = process.argv[2] || process.env.TEST_TO;
+const key = process.argv[3] || "auftragsbestaetigung";
 if (!to) {
-  console.error("Empfänger fehlt.  Aufruf:  npm run email:test -- du@example.com");
+  console.error("Empfänger fehlt.  Aufruf:  npm run email:test -- du@example.com [templateKey]");
   process.exit(1);
 }
-
-const html = await render(React.createElement(Auftragsbestaetigung, {}));
-await sendMail({ to, subject: subject(), html });
-console.log("✓ Auftragsbestätigung gesendet an", to);
+const t = TEMPLATES[key];
+if (!t) {
+  console.error(`Unbekanntes Template "${key}". Verfügbar: ${Object.keys(TEMPLATES).join(", ")}`);
+  process.exit(1);
+}
+const html = await render(React.createElement(t.component, t.sample));
+await sendMail({ to, subject: t.subject(t.sample), html });
+console.log(`✓ "${t.label}" gesendet an ${to}`);
