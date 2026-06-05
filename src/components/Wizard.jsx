@@ -4,6 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
+import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 const AGB_CONSENT = {
@@ -64,7 +65,10 @@ function Stepper({ step }) {
 /* ---- Stylized animated map ---- */
 function FauxMap({ phase, multi, selectedId, candidates, onPick }) {
   const zoomed = phase === "found";
-  const pinPos = { p1: { left: "50%", top: "46%" }, p2: { left: "34%", top: "62%" }, p3: { left: "68%", top: "34%" } };
+  const PIN_SPOTS = [
+    { left: "50%", top: "46%" }, { left: "34%", top: "62%" }, { left: "68%", top: "34%" },
+    { left: "61%", top: "65%" }, { left: "39%", top: "33%" },
+  ];
   return (
     <div className="mapwrap">
       <div className={"map-canvas" + (zoomed ? " zoomed" : "")}>
@@ -82,7 +86,7 @@ function FauxMap({ phase, multi, selectedId, candidates, onPick }) {
           const isMain = c.id === selectedId || (!multi && c.primary);
           if (!multi && !c.primary) return null;
           return (
-            <div key={c.id} className={"map-pin drop" + (isMain ? "" : " alt")} style={{ ...pinPos[c.id], animationDelay: `${i * 0.12}s` }} onClick={() => onPick && onPick(c.id)}>
+            <div key={c.id} className={"map-pin drop" + (isMain ? "" : " alt")} style={{ ...PIN_SPOTS[i % PIN_SPOTS.length], animationDelay: `${i * 0.12}s` }} onClick={() => onPick && onPick(c.id)}>
               <div className="pin-ring"></div>
               <div className="pin-body"><Icon.mapPin /></div>
               <div className="pin-shadow"></div>
@@ -133,20 +137,24 @@ function ratingAssessment(ratingStr, lang) {
 /* ---- Profile card ---- */
 function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) {
   const { lang } = useLang();
-  const a = ratingAssessment(c.rating, lang);
+  const a = c.rating != null ? ratingAssessment(c.rating, lang) : null;
   return (
     <div className={"profile-card reveal-in" + (selected ? " sel" : "")} onClick={selectable ? onClick : undefined} style={!selectable ? { cursor: "default" } : null}>
       <div className="profile-thumb"><Icon.building /></div>
       <div className="profile-main">
         <div className="pn">{c.name}</div>
-        <div className="pcat">{c.cat}</div>
-        <div className="profile-rating">
-          <span className="stars sm" style={{ color: "var(--primary)" }}>{[0,1,2,3,4].map(i => <Icon.star key={i} size={14} />)}</span>
-          <span className="rv">{c.rating}</span>
-          <span className="rc">· {c.reviews} {reviewsLabel}</span>
-        </div>
-        <div className={"rate-assess " + a.tone}><Icon.alert /> {a.label}</div>
-        <div className="profile-addr"><Icon.mapPin /> {c.addr}</div>
+        {c.cat && <div className="pcat">{c.cat}</div>}
+        {c.rating != null && (
+          <React.Fragment>
+            <div className="profile-rating">
+              <span className="stars sm" style={{ color: "var(--primary)" }}>{[0,1,2,3,4].map(i => <Icon.star key={i} size={14} />)}</span>
+              <span className="rv">{c.rating}</span>
+              <span className="rc">· {c.reviews} {reviewsLabel}</span>
+            </div>
+            <div className={"rate-assess " + a.tone}><Icon.alert /> {a.label}</div>
+          </React.Fragment>
+        )}
+        {c.addr && <div className="profile-addr"><Icon.mapPin /> {c.addr}</div>}
       </div>
       {selectable && <div className="profile-radio"><Icon.check /></div>}
     </div>
@@ -188,11 +196,30 @@ function Wizard({ initialName, onExit }) {
     const nm = (n != null ? n : name);
     if (!nm.trim()) return;
     setName(nm);
-    setCandidates(makeCandidates(nm, lang));
     setContact((c) => ({ ...c, company: nm }));
     setPhase("searching");
     setStep(1);
-    setTimeout(() => setPhase("found"), 1700);
+    runSearch(nm);
+  };
+
+  // Echte Google-Places-Suche; Mindest-Anzeigezeit für die Karten-Animation,
+  // mit sauberen Fallbacks (kein Key → Demo, Key aber kein Treffer → manuell).
+  const runSearch = async (nm) => {
+    const minDelay = new Promise((r) => setTimeout(r, 900));
+    let results = null;
+    if (placesEnabled()) {
+      try { results = await searchProfiles(nm, lang); }
+      catch (e) { if (typeof console !== "undefined") console.warn("Places-Suche fehlgeschlagen:", e.message); }
+    }
+    await minDelay;
+    let list;
+    if (results && results.length) list = results;          // echte Treffer
+    else if (placesEnabled()) list = manualCandidate(nm, lang); // Key gesetzt, aber nichts gefunden
+    else list = makeCandidates(nm, lang);                    // Demo-Modus (kein Key)
+    setCandidates(list);
+    setSelectedId(list[0].id);
+    setMulti(list.length > 1);
+    setPhase("found");
   };
 
   const go = (n) => setStep(n);

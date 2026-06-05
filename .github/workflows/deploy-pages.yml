@@ -29,6 +29,10 @@ jobs:
         env:
           GITHUB_PAGES: "true"
           NEXT_PUBLIC_BASE_PATH: "/RapidRemove"
+          # Browser-Key für die Google-Places-Profilsuche im Wizard.
+          # Als GitHub-Secret hinterlegen (Settings → Secrets and variables →
+          # Actions). Fehlt er, läuft der Wizard im Demo-Modus weiter.
+          NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./out
