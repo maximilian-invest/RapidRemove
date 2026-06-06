@@ -107,7 +107,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
   const links = [
-    ["how", t.nav.how], ["why", t.nav.why], ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about], ["faq", t.nav.faq],
+    ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about],
   ];
   const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else if (id === "about") { onAbout && onAbout(); } else { onNav(id); } };
   const sv = SVC[t.code] || SVC.en;
