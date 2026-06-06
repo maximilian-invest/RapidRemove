@@ -209,6 +209,7 @@ const I18N = {
         sub: "Wir durchsuchen Google nach Ihrem echten Unternehmensprofil. Unverbindlich, kostenlos und in Sekunden.",
         placeholder: "z. B. Müller Zahnarztpraxis, Berlin",
         button: "Profil suchen",
+        hint: "Ihr Unternehmen erscheint nicht? Geben Sie den genauen Wortlaut ein. Ist Ihr Profil auf „dauerhaft geschlossen“ gesetzt, schreiben Sie den Namen samt Adresse – und fahren Sie fort.",
         assure: ["Keine Anmeldung", "Kein Zugriff auf Ihr Konto", "100 % vertraulich"],
       },
       s2: {
@@ -487,6 +488,7 @@ const I18N = {
         sub: "We'll search Google for your real business profile. No obligation, free, and in seconds.",
         placeholder: "e.g. Müller Dental, Berlin",
         button: "Find my profile",
+        hint: "Business not showing up? Enter the exact name. If your profile is set to “permanently closed,” add the address as well — then continue.",
         assure: ["No sign-up", "No access to your account", "100% confidential"],
       },
       s2: {

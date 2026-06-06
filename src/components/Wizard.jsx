@@ -254,6 +254,9 @@ function Wizard({ initialName, onExit }) {
           <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={v}
             onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSearch(v)} />
         </div>
+        {w.s1.hint && (
+          <p className="wz-hint"><Icon.info size={17} /> {w.s1.hint}</p>
+        )}
         <div className="wz-actions">
           <button className="btn btn-primary lg grow" onClick={() => startSearch(v)} disabled={!v.trim()}>
             <Icon.search size={19} /> {w.s1.button} <Icon.arrowRight size={18} />

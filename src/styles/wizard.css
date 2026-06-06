@@ -56,6 +56,8 @@
 
 .wz-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
 .wz-actions .grow{flex:1;}
+.wz-hint{display:flex;gap:9px;align-items:flex-start;background:var(--primary-soft);border:1px solid var(--orange-200);border-radius:var(--r-md);padding:11px 14px;margin:-2px 0 18px;font-size:13.5px;line-height:1.5;color:var(--fg-2);}
+.wz-hint svg{width:17px;height:17px;color:var(--primary);flex:none;margin-top:1px;}
 .wz-mini-assure{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:24px;}
 .wz-mini-assure div{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--fg-2);}
 .wz-mini-assure svg{width:16px;height:16px;color:var(--success);}
