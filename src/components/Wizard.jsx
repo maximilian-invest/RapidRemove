@@ -251,7 +251,6 @@ function Wizard({ initialName, onExit }) {
 
   /* ---------- step bodies ---------- */
   function StepName() {
-    const [v, setV] = React.useState(name);
     return (
       <div className="wz-card pad-lg">
         <div className="wz-eyebrow"><Icon.search size={14} /> {w.s1.eyebrow}</div>
@@ -259,14 +258,14 @@ function Wizard({ initialName, onExit }) {
         <p className="wz-sub">{w.s1.sub}</p>
         <div className="wz-bigfield">
           <Icon.building size={22} />
-          <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={v}
-            onChange={(e) => setV(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSearch(v)} />
+          <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={name}
+            onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSearch(name)} />
         </div>
         {w.s1.hint && (
           <p className="wz-hint"><Icon.info size={17} /> {w.s1.hint}</p>
         )}
         <div className="wz-actions">
-          <button className="btn btn-primary lg grow" onClick={() => startSearch(v)} disabled={!v.trim()}>
+          <button className="btn btn-primary lg grow" onClick={() => startSearch(name)} disabled={!name.trim()}>
             <Icon.search size={19} /> {w.s1.button} <Icon.arrowRight size={18} />
           </button>
         </div>
@@ -550,7 +549,7 @@ function Wizard({ initialName, onExit }) {
       <Stepper step={step} />
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
-          <Body />
+          {Body()}
         </div>
       </div>
     </div>
