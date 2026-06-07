@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
+import { submitOrder } from "@/lib/order";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 const AGB_CONSENT = {
@@ -238,6 +239,13 @@ function Wizard({ initialName, onExit }) {
     setErrors(er);
     if (Object.keys(er).length) return;
     setProcessing(true);
+    // Bestellung im Hintergrund ans ops-Backend (Auftragsbestätigung + interne Notiz).
+    // Stört die Danke-Animation nicht; ohne NEXT_PUBLIC_OPS_URL ein No-op (Demo).
+    submitOrder({
+      email: contact.email, name: contact.name, phone: contact.phone,
+      company: contact.company, service, protection: protection || "",
+      profile: selected ? selected.name : "", orderId, lang,
+    }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     setTimeout(() => { setProcessing(false); setStep(5); }, 2400);
   };
 
@@ -413,7 +421,6 @@ function Wizard({ initialName, onExit }) {
   }
 
   function StepCheckout() {
-    const [pm, setPm] = React.useState("PayPal");
     const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
     const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
     if (processing) {
@@ -455,14 +462,6 @@ function Wizard({ initialName, onExit }) {
             <div className="fld full">
               <label>{w.s5.f.company}</label>
               <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} />
-            </div>
-          </div>
-          <div style={{ marginTop: 20 }}>
-            <label style={{ fontSize: 13, fontWeight: 700, display: "block", marginBottom: 8 }}>{w.s5.payTitle}</label>
-            <div className="pay-methods">
-              {["PayPal", "Klarna", t.code === "de" ? "Karte" : "Card", "iDEAL"].map((m) => (
-                <div key={m} className={"pay-m" + (pm === m ? " on" : "")} onClick={() => setPm(m)}>{m}</div>
-              ))}
             </div>
           </div>
           <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
