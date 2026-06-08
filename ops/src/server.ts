@@ -146,6 +146,33 @@ app.post("/order", async (req, reply) => {
   return result;
 });
 
+// Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)
+app.post("/admin/verify", async (req) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  return { ok: !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN };
+});
+
+// Admin-Dashboard: frei verfasste E-Mail aus dem Composer versenden (token-geschützt)
+app.post("/admin/send", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.to || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const subject = String(b.subject || "").trim() || "RapidRemove";
+  const safe = escapeHtml(String(b.text || "")).replace(/\n/g, "<br>");
+  const html =
+    `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px">` +
+    `<div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div>` +
+    `<div>${safe}</div></div>`;
+  try {
+    await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    return { ok: true };
+  } catch (e) {
+    app.log.error({ err: e }, "admin/send fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: "send failed" });
+  }
+});
+
 const port = Number(process.env.PORT) || 3000;
 app.listen({ host: "0.0.0.0", port })
   .then((addr) => app.log.info(`ops läuft auf ${addr}`))
