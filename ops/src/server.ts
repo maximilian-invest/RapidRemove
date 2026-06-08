@@ -43,7 +43,7 @@ const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 // Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
 app.register(stripeWebhook);
 
-app.get("/health", async () => ({ ok: true }));
+app.get("/health", async () => ({ ok: true, db: dbReady(), stripe: hasSecretKey() }));
 
 // Übersicht aller Templates (nach Gruppe sortiert, im Markendesign)
 app.get("/", async (_req, reply) => {
