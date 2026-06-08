@@ -2,7 +2,8 @@
 import React from "react";
 import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
-import { SUBS, PLANS, DAILY_REV, PAYMENTS } from "@/lib/admin-data";
+import { SUBS as SUBS_SAMPLE, PLANS as PLANS_SAMPLE, DAILY_REV as DAILY_REV_SAMPLE, PAYMENTS as PAYMENTS_SAMPLE } from "@/lib/admin-data";
+import { fetchStripe } from "@/lib/admin-api";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Abos & Umsatz (Reputations-Schutz Abonnements über Stripe) */
@@ -116,6 +117,16 @@ function SubKpi({ label, value, format, color, tone, delta, sub, spark, sparkCol
 }
 
 function SubsDashboard({ toast }) {
+  const [liveData, setLiveData] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    (async () => { try { const d = await fetchStripe(); if (alive && d && d.connected) setLiveData(d); } catch (e) {} })();
+    return () => { alive = false; };
+  }, []);
+  const SUBS = (liveData && liveData.subs) || SUBS_SAMPLE;
+  const PLANS = (liveData && liveData.plans) || PLANS_SAMPLE;
+  const DAILY_REV = (liveData && liveData.dailyRev) || DAILY_REV_SAMPLE;
+  const PAYMENTS = (liveData && liveData.payments) || PAYMENTS_SAMPLE;
   const maxDay = Math.max(...DAILY_REV.map((d) => d.v));
   const totalAbos = PLANS.reduce((s, p) => s + p.count, 0);
   const avgDay = DAILY_REV.reduce((s, d) => s + d.v, 0) / DAILY_REV.length;

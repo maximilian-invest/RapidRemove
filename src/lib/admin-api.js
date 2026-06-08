@@ -69,3 +69,26 @@ export async function fetchAdminData() {
   const j = await res.json();
   return { db: !!j.db, orders: (j.orders || []).map(mapOrder), checks: (j.checks || []).map(mapCheck) };
 }
+
+/* ---- Abos & Umsatz live aus Stripe ---- */
+const PLAN_COLORS = ["var(--primary)", "#3b82f6", "#10b981", "#a855f7", "#ec4899", "#f59e0b", "#14b8a6"];
+
+/** Holt die Stripe-Kennzahlen. Gibt { connected:false } zurück, wenn kein Key/Backend. */
+export async function fetchStripe() {
+  if (!OPS) return { connected: false };
+  const res = await fetch(OPS + "/admin/stripe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  if (!j || !j.connected) return { connected: false };
+  return {
+    connected: true,
+    subs: j.subs || {},
+    plans: (j.plans || []).map((p, i) => ({ ...p, color: PLAN_COLORS[i % PLAN_COLORS.length] })),
+    dailyRev: j.dailyRev || [],
+    payments: j.payments || [],
+  };
+}

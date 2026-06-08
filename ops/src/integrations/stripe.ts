@@ -99,3 +99,132 @@ export function verifyStripeSignature(
 export function langFromLocale(locale?: string | null): "de" | "en" {
   return (locale || "").toLowerCase().startsWith("de") ? "de" : "en";
 }
+
+/* ── Read-only Dashboard-Kennzahlen (Abos & Umsatz) ───────────────────── */
+
+/** Listet eine Stripe-Collection seitenweise (bis maxPages × 100). */
+export async function stripeList<T = any>(path: string, maxPages = 5): Promise<T[]> {
+  const out: T[] = [];
+  for (let i = 0; i < maxPages; i++) {
+    const last = out.length ? (out[out.length - 1] as any).id : null;
+    const sep = path.includes("?") ? "&" : "?";
+    const url = last ? `${path}${sep}starting_after=${last}` : path;
+    const page = await stripeGet<{ data: T[]; has_more: boolean }>(url);
+    out.push(...(page.data || []));
+    if (!page.has_more || !(page.data || []).length) break;
+  }
+  return out;
+}
+
+function fmtAmount(major: number, cur?: string): string {
+  return (cur || "eur").toLowerCase() === "usd"
+    ? "$ " + major.toLocaleString("en-US")
+    : "€ " + major.toLocaleString("de-DE", { minimumFractionDigits: major % 1 ? 2 : 0 });
+}
+function dmy(ts: number): string {
+  const d = new Date(ts * 1000);
+  const p = (n: number) => String(n).padStart(2, "0");
+  return `${p(d.getDate())}.${p(d.getMonth() + 1)}.`;
+}
+/** Normalisiert einen Preis auf einen Monatsbetrag (Jahr/Woche/Tag → Monat). */
+function monthlyAmount(price: any, quantity = 1): number {
+  if (!price || price.unit_amount == null) return 0;
+  const amt = (price.unit_amount / 100) * (quantity || 1);
+  const iv = price.recurring?.interval;
+  const cnt = price.recurring?.interval_count || 1;
+  if (iv === "year") return amt / (12 * cnt);
+  if (iv === "week") return (amt * 52) / 12 / cnt;
+  if (iv === "day") return (amt * 365) / 12 / cnt;
+  return amt / cnt;
+}
+
+export interface StripeDashboard {
+  subs: Record<string, number>;
+  plans: { label: string; count: number; mrr: number; cur: string }[];
+  dailyRev: { d: string; v: number }[];
+  payments: { name: string; date: string; plan: string; price: string; amount: number; cur: string; status: string }[];
+}
+
+/** Reine Berechnung (testbar) – formt Roh-Stripe-Daten in die Dashboard-Form. */
+export function buildStripeDashboard(raw: {
+  subs: any[]; invoices: any[]; customersThisMonth: number; monthStart: number;
+}): StripeDashboard {
+  const { subs, invoices, customersThisMonth, monthStart } = raw;
+  const active = new Set(["active", "trialing"]);
+  const overdueSet = new Set(["past_due", "unpaid", "incomplete"]);
+
+  let mrr = 0, activeCount = 0, trialing = 0, overdue = 0, churned = 0;
+  const planMap = new Map<string, { label: string; count: number; mrr: number; cur: string }>();
+
+  for (const s of subs) {
+    if (s.status === "canceled") { if ((s.canceled_at || 0) >= monthStart) churned++; continue; }
+    if (overdueSet.has(s.status)) overdue++;
+    if (!active.has(s.status)) continue;
+    activeCount++;
+    if (s.status === "trialing") trialing++;
+    const items = s.items?.data || [];
+    let subMonthly = 0;
+    for (const it of items) subMonthly += monthlyAmount(it.price, it.quantity);
+    mrr += subMonthly;
+    const primary = items[0]?.price;
+    if (primary) {
+      const e = planMap.get(primary.id) || {
+        label: fmtAmount((primary.unit_amount || 0) / 100, primary.currency) + "/Mo",
+        count: 0, mrr: 0, cur: (primary.currency || "eur").toUpperCase(),
+      };
+      e.count += 1; e.mrr += subMonthly; planMap.set(primary.id, e);
+    }
+  }
+
+  let monthRevenue = 0;
+  const byDay = new Map<string, number>();
+  for (const inv of invoices) {
+    const major = (inv.amount_paid || 0) / 100;
+    monthRevenue += major;
+    byDay.set(dmy(inv.created), (byDay.get(dmy(inv.created)) || 0) + major);
+  }
+  const now = new Date();
+  const dailyRev: { d: string; v: number }[] = [];
+  for (let day = 1; day <= now.getDate(); day++) {
+    const key = dmy(Math.floor(new Date(now.getFullYear(), now.getMonth(), day).getTime() / 1000));
+    dailyRev.push({ d: key, v: Math.round(byDay.get(key) || 0) });
+  }
+
+  const payStatus = (s: string) => (s === "paid" ? "bezahlt" : s === "open" ? "offen" : "fehlgeschlagen");
+  const payments = invoices
+    .slice().sort((a, b) => (b.created || 0) - (a.created || 0)).slice(0, 8)
+    .map((inv) => {
+      const line = inv.lines?.data?.[0];
+      return {
+        name: inv.customer_name || inv.customer_email || "Kunde",
+        date: dmy(inv.created),
+        plan: line?.description || line?.price?.nickname || "Abo",
+        price: fmtAmount((line?.price?.unit_amount || inv.amount_paid || 0) / 100, inv.currency),
+        amount: Math.round((inv.amount_paid || 0)) / 100,
+        cur: (inv.currency || "eur").toUpperCase(),
+        status: payStatus(inv.status),
+      };
+    });
+
+  const plans = [...planMap.values()].map((p) => ({ ...p, mrr: Math.round(p.mrr) })).sort((a, b) => b.count - a.count);
+  return {
+    subs: {
+      mrr: Math.round(mrr), arr: Math.round(mrr * 12), active: activeCount, trialing, overdue,
+      monthRevenue: Math.round(monthRevenue), paidInvoices: invoices.length,
+      newCustomers: customersThisMonth, churned, reactivatable: overdue,
+    },
+    plans, dailyRev, payments,
+  };
+}
+
+/** Holt die Kennzahlen live aus Stripe (read-only). */
+export async function getStripeMetrics(): Promise<StripeDashboard> {
+  const d = new Date();
+  const monthStart = Math.floor(new Date(d.getFullYear(), d.getMonth(), 1).getTime() / 1000);
+  const [subs, invoices, customers] = await Promise.all([
+    stripeList<any>(`subscriptions?status=all&limit=100`),
+    stripeList<any>(`invoices?status=paid&created[gte]=${monthStart}&limit=100`),
+    stripeList<any>(`customers?created[gte]=${monthStart}&limit=100`),
+  ]);
+  return buildStripeDashboard({ subs, invoices, customersThisMonth: customers.length, monthStart });
+}

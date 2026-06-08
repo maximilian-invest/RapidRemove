@@ -8,6 +8,7 @@ import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks } from "./db";
+import { hasSecretKey, getStripeMetrics } from "./integrations/stripe";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
@@ -221,6 +222,23 @@ app.post("/admin/data", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const [orders, checks] = await Promise.all([listOrders(200), listChecks(200)]);
   return { ok: true, db: dbReady(), orders, checks };
+});
+
+// Admin-Dashboard: Abos & Umsatz live aus Stripe (read-only, 60s gecacht)
+let stripeCache: { ts: number; data: unknown } | null = null;
+app.post("/admin/stripe", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return { ok: true, connected: false };
+  try {
+    if (!stripeCache || Date.now() - stripeCache.ts > 60_000) {
+      stripeCache = { ts: Date.now(), data: await getStripeMetrics() };
+    }
+    return { ok: true, connected: true, ...(stripeCache.data as Record<string, unknown>) };
+  } catch (e) {
+    app.log.error({ err: e }, "Stripe-Kennzahlen fehlgeschlagen");
+    return { ok: true, connected: false, error: "stripe fetch failed" };
+  }
 });
 
 const port = Number(process.env.PORT) || 3000;
