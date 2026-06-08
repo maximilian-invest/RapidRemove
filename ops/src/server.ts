@@ -44,9 +44,10 @@ const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 app.register(stripeWebhook);
 
 app.get("/health", async () => {
-  let orders = 0, checks = 0;
-  try { const c = await dbCounts(); orders = c.orders; checks = c.checks; } catch { /* Tabellen evtl. noch nicht da */ }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), orders, checks };
+  let orders = 0, checks = 0, dbError = "";
+  try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
+  catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Übersicht aller Templates (nach Gruppe sortiert, im Markendesign)
@@ -129,7 +130,7 @@ app.post("/order", async (req, reply) => {
   const props = { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props));
 
-  const result = { ok: true, customer: false, notify: false, saved: false };
+  const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
   // 1) Kundenbestätigung (bestehendes Template)
   try {
     await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
@@ -170,7 +171,10 @@ app.post("/order", async (req, reply) => {
       if (checkId) await linkCheck(checkId, id);
       result.saved = true;
     }
-  } catch (e) { app.log.error({ err: e }, "Bestellung speichern fehlgeschlagen"); }
+  } catch (e) {
+    app.log.error({ err: e }, "Bestellung speichern fehlgeschlagen");
+    result.saveError = String((e as Error)?.message || e).slice(0, 200);
+  }
 
   return result;
 });

@@ -64,6 +64,24 @@ export async function initDb(): Promise<void> {
       raw         jsonb
     )
   `);
+  // Selbstheilung: fehlende Spalten ergänzen, falls die Tabelle aus einer älteren Version stammt.
+  await pool.query(`
+    ALTER TABLE orders
+      ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS phone text,
+      ADD COLUMN IF NOT EXISTS company text, ADD COLUMN IF NOT EXISTS country text, ADD COLUMN IF NOT EXISTS lang text,
+      ADD COLUMN IF NOT EXISTS profile text, ADD COLUMN IF NOT EXISTS category text, ADD COLUMN IF NOT EXISTS rating text,
+      ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS service text, ADD COLUMN IF NOT EXISTS protection text,
+      ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS prot_amount numeric, ADD COLUMN IF NOT EXISTS status text,
+      ADD COLUMN IF NOT EXISTS pay text, ADD COLUMN IF NOT EXISTS note text, ADD COLUMN IF NOT EXISTS check_id text,
+      ADD COLUMN IF NOT EXISTS raw jsonb
+  `);
+  await pool.query(`
+    ALTER TABLE checks
+      ADD COLUMN IF NOT EXISTS profile text, ADD COLUMN IF NOT EXISTS category text, ADD COLUMN IF NOT EXISTS rating text,
+      ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS flagged integer, ADD COLUMN IF NOT EXISTS recommend text,
+      ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS country text,
+      ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text
+  `);
 }
 
 export type OrderInput = {
