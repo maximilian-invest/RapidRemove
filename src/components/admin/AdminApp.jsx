@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData } from "@/lib/admin-api";
 import { ORDERS, CHECKS, SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -43,7 +43,7 @@ function fillVars(text, o) {
 }
 
 /* ---------- Sidebar ---------- */
-function Sidebar({ view, setView, counts, open }) {
+function Sidebar({ view, setView, counts, open, live }) {
   const items = [
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
@@ -55,7 +55,7 @@ function Sidebar({ view, setView, counts, open }) {
     <aside className={"side" + (open ? " open" : "")}>
       <div className="side-logo">
         <img src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
-        <span className="env">Admin</span>
+        <span className="env">{live ? "Live" : "Demo"}</span>
       </div>
       <div className="side-sec">Betrieb</div>
       {items.map(([id, I, label, badge]) => (
@@ -107,7 +107,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
     { ic: Icon.search, label: "Profile geprüft", val: checks.length, d: newChecks + " neu, unbearbeitet", up: true },
     { ic: Icon.clock, label: "In Bearbeitung", val: progressCount, d: "Ø 19 h Laufzeit", up: true },
     { ic: AI.euro, label: "Umsatz (bezahlt)", val: money(revenue, "DE"), d: "+12,4 % ggü. Vorwoche", up: true },
-    { ic: AI.trendUp, label: "Prüfung → Auftrag", val: Math.round(checks.filter((c) => c.status === "konvertiert").length / checks.length * 100) + " %", d: "Konversionsrate", up: true },
+    { ic: AI.trendUp, label: "Prüfung → Auftrag", val: (checks.length ? Math.round(checks.filter((c) => c.status === "konvertiert").length / checks.length * 100) : 0) + " %", d: "Konversionsrate", up: true },
   ];
   return (
     <div className="content">
@@ -880,6 +880,8 @@ const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & 
 
 function AdminApp() {
   const [orders, setOrders] = React.useState(ORDERS);
+  const [checks, setChecks] = React.useState(CHECKS);
+  const [live, setLive] = React.useState(false);
   const [view, setView] = React.useState("dashboard");
   const [active, setActive] = React.useState(null); // order in drawer
   const [compose, setCompose] = React.useState(null); // {order, template}
@@ -891,6 +893,20 @@ function AdminApp() {
   const [sideOpen, setSideOpen] = React.useState(false);
   const [toastMsg, setToastMsg] = React.useState(null);
   const toast = (m) => { setToastMsg(m); setTimeout(() => setToastMsg(null), 2600); };
+
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const data = await fetchAdminData();
+        if (!alive || !data || !data.db) return; // kein Backend/keine DB → Demo-Daten behalten
+        setOrders(data.orders);
+        setChecks(data.checks);
+        setLive(true);
+      } catch (e) { /* Fehler → Demo-Daten behalten */ }
+    })();
+    return () => { alive = false; };
+  }, []);
 
   const counts = { new: orders.filter((o) => o.status === "new").length };
   const openOrder = (o) => setActive(o);
@@ -911,7 +927,7 @@ function AdminApp() {
 
   let body;
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={doStorno} toast={toast} />;
-  else if (view === "dashboard") body = <Dashboard orders={orders} checks={CHECKS} openOrder={openDetail} openCheck={openDetail} />;
+  else if (view === "dashboard") body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates onUse={(t) => setCompose({ order: orders[0], template: t })} />;
@@ -920,7 +936,7 @@ function AdminApp() {
 
   return (
     <div className="adm">
-      <Sidebar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} open={sideOpen} />
+      <Sidebar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} open={sideOpen} live={live} />
       <div className="main">
         <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} />
         {body}

@@ -7,6 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks } from "./db";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
@@ -22,17 +23,21 @@ app.addHook("onRequest", async (req, reply) => {
   if (req.method === "OPTIONS") return reply.code(204).send();
 });
 
-// einfache In-Memory-Drosselung pro IP (Missbrauchsschutz für /order)
-const orderHits = new Map<string, number[]>();
-function allowOrder(ip: string): boolean {
+// einfache In-Memory-Drosselung pro IP (Missbrauchsschutz)
+function throttle(map: Map<string, number[]>, ip: string, limit: number): boolean {
   const now = Date.now();
-  const arr = (orderHits.get(ip) || []).filter((ts) => now - ts < 60_000);
-  if (arr.length >= 5) { orderHits.set(ip, arr); return false; }
-  arr.push(now); orderHits.set(ip, arr);
+  const arr = (map.get(ip) || []).filter((ts) => now - ts < 60_000);
+  if (arr.length >= limit) { map.set(ip, arr); return false; }
+  arr.push(now); map.set(ip, arr);
   return true;
 }
+const orderHits = new Map<string, number[]>();
+const checkHits = new Map<string, number[]>();
+const allowOrder = (ip: string) => throttle(orderHits, ip, 5);
+const allowCheck = (ip: string) => throttle(checkHits, ip, 30);
 const escapeHtml = (s: string) =>
   String(s).replace(/[<>&]/g, (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;"));
+const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 
 // Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
 app.register(stripeWebhook);
@@ -104,7 +109,6 @@ app.post("/order", async (req, reply) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "invalid email" });
   if (!allowOrder(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
 
-  const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
   const name = clip(b.name, 120);
   const company = clip(b.company, 160);
   const phone = clip(b.phone, 60);
@@ -143,7 +147,45 @@ app.post("/order", async (req, reply) => {
     result.notify = true;
   } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
 
+  // 3) Bestellung in der Datenbank speichern (falls DATABASE_URL gesetzt)
+  try {
+    if (dbReady()) {
+      const id = orderId || ("RR-" + Math.floor(100000 + Math.random() * 899999));
+      const checkId = clip(b.checkId, 40);
+      await insertOrder({
+        id, name, email, phone, company, lang, profile, service, protection,
+        country: clip(b.country, 6) || "DE",
+        category: clip(b.category, 120),
+        rating: clip(b.rating, 12),
+        reviews: Number(b.reviews) || 0,
+        amount: Number(b.amount) || 0,
+        protAmount: Number(b.protAmount) || 0,
+        checkId, raw: b,
+      });
+      if (checkId) await linkCheck(checkId, id);
+    }
+  } catch (e) { app.log.error({ err: e }, "Bestellung speichern fehlgeschlagen"); }
+
   return result;
+});
+
+// Profil-Prüfung aus dem Wizard protokollieren (Lead). Öffentlich, gedrosselt.
+app.post("/check", async (req, reply) => {
+  if (!allowCheck(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
+  const b = (req.body || {}) as Record<string, unknown>;
+  const id = clip(b.checkId, 40) || ("CHK-" + Math.floor(100000 + Math.random() * 899999));
+  try {
+    if (dbReady()) {
+      await upsertCheck({
+        id,
+        profile: clip(b.profile, 200), category: clip(b.category, 120), rating: clip(b.rating, 12),
+        reviews: Number(b.reviews) || 0, recommend: clip(b.recommend, 40) || "remove",
+        name: clip(b.name, 160), email: clip(b.email, 160) || undefined,
+        country: clip(b.country, 6) || "DE", lang: clip(b.lang, 5) || "de",
+      });
+    }
+  } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }
+  return { ok: true, id };
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)
@@ -173,7 +215,21 @@ app.post("/admin/send", async (req, reply) => {
   }
 });
 
+// Admin-Dashboard: Live-Daten (Bestellungen + Prüfungen) aus der DB
+app.post("/admin/data", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const [orders, checks] = await Promise.all([listOrders(200), listChecks(200)]);
+  return { ok: true, db: dbReady(), orders, checks };
+});
+
 const port = Number(process.env.PORT) || 3000;
-app.listen({ host: "0.0.0.0", port })
-  .then((addr) => app.log.info(`ops läuft auf ${addr}`))
-  .catch((err) => { app.log.error(err); process.exit(1); });
+async function start() {
+  try { await initDb(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
+  catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
+  try {
+    const addr = await app.listen({ host: "0.0.0.0", port });
+    app.log.info(`ops läuft auf ${addr}`);
+  } catch (err) { app.log.error(err); process.exit(1); }
+}
+start();

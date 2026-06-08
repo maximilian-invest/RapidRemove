@@ -16,12 +16,14 @@
     "@react-email/render": "1.x",
     "dotenv": "16.x",
     "fastify": "5.x",
+    "pg": "8.x",
     "react": "18.x",
     "react-dom": "18.x",
     "tsx": "4.x"
   },
   "devDependencies": {
     "@types/node": "22.x",
+    "@types/pg": "8.x",
     "@types/react": "18.x",
     "typescript": "5.x"
   }

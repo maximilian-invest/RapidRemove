@@ -25,3 +25,15 @@ export async function submitOrder(payload) {
   if (!res.ok) throw new Error("order " + res.status);
   return res.json().catch(() => ({ ok: true }));
 }
+
+/** Protokolliert eine Profil-Prüfung (Lead) im ops-Backend. No-op ohne URL. */
+export async function submitCheck(payload) {
+  if (!OPS) return { ok: false, skipped: true };
+  const res = await fetch(OPS + "/check", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
+  if (!res.ok) throw new Error("check " + res.status);
+  return res.json().catch(() => ({ ok: true }));
+}

@@ -1,0 +1,125 @@
+/* RapidRemove ops — Postgres-Anbindung (Railway).
+ *
+ * Speichert Bestellungen (orders) und Profil-Prüfungen (checks). Ist
+ * DATABASE_URL nicht gesetzt, läuft das Backend ohne DB weiter (E-Mail-
+ * Versand funktioniert trotzdem) und alle DB-Funktionen sind No-ops –
+ * das Dashboard zeigt dann weiter die Demo-Daten (db:false).
+ */
+import { Pool } from "pg";
+
+const url = process.env.DATABASE_URL || "";
+// Railway-intern (.railway.internal) und localhost brauchen kein SSL; öffentliche Proxy-URLs schon.
+const needSSL = !!url && !/localhost|127\.0\.0\.1|\.railway\.internal/.test(url);
+export const pool = url
+  ? new Pool({ connectionString: url, ssl: needSSL ? { rejectUnauthorized: false } : undefined, max: 5 })
+  : null;
+
+export function dbReady(): boolean {
+  return !!pool;
+}
+
+/** Legt die Tabellen an, falls sie fehlen (idempotent). */
+export async function initDb(): Promise<void> {
+  if (!pool) return;
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS checks (
+      id          text PRIMARY KEY,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      profile     text,
+      category    text,
+      rating      text,
+      reviews     integer,
+      flagged     integer,
+      recommend   text,
+      name        text,
+      email       text,
+      country     text,
+      lang        text,
+      status      text NOT NULL DEFAULT 'neu',
+      order_id    text
+    )
+  `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id          text PRIMARY KEY,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      name        text,
+      email       text,
+      phone       text,
+      company     text,
+      country     text,
+      lang        text,
+      profile     text,
+      category    text,
+      rating      text,
+      reviews     integer,
+      service     text,
+      protection  text,
+      amount      numeric,
+      prot_amount numeric,
+      status      text NOT NULL DEFAULT 'new',
+      pay         text NOT NULL DEFAULT 'pending',
+      note        text,
+      check_id    text,
+      raw         jsonb
+    )
+  `);
+}
+
+export type OrderInput = {
+  id: string; name?: string; email?: string; phone?: string; company?: string;
+  country?: string; lang?: string; profile?: string; category?: string; rating?: string;
+  reviews?: number; service?: string; protection?: string; amount?: number; protAmount?: number;
+  note?: string; checkId?: string; raw?: unknown;
+};
+
+export async function insertOrder(o: OrderInput): Promise<void> {
+  if (!pool) return;
+  await pool.query(
+    `INSERT INTO orders
+       (id,name,email,phone,company,country,lang,profile,category,rating,reviews,service,protection,amount,prot_amount,note,check_id,raw)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+     ON CONFLICT (id) DO NOTHING`,
+    [o.id, o.name || null, o.email || null, o.phone || null, o.company || null, o.country || null,
+     o.lang || null, o.profile || null, o.category || null, o.rating || null, o.reviews ?? null,
+     o.service || null, o.protection || null, o.amount ?? null, o.protAmount ?? null, o.note || null,
+     o.checkId || null, o.raw ? JSON.stringify(o.raw) : null],
+  );
+}
+
+export type CheckInput = {
+  id: string; profile?: string; category?: string; rating?: string; reviews?: number;
+  flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;
+};
+
+export async function upsertCheck(c: CheckInput): Promise<void> {
+  if (!pool) return;
+  await pool.query(
+    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+     ON CONFLICT (id) DO UPDATE SET
+       profile=EXCLUDED.profile, category=EXCLUDED.category, rating=EXCLUDED.rating,
+       reviews=EXCLUDED.reviews, recommend=EXCLUDED.recommend, name=EXCLUDED.name,
+       email=COALESCE(EXCLUDED.email, checks.email)`,
+    [c.id, c.profile || null, c.category || null, c.rating || null, c.reviews ?? null, c.flagged ?? null,
+     c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null],
+  );
+}
+
+/** Verknüpft eine Prüfung mit der daraus entstandenen Bestellung. */
+export async function linkCheck(checkId: string, orderId: string): Promise<void> {
+  if (!pool || !checkId) return;
+  await pool.query(`UPDATE checks SET order_id=$2, status='konvertiert' WHERE id=$1`, [checkId, orderId || null]);
+}
+
+export async function listOrders(limit = 200): Promise<Record<string, unknown>[]> {
+  if (!pool) return [];
+  const r = await pool.query(`SELECT * FROM orders ORDER BY created_at DESC LIMIT $1`, [limit]);
+  return r.rows;
+}
+
+export async function listChecks(limit = 200): Promise<Record<string, unknown>[]> {
+  if (!pool) return [];
+  const r = await pool.query(`SELECT * FROM checks ORDER BY created_at DESC LIMIT $1`, [limit]);
+  return r.rows;
+}

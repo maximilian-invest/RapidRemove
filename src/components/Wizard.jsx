@@ -5,7 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder } from "@/lib/order";
+import { submitOrder, submitCheck } from "@/lib/order";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 const AGB_CONSENT = {
@@ -181,6 +181,8 @@ function Wizard({ initialName, onExit }) {
   const [processing, setProcessing] = React.useState(false);
   const [agbOk, setAgbOk] = React.useState(false);
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
+  const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
+  const checkSent = React.useRef(false);
   const bodyRef = React.useRef(null);
 
   React.useEffect(() => { if (bodyRef.current) window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
@@ -231,6 +233,19 @@ function Wizard({ initialName, onExit }) {
   const protPriceVal = protection === "monthly" ? p.protMonthly : protection === "monitor" ? p.protMonitor : protection === "lifetime" ? p.protLifetime : null;
   const protCadence = protection === "lifetime" ? w.s4.once : w.s4.per;
 
+  const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(",", ".")) || 0;
+  const country = lang === "en" ? "US" : "DE";
+  const persistCheck = () => {
+    if (checkSent.current) return;
+    checkSent.current = true;
+    submitCheck({
+      checkId, profile: selected ? selected.name : name, category: selected ? selected.cat : "",
+      rating: selected ? selected.rating : "", reviews: selected ? selected.reviews : 0,
+      recommend: service, name, country, lang,
+    }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
+  };
+  const proceedFromSearch = () => { persistCheck(); go(2); };
+
   const submit = () => {
     const er = {};
     if (!contact.name.trim()) er.name = w.s5.errName;
@@ -239,12 +254,17 @@ function Wizard({ initialName, onExit }) {
     setErrors(er);
     if (Object.keys(er).length) return;
     setProcessing(true);
+    persistCheck();
     // Bestellung im Hintergrund ans ops-Backend (Auftragsbestätigung + interne Notiz).
     // Stört die Danke-Animation nicht; ohne NEXT_PUBLIC_OPS_URL ein No-op (Demo).
     submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
       company: contact.company, service, protection: protection || "",
       profile: selected ? selected.name : "", orderId, lang,
+      category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
+      reviews: selected ? selected.reviews : 0,
+      amount: num(servicePrice), protAmount: protPriceVal ? num(protPriceVal) : 0,
+      country, checkId,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     setTimeout(() => { setProcessing(false); setStep(5); }, 2400);
   };
@@ -295,7 +315,7 @@ function Wizard({ initialName, onExit }) {
             ))}
             <div className="wz-actions" style={{ marginTop: 6 }}>
               <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              <button className="btn btn-primary grow" onClick={() => go(2)}>{w.s2.button} <Icon.arrowRight size={18} /></button>
+              <button className="btn btn-primary grow" onClick={proceedFromSearch}>{w.s2.button} <Icon.arrowRight size={18} /></button>
             </div>
           </div>
         )}
