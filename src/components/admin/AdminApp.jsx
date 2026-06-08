@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchEvents } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -392,7 +392,7 @@ function EmailComposer({ data, onClose, toast }) {
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Versand über RapidRemove-Mailserver</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendAdminEmail({ to: order.email, subject, text: body }); onClose(); toast("E-Mail an " + order.name + " gesendet ✓"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><AI.send /> Senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendAdminEmail({ to: order.email, subject, text: body, orderId: order.id, label: template ? template.name : "E-Mail" }); onClose(); toast("E-Mail an " + order.name + " gesendet ✓"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><AI.send /> Senden</button>
         </div>
       </div>
     </div>
@@ -618,6 +618,12 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const ex = crmExtras(o);
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
+  const [events, setEvents] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    fetchEvents(o.id).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
+    return () => { alive = false; };
+  }, [o.id]);
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
   return (
@@ -632,7 +638,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <span className="m"><Icon.mail /> {o.email}</span>
             <span className="m"><Icon.phone /> {o.phone}</span>
             <span className="m"><Icon.globe /> {o.country}</span>
-            <span className="m"><AI.list /> rowId 2{o.id.replace(/\D/g, "").slice(-2)}</span>
           </div>
         </div>
         <div className="cd-acts">
@@ -718,13 +723,13 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ padding: "20px 22px" }}>
               {tab === "activity" && (
                 <div className="act">
-                  {ex.activity.map((a, i) => (
+                  {(events || []).length ? (events || []).map((a, i) => (
                     <div className="act-item" key={i}>
                       <div className="act-rail"></div>
                       <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : <Icon.fileText />}</div>
                       <div className="act-body"><div className="at">{a.t}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
                     </div>
-                  ))}
+                  )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
                 </div>
               )}
               {tab === "order" && (
@@ -772,20 +777,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   <span className="ph-amt">{p.amt}</span>
                 </div>
               ))}
-            </div>
-          </div>
-
-          {/* asana */}
-          <div className="dsec">
-            <h3><AI.list /> Asana-Task <span className="right"><a className="btn btn-ghost btn-sm" href="#" onClick={(e) => { e.preventDefault(); toast("Öffne in Asana…"); }}><AI.external /> Öffnen</a></span></h3>
-            <div className={"asana-task" + (o.status === "done" ? " done" : "")}>
-              <div className="at-top"><span className="at-dot"></span><span className="at-name">Löschung: {o.company}</span></div>
-              <div className="at-id">ID {ex.asanaId}</div>
-              <div style={{ marginTop: 8 }}>
-                {ex.asanaSubs.map((s, i) => (
-                  <div className={"asana-sub" + (s.s === "done" ? " done" : "")} key={i}>{s.s === "done" ? <Icon.checkCircle /> : <Icon.clock />} {s.t}</div>
-                ))}
-              </div>
             </div>
           </div>
 
@@ -884,7 +875,7 @@ function PayLinkModal({ order, onClose, toast }) {
         </div>
         <div className="modal-foot">
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={() => { onClose(); toast("Stripe-Zahlungslink über " + (order.amount ? money(total, order.country) : "0 €") + " gesendet ✓"); }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, amount: total, currency: order.country === "US" ? "usd" : "eur", name: order.name, orderId: order.id, description: SERVICES[order.service] ? SERVICES[order.service].name : "RapidRemove" }); onClose(); toast("Zahlungslink an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>

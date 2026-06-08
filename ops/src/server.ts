@@ -7,8 +7,8 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts } from "./db";
-import { hasSecretKey, getStripeMetrics } from "./integrations/stripe";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents } from "./db";
+import { hasSecretKey, getStripeMetrics, createPaymentLink } from "./integrations/stripe";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
@@ -169,6 +169,8 @@ app.post("/order", async (req, reply) => {
         checkId, raw: b,
       });
       if (checkId) await linkCheck(checkId, id);
+      await insertEvent({ orderId: id, type: "order", title: "Bestellung eingegangen", detail: `${id} erstellt` });
+      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}` });
       result.saved = true;
     }
   } catch (e) {
@@ -218,6 +220,8 @@ app.post("/admin/send", async (req, reply) => {
     `<div>${safe}</div></div>`;
   try {
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    const oid = clip(b.orderId, 40);
+    if (oid) await insertEvent({ orderId: oid, type: "mail", title: (clip(b.label, 80) || "E-Mail") + " gesendet", detail: "an " + to });
     return { ok: true };
   } catch (e) {
     app.log.error({ err: e }, "admin/send fehlgeschlagen");
@@ -261,6 +265,45 @@ app.post("/admin/templates", async (req, reply) => {
     return { key, label: t.label, group: t.group, subject };
   });
   return { ok: true, templates };
+});
+
+// Admin-Dashboard: echten Stripe-Zahlungslink erstellen + dem Kunden mailen
+app.post("/admin/paylink", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+  const to = String(b.email || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const amount = Number(b.amount) || 0;
+  if (amount <= 0) return reply.code(400).send({ ok: false, error: "invalid amount" });
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const name = clip(b.name, 120);
+  const orderId = clip(b.orderId, 40);
+  const desc = (clip(b.description, 120) || "RapidRemove") + (orderId ? ` (${orderId})` : "");
+  try {
+    const url = await createPaymentLink({ amountCents: Math.round(amount * 100), currency, name: desc });
+    const anrede = name ? `Guten Tag ${escapeHtml(name)},` : "Guten Tag,";
+    const html =
+      `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px">` +
+      `<div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div>` +
+      `<p>${anrede}</p><p>anbei Ihr Zahlungslink${orderId ? ` für Auftrag ${escapeHtml(orderId)}` : ""}:</p>` +
+      `<p style="margin:20px 0"><a href="${url}" style="background:#ff8000;color:#fff;text-decoration:none;font-weight:800;padding:12px 22px;border-radius:10px;display:inline-block">Jetzt sicher bezahlen</a></p>` +
+      `<p style="font-size:13px;color:#6b6259">Falls der Button nicht funktioniert, nutzen Sie diesen Link:<br>${escapeHtml(url)}</p></div>`;
+    await sendMail({ to, subject: "Ihr Zahlungslink – RapidRemove", html, replyTo: process.env.MAIL_REPLY_TO });
+    if (orderId) await insertEvent({ orderId, type: "pay", title: "Zahlungslink gesendet", detail: `${amount} ${currency.toUpperCase()} · an ${to}` });
+    return { ok: true, url };
+  } catch (e) {
+    app.log.error({ err: e }, "Zahlungslink fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
+// Admin-Dashboard: Aktivitäts-Verlauf einer Bestellung
+app.post("/admin/events", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const events = await listEvents(clip(b.orderId, 40), 100);
+  return { ok: true, events };
 });
 
 const port = Number(process.env.PORT) || 3000;

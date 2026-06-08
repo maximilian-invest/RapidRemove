@@ -280,3 +280,36 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   ]);
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }
+
+/* ── Schreiboperation: echten Zahlungslink erstellen ──────────────────── */
+
+/** Stripe-POST (form-encoded). Braucht einen Key MIT Schreibrechten. */
+export async function stripePost<T = any>(path: string, params: Record<string, string | number>): Promise<T> {
+  const body = new URLSearchParams();
+  for (const [k, v] of Object.entries(params)) body.append(k, String(v));
+  const res = await fetch(`https://api.stripe.com/v1/${path.replace(/^\//, "")}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${req("STRIPE_SECRET_KEY")}`,
+      "Stripe-Version": "2024-06-20",
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+  if (!res.ok) throw new Error(`Stripe POST ${path} (${res.status}): ${(await res.text()).slice(0, 300)}`);
+  return (await res.json()) as T;
+}
+
+/** Erstellt einen (nicht ablaufenden) Stripe-Payment-Link über den Betrag. */
+export async function createPaymentLink(opts: { amountCents: number; currency: string; name: string }): Promise<string> {
+  const price = await stripePost<{ id: string }>("prices", {
+    currency: opts.currency,
+    unit_amount: Math.round(opts.amountCents),
+    "product_data[name]": opts.name,
+  });
+  const link = await stripePost<{ url: string }>("payment_links", {
+    "line_items[0][price]": price.id,
+    "line_items[0][quantity]": 1,
+  });
+  return link.url;
+}

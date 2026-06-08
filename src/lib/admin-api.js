@@ -20,12 +20,12 @@ export async function verifyAdmin(token) {
 }
 
 /** Versendet eine vom Admin verfasste E-Mail (Betreff + Text) über das ops-Backend. */
-export async function sendAdminEmail({ to, subject, text }) {
+export async function sendAdminEmail({ to, subject, text, orderId, label }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, to, subject, text }),
+    body: JSON.stringify({ token: TOKEN, to, subject, text, orderId: orderId || "", label: label || "" }),
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");
@@ -109,4 +109,30 @@ export async function fetchTemplates() {
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
   return j.templates || [];
+}
+
+/** Erstellt einen echten Stripe-Zahlungslink und mailt ihn dem Kunden. */
+export async function sendPayLink({ to, amount, currency, name, orderId, description }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/paylink", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, email: to, amount, currency, name, orderId, description }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
+/** Aktivitäts-Verlauf einer Bestellung (für die Kundenakte). */
+export async function fetchEvents(orderId) {
+  if (!OPS || !orderId) return [];
+  const res = await fetch(OPS + "/admin/events", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  return (j.events || []).map((e) => ({ ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at) }));
 }

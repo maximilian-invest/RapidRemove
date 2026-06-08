@@ -82,6 +82,16 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS country text,
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS events (
+      id          bigserial PRIMARY KEY,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      order_id    text,
+      type        text,
+      title       text,
+      detail      text
+    )
+  `);
 }
 
 export type OrderInput = {
@@ -139,6 +149,24 @@ export async function listOrders(limit = 200): Promise<Record<string, unknown>[]
 export async function listChecks(limit = 200): Promise<Record<string, unknown>[]> {
   if (!pool) return [];
   const r = await pool.query(`SELECT * FROM checks ORDER BY created_at DESC LIMIT $1`, [limit]);
+  return r.rows;
+}
+
+/** Aktivität protokollieren (best effort – wirft nie). */
+export async function insertEvent(e: { orderId?: string; type?: string; title?: string; detail?: string }): Promise<void> {
+  if (!pool || !e.orderId) return;
+  try {
+    await pool.query(
+      `INSERT INTO events (order_id, type, title, detail) VALUES ($1,$2,$3,$4)`,
+      [e.orderId, e.type || "info", e.title || "", e.detail || ""],
+    );
+  } catch { /* Logging darf den Hauptablauf nie stören */ }
+}
+
+/** Aktivitäts-Verlauf einer Bestellung (neueste zuerst). */
+export async function listEvents(orderId: string, limit = 100): Promise<Record<string, unknown>[]> {
+  if (!pool || !orderId) return [];
+  const r = await pool.query(`SELECT * FROM events WHERE order_id=$1 ORDER BY created_at DESC LIMIT $2`, [orderId, limit]);
   return r.rows;
 }
 
