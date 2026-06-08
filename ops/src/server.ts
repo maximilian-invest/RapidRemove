@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts } from "./db";
 import { hasSecretKey, getStripeMetrics } from "./integrations/stripe";
 
 const app = Fastify({ logger: true, trustProxy: true });
@@ -43,7 +43,11 @@ const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 // Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
 app.register(stripeWebhook);
 
-app.get("/health", async () => ({ ok: true, db: dbReady(), stripe: hasSecretKey() }));
+app.get("/health", async () => {
+  let orders = 0, checks = 0;
+  try { const c = await dbCounts(); orders = c.orders; checks = c.checks; } catch { /* Tabellen evtl. noch nicht da */ }
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), orders, checks };
+});
 
 // Übersicht aller Templates (nach Gruppe sortiert, im Markendesign)
 app.get("/", async (_req, reply) => {
@@ -125,7 +129,7 @@ app.post("/order", async (req, reply) => {
   const props = { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props));
 
-  const result = { ok: true, customer: false, notify: false };
+  const result = { ok: true, customer: false, notify: false, saved: false };
   // 1) Kundenbestätigung (bestehendes Template)
   try {
     await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
@@ -164,6 +168,7 @@ app.post("/order", async (req, reply) => {
         checkId, raw: b,
       });
       if (checkId) await linkCheck(checkId, id);
+      result.saved = true;
     }
   } catch (e) { app.log.error({ err: e }, "Bestellung speichern fehlgeschlagen"); }
 

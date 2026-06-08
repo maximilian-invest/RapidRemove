@@ -123,3 +123,12 @@ export async function listChecks(limit = 200): Promise<Record<string, unknown>[]
   const r = await pool.query(`SELECT * FROM checks ORDER BY created_at DESC LIMIT $1`, [limit]);
   return r.rows;
 }
+
+/** Zeilen-Zähler für Diagnose (z. B. /health). */
+export async function dbCounts(): Promise<{ orders: number; checks: number }> {
+  if (!pool) return { orders: 0, checks: 0 };
+  const r = await pool.query(
+    `SELECT (SELECT count(*) FROM orders)::int AS orders, (SELECT count(*) FROM checks)::int AS checks`,
+  );
+  return { orders: r.rows[0]?.orders || 0, checks: r.rows[0]?.checks || 0 };
+}
