@@ -139,6 +139,18 @@ const DAILY_REV = [
   { d: "05.06.", v: 90 }, { d: "06.06.", v: 330 }, { d: "07.06.", v: 180 }, { d: "08.06.", v: 462 },
 ];
 
+const WEEKLY_REV = [
+  { d: "17.03.", v: 1180 }, { d: "24.03.", v: 1240 }, { d: "31.03.", v: 1090 }, { d: "07.04.", v: 1320 },
+  { d: "14.04.", v: 1410 }, { d: "21.04.", v: 1280 }, { d: "28.04.", v: 1520 }, { d: "05.05.", v: 1605 },
+  { d: "12.05.", v: 1490 }, { d: "19.05.", v: 1710 }, { d: "26.05.", v: 1840 }, { d: "02.06.", v: 1297 },
+];
+
+const MONTHLY_REV = [
+  { d: "Jul", v: 1980 }, { d: "Aug", v: 2110 }, { d: "Sep", v: 2040 }, { d: "Okt", v: 2260 },
+  { d: "Nov", v: 2390 }, { d: "Dez", v: 2580 }, { d: "Jan", v: 2120 }, { d: "Feb", v: 2240 },
+  { d: "Mär", v: 2410 }, { d: "Apr", v: 2530 }, { d: "Mai", v: 2470 }, { d: "Jun", v: 2297 },
+];
+
 /* Letzte Zahlungen (Stripe-Abrechnungen im Monat) */
 const PAYMENTS = [
   { name: "Michael Karl-Heinz Flamm", date: "07.06.26", plan: "1 × Schutz", price: "24,90 € / Monat", amount: 25, cur: "EUR", status: "bezahlt" },
@@ -188,4 +200,4 @@ function crmExtras(o) {
   ];
   return { inv, asanaId, asanaSubs, activity, payHist, files };
 }
-export { SERVICES, ORDERS, CHECKS, STATUS_FLOW, TEMPLATES, COMPANY, SUBS, PLANS, DAILY_REV, PAYMENTS, money, crmExtras };
+export { SERVICES, ORDERS, CHECKS, STATUS_FLOW, TEMPLATES, COMPANY, SUBS, PLANS, DAILY_REV, WEEKLY_REV, MONTHLY_REV, PAYMENTS, money, crmExtras };

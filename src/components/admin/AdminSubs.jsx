@@ -2,7 +2,7 @@
 import React from "react";
 import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
-import { SUBS as SUBS_SAMPLE, PLANS as PLANS_SAMPLE, DAILY_REV as DAILY_REV_SAMPLE, PAYMENTS as PAYMENTS_SAMPLE } from "@/lib/admin-data";
+import { SUBS as SUBS_SAMPLE, PLANS as PLANS_SAMPLE, DAILY_REV as DAILY_REV_SAMPLE, WEEKLY_REV as WEEKLY_REV_SAMPLE, MONTHLY_REV as MONTHLY_REV_SAMPLE, PAYMENTS as PAYMENTS_SAMPLE } from "@/lib/admin-data";
 import { fetchStripe } from "@/lib/admin-api";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -178,6 +178,7 @@ function SubsDetail({ detail, plans, payments, live, onClose }) {
 function SubsDashboard({ toast }) {
   const [liveData, setLiveData] = React.useState(null);
   const [detail, setDetail] = React.useState(null);
+  const [range, setRange] = React.useState("day");
   React.useEffect(() => {
     let alive = true;
     (async () => { try { const d = await fetchStripe(); if (alive && d && d.connected) setLiveData(d); } catch (e) {} })();
@@ -185,11 +186,13 @@ function SubsDashboard({ toast }) {
   }, []);
   const SUBS = (liveData && liveData.subs) || SUBS_SAMPLE;
   const PLANS = (liveData && liveData.plans) || PLANS_SAMPLE;
-  const DAILY_REV = (liveData && liveData.dailyRev) || DAILY_REV_SAMPLE;
   const PAYMENTS = (liveData && liveData.payments) || PAYMENTS_SAMPLE;
-  const maxDay = Math.max(...DAILY_REV.map((d) => d.v));
+  const REV = (liveData && liveData.rev) || { day: DAILY_REV_SAMPLE, week: WEEKLY_REV_SAMPLE, month: MONTHLY_REV_SAMPLE };
+  const series = REV[range] || [];
+  const maxDay = Math.max(1, ...series.map((d) => d.v));
+  const avgDay = series.length ? series.reduce((s, d) => s + d.v, 0) / series.length : 0;
+  const totalRev = series.reduce((s, d) => s + d.v, 0);
   const totalAbos = PLANS.reduce((s, p) => s + p.count, 0);
-  const avgDay = DAILY_REV.reduce((s, d) => s + d.v, 0) / DAILY_REV.length;
   const note = (m) => toast ? toast(m) : null;
   return (
     <div className="content subs-page">{detail ? <SubsDetail detail={detail} plans={PLANS} payments={PAYMENTS} live={liveData} onClose={() => setDetail(null)} /> : null}
@@ -211,15 +214,25 @@ function SubsDashboard({ toast }) {
 
       <div className="grid-2">
         <div className="panel rise" style={{ animationDelay: "0.1s" }}>
-          <div className="panel-head"><div><h2>Umsatz — Monat</h2><div className="ph-sub">Täglich, bezahlte Rechnungen</div></div><div className="ph-right"><span className="chart-total">{eur(SUBS.monthRevenue)}</span></div></div>
+          <div className="panel-head">
+            <div><h2>Umsatz</h2><div className="ph-sub">{range === "day" ? "Täglich · aktueller Monat" : range === "week" ? "Wöchentlich · letzte 12 Wochen" : "Monatlich · letzte 12 Monate"}</div></div>
+            <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div className="chips">
+                {[["day", "Tag"], ["week", "Woche"], ["month", "Monat"]].map(([id, lbl]) => (
+                  <button key={id} className={"chipf" + (range === id ? " on" : "")} onClick={() => setRange(id)}>{lbl}</button>
+                ))}
+              </div>
+              <span className="chart-total">{eur(Math.round(totalRev))}</span>
+            </div>
+          </div>
           <div className="rev-chart">
-            <div className="rev-avg" style={{ bottom: (avgDay / maxDay * 100) + "%" }}><span className="rev-avg-lbl">Ø {eur(Math.round(avgDay))}</span></div>
-            {DAILY_REV.map((d, i) => (
+            <div className="rev-avg" style={{ bottom: (maxDay ? avgDay / maxDay * 100 : 0) + "%" }}><span className="rev-avg-lbl">Ø {eur(Math.round(avgDay))}</span></div>
+            {series.map((d, i) => (
               <div className="rev-col" key={i}>
                 <div className="rev-bar" style={{ height: Math.max(2, Math.round(d.v / maxDay * 100)) + "%", animationDelay: 0.12 + i * 0.05 + "s" }}>
                   <span className="rev-val">{eur(d.v)}</span>
                 </div>
-                <div className="rev-x">{d.d.replace(".06.", "")}</div>
+                <div className="rev-x">{d.d}</div>
               </div>
             ))}
           </div>

@@ -88,7 +88,7 @@ export async function fetchStripe() {
     connected: true,
     subs: j.subs || {},
     plans: (j.plans || []).map((p, i) => ({ ...p, color: PLAN_COLORS[i % PLAN_COLORS.length] })),
-    dailyRev: j.dailyRev || [],
+    rev: j.rev || { day: [], week: [], month: [] },
     payments: j.payments || [],
     overdueList: j.overdueList || [],
     newCustomersList: j.newCustomersList || [],

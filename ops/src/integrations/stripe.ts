@@ -141,11 +141,45 @@ function monthlyAmount(price: any, quantity = 1): number {
 export interface StripeDashboard {
   subs: Record<string, number>;
   plans: { label: string; count: number; mrr: number; cur: string }[];
-  dailyRev: { d: string; v: number }[];
+  rev: { day: { d: string; v: number }[]; week: { d: string; v: number }[]; month: { d: string; v: number }[] };
   payments: { name: string; date: string; plan: string; price: string; amount: number; cur: string; status: string }[];
   overdueList: { name: string; amount: number; cur: string; status: string }[];
   newCustomersList: { name: string; email: string; date: string }[];
   churnList: { name: string; date: string }[];
+}
+
+const MONTHS_DE = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+/** Baut Tages-/Wochen-/Monats-Umsatzreihen aus bezahlten Rechnungen. */
+function buildSeries(invoices: any[], now: Date) {
+  const paid = (i: any) => (i.amount_paid || 0) / 100;
+  const inRange = (a: number, b: number) => invoices.filter((i) => i.created >= a && i.created < b).reduce((s, i) => s + paid(i), 0);
+  const p2 = (n: number) => String(n).padStart(2, "0");
+
+  const day: { d: string; v: number }[] = [];
+  for (let dd = 1; dd <= now.getDate(); dd++) {
+    const a = new Date(now.getFullYear(), now.getMonth(), dd).getTime() / 1000;
+    day.push({ d: String(dd), v: Math.round(inRange(a, a + 86400)) });
+  }
+
+  const week: { d: string; v: number }[] = [];
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  for (let i = 11; i >= 0; i--) {
+    const ws = new Date(weekStart); ws.setDate(weekStart.getDate() - i * 7);
+    const a = ws.getTime() / 1000;
+    week.push({ d: `${p2(ws.getDate())}.${p2(ws.getMonth() + 1)}.`, v: Math.round(inRange(a, a + 7 * 86400)) });
+  }
+
+  const month: { d: string; v: number }[] = [];
+  for (let i = 11; i >= 0; i--) {
+    const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const a = m.getTime() / 1000;
+    const b = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime() / 1000;
+    month.push({ d: MONTHS_DE[m.getMonth()], v: Math.round(inRange(a, b)) });
+  }
+
+  return { day, week, month };
 }
 
 /** Reine Berechnung (testbar) – formt Roh-Stripe-Daten in die Dashboard-Form. */
@@ -189,19 +223,10 @@ export function buildStripeDashboard(raw: {
     }
   }
 
-  let monthRevenue = 0;
-  const byDay = new Map<string, number>();
-  for (const inv of invoices) {
-    const major = (inv.amount_paid || 0) / 100;
-    monthRevenue += major;
-    byDay.set(dmy(inv.created), (byDay.get(dmy(inv.created)) || 0) + major);
-  }
   const now = new Date();
-  const dailyRev: { d: string; v: number }[] = [];
-  for (let day = 1; day <= now.getDate(); day++) {
-    const key = dmy(Math.floor(new Date(now.getFullYear(), now.getMonth(), day).getTime() / 1000));
-    dailyRev.push({ d: key, v: Math.round(byDay.get(key) || 0) });
-  }
+  const monthInvoices = invoices.filter((inv) => (inv.created || 0) >= monthStart);
+  const monthRevenue = monthInvoices.reduce((s, inv) => s + (inv.amount_paid || 0) / 100, 0);
+  const rev = buildSeries(invoices, now);
 
   const payStatus = (s: string) => (s === "paid" ? "bezahlt" : s === "open" ? "offen" : "fehlgeschlagen");
   const payments = invoices
@@ -224,10 +249,10 @@ export function buildStripeDashboard(raw: {
   return {
     subs: {
       mrr: Math.round(mrr), arr: Math.round(mrr * 12), active: activeCount, trialing, overdue,
-      monthRevenue: Math.round(monthRevenue), paidInvoices: invoices.length,
+      monthRevenue: Math.round(monthRevenue), paidInvoices: monthInvoices.length,
       newCustomers: customers.length, churned, reactivatable: overdue,
     },
-    plans, dailyRev, payments, overdueList, newCustomersList, churnList,
+    plans, rev, payments, overdueList, newCustomersList, churnList,
   };
 }
 
@@ -235,9 +260,10 @@ export function buildStripeDashboard(raw: {
 export async function getStripeMetrics(): Promise<StripeDashboard> {
   const d = new Date();
   const monthStart = Math.floor(new Date(d.getFullYear(), d.getMonth(), 1).getTime() / 1000);
+  const yearStart = Math.floor(new Date(d.getFullYear(), d.getMonth() - 11, 1).getTime() / 1000);
   const [subs, invoices, customers] = await Promise.all([
     stripeList<any>(`subscriptions?status=all&limit=100&expand[]=data.customer`),
-    stripeList<any>(`invoices?status=paid&created[gte]=${monthStart}&limit=100`),
+    stripeList<any>(`invoices?status=paid&created[gte]=${yearStart}&limit=100`, 10),
     stripeList<any>(`customers?created[gte]=${monthStart}&limit=100`),
   ]);
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
