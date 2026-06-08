@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchEvents } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchEvents, sendTemplate } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -659,6 +659,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 <div className="act-grp-l">Zahlung</div>
                 <div className="act-btns">
                   <button className="btn btn-pri btn-sm" onClick={() => onPayLink(o)}><AI.send /> Zahlungslink senden</button>
+                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, amount: tot, currency: o.country === "US" ? "usd" : "eur", name: o.name, orderId: o.id, description: SERVICES[o.service] ? SERVICES[o.service].name : "RapidRemove", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
                   {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
                   {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
                 </div>
@@ -672,13 +673,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 </div>
               </div>
               <div>
-                <div className="act-grp-l">Vorgangs-Mails</div>
+                <div className="act-grp-l">Vorgangs-Mails (echte Vorlagen)</div>
                 <div className="act-btns">
-                  {["rechte", "adresse", "verify", "garantie"].map((id) => {
-                    const tpl = TEMPLATES.find((t) => t.id === id);
-                    const I = Icon[tpl.icon] || AI[tpl.icon] || Icon.mail;
-                    return <button key={id} className="btn btn-sec btn-sm" onClick={() => onCompose(o, tpl)}><I size={15} /> {tpl.name}</button>;
-                  })}
+                  {[["rechte-benoetigt", "Zugriffsrechte", Icon.lock], ["adresse", "Adresse", Icon.mapPin], ["verifizieren", "Verifizieren", Icon.shieldCheck], ["nachweise-benoetigt", "Nachweise", Icon.fileText], ["nicht-gefunden", "Nicht gefunden", Icon.search], ["garantiefall", "Garantiefall", Icon.refresh]].map(([key, label, Ic]) => (
+                    <button key={key} className="btn btn-sec btn-sm" onClick={async () => { if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return; try { await sendTemplate({ key, to: o.email, orderId: o.id }); toast(label + " an " + o.name + " gesendet \u2713"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><Ic size={15} /> {label}</button>
+                  ))}
                 </div>
               </div>
               <div>

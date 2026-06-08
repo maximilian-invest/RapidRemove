@@ -112,12 +112,25 @@ export async function fetchTemplates() {
 }
 
 /** Erstellt einen echten Stripe-Zahlungslink und mailt ihn dem Kunden. */
-export async function sendPayLink({ to, amount, currency, name, orderId, description }) {
+export async function sendPayLink({ to, amount, currency, name, orderId, description, template }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, email: to, amount, currency, name, orderId, description }),
+    body: JSON.stringify({ token: TOKEN, email: to, amount, currency, name, orderId, description, template }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
+/** Sendet eine echte, gebrandete Vorlage (z. B. Rechte benötigt, Adresse) an den Kunden. */
+export async function sendTemplate({ key, to, orderId }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/send-template", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, key, to, orderId }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

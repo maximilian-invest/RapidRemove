@@ -282,19 +282,41 @@ app.post("/admin/paylink", async (req, reply) => {
   const desc = (clip(b.description, 120) || "RapidRemove") + (orderId ? ` (${orderId})` : "");
   try {
     const url = await createPaymentLink({ amountCents: Math.round(amount * 100), currency, name: desc });
-    const anrede = name ? `Guten Tag ${escapeHtml(name)},` : "Guten Tag,";
-    const html =
-      `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px">` +
-      `<div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div>` +
-      `<p>${anrede}</p><p>anbei Ihr Zahlungslink${orderId ? ` für Auftrag ${escapeHtml(orderId)}` : ""}:</p>` +
-      `<p style="margin:20px 0"><a href="${url}" style="background:#ff8000;color:#fff;text-decoration:none;font-weight:800;padding:12px 22px;border-radius:10px;display:inline-block">Jetzt sicher bezahlen</a></p>` +
-      `<p style="font-size:13px;color:#6b6259">Falls der Button nicht funktioniert, nutzen Sie diesen Link:<br>${escapeHtml(url)}</p></div>`;
-    await sendMail({ to, subject: "Ihr Zahlungslink – RapidRemove", html, replyTo: process.env.MAIL_REPLY_TO });
-    if (orderId) await insertEvent({ orderId, type: "pay", title: "Zahlungslink gesendet", detail: `${amount} ${currency.toUpperCase()} · an ${to}` });
+    const tplKey = clip(b.template, 40) || "zahlungslink";
+    const t = TEMPLATES[tplKey] || TEMPLATES["zahlungslink"];
+    const money = currency === "usd"
+      ? `$ ${amount.toLocaleString("en-US")}`
+      : `${amount.toLocaleString("de-DE", { minimumFractionDigits: amount % 1 ? 2 : 0 })} €`;
+    const props = { lang: "de", total: money, due: tplKey === "mahnung" ? "umgehend" : "sofort", payUrl: url };
+    const html = await render(React.createElement(t.component, props as any));
+    await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
+    const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
+    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${amount} ${currency.toUpperCase()} · an ${to}` });
     return { ok: true, url };
   } catch (e) {
     app.log.error({ err: e }, "Zahlungslink fehlgeschlagen");
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
+// Admin-Dashboard: eine echte (gebrandete) Vorlage an den Kunden senden
+app.post("/admin/send-template", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.to || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const t = TEMPLATES[clip(b.key, 60)];
+  if (!t) return reply.code(400).send({ ok: false, error: "unknown template" });
+  const orderId = clip(b.orderId, 40);
+  try {
+    const props = { ...(t.sample as object), lang: "de" };
+    const html = await render(React.createElement(t.component, props as any));
+    await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
+    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to });
+    return { ok: true };
+  } catch (e) {
+    app.log.error({ err: e }, "send-template fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
   }
 });
 

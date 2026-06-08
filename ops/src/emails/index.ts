@@ -18,6 +18,7 @@ import NichtGefunden, { subject as nichtGefundenSubject } from "./NichtGefunden"
 import NeuesAbo, { subject as neuesAboSubject } from "./NeuesAbo";
 import AboDeaktiviert, { subject as aboDeaktiviertSubject } from "./AboDeaktiviert";
 import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
+import Mahnung, { subject as mahnungSubject } from "./Mahnung";
 
 export interface TemplateEntry {
   label: string;
@@ -59,6 +60,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: ZahlungsbestaetigungGutschein,
     subject: zahlungSubject,
     sample: de,
+  },
+  mahnung: {
+    label: "Mahnung / Zahlungserinnerung",
+    group: "Bestellung",
+    component: Mahnung,
+    subject: mahnungSubject,
+    sample: { lang: "de", total: "519,90 €", due: "innerhalb 7 Tagen", payUrl: "https://buy.stripe.com/test_00000000" },
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────
