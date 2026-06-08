@@ -30,6 +30,14 @@ const FIELD_MASK = [
   "places.googleMapsUri",
 ].join(",");
 
+/* Pro Website-Sprache im passenden Land suchen (CLDR-Regioncode), damit die
+   Suche nicht an der IP des Besuchers hängt. Deutsch bleibt bewusst OHNE
+   Regioncode → DACH-/Standort-Bias (findet AT, DE und CH automatisch). */
+const REGION_BY_LANG = {
+  en: "GB", es: "ES", fr: "FR", it: "IT", nl: "NL",
+  pt: "PT", ja: "JP", sv: "SE", da: "DK", no: "NO",
+};
+
 /** true, wenn ein Maps-Key vorhanden ist (sonst läuft der Wizard im Demo-Modus). */
 export function placesEnabled() {
   return !!KEY;
@@ -49,6 +57,9 @@ function fmtRating(r, lang) {
 export async function searchProfiles(query, lang = "de") {
   const q = (query || "").trim();
   if (!KEY || !q) return [];
+  const reqBody = { textQuery: q, languageCode: lang || "de" };
+  const region = REGION_BY_LANG[lang];
+  if (region) reqBody.regionCode = region; // biast die Suche aufs Land der Sprache (statt auf die IP)
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: {
@@ -56,7 +67,7 @@ export async function searchProfiles(query, lang = "de") {
       "X-Goog-Api-Key": KEY,
       "X-Goog-FieldMask": FIELD_MASK,
     },
-    body: JSON.stringify({ textQuery: q, languageCode: lang || "de" }),
+    body: JSON.stringify(reqBody),
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
