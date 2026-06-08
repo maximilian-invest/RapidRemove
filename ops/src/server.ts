@@ -229,7 +229,7 @@ let stripeCache: { ts: number; data: unknown } | null = null;
 app.post("/admin/stripe", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
-  if (!hasSecretKey()) return { ok: true, connected: false };
+  if (!hasSecretKey()) return { ok: true, connected: false, error: "STRIPE_SECRET_KEY nicht gesetzt" };
   try {
     if (!stripeCache || Date.now() - stripeCache.ts > 60_000) {
       stripeCache = { ts: Date.now(), data: await getStripeMetrics() };
@@ -237,7 +237,7 @@ app.post("/admin/stripe", async (req, reply) => {
     return { ok: true, connected: true, ...(stripeCache.data as Record<string, unknown>) };
   } catch (e) {
     app.log.error({ err: e }, "Stripe-Kennzahlen fehlgeschlagen");
-    return { ok: true, connected: false, error: "stripe fetch failed" };
+    return { ok: true, connected: false, error: String((e as Error)?.message || e).slice(0, 240) };
   }
 });
 

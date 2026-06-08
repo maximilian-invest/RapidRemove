@@ -372,7 +372,7 @@ button{font-family:inherit;}
 .chart-total{font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--fg);}
 
 /* revenue bar chart */
-.rev-chart{position:relative;display:flex;align-items:flex-end;gap:10px;padding:26px 24px 16px;height:248px;}
+.rev-chart{position:relative;display:flex;align-items:flex-end;gap:10px;padding:26px 24px 42px;height:266px;}
 .rev-avg{position:absolute;left:24px;right:24px;height:0;border-top:1.5px dashed var(--hairline-strong);pointer-events:none;}
 .rev-avg-lbl{position:absolute;right:0;top:-9px;font-size:10.5px;font-weight:800;color:var(--fg-muted);background:#fff;padding:0 5px;}
 .rev-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:9px;position:relative;}
@@ -380,7 +380,7 @@ button{font-family:inherit;}
 .rev-col:hover .rev-bar{filter:brightness(1.06) saturate(1.1);}
 .rev-val{position:absolute;top:-26px;left:50%;transform:translateX(-50%) translateY(4px);background:var(--ink-canvas,#1c1916);color:#fff;font-size:11px;font-weight:800;padding:3px 8px;border-radius:var(--r-pill);white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;}
 .rev-col:hover .rev-val{opacity:1;transform:translateX(-50%) translateY(0);}
-.rev-x{font-size:11px;color:var(--fg-muted);font-weight:700;}
+.rev-x{position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:11px;color:var(--fg-muted);font-weight:700;}
 
 /* abo-mix: donut + legend bars */
 .mix-body{padding:20px 24px 24px;display:flex;align-items:center;gap:26px;}

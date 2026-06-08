@@ -83,7 +83,7 @@ export async function fetchStripe() {
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
-  if (!j || !j.connected) return { connected: false };
+  if (!j || !j.connected) return { connected: false, error: (j && j.error) || "" };
   return {
     connected: true,
     subs: j.subs || {},
