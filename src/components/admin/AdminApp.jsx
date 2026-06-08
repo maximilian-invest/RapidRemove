@@ -874,7 +874,7 @@ function PayLinkModal({ order, onClose, toast }) {
         </div>
         <div className="modal-foot">
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, amount: total, currency: order.country === "US" ? "usd" : "eur", name: order.name, orderId: order.id, description: SERVICES[order.service] ? SERVICES[order.service].name : "RapidRemove" }); onClose(); toast("Zahlungslink an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, amount: total, currency: order.country === "US" ? "usd" : "eur", name: order.name, orderId: order.id, description: SERVICES[order.service] ? SERVICES[order.service].name : "RapidRemove", protectionLabel: order.protection ? ((order.protection === "lifetime" ? "Lebenslanger Schutz" : order.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (order.protAmount ? " – " + money(order.protAmount, order.country) + (order.protection !== "lifetime" ? "/Mon." : "") : "")) : "" }); onClose(); toast("Zahlungslink an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>

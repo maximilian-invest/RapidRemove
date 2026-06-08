@@ -112,12 +112,12 @@ export async function fetchTemplates() {
 }
 
 /** Erstellt einen echten Stripe-Zahlungslink und mailt ihn dem Kunden. */
-export async function sendPayLink({ to, amount, currency, name, orderId, description, template }) {
+export async function sendPayLink({ to, amount, currency, name, orderId, description, template, protectionLabel }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, email: to, amount, currency, name, orderId, description, template }),
+    body: JSON.stringify({ token: TOKEN, email: to, amount, currency, name, orderId, description, template, protectionLabel }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

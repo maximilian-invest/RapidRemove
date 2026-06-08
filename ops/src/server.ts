@@ -287,7 +287,7 @@ app.post("/admin/paylink", async (req, reply) => {
     const money = currency === "usd"
       ? `$ ${amount.toLocaleString("en-US")}`
       : `${amount.toLocaleString("de-DE", { minimumFractionDigits: amount % 1 ? 2 : 0 })} €`;
-    const props = { lang: "de", total: money, due: tplKey === "mahnung" ? "umgehend" : "sofort", payUrl: url };
+    const props = { lang: "de", total: money, due: tplKey === "mahnung" ? "umgehend" : "sofort", payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
