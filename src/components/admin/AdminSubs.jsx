@@ -133,7 +133,7 @@ function SubsDashboard({ toast }) {
   const note = (m) => toast ? toast(m) : null;
   return (
     <div className="content subs-page">
-      <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs</div>
+      <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 999, background: liveData ? "rgba(16,185,129,.14)" : "rgba(148,140,130,.16)", color: liveData ? "#0a8f5b" : "#6b6259", textTransform: "none", letterSpacing: 0 }}>{liveData ? "● Live aus Stripe" : "● Demo-Daten"}</span></div>
       <div className="kpis sub-kpis">
         <SubKpi idx={0} label="MRR" value={SUBS.mrr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.mrr} sparkColor="var(--primary)" details onLink={() => note("MRR-Detailansicht geöffnet")} />
         <SubKpi idx={1} label="ARR" value={SUBS.arr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.arr} sparkColor="var(--primary)" details onLink={() => note("ARR-Detailansicht geöffnet")} />
