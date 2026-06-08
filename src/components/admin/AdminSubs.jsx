@@ -116,8 +116,68 @@ function SubKpi({ label, value, format, color, tone, delta, sub, spark, sparkCol
   );
 }
 
+function SubsDetail({ detail, plans, payments, live, onClose }) {
+  const k = detail.kind;
+  const fmt = (n, cur) => (cur === "USD" ? "$ " : "€ ") + Number(n || 0).toLocaleString("de-DE", { minimumFractionDigits: n % 1 ? 2 : 0 });
+  const totalMrr = plans.reduce((s, p) => s + (p.mrr || 0), 0);
+  const totalAbos = plans.reduce((s, p) => s + (p.count || 0), 0);
+  let inner = null;
+  if (k === "plans") {
+    inner = (
+      <table className="tbl" style={{ width: "100%" }}>
+        <thead><tr><th>Plan</th><th>Abos</th><th>MRR</th><th>ARR</th><th>Anteil</th></tr></thead>
+        <tbody>
+          {plans.map((p, i) => (
+            <tr key={i}>
+              <td><span style={{ display: "inline-block", width: 9, height: 9, borderRadius: "50%", background: p.color, marginRight: 8 }}></span>{p.label}</td>
+              <td>{p.count}</td>
+              <td>{fmt(p.mrr, p.cur)}</td>
+              <td>{fmt(p.mrr * 12, p.cur)}</td>
+              <td>{totalMrr ? Math.round((p.mrr / totalMrr) * 100) : 0} %</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot><tr style={{ fontWeight: 800 }}>
+          <td>Gesamt</td><td>{totalAbos}</td><td>{fmt(Math.round(totalMrr), "EUR")}</td><td>{fmt(Math.round(totalMrr * 12), "EUR")}</td><td>100 %</td>
+        </tr></tfoot>
+      </table>
+    );
+  } else if (k === "payments") {
+    inner = payments.length ? (
+      <table className="tbl" style={{ width: "100%" }}>
+        <thead><tr><th>Kunde</th><th>Datum</th><th>Plan</th><th>Betrag</th><th>Status</th></tr></thead>
+        <tbody>{payments.map((p, i) => (<tr key={i}><td>{p.name}</td><td>{p.date}</td><td>{p.plan}</td><td>{fmt(p.amount, p.cur)}</td><td>{p.status}</td></tr>))}</tbody>
+      </table>
+    ) : <div style={{ padding: 10, color: "var(--fg-muted)", fontWeight: 600 }}>Keine Zahlungen im Zeitraum.</div>;
+  } else {
+    const rows = (live && (k === "overdue" ? live.overdueList : k === "newCustomers" ? live.newCustomersList : live.churnList)) || [];
+    if (!rows.length) {
+      inner = <div style={{ padding: 10, color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, lineHeight: 1.5 }}>Die Detailliste erscheint mit <b>Live-Daten aus Stripe</b> (im Demo-Modus nicht verfügbar).</div>;
+    } else if (k === "overdue") {
+      inner = <table className="tbl" style={{ width: "100%" }}><thead><tr><th>Kunde</th><th>Betrag/Mo</th><th>Status</th></tr></thead><tbody>{rows.map((r, i) => (<tr key={i}><td>{r.name}</td><td>{fmt(r.amount, r.cur)}</td><td>{r.status}</td></tr>))}</tbody></table>;
+    } else if (k === "newCustomers") {
+      inner = <table className="tbl" style={{ width: "100%" }}><thead><tr><th>Kunde</th><th>E-Mail</th><th>Datum</th></tr></thead><tbody>{rows.map((r, i) => (<tr key={i}><td>{r.name}</td><td>{r.email || "—"}</td><td>{r.date}</td></tr>))}</tbody></table>;
+    } else {
+      inner = <table className="tbl" style={{ width: "100%" }}><thead><tr><th>Kunde</th><th>Gekündigt am</th></tr></thead><tbody>{rows.map((r, i) => (<tr key={i}><td>{r.name}</td><td>{r.date}</td></tr>))}</tbody></table>;
+    }
+  }
+  return (
+    <div className="modal-scrim open" onClick={onClose}>
+      <div className="modal" style={{ width: 640 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><AI.euro size={19} style={{ color: "var(--primary)" }} /></span>
+          <div><h3>{detail.title}</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{live ? "Live aus Stripe" : "Demo-Daten"}</div></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
+        </div>
+        <div className="modal-body">{inner}</div>
+      </div>
+    </div>
+  );
+}
+
 function SubsDashboard({ toast }) {
   const [liveData, setLiveData] = React.useState(null);
+  const [detail, setDetail] = React.useState(null);
   React.useEffect(() => {
     let alive = true;
     (async () => { try { const d = await fetchStripe(); if (alive && d && d.connected) setLiveData(d); } catch (e) {} })();
@@ -132,21 +192,21 @@ function SubsDashboard({ toast }) {
   const avgDay = DAILY_REV.reduce((s, d) => s + d.v, 0) / DAILY_REV.length;
   const note = (m) => toast ? toast(m) : null;
   return (
-    <div className="content subs-page">
+    <div className="content subs-page">{detail ? <SubsDetail detail={detail} plans={PLANS} payments={PAYMENTS} live={liveData} onClose={() => setDetail(null)} /> : null}
       <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 999, background: liveData ? "rgba(16,185,129,.14)" : "rgba(148,140,130,.16)", color: liveData ? "#0a8f5b" : "#6b6259", textTransform: "none", letterSpacing: 0 }}>{liveData ? "● Live aus Stripe" : "● Demo-Daten"}</span></div>
       <div className="kpis sub-kpis">
-        <SubKpi idx={0} label="MRR" value={SUBS.mrr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.mrr} sparkColor="var(--primary)" details onLink={() => note("MRR-Detailansicht geöffnet")} />
-        <SubKpi idx={1} label="ARR" value={SUBS.arr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.arr} sparkColor="var(--primary)" details onLink={() => note("ARR-Detailansicht geöffnet")} />
-        <SubKpi idx={2} label="Aktive Abos" value={SUBS.active} color="green" delta="+6" tone="up" spark={SPARK.active} sparkColor="var(--success)" sub={SUBS.trialing + " in Testphase"} details onLink={() => note("Aktive Abonnements")} />
-        <SubKpi idx={3} label="Überfällig" value={SUBS.overdue} color="red" delta="−1" tone="down" spark={SPARK.overdue} sparkColor="var(--danger)" sub="Zahlungsverzug" details onLink={() => note("Überfällige Zahlungen")} />
+        <SubKpi idx={0} label="MRR" value={SUBS.mrr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.mrr} sparkColor="var(--primary)" details onLink={() => setDetail({ kind: "plans", title: "MRR — Zusammensetzung nach Plan" })} />
+        <SubKpi idx={1} label="ARR" value={SUBS.arr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.arr} sparkColor="var(--primary)" details onLink={() => setDetail({ kind: "plans", title: "ARR — Zusammensetzung nach Plan" })} />
+        <SubKpi idx={2} label="Aktive Abos" value={SUBS.active} color="green" delta="+6" tone="up" spark={SPARK.active} sparkColor="var(--success)" sub={SUBS.trialing + " in Testphase"} details onLink={() => setDetail({ kind: "plans", title: "Aktive Abos — nach Plan" })} />
+        <SubKpi idx={3} label="Überfällig" value={SUBS.overdue} color="red" delta="−1" tone="down" spark={SPARK.overdue} sparkColor="var(--danger)" sub="Zahlungsverzug" details onLink={() => setDetail({ kind: "overdue", title: "Überfällige Abos" })} />
       </div>
 
       <div className="sec-eyebrow rise" style={{ animationDelay: "0.05s" }}>Monat — Übersicht</div>
       <div className="kpis sub-kpis">
         <SubKpi idx={4} label="Umsatz" value={SUBS.monthRevenue} format={(n) => eur(Math.round(n))} delta="+12,4 %" tone="up" sub="Monat" />
-        <SubKpi idx={5} label="Rechnungen" value={SUBS.paidInvoices} delta="+3" tone="up" sub="bezahlte Rg." details onLink={() => note("Rechnungsliste")} />
-        <SubKpi idx={6} label="Neue Kunden" value={SUBS.newCustomers} color="green" delta="+2" tone="up" details onLink={() => note("Neue Kunden im Monat")} />
-        <SubKpi idx={7} label="Gekündigt" value={SUBS.churned} color="red" delta="+1" tone="down" details onLink={() => note("Kündigungen im Monat")} />
+        <SubKpi idx={5} label="Rechnungen" value={SUBS.paidInvoices} delta="+3" tone="up" sub="bezahlte Rg." details onLink={() => setDetail({ kind: "payments", title: "Bezahlte Rechnungen (Monat)" })} />
+        <SubKpi idx={6} label="Neue Kunden" value={SUBS.newCustomers} color="green" delta="+2" tone="up" details onLink={() => setDetail({ kind: "newCustomers", title: "Neue Kunden (Monat)" })} />
+        <SubKpi idx={7} label="Gekündigt" value={SUBS.churned} color="red" delta="+1" tone="down" details onLink={() => setDetail({ kind: "churn", title: "Kündigungen (Monat)" })} />
       </div>
 
       <div className="grid-2">

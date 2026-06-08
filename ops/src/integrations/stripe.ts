@@ -143,22 +143,35 @@ export interface StripeDashboard {
   plans: { label: string; count: number; mrr: number; cur: string }[];
   dailyRev: { d: string; v: number }[];
   payments: { name: string; date: string; plan: string; price: string; amount: number; cur: string; status: string }[];
+  overdueList: { name: string; amount: number; cur: string; status: string }[];
+  newCustomersList: { name: string; email: string; date: string }[];
+  churnList: { name: string; date: string }[];
 }
 
 /** Reine Berechnung (testbar) – formt Roh-Stripe-Daten in die Dashboard-Form. */
 export function buildStripeDashboard(raw: {
-  subs: any[]; invoices: any[]; customersThisMonth: number; monthStart: number;
+  subs: any[]; invoices: any[]; customers: any[]; monthStart: number;
 }): StripeDashboard {
-  const { subs, invoices, customersThisMonth, monthStart } = raw;
+  const { subs, invoices, customers, monthStart } = raw;
   const active = new Set(["active", "trialing"]);
   const overdueSet = new Set(["past_due", "unpaid", "incomplete"]);
+  const custName = (s: any) => s.customer?.name || s.customer?.email || "Kunde";
 
   let mrr = 0, activeCount = 0, trialing = 0, overdue = 0, churned = 0;
   const planMap = new Map<string, { label: string; count: number; mrr: number; cur: string }>();
+  const overdueList: { name: string; amount: number; cur: string; status: string }[] = [];
+  const churnList: { name: string; date: string }[] = [];
 
   for (const s of subs) {
-    if (s.status === "canceled") { if ((s.canceled_at || 0) >= monthStart) churned++; continue; }
-    if (overdueSet.has(s.status)) overdue++;
+    if (s.status === "canceled") {
+      if ((s.canceled_at || 0) >= monthStart) { churned++; churnList.push({ name: custName(s), date: dmy(s.canceled_at) }); }
+      continue;
+    }
+    if (overdueSet.has(s.status)) {
+      overdue++;
+      const amt = (s.items?.data || []).reduce((a: number, it: any) => a + monthlyAmount(it.price, it.quantity), 0);
+      overdueList.push({ name: custName(s), amount: Math.round(amt * 100) / 100, cur: (s.items?.data?.[0]?.price?.currency || "eur").toUpperCase(), status: s.status });
+    }
     if (!active.has(s.status)) continue;
     activeCount++;
     if (s.status === "trialing") trialing++;
@@ -207,13 +220,14 @@ export function buildStripeDashboard(raw: {
     });
 
   const plans = [...planMap.values()].map((p) => ({ ...p, mrr: Math.round(p.mrr) })).sort((a, b) => b.count - a.count);
+  const newCustomersList = customers.slice(0, 30).map((c: any) => ({ name: c.name || c.email || "Kunde", email: c.email || "", date: dmy(c.created) }));
   return {
     subs: {
       mrr: Math.round(mrr), arr: Math.round(mrr * 12), active: activeCount, trialing, overdue,
       monthRevenue: Math.round(monthRevenue), paidInvoices: invoices.length,
-      newCustomers: customersThisMonth, churned, reactivatable: overdue,
+      newCustomers: customers.length, churned, reactivatable: overdue,
     },
-    plans, dailyRev, payments,
+    plans, dailyRev, payments, overdueList, newCustomersList, churnList,
   };
 }
 
@@ -222,9 +236,9 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   const d = new Date();
   const monthStart = Math.floor(new Date(d.getFullYear(), d.getMonth(), 1).getTime() / 1000);
   const [subs, invoices, customers] = await Promise.all([
-    stripeList<any>(`subscriptions?status=all&limit=100`),
+    stripeList<any>(`subscriptions?status=all&limit=100&expand[]=data.customer`),
     stripeList<any>(`invoices?status=paid&created[gte]=${monthStart}&limit=100`),
     stripeList<any>(`customers?created[gte]=${monthStart}&limit=100`),
   ]);
-  return buildStripeDashboard({ subs, invoices, customersThisMonth: customers.length, monthStart });
+  return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }
