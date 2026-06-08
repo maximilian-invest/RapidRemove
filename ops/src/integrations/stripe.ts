@@ -138,11 +138,16 @@ function monthlyAmount(price: any, quantity = 1): number {
   return amt / cnt;
 }
 
+type RevPt = { d: string; v: number; start: number; end: number };
+type Payment = { name: string; date: string; plan: string; price: string; amount: number; cur: string; status: string; created: number };
+
 export interface StripeDashboard {
   subs: Record<string, number>;
   plans: { label: string; count: number; mrr: number; cur: string }[];
-  rev: { day: { d: string; v: number }[]; week: { d: string; v: number }[]; month: { d: string; v: number }[] };
-  payments: { name: string; date: string; plan: string; price: string; amount: number; cur: string; status: string }[];
+  rev: { day: RevPt[]; week: RevPt[]; month: RevPt[] };
+  payments: Payment[];
+  paymentsAll: Payment[];
+  customersList: { id: string; name: string; email: string; created: number; date: string }[];
   overdueList: { name: string; amount: number; cur: string; status: string }[];
   newCustomersList: { name: string; email: string; date: string }[];
   churnList: { name: string; date: string }[];
@@ -156,27 +161,28 @@ function buildSeries(invoices: any[], now: Date) {
   const inRange = (a: number, b: number) => invoices.filter((i) => i.created >= a && i.created < b).reduce((s, i) => s + paid(i), 0);
   const p2 = (n: number) => String(n).padStart(2, "0");
 
-  const day: { d: string; v: number }[] = [];
+  type Pt = { d: string; v: number; start: number; end: number };
+  const day: Pt[] = [];
   for (let dd = 1; dd <= now.getDate(); dd++) {
     const a = new Date(now.getFullYear(), now.getMonth(), dd).getTime() / 1000;
-    day.push({ d: String(dd), v: Math.round(inRange(a, a + 86400)) });
+    day.push({ d: String(dd), v: Math.round(inRange(a, a + 86400)), start: a, end: a + 86400 });
   }
 
-  const week: { d: string; v: number }[] = [];
+  const week: Pt[] = [];
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(today); weekStart.setDate(today.getDate() - ((today.getDay() + 6) % 7));
   for (let i = 11; i >= 0; i--) {
     const ws = new Date(weekStart); ws.setDate(weekStart.getDate() - i * 7);
     const a = ws.getTime() / 1000;
-    week.push({ d: `${p2(ws.getDate())}.${p2(ws.getMonth() + 1)}.`, v: Math.round(inRange(a, a + 7 * 86400)) });
+    week.push({ d: `${p2(ws.getDate())}.${p2(ws.getMonth() + 1)}.`, v: Math.round(inRange(a, a + 7 * 86400)), start: a, end: a + 7 * 86400 });
   }
 
-  const month: { d: string; v: number }[] = [];
+  const month: Pt[] = [];
   for (let i = 11; i >= 0; i--) {
     const m = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const a = m.getTime() / 1000;
     const b = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime() / 1000;
-    month.push({ d: MONTHS_DE[m.getMonth()], v: Math.round(inRange(a, b)) });
+    month.push({ d: MONTHS_DE[m.getMonth()], v: Math.round(inRange(a, b)), start: a, end: b });
   }
 
   return { day, week, month };
@@ -229,30 +235,36 @@ export function buildStripeDashboard(raw: {
   const rev = buildSeries(invoices, now);
 
   const payStatus = (s: string) => (s === "paid" ? "bezahlt" : s === "open" ? "offen" : "fehlgeschlagen");
-  const payments = invoices
-    .slice().sort((a, b) => (b.created || 0) - (a.created || 0)).slice(0, 8)
-    .map((inv) => {
-      const line = inv.lines?.data?.[0];
-      return {
-        name: inv.customer_name || inv.customer_email || "Kunde",
-        date: dmy(inv.created),
-        plan: line?.description || line?.price?.nickname || "Abo",
-        price: fmtAmount((line?.price?.unit_amount || inv.amount_paid || 0) / 100, inv.currency),
-        amount: Math.round((inv.amount_paid || 0)) / 100,
-        cur: (inv.currency || "eur").toUpperCase(),
-        status: payStatus(inv.status),
-      };
-    });
+  const toPayment = (inv: any): Payment => {
+    const line = inv.lines?.data?.[0];
+    return {
+      name: inv.customer_name || inv.customer_email || "Kunde",
+      date: dmy(inv.created),
+      plan: line?.description || line?.price?.nickname || "Abo",
+      price: fmtAmount((line?.price?.unit_amount || inv.amount_paid || 0) / 100, inv.currency),
+      amount: Math.round((inv.amount_paid || 0)) / 100,
+      cur: (inv.currency || "eur").toUpperCase(),
+      status: payStatus(inv.status),
+      created: inv.created || 0,
+    };
+  };
+  const sortedInv = invoices.slice().sort((a, b) => (b.created || 0) - (a.created || 0));
+  const payments = sortedInv.slice(0, 8).map(toPayment);
+  const paymentsAll = sortedInv.map(toPayment);
 
   const plans = [...planMap.values()].map((p) => ({ ...p, mrr: Math.round(p.mrr) })).sort((a, b) => b.count - a.count);
-  const newCustomersList = customers.slice(0, 30).map((c: any) => ({ name: c.name || c.email || "Kunde", email: c.email || "", date: dmy(c.created) }));
+  const monthCustomers = customers.filter((c: any) => (c.created || 0) >= monthStart);
+  const newCustomersList = monthCustomers.map((c: any) => ({ name: c.name || c.email || "Kunde", email: c.email || "", date: dmy(c.created) }));
+  const customersList = customers
+    .slice().sort((a: any, b: any) => (b.created || 0) - (a.created || 0))
+    .map((c: any) => ({ id: c.id || "", name: c.name || c.email || "—", email: c.email || "", created: c.created || 0, date: dmy(c.created) }));
   return {
     subs: {
       mrr: Math.round(mrr), arr: Math.round(mrr * 12), active: activeCount, trialing, overdue,
       monthRevenue: Math.round(monthRevenue), paidInvoices: monthInvoices.length,
-      newCustomers: customers.length, churned, reactivatable: overdue,
+      newCustomers: monthCustomers.length, churned, reactivatable: overdue,
     },
-    plans, rev, payments, overdueList, newCustomersList, churnList,
+    plans, rev, payments, paymentsAll, customersList, overdueList, newCustomersList, churnList,
   };
 }
 
@@ -264,7 +276,7 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   const [subs, invoices, customers] = await Promise.all([
     stripeList<any>(`subscriptions?status=all&limit=100&expand[]=data.customer`),
     stripeList<any>(`invoices?status=paid&created[gte]=${yearStart}&limit=100`, 10),
-    stripeList<any>(`customers?created[gte]=${monthStart}&limit=100`),
+    stripeList<any>(`customers?limit=100`, 5),
   ]);
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }

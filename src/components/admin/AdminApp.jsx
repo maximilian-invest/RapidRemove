@@ -4,8 +4,8 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData } from "@/lib/admin-api";
-import { ORDERS, CHECKS, SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates } from "@/lib/admin-api";
+import { SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Hauptanwendung (Dashboard, Bestellungen, E-Mail, Rechnungen) */
@@ -399,30 +399,43 @@ function EmailComposer({ data, onClose, toast }) {
   );
 }
 
-/* ---------- Templates ---------- */
-function Templates({ onUse }) {
+/* ---------- Templates (echte ops-Vorlagen + Vorschau) ---------- */
+function Templates() {
+  const [tpls, setTpls] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  React.useEffect(() => {
+    let alive = true;
+    (async () => {
+      try { const list = await fetchTemplates(); if (alive) setTpls(list || []); }
+      catch (e) { if (alive) setErr(e.message || "Fehler"); }
+    })();
+    return () => { alive = false; };
+  }, []);
+  const opsBase = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
   return (
     <div className="content">
       <div className="panel" style={{ background: "transparent", border: "none", boxShadow: "none" }}>
         <div className="panel-head" style={{ padding: "0 2px 18px", borderBottom: "none" }}>
           <h2>E-Mail-Vorlagen</h2>
-          <div className="ph-right"><button className="btn btn-pri btn-sm"><AI.plus /> Neue Vorlage</button></div>
+          <div className="ph-right muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{tpls ? tpls.length + " echte Vorlagen" : "lädt…"}</div>
         </div>
+        {err ? <div className="empty"><Icon.mail /><p>Vorlagen nicht ladbar: {err}</p></div> : null}
+        {tpls && !tpls.length && !err ? <div className="empty"><Icon.mail /><p>Keine Vorlagen gefunden.</p></div> : null}
         <div className="tpl-grid">
-          {TEMPLATES.map((t) => {
-            const I = Icon[t.icon] || AI[t.icon] || Icon.mail;
-            return (
-              <div className="tpl-card" key={t.id} onClick={() => onUse(t)}>
-                <div className="tc-top">
-                  <span className="tc-ic"><I size={19} /></span>
-                  <div><div className="tc-name">{t.name}</div><div className="tc-tag">{t.tag}</div></div>
-                </div>
-                <div className="tc-subj">{t.subject}</div>
-                <div className="tc-prev">{t.body}</div>
-                <div className="tc-foot"><Icon.edit /> Bearbeiten · <AI.send /> Verwenden</div>
+          {(tpls || []).map((t) => (
+            <div className="tpl-card" key={t.key}>
+              <div className="tc-top">
+                <span className="tc-ic"><Icon.mail size={19} /></span>
+                <div><div className="tc-name">{t.label}</div><div className="tc-tag">{t.group}</div></div>
               </div>
-            );
-          })}
+              <div className="tc-subj">{t.subject}</div>
+              <div className="tc-foot">
+                {opsBase
+                  ? <React.Fragment><a href={opsBase + "/preview/" + t.key} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}><Icon.eye /> Vorschau DE</a> · <a href={opsBase + "/preview/" + t.key + "?lang=en"} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>EN</a></React.Fragment>
+                  : <span>Vorschau (ops-URL fehlt)</span>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -478,28 +491,31 @@ function InvoiceView({ order, toast }) {
   );
 }
 
-/* ---------- Customers ---------- */
-function Customers({ orders, openOrder, query }) {
-  let list = orders;
-  if (query.trim()) { const q = query.toLowerCase(); list = list.filter((o) => (o.name + o.email + o.company).toLowerCase().includes(q)); }
+/* ---------- Customers (echte Stripe-Kunden) ---------- */
+function Customers({ customers, query }) {
+  let list = customers || [];
+  if (query.trim()) { const q = query.toLowerCase(); list = list.filter((c) => ((c.name || "") + (c.email || "")).toLowerCase().includes(q)); }
   return (
     <div className="content">
       <div className="panel">
-        <div className="panel-head"><h2>Kunden</h2><div className="ph-right muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{list.length} Einträge</div></div>
-        <table className="tbl">
-          <thead><tr><th>Kunde</th><th>Unternehmen</th><th>Land</th><th>Auftrag</th><th>Wert</th></tr></thead>
-          <tbody>
-            {list.map((o) => (
-              <tr key={o.id} onClick={() => openOrder(o)}>
-                <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 10 }}><span className="ca" style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--orange-100)", color: "var(--orange-800)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>{initials(o.name)}</span><div>{o.name}<div className="sub">{o.email}</div></div></div></td>
-                <td>{o.company}</td>
-                <td>{o.country}</td>
-                <td><span className="oid">{o.id}</span></td>
-                <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="panel-head"><h2>Kunden</h2><div className="ph-right muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{list.length} aus Stripe</div></div>
+        {list.length ? (
+          <table className="tbl">
+            <thead><tr><th>Kunde</th><th>E-Mail</th><th>Kunde seit</th><th>Stripe-ID</th></tr></thead>
+            <tbody>
+              {list.map((c) => (
+                <tr key={c.id || c.email}>
+                  <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 10 }}><span className="ca" style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--orange-100)", color: "var(--orange-800)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 13 }}>{initials(c.name || c.email || "?")}</span><div>{c.name || "—"}</div></div></td>
+                  <td>{c.email || "—"}</td>
+                  <td>{c.date || "—"}</td>
+                  <td><span className="oid" style={{ fontSize: 12 }}>{c.id}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="empty"><AI.users /><p>Keine Stripe-Kunden geladen — ist der STRIPE_SECRET_KEY gesetzt?</p></div>
+        )}
       </div>
     </div>
   );
@@ -879,9 +895,10 @@ function PayLinkModal({ order, onClose, toast }) {
 const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden", settings: "Einstellungen" };
 
 function AdminApp() {
-  const [orders, setOrders] = React.useState(ORDERS);
-  const [checks, setChecks] = React.useState(CHECKS);
+  const [orders, setOrders] = React.useState([]);
+  const [checks, setChecks] = React.useState([]);
   const [live, setLive] = React.useState(false);
+  const [stripeCustomers, setStripeCustomers] = React.useState([]);
   const [view, setView] = React.useState("dashboard");
   const [active, setActive] = React.useState(null); // order in drawer
   const [compose, setCompose] = React.useState(null); // {order, template}
@@ -899,11 +916,12 @@ function AdminApp() {
     (async () => {
       try {
         const data = await fetchAdminData();
-        if (!alive || !data || !data.db) return; // kein Backend/keine DB → Demo-Daten behalten
-        setOrders(data.orders);
-        setChecks(data.checks);
-        setLive(true);
-      } catch (e) { /* Fehler → Demo-Daten behalten */ }
+        if (alive && data) { setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db); }
+      } catch (e) { /* ohne Backend bleibt es leer — keine Demo-Daten */ }
+      try {
+        const s = await fetchStripe();
+        if (alive && s && s.connected) setStripeCustomers(s.customersList || []);
+      } catch (e) { /* Stripe optional */ }
     })();
     return () => { alive = false; };
   }, []);
@@ -930,8 +948,8 @@ function AdminApp() {
   else if (view === "dashboard") body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
-  else if (view === "templates") body = <Templates onUse={(t) => setCompose({ order: orders[0], template: t })} />;
-  else if (view === "customers") body = <Customers orders={orders} openOrder={openDetail} query={query} />;
+  else if (view === "templates") body = <Templates />;
+  else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else body = <Settings />;
 
   return (

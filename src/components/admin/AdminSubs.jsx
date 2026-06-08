@@ -149,6 +149,17 @@ function SubsDetail({ detail, plans, payments, live, onClose }) {
         <tbody>{payments.map((p, i) => (<tr key={i}><td>{p.name}</td><td>{p.date}</td><td>{p.plan}</td><td>{fmt(p.amount, p.cur)}</td><td>{p.status}</td></tr>))}</tbody>
       </table>
     ) : <div style={{ padding: 10, color: "var(--fg-muted)", fontWeight: 600 }}>Keine Zahlungen im Zeitraum.</div>;
+  } else if (k === "bucket") {
+    const all = (live && live.paymentsAll) || [];
+    const rows = detail.start != null ? all.filter((p) => p.created >= detail.start && p.created < detail.end) : [];
+    const sum = rows.reduce((acc, p) => acc + (p.amount || 0), 0);
+    inner = rows.length ? (
+      <table className="tbl" style={{ width: "100%" }}>
+        <thead><tr><th>Kunde</th><th>Datum</th><th>Plan</th><th>Betrag</th><th>Status</th></tr></thead>
+        <tbody>{rows.map((p, i) => (<tr key={i}><td>{p.name}</td><td>{p.date}</td><td>{p.plan}</td><td>{fmt(p.amount, p.cur)}</td><td>{p.status}</td></tr>))}</tbody>
+        <tfoot><tr style={{ fontWeight: 800 }}><td colSpan={3}>Summe ({rows.length})</td><td>{fmt(Math.round(sum), "EUR")}</td><td></td></tr></tfoot>
+      </table>
+    ) : <div style={{ padding: 10, color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, lineHeight: 1.5 }}>Keine echten Zahlungen in diesem Zeitraum{live ? "" : " (nur mit Live-Daten aus Stripe)"}.</div>;
   } else {
     const rows = (live && (k === "overdue" ? live.overdueList : k === "newCustomers" ? live.newCustomersList : live.churnList)) || [];
     if (!rows.length) {
@@ -228,7 +239,7 @@ function SubsDashboard({ toast }) {
           <div className="rev-chart">
             <div className="rev-avg" style={{ bottom: (maxDay ? avgDay / maxDay * 100 : 0) + "%" }}><span className="rev-avg-lbl">Ø {eur(Math.round(avgDay))}</span></div>
             {series.map((d, i) => (
-              <div className="rev-col" key={i}>
+              <div className="rev-col" key={i} style={{ cursor: "pointer" }} onClick={() => setDetail({ kind: "bucket", title: "Zahlungen · " + d.d, start: d.start, end: d.end })}>
                 <div className="rev-bar" style={{ height: Math.max(2, Math.round(d.v / maxDay * 100)) + "%", animationDelay: 0.12 + i * 0.05 + "s" }}>
                   <span className="rev-val">{eur(d.v)}</span>
                 </div>

@@ -241,6 +241,19 @@ app.post("/admin/stripe", async (req, reply) => {
   }
 });
 
+// Admin-Dashboard: echte E-Mail-Vorlagen (Liste + Betreff) für die Vorlagen-Ansicht.
+// Die Vorschau läuft über den bestehenden öffentlichen /preview/:key-Endpunkt.
+app.post("/admin/templates", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const templates = Object.entries(TEMPLATES).map(([key, t]) => {
+    let subject = "";
+    try { subject = (t.subject as (p: any) => string)(t.sample as any); } catch { /* Betreff optional */ }
+    return { key, label: t.label, group: t.group, subject };
+  });
+  return { ok: true, templates };
+});
+
 const port = Number(process.env.PORT) || 3000;
 async function start() {
   try { await initDb(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
