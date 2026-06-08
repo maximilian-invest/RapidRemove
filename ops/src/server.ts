@@ -8,7 +8,8 @@ import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents } from "./db";
-import { hasSecretKey, getStripeMetrics, createPaymentLink } from "./integrations/stripe";
+import { hasSecretKey, getStripeMetrics, matchPaymentLink } from "./integrations/stripe";
+import { payLinkFor } from "./paymentLinks";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
@@ -271,30 +272,42 @@ app.post("/admin/templates", async (req, reply) => {
 app.post("/admin/paylink", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
-  if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  const amount = Number(b.amount) || 0;
-  if (amount <= 0) return reply.code(400).send({ ok: false, error: "invalid amount" });
+  const service = clip(b.service, 40);
+  const protection = clip(b.protection, 20) || "none";
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
-  const name = clip(b.name, 120);
+  // KEIN Erstellen in Stripe. 1) optionaler manueller Override, 2) sonst passenden BESTEHENDEN Link auslesen.
+  let url = payLinkFor(service, protection, currency);
+  let available: string[] = [];
+  if (!url) {
+    if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+    const serviceAmount = Number(b.serviceAmount) || 0;
+    const protAmount = Number(b.protAmount) || 0;
+    const protType = clip(b.protType, 20);
+    const items: { amount: number; interval: string }[] = [];
+    if (serviceAmount > 0) items.push({ amount: Math.round(serviceAmount * 100), interval: "once" });
+    if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "monthly" || protType === "monitor" ? "month" : "once" });
+    try { const m = await matchPaymentLink(items); url = m.url; available = m.available; }
+    catch (e) { app.log.error({ err: e }, "Payment-Link-Suche fehlgeschlagen"); }
+  }
+  if (!url) return reply.code(400).send({ ok: false, error: `Kein passender Stripe-Zahlungslink gefunden (${service}|${protection}|${currency}).`, available });
   const orderId = clip(b.orderId, 40);
-  const desc = (clip(b.description, 120) || "RapidRemove") + (orderId ? ` (${orderId})` : "");
+  const total = Number(b.total) || 0;
   try {
-    const url = await createPaymentLink({ amountCents: Math.round(amount * 100), currency, name: desc });
     const tplKey = clip(b.template, 40) || "zahlungslink";
     const t = TEMPLATES[tplKey] || TEMPLATES["zahlungslink"];
     const money = currency === "usd"
-      ? `$ ${amount.toLocaleString("en-US")}`
-      : `${amount.toLocaleString("de-DE", { minimumFractionDigits: amount % 1 ? 2 : 0 })} €`;
+      ? `$ ${total.toLocaleString("en-US")}`
+      : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
     const props = { lang: "de", total: money, due: tplKey === "mahnung" ? "umgehend" : "sofort", payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
-    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${amount} ${currency.toUpperCase()} · an ${to}` });
+    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}|${protection} · an ${to}` });
     return { ok: true, url };
   } catch (e) {
-    app.log.error({ err: e }, "Zahlungslink fehlgeschlagen");
+    app.log.error({ err: e }, "Zahlungslink-Mail fehlgeschlagen");
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
 });
