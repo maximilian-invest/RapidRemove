@@ -21,6 +21,8 @@ const AGB_CONSENT = {
   da: { pre: "Jeg har læst og accepterer ", link: "privatlivspolitikken og vilkårene", post: ".", err: "Bekræft privatlivspolitikken." },
   no: { pre: "Jeg har lest og godtar ", link: "personvernerklæringen og vilkårene", post: ".", err: "Bekreft personvernerklæringen." },
 };
+// Deutsche AGB/Datenschutz lokal; alle anderen Sprachen → englische GTC.
+const GTC_EN = "https://onecdn.io/media/rapidremovegtc-7e48fe7f-35be-4849-861a-e10de91526fd.pdf";
 
 
 /* ---- plausible profile candidates from a typed business name ---- */
@@ -489,7 +491,7 @@ function Wizard({ initialName, onExit }) {
               style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
             <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
               {ag.pre}
-              <a href={asset("/rapidremove-agb-datenschutz.pdf")} target="_blank" rel="noopener noreferrer"
+              <a href={t.code === "de" ? asset("/rapidremove-agb-datenschutz.pdf") : GTC_EN} target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
                 onClick={(e) => e.stopPropagation()}>{ag.link}</a>
               {ag.post}

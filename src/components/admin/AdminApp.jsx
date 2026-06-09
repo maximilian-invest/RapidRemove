@@ -837,14 +837,18 @@ function SmsModal({ order, onClose, toast }) {
 /* ---------- Payment-link modal (Stripe — Betrag automatisch erkannt) ---------- */
 function PayLinkModal({ order, onClose, toast }) {
   const [prot, setProt] = React.useState("none");
-  React.useEffect(() => { if (order) setProt(order.protection || "none"); }, [order]);
+  const [svcKey, setSvcKey] = React.useState("remove");
+  React.useEffect(() => { if (order) { setProt(order.protection || "none"); setSvcKey(order.service === "reset" ? "reset" : "remove"); } }, [order]);
   if (!order) return <div className="modal-scrim"></div>;
+  const cur = order.country === "US" ? "usd" : "eur";
+  const SVC = { remove: { name: "Löschung", eur: 450, usd: 495 }, reset: { name: "Profil + Neustart", eur: 850, usd: 950 } };
   const PROT_PRICE = { none: 0, monthly: 24.9, monitor: 69.9, lifetime: 990 };
   const PROT_LABEL = { none: "Kein Schutz", monthly: "Monatlich", monitor: "Monitoring", lifetime: "Lebenslang" };
-  const svc = SERVICES[order.service];
+  const svc = SVC[svcKey];
+  const serviceAmount = svc[cur];
   const protAmount = PROT_PRICE[prot] || 0;
   const recurring = prot === "monthly" || prot === "monitor";
-  const total = (order.amount || 0) + protAmount;
+  const total = serviceAmount + protAmount;
   const isEn = (order.lang || "de") === "en";
   const protMailLabel = prot === "none" ? "" : ((isEn ? { monthly: "Monthly protection", monitor: "Protection + Monitoring", lifetime: "Lifetime protection" } : { monthly: "Monatlicher Schutz", monitor: "Schutz + Monitoring", lifetime: "Lebenslanger Schutz" })[prot] + " – " + money(protAmount, order.country) + (recurring ? (isEn ? "/mo." : "/Mon.") : ""));
   return (
@@ -858,8 +862,8 @@ function PayLinkModal({ order, onClose, toast }) {
         <div className="modal-body">
           <div style={{ background: "var(--neutral-50)", border: "1px solid var(--hairline)", borderRadius: "var(--r-md)", padding: "14px 16px", marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0" }}>
-              <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>{svc ? svc.name : order.service}</span>
-              <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{order.amount ? money(order.amount, order.country) : "—"}</span>
+              <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>{svc.name}</span>
+              <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{money(serviceAmount, order.country)}</span>
             </div>
             {prot !== "none" ? (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderTop: "1px solid var(--hairline)" }}>
@@ -869,7 +873,16 @@ function PayLinkModal({ order, onClose, toast }) {
             ) : null}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0 2px", borderTop: "1px solid var(--hairline)", marginTop: 4 }}>
               <span style={{ fontSize: 13, fontWeight: 800 }}>Gesamt</span>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: "var(--primary)" }}>{order.amount ? money(total, order.country) : "kostenlose Prüfung"}</span>
+              <span style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: "var(--primary)" }}>{money(total, order.country)}</span>
+            </div>
+          </div>
+          {/* Leistung wählen (Löschung / Reset) */}
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", display: "block", marginBottom: 7 }}>Leistung</label>
+            <div className="chips" style={{ flexWrap: "wrap" }}>
+              {["remove", "reset"].map((k) => (
+                <button key={k} className={"chipf" + (svcKey === k ? " on" : "")} onClick={() => setSvcKey(k)}>{SVC[k].name} · {money(SVC[k][cur], order.country)}</button>
+              ))}
             </div>
           </div>
           {/* Zahlungslink ändern: Schutz / Abo wählen */}
@@ -890,7 +903,7 @@ function PayLinkModal({ order, onClose, toast }) {
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: order.country === "US" ? "usd" : "eur", service: order.service, protection: prot, serviceAmount: order.amount || 0, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: protMailLabel, lang: order.lang || "de" }); onClose(); toast("Zahlungslink (" + PROT_LABEL[prot] + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: cur, service: svcKey, protection: prot, serviceAmount: serviceAmount, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: protMailLabel, lang: order.lang || "de" }); onClose(); toast("Zahlungslink (" + svc.name + (prot !== "none" ? " + " + PROT_LABEL[prot] : "") + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>
