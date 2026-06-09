@@ -87,7 +87,7 @@ export function AdminGate() {
       } else if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
         try {
           avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-          if (!avail) reason = "Auf diesem Gerät ist kein Face ID / Touch ID eingerichtet – bitte in den iPhone-Einstellungen aktivieren (oder Privat-Modus verlassen).";
+          if (!avail) reason = "Face ID hier nicht nutzbar. Bitte prüfen: iCloud-Schlüsselbund AN (Einstellungen → [Name] → iCloud → Passwörter & Schlüsselbund), in Safari öffnen (nicht Chrome), kein privater Tab.";
         } catch (e) { reason = "Face ID konnte nicht geprüft werden."; }
       } else {
         avail = true; // API vorhanden, aber Verfügbarkeitsprüfung fehlt → optimistisch erlauben
