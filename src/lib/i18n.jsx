@@ -255,7 +255,7 @@ const I18N = {
       s5: {
         eyebrow: "Checkout · Schritt 5",
         h: "Fast geschafft.",
-        sub: "Geben Sie nur das Nötigste ein. Belastet wird erst nach erfolgreicher Löschung.",
+        sub: "Bitte hinterlassen Sie die Daten für die Auftragserteilung. Nach Erfolg erhalten Sie einen Zahlungslink und eine Rechnung.",
         contact: "Kontakt", company: "Unternehmen",
         f: { name: "Ihr Name", email: "E-Mail", phone: "Telefon (optional)", company: "Firmenname", profileUrl: "Google-Profil-Link (falls vorhanden)" },
         payTitle: "Zahlungsart",

@@ -66,55 +66,17 @@ function Stepper({ step }) {
   );
 }
 
-/* ---- Stylized animated map ---- */
-function FauxMap({ phase, multi, selectedId, candidates, onPick }) {
-  const zoomed = phase === "found";
-  const PIN_SPOTS = [
-    { left: "50%", top: "46%" }, { left: "34%", top: "62%" }, { left: "68%", top: "34%" },
-    { left: "61%", top: "65%" }, { left: "39%", top: "33%" },
-  ];
-  return (
-    <div className="mapwrap">
-      <div className={"map-canvas" + (zoomed ? " zoomed" : "")}>
-        <div className="map-bg"></div>
-        <div className="map-blob park b1"></div>
-        <div className="map-blob water b2"></div>
-        <div className="map-blob park b3"></div>
-        <div className="map-road r1"></div>
-        <div className="map-road r2"></div>
-        {phase === "searching" && <React.Fragment>
-          <div className="map-grid-pulse run"></div>
-          <div className="map-scan run"></div>
-        </React.Fragment>}
-        {zoomed && candidates.map((c, i) => {
-          const isMain = c.id === selectedId || (!multi && c.primary);
-          if (!multi && !c.primary) return null;
-          return (
-            <div key={c.id} className={"map-pin drop" + (isMain ? "" : " alt")} style={{ ...PIN_SPOTS[i % PIN_SPOTS.length], animationDelay: `${i * 0.12}s` }} onClick={() => onPick && onPick(c.id)}>
-              <div className="pin-ring"></div>
-              <div className="pin-body"><Icon.mapPin /></div>
-              <div className="pin-shadow"></div>
-            </div>
-          );
-        })}
-      </div>
-      {phase === "searching"
-        ? <div className="map-badge"><span className="spin" style={{ width: 14, height: 14, border: "2px solid var(--orange-200)", borderTopColor: "var(--primary)", borderRadius: "50%", display: "inline-block", animation: "spin .7s linear infinite" }}></span> Google Maps</div>
-        : <div className="map-badge"><Icon.checkCircle /> Google Maps</div>}
-      <div className="map-attr">Map data · demo</div>
-    </div>
-  );
-}
+/* (Karte entfernt – Schritt „Ist das Ihr Profil" zeigt nur noch die Profilkarte) */
 
 /* ---- rating assessment (worse rating = more reputation-damaging) ---- */
 const ASSESS = {
-  de: { vbad: "sehr schlecht – stark rufschädigend", bad: "schlecht und rufschädigend", mixed: "durchwachsen – schadet dem Ruf", ok: "noch okay – Eintrag bleibt sichtbar" },
-  en: { vbad: "very poor – highly damaging", bad: "poor and reputation-damaging", mixed: "mixed – hurts your reputation", ok: "okay – but the listing stays visible" },
-  es: { vbad: "muy mala – muy da\u00f1ina", bad: "mala y da\u00f1ina para la reputaci\u00f3n", mixed: "irregular – da\u00f1a tu reputaci\u00f3n", ok: "aceptable – pero la ficha sigue visible" },
-  fr: { vbad: "tr\u00e8s mauvaise – tr\u00e8s pr\u00e9judiciable", bad: "mauvaise et pr\u00e9judiciable", mixed: "mitig\u00e9e – nuit \u00e0 votre r\u00e9putation", ok: "correcte – mais la fiche reste visible" },
-  it: { vbad: "pessima – molto dannosa", bad: "scarsa e dannosa per la reputazione", mixed: "altalenante – danneggia la reputazione", ok: "accettabile – ma la scheda resta visibile" },
-  nl: { vbad: "zeer slecht – zeer schadelijk", bad: "slecht en reputatieschadelijk", mixed: "wisselend – schaadt uw reputatie", ok: "ok\u00e9 – maar de vermelding blijft zichtbaar" },
-  pt: { vbad: "muito m\u00e1 – muito prejudicial", bad: "m\u00e1 e prejudicial \u00e0 reputa\u00e7\u00e3o", mixed: "irregular – prejudica a sua reputa\u00e7\u00e3o", ok: "aceit\u00e1vel – mas a ficha continua vis\u00edvel" },
+  de: { urgent: "Löschung dringend empfohlen", recommend: "Löschung empfohlen", possible: "Löschung möglich" },
+  en: { urgent: "Removal strongly recommended", recommend: "Removal recommended", possible: "Removal possible" },
+  es: { urgent: "Eliminación muy recomendable", recommend: "Eliminación recomendada", possible: "Eliminación posible" },
+  fr: { urgent: "Suppression fortement recommandée", recommend: "Suppression recommandée", possible: "Suppression possible" },
+  it: { urgent: "Rimozione fortemente consigliata", recommend: "Rimozione consigliata", possible: "Rimozione possibile" },
+  nl: { urgent: "Verwijdering sterk aanbevolen", recommend: "Verwijdering aanbevolen", possible: "Verwijdering mogelijk" },
+  pt: { urgent: "Remoção fortemente recomendada", recommend: "Remoção recomendada", possible: "Remoção possível" },
 };
 /* ---- protection nudge copy (protection is the default everyone keeps) ---- */
 const PROT_NUDGE = {
@@ -131,10 +93,9 @@ function ratingAssessment(ratingStr, lang) {
   const r = parseFloat(String(ratingStr).replace(",", ".")) || 0;
   const m = ASSESS[lang] || ASSESS.en;
   let key, tone;
-  if (r < 2.0) { key = "vbad"; tone = "bad"; }
-  else if (r < 3.0) { key = "bad"; tone = "bad"; }
-  else if (r < 3.8) { key = "mixed"; tone = "warn"; }
-  else { key = "ok"; tone = "warn"; }
+  if (r < 3.0) { key = "urgent"; tone = "bad"; }
+  else if (r < 4.2) { key = "recommend"; tone = "warn"; }
+  else { key = "possible"; tone = "ok"; }
   return { label: m[key], tone };
 }
 
@@ -155,7 +116,7 @@ function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) 
               <span className="rv">{c.rating}</span>
               <span className="rc">· {c.reviews} {reviewsLabel}</span>
             </div>
-            <div className={"rate-assess " + a.tone}><Icon.alert /> {a.label}</div>
+            <div className={"rate-assess " + a.tone}>{a.tone === "ok" ? <Icon.checkCircle /> : <Icon.alert />} {a.label}</div>
           </React.Fragment>
         )}
         {c.addr && <div className="profile-addr"><Icon.mapPin /> {c.addr}</div>}
@@ -310,7 +271,6 @@ function Wizard({ initialName, onExit }) {
               ? <React.Fragment><h1 className="wz-h" style={{ fontSize: 26 }}>{w.s2.multiH}</h1><p className="wz-sub" style={{ marginBottom: 18 }}>{w.s2.multiSub}</p></React.Fragment>
               : <React.Fragment><h1 className="wz-h" style={{ fontSize: 26 }}>{w.s2.h}</h1><p className="wz-sub" style={{ marginBottom: 18 }}>{w.s2.sub}</p></React.Fragment>)
         }
-        <FauxMap phase={phase} multi={multi} selectedId={selectedId} candidates={candidates} onPick={setSelectedId} />
         {phase === "found" && (
           <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
             {(multi ? candidates : candidates.filter((c) => c.primary)).map((c) => (
@@ -343,13 +303,12 @@ function Wizard({ initialName, onExit }) {
             ))}
           </div>
         </div>
-        <p className="wz-sub" style={{ fontSize: 14, margin: "18px 0 8px" }}>{w.s3.reassure}</p>
-        <div className="wz-actions">
+        <div className="wz-actions" style={{ marginTop: 18 }}>
           <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
           <button className="btn btn-primary grow" onClick={() => go(3)}>{w.s3.button} <Icon.arrowRight size={18} /></button>
         </div>
         <div className="wz-trust-strip">
-          {w.trustStrip.slice(0, 4).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}
+          {w.trustStrip.slice(3).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}
         </div>
       </div>
     );
@@ -406,11 +365,11 @@ function Wizard({ initialName, onExit }) {
             </div>
           )}
           {showSkip && (
-            <div className="mini-dialog">
-              <Icon.alert />
-              <div>
+            <div className="prot-modal-scrim" onClick={() => { if (!protection) setProtection("monthly"); setShowSkip(false); }}>
+              <div className="prot-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="pm-ic"><Icon.alert /></div>
                 <b>{w.s4.skipTitle}</b>
-                <div style={{ marginTop: 4 }}>{w.s4.skipBody}</div>
+                <div className="pm-body">{w.s4.skipBody}</div>
                 <div className="md-actions">
                   <button className="keep" onClick={() => { if (!protection) setProtection("monthly"); setShowSkip(false); }}>{nudge.keep}</button>
                   <button className="skip" onClick={() => { setProtection(null); setShowSkip(false); }}>{nudge.remove}</button>
