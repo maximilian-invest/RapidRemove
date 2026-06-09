@@ -189,7 +189,7 @@ export async function runExpressSetup(opts: {
     return (await api<{ id: string }>("POST", "prices", params)).id;
   }
 
-  async function createPaymentLink(combo: string, prices: string[], hs: HouseStyle): Promise<string> {
+  async function createPaymentLink(combo: string, prices: string[], hs: HouseStyle, hasRecurring: boolean): Promise<string> {
     const params: Record<string, any> = {
       line_items: prices.map((price) => ({ price, quantity: 1 })),
       automatic_tax: { enabled: hs.automatic_tax },
@@ -198,7 +198,8 @@ export async function runExpressSetup(opts: {
     if (hs.tax_id_collection) params.tax_id_collection = { enabled: true };
     if (hs.billing_address_collection) params.billing_address_collection = hs.billing_address_collection;
     if (hs.allow_promotion_codes !== undefined) params.allow_promotion_codes = hs.allow_promotion_codes;
-    if (hs.customer_creation) params.customer_creation = hs.customer_creation;
+    // customer_creation ist bei Abo-Positionen nicht erlaubt (Stripe legt dort ohnehin immer einen Kunden an).
+    if (hs.customer_creation && !hasRecurring) params.customer_creation = hs.customer_creation;
     if (hs.locale) params.locale = hs.locale;
     if (hs.after_completion?.type) {
       params.after_completion = hs.after_completion.type === "redirect" && hs.after_completion.redirect?.url
@@ -225,7 +226,7 @@ export async function runExpressSetup(opts: {
         log(`+ ${combo}`);
         const servicePrice = await ensureExpressServicePrice(svc, currency, taxBehavior, productId);
         const protPrice = await ensureProtectionPrice(prot, currency);
-        links[combo] = await createPaymentLink(combo, protPrice ? [servicePrice, protPrice] : [servicePrice], houseStyle);
+        links[combo] = await createPaymentLink(combo, protPrice ? [servicePrice, protPrice] : [servicePrice], houseStyle, prot.interval === "month");
         created++;
       }
     }
