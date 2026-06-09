@@ -184,9 +184,9 @@ export async function setOrderForm(id: string, form: unknown): Promise<boolean> 
 }
 
 /** Minimal-Infos zu einer Bestellung (für die öffentliche Fragebogen-Seite). */
-export async function getOrderBasic(id: string): Promise<{ id: string; company: string | null; form: unknown } | null> {
+export async function getOrderBasic(id: string): Promise<{ id: string; company: string | null; lang: string | null; form: unknown } | null> {
   if (!pool || !id) return null;
-  const r = await pool.query(`SELECT id, company, form FROM orders WHERE id=$1`, [id]);
+  const r = await pool.query(`SELECT id, company, lang, form FROM orders WHERE id=$1`, [id]);
   return r.rows[0] || null;
 }
 

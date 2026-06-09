@@ -173,6 +173,11 @@ function Footer({ onStart, onBlog, onAbout }) {
     if (/check|Check|prüfen/.test(l)) return onStart;
     return undefined;
   };
+  // Legal-Spalte (überall die letzte, Reihenfolge: Impressum, Datenschutz, …) → echte Links in allen Sprachen.
+  const cols = t.footer.cols || [];
+  let legalIdx = cols.findIndex((c) => /recht|legal|légal|legale|juridi|法|特定商/i.test(c.h || ""));
+  if (legalIdx < 0) legalIdx = cols.length - 1;
+  const LEGAL = ["https://rapid-remove.com/impressum", "https://rapid-remove.com/datenschutzerklaerung"];
   return (
     <footer className="footer">
       <div className="container">
@@ -182,12 +187,15 @@ function Footer({ onStart, onBlog, onAbout }) {
             <p>{t.footer.tagline}</p>
             <div className="addr">{t.footer.addr}</div>
           </div>
-          {t.footer.cols.map((c, i) => (
+          {cols.map((c, i) => (
             <div className="foot-col" key={i}>
               <h4>{c.h}</h4>
-              {c.links.map((l, j) => (
-                <a key={j} onClick={linkAction(l)}>{l}</a>
-              ))}
+              {c.links.map((l, j) => {
+                const href = i === legalIdx && j < 2 ? LEGAL[j] : null;
+                return href
+                  ? <a key={j} href={href} target="_blank" rel="noopener noreferrer">{l}</a>
+                  : <a key={j} onClick={linkAction(l)}>{l}</a>;
+              })}
             </div>
           ))}
         </div>

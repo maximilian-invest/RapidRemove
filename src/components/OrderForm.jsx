@@ -6,11 +6,19 @@ import { submitOrderForm } from "@/lib/order";
 const TXT = {
   de: { eyebrow: "Optional · hilft uns", title: "Kurzer Fragebogen", sub: "Hilft uns, Ihre Löschung schneller zu bearbeiten. Freiwillig – Sie können es überspringen.", ja: "Ja", nein: "Nein", submit: "Antworten senden", sending: "Senden…", skip: "Kein Muss – Sie können diese Seite auch einfach schließen.", doneT: "Vielen Dank!", doneS: "Ihre Antworten wurden gespeichert – das hilft uns sehr.", errMsg: "Konnte nicht gespeichert werden. Bitte erneut versuchen." },
   en: { eyebrow: "Optional · helps us", title: "Quick questionnaire", sub: "Helps us process your removal faster. Optional – you can skip it.", ja: "Yes", nein: "No", submit: "Send answers", sending: "Sending…", skip: "No obligation – you can simply close this page.", doneT: "Thank you!", doneS: "Your answers have been saved – this helps us a lot.", errMsg: "Could not be saved. Please try again." },
+  es: { eyebrow: "Opcional · nos ayuda", title: "Breve cuestionario", sub: "Nos ayuda a procesar su eliminación más rápido. Opcional – puede omitirlo.", ja: "Sí", nein: "No", submit: "Enviar respuestas", sending: "Enviando…", skip: "Sin compromiso – puede simplemente cerrar esta página.", doneT: "¡Muchas gracias!", doneS: "Sus respuestas se han guardado – nos ayuda mucho.", errMsg: "No se pudo guardar. Inténtelo de nuevo." },
+  fr: { eyebrow: "Facultatif · nous aide", title: "Court questionnaire", sub: "Nous aide à traiter votre suppression plus vite. Facultatif – vous pouvez l'ignorer.", ja: "Oui", nein: "Non", submit: "Envoyer les réponses", sending: "Envoi…", skip: "Sans obligation – vous pouvez simplement fermer cette page.", doneT: "Merci beaucoup !", doneS: "Vos réponses ont été enregistrées – cela nous aide beaucoup.", errMsg: "Échec de l'enregistrement. Veuillez réessayer." },
+  it: { eyebrow: "Facoltativo · ci aiuta", title: "Breve questionario", sub: "Ci aiuta a gestire più velocemente la tua rimozione. Facoltativo – puoi saltarlo.", ja: "Sì", nein: "No", submit: "Invia risposte", sending: "Invio…", skip: "Nessun obbligo – puoi semplicemente chiudere questa pagina.", doneT: "Grazie mille!", doneS: "Le tue risposte sono state salvate – ci aiuta molto.", errMsg: "Impossibile salvare. Riprova." },
+  nl: { eyebrow: "Optioneel · helpt ons", title: "Korte vragenlijst", sub: "Helpt ons uw verwijdering sneller te verwerken. Vrijwillig – u kunt het overslaan.", ja: "Ja", nein: "Nee", submit: "Antwoorden versturen", sending: "Versturen…", skip: "Geen verplichting – u kunt deze pagina ook gewoon sluiten.", doneT: "Hartelijk dank!", doneS: "Uw antwoorden zijn opgeslagen – dat helpt ons enorm.", errMsg: "Kon niet worden opgeslagen. Probeer het opnieuw." },
+  pt: { eyebrow: "Opcional · ajuda-nos", title: "Breve questionário", sub: "Ajuda-nos a processar a sua remoção mais rápido. Opcional – pode ignorar.", ja: "Sim", nein: "Não", submit: "Enviar respostas", sending: "A enviar…", skip: "Sem obrigação – pode simplesmente fechar esta página.", doneT: "Muito obrigado!", doneS: "As suas respostas foram guardadas – ajuda-nos muito.", errMsg: "Não foi possível guardar. Tente novamente." },
+  ja: { eyebrow: "任意 · 助かります", title: "簡単なアンケート", sub: "削除をより早く進めるのに役立ちます。任意です – スキップできます。", ja: "はい", nein: "いいえ", submit: "回答を送信", sending: "送信中…", skip: "義務ではありません – このページを閉じても構いません。", doneT: "ありがとうございます！", doneS: "回答を保存しました。大変助かります。", errMsg: "保存できませんでした。もう一度お試しください。" },
+  sv: { eyebrow: "Valfritt · hjälper oss", title: "Kort frågeformulär", sub: "Hjälper oss att hantera din borttagning snabbare. Frivilligt – du kan hoppa över.", ja: "Ja", nein: "Nej", submit: "Skicka svar", sending: "Skickar…", skip: "Inget krav – du kan helt enkelt stänga sidan.", doneT: "Tack så mycket!", doneS: "Dina svar har sparats – det hjälper oss mycket.", errMsg: "Kunde inte sparas. Försök igen." },
+  da: { eyebrow: "Valgfrit · hjælper os", title: "Kort spørgeskema", sub: "Hjælper os med at behandle din sletning hurtigere. Frivilligt – du kan springe over.", ja: "Ja", nein: "Nej", submit: "Send svar", sending: "Sender…", skip: "Ingen forpligtelse – du kan blot lukke denne side.", doneT: "Mange tak!", doneS: "Dine svar er gemt – det hjælper os meget.", errMsg: "Kunne ikke gemmes. Prøv igen." },
+  no: { eyebrow: "Valgfritt · hjelper oss", title: "Kort spørreskjema", sub: "Hjelper oss å behandle slettingen din raskere. Frivillig – du kan hoppe over.", ja: "Ja", nein: "Nei", submit: "Send svar", sending: "Sender…", skip: "Ingen forpliktelse – du kan bare lukke denne siden.", doneT: "Tusen takk!", doneS: "Svarene dine er lagret – det hjelper oss mye.", errMsg: "Kunne ikke lagres. Prøv igjen." },
 };
 
 export default function OrderForm({ orderId, lang = "de", initial = null, onDone }) {
-  const tx = TXT[lang] || TXT.de;
-  const isEn = lang === "en";
+  const tx = TXT[lang] || TXT.en || TXT.de;
   const [ans, setAns] = React.useState(() => {
     const o = {};
     FORM_QUESTIONS.forEach((q) => { o[q.key] = (initial && (initial[q.key] === "ja" || initial[q.key] === "nein")) ? initial[q.key] : null; });
@@ -52,7 +60,7 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
           <div key={q.key} style={S.row}>
             <div style={{ display: "flex", gap: 10, flex: "1 1 220px", minWidth: 0, alignItems: "flex-start" }}>
               <span style={S.num}>{i + 1}</span>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg, #1c1916)", lineHeight: 1.4 }}>{isEn ? q.en : q.de}</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg, #1c1916)", lineHeight: 1.4 }}>{q.t[lang] || q.t.en || q.t.de}</span>
             </div>
             <div style={{ display: "flex", gap: 6, flex: "none" }}>
               {[["ja", tx.ja], ["nein", tx.nein]].map(([v, lab]) => (

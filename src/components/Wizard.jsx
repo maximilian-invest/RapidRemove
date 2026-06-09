@@ -524,7 +524,7 @@ function Wizard({ initialName, onExit }) {
         </div>
 
         <div style={{ marginTop: 24 }}>
-          <OrderForm orderId={orderId} lang={t.code === "de" ? "de" : "en"} />
+          <OrderForm orderId={orderId} lang={t.code} />
         </div>
 
         <div style={{ marginTop: 30 }}>

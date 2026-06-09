@@ -217,7 +217,7 @@ app.post("/order-form-info", async (req, reply) => {
   const row = await getOrderBasic(id);
   if (!row) return { ok: true, exists: false };
   const f = (row.form || {}) as Record<string, unknown>;
-  return { ok: true, exists: true, company: row.company || "", filled: !!f.filledAt, form: f };
+  return { ok: true, exists: true, company: row.company || "", lang: row.lang || "de", filled: !!f.filledAt, form: f };
 });
 
 // Profil-Prüfung aus dem Wizard protokollieren (Lead). Öffentlich, gedrosselt.
