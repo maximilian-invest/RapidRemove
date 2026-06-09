@@ -92,6 +92,28 @@ function Topbar({ title, onBurger, query, setQuery }) {
   );
 }
 
+/* ---------- Mobile bottom tab bar (Design „Admin Dashboard Mobile") ---------- */
+function MobileTabBar({ view, setView, counts }) {
+  const tabs = [
+    ["dashboard", AI.grid, "Übersicht"],
+    ["orders", AI.inbox, "Bestellungen", counts.new],
+    ["subs", AI.euro, "Umsatz"],
+    ["templates", Icon.mail, "Vorlagen"],
+    ["customers", AI.users, "Kunden"],
+  ];
+  return (
+    <nav className="m-tabbar">
+      {tabs.map(([id, I, label, badge]) => (
+        <button key={id} className={"m-tab" + (view === id ? " on" : "")} onClick={() => setView(id)}>
+          <I />
+          {badge ? <span className="tbadge">{badge}</span> : null}
+          <span className="lbl">{label}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
 /* ---------- Dashboard ---------- */
 function Dashboard({ orders, checks, openOrder, openCheck }) {
   const newCount = orders.filter((o) => o.status === "new").length;
@@ -1063,6 +1085,7 @@ function AdminApp() {
         <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} />
         {body}
       </div>
+      <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />
       <OrderDrawer order={active} onClose={() => setActive(null)} onStatus={setStatus} onOpenFull={openDetail}
         onCompose={(o, t) => setCompose({ order: o, template: t })} onPayLink={(o) => setPayLinkOrder(o)} toast={toast} />
       <EmailComposer data={compose} onClose={() => setCompose(null)} toast={toast} />

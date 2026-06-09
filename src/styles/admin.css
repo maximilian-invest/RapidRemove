@@ -256,7 +256,23 @@ button{font-family:inherit;}
   .tbl th:nth-child(4),.tbl td:nth-child(4){display:none;}
 }
 .burger{display:none;}
-@media(max-width:760px){.burger{display:flex;}}
+
+/* ── Mobile-Navigation: untere Tab-Leiste (Design „Admin Dashboard Mobile") ──
+   Ersetzt auf Mobil die Burger-/Drawer-Navigation. Nur Optik – die Tabs rufen
+   dasselbe setView wie die Desktop-Sidebar. */
+.m-tabbar{display:none;}
+@media(max-width:760px){
+  .side{display:none;}
+  .burger{display:none;}
+  .main{padding-bottom:calc(80px + env(safe-area-inset-bottom, 0px));}
+  .m-tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--hairline);padding:7px 6px calc(10px + env(safe-area-inset-bottom, 16px));}
+  .m-tab{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 2px;color:var(--fg-muted);position:relative;font-family:inherit;}
+  .m-tab:active{transform:scale(.93);}
+  .m-tab svg{width:24px;height:24px;}
+  .m-tab .lbl{font-size:10.5px;font-weight:800;letter-spacing:-.1px;}
+  .m-tab.on{color:var(--primary);}
+  .m-tab .tbadge{position:absolute;top:0;left:calc(50% + 8px);min-width:17px;height:17px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid #fff;}
+}
 
 /* ============================================================
    Customer Detail (full CRM record)
