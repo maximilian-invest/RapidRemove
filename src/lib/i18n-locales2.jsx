@@ -196,7 +196,7 @@ import { PRICES } from "@/lib/pricing";
     },
     wizard: {
       back: "Indietro", backHome: "Torna alla home", secure: "Cifrato e sicuro",
-      steps: ["Nome", "Ricerca", "Conferma", "Servizio", "Pagamento", "Fatto"],
+      steps: ["Nome", "Ricerca", "Conferma", "Servizio", "Protezione", "Pagamento", "Fatto"],
       stepCount: (a, b) => `Passo ${a} di ${b}`,
       s1: { eyebrow: "Analisi gratis · Passo 1", h: "Come si chiama la tua azienda?", sub: "Cercheremo su Google il tuo vero profilo aziendale. Senza impegno, gratis e in pochi secondi.", placeholder: "es. Studio Müller, Milano", button: "Trova il mio profilo", hint: "La tua azienda non compare? Inserisci il nome esatto. Se il profilo è impostato su «chiuso definitivamente», aggiungi anche l'indirizzo e prosegui.", assure: ["Senza registrazione", "Nessun accesso al tuo account", "100 % riservato"] },
       s2: { eyebrow: "Ricerca · Passo 2", searching: "Ricerca dei profili aziendali Google…", foundBadge: "Profilo trovato", h: "È questo il tuo profilo?", sub: "Abbiamo trovato il tuo profilo su Google Maps. Verifica che i dati corrispondano.", multiH: "Abbiamo trovato più risultati", multiSub: "Scegli il profilo corretto, sulla mappa o nell'elenco qui sotto.", button: "Analizza questo profilo", reviews: "recensioni" },
@@ -400,7 +400,7 @@ import { PRICES } from "@/lib/pricing";
     },
     wizard: {
       back: "Terug", backHome: "Terug naar home", secure: "Versleuteld en veilig",
-      steps: ["Naam", "Zoeken", "Bevestigen", "Service", "Betalen", "Klaar"],
+      steps: ["Naam", "Zoeken", "Bevestigen", "Service", "Bescherming", "Betalen", "Klaar"],
       stepCount: (a, b) => `Stap ${a} van ${b}`,
       s1: { eyebrow: "Gratis check · Stap 1", h: "Hoe heet uw bedrijf?", sub: "We zoeken op Google naar uw echte bedrijfsprofiel. Vrijblijvend, gratis en in seconden.", placeholder: "bijv. Müller Tandarts, Amsterdam", button: "Vind mijn profiel", hint: "Verschijnt uw bedrijf niet? Voer de exacte naam in. Staat uw profiel op 'permanent gesloten', voeg dan ook het adres toe en ga verder.", assure: ["Geen registratie", "Geen toegang tot uw account", "100 % vertrouwelijk"] },
       s2: { eyebrow: "Zoeken · Stap 2", searching: "Google-bedrijfsprofielen doorzoeken…", foundBadge: "Profiel gevonden", h: "Is dit uw profiel?", sub: "We hebben uw profiel op Google Maps gevonden. Controleer of de gegevens kloppen.", multiH: "We vonden meerdere resultaten", multiSub: "Kies het juiste profiel, op de kaart of in de lijst hieronder.", button: "Dit profiel checken", reviews: "reviews" },
@@ -604,7 +604,7 @@ import { PRICES } from "@/lib/pricing";
     },
     wizard: {
       back: "Voltar", backHome: "Voltar ao início", secure: "Encriptado e seguro",
-      steps: ["Nome", "Pesquisa", "Confirmar", "Serviço", "Pagamento", "Concluído"],
+      steps: ["Nome", "Pesquisa", "Confirmar", "Serviço", "Proteção", "Pagamento", "Concluído"],
       stepCount: (a, b) => `Passo ${a} de ${b}`,
       s1: { eyebrow: "Análise grátis · Passo 1", h: "Como se chama a sua empresa?", sub: "Vamos pesquisar no Google o seu perfil de empresa real. Sem compromisso, grátis e em segundos.", placeholder: "ex. Clínica Müller, Lisboa", button: "Encontrar o meu perfil", hint: "A sua empresa não aparece? Introduza o nome exato. Se o seu perfil estiver como «encerrado definitivamente», acrescente também a morada e continue.", assure: ["Sem registo", "Sem acesso à sua conta", "100 % confidencial"] },
       s2: { eyebrow: "Pesquisa · Passo 2", searching: "A pesquisar perfis de empresa do Google…", foundBadge: "Perfil encontrado", h: "Este é o seu perfil?", sub: "Encontrámos o seu perfil no Google Maps. Verifique se os dados coincidem.", multiH: "Encontrámos vários resultados", multiSub: "Escolha o perfil correto, no mapa ou na lista abaixo.", button: "Analisar este perfil", reviews: "avaliações" },

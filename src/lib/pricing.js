@@ -6,12 +6,12 @@
 export const PRICES = {
   de: {
     cur: "€", sym: "€", suffix: true, // "450 €"
-    deletion: "450", reset: "850",
+    deletion: "450", reset: "850", express: "149",
     protMonthly: "24,90", protMonitor: "69,90", protLifetime: "990",
   },
   en: {
     cur: "$", sym: "$", suffix: false, // "$495"
-    deletion: "495", reset: "950",
+    deletion: "495", reset: "950", express: "149",
     protMonthly: "24.90", protMonitor: "69.90", protLifetime: "990",
   },
 };

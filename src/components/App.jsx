@@ -73,7 +73,7 @@ export default function App({ initialLang = "de", magCards = [] }) {
             ? <OrmPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
             : route === "deindex"
               ? <DeindexPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
-              : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} />}
+              : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} />}
     </LangContext.Provider>
   );
 }
