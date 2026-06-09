@@ -10,6 +10,8 @@ export interface PaymentLinkProps {
   total: string;
   /** Text rechts neben "Schutz?/Protection?" – z. B. "Enthält monatlichen Schutz + Überwachung" */
   protectionLabel?: string;
+  /** Text rechts neben "Express?" – nur gesetzt, wenn Express gebucht wurde, z. B. "Beschleunigt (≤6 h) · +149 €" */
+  expressLabel?: string;
   /** Link für "(Upgrade?)" – optional */
   upgradeUrl?: string;
   /** Fälligkeit – z. B. "sofort", "innerhalb 7 Tagen" */
@@ -26,6 +28,7 @@ const T = {
     intro: "wir freuen uns, Ihnen mitteilen zu können, dass Ihr Google-Unternehmensprofil ",
     introBold: "erfolgreich gelöscht wurde.",
     total: "Gesamt",
+    express: "Express?",
     protection: "Schutz?",
     noProtection: "Kein Schutz gewählt",
     upgrade: "Upgrade?",
@@ -42,6 +45,7 @@ const T = {
     intro: "we are pleased to inform you that your Google Business Profile has been ",
     introBold: "successfully deleted.",
     total: "Total",
+    express: "Express?",
     protection: "Protection?",
     noProtection: "No protection selected",
     upgrade: "Upgrade?",
@@ -57,7 +61,7 @@ export function subject(p: PaymentLinkProps): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function PaymentLink({ lang = "de", total, protectionLabel, upgradeUrl, due, payUrl }: PaymentLinkProps) {
+export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl }: PaymentLinkProps) {
   const t = T[lang] || T.de;
   const label = { fontSize: 14, fontWeight: 700, color: brand.text, margin: 0 } as const;
   const val = { fontSize: 14, color: brand.text, margin: 0 } as const;
@@ -73,6 +77,12 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, upgra
       </Row>
       <Hr style={{ borderColor: brand.hr, margin: "4px 0 14px" }} />
 
+      {expressLabel ? (
+        <Row style={{ marginBottom: 8 }}>
+          <Column style={{ width: "42%", verticalAlign: "top" }}><Text style={label}>{t.express}</Text></Column>
+          <Column><Text style={val}>{expressLabel}</Text></Column>
+        </Row>
+      ) : null}
       <Row style={{ marginBottom: 8 }}>
         <Column style={{ width: "42%", verticalAlign: "top" }}><Text style={label}>{t.protection}</Text></Column>
         <Column>

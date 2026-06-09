@@ -16,8 +16,18 @@ export const PAYMENT_LINKS: Record<string, string> = {
   // ↓ hier die echten Stripe-Links eintragen (Schlüssel = service|protection|currency)
 };
 
-/** Liefert den hinterlegten Zahlungslink für ein Szenario – oder undefined. */
-export function payLinkFor(service: string, protection: string, currency: string): string | undefined {
-  const key = `${service}|${protection || "none"}|${(currency || "eur").toLowerCase()}`;
-  return PAYMENT_LINKS[key];
+/* Express-Bearbeitung (Aufpreis): EIGENE Links, da der Einmalbetrag höher ist.
+ * Schlüssel:  `${service}|express|${protection}|${currency}`
+ * Diese Tabelle füllt das Skript `setupExpressLinks.ts` (Ausgabe einfach hier einsetzen). */
+export const EXPRESS_PAYMENT_LINKS: Record<string, string> = {
+  // ↓ Ausgabe von `npx tsx src/setupExpressLinks.ts --apply` hier einsetzen
+};
+
+/** Liefert den hinterlegten Zahlungslink für ein Szenario – oder undefined.
+ *  Bei express=true wird die Express-Tabelle (höherer Einmalbetrag) verwendet. */
+export function payLinkFor(service: string, protection: string, currency: string, express = false): string | undefined {
+  const cur = (currency || "eur").toLowerCase();
+  const prot = protection || "none";
+  if (express) return EXPRESS_PAYMENT_LINKS[`${service}|express|${prot}|${cur}`];
+  return PAYMENT_LINKS[`${service}|${prot}|${cur}`];
 }

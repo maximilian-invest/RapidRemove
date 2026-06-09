@@ -332,6 +332,7 @@ app.post("/admin/paylink", async (req, reply) => {
   const service = clip(b.service, 40);
   const protection = clip(b.protection, 20) || "none";
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const express = b.express === true || b.express === "true" || b.express === 1 || b.express === "1";
   // KEIN Erstellen in Stripe. 0) direkt gewählter aktiver Link, 1) manueller Override, 2) Betrag-Match.
   const chosenUrl = clip(b.url, 300);
   let url: string | undefined;
@@ -342,7 +343,7 @@ app.post("/admin/paylink", async (req, reply) => {
     catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
     if (!url) return reply.code(400).send({ ok: false, error: "Unbekannter oder inaktiver Zahlungslink." });
   }
-  if (!url) url = payLinkFor(service, protection, currency);
+  if (!url) url = payLinkFor(service, protection, currency, express);
   if (!url) {
     if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
     const serviceAmount = Number(b.serviceAmount) || 0;
@@ -364,11 +365,11 @@ app.post("/admin/paylink", async (req, reply) => {
       ? `$ ${total.toLocaleString("en-US")}`
       : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
     const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
-    const props = { lang: tlang, total: money, due: tlang === "de" ? (tplKey === "mahnung" ? "umgehend" : "sofort") : (tplKey === "mahnung" ? "now" : "immediately"), payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined };
+    const props = { lang: tlang, total: money, due: tlang === "de" ? (tplKey === "mahnung" ? "umgehend" : "sofort") : (tplKey === "mahnung" ? "now" : "immediately"), payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
-    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}|${protection} · an ${to}` });
+    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}` });
     return { ok: true, url };
   } catch (e) {
     app.log.error({ err: e }, "Zahlungslink-Mail fehlgeschlagen");

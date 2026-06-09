@@ -50,7 +50,8 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: paymentSubject,
     sample: {
       lang: "de",
-      total: "519,90 € (netto)",
+      total: "668,90 € (netto)",
+      expressLabel: "Beschleunigt (≤6 h) · +149 €",
       protectionLabel: "Enthält monatlichen Schutz + Überwachung",
       upgradeUrl: "https://rapid-remove.com/",
       due: "sofort",

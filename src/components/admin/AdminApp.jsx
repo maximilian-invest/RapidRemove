@@ -119,11 +119,14 @@ async function sendOrderedPayLink(o, toast, onStatus) {
     const protectionLabel = o.protection
       ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : ""))
       : "";
+    const expressLabel = o.express
+      ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : ""))
+      : undefined;
     await sendPayLink({
       to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur",
       service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0,
       protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "",
-      total: tot, protectionLabel, lang: o.lang || "de",
+      total: tot, protectionLabel, express: !!o.express, expressLabel, lang: o.lang || "de",
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
@@ -1168,7 +1171,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount ? <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet ✓"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button> : null}
+              {o.amount ? <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet ✓"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
             <div style={{ marginTop: 14, borderTop: "1px solid var(--hairline)", paddingTop: 6 }}>
