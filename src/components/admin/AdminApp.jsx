@@ -836,45 +836,59 @@ function SmsModal({ order, onClose, toast }) {
 
 /* ---------- Payment-link modal (Stripe — Betrag automatisch erkannt) ---------- */
 function PayLinkModal({ order, onClose, toast }) {
+  const [prot, setProt] = React.useState("none");
+  React.useEffect(() => { if (order) setProt(order.protection || "none"); }, [order]);
   if (!order) return <div className="modal-scrim"></div>;
-  const link = "pay.rapid-remove.com/" + order.id.toLowerCase();
+  const PROT_PRICE = { none: 0, monthly: 24.9, monitor: 69.9, lifetime: 990 };
+  const PROT_LABEL = { none: "Kein Schutz", monthly: "Monatlich", monitor: "Monitoring", lifetime: "Lebenslang" };
   const svc = SERVICES[order.service];
-  const hasProt = order.protection && order.protAmount;
-  const total = order.amount + (hasProt ? order.protAmount : 0);
+  const protAmount = PROT_PRICE[prot] || 0;
+  const recurring = prot === "monthly" || prot === "monitor";
+  const total = (order.amount || 0) + protAmount;
   return (
     <div className="modal-scrim open" onClick={onClose}>
       <div className="modal" style={{ width: 480 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><AI.creditCard size={19} style={{ color: "var(--primary)" }} /></span>
-          <div><h3>Zahlungslink senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.id} · Stripe</div></div>
+          <div><h3>Zahlungslink senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.id} · bestehender Stripe-Link</div></div>
           <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
         </div>
         <div className="modal-body">
           <div style={{ background: "var(--neutral-50)", border: "1px solid var(--hairline)", borderRadius: "var(--r-md)", padding: "14px 16px", marginBottom: 14 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0" }}>
-              <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>{svc.name}</span>
+              <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>{svc ? svc.name : order.service}</span>
               <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{order.amount ? money(order.amount, order.country) : "—"}</span>
             </div>
-            {hasProt ? (
+            {prot !== "none" ? (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderTop: "1px solid var(--hairline)" }}>
-                <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>Reputations-Schutz</span>
-                <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{money(order.protAmount, order.country)}{order.protection !== "lifetime" ? " /Mon." : ""}</span>
+                <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>Schutz ({PROT_LABEL[prot]})</span>
+                <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{money(protAmount, order.country)}{recurring ? " /Mon." : ""}</span>
               </div>
             ) : null}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0 2px", borderTop: "1px solid var(--hairline)", marginTop: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 800 }}>Betrag (autom. erkannt)</span>
+              <span style={{ fontSize: 13, fontWeight: 800 }}>Gesamt</span>
               <span style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: "var(--primary)" }}>{order.amount ? money(total, order.country) : "kostenlose Prüfung"}</span>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 9, alignItems: "flex-start", background: "var(--orange-50)", borderRadius: "var(--r-md)", padding: "11px 13px", marginBottom: 14 }}>
-            <Icon.zap size={16} style={{ color: "var(--primary)", flexShrink: 0, marginTop: 1 }} />
-            <span style={{ fontSize: 12.5, color: "var(--fg-2)", fontWeight: 600, lineHeight: 1.5 }}>Stripe erstellt den Zahlungslink automatisch anhand der Bestellung. Der Betrag wird aus der gewählten Leistung erkannt — keine manuelle Eingabe nötig.</span>
+          {/* Zahlungslink ändern: Schutz / Abo wählen */}
+          <div style={{ marginBottom: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", display: "block", marginBottom: 7 }}>Zahlungslink anpassen — Schutz / Abo</label>
+            <div className="chips" style={{ flexWrap: "wrap" }}>
+              {["none", "monthly", "monitor", "lifetime"].map((k) => (
+                <button key={k} className={"chipf" + (prot === k ? " on" : "")} onClick={() => setProt(k)}>
+                  {PROT_LABEL[k]}{k !== "none" ? " · " + money(PROT_PRICE[k], order.country) + (k === "lifetime" ? "" : "/Mon.") : ""}
+                </button>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--fg-muted)", fontWeight: 600, marginTop: 9, lineHeight: 1.5 }}>
+              {recurring ? "Monatliches Abo — es wird der bestehende Stripe-Abo-Link verschickt." : prot === "lifetime" ? "Einmalig lebenslang — bestehender Einmal-Link." : "Nur Löschung, kein Schutz — bestehender Einmal-Link."}
+            </div>
           </div>
-          <div className="stripe-box"><span className="sb-logo">stripe</span><span className="sb-card" style={{ fontSize: 12, color: "var(--fg-2)" }}>{link}</span><span className="sb-status"><AI.copy style={{ width: 16, height: 16, cursor: "pointer", color: "var(--fg-muted)" }} onClick={() => toast("Link kopiert")} /></span></div>
         </div>
         <div className="modal-foot">
+          <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: order.country === "US" ? "usd" : "eur", service: order.service, protection: order.protection || "none", serviceAmount: order.amount || 0, protAmount: (order.protection && order.protAmount) ? order.protAmount : 0, protType: order.protection || "", total: total, protectionLabel: order.protection ? ((order.protection === "lifetime" ? "Lebenslanger Schutz" : order.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (order.protAmount ? " – " + money(order.protAmount, order.country) + (order.protection !== "lifetime" ? "/Mon." : "") : "")) : "" }); onClose(); toast("Zahlungslink an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: order.country === "US" ? "usd" : "eur", service: order.service, protection: prot, serviceAmount: order.amount || 0, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: prot !== "none" ? (PROT_LABEL[prot] + " – " + money(protAmount, order.country) + (recurring ? "/Mon." : "")) : "" }); onClose(); toast("Zahlungslink (" + PROT_LABEL[prot] + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>
