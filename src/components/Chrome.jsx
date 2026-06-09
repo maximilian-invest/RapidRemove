@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Script from "next/script";
 import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
@@ -222,14 +223,9 @@ function StickyCTA({ onStart }) {
   );
 }
 
-/* ---- WhatsApp float ---- */
+/* ---- Chat-Widget: Tidio (ersetzt den früheren WhatsApp-Float; eigenes Bubble rechts unten) ---- */
 function WhatsAppFloat() {
-  const { t } = useLang();
-  return (
-    <button className="wa-float" title={t.wa} aria-label={t.wa} onClick={() => window.open("https://wa.me/4300000000", "_blank")}>
-      <Icon.whatsapp />
-    </button>
-  );
+  return <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" />;
 }
 
 export { useReveal, CountUp, LangToggle, Nav, Footer, StickyCTA, WhatsAppFloat };
