@@ -612,6 +612,32 @@ function InvoiceModal({ order, onClose, onCompose, toast }) {
   );
 }
 
+/* ---------- Confirm-Dialog (im Backend-Design, ersetzt window.confirm) ---------- */
+function ConfirmDialog({ ask, onClose }) {
+  if (!ask) return null;
+  const danger = !!ask.danger;
+  return (
+    <div className="modal-scrim open" onClick={onClose}>
+      <div className="modal" style={{ width: 420 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: danger ? "rgba(220,38,38,.10)" : "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            {danger ? <Icon.ban size={18} style={{ color: "#dc2626" }} /> : <Icon.mail size={18} style={{ color: "var(--primary)" }} />}
+          </span>
+          <div><h3>{ask.title}</h3></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
+        </div>
+        <div className="modal-body">
+          <p style={{ fontSize: 14, color: "var(--fg-2)", fontWeight: 600, lineHeight: 1.55, margin: 0 }}>{ask.message}</p>
+        </div>
+        <div className="modal-foot">
+          <button className="btn btn-sec" style={{ marginLeft: "auto" }} onClick={onClose}>Abbrechen</button>
+          <button className={"btn " + (danger ? "btn-danger" : "btn-pri")} onClick={() => { onClose(); if (ask.onConfirm) ask.onConfirm(); }}>{ask.confirmLabel || "Bestätigen"}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, toast }) {
   const o = order;
@@ -631,10 +657,18 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     fetchTemplates().then((l) => { if (alive) setTpls(l || []); }).catch(() => {});
     return () => { alive = false; };
   }, []);
-  const sendReal = async (key, label) => {
-    if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return;
-    try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet ✓"); }
-    catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+  // Bestätigungs-Dialog im Backend-Design (kein natives window.confirm).
+  const [ask, setAsk] = React.useState(null);
+  const sendReal = (key, label) => {
+    setAsk({
+      title: "Mail senden",
+      message: label + "-Mail an " + o.name + " (" + o.email + ") senden?",
+      confirmLabel: "Senden",
+      onConfirm: async () => {
+        try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet ✓"); }
+        catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+      },
+    });
   };
   // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
   const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
@@ -643,6 +677,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
   return (
     <div className="content">
+      <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       <button className="cd-back" onClick={onBack}><Icon.arrowLeft /> Zurück zu Bestellungen</button>
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
@@ -708,7 +743,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               <div>
                 <div className="act-grp-l">Verwaltung</div>
                 <div className="act-btns">
-                  {o.status !== "storniert" ? <button className="btn btn-danger btn-sm" onClick={() => { if (window.confirm("Bestellung " + o.id + " wirklich stornieren?")) onStorno(o); }}><Icon.ban /> Bestellung stornieren</button> : <span className="badge-st st-refunded"><span className="d"></span>Storniert</span>}
+                  {o.status !== "storniert" ? <button className="btn btn-danger btn-sm" onClick={() => setAsk({ title: "Bestellung stornieren", message: "Bestellung " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Bestellung stornieren</button> : <span className="badge-st st-refunded"><span className="d"></span>Storniert</span>}
                 </div>
               </div>
             </div>
