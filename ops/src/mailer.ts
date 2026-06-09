@@ -35,6 +35,13 @@ async function token(): Promise<string> {
   return j.access_token;
 }
 
+export interface MailAttachment {
+  filename: string;
+  /** Roh-Bytes (Buffer) oder String – wird für Graph base64-kodiert. */
+  content: Buffer | string;
+  contentType?: string;
+}
+
 export interface SendArgs {
   to: string | string[];
   subject: string;
@@ -44,6 +51,7 @@ export interface SendArgs {
   replyTo?: string;
   cc?: string[];
   bcc?: string[];
+  attachments?: MailAttachment[];
 }
 
 const addr = (e: string) => ({ emailAddress: { address: e } });
@@ -60,6 +68,14 @@ export async function sendMail(args: SendArgs): Promise<void> {
   if (args.bcc?.length) message.bccRecipients = args.bcc.map(addr);
   const reply = args.replyTo || process.env.MAIL_REPLY_TO;
   if (reply) message.replyTo = [addr(reply)];
+  if (args.attachments?.length) {
+    message.attachments = args.attachments.map((a) => ({
+      "@odata.type": "#microsoft.graph.fileAttachment",
+      name: a.filename,
+      contentType: a.contentType || "application/octet-stream",
+      contentBytes: (Buffer.isBuffer(a.content) ? a.content : Buffer.from(a.content)).toString("base64"),
+    }));
+  }
 
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(from)}/sendMail`,

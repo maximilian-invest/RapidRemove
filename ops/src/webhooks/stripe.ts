@@ -2,7 +2,9 @@
  * Stripe-Webhook → E-Mails (+ später sevDesk/SMS/Affiliate).
  * Logik 1:1 aus den make.com-Blueprints abgeleitet:
  *
- *   invoice.paid                  → Rechnung/Gutschein-Mail (DE bei EUR, sonst EN)
+ *   invoice.paid                  → Rechnungs-Mail mit PDF-Anhang + Rechnungslink
+ *                                     (DE bei EUR, sonst EN); BCC an Trustpilot nur
+ *                                     bei billing_reason = "manual" (Review-Einladung)
  *                                   + Upsell „Hinweis zum Schutzmodell", falls die
  *                                     Zahlung eine Einmal-Löschung ohne Abo war
  *                                     (keine Abo-Zeile & Betrag < 990)
@@ -18,7 +20,7 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { TEMPLATES } from "../emails/index.js";
-import { sendMail } from "../mailer.js";
+import { sendMail, type MailAttachment } from "../mailer.js";
 import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
@@ -31,14 +33,15 @@ async function sendTemplate(
   lang: Lang,
   to: string | undefined | null,
   extra: Record<string, unknown> = {},
+  opts: { bcc?: string[]; attachments?: MailAttachment[] } = {},
 ): Promise<void> {
   const t = TEMPLATES[key];
   if (!t) { log.error(`Webhook: unbekanntes Template "${key}"`); return; }
   if (!to) { log.warn(`Webhook: kein Empfänger für "${key}" – übersprungen`); return; }
   const props = { ...t.sample, lang, ...extra };
   const html = await render(React.createElement(t.component, props));
-  await sendMail({ to, subject: t.subject(props), html });
-  log.info(`Webhook: "${t.label}" (${lang}) an ${to} gesendet`);
+  await sendMail({ to, subject: t.subject(props), html, bcc: opts.bcc, attachments: opts.attachments });
+  log.info(`Webhook: "${t.label}" (${lang}) an ${to} gesendet${opts.bcc?.length ? " (+BCC)" : ""}`);
 }
 
 /** Customer-E-Mail + Sprache nachladen (für Subscription-Events). */
@@ -60,6 +63,45 @@ async function customerLangAndEmail(
     }
   }
   return { to: obj?.customer_email ?? undefined, lang: "de" };
+}
+
+/** Trustpilot-Einladungs-BCC (Review-Invite-Alias) – wie in den make.com-Mails. */
+const TRUSTPILOT_BCC = "rapid-remove.com+371c063a01@invite.trustpilot.com";
+
+/** Lädt eine Datei (z. B. das Rechnungs-PDF) als Buffer; wirft bei HTTP-Fehler. */
+async function fetchBuffer(url: string): Promise<Buffer> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`GET ${url} → ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+/**
+ * Rechnungs-/Zahlungsbestätigungs-Mail wie make.com (Module 32/34/49/50):
+ *   – immer mit angehängtem Rechnungs-PDF ({number}.pdf) und dem
+ *     hosted_invoice_url als Download-Link in der Mail,
+ *   – BCC an Trustpilot NUR bei billing_reason = "manual" (Review-Einladung),
+ *   – Sprache nach Rechnungswährung (EUR → de, sonst → en).
+ * Das PDF wird best-effort geladen (make.com „Ignore" auf dem Datei-Download):
+ *   schlägt der Download fehl, geht die Mail trotzdem – nur ohne Anhang.
+ */
+async function sendInvoiceMail(
+  log: FastifyInstance["log"], obj: any, lang: Lang,
+): Promise<void> {
+  let attachments: MailAttachment[] | undefined;
+  if (obj?.invoice_pdf) {
+    try {
+      const pdf = await fetchBuffer(obj.invoice_pdf);
+      attachments = [{ filename: `${obj?.number || "Rechnung"}.pdf`, content: pdf, contentType: "application/pdf" }];
+    } catch (e) {
+      log.error(`Webhook: Rechnungs-PDF nicht ladbar (Mail ohne Anhang): ${(e as Error).message}`);
+    }
+  }
+  const bcc = obj?.billing_reason === "manual" ? [TRUSTPILOT_BCC] : undefined;
+  await sendTemplate(
+    log, "zahlungsbestaetigung", lang, obj?.customer_email,
+    { invoiceUrl: obj?.hosted_invoice_url || undefined },
+    { bcc, attachments },
+  );
 }
 
 /** make.com: Upsell nur bei Gesamtbetrag < 990,00 (in Minor Units → < 99000). */
@@ -98,7 +140,7 @@ async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
     case "invoice.paid":
     case "invoice.payment_succeeded": {
       const lang: Lang = (obj.currency || "").toLowerCase() === "eur" ? "de" : "en";
-      await sendTemplate(app.log, "zahlungsbestaetigung", lang, obj.customer_email);
+      await sendInvoiceMail(app.log, obj, lang);
       await maybeSendSchutzhinweis(app.log, obj, lang);
       // TODO M3: sevDesk-Beleg (createContact → uploadVoucher → createVoucher)
       return;
