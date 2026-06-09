@@ -48,6 +48,7 @@ function mapOrder(r) {
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     form: r.form || null,
+    addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "",
   };
 }
 function mapCheck(r) {

@@ -68,6 +68,23 @@ function OrderRow({ o, onClick }) {
     </div>
   );
 }
+/* Profilname im Detail anklickbar → Google Maps bzw. Google-Suche (Name + Ort).
+   Adresse/Maps-URL stammen aus der Bestellung; fehlen sie (Altbestand), wird nach
+   dem Namen bzw. der getippten Eingabe gesucht. */
+function ProfileLinks({ o }) {
+  const base = (o.profile || o.company || "").trim();
+  if (!base) return "—";
+  const q = o.addr ? base + " " + o.addr : (o.company && o.company !== o.profile ? o.company : base);
+  const mapsHref = o.mapsUri || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q));
+  const searchHref = "https://www.google.com/search?q=" + encodeURIComponent(q);
+  return (
+    <span className="prof-links">
+      <span className="pn">{base}</span>
+      <a href={mapsHref} target="_blank" rel="noopener noreferrer" title="In Google Maps öffnen"><Icon.mapPin size={13} /> Maps</a>
+      <a href={searchHref} target="_blank" rel="noopener noreferrer" title="In Google-Suche öffnen"><Icon.search size={13} /> Google</a>
+    </span>
+  );
+}
 function fillVars(text, o) {
   const inv = "RE-" + o.id.replace("RR-", "");
   return text
@@ -468,7 +485,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
           {/* profile / service */}
           <div className="dsec">
             <h3><Icon.building /> Profil & Leistung</h3>
-            <div className="drow"><span className="dl">Google-Profil</span><span className="dv">{o.profile}</span></div>
+            <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
             <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
             <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
             {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
@@ -918,7 +935,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 
         <div className="m-dsec">
           <h3><Icon.building /> Profil &amp; Leistung</h3>
-          <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv">{o.profile}</span></div>
+          <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
           <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
           {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
@@ -1095,7 +1112,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               )}
               {tab === "order" && (
                 <div>
-                  <div className="drow"><span className="dl">Google-Profil</span><span className="dv">{o.profile}</span></div>
+                  <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
                   <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                   <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
                   {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}

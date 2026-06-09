@@ -275,6 +275,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
       email: contact.email, name: contact.name, phone: contact.phone,
       company: contact.company, service, protection: protection || "",
       profile: selected ? selected.name : "", orderId, lang,
+      addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
       category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
       reviews: selected ? selected.reviews : 0,
       amount: num(servicePrice), protAmount: protPriceVal ? num(protPriceVal) : 0,
