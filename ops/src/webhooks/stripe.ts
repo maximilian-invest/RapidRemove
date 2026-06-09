@@ -53,6 +53,7 @@ async function sendTemplate(
     type: "mail",
     title: `${t.label} (${lang}) gesendet`,
     detail: `an ${to}${opts.bcc?.length ? " (+BCC)" : ""} · ${mailTrace(res)}`,
+    auto: true, // vom System (Stripe-Webhook) ausgelöst → „automatisch versendet"
   });
 }
 

@@ -647,9 +647,9 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const [events, setEvents] = React.useState(null);
   React.useEffect(() => {
     let alive = true;
-    fetchEvents(o.id).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
+    fetchEvents(o.id, o.email).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
     return () => { alive = false; };
-  }, [o.id]);
+  }, [o.id, o.email]);
   // Alle echten ops-Vorlagen laden → jede ist per Klick an den Kunden sendbar.
   const [tpls, setTpls] = React.useState(null);
   React.useEffect(() => {
@@ -786,7 +786,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     <div className="act-item" key={i}>
                       <div className="act-rail"></div>
                       <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : <Icon.fileText />}</div>
-                      <div className="act-body"><div className="at">{a.t}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+                      <div className="act-body"><div className="at">{a.t}{a.auto ? <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap" }}>automatisch versendet</span> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
                     </div>
                   )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
                 </div>

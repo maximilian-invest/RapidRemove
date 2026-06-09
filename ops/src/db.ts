@@ -90,11 +90,13 @@ export async function initDb(): Promise<void> {
       email       text,
       type        text,
       title       text,
-      detail      text
+      detail      text,
+      auto        boolean NOT NULL DEFAULT false
     )
   `);
-  // Selbstheilung: E-Mail-Spalte ergänzen, falls events aus einer älteren Version stammt.
+  // Selbstheilung: Spalten ergänzen, falls events aus einer älteren Version stammt.
   await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS email text`);
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS auto boolean NOT NULL DEFAULT false`);
   // Geplante Upsell-Mails (Serie „Hinweis zum Schutzmodell" über ~2 Wochen).
   await pool.query(`
     CREATE TABLE IF NOT EXISTS upsell_jobs (
@@ -180,15 +182,15 @@ export async function listChecks(limit = 200): Promise<Record<string, unknown>[]
  * oder – bei automatisierten Mails – über die Kunden-E-Mail (orderId wird dann
  * aus der jüngsten Bestellung aufgelöst; ohne Treffer wird die E-Mail getaggt).
  */
-export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string }): Promise<void> {
+export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string; auto?: boolean }): Promise<void> {
   if (!pool) return;
   try {
     let orderId = e.orderId || null;
     if (!orderId && e.email) orderId = await latestOrderId(e.email);
     if (!orderId && !e.email) return; // nichts, woran sich der Eintrag hängen ließe
     await pool.query(
-      `INSERT INTO events (order_id, email, type, title, detail) VALUES ($1,$2,$3,$4,$5)`,
-      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || ""],
+      `INSERT INTO events (order_id, email, type, title, detail, auto) VALUES ($1,$2,$3,$4,$5,$6)`,
+      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || "", e.auto === true],
     );
   } catch { /* Logging darf den Hauptablauf nie stören */ }
 }

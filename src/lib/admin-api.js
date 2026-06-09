@@ -152,15 +152,16 @@ export async function sendTemplate({ key, to, orderId, lang }) {
   return j;
 }
 
-/** Aktivitäts-Verlauf einer Bestellung (für die Kundenakte). */
-export async function fetchEvents(orderId) {
-  if (!OPS || !orderId) return [];
+/** Aktivitäts-Verlauf einer Kundenakte – per E-Mail (robust, inkl. automatischer
+ *  System-Mails wie „Schutz aktiviert"), sonst per Bestell-ID als Fallback. */
+export async function fetchEvents(orderId, email) {
+  if (!OPS || (!orderId && !email)) return [];
   const res = await fetch(OPS + "/admin/events", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, orderId }),
+    body: JSON.stringify({ token: TOKEN, orderId, email }),
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
-  return (j.events || []).map((e) => ({ ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at) }));
+  return (j.events || []).map((e) => ({ ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), auto: !!e.auto }));
 }

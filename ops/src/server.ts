@@ -172,7 +172,7 @@ app.post("/order", async (req, reply) => {
       });
       if (checkId) await linkCheck(checkId, id);
       await insertEvent({ orderId: id, type: "order", title: "Bestellung eingegangen", detail: `${id} erstellt` });
-      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}` });
+      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true });
       result.saved = true;
     }
   } catch (e) {
