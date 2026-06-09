@@ -888,8 +888,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
         <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} />
           {o.status !== "storniert"
-            ? <button className="stat-toggle danger" onClick={() => setAsk({ title: "Auftrag stornieren", message: "Auftrag " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Auftrag stornieren</button>
-            : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Status wird auf „In Bearbeitung“ gesetzt.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
+            ? <button className="stat-toggle danger" onClick={() => onStorno(o)}><Icon.ban /> Auftrag stornieren</button>
+            : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
         </div>
 
         <div className="m-btn-row" style={{ marginTop: 14 }}>
@@ -972,8 +972,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div>
           <div className="cd-id">{o.name} <StatusBadge status={o.status} /> <PayBadge pay={o.pay} />
             {o.status !== "storniert"
-              ? <button className="stat-toggle danger" onClick={() => setAsk({ title: "Auftrag stornieren", message: "Auftrag " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Auftrag stornieren</button>
-              : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Status wird auf „In Bearbeitung“ gesetzt.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
+              ? <button className="stat-toggle danger" onClick={() => onStorno(o)}><Icon.ban /> Auftrag stornieren</button>
+              : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
           </div>
           <div className="cd-sub">{o.company} · {o.id}</div>
           <div className="cd-meta-row">
@@ -1197,7 +1197,8 @@ function SmsModal({ order, onClose, toast }) {
 }
 
 /* ---------- Payment-link modal (alle AKTIVEN Stripe-Links zur Auswahl) ---------- */
-function PayLinkModal({ order, onClose, toast, onStatus }) {
+function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
+  const storno = mode === "storno";
   const [links, setLinks] = React.useState(null);
   const [err, setErr] = React.useState("");
   const [sel, setSel] = React.useState(null);
@@ -1237,9 +1238,9 @@ function PayLinkModal({ order, onClose, toast, onStatus }) {
     if (!sel) return;
     try {
       await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url });
-      if (onStatus) onStatus(order, "done", true, true); // Zahlungslink erhalten → Profil gelöscht
-      onClose(); toast("Zahlungslink (" + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
-    } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); }
+      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
+      onClose(); toast((storno ? "Storno-Link (" : "Zahlungslink (") + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
+    } catch (e) { toast((storno ? "Storno-Link" : "Zahlungslink") + " fehlgeschlagen: " + e.message); }
   };
 
   return (
@@ -1247,7 +1248,7 @@ function PayLinkModal({ order, onClose, toast, onStatus }) {
       <div className="modal" style={{ width: 520 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><AI.creditCard size={19} style={{ color: "var(--primary)" }} /></span>
-          <div><h3>Zahlungslink senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.name} · aktive Stripe-Links</div></div>
+          <div><h3>{storno ? "Storno-Zahlungslink senden" : "Zahlungslink senden"}</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.name} · {storno ? "Storno-Link wählen" : "aktive Stripe-Links"}</div></div>
           <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
         </div>
         <div className="modal-body">
@@ -1271,7 +1272,7 @@ function PayLinkModal({ order, onClose, toast, onStatus }) {
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender aktiver Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" disabled={!sel} onClick={send}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" disabled={!sel} onClick={send}><AI.send /> {storno ? "Storno-Link senden" : "Zahlungslink senden"}</button>
         </div>
       </div>
     </div>
@@ -1293,6 +1294,7 @@ function AdminApp() {
   const [detail, setDetail] = React.useState(null); // full customer record
   const [smsOrder, setSmsOrder] = React.useState(null);
   const [payLinkOrder, setPayLinkOrder] = React.useState(null);
+  const [stornoOrder, setStornoOrder] = React.useState(null);
   const [query, setQuery] = React.useState("");
   const [sideOpen, setSideOpen] = React.useState(false);
   const [toastMsg, setToastMsg] = React.useState(null);
@@ -1329,26 +1331,25 @@ function AdminApp() {
     if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
   const goInvoice = (o) => { setInvoiceModal(o); };
-  const doStorno = (o) => {
-    const upd = (x) => x && x.id === o.id ? { ...x, status: "storniert", pay: "refunded" } : x;
-    setOrders((list) => list.map(upd));
-    setDetail(upd);
-    setActive(upd);
-    setOrderStatus({ orderId: o.id, status: "storniert", pay: "refunded", label: "storniert" }).catch((e) => toast("Status nicht gespeichert: " + e.message));
-    toast("Bestellung " + o.id + " storniert");
-  };
-  // Gegenstück zum Stornieren: Auftrag wieder aktiv setzen (In Bearbeitung, Zahlung offen).
-  const doReactivate = (o) => {
+  // „Auftrag stornieren" öffnet jetzt die Storno-Zahlungslink-Auswahl (stornoOrder);
+  // als „storniert" markiert der Storno-Dialog die Bestellung nach dem Versand.
+  // Gegenstück: Auftrag wieder aktiv setzen UND den Kunden per Mail informieren.
+  const doReactivate = async (o) => {
     const upd = (x) => x && x.id === o.id ? { ...x, status: "progress", pay: "pending" } : x;
     setOrders((list) => list.map(upd));
     setDetail(upd);
     setActive(upd);
     setOrderStatus({ orderId: o.id, status: "progress", pay: "pending", label: "In Bearbeitung" }).catch((e) => toast("Status nicht gespeichert: " + e.message));
-    toast("Auftrag " + o.id + " wieder aktiviert");
+    try {
+      await sendTemplate({ key: "reaktivierung", to: o.email, orderId: o.id, lang: o.lang || "de" });
+      toast("Auftrag " + o.id + " wieder aktiv · Kunde per Mail informiert ✓");
+    } catch (e) {
+      toast("Auftrag aktiviert, aber E-Mail fehlgeschlagen: " + e.message);
+    }
   };
 
   let body;
-  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={doStorno} onReactivate={doReactivate} toast={toast} />;
+  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates />;
@@ -1369,6 +1370,7 @@ function AdminApp() {
       <InvoiceModal order={invoiceModal} onClose={() => setInvoiceModal(null)} onCompose={(o, t) => setCompose({ order: o, template: t })} toast={toast} />
       <SmsModal order={smsOrder} onClose={() => setSmsOrder(null)} toast={toast} />
       <PayLinkModal order={payLinkOrder} onClose={() => setPayLinkOrder(null)} toast={toast} onStatus={setStatus} />
+      <PayLinkModal order={stornoOrder} mode="storno" onClose={() => setStornoOrder(null)} toast={toast} onStatus={setStatus} />
       <div className={"toast" + (toastMsg ? " show" : "")}><Icon.checkCircle />{toastMsg}</div>
     </div>
   );
