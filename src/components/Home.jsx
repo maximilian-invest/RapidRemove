@@ -101,6 +101,7 @@ Object.assign(WP_COPY, {
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
+  const tpUrl = lang === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
   const [name, setName] = React.useState("");
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
@@ -134,7 +135,7 @@ function Hero({ onStart }) {
           <span className="chip hs hs1"><Icon.shieldCheck size={15} /> {t.hero.chip}</span>
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
           <p className="lead hs hs3">{t.hero.lead}</p>
-          <div className="hero-proof hs hs5">
+          <a className="hero-proof hs hs5" href={tpUrl} target="_blank" rel="noopener noreferrer">
             <div className="ava-stack">
               {[1, 2, 3, 4, 5].map((n) => <img className="av" key={n} src={asset("/assets/person-" + n + ".jpg")} alt="" width={40} height={40} />)}
             </div>
@@ -142,17 +143,17 @@ function Hero({ onStart }) {
               <span className="stars sm">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} />)}</span>
               <div className="pr-line"><b>{t.hero.trust[0]}/5</b> · {t.hero.trust[1]} · Trustpilot</div>
             </div>
-          </div>
+          </a>
         </div>
 
         <div className="hero-card-col hs hs4">
-          <div className="float-card tp">
+          <a className="float-card tp" href={tpUrl} target="_blank" rel="noopener noreferrer">
             <span className="fc-tp"><Icon.star /></span>
             <div>
               <div className="fc-strong">{t.hero.trust[0]} <span className="stars sm" style={{ verticalAlign: "middle" }}>{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} size={12} />)}</span></div>
               <div className="fc-cap">Trustpilot</div>
             </div>
-          </div>
+          </a>
         <div className="check-card">
           <div className="cc-head">
             <span className="eyebrow" style={{ margin: 0 }}>{t.hero.cardEyebrow}</span>

@@ -88,6 +88,16 @@ const PROT_NUDGE = {
   nl: { rec: "Aanbevolen", social: "9 van de 10 klanten houden de bescherming", keep: "Ja, bescherming houden", remove: "Bescherming toch verwijderen" },
   pt: { rec: "Recomendado", social: "9 em cada 10 clientes mantêm a proteção", keep: "Sim, manter a proteção", remove: "Remover a proteção mesmo assim" },
 };
+/* ---- „Mehrere Profile löschen?" – Karte unter den Treffern öffnet eine Helpdesk-Mail ---- */
+const MULTI_PROFILE = {
+  de: { t: "Mehrere Profile löschen?", d: "Schreiben Sie uns – wir entfernen alle auf einmal." },
+  en: { t: "Delete multiple profiles?", d: "Write to us — we'll remove them all at once." },
+  es: { t: "¿Eliminar varios perfiles?", d: "Escríbanos: los eliminamos todos a la vez." },
+  fr: { t: "Supprimer plusieurs profils ?", d: "Écrivez-nous — nous les supprimons tous." },
+  it: { t: "Eliminare più profili?", d: "Scrivici: li rimuoviamo tutti insieme." },
+  nl: { t: "Meerdere profielen verwijderen?", d: "Mail ons — we verwijderen ze allemaal." },
+  pt: { t: "Excluir vários perfis?", d: "Escreva-nos — removemos todos de uma vez." },
+};
 
 function ratingAssessment(ratingStr, lang) {
   const r = parseFloat(String(ratingStr).replace(",", ".")) || 0;
@@ -151,6 +161,10 @@ function Wizard({ initialName, initialProfile, onExit }) {
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   const checkSent = React.useRef(false);
   const bodyRef = React.useRef(null);
+  // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
+  const [sug, setSug] = React.useState([]);
+  const [acOpen, setAcOpen] = React.useState(false);
+  const acRef = React.useRef(null);
 
   React.useEffect(() => { if (bodyRef.current) window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
@@ -160,6 +174,23 @@ function Wizard({ initialName, initialProfile, onExit }) {
     if (initialProfile) return;
     if (initialName && initialName.trim()) { startSearch(initialName); }
     // eslint-disable-next-line
+  }, []);
+
+  // Entprellte Profilvorschläge, solange wir auf Schritt 1 (Namenseingabe) sind.
+  React.useEffect(() => {
+    if (step !== 0) { setSug([]); return; }
+    const q = (name || "").trim();
+    if (q.length < 2) { setSug([]); return; }
+    let alive = true;
+    const id = setTimeout(() => {
+      searchProfiles(q, lang).then((r) => { if (alive) setSug(r || []); }).catch(() => { if (alive) setSug([]); });
+    }, 280);
+    return () => { alive = false; clearTimeout(id); };
+  }, [name, lang, step]);
+  React.useEffect(() => {
+    const onDoc = (e) => { if (acRef.current && !acRef.current.contains(e.target)) setAcOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
   const selected = candidates.find((c) => c.id === selectedId) || candidates[0];
@@ -217,6 +248,17 @@ function Wizard({ initialName, initialProfile, onExit }) {
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
   const proceedFromSearch = () => { persistCheck(); go(2); };
+  // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
+  const pickProfile = (profile) => {
+    setAcOpen(false);
+    setName(profile.name || "");
+    setContact((c) => ({ ...c, company: profile.name || "" }));
+    setCandidates([{ ...profile, id: "p1", primary: true }]);
+    setSelectedId("p1");
+    setMulti(false);
+    setPhase("found");
+    go(2);
+  };
 
   const submit = () => {
     const er = {};
@@ -253,10 +295,27 @@ function Wizard({ initialName, initialProfile, onExit }) {
         <div className="wz-eyebrow"><Icon.search size={14} /> {w.s1.eyebrow}</div>
         <h1 className="wz-h">{w.s1.h}</h1>
         <p className="wz-sub">{w.s1.sub}</p>
-        <div className="wz-bigfield">
-          <Icon.building size={22} />
-          <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={name}
-            onChange={(e) => setName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && startSearch(name)} />
+        <div className="hero-ac" ref={acRef}>
+          <div className="wz-bigfield">
+            <Icon.building size={22} />
+            <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={name}
+              onChange={(e) => { setName(e.target.value); setAcOpen(true); }} onFocus={() => setAcOpen(true)}
+              onKeyDown={(e) => e.key === "Enter" && startSearch(name)} />
+          </div>
+          {acOpen && name.trim().length >= 2 && (
+            <div className="hero-ac-pop">
+              {sug.map((s) => (
+                <button type="button" className="hero-ac-item" key={s.placeId || s.id} onClick={() => pickProfile(s)}>
+                  <Icon.building />
+                  <span className="ac-tx"><span className="ac-n">{s.name}</span>{s.addr ? <span className="ac-a">{s.addr}</span> : null}</span>
+                </button>
+              ))}
+              <button type="button" className="hero-ac-item use" onClick={() => { setAcOpen(false); startSearch(name); }}>
+                <Icon.arrowRight />
+                <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{lang === "de" ? "So fortfahren – auch wenn nicht gelistet" : "Continue with this — even if not listed"}</span></span>
+              </button>
+            </div>
+          )}
         </div>
         {w.s1.hint && (
           <p className="wz-hint"><Icon.info size={17} /> {w.s1.hint}</p>
@@ -275,6 +334,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
   }
 
   function StepSearch() {
+    const mp = MULTI_PROFILE[t.code] || MULTI_PROFILE.en;
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.mapPin size={14} /> {w.s2.eyebrow}</div>
@@ -289,6 +349,14 @@ function Wizard({ initialName, initialProfile, onExit }) {
             {(multi ? candidates : candidates.filter((c) => c.primary)).map((c) => (
               <ProfileCard key={c.id} c={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} reviewsLabel={w.s2.reviews} />
             ))}
+            <a className="profile-card reveal-in" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)} style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="profile-thumb"><Icon.building /></div>
+              <div className="profile-main">
+                <div className="pn">{mp.t}</div>
+                <div className="pcat">{mp.d}</div>
+              </div>
+              <div className="profile-radio"><Icon.check /></div>
+            </a>
             <div className="wz-actions" style={{ marginTop: 6 }}>
               <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
               <button className="btn btn-primary grow" onClick={proceedFromSearch}>{w.s2.button} <Icon.arrowRight size={18} /></button>

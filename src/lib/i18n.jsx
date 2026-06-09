@@ -19,7 +19,7 @@ const I18N = {
       chip: "DSGVO-konform · Server in Deutschland · 100 % legal",
       h1a: "Ihr Google-Unternehmensprofil löschen –",
       h1b: "dauerhaft, legal, in 24 Stunden.",
-      lead: "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon. Inklusive aller Bewertungen – und Sie zahlen erst nach erfolgreicher Löschung.",
+      lead: "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon. Inklusive aller Bewertungen, aus der Suche und von Google Maps.",
       trust: ["4,9", "266 Bewertungen", "Empfohlen von heise.de", "Keine Vorkasse", "Über 1.000 Profile entfernt"],
       assure: ["Kein Erfolg, keine Kosten", "Kein Zugriff auf Ihr Konto", "Antwort meist in Minuten"],
       cardEyebrow: "Kostenloser Löschbarkeits-Check",
