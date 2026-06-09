@@ -125,7 +125,7 @@ section{position:relative;}
 /* hero social-proof cluster */
 .hero-proof{display:flex;align-items:center;gap:14px;margin-top:30px;flex-wrap:wrap;}
 .ava-stack{display:flex;}
-.ava-stack .av{width:40px;height:40px;border-radius:50%;border:2.5px solid var(--canvas);background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:15px;margin-left:-12px;box-shadow:var(--shadow-xs);}
+.ava-stack .av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2.5px solid var(--canvas);background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:15px;margin-left:-12px;box-shadow:var(--shadow-xs);}
 .ava-stack .av:first-child{margin-left:0;}
 .hero-proof .pr-meta .stars{display:block;margin-bottom:3px;}
 .hero-proof .pr-line{font-size:13.5px;color:var(--fg-2);font-weight:700;}

@@ -113,16 +113,12 @@ function Hero({ onStart }) {
           <p className="lead hs hs3">{t.hero.lead}</p>
           <div className="hero-proof hs hs5">
             <div className="ava-stack">
-              {["M", "K", "T", "S", "L"].map((x) => <span className="av" key={x}>{x}</span>)}
+              {[1, 2, 3, 4, 5].map((n) => <img className="av" key={n} src={asset("/assets/person-" + n + ".jpg")} alt="" width={40} height={40} />)}
             </div>
             <div className="pr-meta">
               <span className="stars sm">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} />)}</span>
               <div className="pr-line"><b>{t.hero.trust[0]}/5</b> · {t.hero.trust[1]} · Trustpilot</div>
             </div>
-          </div>
-          <div className="hero-subproof hs hs6"><Icon.check /> {t.hero.trust[2]} <span className="dot"></span> {t.hero.trust[4]}</div>
-          <div className="hero-assure hs hs6">
-            {t.hero.assure.map((a, i) => <div key={i}><Icon.check /> {a}</div>)}
           </div>
         </div>
 
