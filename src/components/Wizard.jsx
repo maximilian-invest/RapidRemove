@@ -769,7 +769,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           </div>
           <div className="wz-actions">
             <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => go(5)}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
+            <button className="btn btn-primary grow" disabled={showSkip} onClick={() => go(5)}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
           </div>
         </div>
       </div>
@@ -791,9 +791,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
         <div className="sum-total"><span className="sl">{w.s5.sumTotal}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
         {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {conv.perMonthShort}</b></div>}
         <div className="sum-note"><Icon.shieldCheck /> {w.s5.sumNote}</div>
-        <div className="sum-trust">
-          {w.trustStrip.slice(0, 3).map((x, i) => <span key={i}><Icon.check /> {x}</span>)}
-        </div>
       </div>
     );
   }
