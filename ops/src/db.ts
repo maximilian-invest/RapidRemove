@@ -87,11 +87,14 @@ export async function initDb(): Promise<void> {
       id          bigserial PRIMARY KEY,
       created_at  timestamptz NOT NULL DEFAULT now(),
       order_id    text,
+      email       text,
       type        text,
       title       text,
       detail      text
     )
   `);
+  // Selbstheilung: E-Mail-Spalte ergänzen, falls events aus einer älteren Version stammt.
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS email text`);
   // Geplante Upsell-Mails (Serie „Hinweis zum Schutzmodell" über ~2 Wochen).
   await pool.query(`
     CREATE TABLE IF NOT EXISTS upsell_jobs (
@@ -172,13 +175,20 @@ export async function listChecks(limit = 200): Promise<Record<string, unknown>[]
   return r.rows;
 }
 
-/** Aktivität protokollieren (best effort – wirft nie). */
-export async function insertEvent(e: { orderId?: string; type?: string; title?: string; detail?: string }): Promise<void> {
-  if (!pool || !e.orderId) return;
+/**
+ * Aktivität protokollieren (best effort – wirft nie). Verknüpft über orderId
+ * oder – bei automatisierten Mails – über die Kunden-E-Mail (orderId wird dann
+ * aus der jüngsten Bestellung aufgelöst; ohne Treffer wird die E-Mail getaggt).
+ */
+export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string }): Promise<void> {
+  if (!pool) return;
   try {
+    let orderId = e.orderId || null;
+    if (!orderId && e.email) orderId = await latestOrderId(e.email);
+    if (!orderId && !e.email) return; // nichts, woran sich der Eintrag hängen ließe
     await pool.query(
-      `INSERT INTO events (order_id, type, title, detail) VALUES ($1,$2,$3,$4)`,
-      [e.orderId, e.type || "info", e.title || "", e.detail || ""],
+      `INSERT INTO events (order_id, email, type, title, detail) VALUES ($1,$2,$3,$4,$5)`,
+      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || ""],
     );
   } catch { /* Logging darf den Hauptablauf nie stören */ }
 }
@@ -190,14 +200,33 @@ export async function listEvents(orderId: string, limit = 100): Promise<Record<s
   return r.rows;
 }
 
-/** Service-Key der jüngsten Bestellung zu einer E-Mail (z. B. "remove" | "reset"). */
-export async function latestOrderService(email: string): Promise<string | null> {
+/** Aktivitäts-Verlauf zu einer Kunden-E-Mail: direkt getaggte Events ODER über deren Bestellungen. */
+export async function listEventsByEmail(email: string, limit = 100): Promise<Record<string, unknown>[]> {
+  if (!pool || !email) return [];
+  const r = await pool.query(
+    `SELECT e.* FROM events e
+       LEFT JOIN orders o ON o.id = e.order_id
+      WHERE lower(e.email) = lower($1) OR lower(o.email) = lower($1)
+      ORDER BY e.created_at DESC LIMIT $2`,
+    [email, limit],
+  );
+  return r.rows;
+}
+
+/** Jüngste Bestellung zu einer E-Mail (ID + Service-Key, z. B. "remove" | "reset"). */
+export async function latestOrder(email: string): Promise<{ id: string; service: string | null } | null> {
   if (!pool || !email) return null;
   const r = await pool.query(
-    `SELECT service FROM orders WHERE lower(email) = lower($1) ORDER BY created_at DESC LIMIT 1`,
+    `SELECT id, service FROM orders WHERE lower(email) = lower($1) ORDER BY created_at DESC LIMIT 1`,
     [email],
   );
-  return (r.rows[0]?.service as string) ?? null;
+  const row = r.rows[0];
+  return row ? { id: row.id as string, service: (row.service as string) ?? null } : null;
+}
+
+/** ID der jüngsten Bestellung zu einer E-Mail (für Aktivitäts-Verknüpfung). */
+export async function latestOrderId(email: string): Promise<string | null> {
+  return (await latestOrder(email))?.id ?? null;
 }
 
 /**

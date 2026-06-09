@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
 import { startUpsellWorker } from "./upsell";
@@ -342,7 +342,8 @@ app.post("/admin/send-template", async (req, reply) => {
 app.post("/admin/events", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
-  const events = await listEvents(clip(b.orderId, 40), 100);
+  const email = clip(b.email, 160);
+  const events = email ? await listEventsByEmail(email, 100) : await listEvents(clip(b.orderId, 40), 100);
   return { ok: true, events };
 });
 

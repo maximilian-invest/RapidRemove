@@ -9,8 +9,8 @@ import * as React from "react";
 import { render } from "@react-email/render";
 import type { FastifyInstance } from "fastify";
 import { TEMPLATES } from "./emails/index";
-import { sendMail } from "./mailer";
-import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt } from "./db";
+import { sendMail, mailTrace } from "./mailer";
+import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt, insertEvent } from "./db";
 
 const TICK_MS = Number(process.env.UPSELL_TICK_MS) || 60_000;
 
@@ -24,12 +24,22 @@ async function runDue(log: FastifyInstance["log"]): Promise<void> {
     const props = { lang, variant };
     try {
       const html = await render(React.createElement(t.component, props));
-      await sendMail({ to: j.email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+      const res = await sendMail({ to: j.email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
       await markUpsellSent(j.id);
       log.info(`Upsell: Schutzhinweis #${variant} (${lang}) an ${j.email} gesendet`);
+      await insertEvent({
+        email: j.email, type: "mail",
+        title: `Hinweis zum Schutzmodell #${variant} gesendet`,
+        detail: `an ${j.email} · ${mailTrace(res)}`,
+      });
     } catch (e) {
       await bumpUpsellAttempt(j.id);
       log.error(`Upsell: Versand an ${j.email} (#${variant}) fehlgeschlagen: ${(e as Error).message}`);
+      await insertEvent({
+        email: j.email, type: "mail-error",
+        title: `Hinweis zum Schutzmodell #${variant} fehlgeschlagen`,
+        detail: String((e as Error).message).slice(0, 200),
+      });
     }
   }
 }

@@ -56,8 +56,20 @@ export interface SendArgs {
 
 const addr = (e: string) => ({ emailAddress: { address: e } });
 
+export interface SendResult {
+  /** HTTP-Status der Graph-Antwort (202 = zum Versand angenommen). */
+  status: number;
+  /** Graph-Korrelations-ID (request-id) als Nachweis/Trace. */
+  requestId?: string;
+}
+
+/** Kurzer, nachvollziehbarer Versand-Nachweis für Aktivitäts-Logs. */
+export function mailTrace(r: SendResult): string {
+  return `angenommen (${r.status}${r.requestId ? `, req ${r.requestId}` : ""})`;
+}
+
 /** Versendet eine HTML-Mail über das angegebene (oder Standard-)Postfach. */
-export async function sendMail(args: SendArgs): Promise<void> {
+export async function sendMail(args: SendArgs): Promise<SendResult> {
   const from = args.from || process.env.MAIL_FROM || "info@rapid-remove.com";
   const message: Record<string, unknown> = {
     subject: args.subject,
@@ -86,4 +98,8 @@ export async function sendMail(args: SendArgs): Promise<void> {
     },
   );
   if (!res.ok) throw new Error(`Graph sendMail fehlgeschlagen (${res.status}): ${await res.text()}`);
+  return {
+    status: res.status,
+    requestId: res.headers.get("request-id") || res.headers.get("client-request-id") || undefined,
+  };
 }

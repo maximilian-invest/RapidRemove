@@ -22,12 +22,12 @@ import type { FastifyInstance, FastifyRequest } from "fastify";
 import * as React from "react";
 import { render } from "@react-email/render";
 import { TEMPLATES } from "../emails/index.js";
-import { sendMail, type MailAttachment } from "../mailer.js";
+import { sendMail, mailTrace, type MailAttachment } from "../mailer.js";
 import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
 import {
-  dbReady, latestOrderService, enqueueUpsellSeries, cancelUpsellForEmail,
+  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent,
 } from "../db.js";
 
 type Lang = "de" | "en";
@@ -45,8 +45,15 @@ async function sendTemplate(
   if (!to) { log.warn(`Webhook: kein Empfänger für "${key}" – übersprungen`); return; }
   const props = { ...t.sample, lang, ...extra };
   const html = await render(React.createElement(t.component, props));
-  await sendMail({ to, subject: t.subject(props), html, bcc: opts.bcc, attachments: opts.attachments });
+  const res = await sendMail({ to, subject: t.subject(props), html, bcc: opts.bcc, attachments: opts.attachments });
   log.info(`Webhook: "${t.label}" (${lang}) an ${to} gesendet${opts.bcc?.length ? " (+BCC)" : ""}`);
+  // Aktivitäts-Eintrag erst NACH bestätigtem Versand (sendMail wirft sonst).
+  await insertEvent({
+    email: Array.isArray(to) ? to[0] : to,
+    type: "mail",
+    title: `${t.label} (${lang}) gesendet`,
+    detail: `an ${to}${opts.bcc?.length ? " (+BCC)" : ""} · ${mailTrace(res)}`,
+  });
 }
 
 /** Customer-E-Mail + Sprache nachladen (für Subscription-Events). */
@@ -140,7 +147,7 @@ async function maybeSendSchutzhinweis(
   // Reset-Aufträge (Löschen + Neuanlegen) bekommen keinen Schutz-Upsell.
   // Best effort: ohne Treffer wird normal gesendet (keine fälschliche Unterdrückung).
   try {
-    if ((await latestOrderService(email))?.toLowerCase() === "reset") {
+    if ((await latestOrder(email))?.service?.toLowerCase() === "reset") {
       log.info(`Webhook: Schutzhinweis übersprungen (Reset-Auftrag) für ${email}`);
       return;
     }
