@@ -112,17 +112,17 @@ const MULTI_PROFILE = {
 };
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet" },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed" },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca" },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié" },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato" },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld" },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado" },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad" },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført" },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført" },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", monitorLabel: "Überwachung", monitorDesc: "Wir überwachen Ihr Profil laufend und entfernen es sofort erneut, falls es wieder auftaucht." },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", monitorLabel: "Monitoring", monitorDesc: "We continuously monitor your profile and remove it again immediately if it reappears." },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", monitorLabel: "Vigilancia", monitorDesc: "Vigilamos su perfil de forma continua y lo eliminamos de nuevo de inmediato si reaparece." },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", monitorLabel: "Surveillance", monitorDesc: "Nous surveillons votre fiche en continu et la supprimons à nouveau immédiatement si elle réapparaît." },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", monitorLabel: "Monitoraggio", monitorDesc: "Monitoriamo il tuo profilo di continuo e lo rimuoviamo subito se riappare." },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", monitorLabel: "Monitoring", monitorDesc: "We monitoren uw profiel doorlopend en verwijderen het direct opnieuw als het terugkomt." },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", monitorLabel: "Monitorização", monitorDesc: "Monitorizamos o seu perfil continuamente e removemo-lo de novo imediatamente se reaparecer." },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", monitorLabel: "監視", monitorDesc: "プロフィールを継続的に監視し、再表示された場合はすぐに再削除します。" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", monitorLabel: "Övervakning", monitorDesc: "Vi övervakar din profil löpande och tar bort den igen direkt om den dyker upp." },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", monitorLabel: "Overvågning", monitorDesc: "Vi overvåger din profil løbende og fjerner den igen med det samme, hvis den dukker op." },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", monitorLabel: "Overvåking", monitorDesc: "Vi overvåker profilen din løpende og fjerner den igjen umiddelbart hvis den dukker opp." },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -428,6 +428,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
 
   function StepService() {
     const nudge = PROT_NUDGE[t.code] || PROT_NUDGE.en;
+    const monitorDelta = String(Math.round((num(p.protMonitor) - num(p.protMonthly)) * 100) / 100).replace(".", lang === "en" ? "." : ",");
     const opts = [
       { id: "remove", t: w.s4.opt1.t, d: w.s4.opt1.d, price: p.deletion, badge: w.s4.opt1.badge },
       { id: "reset", t: w.s4.opt2.t, d: w.s4.opt2.d, price: p.reset, badge: w.s4.opt2.badge },
@@ -466,15 +467,29 @@ function Wizard({ initialName, initialProfile, onExit }) {
             <button className={"switch" + (protection ? " on" : "")} onClick={toggleProt} aria-label="toggle"></button>
           </div>
           {protection && (
-            <div className="seg">
-              {[["monthly", w.s4.planMonthly, money(lang, p.protMonthly) + " " + w.s4.per],
-                ["monitor", w.s4.planMonitor, money(lang, p.protMonitor) + " " + w.s4.per],
-                ["lifetime", w.s4.planLifetime, money(lang, p.protLifetime)]].map(([id, label, price]) => (
-                <button key={id} className={protection === id ? "on" : ""} onClick={() => setProtection(id)}>
-                  {label}<span className="sp">{price}</span>
-                </button>
-              ))}
-            </div>
+            <React.Fragment>
+              <div className="seg">
+                {[["monthly", w.s4.planMonthly, money(lang, p.protMonthly) + " " + w.s4.per],
+                  ["lifetime", w.s4.planLifetime, money(lang, p.protLifetime)]].map(([id, label, price]) => {
+                  const active = id === "monthly" ? (protection === "monthly" || protection === "monitor") : protection === id;
+                  return (
+                    <button key={id} className={active ? "on" : ""} onClick={() => setProtection(id)}>
+                      {label}<span className="sp">{price}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {(protection === "monthly" || protection === "monitor") && (
+                <label className="mon-check">
+                  <input type="checkbox" checked={protection === "monitor"} onChange={(e) => setProtection(e.target.checked ? "monitor" : "monthly")} />
+                  <span className="mc-main">
+                    <span className="mc-t">{wm.monitorLabel}</span>
+                    <span className="mc-d">{wm.monitorDesc}</span>
+                  </span>
+                  <span className="mc-price">+{money(lang, monitorDelta)} {w.s4.per}</span>
+                </label>
+              )}
+            </React.Fragment>
           )}
           {showSkip && (
             <div className="prot-modal-scrim" onClick={() => { if (!protection) setProtection("monthly"); setShowSkip(false); }}>

@@ -209,6 +209,15 @@
 .seg button .sp{display:block;font-family:var(--font-display);font-size:16px;color:var(--fg);margin-top:3px;}
 .seg button.on{border-color:var(--primary);background:var(--orange-50);color:var(--primary);}
 .seg button.on .sp{color:var(--primary);}
+/* „Überwachung" – eigene Checkbox unter den Schutz-Plänen */
+.mon-check{display:flex;align-items:flex-start;gap:12px;margin-top:10px;padding:13px 15px;border:1.5px solid var(--hairline-strong);border-radius:var(--r-md);cursor:pointer;transition:border-color var(--dur),background var(--dur);}
+.mon-check:hover{border-color:var(--primary);}
+.mon-check:has(input:checked){border-color:var(--primary);background:var(--orange-50);}
+.mon-check>input{width:20px;height:20px;margin:1px 0 0;flex:none;accent-color:var(--primary);cursor:pointer;}
+.mon-check .mc-main{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0;}
+.mon-check .mc-t{font-family:var(--font-display);font-weight:600;font-size:14.5px;}
+.mon-check .mc-d{font-size:12px;color:var(--fg-2);line-height:1.45;}
+.mon-check .mc-price{font-family:var(--font-display);font-weight:700;font-size:14px;white-space:nowrap;color:var(--primary);}
 
 /* ---------- Order summary rail ---------- */
 .wz-split{display:grid;grid-template-columns:1.5fr 1fr;gap:28px;align-items:start;}
