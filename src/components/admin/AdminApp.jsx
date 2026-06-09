@@ -40,6 +40,33 @@ const avaColor = (s) => { let h = 0; for (let i = 0; i < (s || "").length; i++) 
 const TPL_USAGE_KEY = "rr_tpl_usage";
 function readTplUsage() { try { return JSON.parse(localStorage.getItem(TPL_USAGE_KEY) || "{}") || {}; } catch (e) { return {}; } }
 function bumpTplUsage(key) { try { const u = readTplUsage(); u[key] = (u[key] || 0) + 1; localStorage.setItem(TPL_USAGE_KEY, JSON.stringify(u)); } catch (e) {} }
+/* Mobile-Erkennung (matchMedia) für die Design-Layouts (Liste/Detail). */
+function useIsMobile(bp = 760) {
+  const [m, setM] = React.useState(false);
+  React.useEffect(() => {
+    const mq = window.matchMedia("(max-width:" + bp + "px)");
+    const on = () => setM(mq.matches); on();
+    if (mq.addEventListener) mq.addEventListener("change", on); else mq.addListener(on);
+    return () => { if (mq.removeEventListener) mq.removeEventListener("change", on); else mq.removeListener(on); };
+  }, [bp]);
+  return m;
+}
+/* Bestell-Karte für die mobile Liste (Design „mobil-bestellungen"). */
+function OrderRow({ o, onClick }) {
+  return (
+    <div className="m-row" onClick={onClick}>
+      <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff" }}>{initials(o.name)}</div>
+      <div className="main">
+        <div className="nm">{o.name}</div>
+        <div className="meta">{SERVICES[o.service].name} · {o.id}</div>
+      </div>
+      <div className="right">
+        <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
+        <StatusBadge status={o.status} />
+      </div>
+    </div>
+  );
+}
 function fillVars(text, o) {
   const inv = "RE-" + o.id.replace("RR-", "");
   return text
@@ -258,6 +285,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
 
 /* ---------- Orders list ---------- */
 function Orders({ orders, openOrder, query }) {
+  const isMobile = useIsMobile();
   const [filter, setFilter] = React.useState("all");
   const filters = [
     ["all", "Alle", orders.length],
@@ -273,6 +301,20 @@ function Orders({ orders, openOrder, query }) {
     const q = query.toLowerCase();
     list = list.filter((o) => (o.name + o.email + o.id + o.company).toLowerCase().includes(q));
   }
+  if (isMobile) return (
+    <div className="content">
+      <div className="m-chips">
+        {filters.map(([id, label, n]) => (
+          <button key={id} className={"m-chip" + (filter === id ? " on" : "")} onClick={() => setFilter(id)}>{label} <span className="ct">{n}</span></button>
+        ))}
+      </div>
+      {list.length ? (
+        <div className="m-list">{list.map((o) => <OrderRow key={o.id} o={o} onClick={() => openOrder(o)} />)}</div>
+      ) : (
+        <div className="m-empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
+      )}
+    </div>
+  );
   return (
     <div className="content">
       <div className="panel">
@@ -287,8 +329,7 @@ function Orders({ orders, openOrder, query }) {
           <div className="ph-right"><button className="btn btn-sec btn-sm"><AI.download /> Export</button></div>
         </div>
         {list.length ? (
-          <React.Fragment>
-          <table className="tbl ord-table">
+          <table className="tbl">
             <thead><tr><th>Auftrag</th><th>Kunde</th><th>Leistung</th><th>Zahlung</th><th>Status</th><th>Betrag</th></tr></thead>
             <tbody>
               {list.map((o) => (
@@ -303,22 +344,6 @@ function Orders({ orders, openOrder, query }) {
               ))}
             </tbody>
           </table>
-          <div className="m-list ord-cards">
-            {list.map((o) => (
-              <div className="m-row" key={o.id} onClick={() => openOrder(o)}>
-                <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff" }}>{initials(o.name)}</div>
-                <div className="main">
-                  <div className="nm">{o.name}</div>
-                  <div className="meta">{SERVICES[o.service].name} · {o.id}</div>
-                </div>
-                <div className="right">
-                  <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
-                  <StatusBadge status={o.status} />
-                </div>
-              </div>
-            ))}
-          </div>
-          </React.Fragment>
         ) : (
           <div className="empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
         )}
@@ -707,6 +732,7 @@ function AutomationInfo({ info, onClose }) {
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, toast }) {
   const o = order;
+  const isMobile = useIsMobile();
   const ex = crmExtras(o);
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
@@ -769,6 +795,98 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
+  if (isMobile) return (
+    <div className="m-detail">
+      <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
+      <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
+      <div className="m-detail-head">
+        <button className="m-back" onClick={onBack}><Icon.arrowLeft /> Zurück</button>
+        <span className="oid">{o.id}</span>
+      </div>
+      <div className="m-scroll">
+        <div className="m-dhero">
+          <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff", width: 54, height: 54, fontSize: 21 }}>{initials(o.name)}</div>
+          <div>
+            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 19, lineHeight: 1.15 }}>{o.name}</div>
+            <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
+          </div>
+        </div>
+        <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} /></div>
+
+        <div className="m-btn-row" style={{ marginTop: 14 }}>
+          <a className="m-btn m-btn-sec" href={"tel:" + (o.phone || "").replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
+          <a className="m-btn m-btn-sec" href="#" onClick={(e) => { e.preventDefault(); toast("WhatsApp öffnen…"); }}><Icon.whatsapp /> WhatsApp</a>
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} /></span></h3>
+          <div className="m-vpipe">
+            {STATUS_FLOW.map((s, i) => {
+              const cls = i < curIdx ? "done" : i === curIdx ? "active" : "";
+              return (
+                <div className={"m-vstep " + cls} key={s.id} onClick={() => onStatus(o, s.id)}>
+                  {i < STATUS_FLOW.length - 1 && <div className="rail"></div>}
+                  <div className="m-vdot">{i < curIdx ? <Icon.check /> : i === curIdx ? <Icon.clock /> : i + 1}</div>
+                  <div><div className="pt">{s.label}{i === curIdx && <span className="now">JETZT</span>}</div><div className="pd">{s.desc}</div></div>
+                </div>
+              );
+            })}
+          </div>
+          {curIdx < STATUS_FLOW.length - 1 && (
+            <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => onStatus(o, STATUS_FLOW[curIdx + 1].id)}><Icon.arrowRight /> Weiter: {STATUS_FLOW[curIdx + 1].label}</button>
+          )}
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.building /> Profil &amp; Leistung</h3>
+          <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv">{o.profile}</span></div>
+          <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
+          <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+          {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+          <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
+          <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
+          {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
+          <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
+          {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
+          {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.mail /> Kommunikation</h3>
+          <div className="m-btn-row">
+            <button className="m-btn m-btn-sec" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
+            <button className="m-btn m-btn-sec" onClick={() => onSms(o)}><Icon.message /> SMS</button>
+          </div>
+          {tpls && tpls.length ? (
+            <React.Fragment>
+              <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "14px 0 7px" }}>Am häufigsten verwendet</div>
+              <div className="act-btns">{topUsed.map((t) => renderTplBtn(t))}</div>
+              <div className="chips" style={{ marginTop: 10, marginBottom: openGroup ? 10 : 0 }}>
+                {TPL_GROUP_ORDER.map((g) => {
+                  const n = sendableTpls.filter((t) => t.group === g).length;
+                  return n ? <button key={g} className={"chipf" + (openGroup === g ? " on" : "")} onClick={() => setOpenGroup(openGroup === g ? null : g)}>{g} <span className="ct">{n}</span></button> : null;
+                })}
+              </div>
+              {openGroup ? <div className="act-btns" style={{ marginTop: 2 }}>{sendableTpls.filter((t) => t.group === openGroup).map((t) => renderTplBtn(t))}</div> : null}
+            </React.Fragment>
+          ) : null}
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.ban /> Verwaltung</h3>
+          <div className="m-btn-row">
+            {o.status !== "storniert"
+              ? <button className="m-btn m-btn-danger" onClick={() => setAsk({ title: "Bestellung stornieren", message: "Bestellung " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Stornieren</button>
+              : <span className="badge-st st-refunded" style={{ margin: "0 auto" }}><span className="d"></span>Storniert</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   return (
     <div className="content">
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
