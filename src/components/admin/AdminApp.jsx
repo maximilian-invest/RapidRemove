@@ -7,6 +7,7 @@ import { asset } from "@/lib/base";
 import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
+import { placePhotoUrl, streetViewUrl, staticMapUrl } from "@/lib/places";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Hauptanwendung (Dashboard, Bestellungen, E-Mail, Rechnungen) */
@@ -83,6 +84,29 @@ function ProfileLinks({ o }) {
       <a href={mapsHref} target="_blank" rel="noopener noreferrer" title="In Google Maps öffnen"><Icon.mapPin size={13} /> Maps</a>
       <a href={searchHref} target="_blank" rel="noopener noreferrer" title="In Google-Suche öffnen"><Icon.search size={13} /> Google</a>
     </span>
+  );
+}
+/* Echte Profil-Aufnahme: Google-Profilfoto, mit Street View und statischer Karte
+   als automatischem Fallback (per onError durchgereicht). */
+function ProfileShot({ o }) {
+  const sources = React.useMemo(() => {
+    const out = [];
+    const ph = placePhotoUrl(o.photo); if (ph) out.push(ph);
+    const loc = o.addr || o.profile || o.company || "";
+    const sv = streetViewUrl(loc); if (sv) out.push(sv);
+    const mp = staticMapUrl(loc); if (mp) out.push(mp);
+    return out;
+  }, [o.photo, o.addr, o.profile, o.company]);
+  const [idx, setIdx] = React.useState(0);
+  React.useEffect(() => { setIdx(0); }, [o.id]);
+  if (!sources.length || idx >= sources.length) return <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, padding: "6px 2px" }}>Kein Profilbild verfügbar.</div>;
+  const src = sources[idx];
+  return (
+    <a href={src} target="_blank" rel="noopener noreferrer" style={{ display: "block" }} title="In voller Größe öffnen">
+      <img src={src} alt={"Google-Profil " + (o.profile || o.company || "")} loading="lazy"
+        onError={() => setIdx((i) => i + 1)}
+        style={{ width: "100%", borderRadius: "var(--r-md)", border: "1px solid var(--hairline)", display: "block" }} />
+    </a>
   );
 }
 function fillVars(text, o) {
@@ -953,6 +977,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
           {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
           <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+          <div style={{ marginTop: 12 }}><ProfileShot o={o} /></div>
         </div>
 
         <div className="m-dsec">
@@ -1162,16 +1187,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             </div>
           </div>
 
-          {/* files */}
+          {/* files — echte Profil-Aufnahme */}
           <div className="dsec">
-            <h3><Icon.fileText /> Dateien <span className="right"><button className="btn btn-ghost btn-sm" onClick={() => toast("Datei-Upload…")}><AI.plus /> Hinzufügen</button></span></h3>
-            {ex.files.map((f, i) => (
-              <div className="file-row" key={i}>
-                <span className="fic"><Icon.fileText /></span>{f.n}
-                <span className="fsz">{f.sz}</span>
-                <span className="fdl" onClick={() => toast("Download…")}><AI.download /></span>
-              </div>
-            ))}
+            <h3><Icon.fileText /> Dateien</h3>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "0 0 8px" }}>Google-Profil</div>
+            <ProfileShot o={o} />
           </div>
 
         </div>

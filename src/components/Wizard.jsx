@@ -4,7 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
-import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
+import { searchProfiles, placesEnabled, manualCandidate, fetchPlacePhoto } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
 import OrderForm from "@/components/OrderForm";
 
@@ -298,16 +298,18 @@ function Wizard({ initialName, initialProfile, onExit }) {
     persistCheck();
     // Bestellung im Hintergrund ans ops-Backend (Auftragsbestätigung + interne Notiz).
     // Stört die Danke-Animation nicht; ohne NEXT_PUBLIC_OPS_URL ein No-op (Demo).
-    submitOrder({
+    // Profilfoto (einmal pro Bestellung) holen und mit der Bestellung speichern.
+    const photoPid = selected && selected.placeId;
+    Promise.resolve(photoPid ? fetchPlacePhoto(photoPid) : "").then((photo) => submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
       company: contact.company, service, protection: protection || "",
       profile: selected ? selected.name : "", orderId, lang,
-      addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
+      addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "", photo,
       category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
       reviews: selected ? selected.reviews : 0,
       amount: num(servicePrice), protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId,
-    }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
+    })).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung aufgegeben.
     if (typeof window !== "undefined") {
       window.dataLayer = window.dataLayer || [];
