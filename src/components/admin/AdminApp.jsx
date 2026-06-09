@@ -34,6 +34,8 @@ function PayBadge({ pay }) {
   return <span className={"pay-badge " + cls}><I />{label}</span>;
 }
 function initials(name) { return name.split(" ").filter(Boolean).slice(-2).map((s) => s[0]).join("").toUpperCase(); }
+/* Stabile Avatar-Farbe aus dem Namen (mobile Bestell-/Kundenkarten). */
+const avaColor = (s) => { let h = 0; for (let i = 0; i < (s || "").length; i++) h = s.charCodeAt(i) + ((h << 5) - h); return `hsl(${Math.abs(h) % 360} 58% 52%)`; };
 function fillVars(text, o) {
   const inv = "RE-" + o.id.replace("RR-", "");
   return text
@@ -274,7 +276,8 @@ function Orders({ orders, openOrder, query }) {
           <div className="ph-right"><button className="btn btn-sec btn-sm"><AI.download /> Export</button></div>
         </div>
         {list.length ? (
-          <table className="tbl">
+          <React.Fragment>
+          <table className="tbl ord-table">
             <thead><tr><th>Auftrag</th><th>Kunde</th><th>Leistung</th><th>Zahlung</th><th>Status</th><th>Betrag</th></tr></thead>
             <tbody>
               {list.map((o) => (
@@ -289,6 +292,22 @@ function Orders({ orders, openOrder, query }) {
               ))}
             </tbody>
           </table>
+          <div className="m-list ord-cards">
+            {list.map((o) => (
+              <div className="m-row" key={o.id} onClick={() => openOrder(o)}>
+                <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff" }}>{initials(o.name)}</div>
+                <div className="main">
+                  <div className="nm">{o.name}</div>
+                  <div className="meta">{SERVICES[o.service].name} · {o.id}</div>
+                </div>
+                <div className="right">
+                  <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
+                  <StatusBadge status={o.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+          </React.Fragment>
         ) : (
           <div className="empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
         )}
