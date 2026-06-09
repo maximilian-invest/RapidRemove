@@ -927,11 +927,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
         </div>
 
-        <div className="m-btn-row" style={{ marginTop: 14 }}>
-          <a className="m-btn m-btn-sec" href={"tel:" + (o.phone || "").replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
-          <a className="m-btn m-btn-sec" href="#" onClick={(e) => { e.preventDefault(); toast("WhatsApp öffnen…"); }}><Icon.whatsapp /> WhatsApp</a>
-        </div>
-
         <div className="m-dsec">
           <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} /></span></h3>
           <div className="m-vpipe">
