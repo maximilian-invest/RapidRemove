@@ -488,8 +488,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     if (!s || !canStepBack) return;
     const tt = e.changedTouches && e.changedTouches[0]; if (!tt) return;
     const dx = tt.clientX - s.x, dy = tt.clientY - s.y;
-    // klarer horizontaler Linkswisch
-    if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 1.6) go(step - 1);
+    // klarer horizontaler Rechtswisch (von links nach rechts, iOS-typisch) = ein Schritt zurück
+    if (dx > 70 && Math.abs(dx) > Math.abs(dy) * 1.6) go(step - 1);
   };
 
   /* pricing */
