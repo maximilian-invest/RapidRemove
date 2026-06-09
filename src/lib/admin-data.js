@@ -200,4 +200,39 @@ function crmExtras(o) {
   ];
   return { inv, asanaId, asanaSubs, activity, payHist, files };
 }
-export { SERVICES, ORDERS, CHECKS, STATUS_FLOW, TEMPLATES, COMPANY, SUBS, PLANS, DAILY_REV, WEEKLY_REV, MONTHLY_REV, PAYMENTS, money, crmExtras };
+/* Automatisierungen — was im Hintergrund ohne manuelles Zutun passiert.
+   Wird im Admin neben automatischen Sends als anklickbares ⚡-Icon erklärt.
+   `match` ordnet einen Aktivitäts-Eintrag (über den Titel) zu, `keys` ordnet
+   die passenden Vorlagen-Buttons zu. */
+const AUTOMATIONS = [
+  { id: "neues-abo", keys: ["neues-abo"], match: /Schutz aktiviert|neues Abo|Protection Activated/i,
+    title: "Schutz aktiviert (neues Abo)",
+    trigger: "Sobald der Kunde ein Abo abschließt (Stripe: subscription.created).",
+    how: "Der Kunde erhält automatisch die Mail „Schutz aktiviert“. Noch offene Schutzhinweis-Mails (Upsell-Serie) werden gestoppt." },
+  { id: "zahlung", keys: ["zahlungsbestaetigung"], match: /Zahlung erfolgreich|Rechnung|Zahlungsbest/i,
+    title: "Zahlung erfolgreich / Rechnung",
+    trigger: "Nach erfolgreicher Zahlung (Stripe: invoice.paid).",
+    how: "Der Kunde bekommt automatisch die Zahlungsbestätigung samt Rechnungs-PDF. Bei manuell erstellten Rechnungen geht zusätzlich eine Trustpilot-Bewertungseinladung als BCC raus." },
+  { id: "schutzhinweis", keys: ["schutzhinweis"], match: /Schutzmodell|Hinweis zum Schutz/i,
+    title: "Hinweis zum Schutzmodell (Upsell)",
+    trigger: "Nach einer Einmal-Löschung ohne Abo (kein Reset-Auftrag, Betrag < 990 €).",
+    how: "Automatische 3-teilige Serie über zwei Wochen (Tag 0, 7, 14). Schließt der Kunde zwischendurch ein Abo ab, stoppt die Serie automatisch." },
+  { id: "abo-deaktiviert", keys: ["abo-deaktiviert"], match: /Schutz deaktiviert/i,
+    title: "Schutz deaktiviert",
+    trigger: "Wenn ein Abo wegen Zahlungsausfall endet — nicht bei einer Kündigung auf Kundenwunsch.",
+    how: "Der Kunde wird automatisch informiert, dass der Schutz ausläuft." },
+  { id: "bestellung", keys: ["auftragsbestaetigung"], match: /Bestellbestätigung|Bestellung eingegangen/i,
+    title: "Bestellbestätigung",
+    trigger: "Sobald eine neue Bestellung im Funnel eingeht.",
+    how: "Der Kunde erhält automatisch die Bestellbestätigung per E-Mail." },
+  { id: "storno", keys: ["storno", "kundenstorno", "rechtestorno", "scamstorno"], match: null,
+    title: "Storno → Status „storniert“",
+    trigger: "Beim Senden einer Storno-Mail aus diesem Bereich.",
+    how: "Die Bestellung wird automatisch auf den Status „storniert“ gesetzt." },
+  { id: "reaktivierung", keys: ["reaktivierung"], match: /reaktiviert|wieder aktiviert/i,
+    title: "Reaktivierung → Auftrag aktiv",
+    trigger: "Beim Senden der Mail „Auftrag wieder aktiviert“.",
+    how: "Die Bestellung wird automatisch wieder aktiviert (Status zurück auf „In Bearbeitung“)." },
+];
+
+export { SERVICES, ORDERS, CHECKS, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, SUBS, PLANS, DAILY_REV, WEEKLY_REV, MONTHLY_REV, PAYMENTS, money, crmExtras };

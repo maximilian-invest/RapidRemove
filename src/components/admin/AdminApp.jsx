@@ -5,7 +5,7 @@ import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
 import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate } from "@/lib/admin-api";
-import { SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
+import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Hauptanwendung (Dashboard, Bestellungen, E-Mail, Rechnungen) */
@@ -638,6 +638,35 @@ function ConfirmDialog({ ask, onClose }) {
   );
 }
 
+/* ---------- Automatik-Erklärung (anklickbares ⚡-Icon neben Auto-Sends) ---------- */
+function AutomationInfo({ info, onClose }) {
+  if (!info) return null;
+  return (
+    <div className="modal-scrim open" onClick={onClose}>
+      <div className="modal" style={{ width: 460 }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon.zap size={18} style={{ color: "var(--primary)" }} /></span>
+          <div><h3>{info.title}</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>Automatisch — kein manuelles Zutun nötig</div></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
+        </div>
+        <div className="modal-body">
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>Wann</div>
+            <p style={{ fontSize: 14, color: "var(--fg-2)", fontWeight: 600, lineHeight: 1.55, margin: 0 }}>{info.trigger}</p>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 5 }}>Was passiert</div>
+            <p style={{ fontSize: 14, color: "var(--fg-2)", fontWeight: 600, lineHeight: 1.55, margin: 0 }}>{info.how}</p>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn btn-pri" style={{ marginLeft: "auto" }} onClick={onClose}>Verstanden</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, toast }) {
   const o = order;
@@ -659,14 +688,26 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   }, []);
   // Bestätigungs-Dialog im Backend-Design (kein natives window.confirm).
   const [ask, setAsk] = React.useState(null);
+  // Automatik-Erklärung (⚡-Icon).
+  const [autoInfo, setAutoInfo] = React.useState(null);
+  const automationForKey = (key) => AUTOMATIONS.find((a) => a.keys.includes(key));
+  const automationForTitle = (title) => AUTOMATIONS.find((a) => a.match && a.match.test(title || ""));
+  const GENERIC_AUTO = { title: "Automatisch versendet", trigger: "Diese Nachricht wurde vom System automatisch ausgelöst (z. B. durch ein Stripe-Ereignis).", how: "Es war kein manuelles Zutun nötig — der Versand erfolgte automatisch im Hintergrund." };
+  const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno"];
   const sendReal = (key, label) => {
     setAsk({
       title: "Mail senden",
       message: label + "-Mail an " + o.name + " (" + o.email + ") senden?",
       confirmLabel: "Senden",
       onConfirm: async () => {
-        try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet ✓"); }
-        catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+        try {
+          await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" });
+          // Status-Automatik: Storno-Mail → storniert, Reaktivierungs-Mail → wieder aktiv.
+          let note = "";
+          if (STORNO_KEYS.includes(key)) { onStatus(o, "storniert", true); note = " · Bestellung storniert"; }
+          else if (key === "reaktivierung") { onStatus(o, "progress", true); note = " · Auftrag reaktiviert"; }
+          toast(label + " an " + o.name + " gesendet ✓" + note);
+        } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
       },
     });
   };
@@ -678,6 +719,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   return (
     <div className="content">
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
+      <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
       <button className="cd-back" onClick={onBack}><Icon.arrowLeft /> Zurück zu Bestellungen</button>
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
@@ -732,9 +774,15 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     <div key={g} style={{ marginBottom: 8 }}>
                       <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "4px 0 6px" }}>{g}</div>
                       <div className="act-btns">
-                        {items.map((t) => (
-                          <button key={t.key} className="btn btn-sec btn-sm" onClick={() => sendReal(t.key, t.label)}><Icon.mail size={15} /> {t.label}</button>
-                        ))}
+                        {items.map((t) => {
+                          const auto = automationForKey(t.key);
+                          return (
+                            <span key={t.key} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+                              <button className="btn btn-sec btn-sm" onClick={() => sendReal(t.key, t.label)}><Icon.mail size={15} /> {t.label}</button>
+                              {auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(auto)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 8, border: "1px solid var(--hairline)", background: "var(--orange-50)", color: "var(--primary)", cursor: "pointer", flex: "0 0 auto", padding: 0 }}><Icon.zap size={13} /></button> : null}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -786,7 +834,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     <div className="act-item" key={i}>
                       <div className="act-rail"></div>
                       <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : <Icon.fileText />}</div>
-                      <div className="act-body"><div className="at">{a.t}{a.auto ? <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap" }}>automatisch versendet</span> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+                      <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.zap size={11} /> automatisch versendet</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
                     </div>
                   )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
                 </div>
@@ -1013,12 +1061,12 @@ function AdminApp() {
   const counts = { new: orders.filter((o) => o.status === "new").length };
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
-  const setStatus = (o, id) => {
+  const setStatus = (o, id, silent) => {
     const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: id === "done" && x.pay === "pending" ? "paid" : x.pay } : x;
     setOrders((list) => list.map(upd));
     setActive(upd);
     setDetail(upd);
-    toast("Status „" + STATUS_FLOW.find((s) => s.id === id).label + "“ gesetzt");
+    if (!silent) { const s = STATUS_FLOW.find((s) => s.id === id); toast(s ? "Status „" + s.label + "“ gesetzt" : "Status aktualisiert"); }
   };
   const goInvoice = (o) => { setInvoiceModal(o); };
   const doStorno = (o) => {

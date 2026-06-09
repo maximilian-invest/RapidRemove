@@ -20,6 +20,7 @@ import Schutzhinweis, { subject as schutzhinweisSubject } from "./Schutzhinweis"
 import AboDeaktiviert, { subject as aboDeaktiviertSubject } from "./AboDeaktiviert";
 import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
 import Mahnung, { subject as mahnungSubject } from "./Mahnung";
+import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung";
 
 export interface TemplateEntry {
   label: string;
@@ -134,6 +135,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Storno",
     component: Scamstorno,
     subject: scamstornoSubject,
+    sample: de,
+  },
+  reaktivierung: {
+    label: "Auftrag wieder aktiviert",
+    group: "Storno",
+    component: Reaktivierung,
+    subject: reaktivierungSubject,
     sample: de,
   },
   reset: {
