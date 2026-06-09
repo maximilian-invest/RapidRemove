@@ -5,9 +5,11 @@
  *   invoice.paid                  → Rechnungs-Mail mit PDF-Anhang + Rechnungslink
  *                                     (DE bei EUR, sonst EN); BCC an Trustpilot nur
  *                                     bei billing_reason = "manual" (Review-Einladung)
- *                                   + Upsell „Hinweis zum Schutzmodell", falls die
+ *                                   + Upsell-Serie „Hinweis zum Schutzmodell"
+ *                                     (3 Mails über 2 Wochen, Tag 0/7/14), falls die
  *                                     Zahlung eine Einmal-Löschung ohne Abo war
- *                                     (keine Abo-Zeile & Betrag < 990)
+ *                                     (keine Abo-Zeile & Betrag < 990) und KEIN
+ *                                     Reset-Auftrag (Löschen + Neuanlegen)
  *                                   [TODO M3: sevDesk-Beleg buchen]
  *   customer.subscription.created → „Schutz aktiviert“ (Sprache aus preferred_locales)
  *   customer.subscription.deleted → „Schutz deaktiviert“ – NUR wenn die Kündigung
@@ -24,6 +26,9 @@ import { sendMail, type MailAttachment } from "../mailer.js";
 import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
+import {
+  dbReady, latestOrderService, enqueueUpsellSeries, cancelUpsellForEmail,
+} from "../db.js";
 
 type Lang = "de" | "en";
 
@@ -108,14 +113,16 @@ async function sendInvoiceMail(
 const UPSELL_MAX_TOTAL = 99000;
 
 /**
- * Upsell „Hinweis zum Schutzmodell" nach einer Einmalzahlung ohne Abo
- * (make.com „Payment Stripe to sevDesk", Module 43 DE / 44 EN).
- *   Bedingungen: keine Abo-Zeile in der Rechnung UND Gesamtbetrag < 99000.
+ * Upsell-Serie „Hinweis zum Schutzmodell" nach einer Einmalzahlung ohne Abo
+ * (make.com „Payment Stripe to sevDesk", Module 43 DE / 44 EN), aufgefächert auf
+ * 3 Mails mit unterschiedlichem Text über ~2 Wochen (Tag 0/7/14).
+ *   Bedingungen: keine Abo-Zeile UND Gesamtbetrag < 99000 UND kein Reset-Auftrag
+ *   (Löschen + Neuanlegen – der bekommt keinen Schutz-Upsell).
  *   Sprache wie die Rechnung (EUR → de, sonst → en).
- * Hinweis: make.com wartete 300 s vor dem Versand; ein Webhook muss aber schnell
- *   antworten und es gibt (M1) keinen Scheduler – daher sofortiger Versand.
- * Fehler werden geschluckt (make.com-Module hatten „Ignore"), damit ein
- *   misslungener Upsell den Webhook nicht kippt und keine Stripe-Retries auslöst.
+ * Umsetzung: 3 Jobs in der DB einplanen; ein Worker (src/upsell.ts) versendet sie
+ *   fällig. Idempotent über die Invoice-ID (kein Doppel-Enqueue bei invoice.paid +
+ *   payment_succeeded oder Stripe-Retries). Ohne DB: einmaliger Sofortversand.
+ * Fehler werden geschluckt, damit ein misslungener Upsell den Webhook nicht kippt.
  */
 async function maybeSendSchutzhinweis(
   log: FastifyInstance["log"], obj: any, lang: Lang,
@@ -127,10 +134,33 @@ async function maybeSendSchutzhinweis(
     log.info(`Webhook: Schutzhinweis übersprungen (Abo=${hasSubscription}, total=${obj?.total})`);
     return;
   }
+  const email: string | undefined = obj?.customer_email ?? undefined;
+  if (!email) { log.warn("Webhook: Schutzhinweis ohne Empfänger – übersprungen"); return; }
+
+  // Reset-Aufträge (Löschen + Neuanlegen) bekommen keinen Schutz-Upsell.
+  // Best effort: ohne Treffer wird normal gesendet (keine fälschliche Unterdrückung).
   try {
-    await sendTemplate(log, "schutzhinweis", lang, obj?.customer_email);
+    if ((await latestOrderService(email))?.toLowerCase() === "reset") {
+      log.info(`Webhook: Schutzhinweis übersprungen (Reset-Auftrag) für ${email}`);
+      return;
+    }
   } catch (e) {
-    log.error(`Webhook: Schutzhinweis-Versand fehlgeschlagen (ignoriert): ${(e as Error).message}`);
+    log.error(`Webhook: Reset-Prüfung fehlgeschlagen (sende trotzdem): ${(e as Error).message}`);
+  }
+
+  if (dbReady()) {
+    try {
+      const n = await enqueueUpsellSeries({ email, lang, dedupKey: String(obj?.id || email) });
+      log.info(`Webhook: Schutzhinweis-Serie eingeplant (${n} Mails, Tag 0/7/14) für ${email}`);
+    } catch (e) {
+      log.error(`Webhook: Schutzhinweis-Serie konnte nicht eingeplant werden: ${(e as Error).message}`);
+    }
+  } else {
+    try {
+      await sendTemplate(log, "schutzhinweis", lang, email, { variant: 1 });
+    } catch (e) {
+      log.error(`Webhook: Schutzhinweis-Sofortversand fehlgeschlagen (ignoriert): ${(e as Error).message}`);
+    }
   }
 }
 
@@ -148,6 +178,15 @@ async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
     case "customer.subscription.created": {
       const { to, lang } = await customerLangAndEmail(app.log, obj);
       await sendTemplate(app.log, "neues-abo", lang, to);
+      // Schutz ist jetzt aktiv → noch offene Upsell-Mails stoppen.
+      if (to && dbReady()) {
+        try {
+          const n = await cancelUpsellForEmail(to);
+          if (n) app.log.info(`Webhook: ${n} offene Schutzhinweis-Mail(s) für ${to} gestoppt (Abo aktiv)`);
+        } catch (e) {
+          app.log.error(`Webhook: Stoppen der Upsell-Serie fehlgeschlagen: ${(e as Error).message}`);
+        }
+      }
       return;
     }
     case "customer.subscription.deleted":

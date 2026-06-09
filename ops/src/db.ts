@@ -92,6 +92,26 @@ export async function initDb(): Promise<void> {
       detail      text
     )
   `);
+  // Geplante Upsell-Mails (Serie „Hinweis zum Schutzmodell" über ~2 Wochen).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS upsell_jobs (
+      id          bigserial PRIMARY KEY,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      email       text NOT NULL,
+      lang        text NOT NULL DEFAULT 'de',
+      step        integer NOT NULL,
+      send_at     timestamptz NOT NULL,
+      sent_at     timestamptz,
+      attempts    integer NOT NULL DEFAULT 0,
+      canceled    boolean NOT NULL DEFAULT false,
+      dedup_key   text NOT NULL,
+      UNIQUE (dedup_key, step)
+    )
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS upsell_jobs_due
+      ON upsell_jobs (send_at) WHERE sent_at IS NULL AND canceled = false
+  `);
 }
 
 export type OrderInput = {
@@ -168,6 +188,81 @@ export async function listEvents(orderId: string, limit = 100): Promise<Record<s
   if (!pool || !orderId) return [];
   const r = await pool.query(`SELECT * FROM events WHERE order_id=$1 ORDER BY created_at DESC LIMIT $2`, [orderId, limit]);
   return r.rows;
+}
+
+/** Service-Key der jüngsten Bestellung zu einer E-Mail (z. B. "remove" | "reset"). */
+export async function latestOrderService(email: string): Promise<string | null> {
+  if (!pool || !email) return null;
+  const r = await pool.query(
+    `SELECT service FROM orders WHERE lower(email) = lower($1) ORDER BY created_at DESC LIMIT 1`,
+    [email],
+  );
+  return (r.rows[0]?.service as string) ?? null;
+}
+
+/**
+ * Plant die Upsell-Serie ein: je eine Mail pro Versatz (Default Tag 0/7/14).
+ * Idempotent über (dedup_key, step) – mehrfache Webhook-Events legen nichts doppelt an.
+ * Liefert die Anzahl neu eingeplanter Mails.
+ */
+export async function enqueueUpsellSeries(opts: {
+  email: string; lang: string; dedupKey: string; offsetsDays?: number[];
+}): Promise<number> {
+  if (!pool) return 0;
+  const offsets = opts.offsetsDays?.length ? opts.offsetsDays : [0, 7, 14];
+  const now = Date.now();
+  let inserted = 0;
+  for (let i = 0; i < offsets.length; i++) {
+    const sendAt = new Date(now + offsets[i] * 86_400_000);
+    const r = await pool.query(
+      `INSERT INTO upsell_jobs (email, lang, step, send_at, dedup_key)
+       VALUES ($1,$2,$3,$4,$5) ON CONFLICT (dedup_key, step) DO NOTHING`,
+      [opts.email, opts.lang === "en" ? "en" : "de", i + 1, sendAt, opts.dedupKey],
+    );
+    inserted += r.rowCount || 0;
+  }
+  return inserted;
+}
+
+/** Fällige, noch nicht versandte Upsell-Mails (älteste zuerst). */
+export async function dueUpsellJobs(limit = 25): Promise<{ id: string; email: string; lang: string; step: number }[]> {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT id, email, lang, step FROM upsell_jobs
+     WHERE sent_at IS NULL AND canceled = false AND send_at <= now()
+     ORDER BY send_at ASC LIMIT $1`,
+    [limit],
+  );
+  return r.rows as { id: string; email: string; lang: string; step: number }[];
+}
+
+/** Markiert eine Upsell-Mail als versandt. */
+export async function markUpsellSent(id: string | number): Promise<void> {
+  if (!pool) return;
+  await pool.query(`UPDATE upsell_jobs SET sent_at = now() WHERE id = $1`, [id]);
+}
+
+/** Zählt einen Fehlversuch; ab `max` Versuchen wird aufgegeben (als versandt markiert). */
+export async function bumpUpsellAttempt(id: string | number, max = 3): Promise<void> {
+  if (!pool) return;
+  await pool.query(
+    `UPDATE upsell_jobs
+       SET attempts = attempts + 1,
+           sent_at = CASE WHEN attempts + 1 >= $2 THEN now() ELSE sent_at END
+     WHERE id = $1`,
+    [id, max],
+  );
+}
+
+/** Stoppt alle noch offenen Upsell-Mails einer E-Mail (z. B. wenn der Schutz gebucht wurde). */
+export async function cancelUpsellForEmail(email: string): Promise<number> {
+  if (!pool || !email) return 0;
+  const r = await pool.query(
+    `UPDATE upsell_jobs SET canceled = true
+     WHERE lower(email) = lower($1) AND sent_at IS NULL AND canceled = false`,
+    [email],
+  );
+  return r.rowCount || 0;
 }
 
 /** Zeilen-Zähler für Diagnose (z. B. /health). */

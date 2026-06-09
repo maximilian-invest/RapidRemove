@@ -10,6 +10,7 @@ import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
+import { startUpsellWorker } from "./upsell";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
@@ -88,21 +89,21 @@ app.get("/", async (_req, reply) => {
 // Einzelne Vorschau (HTML im Browser)
 app.get("/preview/:key", async (req, reply) => {
   const { key } = req.params as { key: string };
-  const { lang } = req.query as { lang?: string };
+  const { lang, variant } = req.query as { lang?: string; variant?: string };
   const t = TEMPLATES[key];
   if (!t) return reply.code(404).type("text/html").send("Unbekanntes Template");
-  const props = { ...t.sample, ...(lang ? { lang } : {}) };
+  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}) };
   const html = await render(React.createElement(t.component, props));
   return reply.type("text/html").send(html);
 });
 
 // Test-Versand per Link (mit ADMIN_TOKEN geschützt)
 app.get("/send-test", async (req, reply) => {
-  const { key = "auftragsbestaetigung", to, token, lang } = req.query as Record<string, string>;
+  const { key = "auftragsbestaetigung", to, token, lang, variant } = req.query as Record<string, string>;
   if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) return reply.code(401).send("unauthorized");
   const t = TEMPLATES[key];
   if (!t || !to) return reply.code(400).send("Parameter fehlen: key, to");
-  const props = { ...t.sample, ...(lang ? { lang } : {}) };
+  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}) };
   const html = await render(React.createElement(t.component, props));
   await sendMail({ to, subject: t.subject(props), html });
   return { sent: to, template: key };
@@ -352,6 +353,7 @@ async function start() {
   try {
     const addr = await app.listen({ host: "0.0.0.0", port });
     app.log.info(`ops läuft auf ${addr}`);
+    startUpsellWorker(app);
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();
