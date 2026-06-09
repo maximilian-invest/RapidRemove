@@ -63,10 +63,6 @@ function Sidebar({ view, setView, counts, open, live }) {
           <I /> {label} {badge ? <span className="badge">{badge}</span> : null}
         </button>
       ))}
-      <div className="side-sec">System</div>
-      <button className={"side-link" + (view === "settings" ? " on" : "")} onClick={() => setView("settings")}>
-        <AI.settings /> Einstellungen
-      </button>
       <div className="side-foot">
         <div className="ava">MK</div>
         <div>
@@ -516,37 +512,6 @@ function Customers({ customers, query }) {
         ) : (
           <div className="empty"><AI.users /><p>Keine Stripe-Kunden geladen — ist der STRIPE_SECRET_KEY gesetzt?</p></div>
         )}
-      </div>
-    </div>
-  );
-}
-
-/* ---------- Settings (light) ---------- */
-function Settings() {
-  return (
-    <div className="content">
-      <div className="grid-2">
-        <div className="panel">
-          <div className="panel-head"><h2>Integrationen</h2></div>
-          <div style={{ padding: 22, display: "flex", flexDirection: "column", gap: 14 }}>
-            {[["stripe", "Stripe", "Zahlungen & Auszahlungen", true], ["mail", "Mailserver", "Transaktions-E-Mails", true], ["trustpilot", "Trustpilot", "Bewertungs-Einladungen", true], ["whatsapp", "WhatsApp Business", "Direkter Kundenkontakt", false]].map(([id, name, desc, on]) => (
-              <div key={id} className="stripe-box">
-                <div><div style={{ fontWeight: 800, fontSize: 14 }}>{name}</div><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{desc}</div></div>
-                <span className="sb-status">{on ? <span className="badge-st st-done"><span className="d"></span>Verbunden</span> : <button className="btn btn-sec btn-sm">Verbinden</button>}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="panel">
-          <div className="panel-head"><h2>Firmendaten</h2></div>
-          <div style={{ padding: 22 }}>
-            <div className="drow"><span className="dl">Firma</span><span className="dv">{COMPANY.name}</span></div>
-            <div className="drow"><span className="dl">Adresse</span><span className="dv">{COMPANY.street}, {COMPANY.city}</span></div>
-            <div className="drow"><span className="dl">UID</span><span className="dv">{COMPANY.vat}</span></div>
-            <div className="drow"><span className="dl">E-Mail</span><span className="dv">{COMPANY.email}</span></div>
-            <div className="drow"><span className="dl">IBAN</span><span className="dv">{COMPANY.iban}</span></div>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -1024,7 +989,7 @@ function PayLinkModal({ order, onClose, toast }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden", settings: "Einstellungen" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -1085,12 +1050,11 @@ function AdminApp() {
 
   let body;
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={doStorno} toast={toast} />;
-  else if (view === "dashboard") body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
-  else body = <Settings />;
+  else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
 
   return (
     <div className="adm">
