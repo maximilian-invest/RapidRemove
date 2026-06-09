@@ -46,7 +46,7 @@ function mapOrder(r) {
     id: r.id, created: fmtDate(r.created_at), name: r.name || "", email: r.email || "", phone: r.phone || "",
     company: r.company || "", profile: r.profile || "", reviews: Number(r.reviews) || 0, rating: r.rating || "—",
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
-    amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", note: r.note || "",
+    amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
   };
 }
 function mapCheck(r) {
@@ -112,12 +112,12 @@ export async function fetchTemplates() {
 }
 
 /** Verschickt einen BESTEHENDEN Stripe-Zahlungslink (nach Szenario) an den Kunden. */
-export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, template }) {
+export async function sendPayLink({ to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, template, lang }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/paylink", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, template }),
+    body: JSON.stringify({ token: TOKEN, email: to, name, orderId, currency, service, protection, serviceAmount, protAmount, protType, total, protectionLabel, template, lang }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
@@ -125,12 +125,12 @@ export async function sendPayLink({ to, name, orderId, currency, service, protec
 }
 
 /** Sendet eine echte, gebrandete Vorlage (z. B. Rechte benötigt, Adresse) an den Kunden. */
-export async function sendTemplate({ key, to, orderId }) {
+export async function sendTemplate({ key, to, orderId, lang }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/send-template", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, key, to, orderId }),
+    body: JSON.stringify({ token: TOKEN, key, to, orderId, lang }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

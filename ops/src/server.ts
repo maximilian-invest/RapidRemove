@@ -302,7 +302,8 @@ app.post("/admin/paylink", async (req, reply) => {
     const money = currency === "usd"
       ? `$ ${total.toLocaleString("en-US")}`
       : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
-    const props = { lang: "de", total: money, due: tplKey === "mahnung" ? "umgehend" : "sofort", payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined };
+    const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
+    const props = { lang: tlang, total: money, due: tlang === "de" ? (tplKey === "mahnung" ? "umgehend" : "sofort") : (tplKey === "mahnung" ? "now" : "immediately"), payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
@@ -324,7 +325,8 @@ app.post("/admin/send-template", async (req, reply) => {
   if (!t) return reply.code(400).send({ ok: false, error: "unknown template" });
   const orderId = clip(b.orderId, 40);
   try {
-    const props = { ...(t.sample as object), lang: "de" };
+    const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
+    const props = { ...(t.sample as object), lang: tlang };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to });

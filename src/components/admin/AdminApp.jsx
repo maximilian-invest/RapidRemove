@@ -659,7 +659,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 <div className="act-grp-l">Zahlung</div>
                 <div className="act-btns">
                   <button className="btn btn-pri btn-sm" onClick={() => onPayLink(o)}><AI.send /> Zahlungslink senden</button>
-                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
+                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
                   {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
                   {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
                 </div>
@@ -676,7 +676,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 <div className="act-grp-l">Vorgangs-Mails (echte Vorlagen)</div>
                 <div className="act-btns">
                   {[["rechte-benoetigt", "Zugriffsrechte", Icon.lock], ["adresse", "Adresse", Icon.mapPin], ["verifizieren", "Verifizieren", Icon.shieldCheck], ["nachweise-benoetigt", "Nachweise", Icon.fileText], ["nicht-gefunden", "Nicht gefunden", Icon.search], ["garantiefall", "Garantiefall", Icon.refresh]].map(([key, label, Ic]) => (
-                    <button key={key} className="btn btn-sec btn-sm" onClick={async () => { if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return; try { await sendTemplate({ key, to: o.email, orderId: o.id }); toast(label + " an " + o.name + " gesendet \u2713"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><Ic size={15} /> {label}</button>
+                    <button key={key} className="btn btn-sec btn-sm" onClick={async () => { if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return; try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet \u2713"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><Ic size={15} /> {label}</button>
                   ))}
                 </div>
               </div>
@@ -845,6 +845,8 @@ function PayLinkModal({ order, onClose, toast }) {
   const protAmount = PROT_PRICE[prot] || 0;
   const recurring = prot === "monthly" || prot === "monitor";
   const total = (order.amount || 0) + protAmount;
+  const isEn = (order.lang || "de") === "en";
+  const protMailLabel = prot === "none" ? "" : ((isEn ? { monthly: "Monthly protection", monitor: "Protection + Monitoring", lifetime: "Lifetime protection" } : { monthly: "Monatlicher Schutz", monitor: "Schutz + Monitoring", lifetime: "Lebenslanger Schutz" })[prot] + " – " + money(protAmount, order.country) + (recurring ? (isEn ? "/mo." : "/Mon.") : ""));
   return (
     <div className="modal-scrim open" onClick={onClose}>
       <div className="modal" style={{ width: 480 }} onClick={(e) => e.stopPropagation()}>
@@ -888,7 +890,7 @@ function PayLinkModal({ order, onClose, toast }) {
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: order.country === "US" ? "usd" : "eur", service: order.service, protection: prot, serviceAmount: order.amount || 0, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: prot !== "none" ? (PROT_LABEL[prot] + " – " + money(protAmount, order.country) + (recurring ? "/Mon." : "")) : "" }); onClose(); toast("Zahlungslink (" + PROT_LABEL[prot] + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: order.country === "US" ? "usd" : "eur", service: order.service, protection: prot, serviceAmount: order.amount || 0, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: protMailLabel, lang: order.lang || "de" }); onClose(); toast("Zahlungslink (" + PROT_LABEL[prot] + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>
