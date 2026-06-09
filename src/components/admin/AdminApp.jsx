@@ -624,6 +624,21 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     fetchEvents(o.id).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
     return () => { alive = false; };
   }, [o.id]);
+  // Alle echten ops-Vorlagen laden → jede ist per Klick an den Kunden sendbar.
+  const [tpls, setTpls] = React.useState(null);
+  React.useEffect(() => {
+    let alive = true;
+    fetchTemplates().then((l) => { if (alive) setTpls(l || []); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  const sendReal = async (key, label) => {
+    if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return;
+    try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet ✓"); }
+    catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+  };
+  // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
+  const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
+  const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
   return (
@@ -674,11 +689,21 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               </div>
               <div>
                 <div className="act-grp-l">Vorgangs-Mails (echte Vorlagen)</div>
-                <div className="act-btns">
-                  {[["rechte-benoetigt", "Zugriffsrechte", Icon.lock], ["adresse", "Adresse", Icon.mapPin], ["verifizieren", "Verifizieren", Icon.shieldCheck], ["nachweise-benoetigt", "Nachweise", Icon.fileText], ["nicht-gefunden", "Nicht gefunden", Icon.search], ["garantiefall", "Garantiefall", Icon.refresh]].map(([key, label, Ic]) => (
-                    <button key={key} className="btn btn-sec btn-sm" onClick={async () => { if (typeof window !== "undefined" && !window.confirm(label + "-Mail an " + o.name + " senden?")) return; try { await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" }); toast(label + " an " + o.name + " gesendet \u2713"); } catch (e) { toast("Senden fehlgeschlagen: " + e.message); } }}><Ic size={15} /> {label}</button>
-                  ))}
-                </div>
+                {tpls === null ? <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600 }}>Vorlagen laden\u2026</div> : null}
+                {TPL_GROUP_ORDER.map((g) => {
+                  const items = (tpls || []).filter((t) => t.group === g && !TPL_VIA_PAYLINK.has(t.key));
+                  if (!items.length) return null;
+                  return (
+                    <div key={g} style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "4px 0 6px" }}>{g}</div>
+                      <div className="act-btns">
+                        {items.map((t) => (
+                          <button key={t.key} className="btn btn-sec btn-sm" onClick={() => sendReal(t.key, t.label)}><Icon.mail size={15} /> {t.label}</button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <div>
                 <div className="act-grp-l">Verwaltung</div>
