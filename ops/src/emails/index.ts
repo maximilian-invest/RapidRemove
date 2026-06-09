@@ -16,6 +16,7 @@ import Scamstorno, { subject as scamstornoSubject } from "./Scamstorno";
 import Reset, { subject as resetSubject } from "./Reset";
 import NichtGefunden, { subject as nichtGefundenSubject } from "./NichtGefunden";
 import NeuesAbo, { subject as neuesAboSubject } from "./NeuesAbo";
+import Schutzhinweis, { subject as schutzhinweisSubject } from "./Schutzhinweis";
 import AboDeaktiviert, { subject as aboDeaktiviertSubject } from "./AboDeaktiviert";
 import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
 import Mahnung, { subject as mahnungSubject } from "./Mahnung";
@@ -149,6 +150,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Schutz",
     component: NeuesAbo,
     subject: neuesAboSubject,
+    sample: de,
+  },
+  schutzhinweis: {
+    label: "Hinweis zum Schutzmodell (Upsell)",
+    group: "Schutz",
+    component: Schutzhinweis,
+    subject: schutzhinweisSubject,
     sample: de,
   },
   "abo-deaktiviert": {

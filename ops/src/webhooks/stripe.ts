@@ -3,6 +3,9 @@
  * Logik 1:1 aus den make.com-Blueprints abgeleitet:
  *
  *   invoice.paid                  → Rechnung/Gutschein-Mail (DE bei EUR, sonst EN)
+ *                                   + Upsell „Hinweis zum Schutzmodell", falls die
+ *                                     Zahlung eine Einmal-Löschung ohne Abo war
+ *                                     (keine Abo-Zeile & Betrag < 990)
  *                                   [TODO M3: sevDesk-Beleg buchen]
  *   customer.subscription.created → „Schutz aktiviert“ (Sprache aus preferred_locales)
  *   customer.subscription.deleted → „Schutz deaktiviert“ – NUR wenn die Kündigung
@@ -59,6 +62,36 @@ async function customerLangAndEmail(
   return { to: obj?.customer_email ?? undefined, lang: "de" };
 }
 
+/** make.com: Upsell nur bei Gesamtbetrag < 990,00 (in Minor Units → < 99000). */
+const UPSELL_MAX_TOTAL = 99000;
+
+/**
+ * Upsell „Hinweis zum Schutzmodell" nach einer Einmalzahlung ohne Abo
+ * (make.com „Payment Stripe to sevDesk", Module 43 DE / 44 EN).
+ *   Bedingungen: keine Abo-Zeile in der Rechnung UND Gesamtbetrag < 99000.
+ *   Sprache wie die Rechnung (EUR → de, sonst → en).
+ * Hinweis: make.com wartete 300 s vor dem Versand; ein Webhook muss aber schnell
+ *   antworten und es gibt (M1) keinen Scheduler – daher sofortiger Versand.
+ * Fehler werden geschluckt (make.com-Module hatten „Ignore"), damit ein
+ *   misslungener Upsell den Webhook nicht kippt und keine Stripe-Retries auslöst.
+ */
+async function maybeSendSchutzhinweis(
+  log: FastifyInstance["log"], obj: any, lang: Lang,
+): Promise<void> {
+  const lines: any[] = obj?.lines?.data ?? [];
+  const hasSubscription = !!obj?.subscription || lines.some((l) => !!l?.subscription);
+  const total = Number(obj?.total);
+  if (hasSubscription || !Number.isFinite(total) || total >= UPSELL_MAX_TOTAL) {
+    log.info(`Webhook: Schutzhinweis übersprungen (Abo=${hasSubscription}, total=${obj?.total})`);
+    return;
+  }
+  try {
+    await sendTemplate(log, "schutzhinweis", lang, obj?.customer_email);
+  } catch (e) {
+    log.error(`Webhook: Schutzhinweis-Versand fehlgeschlagen (ignoriert): ${(e as Error).message}`);
+  }
+}
+
 async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
   const obj = event?.data?.object ?? {};
   switch (event?.type) {
@@ -66,6 +99,7 @@ async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
     case "invoice.payment_succeeded": {
       const lang: Lang = (obj.currency || "").toLowerCase() === "eur" ? "de" : "en";
       await sendTemplate(app.log, "zahlungsbestaetigung", lang, obj.customer_email);
+      await maybeSendSchutzhinweis(app.log, obj, lang);
       // TODO M3: sevDesk-Beleg (createContact → uploadVoucher → createVoucher)
       return;
     }
