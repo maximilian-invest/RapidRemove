@@ -177,7 +177,7 @@ function Hero({ onStart }) {
           <div className="sub">{t.hero.cardSub}</div>
           <div className="hero-ac" ref={acRef}>
             <div className="field">
-              <Icon.search />
+              <Icon.googleG />
               <input className="input" placeholder={t.hero.placeholder} value={name}
                 onChange={(e) => { setName(e.target.value); setAcOpen(true); }}
                 onFocus={() => setAcOpen(true)}
@@ -198,7 +198,7 @@ function Hero({ onStart }) {
               </div>
             )}
           </div>
-          <button className="btn btn-primary btn-block lg" onClick={go}>
+          <button className="btn btn-primary btn-block lg cta-glow" onClick={go}>
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
         </div>
