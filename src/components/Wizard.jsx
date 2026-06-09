@@ -168,15 +168,23 @@ function makeCandidates(rawName, lang) {
 }
 
 /* ---- Step indicator ---- */
-function Stepper({ step }) {
+function Stepper({ step, onNav }) {
   const { t } = useLang();
   const labels = t.wizard.steps;
   return (
     <div className="stepper">
       <div className="stepper-track">
-        {labels.map((label, i) => (
+        {labels.map((label, i) => {
+          const clickable = !!onNav && i < step; // nur bereits erledigte Schritte sind anklickbar
+          return (
           <React.Fragment key={i}>
-            <div className={"stepper-node" + (i < step ? " done" : i === step ? " active" : "")}>
+            <div
+              className={"stepper-node" + (i < step ? " done" : i === step ? " active" : "") + (clickable ? " nav" : "")}
+              onClick={clickable ? () => onNav(i) : undefined}
+              role={clickable ? "button" : undefined}
+              tabIndex={clickable ? 0 : undefined}
+              onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNav(i); } } : undefined}
+            >
               <div className="stepper-dot">{i < step ? <Icon.check /> : i + 1}</div>
               <div className="stepper-label">{label}</div>
             </div>
@@ -184,7 +192,8 @@ function Stepper({ step }) {
               <div className={"stepper-bar" + (i < step ? " filled" : "")}><div className="fill"></div></div>
             )}
           </React.Fragment>
-        ))}
+          );
+        })}
       </div>
       <div className="stepper-count">{t.wizard.stepCount(step + 1, labels.length)}</div>
     </div>
@@ -466,6 +475,22 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   };
 
   const go = (n) => setStep(n);
+
+  // Navigation per Wisch (nach links = ein Schritt zurück) und per Klick auf einen erledigten Stepper-Schritt.
+  const canStepBack = step > 0 && step < 6 && !processing;
+  const touchRef = React.useRef(null);
+  const onTouchStart = (e) => {
+    if (!e.touches || e.touches.length !== 1) { touchRef.current = null; return; }
+    touchRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+  const onTouchEnd = (e) => {
+    const s = touchRef.current; touchRef.current = null;
+    if (!s || !canStepBack) return;
+    const tt = e.changedTouches && e.changedTouches[0]; if (!tt) return;
+    const dx = tt.clientX - s.x, dy = tt.clientY - s.y;
+    // klarer horizontaler Linkswisch
+    if (dx < -70 && Math.abs(dx) > Math.abs(dy) * 1.6) go(step - 1);
+  };
 
   /* pricing */
   const servicePriceNum = num(service === "remove" ? p.deletion : p.reset);
@@ -935,7 +960,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
                 <Icon.arrowRight className="dc-arrow" size={18} />
               </button>
               <button className="dc-card" onClick={() => onDeindex && onDeindex()}>
-                <span className="dc-ic"><Icon.fileText size={22} /></span>
+                <span className="dc-ic"><Icon.globe size={22} /></span>
                 <span className="dc-main">
                   <span className="dc-t">{conv.xsPressTitle}</span>
                   <span className="dc-d">{conv.xsPressDesc}</span>
@@ -968,9 +993,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
         </div>
       </div>
-      <Stepper step={step} />
+      <Stepper step={step} onNav={canStepBack ? go : null} />
       <TrustBar />
-      <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef}>
+      <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
         </div>

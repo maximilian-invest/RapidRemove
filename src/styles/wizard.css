@@ -476,6 +476,11 @@
 .wz-hint svg{width:17px;height:17px;color:var(--primary);flex:none;margin-top:1px;}
 .agb-consent.err{color:var(--danger);}
 
+/* ---- clickable stepper (jump back to a completed step) ---- */
+.stepper-node.nav{cursor:pointer;}
+.stepper-node.nav:hover .stepper-dot{border-color:var(--primary);color:var(--primary);}
+.stepper-node.nav.done:hover .stepper-dot{border-color:var(--primary);background:var(--primary);color:#fff;}
+
 /* ---- mobile: topbar trims + no horizontal overflow ---- */
 @media(max-width:720px){
   .wz-secure{display:none;}            /* "verschlüsselt & sicher" raus auf Mobil */
@@ -487,6 +492,15 @@
   .wz-grid-name,.wz-grid-confirm{gap:18px;}
   .wz-grid-name>*,.wz-grid-confirm>*,.wz-aside,.profile-main{min-width:0;}
   .profile-main .pn{overflow-wrap:anywhere;}
-  .svc-cta .wz-actions{min-width:0;}
   .stat-card .stat-num{font-size:40px;}
+  /* action buttons stack full-width so long labels never spill past the edge */
+  .wz-actions{flex-direction:column-reverse;align-items:stretch;gap:10px;}
+  .wz-actions .btn{width:100%;}
+  .svc-cta{flex-direction:column;align-items:stretch;gap:14px;}
+  .svc-cta .wz-actions{width:100%;min-width:0;}
+  /* express order-bump: give the copy full width instead of a tiny sliver */
+  .express{flex-wrap:wrap;gap:10px;padding:18px;position:relative;}
+  .express .ex-ic{width:42px;height:42px;}
+  .express .ex-main{flex:1 1 100%;}
+  .express .switch{position:absolute;top:18px;right:18px;}
 }
