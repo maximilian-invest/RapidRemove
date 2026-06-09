@@ -805,7 +805,7 @@ function FragebogenBlock({ form, onRequest }) {
 }
 
 /* ---------- Customer detail (full CRM record) ---------- */
-function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, toast }) {
+function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, toast }) {
   const o = order;
   const isMobile = useIsMobile();
   const ex = crmExtras(o);
@@ -886,7 +886,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
           </div>
         </div>
-        <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} /></div>
+        <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} />
+          {o.status !== "storniert"
+            ? <button className="stat-toggle danger" onClick={() => setAsk({ title: "Auftrag stornieren", message: "Auftrag " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Auftrag stornieren</button>
+            : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Status wird auf „In Bearbeitung“ gesetzt.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
+        </div>
 
         <div className="m-btn-row" style={{ marginTop: 14 }}>
           <a className="m-btn m-btn-sec" href={"tel:" + (o.phone || "").replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
@@ -955,15 +959,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <h3><Icon.fileText /> Fragebogen</h3>
           <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
         </div>
-
-        <div className="m-dsec">
-          <h3><Icon.ban /> Verwaltung</h3>
-          <div className="m-btn-row">
-            {o.status !== "storniert"
-              ? <button className="m-btn m-btn-danger" onClick={() => setAsk({ title: "Bestellung stornieren", message: "Bestellung " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Stornieren</button>
-              : <span className="badge-st st-refunded" style={{ margin: "0 auto" }}><span className="d"></span>Storniert</span>}
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -975,7 +970,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
         <div>
-          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> <PayBadge pay={o.pay} /></div>
+          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> <PayBadge pay={o.pay} />
+            {o.status !== "storniert"
+              ? <button className="stat-toggle danger" onClick={() => setAsk({ title: "Auftrag stornieren", message: "Auftrag " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Auftrag stornieren</button>
+              : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Status wird auf „In Bearbeitung“ gesetzt.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
+          </div>
           <div className="cd-sub">{o.company} · {o.id}</div>
           <div className="cd-meta-row">
             <span className="m"><Icon.mail /> {o.email}</span>
@@ -1040,12 +1039,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     ) : null}
                   </React.Fragment>
                 ) : null}
-              </div>
-              <div>
-                <div className="act-grp-l">Verwaltung</div>
-                <div className="act-btns">
-                  {o.status !== "storniert" ? <button className="btn btn-danger btn-sm" onClick={() => setAsk({ title: "Bestellung stornieren", message: "Bestellung " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Bestellung stornieren</button> : <span className="badge-st st-refunded"><span className="d"></span>Storniert</span>}
-                </div>
               </div>
             </div>
           </div>
@@ -1344,9 +1337,18 @@ function AdminApp() {
     setOrderStatus({ orderId: o.id, status: "storniert", pay: "refunded", label: "storniert" }).catch((e) => toast("Status nicht gespeichert: " + e.message));
     toast("Bestellung " + o.id + " storniert");
   };
+  // Gegenstück zum Stornieren: Auftrag wieder aktiv setzen (In Bearbeitung, Zahlung offen).
+  const doReactivate = (o) => {
+    const upd = (x) => x && x.id === o.id ? { ...x, status: "progress", pay: "pending" } : x;
+    setOrders((list) => list.map(upd));
+    setDetail(upd);
+    setActive(upd);
+    setOrderStatus({ orderId: o.id, status: "progress", pay: "pending", label: "In Bearbeitung" }).catch((e) => toast("Status nicht gespeichert: " + e.message));
+    toast("Auftrag " + o.id + " wieder aktiviert");
+  };
 
   let body;
-  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={doStorno} toast={toast} />;
+  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={doStorno} onReactivate={doReactivate} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates />;

@@ -375,6 +375,12 @@ button{font-family:inherit;}
 .cd-hero .cd-id{font-family:var(--font-display);font-weight:700;font-size:23px;line-height:1.1;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
 .cd-hero .cd-sub{font-size:13.5px;color:var(--fg-muted);margin-top:3px;font-weight:600;}
 .cd-hero .cd-acts{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}
+/* Status-Umschalter im Detail-Kopf neben den Badges (Auftrag stornieren ⇄ aktivieren). */
+.stat-toggle{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:var(--r-pill);padding:6px 13px;font-family:var(--font-body);font-size:12.5px;font-weight:800;line-height:1;cursor:pointer;background:var(--primary);color:#fff;transition:filter .15s,transform .1s;}
+.stat-toggle:hover{filter:brightness(.96);}
+.stat-toggle:active{transform:scale(.96);}
+.stat-toggle.danger{background:var(--danger);}
+.stat-toggle svg{width:14px;height:14px;}
 .cd-meta-row{display:flex;gap:22px;margin-top:10px;flex-wrap:wrap;}
 .cd-meta-row .m{font-size:12.5px;color:var(--fg-2);font-weight:700;display:flex;align-items:center;gap:6px;}
 .cd-meta-row .m svg{width:14px;height:14px;color:var(--fg-muted);}
