@@ -127,15 +127,18 @@ function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) 
 }
 
 /* ============ WIZARD ROOT ============ */
-function Wizard({ initialName, onExit }) {
+function Wizard({ initialName, initialProfile, onExit }) {
   const { t, lang } = useLang();
   const w = t.wizard;
   const p = profileFor(lang);
-  const [step, setStep] = React.useState(0);
+  // Mit einem in der Live-Suche gewählten Profil starten wir direkt auf der
+  // Machbarkeits-Karte (Schritt 3 / Index 2) – ohne erneute Profilsuche.
+  const [step, setStep] = React.useState(initialProfile ? 2 : 0);
   const [name, setName] = React.useState(initialName || "");
-  const [candidates, setCandidates] = React.useState(() => makeCandidates(initialName, lang));
-  const [phase, setPhase] = React.useState("searching"); // searching | found
-  const [multi, setMulti] = React.useState(true);
+  const [candidates, setCandidates] = React.useState(() =>
+    initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang));
+  const [phase, setPhase] = React.useState(initialProfile ? "found" : "searching"); // searching | found
+  const [multi, setMulti] = React.useState(initialProfile ? false : true);
   const [selectedId, setSelectedId] = React.useState("p1");
   const [service, setService] = React.useState("remove");
   const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — default ON
@@ -151,8 +154,10 @@ function Wizard({ initialName, onExit }) {
 
   React.useEffect(() => { if (bodyRef.current) window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
-  // If we arrived with a name, auto-jump into the search step
+  // Mit konkretem Profil bleiben wir auf Schritt 3 (Machbarkeit); sonst startet
+  // ein getippter Name automatisch die Profilsuche.
   React.useEffect(() => {
+    if (initialProfile) return;
     if (initialName && initialName.trim()) { startSearch(initialName); }
     // eslint-disable-next-line
   }, []);
@@ -313,7 +318,7 @@ function Wizard({ initialName, onExit }) {
         </div>
         <div className="wz-actions" style={{ marginTop: 18 }}>
           <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-          <button className="btn btn-primary grow" onClick={() => go(3)}>{w.s3.button} <Icon.arrowRight size={18} /></button>
+          <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
         </div>
         <div className="wz-trust-strip">
           {w.trustStrip.slice(3).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}

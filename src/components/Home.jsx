@@ -121,7 +121,9 @@ function Hero({ onStart }) {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
-  const pick = (n) => { setAcOpen(false); go(n); };
+  // Konkrete Auswahl aus der Live-Suche: ein Profil-Objekt springt direkt zu
+  // „Schritt 3" (Machbarkeit); der getippte Text bleibt ein String (normale Suche).
+  const pick = (val) => { setAcOpen(false); onStart(val); };
   const showAc = acOpen && name.trim().length >= 2;
   return (
     <section className="hero">
@@ -168,7 +170,7 @@ function Hero({ onStart }) {
             {showAc && (
               <div className="hero-ac-pop">
                 {sug.map((s) => (
-                  <button type="button" className="hero-ac-item" key={s.placeId || s.id} onClick={() => pick(s.name)}>
+                  <button type="button" className="hero-ac-item" key={s.placeId || s.id} onClick={() => pick(s)}>
                     <Icon.building />
                     <span className="ac-tx"><span className="ac-n">{s.name}</span>{s.addr ? <span className="ac-a">{s.addr}</span> : null}</span>
                   </button>

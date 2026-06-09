@@ -14,6 +14,7 @@ export default function App({ initialLang = "de" }) {
   const lang = I18N[initialLang] ? initialLang : "de";
   const [route, setRoute] = React.useState("home"); // home | wizard | blog | orm | deindex
   const [seed, setSeed] = React.useState("");
+  const [seedProfile, setSeedProfile] = React.useState(null);
   const [homeScroll, setHomeScroll] = React.useState(null);
 
   // Deep links: ?start=1 -> wizard, ?view=magazin|reputation|presse -> view, #section -> scroll.
@@ -41,8 +42,17 @@ export default function App({ initialLang = "de" }) {
 
   const t = I18N[lang] || I18N.de;
 
-  const startWizard = (name) => {
-    setSeed(typeof name === "string" ? name : "");
+  // Vom Hero/Live-Suche: entweder ein String (getippter Firmenname) oder ein
+  // konkretes Profil-Objekt (in der Live-Suche angeklickt). Mit Profil springt
+  // der Wizard direkt zu „Schritt 3" (Machbarkeit) – die Profilsuche entfällt.
+  const startWizard = (arg) => {
+    if (arg && typeof arg === "object") {
+      setSeed(arg.name || "");
+      setSeedProfile(arg);
+    } else {
+      setSeed(typeof arg === "string" ? arg : "");
+      setSeedProfile(null);
+    }
     setRoute("wizard");
     window.scrollTo({ top: 0 });
   };
@@ -63,7 +73,7 @@ export default function App({ initialLang = "de" }) {
             ? <OrmPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
             : route === "deindex"
               ? <DeindexPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
-              : <Wizard key={seed + lang} initialName={seed} onExit={exitWizard} />}
+              : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} />}
     </LangContext.Provider>
   );
 }
