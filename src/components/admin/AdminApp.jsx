@@ -46,7 +46,7 @@ function fillVars(text, o) {
 
 /* Sendet dem Kunden mit EINEM Klick genau den Zahlungslink, der zu seiner
    Bestellung passt (Betrag/Leistung/Schutz) — ohne Auswahl-Liste. */
-async function sendOrderedPayLink(o, toast) {
+async function sendOrderedPayLink(o, toast, onStatus) {
   try {
     const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
     const protectionLabel = o.protection
@@ -59,6 +59,8 @@ async function sendOrderedPayLink(o, toast) {
       total: tot, protectionLabel, lang: o.lang || "de",
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
+    // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
+    if (onStatus) onStatus(o, "done", true, true);
   } catch (e) {
     toast("Kein passender Link — bitte „Anderen Link wählen“: " + (e.message || e));
   }
@@ -142,7 +144,12 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
   const progressCount = orders.filter((o) => o.status === "progress").length;
   const revenue = orders.filter((o) => o.pay === "paid").reduce((s, o) => s + o.amount, 0);
   const newChecks = checks.filter((c) => c.status === "neu").length;
+  // Erfolgsquote: Erfolg = Zahlungslink gesendet (Status „gelöscht"); kein Erfolg = storniert.
+  const doneCount = orders.filter((o) => o.status === "done").length;
+  const stornoCount = orders.filter((o) => o.status === "storniert").length;
+  const successRate = (doneCount + stornoCount) ? Math.round((doneCount / (doneCount + stornoCount)) * 100) : null;
   const kpis = [
+    { ic: Icon.checkCircle, label: "Erfolgsquote", val: successRate !== null ? successRate + " %" : "—", d: doneCount + " gelöscht · " + stornoCount + " storniert", up: true },
     { ic: AI.inbox, label: "Neue Bestellungen", val: newCount, d: "+3 heute", up: true },
     { ic: Icon.search, label: "Profile geprüft", val: checks.length, d: newChecks + " neu, unbearbeitet", up: true },
     { ic: Icon.clock, label: "In Bearbeitung", val: progressCount, d: "Ø 19 h Laufzeit", up: true },
@@ -403,7 +410,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay === "pending" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
@@ -762,7 +769,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
           <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
           <a className="btn btn-sec btn-sm" href="#"><Icon.whatsapp /> WhatsApp</a>
-          <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast)}><AI.creditCard /> Zahlungslink senden</button>
+          <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.creditCard /> Zahlungslink senden</button>
         </div>
       </div>
 
@@ -776,9 +783,9 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               <div>
                 <div className="act-grp-l">Zahlung</div>
                 <div className="act-btns">
-                  <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast)}><AI.send /> Bestellten Zahlungslink senden</button>
+                  <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Bestellten Zahlungslink senden</button>
                   <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button>
-                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
+                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
                   {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
                   {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
                 </div>
@@ -970,7 +977,7 @@ function SmsModal({ order, onClose, toast }) {
 }
 
 /* ---------- Payment-link modal (alle AKTIVEN Stripe-Links zur Auswahl) ---------- */
-function PayLinkModal({ order, onClose, toast }) {
+function PayLinkModal({ order, onClose, toast, onStatus }) {
   const [links, setLinks] = React.useState(null);
   const [err, setErr] = React.useState("");
   const [sel, setSel] = React.useState(null);
@@ -1010,6 +1017,7 @@ function PayLinkModal({ order, onClose, toast }) {
     if (!sel) return;
     try {
       await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url });
+      if (onStatus) onStatus(order, "done", true, true); // Zahlungslink erhalten → Profil gelöscht
       onClose(); toast("Zahlungslink (" + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
     } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); }
   };
@@ -1088,8 +1096,8 @@ function AdminApp() {
   const counts = { new: orders.filter((o) => o.status === "new").length };
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
-  const setStatus = (o, id, silent) => {
-    const nextPay = id === "done" && o.pay === "pending" ? "paid" : o.pay;
+  const setStatus = (o, id, silent, keepPay) => {
+    const nextPay = (!keepPay && id === "done" && o.pay === "pending") ? "paid" : o.pay;
     const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay } : x;
     setOrders((list) => list.map(upd));
     setActive(upd);
@@ -1131,7 +1139,7 @@ function AdminApp() {
       <EmailComposer data={compose} onClose={() => setCompose(null)} toast={toast} />
       <InvoiceModal order={invoiceModal} onClose={() => setInvoiceModal(null)} onCompose={(o, t) => setCompose({ order: o, template: t })} toast={toast} />
       <SmsModal order={smsOrder} onClose={() => setSmsOrder(null)} toast={toast} />
-      <PayLinkModal order={payLinkOrder} onClose={() => setPayLinkOrder(null)} toast={toast} />
+      <PayLinkModal order={payLinkOrder} onClose={() => setPayLinkOrder(null)} toast={toast} onStatus={setStatus} />
       <div className={"toast" + (toastMsg ? " show" : "")}><Icon.checkCircle />{toastMsg}</div>
     </div>
   );
