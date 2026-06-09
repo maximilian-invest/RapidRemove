@@ -70,17 +70,30 @@ export function AdminGate() {
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState("");
   const [canFace, setCanFace] = React.useState(false);
+  const [faceReason, setFaceReason] = React.useState("");
 
   React.useEffect(() => {
     (async () => {
       let face = "", session = "";
       try { face = localStorage.getItem(FACE_KEY) || ""; } catch (e) {}
       try { session = sessionStorage.getItem(KEY) || ""; } catch (e) {}
-      let avail = webauthnAvailable();
-      if (avail && window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
-        try { avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable(); } catch (e) { /* Fähigkeit unklar → später Fallback */ }
+      // Face-ID-Verfügbarkeit prüfen – und falls nicht, den Grund in Klartext festhalten.
+      let avail = false, reason = "";
+      const secure = typeof window !== "undefined" && (window.isSecureContext || location.hostname === "localhost");
+      if (!secure) {
+        reason = "Kein sicherer Kontext – die Seite muss über https:// geöffnet sein.";
+      } else if (!webauthnAvailable()) {
+        reason = "Dieser Browser bietet keine Passkeys. Auf dem iPhone bitte in Safari öffnen.";
+      } else if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
+        try {
+          avail = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+          if (!avail) reason = "Auf diesem Gerät ist kein Face ID / Touch ID eingerichtet – bitte in den iPhone-Einstellungen aktivieren (oder Privat-Modus verlassen).";
+        } catch (e) { reason = "Face ID konnte nicht geprüft werden."; }
+      } else {
+        avail = true; // API vorhanden, aber Verfügbarkeitsprüfung fehlt → optimistisch erlauben
       }
       setCanFace(avail);
+      setFaceReason(avail ? "" : reason);
       if (face === "1") { setMode("faceid"); return; }                 // dauerhaft → per Face ID entsperren
       if (session) { setAdminToken(session); setMode("authed"); return; } // laufende Sitzung
       setMode("password");
@@ -181,6 +194,7 @@ export function AdminGate() {
         <button type="submit" disabled={busy} style={primaryBtn(busy)}>{busy ? "Prüfe…" : "Anmelden"}</button>
       </form>
       {canFace ? <button onClick={() => { setErr(""); setMode("faceid"); }} style={linkBtn}>Mit Face ID anmelden</button> : null}
+      {!canFace && faceReason ? <div style={{ color: "#8a8079", fontSize: 12, fontWeight: 600, marginTop: 10, lineHeight: 1.45 }}>Face ID hier nicht verfügbar: {faceReason}</div> : null}
       {!opsConfigured() ? <div style={{ color: "#b45309", fontSize: 12, fontWeight: 700, marginTop: 12, lineHeight: 1.4 }}>Hinweis: <code>NEXT_PUBLIC_OPS_URL</code> ist nicht gesetzt — Anmeldung &amp; Versand brauchen das ops-Backend.</div> : null}
     </Shell>
   );
