@@ -57,7 +57,7 @@ function OrderRow({ o, onClick }) {
   return (
     <div className="m-row" onClick={onClick}>
       <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff" }}>{initials(o.name)}</div>
-      <div className="main">
+      <div className="m-main">
         <div className="nm">{o.name}</div>
         <div className="meta">{SERVICES[o.service].name} · {o.id}</div>
       </div>
