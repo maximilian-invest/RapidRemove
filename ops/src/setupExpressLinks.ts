@@ -38,9 +38,10 @@ type Cur = "eur" | "usd";
 const CURRENCIES: Cur[] = (onlyCurrency ? [onlyCurrency as Cur] : ["eur", "usd"]).filter((c) => c === "eur" || c === "usd") as Cur[];
 
 // Einmalige Leistungs-Grundpreise (ohne Express). Express = Grundpreis + Aufschlag.
+// Express gilt NUR für die Löschung ("remove"). "reset" ist bewusst nicht dabei.
 const SERVICES = [
-  { key: "remove", label: "Profil-Löschung",            base: { eur: 450, usd: 495 } },
-  { key: "reset",  label: "Profil-Löschung + Neustart", base: { eur: 850, usd: 950 } },
+  { key: "remove", label: "Profil-Löschung", base: { eur: 450, usd: 495 } },
+  // { key: "reset", label: "Profil-Löschung + Neustart", base: { eur: 850, usd: 950 } }, // Express nicht für Reset
 ].filter((s) => !onlyService || s.key === onlyService);
 
 const EXPRESS_SURCHARGE: Record<Cur, number> = { eur: 149, usd: 149 };

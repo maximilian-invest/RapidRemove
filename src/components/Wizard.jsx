@@ -692,7 +692,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           {opts.map((o) => {
             const I = Icon[o.ic] || Icon.trash;
             return (
-              <div className={"opt" + (service === o.id ? " sel" : "")} key={o.id} onClick={() => setService(o.id)}>
+              <div className={"opt" + (service === o.id ? " sel" : "")} key={o.id} onClick={() => { setService(o.id); if (o.id !== "remove") setExpress(false); }}>
                 <div className="opt-radio"></div>
                 <div className="opt-ic"><I size={22} /></div>
                 <div className="opt-main">
@@ -705,6 +705,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           })}
         </div>
 
+        {service === "remove" && (
         <div className={"express" + (express ? " on" : "")} onClick={() => setExpress(!express)}>
           <div className="ex-ic"><Icon.zap size={24} /></div>
           <div className="ex-main">
@@ -716,6 +717,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           </div>
           <button className={"switch" + (express ? " on" : "")} aria-label="toggle" onClick={(e) => { e.stopPropagation(); setExpress(!express); }}></button>
         </div>
+        )}
 
         <div className="svc-cta">
           <div className="svc-total">
@@ -865,7 +867,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
             </div>
           </div>
 
-          {!express && (
+          {!express && service === "remove" && (
             <div className="last-chance" onClick={() => setExpress(true)}>
               <div className="lc-ic"><Icon.zap size={20} /></div>
               <div className="lc-main">
