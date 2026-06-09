@@ -44,6 +44,20 @@ export function ServicesTrio({ onStart, onOrm, onDeindex }) {
 }
 
 /* shared before/after SERP visual */
+/* SERP-Vorher/Nachher-Labels (De-Indexierung) in allen Sprachen */
+const SERP_BA = {
+  de: { before: "In Google sichtbar", after: "Ausgelistet" },
+  en: { before: "Visible in Google", after: "De-indexed" },
+  es: { before: "Visible en Google", after: "Desindexado" },
+  fr: { before: "Visible dans Google", after: "Désindexé" },
+  it: { before: "Visibile su Google", after: "Deindicizzato" },
+  nl: { before: "Zichtbaar in Google", after: "Gede-indexeerd" },
+  pt: { before: "Visível no Google", after: "Desindexado" },
+  ja: { before: "Googleに表示", after: "インデックス削除済み" },
+  sv: { before: "Synlig i Google", after: "Avindexerad" },
+  da: { before: "Synlig i Google", after: "Afindekseret" },
+  no: { before: "Synlig i Google", after: "Avindeksert" },
+};
 function SerpBA({ before, after, left, right }) {
   return (
     <div className="serp-ba">
@@ -189,7 +203,7 @@ export function DeindexPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeind
             </div>
           </div>
           <div className="reveal d2">
-            <SerpBA before={t.code === "de" ? "In Google sichtbar" : "Visible in Google"} after={t.code === "de" ? "Ausgelistet" : "De-indexed"}
+            <SerpBA before={(SERP_BA[t.code] || SERP_BA.en).before} after={(SERP_BA[t.code] || SERP_BA.en).after}
               left={[["neg", 1], ["neutral", 2], ["neg", 3]]}
               right={[["pos", 1], ["neutral", 2], ["neutral", 3]]} />
           </div>

@@ -98,6 +98,21 @@ Object.assign(WP_COPY, {
     note: ["Derfor fjerner vi bevisst ", "hele profilen med alle omtaler", ". Endelig, ikke stykkevis."] },
 });
 
+/* kleine Home-Labels, die früher nur DE/EN waren — jetzt in allen Sprachen */
+const HOME_MISC = {
+  de: { continueTyped: "So fortfahren – auch wenn nicht gelistet", verified: "Verifiziert", or: "oder" },
+  en: { continueTyped: "Continue with this — even if not listed", verified: "Verified", or: "or" },
+  es: { continueTyped: "Continuar así, aunque no aparezca", verified: "Verificado", or: "o" },
+  fr: { continueTyped: "Continuer ainsi, même si non répertorié", verified: "Vérifié", or: "ou" },
+  it: { continueTyped: "Continua così, anche se non elencato", verified: "Verificato", or: "o" },
+  nl: { continueTyped: "Zo doorgaan – ook als niet vermeld", verified: "Geverifieerd", or: "of" },
+  pt: { continueTyped: "Continuar assim, mesmo se não listado", verified: "Verificado", or: "ou" },
+  ja: { continueTyped: "リストになくても続行", verified: "認証済み", or: "または" },
+  sv: { continueTyped: "Fortsätt ändå – även om den inte är listad", verified: "Verifierad", or: "eller" },
+  da: { continueTyped: "Fortsæt alligevel – også hvis ikke anført", verified: "Verificeret", or: "eller" },
+  no: { continueTyped: "Fortsett likevel – også om ikke oppført", verified: "Verifisert", or: "eller" },
+};
+
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
@@ -178,7 +193,7 @@ function Hero({ onStart }) {
                 ))}
                 <button type="button" className="hero-ac-item use" onClick={() => pick(name)}>
                   <Icon.arrowRight />
-                  <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{lang === "de" ? "So fortfahren – auch wenn nicht gelistet" : "Continue with this — even if not listed"}</span></span>
+                  <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{(HOME_MISC[lang] || HOME_MISC.en).continueTyped}</span></span>
                 </button>
               </div>
             )}
@@ -418,7 +433,7 @@ function Social({ id }) {
           <div className={`tcard reveal d${i + 1}`} key={i}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span className="stars sm">{[0, 1, 2, 3, 4].map((j) => <Icon.star key={j} />)}</span>
-                <span className="tverify"><Icon.checkCircle /> {t.code === "de" ? "Verifiziert" : "Verified"}</span>
+                <span className="tverify"><Icon.checkCircle /> {(HOME_MISC[t.code] || HOME_MISC.en).verified}</span>
               </div>
               <p>"{tm.q}"</p>
               <div className="tauthor">
@@ -480,7 +495,7 @@ function Pricing({ id, onStart }) {
             <p>{t.pricing.protDesc}</p>
           </div>
           <div className="pp">{money(lang, t.pricing.protPrice)} <small>{t.pricing.protPer}</small>
-            <small style={{ marginTop: 4 }}>{t.code === "de" ? "oder" : "or"} {money(lang, t.pricing.protLifetime)} {t.pricing.protLifetimeLabel}</small>
+            <small style={{ marginTop: 4 }}>{(HOME_MISC[t.code] || HOME_MISC.en).or} {money(lang, t.pricing.protLifetime)} {t.pricing.protLifetimeLabel}</small>
           </div>
         </div>
 

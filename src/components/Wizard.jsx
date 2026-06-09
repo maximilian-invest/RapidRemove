@@ -110,6 +110,20 @@ const MULTI_PROFILE = {
   da: { t: "Slet flere profiler?", d: "Skriv til os – vi fjerner dem alle på én gang." },
   no: { t: "Slette flere profiler?", d: "Skriv til oss – vi fjerner alle på én gang." },
 };
+/* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
+const WZ_MISC = {
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført" },
+};
 
 function ratingAssessment(ratingStr, lang) {
   const r = parseFloat(String(ratingStr).replace(",", ".")) || 0;
@@ -152,6 +166,7 @@ function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) 
 function Wizard({ initialName, initialProfile, onExit }) {
   const { t, lang } = useLang();
   const w = t.wizard;
+  const wm = WZ_MISC[t.code] || WZ_MISC.en;
   const p = profileFor(lang);
   // Mit einem in der Live-Suche gewählten Profil starten wir direkt auf der
   // Machbarkeits-Karte (Schritt 3 / Index 2) – ohne erneute Profilsuche.
@@ -325,7 +340,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
               ))}
               <button type="button" className="hero-ac-item use" onClick={() => { setAcOpen(false); startSearch(name); }}>
                 <Icon.arrowRight />
-                <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{lang === "de" ? "So fortfahren – auch wenn nicht gelistet" : "Continue with this — even if not listed"}</span></span>
+                <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{wm.continueTyped}</span></span>
               </button>
             </div>
           )}
@@ -432,7 +447,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
                 <div className="ot">{o.t} {o.badge && <span className="obadge">{o.badge}</span>}</div>
                 <div className="od">{o.d}</div>
               </div>
-              <div className="opt-price">{money(lang, o.price)}<small>{w.s5.sumNote ? (t.code === "de" ? "nach Erfolg" : "after success") : ""}</small></div>
+              <div className="opt-price">{money(lang, o.price)}<small>{w.s5.sumNote ? wm.afterSuccess : ""}</small></div>
             </div>
           ))}
         </div>
@@ -590,7 +605,7 @@ function Wizard({ initialName, initialProfile, onExit }) {
                 <div className="pl-body">
                   <h4>{s.t}</h4>
                   <p>{s.d}</p>
-                  {s.now && <span className="tnow"><Icon.clock size={13} /> {t.code === "de" ? "Jetzt" : "Now"}</span>}
+                  {s.now && <span className="tnow"><Icon.clock size={13} /> {wm.now}</span>}
                 </div>
               </div>
             ))}
