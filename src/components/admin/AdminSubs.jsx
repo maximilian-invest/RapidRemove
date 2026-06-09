@@ -3,7 +3,7 @@ import React from "react";
 import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SUBS as SUBS_SAMPLE, PLANS as PLANS_SAMPLE, DAILY_REV as DAILY_REV_SAMPLE, WEEKLY_REV as WEEKLY_REV_SAMPLE, MONTHLY_REV as MONTHLY_REV_SAMPLE, PAYMENTS as PAYMENTS_SAMPLE } from "@/lib/admin-data";
-import { fetchStripe } from "@/lib/admin-api";
+import { fetchStripe, setupExpressLinks } from "@/lib/admin-api";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Abos & Umsatz (Reputations-Schutz Abonnements über Stripe) */
@@ -186,6 +186,85 @@ function SubsDetail({ detail, plans, payments, live, onClose }) {
   );
 }
 
+/* Express-Zahlungslinks anlegen — direkt aus dem Admin (ops-Dienst hat Key + Stripe-Zugriff). */
+function ExpressSetupCard({ connected, toast }) {
+  const [report, setReport] = React.useState(null);
+  const [applied, setApplied] = React.useState(null);
+  const [busy, setBusy] = React.useState("");
+  const [err, setErr] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+
+  const run = async (apply) => {
+    setBusy(apply ? "apply" : "plan"); setErr("");
+    try {
+      const j = await setupExpressLinks({ apply });
+      if (apply) { setApplied(j); if (toast) toast(`Express-Links: ${j.created} angelegt, ${j.skipped} vorhanden ✓`); }
+      else { setReport(j); setApplied(null); }
+    } catch (e) { setErr(e.message || "Fehlgeschlagen"); }
+    finally { setBusy(""); }
+  };
+
+  const result = applied || report;
+  const registryBlock = result
+    ? "export const EXPRESS_PAYMENT_LINKS: Record<string, string> = {\n" + Object.entries(result.links).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`).join("\n") + "\n};"
+    : "";
+
+  return (
+    <div className="panel rise" style={{ marginBottom: 18 }}>
+      <div className="panel-head">
+        <div>
+          <h2 style={{ display: "flex", alignItems: "center", gap: 8 }}><Icon.zap /> Express-Zahlungslinks</h2>
+          <div className="ph-sub">Legt die Stripe-Links für die Express-Löschung an (alle Schutz- & Währungs-Kombinationen) — Steuer & Abo genau wie bei den bestehenden Links.</div>
+        </div>
+        <button className="btn btn-sec" onClick={() => setOpen(!open)}>{open ? "Schließen" : "Öffnen"}</button>
+      </div>
+      {open && (
+        <div style={{ padding: "6px 2px 2px" }}>
+          {!connected ? (
+            <div style={{ background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 10, padding: "11px 14px", fontSize: 13, fontWeight: 600, color: "var(--fg-2)" }}>
+              Stripe ist nicht verbunden. Am ops-Dienst (Railway) einen <b>STRIPE_SECRET_KEY mit Schreibrechten</b> für Produkte, Preise &amp; Payment Links setzen, dann hier erneut öffnen.
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                <button className="btn btn-sec" disabled={!!busy} onClick={() => run(false)}>{busy === "plan" ? "Prüfe…" : "1) Plan prüfen (Trockenlauf)"}</button>
+                <button className="btn btn-pri" disabled={!!busy || !report || !!applied} onClick={() => run(true)}>{busy === "apply" ? "Lege an…" : "2) Jetzt anlegen"}</button>
+              </div>
+              {err && <div style={{ color: "var(--danger)", fontWeight: 700, fontSize: 13, marginBottom: 10 }}>{err}</div>}
+              {result && (
+                <div style={{ fontSize: 13 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 5 }}>
+                    {applied ? `✓ ${applied.created} angelegt, ${applied.skipped} bereits vorhanden.` : `Trockenlauf: ${report.created} würden neu angelegt, ${report.skipped} existieren bereits.`}
+                  </div>
+                  <div style={{ color: "var(--fg-2)", marginBottom: 10 }}>
+                    Steuer übernommen: automatic_tax={String(result.houseStyle.automatic_tax)} · tax_id_collection={String(result.houseStyle.tax_id_collection)}
+                    {result.houseStyle.sampleLink ? "" : " · ⚠ kein Vorlage-Link gefunden — Steuer bitte prüfen"}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {Object.entries(result.links).map(([k, v]) => (
+                      <div key={k} style={{ display: "flex", gap: 8, fontFamily: "monospace", fontSize: 12, flexWrap: "wrap" }}>
+                        <span style={{ color: "var(--fg-2)", minWidth: 200 }}>{k}</span>
+                        {applied ? <a href={v} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>{v}</a> : <span style={{ color: "var(--fg-muted)" }}>{v}</span>}
+                      </div>
+                    ))}
+                  </div>
+                  {!applied && <div style={{ marginTop: 10, color: "var(--fg-2)" }}>Sieht gut aus? Dann auf <b>„2) Jetzt anlegen"</b>.</div>}
+                  {applied && (
+                    <div style={{ marginTop: 12 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>Fertig. (Greift sofort.) Optional für <code>paymentLinks.ts</code> — oder kopier es Claude hier rein:</div>
+                      <textarea readOnly value={registryBlock} onFocus={(e) => e.target.select()} style={{ width: "100%", minHeight: 110, fontFamily: "monospace", fontSize: 12, padding: 10, borderRadius: 8, border: "1px solid var(--hairline)", resize: "vertical" }} />
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SubsDashboard({ toast }) {
   const [liveData, setLiveData] = React.useState(null);
   const [stripeErr, setStripeErr] = React.useState("");
@@ -222,6 +301,7 @@ function SubsDashboard({ toast }) {
           <b>Demo-Daten</b> — Stripe nicht verbunden{stripeErr ? <span>: <span style={{ color: "var(--danger)", fontWeight: 700 }}>{stripeErr}</span></span> : <span>. STRIPE_SECRET_KEY (read-only) am ops-Dienst in Railway setzen.</span>}
         </div>
       ) : null}
+      <ExpressSetupCard connected={!!liveData} toast={toast} />
       <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 999, background: liveData ? "rgba(16,185,129,.14)" : "rgba(148,140,130,.16)", color: liveData ? "#0a8f5b" : "#6b6259", textTransform: "none", letterSpacing: 0 }}>{loading ? "● lädt…" : liveData ? "● Live aus Stripe" : "● Demo-Daten"}</span></div>
       <div className="kpis sub-kpis">
         <SubKpi idx={0} label="MRR" value={SUBS.mrr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.mrr} sparkColor="var(--primary)" details onLink={() => setDetail({ kind: "plans", title: "MRR — Zusammensetzung nach Plan" })} />

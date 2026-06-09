@@ -10,6 +10,7 @@ import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
+import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
 
 const app = Fastify({ logger: true, trustProxy: true });
@@ -320,6 +321,21 @@ app.post("/admin/paylinks", async (req, reply) => {
   } catch (e) {
     app.log.error({ err: e }, "Payment-Links lesen fehlgeschlagen");
     return { ok: true, links: [], error: String((e as Error)?.message || e).slice(0, 200) };
+  }
+});
+
+// Admin-Dashboard: Express-Zahlungslinks anlegen (alle Kombinationen). apply=false → Trockenlauf.
+app.post("/admin/setup-express", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+  const apply = b.apply === true || b.apply === "true";
+  try {
+    const report = await runExpressSetup({ apply });
+    return { ok: true, ...report };
+  } catch (e) {
+    app.log.error({ err: e }, "Express-Setup fehlgeschlagen");
+    return reply.code(400).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 300) });
   }
 });
 

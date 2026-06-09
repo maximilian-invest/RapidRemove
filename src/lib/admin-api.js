@@ -142,6 +142,19 @@ export async function sendPayLink({ to, name, orderId, currency, service, protec
   return j;
 }
 
+/** Legt die Express-Zahlungslinks in Stripe an (alle Kombinationen). apply=false → Trockenlauf. */
+export async function setupExpressLinks({ apply } = {}) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/setup-express", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, apply: !!apply }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
 /** Sendet eine echte, gebrandete Vorlage (z. B. Rechte benötigt, Adresse) an den Kunden. */
 export async function sendTemplate({ key, to, orderId, lang }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
