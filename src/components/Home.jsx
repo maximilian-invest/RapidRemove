@@ -136,7 +136,6 @@ function Hero({ onStart }) {
           </div>
         <div className="check-card">
           <div className="cc-head">
-            <span className="lv"><span className="pulse"></span> Live</span>
             <span className="eyebrow" style={{ margin: 0 }}>{t.hero.cardEyebrow}</span>
           </div>
           <div className="ttl">{t.hero.cardTitle}</div>
@@ -150,8 +149,6 @@ function Hero({ onStart }) {
           <button className="btn btn-primary btn-block lg" onClick={go}>
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
-          <div className="risk-banner"><Icon.shieldCheck /> {t.riskReversal}</div>
-          <div className="cc-foot"><Icon.lock /> {t.hero.foot}</div>
         </div>
         </div>
       </div>
