@@ -10,7 +10,7 @@ import { Blog } from "@/components/Blog";
 import { Wizard } from "@/components/Wizard";
 import { OrmPage, DeindexPage } from "@/components/ServicePages";
 
-export default function App({ initialLang = "de" }) {
+export default function App({ initialLang = "de", magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
   const [route, setRoute] = React.useState("home"); // home | wizard | blog | orm | deindex
   const [seed, setSeed] = React.useState("");
@@ -68,7 +68,7 @@ export default function App({ initialLang = "de" }) {
       {route === "home"
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
         : route === "blog"
-          ? <Blog onStart={startWizard} onGoHome={goHome} onOrm={openOrm} onDeindex={openDeindex} />
+          ? <Blog onStart={startWizard} onGoHome={goHome} onOrm={openOrm} onDeindex={openDeindex} magCards={magCards} />
           : route === "orm"
             ? <OrmPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
             : route === "deindex"

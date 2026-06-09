@@ -35,17 +35,21 @@ function AuthStat({ s }) {
   );
 }
 
-function Blog({ onStart, onGoHome, onOrm, onDeindex }) {
+function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
   const { t } = useLang();
   const b = t.blog;
   const [cat, setCat] = React.useState(b.cats[0]);
   useReveal();
   React.useEffect(() => { window.scrollTo({ top: 0 }); }, []);
 
-  const featured = b.articles[0];
-  const rest = b.articles.slice(1);
-  // German magazine surfaces the real SEO cluster; other locales keep the sample grid.
-  const gridSource = t.code === "de" ? CLUSTER_CARDS : rest;
+  // German magazine leads with the flagship cover story + the real SEO cluster.
+  // Localized magazines lead with the first localized cluster article and grid the rest,
+  // linking to the statically-generated /<lang>/<slug>/ article pages (now clickable everywhere).
+  const deMode = t.code === "de";
+  const hasCards = !deMode && magCards && magCards.length > 0;
+  const featured = deMode ? b.articles[0] : (hasCards ? magCards[0] : b.articles[0]);
+  const featuredHref = deMode ? asset("/" + ARTICLE_SLUG + "/") : (hasCards ? asset(magCards[0].href) : undefined);
+  const gridSource = deMode ? CLUSTER_CARDS : (hasCards ? magCards.slice(1) : b.articles.slice(1));
   const filtered = cat === b.cats[0] ? gridSource : gridSource.filter((a) => a.cat === cat);
   const FeatIcon = Icon[featured.icon] || Icon.star;
 
@@ -69,7 +73,7 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex }) {
           </div>
 
           {/* featured */}
-          <a className="feat-article reveal d2" href={t.code === "de" ? asset("/" + ARTICLE_SLUG + "/") : undefined} style={{ textDecoration: "none", color: "inherit", cursor: t.code === "de" ? "pointer" : "default" }}>
+          <a className="feat-article reveal d2" href={featuredHref} style={{ textDecoration: "none", color: "inherit", cursor: featuredHref ? "pointer" : "default" }}>
             <div className={"feat-thumb " + featured.thm}>
               <span className="ft-icon"><FeatIcon /></span>
               <span className="ft-cat"><Icon.star size={13} /> {b.featuredTag}</span>
@@ -135,8 +139,9 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex }) {
                 </React.Fragment>
               );
               const cls = "art-card reveal d" + ((i % 3) + 1);
-              return a.slug
-                ? <a className={cls} href={asset("/" + a.slug + "/")} key={a.slug} style={{ textDecoration: "none", color: "inherit" }}>{inner}</a>
+              const href = a.href || (a.slug ? "/" + a.slug + "/" : null);
+              return href
+                ? <a className={cls} href={asset(href)} key={a.slug || a.title} style={{ textDecoration: "none", color: "inherit" }}>{inner}</a>
                 : <article className={cls} key={a.title}>{inner}</article>;
             })}
           </div>

@@ -2,6 +2,7 @@
    Server-side only (heavy). Used by the article route pages, not the renderer. */
 import { SITE_URL } from "@/lib/article-google-profil";
 import { TRANSLATIONS } from "@/lib/articles/translations";
+import { CLUSTER_CARDS } from "@/lib/articles/registry";
 
 import a1 from "@/lib/articles/google-bewertung-loeschen-lassen";
 import a2 from "@/lib/articles/fake-google-bewertung-melden-loeschen";
@@ -26,6 +27,28 @@ export function localizedPath(lang, deSlug) {
   if (lang === "de") return `/${deSlug}/`;
   const t = tFor(lang, deSlug);
   return t ? `/${lang}/${t.meta.slug}/` : null;
+}
+
+// Lightweight, client-safe magazine cards for a language (no article bodies):
+// German shows the real SEO cluster; other locales reuse the localized article
+// meta (title/description/slug/category/date) so the grid links to /<lang>/<slug>/.
+const monthYear = (iso, lang) => {
+  try { return new Intl.DateTimeFormat(lang, { month: "long", year: "numeric" }).format(new Date(iso + "T12:00:00")); }
+  catch (e) { return ""; }
+};
+export function magCardsFor(lang) {
+  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: `/${c.slug}/` }));
+  return CLUSTER_CARDS.map((c) => {
+    const t = tFor(lang, c.slug);
+    if (!t) return null;
+    return {
+      slug: t.meta.slug, href: `/${lang}/${t.meta.slug}/`,
+      cat: t.category || c.cat, thm: c.thm, icon: c.icon,
+      title: t.meta.title, excerpt: t.meta.description,
+      author: t.meta.author || c.author, read: c.read,
+      date: (t.meta.date && monthYear(t.meta.date, lang)) || c.date,
+    };
+  }).filter(Boolean);
 }
 
 // [lang]/[aslug] params for every translated article.

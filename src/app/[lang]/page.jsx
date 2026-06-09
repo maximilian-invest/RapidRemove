@@ -3,6 +3,7 @@
 import App from "@/components/App";
 import { I18N } from "@/lib/i18n";
 import { NON_DEFAULT_LOCALES, localeUrl, hreflangMap } from "@/lib/locales-meta";
+import { magCardsFor } from "@/lib/articles/catalog";
 
 export const dynamicParams = false;
 
@@ -23,5 +24,5 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
-  return <App initialLang={params.lang} />;
+  return <App initialLang={params.lang} magCards={magCardsFor(params.lang)} />;
 }

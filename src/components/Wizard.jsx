@@ -77,6 +77,10 @@ const ASSESS = {
   it: { urgent: "Rimozione fortemente consigliata", recommend: "Rimozione consigliata", possible: "Rimozione possibile" },
   nl: { urgent: "Verwijdering sterk aanbevolen", recommend: "Verwijdering aanbevolen", possible: "Verwijdering mogelijk" },
   pt: { urgent: "Remoção fortemente recomendada", recommend: "Remoção recomendada", possible: "Remoção possível" },
+  ja: { urgent: "削除を強く推奨", recommend: "削除を推奨", possible: "削除が可能" },
+  sv: { urgent: "Borttagning starkt rekommenderad", recommend: "Borttagning rekommenderas", possible: "Borttagning möjlig" },
+  da: { urgent: "Fjernelse stærkt anbefalet", recommend: "Fjernelse anbefales", possible: "Fjernelse mulig" },
+  no: { urgent: "Fjerning sterkt anbefalt", recommend: "Fjerning anbefales", possible: "Fjerning mulig" },
 };
 /* ---- protection nudge copy (protection is the default everyone keeps) ---- */
 const PROT_NUDGE = {
@@ -87,6 +91,10 @@ const PROT_NUDGE = {
   it: { rec: "Consigliato", social: "9 clienti su 10 mantengono la protezione", keep: "Sì, mantieni la protezione", remove: "Rimuovi comunque la protezione" },
   nl: { rec: "Aanbevolen", social: "9 van de 10 klanten houden de bescherming", keep: "Ja, bescherming houden", remove: "Bescherming toch verwijderen" },
   pt: { rec: "Recomendado", social: "9 em cada 10 clientes mantêm a proteção", keep: "Sim, manter a proteção", remove: "Remover a proteção mesmo assim" },
+  ja: { rec: "おすすめ", social: "10人中9人のお客様が保護を継続しています", keep: "はい、保護を継続", remove: "それでも保護を外す" },
+  sv: { rec: "Rekommenderas", social: "9 av 10 kunder behåller skyddet", keep: "Ja, behåll skyddet", remove: "Ta bort skyddet ändå" },
+  da: { rec: "Anbefales", social: "9 ud af 10 kunder beholder beskyttelsen", keep: "Ja, behold beskyttelsen", remove: "Fjern beskyttelsen alligevel" },
+  no: { rec: "Anbefales", social: "9 av 10 kunder beholder beskyttelsen", keep: "Ja, behold beskyttelsen", remove: "Fjern beskyttelsen likevel" },
 };
 /* ---- „Mehrere Profile löschen?" – Karte unter den Treffern öffnet eine Helpdesk-Mail ---- */
 const MULTI_PROFILE = {
@@ -97,6 +105,10 @@ const MULTI_PROFILE = {
   it: { t: "Eliminare più profili?", d: "Scrivici: li rimuoviamo tutti insieme." },
   nl: { t: "Meerdere profielen verwijderen?", d: "Mail ons — we verwijderen ze allemaal." },
   pt: { t: "Excluir vários perfis?", d: "Escreva-nos — removemos todos de uma vez." },
+  ja: { t: "複数のプロフィールを削除しますか？", d: "ご連絡ください ― すべて一度に削除します。" },
+  sv: { t: "Ta bort flera profiler?", d: "Skriv till oss – vi tar bort alla på en gång." },
+  da: { t: "Slet flere profiler?", d: "Skriv til os – vi fjerner dem alle på én gang." },
+  no: { t: "Slette flere profiler?", d: "Skriv til oss – vi fjerner alle på én gang." },
 };
 
 function ratingAssessment(ratingStr, lang) {
