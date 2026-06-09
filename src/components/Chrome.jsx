@@ -130,7 +130,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
                       <button className={"nav-dd-item" + (c.id === "core" ? " core" : "")} key={c.id}
                         onClick={() => { setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
                         <span className="nav-dd-ic"><I size={20} /></span>
-                        <span className="nav-dd-tx"><span className="t">{c.t} {c.id === "core" && <span className="pin">{c.tag}</span>}</span><span className="d">{c.d}</span></span>
+                        <span className="nav-dd-tx"><span className="t">{c.t}</span><span className="d">{c.d}</span></span>
                       </button>
                     );
                   })}
@@ -141,7 +141,6 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           </div>
           <div className="nav-right">
             <LangToggle />
-            <button className="btn btn-ghost">{t.nav.login}</button>
             <button className="btn btn-primary sm" onClick={onStart}><span className="ico"><Icon.search size={17} /></span>{t.nav.cta}</button>
             <button className="nav-burger" onClick={() => setOpen(true)} aria-label="Menu"><Icon.menu /></button>
           </div>
@@ -156,7 +155,6 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
           {(onOrm || onDeindex) && sv.cards.map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
-          <a onClick={() => goTo("portal")}>{t.nav.login}</a>
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
       </div>

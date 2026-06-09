@@ -6,11 +6,11 @@
 
 /* ---- Nav: Leistungen dropdown ---- */
 .nav-dd{position:relative;}
-.nav-dd-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-weight:700;font-size:14.5px;color:var(--fg-2);transition:color var(--dur);padding:0;}
+.nav-dd-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-weight:700;font-size:13.5px;color:var(--fg-2);transition:color var(--dur);padding:0;line-height:1;}
 .nav-dd-btn:hover,.nav-dd.open .nav-dd-btn{color:var(--fg);}
 .nav-dd-btn svg{width:15px;height:15px;transition:transform var(--dur);}
 .nav-dd.open .nav-dd-btn svg{transform:rotate(180deg);}
-.nav-dd-pop{position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%) translateY(-6px);background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:8px;width:340px;opacity:0;pointer-events:none;transition:opacity var(--dur),transform var(--dur);z-index:90;}
+.nav-dd-pop{position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%) translateY(-6px);background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:8px;width:340px;display:flex;flex-direction:column;gap:6px;opacity:0;pointer-events:none;transition:opacity var(--dur),transform var(--dur);z-index:90;}
 .nav-dd.open .nav-dd-pop{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
 .nav-dd-item{display:flex;gap:13px;align-items:flex-start;padding:13px 14px;border-radius:var(--r-md);cursor:pointer;transition:background var(--dur);text-align:left;width:100%;border:none;background:none;font-family:var(--font-body);}
 .nav-dd-item:hover{background:var(--neutral-50);}
