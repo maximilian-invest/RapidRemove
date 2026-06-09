@@ -205,8 +205,11 @@ function ExpressSetupCard({ connected, toast }) {
   };
 
   const result = applied || report;
-  const registryBlock = result
-    ? "export const EXPRESS_PAYMENT_LINKS: Record<string, string> = {\n" + Object.entries(result.links).map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`).join("\n") + "\n};"
+  const isReal = (v) => typeof v === "string" && v.startsWith("https://buy.stripe.com");
+  const realLinks = result ? Object.entries(result.links).filter(([, v]) => isReal(v)) : [];
+  const hasPlaceholders = result ? Object.values(result.links).some((v) => !isReal(v)) : false;
+  const registryBlock = realLinks.length
+    ? "export const EXPRESS_PAYMENT_LINKS: Record<string, string> = {\n" + realLinks.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)},`).join("\n") + "\n};"
     : "";
 
   return (
@@ -244,14 +247,14 @@ function ExpressSetupCard({ connected, toast }) {
                     {Object.entries(result.links).map(([k, v]) => (
                       <div key={k} style={{ display: "flex", gap: 8, fontFamily: "monospace", fontSize: 12, flexWrap: "wrap" }}>
                         <span style={{ color: "var(--fg-2)", minWidth: 200 }}>{k}</span>
-                        {applied ? <a href={v} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>{v}</a> : <span style={{ color: "var(--fg-muted)" }}>{v}</span>}
+                        {isReal(v) ? <a href={v} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>{v}</a> : <span style={{ color: "var(--fg-muted)" }}>{v}</span>}
                       </div>
                     ))}
                   </div>
-                  {!applied && <div style={{ marginTop: 10, color: "var(--fg-2)" }}>Sieht gut aus? Dann auf <b>„2) Jetzt anlegen"</b>.</div>}
-                  {applied && (
+                  {!applied && hasPlaceholders && <div style={{ marginTop: 10, color: "var(--fg-2)" }}>Sieht gut aus? Dann auf <b>„2) Jetzt anlegen"</b>.</div>}
+                  {realLinks.length > 0 && (
                     <div style={{ marginTop: 12 }}>
-                      <div style={{ fontWeight: 700, marginBottom: 4 }}>Fertig. (Greift sofort.) Optional für <code>paymentLinks.ts</code> — oder kopier es Claude hier rein:</div>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>{applied ? "Fertig. (Greift sofort.) " : "Vorhandene Express-Links. "}Für <code>paymentLinks.ts</code> — oder kopier den Block Claude hier rein:</div>
                       <textarea readOnly value={registryBlock} onFocus={(e) => e.target.select()} style={{ width: "100%", minHeight: 110, fontFamily: "monospace", fontSize: 12, padding: 10, borderRadius: 8, border: "1px solid var(--hairline)", resize: "vertical" }} />
                     </div>
                   )}
