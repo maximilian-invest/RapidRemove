@@ -969,6 +969,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-btn-row">
             <button className="m-btn m-btn-sec" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
             <button className="m-btn m-btn-sec" onClick={() => onSms(o)}><Icon.message /> SMS</button>
+            <a className="m-btn m-btn-sec" href={"tel:" + (o.phone || "").replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
           </div>
           {tpls && tpls.length ? (
             <React.Fragment>
