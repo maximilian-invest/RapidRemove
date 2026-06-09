@@ -106,33 +106,3 @@ export function manualCandidate(query, lang = "de") {
     primary: true,
   }];
 }
-
-/* Place-Details: nur das erste Profilfoto holen. Wird EINMAL pro Bestellung
-   aufgerufen (nicht in der Live-Suche) – so bleiben die häufigen Such-Calls auf
-   der günstigen SKU. Liefert den Foto-Ressourcennamen oder "" (best effort). */
-export async function fetchPlacePhoto(placeId) {
-  if (!KEY || !placeId) return "";
-  try {
-    const res = await fetch(`https://places.googleapis.com/v1/places/${encodeURIComponent(placeId)}`, {
-      headers: { "X-Goog-Api-Key": KEY, "X-Goog-FieldMask": "photos" },
-    });
-    if (!res.ok) return "";
-    const data = await res.json();
-    return (data.photos && data.photos[0] && data.photos[0].name) || "";
-  } catch (e) { return ""; }
-}
-
-/* Bild-URLs – im Admin als <img> geladen (Referrer-Key der Auslieferungs-Domain). */
-export function placePhotoUrl(name, maxW = 960) {
-  if (!KEY || !name) return null;
-  return `https://places.googleapis.com/v1/${name}/media?maxWidthPx=${maxW}&key=${KEY}`;
-}
-export function streetViewUrl(location, w = 640, h = 380) {
-  if (!KEY || !location) return null;
-  return `https://maps.googleapis.com/maps/api/streetview?size=${w}x${h}&location=${encodeURIComponent(location)}&fov=80&return_error_code=true&key=${KEY}`;
-}
-export function staticMapUrl(location, w = 640, h = 380, zoom = 16) {
-  if (!KEY || !location) return null;
-  const q = encodeURIComponent(location);
-  return `https://maps.googleapis.com/maps/api/staticmap?center=${q}&zoom=${zoom}&size=${w}x${h}&scale=2&markers=color:0xff8000%7C${q}&key=${KEY}`;
-}

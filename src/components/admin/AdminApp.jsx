@@ -7,7 +7,6 @@ import { asset } from "@/lib/base";
 import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
-import { placePhotoUrl, streetViewUrl, staticMapUrl } from "@/lib/places";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Hauptanwendung (Dashboard, Bestellungen, E-Mail, Rechnungen) */
@@ -86,27 +85,22 @@ function ProfileLinks({ o }) {
     </span>
   );
 }
-/* Echte Profil-Aufnahme: Google-Profilfoto, mit Street View und statischer Karte
-   als automatischem Fallback (per onError durchgereicht). */
-function ProfileShot({ o }) {
-  const sources = React.useMemo(() => {
-    const out = [];
-    const ph = placePhotoUrl(o.photo); if (ph) out.push(ph);
-    const loc = o.addr || o.profile || o.company || "";
-    const sv = streetViewUrl(loc); if (sv) out.push(sv);
-    const mp = staticMapUrl(loc); if (mp) out.push(mp);
-    return out;
-  }, [o.photo, o.addr, o.profile, o.company]);
-  const [idx, setIdx] = React.useState(0);
-  React.useEffect(() => { setIdx(0); }, [o.id]);
-  if (!sources.length || idx >= sources.length) return <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, padding: "6px 2px" }}>Kein Profilbild verfügbar.</div>;
-  const src = sources[idx];
+/* Profil-Nachweis: Stand des Unternehmensprofils zum Zeitpunkt der Beauftragung.
+   Die eindeutige Google Place-ID belegt das exakte Profil (ein neues Profil mit
+   gleichem Namen/Adresse hat eine andere ID). */
+const BIZ_STATUS = { OPERATIONAL: "Aktiv (gelistet)", CLOSED_TEMPORARILY: "Vorübergehend geschlossen", CLOSED_PERMANENTLY: "Dauerhaft geschlossen" };
+const bizStatus = (s) => BIZ_STATUS[s] || s || "—";
+function ProfilNachweis({ o }) {
   return (
-    <a href={src} target="_blank" rel="noopener noreferrer" style={{ display: "block" }} title="In voller Größe öffnen">
-      <img src={src} alt={"Google-Profil " + (o.profile || o.company || "")} loading="lazy"
-        onError={() => setIdx((i) => i + 1)}
-        style={{ width: "100%", borderRadius: "var(--r-md)", border: "1px solid var(--hairline)", display: "block" }} />
-    </a>
+    <div>
+      <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "0 0 8px" }}>Stand der Beauftragung · {o.created}</div>
+      <div className="drow"><span className="dl">Profilname</span><span className="dv">{o.profile || "—"}</span></div>
+      <div className="drow"><span className="dl">Adresse</span><span className="dv">{o.addr || "—"}</span></div>
+      <div className="drow"><span className="dl">Bewertung</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
+      {o.businessStatus ? <div className="drow"><span className="dl">Status</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
+      <div className="drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 11, wordBreak: "break-all", textAlign: "right" }}>{o.placeId || "—"}</span></div>
+      {o.mapsUri ? <a className="btn btn-sec btn-sm" href={o.mapsUri} target="_blank" rel="noopener noreferrer" style={{ marginTop: 12, width: "100%" }}><Icon.mapPin /> Profil auf Google Maps öffnen</a> : null}
+    </div>
   );
 }
 function fillVars(text, o) {
@@ -977,7 +971,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
           {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
           <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
-          <div style={{ marginTop: 12 }}><ProfileShot o={o} /></div>
+          {o.businessStatus ? <div className="m-drow"><span className="dl">Status (Beauftragung)</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
+          {o.placeId ? <div className="m-drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 10.5, wordBreak: "break-all", textAlign: "right" }}>{o.placeId}</span></div> : null}
         </div>
 
         <div className="m-dsec">
@@ -1187,11 +1182,10 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             </div>
           </div>
 
-          {/* files — echte Profil-Aufnahme */}
+          {/* Profil-Nachweis (Stand der Beauftragung) */}
           <div className="dsec">
-            <h3><Icon.fileText /> Dateien</h3>
-            <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "0 0 8px" }}>Google-Profil</div>
-            <ProfileShot o={o} />
+            <h3><Icon.shieldCheck /> Profil-Nachweis</h3>
+            <ProfilNachweis o={o} />
           </div>
 
         </div>
