@@ -189,6 +189,7 @@ function SubsDetail({ detail, plans, payments, live, onClose }) {
 function SubsDashboard({ toast }) {
   const [liveData, setLiveData] = React.useState(null);
   const [stripeErr, setStripeErr] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
   const [detail, setDetail] = React.useState(null);
   const [range, setRange] = React.useState("day");
   React.useEffect(() => {
@@ -200,6 +201,7 @@ function SubsDashboard({ toast }) {
         if (d && d.connected) setLiveData(d);
         else setStripeErr((d && d.error) || "Kein STRIPE_SECRET_KEY gesetzt.");
       } catch (e) { if (alive) setStripeErr(e.message || "Stripe-Aufruf fehlgeschlagen."); }
+      finally { if (alive) setLoading(false); }
     })();
     return () => { alive = false; };
   }, []);
@@ -215,12 +217,12 @@ function SubsDashboard({ toast }) {
   const note = (m) => toast ? toast(m) : null;
   return (
     <div className="content subs-page">{detail ? <SubsDetail detail={detail} plans={PLANS} payments={PAYMENTS} live={liveData} onClose={() => setDetail(null)} /> : null}
-      {!liveData ? (
+      {!loading && !liveData ? (
         <div style={{ background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 12, padding: "11px 15px", marginBottom: 16, fontSize: 13, fontWeight: 600, color: "var(--fg-2)", lineHeight: 1.5 }}>
           <b>Demo-Daten</b> — Stripe nicht verbunden{stripeErr ? <span>: <span style={{ color: "var(--danger)", fontWeight: 700 }}>{stripeErr}</span></span> : <span>. STRIPE_SECRET_KEY (read-only) am ops-Dienst in Railway setzen.</span>}
         </div>
       ) : null}
-      <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 999, background: liveData ? "rgba(16,185,129,.14)" : "rgba(148,140,130,.16)", color: liveData ? "#0a8f5b" : "#6b6259", textTransform: "none", letterSpacing: 0 }}>{liveData ? "● Live aus Stripe" : "● Demo-Daten"}</span></div>
+      <div className="sec-eyebrow rise" style={{ animationDelay: "0s" }}>Subscription KPIs <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 800, padding: "2px 9px", borderRadius: 999, background: liveData ? "rgba(16,185,129,.14)" : "rgba(148,140,130,.16)", color: liveData ? "#0a8f5b" : "#6b6259", textTransform: "none", letterSpacing: 0 }}>{loading ? "● lädt…" : liveData ? "● Live aus Stripe" : "● Demo-Daten"}</span></div>
       <div className="kpis sub-kpis">
         <SubKpi idx={0} label="MRR" value={SUBS.mrr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.mrr} sparkColor="var(--primary)" details onLink={() => setDetail({ kind: "plans", title: "MRR — Zusammensetzung nach Plan" })} />
         <SubKpi idx={1} label="ARR" value={SUBS.arr} format={(n) => eur(Math.round(n))} color="orange" delta="+8,2 %" tone="up" spark={SPARK.arr} sparkColor="var(--primary)" details onLink={() => setDetail({ kind: "plans", title: "ARR — Zusammensetzung nach Plan" })} />

@@ -275,8 +275,8 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   const yearStart = Math.floor(new Date(d.getFullYear(), d.getMonth() - 11, 1).getTime() / 1000);
   const [subs, invoices, customers] = await Promise.all([
     stripeList<any>(`subscriptions?status=all&limit=100&expand[]=data.customer`),
-    stripeList<any>(`invoices?status=paid&created[gte]=${yearStart}&limit=100`, 10),
-    stripeList<any>(`customers?limit=100`, 5),
+    stripeList<any>(`invoices?status=paid&created[gte]=${yearStart}&limit=100`, 6),
+    stripeList<any>(`customers?limit=100`, 3),
   ]);
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }

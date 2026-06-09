@@ -245,12 +245,14 @@ app.post("/admin/stripe", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   if (!hasSecretKey()) return { ok: true, connected: false, error: "STRIPE_SECRET_KEY nicht gesetzt" };
   try {
-    if (!stripeCache || Date.now() - stripeCache.ts > 60_000) {
+    if (!stripeCache || Date.now() - stripeCache.ts > 300_000) {
       stripeCache = { ts: Date.now(), data: await getStripeMetrics() };
     }
     return { ok: true, connected: true, ...(stripeCache.data as Record<string, unknown>) };
   } catch (e) {
     app.log.error({ err: e }, "Stripe-Kennzahlen fehlgeschlagen");
+    // Letzten guten Stand weiterreichen statt auf Demo zu fallen (verhindert Flackern bei Timeouts/Rate-Limit).
+    if (stripeCache) return { ok: true, connected: true, stale: true, ...(stripeCache.data as Record<string, unknown>) };
     return { ok: true, connected: false, error: String((e as Error)?.message || e).slice(0, 240) };
   }
 });
