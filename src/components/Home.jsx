@@ -158,9 +158,9 @@ function TrustBar() {
   return (
     <div className="trustbar">
       <div className="container trustbar-inner">
-        <div className="tb-item"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> <b>Trustpilot</b> {t.trustbar.rating}</div>
+        <a className="tb-item" href={t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com"} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> {t.trustbar.reviews} <b>Trustpilot</b></a>
         <div className="tb-sep"></div>
-        <div className="tb-item"><span style={{ color: "var(--primary)", fontFamily: "var(--font-display)", fontSize: 16 }}>heise.de</span> {t.trustbar.legal.split("&")[0]}</div>
+        <a className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>
         <div className="tb-sep"></div>
         <div className="tb-item"><Icon.shieldCheck size={20} /> {t.trustbar.legal}</div>
         <div className="tb-sep"></div>

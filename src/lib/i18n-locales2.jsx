@@ -24,7 +24,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analizza gratis",
       foot: "Senza impegno · senza registrazione · riservato",
     },
-    trustbar: { rating: "Eccellente", reviews: "266 recensioni su", legal: "100 % legale e verificato da giuristi", eu: "Made in Austria · UE", pay: "Pagamento sicuro" },
+    trustbar: { rating: "Eccellente", reviews: "266 recensioni su", legal: "100 % legale e verificato da giuristi", heise: "Consigliato da heise.de", eu: "Esperti dalla Germania e dal mondo", pay: "Pagamento sicuro" },
     problem: {
       eyebrow: "Il problema",
       h2: "Google guadagna con i tuoi dati e non ti dà alcun pulsante elimina.",
@@ -228,7 +228,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Gratis checken",
       foot: "Vrijblijvend · geen registratie · vertrouwelijk",
     },
-    trustbar: { rating: "Uitstekend", reviews: "266 reviews op", legal: "100 % legaal en juridisch getoetst", eu: "Made in Austria · EU", pay: "Veilig betalen" },
+    trustbar: { rating: "Uitstekend", reviews: "266 reviews op", legal: "100 % legaal en juridisch getoetst", heise: "Aanbevolen door heise.de", eu: "Experts uit Duitsland en de wereld", pay: "Veilig betalen" },
     problem: {
       eyebrow: "Het probleem",
       h2: "Google verdient aan uw gegevens en geeft u geen verwijderknop.",
@@ -432,7 +432,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analisar grátis",
       foot: "Sem compromisso · sem registo · confidencial",
     },
-    trustbar: { rating: "Excelente", reviews: "266 avaliações no", legal: "100 % legal e verificado por juristas", eu: "Feito na Áustria · UE", pay: "Pagamento seguro" },
+    trustbar: { rating: "Excelente", reviews: "266 avaliações no", legal: "100 % legal e verificado por juristas", heise: "Recomendado pela heise.de", eu: "Especialistas da Alemanha e do mundo", pay: "Pagamento seguro" },
     problem: {
       eyebrow: "O problema",
       h2: "O Google lucra com os seus dados e não lhe dá um botão de apagar.",

@@ -29,7 +29,7 @@ const I18N = {
       button: "Löschbarkeit jetzt prüfen",
       foot: "Unverbindlich · keine Anmeldung · vertraulich",
     },
-    trustbar: { rating: "Ausgezeichnet", reviews: "266 Bewertungen auf", legal: "100 % legal & juristisch geprüft", eu: "Made in Austria · EU", pay: "Sichere Zahlung" },
+    trustbar: { rating: "Ausgezeichnet", reviews: "266 Bewertungen auf", legal: "100 % legal & juristisch geprüft", heise: "Empfohlen von heise.de", eu: "Experten aus Deutschland und der Welt", pay: "Sichere Zahlung" },
     problem: {
       eyebrow: "Das Problem",
       h2: "Google verdient an Ihren Daten – und gibt Ihnen keinen Löschen-Button.",
@@ -308,7 +308,7 @@ const I18N = {
       button: "Check for free",
       foot: "No obligation · no sign-up · confidential",
     },
-    trustbar: { rating: "Excellent", reviews: "266 reviews on", legal: "100% legal & lawyer-reviewed", eu: "Made in Austria · EU", pay: "Secure payment" },
+    trustbar: { rating: "Excellent", reviews: "266 reviews on", legal: "100% legal & lawyer-reviewed", heise: "Recommended by heise.de", eu: "Experts from Germany and around the world", pay: "Secure payment" },
     problem: {
       eyebrow: "The problem",
       h2: "Google profits from your data – and gives you no delete button.",

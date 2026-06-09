@@ -26,7 +26,7 @@ const ja = {
     button: "無料でチェック",
     foot: "義務なし・登録不要・秘密厳守",
   },
-  trustbar: { rating: "非常に高評価", reviews: "266件のレビュー：", legal: "100% 合法・弁護士による確認済み", eu: "Made in Austria・EU", pay: "安全なお支払い" },
+  trustbar: { rating: "非常に高評価", reviews: "266件のレビュー：", legal: "100% 合法・弁護士による確認済み", heise: "heise.de が推奨", eu: "ドイツと世界の専門家", pay: "安全なお支払い" },
   problem: {
     eyebrow: "課題",
     h2: "Googleはあなたのデータで稼ぎ ― 削除ボタンは用意しません。",
@@ -230,7 +230,7 @@ const sv = {
     button: "Kolla gratis",
     foot: "Utan förpliktelse · ingen registrering · konfidentiellt",
   },
-  trustbar: { rating: "Utmärkt", reviews: "266 omdömen på", legal: "100 % lagligt & juridiskt granskat", eu: "Made in Austria · EU", pay: "Säker betalning" },
+  trustbar: { rating: "Utmärkt", reviews: "266 omdömen på", legal: "100 % lagligt & juridiskt granskat", heise: "Rekommenderas av heise.de", eu: "Experter från Tyskland och världen", pay: "Säker betalning" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjänar på dina data – och ger dig ingen raderingsknapp.",
@@ -434,7 +434,7 @@ const da = {
     button: "Tjek gratis",
     foot: "Uforpligtende · ingen tilmelding · fortroligt",
   },
-  trustbar: { rating: "Fremragende", reviews: "266 anmeldelser på", legal: "100 % lovligt & juridisk gennemgået", eu: "Made in Austria · EU", pay: "Sikker betaling" },
+  trustbar: { rating: "Fremragende", reviews: "266 anmeldelser på", legal: "100 % lovligt & juridisk gennemgået", heise: "Anbefalet af heise.de", eu: "Eksperter fra Tyskland og verden", pay: "Sikker betaling" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjener på dine data – og giver dig ingen sletteknap.",
@@ -638,7 +638,7 @@ const no = {
     button: "Sjekk gratis",
     foot: "Uforpliktende · ingen registrering · konfidensielt",
   },
-  trustbar: { rating: "Utmerket", reviews: "266 omtaler på", legal: "100 % lovlig & juridisk vurdert", eu: "Made in Austria · EU", pay: "Sikker betaling" },
+  trustbar: { rating: "Utmerket", reviews: "266 omtaler på", legal: "100 % lovlig & juridisk vurdert", heise: "Anbefalt av heise.de", eu: "Eksperter fra Tyskland og verden", pay: "Sikker betaling" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjener på dataene dine – og gir deg ingen slett-knapp.",

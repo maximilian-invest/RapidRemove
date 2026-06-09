@@ -26,7 +26,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analizar gratis",
       foot: "Sin compromiso · sin registro · confidencial",
     },
-    trustbar: { rating: "Excelente", reviews: "266 opiniones en", legal: "100 % legal y revisado por juristas", eu: "Hecho en Austria · UE", pay: "Pago seguro" },
+    trustbar: { rating: "Excelente", reviews: "266 opiniones en", legal: "100 % legal y revisado por juristas", heise: "Recomendado por heise.de", eu: "Expertos de Alemania y del mundo", pay: "Pago seguro" },
     problem: {
       eyebrow: "El problema",
       h2: "Google gana con tus datos y no te da ningún botón de borrar.",
@@ -230,7 +230,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analyser gratuitement",
       foot: "Sans engagement · sans inscription · confidentiel",
     },
-    trustbar: { rating: "Excellent", reviews: "266 avis sur", legal: "100 % légal et validé par des juristes", eu: "Fait en Autriche · UE", pay: "Paiement sécurisé" },
+    trustbar: { rating: "Excellent", reviews: "266 avis sur", legal: "100 % légal et validé par des juristes", heise: "Recommandé par heise.de", eu: "Experts d'Allemagne et du monde entier", pay: "Paiement sécurisé" },
     problem: {
       eyebrow: "Le problème",
       h2: "Google profite de vos données et ne vous donne aucun bouton supprimer.",

@@ -180,9 +180,10 @@ section{position:relative;}
 /* ---------- Trust bar ---------- */
 .trustbar{border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:#fff;}
 .trustbar-inner{display:flex;align-items:center;justify-content:space-between;gap:28px;padding:22px 0;flex-wrap:wrap;}
-.tb-item{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--fg-2);}
+.tb-item{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:var(--fg-2);text-decoration:none;transition:color .15s;}
 .tb-item svg{width:20px;height:20px;color:var(--fg-muted);}
 .tb-item .tp{color:#00b67a;}
+a.tb-item:hover{color:var(--primary);}
 .tb-sep{width:1px;height:26px;background:var(--hairline);}
 @media(max-width:920px){.tb-sep{display:none;}.trustbar-inner{justify-content:center;gap:18px 26px;}}
 
