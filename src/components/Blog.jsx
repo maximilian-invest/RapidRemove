@@ -35,7 +35,7 @@ function AuthStat({ s }) {
   );
 }
 
-function Blog({ onStart, onGoHome }) {
+function Blog({ onStart, onGoHome, onOrm, onDeindex }) {
   const { t } = useLang();
   const b = t.blog;
   const [cat, setCat] = React.useState(b.cats[0]);
@@ -51,7 +51,7 @@ function Blog({ onStart, onGoHome }) {
 
   return (
     <div className="mag">
-      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} active="magazin" />
+      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} onOrm={onOrm} onDeindex={onDeindex} active="magazin" />
 
       {/* hero */}
       <section className="mag-hero">

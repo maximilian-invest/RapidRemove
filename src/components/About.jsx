@@ -213,7 +213,7 @@ function AboutInner() {
 
   return (
     <div className="about">
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={toTop} active="about" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={toTop} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="about" />
 
       <section className="ab-hero">
         <div className="hero-glow"></div>
