@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -1062,16 +1062,24 @@ function AdminApp() {
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
   const setStatus = (o, id, silent) => {
-    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: id === "done" && x.pay === "pending" ? "paid" : x.pay } : x;
+    const nextPay = id === "done" && o.pay === "pending" ? "paid" : o.pay;
+    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay } : x;
     setOrders((list) => list.map(upd));
     setActive(upd);
     setDetail(upd);
-    if (!silent) { const s = STATUS_FLOW.find((s) => s.id === id); toast(s ? "Status „" + s.label + "“ gesetzt" : "Status aktualisiert"); }
+    const s = STATUS_FLOW.find((s) => s.id === id);
+    const label = s ? s.label : id;
+    // Dauerhaft im Backend speichern (bleibt bis zur nächsten Änderung).
+    setOrderStatus({ orderId: o.id, status: id, pay: nextPay, label }).catch((e) => toast("Status nicht gespeichert: " + e.message));
+    if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
   const goInvoice = (o) => { setInvoiceModal(o); };
   const doStorno = (o) => {
-    setOrders((list) => list.map((x) => x.id === o.id ? { ...x, status: "storniert", pay: "refunded" } : x));
-    setDetail((d) => d && d.id === o.id ? { ...d, status: "storniert", pay: "refunded" } : d);
+    const upd = (x) => x && x.id === o.id ? { ...x, status: "storniert", pay: "refunded" } : x;
+    setOrders((list) => list.map(upd));
+    setDetail(upd);
+    setActive(upd);
+    setOrderStatus({ orderId: o.id, status: "storniert", pay: "refunded", label: "storniert" }).catch((e) => toast("Status nicht gespeichert: " + e.message));
     toast("Bestellung " + o.id + " storniert");
   };
 

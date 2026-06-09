@@ -165,3 +165,16 @@ export async function fetchEvents(orderId, email) {
   const j = await res.json();
   return (j.events || []).map((e) => ({ ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), auto: !!e.auto }));
 }
+
+/** Bestell-Status dauerhaft im Backend setzen (bleibt bis zur nächsten Änderung). */
+export async function setOrderStatus({ orderId, status, pay, label }) {
+  if (!OPS || !orderId || !status) return { ok: false };
+  const res = await fetch(OPS + "/admin/order-status", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId, status, pay, label }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}

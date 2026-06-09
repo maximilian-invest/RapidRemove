@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, updateOrderStatus } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
 import { startUpsellWorker } from "./upsell";
@@ -368,6 +368,24 @@ app.post("/admin/events", async (req, reply) => {
   const email = clip(b.email, 160);
   const events = email ? await listEventsByEmail(email, 100) : await listEvents(clip(b.orderId, 40), 100);
   return { ok: true, events };
+});
+
+// Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).
+// Bleibt bestehen, bis er erneut geändert wird (z. B. Storno → „storniert“,
+// Reaktivierung → „progress“, Pipeline-Klicks).
+app.post("/admin/order-status", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = clip(b.orderId, 40);
+  const status = clip(b.status, 40);
+  const pay = clip(b.pay, 20) || undefined;
+  if (!id || !status) return reply.code(400).send({ ok: false, error: "orderId und status erforderlich" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const ok = await updateOrderStatus(id, status, pay);
+  if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  const label = clip(b.label, 80) || status;
+  await insertEvent({ orderId: id, type: "status", title: `Status → ${label}`, detail: pay ? `Zahlung: ${pay} · im Dashboard gesetzt` : "im Dashboard gesetzt" });
+  return { ok: true };
 });
 
 const port = Number(process.env.PORT) || 3000;

@@ -165,6 +165,16 @@ export async function linkCheck(checkId: string, orderId: string): Promise<void>
   await pool.query(`UPDATE checks SET order_id=$2, status='konvertiert' WHERE id=$1`, [checkId, orderId || null]);
 }
 
+/** Status (und optional Zahlungsstatus) einer Bestellung dauerhaft setzen.
+ *  Gibt true zurück, wenn eine Bestellung mit dieser ID aktualisiert wurde. */
+export async function updateOrderStatus(id: string, status: string, pay?: string): Promise<boolean> {
+  if (!pool || !id || !status) return false;
+  const r = pay
+    ? await pool.query(`UPDATE orders SET status=$2, pay=$3 WHERE id=$1`, [id, status, pay])
+    : await pool.query(`UPDATE orders SET status=$2 WHERE id=$1`, [id, status]);
+  return (r.rowCount ?? 0) > 0;
+}
+
 export async function listOrders(limit = 200): Promise<Record<string, unknown>[]> {
   if (!pool) return [];
   const r = await pool.query(`SELECT * FROM orders ORDER BY created_at DESC LIMIT $1`, [limit]);
