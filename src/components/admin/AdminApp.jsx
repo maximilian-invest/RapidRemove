@@ -171,6 +171,7 @@ function MobileTabBar({ view, setView, counts }) {
 
 /* ---------- Dashboard ---------- */
 function Dashboard({ orders, checks, openOrder, openCheck }) {
+  const isMobile = useIsMobile();
   const newCount = orders.filter((o) => o.status === "new").length;
   const progressCount = orders.filter((o) => o.status === "progress").length;
   const revenue = orders.filter((o) => o.pay === "paid").reduce((s, o) => s + o.amount, 0);
@@ -187,6 +188,52 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
     { ic: AI.euro, label: "Umsatz (bezahlt)", val: money(revenue, "DE"), d: "+12,4 % ggü. Vorwoche", up: true },
     { ic: AI.trendUp, label: "Prüfung → Auftrag", val: (checks.length ? Math.round(checks.filter((c) => c.status === "konvertiert").length / checks.length * 100) : 0) + " %", d: "Konversionsrate", up: true },
   ];
+  if (isMobile) {
+    const mobileKpis = kpis.filter((k) => k.label !== "Umsatz (bezahlt)" && k.label !== "Prüfung → Auftrag");
+    return (
+      <div className="content">
+        <div className="m-kpi span" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <div>
+            <div className="kl" style={{ marginTop: 0, fontSize: 12.5 }}>Umsatz (bezahlt)</div>
+            <div className="kv" style={{ fontSize: 34, marginTop: 6, color: "var(--primary)" }}>{money(revenue, "DE")}</div>
+            <div className="kd up" style={{ marginTop: 8 }}><AI.trendUp /> bezahlte Aufträge</div>
+          </div>
+          <div className="ic" style={{ marginLeft: "auto", marginBottom: 0, width: 44, height: 44 }}><AI.euro style={{ width: 22, height: 22 }} /></div>
+        </div>
+        <div className="m-kpis" style={{ marginTop: 11 }}>
+          {mobileKpis.map((k, i) => (
+            <div className="m-kpi" key={i}>
+              <div className="ic"><k.ic /></div>
+              <div className="kv">{k.val}</div>
+              <div className="kl">{k.label}</div>
+              <div className={"kd " + (k.up ? "up" : "down")}>{k.up ? <AI.trendUp /> : <AI.trendDown />}{k.d}</div>
+            </div>
+          ))}
+        </div>
+        <div className="m-sec-head"><h2>Pipeline heute</h2></div>
+        <div className="m-card m-card-pad">
+          <div className="m-pipe">
+            {STATUS_FLOW.map((s) => {
+              const n = orders.filter((o) => o.status === s.id).length;
+              const pct = orders.length ? Math.round((n / orders.length) * 100) : 0;
+              const col = s.id === "done" ? "var(--success)" : s.id === "progress" ? "var(--warning)" : "var(--primary)";
+              return (
+                <div className="m-pipe-row" key={s.id}>
+                  <div className="t"><span>{s.label}</span><span className="n">{n}</span></div>
+                  <div className="m-pipe-bar"><i style={{ width: pct + "%", background: col }}></i></div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="m-sec-head"><h2>Neueste Bestellungen</h2></div>
+        <div className="m-list">
+          {orders.slice(0, 5).map((o) => <OrderRow key={o.id} o={o} onClick={() => openOrder(o)} />)}
+        </div>
+        <div className="m-trust"><Icon.shieldCheck /> DSGVO-konform · Server in Deutschland</div>
+      </div>
+    );
+  }
   return (
     <div className="content">
       <div className="kpis">

@@ -335,6 +335,30 @@ button{font-family:inherit;}
 .m-drow:last-child{border-bottom:none;}
 .m-drow .dl{color:var(--fg-2);font-weight:600;}
 .m-drow .dv{font-weight:700;text-align:right;}
+/* Übersicht/Dashboard (Design „mobil-uebersicht"): KPIs, Karten, Pipeline */
+.m-sec-head{display:flex;align-items:baseline;justify-content:space-between;margin:22px 2px 11px;}
+.m-sec-head:first-child{margin-top:2px;}
+.m-sec-head h2{font-family:var(--font-display);font-weight:700;font-size:18px;margin:0;letter-spacing:-.2px;}
+.m-kpis{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.m-kpi{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);padding:15px 15px 14px;box-shadow:var(--shadow-xs);}
+.m-kpi .ic{width:32px;height:32px;border-radius:9px;background:var(--orange-50);display:flex;align-items:center;justify-content:center;margin-bottom:11px;}
+.m-kpi .ic svg{width:17px;height:17px;color:var(--primary);}
+.m-kpi .kv{font-family:var(--font-display);font-weight:700;font-size:25px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1;}
+.m-kpi .kl{font-size:12px;font-weight:700;color:var(--fg-2);margin-top:6px;}
+.m-kpi .kd{font-size:11.5px;font-weight:800;margin-top:7px;display:flex;align-items:center;gap:4px;}
+.m-kpi .kd.up{color:var(--success);}
+.m-kpi .kd.down{color:var(--danger);}
+.m-kpi .kd svg{width:13px;height:13px;}
+.m-kpi.span{grid-column:1 / -1;}
+.m-card{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);box-shadow:var(--shadow-xs);overflow:hidden;}
+.m-card-pad{padding:16px;}
+.m-pipe{display:flex;flex-direction:column;gap:15px;}
+.m-pipe-row .t{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-size:13px;font-weight:700;}
+.m-pipe-row .t .n{font-family:var(--font-display);font-size:15px;}
+.m-pipe-bar{height:8px;background:var(--neutral-100);border-radius:4px;overflow:hidden;}
+.m-pipe-bar i{display:block;height:100%;border-radius:4px;}
+.m-trust{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--fg-muted);margin-top:18px;}
+.m-trust svg{width:14px;height:14px;color:var(--success);}
 @media(max-width:760px){
   .topbar .search,.topbar .tb-right{display:none;}
 }
