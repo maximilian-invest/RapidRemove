@@ -169,6 +169,19 @@ section{position:relative;}
 .input::placeholder{color:var(--fg-muted);font-weight:500;}
 .input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(255,128,0,.16);}
 .input.plain{padding-left:16px;}
+/* Live-Suche-Dropdown im Hero */
+.hero-ac{position:relative;margin-bottom:12px;}
+.hero-ac .field{margin-bottom:0;}
+.hero-ac-pop{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:30;background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--shadow-lg);max-height:300px;overflow-y:auto;}
+.hero-ac-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:11px 14px;background:none;border:none;border-bottom:1px solid var(--hairline);cursor:pointer;transition:background .12s;}
+.hero-ac-item:last-child{border-bottom:none;}
+.hero-ac-item:hover{background:var(--neutral-50);}
+.hero-ac-item svg{width:17px;height:17px;color:var(--fg-muted);flex:none;margin-top:1px;}
+.hero-ac-item.use{background:var(--orange-50);}
+.hero-ac-item.use svg{color:var(--primary);}
+.hero-ac .ac-tx{display:flex;flex-direction:column;min-width:0;}
+.hero-ac .ac-n{font-weight:700;font-size:14px;color:var(--fg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hero-ac .ac-a{font-size:12px;color:var(--fg-muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
 .cc-foot{display:flex;align-items:center;gap:8px;margin-top:16px;font-size:13px;color:var(--fg-muted);}
 .cc-foot svg{width:15px;height:15px;}
 

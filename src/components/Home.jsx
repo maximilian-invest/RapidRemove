@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat } from "@/components/Chrome";
+import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 
@@ -99,9 +100,29 @@ Object.assign(WP_COPY, {
 
 /* ============ HERO ============ */
 function Hero({ onStart }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [name, setName] = React.useState("");
-  const go = () => onStart(name);
+  const [sug, setSug] = React.useState([]);
+  const [acOpen, setAcOpen] = React.useState(false);
+  const acRef = React.useRef(null);
+  const go = (n) => onStart(typeof n === "string" ? n : name);
+  // Live-Suche: getippten Namen entprellt in der Places-API nachschlagen.
+  React.useEffect(() => {
+    const q = name.trim();
+    if (q.length < 2) { setSug([]); return; }
+    let alive = true;
+    const id = setTimeout(() => {
+      searchProfiles(q, lang).then((r) => { if (alive) setSug(r || []); }).catch(() => { if (alive) setSug([]); });
+    }, 280);
+    return () => { alive = false; clearTimeout(id); };
+  }, [name, lang]);
+  React.useEffect(() => {
+    const onDoc = (e) => { if (acRef.current && !acRef.current.contains(e.target)) setAcOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+  const pick = (n) => { setAcOpen(false); go(n); };
+  const showAc = acOpen && name.trim().length >= 2;
   return (
     <section className="hero">
       <div className="hero-glow"></div>
@@ -136,11 +157,28 @@ function Hero({ onStart }) {
           </div>
           <div className="ttl">{t.hero.cardTitle}</div>
           <div className="sub">{t.hero.cardSub}</div>
-          <div className="field">
-            <Icon.search />
-            <input className="input" placeholder={t.hero.placeholder} value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && go()} />
+          <div className="hero-ac" ref={acRef}>
+            <div className="field">
+              <Icon.search />
+              <input className="input" placeholder={t.hero.placeholder} value={name}
+                onChange={(e) => { setName(e.target.value); setAcOpen(true); }}
+                onFocus={() => setAcOpen(true)}
+                onKeyDown={(e) => e.key === "Enter" && go()} />
+            </div>
+            {showAc && (
+              <div className="hero-ac-pop">
+                {sug.map((s) => (
+                  <button type="button" className="hero-ac-item" key={s.placeId || s.id} onClick={() => pick(s.name)}>
+                    <Icon.building />
+                    <span className="ac-tx"><span className="ac-n">{s.name}</span>{s.addr ? <span className="ac-a">{s.addr}</span> : null}</span>
+                  </button>
+                ))}
+                <button type="button" className="hero-ac-item use" onClick={() => pick(name)}>
+                  <Icon.arrowRight />
+                  <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{lang === "de" ? "So fortfahren – auch wenn nicht gelistet" : "Continue with this — even if not listed"}</span></span>
+                </button>
+              </div>
+            )}
           </div>
           <button className="btn btn-primary btn-block lg" onClick={go}>
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />

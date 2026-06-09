@@ -180,7 +180,10 @@ function Wizard({ initialName, onExit }) {
     }
     await minDelay;
     let list;
-    if (results && results.length) list = results;          // echte Treffer
+    if (results && results.length) {
+      list = results.slice(0, 4);
+      if (nm.trim()) list = [...list, { ...manualCandidate(nm, lang)[0], id: "pmanual", primary: false }]; // getippter Name immer wählbar → fortfahren auch ohne Places-Treffer
+    }
     else if (placesEnabled()) list = manualCandidate(nm, lang); // Key gesetzt, aber nichts gefunden
     else list = makeCandidates(nm, lang);                    // Demo-Modus (kein Key)
     setCandidates(list);
@@ -230,6 +233,11 @@ function Wizard({ initialName, onExit }) {
       amount: num(servicePrice), protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
+    // Conversion ans dataLayer (Google Tag Manager): Bestellung aufgegeben.
+    if (typeof window !== "undefined") {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: "purchase", transaction_id: orderId, value: num(servicePrice), currency: country === "US" ? "USD" : "EUR" });
+    }
     setTimeout(() => { setProcessing(false); setStep(5); }, 2400);
   };
 

@@ -1,4 +1,5 @@
 /* RapidRemove — root layout: design tokens + global styles, metadata */
+import Script from "next/script";
 import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
@@ -35,7 +36,12 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="de">
-      <body>{children}</body>
+      <body>
+        {/* Google Tag Manager */}
+        <Script id="gtm" strategy="afterInteractive">{`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-KQH66GNX');`}</Script>
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KQH66GNX" height="0" width="0" style={{ display: "none", visibility: "hidden" }} title="Google Tag Manager" /></noscript>
+        {children}
+      </body>
     </html>
   );
 }
