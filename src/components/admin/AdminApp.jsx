@@ -505,7 +505,6 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
-              {o.pay === "pending" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
           </div>
@@ -887,8 +886,27 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
+  // Mail-Vorlagen als Popup (Kategorien + Vorlagen-Links) – für Mobil und Desktop.
+  const tplModalEl = openGroup ? (
+    <div className="modal-scrim open" onClick={() => setOpenGroup(null)}>
+      <div className="modal" style={{ width: 520, maxWidth: "94vw" }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon.mail size={19} style={{ color: "var(--primary)" }} /></span>
+          <div><h3>Mail-Vorlagen</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>Kategorie wählen – Vorlage an {o.name} senden</div></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={() => setOpenGroup(null)}><Icon.x /></button>
+        </div>
+        <div className="modal-body">
+          <div className="chips" style={{ marginBottom: 14 }}>
+            {TPL_GROUP_ORDER.map((g) => { const n = sendableTpls.filter((t) => t.group === g).length; return n ? <button key={g} className={"chipf" + (openGroup === g ? " on" : "")} onClick={() => setOpenGroup(g)}>{g} <span className="ct">{n}</span></button> : null; })}
+          </div>
+          <div className="act-btns">{sendableTpls.filter((t) => t.group === openGroup).map((t) => renderTplBtn(t))}</div>
+        </div>
+      </div>
+    </div>
+  ) : null;
   if (isMobile) return (
     <div className="m-detail">
+      {tplModalEl}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
       <div className="m-detail-head">
@@ -961,13 +979,12 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <React.Fragment>
               <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "14px 0 7px" }}>Am häufigsten verwendet</div>
               <div className="act-btns">{topUsed.map((t) => renderTplBtn(t))}</div>
-              <div className="chips" style={{ marginTop: 10, marginBottom: openGroup ? 10 : 0 }}>
+              <div className="chips" style={{ marginTop: 10 }}>
                 {TPL_GROUP_ORDER.map((g) => {
                   const n = sendableTpls.filter((t) => t.group === g).length;
-                  return n ? <button key={g} className={"chipf" + (openGroup === g ? " on" : "")} onClick={() => setOpenGroup(openGroup === g ? null : g)}>{g} <span className="ct">{n}</span></button> : null;
+                  return n ? <button key={g} className="chipf" onClick={() => setOpenGroup(g)}>{g} <span className="ct">{n}</span></button> : null;
                 })}
               </div>
-              {openGroup ? <div className="act-btns" style={{ marginTop: 2 }}>{sendableTpls.filter((t) => t.group === openGroup).map((t) => renderTplBtn(t))}</div> : null}
             </React.Fragment>
           ) : null}
         </div>
@@ -981,6 +998,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   );
   return (
     <div className="content">
+      {tplModalEl}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
       <button className="cd-back" onClick={onBack}><Icon.arrowLeft /> Zurück zu Bestellungen</button>
@@ -999,31 +1017,26 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <span className="m"><Icon.globe /> {o.country}</span>
           </div>
         </div>
-        <div className="cd-acts">
-          <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
-          <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
-          <a className="btn btn-sec btn-sm" href="#"><Icon.whatsapp /> WhatsApp</a>
-          <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.creditCard /> Zahlungslink senden</button>
-        </div>
       </div>
 
       <div className="cd-grid">
         {/* MAIN COLUMN */}
         <div className="cd-col">
+          {/* profile & service */}
+          <div className="panel">
+            <div className="panel-head"><h2>Profil &amp; Leistung</h2></div>
+            <div style={{ padding: "18px 22px" }}>
+              <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+              <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
+              <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+              {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+              <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+            </div>
+          </div>
           {/* actions */}
           <div className="panel">
             <div className="panel-head"><h2>Aktionen</h2></div>
             <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 16 }}>
-              <div>
-                <div className="act-grp-l">Zahlung</div>
-                <div className="act-btns">
-                  <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Bestellten Zahlungslink senden</button>
-                  <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button>
-                  <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet \u2713"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button>
-                  {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Zahlung erfassen</button> : null}
-                  {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
-                </div>
-              </div>
               <div>
                 <div className="act-grp-l">Kommunikation</div>
                 <div className="act-btns">
@@ -1033,7 +1046,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 </div>
               </div>
               <div>
-                <div className="act-grp-l">Vorgangs-Mails (echte Vorlagen)</div>
                 {tpls === null ? <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600 }}>Vorlagen laden\u2026</div> : null}
                 {tpls && tpls.length ? (
                   <React.Fragment>
@@ -1043,17 +1055,12 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                       {topUsed.map((t) => renderTplBtn(t))}
                     </div>
                     {/* Kategorien als Buttons – Klick klappt die Vorlagen aus */}
-                    <div className="chips" style={{ marginBottom: openGroup ? 10 : 0 }}>
+                    <div className="chips">
                       {TPL_GROUP_ORDER.map((g) => {
                         const n = sendableTpls.filter((t) => t.group === g).length;
-                        return n ? <button key={g} className={"chipf" + (openGroup === g ? " on" : "")} onClick={() => setOpenGroup(openGroup === g ? null : g)}>{g} <span className="ct">{n}</span></button> : null;
+                        return n ? <button key={g} className="chipf" onClick={() => setOpenGroup(g)}>{g} <span className="ct">{n}</span></button> : null;
                       })}
                     </div>
-                    {openGroup ? (
-                      <div className="act-btns" style={{ marginTop: 2 }}>
-                        {sendableTpls.filter((t) => t.group === openGroup).map((t) => renderTplBtn(t))}
-                      </div>
-                    ) : null}
                   </React.Fragment>
                 ) : null}
               </div>
@@ -1143,8 +1150,9 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div className="drow"><span className="dl">Rechnungsbetrag</span><span className="dv">{o.amount ? money(o.amount, o.country) : "—"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => onPayLink(o)}><AI.send /> Stripe-Link senden</button> : null}
-              {o.pay === "pending" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => toast("Stripe-Zahlung erfasst ✓")}><Icon.lock /> Erfassen</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
+              {o.amount ? <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet ✓"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
             <div style={{ marginTop: 14, borderTop: "1px solid var(--hairline)", paddingTop: 6 }}>
@@ -1170,17 +1178,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             ))}
           </div>
 
-          {/* quick email templates */}
-          <div className="dsec">
-            <h3><Icon.mail /> Schnell-Mail</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {TEMPLATES.slice(0, 4).map((t) => (
-                <button key={t.id} className="btn btn-sec btn-sm" style={{ justifyContent: "flex-start" }} onClick={() => onCompose(o, t)}>
-                  {(Icon[t.icon] || AI[t.icon] || Icon.mail)({ size: 15 })} {t.name}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>

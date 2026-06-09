@@ -193,7 +193,6 @@ function crmExtras(o) {
   const payHist = [];
   if (o.pay === "paid") payHist.push({ s: "ok", t: "Zahlung erfasst", amt: money(o.amount, o.country), meta: "Stripe · " + o.created.split("·")[0] });
   if (o.pay === "failed") payHist.push({ s: "fail", t: "Belastung abgelehnt", amt: money(o.amount, o.country), meta: "Stripe · Karte abgelehnt" });
-  payHist.push({ s: o.pay === "paid" ? "ok" : "pend", t: o.pay === "paid" ? "Rechnung " + inv + " bezahlt" : "Rechnung " + inv + " erstellt", amt: money(o.amount, o.country), meta: o.pay === "paid" ? "nach Erfolg" : "Zahllink offen" });
   const files = [
     { n: "Screenshot_Profil.png", sz: "248 KB" },
     { n: inv + ".pdf", sz: "62 KB" },
