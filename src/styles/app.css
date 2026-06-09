@@ -54,7 +54,7 @@ section{position:relative;}
 .nav{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline);transition:box-shadow var(--dur) var(--ease);}
 .nav.scrolled{box-shadow:var(--shadow-sm);}
 .nav-inner{height:70px;display:flex;align-items:center;gap:20px;}
-.nav-logo{height:30px;display:block;cursor:pointer;}
+.nav-logo{height:34px;width:auto;display:block;cursor:pointer;}
 .nav-links{display:flex;gap:18px;margin-left:2px;}
 .nav-links a{color:var(--fg-2);font-weight:700;font-size:13.5px;cursor:pointer;transition:color var(--dur);position:relative;white-space:nowrap;}
 .nav-links a:hover{color:var(--fg);}
@@ -80,6 +80,12 @@ section{position:relative;}
   .nav-links{display:none;}
   .nav-right .btn-ghost{display:none;}
   .nav-burger{display:flex;}
+}
+/* Schmale Handys: nichts soll überlaufen – nur Icon-Logo, Sprache & Burger; CTA liegt unten als Sticky-Button. */
+@media(max-width:560px){
+  .nav-inner{gap:12px;}
+  .nav-right{gap:8px;}
+  .nav-right .btn-primary{display:none;}
 }
 
 /* mobile sheet */

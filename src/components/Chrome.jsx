@@ -118,7 +118,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     <React.Fragment>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
         <div className="container nav-inner">
-          <img className="nav-logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+          <img className="nav-logo" src={asset("/assets/rapidremove-icon.png")} alt="RapidRemove" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
           <div className="nav-links">
             {(onOrm || onDeindex) && (
               <div className={"nav-dd" + (ddOpen ? " open" : "")} ref={ddRef}>

@@ -276,14 +276,14 @@ button{font-family:inherit;}
 
 /* ── Mobile (Design „mobil-bestellungen"): Liste, Filter-Chips & Bestell-Detail ── */
 .m-list{display:flex;flex-direction:column;gap:6px;}
-.m-row{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--shadow-xs);padding:6px 11px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:transform .12s,box-shadow .12s;}
+.m-row{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--shadow-xs);padding:5px 10px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:transform .12s,box-shadow .12s;}
 .m-row:active{transform:scale(.985);box-shadow:var(--shadow-sm);}
-.m-ava{width:29px;height:29px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11.5px;flex:none;}
+.m-ava{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:10.5px;flex:none;}
 .m-row .main{flex:1;min-width:0;}
-.m-row .nm{font-weight:800;font-size:13px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.m-row .meta{font-size:11px;color:var(--fg-muted);font-weight:600;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.m-row .nm{font-weight:800;font-size:12.5px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.m-row .meta{font-size:10.5px;color:var(--fg-muted);font-weight:600;margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .m-row .right{display:flex;flex-direction:row;align-items:center;gap:8px;flex:none;}
-.m-row .right .amt{font-family:var(--font-display);font-weight:700;font-size:13px;}
+.m-row .right .amt{font-family:var(--font-display);font-weight:700;font-size:12.5px;}
 /* Filter-Chips (horizontal scrollbar) */
 .m-chips{display:flex;gap:8px;overflow-x:auto;margin:0 0 14px;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
 .m-chips::-webkit-scrollbar{height:0;}
