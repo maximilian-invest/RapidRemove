@@ -61,7 +61,8 @@ export async function initDb(): Promise<void> {
       pay         text NOT NULL DEFAULT 'pending',
       note        text,
       check_id    text,
-      raw         jsonb
+      raw         jsonb,
+      form        jsonb
     )
   `);
   // Selbstheilung: fehlende Spalten ergänzen, falls die Tabelle aus einer älteren Version stammt.
@@ -73,7 +74,7 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS service text, ADD COLUMN IF NOT EXISTS protection text,
       ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS prot_amount numeric, ADD COLUMN IF NOT EXISTS status text,
       ADD COLUMN IF NOT EXISTS pay text, ADD COLUMN IF NOT EXISTS note text, ADD COLUMN IF NOT EXISTS check_id text,
-      ADD COLUMN IF NOT EXISTS raw jsonb
+      ADD COLUMN IF NOT EXISTS raw jsonb, ADD COLUMN IF NOT EXISTS form jsonb
   `);
   await pool.query(`
     ALTER TABLE checks
@@ -173,6 +174,20 @@ export async function updateOrderStatus(id: string, status: string, pay?: string
     ? await pool.query(`UPDATE orders SET status=$2, pay=$3 WHERE id=$1`, [id, status, pay])
     : await pool.query(`UPDATE orders SET status=$2 WHERE id=$1`, [id, status]);
   return (r.rowCount ?? 0) > 0;
+}
+
+/** Fragebogen-Antworten (5 Ja/Nein + filledAt) zu einer Bestellung speichern. */
+export async function setOrderForm(id: string, form: unknown): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE orders SET form=$2 WHERE id=$1`, [id, form ? JSON.stringify(form) : null]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** Minimal-Infos zu einer Bestellung (für die öffentliche Fragebogen-Seite). */
+export async function getOrderBasic(id: string): Promise<{ id: string; company: string | null; form: unknown } | null> {
+  if (!pool || !id) return null;
+  const r = await pool.query(`SELECT id, company, form FROM orders WHERE id=$1`, [id]);
+  return r.rows[0] || null;
 }
 
 export async function listOrders(limit = 200): Promise<Record<string, unknown>[]> {

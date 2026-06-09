@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
+import OrderForm from "@/components/OrderForm";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 const AGB_CONSENT = {
@@ -520,6 +521,10 @@ function Wizard({ initialName, onExit }) {
           <h1 className="wz-h" style={{ fontSize: 30 }}>{w.s6.h}</h1>
           <p className="wz-sub" style={{ margin: "0 auto 0", textAlign: "center" }}>{w.s6.sub}</p>
           <div className="ty-order">{w.s6.order} <b>#{orderId}</b></div>
+        </div>
+
+        <div style={{ marginTop: 24 }}>
+          <OrderForm orderId={orderId} lang={t.code === "de" ? "de" : "en"} />
         </div>
 
         <div style={{ marginTop: 30 }}>

@@ -21,6 +21,7 @@ import AboDeaktiviert, { subject as aboDeaktiviertSubject } from "./AboDeaktivie
 import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
 import Mahnung, { subject as mahnungSubject } from "./Mahnung";
 import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung";
+import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
 
 export interface TemplateEntry {
   label: string;
@@ -180,6 +181,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: Garantiefall,
     subject: garantiefallSubject,
     sample: de,
+  },
+  fragebogen: {
+    label: "Fragebogen anfordern",
+    group: "Mitwirkung",
+    component: Fragebogen,
+    subject: fragebogenSubject,
+    sample: { lang: "de", formUrl: "https://rapid-remove.com/auftrag/RR-000000" },
   },
 };
 

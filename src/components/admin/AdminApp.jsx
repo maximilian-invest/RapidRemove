@@ -6,6 +6,7 @@ import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
 import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
+import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Hauptanwendung (Dashboard, Bestellungen, E-Mail, Rechnungen) */
@@ -776,6 +777,33 @@ function AutomationInfo({ info, onClose }) {
   );
 }
 
+/* ---------- Fragebogen-Block (Status „ausgefüllt?" + Antworten, im Bestell-Detail) ---------- */
+function FragebogenBlock({ form, onRequest }) {
+  const f = form || {};
+  const filled = !!f.filledAt;
+  return (
+    <React.Fragment>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+        {filled
+          ? <span className="badge-st st-paid"><span className="d" style={{ background: "var(--success)" }}></span>Ausgefüllt</span>
+          : <span className="badge-st st-pending"><span className="d"></span>Nicht ausgefüllt</span>}
+        {!filled ? <button className="btn btn-sec btn-sm" onClick={onRequest}><Icon.mail size={15} /> Per Mail anfordern</button> : null}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {FORM_QUESTIONS.map((q) => {
+          const v = f[q.key]; const yes = v === "ja", no = v === "nein";
+          return (
+            <div key={q.key} style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", fontSize: 13 }}>
+              <span style={{ color: "var(--fg-2)", fontWeight: 600 }}>{q.short}</span>
+              <span style={{ fontWeight: 800, flex: "none", color: yes ? "var(--success)" : no ? "var(--danger)" : "var(--fg-muted)" }}>{yes ? "Ja" : no ? "Nein" : "—"}</span>
+            </div>
+          );
+        })}
+      </div>
+    </React.Fragment>
+  );
+}
+
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, toast }) {
   const o = order;
@@ -924,6 +952,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
 
         <div className="m-dsec">
+          <h3><Icon.fileText /> Fragebogen</h3>
+          <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
+        </div>
+
+        <div className="m-dsec">
           <h3><Icon.ban /> Verwaltung</h3>
           <div className="m-btn-row">
             {o.status !== "storniert"
@@ -1014,6 +1047,14 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   {o.status !== "storniert" ? <button className="btn btn-danger btn-sm" onClick={() => setAsk({ title: "Bestellung stornieren", message: "Bestellung " + o.id + " wirklich stornieren? Der Status wird auf „storniert“ gesetzt.", confirmLabel: "Stornieren", danger: true, onConfirm: () => onStorno(o) })}><Icon.ban /> Bestellung stornieren</button> : <span className="badge-st st-refunded"><span className="d"></span>Storniert</span>}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Fragebogen */}
+          <div className="panel">
+            <div className="panel-head"><h2>Fragebogen</h2></div>
+            <div style={{ padding: "18px 22px" }}>
+              <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
             </div>
           </div>
 

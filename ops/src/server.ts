@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, updateOrderStatus } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
 import { startUpsellWorker } from "./upsell";
@@ -18,6 +18,9 @@ const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 // CORS: erlaubt den Browser-POST der Marketing-Site auf den öffentlichen /order-Endpunkt.
 // SITE_ORIGIN optional auf die Site-URL setzen; sonst "*" (Endpunkt ist nicht credentialed).
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "*";
+// Öffentliche Site-URL (für Links in E-Mails, z. B. Fragebogen-Seite). NICHT SITE_ORIGIN nehmen (kann "*" sein).
+const SITE_URL = (process.env.SITE_URL || "https://rapid-remove.com").replace(/\/+$/, "");
+const FORM_FIELDS = ["verified", "smsOk", "nameChange", "owner", "payment48"];
 app.addHook("onRequest", async (req, reply) => {
   reply.header("Access-Control-Allow-Origin", SITE_ORIGIN);
   reply.header("Vary", "Origin");
@@ -181,6 +184,40 @@ app.post("/order", async (req, reply) => {
   }
 
   return result;
+});
+
+// Fragebogen-Antworten zur Bestellung speichern (öffentlich: Danke-Schritt ODER Mail-Link). Gedrosselt.
+app.post("/order-form", async (req, reply) => {
+  if (!allowCheck(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
+  const b = (req.body || {}) as Record<string, unknown>;
+  const id = clip(b.orderId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
+  if (!dbReady()) return { ok: true, saved: false };
+  const ans = (b.form && typeof b.form === "object") ? (b.form as Record<string, unknown>) : {};
+  const form: Record<string, unknown> = { filledAt: new Date().toISOString() };
+  for (const k of FORM_FIELDS) { const v = clip(ans[k], 6); if (v === "ja" || v === "nein") form[k] = v; }
+  try {
+    const ok = await setOrderForm(id, form);
+    if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+    await insertEvent({ orderId: id, type: "order", title: "Fragebogen ausgefüllt", detail: "vom Kunden ausgefüllt" });
+    return { ok: true, saved: true };
+  } catch (e) {
+    app.log.error({ err: e }, "Fragebogen speichern fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: "Speichern fehlgeschlagen" });
+  }
+});
+
+// Minimal-Infos für die öffentliche Fragebogen-Seite (Firmenname + ob schon ausgefüllt). Gedrosselt.
+app.post("/order-form-info", async (req, reply) => {
+  if (!allowCheck(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
+  const b = (req.body || {}) as Record<string, unknown>;
+  const id = clip(b.orderId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
+  if (!dbReady()) return { ok: true, exists: false };
+  const row = await getOrderBasic(id);
+  if (!row) return { ok: true, exists: false };
+  const f = (row.form || {}) as Record<string, unknown>;
+  return { ok: true, exists: true, company: row.company || "", filled: !!f.filledAt, form: f };
 });
 
 // Profil-Prüfung aus dem Wizard protokollieren (Lead). Öffentlich, gedrosselt.
@@ -350,7 +387,7 @@ app.post("/admin/send-template", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
-    const props = { ...(t.sample as object), lang: tlang };
+    const props = { ...(t.sample as object), lang: tlang, formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to });
