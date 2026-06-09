@@ -20,7 +20,14 @@ export const PAYMENT_LINKS: Record<string, string> = {
  * Schlüssel:  `${service}|express|${protection}|${currency}`
  * Diese Tabelle füllt das Skript `setupExpressLinks.ts` (Ausgabe einfach hier einsetzen). */
 export const EXPRESS_PAYMENT_LINKS: Record<string, string> = {
-  // ↓ Ausgabe von `npx tsx src/setupExpressLinks.ts --apply` hier einsetzen
+  "remove|express|none|eur":     "https://buy.stripe.com/7sY8wO89j1BZ18K9U42cg1d",
+  "remove|express|monthly|eur":  "https://buy.stripe.com/dRm6oG4X72G37x85DO2cg1e",
+  "remove|express|monitor|eur":  "https://buy.stripe.com/cNi7sK1KVbczbNo8Q02cg1f",
+  "remove|express|lifetime|eur": "https://buy.stripe.com/5kQ6oG75f80n2cOeak2cg1g",
+  "remove|express|none|usd":     "https://buy.stripe.com/cNicN489j6Wj18K8Q02cg1h",
+  "remove|express|monthly|usd":  "https://buy.stripe.com/aFabJ061b4Ob6t48Q02cg1i",
+  "remove|express|monitor|usd":  "https://buy.stripe.com/9B69AS89j94r6t46HS2cg1j",
+  "remove|express|lifetime|usd": "https://buy.stripe.com/3cIeVc75f5Sf7x89U42cg1k",
 };
 
 /** Liefert den hinterlegten Zahlungslink für ein Szenario – oder undefined.
