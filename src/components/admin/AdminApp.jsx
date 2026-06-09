@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchEvents, sendTemplate } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, COMPANY, money, crmExtras } from "@/lib/admin-data";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
@@ -859,76 +859,81 @@ function SmsModal({ order, onClose, toast }) {
   );
 }
 
-/* ---------- Payment-link modal (Stripe — Betrag automatisch erkannt) ---------- */
+/* ---------- Payment-link modal (alle AKTIVEN Stripe-Links zur Auswahl) ---------- */
 function PayLinkModal({ order, onClose, toast }) {
-  const [prot, setProt] = React.useState("none");
-  const [svcKey, setSvcKey] = React.useState("remove");
-  React.useEffect(() => { if (order) { setProt(order.protection || "none"); setSvcKey(order.service === "reset" ? "reset" : "remove"); } }, [order]);
+  const [links, setLinks] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  const [sel, setSel] = React.useState(null);
+  const [curFilter, setCurFilter] = React.useState("eur");
+  React.useEffect(() => {
+    if (!order) return;
+    setCurFilter(order.country === "US" ? "usd" : "eur");
+    setSel(null); setLinks(null); setErr("");
+    fetchPayLinks().then((l) => setLinks(l || [])).catch((e) => setErr(e.message || "Fehler"));
+  }, [order]);
   if (!order) return <div className="modal-scrim"></div>;
-  const cur = order.country === "US" ? "usd" : "eur";
-  const SVC = { remove: { name: "Löschung", eur: 450, usd: 495 }, reset: { name: "Profil + Neustart", eur: 850, usd: 950 } };
-  const PROT_PRICE = { none: 0, monthly: 24.9, monitor: 69.9, lifetime: 990 };
-  const PROT_LABEL = { none: "Kein Schutz", monthly: "Monatlich", monitor: "Monitoring", lifetime: "Lebenslang" };
-  const svc = SVC[svcKey];
-  const serviceAmount = svc[cur];
-  const protAmount = PROT_PRICE[prot] || 0;
-  const recurring = prot === "monthly" || prot === "monitor";
-  const total = serviceAmount + protAmount;
-  const isEn = (order.lang || "de") === "en";
-  const protMailLabel = prot === "none" ? "" : ((isEn ? { monthly: "Monthly protection", monitor: "Protection + Monitoring", lifetime: "Lifetime protection" } : { monthly: "Monatlicher Schutz", monitor: "Schutz + Monitoring", lifetime: "Lebenslanger Schutz" })[prot] + " – " + money(protAmount, order.country) + (recurring ? (isEn ? "/mo." : "/Mon.") : ""));
+
+  const fmtMoney = (minor, cur) => {
+    const v = (minor || 0) / 100;
+    return cur === "usd"
+      ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: v % 1 ? 2 : 0 })
+      : v.toLocaleString("de-DE", { minimumFractionDigits: v % 1 ? 2 : 0 }) + " €";
+  };
+  const ivSuffix = (iv) => (iv === "month" ? "/Mon." : iv === "year" ? "/Jahr" : iv === "week" ? "/Wo." : "");
+  // Bekannte Schutz-Stufen schöner benennen (Betrag + Intervall sind eindeutig).
+  const tierName = (it) => {
+    const v = (it.amount || 0) / 100;
+    if (it.interval === "month" && v === 24.9) return "Monatlicher Schutz";
+    if (it.interval === "month" && v === 69.9) return "Schutz + Monitoring";
+    if (it.interval === "year" && v === 245) return "Jahresschutz";
+    if (it.interval === "once" && v === 990) return "Lebenslanger Schutz";
+    return null;
+  };
+  const itemLabel = (it) => { const n = tierName(it); return (n ? n + " · " : "") + fmtMoney(it.amount, it.currency) + ivSuffix(it.interval); };
+  const linkLabel = (l) => (l.items || []).map(itemLabel).join(" + ") || "(leerer Link)";
+  const linkCur = (l) => (l.items && l.items[0] && l.items[0].currency) || "eur";
+  const linkTotal = (l) => (l.items || []).reduce((s, it) => s + (it.amount || 0), 0) / 100;
+  const shown = (links || []).filter((l) => curFilter === "all" || linkCur(l) === curFilter);
+  const muted = { fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, padding: "10px 2px" };
+
+  const send = async () => {
+    if (!sel) return;
+    try {
+      await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url });
+      onClose(); toast("Zahlungslink (" + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
+    } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); }
+  };
+
   return (
     <div className="modal-scrim open" onClick={onClose}>
-      <div className="modal" style={{ width: 480 }} onClick={(e) => e.stopPropagation()}>
+      <div className="modal" style={{ width: 520 }} onClick={(e) => e.stopPropagation()}>
         <div className="modal-head">
           <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><AI.creditCard size={19} style={{ color: "var(--primary)" }} /></span>
-          <div><h3>Zahlungslink senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.id} · bestehender Stripe-Link</div></div>
+          <div><h3>Zahlungslink senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{order.name} · aktive Stripe-Links</div></div>
           <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
         </div>
         <div className="modal-body">
-          <div style={{ background: "var(--neutral-50)", border: "1px solid var(--hairline)", borderRadius: "var(--r-md)", padding: "14px 16px", marginBottom: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0" }}>
-              <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>{svc.name}</span>
-              <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{money(serviceAmount, order.country)}</span>
-            </div>
-            {prot !== "none" ? (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderTop: "1px solid var(--hairline)" }}>
-                <span style={{ fontSize: 13, color: "var(--fg-2)", fontWeight: 700 }}>Schutz ({PROT_LABEL[prot]})</span>
-                <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>{money(protAmount, order.country)}{recurring ? " /Mon." : ""}</span>
-              </div>
-            ) : null}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0 2px", borderTop: "1px solid var(--hairline)", marginTop: 4 }}>
-              <span style={{ fontSize: 13, fontWeight: 800 }}>Gesamt</span>
-              <span style={{ fontFamily: "var(--font-display)", fontSize: 17, fontWeight: 700, color: "var(--primary)" }}>{money(total, order.country)}</span>
-            </div>
+          <div className="chips" style={{ marginBottom: 12 }}>
+            {[["eur", "€ EUR"], ["usd", "$ USD"], ["all", "Alle"]].map(([k, lab]) => (
+              <button key={k} className={"chipf" + (curFilter === k ? " on" : "")} onClick={() => setCurFilter(k)}>{lab}</button>
+            ))}
           </div>
-          {/* Leistung wählen (Löschung / Reset) */}
-          <div style={{ marginBottom: 12 }}>
-            <label style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", display: "block", marginBottom: 7 }}>Leistung</label>
-            <div className="chips" style={{ flexWrap: "wrap" }}>
-              {["remove", "reset"].map((k) => (
-                <button key={k} className={"chipf" + (svcKey === k ? " on" : "")} onClick={() => setSvcKey(k)}>{SVC[k].name} · {money(SVC[k][cur], order.country)}</button>
-              ))}
-            </div>
-          </div>
-          {/* Zahlungslink ändern: Schutz / Abo wählen */}
-          <div style={{ marginBottom: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", display: "block", marginBottom: 7 }}>Zahlungslink anpassen — Schutz / Abo</label>
-            <div className="chips" style={{ flexWrap: "wrap" }}>
-              {["none", "monthly", "monitor", "lifetime"].map((k) => (
-                <button key={k} className={"chipf" + (prot === k ? " on" : "")} onClick={() => setProt(k)}>
-                  {PROT_LABEL[k]}{k !== "none" ? " · " + money(PROT_PRICE[k], order.country) + (k === "lifetime" ? "" : "/Mon.") : ""}
-                </button>
-              ))}
-            </div>
-            <div style={{ fontSize: 12, color: "var(--fg-muted)", fontWeight: 600, marginTop: 9, lineHeight: 1.5 }}>
-              {recurring ? "Monatliches Abo — es wird der bestehende Stripe-Abo-Link verschickt." : prot === "lifetime" ? "Einmalig lebenslang — bestehender Einmal-Link." : "Nur Löschung, kein Schutz — bestehender Einmal-Link."}
-            </div>
+          {err ? <div style={muted}>Links nicht ladbar: {err}</div> : null}
+          {links === null && !err ? <div style={muted}>Lade aktive Zahlungslinks…</div> : null}
+          {links && !shown.length && !err ? <div style={muted}>Keine aktiven Links{curFilter !== "all" ? " in dieser Währung" : ""} gefunden.</div> : null}
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 360, overflowY: "auto" }}>
+            {shown.map((l) => (
+              <button key={l.id} onClick={() => setSel(l)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: "11px 14px", border: "1px solid " + (sel && sel.id === l.id ? "var(--primary)" : "var(--hairline)"), borderRadius: "var(--r-md)", background: sel && sel.id === l.id ? "var(--orange-50)" : "var(--card)", cursor: "pointer", textAlign: "left", width: "100%" }}>
+                <span style={{ fontWeight: 700, fontSize: 13.5 }}>{linkLabel(l)}</span>
+                <span style={{ fontSize: 11, color: "var(--fg-muted)", fontWeight: 800, textTransform: "uppercase" }}>{linkCur(l)}</span>
+              </button>
+            ))}
           </div>
         </div>
         <div className="modal-foot">
-          <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender Link aus Stripe</span>
+          <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender aktiver Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={async () => { try { await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: cur, service: svcKey, protection: prot, serviceAmount: serviceAmount, protAmount: protAmount, protType: prot === "none" ? "" : prot, total: total, protectionLabel: protMailLabel, lang: order.lang || "de" }); onClose(); toast("Zahlungslink (" + svc.name + (prot !== "none" ? " + " + PROT_LABEL[prot] : "") + ") an " + order.name + " gesendet ✓"); } catch (e) { toast("Zahlungslink fehlgeschlagen: " + e.message); } }}><AI.send /> Zahlungslink senden</button>
+          <button className="btn btn-pri" disabled={!sel} onClick={send}><AI.send /> Zahlungslink senden</button>
         </div>
       </div>
     </div>

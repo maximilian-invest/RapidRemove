@@ -8,7 +8,7 @@ import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail } from "./db";
-import { hasSecretKey, getStripeMetrics, matchPaymentLink } from "./integrations/stripe";
+import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
 import { startUpsellWorker } from "./upsell";
 
@@ -271,6 +271,21 @@ app.post("/admin/templates", async (req, reply) => {
   return { ok: true, templates };
 });
 
+// Admin-Dashboard: alle AKTIVEN Stripe-Zahlungslinks auflisten (read-only).
+// Liefert je Link die Positionen (Betrag/Währung/Intervall) – das Dashboard baut daraus die Auswahl.
+app.post("/admin/paylinks", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return { ok: true, links: [], error: "STRIPE_SECRET_KEY nicht gesetzt" };
+  try {
+    const links = await listPaymentLinks();
+    return { ok: true, links: links.map((l) => ({ id: l.id, url: l.url, items: l.items })) };
+  } catch (e) {
+    app.log.error({ err: e }, "Payment-Links lesen fehlgeschlagen");
+    return { ok: true, links: [], error: String((e as Error)?.message || e).slice(0, 200) };
+  }
+});
+
 // Admin-Dashboard: echten Stripe-Zahlungslink erstellen + dem Kunden mailen
 app.post("/admin/paylink", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
@@ -280,9 +295,17 @@ app.post("/admin/paylink", async (req, reply) => {
   const service = clip(b.service, 40);
   const protection = clip(b.protection, 20) || "none";
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
-  // KEIN Erstellen in Stripe. 1) optionaler manueller Override, 2) sonst passenden BESTEHENDEN Link auslesen.
-  let url = payLinkFor(service, protection, currency);
+  // KEIN Erstellen in Stripe. 0) direkt gewählter aktiver Link, 1) manueller Override, 2) Betrag-Match.
+  const chosenUrl = clip(b.url, 300);
+  let url: string | undefined;
   let available: string[] = [];
+  if (chosenUrl) {
+    if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+    try { const links = await listPaymentLinks(); if (links.some((l) => l.url === chosenUrl)) url = chosenUrl; }
+    catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
+    if (!url) return reply.code(400).send({ ok: false, error: "Unbekannter oder inaktiver Zahlungslink." });
+  }
+  if (!url) url = payLinkFor(service, protection, currency);
   if (!url) {
     if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
     const serviceAmount = Number(b.serviceAmount) || 0;
