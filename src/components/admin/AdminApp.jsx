@@ -36,6 +36,10 @@ function PayBadge({ pay }) {
 function initials(name) { return name.split(" ").filter(Boolean).slice(-2).map((s) => s[0]).join("").toUpperCase(); }
 /* Stabile Avatar-Farbe aus dem Namen (mobile Bestell-/Kundenkarten). */
 const avaColor = (s) => { let h = 0; for (let i = 0; i < (s || "").length; i++) h = s.charCodeAt(i) + ((h << 5) - h); return `hsl(${Math.abs(h) % 360} 58% 52%)`; };
+/* Lokaler Nutzungs-Zähler für Vorlagen → speist „Am häufigsten verwendet". */
+const TPL_USAGE_KEY = "rr_tpl_usage";
+function readTplUsage() { try { return JSON.parse(localStorage.getItem(TPL_USAGE_KEY) || "{}") || {}; } catch (e) { return {}; } }
+function bumpTplUsage(key) { try { const u = readTplUsage(); u[key] = (u[key] || 0) + 1; localStorage.setItem(TPL_USAGE_KEY, JSON.stringify(u)); } catch (e) {} }
 function fillVars(text, o) {
   const inv = "RE-" + o.id.replace("RR-", "");
   return text
@@ -723,6 +727,10 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const [ask, setAsk] = React.useState(null);
   // Automatik-Erklärung (⚡-Icon).
   const [autoInfo, setAutoInfo] = React.useState(null);
+  // Vorlagen-Nutzung (für „Am häufigsten verwendet") + aufgeklappte Kategorie.
+  const [usage, setUsage] = React.useState({});
+  const [openGroup, setOpenGroup] = React.useState(null);
+  React.useEffect(() => { setUsage(readTplUsage()); }, []);
   const automationForKey = (key) => AUTOMATIONS.find((a) => a.keys.includes(key));
   const automationForTitle = (title) => AUTOMATIONS.find((a) => a.match && a.match.test(title || ""));
   const GENERIC_AUTO = { title: "Automatisch versendet", trigger: "Diese Nachricht wurde vom System automatisch ausgelöst (z. B. durch ein Stripe-Ereignis).", how: "Es war kein manuelles Zutun nötig — der Versand erfolgte automatisch im Hintergrund." };
@@ -735,6 +743,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       onConfirm: async () => {
         try {
           await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" });
+          bumpTplUsage(key); setUsage(readTplUsage()); // Nutzung für „Am häufigsten verwendet" zählen
           // Status-Automatik: Storno-Mail → storniert, Reaktivierungs-Mail → wieder aktiv.
           let note = "";
           if (STORNO_KEYS.includes(key)) { onStatus(o, "storniert", true); note = " · Bestellung storniert"; }
@@ -747,6 +756,17 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
   const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
   const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
+  const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key));
+  const topUsed = [...sendableTpls].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 6);
+  const renderTplBtn = (t) => {
+    const auto = automationForKey(t.key);
+    return (
+      <span key={t.key} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+        <button className="btn btn-sec btn-sm" onClick={() => sendReal(t.key, t.label)}><Icon.mail size={15} /> {t.label}</button>
+        {auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(auto)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 8, border: "1px solid var(--hairline)", background: "var(--orange-50)", color: "var(--primary)", cursor: "pointer", flex: "0 0 auto", padding: 0 }}><Icon.zap size={13} /></button> : null}
+      </span>
+    );
+  };
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
   return (
@@ -801,26 +821,27 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               <div>
                 <div className="act-grp-l">Vorgangs-Mails (echte Vorlagen)</div>
                 {tpls === null ? <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600 }}>Vorlagen laden\u2026</div> : null}
-                {TPL_GROUP_ORDER.map((g) => {
-                  const items = (tpls || []).filter((t) => t.group === g && !TPL_VIA_PAYLINK.has(t.key));
-                  if (!items.length) return null;
-                  return (
-                    <div key={g} style={{ marginBottom: 8 }}>
-                      <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "4px 0 6px" }}>{g}</div>
-                      <div className="act-btns">
-                        {items.map((t) => {
-                          const auto = automationForKey(t.key);
-                          return (
-                            <span key={t.key} style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                              <button className="btn btn-sec btn-sm" onClick={() => sendReal(t.key, t.label)}><Icon.mail size={15} /> {t.label}</button>
-                              {auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(auto)} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 8, border: "1px solid var(--hairline)", background: "var(--orange-50)", color: "var(--primary)", cursor: "pointer", flex: "0 0 auto", padding: 0 }}><Icon.zap size={13} /></button> : null}
-                            </span>
-                          );
-                        })}
-                      </div>
+                {tpls && tpls.length ? (
+                  <React.Fragment>
+                    {/* Schnellzugriff: am häufigsten verwendete Vorlagen */}
+                    <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "4px 0 6px" }}>Am häufigsten verwendet</div>
+                    <div className="act-btns" style={{ marginBottom: 14 }}>
+                      {topUsed.map((t) => renderTplBtn(t))}
                     </div>
-                  );
-                })}
+                    {/* Kategorien als Buttons – Klick klappt die Vorlagen aus */}
+                    <div className="chips" style={{ marginBottom: openGroup ? 10 : 0 }}>
+                      {TPL_GROUP_ORDER.map((g) => {
+                        const n = sendableTpls.filter((t) => t.group === g).length;
+                        return n ? <button key={g} className={"chipf" + (openGroup === g ? " on" : "")} onClick={() => setOpenGroup(openGroup === g ? null : g)}>{g} <span className="ct">{n}</span></button> : null;
+                      })}
+                    </div>
+                    {openGroup ? (
+                      <div className="act-btns" style={{ marginTop: 2 }}>
+                        {sendableTpls.filter((t) => t.group === openGroup).map((t) => renderTplBtn(t))}
+                      </div>
+                    ) : null}
+                  </React.Fragment>
+                ) : null}
               </div>
               <div>
                 <div className="act-grp-l">Verwaltung</div>
