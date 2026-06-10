@@ -103,7 +103,7 @@ const TEMPLATES = [
   { id: "deindex", icon: "gavel", tag: "Presse · Auslistung", name: "Presse-Prüfung Ergebnis", subject: "Ergebnis Ihrer kostenlosen Prüfung – {{order_id}}",
     body: "Hallo {{name}},\n\nwir haben Ihren Fall gemeinsam mit unserer Partnerkanzlei geprüft. Eine Auslistung des genannten Suchergebnisses kommt grundsätzlich in Frage.\n\nGerne erläutern wir Ihnen die nächsten Schritte und den individuellen Aufwand in einem kurzen Gespräch. Eine Erfolgsgarantie können wir – das wissen Sie – nicht geben, da die Entscheidung bei Google liegt.\n\nHerzliche Grüße\nIhr RapidRemove-Team" },
   { id: "rechte", icon: "lock", tag: "Aktion · Rechte", name: "Rechte benötigt", subject: "Aktion erforderlich: Bearbeitungsrechte für {{profile}}",
-    body: "Hallo {{name}},\n\num Ihr Profil löschen zu können, benötigen wir die Bearbeitungsrechte für Ihr Google-Unternehmensprofil „{{profile}}“.\n\nBitte fügen Sie dazu unsere Adresse hallo@rapid-remove.com als Administrator in Ihrem Google-Unternehmensprofil hinzu. Eine kurze Schritt-für-Schritt-Anleitung finden Sie hier: [Link]\n\nWir haben keinerlei Zugriff auf Ihr Google-Konto, Gmail oder Ihre Daten – nur auf das Profil selbst.\n\nHerzliche Grüße\nIhr RapidRemove-Team" },
+    body: "Hallo {{name}},\n\num Ihr Profil löschen zu können, benötigen wir die Bearbeitungsrechte für Ihr Google-Unternehmensprofil „{{profile}}“.\n\nBitte fügen Sie dazu unsere Adresse helpdesk@rapid-remove.com als Administrator in Ihrem Google-Unternehmensprofil hinzu. Eine kurze Schritt-für-Schritt-Anleitung finden Sie hier: [Link]\n\nWir haben keinerlei Zugriff auf Ihr Google-Konto, Gmail oder Ihre Daten – nur auf das Profil selbst.\n\nHerzliche Grüße\nIhr RapidRemove-Team" },
   { id: "adresse", icon: "mapPin", tag: "Aktion · Adresse", name: "Adresse hinterlegen", subject: "Bitte Rechnungsadresse bestätigen – {{order_id}}",
     body: "Hallo {{name}},\n\nfür die Rechnungsstellung benötigen wir noch Ihre vollständige Rechnungsadresse.\n\nBitte antworten Sie kurz mit: Firma, Straße & Hausnummer, PLZ & Ort sowie (falls vorhanden) Ihre UID-Nummer.\n\nVielen Dank!\nIhr RapidRemove-Team" },
   { id: "verify", icon: "shieldCheck", tag: "Aktion · Verifizierung", name: "Verifizieren", subject: "Kurze Verifizierung für {{order_id}}",
@@ -114,7 +114,7 @@ const TEMPLATES = [
 
 const COMPANY = {
   name: "Simple Solution OG", street: "Salzgasse 2", city: "5400 Hallein, Österreich",
-  vat: "ATU72401536", email: "hallo@rapid-remove.com", iban: "AT00 0000 0000 0000 0000",
+  vat: "ATU72401536", email: "helpdesk@rapid-remove.com", iban: "AT00 0000 0000 0000 0000",
 };
 
 /* ---- Abos & Umsatz (Reputations-Schutz Abonnements über Stripe) ---- */

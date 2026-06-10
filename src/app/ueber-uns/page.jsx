@@ -29,7 +29,7 @@ const jsonLd = {
       legalName: "Simple Solution OG",
       url: SITE_URL,
       logo: `${SITE_URL}/assets/rapidremove-logo-full.png`,
-      email: "hallo@rapid-remove.com",
+      email: "helpdesk@rapid-remove.com",
       vatID: "ATU72401536",
       foundingDate: "2021",
       address: {

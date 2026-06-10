@@ -228,4 +228,21 @@ function WhatsAppFloat() {
   return <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" />;
 }
 
-export { useReveal, CountUp, LangToggle, Nav, Footer, StickyCTA, WhatsAppFloat };
+/* Öffnet den Tidio-Live-Chat. Ersetzt frühere WhatsApp-/„Kontakt"-Links überall auf der Seite.
+   Robust, falls Tidio noch lädt: einmalig auf das 'tidioChat-ready'-Event warten. */
+function openChat(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (typeof window === "undefined") return;
+  const go = () => {
+    try {
+      if (!window.tidioChatApi) return;
+      if (window.tidioChatApi.show) window.tidioChatApi.show();
+      window.tidioChatApi.open();
+    } catch (err) { /* Tidio nicht verfügbar */ }
+  };
+  if (window.tidioChatApi) { go(); return; }
+  const onReady = () => { go(); document.removeEventListener("tidioChat-ready", onReady); };
+  document.addEventListener("tidioChat-ready", onReady);
+}
+
+export { useReveal, CountUp, LangToggle, Nav, Footer, StickyCTA, WhatsAppFloat, openChat };

@@ -4,7 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
-import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat } from "@/components/Chrome";
+import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
@@ -365,9 +365,9 @@ function TrustSecurity({ id }) {
                   {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
                 </div>
                 <div className="pacts">
-                  <a title="WhatsApp" href="https://wa.me/4300000000" target="_blank"><Icon.whatsapp size={20} /></a>
+                  <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>
                   <a title="Telefon" href="tel:+4300000000"><Icon.phone size={20} /></a>
-                  <a title="E-Mail" href="mailto:hallo@rapid-remove.com"><Icon.mail size={20} /></a>
+                  <a title="E-Mail" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={20} /></a>
                 </div>
               </div>
               <div className="team-head">
