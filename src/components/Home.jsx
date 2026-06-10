@@ -504,8 +504,9 @@ function Pricing({ id, onStart }) {
             <h4>{t.pricing.protTitle}</h4>
             <p>{t.pricing.protDesc}</p>
           </div>
-          <div className="pp">{money(lang, t.pricing.protPrice)} <small>{t.pricing.protPer}</small>
-            <small style={{ marginTop: 4 }}>{(HOME_MISC[t.code] || HOME_MISC.en).or} {money(lang, t.pricing.protLifetime)} {t.pricing.protLifetimeLabel}</small>
+          <div className="pp">
+            <span className="pp-now">{money(lang, t.pricing.protPrice)} <small>{t.pricing.protPer}</small></span>
+            <small className="pp-life">{(HOME_MISC[t.code] || HOME_MISC.en).or} {money(lang, t.pricing.protLifetime)} {t.pricing.protLifetimeLabel}</small>
           </div>
         </div>
 
