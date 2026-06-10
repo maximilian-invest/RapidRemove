@@ -211,18 +211,25 @@ function Hero({ onStart }) {
 /* ============ TRUST BAR ============ */
 function TrustBar() {
   const { t } = useLang();
+  const tpUrl = t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
+  const items = [
+    <a key="tp" className="tb-item" href={tpUrl} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> {t.trustbar.reviews} <b>Trustpilot</b></a>,
+    <a key="heise" className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>,
+    <div key="legal" className="tb-item"><Icon.shieldCheck size={20} /> {t.trustbar.legal}</div>,
+    <div key="eu" className="tb-item"><Icon.globe size={20} /> {t.trustbar.eu}</div>,
+    <div key="pay" className="tb-item"><Icon.lock size={20} /> {t.trustbar.pay}</div>,
+  ];
+  // Nahtloses Marquee: Item-Satz mehrfach hintereinander, Spur fährt per CSS-Animation um 50 % nach links.
+  const COPIES = 4;
   return (
     <div className="trustbar">
-      <div className="container trustbar-inner">
-        <a className="tb-item" href={t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com"} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> {t.trustbar.reviews} <b>Trustpilot</b></a>
-        <div className="tb-sep"></div>
-        <a className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>
-        <div className="tb-sep"></div>
-        <div className="tb-item"><Icon.shieldCheck size={20} /> {t.trustbar.legal}</div>
-        <div className="tb-sep"></div>
-        <div className="tb-item"><Icon.globe size={20} /> {t.trustbar.eu}</div>
-        <div className="tb-sep"></div>
-        <div className="tb-item"><Icon.lock size={20} /> {t.trustbar.pay}</div>
+      <div className="trustbar-track">
+        {Array.from({ length: COPIES }).flatMap((_, c) =>
+          items.flatMap((it, i) => [
+            React.cloneElement(it, { key: `i${c}-${i}`, ...(c > 0 ? { "aria-hidden": "true", tabIndex: -1 } : {}) }),
+            <div className="tb-sep" key={`s${c}-${i}`} aria-hidden="true"></div>,
+          ])
+        )}
       </div>
     </div>);
 
