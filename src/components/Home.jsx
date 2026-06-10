@@ -213,8 +213,7 @@ function Hero({ onStart }) {
               <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
               <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
             </span>
-            <span className="ht-tx">{(HERO_TEAM[lang] || HERO_TEAM.en)[0]}<b>{(HERO_TEAM[lang] || HERO_TEAM.en)[1]}</b>{(HERO_TEAM[lang] || HERO_TEAM.en)[2]}</span>
-            <Icon.arrowRight size={15} />
+            <span className="ht-tx">{(HERO_TEAM[lang] || HERO_TEAM.en)[0]}<b>{(HERO_TEAM[lang] || HERO_TEAM.en)[1]}</b>{(HERO_TEAM[lang] || HERO_TEAM.en)[2]}<Icon.arrowRight size={14} /></span>
           </a>
         </div>
 
@@ -473,7 +472,7 @@ function Social({ id }) {
 
         {/* Trustpilot — echtes Live-Widget (offizielles Embed, lädt Bewertung & Anzahl live) */}
         <div className="tp-widget reveal">
-          <TrustpilotLive height="40px" align="center" />
+          <TrustpilotLive height="40px" align="left" />
         </div>
 
         {/* Stats */}

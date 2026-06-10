@@ -162,9 +162,10 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-team .ht-avas img+img{margin-left:-12px;}
 .hero-team .ht-tx{font-size:14px;font-weight:700;color:var(--fg-2);line-height:1.4;}
 .hero-team .ht-tx b{color:var(--fg);}
-.hero-team>svg{color:var(--primary);flex:none;transition:transform var(--dur);}
+/* Pfeil hängt direkt am letzten Wort (folgt dem Umbruch, statt rechts wegzurutschen) */
+.hero-team .ht-tx svg{display:inline;vertical-align:-2px;margin-left:5px;color:var(--primary);transition:transform var(--dur);}
 .hero-team:hover .ht-tx b{color:var(--primary);}
-.hero-team:hover>svg{transform:translateX(3px);}
+.hero-team:hover .ht-tx svg{transform:translateX(3px);}
 .hero-proof .pr-line{font-size:13.5px;color:var(--fg-2);font-weight:700;}
 .hero-proof .pr-line b{font-family:var(--font-display);color:var(--fg);font-size:15px;}
 .hero-subproof{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--fg-muted);}
