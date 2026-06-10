@@ -57,7 +57,7 @@
 
 /* team */
 .ab-team{padding:8px 0 72px;}
-.ab-team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;}
+.ab-team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
 .ab-member{text-align:center;}
 .ab-member .m-photo{width:100%;aspect-ratio:1;border-radius:var(--r-lg);display:flex;align-items:flex-end;justify-content:center;position:relative;overflow:hidden;margin-bottom:14px;}
 .ab-member .m-initial{font-family:var(--font-display);font-weight:700;font-size:64px;color:rgba(255,255,255,.9);position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);}
