@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
-import { localePath } from "@/lib/locales-meta";
+import { localePath, LOCALES } from "@/lib/locales-meta";
 
 
 /* ---- Scroll reveal hook ---- */
@@ -92,6 +92,56 @@ function LangToggle() {
 }
 
 /* ---- Navigation ---- */
+/* ---- Sprach-Hinweis: erkennt die Browser-Sprache und schlägt (dezent, schließbar) den
+   Wechsel zur passenden Sprachversion vor. KEIN Auto-Redirect, kein IP/Geo, SEO-sicher.
+   Erscheint nur, wenn die Top-Browsersprache eine unterstützte ANDERE Sprache ist als die
+   aktuelle Seite – und respektiert eine bewusste Sprachwahl (rr_lang) sowie ein Wegklicken. ---- */
+const LANG_NATIVE = { de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano", nl: "Nederlands", pt: "Português", ja: "日本語", sv: "Svenska", da: "Dansk", no: "Norsk" };
+const LANG_HINT_TXT = {
+  de: (n) => `Diese Seite gibt es auch auf ${n}.`,
+  en: (n) => `This page is also available in ${n}.`,
+  es: (n) => `Esta página también está disponible en ${n}.`,
+  fr: (n) => `Cette page est aussi disponible en ${n}.`,
+  it: (n) => `Questa pagina è disponibile anche in ${n}.`,
+  nl: (n) => `Deze pagina is ook beschikbaar in het ${n}.`,
+  pt: (n) => `Esta página também está disponível em ${n}.`,
+  ja: (n) => `このページは${n}でもご覧いただけます。`,
+  sv: (n) => `Den här sidan finns även på ${n}.`,
+  da: (n) => `Denne side findes også på ${n}.`,
+  no: (n) => `Denne siden finnes også på ${n}.`,
+};
+const LANG_HINT_CTA = { de: "Wechseln", en: "Switch", es: "Cambiar", fr: "Changer", it: "Cambia", nl: "Overschakelen", pt: "Mudar", ja: "切り替え", sv: "Byt", da: "Skift", no: "Bytt" };
+
+function LangHint({ currentLang }) {
+  const [target, setTarget] = React.useState(null);
+  React.useEffect(() => {
+    try {
+      if (localStorage.getItem("rr_lang_hint_off") === "1") return;   // einmal weggeklickt → nie wieder
+      if (localStorage.getItem("rr_lang") === currentLang) return;    // bewusste Sprachwahl respektieren
+      const cands = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ""];
+      for (const c of cands) {
+        const code = String(c).slice(0, 2).toLowerCase();
+        if (LOCALES.includes(code)) { if (code !== currentLang) setTarget(code); return; } // nur die oberste UNTERSTÜTZTE Sprache zählt
+      }
+    } catch (e) { /* kein localStorage/navigator → kein Hinweis */ }
+  }, [currentLang]);
+  if (!target) return null;
+  const dismiss = () => { try { localStorage.setItem("rr_lang_hint_off", "1"); } catch (e) {} setTarget(null); };
+  const go = () => { try { localStorage.setItem("rr_lang", target); } catch (e) {} window.location.href = asset(localePath(target)); };
+  const native = LANG_NATIVE[target] || target;
+  return (
+    <div className="lang-hint" role="region" aria-label="Sprache">
+      <div className="container lang-hint-inner">
+        <span className="lh-txt"><Icon.globe size={15} /> {(LANG_HINT_TXT[target] || LANG_HINT_TXT.en)(native)}</span>
+        <span className="lh-act">
+          <button className="lh-go" onClick={go}>{LANG_HINT_CTA[target] || LANG_HINT_CTA.en} → {native}</button>
+          <button className="lh-x" onClick={dismiss} aria-label="Schließen"><Icon.x size={15} /></button>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   const { t } = useLang();
   const [scrolled, setScrolled] = React.useState(false);
@@ -156,6 +206,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           </div>
         </div>
       </nav>
+      <LangHint currentLang={t.code} />
       <div className={"sheet" + (open ? " open" : "")} onClick={() => setOpen(false)}>
         <div className="sheet-panel" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-top">
