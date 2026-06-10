@@ -138,3 +138,7 @@
 
 /* art-layout padding small phones */
 @media(max-width:560px){.art-layout{padding-left:16px;padding-right:16px;padding-top:28px;}}
+
+/* Bulletproof: the article body keeps its side padding regardless of .container/.art-layout order */
+.container.art-layout{padding-left:24px;padding-right:24px;}
+@media(max-width:560px){.container.art-layout{padding-left:16px;padding-right:16px;}}
