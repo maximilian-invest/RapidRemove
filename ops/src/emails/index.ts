@@ -22,6 +22,7 @@ import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
 import Mahnung, { subject as mahnungSubject } from "./Mahnung";
 import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung";
 import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
+import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang";
 
 export interface TemplateEntry {
   label: string;
@@ -63,6 +64,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: ZahlungsbestaetigungGutschein,
     subject: zahlungSubject,
+    sample: de,
+  },
+  "presse-eingang": {
+    label: "Presse-Anfrage erhalten (Prüfung)",
+    group: "Bestellung",
+    component: PresseEingang,
+    subject: presseEingangSubject,
     sample: de,
   },
   mahnung: {

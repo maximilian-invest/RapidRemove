@@ -198,23 +198,22 @@ app.post("/order", async (req, reply) => {
   const note = clip(b.note, 2000);
   const tlang = mailLang(lang);
   // Presse-/Suchergebnis-Auslistung (Wizard) ist eine kostenlose Prüfung, keine
-  // bestätigte Löschung — landet als Bestellung „deindex" im Admin, aber der Kunde
-  // bekommt NICHT die Auftragsbestätigung fürs Profil-Löschen.
+  // bestätigte Löschung — landet als Bestellung „deindex" im Admin. Der Kunde
+  // bekommt dafür die Eingangsbestätigung „Wir prüfen Ihren Fall" statt der
+  // Auftragsbestätigung fürs Profil-Löschen.
   const isPress = service === "deindex";
 
-  const t = TEMPLATES["auftragsbestaetigung"];
+  const t = TEMPLATES[isPress ? "presse-eingang" : "auftragsbestaetigung"];
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
   const props = { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
-  // 1) Kundenbestätigung (bestehendes Template) — bei Presse-Prüfung übersprungen
-  if (!isPress) {
-    try {
-      await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
-      result.customer = true;
-    } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
-  }
+  // 1) Kundenbestätigung (Presse: Eingangs-/Prüfungsbestätigung, sonst Auftragsbestätigung)
+  try {
+    await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+    result.customer = true;
+  } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
 
   // 2) interne Benachrichtigung an das Postfach
   try {
@@ -252,7 +251,7 @@ app.post("/order", async (req, reply) => {
       });
       if (checkId) await linkCheck(checkId, id);
       await insertEvent({ orderId: id, type: "order", title: isPress ? "Presse-Prüfung angefragt" : "Bestellung eingegangen", detail: `${id} erstellt` });
-      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
+      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: isPress ? "Eingangsbestätigung Presse gesendet" : "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
       result.saved = true;
     }
   } catch (e) {
