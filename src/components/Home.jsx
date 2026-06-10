@@ -202,7 +202,7 @@ function Hero({ onStart }) {
           <a className="float-card tp" href={tpUrl} target="_blank" rel="noopener noreferrer">
             <span className="fc-tp"><Icon.star /></span>
             <div>
-              <div className="fc-strong">{t.hero.trust[0]} <span className="stars sm" style={{ verticalAlign: "middle" }}>{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} size={12} />)}</span></div>
+              <div className="fc-strong">{t.hero.trust[0]} <span style={{ verticalAlign: "middle", display: "inline-flex" }}><TpStars size={14} /></span></div>
               <div className="fc-cap">Trustpilot</div>
             </div>
           </a>
@@ -212,10 +212,6 @@ function Hero({ onStart }) {
           </div>
           <div className="ttl">{t.hero.cardTitle}</div>
           <div className="sub">{t.hero.cardSub}</div>
-          <a className="cc-tp" href={tpUrl} target="_blank" rel="noopener noreferrer" aria-label="Trustpilot">
-            <TpStars size={17} />
-            <span className="cc-tp-tx"><b>Trustpilot</b> · {t.hero.trust[0]}/5</span>
-          </a>
           <div className="hero-ac" ref={acRef}>
             <div className="field">
               <Icon.googleG />
