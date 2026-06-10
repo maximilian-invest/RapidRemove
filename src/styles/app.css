@@ -248,7 +248,7 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
   .hero h1{margin-top:2px;}
   .hero .lead{margin-top:12px;font-size:17px;}
   .hero-proof{display:none;}
-  .cc-tp-line{display:flex;margin:10px 0 2px;}
+  .cc-tp-line{display:flex;margin:10px 0 16px;}
 }
 
 /* hero check card */
