@@ -14,7 +14,7 @@ import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
 
 const app = Fastify({ logger: true, trustProxy: true });
-const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "55default";
 
 // CORS: erlaubt den Browser-POST der Marketing-Site auf den öffentlichen /order-Endpunkt.
 // SITE_ORIGIN optional auf die Site-URL setzen; sonst "*" (Endpunkt ist nicht credentialed).

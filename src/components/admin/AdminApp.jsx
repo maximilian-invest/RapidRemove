@@ -868,6 +868,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   // Vorlagen-Nutzung (für „Am häufigsten verwendet") + aufgeklappte Kategorie.
   const [usage, setUsage] = React.useState({});
   const [openGroup, setOpenGroup] = React.useState(null);
+  const [stornoMail, setStornoMail] = React.useState(false); // „Auftrag stornieren" → nur Storno-Mails
   React.useEffect(() => { setUsage(readTplUsage()); }, []);
   const automationForKey = (key) => AUTOMATIONS.find((a) => a.keys.includes(key));
   const automationForTitle = (title) => AUTOMATIONS.find((a) => a.match && a.match.test(title || ""));
@@ -925,9 +926,30 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       </div>
     </div>
   ) : null;
+  // „Auftrag stornieren" → Popup mit NUR den Storno-Mails (Kategorie „Storno", ohne Reaktivierung).
+  const stornoTpls = sendableTpls.filter((t) => t.group === "Storno" && t.key !== "reaktivierung");
+  const stornoMailEl = stornoMail ? (
+    <div className="modal-scrim open" onClick={() => setStornoMail(false)}>
+      <div className="modal" style={{ width: 520, maxWidth: "94vw" }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--danger-soft)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon.ban size={19} style={{ color: "var(--danger)" }} /></span>
+          <div><h3>Auftrag stornieren</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>Storno-Mail an {o.name} senden – die Bestellung wird storniert</div></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={() => setStornoMail(false)}><Icon.x /></button>
+        </div>
+        <div className="modal-body">
+          {stornoTpls.length
+            ? <div className="act-btns">{stornoTpls.map((t) => (
+                <button key={t.key} className="btn btn-sec btn-sm" onClick={() => { setStornoMail(false); sendReal(t.key, t.label); }}><Icon.mail size={15} /> {t.label}</button>
+              ))}</div>
+            : <div className="empty"><Icon.mail /><p>Keine Storno-Vorlagen gefunden.</p></div>}
+        </div>
+      </div>
+    </div>
+  ) : null;
   if (isMobile) return (
     <div className="m-detail">
       {tplModalEl}
+      {stornoMailEl}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
       <div className="m-detail-head">
@@ -944,7 +966,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
         <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} />
           {o.status !== "storniert"
-            ? <button className="stat-toggle danger" onClick={() => onStorno(o)}><Icon.ban /> Auftrag stornieren</button>
+            ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
         </div>
 
@@ -1018,6 +1040,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   return (
     <div className="content">
       {tplModalEl}
+      {stornoMailEl}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       <AutomationInfo info={autoInfo} onClose={() => setAutoInfo(null)} />
       <button className="cd-back" onClick={onBack}><Icon.arrowLeft /> Zurück zu Bestellungen</button>
@@ -1026,7 +1049,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div>
           <div className="cd-id">{o.name} <StatusBadge status={o.status} /> <PayBadge pay={o.pay} />
             {o.status !== "storniert"
-              ? <button className="stat-toggle danger" onClick={() => onStorno(o)}><Icon.ban /> Auftrag stornieren</button>
+              ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
               : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
           </div>
           <div className="cd-sub">{o.company} · {o.id}</div>
