@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
+import { localePath } from "@/lib/locales-meta";
 
 
 /* ---- Scroll reveal hook ---- */
@@ -111,6 +112,14 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about],
   ];
   const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else if (id === "about") { onAbout && onAbout(); } else { onNav(id); } };
+  // Logo / „Home": zur Startseite DER AKTUELLEN SPRACHE (DE = "/", sonst "/<code>/"); auf der Startseite nur nach oben scrollen.
+  const goHome = () => {
+    setOpen(false);
+    const home = asset(localePath(t.code));
+    const here = ((typeof window !== "undefined" && window.location.pathname) || "/").replace(/\/+$/, "") || "/";
+    if (here === (home.replace(/\/+$/, "") || "/")) window.scrollTo({ top: 0, behavior: "smooth" });
+    else window.location.href = home;
+  };
   const sv = SVC[t.code] || SVC.en;
   const svLabel = SVC_NAV_LABEL[t.code] || SVC_NAV_LABEL.en;
   const svcAct = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex() };
@@ -119,12 +128,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     <React.Fragment>
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
         <div className="container nav-inner">
-          <img className="nav-logo" src={asset("/assets/rapidremove-icon.png")} alt="RapidRemove" onClick={() => {
-            const home = asset("/");
-            const here = ((typeof window !== "undefined" && window.location.pathname) || "/").replace(/\/+$/, "") || "/";
-            if (here === (home.replace(/\/+$/, "") || "/")) window.scrollTo({ top: 0, behavior: "smooth" });
-            else window.location.href = home;
-          }} />
+          <img className="nav-logo" src={asset("/assets/rapidremove-icon.png")} alt="RapidRemove" onClick={goHome} />
           <div className="nav-links">
             {(onOrm || onDeindex) && (
               <div className={"nav-dd" + (ddOpen ? " open" : "")} ref={ddRef}>
@@ -158,7 +162,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             <LangToggle />
             <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
           </div>
-          <a onClick={() => { setOpen(false); window.location.href = asset("/"); }}>Home</a>
+          <a onClick={goHome}>Home</a>
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
           {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
