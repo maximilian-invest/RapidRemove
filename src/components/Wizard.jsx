@@ -934,8 +934,6 @@ const ROUTER_COPY = {
     pressAltReq: "Bitte beantworten Sie noch die Frage oben, dann können Sie die Prüfung anfragen.",
     pressAltYes: "Ja, Alternative anbieten", pressAltNo: "Nein, nur Entfernung",
     pressDoneH: "Anfrage erhalten — wir melden uns.", pressDoneSub: "Wir prüfen Ihren Fall kostenlos und melden uns mit einer ehrlichen Einschätzung. Keine Kosten, keine Verpflichtung.",
-    pbLabel: "Bekannt aus", pbRec: "Im heise-Ratgeber als Anbieter genannt", pbRecUrl: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html",
-    pbOutlets: ["heise online", "DigitalReport", "Wirtschaft·Heute", "TechJournal"],
   },
   en: {
     routerEyebrow: "Quick start", routerH: "What's this about?",
@@ -961,8 +959,6 @@ const ROUTER_COPY = {
     pressAltReq: "Please answer the question above first — then you can request the assessment.",
     pressAltYes: "Yes, offer the alternative", pressAltNo: "No, removal only",
     pressDoneH: "Request received — we'll be in touch.", pressDoneSub: "We assess your case for free and get back to you with an honest opinion. No cost, no obligation.",
-    pbLabel: "As seen in", pbRec: "Listed as a provider by heise", pbRecUrl: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html",
-    pbOutlets: ["heise online", "DigitalReport", "Business·Today", "TechJournal"],
   },
 };
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
