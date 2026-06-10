@@ -73,6 +73,16 @@ const CONV = {
     tierMonitorBadge: "Beliebteste", tierLifetimeBadge: "Best Value",
     lifetimeMath: "Günstiger als 4 Jahre Monatsschutz — danach nie wieder zahlen.",
     monitorMath: "Für alle, die ganz sichergehen wollen.",
+    expTimeOn: "Gelöscht in ~6 Std.", expTimeOff: "In ~6 Std. statt ~24 Std.",
+    protSectionLabel: "Schutz vor erneuter Eintragung",
+    protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
+    protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
+    protMonitorName: "Monitoring", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.",
+    protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
+    protOffTitle: "Ungeschützt – das ist riskant",
+    protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
+    protOffAck: "Risiko verstanden – ohne Schutz fortfahren", protOffAcked: "Ohne Schutz bestätigt",
     perMonthShort: "/ Mon.", onceShort: "einmalig",
     keepProt: "9 von 10 Kunden behalten den Schutz",
     noProtLink: "Ich brauche keinen Schutz",
@@ -129,6 +139,16 @@ const CONV = {
     tierMonitorBadge: "Most popular", tierLifetimeBadge: "Best value",
     lifetimeMath: "Cheaper than 4 years of monthly protection — then never pay again.",
     monitorMath: "For those who want to be completely safe.",
+    expTimeOn: "Removed in ~6 h", expTimeOff: "In ~6 h instead of ~24 h",
+    protSectionLabel: "Protection against re-listing",
+    protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
+    protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
+    protMonitorName: "Monitoring", protMonitorShort: "Daily monitoring & instant removal.",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.",
+    protToggleOn: "On", protToggleOff: "Off",
+    protOffTitle: "Unprotected — this is risky",
+    protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
+    protOffAck: "I understand the risk — continue without protection", protOffAcked: "Continuing without protection",
     perMonthShort: "/ mo.", onceShort: "once",
     keepProt: "9 in 10 customers keep protection",
     noProtLink: "I don't need protection",
@@ -653,7 +673,7 @@ const CONV = {
     asideBadges: ["GDPR-samsvar", "Servere i EU"],
   },
 };
-function convFor(code) { return CONV[code] || CONV.en; }
+function convFor(code) { return { ...CONV.en, ...(CONV[code] || {}) }; }
 
 /* ---- plausible profile candidates from a typed business name (demo fallback only) ---- */
 function makeCandidates(rawName, lang) {
@@ -903,8 +923,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   const [selectedId, setSelectedId] = React.useState("p1");
   const [service, setService] = React.useState("remove");
   const [express, setExpress] = React.useState(false);
+  const [protSkipAck, setProtSkipAck] = React.useState(false);
   const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — default ON
-  const [showSkip, setShowSkip] = React.useState(false);
   const [contact, setContact] = React.useState({ name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
@@ -1055,7 +1075,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: "purchase", transaction_id: orderId, value: oneTimeTotal, currency: country === "US" ? "USD" : "EUR" });
     }
-    setTimeout(() => { setProcessing(false); setStep(6); }, 2400);
+    setTimeout(() => { setProcessing(false); setStep(5); }, 2400);
   };
 
   /* ---------- step bodies ---------- */
@@ -1179,110 +1199,102 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   }
 
   function StepService() {
-    const opts = [
-      { id: "remove", t: w.s4.opt1.t, d: w.s4.opt1.d, price: p.deletion, badge: w.s4.opt1.badge, ic: "trash" },
-      { id: "reset", t: w.s4.opt2.t, d: w.s4.opt2.d, price: p.reset, badge: w.s4.opt2.badge, ic: "refresh" },
-    ];
+    const removePrice = express ? (num(p.deletion) + num(p.express)) : num(p.deletion);
+    const monitorDelta = num(p.protMonitor) - num(p.protMonthly);
+    const protActive = protection !== null;
+    const blockNext = !protActive && !protSkipAck;
+    const toggleProt = () => {
+      if (protActive) setProtection(null);
+      else { setProtection("monthly"); setProtSkipAck(false); }
+    };
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
         <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s4.h}</h1>
         <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s4.sub}</p>
+
         <div className="opt-list">
-          {opts.map((o) => {
-            const I = Icon[o.ic] || Icon.trash;
-            return (
-              <div className={"opt" + (service === o.id ? " sel" : "")} key={o.id} onClick={() => { setService(o.id); if (o.id !== "remove") setExpress(false); }}>
-                <div className="opt-radio"></div>
-                <div className="opt-ic"><I size={22} /></div>
-                <div className="opt-main">
-                  <div className="ot">{o.t} {o.badge && <span className="obadge">{o.badge}</span>}</div>
-                  <div className="od">{o.d}</div>
+          <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => setService("remove")}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.trash size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{w.s4.opt1.t} {w.s4.opt1.badge && <span className="obadge">{w.s4.opt1.badge}</span>}</div>
+              <div className="od">{w.s4.opt1.d}</div>
+              <div className={"opt-express" + (express ? " on" : "")} onClick={(e) => { e.stopPropagation(); setExpress(!express); }}>
+                <Icon.zap size={17} className="oe-zap" />
+                <span className="oe-text">
+                  <b className="oe-label">{conv.expTitle}</b>
+                  <span key={express ? "on" : "off"} className={"oe-time" + (express ? " on" : "")}>{express ? conv.expTimeOn : conv.expTimeOff}</span>
+                </span>
+                <span className="oe-price">+{money(lang, p.express)}</span>
+                <button className={"switch" + (express ? " on" : "")} aria-label="toggle" onClick={(e) => { e.stopPropagation(); setExpress(!express); }}></button>
+              </div>
+            </div>
+            <div className="opt-price">{fmtMoney(lang, removePrice)}<small>{express ? (lang === "de" ? "inkl. Express" : "incl. express") : wm.afterSuccess}</small></div>
+          </div>
+
+          <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => { setService("reset"); setExpress(false); }}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.refresh size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{w.s4.opt2.t}</div>
+              <div className="od">{w.s4.opt2.d}</div>
+            </div>
+            <div className="opt-price">{money(lang, p.reset)}<small>{wm.afterSuccess}</small></div>
+          </div>
+        </div>
+
+        <div className="prot-header">
+          <span className="prot-divider-label"><Icon.shieldCheck size={14} /> {conv.protSectionLabel}</span>
+          <button className="prot-switch" onClick={toggleProt} aria-label="toggle">
+            <span className={"ps-state" + (protActive ? " on" : "")}>{protActive ? conv.protToggleOn : conv.protToggleOff}</span>
+            <span className={"switch" + (protActive ? " on" : "")}></span>
+          </button>
+        </div>
+
+        {protActive ? (
+          <React.Fragment>
+            <p className="prot-lead">{conv.protLead}</p>
+            <div className="prot-grid">
+              <div className="prot-col">
+                <div className={"prot-card" + ((protection === "monthly" || protection === "monitor") ? " sel" : "")} onClick={() => setProtection("monthly")}>
+                  <span className="pr-radio"></span>
+                  <span className="pc-label">{conv.protMonthlyName}</span>
+                  <span className="pc-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></span>
+                  <span className="pc-desc">{conv.protMonthlyShort}</span>
                 </div>
-                <div className="opt-price">{money(lang, o.price)}<small>{wm.afterSuccess}</small></div>
+                {(protection === "monthly" || protection === "monitor") && (
+                  <div className={"prot-upgrade" + (protection === "monitor" ? " on" : "")} onClick={(e) => { e.stopPropagation(); setProtection(protection === "monitor" ? "monthly" : "monitor"); }}>
+                    <span className="pu-check"><Icon.check size={11} /></span>
+                    <span className="pu-main">
+                      <span className="pu-label">{conv.protMonitorName}</span>
+                      <span className="pu-desc">{conv.protMonitorShort}</span>
+                    </span>
+                    <span className="pu-price">+{fmtMoney(lang, monitorDelta)}<small>{conv.perMonthShort}</small></span>
+                  </div>
+                )}
               </div>
-            );
-          })}
-        </div>
-
-        {service === "remove" && (
-        <div className={"express" + (express ? " on" : "")} onClick={() => setExpress(!express)}>
-          <div className="ex-ic"><Icon.zap size={24} /></div>
-          <div className="ex-main">
-            <div className="ex-eyebrow">{conv.expEyebrow}</div>
-            <h4>{conv.expTitle} <span className="ex-price">+{money(lang, p.express)}</span></h4>
-            <p>{conv.expDesc}</p>
-            <div className="ex-guarantee"><Icon.shieldCheck size={14} /> {conv.expGuarantee}</div>
-            <div className="ex-slots"><span className="ex-dot"></span> {conv.expSlots(3)}</div>
-          </div>
-          <button className={"switch" + (express ? " on" : "")} aria-label="toggle" onClick={(e) => { e.stopPropagation(); setExpress(!express); }}></button>
-        </div>
-        )}
-
-        <div className="svc-cta">
-          <div className="svc-total">
-            <span className="st-l">{conv.subtotal}</span>
-            <span className="st-v">{fmtMoney(lang, leistungTotal)}</span>
-          </div>
-          <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => go(4)}>{conv.toProtect} <Icon.arrowRight size={18} /></button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function StepProtect() {
-    const nudge = PROT_NUDGE[t.code] || PROT_NUDGE.en;
-    const tiers = [
-      { id: "monthly", label: conv.tierMonthlyLabel, price: money(lang, p.protMonthly), per: conv.perMonthShort, desc: conv.tierMonthlyDesc, badge: null, foot: null },
-      { id: "monitor", label: conv.tierMonitorLabel, price: money(lang, p.protMonitor), per: conv.perMonthShort, desc: conv.tierMonitorDesc, badge: conv.tierMonitorBadge, foot: conv.monitorMath },
-      { id: "lifetime", label: conv.tierLifetimeLabel, price: money(lang, p.protLifetime), per: conv.onceShort, desc: conv.tierLifetimeDesc, badge: conv.tierLifetimeBadge, foot: conv.lifetimeMath },
-    ];
-    return (
-      <div className="wz-card">
-        <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {conv.protStepLabel}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{conv.protH}</h1>
-        <p className="wz-sub" style={{ marginBottom: 8 }}>{conv.protSub}</p>
-        <div className="prot-eyebrow" style={{ marginBottom: 18 }}><Icon.star size={13} /> {conv.protEyebrow}</div>
-
-        <div className="tier-grid">
-          {tiers.map((tier) => (
-            <button key={tier.id} className={"tier" + (protection === tier.id ? " sel" : "") + (tier.badge === conv.tierLifetimeBadge ? " best" : "")} onClick={() => setProtection(tier.id)}>
-              {tier.badge && <span className={"tier-badge" + (tier.badge === conv.tierLifetimeBadge ? " gold" : "")}>{tier.badge}</span>}
-              <span className="tier-radio"></span>
-              <span className="tier-label">{tier.label}</span>
-              <span className="tier-price">{tier.price}<small>{tier.per}</small></span>
-              <span className="tier-desc">{tier.desc}</span>
-              {tier.foot && <span className="tier-foot"><Icon.check size={13} /> {tier.foot}</span>}
-            </button>
-          ))}
-        </div>
-        {protection
-          ? <div className="prot-foot">
-              <span className="prot-social"><Icon.shieldCheck size={15} /> {conv.keepProt}</span>
-              <button className="prot-skip-link" onClick={() => setShowSkip(true)}>{conv.noProtLink}</button>
+              <div className="prot-col">
+                <div className={"prot-card best" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
+                  <span className="pc-tag">{conv.tierLifetimeBadge}</span>
+                  <span className="pr-radio"></span>
+                  <span className="pc-label">{conv.protLifetimeName}</span>
+                  <span className="pc-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></span>
+                  <span className="pc-desc">{conv.protLifetimeShort}</span>
+                </div>
+              </div>
             </div>
-          : <div className="no-prot">
-              <Icon.alert />
-              <div>
-                <b>{conv.noProtTitle}</b>
-                <div className="np-body">{conv.noProtBody}</div>
-              </div>
-              <button className="btn btn-primary sm" onClick={() => setProtection("monthly")}>{conv.addProtBack}</button>
-            </div>
-        }
-        {showSkip && (
-          <div className="mini-dialog">
-            <Icon.alert />
-            <div>
-              <b>{w.s4.skipTitle}</b>
-              <div style={{ marginTop: 4 }}>{w.s4.skipBody}</div>
-              <div className="md-actions">
-                <button className="keep" onClick={() => setShowSkip(false)}>{nudge.keep}</button>
-                <button className="skip" onClick={() => { setProtection(null); setShowSkip(false); }}>{nudge.remove}</button>
-              </div>
+            <div className="prot-note"><Icon.shieldCheck size={14} /> {conv.keepProt}</div>
+          </React.Fragment>
+        ) : (
+          <div className={"prot-warn-box" + (protSkipAck ? " acked" : "")}>
+            <div className="pw-ic"><Icon.alert size={22} /></div>
+            <div className="pw-body">
+              <b className="pw-title">{conv.protOffTitle}</b>
+              <p className="pw-text">{conv.protOffBody}</p>
+              {protSkipAck
+                ? <div className="pw-acked"><Icon.check size={15} /> {conv.protOffAcked}</div>
+                : <button className="pw-ack" onClick={() => setProtSkipAck(true)}>{conv.protOffAck}</button>}
             </div>
           </div>
         )}
@@ -1295,8 +1307,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
             <span className="st-v">{fmtMoney(lang, oneTimeTotal)}{recurringNum > 0 && <em> + {money(lang, protPriceVal)} {conv.perMonthShort}</em>}</span>
           </div>
           <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" disabled={showSkip} onClick={() => go(5)}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
+            <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-primary grow" disabled={blockNext} onClick={() => { if (!blockNext) go(4); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
           </div>
         </div>
       </div>
@@ -1397,7 +1409,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           <div className="risk-banner lg" style={{ marginTop: 14 }}><Icon.shieldCheck /> {t.riskReversal}</div>
           <div className="checkout-testi"><Testimonial q={conv.quotes[2]} /></div>
           <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button className="btn btn-secondary" onClick={() => go(4)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
           </div>
         </div>
         <OrderSummary />
@@ -1482,9 +1494,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     );
   }
 
-  const bodies = [StepName, StepSearch, StepConfirm, StepService, StepProtect, StepCheckout, StepDone];
+  const bodies = [StepName, StepSearch, StepConfirm, StepService, StepCheckout, StepDone];
   const Body = bodies[step];
-  const wideStep = [0, 2, 4, 5].includes(step) && !processing;
+  const wideStep = [0, 2, 4].includes(step) && !processing;
 
   return (
     <div className="wz">
