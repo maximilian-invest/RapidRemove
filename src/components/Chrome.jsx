@@ -94,6 +94,61 @@ function LangToggle() {
   );
 }
 
+/* ---- Telefonnummer in der Navbar: erreichbar 9–17 Uhr (Europe/Vienna).
+   Außerhalb der Zeiten blockt der Klick und zeigt einen Hinweis mit
+   „Trotzdem anrufen" + „Live-Chat öffnen". ---- */
+const TEL_NUMBER = "tel:08000900001";
+const TEL_HOURS = { from: 9, to: 17 };
+const TEL_NOTE = {
+  de: ["Telefonisch erreichbar: 9–17 Uhr (MEZ).", "Trotzdem anrufen", "Live-Chat öffnen"],
+  en: ["Phone hours: 9 am–5 pm (CET).", "Call anyway", "Open live chat"],
+  es: ["Atención telefónica: 9–17 h (CET).", "Llamar igualmente", "Abrir el chat"],
+  fr: ["Téléphone : 9 h–17 h (CET).", "Appeler quand même", "Ouvrir le chat"],
+  it: ["Telefono: 9–17 (CET).", "Chiama comunque", "Apri la chat"],
+  nl: ["Telefonisch bereikbaar: 9–17 uur (CET).", "Toch bellen", "Chat openen"],
+  pt: ["Telefone: 9–17 h (CET).", "Ligar mesmo assim", "Abrir o chat"],
+  ja: ["電話受付：9〜17時（中央ヨーロッパ時間）", "それでも電話する", "チャットを開く"],
+  sv: ["Telefontid: 9–17 (CET).", "Ring ändå", "Öppna chatten"],
+  da: ["Telefontid: 9–17 (CET).", "Ring alligevel", "Åbn chatten"],
+  no: ["Telefontid: 9–17 (CET).", "Ring likevel", "Åpne chatten"],
+};
+
+function viennaHour() {
+  try {
+    return parseInt(new Intl.DateTimeFormat("de-AT", { hour: "numeric", hour12: false, timeZone: "Europe/Vienna" }).format(new Date()), 10);
+  } catch (e) { return new Date().getHours(); }
+}
+
+function NavTel() {
+  const { lang } = useLang();
+  const [note, setNote] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const onDoc = (e) => { if (ref.current && !ref.current.contains(e.target)) setNote(false); };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+  const tx = TEL_NOTE[lang] || TEL_NOTE.en;
+  const onClick = (e) => {
+    const h = viennaHour();
+    if (h >= TEL_HOURS.from && h < TEL_HOURS.to) return; // innerhalb der Zeiten: normal anrufen
+    e.preventDefault();
+    setNote(true);
+  };
+  return (
+    <span className="nav-tel-wrap" ref={ref}>
+      <a className="nav-tel" href={TEL_NUMBER} onClick={onClick} aria-label="Telefon 0800 0900001"><Icon.phone size={15} /><span>0800 0900001</span></a>
+      {note && (
+        <span className="nav-tel-note">
+          <b>{tx[0]}</b>
+          <a href={TEL_NUMBER} onClick={() => setNote(false)}>{tx[1]}</a>
+          <button type="button" onClick={() => { setNote(false); openChat(); }}>{tx[2]}</button>
+        </span>
+      )}
+    </span>
+  );
+}
+
 /* ---- Navigation ---- */
 /* ---- Sprach-Hinweis: erkennt die Browser-Sprache und schlägt (dezent, schließbar) den
    Wechsel zur passenden Sprachversion vor. KEIN Auto-Redirect, kein IP/Geo, SEO-sicher.
@@ -242,7 +297,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           </div>
           <div className="nav-right">
-            <a className="nav-tel" href="tel:08000900001" aria-label="Telefon 0800 0900001"><Icon.phone size={15} /><span>0800 0900001</span></a>
+            <NavTel />
             <LangToggle />
             <button className="btn btn-primary sm" onClick={onStart}><span className="ico"><Icon.search size={17} /></span>{t.nav.cta}</button>
             <button className="nav-burger" onClick={() => setOpen(true)} aria-label="Menu"><Icon.menu /></button>
