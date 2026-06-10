@@ -151,6 +151,10 @@ function LangHint({ currentLang }) {
         // 2) Physischer Standort per IP — NUR wenn das Sprachsignal schwach ist: kein unterstütztes
         //    Browser-Match ODER Englisch als internationaler Default (z. B. EN-Browser, sitzt in Italien).
         if (browserTarget && browserTarget !== "en") return;
+        // Stufe 2 (IP-Standort) NUR mit Einwilligung — ohne Consent kein Drittanbieter-/IP-Call (DSGVO).
+        // Consent-Banner/CMP setzt bei Zustimmung localStorage 'rr_geo_consent' = '1'.
+        let geoConsent = false; try { geoConsent = localStorage.getItem("rr_geo_consent") === "1"; } catch (e) {}
+        if (!geoConsent) return;
         const cc = await detectCountry();
         if (!alive || !cc) return;
         const loc = COUNTRY_LOCALE[cc];
