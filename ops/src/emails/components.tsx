@@ -57,7 +57,7 @@ export function EmailShell({
           {/* Footer */}
           <Section style={{ padding: "18px 32px 24px", background: brand.page, borderTop: `1px solid ${brand.hr}` }}>
             <Text style={{ margin: 0, fontSize: 12, lineHeight: "1.6", color: brand.muted }}>
-              <strong style={{ color: brand.text }}>RapidRemove</strong> · Simple Solution OG<br />
+              <strong style={{ color: brand.text }}>RapidRemove</strong> · Simple Solution. OG<br />
               Salzgasse 2, 5400 Hallein, Österreich · helpdesk@rapid-remove.com · rapid-remove.com
             </Text>
           </Section>

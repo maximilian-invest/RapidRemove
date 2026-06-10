@@ -113,7 +113,7 @@ const TEMPLATES = [
 ];
 
 const COMPANY = {
-  name: "Simple Solution OG", street: "Salzgasse 2", city: "5400 Hallein, Österreich",
+  name: "Simple Solution. OG", street: "Salzgasse 2", city: "5400 Hallein, Österreich",
   vat: "ATU72401536", email: "helpdesk@rapid-remove.com", iban: "AT00 0000 0000 0000 0000",
 };
 

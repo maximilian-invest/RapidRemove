@@ -588,7 +588,7 @@ function FAQ({ id }) {
               <button className="faq-q" onClick={() => setOpen(open === i ? -1 : i)}>
                 {it.q} <Icon.chevronDown />
               </button>
-              <div className="faq-a"><div className="faq-a-inner"><p>{it.a}</p></div></div>
+              <div className="faq-a"><div className="faq-a-inner"><p>{it.a}{it.link ? <a href={asset(it.link)} style={{ marginLeft: 6, color: "var(--primary)", fontWeight: 700 }}>{it.linkLabel}</a> : null}</p></div></div>
             </div>
           )}
         </div>

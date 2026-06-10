@@ -53,7 +53,7 @@ const ABOUT_COPY = {
     coH: "Ein Unternehmen aus Österreich – mit Namen und Adresse.",
     coSub: "Hinter RapidRemove steht eine eingetragene Firma in Österreich – kein anonymer Anbieter, sondern ein EU-Betrieb mit klaren, offenen Daten.",
     coFacts: [
-      { l: "Firma", v: "Simple Solution OG" },
+      { l: "Firma", v: "Simple Solution. OG" },
       { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Österreich" },
       { l: "UID-Nummer", v: "ATU72401536" },
       { l: "Kontakt", v: "helpdesk@rapid-remove.com" },
@@ -106,7 +106,7 @@ const ABOUT_COPY = {
     coH: "A company from Austria – with a name and an address.",
     coSub: "Behind RapidRemove is a registered company in Austria – not an anonymous provider, but an EU business with clear, open details.",
     coFacts: [
-      { l: "Company", v: "Simple Solution OG" },
+      { l: "Company", v: "Simple Solution. OG" },
       { l: "Address", v: "Salzgasse 2, 5400 Hallein, Austria" },
       { l: "VAT ID", v: "ATU72401536" },
       { l: "Contact", v: "helpdesk@rapid-remove.com" },
@@ -130,7 +130,7 @@ Object.assign(ABOUT_COPY, {
     teamLabel: "チーム", teamH: "あなたのケースを個別に担当する専門家。",
     team: [{ n: "Matthias", r: "創業者・経営", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "創業者", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "評判管理責任者", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein（提携法律事務所）", r: "法務・コンプライアンス", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
     coH: "実在する会社。名前と住所があります。", coSub: "RapidRemoveの背後にはオーストリアの登記済み企業があります ― 匿名の業者ではなく、明確な情報を持つ実在のEU事業者です。",
-    coFacts: [{ l: "会社", v: "Simple Solution OG" }, { l: "住所", v: "Salzgasse 2, 5400 Hallein, オーストリア" }, { l: "UID番号", v: "ATU72401536" }, { l: "連絡先", v: "helpdesk@rapid-remove.com" }],
+    coFacts: [{ l: "会社", v: "Simple Solution. OG" }, { l: "住所", v: "Salzgasse 2, 5400 Hallein, オーストリア" }, { l: "UID番号", v: "ATU72401536" }, { l: "連絡先", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR準拠", "EUサーバー", "弁護士確認済み", "Made in Austria"], ctaTitle: "無料チェックで私たちを知ってください。", ctaBtn: "無料でチェック",
   },
   sv: {
@@ -146,7 +146,7 @@ Object.assign(ABOUT_COPY, {
     teamLabel: "Teamet", teamH: "Specialister som hanterar ditt ärende personligen.",
     team: [{ n: "Matthias", r: "Grundare & VD", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundare", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Chef Rykte", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerbyrå)", r: "Juridik & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
     coH: "Ett riktigt företag. Med namn och adress.", coSub: "Bakom RapidRemove står ett registrerat företag i Österrike – ingen anonym leverantör, utan ett riktigt EU-företag med tydliga uppgifter.",
-    coFacts: [{ l: "Företag", v: "Simple Solution OG" }, { l: "Adress", v: "Salzgasse 2, 5400 Hallein, Österrike" }, { l: "Momsnr", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
+    coFacts: [{ l: "Företag", v: "Simple Solution. OG" }, { l: "Adress", v: "Salzgasse 2, 5400 Hallein, Österrike" }, { l: "Momsnr", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-anpassat", "EU-servrar", "Juridiskt granskat", "Made in Austria"], ctaTitle: "Lär känna oss – med den gratis kollen.", ctaBtn: "Kolla gratis",
   },
   da: {
@@ -162,7 +162,7 @@ Object.assign(ABOUT_COPY, {
     teamLabel: "Teamet", teamH: "Specialister, der håndterer din sag personligt.",
     team: [{ n: "Matthias", r: "Grundlægger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundlægger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Chef for omdømme", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerfirma)", r: "Jura & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
     coH: "En rigtig virksomhed. Med navn og adresse.", coSub: "Bag RapidRemove står en registreret virksomhed i Østrig – ingen anonym udbyder, men en rigtig EU-virksomhed med klare oplysninger.",
-    coFacts: [{ l: "Virksomhed", v: "Simple Solution OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østrig" }, { l: "Momsnr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
+    coFacts: [{ l: "Virksomhed", v: "Simple Solution. OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østrig" }, { l: "Momsnr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-overholdende", "EU-servere", "Juridisk gennemgået", "Made in Austria"], ctaTitle: "Lær os at kende – med det gratis tjek.", ctaBtn: "Tjek gratis",
   },
   no: {
@@ -178,7 +178,7 @@ Object.assign(ABOUT_COPY, {
     teamLabel: "Teamet", teamH: "Spesialister som håndterer saken din personlig.",
     team: [{ n: "Matthias", r: "Grunnlegger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grunnlegger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Leder omdømme", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerfirma)", r: "Juss & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
     coH: "Et ekte selskap. Med navn og adresse.", coSub: "Bak RapidRemove står et registrert selskap i Østerrike – ingen anonym leverandør, men et ekte EU-selskap med tydelige opplysninger.",
-    coFacts: [{ l: "Selskap", v: "Simple Solution OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østerrike" }, { l: "Mva-nr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
+    coFacts: [{ l: "Selskap", v: "Simple Solution. OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østerrike" }, { l: "Mva-nr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-tilpasset", "EU-servere", "Juridisk vurdert", "Made in Austria"], ctaTitle: "Bli kjent med oss – med den gratis sjekken.", ctaBtn: "Sjekk gratis",
   },
 });

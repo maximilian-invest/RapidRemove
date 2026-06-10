@@ -7,7 +7,7 @@ const URL = `${SITE_URL}/ueber-uns`;
 export const metadata = {
   title: "Über uns — RapidRemove",
   description:
-    "RapidRemove ist der weltweit führende Anbieter für die Löschung von Google-Unternehmensprofilen — eine eingetragene Firma aus Hallein, Österreich (Simple Solution OG). Unsere Mission, unser Team und echte Firmendaten.",
+    "RapidRemove ist der weltweit führende Anbieter für die Löschung von Google-Unternehmensprofilen — eine eingetragene Firma aus Hallein, Österreich (Simple Solution. OG). Unsere Mission, unser Team und echte Firmendaten.",
   alternates: { canonical: URL },
   openGraph: {
     type: "website",
@@ -26,7 +26,7 @@ const jsonLd = {
     {
       "@type": "Organization",
       name: "RapidRemove",
-      legalName: "Simple Solution OG",
+      legalName: "Simple Solution. OG",
       url: SITE_URL,
       logo: `${SITE_URL}/assets/rapidremove-logo-full.png`,
       email: "helpdesk@rapid-remove.com",

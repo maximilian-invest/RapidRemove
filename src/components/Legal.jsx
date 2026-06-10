@@ -11,7 +11,7 @@ import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 
 const COMPANY = {
-  legal: "Simple Solution OG",
+  legal: "Simple Solution. OG",
   street: "Salzgasse 2",
   city: "5400 Hallein",
   uid: "ATU72401536",

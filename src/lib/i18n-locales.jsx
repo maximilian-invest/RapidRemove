@@ -70,7 +70,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Pagas únicamente tras la eliminación con éxito.",
       ncnpBody: "Sin pago por adelantado, sin costes ocultos. Si el perfil sigue online, no pagas nada. Así de simple.",
       items: [
-        { t: "Empresa registrada en Austria", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536." },
+        { t: "Empresa registrada en Austria", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536." },
         { t: "Conforme al RGPD, empresa de la UE", d: "Servidores en la UE. No accedemos a tu cuenta de Google, Gmail, Ads ni datos personales. Trato discreto." },
         { t: "100 % legal, revisado por juristas", d: "Nuestro método funciona por canales oficiales y ha sido revisado por juristas. Sin zonas grises." },
         { t: "Protección ante reaparición", d: "Si un tercero vuelve a publicar tu perfil, lo eliminamos de nuevo gratis durante tu periodo de protección." },
@@ -134,7 +134,7 @@ import { PRICES } from "@/lib/pricing";
         { q: "¿Por qué tiene coste?", a: "La eliminación requiere trabajo real, experiencia y responsabilidad. Por eso pagas un precio fijo claro, y solo si tenemos éxito." },
         { q: "¿Qué métodos de pago hay?", a: "PayPal, tarjeta, Klarna y más, todo cifrado. Se cobra solo tras la eliminación con éxito." },
         { q: "¿Qué pasa con mis datos?", a: "Todo se trata conforme al RGPD y de forma confidencial, en servidores de la UE. No accedemos a tu cuenta ni a datos personales." },
-        { q: "¿Quién está detrás?", a: "Simple Solution OG, de Hallein, Austria: una empresa real de la UE con dirección, CIF y un contacto personal." },
+        { q: "¿Quién está detrás?", a: "Una empresa austriaca: Simple Solution. OG, de Hallein.", link: "/ueber-uns/", linkLabel: "Más sobre nosotros →" },
       ],
     },
     cta: {
@@ -151,7 +151,7 @@ import { PRICES } from "@/lib/pricing";
         { h: "Empresa", links: ["Sobre nosotros", "Blog / Revista", "Hazte socio", "Contacto"] },
         { h: "Legal", links: ["Aviso legal", "Privacidad", "Términos", "Portal de cliente"] },
       ],
-      addr: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536",
+      addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536",
       rights: "Todos los derechos reservados.",
     },
     wa: "Pregunta por WhatsApp",
@@ -272,7 +272,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Vous payez uniquement après la suppression réussie.",
       ncnpBody: "Sans paiement d'avance, sans frais cachés. Si la fiche reste en ligne, vous ne payez rien. Aussi simple que ça.",
       items: [
-        { t: "Entreprise enregistrée en Autriche", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536." },
+        { t: "Entreprise enregistrée en Autriche", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536." },
         { t: "Conforme au RGPD, entreprise de l'UE", d: "Serveurs dans l'UE. Aucun accès à votre compte Google, Gmail, Ads ou données personnelles. Traitement discret." },
         { t: "100 % légal, validé par des juristes", d: "Notre méthode passe par les canaux officiels et a été validée par des juristes. Aucune zone grise." },
         { t: "Protection en cas de réapparition", d: "Si un tiers republie votre fiche, nous la supprimons à nouveau gratuitement pendant votre période de protection." },
@@ -336,7 +336,7 @@ import { PRICES } from "@/lib/pricing";
         { q: "Pourquoi est-ce payant ?", a: "La suppression demande un vrai travail, de l'expérience et de la responsabilité. D'où un prix fixe clair, et seulement en cas de succès." },
         { q: "Quels moyens de paiement ?", a: "PayPal, carte, Klarna et plus, le tout chiffré. Le débit n'a lieu qu'après la suppression réussie." },
         { q: "Que deviennent mes données ?", a: "Tout est traité conformément au RGPD et de façon confidentielle, sur des serveurs de l'UE. Aucun accès à votre compte ni à vos données personnelles." },
-        { q: "Qui est derrière ?", a: "Simple Solution OG, de Hallein, Autriche : une vraie entreprise de l'UE avec adresse, numéro de TVA et un interlocuteur personnel." },
+        { q: "Qui est derrière ?", a: "Une entreprise autrichienne : Simple Solution. OG, de Hallein.", link: "/ueber-uns/", linkLabel: "En savoir plus →" },
       ],
     },
     cta: {
@@ -353,7 +353,7 @@ import { PRICES } from "@/lib/pricing";
         { h: "Entreprise", links: ["À propos", "Blog / Magazine", "Devenir partenaire", "Contact"] },
         { h: "Légal", links: ["Mentions légales", "Confidentialité", "CGU", "Espace client"] },
       ],
-      addr: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536",
+      addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536",
       rights: "Tous droits réservés.",
     },
     wa: "Une question sur WhatsApp",

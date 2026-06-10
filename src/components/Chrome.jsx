@@ -299,7 +299,7 @@ function Footer({ onStart, onBlog, onAbout }) {
           ))}
         </div>
         <div className="foot-bottom">
-          <span>© {new Date().getFullYear()} Simple Solution OG · {t.footer.rights}</span>
+          <span>© {new Date().getFullYear()} Simple Solution. OG · {t.footer.rights}</span>
           <div className="foot-pay">
             {["PayPal", "Klarna", "VISA", "Mastercard", "iDEAL"].map((p) => <span className="pm" key={p}>{p}</span>)}
           </div>
