@@ -566,22 +566,6 @@ function Pricing({ id, onStart }) {
             </div>
           )}
         </div>
-        <div className="price-why reveal">
-          <div className="pw-h">{t.pricing.whyTitle}</div>
-          <div className="pw-sub">{t.pricing.whySub}</div>
-          <div className="pw-grid">
-            {t.pricing.why.map((it, i) => {
-              const I = [Icon.clock, Icon.star][i] || Icon.check;
-              return (
-                <div className="pw-item" key={i}>
-                  <div className="pw-ic"><I size={24} /></div>
-                  <h4>{it.t}</h4>
-                  <p>{it.d}</p>
-                </div>);
-
-            })}
-          </div>
-        </div>
       </div>
     </section>);
 
