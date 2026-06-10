@@ -153,8 +153,9 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             <LangToggle />
             <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
           </div>
+          <a onClick={() => { setOpen(false); window.location.href = asset("/"); }}>Home</a>
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
-          {(onOrm || onDeindex) && sv.cards.map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
+          {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
