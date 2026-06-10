@@ -35,6 +35,15 @@ function AuthStat({ s }) {
   );
 }
 
+// „Bekannt aus" – echte Quellen, die RapidRemove erwähnen/verlinken (sprachübergreifend).
+const PRESS_LINKS = [
+  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" },
+  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/" },
+  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/" },
+  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/" },
+  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
+];
+
 function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
   const { t } = useLang();
   const b = t.blog;
@@ -92,7 +101,7 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
       <div className="press-band">
         <div className="container press-inner">
           <span className="pl-label">{b.pressLabel}</span>
-          {b.press.map((p, i) => <span className="pl" key={i}>{p}</span>)}
+          {PRESS_LINKS.map((p, i) => <a className="pl" key={i} href={p.u} target="_blank" rel="noopener noreferrer">{p.n}</a>)}
         </div>
       </div>
 
