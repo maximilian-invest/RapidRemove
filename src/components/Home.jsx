@@ -167,7 +167,7 @@ function TrustpilotLive() {
   return (
     <a className="tp-line" href={url} target="_blank" rel="noopener noreferrer">
       <TpStars size={17} />
-      <span className="tpl-tx">{tl[0]}<b>{count || "260+"}</b>{tl[1]}</span>
+      <span className="tpl-tx"><span className="tpl-lead">{tl[0]}</span><b>{count || "260+"}</b>{tl[1]}</span>
       <span className="tpl-logo"><span className="tp-sq" style={{ "--tpsq": "17px" }}><Icon.star /></span> Trustpilot</span>
     </a>
   );
