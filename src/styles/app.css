@@ -500,7 +500,8 @@ a.tb-item:hover{color:var(--primary);}
 .sticky-cta .sc-meta b{font-family:var(--font-display);font-size:14px;display:block;}
 .sticky-cta .sc-meta span{font-size:12px;color:var(--fg-2);}
 .sticky-cta .btn{flex:none;}
-@media(max-width:920px){.sticky-cta{display:flex;}}
+/* Rechts Platz für die Tidio-Bubble freihalten → der Gratis-Check-Button rückt nach links. */
+@media(max-width:920px){.sticky-cta{display:flex;padding-right:86px;}}
 
 /* ---------- WhatsApp float ---------- */
 .wa-float{position:fixed;right:22px;bottom:22px;z-index:65;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(37,211,102,.4);cursor:pointer;transition:transform var(--dur) var(--ease);border:none;}
