@@ -115,7 +115,7 @@ section{position:relative;}
 .hero-glow{position:absolute;top:-160px;right:-120px;width:640px;height:640px;background:radial-gradient(circle,rgba(255,128,0,.15),transparent 64%);pointer-events:none;z-index:0;}
 .hero-mesh{position:absolute;inset:0;background-image:radial-gradient(var(--neutral-200) 1px,transparent 1px);background-size:34px 34px;-webkit-mask-image:radial-gradient(ellipse 80% 70% at 70% 20%,#000,transparent 70%);mask-image:radial-gradient(ellipse 80% 70% at 70% 20%,#000,transparent 70%);opacity:.5;pointer-events:none;}
 .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;position:relative;z-index:1;}
-.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(38px,5.2vw,60px);line-height:1.03;letter-spacing:-.6px;margin:18px 0 0;color:var(--fg);text-wrap:balance;}
+.hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(38px,5.2vw,60px);line-height:1.03;letter-spacing:-.6px;margin:18px 0 0;color:var(--fg);text-wrap:balance;overflow-wrap:break-word;hyphens:auto;}
 .hero h1 .hl{color:var(--primary);}
 .hero .lead{font-size:19px;line-height:1.6;color:var(--fg-2);margin:22px 0 0;max-width:540px;text-wrap:pretty;}
 .hero-trustline{display:flex;align-items:center;gap:14px 18px;margin-top:28px;flex-wrap:wrap;font-size:13.5px;font-weight:700;color:var(--fg-2);}
@@ -311,6 +311,12 @@ a.tb-item:hover{color:var(--primary);}
 .tp-widget .tp-star svg{width:20px;height:20px;color:#fff;fill:#fff;}
 .tp-widget .tp-stars{display:flex;gap:4px;}
 .tp-widget .tp-meta b{font-family:var(--font-display);font-weight:700;}
+.tp-widget .tp-cta{margin-left:auto;}
+@media(max-width:520px){
+  .hero h1{font-size:30px;}
+  .tp-widget{flex-direction:column;text-align:center;padding:20px;}
+  .tp-widget .tp-cta{margin-left:0;}
+}
 .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .tcard{background:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:28px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--hairline);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);}
 .tcard:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}

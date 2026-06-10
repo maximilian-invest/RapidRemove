@@ -412,7 +412,7 @@ function Social({ id }) {
               <b style={{ color: "var(--fg)" }}>{t.social.tpScore}</b> · {t.social.tpCount}
             </div>
           </div>
-          <a className="btn btn-secondary sm" href="https://www.trustpilot.com/review/rapid-remove.com" target="_blank" style={{ marginLeft: "auto" }}>
+          <a className="btn btn-secondary sm tp-cta" href="https://www.trustpilot.com/review/rapid-remove.com" target="_blank">
             {t.social.tpLink} <Icon.arrowRight size={15} />
           </a>
         </div>
