@@ -103,6 +103,42 @@ function ProfilNachweis({ o }) {
     </div>
   );
 }
+/* Presse-/Suchergebnis-Auslistung („deindex"): ganz andere Detailansicht.
+   Kein Google-Profil, keine Maps/Bewertungen/Place-ID — sondern die zu prüfenden
+   Artikel-Links (anklickbar), die Beschreibung und ob Verdrängung gewünscht ist.
+   Die Daten stecken im frei-Text-Feld o.note (vom Wizard erzeugt) und werden hier
+   robust herausgelesen, damit auch bereits eingegangene Anfragen sauber erscheinen. */
+function parsePress(note) {
+  const text = String(note || "");
+  const links = text.match(/https?:\/\/\S+/g) || [];
+  let desc = "", orm = "";
+  const dm = text.match(/Beschreibung:\s*(.+)/);
+  if (dm && dm[1].trim() !== "—") desc = dm[1].trim();
+  const om = text.match(/gew(?:ü|ue)nscht:\s*(ja|nein|yes|no)/i);
+  if (om) orm = /^(ja|yes)$/i.test(om[1]) ? "ja" : "nein";
+  return { links, desc, orm };
+}
+function PressInfo({ o, rc = "drow" }) {
+  const { links, desc, orm } = parsePress(o.note);
+  return (
+    <React.Fragment>
+      <div className={rc}><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+      <div className={rc} style={{ alignItems: "flex-start" }}><span className="dl">Auszulistende Links</span>
+        <span className="dv">{links.length ? (
+          <span className="press-arts">
+            {links.map((u, i) => {
+              let host = u; try { host = new URL(u).hostname.replace(/^www\./, ""); } catch (e) {}
+              return <a key={i} className="press-art" href={u} target="_blank" rel="noopener noreferrer" title={u}><Icon.external size={13} /> {host}</a>;
+            })}
+          </span>
+        ) : "—"}</span>
+      </div>
+      {desc ? <div className={rc} style={{ alignItems: "flex-start" }}><span className="dl">Beschreibung</span><span className="dv" style={{ maxWidth: 320, fontWeight: 600, color: "var(--fg-2)" }}>{desc}</span></div> : null}
+      <div className={rc}><span className="dl">Verdrängung gewünscht</span><span className="dv">{orm === "ja" ? "Ja" : orm === "nein" ? "Nein" : "—"}</span></div>
+      <div className={rc}><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+    </React.Fragment>
+  );
+}
 function fillVars(text, o) {
   const inv = "RE-" + o.id.replace("RR-", "");
   return text
@@ -442,6 +478,7 @@ function Orders({ orders, openOrder, query }) {
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
   if (!order) return <React.Fragment><div className="drawer-scrim"></div><div className="drawer"></div></React.Fragment>;
   const o = order;
+  const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Ansicht
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
   return (
@@ -503,24 +540,35 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             </div>
           </div>
 
-          {/* profile / service */}
+          {/* profile / service (Presse: zu prüfende Inhalte statt Google-Profil) */}
           <div className="dsec">
-            <h3><Icon.building /> Profil & Leistung</h3>
-            <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
-            <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
-            <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-            {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
-            <div className="drow"><span className="dl">Notiz</span><span className="dv" style={{ fontWeight: 600, color: "var(--fg-2)", maxWidth: 280 }}>{o.note}</span></div>
+            {isPress ? (
+              <React.Fragment>
+                <h3><Icon.fileText /> Auszulistende Inhalte</h3>
+                <PressInfo o={o} />
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <h3><Icon.building /> Profil & Leistung</h3>
+                <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+                <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
+                <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+                {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                <div className="drow"><span className="dl">Notiz</span><span className="dv" style={{ fontWeight: 600, color: "var(--fg-2)", maxWidth: 280 }}>{o.note}</span></div>
+              </React.Fragment>
+            )}
           </div>
 
           {/* payment / stripe */}
           <div className="dsec">
             <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
-            <div className="stripe-box" style={{ marginBottom: 14 }}>
-              <span className="sb-logo">stripe</span>
-              <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
-              <span className="sb-status">{o.pay === "paid" ? <span className="badge-st st-paid"><span className="d" style={{ background: "var(--success)" }}></span>Erfasst</span> : o.pay === "failed" ? <span className="badge-st st-refunded"><span className="d"></span>Abgelehnt</span> : <span className="badge-st st-pending"><span className="d"></span>Reserviert</span>}</span>
-            </div>
+            {!isPress && (
+              <div className="stripe-box" style={{ marginBottom: 14 }}>
+                <span className="sb-logo">stripe</span>
+                <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
+                <span className="sb-status">{o.pay === "paid" ? <span className="badge-st st-paid"><span className="d" style={{ background: "var(--success)" }}></span>Erfasst</span> : o.pay === "failed" ? <span className="badge-st st-refunded"><span className="d"></span>Abgelehnt</span> : <span className="badge-st st-pending"><span className="d"></span>Reserviert</span>}</span>
+              </div>
+            )}
             <div className="drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
@@ -844,14 +892,17 @@ function FragebogenBlock({ form, onRequest }) {
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, toast }) {
   const o = order;
+  const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Detailansicht
   const isMobile = useIsMobile();
   const ex = crmExtras(o);
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
   const [events, setEvents] = React.useState(null);
+  // Verlauf STRIKT pro Bestellung (nicht pro E-Mail) — sonst würde der Verlauf bei
+  // Kunden, die mehrfach mit derselben Adresse bestellen, ins Unendliche wachsen.
   const reloadEvents = React.useCallback(() => {
-    fetchEvents(o.id, o.email).then((ev) => setEvents(ev)).catch(() => {});
-  }, [o.id, o.email]);
+    fetchEvents(o.id).then((ev) => setEvents(ev)).catch(() => {});
+  }, [o.id]);
   React.useEffect(() => { reloadEvents(); }, [reloadEvents]);
   // 1:1-Vorschau der EXAKT versendeten Mail (richtige Sprache, richtiger Zahlungslink) zu Kontrollzwecken.
   const [mailPreview, setMailPreview] = React.useState(null); // null | {loading} | {ok,html,subject} | {error}
@@ -998,14 +1049,23 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
 
         <div className="m-dsec">
-          <h3><Icon.building /> Profil &amp; Leistung</h3>
-          <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
-          <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
-          <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-          {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
-          <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
-          {o.businessStatus ? <div className="m-drow"><span className="dl">Status (Beauftragung)</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
-          {o.placeId ? <div className="m-drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 10.5, wordBreak: "break-all", textAlign: "right" }}>{o.placeId}</span></div> : null}
+          {isPress ? (
+            <React.Fragment>
+              <h3><Icon.fileText /> Auszulistende Inhalte</h3>
+              <PressInfo o={o} rc="m-drow" />
+            </React.Fragment>
+          ) : (
+            <React.Fragment>
+              <h3><Icon.building /> Profil &amp; Leistung</h3>
+              <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+              <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
+              <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+              {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+              <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+              {o.businessStatus ? <div className="m-drow"><span className="dl">Status (Beauftragung)</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
+              {o.placeId ? <div className="m-drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 10.5, wordBreak: "break-all", textAlign: "right" }}>{o.placeId}</span></div> : null}
+            </React.Fragment>
+          )}
         </div>
 
         <div className="m-dsec">
@@ -1072,15 +1132,19 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       <div className="cd-grid">
         {/* MAIN COLUMN */}
         <div className="cd-col">
-          {/* profile & service */}
+          {/* profile & service (Presse: zu prüfende Inhalte statt Google-Profil) */}
           <div className="panel">
-            <div className="panel-head"><h2>Profil &amp; Leistung</h2></div>
+            <div className="panel-head"><h2>{isPress ? "Auszulistende Inhalte" : "Profil & Leistung"}</h2></div>
             <div style={{ padding: "18px 22px" }}>
-              <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
-              <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
-              <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-              {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
-              <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+              {isPress ? <PressInfo o={o} /> : (
+                <React.Fragment>
+                  <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+                  <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
+                  <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+                  {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                  <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
+                </React.Fragment>
+              )}
             </div>
           </div>
           {/* actions */}
@@ -1188,10 +1252,14 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               )}
               {tab === "order" && (
                 <div>
-                  <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
-                  <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
-                  <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-                  {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                  {isPress ? <PressInfo o={o} /> : (
+                    <React.Fragment>
+                      <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+                      <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
+                      <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
+                      {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                    </React.Fragment>
+                  )}
                   <div className="drow"><span className="dl">Bestelldatum</span><span className="dv">{o.created}</span></div>
                   <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Auftragswert</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "kostenlose Prüfung"}</span></div>
                 </div>
@@ -1210,7 +1278,10 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div className="cd-col">
           {/* billing / stripe */}
           <div className="dsec">
-            <h3><Icon.lock /> Abrechnung <span className="right"><PayBadge pay={o.pay} /></span></h3>
+            <h3><Icon.lock /> Abrechnung <span className="right">{isPress ? null : <PayBadge pay={o.pay} />}</span></h3>
+            {isPress ? (
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)", lineHeight: 1.55 }}>Kostenlose Erstprüfung – es fällt keine Zahlung an. Nach der Prüfung folgt ggf. ein Festpreis-Angebot.</div>
+            ) : (<React.Fragment>
             <div className="stripe-box" style={{ marginBottom: 12 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
@@ -1233,13 +1304,16 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 </div>
               ))}
             </div>
+            </React.Fragment>)}
           </div>
 
-          {/* Profil-Nachweis (Stand der Beauftragung) */}
-          <div className="dsec">
-            <h3><Icon.shieldCheck /> Profil-Nachweis</h3>
-            <ProfilNachweis o={o} />
-          </div>
+          {/* Profil-Nachweis (Stand der Beauftragung) — bei Presse-Auslistung nicht relevant */}
+          {!isPress && (
+            <div className="dsec">
+              <h3><Icon.shieldCheck /> Profil-Nachweis</h3>
+              <ProfilNachweis o={o} />
+            </div>
+          )}
 
         </div>
       </div>

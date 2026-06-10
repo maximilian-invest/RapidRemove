@@ -168,8 +168,9 @@ export async function sendTemplate({ key, to, orderId, lang }) {
   return j;
 }
 
-/** Aktivitäts-Verlauf einer Kundenakte – per E-Mail (robust, inkl. automatischer
- *  System-Mails wie „Schutz aktiviert"), sonst per Bestell-ID als Fallback. */
+/** Aktivitäts-Verlauf – standardmäßig STRIKT pro Bestellung (orderId), damit der
+ *  Verlauf bei Mehrfachbestellern mit derselben E-Mail nicht endlos wird. Der
+ *  optionale email-Parameter würde alle Bestellungen dieser Adresse bündeln. */
 export async function fetchEvents(orderId, email) {
   if (!OPS || (!orderId && !email)) return [];
   const res = await fetch(OPS + "/admin/events", {
