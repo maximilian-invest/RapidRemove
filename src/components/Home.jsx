@@ -126,12 +126,28 @@ function TpStars({ size = 16 }) {
 /* ---- Trustpilot: echtes Live-Widget (offizielles Embed; Bootstrap-Skript wird einmalig geladen).
    Fällt auf den Profil-Link zurück, wenn das Skript blockiert ist. ---- */
 const TP_LOCALE = { de: "de-AT", en: "en-US", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "en-US", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
-function TrustpilotLive({ height = "40px", align = "center" }) {
+function TrustpilotLive({ height = "40px", align = "left" }) {
   const { lang } = useLang();
   const ref = React.useRef(null);
   React.useEffect(() => {
-    const init = () => { try { if (window.Trustpilot && ref.current) window.Trustpilot.loadFromElement(ref.current, true); } catch (e) { /* Widget optional */ } };
-    if (window.Trustpilot) { init(); return; }
+    // Ausrichtung notfalls erzwingen: das Widget rendert in einem iframe (Inhalt von außen
+    // nicht stylebar); die Ausrichtung kommt als styleAlignment-Parameter in der iframe-URL.
+    // Falls das data-Attribut nicht durchgereicht wurde, Parameter direkt in die URL setzen.
+    const fixAlign = () => {
+      try {
+        const ifr = ref.current && ref.current.querySelector("iframe");
+        if (!ifr || !ifr.src) return;
+        const want = "styleAlignment=" + align;
+        if (ifr.src.indexOf("styleAlignment=") === -1) ifr.src = ifr.src + (ifr.src.indexOf("?") > -1 ? "&" : "?") + want;
+        else if (ifr.src.indexOf(want) === -1) ifr.src = ifr.src.replace(/styleAlignment=[^&]*/, want);
+      } catch (e) { /* optional */ }
+    };
+    let t1, t2;
+    const init = () => {
+      try { if (window.Trustpilot && ref.current) window.Trustpilot.loadFromElement(ref.current, true); } catch (e) { /* Widget optional */ }
+      t1 = setTimeout(fixAlign, 700); t2 = setTimeout(fixAlign, 2000);
+    };
+    if (window.Trustpilot) { init(); return () => { clearTimeout(t1); clearTimeout(t2); }; }
     let s = document.getElementById("tp-widget-script");
     if (!s) {
       s = document.createElement("script");
@@ -141,8 +157,8 @@ function TrustpilotLive({ height = "40px", align = "center" }) {
       document.head.appendChild(s);
     }
     s.addEventListener("load", init);
-    return () => s.removeEventListener("load", init);
-  }, [lang]);
+    return () => { s.removeEventListener("load", init); clearTimeout(t1); clearTimeout(t2); };
+  }, [lang, align]);
   return (
     <div ref={ref} className="trustpilot-widget" data-locale={TP_LOCALE[lang] || "en-US"} data-template-id="5419b6a8b0d04a076446a9ad"
       data-businessunit-id="650984f45e6fd78f6d11c4db" data-style-height={height} data-style-width="100%"
