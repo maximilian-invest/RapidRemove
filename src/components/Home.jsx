@@ -9,7 +9,7 @@ import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 import { AblaufVideo } from "@/components/AblaufVideo";
-import { TpStars, TrustpilotLive, PRESS_LINKS } from "@/components/Proof";
+import { TpStars, TrustpilotLive } from "@/components/Proof";
 
 
 const TEAM_COPY = {
@@ -221,10 +221,6 @@ function Hero({ onStart }) {
           <button className="btn btn-primary btn-block lg cta-glow" onClick={go}>
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
-        </div>
-        <div className="hero-press">
-          <span className="hp-label">{t.blog.pressLabel}</span>
-          {PRESS_LINKS.map((p, i) => <a key={i} href={p.u} target="_blank" rel="noopener noreferrer">{p.n}</a>)}
         </div>
         </div>
       </div>
