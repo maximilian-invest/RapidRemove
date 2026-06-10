@@ -262,6 +262,7 @@ function Hero({ onStart }) {
           </div>
           <div className="ttl">{t.hero.cardTitle}</div>
           <div className="sub">{t.hero.cardSub}</div>
+          <div className="cc-tp-line"><TrustpilotLive /></div>
           <div className="hero-ac" ref={acRef}>
             <div className="field">
               <Icon.googleG />

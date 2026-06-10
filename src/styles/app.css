@@ -194,8 +194,12 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .ava-stack .av:first-child{margin-left:0;}
 .hero-proof .pr-meta .stars{display:block;margin-bottom:3px;}
 .hero-proof .pr-meta .tp-sq-row{display:flex;margin-bottom:4px;}
-/* „Bekannt aus" unter der Check-Karte im Hero — eingerückt auf die Innenkante der Kachel */
-.hero-press{margin-top:14px;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;padding:0 28px;}
+/* „Bekannt aus" unter der Check-Karte im Hero — eingerückt auf die Innenkante der Kachel.
+   IMMER einzeilig: Desktop passt per kleinerer Schrift, mobil scrollt die Zeile seitlich. */
+.hero-press{margin-top:14px;display:flex;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;padding:0 28px;overflow-x:auto;scrollbar-width:none;}
+.hero-press::-webkit-scrollbar{display:none;}
+.hero-press .hp-label{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-muted);flex:none;}
+.hero-press a{font-size:11.5px;font-weight:700;color:var(--fg-2);text-decoration:none;white-space:nowrap;flex:none;}
 @media(max-width:920px){.hero-press{padding:0 24px;}}
 .hero-press .hp-label{font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--fg-muted);flex:none;}
 .hero-press a{font-size:12.5px;font-weight:700;color:var(--fg-2);text-decoration:none;white-space:nowrap;}
@@ -236,12 +240,15 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-assure div{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--fg-2);}
 .hero-assure svg{width:18px;height:18px;color:var(--success);}
 @media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:24px;}.hero-grid>*{min-width:0;}.check-card{padding:24px;}}
-/* Mobil: Whitespace im Hero einkürzen, damit die Check-Karte ohne Scrollen sichtbar wird */
+/* Mobil: Whitespace im Hero einkürzen, damit die Check-Karte ohne Scrollen sichtbar wird.
+   Trustpilot-Zeile wandert mobil IN die Check-Karte (links ausgeblendet, Desktop unverändert). */
+.cc-tp-line{display:none;}
 @media(max-width:920px){
   .hero{padding:26px 0 56px;}
   .hero h1{margin-top:2px;}
   .hero .lead{margin-top:12px;font-size:17px;}
-  .hero-proof{margin-top:16px;}
+  .hero-proof{display:none;}
+  .cc-tp-line{display:flex;margin:10px 0 2px;}
 }
 
 /* hero check card */
