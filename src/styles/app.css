@@ -59,15 +59,14 @@ section{position:relative;}
 .tp-line .tpl-tx b{color:var(--fg);text-decoration:underline;text-decoration-color:var(--hairline-strong);text-underline-offset:3px;}
 .tp-line .tpl-logo{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-display);font-weight:700;font-size:15.5px;color:var(--fg);}
 .tp-line:hover .tpl-tx b{color:#00b67a;text-decoration-color:#00b67a;}
-/* Mobil: Zeile verkleinern, damit sie nicht umbricht; sehr schmal → Vorspann („Sehen Sie unsere") weglassen */
+/* Mobil: einzeilig erzwingen — flex-wrap aus (white-space stoppt Flex-Umbrüche nicht),
+   kompakter, und der Vorspann („Sehen Sie unsere") entfällt: ★★★★★ 267 Bewertungen auf ⭐Trustpilot */
 @media(max-width:600px){
-  .tp-line{gap:7px;white-space:nowrap;}
+  .tp-line{gap:7px;flex-wrap:nowrap;white-space:nowrap;}
   .tp-line .tpl-tx{font-size:12.5px;}
   .tp-line .tpl-logo{font-size:13.5px;gap:4px;}
   .tp-line .tp-sq{width:13px !important;height:13px !important;}
   .tp-line .tp-sq svg{width:8px !important;height:8px !important;}
-}
-@media(max-width:430px){
   .tp-line .tpl-lead{display:none;}
 }
 
