@@ -98,6 +98,9 @@ export async function initDb(): Promise<void> {
   // Selbstheilung: Spalten ergänzen, falls events aus einer älteren Version stammt.
   await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS email text`);
   await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS auto boolean NOT NULL DEFAULT false`);
+  // Für die 1:1-Mail-Vorschau im Admin: exakt versendetes HTML + Betreff am Event ablegen.
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS html text`);
+  await pool.query(`ALTER TABLE events ADD COLUMN IF NOT EXISTS subject text`);
   // Geplante Upsell-Mails (Serie „Hinweis zum Schutzmodell" über ~2 Wochen).
   await pool.query(`
     CREATE TABLE IF NOT EXISTS upsell_jobs (
@@ -207,15 +210,15 @@ export async function listChecks(limit = 200): Promise<Record<string, unknown>[]
  * oder – bei automatisierten Mails – über die Kunden-E-Mail (orderId wird dann
  * aus der jüngsten Bestellung aufgelöst; ohne Treffer wird die E-Mail getaggt).
  */
-export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string; auto?: boolean }): Promise<void> {
+export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string; auto?: boolean; html?: string; subject?: string }): Promise<void> {
   if (!pool) return;
   try {
     let orderId = e.orderId || null;
     if (!orderId && e.email) orderId = await latestOrderId(e.email);
     if (!orderId && !e.email) return; // nichts, woran sich der Eintrag hängen ließe
     await pool.query(
-      `INSERT INTO events (order_id, email, type, title, detail, auto) VALUES ($1,$2,$3,$4,$5,$6)`,
-      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || "", e.auto === true],
+      `INSERT INTO events (order_id, email, type, title, detail, auto, html, subject) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || "", e.auto === true, e.html || null, e.subject || null],
     );
   } catch { /* Logging darf den Hauptablauf nie stören */ }
 }
@@ -223,7 +226,7 @@ export async function insertEvent(e: { orderId?: string; email?: string; type?: 
 /** Aktivitäts-Verlauf einer Bestellung (neueste zuerst). */
 export async function listEvents(orderId: string, limit = 100): Promise<Record<string, unknown>[]> {
   if (!pool || !orderId) return [];
-  const r = await pool.query(`SELECT * FROM events WHERE order_id=$1 ORDER BY created_at DESC LIMIT $2`, [orderId, limit]);
+  const r = await pool.query(`SELECT id, created_at, order_id, email, type, title, detail, auto, (html IS NOT NULL) AS has_html FROM events WHERE order_id=$1 ORDER BY created_at DESC LIMIT $2`, [orderId, limit]);
   return r.rows;
 }
 
@@ -231,13 +234,23 @@ export async function listEvents(orderId: string, limit = 100): Promise<Record<s
 export async function listEventsByEmail(email: string, limit = 100): Promise<Record<string, unknown>[]> {
   if (!pool || !email) return [];
   const r = await pool.query(
-    `SELECT e.* FROM events e
+    `SELECT e.id, e.created_at, e.order_id, e.email, e.type, e.title, e.detail, e.auto, (e.html IS NOT NULL) AS has_html
+       FROM events e
        LEFT JOIN orders o ON o.id = e.order_id
       WHERE lower(e.email) = lower($1) OR lower(o.email) = lower($1)
       ORDER BY e.created_at DESC LIMIT $2`,
     [email, limit],
   );
   return r.rows;
+}
+
+/** Liefert die exakt versendete Mail (1:1 gespeichertes HTML + Betreff) zu einem Event-Eintrag. */
+export async function getEventEmail(id: string | number): Promise<{ html: string; subject: string | null; title: string | null; created_at: string } | null> {
+  if (!pool || !id) return null;
+  const r = await pool.query(`SELECT html, subject, title, created_at FROM events WHERE id=$1`, [id]);
+  const row = r.rows[0];
+  if (!row || !row.html) return null;
+  return { html: row.html as string, subject: (row.subject as string) ?? null, title: (row.title as string) ?? null, created_at: String(row.created_at) };
 }
 
 /** Jüngste Bestellung zu einer E-Mail (ID + Service-Key, z. B. "remove" | "reset"). */

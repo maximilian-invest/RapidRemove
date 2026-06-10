@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
@@ -188,7 +188,7 @@ app.post("/order", async (req, reply) => {
       });
       if (checkId) await linkCheck(checkId, id);
       await insertEvent({ orderId: id, type: "order", title: "Bestellung eingegangen", detail: `${id} erstellt` });
-      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true });
+      if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
       result.saved = true;
     }
   } catch (e) {
@@ -273,7 +273,7 @@ app.post("/admin/send", async (req, reply) => {
   try {
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     const oid = clip(b.orderId, 40);
-    if (oid) await insertEvent({ orderId: oid, type: "mail", title: (clip(b.label, 80) || "E-Mail") + " gesendet", detail: "an " + to });
+    if (oid) await insertEvent({ orderId: oid, type: "mail", title: (clip(b.label, 80) || "E-Mail") + " gesendet", detail: "an " + to, html, subject });
     return { ok: true };
   } catch (e) {
     app.log.error({ err: e }, "admin/send fehlgeschlagen");
@@ -398,7 +398,7 @@ app.post("/admin/paylink", async (req, reply) => {
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
-    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}` });
+    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
     return { ok: true, url };
   } catch (e) {
     app.log.error({ err: e }, "Zahlungslink-Mail fehlgeschlagen");
@@ -420,7 +420,7 @@ app.post("/admin/send-template", async (req, reply) => {
     const props = { ...(t.sample as object), lang: tlang, formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
-    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to });
+    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject: t.subject(props as any) });
     return { ok: true };
   } catch (e) {
     app.log.error({ err: e }, "send-template fehlgeschlagen");
@@ -435,6 +435,17 @@ app.post("/admin/events", async (req, reply) => {
   const email = clip(b.email, 160);
   const events = email ? await listEventsByEmail(email, 100) : await listEvents(clip(b.orderId, 40), 100);
   return { ok: true, events };
+});
+
+// Admin-Dashboard: die EXAKT versendete Mail (1:1 gespeichertes HTML + Betreff) zu einem Aktivitäts-Eintrag.
+app.post("/admin/email", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = String((b.id as string | number) ?? "").trim();
+  if (!/^\d+$/.test(id)) return reply.code(400).send({ ok: false, error: "id erforderlich" });
+  const mail = await getEventEmail(id);
+  if (!mail) return { ok: false, error: "Für diesen Eintrag wurde keine 1:1-Kopie gespeichert (nur Mails ab diesem Update)." };
+  return { ok: true, ...mail };
 });
 
 // Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).

@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, sendTemplate, setOrderStatus } from "@/lib/admin-api";
+import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -854,6 +854,14 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     fetchEvents(o.id, o.email).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
     return () => { alive = false; };
   }, [o.id, o.email]);
+  // 1:1-Vorschau der EXAKT versendeten Mail (richtige Sprache, richtiger Zahlungslink) zu Kontrollzwecken.
+  const [mailPreview, setMailPreview] = React.useState(null); // null | {loading} | {ok,html,subject} | {error}
+  const openMailPreview = (id) => {
+    setMailPreview({ loading: true });
+    fetchEmailPreview(id)
+      .then((r) => setMailPreview(r && r.ok ? r : { error: (r && r.error) || "Keine Kopie gespeichert." }))
+      .catch((e) => setMailPreview({ error: e.message || "Fehler beim Laden." }));
+  };
   // Alle echten ops-Vorlagen laden → jede ist per Klick an den Kunden sendbar.
   const [tpls, setTpls] = React.useState(null);
   React.useEffect(() => {
@@ -1148,13 +1156,32 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               </div>
             </div>
             <div style={{ padding: "20px 22px" }}>
+              {mailPreview && (
+                <div onClick={() => setMailPreview(null)} style={{ position: "fixed", inset: 0, zIndex: 90, background: "rgba(28,25,22,.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+                  <div onClick={(e) => e.stopPropagation()} style={{ background: "#fff", borderRadius: 14, width: "min(700px, 96vw)", maxHeight: "92vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 24px 60px rgba(28,25,22,.35)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 16px", borderBottom: "1px solid var(--hairline)" }}>
+                      <Icon.mail size={16} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 10.5, color: "var(--fg-muted)", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".05em" }}>1:1 wie versendet</div>
+                        <div style={{ fontWeight: 700, fontSize: 13.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{mailPreview.subject || (mailPreview.loading ? "Lädt…" : mailPreview.error ? "—" : "(kein Betreff)")}</div>
+                      </div>
+                      <button className="drawer-close" onClick={() => setMailPreview(null)}><Icon.x /></button>
+                    </div>
+                    {mailPreview.loading
+                      ? <div style={{ padding: 28, color: "var(--fg-muted)", fontWeight: 600 }}>Lädt…</div>
+                      : mailPreview.error
+                        ? <div style={{ padding: 28, color: "var(--danger)", fontWeight: 600 }}>{mailPreview.error}</div>
+                        : <iframe title="Mail-Vorschau" srcDoc={mailPreview.html} sandbox="allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation" style={{ width: "100%", height: "72vh", border: "none", background: "#fff" }} />}
+                  </div>
+                </div>
+              )}
               {tab === "activity" && (
                 <div className="act">
                   {(events || []).length ? (events || []).map((a, i) => (
                     <div className="act-item" key={i}>
                       <div className="act-rail"></div>
                       <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : <Icon.fileText />}</div>
-                      <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.zap size={11} /> automatisch versendet</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+                      <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
                     </div>
                   )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
                 </div>

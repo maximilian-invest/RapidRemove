@@ -179,7 +179,19 @@ export async function fetchEvents(orderId, email) {
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
-  return (j.events || []).map((e) => ({ ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), auto: !!e.auto }));
+  return (j.events || []).map((e) => ({ id: e.id, ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), auto: !!e.auto, hasHtml: !!e.has_html }));
+}
+
+/** Holt die EXAKT versendete Mail (1:1 gespeichertes HTML + Betreff) zu einem Aktivitäts-Eintrag. */
+export async function fetchEmailPreview(eventId) {
+  if (!OPS || !eventId) return { ok: false, error: "Kein ops-Backend." };
+  const res = await fetch(OPS + "/admin/email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, id: eventId }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  return res.json();
 }
 
 /** Bestell-Status dauerhaft im Backend setzen (bleibt bis zur nächsten Änderung). */
