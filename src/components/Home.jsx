@@ -11,7 +11,7 @@ import { ServicesTrio } from "@/components/ServicePages";
 
 
 const TEAM_COPY = {
-  de: { title: "Ein ganzes Team kümmert sich um Ihren Fall.", sub: "Spezialisten für Online-Reputation und Recht — in über 30 Ländern, rund um die Uhr erreichbar.", stats: ["40+ Spezialisten", "30+ Länder", "Antwort in Minuten"], more: "+35" },
+  de: { title: "Ein eingespieltes Team kümmert sich um Ihren Fall.", sub: "Spezialisten für Online-Reputation und Google – persönlich, diskret und schnell erreichbar.", stats: ["Persönlicher Ansprechpartner", "Antwort oft in Minuten", "100 % diskret"], more: "" },
   en: { title: "A whole team handles your case.", sub: "Specialists in online reputation and law — across 30+ countries, reachable around the clock.", stats: ["40+ specialists", "30+ countries", "Reply in minutes"], more: "+35" },
   es: { title: "Todo un equipo se ocupa de tu caso.", sub: "Especialistas en reputación online y derecho — en más de 30 países, disponibles a toda hora.", stats: ["40+ especialistas", "30+ países", "Respuesta en minutos"], more: "+35" },
   fr: { title: "Toute une équipe gère votre dossier.", sub: "Spécialistes en e-réputation et droit — dans plus de 30 pays, joignables à toute heure.", stats: ["40+ spécialistes", "30+ pays", "Réponse en minutes"], more: "+35" },
@@ -42,7 +42,7 @@ const WP_COPY = {
     lead: "Einzelne Bewertungen zu entfernen ist mühsam und ungewiss: Google lehnt oft ab, und für jede gelöschte Bewertung tauchen neue auf. Wir gehen das Problem an der Wurzel an.",
     singleH: "Einzelne Bewertung löschen", single: ["Wochenlang — und oft abgelehnt", "Eine weg, neue kommen nach", "Ein Antrag pro Bewertung"],
     wholeH: "Das ganze Profil entfernen", badge: "Unser Weg", whole: ["In 24 Stunden, mit Erfolgsgarantie", "Alle Bewertungen auf einmal weg", "Dauerhaft — kein Wiederauftauchen"],
-    note: ["Deshalb entfernen wir bewusst das ", "komplette Profil samt aller Bewertungen", ". Endgültig statt Stückwerk."] },
+    note: ["Deshalb entfernen wir bewusst das ", "komplette Profil samt aller Bewertungen", ". So sind alle schlechten Bewertungen auf einmal weg – und bleiben es."] },
   en: { eyebrow: "Our approach", title: "We don't delete individual reviews — we remove the entire profile.",
     lead: "Removing single reviews is tedious and uncertain: Google often refuses, and for every review deleted, new ones appear. We tackle the problem at the root.",
     singleH: "Delete a single review", single: ["Weeks — and often refused", "One gone, new ones follow", "One request per review"],
@@ -212,17 +212,21 @@ function TrustBar() {
   const { t } = useLang();
   const tpUrl = t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
   const items = [
-    <a key="tp" className="tb-item" href={tpUrl} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> {t.trustbar.reviews} <b>Trustpilot</b></a>,
+    <a key="tp" className="tb-item" href={tpUrl} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> <span>{t.trustbar.reviews} <b>Trustpilot</b></span></a>,
     <a key="heise" className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>,
     <div key="legal" className="tb-item"><Icon.shieldCheck size={20} /> {t.trustbar.legal}</div>,
     <div key="eu" className="tb-item"><Icon.globe size={20} /> {t.trustbar.eu}</div>,
     <div key="pay" className="tb-item"><Icon.lock size={20} /> {t.trustbar.pay}</div>,
   ];
-  // Nahtloses Marquee: Item-Satz mehrfach hintereinander, Spur fährt per CSS-Animation um 50 % nach links.
-  const COPIES = 4;
+  const COPIES = 4; // nahtloses Marquee (nur mobil)
   return (
     <div className="trustbar">
-      <div className="trustbar-track">
+      {/* Desktop: statisch, im Inhaltsbereich (lenkt nicht vom CTA ab) */}
+      <div className="container trustbar-inner">
+        {items.flatMap((it, i) => i < items.length - 1 ? [it, <div className="tb-sep" key={"s" + i}></div>] : [it])}
+      </div>
+      {/* Mobil: Leiste fährt von selbst durch */}
+      <div className="trustbar-track" aria-hidden={false}>
         {Array.from({ length: COPIES }).flatMap((_, c) =>
           items.flatMap((it, i) => [
             React.cloneElement(it, { key: `i${c}-${i}`, ...(c > 0 ? { "aria-hidden": "true", tabIndex: -1 } : {}) }),
@@ -358,7 +362,7 @@ function TrustSecurity({ id }) {
               <div className="team-top">
                 <div className="team-stack" data-comment-anchor="036ab80e57-b-256-17">
                   {["M", "L", "S", "T", "A", "J"].map((x) => <span className="av" key={x}>{x}</span>)}
-                  <span className="av more">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span>
+                  {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
                 </div>
                 <div className="pacts">
                   <a title="WhatsApp" href="https://wa.me/4300000000" target="_blank"><Icon.whatsapp size={20} /></a>
@@ -583,7 +587,7 @@ function FinalCTA({ onStart }) {
 
 /* ============ VIDEO / EXPLAINER ============ */
 const VIDEO_COPY = {
-  de: { eyebrow: "Im Video", title: "Sehen Sie in 90 Sekunden, wie es funktioniert.", sub: "Ein kurzer Überblick – vom Gratis-Check bis zum gelöschten Profil." },
+  de: { eyebrow: "Im Video", title: "So funktioniert's – in 90 Sekunden.", sub: "Ein kurzer Überblick – vom Gratis-Check bis zum gelöschten Profil." },
   en: { eyebrow: "On video", title: "See how it works in 90 seconds.", sub: "A quick overview – from the free check to the deleted profile." },
   es: { eyebrow: "En v\u00eddeo", title: "Vea c\u00f3mo funciona en 90 segundos.", sub: "Un resumen r\u00e1pido – del an\u00e1lisis gratis al perfil eliminado." },
   fr: { eyebrow: "En vid\u00e9o", title: "D\u00e9couvrez comment \u00e7a marche en 90 secondes.", sub: "Un aper\u00e7u rapide – de l'analyse gratuite \u00e0 la fiche supprim\u00e9e." },

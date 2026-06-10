@@ -17,7 +17,7 @@ const I18N = {
     nav: { how: "So funktioniert's", why: "Warum wir", pricing: "Preise", reviews: "Bewertungen", faq: "FAQ", magazin: "Magazin", about: "Über uns", login: "Kundenportal", cta: "Gratis-Check" },
     hero: {
       chip: "DSGVO-konform · Server in Deutschland · 100 % legal",
-      h1a: "Ihr Google-Unternehmensprofil löschen –",
+      h1a: "Wir löschen Ihr Google-Unternehmensprofil –",
       h1b: "dauerhaft, legal, in 24 Stunden.",
       lead: "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon. Inklusive aller Bewertungen, aus der Suche und von Google Maps.",
       trust: ["4,9", "266 Bewertungen", "Empfohlen von heise.de", "Keine Vorkasse", "Über 1.000 Profile entfernt"],
@@ -37,7 +37,7 @@ const I18N = {
       cards: [
         { t: "Fake- & Rachebewertungen", d: "Eine Handvoll falscher 1-Stern-Bewertungen ruiniert öffentlich Ihren Ruf – und Google entfernt sie selten." },
         { t: "Kein Ausstieg möglich", d: "Sie wollen raus aus Google Maps? „Geschlossen“ reicht nicht – Profil und Bewertungen bleiben für alle sichtbar." },
-        { t: "Anwalt = teuer, langsam, riskant", d: "300 €+ pro Stunde, 3–9 Monate Wartezeit, ungewisser Ausgang – und oft der Streisand-Effekt, der alles schlimmer macht." },
+        { t: "Anwalt = teuer, langsam, riskant", d: "300 €+ pro Stunde, 3–9 Monate Wartezeit und kein garantierter Erfolg. Oft lenkt der Streit am Ende sogar noch mehr Aufmerksamkeit auf die schlechten Bewertungen." },
       ],
     },
     how: {
@@ -46,7 +46,7 @@ const I18N = {
       sub: "Ein geführter, transparenter Ablauf. Sie tun fast nichts – wir kümmern uns um den Rest.",
       steps: [
         { t: "Gratis-Check", d: "Firmennamen eingeben. Wir finden Ihr Profil und prüfen sofort, ob die Löschung möglich ist.", a: "Unverbindlich & kostenlos" },
-        { t: "Bestätigen & freigeben", d: "Sie bestätigen das richtige Profil und erteilen die Bearbeitungsfreigabe. Kein Zugriff auf Gmail, Ads oder persönliche Daten.", a: "Ihr Konto bleibt privat" },
+        { t: "Bestätigen & freigeben", d: "Sie bestätigen das richtige Profil und geben uns die Bearbeitung frei. Wir bekommen dabei keinen Zugriff auf Gmail, Google Ads oder Ihre persönlichen Daten.", a: "Kein Zugriff auf Ihr Konto" },
         { t: "Löschung in ~24 h", d: "Unser Team entfernt das Profil samt allen Bewertungen – dauerhaft. Sie zahlen erst danach.", a: "Bezahlung erst nach Erfolg" },
       ],
       cta: "Jetzt Gratis-Check starten",
@@ -62,14 +62,14 @@ const I18N = {
         { l: "Erfolg", rr: "Garantiert", law: "Unsicher", diy: "Nein" },
         { l: "Alle Bewertungen weg", rr: "Ja, alle", law: "Einzeln, mühsam", diy: "Nein" },
         { l: "Ihr Aufwand", rr: "Praktisch null", law: "Hoch", diy: "Hoch" },
-        { l: "Streisand-Risiko", rr: "Keines", law: "Hoch", diy: "Hoch" },
+        { l: "Mehr Aufsehen ums Problem", rr: "Nein", law: "Oft", diy: "Oft" },
       ],
     },
     trust: {
       eyebrow: "Vertrauen & Sicherheit",
       h2: "Sie geben ein Problem ab – kein Risiko.",
       sub: "Wir wissen, dass Sie Fremden Zugang zu Ihrem Profil geben. Deshalb haben wir Vertrauen zur Grundlage von allem gemacht.",
-      ncnpBadge: "No Cure · No Pay",
+      ncnpBadge: "Zahlung nur bei Erfolg",
       ncnpTitle: "Sie zahlen ausschließlich nach erfolgreicher Löschung.",
       ncnpBody: "Keine Vorkasse, keine versteckten Kosten. Bleibt das Profil online, zahlen Sie nichts. So einfach.",
       items: [
@@ -106,7 +106,7 @@ const I18N = {
       perf: "Zahlung erst nach Erfolg",
       anchorOldLabel: "Der übliche Weg",
       anchorOldAmt: "ab 2.400 €",
-      anchorOldSub: "Anwalt über 3–9 Monate – ohne Erfolgsgarantie, oft mit Streisand-Effekt.",
+      anchorOldSub: "Anwalt über 3–9 Monate – ohne Erfolgsgarantie und oft mit noch mehr Aufmerksamkeit fürs Problem.",
       anchorNewLabel: "Mit RapidRemove",
       anchorNewAmt: "ab 450 €",
       anchorNewSub: "Fixpreis · in 24 h · nur bei Erfolg",

@@ -5,7 +5,7 @@
    ============================================================ */
 
 /* ---- Nav: Leistungen dropdown ---- */
-.nav-dd{position:relative;}
+.nav-dd{position:relative;padding-bottom:3px;}
 .nav-dd-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-family:var(--font-body);font-weight:700;font-size:13.5px;color:var(--fg-2);transition:color var(--dur);padding:0;line-height:1;}
 .nav-dd-btn:hover,.nav-dd.open .nav-dd-btn{color:var(--fg);}
 .nav-dd-btn svg{width:15px;height:15px;transition:transform var(--dur);}

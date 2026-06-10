@@ -199,16 +199,22 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 
 /* ---------- Trust bar ---------- */
 .trustbar{border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:#fff;overflow:hidden;}
-.trustbar-track{display:flex;align-items:center;gap:16px;width:max-content;padding:18px 0;animation:tb-marquee 42s linear infinite;will-change:transform;}
-.trustbar:hover .trustbar-track{animation-play-state:paused;}
-@keyframes tb-marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+/* Desktop: statisch, im Inhaltsbereich (keine Animation – lenkt nicht vom CTA ab) */
+.trustbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;flex-wrap:nowrap;}
+.trustbar-track{display:none;}
 .tb-item{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--fg-2);text-decoration:none;transition:color .15s;white-space:nowrap;flex:0 0 auto;}
 .tb-item svg{width:18px;height:18px;color:var(--fg-muted);}
 .tb-item .tp{color:#00b67a;}
 a.tb-item:hover{color:var(--primary);}
 .tb-sep{width:1px;height:24px;background:var(--hairline);flex:none;}
-@media(max-width:920px){.tb-sep{display:none;}.trustbar-track{gap:22px;}}
-@media(prefers-reduced-motion:reduce){.trustbar-track{animation:none;width:auto;flex-wrap:wrap;justify-content:center;padding-left:20px;padding-right:20px;}}
+@keyframes tb-marquee{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+/* Mobil: Leiste fährt von selbst durch */
+@media(max-width:720px){
+  .trustbar-inner{display:none;}
+  .trustbar-track{display:flex;align-items:center;gap:22px;width:max-content;padding:14px 0;animation:tb-marquee 26s linear infinite;will-change:transform;}
+  .tb-sep{display:none;}
+}
+@media(prefers-reduced-motion:reduce){.trustbar-track{animation:none;}}
 
 /* ---------- Problem cards ---------- */
 .pgrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
