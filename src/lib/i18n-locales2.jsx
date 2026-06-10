@@ -147,7 +147,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Prodotto", links: ["Come funziona", "Prezzi", "Recensioni", "Analisi gratis"] },
         { h: "Azienda", links: ["Chi siamo", "Blog / Magazine", "Diventa partner", "Contatti"] },
-        { h: "Legale", links: ["Note legali", "Privacy", "Termini", "Area clienti"] },
+        { h: "Legale", links: ["Note legali", "Privacy", "Area clienti"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · P.IVA ATU72401536",
       rights: "Tutti i diritti riservati.",
@@ -156,12 +156,12 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "Il tuo profilo è eliminabile?", s: "Analisi gratis · senza anticipo", b: "Analisi gratis" },
     blog: {
       kicker: "Il Magazine",
-      h1: "Il sapere del leader mondiale nella rimozione dei profili Google.",
+      h1: "Il sapere dell'agenzia di reputazione leader nella rimozione dei profili Google.",
       lead: "Analisi, casi studio e chiarezza su reputazione online, recensioni false e i tuoi diritti, dal team che ha rimosso più profili di chiunque altro al mondo.",
-      ribbonBadge: "N° 1 al mondo",
+      ribbonBadge: "Agenzia di reputazione leader",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Oltre ", React.createElement("b", null, n + " profili rimossi"), " in più di 30 Paesi"),
       featuredTag: "In copertina",
-      authorityEyebrow: "Il leader mondiale in cifre",
+      authorityEyebrow: "L'agenzia leader in cifre",
       authorityTitle: "Una scala che parla da sé.",
       authStats: [
         { v: 1000, suf: "+", l: "profili rimossi" },
@@ -349,7 +349,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Product", links: ["Hoe het werkt", "Prijzen", "Reviews", "Gratis check"] },
         { h: "Bedrijf", links: ["Over ons", "Blog / Magazine", "Partner worden", "Contact"] },
-        { h: "Juridisch", links: ["Colofon", "Privacy", "Voorwaarden", "Klantportaal"] },
+        { h: "Juridisch", links: ["Colofon", "Privacy", "Klantportaal"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Oostenrijk · btw ATU72401536",
       rights: "Alle rechten voorbehouden.",
@@ -358,12 +358,12 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "Is uw profiel te verwijderen?", s: "Gratis checken · geen vooruitbetaling", b: "Gratis check" },
     blog: {
       kicker: "Het Magazine",
-      h1: "Kennis van de wereldmarktleider in het verwijderen van Google-profielen.",
+      h1: "Kennis van het toonaangevende reputatiebureau in het verwijderen van Google-profielen.",
       lead: "Analyses, casestudy's en heldere taal over online reputatie, nepreviews en uw rechten, van het team dat meer profielen heeft verwijderd dan wie ook ter wereld.",
-      ribbonBadge: "Nr. 1 wereldwijd",
+      ribbonBadge: "Toonaangevend reputatiebureau",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Meer dan ", React.createElement("b", null, n + " profielen verwijderd"), " in 30+ landen"),
       featuredTag: "Coververhaal",
-      authorityEyebrow: "De wereldmarktleider in cijfers",
+      authorityEyebrow: "Het toonaangevende bureau in cijfers",
       authorityTitle: "Een schaal die voor zich spreekt.",
       authStats: [
         { v: 1000, suf: "+", l: "profielen verwijderd" },
@@ -551,7 +551,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Produto", links: ["Como funciona", "Preços", "Avaliações", "Análise grátis"] },
         { h: "Empresa", links: ["Sobre nós", "Blog / Revista", "Seja parceiro", "Contacto"] },
-        { h: "Legal", links: ["Aviso legal", "Privacidade", "Termos", "Portal do cliente"] },
+        { h: "Legal", links: ["Aviso legal", "Privacidade", "Portal do cliente"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Áustria · NIF ATU72401536",
       rights: "Todos os direitos reservados.",
@@ -560,12 +560,12 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "O seu perfil pode ser eliminado?", s: "Analise grátis · sem pagamento antecipado", b: "Análise grátis" },
     blog: {
       kicker: "A Revista",
-      h1: "Conhecimento do líder mundial em remoção de perfis do Google.",
+      h1: "Conhecimento da agência de reputação líder em remoção de perfis do Google.",
       lead: "Análises, casos de estudo e clareza sobre reputação online, avaliações falsas e os seus direitos, da equipa que removeu mais perfis do que qualquer outra no mundo.",
-      ribbonBadge: "N.º 1 mundial",
+      ribbonBadge: "Agência de reputação líder",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Mais de ", React.createElement("b", null, n + " perfis removidos"), " em mais de 30 países"),
       featuredTag: "Destaque de capa",
-      authorityEyebrow: "O líder mundial em números",
+      authorityEyebrow: "A agência líder em números",
       authorityTitle: "Uma escala que fala por si.",
       authStats: [
         { v: 1000, suf: "+", l: "perfis removidos" },

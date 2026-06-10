@@ -11,7 +11,7 @@ import { localePath } from "@/lib/locales-meta";
 const ABOUT_COPY = {
   de: {
     eyebrow: "Über uns",
-    h1: "Der Weltmarktführer für die Löschung von Google-Profilen.",
+    h1: "Die führende Reputations-Agentur für die Löschung von Google-Profilen.",
     lead: "Wir geben Unternehmern die Kontrolle über ihren Ruf zurück – schnell, legal und ohne Risiko. Aus Österreich, für Kunden in über 30 Ländern.",
     missionLabel: "Unsere Mission",
     mission: ["Niemand sollte sich seinem Google-Eintrag ", "ausgeliefert", " fühlen. Wir nehmen Ihnen das Problem ab – und Sie zahlen erst, wenn es gelöst ist."],
@@ -20,13 +20,13 @@ const ABOUT_COPY = {
     story: [
       "RapidRemove entstand aus einer einfachen Beobachtung: Unternehmer waren ihren Google-Unternehmensprofilen schutzlos ausgeliefert. Fake-Bewertungen, veraltete Einträge, Rachekampagnen – und kein Knopf, um das Ganze zu beenden.",
       "Anwälte waren teuer, langsam und unsicher. Also haben wir einen besseren Weg gebaut: eine eigene, juristisch geprüfte Methode, die das gesamte Profil dauerhaft und über die offiziellen Schnittstellen entfernt.",
-      "Heute ist daraus der weltweit führende Anbieter für die Löschung von Google-Unternehmensprofilen geworden – mit einem Versprechen, das alles zusammenhält: Bezahlung erst nach Erfolg.",
+      "Heute ist daraus die führende Reputations-Agentur für die Löschung von Google-Unternehmensprofilen geworden – mit einem Versprechen, das alles zusammenhält: Bezahlung erst nach Erfolg.",
     ],
     timeline: [
       { y: "2021", t: "Der Anfang", d: "Gegründet in Hallein, Österreich – aus dem Frust über die Ohnmacht gegenüber Google." },
       { y: "2023", t: "Eigene Methode", d: "Entwicklung eines juristisch geprüften Verfahrens über offizielle Schnittstellen." },
       { y: "2024", t: "International", d: "Expansion in über 30 Länder, vollständig mehrsprachig." },
-      { y: "2026", t: "Weltmarktführer", d: "Über 1.000 entfernte Profile und 5,0★ auf Trustpilot." },
+      { y: "2026", t: "Führende Reputations-Agentur", d: "Über 1.000 entfernte Profile und 5,0★ auf Trustpilot." },
     ],
     statsLabel: "RapidRemove in Zahlen",
     stats: [
@@ -64,7 +64,7 @@ const ABOUT_COPY = {
   },
   en: {
     eyebrow: "About us",
-    h1: "The world leader in deleting Google profiles.",
+    h1: "The leading reputation agency for deleting Google profiles.",
     lead: "We give business owners back control over their reputation – fast, legal and risk-free. From Austria, for clients in 30+ countries.",
     missionLabel: "Our mission",
     mission: ["No one should feel ", "at the mercy", " of their Google listing. We take the problem off your hands – and you only pay once it's solved."],
@@ -73,13 +73,13 @@ const ABOUT_COPY = {
     story: [
       "RapidRemove began with a simple observation: business owners were defenceless against their Google business profiles. Fake reviews, outdated listings, revenge campaigns – and no button to end it.",
       "Lawyers were expensive, slow and uncertain. So we built a better way: our own, lawyer-reviewed method that removes the entire profile permanently and through official channels.",
-      "Today it has become the world's leading provider for removing Google business profiles – held together by one promise: payment only after success.",
+      "Today it has become the leading reputation agency for removing Google business profiles – held together by one promise: payment only after success.",
     ],
     timeline: [
       { y: "2021", t: "The beginning", d: "Founded in Hallein, Austria – out of frustration with powerlessness against Google." },
       { y: "2023", t: "Our own method", d: "Developed a lawyer-reviewed process working through official channels." },
       { y: "2024", t: "International", d: "Expanded into 30+ countries, fully multilingual." },
-      { y: "2026", t: "World leader", d: "Over 1,000 profiles removed and 5.0★ on Trustpilot." },
+      { y: "2026", t: "Leading reputation agency", d: "Over 1,000 profiles removed and 5.0★ on Trustpilot." },
     ],
     statsLabel: "RapidRemove in numbers",
     stats: [
@@ -118,12 +118,12 @@ const ABOUT_COPY = {
 };
 Object.assign(ABOUT_COPY, {
   ja: {
-    eyebrow: "会社概要", h1: "Googleプロフィール削除の世界的リーダー。",
+    eyebrow: "会社概要", h1: "Googleプロフィール削除のリーディング評判管理エージェンシー。",
     lead: "私たちは経営者に評判のコントロールを取り戻します ― 速く、合法的に、リスクなく。オーストリアから、30か国以上のお客様へ。",
     missionLabel: "私たちの使命", mission: ["誰も自分のGoogle掲載に", "翻弄される", "べきではありません。私たちが問題を引き受けます ― そしてお支払いは解決後だけです。"], missionSign: "— RapidRemoveチーム",
     storyH: "不満から解決策が生まれました。",
-    story: ["RapidRemoveは単純な気づきから生まれました。経営者は自分のGoogleビジネスプロフィールに対して無防備でした。偽レビュー、古い掲載、報復キャンペーン ― そしてそれを終わらせるボタンがありません。", "弁護士は高額で、遅く、不確実でした。そこで私たちはより良い方法を作りました。公式な手続きを通じてプロフィール全体を永久に削除する、独自の弁護士確認済みの手法です。", "今日それは、Googleビジネスプロフィール削除の世界的リーダーへと成長しました ― すべてをつなぐ1つの約束とともに。成功後にのみお支払い。"],
-    timeline: [{ y: "2021", t: "始まり", d: "オーストリア・ハラインで創業 ― Googleへの無力感への不満から。" }, { y: "2023", t: "独自の手法", d: "公式な手続きを通じた、弁護士確認済みのプロセスを開発。" }, { y: "2024", t: "国際展開", d: "30か国以上へ拡大、完全多言語対応。" }, { y: "2026", t: "世界的リーダー", d: "1,000件以上のプロフィール削除、Trustpilotで5.0★。" }],
+    story: ["RapidRemoveは単純な気づきから生まれました。経営者は自分のGoogleビジネスプロフィールに対して無防備でした。偽レビュー、古い掲載、報復キャンペーン ― そしてそれを終わらせるボタンがありません。", "弁護士は高額で、遅く、不確実でした。そこで私たちはより良い方法を作りました。公式な手続きを通じてプロフィール全体を永久に削除する、独自の弁護士確認済みの手法です。", "今日それは、Googleビジネスプロフィール削除のリーディング評判管理エージェンシーへと成長しました ― すべてをつなぐ1つの約束とともに。成功後にのみお支払い。"],
+    timeline: [{ y: "2021", t: "始まり", d: "オーストリア・ハラインで創業 ― Googleへの無力感への不満から。" }, { y: "2023", t: "独自の手法", d: "公式な手続きを通じた、弁護士確認済みのプロセスを開発。" }, { y: "2024", t: "国際展開", d: "30か国以上へ拡大、完全多言語対応。" }, { y: "2026", t: "リーディング評判管理エージェンシー", d: "1,000件以上のプロフィール削除、Trustpilotで5.0★。" }],
     statsLabel: "数字で見るRapidRemove", stats: [{ v: 1000, suf: "+", l: "削除したプロフィール" }, { v: 30, suf: "+", l: "世界の国" }, { v: 98, suf: " %", l: "成功率" }, { fmt: "5.0 ★", l: "Trustpilot" }],
     valuesLabel: "私たちの価値観", valuesH: "信頼は機能ではありません。土台です。",
     values: [{ ic: "shieldCheck", t: "成功しなければ費用なし", d: "削除に成功した後にのみお支払いいただきます。プロフィールがオンラインのままなら、お支払いは不要です。" }, { ic: "gavel", t: "100% 合法", d: "私たちの手法は弁護士の確認を受け、公式な手続きのみを通じて行われます。" }, { ic: "lock", t: "秘密厳守・GDPR準拠", d: "EUサーバー、アカウントや個人データへのアクセスなし。あなたの案件は秘密に扱われます。" }],
@@ -134,12 +134,12 @@ Object.assign(ABOUT_COPY, {
     coBadges: ["GDPR準拠", "EUサーバー", "弁護士確認済み", "Made in Austria"], ctaTitle: "無料チェックで私たちを知ってください。", ctaBtn: "無料でチェック",
   },
   sv: {
-    eyebrow: "Om oss", h1: "Världsledaren inom borttagning av Google-profiler.",
+    eyebrow: "Om oss", h1: "Den ledande byrån för online-rykte inom borttagning av Google-profiler.",
     lead: "Vi ger företagare tillbaka kontrollen över sitt rykte – snabbt, lagligt och riskfritt. Från Österrike, för kunder i 30+ länder.",
     missionLabel: "Vårt uppdrag", mission: ["Ingen ska känna sig ", "utlämnad", " åt sin Google-annons. Vi tar problemet ur dina händer – och du betalar först när det är löst."], missionSign: "— Teamet på RapidRemove",
     storyH: "Frustration blev en lösning.",
-    story: ["RapidRemove började med en enkel observation: företagare var försvarslösa mot sina Google-företagsprofiler. Falska omdömen, föråldrade annonser, hämndkampanjer – och ingen knapp för att få slut på det.", "Advokater var dyra, långsamma och osäkra. Så vi byggde en bättre väg: vår egen, juridiskt granskade metod som tar bort hela profilen permanent och via officiella kanaler.", "Idag har det blivit världens ledande leverantör för borttagning av Google-företagsprofiler – sammanhållet av ett löfte: betalning först efter framgång."],
-    timeline: [{ y: "2021", t: "Början", d: "Grundat i Hallein, Österrike – ur frustration över maktlöshet mot Google." }, { y: "2023", t: "Egen metod", d: "Utvecklade en juridiskt granskad process via officiella kanaler." }, { y: "2024", t: "Internationellt", d: "Expanderade till 30+ länder, helt flerspråkigt." }, { y: "2026", t: "Världsledare", d: "Över 1 000 profiler borttagna och 5,0★ på Trustpilot." }],
+    story: ["RapidRemove började med en enkel observation: företagare var försvarslösa mot sina Google-företagsprofiler. Falska omdömen, föråldrade annonser, hämndkampanjer – och ingen knapp för att få slut på det.", "Advokater var dyra, långsamma och osäkra. Så vi byggde en bättre väg: vår egen, juridiskt granskade metod som tar bort hela profilen permanent och via officiella kanaler.", "Idag har det blivit den ledande byrån för online-rykte inom borttagning av Google-företagsprofiler – sammanhållet av ett löfte: betalning först efter framgång."],
+    timeline: [{ y: "2021", t: "Början", d: "Grundat i Hallein, Österrike – ur frustration över maktlöshet mot Google." }, { y: "2023", t: "Egen metod", d: "Utvecklade en juridiskt granskad process via officiella kanaler." }, { y: "2024", t: "Internationellt", d: "Expanderade till 30+ länder, helt flerspråkigt." }, { y: "2026", t: "Ledande byrå", d: "Över 1 000 profiler borttagna och 5,0★ på Trustpilot." }],
     statsLabel: "RapidRemove i siffror", stats: [{ v: 1000, suf: "+", l: "profiler borttagna" }, { v: 30, suf: "+", l: "länder världen över" }, { v: 98, suf: " %", l: "framgångsgrad" }, { fmt: "5,0 ★", l: "på Trustpilot" }],
     valuesLabel: "Vad vi står för", valuesH: "Förtroende är ingen funktion. Det är grunden.",
     values: [{ ic: "shieldCheck", t: "Ingen framgång, ingen kostnad", d: "Du betalar uteslutande efter lyckad borttagning. Förblir profilen online betalar du inget." }, { ic: "gavel", t: "100 % lagligt", d: "Vår metod är juridiskt granskad och arbetar uteslutande via officiella kanaler." }, { ic: "lock", t: "Diskret & GDPR-anpassat", d: "EU-servrar, ingen åtkomst till ditt konto eller persondata. Ditt ärende förblir konfidentiellt." }],
@@ -150,12 +150,12 @@ Object.assign(ABOUT_COPY, {
     coBadges: ["GDPR-anpassat", "EU-servrar", "Juridiskt granskat", "Made in Austria"], ctaTitle: "Lär känna oss – med den gratis kollen.", ctaBtn: "Kolla gratis",
   },
   da: {
-    eyebrow: "Om os", h1: "Verdensføreren i fjernelse af Google-profiler.",
+    eyebrow: "Om os", h1: "Det førende omdømmebureau inden for fjernelse af Google-profiler.",
     lead: "Vi giver virksomhedsejere kontrollen over deres omdømme tilbage – hurtigt, lovligt og uden risiko. Fra Østrig, for kunder i 30+ lande.",
     missionLabel: "Vores mission", mission: ["Ingen bør føle sig ", "prisgivet", " sin Google-annonce. Vi tager problemet ud af dine hænder – og du betaler først, når det er løst."], missionSign: "— Teamet hos RapidRemove",
     storyH: "Frustration blev til en løsning.",
-    story: ["RapidRemove begyndte med en enkel observation: virksomhedsejere var forsvarsløse over for deres Google-virksomhedsprofiler. Falske anmeldelser, forældede annoncer, hævnkampagner – og ingen knap til at gøre en ende på det.", "Advokater var dyre, langsomme og usikre. Så vi byggede en bedre vej: vores egen, juridisk gennemgåede metode, der fjerner hele profilen permanent og via officielle kanaler.", "I dag er det blevet verdens førende udbyder af fjernelse af Google-virksomhedsprofiler – holdt sammen af ét løfte: betaling først efter succes."],
-    timeline: [{ y: "2021", t: "Begyndelsen", d: "Grundlagt i Hallein, Østrig – ud af frustration over magtesløshed mod Google." }, { y: "2023", t: "Egen metode", d: "Udviklede en juridisk gennemgået proces via officielle kanaler." }, { y: "2024", t: "Internationalt", d: "Udvidede til 30+ lande, fuldt flersproget." }, { y: "2026", t: "Verdensfører", d: "Over 1.000 profiler fjernet og 5,0★ på Trustpilot." }],
+    story: ["RapidRemove begyndte med en enkel observation: virksomhedsejere var forsvarsløse over for deres Google-virksomhedsprofiler. Falske anmeldelser, forældede annoncer, hævnkampagner – og ingen knap til at gøre en ende på det.", "Advokater var dyre, langsomme og usikre. Så vi byggede en bedre vej: vores egen, juridisk gennemgåede metode, der fjerner hele profilen permanent og via officielle kanaler.", "I dag er det blevet det førende omdømmebureau inden for fjernelse af Google-virksomhedsprofiler – holdt sammen af ét løfte: betaling først efter succes."],
+    timeline: [{ y: "2021", t: "Begyndelsen", d: "Grundlagt i Hallein, Østrig – ud af frustration over magtesløshed mod Google." }, { y: "2023", t: "Egen metode", d: "Udviklede en juridisk gennemgået proces via officielle kanaler." }, { y: "2024", t: "Internationalt", d: "Udvidede til 30+ lande, fuldt flersproget." }, { y: "2026", t: "Førende omdømmebureau", d: "Over 1.000 profiler fjernet og 5,0★ på Trustpilot." }],
     statsLabel: "RapidRemove i tal", stats: [{ v: 1000, suf: "+", l: "profiler fjernet" }, { v: 30, suf: "+", l: "lande verden over" }, { v: 98, suf: " %", l: "succesrate" }, { fmt: "5,0 ★", l: "på Trustpilot" }],
     valuesLabel: "Hvad vi står for", valuesH: "Tillid er ikke en funktion. Det er fundamentet.",
     values: [{ ic: "shieldCheck", t: "Ingen succes, ingen omkostning", d: "Du betaler udelukkende efter vellykket fjernelse. Forbliver profilen online, betaler du intet." }, { ic: "gavel", t: "100 % lovligt", d: "Vores metode er juridisk gennemgået og arbejder udelukkende via officielle kanaler." }, { ic: "lock", t: "Diskret & GDPR-overholdende", d: "EU-servere, ingen adgang til din konto eller persondata. Din sag forbliver fortrolig." }],
@@ -166,12 +166,12 @@ Object.assign(ABOUT_COPY, {
     coBadges: ["GDPR-overholdende", "EU-servere", "Juridisk gennemgået", "Made in Austria"], ctaTitle: "Lær os at kende – med det gratis tjek.", ctaBtn: "Tjek gratis",
   },
   no: {
-    eyebrow: "Om oss", h1: "Verdenslederen innen fjerning av Google-profiler.",
+    eyebrow: "Om oss", h1: "Det ledende omdømmebyrået innen fjerning av Google-profiler.",
     lead: "Vi gir bedriftseiere tilbake kontrollen over omdømmet sitt – raskt, lovlig og uten risiko. Fra Østerrike, for kunder i 30+ land.",
     missionLabel: "Vårt oppdrag", mission: ["Ingen bør føle seg ", "prisgitt", " sin Google-oppføring. Vi tar problemet ut av hendene dine – og du betaler først når det er løst."], missionSign: "— Teamet i RapidRemove",
     storyH: "Frustrasjon ble til en løsning.",
-    story: ["RapidRemove begynte med en enkel observasjon: bedriftseiere var forsvarsløse mot sine Google-bedriftsprofiler. Falske omtaler, utdaterte oppføringer, hevnkampanjer – og ingen knapp for å få slutt på det.", "Advokater var dyre, trege og usikre. Så vi bygde en bedre vei: vår egen, juridisk vurderte metode som fjerner hele profilen permanent og via offisielle kanaler.", "I dag har det blitt verdens ledende leverandør for fjerning av Google-bedriftsprofiler – holdt sammen av ett løfte: betaling først etter suksess."],
-    timeline: [{ y: "2021", t: "Begynnelsen", d: "Grunnlagt i Hallein, Østerrike – ut av frustrasjon over maktesløshet mot Google." }, { y: "2023", t: "Egen metode", d: "Utviklet en juridisk vurdert prosess via offisielle kanaler." }, { y: "2024", t: "Internasjonalt", d: "Utvidet til 30+ land, fullt flerspråklig." }, { y: "2026", t: "Verdensleder", d: "Over 1 000 profiler fjernet og 5,0★ på Trustpilot." }],
+    story: ["RapidRemove begynte med en enkel observasjon: bedriftseiere var forsvarsløse mot sine Google-bedriftsprofiler. Falske omtaler, utdaterte oppføringer, hevnkampanjer – og ingen knapp for å få slutt på det.", "Advokater var dyre, trege og usikre. Så vi bygde en bedre vei: vår egen, juridisk vurderte metode som fjerner hele profilen permanent og via offisielle kanaler.", "I dag har det blitt det ledende omdømmebyrået for fjerning av Google-bedriftsprofiler – holdt sammen av ett løfte: betaling først etter suksess."],
+    timeline: [{ y: "2021", t: "Begynnelsen", d: "Grunnlagt i Hallein, Østerrike – ut av frustrasjon over maktesløshet mot Google." }, { y: "2023", t: "Egen metode", d: "Utviklet en juridisk vurdert prosess via offisielle kanaler." }, { y: "2024", t: "Internasjonalt", d: "Utvidet til 30+ land, fullt flerspråklig." }, { y: "2026", t: "Ledende omdømmebyrå", d: "Over 1 000 profiler fjernet og 5,0★ på Trustpilot." }],
     statsLabel: "RapidRemove i tall", stats: [{ v: 1000, suf: "+", l: "profiler fjernet" }, { v: 30, suf: "+", l: "land verden over" }, { v: 98, suf: " %", l: "suksessrate" }, { fmt: "5,0 ★", l: "på Trustpilot" }],
     valuesLabel: "Hva vi står for", valuesH: "Tillit er ingen funksjon. Det er fundamentet.",
     values: [{ ic: "shieldCheck", t: "Ingen suksess, ingen kostnad", d: "Du betaler utelukkende etter vellykket fjerning. Forblir profilen på nett, betaler du ingenting." }, { ic: "gavel", t: "100 % lovlig", d: "Metoden vår er juridisk vurdert og arbeider utelukkende via offisielle kanaler." }, { ic: "lock", t: "Diskret & GDPR-tilpasset", d: "EU-servere, ingen tilgang til kontoen eller persondataene dine. Saken din forblir konfidensiell." }],

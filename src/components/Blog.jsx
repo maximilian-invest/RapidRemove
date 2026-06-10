@@ -35,15 +35,6 @@ function AuthStat({ s }) {
   );
 }
 
-// „Bekannt aus" – echte Quellen, die RapidRemove erwähnen/verlinken (sprachübergreifend).
-const PRESS_LINKS = [
-  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" },
-  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/" },
-  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/" },
-  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/" },
-  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
-];
-
 function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
   const { t } = useLang();
   const b = t.blog;
@@ -96,14 +87,6 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
           </a>
         </div>
       </section>
-
-      {/* press band */}
-      <div className="press-band">
-        <div className="container press-inner">
-          <span className="pl-label">{b.pressLabel}</span>
-          {PRESS_LINKS.map((p, i) => <a className="pl" key={i} href={p.u} target="_blank" rel="noopener noreferrer">{p.n}</a>)}
-        </div>
-      </div>
 
       {/* authority numbers */}
       <section className="mag-authority">
@@ -176,23 +159,6 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
               {[[18,30],[78,24],[30,72],[68,78],[50,12],[12,55],[88,60],[44,90]].map((pos, i) => (
                 <span className="dot" key={i} style={{ left: pos[0] + "%", top: pos[1] + "%" }}></span>
               ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* newsletter */}
-      <section className="mag-section soft">
-        <div className="container">
-          <div className="mag-news reveal">
-            <h2>{b.newsTitle}</h2>
-            <p>{b.newsText}</p>
-            <div className="news-form">
-              <div className="field" style={{ flex: 1, marginBottom: 0 }}>
-                <Icon.mail />
-                <input className="input" placeholder={b.newsPlaceholder} />
-              </div>
-              <button className="btn btn-primary lg">{b.newsButton} <Icon.arrowRight size={18} /></button>
             </div>
           </div>
         </div>

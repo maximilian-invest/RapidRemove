@@ -173,6 +173,16 @@ function TrustpilotLive() {
   );
 }
 
+/* „Bekannt aus" – echte Quellen, die RapidRemove erwähnen/verlinken (sprachübergreifend).
+   Sitzt im Hero unter der Check-Karte (aus dem Magazin hierher verschoben). */
+const PRESS_LINKS = [
+  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" },
+  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/" },
+  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/" },
+  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/" },
+  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
+];
+
 /* Hero: Team-Link unter dem Trustpilot-Widget („Lernen Sie Max & Matthias kennen" → /ueber-uns) */
 const HERO_TEAM = {
   de: ["Lernen Sie die Google-Experten ", "Max & Matthias", " kennen"],
@@ -278,6 +288,10 @@ function Hero({ onStart }) {
           <button className="btn btn-primary btn-block lg cta-glow" onClick={go}>
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
+        </div>
+        <div className="hero-press">
+          <span className="hp-label">{t.blog.pressLabel}</span>
+          {PRESS_LINKS.map((p, i) => <a key={i} href={p.u} target="_blank" rel="noopener noreferrer">{p.n}</a>)}
         </div>
         </div>
       </div>

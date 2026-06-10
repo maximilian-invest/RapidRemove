@@ -11,7 +11,6 @@ import { localePath, LOCALES } from "@/lib/locales-meta";
 
 /* Externe Ziel-URLs (Footer/Navbar) */
 const PARTNER_URL = "https://rapid-remove.firstpromoter.com/signup";
-const GTC_EN_URL = "https://onecdn.io/media/rapidremovegtc-7e48fe7f-35be-4849-861a-e10de91526fd.pdf";
 
 /* ---- Scroll reveal hook ---- */
 function useReveal() {
@@ -281,7 +280,7 @@ function Footer({ onStart, onBlog, onAbout }) {
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
     [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: lang === "de" ? asset("/magazin/") : hb + "?view=magazin" }, { href: PARTNER_URL, ext: true }, { onClick: openChat, href: "#chat" }],
-    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: lang === "de" ? asset("/rapidremove-agb-datenschutz.pdf") : GTC_EN_URL, ext: true }, { href: "mailto:helpdesk@rapid-remove.com" }],
+    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "mailto:helpdesk@rapid-remove.com" }],
   ];
   return (
     <footer className="footer">
