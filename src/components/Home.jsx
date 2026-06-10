@@ -123,48 +123,53 @@ function TpStars({ size = 16 }) {
   );
 }
 
-/* ---- Trustpilot: echtes Live-Widget (offizielles Embed; Bootstrap-Skript wird einmalig geladen).
-   Fällt auf den Profil-Link zurück, wenn das Skript blockiert ist. ---- */
-const TP_LOCALE = { de: "de-AT", en: "en-US", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "en-US", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
-function TrustpilotLive({ height = "40px", align = "left" }) {
+/* ---- Trustpilot: eigene, voll stylebare Zeile mit LIVE-Bewertungszahl (linksbündig garantiert).
+   Ersetzt das offizielle iframe-Widget — dessen Inhalt ist cross-origin und ließ sich nicht
+   zuverlässig ausrichten. Die Zahl liefert der ops-Endpoint /tp-count (liest sie serverseitig
+   vom Trustpilot-Profil, 6 h gecacht); Fallback ist das immergrüne „260+". ---- */
+const OPS_BASE = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
+const TP_LINE = {
+  de: ["Sehen Sie unsere ", " Bewertungen auf"],
+  en: ["See our ", " reviews on"],
+  es: ["Vea nuestras ", " reseñas en"],
+  fr: ["Découvrez nos ", " avis sur"],
+  it: ["Guarda le nostre ", " recensioni su"],
+  nl: ["Bekijk onze ", " reviews op"],
+  pt: ["Veja as nossas ", " avaliações no"],
+  ja: ["私たちの", "件のレビューはこちら:"],
+  sv: ["Se våra ", " omdömen på"],
+  da: ["Se vores ", " anmeldelser på"],
+  no: ["Se våre ", " omtaler på"],
+};
+let tpCountOnce = null; // einmal pro Pageload holen, dann teilen sich alle Instanzen die Zahl
+function TrustpilotLive() {
   const { lang } = useLang();
-  const ref = React.useRef(null);
+  const [count, setCount] = React.useState(tpCountOnce);
   React.useEffect(() => {
-    // Ausrichtung notfalls erzwingen: das Widget rendert in einem iframe (Inhalt von außen
-    // nicht stylebar); die Ausrichtung kommt als styleAlignment-Parameter in der iframe-URL.
-    // Falls das data-Attribut nicht durchgereicht wurde, Parameter direkt in die URL setzen.
-    const fixAlign = () => {
-      try {
-        const ifr = ref.current && ref.current.querySelector("iframe");
-        if (!ifr || !ifr.src) return;
-        const want = "styleAlignment=" + align;
-        if (ifr.src.indexOf("styleAlignment=") === -1) ifr.src = ifr.src + (ifr.src.indexOf("?") > -1 ? "&" : "?") + want;
-        else if (ifr.src.indexOf(want) === -1) ifr.src = ifr.src.replace(/styleAlignment=[^&]*/, want);
-      } catch (e) { /* optional */ }
-    };
-    let t1, t2;
-    const init = () => {
-      try { if (window.Trustpilot && ref.current) window.Trustpilot.loadFromElement(ref.current, true); } catch (e) { /* Widget optional */ }
-      t1 = setTimeout(fixAlign, 700); t2 = setTimeout(fixAlign, 2000);
-    };
-    if (window.Trustpilot) { init(); return () => { clearTimeout(t1); clearTimeout(t2); }; }
-    let s = document.getElementById("tp-widget-script");
-    if (!s) {
-      s = document.createElement("script");
-      s.id = "tp-widget-script";
-      s.src = "https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js";
-      s.async = true;
-      document.head.appendChild(s);
-    }
-    s.addEventListener("load", init);
-    return () => { s.removeEventListener("load", init); clearTimeout(t1); clearTimeout(t2); };
-  }, [lang, align]);
+    if (tpCountOnce != null || !OPS_BASE) return;
+    let alive = true;
+    try {
+      const c = JSON.parse(localStorage.getItem("rr_tp_count") || "null");
+      if (c && c.n && Date.now() - c.ts < 6 * 3600_000) { tpCountOnce = c.n; setCount(c.n); return; }
+    } catch (e) {}
+    fetch(OPS_BASE + "/tp-count")
+      .then((r) => r.json())
+      .then((j) => {
+        if (!alive || !j || !j.count) return;
+        tpCountOnce = j.count; setCount(j.count);
+        try { localStorage.setItem("rr_tp_count", JSON.stringify({ n: j.count, ts: Date.now() })); } catch (e) {}
+      })
+      .catch(() => { /* Fallback bleibt 260+ */ });
+    return () => { alive = false; };
+  }, []);
+  const url = lang === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
+  const tl = TP_LINE[lang] || TP_LINE.en;
   return (
-    <div ref={ref} className="trustpilot-widget" data-locale={TP_LOCALE[lang] || "en-US"} data-template-id="5419b6a8b0d04a076446a9ad"
-      data-businessunit-id="650984f45e6fd78f6d11c4db" data-style-height={height} data-style-width="100%"
-      data-theme="light" data-style-alignment={align}>
-      <a href="https://at.trustpilot.com/review/rapid-remove.com" target="_blank" rel="noopener noreferrer">Trustpilot</a>
-    </div>
+    <a className="tp-line" href={url} target="_blank" rel="noopener noreferrer">
+      <TpStars size={17} />
+      <span className="tpl-tx">{tl[0]}<b>{count || "260+"}</b>{tl[1]}</span>
+      <span className="tpl-logo"><span className="tp-sq" style={{ "--tpsq": "17px" }}><Icon.star /></span> Trustpilot</span>
+    </a>
   );
 }
 
@@ -220,8 +225,8 @@ function Hero({ onStart }) {
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
           <p className="lead hs hs3">{t.hero.lead}</p>
           <div className="hero-proof hs hs5">
-            <div style={{ width: "100%", maxWidth: 420 }}>
-              <TrustpilotLive height="40px" align="left" />
+            <div style={{ width: "100%" }}>
+              <TrustpilotLive />
             </div>
           </div>
           <a className="hero-team hs hs5" href={asset("/ueber-uns/")}>
@@ -488,7 +493,7 @@ function Social({ id }) {
 
         {/* Trustpilot — echtes Live-Widget (offizielles Embed, lädt Bewertung & Anzahl live) */}
         <div className="tp-widget reveal">
-          <TrustpilotLive height="40px" align="left" />
+          <TrustpilotLive />
         </div>
 
         {/* Stats */}

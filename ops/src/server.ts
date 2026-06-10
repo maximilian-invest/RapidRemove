@@ -125,6 +125,32 @@ app.get("/send-test", async (req, reply) => {
   return { sent: to, template: key };
 });
 
+// Live-Bewertungszahl von Trustpilot: serverseitig vom Profil gelesen (6 h gecacht).
+// Für die eigene Trustpilot-Zeile auf der Website — das offizielle Widget-iframe
+// ließ sich nicht zuverlässig linksbündig ausrichten (Inhalt cross-origin).
+let tpCountCache: { ts: number; count: number; rating: string | null } | null = null;
+app.get("/tp-count", async () => {
+  if (tpCountCache && Date.now() - tpCountCache.ts < 6 * 3600_000) {
+    return { ok: true, count: tpCountCache.count, rating: tpCountCache.rating };
+  }
+  try {
+    const res = await fetch("https://at.trustpilot.com/review/rapid-remove.com", {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0; +https://rapid-remove.com)" },
+    });
+    const html = await res.text();
+    const m = html.match(/"reviewCount"\s*:\s*"?(\d+)/) || html.match(/"numberOfReviews"\s*:\s*(\d+)/);
+    const r = html.match(/"ratingValue"\s*:\s*"?([\d.]+)/) || html.match(/"trustScore"\s*:\s*([\d.]+)/);
+    const count = m ? parseInt(m[1], 10) : 0;
+    const rating = r ? r[1] : null;
+    if (count > 0) { tpCountCache = { ts: Date.now(), count, rating }; return { ok: true, count, rating }; }
+    return { ok: false, count: null, rating };
+  } catch (e) {
+    app.log.warn({ err: e }, "tp-count fehlgeschlagen");
+    if (tpCountCache) return { ok: true, count: tpCountCache.count, rating: tpCountCache.rating, stale: true };
+    return { ok: false, count: null, rating: null };
+  }
+});
+
 // Bestellung aus dem Wizard: bestehende Auftragsbestätigung an den Kunden
 // + interne Benachrichtigung an das Postfach. Kein Stripe nötig.
 app.post("/order", async (req, reply) => {
