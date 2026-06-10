@@ -171,13 +171,6 @@ function Hero({ onStart }) {
               <TrustpilotLive />
             </div>
           </div>
-          <a className="hero-team hs hs5" href={asset("/ueber-uns/")}>
-            <span className="ht-avas">
-              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
-              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
-            </span>
-            <span className="ht-tx">{(HERO_TEAM[lang] || HERO_TEAM.en)[0]}<b>{(HERO_TEAM[lang] || HERO_TEAM.en)[1]}</b>{(HERO_TEAM[lang] || HERO_TEAM.en)[2]}<Icon.arrowRight size={14} /></span>
-          </a>
         </div>
 
         <div className="hero-card-col hs hs4">
@@ -222,6 +215,13 @@ function Hero({ onStart }) {
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
         </div>
+        <a className="hero-team below hs hs5" href={asset("/ueber-uns/")}>
+          <span className="ht-avas">
+            <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={46} height={46} />
+            <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={46} height={46} />
+          </span>
+          <span className="ht-tx">{(HERO_TEAM[lang] || HERO_TEAM.en)[0]}<b>{(HERO_TEAM[lang] || HERO_TEAM.en)[1]}</b>{(HERO_TEAM[lang] || HERO_TEAM.en)[2]}<Icon.arrowRight size={14} /></span>
+        </a>
         </div>
       </div>
     </section>);
