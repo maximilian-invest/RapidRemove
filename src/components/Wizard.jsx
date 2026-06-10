@@ -37,7 +37,7 @@ function fmtMoney(lang, n) {
 /* ---- conversion copy (de + en, fallback en). Self-contained so locale files stay untouched ---- */
 const CONV = {
   de: {
-    rating: "4,9", reviewsN: "266 Bewertungen", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ Bewertungen", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "Profile gelöscht", successRate: "98 % Erfolgsquote",
     avgTime: "Ø 24 h", liveNow: "gerade aktiv",
     activityPre: "Gerade gelöscht",
@@ -103,7 +103,7 @@ const CONV = {
     asideBadges: ["DSGVO-konform", "Server in Deutschland"],
   },
   en: {
-    rating: "4.9", reviewsN: "266 reviews", trustpilot: "Trustpilot",
+    rating: "4.9", reviewsN: "260+ reviews", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profiles removed", successRate: "98% success rate",
     avgTime: "avg. 24 h", liveNow: "active now",
     activityPre: "Just removed",
@@ -169,7 +169,7 @@ const CONV = {
     asideBadges: ["GDPR-compliant", "EU servers"],
   },
   es: {
-    rating: "4,9", reviewsN: "266 reseñas", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ reseñas", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "perfiles eliminados", successRate: "98 % de éxito",
     avgTime: "≈ 24 h", liveNow: "activos ahora",
     activityPre: "Recién eliminado",
@@ -225,7 +225,7 @@ const CONV = {
     asideBadges: ["Conforme al RGPD", "Servidores en la UE"],
   },
   fr: {
-    rating: "4,9", reviewsN: "266 avis", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ avis", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profils supprimés", successRate: "98 % de réussite",
     avgTime: "≈ 24 h", liveNow: "actifs maintenant",
     activityPre: "Vient d'être supprimé",
@@ -281,7 +281,7 @@ const CONV = {
     asideBadges: ["Conforme au RGPD", "Serveurs dans l'UE"],
   },
   it: {
-    rating: "4,9", reviewsN: "266 recensioni", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ recensioni", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profili eliminati", successRate: "98% di successo",
     avgTime: "≈ 24 h", liveNow: "attivi ora",
     activityPre: "Appena eliminato",
@@ -337,7 +337,7 @@ const CONV = {
     asideBadges: ["Conforme al GDPR", "Server nell'UE"],
   },
   nl: {
-    rating: "4,9", reviewsN: "266 beoordelingen", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ beoordelingen", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profielen verwijderd", successRate: "98% succes",
     avgTime: "ø 24 u", liveNow: "nu actief",
     activityPre: "Net verwijderd",
@@ -393,7 +393,7 @@ const CONV = {
     asideBadges: ["AVG-conform", "Servers in de EU"],
   },
   pt: {
-    rating: "4,9", reviewsN: "266 avaliações", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ avaliações", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "perfis eliminados", successRate: "98% de sucesso",
     avgTime: "≈ 24 h", liveNow: "ativos agora",
     activityPre: "Acabado de eliminar",
@@ -449,7 +449,7 @@ const CONV = {
     asideBadges: ["Conforme o RGPD", "Servidores na UE"],
   },
   ja: {
-    rating: "4.9", reviewsN: "266件のレビュー", trustpilot: "Trustpilot",
+    rating: "4.9", reviewsN: "260件以上のレビュー", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "件のプロフィールを削除", successRate: "98% 成功率",
     avgTime: "平均24時間", liveNow: "対応中",
     activityPre: "削除完了",
@@ -505,7 +505,7 @@ const CONV = {
     asideBadges: ["GDPR準拠", "EUのサーバー"],
   },
   sv: {
-    rating: "4,9", reviewsN: "266 omdömen", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ omdömen", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profiler borttagna", successRate: "98 % lyckade",
     avgTime: "ø 24 h", liveNow: "aktiva nu",
     activityPre: "Nyss borttaget",
@@ -561,7 +561,7 @@ const CONV = {
     asideBadges: ["GDPR-förenligt", "Servrar inom EU"],
   },
   da: {
-    rating: "4,9", reviewsN: "266 anmeldelser", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ anmeldelser", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profiler fjernet", successRate: "98 % succes",
     avgTime: "ø 24 t", liveNow: "aktive nu",
     activityPre: "Lige fjernet",
@@ -617,7 +617,7 @@ const CONV = {
     asideBadges: ["GDPR-overholdelse", "Servere i EU"],
   },
   no: {
-    rating: "4,9", reviewsN: "266 anmeldelser", trustpilot: "Trustpilot",
+    rating: "4,9", reviewsN: "260+ anmeldelser", trustpilot: "Trustpilot",
     counterBase: 1024, counterLabel: "profiler fjernet", successRate: "98 % suksess",
     avgTime: "ø 24 t", liveNow: "aktive nå",
     activityPre: "Nettopp fjernet",

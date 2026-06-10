@@ -45,7 +45,7 @@ const jsonLd = {
       ],
       areaServed: "Worldwide",
       sameAs: ["https://www.trustpilot.com/review/rapid-remove.com"],
-      aggregateRating: { "@type": "AggregateRating", ratingValue: "5.0", reviewCount: "266" },
+      aggregateRating: { "@type": "AggregateRating", ratingValue: "5.0", reviewCount: "267" },
     },
     {
       "@type": "BreadcrumbList",

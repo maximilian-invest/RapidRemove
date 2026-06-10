@@ -8,6 +8,7 @@ import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat, openChat } f
 import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
+import { AblaufVideo } from "@/components/AblaufVideo";
 
 
 const TEAM_COPY = {
@@ -187,15 +188,14 @@ function Hero({ onStart }) {
         <div>
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
           <p className="lead hs hs3">{t.hero.lead}</p>
-          <a className="hero-proof hs hs5" href={tpUrl} target="_blank" rel="noopener noreferrer">
+          <div className="hero-proof hs hs5">
             <div className="ava-stack">
               {[1, 2, 3, 4, 5].map((n) => <img className="av" key={n} src={asset("/assets/person-" + n + ".jpg")} alt="" width={40} height={40} />)}
             </div>
-            <div className="pr-meta">
-              <TpStars size={16} />
-              <div className="pr-line"><b>{t.hero.trust[0]}/5</b> · {t.hero.trust[1]} · Trustpilot</div>
+            <div className="pr-meta" style={{ flex: "1 1 240px", maxWidth: 420 }}>
+              <TrustpilotLive height="40px" align="left" />
             </div>
-          </a>
+          </div>
         </div>
 
         <div className="hero-card-col hs hs4">
@@ -616,7 +616,7 @@ function FinalCTA({ onStart }) {
 
 /* ============ VIDEO / EXPLAINER ============ */
 const VIDEO_COPY = {
-  de: { eyebrow: "Im Video", title: "So funktioniert's – in 90 Sekunden.", sub: "Ein kurzer Überblick – vom Gratis-Check bis zum gelöschten Profil." },
+  de: { eyebrow: "Im Video", title: "So funktioniert's – in 60 Sekunden.", sub: "Der komplette Ablauf in 7 Schritten – von der Profil-Suche bis zur Zahlung nach Erfolg." },
   en: { eyebrow: "On video", title: "See how it works in 90 seconds.", sub: "A quick overview – from the free check to the deleted profile." },
   es: { eyebrow: "En v\u00eddeo", title: "Vea c\u00f3mo funciona en 90 segundos.", sub: "Un resumen r\u00e1pido – del an\u00e1lisis gratis al perfil eliminado." },
   fr: { eyebrow: "En vid\u00e9o", title: "D\u00e9couvrez comment \u00e7a marche en 90 secondes.", sub: "Un aper\u00e7u rapide – de l'analyse gratuite \u00e0 la fiche supprim\u00e9e." },
@@ -624,9 +624,9 @@ const VIDEO_COPY = {
   nl: { eyebrow: "In video", title: "Zie in 90 seconden hoe het werkt.", sub: "Een kort overzicht – van gratis check tot verwijderd profiel." },
   pt: { eyebrow: "Em v\u00eddeo", title: "Veja como funciona em 90 segundos.", sub: "Uma vis\u00e3o r\u00e1pida – da an\u00e1lise gr\u00e1tis ao perfil eliminado." }
 };
-function VideoSection() {
+function VideoSection({ onStart }) {
   const { lang } = useLang();
-  if (lang !== "de") return null; // explainer video runs on the German site only
+  if (lang !== "de") return null; // explainer runs on the German site only (German captions)
   const v = VIDEO_COPY[lang] || VIDEO_COPY.en;
   return (
     <section className="band tint">
@@ -637,12 +637,7 @@ function VideoSection() {
           <p>{v.sub}</p>
         </div>
         <div className="video-wrap reveal">
-          <div className="video-frame">
-            <iframe src="https://www.youtube-nocookie.com/embed/4Lqfo6WUQAA?rel=0"
-            title="RapidRemove" loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen></iframe>
-          </div>
+          <AblaufVideo onStart={() => onStart && onStart()} />
         </div>
       </div>
     </section>);
@@ -710,7 +705,7 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <Problem id="problem" />
       <How id="how" onStart={onStart} />
       <ProfileDissolveDemo />
-      <VideoSection />
+      <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
       <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} />
