@@ -108,8 +108,6 @@ import { PRICES } from "@/lib/pricing";
       whyTitle: "Perché il prezzo vale",
       whySub: "Non paghi per un tentativo, ma per un risultato che da solo non puoi ottenere.",
       why: [
-        { t: "Un risultato, non un tentativo", d: "Abbiamo svolto questo processo centinaia di volte, con software proprietario verificato da giuristi. Da solo non puoi." },
-        { t: "0 € se falliamo", d: "Se il profilo resta online, non paghi nulla. Il prezzo si applica solo al risultato finale." },
         { t: "Giorni, non mesi", d: "Un avvocato costa oltre 300 €/ora e impiega mesi. Noi in ~24 ore, a prezzo fisso." },
         { t: "La tua reputazione vale di più", d: "Una sola recensione falsa ti costa spesso molto di più ogni mese. La rimozione si ripaga nella prima settimana." },
       ],
@@ -312,8 +310,6 @@ import { PRICES } from "@/lib/pricing";
       whyTitle: "Waarom de prijs het waard is",
       whySub: "U betaalt niet voor een poging, maar voor een resultaat dat u zelf niet kunt bereiken.",
       why: [
-        { t: "Een resultaat, geen poging", d: "We deden dit proces honderden keren, met eigen, juridisch getoetste software. Zelf lukt het u niet." },
-        { t: "0 € als wij falen", d: "Blijft het profiel online, dan betaalt u niets. De prijs geldt alleen voor het eindresultaat." },
         { t: "Dagen, geen maanden", d: "Een advocaat rekent meer dan 300 €/uur en doet er maanden over. Wij in ~24 uur, tegen een vaste prijs." },
         { t: "Uw reputatie is meer waard", d: "Eén nepreview kost u vaak maandelijks een veelvoud. De verwijdering verdient zich meestal in de eerste week terug." },
       ],
@@ -516,8 +512,6 @@ import { PRICES } from "@/lib/pricing";
       whyTitle: "Porque o preço vale a pena",
       whySub: "Você não paga por uma tentativa, mas por um resultado que não consegue alcançar sozinho.",
       why: [
-        { t: "Um resultado, não uma tentativa", d: "Já fizemos este processo centenas de vezes, com software próprio verificado por juristas. Sozinho, não consegue." },
-        { t: "0 € se falharmos", d: "Se o perfil ficar online, não paga nada. O preço só se aplica ao resultado final." },
         { t: "Dias, não meses", d: "Um advogado cobra mais de 300 €/hora e demora meses. Nós, em ~24 horas e a preço fixo." },
         { t: "A sua reputação vale mais", d: "Uma única avaliação falsa custa-lhe muitas vezes um múltiplo por mês. A remoção paga-se na primeira semana." },
       ],

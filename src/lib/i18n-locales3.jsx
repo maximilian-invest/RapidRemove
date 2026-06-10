@@ -110,8 +110,6 @@ const ja = {
     whyTitle: "なぜこの価格に価値があるのか",
     whySub: "試行に対してではなく、ご自身では得られない結果に対してお支払いいただきます。",
     why: [
-      { t: "試行ではなく結果", d: "私たちは独自の弁護士確認済みソフトウェアで、このプロセスを数百回実行してきました。ご自身では実現できません。" },
-      { t: "失敗すれば0 €", d: "プロフィールがオンラインのままなら、お支払いは不要です。完成した結果に対してのみ価格が発生します。" },
       { t: "数か月ではなく数日", d: "弁護士は1時間300ユーロ以上で数か月かかります。私たちは約24時間で完了 ― 予測可能な定額で。" },
       { t: "あなたの評判はもっと価値がある", d: "1件の偽レビューが毎月その何倍もの損失を生むことがあります。削除費用は多くの場合、最初の1週間で回収できます。" },
     ],
@@ -314,8 +312,6 @@ const sv = {
     whyTitle: "Varför priset är värt det",
     whySub: "Du betalar inte för ett försök – utan för ett resultat du inte kan uppnå själv.",
     why: [
-      { t: "Ett resultat, inte ett försök", d: "Vi har kört processen hundratals gånger – med egen, juridiskt granskad mjukvara. Du klarar inte detta själv." },
-      { t: "0 € om vi misslyckas", d: "Förblir profilen online betalar du inget. Priset gäller bara mot det färdiga resultatet." },
       { t: "Dagar, inte månader", d: "En advokat tar 300 €+/timme och behöver månader. Vi är klara på ~24 timmar – till fast pris." },
       { t: "Ditt rykte är värt mer", d: "Ett enda falskt omdöme kostar ofta mångdubbelt varje månad. Borttagningen betalar sig oftast första veckan." },
     ],
@@ -518,8 +514,6 @@ const da = {
     whyTitle: "Hvorfor prisen er det værd",
     whySub: "Du betaler ikke for et forsøg – men for et resultat, du ikke selv kan opnå.",
     why: [
-      { t: "Et resultat, ikke et forsøg", d: "Vi har kørt processen hundredvis af gange – med egen, juridisk gennemgået software. Det kan du ikke selv." },
-      { t: "0 € hvis vi fejler", d: "Forbliver profilen online, betaler du intet. Prisen gælder kun mod det færdige resultat." },
       { t: "Dage, ikke måneder", d: "En advokat tager 300 €+/time og bruger måneder. Vi er færdige på ~24 timer – til fast pris." },
       { t: "Dit ry er mere værd", d: "En enkelt falsk anmeldelse koster ofte mangedobbelt hver måned. Fjernelsen tjener sig oftest ind i første uge." },
     ],
@@ -722,8 +716,6 @@ const no = {
     whyTitle: "Hvorfor prisen er verdt det",
     whySub: "Du betaler ikke for et forsøk – men for et resultat du ikke kan oppnå selv.",
     why: [
-      { t: "Et resultat, ikke et forsøk", d: "Vi har kjørt prosessen hundrevis av ganger – med egen, juridisk vurdert programvare. Dette klarer du ikke selv." },
-      { t: "0 € hvis vi mislykkes", d: "Forblir profilen på nett, betaler du ingenting. Prisen gjelder kun mot det ferdige resultatet." },
       { t: "Dager, ikke måneder", d: "En advokat tar 300 €+/time og bruker måneder. Vi er ferdige på ~24 timer – til fast pris." },
       { t: "Ryktet ditt er verdt mer", d: "En eneste falsk omtale koster ofte mangedobbelt hver måned. Fjerningen tjener seg oftest inn første uke." },
     ],

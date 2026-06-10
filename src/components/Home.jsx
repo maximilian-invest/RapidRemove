@@ -566,24 +566,12 @@ function Pricing({ id, onStart }) {
             </div>
           )}
         </div>
-        <div className="protect reveal">
-          <div className="shield"><Icon.shield size={26} /></div>
-          <div>
-            <h4>{t.pricing.protTitle}</h4>
-            <p>{t.pricing.protDesc}</p>
-          </div>
-          <div className="pp">
-            <span className="pp-now">{money(lang, t.pricing.protPrice)} <small>{t.pricing.protPer}</small></span>
-            <small className="pp-life">{(HOME_MISC[t.code] || HOME_MISC.en).or} {money(lang, t.pricing.protLifetime)} {t.pricing.protLifetimeLabel}</small>
-          </div>
-        </div>
-
         <div className="price-why reveal">
           <div className="pw-h">{t.pricing.whyTitle}</div>
           <div className="pw-sub">{t.pricing.whySub}</div>
           <div className="pw-grid">
             {t.pricing.why.map((it, i) => {
-              const I = [Icon.zap, Icon.shieldCheck, Icon.clock, Icon.star][i];
+              const I = [Icon.clock, Icon.star][i] || Icon.check;
               return (
                 <div className="pw-item" key={i}>
                   <div className="pw-ic"><I size={24} /></div>

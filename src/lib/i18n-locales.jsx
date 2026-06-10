@@ -110,8 +110,6 @@ import { PRICES } from "@/lib/pricing";
       whyTitle: "Por qué el precio vale la pena",
       whySub: "No pagas por un intento, sino por un resultado que no puedes lograr tú mismo.",
       why: [
-        { t: "Un resultado, no un intento", d: "Hemos hecho este proceso cientos de veces, con software propio revisado por juristas. Tú solo no puedes." },
-        { t: "0 € si fallamos", d: "Si el perfil sigue online, no pagas nada. El precio solo se aplica contra el resultado final." },
         { t: "Días, no meses", d: "Un abogado cobra más de 300 €/hora y tarda meses. Nosotros, en ~24 horas y a precio fijo." },
         { t: "Tu reputación vale más", d: "Una sola reseña falsa suele costarte mucho más cada mes. La eliminación se amortiza en la primera semana." },
       ],
@@ -314,8 +312,6 @@ import { PRICES } from "@/lib/pricing";
       whyTitle: "Pourquoi le prix en vaut la peine",
       whySub: "Vous ne payez pas pour une tentative, mais pour un résultat que vous ne pouvez pas obtenir seul.",
       why: [
-        { t: "Un résultat, pas une tentative", d: "Nous avons mené ce processus des centaines de fois, avec notre propre logiciel validé par des juristes. Seul, vous ne pouvez pas." },
-        { t: "0 € si nous échouons", d: "Si la fiche reste en ligne, vous ne payez rien. Le prix ne s'applique qu'au résultat final." },
         { t: "Des jours, pas des mois", d: "Un avocat facture plus de 300 €/heure et prend des mois. Nous, en ~24 heures, à prix fixe." },
         { t: "Votre réputation vaut plus", d: "Un seul faux avis vous coûte souvent bien plus chaque mois. La suppression est rentabilisée dès la première semaine." },
       ],

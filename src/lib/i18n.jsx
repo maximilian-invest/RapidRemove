@@ -113,8 +113,6 @@ const I18N = {
       whyTitle: "Warum sich der Preis lohnt",
       whySub: "Sie zahlen nicht für einen Versuch – sondern für ein Ergebnis, das Sie selbst nicht erreichen können.",
       why: [
-        { t: "Ergebnis, kein Versuch", d: "Wir haben den Prozess hunderte Male durchgeführt – mit eigener, juristisch geprüfter Software. Sie erreichen das selbst nicht." },
-        { t: "0 €, wenn wir scheitern", d: "Bleibt das Profil online, zahlen Sie nichts. Den Preis gibt es nur gegen das fertige Ergebnis." },
         { t: "Tage statt Monate", d: "Ein Anwalt kostet 300 €+/Stunde und braucht Monate. Wir sind in ~24 Stunden fertig – zum planbaren Fixpreis." },
         { t: "Ihr Ruf ist mehr wert", d: "Eine einzige Fake-Bewertung kostet Sie oft monatlich ein Vielfaches. Die Löschung zahlt sich meist in der ersten Woche aus." },
       ],
@@ -392,8 +390,6 @@ const I18N = {
       whyTitle: "Why the price is worth it",
       whySub: "You're not paying for an attempt – you're paying for a result you can't achieve yourself.",
       why: [
-        { t: "A result, not an attempt", d: "We've run this process hundreds of times – with our own, lawyer-reviewed software. You can't do this yourself." },
-        { t: "$0 if we fail", d: "If the profile stays online, you pay nothing. The price only applies against the finished result." },
         { t: "Days, not months", d: "A lawyer charges $300+/hour and takes months. We're done in ~24 hours – at a predictable fixed price." },
         { t: "Your reputation is worth more", d: "A single fake review often costs you many times this every month. Removal usually pays for itself in the first week." },
       ],
