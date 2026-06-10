@@ -152,6 +152,21 @@ function TrustpilotLive({ height = "40px", align = "center" }) {
   );
 }
 
+/* Hero: Team-Link unter dem Trustpilot-Widget („Lernen Sie Max & Matthias kennen" → /ueber-uns) */
+const HERO_TEAM = {
+  de: ["Lernen Sie die Google-Experten ", "Max & Matthias", " kennen"],
+  en: ["Meet the Google experts ", "Max & Matthias", ""],
+  es: ["Conozca a los expertos en Google ", "Max & Matthias", ""],
+  fr: ["Rencontrez les experts Google ", "Max & Matthias", ""],
+  it: ["Conosca gli esperti Google ", "Max & Matthias", ""],
+  nl: ["Maak kennis met de Google-experts ", "Max & Matthias", ""],
+  pt: ["Conheça os especialistas em Google ", "Max & Matthias", ""],
+  ja: ["Google専門家の", "Max & Matthias", "をご紹介"],
+  sv: ["Möt Google-experterna ", "Max & Matthias", ""],
+  da: ["Mød Google-eksperterne ", "Max & Matthias", ""],
+  no: ["Møt Google-ekspertene ", "Max & Matthias", ""],
+};
+
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
@@ -189,13 +204,18 @@ function Hero({ onStart }) {
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
           <p className="lead hs hs3">{t.hero.lead}</p>
           <div className="hero-proof hs hs5">
-            <div className="ava-stack">
-              {[1, 2, 3, 4, 5].map((n) => <img className="av" key={n} src={asset("/assets/person-" + n + ".jpg")} alt="" width={40} height={40} />)}
-            </div>
-            <div className="pr-meta" style={{ flex: "1 1 240px", maxWidth: 420 }}>
+            <div style={{ width: "100%", maxWidth: 420 }}>
               <TrustpilotLive height="40px" align="left" />
             </div>
           </div>
+          <a className="hero-team hs hs5" href={asset("/ueber-uns/")}>
+            <span className="ht-avas">
+              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
+              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
+            </span>
+            <span className="ht-tx">{(HERO_TEAM[lang] || HERO_TEAM.en)[0]}<b>{(HERO_TEAM[lang] || HERO_TEAM.en)[1]}</b>{(HERO_TEAM[lang] || HERO_TEAM.en)[2]}</span>
+            <Icon.arrowRight size={15} />
+          </a>
         </div>
 
         <div className="hero-card-col hs hs4">
@@ -702,9 +722,9 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <Hero onStart={onStart} />
       <TrustBar />
+      <ProfileDissolveDemo />
       <Problem id="problem" />
       <How id="how" onStart={onStart} />
-      <ProfileDissolveDemo />
       <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
