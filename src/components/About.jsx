@@ -47,8 +47,6 @@ const ABOUT_COPY = {
     team: [
       { n: "Matthias", r: "Gründer & Geschäftsführung", thm: "tm-orange", img: "/assets/matthias-lang.webp" },
       { n: "Maximilian Hölzl", r: "Gründer", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" },
-      { n: "Lena", r: "Leitung Reputation", thm: "tm-teal", img: "/assets/lena.webp" },
-      { n: "Dr. Stein (Partnerkanzlei)", r: "Recht & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" },
     ],
     coH: "Ein Unternehmen aus Österreich – mit Namen und Adresse.",
     coSub: "Hinter RapidRemove steht eine eingetragene Firma in Österreich – kein anonymer Anbieter, sondern ein EU-Betrieb mit klaren, offenen Daten.",
@@ -100,8 +98,6 @@ const ABOUT_COPY = {
     team: [
       { n: "Matthias", r: "Founder & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" },
       { n: "Maximilian Hölzl", r: "Founder", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" },
-      { n: "Lena", r: "Head of Reputation", thm: "tm-teal", img: "/assets/lena.webp" },
-      { n: "Dr. Stein (Partner law firm)", r: "Law & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" },
     ],
     coH: "A company from Austria – with a name and an address.",
     coSub: "Behind RapidRemove is a registered company in Austria – not an anonymous provider, but an EU business with clear, open details.",
@@ -128,7 +124,7 @@ Object.assign(ABOUT_COPY, {
     valuesLabel: "私たちの価値観", valuesH: "信頼は機能ではありません。土台です。",
     values: [{ ic: "shieldCheck", t: "成功しなければ費用なし", d: "削除に成功した後にのみお支払いいただきます。プロフィールがオンラインのままなら、お支払いは不要です。" }, { ic: "gavel", t: "100% 合法", d: "私たちの手法は弁護士の確認を受け、公式な手続きのみを通じて行われます。" }, { ic: "lock", t: "秘密厳守・GDPR準拠", d: "EUサーバー、アカウントや個人データへのアクセスなし。あなたの案件は秘密に扱われます。" }],
     teamLabel: "チーム", teamH: "あなたのケースを個別に担当する専門家。",
-    team: [{ n: "Matthias", r: "創業者・経営", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "創業者", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "評判管理責任者", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein（提携法律事務所）", r: "法務・コンプライアンス", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
+    team: [{ n: "Matthias", r: "創業者・経営", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "創業者", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }],
     coH: "実在する会社。名前と住所があります。", coSub: "RapidRemoveの背後にはオーストリアの登記済み企業があります ― 匿名の業者ではなく、明確な情報を持つ実在のEU事業者です。",
     coFacts: [{ l: "会社", v: "Simple Solution. OG" }, { l: "住所", v: "Salzgasse 2, 5400 Hallein, オーストリア" }, { l: "UID番号", v: "ATU72401536" }, { l: "連絡先", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR準拠", "EUサーバー", "弁護士確認済み", "Made in Austria"], ctaTitle: "無料チェックで私たちを知ってください。", ctaBtn: "無料でチェック",
@@ -144,7 +140,7 @@ Object.assign(ABOUT_COPY, {
     valuesLabel: "Vad vi står för", valuesH: "Förtroende är ingen funktion. Det är grunden.",
     values: [{ ic: "shieldCheck", t: "Ingen framgång, ingen kostnad", d: "Du betalar uteslutande efter lyckad borttagning. Förblir profilen online betalar du inget." }, { ic: "gavel", t: "100 % lagligt", d: "Vår metod är juridiskt granskad och arbetar uteslutande via officiella kanaler." }, { ic: "lock", t: "Diskret & GDPR-anpassat", d: "EU-servrar, ingen åtkomst till ditt konto eller persondata. Ditt ärende förblir konfidentiellt." }],
     teamLabel: "Teamet", teamH: "Specialister som hanterar ditt ärende personligen.",
-    team: [{ n: "Matthias", r: "Grundare & VD", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundare", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Chef Rykte", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerbyrå)", r: "Juridik & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
+    team: [{ n: "Matthias", r: "Grundare & VD", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundare", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }],
     coH: "Ett riktigt företag. Med namn och adress.", coSub: "Bakom RapidRemove står ett registrerat företag i Österrike – ingen anonym leverantör, utan ett riktigt EU-företag med tydliga uppgifter.",
     coFacts: [{ l: "Företag", v: "Simple Solution. OG" }, { l: "Adress", v: "Salzgasse 2, 5400 Hallein, Österrike" }, { l: "Momsnr", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-anpassat", "EU-servrar", "Juridiskt granskat", "Made in Austria"], ctaTitle: "Lär känna oss – med den gratis kollen.", ctaBtn: "Kolla gratis",
@@ -160,7 +156,7 @@ Object.assign(ABOUT_COPY, {
     valuesLabel: "Hvad vi står for", valuesH: "Tillid er ikke en funktion. Det er fundamentet.",
     values: [{ ic: "shieldCheck", t: "Ingen succes, ingen omkostning", d: "Du betaler udelukkende efter vellykket fjernelse. Forbliver profilen online, betaler du intet." }, { ic: "gavel", t: "100 % lovligt", d: "Vores metode er juridisk gennemgået og arbejder udelukkende via officielle kanaler." }, { ic: "lock", t: "Diskret & GDPR-overholdende", d: "EU-servere, ingen adgang til din konto eller persondata. Din sag forbliver fortrolig." }],
     teamLabel: "Teamet", teamH: "Specialister, der håndterer din sag personligt.",
-    team: [{ n: "Matthias", r: "Grundlægger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundlægger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Chef for omdømme", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerfirma)", r: "Jura & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
+    team: [{ n: "Matthias", r: "Grundlægger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grundlægger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }],
     coH: "En rigtig virksomhed. Med navn og adresse.", coSub: "Bag RapidRemove står en registreret virksomhed i Østrig – ingen anonym udbyder, men en rigtig EU-virksomhed med klare oplysninger.",
     coFacts: [{ l: "Virksomhed", v: "Simple Solution. OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østrig" }, { l: "Momsnr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-overholdende", "EU-servere", "Juridisk gennemgået", "Made in Austria"], ctaTitle: "Lær os at kende – med det gratis tjek.", ctaBtn: "Tjek gratis",
@@ -176,7 +172,7 @@ Object.assign(ABOUT_COPY, {
     valuesLabel: "Hva vi står for", valuesH: "Tillit er ingen funksjon. Det er fundamentet.",
     values: [{ ic: "shieldCheck", t: "Ingen suksess, ingen kostnad", d: "Du betaler utelukkende etter vellykket fjerning. Forblir profilen på nett, betaler du ingenting." }, { ic: "gavel", t: "100 % lovlig", d: "Metoden vår er juridisk vurdert og arbeider utelukkende via offisielle kanaler." }, { ic: "lock", t: "Diskret & GDPR-tilpasset", d: "EU-servere, ingen tilgang til kontoen eller persondataene dine. Saken din forblir konfidensiell." }],
     teamLabel: "Teamet", teamH: "Spesialister som håndterer saken din personlig.",
-    team: [{ n: "Matthias", r: "Grunnlegger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grunnlegger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }, { n: "Lena", r: "Leder omdømme", thm: "tm-teal", img: "/assets/lena.webp" }, { n: "Dr. Stein (Partnerfirma)", r: "Juss & Compliance", thm: "tm-plum", img: "/assets/dr-stein.webp" }],
+    team: [{ n: "Matthias", r: "Grunnlegger & CEO", thm: "tm-orange", img: "/assets/matthias-lang.webp" }, { n: "Maximilian Hölzl", r: "Grunnlegger", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" }],
     coH: "Et ekte selskap. Med navn og adresse.", coSub: "Bak RapidRemove står et registrert selskap i Østerrike – ingen anonym leverandør, men et ekte EU-selskap med tydelige opplysninger.",
     coFacts: [{ l: "Selskap", v: "Simple Solution. OG" }, { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Østerrike" }, { l: "Mva-nr.", v: "ATU72401536" }, { l: "Kontakt", v: "helpdesk@rapid-remove.com" }],
     coBadges: ["GDPR-tilpasset", "EU-servere", "Juridisk vurdert", "Made in Austria"], ctaTitle: "Bli kjent med oss – med den gratis sjekken.", ctaBtn: "Sjekk gratis",
@@ -202,9 +198,26 @@ function FinalCTABand({ onStart, title, btn }) {
   );
 }
 
+/* Persönlicher Team-Text (Max & Matthias) + Partner-Hinweis + Links zu den beiden
+   weiteren Leistungen (Reputation verdrängen, Presse auslisten). p1/p2 umschließen die Links. */
+const TEAM_EXTRA = {
+  de: { p1: "Matthias und ich (Max) löschen seit einem halben Jahrzehnt – gemeinsam mit unserem Team – täglich Google-Profile. Wir haben es uns zur Aufgabe gemacht, die Besten in unserem Bereich zu sein, und haben 2026 unseren Service um weitere Reputationsleistungen erweitert: ", p2: ".", s1: "Reputation verdrängen", s2: "Presse auslisten", partners: "Dafür arbeiten wir mit vielen Partnern und Kanzleien zusammen." },
+  en: { p1: "Matthias and I (Max) have been removing Google profiles daily for half a decade – together with our team. We've made it our mission to be the best in this field, and in 2026 we expanded our service with further reputation offerings: ", p2: ".", s1: "Suppress reputation", s2: "De-list press", partners: "For this we work with many partners and law firms." },
+  es: { p1: "Matthias y yo (Max) eliminamos perfiles de Google a diario desde hace media década, junto con nuestro equipo. Nos hemos propuesto ser los mejores del sector y en 2026 ampliamos nuestro servicio con más prestaciones de reputación: ", p2: ".", s1: "Desplazar la reputación", s2: "Retirar prensa", partners: "Para ello colaboramos con numerosos socios y despachos de abogados." },
+  fr: { p1: "Matthias et moi (Max) supprimons des fiches Google chaque jour depuis une demi-décennie, avec notre équipe. Nous avons pour mission d'être les meilleurs du domaine et avons élargi notre service en 2026 avec d'autres prestations de réputation : ", p2: ".", s1: "Reléguer la réputation", s2: "Déréférencer la presse", partners: "Pour cela, nous collaborons avec de nombreux partenaires et cabinets d'avocats." },
+  it: { p1: "Matthias e io (Max) rimuoviamo profili Google ogni giorno da mezzo decennio, insieme al nostro team. Ci siamo posti l'obiettivo di essere i migliori del settore e nel 2026 abbiamo ampliato il servizio con ulteriori prestazioni di reputazione: ", p2: ".", s1: "Spostare la reputazione", s2: "Deindicizzare la stampa", partners: "Per questo collaboriamo con numerosi partner e studi legali." },
+  nl: { p1: "Matthias en ik (Max) verwijderen al een half decennium dagelijks Google-profielen, samen met ons team. We hebben het ons tot doel gesteld de besten in dit vak te zijn en breidden onze service in 2026 uit met extra reputatiediensten: ", p2: ".", s1: "Reputatie verdringen", s2: "Pers de-indexeren", partners: "Daarvoor werken we samen met veel partners en advocatenkantoren." },
+  pt: { p1: "O Matthias e eu (Max) eliminamos perfis do Google diariamente há meia década, em conjunto com a nossa equipa. Propusemo-nos a ser os melhores na área e em 2026 alargámos o serviço com mais prestações de reputação: ", p2: ".", s1: "Suprimir a reputação", s2: "Desindexar imprensa", partners: "Para isso, colaboramos com muitos parceiros e escritórios de advogados." },
+  ja: { p1: "Matthiasと私（Max）はチームとともに、5年にわたり毎日Googleプロフィールを削除してきました。この分野で最高であることを使命とし、2026年にはサービスを評判管理の領域へ拡張しました：", p2: "。", s1: "評判の押し下げ", s2: "報道の非表示化", partners: "そのために多くのパートナーや法律事務所と連携しています。" },
+  sv: { p1: "Matthias och jag (Max) har tagit bort Google-profiler dagligen i ett halvt decennium – tillsammans med vårt team. Vi har gjort det till vår uppgift att vara bäst i branschen och utökade 2026 tjänsten med fler ryktestjänster: ", p2: ".", s1: "Tränga undan rykte", s2: "Avindexera press", partners: "För detta samarbetar vi med många partner och advokatbyråer." },
+  da: { p1: "Matthias og jeg (Max) har fjernet Google-profiler dagligt i et halvt årti – sammen med vores team. Vi har gjort det til vores mission at være de bedste i feltet og udvidede i 2026 servicen med flere omdømmeydelser: ", p2: ".", s1: "Fortræng omdømme", s2: "Afindeksér presse", partners: "Til det samarbejder vi med mange partnere og advokatfirmaer." },
+  no: { p1: "Matthias og jeg (Max) har fjernet Google-profiler daglig i et halvt tiår – sammen med teamet vårt. Vi har gjort det til vår oppgave å være best i feltet, og utvidet i 2026 tjenesten med flere omdømmetjenester: ", p2: ".", s1: "Fortreng omdømme", s2: "Avindekser presse", partners: "Til dette samarbeider vi med mange partnere og advokatfirmaer." },
+};
+
 function AboutInner() {
   const { t } = useLang();
   const a = ABOUT_COPY[t.code] || ABOUT_COPY.en;
+  const tx = TEAM_EXTRA[t.code] || TEAM_EXTRA.en;
   useReveal();
   const nav = (p) => { window.location.href = asset(p); };
   const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
@@ -304,6 +317,10 @@ function AboutInner() {
                 <div className="m-role">{m.r}</div>
               </div>
             ))}
+          </div>
+          <div className="ab-team-note reveal">
+            <p>{tx.p1}<a href={asset("/?view=reputation")}>{tx.s1}</a> &amp; <a href={asset("/?view=presse")}>{tx.s2}</a>{tx.p2}</p>
+            <p className="ab-partners">{tx.partners}</p>
           </div>
         </div>
       </section>
