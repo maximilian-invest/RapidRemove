@@ -112,18 +112,52 @@ const LANG_HINT_TXT = {
 };
 const LANG_HINT_CTA = { de: "Wechseln", en: "Switch", es: "Cambiar", fr: "Changer", it: "Cambia", nl: "Overschakelen", pt: "Mudar", ja: "切り替え", sv: "Byt", da: "Skift", no: "Bytt" };
 
+/* Stufe 2: physischer Standort per IP (externer Geo-Dienst, gecacht 1×/Tag, mit Fallback).
+   Sendet die Besucher-IP an einen Drittanbieter → Datenschutz-Hinweis in der Policy ergänzen. */
+const COUNTRY_LOCALE = {
+  IT: "it", DE: "de", AT: "de", CH: "de", LI: "de", FR: "fr", BE: "fr", LU: "fr", MC: "fr",
+  NL: "nl", PT: "pt", BR: "pt", AO: "pt", MZ: "pt", JP: "ja", SE: "sv", DK: "da", NO: "no",
+  ES: "es", MX: "es", AR: "es", CO: "es", CL: "es", PE: "es", VE: "es", EC: "es", GT: "es",
+  BO: "es", DO: "es", HN: "es", PY: "es", SV: "es", NI: "es", CR: "es", PA: "es", UY: "es",
+  US: "en", GB: "en", IE: "en", AU: "en", NZ: "en", CA: "en", ZA: "en", IN: "en", SG: "en",
+};
+async function detectCountry() {
+  try { const c = JSON.parse(localStorage.getItem("rr_geo") || "null"); if (c && c.cc && Date.now() - c.ts < 86400000) return c.cc; } catch (e) {}
+  for (const url of ["https://get.geojs.io/v1/ip/country.json", "https://api.country.is/"]) {
+    try {
+      const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 2500);
+      const res = await fetch(url, { signal: ctrl.signal }); clearTimeout(to);
+      const j = await res.json();
+      const cc = String(j.country || j.country_code || "").toUpperCase();
+      if (cc) { try { localStorage.setItem("rr_geo", JSON.stringify({ cc, ts: Date.now() })); } catch (e) {} return cc; }
+    } catch (e) { /* nächster Dienst / offline → kein IP-Hinweis */ }
+  }
+  return null;
+}
+
 function LangHint({ currentLang }) {
   const [target, setTarget] = React.useState(null);
   React.useEffect(() => {
-    try {
-      if (localStorage.getItem("rr_lang_hint_off") === "1") return;   // einmal weggeklickt → nie wieder
-      if (localStorage.getItem("rr_lang") === currentLang) return;    // bewusste Sprachwahl respektieren
-      const cands = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ""];
-      for (const c of cands) {
-        const code = String(c).slice(0, 2).toLowerCase();
-        if (LOCALES.includes(code)) { if (code !== currentLang) setTarget(code); return; } // nur die oberste UNTERSTÜTZTE Sprache zählt
-      }
-    } catch (e) { /* kein localStorage/navigator → kein Hinweis */ }
+    let alive = true;
+    (async () => {
+      try {
+        if (localStorage.getItem("rr_lang_hint_off") === "1") return;   // einmal weggeklickt → nie wieder
+        if (localStorage.getItem("rr_lang") === currentLang) return;    // bewusste Sprachwahl respektieren
+        // 1) Browser-Sprache — stärkstes Signal für die Sprach-Vorliebe.
+        let browserTarget = null;
+        const cands = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ""];
+        for (const c of cands) { const code = String(c).slice(0, 2).toLowerCase(); if (LOCALES.includes(code)) { browserTarget = code; break; } }
+        if (browserTarget && browserTarget !== currentLang) { if (alive) setTarget(browserTarget); return; }
+        // 2) Physischer Standort per IP — NUR wenn das Sprachsignal schwach ist: kein unterstütztes
+        //    Browser-Match ODER Englisch als internationaler Default (z. B. EN-Browser, sitzt in Italien).
+        if (browserTarget && browserTarget !== "en") return;
+        const cc = await detectCountry();
+        if (!alive || !cc) return;
+        const loc = COUNTRY_LOCALE[cc];
+        if (loc && LOCALES.includes(loc) && loc !== currentLang) setTarget(loc);
+      } catch (e) { /* kein localStorage/navigator/Netz → kein Hinweis */ }
+    })();
+    return () => { alive = false; };
   }, [currentLang]);
   if (!target) return null;
   const dismiss = () => { try { localStorage.setItem("rr_lang_hint_off", "1"); } catch (e) {} setTarget(null); };
