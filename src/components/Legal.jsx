@@ -5,7 +5,6 @@
    HINWEIS: ENTWURF – vor dem Livegang juristisch prüfen lassen und die mit
    […] markierten Pflichtangaben (Firmenbuch, Geschäftsführer, Telefon …) ergänzen. */
 import React from "react";
-import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
@@ -37,24 +36,12 @@ function Shell({ children }) {
   );
 }
 
-function ReviewNote({ de }) {
-  return (
-    <div className="legal-review">
-      <Icon.alert size={16} />
-      <span>{de
-        ? "Entwurf – vor dem Livegang bitte juristisch prüfen und die mit […] markierten Pflichtangaben ergänzen."
-        : "Draft — please have a lawyer review this before publishing and complete the mandatory fields marked […]."}</span>
-    </div>
-  );
-}
-
 /* ────────────────────────── Impressum ────────────────────────── */
 function ImpressumBody() {
   const de = useLang().lang === "de";
   return (
     <React.Fragment>
       <h1>{de ? "Impressum" : "Legal notice (Impressum)"}</h1>
-      <ReviewNote de={de} />
       <p className="legal-sub">{de ? "Angaben gemäß § 5 ECG, § 14 UGB und § 25 MedienG." : "Information pursuant to § 5 ECG, § 14 UGB and § 25 MedienG (Austria)."}</p>
 
       <h2>{de ? "Medieninhaber & Diensteanbieter" : "Owner & service provider"}</h2>
@@ -97,7 +84,6 @@ function DatenschutzBody() {
   return (
     <React.Fragment>
       <h1>{de ? "Datenschutzerklärung" : "Privacy policy"}</h1>
-      <ReviewNote de={de} />
       <p className="legal-sub">{de
         ? "Wir behandeln Ihre personenbezogenen Daten vertraulich und gemäß der DSGVO. Diese Erklärung informiert über Art, Umfang und Zweck der Verarbeitung."
         : "We treat your personal data confidentially and in accordance with the GDPR. This statement explains the nature, scope and purpose of processing."}</p>

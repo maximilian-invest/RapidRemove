@@ -81,8 +81,6 @@ section{position:relative;}
 .legal-doc a{color:var(--primary);font-weight:700;}
 .legal-doc .legal-sub{color:var(--fg-muted);font-weight:600;margin-bottom:18px;}
 .legal-doc .legal-upd{font-size:13px;color:var(--fg-muted);margin-top:30px;}
-.legal-review{display:flex;gap:9px;align-items:flex-start;background:var(--warning-soft,#fff7e6);border:1px solid #f6dca0;color:#8a5a06;border-radius:12px;padding:12px 14px;font-size:13.5px;font-weight:600;line-height:1.5;margin:0 0 22px;}
-.legal-review svg{flex:none;margin-top:1px;color:var(--warning,#d98a00);}
 
 /* language menu */
 .langmenu{position:relative;}
