@@ -211,7 +211,7 @@ function AboutInner() {
 
   return (
     <div className="about">
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={toTop} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="about" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="about" />
 
       <section className="ab-hero">
         <div className="hero-glow"></div>
@@ -335,7 +335,7 @@ function AboutInner() {
 
       <FinalCTABand onStart={() => nav("/?start=1")} title={a.ctaTitle} btn={a.ctaBtn} />
 
-      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={toTop} />
+      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} />
       <WhatsAppFloat />
     </div>
   );

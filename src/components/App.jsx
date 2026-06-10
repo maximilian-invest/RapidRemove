@@ -23,7 +23,11 @@ export default function App({ initialLang = "de", magCards = [] }) {
       const params = new URLSearchParams(window.location.search);
       const view = params.get("view");
       if (params.get("start") === "1") setRoute("wizard");
-      else if (view === "magazin") setRoute("blog");
+      else if (view === "magazin") {
+        // DE hat eine echte Magazin-URL (SEO) — alte ?view=magazin-Links dorthin umleiten.
+        if (lang === "de") { window.location.replace(asset("/magazin/")); return; }
+        setRoute("blog");
+      }
       else if (view === "reputation") setRoute("orm");
       else if (view === "presse") setRoute("deindex");
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
@@ -57,7 +61,11 @@ export default function App({ initialLang = "de", magCards = [] }) {
     window.scrollTo({ top: 0 });
   };
   const exitWizard = () => { setRoute("home"); window.scrollTo({ top: 0 }); };
-  const openBlog = () => { setRoute("blog"); window.scrollTo({ top: 0 }); };
+  const openBlog = () => {
+    // DE → echte /magazin/-Seite (crawlbar); andere Sprachen behalten die SPA-Ansicht.
+    if (lang === "de") { window.location.href = asset("/magazin/"); return; }
+    setRoute("blog"); window.scrollTo({ top: 0 });
+  };
   const openOrm = () => { setRoute("orm"); window.scrollTo({ top: 0 }); };
   const openDeindex = () => { setRoute("deindex"); window.scrollTo({ top: 0 }); };
   const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); window.scrollTo({ top: 0 }); };

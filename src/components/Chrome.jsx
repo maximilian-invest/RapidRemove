@@ -324,14 +324,39 @@ function StickyCTA({ onStart }) {
 
 /* ---- Chat-Widget: Tidio (ersetzt den früheren WhatsApp-Float; eigenes Bubble rechts unten) ---- */
 function WhatsAppFloat() {
-  // Offen/zu als body-Klasse spiegeln: die CSS-Verschiebung der Bubble (mobil, über die
-  // Sticky-Leiste) gilt nur im geschlossenen Zustand — der offene Chat bleibt Vollbild.
+  // Tidio positioniert sein iframe per Inline-Style und überschreibt Stylesheet-Regeln.
+  // Deshalb: Versatz MOBIL direkt als Inline-Style mit important-Priorität setzen und
+  // dauerhaft durchsetzen (Tidio schreibt seine Styles gelegentlich neu). Gilt nur für
+  // die geschlossene Bubble — der geöffnete Chat bleibt unangetastet (Vollbild).
   React.useEffect(() => {
-    const on = () => document.body.classList.add("tidio-open");
-    const off = () => document.body.classList.remove("tidio-open");
-    document.addEventListener("tidioChat-open", on);
-    document.addEventListener("tidioChat-close", off);
-    return () => { document.removeEventListener("tidioChat-open", on); document.removeEventListener("tidioChat-close", off); };
+    const MQ = window.matchMedia("(max-width: 920px)");
+    let open = false;
+    const LIFT = "calc(106px + env(safe-area-inset-bottom))";
+    const apply = () => {
+      const f = document.getElementById("tidio-chat-iframe");
+      if (!f) return;
+      if (MQ.matches && !open) f.style.setProperty("bottom", LIFT, "important");
+      else f.style.removeProperty("bottom");
+    };
+    const onOpen = () => { open = true; apply(); };
+    const onClose = () => { open = false; apply(); };
+    document.addEventListener("tidioChat-ready", apply);
+    document.addEventListener("tidioChat-open", onOpen);
+    document.addEventListener("tidioChat-close", onClose);
+    if (MQ.addEventListener) MQ.addEventListener("change", apply); else MQ.addListener(apply);
+    // Durchsetzen: falls Tidio den Inline-Style neu setzt oder das iframe später erscheint.
+    const iv = setInterval(() => {
+      const f = document.getElementById("tidio-chat-iframe");
+      if (f && MQ.matches && !open && f.style.getPropertyValue("bottom") !== LIFT) apply();
+    }, 700);
+    apply();
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener("tidioChat-ready", apply);
+      document.removeEventListener("tidioChat-open", onOpen);
+      document.removeEventListener("tidioChat-close", onClose);
+      if (MQ.removeEventListener) MQ.removeEventListener("change", apply); else MQ.removeListener(apply);
+    };
   }, []);
   return <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" />;
 }

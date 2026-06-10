@@ -49,7 +49,7 @@ const jsonLd = {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/` },
-        { "@type": "ListItem", position: 2, name: "Magazin", item: `${SITE_URL}/?view=magazin` },
+        { "@type": "ListItem", position: 2, name: "Magazin", item: `${SITE_URL}/magazin` },
         { "@type": "ListItem", position: 3, name: "Google-Unternehmensprofil löschen", item: ARTICLE_META.url },
       ],
     },

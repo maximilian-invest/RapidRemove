@@ -64,7 +64,7 @@ function ArticleBody() {
         <div className="container">
           <nav className="art-breadcrumb" aria-label="Breadcrumb">
             <a href={asset("/")}>Start</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
-            <a href={asset("/?view=magazin")}>Magazin</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
+            <a href={asset("/magazin/")}>Magazin</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
             <span>Google-Unternehmensprofil löschen</span>
           </nav>
           <span className="art-cat"><Icon.ban size={14} /> {ARTICLE_META.category}</span>
@@ -162,7 +162,7 @@ function ArticleBody() {
           </div>
           <p>
             Der DIY-Weg endet fast immer bei „dauerhaft geschlossen“. Der Anwaltsweg ist teuer, langsam und ungewiss –
-            und löst nicht selten den <a href={asset("/?view=magazin")}>Streisand-Effekt</a> aus, bei dem die
+            und löst nicht selten den <a href={asset("/magazin/")}>Streisand-Effekt</a> aus, bei dem die
             Aufmerksamkeit erst recht steigt. Bleibt der dritte Weg: die professionelle, vollständige Entfernung.
           </p>
 
@@ -301,7 +301,7 @@ function ArticleBody() {
           </div>
 
           <div className="art-back">
-            <a className="btn btn-secondary" href={asset("/?view=magazin")}><Icon.arrowLeft size={17} /> Zurück zum Magazin</a>
+            <a className="btn btn-secondary" href={asset("/magazin/")}><Icon.arrowLeft size={17} /> Zurück zum Magazin</a>
           </div>
         </article>
 
@@ -335,9 +335,9 @@ export default function Article() {
   const nav = (path) => { window.location.href = asset(path); };
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="magazin" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="magazin" />
       <ArticleBody />
-      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/?view=magazin")} onAbout={() => nav("/ueber-uns/")} />
+      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} />
       <WhatsAppFloat />
     </LangContext.Provider>
   );
