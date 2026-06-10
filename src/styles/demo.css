@@ -5,6 +5,13 @@
    appears as it looks in Google search → it dissolves → success.
    ============================================================ */
 .demo-stage{position:relative;max-width:920px;margin:0 auto;}
+/* Desktop: zweispaltig — Text links, Demo rechts (mobil bleibt alles untereinander/zentriert) */
+@media(min-width:1001px){
+  .demo-split{display:grid;grid-template-columns:.85fr 1.3fr;gap:56px;align-items:center;}
+  .demo-split .sec-head.center{text-align:left;margin:0;max-width:none;}
+  .demo-split .demo-stage{margin:0;max-width:none;}
+  .demo-split .demo-controls{justify-content:flex-start;}
+}
 .serp-main{min-width:0;}
 .serp-right{position:relative;align-self:start;}
 

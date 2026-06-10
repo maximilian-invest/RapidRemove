@@ -199,12 +199,14 @@ function ProfileDissolveDemo() {
   return (
     <section className="band">
       <div className="container">
+        <div className="demo-split">
         <div className="sec-head center reveal">
           <span className="eyebrow"><Icon.trash size={15} /> {c.eyebrow}</span>
           <h2>{c.title}</h2>
           <p>{c.sub}</p>
         </div>
 
+        <div className="demo-main">
         <div className={"demo-stage is-" + phase} ref={stageRef}>
           <div className="serp">
             <div className="serp-bar">
@@ -269,6 +271,8 @@ function ProfileDissolveDemo() {
         <div className="demo-controls">
           <span className={"demo-phaselabel " + phaseCls}>{phaseLabel}</span>
           <button className="demo-replay" onClick={replay}><Icon.refresh /> {c.replay}</button>
+        </div>
+        </div>
         </div>
       </div>
     </section>
