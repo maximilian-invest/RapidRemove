@@ -5,7 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck } from "@/lib/order";
+import { submitOrder, submitCheck, submitContact } from "@/lib/order";
 import OrderForm from "@/components/OrderForm";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
@@ -906,6 +906,123 @@ function Testimonial({ q }) {
 }
 
 /* ============ WIZARD ROOT ============ */
+/* ---- Router (erste Seite) + Presse-/Einzeltreffer-Flow (aus dem Design portiert).
+   de + en ausformuliert; übrige Sprachen erben EN (wie im Design). ---- */
+const ROUTER_COPY = {
+  de: {
+    routerEyebrow: "Kurz vorab", routerH: "Worum geht es?",
+    routerSub: "Damit wir Sie zur richtigen Lösung führen. Die meisten sind hier genau richtig:",
+    tiles: [
+      { id: "delete", ic: "trash", badge: "Häufigste", t: "Google-Profil oder Bewertungen loswerden", d: "Ihr Unternehmensprofil samt aller Bewertungen dauerhaft entfernen." },
+      { id: "press", ic: "fileText", t: "Negative Presse oder Suchergebnisse", d: "Ein Artikel oder Treffer in der Google-Suche, der verschwinden soll." },
+      { id: "unsure", ic: "info", t: "Nicht sicher", d: "Zwei kurze Fragen — wir leiten Sie weiter." },
+    ],
+    qH: "Zwei kurze Fragen",
+    q1: "Geht es um Ihr eigenes Google-Unternehmensprofil?",
+    q1yes: "Ja, um mein Unternehmensprofil", q1no: "Nein, um etwas anderes im Netz",
+    q2: "Handelt es sich um einen Presseartikel oder eine fremde Website?",
+    q2yes: "Ja, Presse / fremde Website", q2no: "Nein, eher Bewertungen / mein Profil",
+    pressIntakeH: "Negative Presse oder Suchergebnisse",
+    pressIntakeSub: "Wir prüfen kostenlos, ob eine Auslistung in Frage kommt, und übernehmen die Antragstellung. Die rechtliche Einzelfallprüfung erfolgt durch unsere Partnerkanzlei.",
+    pressUrl: "Link zum Artikel / Suchergebnis", pressAddUrl: "Weiteren Link hinzufügen", pressEmail: "Ihre E-Mail", pressDesc: "Worum geht es? (kurz)",
+    pressBtn: "Kostenlose Prüfung anfragen",
+    pressPriceH: "Zur Orientierung: 1.500 – 4.000 € pro Artikel",
+    pressPriceSub: "Je nach Schwierigkeit des Falls — bei mehreren Artikeln sind Mengenpreise möglich. Diese Angabe dient nur Ihrer Einordnung vorab: Ein verbindliches Angebot erhalten Sie erst nach der kostenlosen Prüfung, Kosten entstehen nur bei Beauftragung.",
+    pressAltQ: "Falls sich das Suchergebnis nicht entfernen lässt:",
+    pressAltHint: "Nicht jeder Treffer kann gelöscht werden — z. B. wegen Pressefreiheit. Als Alternative können wir den Treffer mit positiven Inhalten von Seite 1 der Google-Suche verdrängen, sodass ihn kaum noch jemand sieht. Sollen wir Ihnen in dem Fall dazu ein Angebot machen?",
+    pressAltReq: "Bitte beantworten Sie noch die Frage oben, dann können Sie die Prüfung anfragen.",
+    pressAltYes: "Ja, Alternative anbieten", pressAltNo: "Nein, nur Entfernung",
+    pressDoneH: "Anfrage erhalten — wir melden uns.", pressDoneSub: "Wir prüfen Ihren Fall kostenlos und melden uns mit einer ehrlichen Einschätzung. Keine Kosten, keine Verpflichtung.",
+    pbLabel: "Bekannt aus", pbRec: "Im heise-Ratgeber als Anbieter genannt", pbRecUrl: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html",
+    pbOutlets: ["heise online", "DigitalReport", "Wirtschaft·Heute", "TechJournal"],
+  },
+  en: {
+    routerEyebrow: "Quick start", routerH: "What's this about?",
+    routerSub: "So we guide you to the right solution. Most people are in the right place here:",
+    tiles: [
+      { id: "delete", ic: "trash", badge: "Most common", t: "Get rid of a Google profile or reviews", d: "Permanently remove your business profile and all its reviews." },
+      { id: "press", ic: "fileText", t: "Negative press or search results", d: "An article or result in Google search you want gone." },
+      { id: "unsure", ic: "info", t: "Not sure", d: "Two quick questions — we'll route you." },
+    ],
+    qH: "Two quick questions",
+    q1: "Is this about your own Google business profile?",
+    q1yes: "Yes, my business profile", q1no: "No, something else online",
+    q2: "Is it a press article or a third-party website?",
+    q2yes: "Yes, press / third-party site", q2no: "No, more like reviews / my profile",
+    pressIntakeH: "Negative press or search results",
+    pressIntakeSub: "We check for free whether de-indexing is an option and handle the application. The legal case-by-case review is done by our partner law firm.",
+    pressUrl: "Link to the article / result", pressAddUrl: "Add another link", pressEmail: "Your email", pressDesc: "What's it about? (briefly)",
+    pressBtn: "Request a free assessment",
+    pressPriceH: "For orientation: €1,500 – €4,000 per article",
+    pressPriceSub: "Depending on the difficulty of the case — volume pricing is available for multiple articles. This range is only meant to help you decide upfront: you'll receive a binding quote only after the free assessment, and you pay nothing unless you engage us.",
+    pressAltQ: "If the search result can't be removed:",
+    pressAltHint: "Not every result can be removed — e.g. because of press freedom. As an alternative, we can push the result off page 1 of Google Search with positive content, so hardly anyone sees it anymore. Should we send you a quote for that if removal fails?",
+    pressAltReq: "Please answer the question above first — then you can request the assessment.",
+    pressAltYes: "Yes, offer the alternative", pressAltNo: "No, removal only",
+    pressDoneH: "Request received — we'll be in touch.", pressDoneSub: "We assess your case for free and get back to you with an honest opinion. No cost, no obligation.",
+    pbLabel: "As seen in", pbRec: "Listed as a provider by heise", pbRecUrl: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html",
+    pbOutlets: ["heise online", "DigitalReport", "Business·Today", "TechJournal"],
+  },
+};
+const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
+
+const SERP_TXT = {
+  de: { q: "ihr name + unternehmen", own: "Ihre Website — Startseite", ownUrl: "ihre-website.de", neg: "Negativer Artikel über Ihr Unternehmen", negUrl: "presse-portal.de › artikel", negTag: "Presse", other: "Branchenverzeichnis — Eintrag", otherUrl: "verzeichnis.de", gone: "Aus der Google-Suche entfernt" },
+  en: { q: "your name + company", own: "Your website — home", ownUrl: "your-website.com", neg: "Negative article about your business", negUrl: "press-portal.com › article", negTag: "Press", other: "Business directory — listing", otherUrl: "directory.com", gone: "Removed from Google Search" },
+};
+
+function PressBar({ big }) {
+  const { t } = useLang();
+  const rc = routerCopy(t.code);
+  return (
+    <div className={"press-bar" + (big ? " big" : "")}>
+      <div className="pb-label">{rc.pbLabel}</div>
+      <div className="pb-logos">
+        {rc.pbOutlets.map((o, i) => <span key={i} className={"pb-logo" + (i === 0 ? " lead" : "")}>{o}</span>)}
+      </div>
+      <a className="pb-rec" href={rc.pbRecUrl} target="_blank" rel="noopener noreferrer"><Icon.star size={14} /> {rc.pbRec} <Icon.arrowRight size={13} /></a>
+    </div>
+  );
+}
+
+function PressSerpDemo() {
+  const { t } = useLang();
+  const x = SERP_TXT[t.code] || SERP_TXT.en;
+  const [phase, setPhase] = React.useState(0); // 0 show · 1 fading · 2 removed
+  React.useEffect(() => {
+    let alive = true; const timers = [];
+    const cycle = () => {
+      if (!alive) return;
+      setPhase(0);
+      timers.push(setTimeout(() => alive && setPhase(1), 2000));
+      timers.push(setTimeout(() => alive && setPhase(2), 3100));
+      timers.push(setTimeout(cycle, 7200));
+    };
+    cycle();
+    return () => { alive = false; timers.forEach(clearTimeout); };
+  }, []);
+  return (
+    <div className="serp-demo" aria-hidden="true">
+      <div className="serp-bar"><Icon.search size={15} /> {x.q}</div>
+      <div className="serp-results">
+        <div className="serp-r"><div className="u">{x.ownUrl}</div><div className="st">{x.own}</div><div className="sk" style={{ width: "72%" }}></div></div>
+        <div className={"serp-slot" + (phase === 2 ? " done" : "")}>
+          {phase < 2 ? (
+            <div className={"serp-r neg" + (phase === 1 ? " fading" : "")}>
+              <div className="u">{x.negUrl} <span className="neg-tag">{x.negTag}</span></div>
+              <div className="st">{x.neg}</div>
+              <div className="sk" style={{ width: "58%" }}></div>
+            </div>
+          ) : (
+            <div className="serp-gone"><Icon.checkCircle /> {x.gone}</div>
+          )}
+        </div>
+        <div className="serp-r"><div className="u">{x.otherUrl}</div><div className="st">{x.other}</div><div className="sk" style={{ width: "64%" }}></div></div>
+      </div>
+    </div>
+  );
+}
+
 function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   const { t, lang } = useLang();
   const w = t.wizard;
@@ -931,6 +1048,14 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   const [agbOk, setAgbOk] = React.useState(false);
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
+  // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
+  // (generischer „Gratis-Check"). Mit Hero-Suche bleibt der Lösch-Flow unverändert.
+  const rc = routerCopy(t.code);
+  const [routed, setRouted] = React.useState(!!(initialName && initialName.trim()) || !!initialProfile);
+  const [pressMode, setPressMode] = React.useState(false);
+  const [unsureStep, setUnsureStep] = React.useState(0);
+  const [pressData, setPressData] = React.useState({ urls: [""], email: "", desc: "", orm: "" });
+  const [pressDone, setPressDone] = React.useState(false);
   const checkSent = React.useRef(false);
   const bodyRef = React.useRef(null);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
@@ -1494,19 +1619,164 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     );
   }
 
+  const Top = (
+    <div className="wz-top">
+      <div className="wz-top-inner">
+        <img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={onExit} />
+        <div className="wz-secure"><Icon.lock /> {w.secure}</div>
+        <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
+      </div>
+    </div>
+  );
+
+  /* ---- erste Seite: Service-Router (mit den anderen Dienstleistungen) ---- */
+  function RouterScreen() {
+    const pick = (id) => { if (id === "delete") setRouted(true); else if (id === "press") setPressMode(true); else setUnsureStep(1); };
+    if (unsureStep > 0) {
+      return (
+        <div className="wz-card pad-lg router">
+          <div className="wz-eyebrow"><Icon.info size={14} /> {rc.qH}</div>
+          <h1 className="wz-h" style={{ fontSize: 28 }}>{unsureStep === 1 ? rc.q1 : rc.q2}</h1>
+          <div className="router-q" style={{ marginTop: 18 }}>
+            {unsureStep === 1 ? (
+              <React.Fragment>
+                <button className="rq-opt" onClick={() => setRouted(true)}><Icon.check /> {rc.q1yes}</button>
+                <button className="rq-opt" onClick={() => setUnsureStep(2)}><Icon.arrowRight /> {rc.q1no}</button>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <button className="rq-opt" onClick={() => { setUnsureStep(0); setPressMode(true); }}><Icon.edit /> {rc.q2yes}</button>
+                <button className="rq-opt" onClick={() => setRouted(true)}><Icon.trash /> {rc.q2no}</button>
+              </React.Fragment>
+            )}
+          </div>
+          <div className="wz-actions" style={{ marginTop: 18 }}>
+            <button className="btn btn-secondary" onClick={() => setUnsureStep(unsureStep === 2 ? 1 : 0)}><Icon.arrowLeft size={17} /> {w.back}</button>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="wz-card pad-lg router">
+        <div className="wz-eyebrow"><Icon.search size={14} /> {rc.routerEyebrow}</div>
+        <h1 className="wz-h" style={{ fontSize: 30 }}>{rc.routerH}</h1>
+        <p className="wz-sub">{rc.routerSub}</p>
+        <div className="router-tiles">
+          {rc.tiles.map((tl) => {
+            const I = Icon[tl.ic] || (tl.ic === "fileText" ? Icon.edit : Icon.trash);
+            return (
+              <button className={"router-tile" + (tl.id === "delete" ? " primary" : "")} key={tl.id} onClick={() => pick(tl.id)}>
+                <span className="rt-ic"><I size={27} /></span>
+                <span className="rt-main">
+                  <span className="rt-t">{tl.t} {tl.badge && <span className="rt-badge">{tl.badge}</span>}</span>
+                  <span className="rt-d">{tl.d}</span>
+                </span>
+                <Icon.arrowRight className="rt-arrow" size={20} />
+              </button>
+            );
+          })}
+        </div>
+        <div className="router-proof">
+          <span className="rp-stars">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} size={14} />)}</span>
+          <b>{conv.rating}</b> · {conv.trustpilot} · <span style={{ color: "var(--fg-muted)" }}>{(2413).toLocaleString(lang === "en" ? "en-US" : "de-DE")}+ {conv.counterLabel}</span>
+        </div>
+        <PressBar />
+      </div>
+    );
+  }
+
+  /* ---- Wizard fürs Löschen einzelner Treffer in der Google-Suche (Presse/Auslistung) ---- */
+  function PressIntake() {
+    const set = (k) => (e) => setPressData({ ...pressData, [k]: e.target.value });
+    const setUrl = (i) => (e) => { const urls = pressData.urls.slice(); urls[i] = e.target.value; setPressData({ ...pressData, urls }); };
+    const addUrl = () => setPressData({ ...pressData, urls: [...pressData.urls, ""] });
+    const rmUrl = (i) => () => setPressData({ ...pressData, urls: pressData.urls.filter((_, j) => j !== i) });
+    const submitPress = () => {
+      const urls = (pressData.urls || []).filter((u) => u && u.trim());
+      const message = `Links:\n${urls.join("\n") || "—"}\n\nBeschreibung: ${pressData.desc || "—"}\nAlternative (Verdrängung) gewünscht: ${pressData.orm === "yes" ? "ja" : "nein"}`;
+      submitContact({ email: pressData.email, topic: "Presse / Suchergebnis auslisten", message, lang }).catch(() => {});
+      setPressDone(true);
+    };
+    if (pressDone) {
+      return (
+        <div className="wz-card pad-lg">
+          <div className="ty-hero">
+            <div className="ty-check"><div className="core"><Icon.check /></div></div>
+            <h1 className="wz-h" style={{ fontSize: 28 }}>{rc.pressDoneH}</h1>
+            <p className="wz-sub" style={{ margin: "0 auto", textAlign: "center" }}>{rc.pressDoneSub}</p>
+          </div>
+          <div className="ty-cta-row"><button className="btn btn-secondary lg" onClick={onExit}>{w.s6.home}</button></div>
+        </div>
+      );
+    }
+    return (
+      <div className="wz-card pad-lg">
+        <div className="wz-eyebrow"><Icon.edit size={14} /> {rc.pressIntakeH}</div>
+        <h1 className="wz-h" style={{ fontSize: 26 }}>{rc.pressIntakeH}</h1>
+        <p className="wz-sub">{rc.pressIntakeSub}</p>
+        <PressSerpDemo />
+        <div className="press-price">
+          <div className="pp-ic"><Icon.info /></div>
+          <div className="pp-body"><b>{rc.pressPriceH}</b><p>{rc.pressPriceSub}</p></div>
+        </div>
+        <div className="form-grid">
+          <div className="fld full">
+            <label>{rc.pressUrl}</label>
+            <div className="url-list">
+              {pressData.urls.map((u, i) => (
+                <div className="url-row" key={i}>
+                  <input value={u} onChange={setUrl(i)} placeholder="https://…" />
+                  {pressData.urls.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="Entfernen"><Icon.x /></button> : null}
+                </div>
+              ))}
+              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rc.pressAddUrl}</button>
+            </div>
+          </div>
+          <div className="fld full"><label>{rc.pressEmail}</label><input value={pressData.email} onChange={set("email")} placeholder="name@firma.com" /></div>
+          <div className="fld full"><label>{rc.pressDesc}</label><input value={pressData.desc} onChange={set("desc")} placeholder="" /></div>
+        </div>
+        <div className="press-alt">
+          <b>{rc.pressAltQ}</b>
+          <p>{rc.pressAltHint}</p>
+          <div className="pa-opts">
+            <button type="button" className={"pa-opt" + (pressData.orm === "yes" ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: "yes" })}><Icon.check /> {rc.pressAltYes}</button>
+            <button type="button" className={"pa-opt" + (pressData.orm === "no" ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: "no" })}>{rc.pressAltNo}</button>
+          </div>
+        </div>
+        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} disabled={!pressData.orm} onClick={submitPress}><Icon.shieldCheck size={18} /> {rc.pressBtn}</button>
+        {!pressData.orm ? <div className="pa-req">{rc.pressAltReq}</div> : null}
+        <div className="wz-actions" style={{ marginTop: 16 }}>
+          <button className="btn btn-secondary" onClick={() => setPressMode(false)}><Icon.arrowLeft size={17} /> {w.back}</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!routed && !pressMode) {
+    return (
+      <div className="wz">
+        {Top}
+        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"router" + unsureStep}>{RouterScreen()}</div></div>
+        <ActivityToast />
+      </div>
+    );
+  }
+  if (pressMode) {
+    return (
+      <div className="wz">
+        {Top}
+        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"press" + pressDone}>{PressIntake()}</div></div>
+      </div>
+    );
+  }
+
   const bodies = [StepName, StepSearch, StepConfirm, StepService, StepCheckout, StepDone];
   const Body = bodies[step];
   const wideStep = [0, 2, 4].includes(step) && !processing;
 
   return (
     <div className="wz">
-      <div className="wz-top">
-        <div className="wz-top-inner">
-          <img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={onExit} />
-          <div className="wz-secure"><Icon.lock /> {w.secure}</div>
-          <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
-        </div>
-      </div>
+      {Top}
       <Stepper step={step} onNav={canStepBack ? go : null} />
       <TrustBar />
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
