@@ -386,8 +386,8 @@ function TrustSecurity({ id }) {
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>
-                  <a title="Telefon" href="tel:+4300000000"><Icon.phone size={20} /></a>
-                  <a title="E-Mail" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={20} /></a>
+                  <a title="Telefon · 0800 0900001" href="tel:08000900001"><Icon.phone size={20} /></a>
+                  <a title="E-Mail · helpdesk@rapid-remove.com" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={20} /></a>
                 </div>
               </div>
               <div className="team-head">
