@@ -70,7 +70,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Pagas únicamente tras la eliminación con éxito.",
       ncnpBody: "Sin pago por adelantado, sin costes ocultos. Si el perfil sigue online, no pagas nada. Así de simple.",
       items: [
-        { t: "Empresa real, dirección real", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536." },
+        { t: "Empresa registrada en Austria", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536." },
         { t: "Conforme al RGPD, empresa de la UE", d: "Servidores en la UE. No accedemos a tu cuenta de Google, Gmail, Ads ni datos personales. Trato discreto." },
         { t: "100 % legal, revisado por juristas", d: "Nuestro método funciona por canales oficiales y ha sido revisado por juristas. Sin zonas grises." },
         { t: "Protección ante reaparición", d: "Si un tercero vuelve a publicar tu perfil, lo eliminamos de nuevo gratis durante tu periodo de protección." },
@@ -274,7 +274,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Vous payez uniquement après la suppression réussie.",
       ncnpBody: "Sans paiement d'avance, sans frais cachés. Si la fiche reste en ligne, vous ne payez rien. Aussi simple que ça.",
       items: [
-        { t: "Entreprise réelle, adresse réelle", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536." },
+        { t: "Entreprise enregistrée en Autriche", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536." },
         { t: "Conforme au RGPD, entreprise de l'UE", d: "Serveurs dans l'UE. Aucun accès à votre compte Google, Gmail, Ads ou données personnelles. Traitement discret." },
         { t: "100 % légal, validé par des juristes", d: "Notre méthode passe par les canaux officiels et a été validée par des juristes. Aucune zone grise." },
         { t: "Protection en cas de réapparition", d: "Si un tiers republie votre fiche, nous la supprimons à nouveau gratuitement pendant votre période de protection." },

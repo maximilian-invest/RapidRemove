@@ -68,7 +68,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Paghi esclusivamente dopo la rimozione riuscita.",
       ncnpBody: "Senza anticipo, senza costi nascosti. Se il profilo resta online, non paghi nulla. Semplice così.",
       items: [
-        { t: "Azienda reale, indirizzo reale", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · P.IVA ATU72401536." },
+        { t: "Azienda registrata in Austria", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · P.IVA ATU72401536." },
         { t: "Conforme al GDPR, azienda UE", d: "Server nell'UE. Non accediamo al tuo account Google, Gmail, Ads o dati personali. Trattamento riservato." },
         { t: "100 % legale, verificato da giuristi", d: "Il nostro metodo opera tramite canali ufficiali ed è stato verificato da giuristi. Nessuna zona grigia." },
         { t: "Protezione in caso di ricomparsa", d: "Se un terzo ripubblica il tuo profilo, lo rimuoviamo di nuovo gratis durante il periodo di protezione." },
@@ -272,7 +272,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "U betaalt uitsluitend na succesvolle verwijdering.",
       ncnpBody: "Geen vooruitbetaling, geen verborgen kosten. Blijft het profiel online, dan betaalt u niets. Zo simpel is het.",
       items: [
-        { t: "Echt bedrijf, echt adres", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Oostenrijk · btw ATU72401536." },
+        { t: "Geregistreerd bedrijf uit Oostenrijk", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Oostenrijk · btw ATU72401536." },
         { t: "AVG-conform, EU-bedrijf", d: "Servers in de EU. We krijgen geen toegang tot uw Google-account, Gmail, Ads of persoonlijke gegevens. Discrete afhandeling." },
         { t: "100 % legaal, juridisch getoetst", d: "Onze methode werkt via officiële kanalen en is juridisch getoetst. Geen grijs gebied." },
         { t: "Bescherming bij heroptreden", d: "Plaatst een derde uw profiel opnieuw, dan verwijderen we het gratis opnieuw tijdens uw beschermingsperiode." },
@@ -476,7 +476,7 @@ import { PRICES } from "@/lib/pricing";
       ncnpTitle: "Você paga exclusivamente após a remoção bem-sucedida.",
       ncnpBody: "Sem pagamento antecipado, sem custos ocultos. Se o perfil ficar online, não paga nada. Simples assim.",
       items: [
-        { t: "Empresa real, morada real", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Áustria · NIF ATU72401536." },
+        { t: "Empresa registada na Áustria", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Áustria · NIF ATU72401536." },
         { t: "Conforme o RGPD, empresa da UE", d: "Servidores na UE. Não acedemos à sua conta Google, Gmail, Ads ou dados pessoais. Tratamento discreto." },
         { t: "100 % legal, verificado por juristas", d: "O nosso método atua através de canais oficiais e foi verificado por juristas. Sem zonas cinzentas." },
         { t: "Proteção em caso de reaparecimento", d: "Se um terceiro voltar a publicar o seu perfil, removemo-lo de novo gratuitamente durante o período de proteção." },

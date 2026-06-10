@@ -322,8 +322,9 @@ a.tb-item:hover{color:var(--primary);}
 .tp-widget .tp-cta{margin-left:auto;}
 @media(max-width:520px){
   .hero h1{font-size:30px;}
-  .tp-widget{flex-direction:column;text-align:center;padding:20px;}
+  .tp-widget{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:20px;}
   .tp-widget .tp-cta{margin-left:0;}
+  .tp-widget .tp-stars{justify-content:center;}
 }
 .tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
 .tcard{background:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-sm);padding:28px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--hairline);transition:transform var(--dur) var(--ease),box-shadow var(--dur) var(--ease);}
@@ -483,3 +484,6 @@ a.tb-item:hover{color:var(--primary);}
   .reveal{opacity:1;transform:none;}
   .hs{opacity:1;transform:none;}
 }
+
+/* Tidio-Chat-Bubble auf Mobil über die Sticky-CTA (Gratis-Check) heben */
+@media(max-width:920px){#tidio-chat-iframe{bottom:88px !important;}}

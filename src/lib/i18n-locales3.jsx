@@ -70,7 +70,7 @@ const ja = {
     ncnpTitle: "削除に成功した後にのみお支払いいただきます。",
     ncnpBody: "前払いなし、隠れた費用なし。プロフィールがオンラインのままなら、お支払いは不要です。とてもシンプルです。",
     items: [
-      { t: "実在する会社、実在する住所", d: "Simple Solution OG・Salzgasse 2, 5400 Hallein, オーストリア・UID ATU72401536。" },
+      { t: "オーストリアの登録企業", d: "Simple Solution OG・Salzgasse 2, 5400 Hallein, オーストリア・UID ATU72401536。" },
       { t: "GDPR準拠のEU企業", d: "EUサーバー。Googleアカウント、Gmail、広告、個人データにアクセスしません。秘密厳守で対応します。" },
       { t: "100% 合法・弁護士確認済み", d: "私たちの手法は公式な手続きを通じて行われ、弁護士の確認を受けています。グレーゾーンはありません。" },
       { t: "再掲載への保護", d: "第三者がプロフィールを再登録した場合、保護期間中は無料で再び削除します。" },
@@ -274,7 +274,7 @@ const sv = {
     ncnpTitle: "Du betalar endast efter lyckad borttagning.",
     ncnpBody: "Ingen förskottsbetalning, inga dolda kostnader. Förblir profilen online betalar du inget. Så enkelt är det.",
     items: [
-      { t: "Riktigt företag, riktig adress", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Österrike · momsnr ATU72401536." },
+      { t: "Registrerat företag i Österrike", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Österrike · momsnr ATU72401536." },
       { t: "GDPR-anpassat EU-företag", d: "EU-servrar. Vi får ingen åtkomst till ditt Google-konto, Gmail, annonser eller persondata. Diskret hantering." },
       { t: "100 % lagligt, juridiskt granskat", d: "Vår metod arbetar via officiella kanaler och har granskats av jurister. Ingen gråzon." },
       { t: "Skydd mot återpublicering", d: "Om tredje part återpublicerar din profil tar vi bort den igen gratis under skyddsperioden." },
@@ -478,7 +478,7 @@ const da = {
     ncnpTitle: "Du betaler kun efter vellykket fjernelse.",
     ncnpBody: "Ingen forudbetaling, ingen skjulte omkostninger. Forbliver profilen online, betaler du intet. Så enkelt er det.",
     items: [
-      { t: "Rigtig virksomhed, rigtig adresse", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Østrig · momsnr. ATU72401536." },
+      { t: "Registreret virksomhed i Østrig", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Østrig · momsnr. ATU72401536." },
       { t: "GDPR-overholdende EU-virksomhed", d: "EU-servere. Vi får ingen adgang til din Google-konto, Gmail, annoncer eller persondata. Diskret håndtering." },
       { t: "100 % lovligt, juridisk gennemgået", d: "Vores metode arbejder via officielle kanaler og er gennemgået af jurister. Ingen gråzone." },
       { t: "Beskyttelse mod genoprettelse", d: "Hvis tredjepart genopretter din profil, fjerner vi den igen gratis i beskyttelsesperioden." },
@@ -682,7 +682,7 @@ const no = {
     ncnpTitle: "Du betaler kun etter vellykket fjerning.",
     ncnpBody: "Ingen forskuddsbetaling, ingen skjulte kostnader. Forblir profilen på nett, betaler du ingenting. Så enkelt er det.",
     items: [
-      { t: "Ekte selskap, ekte adresse", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Østerrike · mva-nr. ATU72401536." },
+      { t: "Registrert selskap i Østerrike", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Østerrike · mva-nr. ATU72401536." },
       { t: "GDPR-tilpasset EU-selskap", d: "EU-servere. Vi får ingen tilgang til Google-kontoen din, Gmail, annonser eller persondata. Diskret håndtering." },
       { t: "100 % lovlig, juridisk vurdert", d: "Metoden vår arbeider via offisielle kanaler og er vurdert av jurister. Ingen gråsone." },
       { t: "Beskyttelse mot gjenoppretting", d: "Hvis tredjepart gjenoppretter profilen din, fjerner vi den igjen gratis i beskyttelsesperioden." },

@@ -480,7 +480,6 @@ function Pricing({ id, onStart }) {
           <div className="va-side va-new">
             <div className="lbl">{t.pricing.anchorNewLabel}</div>
             <div className="amt">{t.pricing.anchorNewAmt}</div>
-            <div className="sub"><Icon.shieldCheck /> {t.pricing.anchorNewSub}</div>
           </div>
         </div>
         <div className="pgrid">

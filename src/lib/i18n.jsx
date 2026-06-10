@@ -73,7 +73,7 @@ const I18N = {
       ncnpTitle: "Sie zahlen ausschließlich nach erfolgreicher Löschung.",
       ncnpBody: "Keine Vorkasse, keine versteckten Kosten. Bleibt das Profil online, zahlen Sie nichts. So einfach.",
       items: [
-        { t: "Echte Firma, echte Adresse", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Österreich · UID ATU72401536." },
+        { t: "Eingetragenes Unternehmen aus Österreich", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Österreich · UID ATU72401536." },
         { t: "DSGVO-konform, EU-Unternehmen", d: "Server in Deutschland. Wir erhalten keinen Zugriff auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten. Diskrete Behandlung." },
         { t: "100 % legal, juristisch geprüft", d: "Unsere Methode arbeitet über offizielle Schnittstellen und wurde von Juristen geprüft. Kein Graubereich." },
         { t: "Schutz bei Wiederauftauchen", d: "Trägt ein Dritter Ihr Profil erneut ein, entfernen wir es im Schutzzeitraum kostenlos wieder." },
@@ -206,7 +206,7 @@ const I18N = {
       s1: {
         eyebrow: "Gratis-Check · Schritt 1",
         h: "Wie heißt Ihr Unternehmen?",
-        sub: "Wir durchsuchen Google nach Ihrem echten Unternehmensprofil. Unverbindlich, kostenlos und in Sekunden.",
+        sub: "Wir durchsuchen Google nach Ihrem Unternehmensprofil. Unverbindlich, kostenlos und in Sekunden.",
         placeholder: "z. B. Müller Zahnarztpraxis, Berlin",
         button: "Profil suchen",
         hint: "Ihr Unternehmen erscheint nicht? Geben Sie den genauen Wortlaut ein. Ist Ihr Profil auf „dauerhaft geschlossen“ gesetzt, schreiben Sie den Namen samt Adresse – und fahren Sie fort.",
@@ -352,7 +352,7 @@ const I18N = {
       ncnpTitle: "You only pay after successful removal.",
       ncnpBody: "No upfront payment, no hidden costs. If the profile stays online, you pay nothing. It's that simple.",
       items: [
-        { t: "Real company, real address", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · VAT ATU72401536." },
+        { t: "Registered company in Austria", d: "Simple Solution OG · Salzgasse 2, 5400 Hallein, Austria · VAT ATU72401536." },
         { t: "GDPR-compliant, EU company", d: "EU servers. We get no access to your Google account, Gmail, Ads or personal data. Handled discreetly." },
         { t: "100% legal, lawyer-reviewed", d: "Our method works through official channels and was reviewed by lawyers. No grey area." },
         { t: "Protection against re-listing", d: "If a third party re-lists your profile, we remove it again for free during your protection period." },

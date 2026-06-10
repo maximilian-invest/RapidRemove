@@ -51,8 +51,8 @@ const ABOUT_COPY = {
       { n: "Dr. Stein", r: "Recht & Compliance", thm: "tm-plum" },
       { n: "Sophie", r: "Kundenbetreuung", thm: "tm-orange" },
     ],
-    coH: "Ein echtes Unternehmen. Mit Namen und Adresse.",
-    coSub: "Hinter RapidRemove steht eine eingetragene Firma in Österreich – kein anonymer Anbieter, sondern ein realer EU-Betrieb mit klaren Daten.",
+    coH: "Ein Unternehmen aus Österreich – mit Namen und Adresse.",
+    coSub: "Hinter RapidRemove steht eine eingetragene Firma in Österreich – kein anonymer Anbieter, sondern ein EU-Betrieb mit klaren, offenen Daten.",
     coFacts: [
       { l: "Firma", v: "Simple Solution OG" },
       { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Österreich" },
@@ -105,8 +105,8 @@ const ABOUT_COPY = {
       { n: "Dr. Stein", r: "Law & Compliance", thm: "tm-plum" },
       { n: "Sophie", r: "Customer Care", thm: "tm-orange" },
     ],
-    coH: "A real company. With a name and an address.",
-    coSub: "Behind RapidRemove is a registered company in Austria – not an anonymous provider, but a real EU business with clear details.",
+    coH: "A company from Austria – with a name and an address.",
+    coSub: "Behind RapidRemove is a registered company in Austria – not an anonymous provider, but an EU business with clear, open details.",
     coFacts: [
       { l: "Company", v: "Simple Solution OG" },
       { l: "Address", v: "Salzgasse 2, 5400 Hallein, Austria" },
