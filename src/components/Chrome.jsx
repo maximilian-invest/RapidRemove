@@ -9,6 +9,10 @@ import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, LOCALES } from "@/lib/locales-meta";
 
 
+/* Externe Ziel-URLs (Footer/Navbar) */
+const PARTNER_URL = "https://rapid-remove.firstpromoter.com/signup";
+const GTC_EN_URL = "https://onecdn.io/media/rapidremovegtc-7e48fe7f-35be-4849-861a-e10de91526fd.pdf";
+
 /* ---- Scroll reveal hook ---- */
 function useReveal() {
   React.useEffect(() => {
@@ -236,6 +240,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
               </div>
             )}
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
+            <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           </div>
           <div className="nav-right">
             <a className="nav-tel" href="tel:08000900001" aria-label="Telefon 0800 0900001"><Icon.phone size={15} /><span>0800 0900001</span></a>
@@ -256,6 +261,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
           {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
+          <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
       </div>
@@ -265,18 +271,18 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
 
 /* ---- Footer ---- */
 function Footer({ onStart, onBlog, onAbout }) {
-  const { t } = useLang();
-  const linkAction = (l) => {
-    if (/Magazin|Magazine|Blog/.test(l)) return onBlog;
-    if (/Über uns|About us|Quiénes somos|À propos|Chi siamo|Over ons|Sobre nós/.test(l)) return onAbout;
-    if (/check|Check|prüfen/.test(l)) return onStart;
-    return undefined;
-  };
-  // Legal-Spalte (überall die letzte, Reihenfolge: Impressum, Datenschutz, …) → echte Links in allen Sprachen.
+  const { t, lang } = useLang();
+  const hb = asset(localePath(lang)); // Sprach-Startseite ("/" bzw. "/es/" …)
+  // ALLE Footer-Links klickbar. Spalten & Reihenfolge sind in allen 11 Sprachen identisch:
+  // 0 Produkt: So funktioniert's · Preise · Bewertungen · Gratis-Check
+  // 1 Unternehmen: Über uns · Magazin · Partner werden · Kontakt (Live-Chat)
+  // 2 Rechtliches: Impressum · Datenschutz · AGB · Kundenportal
   const cols = t.footer.cols || [];
-  let legalIdx = cols.findIndex((c) => /recht|legal|légal|legale|juridi|法|特定商/i.test(c.h || ""));
-  if (legalIdx < 0) legalIdx = cols.length - 1;
-  const LEGAL = [asset("/impressum/"), asset("/datenschutzerklaerung/")];
+  const cells = [
+    [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
+    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: lang === "de" ? asset("/magazin/") : hb + "?view=magazin" }, { href: PARTNER_URL, ext: true }, { onClick: openChat, href: "#chat" }],
+    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: lang === "de" ? asset("/rapidremove-agb-datenschutz.pdf") : GTC_EN_URL, ext: true }, { href: "mailto:helpdesk@rapid-remove.com" }],
+  ];
   return (
     <footer className="footer">
       <div className="container">
@@ -290,10 +296,12 @@ function Footer({ onStart, onBlog, onAbout }) {
             <div className="foot-col" key={i}>
               <h4>{c.h}</h4>
               {c.links.map((l, j) => {
-                const href = i === legalIdx && j < 2 ? LEGAL[j] : null;
-                return href
-                  ? <a key={j} href={href} target="_blank" rel="noopener noreferrer">{l}</a>
-                  : <a key={j} onClick={linkAction(l)}>{l}</a>;
+                const cell = (cells[i] || [])[j] || {};
+                const onClick = cell.onClick ? (e) => { e.preventDefault(); cell.onClick(); } : undefined;
+                return (
+                  <a key={j} href={cell.href || hb} onClick={onClick}
+                    target={cell.ext ? "_blank" : undefined} rel={cell.ext ? "noopener noreferrer" : undefined}>{l}</a>
+                );
               })}
             </div>
           ))}
