@@ -1364,7 +1364,7 @@ function AdminApp() {
   const [checks, setChecks] = React.useState([]);
   const [live, setLive] = React.useState(false);
   const [stripeCustomers, setStripeCustomers] = React.useState([]);
-  const [view, setView] = React.useState("dashboard");
+  const [view, setView] = React.useState(() => { try { return localStorage.getItem("rr_admin_view") || "dashboard"; } catch (e) { return "dashboard"; } });
   const [active, setActive] = React.useState(null); // order in drawer
   const [compose, setCompose] = React.useState(null); // {order, template}
   const [invoiceModal, setInvoiceModal] = React.useState(null);
@@ -1382,7 +1382,17 @@ function AdminApp() {
     (async () => {
       try {
         const data = await fetchAdminData();
-        if (alive && data) { setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db); }
+        if (alive && data) {
+          setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db);
+          // Nach einem Reload den zuvor geöffneten Kunden wieder aufschlagen → man bleibt an derselben Stelle.
+          try {
+            const savedId = localStorage.getItem("rr_admin_detail");
+            if (savedId) {
+              const rec = (data.orders || []).find((x) => x.id === savedId) || (data.checks || []).find((x) => x.id === savedId);
+              if (rec) setDetail(rec);
+            }
+          } catch (e) {}
+        }
       } catch (e) { /* ohne Backend bleibt es leer — keine Demo-Daten */ }
       try {
         const s = await fetchStripe();
@@ -1391,6 +1401,12 @@ function AdminApp() {
     })();
     return () => { alive = false; };
   }, []);
+
+  // Navigation über einen Browser-Reload hinweg merken: aktueller Bereich + offener Kunde.
+  React.useEffect(() => { try { localStorage.setItem("rr_admin_view", view); } catch (e) {} }, [view]);
+  React.useEffect(() => {
+    try { if (detail && detail.id) localStorage.setItem("rr_admin_detail", detail.id); else localStorage.removeItem("rr_admin_detail"); } catch (e) {}
+  }, [detail]);
 
   const counts = { new: orders.filter((o) => o.status === "new").length };
   const openOrder = (o) => setActive(o);
