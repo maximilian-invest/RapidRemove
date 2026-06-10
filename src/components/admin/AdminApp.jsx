@@ -849,11 +849,10 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
   const [events, setEvents] = React.useState(null);
-  React.useEffect(() => {
-    let alive = true;
-    fetchEvents(o.id, o.email).then((ev) => { if (alive) setEvents(ev); }).catch(() => {});
-    return () => { alive = false; };
+  const reloadEvents = React.useCallback(() => {
+    fetchEvents(o.id, o.email).then((ev) => setEvents(ev)).catch(() => {});
   }, [o.id, o.email]);
+  React.useEffect(() => { reloadEvents(); }, [reloadEvents]);
   // 1:1-Vorschau der EXAKT versendeten Mail (richtige Sprache, richtiger Zahlungslink) zu Kontrollzwecken.
   const [mailPreview, setMailPreview] = React.useState(null); // null | {loading} | {ok,html,subject} | {error}
   const openMailPreview = (id) => {
@@ -896,6 +895,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           if (STORNO_KEYS.includes(key)) { onStatus(o, "storniert", true); note = " · Bestellung storniert"; }
           else if (key === "reaktivierung") { onStatus(o, "progress", true); note = " · Auftrag reaktiviert"; }
           toast(label + " an " + o.name + " gesendet ✓" + note);
+          reloadEvents(); setTimeout(reloadEvents, 900); // Verlauf sofort aktualisieren → Mail-Eintrag inkl. „Vorschau" erscheint direkt
         } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
       },
     });
