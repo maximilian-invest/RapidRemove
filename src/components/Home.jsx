@@ -9,6 +9,7 @@ import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 import { AblaufVideo } from "@/components/AblaufVideo";
+import { TpStars, TrustpilotLive, PRESS_LINKS } from "@/components/Proof";
 
 
 const TEAM_COPY = {
@@ -113,75 +114,6 @@ const HOME_MISC = {
   da: { continueTyped: "Fortsæt alligevel – også hvis ikke anført", verified: "Verificeret", or: "eller" },
   no: { continueTyped: "Fortsett likevel – også om ikke oppført", verified: "Verifisert", or: "eller" },
 };
-
-/* ---- Trustpilot: grüne Stern-Kacheln (statisch, rendert sofort ohne Layout-Sprung) ---- */
-function TpStars({ size = 16 }) {
-  return (
-    <span className="tp-sq-row" style={{ "--tpsq": size + "px" }}>
-      {[0, 1, 2, 3, 4].map((i) => <span className="tp-sq" key={i}><Icon.star /></span>)}
-    </span>
-  );
-}
-
-/* ---- Trustpilot: eigene, voll stylebare Zeile mit LIVE-Bewertungszahl (linksbündig garantiert).
-   Ersetzt das offizielle iframe-Widget — dessen Inhalt ist cross-origin und ließ sich nicht
-   zuverlässig ausrichten. Die Zahl liefert der ops-Endpoint /tp-count (liest sie serverseitig
-   vom Trustpilot-Profil, 6 h gecacht); Fallback ist das immergrüne „260+". ---- */
-const OPS_BASE = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
-const TP_LINE = {
-  de: ["Sehen Sie unsere ", " Bewertungen auf"],
-  en: ["See our ", " reviews on"],
-  es: ["Vea nuestras ", " reseñas en"],
-  fr: ["Découvrez nos ", " avis sur"],
-  it: ["Guarda le nostre ", " recensioni su"],
-  nl: ["Bekijk onze ", " reviews op"],
-  pt: ["Veja as nossas ", " avaliações no"],
-  ja: ["私たちの", "件のレビューはこちら:"],
-  sv: ["Se våra ", " omdömen på"],
-  da: ["Se vores ", " anmeldelser på"],
-  no: ["Se våre ", " omtaler på"],
-};
-let tpCountOnce = null; // einmal pro Pageload holen, dann teilen sich alle Instanzen die Zahl
-function TrustpilotLive() {
-  const { lang } = useLang();
-  const [count, setCount] = React.useState(tpCountOnce);
-  React.useEffect(() => {
-    if (tpCountOnce != null || !OPS_BASE) return;
-    let alive = true;
-    try {
-      const c = JSON.parse(localStorage.getItem("rr_tp_count") || "null");
-      if (c && c.n && Date.now() - c.ts < 6 * 3600_000) { tpCountOnce = c.n; setCount(c.n); return; }
-    } catch (e) {}
-    fetch(OPS_BASE + "/tp-count")
-      .then((r) => r.json())
-      .then((j) => {
-        if (!alive || !j || !j.count) return;
-        tpCountOnce = j.count; setCount(j.count);
-        try { localStorage.setItem("rr_tp_count", JSON.stringify({ n: j.count, ts: Date.now() })); } catch (e) {}
-      })
-      .catch(() => { /* Fallback bleibt 260+ */ });
-    return () => { alive = false; };
-  }, []);
-  const url = lang === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
-  const tl = TP_LINE[lang] || TP_LINE.en;
-  return (
-    <a className="tp-line" href={url} target="_blank" rel="noopener noreferrer">
-      <TpStars size={17} />
-      <span className="tpl-tx"><span className="tpl-lead">{tl[0]}</span><b>{count || "260+"}</b>{tl[1]}</span>
-      <span className="tpl-logo"><span className="tp-sq" style={{ "--tpsq": "17px" }}><Icon.star /></span> Trustpilot</span>
-    </a>
-  );
-}
-
-/* „Bekannt aus" – echte Quellen, die RapidRemove erwähnen/verlinken (sprachübergreifend).
-   Sitzt im Hero unter der Check-Karte (aus dem Magazin hierher verschoben). */
-const PRESS_LINKS = [
-  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" },
-  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/" },
-  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/" },
-  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/" },
-  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
-];
 
 /* Hero: Team-Link unter dem Trustpilot-Widget („Lernen Sie Max & Matthias kennen" → /ueber-uns) */
 const HERO_TEAM = {

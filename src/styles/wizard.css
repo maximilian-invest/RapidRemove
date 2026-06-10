@@ -642,3 +642,7 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .pa-opt:hover{border-color:var(--orange-300);color:var(--fg);}
 .pa-opt.sel{border-color:var(--primary);color:var(--orange-800);background:var(--orange-50);box-shadow:0 0 0 3px rgba(255,128,0,.10);}
 .pa-req{margin-top:9px;text-align:center;font-size:12.5px;font-weight:700;color:var(--fg-muted);}
+/* echte Presse-Leiste: klickbare Quellen */
+.press-bar .pb-logo{text-decoration:none;cursor:pointer;}
+.press-bar a.pb-logo:hover{color:var(--fg);}
+.router .router-proof{justify-content:center;}

@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, submitContact } from "@/lib/order";
+import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
@@ -971,20 +972,6 @@ const SERP_TXT = {
   en: { q: "your name + company", own: "Your website — home", ownUrl: "your-website.com", neg: "Negative article about your business", negUrl: "press-portal.com › article", negTag: "Press", other: "Business directory — listing", otherUrl: "directory.com", gone: "Removed from Google Search" },
 };
 
-function PressBar({ big }) {
-  const { t } = useLang();
-  const rc = routerCopy(t.code);
-  return (
-    <div className={"press-bar" + (big ? " big" : "")}>
-      <div className="pb-label">{rc.pbLabel}</div>
-      <div className="pb-logos">
-        {rc.pbOutlets.map((o, i) => <span key={i} className={"pb-logo" + (i === 0 ? " lead" : "")}>{o}</span>)}
-      </div>
-      <a className="pb-rec" href={rc.pbRecUrl} target="_blank" rel="noopener noreferrer"><Icon.star size={14} /> {rc.pbRec} <Icon.arrowRight size={13} /></a>
-    </div>
-  );
-}
-
 function PressSerpDemo() {
   const { t } = useLang();
   const x = SERP_TXT[t.code] || SERP_TXT.en;
@@ -1676,11 +1663,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
             );
           })}
         </div>
-        <div className="router-proof">
-          <span className="rp-stars">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} size={14} />)}</span>
-          <b>{conv.rating}</b> · {conv.trustpilot} · <span style={{ color: "var(--fg-muted)" }}>{(2413).toLocaleString(lang === "en" ? "en-US" : "de-DE")}+ {conv.counterLabel}</span>
-        </div>
-        <PressBar />
+        <div className="router-proof"><TrustpilotLive /></div>
+        <PressBand variant="bar" />
       </div>
     );
   }
