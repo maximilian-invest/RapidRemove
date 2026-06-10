@@ -7,6 +7,7 @@ import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
+import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
@@ -962,49 +963,6 @@ const ROUTER_COPY = {
   },
 };
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
-
-const SERP_TXT = {
-  de: { q: "ihr name + unternehmen", own: "Ihre Website — Startseite", ownUrl: "ihre-website.de", neg: "Negativer Artikel über Ihr Unternehmen", negUrl: "presse-portal.de › artikel", negTag: "Presse", other: "Branchenverzeichnis — Eintrag", otherUrl: "verzeichnis.de", gone: "Aus der Google-Suche entfernt" },
-  en: { q: "your name + company", own: "Your website — home", ownUrl: "your-website.com", neg: "Negative article about your business", negUrl: "press-portal.com › article", negTag: "Press", other: "Business directory — listing", otherUrl: "directory.com", gone: "Removed from Google Search" },
-};
-
-function PressSerpDemo() {
-  const { t } = useLang();
-  const x = SERP_TXT[t.code] || SERP_TXT.en;
-  const [phase, setPhase] = React.useState(0); // 0 show · 1 fading · 2 removed
-  React.useEffect(() => {
-    let alive = true; const timers = [];
-    const cycle = () => {
-      if (!alive) return;
-      setPhase(0);
-      timers.push(setTimeout(() => alive && setPhase(1), 2000));
-      timers.push(setTimeout(() => alive && setPhase(2), 3100));
-      timers.push(setTimeout(cycle, 7200));
-    };
-    cycle();
-    return () => { alive = false; timers.forEach(clearTimeout); };
-  }, []);
-  return (
-    <div className="serp-demo" aria-hidden="true">
-      <div className="serp-bar"><Icon.search size={15} /> {x.q}</div>
-      <div className="serp-results">
-        <div className="serp-r"><div className="u">{x.ownUrl}</div><div className="st">{x.own}</div><div className="sk" style={{ width: "72%" }}></div></div>
-        <div className={"serp-slot" + (phase === 2 ? " done" : "")}>
-          {phase < 2 ? (
-            <div className={"serp-r neg" + (phase === 1 ? " fading" : "")}>
-              <div className="u">{x.negUrl} <span className="neg-tag">{x.negTag}</span></div>
-              <div className="st">{x.neg}</div>
-              <div className="sk" style={{ width: "58%" }}></div>
-            </div>
-          ) : (
-            <div className="serp-gone"><Icon.checkCircle /> {x.gone}</div>
-          )}
-        </div>
-        <div className="serp-r"><div className="u">{x.otherUrl}</div><div className="st">{x.other}</div><div className="sk" style={{ width: "64%" }}></div></div>
-      </div>
-    </div>
-  );
-}
 
 function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   const { t, lang } = useLang();
