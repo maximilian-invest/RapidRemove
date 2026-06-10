@@ -324,6 +324,15 @@ function StickyCTA({ onStart }) {
 
 /* ---- Chat-Widget: Tidio (ersetzt den früheren WhatsApp-Float; eigenes Bubble rechts unten) ---- */
 function WhatsAppFloat() {
+  // Offen/zu als body-Klasse spiegeln: die CSS-Verschiebung der Bubble (mobil, über die
+  // Sticky-Leiste) gilt nur im geschlossenen Zustand — der offene Chat bleibt Vollbild.
+  React.useEffect(() => {
+    const on = () => document.body.classList.add("tidio-open");
+    const off = () => document.body.classList.remove("tidio-open");
+    document.addEventListener("tidioChat-open", on);
+    document.addEventListener("tidioChat-close", off);
+    return () => { document.removeEventListener("tidioChat-open", on); document.removeEventListener("tidioChat-close", off); };
+  }, []);
   return <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" />;
 }
 

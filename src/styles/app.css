@@ -520,4 +520,10 @@ a.tb-item:hover{color:var(--primary);}
 }
 
 /* Tidio-Chat-Bubble auf Mobil über die Sticky-CTA (Gratis-Check) heben */
-@media(max-width:920px){#tidio-chat-iframe{bottom:calc(150px + env(safe-area-inset-bottom)) !important;}}
+/* Tidio-Bubble über die Sticky-Leiste heben. WICHTIG: Tidio setzt `bottom` per Inline-Style
+   direkt am iframe — Stylesheet-`bottom` wird ignoriert (deshalb zeigten 88/104/150px nie Wirkung).
+   `transform` setzt Tidio nicht inline → greift zuverlässig. Nur für die GESCHLOSSENE Bubble
+   (body ohne .tidio-open), damit der geöffnete Vollbild-Chat nicht verschoben wird. */
+@media(max-width:920px){
+  body:not(.tidio-open) #tidio-chat-iframe{transform:translateY(calc(-96px - env(safe-area-inset-bottom))) !important;}
+}
