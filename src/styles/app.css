@@ -49,6 +49,15 @@ section{position:relative;}
 .stars{display:inline-flex;gap:2px;color:var(--primary);}
 .stars svg{width:18px;height:18px;fill:currentColor;stroke:none;}
 .stars.sm svg{width:15px;height:15px;}
+/* Trustpilot-Look: grüne Stern-Kacheln (weißer Stern auf #00b67a) */
+.tp-sq-row{display:inline-flex;gap:2px;}
+.tp-sq{width:var(--tpsq,16px);height:var(--tpsq,16px);background:#00b67a;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;}
+.tp-sq svg{width:calc(var(--tpsq,16px) - 5px);height:calc(var(--tpsq,16px) - 5px);color:#fff;fill:#fff;stroke:none;}
+/* Trustpilot-Badge über der Live-Suche (Check-Karte) */
+.cc-tp{display:flex;align-items:center;gap:9px;margin:2px 0 12px;text-decoration:none;color:inherit;}
+.cc-tp .cc-tp-tx{font-size:13px;font-weight:700;color:var(--fg-2);}
+.cc-tp .cc-tp-tx b{color:var(--fg);font-weight:800;}
+.cc-tp:hover .cc-tp-tx b{color:#00b67a;}
 
 /* ---------- Navigation ---------- */
 .nav{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline);transition:box-shadow var(--dur) var(--ease);}
@@ -150,6 +159,7 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .ava-stack .av{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2.5px solid var(--canvas);background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:15px;margin-left:-12px;box-shadow:var(--shadow-xs);}
 .ava-stack .av:first-child{margin-left:0;}
 .hero-proof .pr-meta .stars{display:block;margin-bottom:3px;}
+.hero-proof .pr-meta .tp-sq-row{display:flex;margin-bottom:4px;}
 .hero-proof .pr-line{font-size:13.5px;color:var(--fg-2);font-weight:700;}
 .hero-proof .pr-line b{font-family:var(--font-display);color:var(--fg);font-size:15px;}
 .hero-subproof{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13.5px;font-weight:700;color:var(--fg-muted);}
@@ -174,7 +184,14 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-assure{display:flex;gap:22px;margin-top:24px;flex-wrap:wrap;}
 .hero-assure div{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--fg-2);}
 .hero-assure svg{width:18px;height:18px;color:var(--success);}
-@media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:36px;}.hero-grid>*{min-width:0;}.check-card{padding:24px;}}
+@media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:24px;}.hero-grid>*{min-width:0;}.check-card{padding:24px;}}
+/* Mobil: Whitespace im Hero einkürzen, damit die Check-Karte ohne Scrollen sichtbar wird */
+@media(max-width:920px){
+  .hero{padding:26px 0 56px;}
+  .hero h1{margin-top:2px;}
+  .hero .lead{margin-top:12px;font-size:17px;}
+  .hero-proof{margin-top:16px;}
+}
 
 /* hero check card */
 .check-card{background:#fff;border-radius:var(--r-xl);box-shadow:var(--shadow-lg);padding:28px;border:1px solid var(--hairline);position:relative;}
@@ -340,6 +357,8 @@ a.tb-item:hover{color:var(--primary);}
 .tp-widget .tp-stars{display:flex;gap:4px;}
 .tp-widget .tp-meta b{font-family:var(--font-display);font-weight:700;}
 .tp-widget .tp-cta{margin-left:auto;}
+.tp-widget .trustpilot-widget{flex:1 1 100%;width:100%;}
+.tp-widget .trustpilot-widget>a{font-weight:800;color:#00b67a;text-decoration:none;}
 @media(max-width:520px){
   .hero h1{font-size:30px;}
   .tp-widget{flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;padding:20px;}
@@ -506,4 +525,4 @@ a.tb-item:hover{color:var(--primary);}
 }
 
 /* Tidio-Chat-Bubble auf Mobil über die Sticky-CTA (Gratis-Check) heben */
-@media(max-width:920px){#tidio-chat-iframe{bottom:88px !important;}}
+@media(max-width:920px){#tidio-chat-iframe{bottom:calc(104px + env(safe-area-inset-bottom)) !important;}}

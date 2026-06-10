@@ -113,6 +113,44 @@ const HOME_MISC = {
   no: { continueTyped: "Fortsett likevel – også om ikke oppført", verified: "Verifisert", or: "eller" },
 };
 
+/* ---- Trustpilot: grüne Stern-Kacheln (statisch, rendert sofort ohne Layout-Sprung) ---- */
+function TpStars({ size = 16 }) {
+  return (
+    <span className="tp-sq-row" style={{ "--tpsq": size + "px" }}>
+      {[0, 1, 2, 3, 4].map((i) => <span className="tp-sq" key={i}><Icon.star /></span>)}
+    </span>
+  );
+}
+
+/* ---- Trustpilot: echtes Live-Widget (offizielles Embed; Bootstrap-Skript wird einmalig geladen).
+   Fällt auf den Profil-Link zurück, wenn das Skript blockiert ist. ---- */
+const TP_LOCALE = { de: "de-AT", en: "en-US", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "en-US", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
+function TrustpilotLive({ height = "40px", align = "center" }) {
+  const { lang } = useLang();
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const init = () => { try { if (window.Trustpilot && ref.current) window.Trustpilot.loadFromElement(ref.current, true); } catch (e) { /* Widget optional */ } };
+    if (window.Trustpilot) { init(); return; }
+    let s = document.getElementById("tp-widget-script");
+    if (!s) {
+      s = document.createElement("script");
+      s.id = "tp-widget-script";
+      s.src = "https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js";
+      s.async = true;
+      document.head.appendChild(s);
+    }
+    s.addEventListener("load", init);
+    return () => s.removeEventListener("load", init);
+  }, [lang]);
+  return (
+    <div ref={ref} className="trustpilot-widget" data-locale={TP_LOCALE[lang] || "en-US"} data-template-id="5419b6a8b0d04a076446a9ad"
+      data-businessunit-id="650984f45e6fd78f6d11c4db" data-style-height={height} data-style-width="100%"
+      data-theme="light" data-style-alignment={align}>
+      <a href="https://at.trustpilot.com/review/rapid-remove.com" target="_blank" rel="noopener noreferrer">Trustpilot</a>
+    </div>
+  );
+}
+
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
@@ -154,7 +192,7 @@ function Hero({ onStart }) {
               {[1, 2, 3, 4, 5].map((n) => <img className="av" key={n} src={asset("/assets/person-" + n + ".jpg")} alt="" width={40} height={40} />)}
             </div>
             <div className="pr-meta">
-              <span className="stars sm">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} />)}</span>
+              <TpStars size={16} />
               <div className="pr-line"><b>{t.hero.trust[0]}/5</b> · {t.hero.trust[1]} · Trustpilot</div>
             </div>
           </a>
@@ -174,6 +212,10 @@ function Hero({ onStart }) {
           </div>
           <div className="ttl">{t.hero.cardTitle}</div>
           <div className="sub">{t.hero.cardSub}</div>
+          <a className="cc-tp" href={tpUrl} target="_blank" rel="noopener noreferrer" aria-label="Trustpilot">
+            <TpStars size={17} />
+            <span className="cc-tp-tx"><b>Trustpilot</b> · {t.hero.trust[0]}/5</span>
+          </a>
           <div className="hero-ac" ref={acRef}>
             <div className="field">
               <Icon.googleG />
@@ -413,18 +455,9 @@ function Social({ id }) {
           <p>{t.social.sub}</p>
         </div>
 
-        {/* Trustpilot widget */}
+        {/* Trustpilot — echtes Live-Widget (offizielles Embed, lädt Bewertung & Anzahl live) */}
         <div className="tp-widget reveal">
-          <div className="tp-star"><Icon.star /></div>
-          <div>
-            <div className="tp-stars stars">{[0, 1, 2, 3, 4].map((i) => <Icon.star key={i} />)}</div>
-            <div className="tp-meta" style={{ fontSize: 13, color: "var(--fg-2)", marginTop: 4 }}>
-              <b style={{ color: "var(--fg)" }}>{t.social.tpScore}</b> · {t.social.tpCount}
-            </div>
-          </div>
-          <a className="btn btn-secondary sm tp-cta" href="https://www.trustpilot.com/review/rapid-remove.com" target="_blank">
-            {t.social.tpLink} <Icon.arrowRight size={15} />
-          </a>
+          <TrustpilotLive height="40px" align="center" />
         </div>
 
         {/* Stats */}
