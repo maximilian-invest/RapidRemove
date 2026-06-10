@@ -6,6 +6,7 @@ import "@/styles/wizard.css";
 import "@/styles/blog.css";
 import "@/styles/article.css";
 import "@/styles/about.css";
+import "@/styles/kontakt.css";
 import "@/styles/demo.css";
 import "@/styles/services.css";
 

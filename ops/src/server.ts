@@ -125,6 +125,34 @@ app.get("/send-test", async (req, reply) => {
   return { sent: to, template: key };
 });
 
+// Öffentliches Kontaktformular (Kontakt-Seite): mailt die Nachricht ans Team,
+// Reply-To = Absender. Rate-limited wie /order. Kein Speichern in der DB.
+app.post("/contact", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  const email = String(b.email ?? "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "invalid email" });
+  if (!allowOrder(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
+  const name = clip(b.name, 120);
+  const topic = clip(b.topic, 120);
+  const message = clip(b.message, 4000);
+  const lang = clip(b.lang, 5) || "de";
+  if (!message) return reply.code(400).send({ ok: false, error: "empty message" });
+  try {
+    const notify = process.env.NOTIFY_TO || process.env.MAIL_FROM || "helpdesk@rapid-remove.com";
+    const row = (l: string, v: string) => (v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "");
+    const html =
+      `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">Neue Kontaktanfrage</h2>` +
+      `<table style="border-collapse:collapse;font-size:14px">` +
+      row("Name", name) + row("E-Mail", email) + row("Thema", topic) + row("Sprache", lang) +
+      `</table><p style="white-space:pre-wrap;font-size:14px;margin-top:14px">${escapeHtml(message)}</p></div>`;
+    await sendMail({ to: notify, subject: `Kontaktanfrage – ${topic || name || email}`, html, replyTo: email });
+    return { ok: true };
+  } catch (e) {
+    app.log.error({ err: e }, "Kontaktformular fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: "send failed" });
+  }
+});
+
 // Live-Bewertungszahl von Trustpilot: serverseitig vom Profil gelesen (6 h gecacht).
 // Für die eigene Trustpilot-Zeile auf der Website — das offizielle Widget-iframe
 // ließ sich nicht zuverlässig linksbündig ausrichten (Inhalt cross-origin).

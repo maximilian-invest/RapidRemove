@@ -26,6 +26,18 @@ export async function submitOrder(payload) {
   return res.json().catch(() => ({ ok: true }));
 }
 
+/** Sendet eine Kontaktformular-Nachricht ans ops-Backend (mailt an das Team). */
+export async function submitContact(payload) {
+  if (!OPS) return { ok: false, skipped: true };
+  const res = await fetch(OPS + "/contact", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload || {}),
+  });
+  if (!res.ok) throw new Error("contact " + res.status);
+  return res.json().catch(() => ({ ok: true }));
+}
+
 /** Protokolliert eine Profil-Prüfung (Lead) im ops-Backend. No-op ohne URL. */
 export async function submitCheck(payload) {
   if (!OPS) return { ok: false, skipped: true };

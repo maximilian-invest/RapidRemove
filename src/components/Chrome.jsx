@@ -294,6 +294,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
               </div>
             )}
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
+            <a href={asset("/kontakt/")} className={active === "kontakt" ? "on" : ""}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
             <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           </div>
           <div className="nav-right">
@@ -315,6 +316,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
           {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
+          <a href={asset("/kontakt/")}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
@@ -334,7 +336,7 @@ function Footer({ onStart, onBlog, onAbout }) {
   const cols = t.footer.cols || [];
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
-    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: lang === "de" ? asset("/magazin/") : hb + "?view=magazin" }, { href: PARTNER_URL, ext: true }, { onClick: openChat, href: "#chat" }],
+    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: lang === "de" ? asset("/magazin/") : hb + "?view=magazin" }, { href: PARTNER_URL, ext: true }, { href: asset("/kontakt/") }],
     [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "mailto:helpdesk@rapid-remove.com" }],
   ];
   return (
