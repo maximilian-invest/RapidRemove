@@ -224,7 +224,7 @@ function AboutInner() {
 
   return (
     <div className="about">
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="about" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="about" />
 
       <section className="ab-hero">
         <div className="hero-glow"></div>
@@ -321,12 +321,12 @@ function AboutInner() {
           <div className="ab-team-note reveal">
             <p>{tx.p1}</p>
             <div className="ab-svc-cards">
-              <a className="ab-svc-card" href={asset("/?view=reputation")}>
+              <a className="ab-svc-card" href={asset("/reputation-verdraengen/")}>
                 <span className="asc-ic"><Icon.eye size={20} /></span>
                 <span className="asc-tx"><b>{tx.s1}</b><span>{tx.s1d}</span></span>
                 <span className="asc-go">{tx.more} <Icon.arrowRight size={15} /></span>
               </a>
-              <a className="ab-svc-card" href={asset("/?view=presse")}>
+              <a className="ab-svc-card" href={asset("/presse-auslisten/")}>
                 <span className="asc-ic"><Icon.edit size={20} /></span>
                 <span className="asc-tx"><b>{tx.s2}</b><span>{tx.s2d}</span></span>
                 <span className="asc-go">{tx.more} <Icon.arrowRight size={15} /></span>

@@ -25,6 +25,8 @@ export default function sitemap() {
   return [
     ...homes,
     { url: `${SITE_URL}/ueber-uns`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/presse-auslisten`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
+    { url: `${SITE_URL}/reputation-verdraengen`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/magazin`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: ARTICLE_META.url, lastModified: ARTICLE_META.dateModified, changeFrequency: "monthly", priority: 0.8 },
     ...cluster,

@@ -258,7 +258,7 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
   return (
     <div className="kontakt">
       <Nav onNav={(id) => onBlog && onBlog(id)} onStart={onStart} onBlog={onBlog} onAbout={onAbout}
-        onOrm={() => (window.location.href = asset("/?view=reputation"))} onDeindex={() => (window.location.href = asset("/?view=presse"))} active="" />
+        onOrm={() => (window.location.href = asset("/reputation-verdraengen/"))} onDeindex={() => (window.location.href = asset("/presse-auslisten/"))} active="" />
 
       <section className="kt-hero">
         <div className="hero-glow"></div>

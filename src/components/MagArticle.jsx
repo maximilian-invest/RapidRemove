@@ -182,7 +182,7 @@ export default function MagArticle({ data, lang = "de", ui, langUrls = {}, relat
   const hb = lang === "de" ? "/" : `/${lang}/`;
   return (
     <LangContext.Provider value={{ lang: l, t, setLang }}>
-      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(hb + "?view=magazin")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav(hb + "?view=reputation")} onDeindex={() => nav(hb + "?view=presse")} active="magazin" />
+      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(hb + "?view=magazin")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="magazin" />
       <Body data={data} lang={lang} ui={strings} related={related} />
       <Footer onStart={() => nav(hb + "?start=1")} onBlog={() => nav(hb + "?view=magazin")} onAbout={() => nav("/ueber-uns/")} />
       <WhatsAppFloat />

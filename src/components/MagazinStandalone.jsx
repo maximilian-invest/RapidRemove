@@ -22,8 +22,8 @@ export default function MagazinStandalone() {
       <Blog
         onStart={() => nav("/?start=1")}
         onGoHome={(id) => nav(id && id !== "__top" ? "/#" + id : "/")}
-        onOrm={() => nav("/?view=reputation")}
-        onDeindex={() => nav("/?view=presse")}
+        onOrm={() => nav("/reputation-verdraengen/")}
+        onDeindex={() => nav("/presse-auslisten/")}
         magCards={[]}
       />
     </LangContext.Provider>

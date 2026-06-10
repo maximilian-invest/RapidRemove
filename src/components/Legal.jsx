@@ -439,7 +439,7 @@ function Shell({ children }) {
   const nav = (path) => { window.location.href = asset(path); };
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/?view=reputation")} onDeindex={() => nav("/?view=presse")} active="" />
+      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="" />
       <main className="legal"><div className="container"><article className="legal-doc">{children}</article></div></main>
       <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} />
       <WhatsAppFloat />

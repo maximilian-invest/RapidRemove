@@ -8,11 +8,10 @@ import { localePath } from "@/lib/locales-meta";
 import { Home } from "@/components/Home";
 import { Blog } from "@/components/Blog";
 import { Wizard } from "@/components/Wizard";
-import { OrmPage, DeindexPage } from "@/components/ServicePages";
 
 export default function App({ initialLang = "de", magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
-  const [route, setRoute] = React.useState("home"); // home | wizard | blog | orm | deindex
+  const [route, setRoute] = React.useState("home"); // home | wizard | blog
   const [seed, setSeed] = React.useState("");
   const [seedProfile, setSeedProfile] = React.useState(null);
   const [homeScroll, setHomeScroll] = React.useState(null);
@@ -28,8 +27,9 @@ export default function App({ initialLang = "de", magCards = [] }) {
         if (lang === "de") { window.location.replace(asset("/magazin/")); return; }
         setRoute("blog");
       }
-      else if (view === "reputation") setRoute("orm");
-      else if (view === "presse") setRoute("deindex");
+      // Leistungsseiten sind eigene, crawlbare URLs (SEO) — alte ?view=-Links dorthin umleiten.
+      else if (view === "reputation") { window.location.replace(asset("/reputation-verdraengen/")); return; }
+      else if (view === "presse") { window.location.replace(asset("/presse-auslisten/")); return; }
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
       if (hash) setHomeScroll(hash);
     } catch (e) {}
@@ -66,8 +66,9 @@ export default function App({ initialLang = "de", magCards = [] }) {
     if (lang === "de") { window.location.href = asset("/magazin/"); return; }
     setRoute("blog"); window.scrollTo({ top: 0 });
   };
-  const openOrm = () => { setRoute("orm"); window.scrollTo({ top: 0 }); };
-  const openDeindex = () => { setRoute("deindex"); window.scrollTo({ top: 0 }); };
+  // Eigene, crawlbare Leistungsseiten (SEO) statt In-App-Ansicht.
+  const openOrm = () => { window.location.href = asset("/reputation-verdraengen/"); };
+  const openDeindex = () => { window.location.href = asset("/presse-auslisten/"); };
   const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); window.scrollTo({ top: 0 }); };
   const onAbout = () => { window.location.href = asset("/ueber-uns/"); };
 
@@ -77,11 +78,7 @@ export default function App({ initialLang = "de", magCards = [] }) {
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
         : route === "blog"
           ? <Blog onStart={startWizard} onGoHome={goHome} onOrm={openOrm} onDeindex={openDeindex} magCards={magCards} />
-          : route === "orm"
-            ? <OrmPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
-            : route === "deindex"
-              ? <DeindexPage onStart={startWizard} onGoHome={goHome} onBlog={openBlog} onAbout={onAbout} onOrm={openOrm} onDeindex={openDeindex} />
-              : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} />}
+          : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} />}
     </LangContext.Provider>
   );
 }

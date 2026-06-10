@@ -5,7 +5,10 @@
 import React from "react";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat, useReveal } from "@/components/Chrome";
-import { useLang } from "@/lib/lang-context";
+import { LangContext, useLang } from "@/lib/lang-context";
+import { I18N } from "@/lib/i18n";
+import { asset } from "@/lib/base";
+import { localePath } from "@/lib/locales-meta";
 import { SVC, ORM, DEIDX } from "@/lib/services-copy";
 import { PressSerpDemo } from "@/components/SerpDemo";
 
@@ -275,5 +278,51 @@ export function DeindexPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeind
       <Footer onStart={() => onStart()} onBlog={onBlog} onAbout={onAbout} />
       <WhatsAppFloat />
     </div>
+  );
+}
+
+/* ---- Standalone-Routen-Wrapper: jede Leistungsseite hat eine eigene, crawlbare
+   URL (SEO). Stellt — wie About — den Sprach-Kontext bereit (Sprache aus
+   localStorage, Default DE) und verdrahtet alle Navigations-Callbacks auf echte
+   URLs. Dadurch führt u. a. das Logo zuverlässig zur Startseite. ---- */
+function useRouteShell() {
+  const [lang, setLangState] = React.useState("de");
+  React.useEffect(() => {
+    try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {}
+  }, []);
+  const setLang = (l) => {
+    try { localStorage.setItem("rr_lang", l); } catch (e) {}
+    window.location.href = asset(localePath(l));
+  };
+  const nav = (p) => { window.location.href = asset(p); };
+  const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const t = I18N[lang] || I18N.de;
+  // gemeinsame Navigation; die jeweilige Seite überschreibt onOrm/onDeindex mit toTop
+  const base = {
+    onStart: () => nav("/?start=1"),
+    onGoHome: (id) => nav(id && id !== "__top" ? "/#" + id : "/"),
+    onBlog: () => nav("/magazin/"),
+    onAbout: () => nav("/ueber-uns/"),
+    onOrm: () => nav("/reputation-verdraengen/"),
+    onDeindex: () => nav("/presse-auslisten/"),
+  };
+  return { lang, t, setLang, toTop, base };
+}
+
+export function DeindexRoute() {
+  const { lang, t, setLang, toTop, base } = useRouteShell();
+  return (
+    <LangContext.Provider value={{ lang, t, setLang }}>
+      <DeindexPage {...base} onDeindex={toTop} />
+    </LangContext.Provider>
+  );
+}
+
+export function OrmRoute() {
+  const { lang, t, setLang, toTop, base } = useRouteShell();
+  return (
+    <LangContext.Provider value={{ lang, t, setLang }}>
+      <OrmPage {...base} onOrm={toTop} />
+    </LangContext.Provider>
   );
 }
