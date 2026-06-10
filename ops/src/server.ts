@@ -16,6 +16,18 @@ import { startUpsellWorker } from "./upsell";
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "55default";
 
+// Alle vom Kunden wählbaren Sprachen — Mails werden in der echten Sprache verschickt (Fallback: en).
+const MAIL_LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
+const mailLang = (l: unknown): string => { const s = String(l || "").slice(0, 5); return MAIL_LANGS.includes(s) ? s : "en"; };
+const GREETING: Record<string, (n: string) => string> = {
+  de: (n) => `Guten Tag ${n},`, en: (n) => `Hello ${n},`, es: (n) => `Hola ${n},`,
+  fr: (n) => `Bonjour ${n},`, it: (n) => `Gentile ${n},`, nl: (n) => `Beste ${n},`,
+  pt: (n) => `Olá ${n},`, ja: (n) => `${n} 様`, sv: (n) => `Hej ${n},`,
+  da: (n) => `Hej ${n},`, no: (n) => `Hei ${n},`,
+};
+const DUE_NOW: Record<string, string> = { de: "sofort", en: "immediately", es: "de inmediato", fr: "immédiatement", it: "subito", nl: "direct", pt: "de imediato", ja: "ただちに", sv: "omgående", da: "straks", no: "umiddelbart" };
+const DUE_MAHN: Record<string, string> = { de: "umgehend", en: "now", es: "ahora", fr: "maintenant", it: "ora", nl: "nu", pt: "agora", ja: "今すぐ", sv: "nu", da: "nu", no: "nå" };
+
 // CORS: erlaubt den Browser-POST der Marketing-Site auf den öffentlichen /order-Endpunkt.
 // SITE_ORIGIN optional auf die Site-URL setzen; sonst "*" (Endpunkt ist nicht credentialed).
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "*";
@@ -129,10 +141,10 @@ app.post("/order", async (req, reply) => {
   const profile = clip(b.profile, 200);
   const orderId = clip(b.orderId, 40);
   const lang = clip(b.lang, 5) || "de";
-  const tlang = lang === "de" ? "de" : "en";
+  const tlang = mailLang(lang);
 
   const t = TEMPLATES["auftragsbestaetigung"];
-  const anrede = name ? (tlang === "de" ? `Guten Tag ${name},` : `Hello ${name},`) : undefined;
+  const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
   const props = { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props));
 
@@ -380,8 +392,9 @@ app.post("/admin/paylink", async (req, reply) => {
     const money = currency === "usd"
       ? `$ ${total.toLocaleString("en-US")}`
       : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
-    const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
-    const props = { lang: tlang, total: money, due: tlang === "de" ? (tplKey === "mahnung" ? "umgehend" : "sofort") : (tplKey === "mahnung" ? "now" : "immediately"), payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined };
+    const tlang = mailLang(b.lang);
+    const due = tplKey === "mahnung" ? (DUE_MAHN[tlang] || DUE_MAHN.en) : (DUE_NOW[tlang] || DUE_NOW.en);
+    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
@@ -403,7 +416,7 @@ app.post("/admin/send-template", async (req, reply) => {
   if (!t) return reply.code(400).send({ ok: false, error: "unknown template" });
   const orderId = clip(b.orderId, 40);
   try {
-    const tlang = clip(b.lang, 5) === "de" ? "de" : "en";
+    const tlang = mailLang(b.lang);
     const props = { ...(t.sample as object), lang: tlang, formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });

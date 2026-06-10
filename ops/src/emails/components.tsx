@@ -29,9 +29,11 @@ export const brand = {
 const PHONE = "+4362459305300";
 const HELPDESK = "helpdesk@rapid-remove.com";
 
+export type MailLang = "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
+
 export function EmailShell({
   preview, title, lang = "de", children,
-}: { preview: string; title: string; lang?: "de" | "en"; children: React.ReactNode }) {
+}: { preview: string; title: string; lang?: MailLang; children: React.ReactNode }) {
   return (
     <Html lang={lang}>
       <Head />
@@ -157,20 +159,23 @@ export function GiftCard({ amount }: { amount: string }) {
     phone=true → Telefonzeile · chat=true → Chat-Button. */
 export function Support({
   lang = "de", phone = false, chat = false, chatUrl = "https://rapid-remove.com",
-}: { lang?: "de" | "en"; phone?: boolean; chat?: boolean; chatUrl?: string }) {
-  const t = lang === "en"
-    ? {
-        h: "Questions? We're here for you!",
-        phone: <>Mon–Fri you can reach us by phone from 08:00–18:00 at <A href={`tel:${PHONE}`}>{PHONE}</A> and anytime by email at <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>.</>,
-        mail: <>You can reach us anytime by email at <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>.</>,
-        chat: "Chat with us",
-      }
-    : {
-        h: "Fragen? Wir sind für Sie da!",
-        phone: <>Von Montag–Freitag erreichen Sie uns von 08.00–18.00 Uhr telefonisch unter <A href={`tel:${PHONE}`}>{PHONE}</A> und jederzeit per E-Mail unter <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>.</>,
-        mail: <>Sie erreichen uns jederzeit per E-Mail unter <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>.</>,
-        chat: "Mit uns chatten",
-      };
+}: { lang?: MailLang; phone?: boolean; chat?: boolean; chatUrl?: string }) {
+  const tel = <A href={`tel:${PHONE}`}>{PHONE}</A>;
+  const mailA = <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>;
+  const TS = {
+    de: { h: "Fragen? Wir sind für Sie da!", phone: <>Von Montag–Freitag erreichen Sie uns von 08.00–18.00 Uhr telefonisch unter {tel} und jederzeit per E-Mail unter {mailA}.</>, mail: <>Sie erreichen uns jederzeit per E-Mail unter {mailA}.</>, chat: "Mit uns chatten" },
+    en: { h: "Questions? We're here for you!", phone: <>Mon–Fri you can reach us by phone from 08:00–18:00 at {tel} and anytime by email at {mailA}.</>, mail: <>You can reach us anytime by email at {mailA}.</>, chat: "Chat with us" },
+    es: { h: "¿Preguntas? ¡Estamos aquí para ayudarte!", phone: <>De lunes a viernes puede llamarnos de 08:00 a 18:00 al {tel} y escribirnos en cualquier momento por correo a {mailA}.</>, mail: <>Puede escribirnos en cualquier momento por correo a {mailA}.</>, chat: "Chatea con nosotros" },
+    fr: { h: "Des questions ? Nous sommes là pour vous !", phone: <>Du lundi au vendredi, joignez-nous par téléphone de 08h00 à 18h00 au {tel} et à tout moment par e-mail à {mailA}.</>, mail: <>Vous pouvez nous joindre à tout moment par e-mail à {mailA}.</>, chat: "Discuter avec nous" },
+    it: { h: "Domande? Siamo qui per te!", phone: <>Dal lunedì al venerdì siamo raggiungibili telefonicamente dalle 08:00 alle 18:00 al {tel} e in qualsiasi momento via e-mail all'indirizzo {mailA}.</>, mail: <>Puoi contattarci in qualsiasi momento via e-mail all'indirizzo {mailA}.</>, chat: "Chatta con noi" },
+    nl: { h: "Vragen? We staan voor u klaar!", phone: <>Van maandag t/m vrijdag bereikt u ons telefonisch van 08.00–18.00 uur op {tel} en altijd per e-mail via {mailA}.</>, mail: <>U kunt ons altijd per e-mail bereiken via {mailA}.</>, chat: "Chat met ons" },
+    pt: { h: "Dúvidas? Estamos aqui para si!", phone: <>De segunda a sexta pode contactar-nos por telefone das 08:00 às 18:00 através do {tel} e a qualquer momento por e-mail em {mailA}.</>, mail: <>Pode contactar-nos a qualquer momento por e-mail em {mailA}.</>, chat: "Fale connosco no chat" },
+    ja: { h: "ご不明な点はありますか?お気軽にどうぞ!", phone: <>月〜金の08:00〜18:00は {tel} までお電話で、メールは {mailA} までいつでもご連絡いただけます。</>, mail: <>メールは {mailA} までいつでもご連絡いただけます。</>, chat: "チャットで相談" },
+    sv: { h: "Frågor? Vi finns här för dig!", phone: <>Måndag–fredag når du oss på telefon 08:00–18:00 på {tel} och när som helst via e-post på {mailA}.</>, mail: <>Du når oss när som helst via e-post på {mailA}.</>, chat: "Chatta med oss" },
+    da: { h: "Spørgsmål? Vi er her for dig!", phone: <>Mandag–fredag kan du ringe til os fra 08:00–18:00 på {tel} og altid skrive til os på {mailA}.</>, mail: <>Du kan altid skrive til os på {mailA}.</>, chat: "Chat med os" },
+    no: { h: "Spørsmål? Vi er her for deg!", phone: <>Mandag–fredag når du oss på telefon 08:00–18:00 på {tel} og når som helst på e-post på {mailA}.</>, mail: <>Du kan alltid nå oss på e-post på {mailA}.</>, chat: "Chat med oss" },
+  };
+  const t = TS[lang] || TS.de;
   return (
     <>
       <Hr style={{ borderColor: brand.hr, margin: "22px 0 14px" }} />
