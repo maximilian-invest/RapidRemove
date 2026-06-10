@@ -147,7 +147,6 @@ function Hero({ onStart }) {
       <div className="hero-mesh"></div>
       <div className="container hero-grid">
         <div>
-          <span className="chip hs hs1"><Icon.shieldCheck size={15} /> {t.hero.chip}</span>
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
           <p className="lead hs hs3">{t.hero.lead}</p>
           <a className="hero-proof hs hs5" href={tpUrl} target="_blank" rel="noopener noreferrer">

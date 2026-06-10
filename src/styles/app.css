@@ -154,7 +154,7 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-assure{display:flex;gap:22px;margin-top:24px;flex-wrap:wrap;}
 .hero-assure div{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--fg-2);}
 .hero-assure svg{width:18px;height:18px;color:var(--success);}
-@media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:36px;}}
+@media(max-width:920px){.hero-grid{grid-template-columns:1fr;gap:36px;}.hero-grid>*{min-width:0;}.check-card{padding:24px;}}
 
 /* hero check card */
 .check-card{background:#fff;border-radius:var(--r-xl);box-shadow:var(--shadow-lg);padding:28px;border:1px solid var(--hairline);position:relative;}

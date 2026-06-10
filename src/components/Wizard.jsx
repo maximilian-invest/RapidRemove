@@ -1102,10 +1102,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
         <aside className="wz-aside">
           <LiveCounter base={conv.counterBase} label={conv.counterLabel} sub={conv.successRate + " · " + conv.avgTime} />
           <Testimonial q={conv.quotes[0]} />
-          <div className="aside-badges">
-            <span><Icon.lock size={15} /> {conv.asideBadges[0]}</span>
-            <span><Icon.shieldCheck size={15} /> {conv.asideBadges[1]}</span>
-          </div>
         </aside>
       </div>
     );
