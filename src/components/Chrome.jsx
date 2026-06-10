@@ -238,6 +238,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
           </div>
           <div className="nav-right">
+            <a className="nav-tel" href="tel:08000900001" aria-label="Telefon 0800 0900001"><Icon.phone size={15} /><span>0800 0900001</span></a>
             <LangToggle />
             <button className="btn btn-primary sm" onClick={onStart}><span className="ico"><Icon.search size={17} /></span>{t.nav.cta}</button>
             <button className="nav-burger" onClick={() => setOpen(true)} aria-label="Menu"><Icon.menu /></button>

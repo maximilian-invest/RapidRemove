@@ -71,6 +71,10 @@ section{position:relative;}
 .nav-links a.on{color:var(--primary);}
 .nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
 .nav-burger{display:none;background:none;border:none;cursor:pointer;color:var(--fg);padding:6px;}
+/* Klickbare Telefonnummer in der Navbar (Desktop & Mobil) */
+.nav-tel{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:13.5px;color:var(--fg);text-decoration:none;white-space:nowrap;padding:7px 12px;border:1px solid var(--hairline);border-radius:999px;background:#fff;flex:none;}
+.nav-tel svg{color:var(--primary);flex:none;}
+.nav-tel:hover{border-color:var(--orange-200);color:var(--primary);}
 /* Sprach-Hinweis-Band (Browser-Sprache erkannt) */
 .lang-hint{background:var(--orange-50);border-bottom:1px solid var(--orange-200);padding:8px 0;font-size:13.5px;}
 .lang-hint-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;}
@@ -113,9 +117,12 @@ section{position:relative;}
 }
 /* Schmale Handys: nichts soll überlaufen – nur Icon-Logo, Sprache & Burger; CTA liegt unten als Sticky-Button. */
 @media(max-width:560px){
-  .nav-inner{gap:12px;}
-  .nav-right{gap:8px;}
+  .nav-inner{gap:10px;}
+  .nav-right{gap:7px;}
   .nav-right .btn-primary{display:none;}
+  /* Telefonnummer bleibt sichtbar — kompakter, damit nichts überlappt */
+  .nav-tel{padding:6px 9px;font-size:12.5px;gap:5px;}
+  .langmenu-btn .lm-code{display:none;}
 }
 
 /* mobile sheet */
