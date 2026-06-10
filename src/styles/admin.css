@@ -396,6 +396,7 @@ button{font-family:inherit;}
 .cd-meta-row .m{font-size:12.5px;color:var(--fg-2);font-weight:700;display:flex;align-items:center;gap:6px;}
 .cd-meta-row .m svg{width:14px;height:14px;color:var(--fg-muted);}
 .cd-grid{display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start;}
+.cd-grid.cd-grid-1{grid-template-columns:1fr;} /* Presse-Auslistung: keine Abrechnungs-/Nachweis-Spalte */
 @media(max-width:1080px){.cd-grid{grid-template-columns:1fr;}}
 .cd-col{display:flex;flex-direction:column;gap:22px;}
 

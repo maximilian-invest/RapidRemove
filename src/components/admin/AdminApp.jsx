@@ -559,16 +559,15 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             )}
           </div>
 
-          {/* payment / stripe */}
+          {/* payment / stripe — bei Presse-Auslistung (kostenlose Prüfung) ausgeblendet */}
+          {!isPress && (
           <div className="dsec">
             <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
-            {!isPress && (
-              <div className="stripe-box" style={{ marginBottom: 14 }}>
-                <span className="sb-logo">stripe</span>
-                <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
-                <span className="sb-status">{o.pay === "paid" ? <span className="badge-st st-paid"><span className="d" style={{ background: "var(--success)" }}></span>Erfasst</span> : o.pay === "failed" ? <span className="badge-st st-refunded"><span className="d"></span>Abgelehnt</span> : <span className="badge-st st-pending"><span className="d"></span>Reserviert</span>}</span>
-              </div>
-            )}
+            <div className="stripe-box" style={{ marginBottom: 14 }}>
+              <span className="sb-logo">stripe</span>
+              <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
+              <span className="sb-status">{o.pay === "paid" ? <span className="badge-st st-paid"><span className="d" style={{ background: "var(--success)" }}></span>Erfasst</span> : o.pay === "failed" ? <span className="badge-st st-refunded"><span className="d"></span>Abgelehnt</span> : <span className="badge-st st-pending"><span className="d"></span>Reserviert</span>}</span>
+            </div>
             <div className="drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
@@ -577,6 +576,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
           </div>
+          )}
         </div>
       </div>
     </React.Fragment>
@@ -1023,7 +1023,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
           </div>
         </div>
-        <div className="m-dbadges"><StatusBadge status={o.status} /><PayBadge pay={o.pay} />
+        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge pay={o.pay} />}
           {o.status !== "storniert"
             ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -1068,6 +1068,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           )}
         </div>
 
+        {!isPress && (
         <div className="m-dsec">
           <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
@@ -1076,6 +1077,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
         </div>
+        )}
 
         <div className="m-dsec">
           <h3><Icon.mail /> Kommunikation</h3>
@@ -1115,7 +1117,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
         <div>
-          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> <PayBadge pay={o.pay} />
+          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> {!isPress && <PayBadge pay={o.pay} />}
             {o.status !== "storniert"
               ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
               : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -1129,7 +1131,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
       </div>
 
-      <div className="cd-grid">
+      <div className={"cd-grid" + (isPress ? " cd-grid-1" : "")}>
         {/* MAIN COLUMN */}
         <div className="cd-col">
           {/* profile & service (Presse: zu prüfende Inhalte statt Google-Profil) */}
@@ -1276,12 +1278,10 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 
         {/* RIGHT RAIL */}
         <div className="cd-col">
-          {/* billing / stripe */}
+          {/* billing / stripe — bei Presse-Auslistung (kostenlose Prüfung) komplett ausgeblendet */}
+          {!isPress && (
           <div className="dsec">
-            <h3><Icon.lock /> Abrechnung <span className="right">{isPress ? null : <PayBadge pay={o.pay} />}</span></h3>
-            {isPress ? (
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg-2)", lineHeight: 1.55 }}>Kostenlose Erstprüfung – es fällt keine Zahlung an. Nach der Prüfung folgt ggf. ein Festpreis-Angebot.</div>
-            ) : (<React.Fragment>
+            <h3><Icon.lock /> Abrechnung <span className="right"><PayBadge pay={o.pay} /></span></h3>
             <div className="stripe-box" style={{ marginBottom: 12 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
@@ -1304,8 +1304,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                 </div>
               ))}
             </div>
-            </React.Fragment>)}
           </div>
+          )}
 
           {/* Profil-Nachweis (Stand der Beauftragung) — bei Presse-Auslistung nicht relevant */}
           {!isPress && (
