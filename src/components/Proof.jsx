@@ -71,7 +71,7 @@ export const PRESS_LINKS = [
   { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
 ];
 
-const PRESS_LABEL = { de: "Bekannt aus", en: "As seen in", es: "Conocidos por", fr: "Vu dans", it: "Noti da", nl: "Bekend van", pt: "Conhecidos de", ja: "掲載メディア", sv: "Omnämnda i", da: "Kendt fra", no: "Omtalt i" };
+export const PRESS_LABEL = { de: "Bekannt aus", en: "As seen in", es: "Conocidos por", fr: "Vu dans", it: "Noti da", nl: "Bekend van", pt: "Conhecidos de", ja: "掲載メディア", sv: "Omnämnda i", da: "Kendt fra", no: "Omtalt i" };
 
 /* Echte Presse-Leiste (klickbare Quellen). variant="bar" = zentrierte Karte (Wizard-Router). */
 export function PressBand({ variant }) {

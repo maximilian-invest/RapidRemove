@@ -9,7 +9,7 @@ import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 import { AblaufVideo } from "@/components/AblaufVideo";
-import { TpStars, TrustpilotLive } from "@/components/Proof";
+import { TrustpilotLive, PRESS_LABEL, PRESS_LINKS } from "@/components/Proof";
 
 
 const TEAM_COPY = {
@@ -133,7 +133,6 @@ const HERO_TEAM = {
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
-  const tpUrl = lang === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
   const [name, setName] = React.useState("");
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
@@ -174,11 +173,11 @@ function Hero({ onStart }) {
         </div>
 
         <div className="hero-card-col hs hs4">
-          <a className="float-card tp" href={tpUrl} target="_blank" rel="noopener noreferrer">
-            <span className="fc-tp"><Icon.star /></span>
+          <a className="float-card heise" href={PRESS_LINKS[0].u} target="_blank" rel="noopener noreferrer">
+            <span className="fc-heise" aria-hidden="true">h</span>
             <div>
-              <div className="fc-strong">{t.hero.trust[0]} <span style={{ verticalAlign: "middle", display: "inline-flex" }}><TpStars size={14} /></span></div>
-              <div className="fc-cap">Trustpilot</div>
+              <div className="fc-cap up">{PRESS_LABEL[lang] || PRESS_LABEL.en}</div>
+              <div className="fc-strong">heise online</div>
             </div>
           </a>
         <div className="check-card">

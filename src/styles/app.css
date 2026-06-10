@@ -230,16 +230,20 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-card-col{position:relative;}
 .float-card{position:absolute;background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--shadow-lg);padding:11px 15px 11px 12px;display:flex;align-items:center;gap:11px;z-index:4;animation:floaty 5.5s var(--ease) infinite;text-decoration:none;color:inherit;}
 .float-card.tp{top:-22px;right:-18px;left:auto;animation-delay:.2s;}
+.float-card.heise{top:-22px;right:-18px;left:auto;animation-delay:.2s;padding-right:18px;}
 .float-card.done{bottom:-24px;left:-36px;animation-delay:1.4s;}
 .float-card .fc-strong{font-family:var(--font-display);font-weight:700;font-size:15px;line-height:1.1;color:var(--fg);display:flex;align-items:center;gap:6px;}
 .float-card .fc-cap{font-size:11.5px;font-weight:700;color:var(--fg-muted);margin-top:2px;}
+.float-card .fc-cap.up{margin-top:0;margin-bottom:3px;text-transform:uppercase;letter-spacing:.09em;font-size:10px;color:var(--fg-muted);}
 .float-card .fc-tp{width:32px;height:32px;border-radius:8px;background:#00b67a;display:flex;align-items:center;justify-content:center;flex:none;}
 .float-card .fc-tp svg{width:20px;height:20px;color:#fff;fill:#fff;}
+/* „Bekannt aus heise" – rote heise-Marke (weißes „h" auf heise-Rot), kein externes Bild */
+.float-card .fc-heise{width:34px;height:34px;border-radius:8px;background:#d2001f;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-family:var(--font-display);font-weight:800;font-size:23px;line-height:1;letter-spacing:-.05em;}
 .float-card .fc-done{width:32px;height:32px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;flex:none;}
 .float-card .fc-done svg{width:18px;height:18px;color:#fff;}
 .float-card .stars{color:var(--primary);}
 @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
-@media(max-width:1040px){.float-card.tp{left:auto;right:-12px;}.float-card.done{left:-12px;}}
+@media(max-width:1040px){.float-card.tp,.float-card.heise{left:auto;right:-12px;}.float-card.done{left:-12px;}}
 @media(max-width:920px){.float-card{display:none;}}
 .hero-assure{display:flex;gap:22px;margin-top:24px;flex-wrap:wrap;}
 .hero-assure div{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--fg-2);}
