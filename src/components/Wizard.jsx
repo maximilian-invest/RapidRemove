@@ -5,7 +5,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, submitContact } from "@/lib/order";
+import { submitOrder, submitCheck } from "@/lib/order";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
 
@@ -1673,8 +1673,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     const rmUrl = (i) => () => setPressData({ ...pressData, urls: pressData.urls.filter((_, j) => j !== i) });
     const submitPress = () => {
       const urls = (pressData.urls || []).filter((u) => u && u.trim());
-      const message = `Links:\n${urls.join("\n") || "—"}\n\nBeschreibung: ${pressData.desc || "—"}\nAlternative (Verdrängung) gewünscht: ${pressData.orm === "yes" ? "ja" : "nein"}`;
-      submitContact({ email: pressData.email, topic: "Presse / Suchergebnis auslisten", message, lang }).catch(() => {});
+      // Landet im Admin-Panel als Bestellung „deindex" (Presse auslisten – Prüfung):
+      // Links + Beschreibung als Notiz, damit die Partnerkanzlei sie prüfen kann.
+      const note = `Links:\n${urls.join("\n") || "—"}\n\nBeschreibung: ${pressData.desc || "—"}\nAlternative (Verdrängung) gewünscht: ${pressData.orm === "yes" ? "ja" : "nein"}`;
+      submitOrder({ service: "deindex", email: pressData.email, profile: "Presse-Auslistung", note, company: "", amount: 0, protAmount: 0, lang, country, orderId }).catch(() => {});
       setPressDone(true);
     };
     if (pressDone) {

@@ -195,7 +195,12 @@ app.post("/order", async (req, reply) => {
   const profile = clip(b.profile, 200);
   const orderId = clip(b.orderId, 40);
   const lang = clip(b.lang, 5) || "de";
+  const note = clip(b.note, 2000);
   const tlang = mailLang(lang);
+  // Presse-/Suchergebnis-Auslistung (Wizard) ist eine kostenlose Prüfung, keine
+  // bestätigte Löschung — landet als Bestellung „deindex" im Admin, aber der Kunde
+  // bekommt NICHT die Auftragsbestätigung fürs Profil-Löschen.
+  const isPress = service === "deindex";
 
   const t = TEMPLATES["auftragsbestaetigung"];
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
@@ -203,25 +208,30 @@ app.post("/order", async (req, reply) => {
   const html = await render(React.createElement(t.component, props));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
-  // 1) Kundenbestätigung (bestehendes Template)
-  try {
-    await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
-    result.customer = true;
-  } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
+  // 1) Kundenbestätigung (bestehendes Template) — bei Presse-Prüfung übersprungen
+  if (!isPress) {
+    try {
+      await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+      result.customer = true;
+    } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
+  }
 
   // 2) interne Benachrichtigung an das Postfach
   try {
     const notify = process.env.NOTIFY_TO || process.env.MAIL_FROM || "info@rapid-remove.com";
     const row = (l: string, v: string) =>
       v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "";
+    const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
     const adminHtml =
-      `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">Neue Bestellung</h2>` +
+      `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">${heading}</h2>` +
       `<table style="border-collapse:collapse;font-size:14px">` +
       row("Name", name) + row("E-Mail", email) + row("Telefon", phone) + row("Unternehmen", company) +
       row("Profil", profile) + row("Leistung", service) + row("Schutz", protection) +
       row("Sprache", lang) + row("Bestell-Nr.", orderId) +
-      `</table></div>`;
-    await sendMail({ to: notify, subject: `Neue Bestellung – ${company || name || email}`, html: adminHtml, replyTo: email });
+      `</table>` +
+      (note ? `<div style="margin-top:14px"><div style="color:#6b6259;font-size:13px;margin-bottom:4px">${isPress ? "Zu prüfende Inhalte" : "Notiz"}</div><pre style="white-space:pre-wrap;font:inherit;background:#faf6f0;border-radius:8px;padding:10px 12px;margin:0">${escapeHtml(note)}</pre></div>` : "") +
+      `</div>`;
+    await sendMail({ to: notify, subject: `${heading} – ${company || name || email}`, html: adminHtml, replyTo: email });
     result.notify = true;
   } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
 
@@ -238,10 +248,10 @@ app.post("/order", async (req, reply) => {
         reviews: Number(b.reviews) || 0,
         amount: Number(b.amount) || 0,
         protAmount: Number(b.protAmount) || 0,
-        checkId, raw: b,
+        note, checkId, raw: b,
       });
       if (checkId) await linkCheck(checkId, id);
-      await insertEvent({ orderId: id, type: "order", title: "Bestellung eingegangen", detail: `${id} erstellt` });
+      await insertEvent({ orderId: id, type: "order", title: isPress ? "Presse-Prüfung angefragt" : "Bestellung eingegangen", detail: `${id} erstellt` });
       if (result.customer) await insertEvent({ orderId: id, type: "mail", title: "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
       result.saved = true;
     }
