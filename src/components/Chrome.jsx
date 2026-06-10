@@ -275,7 +275,7 @@ function Footer({ onStart, onBlog, onAbout }) {
   const cols = t.footer.cols || [];
   let legalIdx = cols.findIndex((c) => /recht|legal|légal|legale|juridi|法|特定商/i.test(c.h || ""));
   if (legalIdx < 0) legalIdx = cols.length - 1;
-  const LEGAL = ["https://rapid-remove.com/impressum", "https://rapid-remove.com/datenschutzerklaerung"];
+  const LEGAL = [asset("/impressum/"), asset("/datenschutzerklaerung/")];
   return (
     <footer className="footer">
       <div className="container">

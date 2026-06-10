@@ -25,9 +25,9 @@ export default function OrderFormStandalone({ orderId }) {
           ? <OrderForm key={orderId} orderId={orderId} lang={(info && info.lang) || "de"} initial={info && info.form ? info.form : null} />
           : <div style={{ background: "#fff", border: "1px solid #ece7e1", borderRadius: 18, padding: 28, color: "#6b6259", fontWeight: 600 }}>Lädt…</div>}
         <div style={{ marginTop: 18, textAlign: "center", fontSize: 12.5, fontWeight: 600 }}>
-          <a href="https://rapid-remove.com/impressum" target="_blank" rel="noopener noreferrer" style={{ color: "#8a8079", textDecoration: "none", margin: "0 8px" }}>Impressum</a>
+          <a href={asset("/impressum/")} target="_blank" rel="noopener noreferrer" style={{ color: "#8a8079", textDecoration: "none", margin: "0 8px" }}>Impressum</a>
           <span style={{ color: "#cfc7bf" }}>·</span>
-          <a href="https://rapid-remove.com/datenschutzerklaerung" target="_blank" rel="noopener noreferrer" style={{ color: "#8a8079", textDecoration: "none", margin: "0 8px" }}>Datenschutz</a>
+          <a href={asset("/datenschutzerklaerung/")} target="_blank" rel="noopener noreferrer" style={{ color: "#8a8079", textDecoration: "none", margin: "0 8px" }}>Datenschutz</a>
         </div>
       </div>
     </div>
