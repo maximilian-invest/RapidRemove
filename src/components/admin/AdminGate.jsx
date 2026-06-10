@@ -94,8 +94,17 @@ export function AdminGate() {
       }
       setCanFace(avail);
       setFaceReason(avail ? "" : reason);
-      if (face === "1") { setMode("faceid"); return; }                 // dauerhaft → per Face ID entsperren
-      if (session) { setAdminToken(session); setMode("authed"); return; } // laufende Sitzung
+      if (face === "1") { setMode("faceid"); return; }                 // dauerhaft → per Face ID entsperren (Token wird beim Entsperren geprüft)
+      if (session) {
+        // Gespeicherte Sitzung NICHT blind übernehmen: erst gegen den Server prüfen.
+        // So fällt ein veralteter Token (z. B. nachdem ADMIN_TOKEN geändert wurde) sauber auf
+        // den Login zurück, statt scheinbar eingeloggt zu sein und überall mit HTTP 401 auf
+        // Demo-Daten zu laufen. Bei Netzfehler (Server nicht erreichbar) bleibt es wie bisher.
+        let ok = false, reachable = true;
+        try { ok = await verifyAdmin(session); } catch (e) { reachable = false; }
+        if (ok || !reachable) { setAdminToken(session); setMode("authed"); return; }
+        try { sessionStorage.removeItem(KEY); } catch (e) {}
+      }
       setMode("password");
     })();
   }, []);
@@ -143,6 +152,16 @@ export function AdminGate() {
       let t = "";
       try { t = localStorage.getItem(KEY) || ""; } catch (e) {}
       if (!t) throw new Error("Kein gespeicherter Zugang — bitte Passwort verwenden.");
+      // Hinterlegten Token gegen den Server prüfen: wurde das Passwort geändert,
+      // sauber zurück zum Login statt mit veraltetem Token in 401 zu laufen.
+      let ok = false, reachable = true;
+      try { ok = await verifyAdmin(t); } catch (e) { reachable = false; }
+      if (reachable && !ok) {
+        try { localStorage.removeItem(FACE_KEY); localStorage.removeItem(CRED_KEY); localStorage.removeItem(KEY); } catch (e) {}
+        setErr("Zugang abgelaufen (Passwort wurde geändert). Bitte neu anmelden.");
+        setPw(""); setMode("password");
+        return;
+      }
       setAdminToken(t); setMode("authed");
     } catch (e) {
       setErr(e.message || "Face ID fehlgeschlagen.");
