@@ -35,7 +35,7 @@ const jsonLd = {
       datePublished: ARTICLE_META.datePublished,
       dateModified: ARTICLE_META.dateModified,
       inLanguage: "de-DE",
-      author: { "@type": "Person", name: ARTICLE_META.author, image: `${SITE_URL}${ARTICLE_META.authorImage}` },
+      author: { "@type": "Person", name: ARTICLE_META.author, image: `${SITE_URL}${ARTICLE_META.authorImage}`, url: `${SITE_URL}/ueber-uns`, jobTitle: ARTICLE_META.authorRole },
       publisher: {
         "@type": "Organization",
         name: "RapidRemove",

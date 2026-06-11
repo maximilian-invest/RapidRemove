@@ -119,7 +119,7 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url) {
         datePublished: meta.date,
         dateModified: meta.date,
         inLanguage: lang,
-        author: { "@type": "Person", name: meta.author },
+        author: { "@type": "Person", name: meta.author, url: `${SITE_URL}/ueber-uns` },
         publisher: { "@type": "Organization", name: "RapidRemove", logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/rapidremove-logo-full.png` } },
         mainEntityOfPage: { "@type": "WebPage", "@id": url },
         keywords: (meta.keywords || []).join(", "),

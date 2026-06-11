@@ -108,7 +108,7 @@ function Body({ data, lang, ui, related }) {
           {data.dek && <p className="art-dek">{inline(data.dek)}</p>}
           <div className="art-meta">
             <span className="am-ava">{data.meta.author[0]}</span>
-            <span className="am-author">{data.meta.author}</span>
+            <a className="am-author" href={asset("/ueber-uns/")} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
             {data.meta.authorRole && <span> · {data.meta.authorRole}</span>}
             <span className="am-dot" />
             <span><Icon.clock />{data.readingMin || 7} {ui.reading}</span>
@@ -151,7 +151,7 @@ function Body({ data, lang, ui, related }) {
           <div className="art-author">
             <div className="aa-ava">{data.meta.author[0]}</div>
             <div>
-              <div className="aa-name">{data.meta.author}</div>
+              <a className="aa-name" href={asset("/ueber-uns/")} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
               <div className="aa-role">{data.meta.authorRole || "RapidRemove"}</div>
             </div>
           </div>
