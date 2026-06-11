@@ -24,8 +24,8 @@ const article = {
     { t: "h2", id: "gerichte", text: "Was die Gerichte sagen", toc: "Was Gerichte sagen" },
     { t: "p", text: "Die Rechtsprechung stützt diese Linie seit Jahren:" },
     { t: "ul", items: [
-      "Das **Landgericht Lübeck** entschied bereits 2018, dass eine Google-Bewertung mit einem Stern ohne Text gelöscht werden muss.",
-      "Auch jüngere Entscheidungen, unter anderem des **OLG Köln**, bestätigen, dass es auf eine **tatsächliche Erfahrung** ankommt – fehlt ein erkennbarer Geschäftskontakt, kann die Bewertung unzulässig sein.",
+      "Das **Landgericht Lübeck** entschied bereits 2018 (Beschl. v. 13.06.2018 – Az. 9 O 59/17), dass eine Google-Bewertung mit einem Stern ohne Text gelöscht werden muss.",
+      "Auch der **Bundesgerichtshof** stellte klar (Urt. v. 01.03.2016 – Az. VI ZR 34/15), dass Bewertungsportale beanstandete Bewertungen auf einen **tatsächlichen Geschäftskontakt** prüfen müssen – fehlt dieser, kann die Bewertung unzulässig sein.",
     ] },
     { t: "p", text: "Entscheidend ist also nicht, ob der Bewertende formell Kunde war, sondern ob ein **realer Kontakt** mit Ihrem Unternehmen plausibel ist. Bei einer wortlosen 1-Stern-Bewertung ist das oft gerade nicht der Fall." },
 
@@ -58,7 +58,7 @@ const article = {
     { t: "cta", title: "Prüfen Sie kostenlos, ob Ihre 1-Stern-Bewertung löschbar ist.", text: "Firmennamen eingeben – wir finden Ihr Profil und prüfen in Sekunden, ob und wie schnell es sich entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
   ],
   faq: [
-    { q: "Kann ich eine 1-Stern-Bewertung ohne Text löschen lassen?", a: "In vielen Fällen ja. Da kein Bezug zu einer echten Erfahrung erkennbar ist, fehlt der Bewertung oft die rechtliche Grundlage – Gerichte wie das LG Lübeck und das OLG Köln haben entsprechende Löschansprüche bestätigt." },
+    { q: "Kann ich eine 1-Stern-Bewertung ohne Text löschen lassen?", a: "In vielen Fällen ja. Da kein Bezug zu einer echten Erfahrung erkennbar ist, fehlt der Bewertung oft die rechtliche Grundlage – das LG Lübeck (Az. 9 O 59/17) und der BGH (Az. VI ZR 34/15) haben entsprechende Prüf- und Löschansprüche bestätigt." },
     { q: "Ist eine 1-Stern-Bewertung ohne Text strafbar?", a: "Die Bewertung selbst meist nicht. Wurde sie aber ohne realen Anlass abgegeben, kann sie unzulässig sein und einen zivilrechtlichen Löschanspruch begründen. Dies ist keine Rechtsberatung." },
     { q: "Wie melde ich eine Sternebewertung ohne Kommentar?", a: "Über das Drei-Punkt-Menü neben der Bewertung auf Rezension melden klicken und als Grund den fehlenden Leistungsbezug angeben. Den Status verfolgen Sie über das Google-Tool zur Verwaltung von Rezensionen." },
     { q: "Was tun, wenn Google die Bewertung nicht löscht?", a: "Für eine einzelne Bewertung hilft eine konkret begründete anwaltliche Beanstandung. Ist Ihr Profil insgesamt beschädigt und Sie wollen einen Neuanfang, ist die Profil-Löschung über RapidRemove der zuverlässigste Weg – dabei verschwinden alle Bewertungen mit dem Profil." },

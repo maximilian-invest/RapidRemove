@@ -9,12 +9,20 @@ import { asset } from "@/lib/base";
 import { magazinePath } from "@/lib/locales-meta";
 import { uiFor } from "@/lib/articles/registry";
 
-/* inline **bold** -> <strong> */
+/* inline **bold** + [label](https://url) external links */
 function inline(text, k = "i") {
-  const parts = String(text).split(/\*\*(.+?)\*\*/g);
-  return parts.map((p, i) =>
-    i % 2 === 1 ? <strong key={k + i}>{p}</strong> : <React.Fragment key={k + i}>{p}</React.Fragment>
-  );
+  const s = String(text);
+  const re = /\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  const out = [];
+  let last = 0, m, idx = 0;
+  while ((m = re.exec(s)) !== null) {
+    if (m.index > last) out.push(<React.Fragment key={k + idx++}>{s.slice(last, m.index)}</React.Fragment>);
+    if (m[1] !== undefined) out.push(<strong key={k + idx++}>{m[1]}</strong>);
+    else out.push(<a key={k + idx++} href={m[3]} target="_blank" rel="noopener noreferrer">{m[2]}</a>);
+    last = re.lastIndex;
+  }
+  if (last < s.length) out.push(<React.Fragment key={k + idx++}>{s.slice(last)}</React.Fragment>);
+  return out;
 }
 
 function Body({ data, lang, ui, related }) {

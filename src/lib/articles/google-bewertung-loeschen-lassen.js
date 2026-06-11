@@ -14,7 +14,7 @@ const article = {
   category: "Reputation",
   iconKey: "trash",
   readingMin: 9,
-  dek: "Eine einzige ungerechtfertigte 1-Stern-Bewertung kann Ihren mühsam aufgebauten Ruf beschädigen – und bares Geld kosten. Studien der Harvard Business School zeigen, dass schon ein zusätzlicher Stern im Durchschnitt den Umsatz um 5 bis 9 % steigern kann. In diesem Leitfaden erfahren Sie, **wie Sie eine Google Bewertung löschen lassen können**, welche Methoden wirklich funktionieren, was sie kosten und warum die schnellste Lösung oft nicht der Anwalt ist.",
+  dek: "Eine einzige ungerechtfertigte 1-Stern-Bewertung kann Ihren mühsam aufgebauten Ruf beschädigen – und bares Geld kosten. Eine vielzitierte Yelp-Studie von Michael Luca (Harvard Business School) zeigt, dass schon ein zusätzlicher Stern den Umsatz im Durchschnitt um 5 bis 9 % steigern kann. In diesem Leitfaden erfahren Sie, **wie Sie eine Google Bewertung löschen lassen können**, welche Methoden wirklich funktionieren, was sie kosten und warum die schnellste Lösung oft nicht der Anwalt ist.",
   blocks: [
     { t: "note", title: "Wichtiger Hinweis", text: "Dieser Artikel bietet eine Übersicht über praktische Möglichkeiten und stellt keine Rechtsberatung dar. Bei konkreten rechtlichen Fragen wenden Sie sich an einen Anwalt Ihres Vertrauens." },
 

@@ -91,7 +91,7 @@ function ArticleBody() {
               <li><strong>Selbst löschen geht kaum:</strong> Google bietet keinen echten „Profil löschen“-Knopf – nur den Status „dauerhaft geschlossen“.</li>
               <li><strong>„Geschlossen“ ≠ gelöscht:</strong> Eintrag, Name, Adresse und <strong>alle Bewertungen bleiben öffentlich sichtbar.</strong></li>
               <li><strong>Der einzige verlässliche Weg</strong> ist die vollständige Entfernung des Profils über die offiziellen Verfahren – legal und dauerhaft.</li>
-              <li><strong>RapidRemove</strong> entfernt das Profil samt aller Bewertungen in <strong>~24 Stunden</strong> – <strong>Zahlung erst nach Erfolg</strong>.</li>
+              <li><strong>RapidRemove</strong> entfernt das Profil samt aller Bewertungen in der Regel in <strong>24–48 Stunden</strong> – <strong>Zahlung erst nach Erfolg</strong>.</li>
             </ul>
           </div>
 
@@ -152,7 +152,7 @@ function ArticleBody() {
               </thead>
               <tbody>
                 <tr><td>Vollständige Löschung möglich?</td><td className="no">Praktisch nein</td><td>Unsicher</td><td className="rr ok">Ja</td></tr>
-                <tr><td>Dauer</td><td>—</td><td>3–9 Monate</td><td className="rr">~24 Stunden</td></tr>
+                <tr><td>Dauer</td><td>—</td><td>3–9 Monate</td><td className="rr">24–48 Stunden</td></tr>
                 <tr><td>Kosten</td><td>—</td><td>300 €+ / Stunde</td><td className="rr">Fixpreis ab 450 €</td></tr>
                 <tr><td>Alle Bewertungen weg</td><td className="no">Nein</td><td>Einzeln, mühsam</td><td className="rr ok">Alle auf einmal</td></tr>
                 <tr><td>Erfolg</td><td className="no">Nein</td><td>Ungewiss</td><td className="rr ok">Garantiert (No Cure, No Pay)</td></tr>
@@ -238,7 +238,7 @@ function ArticleBody() {
 
           <h2 id="dauer-kosten">Wie lange dauert es – und was kostet es?</h2>
           <p>
-            Eine professionelle Löschung ist in der Regel <strong>innerhalb von rund 24 Stunden</strong> erledigt – statt
+            Eine professionelle Löschung ist in der Regel <strong>innerhalb von 24–48 Stunden</strong> erledigt – statt
             der Monate, die der Anwaltsweg verschlingt. Bei den Kosten gilt: Ein Anwalt rechnet im Stundentakt (oft
             300 € und mehr) ohne Erfolgsgarantie. RapidRemove arbeitet mit einem <strong>transparenten Fixpreis ab
             450 €</strong> – und Sie zahlen <strong>ausschließlich nach erfolgreicher Löschung</strong>.
@@ -255,7 +255,7 @@ function ArticleBody() {
             {[
               ["Gratis-Check", "Firmennamen eingeben. Wir finden Ihr Profil und prüfen sofort, ob die Löschung möglich ist – unverbindlich und kostenlos."],
               ["Bestätigen & freigeben", "Sie bestätigen das richtige Profil und erteilen die Bearbeitungsfreigabe. Kein Zugriff auf Gmail, Ads oder persönliche Daten."],
-              ["Löschung in ~24 Stunden", "Unser Team entfernt das Profil samt aller Bewertungen – dauerhaft. Bezahlt wird erst danach."],
+              ["Löschung in 24–48 Stunden", "Unser Team entfernt das Profil samt aller Bewertungen – dauerhaft. Bezahlt wird erst danach."],
             ].map(([t, d], i) => (
               <div className="art-step" key={i}>
                 <div className="sn">{i + 1}</div>
