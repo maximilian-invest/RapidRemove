@@ -6,7 +6,7 @@ import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
 export const metadata = {
   title: ARTICLE_META.title,
   description: ARTICLE_META.description,
-  alternates: { canonical: ARTICLE_META.url },
+  alternates: { canonical: ARTICLE_META.url, languages: { de: ARTICLE_META.url, en: `${SITE_URL}/en/delete-google-business-profile`, "x-default": ARTICLE_META.url } },
   openGraph: {
     type: "article",
     title: ARTICLE_META.title,

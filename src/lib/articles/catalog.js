@@ -19,6 +19,15 @@ export { TRANSLATIONS };
 
 const FLAGSHIP_SLUG = "google-unternehmensprofil-loeschen-wie-geht-das";
 const FLAGSHIP_PATH = "/magazin/google-unternehmensprofil-loeschen/";
+const EN_HUB_PATH = "/en/delete-google-business-profile/"; // EN-Übersetzung des Flaggschiffs
+// Karte für das EN-Magazin (leichtgewichtig, ohne Artikel-Body).
+const EN_HUB_CARD = {
+  slug: "delete-google-business-profile", href: EN_HUB_PATH, cat: "Google policy",
+  thm: "thm-orange", icon: "trash",
+  title: "Delete Google Business Profile: Complete Guide (2026)",
+  excerpt: "Why “permanently closed” isn't deletion — and how to remove your Google Business Profile and all its reviews for good.",
+  author: "Maximilian Hölzl", read: 9, date: "June 2026",
+};
 
 export const homeBase = (lang) => (lang === "de" ? "/" : `/${lang}/`);
 export const tFor = (lang, deSlug) => (TRANSLATIONS[lang] || {})[deSlug];
@@ -39,7 +48,7 @@ const monthYear = (iso, lang) => {
 };
 export function magCardsFor(lang) {
   if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: `/${c.slug}/` }));
-  return CLUSTER_CARDS.map((c) => {
+  const cards = CLUSTER_CARDS.map((c) => {
     const t = tFor(lang, c.slug);
     if (!t) return null;
     return {
@@ -50,6 +59,8 @@ export function magCardsFor(lang) {
       date: (t.meta.date && monthYear(t.meta.date, lang)) || c.date,
     };
   }).filter(Boolean);
+  // EN: das übersetzte Flaggschiff als erste (Titel-)Story einreihen.
+  return lang === "en" ? [EN_HUB_CARD, ...cards] : cards;
 }
 
 // [lang]/[aslug] params for every translated article.
@@ -101,7 +112,7 @@ export function resolveRelated(lang, relatedList) {
     // Flagship-Hub gibt es bislang nur auf Deutsch → in Fremdsprachen NICHT auf den
     // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte
     // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
-    if (slug === FLAGSHIP_SLUG) href = lang === "de" ? FLAGSHIP_PATH : null;
+    if (slug === FLAGSHIP_SLUG) href = lang === "de" ? FLAGSHIP_PATH : lang === "en" ? EN_HUB_PATH : null;
     else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;
   }).filter(Boolean);

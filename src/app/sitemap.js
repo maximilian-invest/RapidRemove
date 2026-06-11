@@ -31,6 +31,7 @@ export default function sitemap() {
   }));
   return [
     ...homes,
+    { url: `${SITE_URL}/en/delete-google-business-profile`, lastModified: new Date("2026-06-04"), changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/ueber-uns`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/presse-auslisten`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/reputation-verdraengen`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.8 },
