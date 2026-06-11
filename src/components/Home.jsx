@@ -674,13 +674,13 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <TrustBar />
       <Problem id="problem" />
       <ProfileDissolveDemo />
+      <Social id="reviews" />
       <How id="how" onStart={onStart} />
       <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
       <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} />
       <TrustSecurity id="trust" />
-      <Social id="reviews" />
       <Pricing id="pricing" onStart={onStart} />
       <FAQ id="faq" />
       <FinalCTA onStart={onStart} />
