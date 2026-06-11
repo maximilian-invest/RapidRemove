@@ -6,25 +6,34 @@ import { LangContext } from "@/lib/lang-context";
 import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
 import { pagePath } from "@/lib/page-routes";
+import { fetchProfileById } from "@/lib/places";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
 
-export default function App({ initialLang = "de", magCards = [] }) {
+export default function App({ initialLang = "de", initialView = null, magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
-  const [route, setRoute] = React.useState("home"); // home | wizard | blog
+  const [route, setRoute] = React.useState(initialView === "wizard" ? "wizard" : "home"); // home | wizard
   const [seed, setSeed] = React.useState("");
   const [seedProfile, setSeedProfile] = React.useState(null);
   const [homeScroll, setHomeScroll] = React.useState(null);
 
-  // Deep links: ?start=1 -> wizard, ?view=magazin|reputation|presse -> view, #section -> scroll.
+  // Eigene, lokalisierte Wizard-URL (z. B. /profil-pruefen, /it/verifica-profilo);
+  // die placeId des gewählten Profils hängt als ?p= dran (teil-/wiederherstellbar).
+  const wizardUrl = (placeId) => asset(pagePath("wizard", lang)) + (placeId ? "?p=" + encodeURIComponent(placeId) : "");
+  const homeUrl = asset(localePath(lang));
+  const setUrl = (u) => { try { if (typeof window !== "undefined" && window.location.pathname + window.location.search !== u) window.history.replaceState(null, "", u); } catch (e) {} };
+
+  // Deep links: ?p=<placeId>/?start=1/initialView -> wizard, ?view=… -> redirect, #section -> scroll.
   React.useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const view = params.get("view");
-      if (params.get("start") === "1") setRoute("wizard");
-      // Jede Sprache hat eine echte, crawlbare Magazin-URL (SEO) — alte ?view=magazin-Links dorthin umleiten.
+      const pid = params.get("p");
+      if (initialView === "wizard" || params.get("start") === "1" || pid) {
+        setRoute("wizard");
+        if (pid) fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
+      }
       else if (view === "magazin") { window.location.replace(asset(magazinePath(lang))); return; }
-      // Leistungsseiten sind eigene, crawlbare URLs (SEO) — alte ?view=-Links dorthin umleiten.
       else if (view === "reputation") { window.location.replace(asset(pagePath("orm", lang))); return; }
       else if (view === "presse") { window.location.replace(asset(pagePath("deindex", lang))); return; }
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
@@ -34,6 +43,12 @@ export default function App({ initialLang = "de", magCards = [] }) {
     document.documentElement.lang = lang;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Sobald der Wizard offen ist, die Wizard-URL setzen (Basis-Slug; placeId folgt per onSelectProfile).
+  React.useEffect(() => {
+    if (route === "wizard") setUrl(wizardUrl(seedProfile && seedProfile.placeId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route]);
 
   // Switching language navigates to that locale's own URL (real, crawlable pages).
   const setLang = (l) => {
@@ -47,30 +62,29 @@ export default function App({ initialLang = "de", magCards = [] }) {
   // konkretes Profil-Objekt (in der Live-Suche angeklickt). Mit Profil springt
   // der Wizard direkt zu „Schritt 3" (Machbarkeit) – die Profilsuche entfällt.
   const startWizard = (arg) => {
-    if (arg && typeof arg === "object") {
-      setSeed(arg.name || "");
-      setSeedProfile(arg);
-    } else {
-      setSeed(typeof arg === "string" ? arg : "");
-      setSeedProfile(null);
-    }
+    const obj = arg && typeof arg === "object";
+    if (obj) { setSeed(arg.name || ""); setSeedProfile(arg); }
+    else { setSeed(typeof arg === "string" ? arg : ""); setSeedProfile(null); }
     setRoute("wizard");
+    setUrl(wizardUrl(obj ? arg.placeId : ""));
     window.scrollTo({ top: 0 });
   };
-  const exitWizard = () => { setRoute("home"); window.scrollTo({ top: 0 }); };
+  const exitWizard = () => { setRoute("home"); setUrl(homeUrl); window.scrollTo({ top: 0 }); };
   // Jede Sprache hat eine echte, crawlbare Magazin-Route (SEO).
   const openBlog = () => { window.location.href = asset(magazinePath(lang)); };
   // Eigene, crawlbare Leistungsseiten (SEO) statt In-App-Ansicht.
   const openOrm = () => { window.location.href = asset(pagePath("orm", lang)); };
   const openDeindex = () => { window.location.href = asset(pagePath("deindex", lang)); };
-  const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); window.scrollTo({ top: 0 }); };
+  const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); setUrl(homeUrl); window.scrollTo({ top: 0 }); };
   const onAbout = () => { window.location.href = asset(pagePath("about", lang)); };
+  // Der Wizard meldet das aktuell gewählte Profil → placeId in die URL spiegeln (?p=).
+  const onWizardSelect = (placeId) => setUrl(wizardUrl(placeId));
 
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       {route === "home"
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
-        : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} />}
+        : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
     </LangContext.Provider>
   );
 }

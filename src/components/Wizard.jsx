@@ -964,7 +964,7 @@ const ROUTER_COPY = {
 };
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
-function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
+function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelectProfile }) {
   const { t, lang } = useLang();
   const w = t.wizard;
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
@@ -1030,6 +1030,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   }, []);
 
   const selected = candidates.find((c) => c.id === selectedId) || candidates[0];
+
+  // Gewähltes Profil an die App melden → placeId landet als ?p= in der URL (teilbar).
+  const selPlaceId = (selected && selected.placeId) || "";
+  React.useEffect(() => { if (onSelectProfile) onSelectProfile(selPlaceId); }, [selPlaceId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startSearch = (n) => {
     const nm = (n != null ? n : name);

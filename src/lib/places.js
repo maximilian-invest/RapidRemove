@@ -106,3 +106,29 @@ export function manualCandidate(query, lang = "de") {
     primary: true,
   }];
 }
+
+/* Place-Details (New): einzelnes Profil per placeId laden. Damit lässt sich ein
+   per ?p=<placeId> geteilter Wizard-Link wieder zum vollen Profil auflösen. */
+const DETAIL_FIELD_MASK = [
+  "id", "displayName", "formattedAddress", "rating", "userRatingCount",
+  "primaryTypeDisplayName", "businessStatus", "googleMapsUri",
+].join(",");
+
+/** Lädt ein Profil per placeId; liefert es im Wizard-Kandidatenformat oder null. */
+export async function fetchProfileById(placeId, lang = "de") {
+  const id = (placeId || "").trim();
+  if (!KEY || !id) return null;
+  try {
+    const url = `https://places.googleapis.com/v1/places/${encodeURIComponent(id)}?languageCode=${encodeURIComponent(lang || "de")}`;
+    const res = await fetch(url, { headers: { "X-Goog-Api-Key": KEY, "X-Goog-FieldMask": DETAIL_FIELD_MASK } });
+    if (!res.ok) return null;
+    const p = await res.json();
+    if (!p || !p.id) return null;
+    return {
+      id: "p1", placeId: p.id, name: p.displayName?.text || "",
+      cat: p.primaryTypeDisplayName?.text || "", rating: fmtRating(p.rating, lang),
+      reviews: p.userRatingCount || 0, addr: p.formattedAddress || "",
+      mapsUri: p.googleMapsUri || "", businessStatus: p.businessStatus || "", primary: true,
+    };
+  } catch (e) { return null; }
+}

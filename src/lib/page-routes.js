@@ -16,6 +16,7 @@ export const PAGE_SLUGS = {
   orm: { de: "reputation-verdraengen", en: "reputation-management", es: "gestion-de-reputacion", fr: "gestion-de-reputation", it: "gestione-reputazione", nl: "reputatiebeheer", pt: "gestao-de-reputacao", ja: "reputation-management", sv: "rykteshantering", da: "omdoemmestyring", no: "omdoemmehaandtering" },
   deindex: { de: "presse-auslisten", en: "press-deindexing", es: "desindexar-prensa", fr: "desindexation-presse", it: "deindicizzazione-stampa", nl: "pers-deindexeren", pt: "desindexar-imprensa", ja: "press-deindexing", sv: "avindexera-press", da: "afindeksere-presse", no: "avindeksere-presse" },
   kontakt: { de: "kontakt", en: "contact", es: "contacto", fr: "contact", it: "contatti", nl: "contact", pt: "contacto", ja: "contact", sv: "kontakt", da: "kontakt", no: "kontakt" },
+  wizard: { de: "profil-pruefen", en: "check-profile", es: "comprobar-perfil", fr: "verifier-profil", it: "verifica-profilo", nl: "profiel-checken", pt: "verificar-perfil", ja: "check", sv: "kontrollera-profil", da: "tjek-profil", no: "sjekk-profil" },
 };
 
 export const PAGE_KEYS = Object.keys(PAGE_SLUGS);
@@ -47,7 +48,8 @@ export const pageParams = () => {
   const out = [];
   for (const l of LOCALES) {
     if (l === DEFAULT_LOCALE) continue;
-    for (const key of PAGE_KEYS) out.push({ lang: l, aslug: slugFor(key, l) });
+    // wizard hat eigene, explizite Routen (lädt App nur dort, nicht auf Artikelseiten)
+    for (const key of PAGE_KEYS) { if (key === "wizard") continue; out.push({ lang: l, aslug: slugFor(key, l) }); }
   }
   return out;
 };

@@ -10,6 +10,7 @@ export const PAGE_TITLE = {
   orm: { de: "Reputation verdrängen", en: "Reputation management", es: "Gestión de reputación", fr: "Gestion de réputation", it: "Gestione della reputazione", nl: "Reputatiebeheer", pt: "Gestão de reputação", ja: "オンライン評判管理", sv: "Rykteshantering", da: "Omdømmestyring", no: "Omdømmehåndtering" },
   deindex: { de: "Presse auslisten", en: "Press de-indexing", es: "Desindexar prensa", fr: "Désindexation de presse", it: "Deindicizzazione stampa", nl: "Pers de-indexeren", pt: "Desindexar imprensa", ja: "プレス記事の削除", sv: "Avindexera press", da: "Afindeksér presse", no: "Avindekser presse" },
   kontakt: { de: "Kontakt", en: "Contact", es: "Contacto", fr: "Contact", it: "Contatti", nl: "Contact", pt: "Contacto", ja: "お問い合わせ", sv: "Kontakt", da: "Kontakt", no: "Kontakt" },
+  wizard: { de: "Profil prüfen", en: "Check your profile", es: "Comprobar perfil", fr: "Vérifier la fiche", it: "Verifica profilo", nl: "Profiel checken", pt: "Verificar perfil", ja: "プロフィールを確認", sv: "Kontrollera profil", da: "Tjek profil", no: "Sjekk profil" },
 };
 
 const BRAND_BLURB = {
