@@ -21,7 +21,7 @@ export function ServicesTrio({ onStart, onOrm, onDeindex }) {
   const s = SVC[t.code] || SVC.en;
   const acts = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex() };
   return (
-    <section className="band soft">
+    <section className="band">
       <div className="container">
         <div className="sec-head center reveal">
           <span className="eyebrow"><Icon.shield size={15} /> {s.trioEyebrow}</span>

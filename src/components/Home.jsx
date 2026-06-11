@@ -380,7 +380,7 @@ function TrustSecurity({ id }) {
   const { t } = useLang();
   const icons = [Icon.building, Icon.shieldCheck, Icon.gavel, Icon.refresh];
   return (
-    <section className="band" id={id}>
+    <section className="band soft" id={id}>
       <div className="container">
         <div className="sec-head center reveal">
           <span className="eyebrow"><Icon.lock size={15} /> {t.trust.eyebrow}</span>
