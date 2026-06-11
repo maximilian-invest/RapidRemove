@@ -23,6 +23,7 @@ import Mahnung, { subject as mahnungSubject } from "./Mahnung";
 import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung";
 import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
 import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang";
+import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 
 export interface TemplateEntry {
   label: string;
@@ -79,6 +80,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: Mahnung,
     subject: mahnungSubject,
     sample: { lang: "de", total: "519,90 €", due: "innerhalb 7 Tagen", payUrl: "https://buy.stripe.com/test_00000000" },
+  },
+  verzoegerung: {
+    label: "Verzögerung (Profil von Google blockiert)",
+    group: "Bestellung",
+    component: Verzoegerung,
+    subject: verzoegerungSubject,
+    sample: de,
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────
