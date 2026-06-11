@@ -9,10 +9,10 @@ export const ARTICLE_META = {
   url: `${SITE_URL}/${ARTICLE_SLUG}`,
   category: "Google-Policy",
   title:
-    "Google-Unternehmensprofil löschen: Anleitung 2026 (so geht's wirklich)",
+    "Google-Unternehmensprofil löschen: Anleitung (so geht's)",
   h1: "Google-Unternehmensprofil löschen – wie geht das wirklich?",
   description:
-    "Google lässt Sie Ihr Unternehmensprofil nicht einfach löschen. Diese Anleitung zeigt Schritt für Schritt, welche Wege es 2026 wirklich gibt, warum „dauerhaft geschlossen“ keine Löschung ist – und wie Sie das Profil samt aller Bewertungen dauerhaft und legal entfernen.",
+    "Google lässt Ihr Unternehmensprofil nicht einfach löschen. Die Anleitung zeigt, warum „dauerhaft geschlossen“ keine Löschung ist – und wie es wirklich geht.",
   datePublished: "2026-05-12",
   dateModified: "2026-06-04",
   author: "Maximilian Hölzl",

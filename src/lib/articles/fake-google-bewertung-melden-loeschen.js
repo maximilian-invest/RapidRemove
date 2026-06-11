@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "fake-google-bewertung-melden-loeschen",
-    title: "Fake Google-Bewertung erkennen, melden & löschen lassen (Anleitung 2026)",
+    title: "Fake Google-Bewertung melden & löschen lassen (Anleitung)",
     h1: "Fake Google-Bewertung erkennen, melden & löschen lassen",
     description:
-      "Fake Google-Bewertungen erkennen, melden und löschen lassen: Schritt-für-Schritt-Anleitung, Rechtslage, ob Fake-Bewertungen strafbar sind und was wirklich funktioniert, wenn Google nicht reagiert.",
+      "Fake Google-Bewertungen erkennen, melden und löschen lassen: 7 Warnsignale, die Meldung Schritt für Schritt und was hilft, wenn Google nicht reagiert.",
     keywords: ["fake google bewertung löschen", "fake google bewertungen melden", "fake google bewertungen erkennen", "fake bewertungen google strafbar", "was tun gegen fake google bewertungen", "falsche google bewertung melden"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",

@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "google-rezension-loeschen-lassen",
-    title: "Google Rezension löschen lassen: Formular, Kosten & Anleitung (2026)",
+    title: "Google Rezension löschen lassen: Formular & Kosten",
     h1: "Google Rezension löschen lassen: Formular, Kosten & Anleitung",
     description:
-      "Google Rezension löschen lassen – mit oder ohne Formular, kostenlos oder über eine Agentur? So entfernen Sie eigene und fremde Rezensionen, und so sehen Sie, welche Rezension gelöscht wurde.",
+      "Google Rezension löschen lassen: eigene und fremde Rezensionen entfernen – kostenlos über das Formular melden oder dauerhaft löschen lassen. So geht's.",
     keywords: ["google rezension löschen lassen", "google rezension löschen", "google rezension löschen lassen kosten", "google rezension löschen lassen formular", "google rezension löschen eigene", "google rezension löschen kostenlos"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",

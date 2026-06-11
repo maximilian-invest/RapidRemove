@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "schlechte-google-bewertungen-was-tun",
-    title: "Schlechte Google-Bewertung – was tun? Reagieren, melden, löschen (2026)",
+    title: "Schlechte Google-Bewertung: was tun? Reagieren & löschen",
     h1: "Schlechte Google-Bewertung – was tun? Reagieren, melden, löschen",
     description:
-      "Schlechte Google-Bewertung erhalten? So reagieren Sie richtig, so viel Umsatz kosten negative Bewertungen wirklich, und so lassen Sie ungerechtfertigte Rezensionen melden oder löschen.",
+      "Schlechte Google-Bewertung erhalten? So reagieren Sie richtig, so viel kosten negative Bewertungen wirklich und so lassen Sie sie melden oder löschen.",
     keywords: ["schlechte google bewertung", "schlechte google bewertung was tun", "schlechte google bewertungen löschen lassen", "auf schlechte google bewertung reagieren", "schlechte google bewertung melden", "negative bewertung was tun"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",

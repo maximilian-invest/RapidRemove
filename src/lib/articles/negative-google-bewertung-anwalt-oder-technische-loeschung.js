@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "negative-google-bewertung-anwalt-oder-technische-loeschung",
-    title: "Negative Google-Bewertung löschen: Anwalt oder technische Löschung? (Vergleich 2026)",
+    title: "Negative Google-Bewertung löschen: Anwalt oder Technik?",
     h1: "Negative Google-Bewertung löschen: Anwalt oder technische Löschung?",
     description:
-      "Negative Google-Bewertung löschen lassen: Anwalt, Klage oder technische Löschung? Wir vergleichen Kosten, Dauer und Erfolg, erklären die Rechtslage und zeigen, welcher Weg sich wirklich lohnt.",
+      "Negative Google-Bewertung löschen lassen: Anwalt, Klage oder technische Löschung? Kosten, Dauer und Erfolg im Vergleich – welcher Weg sich wirklich lohnt.",
     keywords: ["negative google bewertung löschen", "negative google bewertungen löschen lassen", "negative google bewertung anwalt", "negative google bewertung klage", "negative google bewertung strafbar", "negative google bewertungen entfernen"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",

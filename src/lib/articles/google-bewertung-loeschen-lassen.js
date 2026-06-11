@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "google-bewertung-loeschen-lassen",
-    title: "Google Bewertung löschen lassen: Kosten, Methoden & was 2026 wirklich funktioniert",
+    title: "Google Bewertung löschen lassen: Kosten & Methoden 2026",
     h1: "Google Bewertung löschen lassen: Kosten, Methoden & was 2026 wirklich funktioniert",
     description:
-      "Google Bewertung löschen lassen – seriös, schnell und garantiert. Wir vergleichen alle Methoden, Kosten und Erfolgsaussichten und zeigen, wie negative Rezensionen wirklich verschwinden.",
+      "Google Bewertung löschen lassen: alle Methoden, Kosten und Erfolgsaussichten im Vergleich – und warum die schnellste Lösung oft nicht der Anwalt ist.",
     keywords: ["google bewertung löschen lassen", "negative google bewertung löschen", "google rezension löschen lassen", "google bewertung entfernen", "schlechte bewertung löschen", "google bewertungen löschen lassen kosten"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",

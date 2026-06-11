@@ -2,10 +2,10 @@
 const article = {
   meta: {
     slug: "1-stern-bewertung-ohne-text-loeschen",
-    title: "1-Stern-Bewertung ohne Text löschen lassen: Rechtslage & Anleitung (2026)",
+    title: "1-Stern-Bewertung ohne Text löschen: Rechtslage & Anleitung",
     h1: "1-Stern-Bewertung ohne Text löschen lassen: Rechtslage & Anleitung",
     description:
-      "1-Stern-Bewertung ohne Text bei Google erhalten? Oft löschbar. Wir erklären die Rechtslage (LG Lübeck, BGH), wie Sie sie melden und welche Wege zur Löschung es gibt.",
+      "1-Stern-Bewertung ohne Text bei Google? Oft löschbar. Wir erklären die Rechtslage (LG Lübeck, BGH), wie Sie sie melden und welche Wege zur Löschung führen.",
     keywords: ["1 stern bewertung ohne text löschen", "1 stern bewertung google löschen", "sternebewertung ohne kommentar löschen", "1 stern bewertung strafbar", "google bewertung ohne text entfernen"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",
