@@ -312,7 +312,7 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 /* ---------- Trust bar ---------- */
 .trustbar{border-top:1px solid var(--hairline);border-bottom:1px solid var(--hairline);background:#fff;overflow:hidden;}
 /* Desktop: statisch, im Inhaltsbereich (keine Animation – lenkt nicht vom CTA ab) */
-.trustbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 0;flex-wrap:nowrap;}
+.trustbar-inner{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;flex-wrap:nowrap;}
 .trustbar-track{display:none;}
 .tb-item{display:flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:var(--fg-2);text-decoration:none;transition:color .15s;white-space:nowrap;flex:0 0 auto;}
 .tb-item svg{width:18px;height:18px;color:var(--fg-muted);}
