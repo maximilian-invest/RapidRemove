@@ -27,7 +27,7 @@ const article = {
     { t: "p", text: "An honest negative opinion is not punishable. It's different with **deliberately false factual claims, insults or abusive criticism** – here civil injunction and damages claims, and possibly criminal or competition-law aspects, come into play. In practice, however, the author often stays anonymous, which makes enforcement difficult." },
 
     { t: "h2", id: "anwalt", text: "Route 1: Lawyer and lawsuit", toc: "Route 1: Lawyer" },
-    { t: "p", text: "The classic legal route relies on confronting Google with a legally reasoned removal request. Specialist lawyers can achieve success rates around 90 % for clearly unlawful reviews. The downsides:" },
+    { t: "p", text: "The classic legal route relies on confronting Google with a legally reasoned removal request. Specialist lawyers can achieve success rates around 90% for clearly unlawful reviews. The downsides:" },
     { t: "ul", items: [
       "**Duration:** the process often drags on for weeks to months.",
       "**Cost:** usually billed per review; specialist firms are often around $110 to $175 per case, partly plus court costs if you sue.",
@@ -36,7 +36,7 @@ const article = {
     { t: "p", text: "For a **single, clearly unlawful** review with a documentable set of facts, the legal route can make sense. With several reviews or a fundamentally damaged profile, it quickly becomes expensive and slow." },
 
     { t: "h2", id: "streisand", text: "The Streisand effect: when being right backfires", toc: "Streisand effect" },
-    { t: "p", text: "An often underestimated risk: legal steps can provoke the reviewer even more. The result is frequently a wave of new **„revenge reviews“** – the problem grows instead of shrinking. This phenomenon is called the **Streisand effect**. A quiet, technical solution avoids it, because it works without direct confrontation with the author." },
+    { t: "p", text: "An often underestimated risk: legal steps can provoke the reviewer even more. The result is frequently a wave of new **“revenge reviews”** – the problem grows instead of shrinking. This phenomenon is called the **Streisand effect**. A quiet, technical solution avoids it, because it works without direct confrontation with the author." },
 
     { t: "h2", id: "technik", text: "Route 2: Technical profile removal", toc: "Route 2: Technical" },
     { t: "p", text: "Here lies the central difference to the legal route: RapidRemove does **not** fight individual reviews, but removes the **entire Google Business Profile**. In the course of this removal, **all** reviews disappear with it – you get a clean slate instead of a fight over every single star. Technically, the method works within Google's logic and tackles the root: the profile. Advantages:" },

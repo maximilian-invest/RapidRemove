@@ -27,15 +27,15 @@ const article = {
     { t: "p", text: "So what matters is not whether the reviewer was formally a customer, but whether a **real contact** with your business is plausible. With a wordless 1-star review, that's often precisely not the case." },
 
     { t: "h2", id: "strafbar", text: "Is a 1-star review without text punishable?", toc: "Punishable?" },
-    { t: "p", text: "A pure star rating is usually not „punishable“ in itself. But if it was given **without any real occasion** – e.g. by a competitor or someone who never had contact – it can be **impermissible** and give rise to a **removal claim**. Civil claims (injunction) are the practically more relevant lever here than criminal law." },
+    { t: "p", text: "A pure star rating is usually not “punishable” in itself. But if it was given **without any real occasion** – e.g. by a competitor or someone who never had contact – it can be **impermissible** and give rise to a **removal claim**. Civil claims (injunction) are the practically more relevant lever here than criminal law." },
 
     { t: "h2", id: "melden", text: "How to report a review without text", toc: "Report (guide)" },
     { t: "p", text: "The first, free step:" },
     { t: "ol", items: [
       "Open your **Google Business Profile** and go to the reviews.",
       "Next to the 1-star review, click the **three-dot menu**.",
-      "Choose **„Report review“**.",
-      "Give as the reason that there's no real business contact or connection to the service (e.g. „Off topic“ / „False information“).",
+      "Choose **“Report review”**.",
+      "Give as the reason that there's no real business contact or connection to the service (e.g. “Off topic” / “False information”).",
       "Submit the report and track the status via the Google tool for managing reviews.",
     ] },
 
@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "**Is your profile permanently damaged by several or unjustified reviews and you want a genuine fresh start?** Then **profile removal** via RapidRemove is the most direct route: we remove the **entire Business Profile**, all reviews disappear with it – a genuine fresh start; you only pay on success." },
     { t: "table", head: ["Route", "What is removed", "Duration", "Success", "Cost"], rows: [
       ["Report yourself", "single review", "uncertain", "low", "free"],
-      ["Lawyer", "single review", "3 – 9 months", "approx. 90 %", "per review, upfront"],
+      ["Lawyer", "single review", "3 – 9 months", "approx. 90%", "per review, upfront"],
       ["RapidRemove", "**whole profile + all reviews**", "24 – 48 h", "pay only on success", "fixed price after success"],
     ] },
     { t: "p", text: "With profile removal you only pay **after success**, and thanks to the guarantee a reappearing profile is removed for free." },
@@ -57,7 +57,7 @@ const article = {
   faq: [
     { q: "Can I have a 1-star review without text removed?", a: "In many cases yes. Since there's no recognisable connection to a real experience, the review often lacks the legal basis – German courts (LG Lübeck, case 9 O 59/17; Federal Court of Justice, VI ZR 34/15) have confirmed such removal claims. In the US, the situation differs (Section 230 CDA)." },
     { q: "Is a 1-star review without text punishable?", a: "The review itself usually isn't. But if it was given without a real occasion, it can be impermissible and give rise to a civil removal claim. This is not legal advice." },
-    { q: "How do I report a star rating without a comment?", a: "Click the three-dot menu next to the review, choose „Report review“ and give the missing service connection as the reason. Track the status via the Google tool for managing reviews." },
+    { q: "How do I report a star rating without a comment?", a: "Click the three-dot menu next to the review, choose “Report review” and give the missing service connection as the reason. Track the status via the Google tool for managing reviews." },
     { q: "What if Google doesn't remove the review?", a: "For a single review, a specifically reasoned objection via a lawyer helps. If your profile is damaged overall and you want a fresh start, profile removal via RapidRemove is the most reliable route – all reviews disappear with the profile." },
     { q: "Does RapidRemove delete the single 1-star review?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. If you only want to get rid of the one review and keep the profile, reporting or a lawyer are responsible." },
     { q: "How fast are the reviews gone?", a: "Via profile removal often within 24 to 48 hours – far faster than the months-long legal route for a single review." },

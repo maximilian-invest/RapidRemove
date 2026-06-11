@@ -16,7 +16,7 @@ const article = {
     { t: "note", title: "Note", text: "This article offers practical guidance and is not legal advice. For a case-by-case legal assessment, please consult a lawyer." },
 
     { t: "h2", id: "was-ist", text: "What is a fake review?", toc: "What is it?" },
-    { t: "p", text: "A fake review is a review that **doesn't reflect a real customer experience**. Typical sources are competitors trying to sabotage your reputation, disgruntled ex-employees, extortion attempts („Pay up, or the 1-star review goes live“) or simply a mix-up with another business. Such reviews violate Google's guidelines and are therefore challengeable in principle." },
+    { t: "p", text: "A fake review is a review that **doesn't reflect a real customer experience**. Typical sources are competitors trying to sabotage your reputation, disgruntled ex-employees, extortion attempts (“Pay up, or the 1-star review goes live”) or simply a mix-up with another business. Such reviews violate Google's guidelines and are therefore challengeable in principle." },
 
     { t: "h2", id: "erkennen", text: "Identify fake Google reviews: 7 warning signs", toc: "7 warning signs" },
     { t: "p", text: "Before you act, document the review (screenshot with date). These signs point to a fake:" },
@@ -38,8 +38,8 @@ const article = {
     { t: "ol", items: [
       "Open your **Google Business Profile** and go to the reviews.",
       "Find the review in question and click the **three-dot menu**.",
-      "Choose **„Report review“**.",
-      "Select the relevant violation (e.g. „False information“, „Off topic“, „Conflict of interest“).",
+      "Choose **“Report review”**.",
+      "Select the relevant violation (e.g. “False information”, “Off topic”, “Conflict of interest”).",
       "Submit the report.",
     ] },
     { t: "p", text: "You can also track the status and bundle several reviews via the **Google tool for managing reviews**." },
@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "This is where the frustration begins for many business owners. Google reviews reports **largely automatically** and often rejects them with standardised boilerplate – even for clear forgeries. You then have no real way to escalate and are back at square one." },
     { t: "p", text: "Two routes lead further:" },
     { t: "ul", items: [
-      "**The legal route:** a legally reasoned removal request can succeed for clearly unlawful reviews – but often takes weeks to months, is billed per review, and may provoke the author into „revenge reviews“ (the Streisand effect).",
+      "**The legal route:** a legally reasoned removal request can succeed for clearly unlawful reviews – but often takes weeks to months, is billed per review, and may provoke the author into “revenge reviews” (the Streisand effect).",
       "**Profile removal:** instead of attacking each fake review individually, the entire profile is removed – all reviews disappear with it.",
     ] },
 
@@ -68,7 +68,7 @@ const article = {
   ],
   faq: [
     { q: "How do I recognise a fake Google review?", a: "Typical signs are a missing service connection, 1 star without text, a profile without review history, suspicious timing of several negative reviews, plus off-topic or insulting content." },
-    { q: "How do I report a fake review to Google?", a: "Via the three-dot menu next to the review, click „Report review“, select the violation and submit. You can track the status via the Google tool for managing reviews." },
+    { q: "How do I report a fake review to Google?", a: "Via the three-dot menu next to the review, click “Report review”, select the violation and submit. You can track the status via the Google tool for managing reviews." },
     { q: "Are fake reviews punishable?", a: "Deliberately false reviews can have civil, competition-law and partly criminal consequences. In practice the author is often anonymous, which is why removing the review is usually the faster lever than a complaint. This is not legal advice." },
     { q: "What can I do if Google doesn't remove the fake review?", a: "If the report is rejected, the legal route remains for a single review. If the profile is damaged by many fakes, profile removal via RapidRemove is the most reliable way: the entire profile is removed, all reviews disappear with it." },
     { q: "Does RapidRemove delete individual fake reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. To remove a single review while keeping the profile, reporting or a lawyer are responsible." },

@@ -19,8 +19,8 @@ const article = {
     { t: "p", text: "A review you **wrote yourself** you can remove for free at any time:" },
     { t: "ol", items: [
       "Open Google Maps on your computer or in the app and sign in.",
-      "Click the menu and then **„Your contributions“** or „Reviews“.",
-      "Find the review, click the **three-dot menu** and choose **„Delete review“**.",
+      "Click the menu and then **“Your contributions”** or “Reviews”.",
+      "Find the review, click the **three-dot menu** and choose **“Delete review”**.",
       "Confirm the action.",
     ] },
     { t: "p", text: "This only works for **your own** reviews. Third-party reviews about your business you can't delete directly – only report." },
@@ -29,7 +29,7 @@ const article = {
     { t: "p", text: "If a third-party review is hurting your business, proceed like this:" },
     { t: "ol", items: [
       "Open your **Google Business Profile** and go to the reviews.",
-      "Next to the review in question, click the **three-dot menu** and then **„Report review“**.",
+      "Next to the review in question, click the **three-dot menu** and then **“Report review”**.",
       "In the **form**, choose the relevant violation (e.g. false information, off topic, conflict of interest).",
       "Via the **Google tool for managing reviews** you can track the status and bundle several reports.",
     ] },
@@ -39,7 +39,7 @@ const article = {
     { t: "table", head: ["Route", "Cost", "Success"], rows: [
       ["Report yourself (form)", "free", "often low"],
       ["Cheap providers", "approx. $20 – 55 / review", "highly variable"],
-      ["Specialist lawyers (single review)", "approx. $110 – 175 / review", "approx. 90 %, slow"],
+      ["Specialist lawyers (single review)", "approx. $110 – 175 / review", "approx. 90%, slow"],
       ["Profile removal (RapidRemove)", "fixed price, payable after success", "guaranteed (all reviews gone)"],
     ] },
 
@@ -47,7 +47,7 @@ const article = {
     { t: "p", text: "The free route via the form is always worth a **first attempt** – especially for obvious spam. The reality, however, is sobering: Google checks largely automatically and rejects many reports with standard boilerplate. If that fails, **professional removal** is the next step. Look for a **success fee** – that way you bear no cost risk if the removal doesn't work." },
 
     { t: "h2", id: "geloescht-sehen", text: "How do I know a review was deleted?", toc: "Was it deleted?" },
-    { t: "p", text: "A deleted review disappears from your profile, and your **average rating** and the **number of reviews** adjust. You're not shown a direct „deleted“ status; the most reliable indicator is that the review and its star rating are no longer visible and the average changes accordingly. Document the starting state with a screenshot beforehand to have a before-and-after comparison." },
+    { t: "p", text: "A deleted review disappears from your profile, and your **average rating** and the **number of reviews** adjust. You're not shown a direct “deleted” status; the most reliable indicator is that the review and its star rating are no longer visible and the average changes accordingly. Document the starting state with a screenshot beforehand to have a before-and-after comparison." },
 
     { t: "h2", id: "profil-loeschen", text: "Permanent solution: have the whole profile removed", toc: "Remove whole profile" },
     { t: "p", text: "If the form doesn't work and several reviews are permanently damaging your profile, **profile removal** is the most direct route. The key difference: RapidRemove removes **no individual reviews, but the entire Google Business Profile** – all reviews disappear with it. The result is a clean slate instead of fighting over every star." },
@@ -62,8 +62,8 @@ const article = {
     { t: "cta", title: "Profile permanently damaged? Check removability – for free.", text: "In seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [
-    { q: "Can I delete my own Google review?", a: "Yes. In Google Maps open „Your contributions“, select the review and click „Delete review“ in the three-dot menu. It's free and possible at any time." },
-    { q: "Is there a form to have a Google review removed?", a: "Yes. Via the three-dot menu next to the review you reach „Report review“ and thus the report form. Track the status via the Google tool for managing reviews." },
+    { q: "Can I delete my own Google review?", a: "Yes. In Google Maps open “Your contributions”, select the review and click “Delete review” in the three-dot menu. It's free and possible at any time." },
+    { q: "Is there a form to have a Google review removed?", a: "Yes. Via the three-dot menu next to the review you reach “Report review” and thus the report form. Track the status via the Google tool for managing reviews." },
     { q: "Can I have a Google review removed for free?", a: "Your own reviews yes. Third-party reviews you can report for free – whether Google removes them isn't guaranteed. For reliable removal there are paid services with a success fee." },
     { q: "How do I see whether my reported review was deleted?", a: "The review disappears from the profile and the average and review count change. No explicit status is shown – a before screenshot helps with the comparison." },
     { q: "What does it cost to delete a Google review?", a: "From free (self-report) to $20–55 (cheap services) to $110–175 per review with a lawyer. For profile removal there's a fixed price, payable after success." },
