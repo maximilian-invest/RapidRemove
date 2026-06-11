@@ -52,7 +52,7 @@ const article = {
 
     { t: "h2", id: "m3", text: "Methode 3: Das gesamte Profil löschen lassen (alle Bewertungen verschwinden mit)", toc: "Methode 3: Profil" },
     { t: "p", text: "Hier liegt der entscheidende Unterschied – und der Ansatz von RapidRemove: **Wir löschen keine einzelnen Bewertungen, sondern das gesamte Google-Unternehmensprofil.** Im Zuge dieser Löschung verschwinden **alle** Bewertungen automatisch mit. Statt einzelne Sterne mühsam wegzuklagen – und zu warten, bis die nächste schlechte Bewertung kommt – entsteht eine **weiße Weste**: ein echter Neuanfang." },
-    { t: "p", text: "Das ist die richtige Lösung, wenn ein Profil durch viele oder ungerechtfertigte Bewertungen dauerhaft beschädigt ist. Technisch arbeitet die Methode innerhalb der Google-Logik und setzt direkt an der Wurzel an – dem Profil selbst." },
+    { t: "p", text: "Das ist die richtige Lösung, wenn ein Profil durch viele oder ungerechtfertigte Bewertungen dauerhaft beschädigt ist. Technisch arbeitet die Methode über Googles offizielle Mechanismen und setzt direkt an der Ursache an – dem Profil selbst." },
     { t: "p", text: "Die Vorteile auf einen Blick:" },
     { t: "ul", items: [
       "**Tempo:** Profil-Löschung oft in 24 bis 48 Stunden statt in Monaten",

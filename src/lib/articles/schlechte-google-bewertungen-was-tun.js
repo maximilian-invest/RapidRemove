@@ -52,9 +52,9 @@ const article = {
     { t: "p", text: "Das Problem: Google prüft Meldungen überwiegend **automatisiert** und lehnt sie oft ab – selbst bei klaren Verstößen. Bleibt der Erfolg aus, haben Sie zwei Optionen:" },
     { t: "table", head: ["Weg", "Was wird entfernt", "Dauer", "Erfolg", "Kosten"], rows: [
       ["Anwalt", "einzelne Bewertung", "3 – 9 Monate", "ca. 90 %", "pro Bewertung, Vorkasse"],
-      ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "garantiert", "Fixpreis nach Erfolg"],
+      ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "Zahlung nur bei Erfolg", "Fixpreis nach Erfolg"],
     ] },
-    { t: "p", text: "Wichtig zu verstehen: RapidRemove löscht **keine einzelnen Bewertungen, sondern das gesamte Google-Unternehmensprofil** – alle Bewertungen verschwinden dabei mit. Das ist die richtige Lösung, wenn ein Profil insgesamt beschädigt ist und Sie einen echten Neuanfang mit weißer Weste wollen. Die Löschung arbeitet innerhalb der Google-Logik, ohne Streisand-Risiko, und wird erst **nach Erfolg** bezahlt. Wer dagegen nur eine einzelne Bewertung entfernen und das Profil behalten möchte, nutzt das Melden oder den Anwaltsweg." },
+    { t: "p", text: "Wichtig zu verstehen: RapidRemove löscht **keine einzelnen Bewertungen, sondern das gesamte Google-Unternehmensprofil** – alle Bewertungen verschwinden dabei mit. Das ist die richtige Lösung, wenn ein Profil insgesamt beschädigt ist und Sie einen echten Neuanfang mit weißer Weste wollen. Die Löschung arbeitet über Googles eigene Prozesse, ohne Streisand-Risiko, und wird erst **nach Erfolg** bezahlt. Wer dagegen nur eine einzelne Bewertung entfernen und das Profil behalten möchte, nutzt das Melden oder den Anwaltsweg." },
 
     { t: "h2", id: "vorbeugen", text: "Vorbeugen: mehr echte gute Bewertungen", toc: "Vorbeugen" },
     { t: "p", text: "Die beste Verteidigung ist ein robuster Schnitt. Bitten Sie zufriedene Kunden aktiv um eine Bewertung (z. B. per QR-Code, Link in der E-Mail-Signatur oder nach erfolgreichem Abschluss). Viele echte positive Bewertungen verwässern den Einfluss einzelner Negativstimmen – und schützen Ihren Schnitt nachhaltig." },

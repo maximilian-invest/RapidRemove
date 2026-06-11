@@ -42,7 +42,7 @@ const article = {
     { t: "p", text: "Ein oft unterschätztes Risiko: Rechtliche Schritte können den Rezensenten erst recht provozieren. Das Ergebnis ist nicht selten eine Welle neuer **„Rache-Bewertungen“** – das Problem wird größer statt kleiner. Dieses Phänomen heißt **Streisand-Effekt**. Eine lautlose, technische Lösung vermeidet ihn, weil sie ohne direkte Konfrontation mit dem Verfasser arbeitet." },
 
     { t: "h2", id: "technik", text: "Weg 2: Technische Profil-Löschung", toc: "Weg 2: Technik" },
-    { t: "p", text: "Hier liegt der zentrale Unterschied zum Anwaltsweg: RapidRemove kämpft **nicht** gegen einzelne Bewertungen, sondern entfernt das **gesamte Google-Unternehmensprofil**. Im Zuge dieser Löschung verschwinden **alle** Bewertungen mit – Sie erhalten eine weiße Weste statt eines Einzel-Streits um jeden Stern. Technisch arbeitet die Methode innerhalb der Google-Logik und setzt an der Wurzel an: dem Profil. Vorteile:" },
+    { t: "p", text: "Hier liegt der zentrale Unterschied zum Anwaltsweg: RapidRemove kämpft **nicht** gegen einzelne Bewertungen, sondern entfernt das **gesamte Google-Unternehmensprofil**. Im Zuge dieser Löschung verschwinden **alle** Bewertungen mit – Sie erhalten einen echten Neustart statt eines Einzel-Streits um jeden Stern. Technisch arbeitet die Methode über die offiziellen Google-Prozesse und setzt am Kern an: dem Profil. Vorteile:" },
     { t: "ul", items: [
       "**Tempo:** Profil-Löschung oft in 24 bis 48 Stunden statt Monaten.",
       "**Vollständig:** das komplette Profil inkl. aller Bewertungen auf einmal.",

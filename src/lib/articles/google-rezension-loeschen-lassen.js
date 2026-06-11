@@ -53,7 +53,7 @@ const article = {
     { t: "p", text: "Eine gelöschte Rezension verschwindet aus Ihrem Profil, und Ihr **Bewertungsdurchschnitt** sowie die **Anzahl der Rezensionen** passen sich an. Ein direkter „gelöscht“-Status wird Ihnen nicht angezeigt; der zuverlässigste Indikator ist, dass die Rezension samt Sternewertung nicht mehr sichtbar ist und der Schnitt sich entsprechend verändert. Dokumentieren Sie vorher den Ausgangszustand per Screenshot, um den Vorher-Nachher-Vergleich zu haben." },
 
     { t: "h2", id: "profil-loeschen", text: "Dauerhafte Lösung: das gesamte Profil löschen lassen", toc: "Ganzes Profil löschen" },
-    { t: "p", text: "Wenn das Formular nicht greift und mehrere Rezensionen Ihr Profil dauerhaft beschädigen, ist die **Profil-Löschung** der direkteste Weg. Der wichtige Unterschied: RapidRemove entfernt **keine einzelnen Rezensionen, sondern das gesamte Google-Unternehmensprofil** – alle Rezensionen verschwinden dabei mit. Das Ergebnis ist eine weiße Weste statt Einzel-Streit um jeden Stern." },
+    { t: "p", text: "Wenn das Formular nicht greift und mehrere Rezensionen Ihr Profil dauerhaft beschädigen, ist die **Profil-Löschung** der direkteste Weg. Der wichtige Unterschied: RapidRemove entfernt **keine einzelnen Rezensionen, sondern das gesamte Google-Unternehmensprofil** – alle Rezensionen verschwinden dabei mit. Das Ergebnis ist ein sauberer Neuanfang statt Einzel-Streit um jeden Stern." },
     { t: "ul", items: [
       "**24 – 48 Stunden** statt Wochen oder Monate",
       "**das komplette Profil inkl. aller Rezensionen** auf einmal",
