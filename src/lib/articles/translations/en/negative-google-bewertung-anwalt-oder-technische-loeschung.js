@@ -21,7 +21,7 @@ const article = {
       "**Hard to remove:** factual, negative accounts of a real customer experience. They are covered by freedom of expression.",
       "**Easy to remove:** reviews that violate Google's guidelines – such as fake reviews, **1-star reviews without text** with no recognisable connection, insults, false factual claims, off-topic content or reviews from competitors.",
     ] },
-    { t: "p", text: "An important pointer from case law: courts have repeatedly ruled that what matters is **an actual experience** (a genuine business contact). If that's missing, a negative review can be challenged – the Regional Court of Lübeck ruled back in 2018 that a 1-star review without text must be removed, and more recent rulings (incl. the Higher Regional Court of Cologne) support this line." },
+    { t: "p", text: "An important pointer from **German case law**: courts have repeatedly ruled that what matters is **an actual experience** (a genuine business contact). If that's missing, a negative review can be challenged – the Regional Court of Lübeck ruled in 2018 (case 9 O 59/17) that a 1-star review without text must be removed, and Germany’s Federal Court of Justice (VI ZR 34/15) requires platforms to check this. In the US, by contrast, Section 230 of the CDA largely shields platforms." },
 
     { t: "h2", id: "strafbar", text: "Are negative reviews punishable?", toc: "Punishable?" },
     { t: "p", text: "An honest negative opinion is not punishable. It's different with **deliberately false factual claims, insults or abusive criticism** – here civil injunction and damages claims, and possibly criminal or competition-law aspects, come into play. In practice, however, the author often stays anonymous, which makes enforcement difficult." },
