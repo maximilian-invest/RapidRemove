@@ -65,7 +65,7 @@ const article = {
     { t: "p", text: "Les prix varient fortement selon le type de prestataire :" },
     { t: "table", head: ["Type de prestataire", "Fourchette de prix", "Succès"], rows: [
       ["Prestataires bon marché", "19 – 49 € par avis", "Très variable"],
-      ["Services hors UE", "50 – 100 € par avis", "Incertain"],
+      ["Services tiers (à l’étranger)", "50 – 100 € par avis", "Incertain"],
       ["Avocats spécialisés (avis isolé)", "100 – 159 € par avis", "env. 90 %, mais lent"],
       ["Suppression de la fiche (RapidRemove)", "Prix fixe, payable après succès", "Garanti (tous les avis partis)"],
     ] },

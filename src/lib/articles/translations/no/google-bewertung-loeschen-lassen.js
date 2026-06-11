@@ -65,7 +65,7 @@ const article = {
     { t: "p", text: "Prisene varierer kraftig avhengig av type leverandør:" },
     { t: "table", head: ["Type leverandør", "Prisklasse", "Suksess"], rows: [
       ["Billige leverandører", "19-49 € per anmeldelse", "Varierer sterkt"],
-      ["Utenlandske EU-tjenester", "50-100 € per anmeldelse", "Uklart"],
+      ["Utenlandske tjenester", "50-100 € per anmeldelse", "Uklart"],
       ["Spesialiserte advokater (enkeltanmeldelse)", "100-159 € per anmeldelse", "ca. 90 %, men tregt"],
       ["Profilfjerning (RapidRemove)", "Fast pris, betales etter suksess", "Garantert (alle anmeldelser borte)"],
     ] },

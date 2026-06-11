@@ -65,7 +65,7 @@ const article = {
     { t: "p", text: "Priserna varierar kraftigt beroende på typ av leverantör:" },
     { t: "table", head: ["Typ av leverantör", "Prisklass", "Framgång"], rows: [
       ["Billiga leverantörer", "19–49 € per recension", "Varierar starkt"],
-      ["Utländska EU-tjänster", "50–100 € per recension", "Oklart"],
+      ["Utländska tjänster", "50–100 € per recension", "Oklart"],
       ["Specialiserade advokater (enskild recension)", "100–159 € per recension", "ca 90 %, men långsamt"],
       ["Profilborttagning (RapidRemove)", "Fast pris, betalas efter framgång", "Garanterat (alla recensioner borta)"],
     ] },

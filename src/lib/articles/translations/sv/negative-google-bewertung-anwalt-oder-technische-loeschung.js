@@ -21,7 +21,7 @@ const article = {
       "**Svåra att ta bort:** sakliga, negativa skildringar av en verklig kundupplevelse. De skyddas av yttrandefriheten.",
       "**Lätta att ta bort:** recensioner som bryter mot Googles riktlinjer – som falska recensioner, **1-stjärniga recensioner utan text** utan igenkännbar koppling, förolämpningar, falska sakpåståenden, ovidkommande innehåll eller recensioner från konkurrenter.",
     ] },
-    { t: "p", text: "En viktig hållpunkt ur rättspraxis: domstolar har upprepade gånger slagit fast att det kommer an på en **verklig upplevelse** (en äkta affärskontakt). Saknas den går en negativ recension att bestrida – tingsrätten i Lübeck slog redan 2018 fast att en 1-stjärnig recension utan text måste tas bort, och även senare domar (bl.a. från hovrätten i Köln) stöder den linjen." },
+    { t: "p", text: "En viktig hållpunkt ur tysk rättspraxis: domstolar har upprepade gånger slagit fast att det kommer an på en **verklig upplevelse** (en äkta affärskontakt). Saknas den går en negativ recension att bestrida – Landgericht Lübeck (tysk domstol) slog redan 2018 fast (mål 9 O 59/17) att en 1-stjärnig recension utan text måste tas bort, och Tysklands högsta domstol (BGH, mål VI ZR 34/15) stöder den linjen." },
 
     { t: "h2", id: "strafbar", text: "Är negativa recensioner straffbara?", toc: "Straffbart?" },
     { t: "p", text: "En ärlig negativ åsikt är inte straffbar. Annorlunda är det vid **medvetet falska sakpåståenden, förolämpningar eller smädeskritik** – här kommer civilrättsliga förbuds- och skadeståndsanspråk samt under vissa omständigheter straff- eller konkurrensrättsliga aspekter i fråga. I praktiken förblir upphovspersonen dock ofta anonym, vilket försvårar rättstillämpningen." },

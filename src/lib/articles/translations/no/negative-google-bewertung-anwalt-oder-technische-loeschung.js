@@ -21,7 +21,7 @@ const article = {
       "**Vanskelige å fjerne:** saklige, negative skildringer av en virkelig kundeopplevelse. De er beskyttet av ytringsfriheten.",
       "**Lette å fjerne:** anmeldelser som bryter Googles retningslinjer – som falske anmeldelser, **1-stjerners anmeldelser uten tekst** uten gjenkjennelig sammenheng, fornærmelser, falske faktapåstander, uvedkommende innhold eller anmeldelser fra konkurrenter.",
     ] },
-    { t: "p", text: "Et viktig holdepunkt fra rettspraksis: domstoler har gjentatte ganger slått fast at det kommer an på en **virkelig opplevelse** (en ekte forretningskontakt). Mangler den, kan en negativ anmeldelse bestrides – tingretten i Lübeck slo allerede i 2018 fast at en 1-stjerners anmeldelse uten tekst må fjernes, og også nyere dommer (bl.a. fra lagmannsretten i Köln) støtter den linjen." },
+    { t: "p", text: "Et viktig holdepunkt fra tysk rettspraksis: domstoler har gjentatte ganger slått fast at det kommer an på en **virkelig opplevelse** (en ekte forretningskontakt). Mangler den, kan en negativ anmeldelse bestrides – Landgericht Lübeck (tysk domstol) slo allerede i 2018 fast (sak 9 O 59/17) at en 1-stjerners anmeldelse uten tekst må fjernes, og Tysklands høyesterett (BGH, sak VI ZR 34/15) støtter den linjen." },
 
     { t: "h2", id: "strafbar", text: "Er negative anmeldelser straffbare?", toc: "Straffbart?" },
     { t: "p", text: "En ærlig negativ mening er ikke straffbar. Annerledes er det ved **bevisst falske faktapåstander, fornærmelser eller sjikane** – her kommer sivilrettslige forbuds- og erstatningskrav samt under visse omstendigheter straffe- eller konkurranserettslige aspekter inn. I praksis forblir opphavspersonen imidlertid ofte anonym, noe som vanskeliggjør rettshåndhevelsen." },

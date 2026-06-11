@@ -22,7 +22,7 @@ const article = {
     { t: "p", text: "Rättspraxis stöder den linjen sedan flera år:" },
     { t: "ul", items: [
       "**Tingsrätten i Lübeck** slog redan 2018 fast att en Google-recension med en stjärna utan text måste tas bort.",
-      "Även senare avgöranden, bland annat från **hovrätten i Köln**, bekräftar att det kommer an på en **verklig upplevelse**; saknas en igenkännbar affärskontakt kan recensionen vara otillåten.",
+      "Även senare avgöranden, även **Tysklands högsta domstol (BGH)** bekräftar att det kommer an på en **verklig upplevelse**; saknas en igenkännbar affärskontakt kan recensionen vara otillåten.",
     ] },
     { t: "p", text: "Avgörande är alltså inte om recensenten formellt var kund, utan om en **verklig kontakt** med ditt företag är trolig. Vid en ordlös 1-stjärnig recension är den ofta just inte det." },
 
@@ -55,7 +55,7 @@ const article = {
     { t: "cta", title: "Kontrollera gratis om din 1-stjärniga recension går att ta bort.", text: "Ange företagsnamnet – vi hittar din profil och kontrollerar på sekunder om och hur snabbt den kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
-    { q: "Kan jag ta bort en 1-stjärnig recension utan text?", a: "I många fall ja. Eftersom ingen koppling till en verklig upplevelse är igenkännbar saknar recensionen ofta den rättsliga grunden; domstolar som tingsrätten i Lübeck och hovrätten i Köln har bekräftat sådana anspråk på borttagning." },
+    { q: "Kan jag ta bort en 1-stjärnig recension utan text?", a: "I många fall ja. Eftersom ingen koppling till en verklig upplevelse är igenkännbar saknar recensionen ofta den rättsliga grunden; tyska domstolar som Landgericht Lübeck och Tysklands högsta domstol (BGH) har bekräftat sådana anspråk på borttagning." },
     { q: "Är en 1-stjärnig recension utan text straffbar?", a: "Recensionen i sig oftast inte. Men om den getts utan verklig anledning kan den vara otillåten och grunda ett civilrättsligt anspråk på borttagning. Detta är inte juridisk rådgivning." },
     { q: "Hur anmäler jag ett stjärnbetyg utan kommentar?", a: "Via trepunktsmenyn bredvid recensionen, klicka på Rapportera recension och ange som skäl den saknade kopplingen till tjänsten. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Vad gör jag om Google inte tar bort recensionen?", a: "För en enskild recension hjälper en konkret motiverad invändning från en advokat. Är din profil skadad som helhet och du vill ha en nystart är profilborttagning via RapidRemove den mest tillförlitliga vägen – då försvinner alla recensioner med profilen." },

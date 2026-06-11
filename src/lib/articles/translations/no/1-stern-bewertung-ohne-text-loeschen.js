@@ -22,7 +22,7 @@ const article = {
     { t: "p", text: "Rettspraksis støtter den linjen gjennom flere år:" },
     { t: "ul", items: [
       "**Tingretten i Lübeck** slo allerede i 2018 fast at en Google-anmeldelse med én stjerne uten tekst må fjernes.",
-      "Også nyere avgjørelser, bl.a. fra **lagmannsretten i Köln**, bekrefter at det kommer an på en **virkelig opplevelse**; mangler en gjenkjennelig forretningskontakt, kan anmeldelsen være utillatelig.",
+      "Også nyere avgjørelser, også **Tysklands høyesterett (BGH)** bekrefter at det kommer an på en **virkelig opplevelse**; mangler en gjenkjennelig forretningskontakt, kan anmeldelsen være utillatelig.",
     ] },
     { t: "p", text: "Avgjørende er altså ikke om anmelderen formelt var kunde, men om en **virkelig kontakt** med bedriften din er sannsynlig. Ved en ordløs 1-stjerners anmeldelse er den ofte nettopp ikke det." },
 
@@ -55,7 +55,7 @@ const article = {
     { t: "cta", title: "Sjekk gratis om din 1-stjerners anmeldelse kan fjernes.", text: "Skriv inn bedriftsnavnet – vi finner profilen din og sjekker på sekunder om og hvor raskt den kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
   ],
   faq: [
-    { q: "Kan jeg få fjernet en 1-stjerners anmeldelse uten tekst?", a: "I mange tilfeller ja. Siden ingen sammenheng med en virkelig opplevelse kan gjenkjennes, mangler anmeldelsen ofte det juridiske grunnlaget; domstoler som tingretten i Lübeck og lagmannsretten i Köln har bekreftet slike krav om fjerning." },
+    { q: "Kan jeg få fjernet en 1-stjerners anmeldelse uten tekst?", a: "I mange tilfeller ja. Siden ingen sammenheng med en virkelig opplevelse kan gjenkjennes, mangler anmeldelsen ofte det juridiske grunnlaget; tyske domstoler som Landgericht Lübeck og Tysklands høyesterett (BGH) har bekreftet slike krav om fjerning." },
     { q: "Er en 1-stjerners anmeldelse uten tekst straffbar?", a: "Anmeldelsen i seg selv oftest ikke. Men hvis den er gitt uten virkelig foranledning, kan den være utillatelig og begrunne et sivilrettslig krav om fjerning. Dette er ikke juridisk rådgivning." },
     { q: "Hvordan rapporterer jeg en stjernevurdering uten kommentar?", a: "Via tre-prikker-menyen ved siden av anmeldelsen, klikk på Rapporter anmeldelse og angi som begrunnelse den manglende sammenhengen med tjenesten. Statusen følger du via Googles verktøy for håndtering av anmeldelser." },
     { q: "Hva gjør jeg hvis Google ikke fjerner anmeldelsen?", a: "For en enkelt anmeldelse hjelper en konkret begrunnet innsigelse fra en advokat. Er profilen din skadet som helhet, og vil du ha en ny start, er profilfjerning via RapidRemove den mest pålitelige veien – da forsvinner alle anmeldelser med profilen." },

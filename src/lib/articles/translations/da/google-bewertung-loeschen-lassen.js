@@ -65,7 +65,7 @@ const article = {
     { t: "p", text: "Priserne varierer kraftigt afhængigt af typen af udbyder:" },
     { t: "table", head: ["Type udbyder", "Prisklasse", "Succes"], rows: [
       ["Billige udbydere", "19-49 € pr. anmeldelse", "Varierer stærkt"],
-      ["Udenlandske EU-tjenester", "50-100 € pr. anmeldelse", "Uklart"],
+      ["Udenlandske tjenester", "50-100 € pr. anmeldelse", "Uklart"],
       ["Specialiserede advokater (enkelt anmeldelse)", "100-159 € pr. anmeldelse", "ca. 90 %, men langsomt"],
       ["Profilfjernelse (RapidRemove)", "Fast pris, betales efter succes", "Garanteret (alle anmeldelser væk)"],
     ] },
