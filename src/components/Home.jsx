@@ -557,7 +557,7 @@ function FAQ({ id }) {
 }
 
 /* ============ FINAL CTA ============ */
-function FinalCTA({ onStart }) {
+export function FinalCTA({ onStart }) {
   const { t } = useLang();
   const [name, setName] = React.useState("");
   return (

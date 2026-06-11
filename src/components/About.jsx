@@ -3,6 +3,7 @@
 import React from "react";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat, useReveal, CountUp, useRouteShell } from "@/components/Chrome";
+import { FinalCTA } from "@/components/Home";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
@@ -15,7 +16,7 @@ const ABOUT_COPY = {
     h1: "Die führende Reputations-Agentur für die Löschung von Google-Profilen.",
     lead: "Wir geben Unternehmern die Kontrolle über ihren Ruf zurück – schnell, legal und ohne Risiko. Aus Österreich, für Kunden in über 30 Ländern.",
     missionLabel: "Unsere Mission",
-    mission: ["Niemand sollte sich seinem Google-Eintrag ", "ausgeliefert", " fühlen. Wir nehmen Ihnen das Problem ab – und Sie zahlen erst, wenn es gelöst ist."],
+    mission: ["Niemand sollte sich seinem Google-Eintrag ", "ausgeliefert", " fühlen. Wir nehmen Ihnen das Problem ab – und Sie zahlen erst, wenn es gelöscht ist."],
     missionSign: "— Das Team von RapidRemove",
     storyH: "Aus Frust wurde eine Lösung.",
     story: [
@@ -49,8 +50,8 @@ const ABOUT_COPY = {
       { n: "Matthias", r: "Gründer", thm: "tm-orange", img: "/assets/matthias-lang.webp" },
       { n: "Maximilian Hölzl", r: "Gründer", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" },
     ],
-    coH: "Ein Unternehmen aus Österreich – mit Namen und Adresse.",
-    coSub: "Hinter RapidRemove steht eine eingetragene Firma in Österreich – kein anonymer Anbieter, sondern ein EU-Betrieb mit klaren, offenen Daten.",
+    coH: "Ein echtes Unternehmen aus Österreich – mit Namen, Adresse und Gesicht.",
+    coSub: "Hinter RapidRemove steht die Simple Solution. OG aus Hallein bei Salzburg – eine im Firmenbuch eingetragene Gesellschaft, kein anonymer Anbieter. Adresse, UID und Geschäftsführung liegen offen einsehbar.",
     coFacts: [
       { l: "Firma", v: "Simple Solution. OG" },
       { l: "Adresse", v: "Salzgasse 2, 5400 Hallein, Österreich" },
@@ -362,7 +363,7 @@ function AboutInner() {
         </div>
       </section>
 
-      <FinalCTABand onStart={() => nav(localePath(t.code) + "?start=1")} title={a.ctaTitle} btn={a.ctaBtn} />
+      <FinalCTA onStart={() => nav(localePath(t.code) + "?start=1")} />
 
       <Footer onStart={() => nav(localePath(t.code) + "?start=1")} onBlog={() => nav(magazinePath(t.code))} onAbout={toTop} />
       <WhatsAppFloat />
