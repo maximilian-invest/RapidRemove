@@ -4,11 +4,12 @@
    Formular sendet an das ops-Backend (/contact); WhatsApp-Kanal → Tidio-Live-Chat. */
 import React from "react";
 import { Icon } from "@/components/Icons";
-import { Nav, Footer, WhatsAppFloat, useReveal, openChat } from "@/components/Chrome";
+import { Nav, Footer, WhatsAppFloat, useReveal, openChat, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 import { submitContact } from "@/lib/order";
 
 const KONTAKT_COPY = {
@@ -258,7 +259,7 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
   return (
     <div className="kontakt">
       <Nav onNav={(id) => onBlog && onBlog(id)} onStart={onStart} onBlog={onBlog} onAbout={onAbout}
-        onOrm={() => (window.location.href = asset("/reputation-verdraengen/"))} onDeindex={() => (window.location.href = asset("/presse-auslisten/"))} active="" />
+        onOrm={() => (window.location.href = asset(pagePath("orm", lang)))} onDeindex={() => (window.location.href = asset(pagePath("deindex", lang)))} active="" />
 
       <section className="kt-hero">
         <div className="hero-glow"></div>
@@ -370,19 +371,11 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
   );
 }
 
-export default function Kontakt() {
-  const [lang, setLangState] = React.useState("de");
-  React.useEffect(() => { try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {} }, []);
-  const setLang = (l) => { try { localStorage.setItem("rr_lang", l); } catch (e) {} window.location.href = asset(localePath(l)); };
-  const t = I18N[lang] || I18N.de;
-  const nav = (p) => { window.location.href = asset(p); };
+export default function Kontakt({ initialLang = "de" }) {
+  const { lang, t, setLang, base } = useRouteShell(initialLang, "kontakt");
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <KontaktBody
-        onStart={() => nav("/?start=1")}
-        onBlog={() => nav(magazinePath(lang))}
-        onAbout={() => nav("/ueber-uns/")}
-      />
+      <KontaktBody onStart={base.onStart} onBlog={base.onBlog} onAbout={base.onAbout} />
     </LangContext.Provider>
   );
 }

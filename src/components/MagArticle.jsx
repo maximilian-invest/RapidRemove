@@ -7,6 +7,7 @@ import { LangContext } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { magazinePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 import { uiFor } from "@/lib/articles/registry";
 
 /* inline **bold** + [label](https://url) external links */
@@ -108,7 +109,7 @@ function Body({ data, lang, ui, related }) {
           {data.dek && <p className="art-dek">{inline(data.dek)}</p>}
           <div className="art-meta">
             <span className="am-ava">{data.meta.author[0]}</span>
-            <a className="am-author" href={asset("/ueber-uns/")} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
+            <a className="am-author" href={asset(pagePath("about", lang))} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
             {data.meta.authorRole && <span> · {data.meta.authorRole}</span>}
             <span className="am-dot" />
             <span><Icon.clock />{data.readingMin || 7} {ui.reading}</span>
@@ -151,7 +152,7 @@ function Body({ data, lang, ui, related }) {
           <div className="art-author">
             <div className="aa-ava">{data.meta.author[0]}</div>
             <div>
-              <a className="aa-name" href={asset("/ueber-uns/")} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
+              <a className="aa-name" href={asset(pagePath("about", lang))} style={{ color: "inherit", textDecoration: "none" }}>{data.meta.author}</a>
               <div className="aa-role">{data.meta.authorRole || "RapidRemove"}</div>
             </div>
           </div>
@@ -191,9 +192,9 @@ export default function MagArticle({ data, lang = "de", ui, langUrls = {}, relat
   const hb = lang === "de" ? "/" : `/${lang}/`;
   return (
     <LangContext.Provider value={{ lang: l, t, setLang }}>
-      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="magazin" />
+      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav(pagePath("about", lang))} onOrm={() => nav(pagePath("orm", lang))} onDeindex={() => nav(pagePath("deindex", lang))} active="magazin" />
       <Body data={data} lang={lang} ui={strings} related={related} />
-      <Footer onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav("/ueber-uns/")} />
+      <Footer onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav(pagePath("about", lang))} />
       <WhatsAppFloat />
     </LangContext.Provider>
   );

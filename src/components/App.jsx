@@ -5,6 +5,7 @@ import { I18N } from "@/lib/i18n";
 import { LangContext } from "@/lib/lang-context";
 import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
 
@@ -24,8 +25,8 @@ export default function App({ initialLang = "de", magCards = [] }) {
       // Jede Sprache hat eine echte, crawlbare Magazin-URL (SEO) — alte ?view=magazin-Links dorthin umleiten.
       else if (view === "magazin") { window.location.replace(asset(magazinePath(lang))); return; }
       // Leistungsseiten sind eigene, crawlbare URLs (SEO) — alte ?view=-Links dorthin umleiten.
-      else if (view === "reputation") { window.location.replace(asset("/reputation-verdraengen/")); return; }
-      else if (view === "presse") { window.location.replace(asset("/presse-auslisten/")); return; }
+      else if (view === "reputation") { window.location.replace(asset(pagePath("orm", lang))); return; }
+      else if (view === "presse") { window.location.replace(asset(pagePath("deindex", lang))); return; }
       const hash = window.location.hash ? window.location.hash.slice(1) : "";
       if (hash) setHomeScroll(hash);
     } catch (e) {}
@@ -60,10 +61,10 @@ export default function App({ initialLang = "de", magCards = [] }) {
   // Jede Sprache hat eine echte, crawlbare Magazin-Route (SEO).
   const openBlog = () => { window.location.href = asset(magazinePath(lang)); };
   // Eigene, crawlbare Leistungsseiten (SEO) statt In-App-Ansicht.
-  const openOrm = () => { window.location.href = asset("/reputation-verdraengen/"); };
-  const openDeindex = () => { window.location.href = asset("/presse-auslisten/"); };
+  const openOrm = () => { window.location.href = asset(pagePath("orm", lang)); };
+  const openDeindex = () => { window.location.href = asset(pagePath("deindex", lang)); };
   const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); window.scrollTo({ top: 0 }); };
-  const onAbout = () => { window.location.href = asset("/ueber-uns/"); };
+  const onAbout = () => { window.location.href = asset(pagePath("about", lang)); };
 
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>

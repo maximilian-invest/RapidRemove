@@ -1,18 +1,44 @@
-/* Route: /<lang>/<localized-slug> — translated cluster articles, statically exported. */
+/* Route: /<lang>/<localized-slug> — statically exported. Serves BOTH:
+   - translated cluster articles (magazine), and
+   - the localized secondary pages (about · impressum · datenschutz · orm ·
+     deindex · kontakt), each rendered in the route's language. */
 import MagArticle from "@/components/MagArticle";
+import About from "@/components/About";
+import { Impressum, Datenschutz } from "@/components/Legal";
+import { OrmRoute, DeindexRoute } from "@/components/ServicePages";
+import Kontakt from "@/components/Kontakt";
 import { uiFor, SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE } from "@/lib/locales-meta";
 import {
   articleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd,
 } from "@/lib/articles/catalog";
+import { pageParams, pageForSlug, pageUrl, pageHreflang } from "@/lib/page-routes";
+import { pageMeta } from "@/lib/page-meta";
 
 export const dynamicParams = false;
 
+// Localized secondary pages share the same single dynamic segment as articles.
+const PAGE_COMPONENT = {
+  about: About, impressum: Impressum, datenschutz: Datenschutz,
+  orm: OrmRoute, deindex: DeindexRoute, kontakt: Kontakt,
+};
+
 export function generateStaticParams() {
-  return articleParams();
+  return [...articleParams(), ...pageParams()];
 }
 
 export function generateMetadata({ params }) {
+  const key = pageForSlug(params.lang, params.aslug);
+  if (key) {
+    const m = pageMeta(key, params.lang);
+    const url = pageUrl(key, params.lang);
+    return {
+      title: m.title,
+      description: m.description,
+      alternates: { canonical: url, languages: pageHreflang(key) },
+      openGraph: { type: "website", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE] },
+    };
+  }
   const r = resolveLocalized(params.lang, params.aslug);
   if (!r) return {};
   const m = r.t.meta;
@@ -26,6 +52,11 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  const key = pageForSlug(params.lang, params.aslug);
+  if (key) {
+    const C = PAGE_COMPONENT[key];
+    return <C initialLang={params.lang} />;
+  }
   const r = resolveLocalized(params.lang, params.aslug);
   const ui = uiFor(params.lang);
   const data = {

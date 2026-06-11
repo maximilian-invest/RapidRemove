@@ -7,6 +7,8 @@ import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
+import { I18N } from "@/lib/i18n";
+import { pagePath } from "@/lib/page-routes";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -28,6 +30,37 @@ function useReveal() {
     els.forEach((e) => io.observe(e));
     return () => io.disconnect();
   });
+}
+
+/* ---- Shared shell for standalone pages (about · legal · service · contact) ----
+   Forces the language from the route (initialLang) so the static HTML is in the
+   right language, and builds language-aware navigation: every link points to the
+   localized URL of the current locale (e.g. /it/chi-siamo). pageKey lets the
+   language switcher jump to the SAME page in the target language. */
+export function useRouteShell(initialLang, pageKey) {
+  const lang = I18N[initialLang] ? initialLang : "de";
+  const t = I18N[lang] || I18N.de;
+  const home = localePath(lang); // "/" or "/it/"
+  const nav = (p) => { window.location.href = asset(p); };
+  const setLang = (l) => {
+    try { localStorage.setItem("rr_lang", l); } catch (e) {}
+    window.location.href = asset(pageKey ? pagePath(pageKey, l) : localePath(l));
+  };
+  const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  React.useEffect(() => {
+    try { localStorage.setItem("rr_lang", lang); } catch (e) {}
+    try { document.documentElement.lang = lang; } catch (e) {}
+  }, [lang]);
+  const base = {
+    onStart: () => nav(home + "?start=1"),
+    onGoHome: (id) => nav(id && id !== "__top" ? home + "#" + id : home),
+    onBlog: () => nav(magazinePath(lang)),
+    onAbout: () => nav(pagePath("about", lang)),
+    onOrm: () => nav(pagePath("orm", lang)),
+    onDeindex: () => nav(pagePath("deindex", lang)),
+    onKontakt: () => nav(pagePath("kontakt", lang)),
+  };
+  return { lang, t, setLang, toTop, nav, home, base };
 }
 
 /* ---- Count-up number ---- */
@@ -303,7 +336,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
               </div>
             )}
             {links.map(([id, label]) => <a key={id} className={active === id ? "on" : ""} onClick={() => goTo(id)}>{label}</a>)}
-            <a href={asset("/kontakt/")} className={active === "kontakt" ? "on" : ""}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
+            <a href={asset(pagePath("kontakt", t.code))} className={active === "kontakt" ? "on" : ""}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
             <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           </div>
           <div className="nav-right">
@@ -325,7 +358,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
           {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
-          <a href={asset("/kontakt/")}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
+          <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
           <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
@@ -346,8 +379,8 @@ function Footer({ onStart, onBlog, onAbout }) {
   const [ftCo, ...ftRest] = (t.footer.addr || "").split(" \u00b7 "); // Firmenname + Adresse darunter
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
-    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset("/kontakt/") }],
-    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "https://portal.rapid-remove.com/", ext: true }],
+    [{ onClick: onAbout, href: asset(pagePath("about", lang)) }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset(pagePath("kontakt", lang)) }],
+    [{ href: asset(pagePath("impressum", lang)) }, { href: asset(pagePath("datenschutz", lang)) }, { href: "https://portal.rapid-remove.com/", ext: true }],
   ];
   return (
     <footer className="footer">

@@ -2,11 +2,12 @@
 /* RapidRemove — About / Über uns page (standalone route). */
 import React from "react";
 import { Icon } from "@/components/Icons";
-import { Nav, Footer, WhatsAppFloat, useReveal, CountUp } from "@/components/Chrome";
+import { Nav, Footer, WhatsAppFloat, useReveal, CountUp, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
-import { localePath } from "@/lib/locales-meta";
+import { localePath, magazinePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 
 const ABOUT_COPY = {
   de: {
@@ -224,7 +225,7 @@ function AboutInner() {
 
   return (
     <div className="about">
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="about" />
+      <Nav onNav={(id) => nav(localePath(t.code) + "#" + id)} onStart={() => nav(localePath(t.code) + "?start=1")} onBlog={() => nav(magazinePath(t.code))} onAbout={toTop} onOrm={() => nav(pagePath("orm", t.code))} onDeindex={() => nav(pagePath("deindex", t.code))} active="about" />
 
       <section className="ab-hero">
         <div className="hero-glow"></div>
@@ -320,12 +321,12 @@ function AboutInner() {
           <div className="ab-team-note reveal">
             <p>{tx.p1}</p>
             <div className="ab-svc-cards">
-              <a className="ab-svc-card" href={asset("/reputation-verdraengen/")}>
+              <a className="ab-svc-card" href={asset(pagePath("orm", t.code))}>
                 <span className="asc-ic"><Icon.eye size={20} /></span>
                 <span className="asc-tx"><b>{tx.s1}</b><span>{tx.s1d}</span></span>
                 <span className="asc-go">{tx.more} <Icon.arrowRight size={15} /></span>
               </a>
-              <a className="ab-svc-card" href={asset("/presse-auslisten/")}>
+              <a className="ab-svc-card" href={asset(pagePath("deindex", t.code))}>
                 <span className="asc-ic"><Icon.edit size={20} /></span>
                 <span className="asc-tx"><b>{tx.s2}</b><span>{tx.s2d}</span></span>
                 <span className="asc-go">{tx.more} <Icon.arrowRight size={15} /></span>
@@ -361,24 +362,16 @@ function AboutInner() {
         </div>
       </section>
 
-      <FinalCTABand onStart={() => nav("/?start=1")} title={a.ctaTitle} btn={a.ctaBtn} />
+      <FinalCTABand onStart={() => nav(localePath(t.code) + "?start=1")} title={a.ctaTitle} btn={a.ctaBtn} />
 
-      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={toTop} />
+      <Footer onStart={() => nav(localePath(t.code) + "?start=1")} onBlog={() => nav(magazinePath(t.code))} onAbout={toTop} />
       <WhatsAppFloat />
     </div>
   );
 }
 
-export default function About() {
-  const [lang, setLangState] = React.useState("de");
-  React.useEffect(() => {
-    try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {}
-  }, []);
-  const setLang = (l) => {
-    try { localStorage.setItem("rr_lang", l); } catch (e) {}
-    window.location.href = asset(localePath(l));
-  };
-  const t = I18N[lang] || I18N.de;
+export default function About({ initialLang = "de" }) {
+  const { lang, t, setLang } = useRouteShell(initialLang, "about");
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       <AboutInner />

@@ -4,7 +4,7 @@
    Rendered as in-page views by App.jsx, reachable from the Leistungen nav. */
 import React from "react";
 import { Icon } from "@/components/Icons";
-import { Nav, Footer, WhatsAppFloat, useReveal } from "@/components/Chrome";
+import { Nav, Footer, WhatsAppFloat, useReveal, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
@@ -285,32 +285,8 @@ export function DeindexPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeind
    URL (SEO). Stellt — wie About — den Sprach-Kontext bereit (Sprache aus
    localStorage, Default DE) und verdrahtet alle Navigations-Callbacks auf echte
    URLs. Dadurch führt u. a. das Logo zuverlässig zur Startseite. ---- */
-function useRouteShell() {
-  const [lang, setLangState] = React.useState("de");
-  React.useEffect(() => {
-    try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {}
-  }, []);
-  const setLang = (l) => {
-    try { localStorage.setItem("rr_lang", l); } catch (e) {}
-    window.location.href = asset(localePath(l));
-  };
-  const nav = (p) => { window.location.href = asset(p); };
-  const toTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-  const t = I18N[lang] || I18N.de;
-  // gemeinsame Navigation; die jeweilige Seite überschreibt onOrm/onDeindex mit toTop
-  const base = {
-    onStart: () => nav("/?start=1"),
-    onGoHome: (id) => nav(id && id !== "__top" ? "/#" + id : "/"),
-    onBlog: () => nav("/magazin/"),
-    onAbout: () => nav("/ueber-uns/"),
-    onOrm: () => nav("/reputation-verdraengen/"),
-    onDeindex: () => nav("/presse-auslisten/"),
-  };
-  return { lang, t, setLang, toTop, base };
-}
-
-export function DeindexRoute() {
-  const { lang, t, setLang, toTop, base } = useRouteShell();
+export function DeindexRoute({ initialLang = "de" }) {
+  const { lang, t, setLang, toTop, base } = useRouteShell(initialLang, "deindex");
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       <DeindexPage {...base} onDeindex={toTop} />
@@ -318,8 +294,8 @@ export function DeindexRoute() {
   );
 }
 
-export function OrmRoute() {
-  const { lang, t, setLang, toTop, base } = useRouteShell();
+export function OrmRoute({ initialLang = "de" }) {
+  const { lang, t, setLang, toTop, base } = useRouteShell(initialLang, "orm");
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       <OrmPage {...base} onOrm={toTop} />

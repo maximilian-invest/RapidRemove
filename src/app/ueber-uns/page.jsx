@@ -1,6 +1,7 @@
 /* Route: /ueber-uns — statically generated About page with Organization JSON-LD. */
 import About from "@/components/About";
 import { SITE_URL } from "@/lib/article-google-profil";
+import { pageHreflang } from "@/lib/page-routes";
 
 const URL = `${SITE_URL}/ueber-uns`;
 
@@ -8,7 +9,7 @@ export const metadata = {
   title: "Über uns — RapidRemove",
   description:
     "RapidRemove ist die führende Reputations-Agentur für die Löschung von Google-Unternehmensprofilen — eine eingetragene Firma aus Hallein, Österreich (Simple Solution. OG). Unsere Mission, unser Team und echte Firmendaten.",
-  alternates: { canonical: URL },
+  alternates: { canonical: URL, languages: pageHreflang("about") },
   openGraph: {
     type: "website",
     title: "Über uns — RapidRemove",
@@ -61,7 +62,7 @@ export default function Page() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <About />
+      <About initialLang="de" />
     </>
   );
 }

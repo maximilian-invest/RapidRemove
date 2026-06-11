@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { asset } from "@/lib/base";
+import { pagePath } from "@/lib/page-routes";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
@@ -230,7 +231,7 @@ function Hero({ onStart }) {
             <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
           </button>
         </div>
-        <a className="hero-team below hs hs5" href={asset("/ueber-uns/")}>
+        <a className="hero-team below hs hs5" href={asset(pagePath("about", lang))}>
           <span className="ht-avas">
             <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={46} height={46} />
             <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={46} height={46} />
@@ -531,7 +532,7 @@ function Pricing({ id, onStart }) {
 
 /* ============ FAQ ============ */
 function FAQ({ id }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [open, setOpen] = React.useState(0);
   return (
     <section className="band soft" id={id}>
@@ -546,7 +547,7 @@ function FAQ({ id }) {
               <button className="faq-q" onClick={() => setOpen(open === i ? -1 : i)}>
                 {it.q} <Icon.chevronDown />
               </button>
-              <div className="faq-a"><div className="faq-a-inner"><p>{it.a}{it.link ? <a href={asset(it.link)} style={{ marginLeft: 6, color: "var(--primary)", fontWeight: 700 }}>{it.linkLabel}</a> : null}</p></div></div>
+              <div className="faq-a"><div className="faq-a-inner"><p>{it.a}{it.link ? <a href={asset(it.link === "/ueber-uns/" ? pagePath("about", lang) : it.link)} style={{ marginLeft: 6, color: "var(--primary)", fontWeight: 700 }}>{it.linkLabel}</a> : null}</p></div></div>
             </div>
           )}
         </div>
@@ -649,6 +650,7 @@ function WholeProfile() {
 
 /* ============ HOME ROOT ============ */
 function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
+  const { lang } = useLang();
   useReveal();
   React.useEffect(() => {
     if (!scrollTarget) return;
@@ -669,7 +671,7 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
   };
   return (
     <React.Fragment>
-      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
+      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
       <Hero onStart={onStart} />
       <TrustBar />
       <Problem id="problem" />
@@ -684,7 +686,7 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <Pricing id="pricing" onStart={onStart} />
       <FAQ id="faq" />
       <FinalCTA onStart={onStart} />
-      <Footer onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
+      <Footer onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
       <StickyCTA onStart={() => onStart()} />
       <WhatsAppFloat />
     </React.Fragment>);

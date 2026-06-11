@@ -4,7 +4,7 @@
    die Sprache folgt der Website-Sprache (rr_lang). Mit […] markierte Pflichtangaben
    (Telefon, Geschäftsführer, Firmenbuch, Kammer) bitte noch ergänzen. */
 import React from "react";
-import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
+import { Nav, Footer, WhatsAppFloat, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
@@ -516,17 +516,13 @@ const L = {
 };
 
 /* Eigenständige Seiten-Hülle (Nav + Footer + Chat), Sprache aus rr_lang (Default DE). */
-function Shell({ children }) {
-  const [lang, setLangState] = React.useState("de");
-  React.useEffect(() => { try { const s = localStorage.getItem("rr_lang"); if (s && I18N[s]) setLangState(s); } catch (e) {} }, []);
-  const setLang = (l) => { try { localStorage.setItem("rr_lang", l); } catch (e) {} window.location.href = asset(localePath(l)); };
-  const t = I18N[lang] || I18N.de;
-  const nav = (path) => { window.location.href = asset(path); };
+function Shell({ initialLang = "de", pageKey, children }) {
+  const { lang, t, setLang, base } = useRouteShell(initialLang, pageKey);
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
-      <Nav onNav={(id) => nav("/#" + id)} onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="" />
+      <Nav onNav={(id) => base.onGoHome(id)} onStart={base.onStart} onBlog={base.onBlog} onAbout={base.onAbout} onOrm={base.onOrm} onDeindex={base.onDeindex} active="" />
       <main className="legal"><div className="container"><article className="legal-doc">{children}</article></div></main>
-      <Footer onStart={() => nav("/?start=1")} onBlog={() => nav("/magazin/")} onAbout={() => nav("/ueber-uns/")} />
+      <Footer onStart={base.onStart} onBlog={base.onBlog} onAbout={base.onAbout} />
       <WhatsAppFloat />
     </LangContext.Provider>
   );
@@ -615,5 +611,5 @@ function DatenschutzBody() {
   );
 }
 
-export function Impressum() { return <Shell><ImpressumBody /></Shell>; }
-export function Datenschutz() { return <Shell><DatenschutzBody /></Shell>; }
+export function Impressum({ initialLang = "de" }) { return <Shell initialLang={initialLang} pageKey="impressum"><ImpressumBody /></Shell>; }
+export function Datenschutz({ initialLang = "de" }) { return <Shell initialLang={initialLang} pageKey="datenschutz"><DatenschutzBody /></Shell>; }

@@ -2,6 +2,7 @@
    Google-Treffer verdrängen" (vorher nur eine In-App-Ansicht ohne URL). */
 import { OrmRoute } from "@/components/ServicePages";
 import { SITE_URL } from "@/lib/article-google-profil";
+import { pageHreflang } from "@/lib/page-routes";
 
 const URL = `${SITE_URL}/reputation-verdraengen`;
 
@@ -9,7 +10,7 @@ export const metadata = {
   title: "Negative Google-Treffer verdrängen — Seite 1 zurückerobern — RapidRemove",
   description:
     "Negative Suchergebnisse gezielt verdrängen und Ihre Online-Reputation auf Seite 1 zurückerobern. Strategie, positive Inhalte und Monitoring von der führenden Reputations-Agentur.",
-  alternates: { canonical: URL },
+  alternates: { canonical: URL, languages: pageHreflang("orm") },
   openGraph: {
     type: "website",
     title: "Negative Google-Treffer verdrängen — Seite 1 zurückerobern — RapidRemove",
@@ -48,7 +49,7 @@ export default function Page() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <OrmRoute />
+      <OrmRoute initialLang="de" />
     </>
   );
 }
