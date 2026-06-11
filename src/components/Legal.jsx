@@ -542,7 +542,7 @@ function ImpressumBody() {
       <p>{COMPANY.legal}<br />{COMPANY.street}<br />{COMPANY.city}, {c.country}</p>
 
       <h2>{i.contact}</h2>
-      <p>{i.email}: <a href={"mailto:" + COMPANY.email}>{COMPANY.email}</a><br />{i.phone}: <a href={"tel:" + COMPANY.phoneHref}>{COMPANY.phone}</a></p>
+      <p>{i.email}: <a href={"mailto:" + COMPANY.email}>{COMPANY.email}</a>{lang === "de" ? <><br />{i.phone}: <a href={"tel:" + COMPANY.phoneHref}>{COMPANY.phone}</a></> : null}</p>
 
       <h2>{i.rep}</h2>
       <p>{COMPANY.reps}</p>

@@ -426,11 +426,7 @@ function StickyCTA({ onStart }) {
   const { t } = useLang();
   return (
     <div className="sticky-cta">
-      <div className="sc-meta">
-        <b>{t.sticky.t}</b>
-        <span>{t.sticky.s}</span>
-      </div>
-      <button className="btn btn-primary sm" onClick={onStart}><Icon.search size={16} />{t.sticky.b}</button>
+      <button className="btn btn-primary sm" onClick={onStart}><Icon.search size={16} />{t.sticky.t}</button>
     </div>
   );
 }

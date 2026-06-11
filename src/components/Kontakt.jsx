@@ -334,7 +334,7 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
             <div className="kt-panel reveal d1">
               <h3 className="kt-ph"><Icon.message size={18} /> {k.chH}</h3>
               <div className="kt-chs">
-                {[...k.channels, { ic: "phone", t: PHONE_LABEL[lang] || PHONE_LABEL.en, d: PHONE_DISPLAY, href: PHONE_HREF }].map((c, i) => {
+                {[...k.channels, ...(lang === "de" ? [{ ic: "phone", t: PHONE_LABEL[lang] || PHONE_LABEL.en, d: PHONE_DISPLAY, href: PHONE_HREF }] : [])].map((c, i) => {
                   const I = Icon[c.ic] || Icon.mail;
                   const ext = c.href && c.href.indexOf("http") === 0;
                   const onClick = c.chat ? (e) => { e.preventDefault(); openChat(); } : undefined;

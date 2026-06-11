@@ -138,7 +138,7 @@ app.post("/contact", async (req, reply) => {
   const lang = clip(b.lang, 5) || "de";
   if (!message) return reply.code(400).send({ ok: false, error: "empty message" });
   try {
-    const notify = process.env.NOTIFY_TO || process.env.MAIL_FROM || "helpdesk@rapid-remove.com";
+    const notify = process.env.CONTACT_TO || "helpdesk@rapid-remove.com";
     const row = (l: string, v: string) => (v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "");
     const html =
       `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">Neue Kontaktanfrage</h2>` +
