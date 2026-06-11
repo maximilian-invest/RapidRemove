@@ -53,7 +53,44 @@ function useIsMobile(bp = 760) {
   return m;
 }
 /* Bestell-Karte für die mobile Liste (Design „mobil-bestellungen"). */
-function OrderRow({ o, onClick }) {
+/* ---- Live-Laufzeit einer Bestellung (seit Bestelleingang) ----
+   Läuft sichtbar mit, damit das Team Bearbeitungs-Zeitfenster besser einhalten kann.
+   Nur für AKTIVE Bestellungen — abgeschlossene/stornierte zeigen keinen laufenden Timer
+   (es gibt keinen Abschluss-Zeitstempel, sonst liefe die Uhr endlos weiter).
+   Farbschwellen: ab 24 h dezent gelb, ab 48 h rot (bei Bedarf hier anpassbar). */
+function useNow(intervalMs = 1000) {
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+  return now;
+}
+const TIMER_DONE = ["done", "storniert"];
+function ageParts(fromIso, now) {
+  const start = fromIso ? new Date(fromIso).getTime() : NaN;
+  if (isNaN(start)) return null;
+  let s = Math.max(0, Math.floor((now - start) / 1000));
+  const d = Math.floor(s / 86400); s -= d * 86400;
+  const h = Math.floor(s / 3600); s -= h * 3600;
+  const m = Math.floor(s / 60); s -= m * 60;
+  return { d, h, m, s, totalH: (now - start) / 3600000 };
+}
+function OrderTimer({ since, status, now, seconds = false }) {
+  if (TIMER_DONE.includes(status)) return null; // abgeschlossen/storniert → kein laufender Timer
+  const p = ageParts(since, now);
+  if (!p) return null;
+  const txt = seconds
+    ? (p.d ? p.d + (p.d === 1 ? " Tag · " : " Tage · ") : "") + [p.h, p.m, p.s].map((n) => String(n).padStart(2, "0")).join(":")
+    : (p.d ? p.d + " T " + p.h + " Std" : p.h ? p.h + " Std " + p.m + " Min" : p.m + " Min");
+  const lvl = p.totalH >= 48 ? " late" : p.totalH >= 24 ? " warn" : "";
+  return (
+    <span className={"otimer" + lvl + (seconds ? " lg" : "")} title="Laufzeit seit Bestelleingang">
+      <Icon.clock /> {txt}
+    </span>
+  );
+}
+function OrderRow({ o, onClick, now }) {
   return (
     <div className="m-row" onClick={onClick}>
       <div className="m-ava" style={{ background: avaColor(o.name), color: "#fff" }}>{initials(o.name)}</div>
@@ -64,6 +101,7 @@ function OrderRow({ o, onClick }) {
       <div className="right">
         <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
         <StatusBadge status={o.status} />
+        <OrderTimer since={o.createdAt} status={o.status} now={now} />
       </div>
     </div>
   );
@@ -408,6 +446,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
 /* ---------- Orders list ---------- */
 function Orders({ orders, openOrder, query }) {
   const isMobile = useIsMobile();
+  const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
   const [filter, setFilter] = React.useState("all");
   const filters = [
     ["all", "Alle", orders.length],
@@ -431,7 +470,7 @@ function Orders({ orders, openOrder, query }) {
         ))}
       </div>
       {list.length ? (
-        <div className="m-list">{list.map((o) => <OrderRow key={o.id} o={o} onClick={() => openOrder(o)} />)}</div>
+        <div className="m-list">{list.map((o) => <OrderRow key={o.id} o={o} now={now} onClick={() => openOrder(o)} />)}</div>
       ) : (
         <div className="m-empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
       )}
@@ -456,7 +495,7 @@ function Orders({ orders, openOrder, query }) {
             <tbody>
               {list.map((o) => (
                 <tr key={o.id} onClick={() => openOrder(o)}>
-                  <td><span className="oid">{o.id}</span><div className="muted">{o.created}</div></td>
+                  <td><span className="oid">{o.id}</span><div className="muted">{o.created}</div><OrderTimer since={o.createdAt} status={o.status} now={now} /></td>
                   <td><div className="cust">{o.name}<div className="sub">{o.email}</div></div></td>
                   <td>{SERVICES[o.service].name}{o.protection ? <div className="muted">+ Schutz</div> : null}</td>
                   <td><PayBadge pay={o.pay} /></td>
@@ -476,6 +515,7 @@ function Orders({ orders, openOrder, query }) {
 
 /* ---------- Order drawer ---------- */
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
+  const now = useNow(1000);
   if (!order) return <React.Fragment><div className="drawer-scrim"></div><div className="drawer"></div></React.Fragment>;
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Ansicht
@@ -489,6 +529,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
           <div>
             <div className="dt-id">{o.id}</div>
             <div className="dt-sub">{o.created} · {o.country}</div>
+            <div style={{ marginTop: 6 }}><OrderTimer since={o.createdAt} status={o.status} now={now} seconds /></div>
           </div>
           <button className="btn btn-sec btn-sm" style={{ marginLeft: "auto" }} onClick={() => onOpenFull(o)}><Icon.user /> Volle Kundenakte</button>
           <button className="drawer-close" onClick={onClose}><Icon.x /></button>
@@ -894,6 +935,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Detailansicht
   const isMobile = useIsMobile();
+  const now = useNow(1000); // Live-Laufzeit-Timer (sekündlich)
   const ex = crmExtras(o);
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
@@ -1023,7 +1065,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
           </div>
         </div>
-        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge pay={o.pay} />}
+        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge pay={o.pay} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
           {o.status !== "storniert"
             ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -1124,6 +1166,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           </div>
           <div className="cd-sub">{o.company} · {o.id}</div>
           <div className="cd-meta-row">
+            <OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
             <span className="m"><Icon.mail /> {o.email}</span>
             <span className="m"><Icon.phone /> {o.phone}</span>
             <span className="m"><Icon.globe /> {o.country}</span>

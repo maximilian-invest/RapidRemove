@@ -164,6 +164,14 @@ button{font-family:inherit;}
 .press-art{display:inline-flex;align-items:center;gap:5px;max-width:280px;font-size:12px;font-weight:700;color:var(--primary);text-decoration:none;background:var(--orange-50);border:1px solid var(--orange-200);border-radius:var(--r-pill);padding:3px 11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .press-art:hover{background:var(--orange-100);}
 .press-art svg{width:13px;height:13px;flex:none;}
+/* Live-Laufzeit-Timer einer Bestellung (seit Eingang) — hilft, Zeitfenster einzuhalten */
+.otimer{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:12px;color:var(--fg-2);background:#f3efe9;border:1px solid var(--hairline);border-radius:var(--r-pill);padding:3px 9px;font-variant-numeric:tabular-nums;white-space:nowrap;line-height:1.1;margin-top:4px;}
+.otimer svg{width:13px;height:13px;color:var(--fg-muted);flex:none;}
+.otimer.lg{font-size:13.5px;padding:5px 12px;margin-top:0;}
+.otimer.warn{color:#9a6b00;background:#fff4e0;border-color:#ffe0a8;}
+.otimer.warn svg{color:#d08700;}
+.otimer.late{color:#9b1c1c;background:#fdecec;border-color:#f5c2c7;}
+.otimer.late svg{color:var(--danger);}
 .drow .dl{color:var(--fg-2);}
 .drow .dv{font-weight:700;text-align:right;}
 .drow+.drow{border-top:1px solid var(--hairline);}
