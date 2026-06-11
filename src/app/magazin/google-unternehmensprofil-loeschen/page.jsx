@@ -6,7 +6,6 @@ import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
 export const metadata = {
   title: ARTICLE_META.title,
   description: ARTICLE_META.description,
-  keywords: ARTICLE_META.keywords,
   alternates: { canonical: ARTICLE_META.url },
   openGraph: {
     type: "article",

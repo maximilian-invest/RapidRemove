@@ -12,7 +12,6 @@ const jsonLd = buildArticleJsonLd(data.meta, data.faq, "de", ui, url);
 export const metadata = {
   title: data.meta.title,
   description: data.meta.description,
-  keywords: data.meta.keywords,
   alternates: { canonical: url, languages: hreflangForArticle(data.meta.slug) },
   openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: "de_DE", publishedTime: data.meta.date, modifiedTime: data.meta.date, authors: [data.meta.author] },
 };
