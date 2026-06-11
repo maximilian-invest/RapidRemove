@@ -15,6 +15,14 @@ const COMPANY = {
   street: "Salzgasse 2",
   city: "5400 Hallein",
   uid: "ATU72401536",
+  fbn: "470700g",
+  court: "Salzburg",
+  reps: "Matthias Lang, Maximilian Hölzl",
+  shares: "Matthias Lang 50 %, Maximilian Hölzl 50 %",
+  authority: "Bezirkshauptmannschaft Hallein",
+  profession: "Werbeagentur",
+  phone: "+43 6245 9305300",
+  phoneHref: "+4362459305300",
   email: "helpdesk@rapid-remove.com",
 };
 
@@ -32,7 +40,14 @@ const L = {
       rep: "Vertretungsberechtigt", repTxt: "[…] (geschäftsführende Gesellschafter)",
       reg: "Register- & Steuerdaten", uid: "Umsatzsteuer-Identifikationsnummer (UID)", fbn: "Firmenbuchnummer", court: "Firmenbuchgericht",
       biz: "Unternehmensgegenstand", bizTxt: "Professionelle Entfernung von Google-Unternehmensprofilen sowie Online-Reputationsdienstleistungen.",
-      chamber: "Kammer & Gewerbe", chamberTxt: "[…] (z. B. Mitgliedschaft Wirtschaftskammer Österreich; anwendbare Gewerbeordnung – GewO)",
+      chamber: "Kammer & Gewerbe", chamberTxt: "Mitglied der Wirtschaftskammer Österreich (WKO). Anwendbare Rechtsvorschrift: Gewerbeordnung (GewO), abrufbar unter",
+      shares: "Beteiligungsverhältnisse", authority: "Aufsichtsbehörde / Gewerbebehörde", profession: "Berufsbezeichnung",
+      notes: [
+        ["Haftung für Inhalte dieser Website", "Wir entwickeln die Inhalte dieser Website ständig weiter und bemühen uns, korrekte und aktuelle Informationen bereitzustellen. Eine Haftung für die Korrektheit aller Inhalte können wir jedoch nicht übernehmen, insbesondere für jene, die von Dritten bereitgestellt wurden. Als Diensteanbieter sind wir nicht verpflichtet, übermittelte oder gespeicherte fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine rechtswidrige Tätigkeit hinweisen. Sollten Ihnen rechtswidrige Inhalte auffallen, bitten wir um umgehende Kontaktaufnahme, damit wir diese entfernen können."],
+        ["Haftung für Links auf dieser Website", "Unsere Website enthält Links zu externen Websites, auf deren Inhalte wir keinen Einfluss haben. Für diese fremden Inhalte können wir keine Haftung übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter verantwortlich. Werden uns Rechtswidrigkeiten bekannt, entfernen wir die betreffenden Links umgehend."],
+        ["Urheberrecht", "Alle Inhalte dieser Website (Bilder, Fotos, Texte, Videos) unterliegen dem Urheberrecht. Bitte fragen Sie uns, bevor Sie Inhalte dieser Website verbreiten, vervielfältigen oder verwerten. Falls erforderlich, verfolgen wir die unerlaubte Nutzung rechtlich."],
+        ["Bildernachweis", "Die Bilder, Fotos und Grafiken auf dieser Website sind urheberrechtlich geschützt."],
+      ],
       eu: "EU-Streitbeilegung",
       euTxt1: "Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: ",
       euTxt2: "Wir sind weder verpflichtet noch bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
@@ -69,7 +84,14 @@ const L = {
       rep: "Authorised representatives", repTxt: "[…] (managing partners)",
       reg: "Register & tax details", uid: "VAT ID (UID)", fbn: "Commercial register no.", court: "Register court",
       biz: "Business activity", bizTxt: "Professional removal of Google Business Profiles and online-reputation services.",
-      chamber: "Chamber & trade", chamberTxt: "[…] (e.g. membership of the Austrian Federal Economic Chamber; applicable trade regulation – GewO)",
+      chamber: "Chamber & trade", chamberTxt: "Member of the Austrian Federal Economic Chamber (WKO). Applicable regulation: the Austrian Trade Act (Gewerbeordnung, GewO), available at",
+      shares: "Ownership structure", authority: "Supervisory / trade authority", profession: "Professional title",
+      notes: [
+        ["Liability for the content of this website", "We continuously develop the content of this website and strive to provide correct and up-to-date information. However, we cannot assume liability for the accuracy of all content, in particular content provided by third parties. As a service provider we are not obliged to monitor transmitted or stored third-party information or to investigate circumstances that indicate unlawful activity. If you notice unlawful content, please contact us immediately so that we can remove it."],
+        ["Liability for links on this website", "Our website contains links to external websites over whose content we have no influence. We therefore cannot accept any liability for this third-party content. The respective provider is always responsible for the content of linked pages. If we become aware of any legal infringements, we will remove the relevant links without delay."],
+        ["Copyright", "All content on this website (images, photos, texts, videos) is protected by copyright. Please ask us before distributing, reproducing or otherwise using the content of this website. Where necessary, we will pursue the unauthorised use of our content by legal means."],
+        ["Image credits", "The images, photos and graphics on this website are protected by copyright."],
+      ],
       eu: "EU dispute resolution",
       euTxt1: "The European Commission provides a platform for online dispute resolution (ODR): ",
       euTxt2: "We are neither obliged nor willing to participate in dispute resolution proceedings before a consumer arbitration board.",
@@ -106,7 +128,14 @@ const L = {
       rep: "Representantes autorizados", repTxt: "[…] (socios gerentes)",
       reg: "Datos registrales y fiscales", uid: "Número de identificación a efectos del IVA (UID)", fbn: "Número de registro mercantil", court: "Tribunal del registro",
       biz: "Objeto de la empresa", bizTxt: "Eliminación profesional de perfiles de empresa de Google y servicios de reputación online.",
-      chamber: "Cámara y actividad", chamberTxt: "[…] (p. ej., pertenencia a la Cámara Económica de Austria; normativa aplicable – GewO)",
+      chamber: "Cámara y actividad", chamberTxt: "Miembro de la Cámara Económica de Austria (WKO). Normativa aplicable: el Reglamento de Actividades de Austria (Gewerbeordnung, GewO), disponible en",
+      shares: "Estructura de participación", authority: "Autoridad de supervisión y de actividad", profession: "Denominación profesional",
+      notes: [
+        ["Responsabilidad por el contenido de este sitio web", "Desarrollamos continuamente el contenido de este sitio web y nos esforzamos por ofrecer información correcta y actualizada. No obstante, no podemos asumir responsabilidad por la exactitud de todos los contenidos, en particular los facilitados por terceros. Como prestador de servicios no estamos obligados a supervisar la información ajena transmitida o almacenada ni a investigar circunstancias que indiquen una actividad ilícita. Si detecta contenidos ilícitos, le rogamos que nos lo comunique de inmediato para poder eliminarlos."],
+        ["Responsabilidad por los enlaces de este sitio web", "Nuestro sitio web contiene enlaces a sitios externos sobre cuyo contenido no tenemos influencia. Por ello no podemos asumir responsabilidad por dichos contenidos ajenos. Del contenido de las páginas enlazadas es siempre responsable el respectivo proveedor. Si tenemos conocimiento de infracciones, eliminaremos los enlaces correspondientes de inmediato."],
+        ["Derechos de autor", "Todos los contenidos de este sitio web (imágenes, fotos, textos, vídeos) están protegidos por derechos de autor. Le rogamos que nos consulte antes de difundir, reproducir o explotar los contenidos de este sitio. En caso necesario, perseguiremos judicialmente el uso no autorizado de nuestros contenidos."],
+        ["Créditos de las imágenes", "Las imágenes, fotos y gráficos de este sitio web están protegidos por derechos de autor."],
+      ],
       eu: "Resolución de litigios de la UE",
       euTxt1: "La Comisión Europea pone a disposición una plataforma de resolución de litigios en línea (ODR): ",
       euTxt2: "No estamos obligados ni dispuestos a participar en procedimientos de resolución de litigios ante una junta arbitral de consumo.",
@@ -143,7 +172,14 @@ const L = {
       rep: "Représentants autorisés", repTxt: "[…] (associés gérants)",
       reg: "Données d'enregistrement & fiscales", uid: "Numéro d'identification TVA (UID)", fbn: "Numéro du registre du commerce", court: "Tribunal du registre",
       biz: "Objet de l'entreprise", bizTxt: "Suppression professionnelle de fiches d'établissement Google et services de réputation en ligne.",
-      chamber: "Chambre & activité", chamberTxt: "[…] (p. ex. adhésion à la Chambre économique d'Autriche ; réglementation applicable – GewO)",
+      chamber: "Chambre & activité", chamberTxt: "Membre de la Chambre économique d'Autriche (WKO). Réglementation applicable : le code autrichien des activités (Gewerbeordnung, GewO), disponible sur",
+      shares: "Répartition du capital", authority: "Autorité de surveillance / autorité commerciale", profession: "Titre professionnel",
+      notes: [
+        ["Responsabilité quant au contenu de ce site", "Nous développons en permanence le contenu de ce site et nous efforçons de fournir des informations correctes et à jour. Nous ne pouvons toutefois pas garantir l'exactitude de l'ensemble des contenus, en particulier ceux fournis par des tiers. En tant que prestataire de services, nous ne sommes pas tenus de surveiller les informations de tiers transmises ou stockées, ni de rechercher des circonstances révélant une activité illicite. Si vous constatez des contenus illicites, merci de nous contacter sans délai afin que nous puissions les supprimer."],
+        ["Responsabilité quant aux liens présents sur ce site", "Notre site contient des liens vers des sites externes dont nous ne maîtrisons pas le contenu. Nous déclinons donc toute responsabilité concernant ces contenus tiers. Le fournisseur respectif est toujours responsable du contenu des pages liées. Dès que nous avons connaissance d'infractions, nous supprimons les liens concernés sans délai."],
+        ["Droit d'auteur", "L'ensemble des contenus de ce site (images, photos, textes, vidéos) est protégé par le droit d'auteur. Merci de nous consulter avant de diffuser, reproduire ou exploiter les contenus de ce site. Le cas échéant, nous poursuivrons en justice toute utilisation non autorisée de nos contenus."],
+        ["Crédits photographiques", "Les images, photos et graphiques de ce site sont protégés par le droit d'auteur."],
+      ],
       eu: "Règlement des litiges de l'UE",
       euTxt1: "La Commission européenne met à disposition une plateforme de règlement en ligne des litiges (RLL) : ",
       euTxt2: "Nous ne sommes ni tenus ni disposés à participer à une procédure de règlement des litiges devant un organisme de conciliation pour consommateurs.",
@@ -180,7 +216,14 @@ const L = {
       rep: "Rappresentanti autorizzati", repTxt: "[…] (soci amministratori)",
       reg: "Dati di registro & fiscali", uid: "Partita IVA (UID)", fbn: "Numero del registro delle imprese", court: "Tribunale del registro",
       biz: "Oggetto sociale", bizTxt: "Rimozione professionale di profili aziendali Google e servizi di reputazione online.",
-      chamber: "Camera & attività", chamberTxt: "[…] (ad es. iscrizione alla Camera economica austriaca; normativa di settore applicabile – GewO)",
+      chamber: "Camera & attività", chamberTxt: "Membro della Camera economica austriaca (WKO). Normativa applicabile: il Codice austriaco delle attività (Gewerbeordnung, GewO), disponibile su",
+      shares: "Assetto partecipativo", authority: "Autorità di vigilanza / autorità commerciale", profession: "Qualifica professionale",
+      notes: [
+        ["Responsabilità per i contenuti di questo sito", "Sviluppiamo costantemente i contenuti di questo sito e ci impegniamo a fornire informazioni corrette e aggiornate. Non possiamo tuttavia assumere alcuna responsabilità per la correttezza di tutti i contenuti, in particolare quelli forniti da terzi. In qualità di fornitori di servizi non siamo tenuti a sorvegliare le informazioni altrui trasmesse o memorizzate, né a ricercare circostanze che indichino un'attività illecita. Qualora notiate contenuti illeciti, vi preghiamo di contattarci immediatamente affinché possiamo rimuoverli."],
+        ["Responsabilità per i link presenti su questo sito", "Il nostro sito contiene link a siti esterni sui cui contenuti non abbiamo alcuna influenza. Non possiamo pertanto assumere alcuna responsabilità per tali contenuti di terzi. Del contenuto delle pagine collegate è sempre responsabile il rispettivo fornitore. Qualora veniamo a conoscenza di violazioni di legge, rimuoveremo immediatamente i relativi link."],
+        ["Diritto d'autore", "Tutti i contenuti di questo sito (immagini, foto, testi, video) sono protetti dal diritto d'autore. Vi preghiamo di contattarci prima di diffondere, riprodurre o utilizzare i contenuti di questo sito. Se necessario, perseguiremo legalmente l'uso non autorizzato dei nostri contenuti."],
+        ["Crediti delle immagini", "Le immagini, le foto e i grafici presenti su questo sito sono protetti dal diritto d'autore."],
+      ],
       eu: "Risoluzione delle controversie UE",
       euTxt1: "La Commissione europea mette a disposizione una piattaforma per la risoluzione online delle controversie (ODR): ",
       euTxt2: "Non siamo obbligati né disposti a partecipare a procedure di risoluzione delle controversie dinanzi a un organismo di conciliazione dei consumatori.",
@@ -217,7 +260,14 @@ const L = {
       rep: "Vertegenwoordigingsbevoegden", repTxt: "[…] (beherende vennoten)",
       reg: "Register- & belastinggegevens", uid: "Btw-identificatienummer (UID)", fbn: "Handelsregisternummer", court: "Registerrechtbank",
       biz: "Bedrijfsactiviteit", bizTxt: "Professionele verwijdering van Google-bedrijfsprofielen en online-reputatiediensten.",
-      chamber: "Kamer & bedrijfsvoering", chamberTxt: "[…] (bijv. lidmaatschap van de Oostenrijkse Kamer van Koophandel; toepasselijke regelgeving – GewO)",
+      chamber: "Kamer & bedrijfsvoering", chamberTxt: "Lid van de Oostenrijkse Kamer van Koophandel (WKO). Toepasselijke regelgeving: de Oostenrijkse Gewerbeordnung (GewO), beschikbaar op",
+      shares: "Eigendomsverhoudingen", authority: "Toezichthoudende / bedrijfsautoriteit", profession: "Beroepsbenaming",
+      notes: [
+        ["Aansprakelijkheid voor de inhoud van deze website", "Wij ontwikkelen de inhoud van deze website voortdurend verder en streven ernaar correcte en actuele informatie te verstrekken. Wij kunnen echter geen aansprakelijkheid aanvaarden voor de juistheid van alle inhoud, in het bijzonder die van derden. Als dienstverlener zijn wij niet verplicht doorgegeven of opgeslagen informatie van derden te controleren of onderzoek te doen naar omstandigheden die op een onwettige activiteit wijzen. Mocht u onwettige inhoud opmerken, neem dan onmiddellijk contact met ons op zodat wij deze kunnen verwijderen."],
+        ["Aansprakelijkheid voor links op deze website", "Onze website bevat links naar externe websites waarop wij geen invloed hebben. Voor deze inhoud van derden kunnen wij dan ook geen aansprakelijkheid aanvaarden. Voor de inhoud van de gelinkte pagina's is steeds de betreffende aanbieder verantwoordelijk. Zodra wij kennis krijgen van inbreuken, verwijderen wij de betreffende links onverwijld."],
+        ["Auteursrecht", "Alle inhoud op deze website (afbeeldingen, foto's, teksten, video's) is auteursrechtelijk beschermd. Vraag het ons voordat u de inhoud van deze website verspreidt, verveelvoudigt of exploiteert. Indien nodig vervolgen wij onrechtmatig gebruik van onze inhoud langs juridische weg."],
+        ["Beeldverantwoording", "De afbeeldingen, foto's en grafieken op deze website zijn auteursrechtelijk beschermd."],
+      ],
       eu: "EU-geschillenbeslechting",
       euTxt1: "De Europese Commissie biedt een platform voor onlinegeschillenbeslechting (ODR): ",
       euTxt2: "Wij zijn niet verplicht en niet bereid deel te nemen aan geschillenbeslechtingsprocedures voor een consumentengeschillencommissie.",
@@ -254,7 +304,14 @@ const L = {
       rep: "Representantes autorizados", repTxt: "[…] (sócios-gerentes)",
       reg: "Dados de registo & fiscais", uid: "Número de identificação de IVA (UID)", fbn: "Número de registo comercial", court: "Tribunal de registo",
       biz: "Objeto da empresa", bizTxt: "Remoção profissional de perfis de empresa do Google e serviços de reputação online.",
-      chamber: "Câmara & atividade", chamberTxt: "[…] (p. ex., filiação na Câmara Económica da Áustria; regulamentação aplicável – GewO)",
+      chamber: "Câmara & atividade", chamberTxt: "Membro da Câmara Económica da Áustria (WKO). Regulamentação aplicável: o Código de Atividades da Áustria (Gewerbeordnung, GewO), disponível em",
+      shares: "Estrutura de participação", authority: "Autoridade de supervisão / autoridade comercial", profession: "Designação profissional",
+      notes: [
+        ["Responsabilidade pelo conteúdo deste site", "Desenvolvemos continuamente o conteúdo deste site e esforçamo-nos por disponibilizar informações corretas e atualizadas. Contudo, não podemos assumir responsabilidade pela exatidão de todos os conteúdos, em particular os fornecidos por terceiros. Enquanto prestadores de serviços, não somos obrigados a vigiar informações de terceiros transmitidas ou armazenadas, nem a investigar circunstâncias que indiciem uma atividade ilícita. Caso detete conteúdos ilícitos, agradecemos que nos contacte de imediato para que possamos removê-los."],
+        ["Responsabilidade pelas ligações neste site", "O nosso site contém ligações para sites externos sobre cujo conteúdo não temos influência. Por conseguinte, não podemos assumir qualquer responsabilidade por esses conteúdos de terceiros. Pelo conteúdo das páginas ligadas é sempre responsável o respetivo fornecedor. Logo que tenhamos conhecimento de infrações, removeremos de imediato as ligações em causa."],
+        ["Direitos de autor", "Todos os conteúdos deste site (imagens, fotos, textos, vídeos) estão protegidos por direitos de autor. Solicitamos que nos consulte antes de divulgar, reproduzir ou utilizar os conteúdos deste site. Se necessário, perseguiremos judicialmente a utilização não autorizada dos nossos conteúdos."],
+        ["Créditos das imagens", "As imagens, fotos e grafismos deste site estão protegidos por direitos de autor."],
+      ],
       eu: "Resolução de litígios da UE",
       euTxt1: "A Comissão Europeia disponibiliza uma plataforma de resolução de litígios em linha (RLL): ",
       euTxt2: "Não estamos obrigados nem dispostos a participar em procedimentos de resolução de litígios perante uma entidade de arbitragem de consumo.",
@@ -291,7 +348,14 @@ const L = {
       rep: "代表者", repTxt: "[…]（業務執行社員）",
       reg: "登記・税務情報", uid: "VAT番号（UID）", fbn: "商業登記番号", court: "登記裁判所",
       biz: "事業内容", bizTxt: "Googleビジネスプロフィールの専門的な削除およびオンライン評判管理サービス。",
-      chamber: "商工会議所・営業", chamberTxt: "[…]（例：オーストリア連邦経済会議所の会員、適用される営業規則 – GewO）",
+      chamber: "商工会議所・営業", chamberTxt: "オーストリア連邦経済会議所（WKO）会員。適用法令：オーストリア営業法（Gewerbeordnung, GewO）。参照先：",
+      shares: "出資比率", authority: "監督官庁／営業許可官庁", profession: "職業名称",
+      notes: [
+        ["当ウェブサイトのコンテンツに関する責任", "当社は当ウェブサイトのコンテンツを継続的に発展させ、正確かつ最新の情報の提供に努めています。ただし、すべてのコンテンツ、とりわけ第三者が提供したコンテンツの正確性について責任を負うことはできません。サービス提供者として、当社は送信または保存された第三者の情報を監視する義務、または違法行為を示す状況を調査する義務を負いません。違法なコンテンツにお気づきの場合は、削除できるよう速やかにご連絡ください。"],
+        ["当ウェブサイトのリンクに関する責任", "当ウェブサイトには、当社が内容を管理できない外部サイトへのリンクが含まれています。これら第三者のコンテンツについて当社は責任を負いません。リンク先ページの内容については、常に各提供者が責任を負います。違法性が判明した場合、当社は該当リンクを速やかに削除します。"],
+        ["著作権", "当ウェブサイトのすべてのコンテンツ（画像、写真、テキスト、動画）は著作権で保護されています。当ウェブサイトのコンテンツを配布・複製・利用される場合は、事前に当社へお問い合わせください。必要に応じて、無断使用に対して法的措置を講じます。"],
+        ["画像の出典", "当ウェブサイトの画像、写真およびグラフィックは著作権で保護されています。"],
+      ],
       eu: "EU紛争解決",
       euTxt1: "欧州委員会はオンライン紛争解決（ODR）プラットフォームを提供しています: ",
       euTxt2: "当社は、消費者仲裁機関での紛争解決手続に参加する義務はなく、参加する意思もありません。",
@@ -328,7 +392,14 @@ const L = {
       rep: "Behöriga företrädare", repTxt: "[…] (verkställande bolagsmän)",
       reg: "Register- & skatteuppgifter", uid: "Momsregistreringsnummer (UID)", fbn: "Handelsregisternummer", court: "Registerdomstol",
       biz: "Verksamhet", bizTxt: "Professionell borttagning av Google-företagsprofiler samt tjänster för online-rykte.",
-      chamber: "Kammare & näring", chamberTxt: "[…] (t.ex. medlemskap i Österrikes handelskammare; tillämplig näringsförordning – GewO)",
+      chamber: "Kammare & näring", chamberTxt: "Medlem i Österrikes handelskammare (WKO). Tillämplig författning: den österrikiska näringsförordningen (Gewerbeordnung, GewO), tillgänglig på",
+      shares: "Ägarförhållanden", authority: "Tillsyns- och näringsmyndighet", profession: "Yrkesbeteckning",
+      notes: [
+        ["Ansvar för innehållet på denna webbplats", "Vi utvecklar fortlöpande innehållet på denna webbplats och strävar efter att tillhandahålla korrekt och aktuell information. Vi kan dock inte ansvara för att allt innehåll är korrekt, särskilt sådant som tillhandahållits av tredje part. Som tjänsteleverantör är vi inte skyldiga att övervaka överförd eller lagrad information från tredje part eller att efterforska omständigheter som tyder på olaglig verksamhet. Om du upptäcker olagligt innehåll ber vi dig kontakta oss omgående så att vi kan ta bort det."],
+        ["Ansvar för länkar på denna webbplats", "Vår webbplats innehåller länkar till externa webbplatser vars innehåll vi inte kan påverka. Vi kan därför inte ta något ansvar för detta innehåll från tredje part. För innehållet på länkade sidor ansvarar alltid respektive leverantör. Om vi får kännedom om överträdelser tar vi omedelbart bort de aktuella länkarna."],
+        ["Upphovsrätt", "Allt innehåll på denna webbplats (bilder, foton, texter, videor) är skyddat av upphovsrätt. Kontakta oss innan du sprider, mångfaldigar eller använder innehållet på denna webbplats. Vid behov beivrar vi otillåten användning av vårt innehåll rättsligt."],
+        ["Bildkällor", "Bilderna, fotona och grafiken på denna webbplats är skyddade av upphovsrätt."],
+      ],
       eu: "EU-tvistlösning",
       euTxt1: "Europeiska kommissionen tillhandahåller en plattform för tvistlösning online (ODR): ",
       euTxt2: "Vi är varken skyldiga eller villiga att delta i tvistlösningsförfaranden inför en konsumentskiljenämnd.",
@@ -365,7 +436,14 @@ const L = {
       rep: "Tegningsberettigede", repTxt: "[…] (forretningsførende selskabsdeltagere)",
       reg: "Register- & skatteoplysninger", uid: "Momsregistreringsnummer (UID)", fbn: "Handelsregisternummer", court: "Registerdomstol",
       biz: "Virksomhedens formål", bizTxt: "Professionel fjernelse af Google-virksomhedsprofiler samt online-omdømmetjenester.",
-      chamber: "Kammer & erhverv", chamberTxt: "[…] (f.eks. medlemskab af det østrigske handelskammer; gældende erhvervsregler – GewO)",
+      chamber: "Kammer & erhverv", chamberTxt: "Medlem af det østrigske handelskammer (WKO). Gældende regler: den østrigske erhvervslov (Gewerbeordnung, GewO), tilgængelig på",
+      shares: "Ejerforhold", authority: "Tilsyns- og erhvervsmyndighed", profession: "Erhvervsbetegnelse",
+      notes: [
+        ["Ansvar for indholdet på dette websted", "Vi udvikler løbende indholdet på dette websted og bestræber os på at levere korrekte og aktuelle oplysninger. Vi kan dog ikke påtage os ansvar for, at alt indhold er korrekt, navnlig indhold leveret af tredjeparter. Som tjenesteudbyder er vi ikke forpligtet til at overvåge fremmede oplysninger, der er overført eller lagret, eller at undersøge forhold, der tyder på ulovlig aktivitet. Hvis du bemærker ulovligt indhold, beder vi dig kontakte os omgående, så vi kan fjerne det."],
+        ["Ansvar for links på dette websted", "Vores websted indeholder links til eksterne websteder, hvis indhold vi ikke har indflydelse på. Vi kan derfor ikke påtage os ansvar for dette tredjepartsindhold. For indholdet på de linkede sider er den pågældende udbyder altid ansvarlig. Bliver vi bekendt med retsstridigheder, fjerner vi straks de pågældende links."],
+        ["Ophavsret", "Alt indhold på dette websted (billeder, fotos, tekster, videoer) er beskyttet af ophavsret. Kontakt os, før du distribuerer, mangfoldiggør eller udnytter indholdet på dette websted. Om nødvendigt forfølger vi uautoriseret brug af vores indhold retsligt."],
+        ["Billedkilder", "Billederne, fotoene og grafikken på dette websted er beskyttet af ophavsret."],
+      ],
       eu: "EU-tvistbilæggelse",
       euTxt1: "Europa-Kommissionen stiller en platform til onlinetvistbilæggelse (OTB) til rådighed: ",
       euTxt2: "Vi er hverken forpligtede eller villige til at deltage i tvistbilæggelsesprocedurer ved et forbrugerklagenævn.",
@@ -402,7 +480,14 @@ const L = {
       rep: "Representanter", repTxt: "[…] (forretningsførende deltakere)",
       reg: "Register- & skatteopplysninger", uid: "MVA-nummer (UID)", fbn: "Foretaksregisternummer", court: "Registerdomstol",
       biz: "Virksomhet", bizTxt: "Profesjonell fjerning av Google-bedriftsprofiler samt tjenester for omdømme på nett.",
-      chamber: "Kammer & næring", chamberTxt: "[…] (f.eks. medlemskap i Østerrikes næringskammer; gjeldende næringsregler – GewO)",
+      chamber: "Kammer & næring", chamberTxt: "Medlem av Østerrikes næringskammer (WKO). Gjeldende regelverk: den østerrikske næringsloven (Gewerbeordnung, GewO), tilgjengelig på",
+      shares: "Eierforhold", authority: "Tilsyns- og næringsmyndighet", profession: "Yrkestittel",
+      notes: [
+        ["Ansvar for innholdet på dette nettstedet", "Vi videreutvikler stadig innholdet på dette nettstedet og bestreber oss på å gi korrekt og oppdatert informasjon. Vi kan likevel ikke påta oss ansvar for at alt innhold er korrekt, særlig innhold levert av tredjeparter. Som tjenesteleverandør er vi ikke forpliktet til å overvåke overført eller lagret informasjon fra tredjeparter, eller å undersøke forhold som tyder på ulovlig aktivitet. Oppdager du ulovlig innhold, ber vi deg kontakte oss omgående slik at vi kan fjerne det."],
+        ["Ansvar for lenker på dette nettstedet", "Nettstedet vårt inneholder lenker til eksterne nettsteder som vi ikke har innflytelse på innholdet til. Vi kan derfor ikke påta oss ansvar for dette tredjepartsinnholdet. For innholdet på de lenkede sidene er det alltid den aktuelle leverandøren som er ansvarlig. Blir vi kjent med lovbrudd, fjerner vi de aktuelle lenkene umiddelbart."],
+        ["Opphavsrett", "Alt innhold på dette nettstedet (bilder, foto, tekster, videoer) er beskyttet av opphavsrett. Kontakt oss før du distribuerer, mangfoldiggjør eller utnytter innholdet på dette nettstedet. Ved behov forfølger vi uautorisert bruk av innholdet vårt rettslig."],
+        ["Bildekreditering", "Bildene, fotoene og grafikken på dette nettstedet er beskyttet av opphavsrett."],
+      ],
       eu: "EU-tvisteløsning",
       euTxt1: "EU-kommisjonen tilbyr en plattform for nettbasert tvisteløsning (ODR): ",
       euTxt2: "Vi er verken forpliktet eller villige til å delta i tvisteløsningsprosedyrer for et forbrukerklageorgan.",
@@ -461,22 +546,38 @@ function ImpressumBody() {
       <p>{COMPANY.legal}<br />{COMPANY.street}<br />{COMPANY.city}, {c.country}</p>
 
       <h2>{i.contact}</h2>
-      <p>{i.email}: <a href={"mailto:" + COMPANY.email}>{COMPANY.email}</a><br />{i.phone}: […]</p>
+      <p>{i.email}: <a href={"mailto:" + COMPANY.email}>{COMPANY.email}</a><br />{i.phone}: <a href={"tel:" + COMPANY.phoneHref}>{COMPANY.phone}</a></p>
 
       <h2>{i.rep}</h2>
-      <p>{i.repTxt}</p>
+      <p>{COMPANY.reps}</p>
+
+      <h2>{i.shares}</h2>
+      <p>{COMPANY.shares}</p>
 
       <h2>{i.reg}</h2>
-      <p>{i.uid}: {COMPANY.uid}<br />{i.fbn}: […]<br />{i.court}: […]</p>
+      <p>{i.uid}: {COMPANY.uid}<br />{i.fbn}: {COMPANY.fbn}<br />{i.court}: {COMPANY.court}</p>
 
       <h2>{i.biz}</h2>
       <p>{i.bizTxt}</p>
 
+      <h2>{i.profession}</h2>
+      <p>{COMPANY.profession} ({c.country})</p>
+
       <h2>{i.chamber}</h2>
-      <p>{i.chamberTxt}</p>
+      <p>{i.chamberTxt} <a href="https://www.ris.bka.gv.at" target="_blank" rel="noopener noreferrer">ris.bka.gv.at</a>.</p>
+
+      <h2>{i.authority}</h2>
+      <p>{COMPANY.authority}</p>
 
       <h2>{i.eu}</h2>
       <p>{i.euTxt1}<a href="https://ec.europa.eu/consumers/odr" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a>. {i.euTxt2}</p>
+
+      {(i.notes || []).map(([h, txt], idx) => (
+        <React.Fragment key={"n" + idx}>
+          <h2>{h}</h2>
+          <p>{txt}</p>
+        </React.Fragment>
+      ))}
 
       <p className="legal-upd">{i.upd}</p>
     </React.Fragment>
