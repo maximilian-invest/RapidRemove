@@ -55,7 +55,7 @@ const article = {
       ["Ce qui est supprimé", "Toute la fiche + tous les avis", "Avis isolé"],
       ["Vitesse", "24 – 48 heures", "3 – 9 mois"],
       ["Coût", "Prix fixe (honoraires de résultat)", "Taux horaires (à l'avance)"],
-      ["Succès", "Garanti et durable", "Incertain (risque)"],
+      ["Succès", "Durable – paiement uniquement en cas de succès", "Incertain (risque)"],
       ["Avis", "Tous partis (avec la fiche)", "Procédures isolées"],
       ["Risque Streisand", "aucun", "présent"],
       ["Effort", "Nul (pilote automatique)", "Élevé (preuves et délais)"],

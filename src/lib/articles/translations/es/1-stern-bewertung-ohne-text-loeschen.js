@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "¿Qué vía te conviene?", toc: "¿Qué vía?" },
     { t: "p", text: "Importante antes: hay dos objetivos muy distintos y, por tanto, dos vías." },
     { t: "p", text: "**¿Solo quieres quitar esa reseña de 1 estrella y conservar tu perfil?** Entonces la **denuncia** a Google y, si falla, la **vía del abogado** son las opciones correctas. Justo con una reseña de 1 estrella sin palabras las posibilidades legales son buenas." },
-    { t: "p", text: "**¿Tu perfil está dañado de forma permanente por varias reseñas o reseñas injustificadas y quieres un verdadero nuevo comienzo?** Entonces la **eliminación del perfil** con RapidRemove es la vía más directa: eliminamos el **perfil de empresa completo**, todas las reseñas desaparecen con él; borrón y cuenta nueva, garantizado." },
+    { t: "p", text: "**¿Tu perfil está dañado de forma permanente por varias reseñas o reseñas injustificadas y quieres un verdadero nuevo comienzo?** Entonces la **eliminación del perfil** con RapidRemove es la vía más directa: eliminamos el **perfil de empresa completo**, todas las reseñas desaparecen con él; un verdadero nuevo comienzo; solo pagas si hay éxito." },
     { t: "table", head: ["Vía", "Qué se elimina", "Duración", "Éxito", "Coste"], rows: [
       ["Denunciar tú mismo", "reseña individual", "incierto", "bajo", "gratis"],
       ["Abogado", "reseña individual", "3 – 9 meses", "aprox. 90 %", "por reseña, por adelantado"],
-      ["RapidRemove", "**todo el perfil + todas las reseñas**", "24 – 48 h", "garantizado", "precio fijo tras el éxito"],
+      ["RapidRemove", "**todo el perfil + todas las reseñas**", "24 – 48 h", "pago solo si hay éxito", "precio fijo tras el éxito"],
     ] },
     { t: "p", text: "Con la eliminación del perfil solo pagas **tras el éxito** y, gracias a la garantía, un perfil que reaparezca se elimina gratis." },
     { t: "cta", title: "Comprueba gratis si tu reseña de 1 estrella se puede eliminar.", text: "Introduce el nombre de tu empresa: encontramos tu perfil y comprobamos en segundos si se puede eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },

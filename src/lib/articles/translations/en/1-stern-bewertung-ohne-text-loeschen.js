@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Which route suits you?", toc: "Which route?" },
     { t: "p", text: "Important first: there are two fundamentally different goals – and therefore two routes." },
     { t: "p", text: "**Do you only want that one 1-star review gone and keep your profile?** Then **reporting** to Google and – if that fails – the **legal route** are the right options. Especially with a wordless 1-star review, the legal chances are good." },
-    { t: "p", text: "**Is your profile permanently damaged by several or unjustified reviews and you want a genuine fresh start?** Then **profile removal** via RapidRemove is the most direct route: we remove the **entire Business Profile**, all reviews disappear with it – clean slate, guaranteed." },
+    { t: "p", text: "**Is your profile permanently damaged by several or unjustified reviews and you want a genuine fresh start?** Then **profile removal** via RapidRemove is the most direct route: we remove the **entire Business Profile**, all reviews disappear with it – a genuine fresh start; you only pay on success." },
     { t: "table", head: ["Route", "What is removed", "Duration", "Success", "Cost"], rows: [
       ["Report yourself", "single review", "uncertain", "low", "free"],
       ["Lawyer", "single review", "3 – 9 months", "approx. 90 %", "per review, upfront"],
-      ["RapidRemove", "**whole profile + all reviews**", "24 – 48 h", "guaranteed", "fixed price after success"],
+      ["RapidRemove", "**whole profile + all reviews**", "24 – 48 h", "pay only on success", "fixed price after success"],
     ] },
     { t: "p", text: "With profile removal you only pay **after success**, and thanks to the guarantee a reappearing profile is removed for free." },
     { t: "cta", title: "Check for free whether your 1-star review can be removed.", text: "Enter your business name – we'll find your profile and check in seconds whether and how fast it can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },

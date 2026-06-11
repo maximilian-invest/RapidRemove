@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Quelle voie vous convient ?", toc: "Quelle voie ?" },
     { t: "p", text: "Important d'abord : il existe deux objectifs très différents – et donc deux voies." },
     { t: "p", text: "**Vous voulez seulement supprimer cet avis 1 étoile et conserver votre fiche ?** Alors le **signalement** à Google et – en cas d'échec – la **voie de l'avocat** sont les bonnes options. Justement avec un avis 1 étoile sans mots, les chances juridiques sont bonnes." },
-    { t: "p", text: "**Votre fiche est durablement endommagée par plusieurs avis ou des avis injustifiés et vous voulez un vrai nouveau départ ?** Alors la **suppression de la fiche** via RapidRemove est la voie la plus directe : nous supprimons la **fiche d'établissement complète**, tous les avis disparaissent avec ; page blanche, garanti." },
+    { t: "p", text: "**Votre fiche est durablement endommagée par plusieurs avis ou des avis injustifiés et vous voulez un vrai nouveau départ ?** Alors la **suppression de la fiche** via RapidRemove est la voie la plus directe : nous supprimons la **fiche d'établissement complète**, tous les avis disparaissent avec ; un vrai nouveau départ ; vous ne payez qu’en cas de succès." },
     { t: "table", head: ["Voie", "Ce qui est supprimé", "Durée", "Succès", "Coût"], rows: [
       ["Signaler soi-même", "avis isolé", "incertain", "faible", "gratuit"],
       ["Avocat", "avis isolé", "3 – 9 mois", "env. 90 %", "par avis, à l'avance"],
-      ["RapidRemove", "**toute la fiche + tous les avis**", "24 – 48 h", "garanti", "prix fixe après succès"],
+      ["RapidRemove", "**toute la fiche + tous les avis**", "24 – 48 h", "paiement en cas de succès", "prix fixe après succès"],
     ] },
     { t: "p", text: "Avec la suppression de la fiche, vous ne payez qu'**après succès**, et grâce à la garantie une fiche qui réapparaît est supprimée gratuitement." },
     { t: "cta", title: "Vérifiez gratuitement si votre avis 1 étoile peut être supprimé.", text: "Saisissez le nom de votre entreprise : nous trouvons votre fiche et vérifions en quelques secondes si elle peut être supprimée, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },

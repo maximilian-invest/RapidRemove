@@ -55,7 +55,7 @@ const article = {
       ["Vad tas bort", "Hela profilen + alla recensioner", "Enskild recension"],
       ["Snabbhet", "24–48 timmar", "3–9 månader"],
       ["Kostnad", "Fast pris (framgångsarvode)", "Timtaxor (förskott)"],
-      ["Framgång", "Garanterat och varaktigt", "Osäkert (risk)"],
+      ["Framgång", "Varaktigt – betalning endast vid framgång", "Osäkert (risk)"],
       ["Recensioner", "Alla borta (med profilen)", "Enskilda tvister"],
       ["Streisandrisk", "ingen", "finns"],
       ["Insats", "Ingen (autopilot)", "Hög (bevis och möten)"],

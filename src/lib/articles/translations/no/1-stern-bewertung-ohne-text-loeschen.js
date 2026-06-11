@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Hvilken vei passer for deg?", toc: "Hvilken vei?" },
     { t: "p", text: "Viktig først: det er to helt forskjellige mål – og dermed to veier." },
     { t: "p", text: "**Vil du bare ha den ene 1-stjerners anmeldelsen vekk og beholde profilen din?** Da er **rapporteringen** til Google og – hvis den mislykkes – **advokatveien** de riktige mulighetene. Nettopp ved en ordløs 1-stjerners anmeldelse er de juridiske sjansene gode." },
-    { t: "p", text: "**Er profilen din varig skadet av flere eller urettferdige anmeldelser, og vil du ha en virkelig ny start?** Da er **profilfjerningen** via RapidRemove den mest direkte veien: vi fjerner **hele bedriftsprofilen**, alle anmeldelser forsvinner med – ren tavle, garantert." },
+    { t: "p", text: "**Er profilen din varig skadet av flere eller urettferdige anmeldelser, og vil du ha en virkelig ny start?** Da er **profilfjerningen** via RapidRemove den mest direkte veien: vi fjerner **hele bedriftsprofilen**, alle anmeldelser forsvinner med – en virkelig ny start; du betaler kun ved suksess." },
     { t: "table", head: ["Vei", "Hva fjernes", "Varighet", "Suksess", "Pris"], rows: [
       ["Rapporter selv", "enkeltanmeldelse", "usikkert", "lav", "gratis"],
       ["Advokat", "enkeltanmeldelse", "3-9 måneder", "ca. 90 %", "per anmeldelse, forskudd"],
-      ["RapidRemove", "**hele profilen + alle anmeldelser**", "24-48 t", "garantert", "fast pris etter suksess"],
+      ["RapidRemove", "**hele profilen + alle anmeldelser**", "24-48 t", "betaling ved suksess", "fast pris etter suksess"],
     ] },
     { t: "p", text: "Ved profilfjerningen betaler du først **etter suksess**, og takket være garantien fjernes en profil som dukker opp igjen, uten kostnad." },
     { t: "cta", title: "Sjekk gratis om din 1-stjerners anmeldelse kan fjernes.", text: "Skriv inn bedriftsnavnet – vi finner profilen din og sjekker på sekunder om og hvor raskt den kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },

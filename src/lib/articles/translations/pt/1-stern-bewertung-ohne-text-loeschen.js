@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Que caminho é o seu?", toc: "Que caminho?" },
     { t: "p", text: "Importante antes de mais: há dois objetivos muito diferentes – e portanto dois caminhos." },
     { t: "p", text: "**Quer apenas tirar aquela avaliação de 1 estrela e manter o perfil?** Então a **denúncia** ao Google e – em caso de insucesso – o **caminho do advogado** são as opções certas. Precisamente numa avaliação de 1 estrela sem palavras, as hipóteses jurídicas são boas." },
-    { t: "p", text: "**O seu perfil está permanentemente danificado por várias avaliações ou por avaliações injustas e quer um verdadeiro recomeço?** Então a **remoção do perfil** com a RapidRemove é o caminho mais direto: removemos o **perfil de empresa completo**, todas as avaliações desaparecem com ele – registo limpo, garantido." },
+    { t: "p", text: "**O seu perfil está permanentemente danificado por várias avaliações ou por avaliações injustas e quer um verdadeiro recomeço?** Então a **remoção do perfil** com a RapidRemove é o caminho mais direto: removemos o **perfil de empresa completo**, todas as avaliações desaparecem com ele – um verdadeiro recomeço; só paga em caso de êxito." },
     { t: "table", head: ["Caminho", "O que é removido", "Duração", "Sucesso", "Custo"], rows: [
       ["Denunciar você mesmo", "avaliação isolada", "incerto", "baixo", "gratuito"],
       ["Advogado", "avaliação isolada", "3 – 9 meses", "cerca de 90 %", "por avaliação, adiantado"],
-      ["RapidRemove", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "garantido", "preço fixo após sucesso"],
+      ["RapidRemove", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "pagamento em caso de êxito", "preço fixo após sucesso"],
     ] },
     { t: "p", text: "Na remoção do perfil só paga **após o sucesso** e, graças à garantia, um perfil que reapareça é removido gratuitamente." },
     { t: "cta", title: "Verifique gratuitamente se a sua avaliação de 1 estrela é removível.", text: "Introduza o nome da empresa – encontramos o seu perfil e verificamos em segundos se e com que rapidez pode ser removido.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },

@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Quale via fa per te?", toc: "Quale via?" },
     { t: "p", text: "Importante prima: ci sono due obiettivi molto diversi – e quindi due vie." },
     { t: "p", text: "**Vuoi solo togliere quella recensione a 1 stella e mantenere il profilo?** Allora la **segnalazione** a Google e – in caso di insuccesso – la **via dell'avvocato** sono le opzioni giuste. Proprio con una recensione a 1 stella senza parole le possibilità legali sono buone." },
-    { t: "p", text: "**Il tuo profilo è danneggiato in modo permanente da più recensioni o da recensioni ingiustificate e vuoi un vero nuovo inizio?** Allora la **rimozione del profilo** con RapidRemove è la via più diretta: rimuoviamo il **profilo dell'attività completo**, tutte le recensioni spariscono con esso; fedina pulita, garantito." },
+    { t: "p", text: "**Il tuo profilo è danneggiato in modo permanente da più recensioni o da recensioni ingiustificate e vuoi un vero nuovo inizio?** Allora la **rimozione del profilo** con RapidRemove è la via più diretta: rimuoviamo il **profilo dell'attività completo**, tutte le recensioni spariscono con esso; un vero nuovo inizio; paghi solo in caso di successo." },
     { t: "table", head: ["Via", "Cosa viene rimosso", "Durata", "Successo", "Costo"], rows: [
       ["Segnalare da soli", "singola recensione", "incerto", "basso", "gratis"],
       ["Avvocato", "singola recensione", "3 – 9 mesi", "ca. 90 %", "a recensione, anticipato"],
-      ["RapidRemove", "**tutto il profilo + tutte le recensioni**", "24 – 48 h", "garantito", "prezzo fisso dopo il successo"],
+      ["RapidRemove", "**tutto il profilo + tutte le recensioni**", "24 – 48 h", "pagamento in caso di successo", "prezzo fisso dopo il successo"],
     ] },
     { t: "p", text: "Con la rimozione del profilo paghi solo **dopo il successo** e, grazie alla garanzia, un profilo che riappare viene rimosso gratis." },
     { t: "cta", title: "Verifica gratis se la tua recensione a 1 stella si può eliminare.", text: "Inserisci il nome della tua azienda: troviamo il tuo profilo e verifichiamo in pochi secondi se si può eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },

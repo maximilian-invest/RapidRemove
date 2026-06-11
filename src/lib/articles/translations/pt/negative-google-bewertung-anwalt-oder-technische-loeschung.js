@@ -55,7 +55,7 @@ const article = {
       ["O que é removido", "Perfil inteiro + todas as avaliações", "Avaliação isolada"],
       ["Rapidez", "24 – 48 horas", "3 – 9 meses"],
       ["Custo", "Preço fixo (comissão de sucesso)", "Honorários por hora (adiantado)"],
-      ["Sucesso", "Garantido e duradouro", "Incerto (risco)"],
+      ["Sucesso", "Duradouro – pagamento só em caso de êxito", "Incerto (risco)"],
       ["Avaliações", "Todas fora (com o perfil)", "Processos isolados"],
       ["Risco Streisand", "nenhum", "presente"],
       ["Esforço", "Nenhum (piloto automático)", "Elevado (provas e prazos)"],

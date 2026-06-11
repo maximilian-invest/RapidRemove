@@ -55,7 +55,7 @@ const article = {
       ["Qué se elimina", "Todo el perfil + todas las reseñas", "Reseña individual"],
       ["Velocidad", "24 – 48 horas", "3 – 9 meses"],
       ["Coste", "Precio fijo (honorario de éxito)", "Tarifas por hora (por adelantado)"],
-      ["Éxito", "Garantizado y permanente", "Incierto (riesgo)"],
+      ["Éxito", "Permanente – pago solo si hay éxito", "Incierto (riesgo)"],
       ["Reseñas", "Todas fuera (con el perfil)", "Procedimientos sueltos"],
       ["Riesgo Streisand", "ninguno", "presente"],
       ["Esfuerzo", "Nulo (piloto automático)", "Alto (pruebas y plazos)"],

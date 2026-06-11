@@ -55,7 +55,7 @@ const article = {
       ["Cosa viene rimosso", "Tutto il profilo + tutte le recensioni", "Singola recensione"],
       ["Velocità", "24 – 48 ore", "3 – 9 mesi"],
       ["Costo", "Prezzo fisso (onorario di successo)", "Tariffe orarie (anticipate)"],
-      ["Successo", "Garantito e permanente", "Incerto (rischio)"],
+      ["Successo", "Permanente – pagamento solo in caso di successo", "Incerto (rischio)"],
       ["Recensioni", "Tutte via (con il profilo)", "Procedimenti singoli"],
       ["Rischio Streisand", "nessuno", "presente"],
       ["Impegno", "Nullo (pilota automatico)", "Alto (prove e scadenze)"],

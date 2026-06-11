@@ -55,7 +55,7 @@ const article = {
       ["Hva fjernes", "Hele profilen + alle anmeldelser", "Enkeltanmeldelse"],
       ["Hastighet", "24-48 timer", "3-9 måneder"],
       ["Pris", "Fast pris (suksesshonorar)", "Timesatser (forskudd)"],
-      ["Suksess", "Garantert og varig", "Usikkert (risiko)"],
+      ["Suksess", "Varig – betaling kun ved suksess", "Usikkert (risiko)"],
       ["Anmeldelser", "Alle borte (med profilen)", "Enkeltsaker"],
       ["Streisand-risiko", "ingen", "finnes"],
       ["Innsats", "Ingen (autopilot)", "Høy (bevis og møter)"],

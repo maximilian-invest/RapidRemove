@@ -45,11 +45,11 @@ const article = {
     { t: "h2", id: "weg", text: "Welke weg past bij u?", toc: "Welke weg?" },
     { t: "p", text: "Belangrijk vooraf: er zijn twee totaal verschillende doelen – en dus twee wegen." },
     { t: "p", text: "**Wilt u alleen die ene 1-sterreview weg en uw profiel behouden?** Dan zijn het **rapporteren** bij Google en – als dat mislukt – de **advocatenweg** de juiste opties. Juist bij een woordeloze 1-sterreview staan de juridische kansen goed." },
-    { t: "p", text: "**Is uw profiel door meerdere of onterechte reviews blijvend beschadigd en wilt u een echte nieuwe start?** Dan is de **profielverwijdering** via RapidRemove de meest directe weg: wij verwijderen het **hele bedrijfsprofiel**, alle reviews verdwijnen mee – schone lei, gegarandeerd." },
+    { t: "p", text: "**Is uw profiel door meerdere of onterechte reviews blijvend beschadigd en wilt u een echte nieuwe start?** Dan is de **profielverwijdering** via RapidRemove de meest directe weg: wij verwijderen het **hele bedrijfsprofiel**, alle reviews verdwijnen mee – een echte nieuwe start; u betaalt alleen bij succes." },
     { t: "table", head: ["Weg", "Wat wordt verwijderd", "Duur", "Succes", "Kosten"], rows: [
       ["Zelf rapporteren", "losse review", "onzeker", "gering", "gratis"],
       ["Advocaat", "losse review", "3 – 9 maanden", "ca. 90 %", "per review, vooraf"],
-      ["RapidRemove", "**heel profiel + alle reviews**", "24 – 48 uur", "gegarandeerd", "vaste prijs na succes"],
+      ["RapidRemove", "**heel profiel + alle reviews**", "24 – 48 uur", "betaling alleen bij succes", "vaste prijs na succes"],
     ] },
     { t: "p", text: "Bij de profielverwijdering betaalt u pas **na succes**, en dankzij de garantie wordt een opnieuw opduikend profiel gratis verwijderd." },
     { t: "cta", title: "Controleer gratis of uw 1-sterreview verwijderbaar is.", text: "Voer uw bedrijfsnaam in – we vinden uw profiel en controleren binnen seconden of en hoe snel het verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },

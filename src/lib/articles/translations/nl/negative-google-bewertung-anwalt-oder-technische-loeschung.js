@@ -55,7 +55,7 @@ const article = {
       ["Wat wordt verwijderd", "Heel profiel + alle reviews", "Losse review"],
       ["Snelheid", "24 – 48 uur", "3 – 9 maanden"],
       ["Kosten", "Vaste prijs (succesfee)", "Uurtarieven (vooraf)"],
-      ["Succes", "Gegarandeerd & blijvend", "Onzeker (risico)"],
+      ["Succes", "Blijvend – betaling alleen bij succes", "Onzeker (risico)"],
       ["Reviews", "Alle weg (met het profiel)", "Losse procedures"],
       ["Streisand-risico", "geen", "aanwezig"],
       ["Inspanning", "Geen (automatisch)", "Hoog (bewijs & afspraken)"],

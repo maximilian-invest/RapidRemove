@@ -55,7 +55,7 @@ const article = {
       ["What is removed", "Whole profile + all reviews", "Single review"],
       ["Speed", "24 – 48 hours", "3 – 9 months"],
       ["Cost", "Fixed price (success fee)", "Hourly rates (upfront)"],
-      ["Success", "Guaranteed & permanent", "Uncertain (risk)"],
+      ["Success", "Permanent – pay only on success", "Uncertain (risk)"],
       ["Reviews", "All gone (with the profile)", "Individual proceedings"],
       ["Streisand risk", "none", "present"],
       ["Effort", "Zero (autopilot)", "High (evidence & deadlines)"],
