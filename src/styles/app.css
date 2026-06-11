@@ -230,7 +230,7 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .hero-card-col{position:relative;}
 .float-card{position:absolute;background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);box-shadow:var(--shadow-lg);padding:11px 15px 11px 12px;display:flex;align-items:center;gap:11px;z-index:4;animation:floaty 5.5s var(--ease) infinite;text-decoration:none;color:inherit;}
 .float-card.tp{top:-22px;right:-18px;left:auto;animation-delay:.2s;}
-.float-card.heise{top:-22px;right:-18px;left:auto;animation-delay:.2s;padding-right:18px;}
+.float-card.heise{top:-22px;right:-18px;left:auto;animation:none;padding-right:18px;}
 .float-card.done{bottom:-24px;left:-36px;animation-delay:1.4s;}
 .float-card .fc-strong{font-family:var(--font-display);font-weight:700;font-size:15px;line-height:1.1;color:var(--fg);display:flex;align-items:center;gap:6px;}
 .float-card .fc-cap{font-size:11.5px;font-weight:700;color:var(--fg-muted);margin-top:2px;}
@@ -347,7 +347,7 @@ a.tb-item:hover{color:var(--primary);}
 .step .ic svg{width:26px;height:26px;color:var(--primary);}
 .step h3{font-family:var(--font-display);font-weight:600;font-size:21px;margin:0 0 8px;}
 .step p{font-size:15px;line-height:1.6;color:var(--fg-2);margin:0 0 14px;}
-.step .assure{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--success);}
+.step .assure{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--fg-2);}
 .step .assure svg{width:16px;height:16px;}
 @media(max-width:880px){.steps{grid-template-columns:1fr;}}
 
@@ -362,7 +362,7 @@ a.tb-item:hover{color:var(--primary);}
 .cmp-col-rr{background:var(--orange-50);}
 .cmp-head .cmp-col-rr{background:var(--primary);color:#fff;flex-direction:column;gap:2px;}
 .cmp-head .cmp-col-rr .lg{display:flex;align-items:center;gap:7px;}
-.cmp-head .cmp-col-rr img{height:18px;}
+.cmp-head .cmp-col-rr img{height:26px;}
 .cmp-cell.yes{color:var(--success);font-weight:800;}
 .cmp-cell.no{color:var(--fg-muted);}
 .cmp-cell .ci{width:18px;height:18px;flex:none;}

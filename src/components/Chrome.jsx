@@ -135,6 +135,8 @@ function NavTel() {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+  // Die 0800-Nummer funktioniert nur aus DACH → nur auf der deutschsprachigen Site zeigen.
+  if (lang !== "de") return null;
   const tx = TEL_NOTE[lang] || TEL_NOTE.en;
   const onClick = (e) => {
     const h = viennaHour();

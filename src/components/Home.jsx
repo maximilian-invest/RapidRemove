@@ -586,7 +586,7 @@ function FinalCTA({ onStart }) {
 
 /* ============ VIDEO / EXPLAINER ============ */
 const VIDEO_COPY = {
-  de: { eyebrow: "Im Video", title: "So funktioniert's – in 60 Sekunden.", sub: "Der komplette Ablauf in 7 Schritten – von der Profil-Suche bis zur Zahlung nach Erfolg." },
+  de: { eyebrow: "Im Video", title: "So funktioniert's – in 60 Sekunden erklärt.", sub: "Der komplette Ablauf in 7 Schritten – von der Profil-Suche bis zur Zahlung nach Erfolg." },
   en: { eyebrow: "On video", title: "See how it works in 90 seconds.", sub: "A quick overview – from the free check to the deleted profile." },
   es: { eyebrow: "En v\u00eddeo", title: "Vea c\u00f3mo funciona en 90 segundos.", sub: "Un resumen r\u00e1pido – del an\u00e1lisis gratis al perfil eliminado." },
   fr: { eyebrow: "En vid\u00e9o", title: "D\u00e9couvrez comment \u00e7a marche en 90 secondes.", sub: "Un aper\u00e7u rapide – de l'analyse gratuite \u00e0 la fiche supprim\u00e9e." },

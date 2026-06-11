@@ -704,7 +704,7 @@ function PlaybackBar({ time, duration, playing, onPlayPause, onReset, onSeek, on
       <div style={{ fontFamily: mono, fontSize: 12, fontVariantNumeric: "tabular-nums", width: 38, textAlign: "right" }}>{fmt(time)}</div>
       <div
         ref={trackRef}
-        onPointerMove={(e) => { if (!trackRef.current) return; if (dragging) onSeek(timeFromEvent(e)); else onHover(timeFromEvent(e)); }}
+        onPointerMove={(e) => { if (!trackRef.current) return; if (dragging) onSeek(timeFromEvent(e)); }}
         onPointerLeave={() => { if (!dragging) onHover(null); }}
         onPointerDown={(e) => { setDragging(true); onSeek(timeFromEvent(e)); onHover(null); }}
         style={{ flex: 1, height: 22, position: "relative", cursor: "pointer", display: "flex", alignItems: "center", touchAction: "none" }}
@@ -771,7 +771,7 @@ export function AblaufVideo({ onStart }) {
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); lastTsRef.current = null; };
   }, [running]);
 
-  const displayTime = hoverTime != null ? hoverTime : time;
+  const displayTime = time;
   const ctx = React.useMemo(() => ({ time: displayTime, duration: DURATION, playing: running }), [displayTime, running]);
 
   return (

@@ -20,7 +20,7 @@
 .serp{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden;min-height:560px;position:relative;display:flex;flex-direction:column;}
 
 /* top search bar row */
-.serp-bar{display:flex;align-items:center;gap:18px;padding:18px 22px;border-bottom:1px solid var(--hairline);}
+.serp-bar{display:flex;align-items:center;gap:18px;padding:18px 22px;}
 .g-logo{font-family:Arial, sans-serif;font-weight:700;font-size:24px;letter-spacing:-1px;flex:none;}
 .g-logo b:nth-child(1){color:#4285F4;}.g-logo b:nth-child(2){color:#EA4335;}.g-logo b:nth-child(3){color:#FBBC05;}
 .g-logo b:nth-child(4){color:#4285F4;}.g-logo b:nth-child(5){color:#34A853;}.g-logo b:nth-child(6){color:#EA4335;}
