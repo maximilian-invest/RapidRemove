@@ -770,17 +770,17 @@ const MULTI_PROFILE = {
 };
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet" },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed" },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca" },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié" },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato" },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld" },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado" },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad" },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført" },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført" },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?" },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -1229,37 +1229,19 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
 
   function StepConfirm() {
     return (
-      <div className="wz-grid-confirm">
-        <div className="wz-card">
-          <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
-          <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
-          <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
-          <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} />
-          <div className="feasible">
-            <div className="feasible-head"><Icon.checkCircle /> {w.s3.checkTitle}</div>
-            <div className="feasible-rows">
-              {w.s3.rows.map((r, i) => (
-                <div className="feasible-row" key={i}>
-                  <Icon.check /> <span className="lbl">{r.l}</span> <span className="val">{r.v}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
-          </div>
-          <div className="wz-trust-strip">
-            {w.trustStrip.slice(3).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}
-          </div>
+      <div className="wz-card">
+        <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
+        <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
+        <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
+        <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} />
+        <button type="button" className="wz-not-mine" onClick={() => go(0)}>{wm.notMine} <Icon.arrowRight size={15} /></button>
+        <div className="wz-actions" style={{ marginTop: 18 }}>
+          <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
+          <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
         </div>
-        <aside className="wz-aside">
-          <div className="stat-card">
-            <div className="stat-num">{conv.successRate.split(" ")[0]}</div>
-            <div className="stat-lbl">{conv.successRate.replace(/^\S+\s/, "")}</div>
-          </div>
-          <Testimonial q={conv.quotes[1]} />
-        </aside>
+        <div className="wz-trust-strip">
+          {w.trustStrip.slice(3).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}
+        </div>
       </div>
     );
   }
@@ -1712,7 +1694,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
 
   const bodies = [StepName, StepSearch, StepConfirm, StepService, StepCheckout, StepDone];
   const Body = bodies[step];
-  const wideStep = [0, 2, 4].includes(step) && !processing;
+  const wideStep = [0, 4].includes(step) && !processing;
 
   return (
     <div className="wz">

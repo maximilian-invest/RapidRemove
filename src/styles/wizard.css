@@ -55,6 +55,11 @@
 .wz-biginput:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px rgba(255,128,0,.16);}
 
 .wz-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
+/* „Nicht Ihr Profil?" – zurück zur Eingabe (Schritt 1) */
+.wz-not-mine{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:none;border:none;padding:4px 0;font-size:13.5px;font-weight:600;color:var(--fg-muted);cursor:pointer;transition:color .15s;}
+.wz-not-mine:hover{color:var(--primary);text-decoration:underline;}
+.wz-not-mine svg{transition:transform .15s;}
+.wz-not-mine:hover svg{transform:translateX(2px);}
 .wz-actions .grow{flex:1;}
 .wz-mini-assure{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:24px;}
 .wz-mini-assure div{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--fg-2);}
