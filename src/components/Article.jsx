@@ -99,6 +99,7 @@ function ArticleBody() {
             Sie googeln Ihr Unternehmen – und sehen ein Profil, das Sie so nicht mehr wollen: voller alter
             Fake- oder Rachebewertungen, mit falschen Daten, oder schlicht ein Eintrag, aus dem Sie endgültig
             raus möchten. Die naheliegende Frage: <strong>Wie kann ich mein Google-Unternehmensprofil löschen?</strong>{" "}
+            (Viele suchen auch schlicht nach <a href={asset("/firma-bei-google-loeschen/")}>„Firma bei Google löschen"</a> – gemeint ist dasselbe.){" "}
             Die ehrliche Antwort ist leider komplizierter, als Google es Sie glauben lässt. Dieser Leitfaden zeigt
             Ihnen, was wirklich funktioniert – Schritt für Schritt, ohne Marketing-Geschwafel.
           </p>

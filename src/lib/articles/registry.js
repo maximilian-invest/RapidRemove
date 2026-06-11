@@ -25,6 +25,7 @@ export const CLUSTER_SLUGS = [
   "1-stern-bewertung-ohne-text-loeschen",
   "google-rezension-loeschen-lassen",
   "google-maps-eintrag-loeschen",
+  "firma-bei-google-loeschen",
 ];
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
@@ -36,6 +37,7 @@ export const CLUSTER_CARDS = [
   { slug: "negative-google-bewertung-anwalt-oder-technische-loeschung", cat: "Recht", thm: "thm-teal", icon: "gavel", title: "Negative Bewertung: Anwalt oder technische Löschung?", excerpt: "Kosten, Dauer und Erfolg im direkten Vergleich – welcher Weg sich wirklich lohnt.", author: "Matthias Lang", read: 8, date: "Juni 2026" },
   { slug: "1-stern-bewertung-ohne-text-loeschen", cat: "Recht", thm: "thm-plum", icon: "gavel", title: "1-Stern-Bewertung ohne Text löschen lassen", excerpt: "Warum wortlose 1-Stern-Bewertungen oft löschbar sind – Rechtslage (LG Lübeck, BGH) & Anleitung.", author: "Matthias Lang", read: 7, date: "Juni 2026" },
   { slug: "google-rezension-loeschen-lassen", cat: "Anleitung", thm: "thm-blue", icon: "edit", title: "Google Rezension löschen lassen: Formular & Kosten", excerpt: "Eigene und fremde Rezensionen entfernen – kostenlos melden oder dauerhaft löschen lassen.", author: "Matthias Lang", read: 7, date: "Juni 2026" },
+  { slug: "firma-bei-google-loeschen", cat: "Google-Policy", thm: "thm-ink", icon: "building", title: "Firma bei Google löschen: so entfernen Sie den Eintrag", excerpt: "Warum „als geschlossen markieren“ den Eintrag nicht löscht – und wie Sie ihn samt aller Bewertungen wirklich entfernen.", author: "Matthias Lang", read: 7, date: "Juni 2026" },
 ];
 
 // Resolve a rapid-remove.com URL (or bare slug) to an on-site path, or null if it
