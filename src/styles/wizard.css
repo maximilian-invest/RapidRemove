@@ -482,13 +482,13 @@
 .agb-consent.err{color:var(--danger);}
 
 /* ---- clickable stepper (jump back to a completed step) ---- */
-.stepper-node.nav{cursor:pointer;}
+.stepper-node.is-nav{cursor:pointer;}
 /* kein UA-Kasten (Fokus-Outline / Tap-Highlight) hinter dem grünen Punkt */
 .stepper-node{outline:none;-webkit-tap-highlight-color:transparent;}
 .stepper-node:focus{outline:none;}
 .stepper-node:focus-visible .stepper-dot{box-shadow:0 0 0 4px rgba(255,128,0,.28);}
-.stepper-node.nav:hover .stepper-dot{border-color:var(--primary);color:var(--primary);}
-.stepper-node.nav.done:hover .stepper-dot{border-color:var(--primary);background:var(--primary);color:#fff;}
+.stepper-node.is-nav:hover .stepper-dot{border-color:var(--primary);color:var(--primary);}
+.stepper-node.is-nav.done:hover .stepper-dot{border-color:var(--primary);background:var(--primary);color:#fff;}
 
 /* ---- mobile: topbar trims + no horizontal overflow ---- */
 @media(max-width:720px){

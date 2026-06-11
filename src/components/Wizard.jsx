@@ -705,7 +705,7 @@ function Stepper({ step, onNav }) {
           return (
           <React.Fragment key={i}>
             <div
-              className={"stepper-node" + (i < step ? " done" : i === step ? " active" : "") + (clickable ? " nav" : "")}
+              className={"stepper-node" + (i < step ? " done" : i === step ? " active" : "") + (clickable ? " is-nav" : "")}
               onClick={clickable ? () => onNav(i) : undefined}
               role={clickable ? "button" : undefined}
               tabIndex={clickable ? 0 : undefined}
@@ -1238,9 +1238,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
           <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
         </div>
-        <div className="wz-trust-strip">
-          {w.trustStrip.slice(3).map((x, i) => <span className="t" key={i}><Icon.check /> {x}</span>)}
-        </div>
       </div>
     );
   }
@@ -1513,7 +1510,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     <div className="wz-top">
       <div className="wz-top-inner">
         <img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={onExit} />
-        <div className="wz-secure"><Icon.lock /> {w.secure}</div>
         <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
       </div>
     </div>
@@ -1667,7 +1663,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
     <div className="wz">
       {Top}
       <Stepper step={step} onNav={canStepBack ? go : null} />
-      <TrustBar />
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
