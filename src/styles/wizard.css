@@ -528,6 +528,23 @@
 @keyframes timePop{0%{transform:translateY(2px);opacity:.2;}100%{transform:translateY(0);opacity:1;}}
 .oe-price{white-space:nowrap;font-family:var(--font-display);font-weight:700;font-size:13.5px;color:var(--primary);background:var(--orange-100);padding:2px 9px;border-radius:var(--r-pill);flex:none;}
 /* Protection master toggle + lead */
+/* Schutz + Überwachung als Kacheln (Toggle rechts oben, Tooltip, Tier-Wahl) */
+.prot-tiles{display:flex;flex-direction:column;gap:14px;margin-top:24px;}
+.prot-tile{cursor:default;align-items:flex-start;}
+.prot-info{position:relative;display:inline-flex;align-items:center;color:var(--fg-muted);cursor:help;}
+.prot-info svg{display:block;}
+.prot-info-pop{position:absolute;left:0;bottom:calc(100% + 9px);width:250px;max-width:72vw;background:var(--ink-canvas,#1c1916);color:#fff;font-size:12.5px;font-weight:500;line-height:1.5;padding:10px 13px;border-radius:11px;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(4px);transition:opacity .15s,transform .15s;z-index:30;pointer-events:none;}
+.prot-info:hover .prot-info-pop,.prot-info:focus .prot-info-pop,.prot-info:focus-visible .prot-info-pop{opacity:1;visibility:visible;transform:translateY(0);}
+.prot-tiers{display:flex;gap:10px;margin-top:14px;}
+.prot-tier{flex:1;display:flex;flex-direction:column;gap:3px;align-items:flex-start;border:1.5px solid var(--hairline);border-radius:var(--r-md);background:#fff;padding:10px 13px;cursor:pointer;transition:border-color var(--dur),background var(--dur);}
+.prot-tier:hover{border-color:var(--orange-300);}
+.prot-tier.on{border-color:var(--primary);background:var(--orange-50);}
+.prot-tier .pt-name{font-family:var(--font-display);font-weight:600;font-size:14px;}
+.prot-tier .pt-price{font-family:var(--font-display);font-weight:700;font-size:16px;}
+.prot-tier .pt-price small,.prot-mon-right .pt-price small{font-size:11.5px;color:var(--fg-muted);font-weight:600;margin-left:2px;}
+.prot-mon-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none;}
+.prot-mon-right .pt-price{font-family:var(--font-display);font-weight:700;font-size:15px;white-space:nowrap;}
+.prot-incl{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--success);flex:none;white-space:nowrap;}
 .prot-header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:28px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--hairline);}
 .prot-divider-label{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);}
 .prot-switch{display:inline-flex;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:0;flex:none;}

@@ -770,17 +770,17 @@ const MULTI_PROFILE = {
 };
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?" },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?" },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?" },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?" },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?" },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?" },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?" },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?" },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?" },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?" },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert" },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -981,8 +981,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   const [selectedId, setSelectedId] = React.useState("p1");
   const [service, setService] = React.useState("remove");
   const [express, setExpress] = React.useState(false);
-  const [protSkipAck, setProtSkipAck] = React.useState(false);
-  const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — default ON
+  const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   const [contact, setContact] = React.useState({ name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
@@ -1247,14 +1246,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
   }
 
   function StepService() {
-    const removePrice = express ? (num(p.deletion) + num(p.express)) : num(p.deletion);
+    const removePrice = num(p.deletion);
     const monitorDelta = num(p.protMonitor) - num(p.protMonthly);
     const protActive = protection !== null;
-    const blockNext = !protActive && !protSkipAck;
-    const toggleProt = () => {
-      if (protActive) setProtection(null);
-      else { setProtection("monthly"); setProtSkipAck(false); }
-    };
+    const monthlyTier = protection === "monthly" || protection === "monitor";
+    const blockNext = false;
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
@@ -1283,60 +1279,52 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
           </div>
         </div>
 
-        <div className="prot-header">
-          <span className="prot-divider-label"><Icon.shieldCheck size={14} /> {conv.protSectionLabel}</span>
-          <button className="prot-switch" onClick={toggleProt} aria-label="toggle">
-            <span className={"ps-state" + (protActive ? " on" : "")}>{protActive ? conv.protToggleOn : conv.protToggleOff}</span>
-            <span className={"switch" + (protActive ? " on" : "")}></span>
-          </button>
-        </div>
-
-        {protActive ? (
-          <React.Fragment>
-            <p className="prot-lead">{conv.protLead}</p>
-            <div className="prot-grid">
-              <div className="prot-col">
-                <div className={"prot-card" + ((protection === "monthly" || protection === "monitor") ? " sel" : "")} onClick={() => setProtection("monthly")}>
-                  <span className="pr-radio"></span>
-                  <span className="pc-label">{conv.protMonthlyName}</span>
-                  <span className="pc-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></span>
-                  <span className="pc-desc">{conv.protMonthlyShort}</span>
-                </div>
-                {(protection === "monthly" || protection === "monitor") && (
-                  <div className={"prot-upgrade" + (protection === "monitor" ? " on" : "")} onClick={(e) => { e.stopPropagation(); setProtection(protection === "monitor" ? "monthly" : "monitor"); }}>
-                    <span className="pu-check"><Icon.check size={11} /></span>
-                    <span className="pu-main">
-                      <span className="pu-label">{conv.protMonitorName}</span>
-                      <span className="pu-desc">{conv.protMonitorShort}</span>
-                    </span>
-                    <span className="pu-price">+{fmtMoney(lang, monitorDelta)}<small>{conv.perMonthShort}</small></span>
-                  </div>
-                )}
+        <div className="prot-tiles">
+          <div className={"opt prot-tile" + (protActive ? " sel" : "")}>
+            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">
+                {wm.schutz}
+                <span className="prot-info" tabIndex={0} role="button" aria-label="Info">
+                  <Icon.info size={15} />
+                  <span className="prot-info-pop">{conv.protLead}</span>
+                </span>
               </div>
-              <div className="prot-col">
-                <div className={"prot-card best" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
-                  <span className="pc-tag">{conv.tierLifetimeBadge}</span>
-                  <span className="pr-radio"></span>
-                  <span className="pc-label">{conv.protLifetimeName}</span>
-                  <span className="pc-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></span>
-                  <span className="pc-desc">{conv.protLifetimeShort}</span>
+              <div className="od">{wm.schutzClaim}</div>
+              {protActive && (
+                <div className="prot-tiers">
+                  <button type="button" className={"prot-tier" + (monthlyTier ? " on" : "")} onClick={() => { if (protection === "lifetime") setProtection("monthly"); }}>
+                    <span className="pt-name">{conv.tierMonthlyLabel}</span>
+                    <span className="pt-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></span>
+                  </button>
+                  <button type="button" className={"prot-tier" + (protection === "lifetime" ? " on" : "")} onClick={() => setProtection("lifetime")}>
+                    <span className="pt-name">{conv.tierLifetimeLabel}</span>
+                    <span className="pt-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></span>
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
-            <div className="prot-note"><Icon.shieldCheck size={14} /> {conv.keepProt}</div>
-          </React.Fragment>
-        ) : (
-          <div className={"prot-warn-box" + (protSkipAck ? " acked" : "")}>
-            <div className="pw-ic"><Icon.alert size={22} /></div>
-            <div className="pw-body">
-              <b className="pw-title">{conv.protOffTitle}</b>
-              <p className="pw-text">{conv.protOffBody}</p>
-              {protSkipAck
-                ? <div className="pw-acked"><Icon.check size={15} /> {conv.protOffAcked}</div>
-                : <button className="pw-ack" onClick={() => setProtSkipAck(true)}>{conv.protOffAck}</button>}
-            </div>
+            <button type="button" className={"switch prot-toggle" + (protActive ? " on" : "")} aria-label="Schutz" onClick={() => setProtection(protActive ? null : "monthly")}></button>
           </div>
-        )}
+
+          {protActive && (
+            <div className={"opt prot-tile" + ((protection === "monitor" || protection === "lifetime") ? " sel" : "")}>
+              <div className="opt-ic"><Icon.eye size={22} /></div>
+              <div className="opt-main">
+                <div className="ot">{wm.ueberw}</div>
+                <div className="od">{wm.ueberwTxt}</div>
+              </div>
+              {protection === "lifetime" ? (
+                <span className="prot-incl"><Icon.check size={14} /> {wm.inklusive}</span>
+              ) : (
+                <span className="prot-mon-right">
+                  <span className="pt-price">+{fmtMoney(lang, monitorDelta)}<small>{conv.perMonthShort}</small></span>
+                  <button type="button" className={"switch prot-toggle" + (protection === "monitor" ? " on" : "")} aria-label="Überwachung" onClick={() => setProtection(protection === "monitor" ? "monthly" : "monitor")}></button>
+                </span>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="risk-banner" style={{ marginTop: 20 }}><Icon.shieldCheck /> {t.riskReversal}</div>
 
