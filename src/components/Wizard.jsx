@@ -1268,17 +1268,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
             <div className="opt-main">
               <div className="ot">{w.s4.opt1.t} {w.s4.opt1.badge && <span className="obadge">{w.s4.opt1.badge}</span>}</div>
               <div className="od">{w.s4.opt1.d}</div>
-              <div className={"opt-express" + (express ? " on" : "")} onClick={(e) => { e.stopPropagation(); setExpress(!express); }}>
-                <Icon.zap size={17} className="oe-zap" />
-                <span className="oe-text">
-                  <b className="oe-label">{conv.expTitle}</b>
-                  <span key={express ? "on" : "off"} className={"oe-time" + (express ? " on" : "")}>{express ? conv.expTimeOn : conv.expTimeOff}</span>
-                </span>
-                <span className="oe-price">+{money(lang, p.express)}</span>
-                <button className={"switch" + (express ? " on" : "")} aria-label="toggle" onClick={(e) => { e.stopPropagation(); setExpress(!express); }}></button>
-              </div>
             </div>
-            <div className="opt-price">{fmtMoney(lang, removePrice)}<small>{express ? (lang === "de" ? "inkl. Express" : "incl. express") : wm.afterSuccess}</small></div>
+            <div className="opt-price">{fmtMoney(lang, removePrice)}<small>{wm.afterSuccess}</small></div>
           </div>
 
           <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => { setService("reset"); setExpress(false); }}>
@@ -1369,7 +1360,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
         <h3><Icon.cart size={20} /> {w.s5.sumTitle}</h3>
         <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div>
         <div className="sum-row"><span className="sl">{serviceName}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
-        {express && <div className="sum-row accent"><span className="sl"><Icon.zap /> {conv.sumExpress}</span><span className="sv">+{fmtMoney(lang, num(p.express))}</span></div>}
         <div className={"sum-row" + (protection ? "" : " muted")}>
           <span className="sl">{w.s5.sumProtect}{protLabel ? `: ${protLabel}` : ""}</span>
           <span className="sv">{protection ? (protection === "lifetime" ? fmtMoney(lang, num(p.protLifetime)) : `${money(lang, protPriceVal)} ${conv.perMonthShort}`) : w.s5.noneProtect}</span>
@@ -1426,17 +1416,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
               <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} />
             </div>
           </div>
-
-          {!express && service === "remove" && (
-            <div className="last-chance" onClick={() => setExpress(true)}>
-              <div className="lc-ic"><Icon.zap size={20} /></div>
-              <div className="lc-main">
-                <b>{conv.lastChanceTitle} <span className="lc-price">+{money(lang, p.express)}</span></b>
-                <p>{conv.lastChanceDesc}</p>
-              </div>
-              <button className="btn btn-primary sm" onClick={(e) => { e.stopPropagation(); setExpress(true); }}>{conv.expAdd}</button>
-            </div>
-          )}
 
           <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
             <input type="checkbox" checked={agbOk}
