@@ -14,8 +14,8 @@ import { submitContact } from "@/lib/order";
 import { FinalCTA, FAQ } from "@/components/Home";
 
 const PHONE_LABEL = { de: "Telefon", en: "Phone", es: "Teléfono", fr: "Téléphone", it: "Telefono", nl: "Telefoon", pt: "Telefone", ja: "電話", sv: "Telefon", da: "Telefon", no: "Telefon" };
-const PHONE_DISPLAY = "+43 6245 9305300";
-const PHONE_HREF = "tel:+4362459305300";
+const PHONE_DISPLAY = "0800 09 00 00 1";
+const PHONE_HREF = "tel:08000900001";
 
 const KONTAKT_COPY = {
   de: {
