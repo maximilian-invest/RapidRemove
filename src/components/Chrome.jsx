@@ -376,7 +376,12 @@ function Footer({ onStart, onBlog, onAbout }) {
   // 1 Unternehmen: Über uns · Magazin · Partner werden · Kontakt (Live-Chat)
   // 2 Rechtliches: Impressum · Datenschutz · AGB · Kundenportal
   const cols = t.footer.cols || [];
-  const [ftCo, ...ftRest] = (t.footer.addr || "").split(" \u00b7 "); // Firmenname + Adresse darunter
+  // Footer-Adresse: Firma \u00b7 Adresse \u00b7 UID (Trennzeichen " \u00b7 " bzw. "\u30fb" f\u00fcr JA).
+  // UID kommt eigenst\u00e4ndig unter die Adresse \u2013 sie steckt bereits in t.footer.addr.
+  const addrParts = (t.footer.addr || "").split(/\s*[\u00b7\u30fb]\s*/);
+  const ftCo = addrParts[0];
+  const ftUid = addrParts.length > 2 ? addrParts[addrParts.length - 1] : "";
+  const ftMid = addrParts.slice(1, ftUid ? -1 : undefined);
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
     [{ onClick: onAbout, href: asset(pagePath("about", lang)) }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset(pagePath("kontakt", lang)) }],
@@ -389,7 +394,7 @@ function Footer({ onStart, onBlog, onAbout }) {
           <div className="foot-brand">
             <img className="foot-logo" src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
             <p>{t.footer.tagline}</p>
-            <div className="addr"><strong>{ftCo}</strong><br />{ftRest.join(" · ")}<br />UID: ATU72401536</div>
+            <div className="addr"><strong>{ftCo}</strong><br />{ftMid.join(" · ")}{ftUid ? <><br />{ftUid}</> : null}</div>
           </div>
           {cols.map((c, i) => (
             <div className="foot-col" key={i}>
