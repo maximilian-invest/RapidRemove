@@ -238,13 +238,21 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .float-card .fc-tp{width:32px;height:32px;border-radius:8px;background:#00b67a;display:flex;align-items:center;justify-content:center;flex:none;}
 .float-card .fc-tp svg{width:20px;height:20px;color:#fff;fill:#fff;}
 /* „Bekannt aus heise" – rote heise-Marke (weißes „h" auf heise-Rot), kein externes Bild */
-.float-card .fc-heise{width:34px;height:34px;border-radius:8px;background:#d2001f;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-family:var(--font-display);font-weight:800;font-size:23px;line-height:1;letter-spacing:-.05em;}
+.float-card .fc-heise{width:34px;height:34px;border-radius:8px;background:#d2001f;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-family:var(--font-display);font-weight:800;font-size:23px;line-height:1;letter-spacing:-.05em;text-transform:uppercase;}
+/* Rotierende „Bekannt aus"-Quellen: sanftes Ein-/Ausblenden beim Wechsel */
+.float-card.heise .fc-strong{white-space:nowrap;}
+.float-card.heise .fc-fade,.float-card.heise .fc-heise{animation:pressfade .45s var(--ease);}
+@keyframes pressfade{from{opacity:0;transform:translateY(2px);}to{opacity:1;transform:none;}}
 .float-card .fc-done{width:32px;height:32px;border-radius:50%;background:var(--success);display:flex;align-items:center;justify-content:center;flex:none;}
 .float-card .fc-done svg{width:18px;height:18px;color:#fff;}
 .float-card .stars{color:var(--primary);}
 @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
 @media(max-width:1040px){.float-card.tp,.float-card.heise{left:auto;right:-12px;}.float-card.done{left:-12px;}}
-@media(max-width:920px){.float-card{display:none;}}
+@media(max-width:920px){
+  .float-card{display:none;}
+  /* „Bekannt aus"-Badge mobil zeigen: statisch & zentriert über dem Prüfen-Kästchen, ohne Schweben */
+  .float-card.heise{display:flex;position:static;right:auto;left:auto;top:auto;width:fit-content;max-width:100%;margin:0 auto 14px;animation:none;}
+}
 .hero-assure{display:flex;gap:22px;margin-top:24px;flex-wrap:wrap;}
 .hero-assure div{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;color:var(--fg-2);}
 .hero-assure svg{width:18px;height:18px;color:var(--success);}

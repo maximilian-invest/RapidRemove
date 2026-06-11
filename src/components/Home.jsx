@@ -130,6 +130,28 @@ const HERO_TEAM = {
   no: ["Møt Google-ekspertene ", "Max & Matthias", ""],
 };
 
+/* „Bekannt aus"-Badge am Prüfen-Kästchen: rotiert durch alle echten Presse-Quellen
+   (heise, Digital-Lokal …), verlinkt jeweils, Icon-Hintergrund passt sich an.
+   Auch mobil sichtbar (per CSS als statisches, zentriertes Badge). */
+function HeroPressBadge({ lang }) {
+  const [i, setI] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setI((x) => (x + 1) % PRESS_LINKS.length), 2800);
+    return () => clearInterval(id);
+  }, []);
+  const p = PRESS_LINKS[i];
+  const label = PRESS_LABEL[lang] || PRESS_LABEL.en;
+  return (
+    <a className="float-card heise" href={p.u} target="_blank" rel="noopener noreferrer" aria-label={label + ": " + p.n}>
+      <span className="fc-heise" aria-hidden="true" style={{ background: p.c || "#d2001f" }} key={"ic" + i}>{p.n[0]}</span>
+      <div className="fc-fade" key={"tx" + i}>
+        <div className="fc-cap up">{label}</div>
+        <div className="fc-strong">{p.n}</div>
+      </div>
+    </a>
+  );
+}
+
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
@@ -173,13 +195,7 @@ function Hero({ onStart }) {
         </div>
 
         <div className="hero-card-col hs hs4">
-          <a className="float-card heise" href={PRESS_LINKS[0].u} target="_blank" rel="noopener noreferrer">
-            <span className="fc-heise" aria-hidden="true">h</span>
-            <div>
-              <div className="fc-cap up">{PRESS_LABEL[lang] || PRESS_LABEL.en}</div>
-              <div className="fc-strong">heise online</div>
-            </div>
-          </a>
+          <HeroPressBadge lang={lang} />
         <div className="check-card">
           <div className="cc-head">
             <span className="eyebrow" style={{ margin: 0 }}>{t.hero.cardEyebrow}</span>

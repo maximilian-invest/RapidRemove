@@ -64,11 +64,11 @@ export function TrustpilotLive() {
 
 /* „Bekannt aus" – echte Quellen, die RapidRemove erwähnen/verlinken (sprachübergreifend). */
 export const PRESS_LINKS = [
-  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" },
-  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/" },
-  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/" },
-  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/" },
-  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/" },
+  { n: "heise.de", u: "https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html", c: "#d2001f" },
+  { n: "Digital-Lokal", u: "https://www.digital-lokal.de/blog/google-unternehmensprofil-loeschen/", c: "#1a73e8" },
+  { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/", c: "#0a8f5b" },
+  { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/", c: "#0f766e" },
+  { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/", c: "#5b2da8" },
 ];
 
 export const PRESS_LABEL = { de: "Bekannt aus", en: "As seen in", es: "Conocidos por", fr: "Vu dans", it: "Noti da", nl: "Bekend van", pt: "Conhecidos de", ja: "掲載メディア", sv: "Omnämnda i", da: "Kendt fra", no: "Omtalt i" };
