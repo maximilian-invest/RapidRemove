@@ -277,9 +277,9 @@ a.hero-proof:hover .pr-line b{color:var(--primary);}
 .check-card .ttl{font-family:var(--font-display);font-weight:600;font-size:21px;margin:0;}
 .check-card .sub{font-size:14px;color:var(--fg-2);margin:6px 0 18px;line-height:1.5;}
 /* Auffällige CTA-Animation für den Hero-Prüfbutton (Glow-Puls + Shine-Sweep) */
-.cta-glow{position:relative;overflow:hidden;animation:ctaGlow 2.4s ease-in-out infinite;}
+.cta-glow{position:relative;overflow:hidden;animation:ctaGlow 4.5s ease-in-out infinite;}
 @keyframes ctaGlow{0%,100%{box-shadow:0 6px 18px rgba(255,128,0,.30),0 0 0 0 rgba(255,128,0,.45);}50%{box-shadow:0 12px 28px rgba(255,128,0,.5),0 0 0 12px rgba(255,128,0,0);}}
-.cta-glow::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;border-radius:inherit;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-130%);animation:ctaShine 2.4s ease-in-out infinite;pointer-events:none;}
+.cta-glow::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;border-radius:inherit;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.55) 50%,transparent 65%);transform:translateX(-130%);animation:ctaShine 4.5s ease-in-out infinite;pointer-events:none;}
 @keyframes ctaShine{0%,50%{transform:translateX(-130%);}85%,100%{transform:translateX(130%);}}
 @media(prefers-reduced-motion:reduce){.cta-glow,.cta-glow::after{animation:none;}}
 .field{position:relative;margin-bottom:12px;}

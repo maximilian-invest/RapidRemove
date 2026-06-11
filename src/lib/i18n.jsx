@@ -25,7 +25,7 @@ const I18N = {
       cardEyebrow: "Kostenlos prüfen",
       cardTitle: "Ist Ihr Profil löschbar?",
       cardSub: "Suchen Sie nach Ihrem Unternehmen – wir prüfen die Löschbarkeit in Echtzeit.",
-      placeholder: "Name Ihres Unternehmens + Ort",
+      placeholder: "Name und Ort des Unternehmens",
       button: "Löschbarkeit jetzt prüfen",
       foot: "Unverbindlich · keine Anmeldung · vertraulich",
     },
@@ -143,7 +143,7 @@ const I18N = {
     cta: {
       h2: "Schluss mit dem unerwünschten Profil.",
       sub: "Starten Sie den kostenlosen Check. In Sekunden sehen Sie, ob Ihr Profil löschbar ist.",
-      placeholder: "Name Ihres Unternehmens + Ort",
+      placeholder: "Name und Ort des Unternehmens",
       button: "Gratis prüfen",
       trust: ["Bezahlung erst nach Erfolg", "DSGVO / EU"],
     },
