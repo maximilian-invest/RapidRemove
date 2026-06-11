@@ -84,6 +84,7 @@ const article = {
       ["Aufwand", "Null", "Hoch", "Mittel"],
       ["Alle Bewertungen weg", "Ja (mit dem Profil)", "Nein (Einzelverfahren)", "Nein (je einzeln)"],
     ] },
+    { t: "cta", title: "Bereit, Ihre Bewertungen loszuwerden?", text: "Machen Sie den kostenlosen Löschbarkeits-Check – in Sekunden und unverbindlich.", btn: "Jetzt prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
   ],
   faq: [
     { q: "Löscht RapidRemove einzelne Bewertungen?", a: "Nein. RapidRemove entfernt das gesamte Google-Unternehmensprofil – dabei verschwinden alle Bewertungen automatisch mit. Eine einzelne Rezension zu entfernen und das Profil zu behalten, ist über das Melden bei Google oder einen Anwalt möglich, nicht über die Profil-Löschung." },

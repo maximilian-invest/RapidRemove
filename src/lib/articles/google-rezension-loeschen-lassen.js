@@ -45,6 +45,7 @@ const article = {
       ["Spezialisierte Anwälte (Einzelrezension)", "ca. 100 – 159 € / Rezension", "ca. 90 %, langsam"],
       ["Profil-Löschung (RapidRemove)", "Fixpreis, zahlbar nach Erfolg", "garantiert (alle Rezensionen weg)"],
     ] },
+    { t: "cta", title: "Rezension hält sich hartnäckig?", text: "Firmennamen eingeben – kostenlose Einschätzung in Sekunden.", btn: "Gratis-Check starten", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "kostenlos-vs", text: "Kostenlos vs. kostenpflichtig: was bringt was?", toc: "Kostenlos vs. bezahlt" },
     { t: "p", text: "Der kostenlose Weg über das Formular lohnt sich immer als **erster Versuch** – besonders bei offensichtlichem Spam. Die Realität ist allerdings ernüchternd: Google prüft überwiegend automatisiert und lehnt viele Meldungen mit Standard-Textbausteinen ab. Bleibt der Erfolg aus, ist eine **professionelle Löschung** der nächste Schritt. Achten Sie dabei auf **Erfolgshonorar** – so tragen Sie kein Kostenrisiko, wenn die Löschung nicht klappt." },

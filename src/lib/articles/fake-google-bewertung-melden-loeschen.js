@@ -65,6 +65,7 @@ const article = {
       ["Alle Fakes weg", "je einzeln", "Einzelverfahren", "ja (mit dem Profil)"],
       ["Aufwand", "mittel", "hoch", "null"],
     ] },
+    { t: "cta", title: "Fake-Bewertungen ziehen Ihren Schnitt runter?", text: "Firmennamen eingeben – wir prüfen kostenlos, ob sich Ihr Profil samt aller Fake-Bewertungen entfernen lässt.", btn: "Kostenlos prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
     { t: "p", text: "Der entscheidende Vorteil: Sie zahlen erst **nach erfolgreicher Löschung**, und falls das Profil durch Dritte wieder auftaucht, wird es im Rahmen der Garantie kostenlos entfernt." },
     { t: "warn", title: "Wichtig", text: "Die Profil-Löschung entfernt das **komplette Unternehmensprofil**, nicht eine einzelne Fake-Bewertung. Wenn Sie nur eine einzelne Rezension entfernen und Ihr Profil behalten möchten, sind das Melden bei Google oder der Anwaltsweg die passenden Optionen." },
     { t: "cta", title: "Fake-Attacke? Prüfen Sie die Löschbarkeit – kostenlos.", text: "Firmennamen eingeben – wir prüfen in Sekunden, ob und wie schnell sich Ihr Profil samt aller Fake-Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },

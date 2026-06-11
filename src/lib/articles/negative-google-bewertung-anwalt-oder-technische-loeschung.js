@@ -37,6 +37,7 @@ const article = {
       "**Risiko:** Der Ausgang ist nicht garantiert, und Sie zahlen für die Bemühung, nicht zwingend für das Ergebnis.",
     ] },
     { t: "p", text: "Bei einer **einzelnen, klar rechtswidrigen** Bewertung mit dokumentierbarem Sachverhalt kann der Anwaltsweg sinnvoll sein. Bei mehreren Bewertungen oder einem grundlegend beschädigten Profil wird er schnell teuer und langsam." },
+    { t: "cta", title: "Anwalt oder Technik – was lohnt sich für Sie?", text: "Lassen Sie es uns in Sekunden prüfen, kostenlos und unverbindlich.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "streisand", text: "Der Streisand-Effekt: Wenn Recht haben nach hinten losgeht", toc: "Streisand-Effekt" },
     { t: "p", text: "Ein oft unterschätztes Risiko: Rechtliche Schritte können den Rezensenten erst recht provozieren. Das Ergebnis ist nicht selten eine Welle neuer **„Rache-Bewertungen“** – das Problem wird größer statt kleiner. Dieses Phänomen heißt **Streisand-Effekt**. Eine lautlose, technische Lösung vermeidet ihn, weil sie ohne direkte Konfrontation mit dem Verfasser arbeitet." },

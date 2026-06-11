@@ -54,6 +54,7 @@ const article = {
       ["Anwalt", "einzelne Bewertung", "3 – 9 Monate", "ca. 90 %", "pro Bewertung, Vorkasse"],
       ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "Zahlung nur bei Erfolg", "Fixpreis nach Erfolg"],
     ] },
+    { t: "cta", title: "Wortlose 1-Stern-Bewertung loswerden?", text: "Prüfen Sie kostenlos, ob und wie schnell sich Ihr Profil bereinigen lässt.", btn: "Gratis prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
     { t: "p", text: "Bei der Profil-Löschung zahlen Sie erst **nach Erfolg**, und dank Garantie wird ein erneut auftauchendes Profil kostenlos entfernt." },
     { t: "cta", title: "Prüfen Sie kostenlos, ob Ihre 1-Stern-Bewertung löschbar ist.", text: "Firmennamen eingeben – wir finden Ihr Profil und prüfen in Sekunden, ob und wie schnell es sich entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
   ],

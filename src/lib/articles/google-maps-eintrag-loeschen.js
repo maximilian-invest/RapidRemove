@@ -25,6 +25,7 @@ const article = {
       "Gehen Sie über das **Drei-Punkt-Menü** zu **„Unternehmensprofil entfernen“**.",
       "Wählen Sie **„Profilinhalt und Administratoren entfernen“** und bestätigen Sie.",
     ] },
+    { t: "cta", title: "Maps-Eintrag dauerhaft loswerden?", text: "Wir prüfen kostenlos, ob sich Ihr Google-Maps-Eintrag entfernen lässt.", btn: "Kostenlos prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "sichtbar", text: "Warum der Eintrag trotzdem sichtbar bleibt", toc: "Warum bleibt er?" },
     { t: "p", text: "Das ist der entscheidende Punkt, den Google bewusst verschleiert: Das Entfernen aus Ihrem Konto bedeutet **nicht**, dass das Unternehmen aus Maps und der Suche verschwindet. Es wird lediglich aus Ihrem Konto gelöst und in der Regel als **„Dauerhaft geschlossen“** markiert. Profil und Bewertungen **bleiben bestehen**. Google positioniert sich in seinen Nutzungsbedingungen ausdrücklich gegen die vollständige Löschung von Unternehmensprofilen – eine restlose Entfernung ist daher allein über das eigene Konto praktisch nicht möglich." },
