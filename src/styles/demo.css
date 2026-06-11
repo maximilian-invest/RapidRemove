@@ -24,8 +24,8 @@
 .g-logo{font-family:Arial, sans-serif;font-weight:700;font-size:24px;letter-spacing:-1px;flex:none;}
 .g-logo b:nth-child(1){color:#4285F4;}.g-logo b:nth-child(2){color:#EA4335;}.g-logo b:nth-child(3){color:#FBBC05;}
 .g-logo b:nth-child(4){color:#4285F4;}.g-logo b:nth-child(5){color:#34A853;}.g-logo b:nth-child(6){color:#EA4335;}
-.g-search{flex:1;height:46px;border:1px solid var(--hairline-strong);border-radius:999px;display:flex;align-items:center;gap:12px;padding:0 18px;box-shadow:0 1px 4px rgba(28,25,22,.06);transition:box-shadow var(--dur);}
-.demo-stage.is-search .g-search{box-shadow:0 3px 10px rgba(66,133,244,.18);border-color:#c9d4e6;}
+.g-search{flex:1;height:46px;border-radius:999px;display:flex;align-items:center;gap:12px;padding:0 18px;box-shadow:0 1px 4px rgba(28,25,22,.06);transition:box-shadow var(--dur);}
+.demo-stage.is-search .g-search{box-shadow:0 3px 10px rgba(66,133,244,.18);}
 .g-search .gq{flex:1;font-family:Arial, sans-serif;font-size:16.5px;color:var(--fg);white-space:nowrap;overflow:hidden;}
 .g-search .gq .ph{color:var(--fg-muted);}
 .g-search .caret{display:inline-block;width:1.5px;height:20px;background:#4285F4;vertical-align:middle;margin-left:1px;animation:gcaret 1s step-end infinite;}

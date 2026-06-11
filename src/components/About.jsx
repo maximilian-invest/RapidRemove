@@ -45,7 +45,7 @@ const ABOUT_COPY = {
     teamLabel: "Das Team",
     teamH: "Spezialisten, die Ihren Fall persönlich betreuen.",
     team: [
-      { n: "Matthias", r: "Gründer & Geschäftsführung", thm: "tm-orange", img: "/assets/matthias-lang.webp" },
+      { n: "Matthias", r: "Gründer", thm: "tm-orange", img: "/assets/matthias-lang.webp" },
       { n: "Maximilian Hölzl", r: "Gründer", thm: "tm-ink", img: "/assets/maximilian-hoelzl.jpg" },
     ],
     coH: "Ein Unternehmen aus Österreich – mit Namen und Adresse.",
@@ -314,7 +314,6 @@ function AboutInner() {
                     : <span className="m-initial">{m.n[0]}</span>}
                 </div>
                 <div className="m-name">{m.n}</div>
-                <div className="m-role">{m.r}</div>
               </div>
             ))}
           </div>
