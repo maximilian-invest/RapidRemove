@@ -222,6 +222,17 @@
 .sum-row .sl{color:var(--fg-2);}
 .sum-row .sv{font-weight:700;font-family:var(--font-display);white-space:nowrap;}
 .sum-row.muted .sv{color:var(--fg-muted);font-weight:600;}
+/* Add-on-Toggles in der Zusammenfassung (Schutz/Überwachung deaktivieren, Express dazu) */
+.sum-opts{display:flex;flex-direction:column;gap:2px;padding:6px 0;border-bottom:1px solid var(--hairline);}
+.sum-opt{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;}
+.sum-opt .so-l{display:inline-flex;align-items:center;gap:8px;font-size:14px;color:var(--fg);font-weight:600;min-width:0;}
+.sum-opt .so-l svg{color:var(--primary);flex:none;}
+.sum-opt .so-tier{color:var(--fg-muted);font-weight:600;}
+.sum-opt .so-r{display:inline-flex;align-items:center;gap:10px;flex:none;}
+.sum-opt .so-price{font-size:12.5px;font-weight:700;color:var(--fg-2);white-space:nowrap;}
+.switch.sm{width:40px;height:23px;}
+.switch.sm::after{width:17px;height:17px;}
+.switch.sm.on::after{transform:translateX(17px);}
 .sum-total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-top:16px;margin-top:6px;}
 .sum-total .sl{font-family:var(--font-display);font-weight:600;font-size:18px;}
 .sum-total .sv{font-family:var(--font-display);font-weight:700;font-size:30px;color:var(--primary);}
