@@ -8,7 +8,7 @@ import { Nav, Footer, WhatsAppFloat, useReveal, openChat } from "@/components/Ch
 import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
-import { localePath } from "@/lib/locales-meta";
+import { localePath, magazinePath } from "@/lib/locales-meta";
 import { submitContact } from "@/lib/order";
 
 const KONTAKT_COPY = {
@@ -380,7 +380,7 @@ export default function Kontakt() {
     <LangContext.Provider value={{ lang, t, setLang }}>
       <KontaktBody
         onStart={() => nav("/?start=1")}
-        onBlog={() => nav(lang === "de" ? "/magazin/" : "/?view=magazin")}
+        onBlog={() => nav(magazinePath(lang))}
         onAbout={() => nav("/ueber-uns/")}
       />
     </LangContext.Provider>

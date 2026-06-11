@@ -1,6 +1,7 @@
 /* RapidRemove — article catalog: German sources + translations + i18n helpers.
    Server-side only (heavy). Used by the article route pages, not the renderer. */
 import { SITE_URL } from "@/lib/article-google-profil";
+import { magazineUrl } from "@/lib/locales-meta";
 import { TRANSLATIONS } from "@/lib/articles/translations";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
 
@@ -97,8 +98,11 @@ export function resolveRelated(lang, relatedList) {
   return (relatedList || []).map((r) => {
     const slug = r.url.replace(/^https?:\/\/rapid-remove\.com\//, "").replace(/\/$/, "");
     let href = null;
-    if (slug === FLAGSHIP_SLUG) href = FLAGSHIP_PATH;
-    else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug) || `/${slug}/`;
+    // Flagship-Hub gibt es bislang nur auf Deutsch → in Fremdsprachen NICHT auf den
+    // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte
+    // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
+    if (slug === FLAGSHIP_SLUG) href = lang === "de" ? FLAGSHIP_PATH : null;
+    else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;
   }).filter(Boolean);
 }
@@ -124,7 +128,7 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url) {
         "@type": "BreadcrumbList",
         itemListElement: [
           { "@type": "ListItem", position: 1, name: ui.bcStart, item: `${SITE_URL}${homeBase(lang)}` },
-          { "@type": "ListItem", position: 2, name: ui.bcMagazin, item: `${SITE_URL}${homeBase(lang)}?view=magazin` },
+          { "@type": "ListItem", position: 2, name: ui.bcMagazin, item: magazineUrl(lang) },
           { "@type": "ListItem", position: 3, name: meta.h1 || meta.title, item: url },
         ],
       },

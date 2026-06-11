@@ -2,7 +2,7 @@
    Statically generated, localized metadata + hreflang alternates for SEO. */
 import App from "@/components/App";
 import { I18N } from "@/lib/i18n";
-import { NON_DEFAULT_LOCALES, localeUrl, hreflangMap } from "@/lib/locales-meta";
+import { NON_DEFAULT_LOCALES, localeUrl, hreflangMap, OG_LOCALE, OG_IMAGE } from "@/lib/locales-meta";
 import { magCardsFor } from "@/lib/articles/catalog";
 
 export const dynamicParams = false;
@@ -19,7 +19,7 @@ export function generateMetadata({ params }) {
     title,
     description: t.hero.lead,
     alternates: { canonical: localeUrl(lang), languages: hreflangMap() },
-    openGraph: { type: "website", title, description: t.hero.lead, url: localeUrl(lang), siteName: "RapidRemove" },
+    openGraph: { type: "website", title, description: t.hero.lead, url: localeUrl(lang), siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE] },
   };
 }
 

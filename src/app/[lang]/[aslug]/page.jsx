@@ -1,6 +1,7 @@
 /* Route: /<lang>/<localized-slug> — translated cluster articles, statically exported. */
 import MagArticle from "@/components/MagArticle";
 import { uiFor, SITE_URL } from "@/lib/articles/registry";
+import { OG_LOCALE, OG_IMAGE } from "@/lib/locales-meta";
 import {
   articleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd,
 } from "@/lib/articles/catalog";
@@ -19,9 +20,8 @@ export function generateMetadata({ params }) {
   return {
     title: m.title,
     description: m.description,
-    keywords: m.keywords,
     alternates: { canonical: url, languages: hreflangForArticle(r.deSlug) },
-    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", publishedTime: m.date, modifiedTime: m.date, authors: [m.author] },
+    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE], publishedTime: m.date, modifiedTime: m.date, authors: [m.author] },
   };
 }
 

@@ -6,6 +6,7 @@ import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
 import { LangContext } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
+import { magazinePath } from "@/lib/locales-meta";
 import { uiFor } from "@/lib/articles/registry";
 
 /* inline **bold** -> <strong> */
@@ -91,7 +92,7 @@ function Body({ data, lang, ui, related }) {
         <div className="container">
           <nav className="art-breadcrumb" aria-label="Breadcrumb">
             <a href={asset(hb)}>{ui.bcStart}</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
-            <a href={asset(hb + "?view=magazin")}>{ui.bcMagazin}</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
+            <a href={asset(magazinePath(lang))}>{ui.bcMagazin}</a><Icon.chevronDown size={14} style={{ transform: "rotate(-90deg)" }} />
             <span>{data.meta.h1 || data.meta.title}</span>
           </nav>
           <span className="art-cat">{(() => { const C = Icon[data.iconKey] || Icon.star; return <C size={14} />; })()} {data.category}</span>
@@ -147,7 +148,7 @@ function Body({ data, lang, ui, related }) {
             </div>
           </div>
           <div className="art-back">
-            <a className="btn btn-secondary" href={asset(hb + "?view=magazin")}><Icon.arrowLeft size={17} /> {ui.back}</a>
+            <a className="btn btn-secondary" href={asset(magazinePath(lang))}><Icon.arrowLeft size={17} /> {ui.back}</a>
           </div>
         </article>
 
@@ -182,9 +183,9 @@ export default function MagArticle({ data, lang = "de", ui, langUrls = {}, relat
   const hb = lang === "de" ? "/" : `/${lang}/`;
   return (
     <LangContext.Provider value={{ lang: l, t, setLang }}>
-      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(hb + "?view=magazin")} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="magazin" />
+      <Nav onNav={(id) => nav(hb + "#" + id)} onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav("/ueber-uns/")} onOrm={() => nav("/reputation-verdraengen/")} onDeindex={() => nav("/presse-auslisten/")} active="magazin" />
       <Body data={data} lang={lang} ui={strings} related={related} />
-      <Footer onStart={() => nav(hb + "?start=1")} onBlog={() => nav(hb + "?view=magazin")} onAbout={() => nav("/ueber-uns/")} />
+      <Footer onStart={() => nav(hb + "?start=1")} onBlog={() => nav(magazinePath(lang))} onAbout={() => nav("/ueber-uns/")} />
       <WhatsAppFloat />
     </LangContext.Provider>
   );

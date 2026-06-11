@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { LANGS } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
-import { localePath, LOCALES } from "@/lib/locales-meta";
+import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -336,7 +336,7 @@ function Footer({ onStart, onBlog, onAbout }) {
   const cols = t.footer.cols || [];
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
-    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: lang === "de" ? asset("/magazin/") : hb + "?view=magazin" }, { href: PARTNER_URL, ext: true }, { href: asset("/kontakt/") }],
+    [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset("/kontakt/") }],
     [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "mailto:helpdesk@rapid-remove.com" }],
   ];
   return (
