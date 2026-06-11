@@ -56,10 +56,14 @@
 
 .wz-actions{display:flex;gap:12px;align-items:center;margin-top:8px;}
 /* „Nicht Ihr Profil?" – zurück zur Eingabe (Schritt 1) */
-.wz-not-mine{display:inline-flex;align-items:center;gap:6px;margin-top:14px;background:none;border:none;padding:4px 0;font-size:13.5px;font-weight:600;color:var(--fg-muted);cursor:pointer;transition:color .15s;}
-.wz-not-mine:hover{color:var(--primary);text-decoration:underline;}
-.wz-not-mine svg{transition:transform .15s;}
-.wz-not-mine:hover svg{transform:translateX(2px);}
+/* „Nicht Ihr Profil?" – Box im Stil der Profilkarte (Klick → zurück zur Eingabe) */
+.not-mine-card{margin-top:14px;border-style:dashed;background:var(--neutral-50);}
+.not-mine-card .profile-thumb{background:#fff;color:var(--fg-muted);}
+.not-mine-card .profile-thumb svg{width:22px;height:22px;}
+.not-mine-card .pn{color:var(--fg-2);}
+.not-mine-card .nm-go{margin-left:auto;align-self:center;color:var(--fg-muted);display:flex;transition:transform .15s,color .15s;}
+.not-mine-card:hover{border-color:var(--primary);}
+.not-mine-card:hover .nm-go{color:var(--primary);transform:translateX(3px);}
 .wz-actions .grow{flex:1;}
 .wz-mini-assure{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:24px;}
 .wz-mini-assure div{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:700;color:var(--fg-2);}
@@ -135,7 +139,7 @@
 .profile-rating{display:flex;align-items:center;gap:8px;margin:6px 0 4px;}
 .profile-rating .rv{font-family:var(--font-display);font-weight:700;font-size:14px;}
 .profile-rating .rc{font-size:13px;color:var(--fg-muted);}
-.profile-addr{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--fg-2);}
+.profile-addr{display:flex;align-items:center;gap:6px;font-size:13.5px;color:var(--fg-2);margin-top:12px;}
 .profile-addr svg{width:15px;height:15px;color:var(--fg-muted);flex:none;}
 .rate-assess{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;margin:4px 0 2px;padding:4px 9px;border-radius:var(--r-pill);}
 .rate-assess svg{width:14px;height:14px;flex:none;}
@@ -506,16 +510,16 @@
   .wz-secure{display:none;}            /* "verschlüsselt & sicher" raus auf Mobil */
 }
 @media(max-width:620px){
-  .wz-body{padding-left:14px;padding-right:14px;}
+  .wz-body{padding-left:14px;padding-right:14px;padding-bottom:88px;}
   .wz-card{padding:24px;}
   .wz-card.pad-lg{padding:24px;}
   .wz-grid-name,.wz-grid-confirm{gap:18px;}
   .wz-grid-name>*,.wz-grid-confirm>*,.wz-aside,.profile-main{min-width:0;}
   .profile-main .pn{overflow-wrap:anywhere;}
   .stat-card .stat-num{font-size:40px;}
-  /* action buttons stack full-width so long labels never spill past the edge */
-  .wz-actions{flex-direction:column-reverse;align-items:stretch;gap:10px;}
-  .wz-actions .btn{width:100%;}
+  /* Navigations-Buttons (weiter/zurück …) als fixe Leiste unten — auf allen Schritten erreichbar */
+  .wz-actions{position:fixed;left:0;right:0;bottom:0;z-index:60;flex-direction:row;align-items:center;gap:10px;margin:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:rgba(255,255,255,.97);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--hairline);box-shadow:0 -6px 20px rgba(28,25,22,.08);}
+  .wz-actions .btn{flex:1;width:auto;}
   .svc-cta{flex-direction:column;align-items:stretch;gap:14px;}
   .svc-cta .wz-actions{width:100%;min-width:0;}
   /* express order-bump: give the copy full width instead of a tiny sliver */

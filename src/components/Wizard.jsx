@@ -1237,7 +1237,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
         <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
         <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} assessOk />
-        <button type="button" className="wz-not-mine" onClick={() => go(0)}>{wm.notMine} <Icon.arrowRight size={15} /></button>
+        <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
+          <div className="profile-thumb"><Icon.search /></div>
+          <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
+          <span className="nm-go"><Icon.arrowRight size={18} /></span>
+        </div>
         <div className="wz-actions" style={{ marginTop: 18 }}>
           <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
           <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
