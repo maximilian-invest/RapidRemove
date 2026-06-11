@@ -531,7 +531,7 @@ function Pricing({ id, onStart }) {
 }
 
 /* ============ FAQ ============ */
-function FAQ({ id }) {
+export function FAQ({ id }) {
   const { t, lang } = useLang();
   const [open, setOpen] = React.useState(0);
   return (

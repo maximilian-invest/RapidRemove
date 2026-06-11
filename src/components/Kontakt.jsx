@@ -11,11 +11,16 @@ import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
 import { pagePath } from "@/lib/page-routes";
 import { submitContact } from "@/lib/order";
+import { FinalCTA, FAQ } from "@/components/Home";
+
+const PHONE_LABEL = { de: "Telefon", en: "Phone", es: "Teléfono", fr: "Téléphone", it: "Telefono", nl: "Telefoon", pt: "Telefone", ja: "電話", sv: "Telefon", da: "Telefon", no: "Telefon" };
+const PHONE_DISPLAY = "+43 6245 9305300";
+const PHONE_HREF = "tel:+4362459305300";
 
 const KONTAKT_COPY = {
   de: {
     eyebrow: "Kontakt", h1: "Sprechen Sie mit uns.",
-    lead: "Ob Frage zur Löschung, laufender Auftrag oder Partnerschaft – wir antworten persönlich, in der Regel innerhalb weniger Stunden.",
+    lead: "Ob eine Frage zur Löschung, ein laufender Auftrag oder eine Partnerschaft – wir antworten persönlich, in der Regel innerhalb weniger Stunden.",
     formH: "Nachricht senden", formSub: "Beschreiben Sie kurz Ihr Anliegen – ein Spezialist aus unserem Team meldet sich bei Ihnen.",
     f: { name: "Ihr Name", namePh: "Max Mustermann", email: "E-Mail", emailPh: "max@firma.de", topic: "Thema", msg: "Ihre Nachricht", msgPh: "Worum geht es? Gern auch mit Link zum Google-Profil." },
     topics: ["Google-Profil löschen lassen", "Bewertungen & Reputation", "Frage zu laufendem Auftrag", "Partner werden", "Sonstiges"],
@@ -244,15 +249,22 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
   React.useEffect(() => { window.scrollTo({ top: 0 }); }, []);
 
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
+  // Ohne ops-Backend (oder bei Fehler) als E-Mail an helpdesk@rapid-remove.com versenden.
+  const sendByMail = () => {
+    const topic = form.topic || k.topics[0];
+    const subject = "Kontaktanfrage: " + topic;
+    const body = `${k.f.name}: ${form.name}\n${k.f.email}: ${form.email}\n${k.f.topic}: ${topic}\n\n${form.message}`;
+    window.location.href = "mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+  };
   const submit = async (e) => {
     e.preventDefault();
     if (state === "sending") return;
     setState("sending");
     try {
       const r = await submitContact({ ...form, topic: form.topic || k.topics[0], lang });
-      if (r && r.skipped) { setState("sent"); return; } // kein ops-Backend (Demo) → optimistisch
+      if (r && r.skipped) { sendByMail(); setState("sent"); return; } // kein ops-Backend → E-Mail an helpdesk
       setState(r && r.ok ? "sent" : "error");
-    } catch (err) { setState("error"); }
+    } catch (err) { sendByMail(); setState("sent"); }
   };
   const reset = () => { setForm({ name: "", email: "", topic: "", message: "" }); setState("idle"); };
 
@@ -322,7 +334,7 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
             <div className="kt-panel reveal d1">
               <h3 className="kt-ph"><Icon.message size={18} /> {k.chH}</h3>
               <div className="kt-chs">
-                {k.channels.map((c, i) => {
+                {[...k.channels, { ic: "phone", t: PHONE_LABEL[lang] || PHONE_LABEL.en, d: PHONE_DISPLAY, href: PHONE_HREF }].map((c, i) => {
                   const I = Icon[c.ic] || Icon.mail;
                   const ext = c.href && c.href.indexOf("http") === 0;
                   const onClick = c.chat ? (e) => { e.preventDefault(); openChat(); } : undefined;
@@ -353,17 +365,9 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
         </div>
       </section>
 
-      <section className="band tight">
-        <div className="container">
-          <div className="cta-band reveal">
-            <div className="glow"></div>
-            <h2>{k.ctaTitle}</h2>
-            <div style={{ position: "relative", marginTop: 8 }}>
-              <button className="btn btn-white lg" onClick={onStart}><Icon.search size={19} /> {k.ctaBtn} <Icon.arrowRight size={18} /></button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <FAQ />
+
+      <FinalCTA onStart={onStart} />
 
       <Footer onStart={onStart} onBlog={onBlog} onAbout={onAbout} />
       <WhatsAppFloat />
