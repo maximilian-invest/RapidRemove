@@ -144,7 +144,7 @@ function NavTel() {
   };
   return (
     <span className="nav-tel-wrap" ref={ref}>
-      <a className="nav-tel" href={TEL_NUMBER} onClick={onClick} aria-label="Telefon 0800 0900001"><Icon.phone size={15} /><span>0800 0900001</span></a>
+      <a className="nav-tel" href={TEL_NUMBER} onClick={onClick} aria-label="Telefon 0800 09 00 00 1"><Icon.phone size={15} /><span>0800 09 00 00 1</span></a>
       {note && (
         <span className="nav-tel-note">
           <b>{tx[0]}</b>
