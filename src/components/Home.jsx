@@ -136,7 +136,7 @@ const HERO_TEAM = {
 function HeroPressBadge({ lang }) {
   const [i, setI] = React.useState(0);
   React.useEffect(() => {
-    const id = setInterval(() => setI((x) => (x + 1) % PRESS_LINKS.length), 2800);
+    const id = setInterval(() => setI((x) => (x + 1) % PRESS_LINKS.length), 4500);
     return () => clearInterval(id);
   }, []);
   const p = PRESS_LINKS[i];
