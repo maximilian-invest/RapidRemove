@@ -58,7 +58,7 @@ const article = {
       ["Was wird entfernt", "Ganzes Profil + alle Bewertungen", "Einzelne Bewertung"],
       ["Schnelligkeit", "24 – 48 Stunden", "3 – 9 Monate"],
       ["Kosten", "Fixpreis (Erfolgshonorar)", "Stundensätze (Vorkasse)"],
-      ["Erfolg", "Garantiert & dauerhaft", "Ungewiss (Risiko)"],
+      ["Erfolg", "Dauerhaft – Zahlung nur bei Erfolg", "Ungewiss (Risiko)"],
       ["Rezensionen", "Alle weg (mit dem Profil)", "Einzelne Streitverfahren"],
       ["Streisand-Risiko", "keines", "vorhanden"],
       ["Aufwand", "Null (Autopilot)", "Hoch (Belege & Termine)"],

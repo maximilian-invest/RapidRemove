@@ -5,7 +5,7 @@ const article = {
     title: "1-Stern-Bewertung ohne Text löschen lassen: Rechtslage & Anleitung (2026)",
     h1: "1-Stern-Bewertung ohne Text löschen lassen: Rechtslage & Anleitung",
     description:
-      "1-Stern-Bewertung ohne Text bei Google erhalten? In vielen Fällen löschbar. Wir erklären die Rechtslage (LG Lübeck, OLG Köln), wie Sie sie melden und wie Sie sie garantiert löschen lassen.",
+      "1-Stern-Bewertung ohne Text bei Google erhalten? Oft löschbar. Wir erklären die Rechtslage (LG Lübeck, BGH), wie Sie sie melden und welche Wege zur Löschung es gibt.",
     keywords: ["1 stern bewertung ohne text löschen", "1 stern bewertung google löschen", "sternebewertung ohne kommentar löschen", "1 stern bewertung strafbar", "google bewertung ohne text entfernen"],
     author: "Matthias Lang",
     authorRole: "Google-Experte",
@@ -48,11 +48,11 @@ const article = {
     { t: "h2", id: "weg", text: "Welcher Weg passt zu Ihnen?", toc: "Welcher Weg?" },
     { t: "p", text: "Wichtig vorab: Es gibt zwei grundverschiedene Ziele – und damit zwei Wege." },
     { t: "p", text: "**Sie wollen nur die eine 1-Stern-Bewertung weg und Ihr Profil behalten?** Dann sind das **Melden** bei Google und – wenn das scheitert – der **Anwaltsweg** die richtigen Optionen. Gerade bei einer wortlosen 1-Stern-Bewertung stehen die rechtlichen Chancen gut." },
-    { t: "p", text: "**Ihr Profil ist durch mehrere oder ungerechtfertigte Bewertungen dauerhaft beschädigt und Sie wollen einen echten Neuanfang?** Dann ist die **Profil-Löschung** über RapidRemove der direkteste Weg: Wir entfernen das **gesamte Unternehmensprofil**, alle Bewertungen verschwinden mit – weiße Weste, garantiert." },
+    { t: "p", text: "**Ihr Profil ist durch mehrere oder ungerechtfertigte Bewertungen dauerhaft beschädigt und Sie wollen einen echten Neuanfang?** Dann ist die **Profil-Löschung** über RapidRemove der direkteste Weg: Wir entfernen das **gesamte Unternehmensprofil**, alle Bewertungen verschwinden mit – und Sie zahlen erst nach Erfolg." },
     { t: "table", head: ["Weg", "Was wird entfernt", "Dauer", "Erfolg", "Kosten"], rows: [
       ["Selbst melden", "einzelne Bewertung", "ungewiss", "gering", "kostenlos"],
       ["Anwalt", "einzelne Bewertung", "3 – 9 Monate", "ca. 90 %", "pro Bewertung, Vorkasse"],
-      ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "garantiert", "Fixpreis nach Erfolg"],
+      ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "Zahlung nur bei Erfolg", "Fixpreis nach Erfolg"],
     ] },
     { t: "p", text: "Bei der Profil-Löschung zahlen Sie erst **nach Erfolg**, und dank Garantie wird ein erneut auftauchendes Profil kostenlos entfernt." },
     { t: "cta", title: "Prüfen Sie kostenlos, ob Ihre 1-Stern-Bewertung löschbar ist.", text: "Firmennamen eingeben – wir finden Ihr Profil und prüfen in Sekunden, ob und wie schnell es sich entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
