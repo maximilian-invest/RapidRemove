@@ -1009,6 +1009,44 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   const curIdx = STATUS_FLOW.findIndex((s) => s.id === o.status);
   const total = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
+  // Mahnungs-Schutz: wurde an diesen Auftrag in den letzten 6 h schon eine Mahnung
+  // gesendet, muss der erneute Versand aktiv bestätigt werden (kein versehentliches Doppel-Mahnen).
+  const MAHN_WINDOW_MS = 6 * 3600 * 1000;
+  const lastMahnungTs = React.useMemo(() => {
+    let latest = 0;
+    for (const e of events || []) {
+      if (e.ts && /mahnung/i.test(e.t || "")) {
+        const ms = new Date(e.ts).getTime();
+        if (!isNaN(ms) && ms > latest) latest = ms;
+      }
+    }
+    return latest;
+  }, [events]);
+  const doSendMahnung = async () => {
+    try {
+      const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
+      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
+      toast("Mahnung an " + o.name + " gesendet ✓");
+      onStatus(o, "done", true, true);
+      reloadEvents(); setTimeout(reloadEvents, 900);
+    } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); }
+  };
+  const sendMahnung = () => {
+    const elapsed = lastMahnungTs ? Date.now() - lastMahnungTs : Infinity;
+    if (elapsed < MAHN_WINDOW_MS) {
+      const mins = Math.max(1, Math.round(elapsed / 60000));
+      const ago = mins < 60 ? `vor ${mins} Min` : `vor ${Math.floor(mins / 60)} Std ${String(mins % 60).padStart(2, "0")} Min`;
+      setAsk({
+        danger: true,
+        title: "Achtung: Mahnung vor Kurzem versandt",
+        message: `An ${o.name} wurde bereits ${ago} eine Mahnung gesendet. Eine weitere Mahnung so kurz danach kann den Kunden verärgern. Möchten Sie trotzdem senden?`,
+        confirmLabel: "Mahnung trotzdem senden",
+        onConfirm: doSendMahnung,
+      });
+    } else {
+      doSendMahnung();
+    }
+  };
   // Mail-Vorlagen als Popup (Kategorien + Vorlagen-Links) – für Mobil und Desktop.
   const tplModalEl = openGroup ? (
     <div className="modal-scrim open" onClick={() => setOpenGroup(null)}>
@@ -1335,7 +1373,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount ? <button className="btn btn-sec btn-sm" onClick={async () => { try { const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0); await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" }); toast("Mahnung an " + o.name + " gesendet ✓"); onStatus(o, "done", true, true); } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); } }}><Icon.mail /> Mahnung senden</button> : null}
+              {o.amount ? <button className="btn btn-sec btn-sm" onClick={sendMahnung}><Icon.mail /> Mahnung senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
             <div style={{ marginTop: 14, borderTop: "1px solid var(--hairline)", paddingTop: 6 }}>

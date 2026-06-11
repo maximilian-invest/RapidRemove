@@ -180,7 +180,7 @@ export async function fetchEvents(orderId, email) {
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
-  return (j.events || []).map((e) => ({ id: e.id, ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), auto: !!e.auto, hasHtml: !!e.has_html }));
+  return (j.events || []).map((e) => ({ id: e.id, ic: e.type || "order", t: e.title || "", d: e.detail || "", time: fmtDate(e.created_at), ts: e.created_at || null, auto: !!e.auto, hasHtml: !!e.has_html }));
 }
 
 /** Holt die EXAKT versendete Mail (1:1 gespeichertes HTML + Betreff) zu einem Aktivitäts-Eintrag. */
