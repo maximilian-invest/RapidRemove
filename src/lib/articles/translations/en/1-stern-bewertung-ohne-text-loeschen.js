@@ -59,7 +59,7 @@ const article = {
     { q: "Is a 1-star review without text punishable?", a: "The review itself usually isn't. But if it was given without a real occasion, it can be impermissible and give rise to a civil removal claim. This is not legal advice." },
     { q: "How do I report a star rating without a comment?", a: "Click the three-dot menu next to the review, choose “Report review” and give the missing service connection as the reason. Track the status via the Google tool for managing reviews." },
     { q: "What if Google doesn't remove the review?", a: "For a single review, a specifically reasoned objection via a lawyer helps. If your profile is damaged overall and you want a fresh start, profile removal via RapidRemove is the most reliable route – all reviews disappear with the profile." },
-    { q: "Does RapidRemove delete the single 1-star review?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. If you only want to get rid of the one review and keep the profile, reporting or a lawyer are responsible." },
+    { q: "Does RapidRemove delete the single 1-star review?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. If you only want to get rid of the one review and keep the profile, use reporting or a lawyer." },
     { q: "How fast are the reviews gone?", a: "Via profile removal often within 24 to 48 hours – far faster than the months-long legal route for a single review." },
   ],
   related: [

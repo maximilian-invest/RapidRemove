@@ -18,7 +18,7 @@ const article = {
       { t: "h2", id: "gefahr", text: "Why negative Google reviews are so dangerous", toc: "Why dangerous" },
       { t: "p", text: "According to a BrightLocal study, 98% of consumers read online reviews before choosing a business – and 87% of them use Google. Your star rating has become a digital shop window: it decides whether a prospect clicks or moves on to a competitor." },
       { t: "p", text: "The tricky part is the so-called **negativity bias**: people weigh negative information more heavily than positive. A single devastating review can undo the effect of a dozen good ones. Industry data shows that businesses with a score below 4.0 carry, on average, 30 to 50% higher cost per new customer than providers above 4.5 stars." },
-      { t: "p", text: "It gets especially bitter with **fake or unjustified reviews** – from competitors, disgruntled ex-employees or people who were never customers. In Germany alone, the economic damage from false negative reviews is estimated at around 3.8 billion euros a year." },
+      { t: "p", text: "It's particularly damaging with **fake or unjustified reviews** – from competitors, disgruntled ex-employees or people who were never customers. Industry estimates put the economic damage from fake reviews in the billions each year." },
 
       { t: "h2", id: "angreifbar", text: "Which reviews can be removed (and which can't)", toc: "What is removable?" },
       { t: "p", text: "Not every bad review can be challenged. A factual, even if negative, account of a real customer experience is covered by freedom of expression and usually stays. **Good chances of removal** exist for reviews that violate Google's guidelines:" },
@@ -65,7 +65,7 @@ const article = {
       { t: "p", text: "Prices vary widely by provider type:" },
       { t: "table", head: ["Provider type", "Price range", "Success"], rows: [
         ["Cheap services", "$20 – 55 per review", "Highly variable"],
-        ["Foreign EU services", "$55 – 110 per review", "Unclear"],
+        ["Overseas services", "$55 – 110 per review", "Unclear"],
         ["Specialist lawyers (single review)", "$110 – 175 per review", "approx. 90%, but slow"],
         ["Profile removal (RapidRemove)", "Fixed price, payable after success", "All reviews gone – pay only on success"],
       ] },

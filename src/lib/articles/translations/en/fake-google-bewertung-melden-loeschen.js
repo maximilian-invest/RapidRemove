@@ -71,7 +71,7 @@ const article = {
     { q: "How do I report a fake review to Google?", a: "Via the three-dot menu next to the review, click “Report review”, select the violation and submit. You can track the status via the Google tool for managing reviews." },
     { q: "Are fake reviews punishable?", a: "Deliberately false reviews can have civil, competition-law and partly criminal consequences. In practice the author is often anonymous, which is why removing the review is usually the faster lever than a complaint. This is not legal advice." },
     { q: "What can I do if Google doesn't remove the fake review?", a: "If the report is rejected, the legal route remains for a single review. If the profile is damaged by many fakes, profile removal via RapidRemove is the most reliable way: the entire profile is removed, all reviews disappear with it." },
-    { q: "Does RapidRemove delete individual fake reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. To remove a single review while keeping the profile, reporting or a lawyer are responsible." },
+    { q: "Does RapidRemove delete individual fake reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. To remove a single review while keeping the profile, use reporting or a lawyer." },
     { q: "How fast are the fake reviews gone?", a: "Via profile removal, results are often possible within 24 to 48 hours – far faster than the months-long legal route." },
   ],
   related: [

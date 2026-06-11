@@ -58,7 +58,7 @@ const article = {
       "**no effort** for you, no Streisand risk",
       "**optional fresh start** with a clean profile",
     ] },
-    { t: "warn", title: "Important", text: "Profile removal removes the **entire profile**, not a single review. Anyone who only wants to remove one review and keep the profile uses reporting or the legal route." },
+    { t: "warn", title: "Important", text: "Profile removal removes the **entire profile**, not a single review. Anyone who only wants to remove one review and keep the profile should use reporting or the legal route." },
     { t: "cta", title: "Profile permanently damaged? Check removability – for free.", text: "In seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [

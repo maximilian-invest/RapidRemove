@@ -6,7 +6,7 @@ const article = {
     title: "Googleのクチコミを削除する方法：費用・手段・2026年に本当に効くもの",
     h1: "Googleのクチコミを削除する方法：費用・手段・2026年に本当に効くもの",
     description: "Googleのクチコミを確実・迅速・保証付きで削除。あらゆる手段・費用・成功率を比較し、悪いクチコミを本当に消す方法を解説します。",
-    keywords: ["googleクチコミ削除", "google悪いクチコミ削除", "googleクチコミ削除依頼", "googleレビュー削除", "googleクチコミ削除費用", "悪い評価削除"],
+    keywords: ["googleクチコミ削除", "google悪いクチコミ削除", "googleクチコミ削除依頼", "googleクチコミ削除", "googleクチコミ削除費用", "悪い評価削除"],
     author: "Matthias Lang",
     authorRole: "Google専門家",
     date: "2026-06-04",
