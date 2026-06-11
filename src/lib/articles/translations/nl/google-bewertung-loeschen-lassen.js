@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "De methoden direct vergeleken", toc: "Directe vergelijking" },
     { t: "table", rrCol: 1, head: ["Criterium", "RapidRemove (profielverwijdering)", "Advocaat (juridische weg)", "Zelf rapporteren"], rows: [
-      ["Wat wordt verwijderd", "🗑️ Heel profiel + alle reviews", "📝 Losse review", "📝 Losse review"],
-      ["Snelheid", "⚡ 24 – 48 uur", "⏳ 3 – 9 maanden", "🐌 Onbepaald"],
-      ["Kosten", "✅ Vaste prijs (bij succes)", "❌ Uurtarieven (vooraf)", "💸 Gratis"],
-      ["Succes", "🛡️ Gegarandeerd", "⚠️ Onzeker", "❓ Zelden"],
-      ["Inspanning", "☕ Geen", "📂 Hoog", "📝 Gemiddeld"],
-      ["Alle reviews weg", "✨ Ja (met het profiel)", "📑 Nee (losse zaken)", "🔁 Nee (één voor één)"],
+      ["Wat wordt verwijderd", "Heel profiel + alle reviews", "Losse review", "Losse review"],
+      ["Snelheid", "24 – 48 uur", "3 – 9 maanden", "Onbepaald"],
+      ["Kosten", "Vaste prijs (bij succes)", "Uurtarieven (vooraf)", "Gratis"],
+      ["Succes", "Gegarandeerd", "Onzeker", "Zelden"],
+      ["Inspanning", "Geen", "Hoog", "Gemiddeld"],
+      ["Alle reviews weg", "Ja (met het profiel)", "Nee (losse zaken)", "Nee (één voor één)"],
     ] },
   ],
   faq: [

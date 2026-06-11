@@ -74,12 +74,12 @@ const article = {
 
       { t: "h2", id: "vergleich", text: "The methods compared directly", toc: "Direct comparison" },
       { t: "table", rrCol: 1, head: ["Criterion", "RapidRemove (profile removal)", "Lawyer (legal route)", "Report yourself"], rows: [
-        ["What is removed", "🗑️ Whole profile + all reviews", "📝 Single review", "📝 Single review"],
-        ["Speed", "⚡ 24 – 48 hours", "⏳ 3 – 9 months", "🐌 Indeterminate"],
-        ["Cost", "✅ Fixed price (on success)", "❌ Hourly rates (upfront)", "💸 Free"],
-        ["Success", "🛡️ Guaranteed", "⚠️ Uncertain", "❓ Rare"],
-        ["Effort", "☕ None", "📂 High", "📝 Medium"],
-        ["All reviews gone", "✨ Yes (with the profile)", "📑 No (individual cases)", "🔁 No (one by one)"],
+        ["What is removed", "Whole profile + all reviews", "Single review", "Single review"],
+        ["Speed", "24 – 48 hours", "3 – 9 months", "Indeterminate"],
+        ["Cost", "Fixed price (on success)", "Hourly rates (upfront)", "Free"],
+        ["Success", "Guaranteed", "Uncertain", "Rare"],
+        ["Effort", "None", "High", "Medium"],
+        ["All reviews gone", "Yes (with the profile)", "No (individual cases)", "No (one by one)"],
       ] },
     ],
     faq: [

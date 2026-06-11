@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Comparaison directe des méthodes", toc: "Comparaison directe" },
     { t: "table", rrCol: 1, head: ["Critère", "RapidRemove (suppression de fiche)", "Avocat (voie juridique)", "Signaler soi-même"], rows: [
-      ["Ce qui est supprimé", "🗑️ Toute la fiche + tous les avis", "📝 Avis isolé", "📝 Avis isolé"],
-      ["Rapidité", "⚡ 24 – 48 heures", "⏳ 3 – 9 mois", "🐌 Indéterminé"],
-      ["Coût", "✅ Prix fixe (au succès)", "❌ Taux horaires (à l'avance)", "💸 Gratuit"],
-      ["Succès", "🛡️ Garanti", "⚠️ Incertain", "❓ Rare"],
-      ["Effort", "☕ Nul", "📂 Élevé", "📝 Moyen"],
-      ["Tous les avis partis", "✨ Oui (avec la fiche)", "📑 Non (cas isolés)", "🔁 Non (un par un)"],
+      ["Ce qui est supprimé", "Toute la fiche + tous les avis", "Avis isolé", "Avis isolé"],
+      ["Rapidité", "24 – 48 heures", "3 – 9 mois", "Indéterminé"],
+      ["Coût", "Prix fixe (au succès)", "Taux horaires (à l'avance)", "Gratuit"],
+      ["Succès", "Garanti", "Incertain", "Rare"],
+      ["Effort", "Nul", "Élevé", "Moyen"],
+      ["Tous les avis partis", "Oui (avec la fiche)", "Non (cas isolés)", "Non (un par un)"],
     ] },
   ],
   faq: [

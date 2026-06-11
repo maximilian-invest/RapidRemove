@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Os métodos comparados diretamente", toc: "Comparação direta" },
     { t: "table", rrCol: 1, head: ["Critério", "RapidRemove (remoção do perfil)", "Advogado (via jurídica)", "Denunciar você mesmo"], rows: [
-      ["O que é removido", "🗑️ Perfil inteiro + todas as avaliações", "📝 Avaliação isolada", "📝 Avaliação isolada"],
-      ["Rapidez", "⚡ 24 – 48 horas", "⏳ 3 – 9 meses", "🐌 Indefinido"],
-      ["Custo", "✅ Preço fixo (após sucesso)", "❌ Honorários por hora (adiantado)", "💸 Gratuito"],
-      ["Sucesso", "🛡️ Garantido", "⚠️ Incerto", "❓ Raro"],
-      ["Esforço", "☕ Nenhum", "📂 Elevado", "📝 Médio"],
-      ["Todas as avaliações fora", "✨ Sim (com o perfil)", "📑 Não (casos isolados)", "🔁 Não (uma a uma)"],
+      ["O que é removido", "Perfil inteiro + todas as avaliações", "Avaliação isolada", "Avaliação isolada"],
+      ["Rapidez", "24 – 48 horas", "3 – 9 meses", "Indefinido"],
+      ["Custo", "Preço fixo (após sucesso)", "Honorários por hora (adiantado)", "Gratuito"],
+      ["Sucesso", "Garantido", "Incerto", "Raro"],
+      ["Esforço", "Nenhum", "Elevado", "Médio"],
+      ["Todas as avaliações fora", "Sim (com o perfil)", "Não (casos isolados)", "Não (uma a uma)"],
     ] },
   ],
   faq: [

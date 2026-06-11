@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Comparación directa de los métodos", toc: "Comparación directa" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (eliminación de perfil)", "Abogado (vía legal)", "Denunciar tú mismo"], rows: [
-      ["Qué se elimina", "🗑️ Todo el perfil + todas las reseñas", "📝 Reseña individual", "📝 Reseña individual"],
-      ["Rapidez", "⚡ 24 – 48 horas", "⏳ 3 – 9 meses", "🐌 Indeterminado"],
-      ["Coste", "✅ Precio fijo (éxito)", "❌ Tarifas por hora (por adelantado)", "💸 Gratis"],
-      ["Éxito", "🛡️ Garantizado", "⚠️ Incierto", "❓ Raro"],
-      ["Esfuerzo", "☕ Nulo", "📂 Alto", "📝 Medio"],
-      ["Todas las reseñas fuera", "✨ Sí (con el perfil)", "📑 No (casos sueltos)", "🔁 No (una a una)"],
+      ["Qué se elimina", "Todo el perfil + todas las reseñas", "Reseña individual", "Reseña individual"],
+      ["Rapidez", "24 – 48 horas", "3 – 9 meses", "Indeterminado"],
+      ["Coste", "Precio fijo (éxito)", "Tarifas por hora (por adelantado)", "Gratis"],
+      ["Éxito", "Garantizado", "Incierto", "Raro"],
+      ["Esfuerzo", "Nulo", "Alto", "Medio"],
+      ["Todas las reseñas fuera", "Sí (con el perfil)", "No (casos sueltos)", "No (una a una)"],
     ] },
   ],
   faq: [

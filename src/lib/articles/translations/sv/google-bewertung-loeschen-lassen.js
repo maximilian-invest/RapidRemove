@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Metoderna direkt jämförda", toc: "Direkt jämförelse" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (profilborttagning)", "Advokat (juridisk väg)", "Rapportera själv"], rows: [
-      ["Vad tas bort", "🗑️ Hela profilen + alla recensioner", "📝 Enskild recension", "📝 Enskild recension"],
-      ["Snabbhet", "⚡ 24–48 timmar", "⏳ 3–9 månader", "🐌 Obestämt"],
-      ["Kostnad", "✅ Fast pris (efter framgång)", "❌ Timtaxor (förskott)", "💸 Gratis"],
-      ["Framgång", "🛡️ Garanterat", "⚠️ Osäkert", "❓ Sällan"],
-      ["Insats", "☕ Ingen", "📂 Hög", "📝 Medel"],
-      ["Alla recensioner borta", "✨ Ja (med profilen)", "📑 Nej (enskilda ärenden)", "🔁 Nej (en i taget)"],
+      ["Vad tas bort", "Hela profilen + alla recensioner", "Enskild recension", "Enskild recension"],
+      ["Snabbhet", "24–48 timmar", "3–9 månader", "Obestämt"],
+      ["Kostnad", "Fast pris (efter framgång)", "Timtaxor (förskott)", "Gratis"],
+      ["Framgång", "Garanterat", "Osäkert", "Sällan"],
+      ["Insats", "Ingen", "Hög", "Medel"],
+      ["Alla recensioner borta", "Ja (med profilen)", "Nej (enskilda ärenden)", "Nej (en i taget)"],
     ] },
   ],
   faq: [

@@ -77,12 +77,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Der direkte Vergleich der Methoden", toc: "Direkter Vergleich" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (Profil-Löschung)", "Anwalt (Rechtsweg)", "Selbst melden"], rows: [
-      ["Was wird entfernt", "🗑️ Ganzes Profil + alle Bewertungen", "📝 Einzelne Bewertung", "📝 Einzelne Bewertung"],
-      ["Schnelligkeit", "⚡ 24 – 48 Stunden", "⏳ 3 – 9 Monate", "🐌 Unbestimmt"],
-      ["Kosten", "✅ Fixpreis (Erfolg)", "❌ Stundensätze (Vorkasse)", "💸 Kostenlos"],
-      ["Erfolg", "🛡️ Garantiert", "⚠️ Ungewiss", "❓ Selten"],
-      ["Aufwand", "☕ Null", "📂 Hoch", "📝 Mittel"],
-      ["Alle Bewertungen weg", "✨ Ja (mit dem Profil)", "📑 Nein (Einzelverfahren)", "🔁 Nein (je einzeln)"],
+      ["Was wird entfernt", "Ganzes Profil + alle Bewertungen", "Einzelne Bewertung", "Einzelne Bewertung"],
+      ["Schnelligkeit", "24 – 48 Stunden", "3 – 9 Monate", "Unbestimmt"],
+      ["Kosten", "Fixpreis (Erfolg)", "Stundensätze (Vorkasse)", "Kostenlos"],
+      ["Erfolg", "Garantiert", "Ungewiss", "Selten"],
+      ["Aufwand", "Null", "Hoch", "Mittel"],
+      ["Alle Bewertungen weg", "Ja (mit dem Profil)", "Nein (Einzelverfahren)", "Nein (je einzeln)"],
     ] },
   ],
   faq: [

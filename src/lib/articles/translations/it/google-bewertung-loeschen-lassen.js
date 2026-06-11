@@ -74,12 +74,12 @@ const article = {
 
     { t: "h2", id: "vergleich", text: "Il confronto diretto dei metodi", toc: "Confronto diretto" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (rimozione profilo)", "Avvocato (via legale)", "Segnalare da soli"], rows: [
-      ["Cosa viene rimosso", "🗑️ Tutto il profilo + tutte le recensioni", "📝 Singola recensione", "📝 Singola recensione"],
-      ["Velocità", "⚡ 24 – 48 ore", "⏳ 3 – 9 mesi", "🐌 Indeterminato"],
-      ["Costo", "✅ Prezzo fisso (al successo)", "❌ Tariffe orarie (anticipate)", "💸 Gratis"],
-      ["Successo", "🛡️ Garantito", "⚠️ Incerto", "❓ Raro"],
-      ["Impegno", "☕ Nullo", "📂 Alto", "📝 Medio"],
-      ["Tutte le recensioni via", "✨ Sì (con il profilo)", "📑 No (casi singoli)", "🔁 No (una a una)"],
+      ["Cosa viene rimosso", "Tutto il profilo + tutte le recensioni", "Singola recensione", "Singola recensione"],
+      ["Velocità", "24 – 48 ore", "3 – 9 mesi", "Indeterminato"],
+      ["Costo", "Prezzo fisso (al successo)", "Tariffe orarie (anticipate)", "Gratis"],
+      ["Successo", "Garantito", "Incerto", "Raro"],
+      ["Impegno", "Nullo", "Alto", "Medio"],
+      ["Tutte le recensioni via", "Sì (con il profilo)", "No (casi singoli)", "No (una a una)"],
     ] },
   ],
   faq: [
