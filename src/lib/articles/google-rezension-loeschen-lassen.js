@@ -73,6 +73,7 @@ const article = {
     { q: "Löscht RapidRemove einzelne Rezensionen?", a: "Nein. RapidRemove entfernt das gesamte Unternehmensprofil; alle Rezensionen verschwinden dabei mit. Eine einzelne Rezension bei Erhalt des Profils entfernt man über das Melden oder einen Anwalt." },
   ],
   related: [
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },

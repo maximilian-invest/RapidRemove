@@ -66,6 +66,7 @@ const article = {
     { q: "Wie schnell ist man die Bewertungen los?", a: "Über die Profil-Löschung häufig innerhalb von 24 bis 48 Stunden – deutlich schneller als der mehrmonatige Rechtsweg für eine Einzelbewertung." },
   ],
   related: [
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },

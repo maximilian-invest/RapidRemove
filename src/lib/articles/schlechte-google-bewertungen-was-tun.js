@@ -68,6 +68,8 @@ const article = {
     { q: "Lohnt sich das Melden bei Google überhaupt?", a: "Als erster, kostenloser Schritt ja – besonders bei offensichtlichem Spam. Da Google aber viele Meldungen automatisiert ablehnt, bleibt bei hartnäckigen Einzelfällen der Anwalt, und bei einem grundlegend beschädigten Profil die Profil-Löschung." },
   ],
   related: [
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
     { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },

@@ -74,6 +74,8 @@ const article = {
     { q: "Sind negative Google-Bewertungen strafbar?", a: "Eine ehrliche Meinung nicht. Bewusst falsche Tatsachenbehauptungen, Beleidigungen oder Schmähkritik können jedoch rechtliche Folgen haben. Dies ist keine Rechtsberatung." },
   ],
   related: [
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
     { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },

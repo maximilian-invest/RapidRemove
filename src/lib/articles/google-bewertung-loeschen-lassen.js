@@ -94,6 +94,7 @@ const article = {
     { q: "Was ist der Streisand-Effekt?", a: "Wenn rechtliche Schritte gegen eine Bewertung den Rezensenten erst recht provozieren und zu weiteren Negativbewertungen führen. Die technische Löschung vermeidet dieses Risiko, da sie ohne direkte Konfrontation arbeitet." },
   ],
   related: [
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
     { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Fake-Bewertung bei Google melden und löschen", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
