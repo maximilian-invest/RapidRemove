@@ -43,7 +43,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Un proceso guiado y transparente. Tú casi no haces nada: del resto nos ocupamos nosotros.",
       steps: [
         { t: "Análisis gratis", d: "Escribe el nombre de tu empresa. Encontramos tu perfil y comprobamos al instante si es posible eliminarlo.", a: "Gratis y sin compromiso" },
-        { t: "Confirmar y autorizar", d: "Confirmas el perfil correcto y concedes permiso de edición. Sin acceso a Gmail, Ads ni datos personales.", a: "Tu cuenta sigue privada" },
+        { t: "Confirmar y autorizar", d: "Confirmas el perfil correcto y concedes permiso de edición. Sin acceso a Gmail, Ads ni datos personales.", a: "Tu cuenta de Google sigue privada" },
         { t: "Eliminado en ~24 h", d: "Nuestro equipo borra el perfil y todas las reseñas, de forma permanente. Pagas solo después.", a: "Pago solo tras el éxito" },
       ],
       cta: "Iniciar el análisis gratis",
@@ -245,7 +245,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Un processus guidé et transparent. Vous ne faites presque rien : on s'occupe du reste.",
       steps: [
         { t: "Analyse gratuite", d: "Saisissez le nom de votre entreprise. Nous trouvons votre fiche et vérifions aussitôt si la suppression est possible.", a: "Gratuit et sans engagement" },
-        { t: "Confirmer et autoriser", d: "Vous confirmez la bonne fiche et accordez l'autorisation de modification. Aucun accès à Gmail, Ads ou données personnelles.", a: "Votre compte reste privé" },
+        { t: "Confirmer et autoriser", d: "Vous confirmez la bonne fiche et accordez l'autorisation de modification. Aucun accès à Gmail, Ads ou données personnelles.", a: "Votre compte Google reste privé" },
         { t: "Supprimée en ~24 h", d: "Notre équipe supprime la fiche et tous les avis, définitivement. Vous ne payez qu'ensuite.", a: "Paiement après succès" },
       ],
       cta: "Lancer l'analyse gratuite",

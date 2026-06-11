@@ -46,7 +46,7 @@ const I18N = {
       sub: "Ein geführter, transparenter Ablauf. Sie tun fast nichts – wir kümmern uns um den Rest.",
       steps: [
         { t: "Gratis-Check", d: "Firmennamen eingeben. Wir finden Ihr Profil und prüfen sofort, ob die Löschung möglich ist.", a: "Unverbindlich & kostenlos" },
-        { t: "Bestätigen & freigeben", d: "Sie bestätigen das richtige Profil und geben uns die Bearbeitung frei. Wir bekommen dabei keinen Zugriff auf Gmail, Google Ads oder Ihre persönlichen Daten.", a: "Kein Zugriff auf Ihr Konto" },
+        { t: "Bestätigen & freigeben", d: "Sie bestätigen das richtige Profil und geben uns die Bearbeitung frei. Wir bekommen dabei keinen Zugriff auf Gmail, Google Ads oder Ihre persönlichen Daten.", a: "Kein Zugriff auf Ihr Google-Konto" },
         { t: "Löschung in ~24 h", d: "Unser Team entfernt das Profil samt allen Bewertungen – dauerhaft. Sie zahlen erst danach.", a: "Bezahlung erst nach Erfolg" },
       ],
       cta: "Jetzt Gratis-Check starten",
@@ -324,7 +324,7 @@ const I18N = {
       sub: "A guided, transparent process. You do almost nothing – we handle the rest.",
       steps: [
         { t: "Free check", d: "Enter your business name. We find your profile and instantly check whether removal is possible.", a: "Free & no obligation" },
-        { t: "Confirm & authorize", d: "You confirm the right profile and grant editing permission. No access to Gmail, Ads or personal data.", a: "Your account stays private" },
+        { t: "Confirm & authorize", d: "You confirm the right profile and grant editing permission. No access to Gmail, Ads or personal data.", a: "Your Google account stays private" },
         { t: "Removed in ~24h", d: "Our team deletes the profile and all reviews – permanently. You only pay afterwards.", a: "Pay only after success" },
       ],
       cta: "Start the free check",

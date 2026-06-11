@@ -43,7 +43,7 @@ const ja = {
     sub: "ガイド付きの透明なプロセス。お客様はほとんど何もする必要がありません ― 残りは私たちが対応します。",
     steps: [
       { t: "無料チェック", d: "会社名を入力。プロフィールを見つけ、削除が可能かどうかを即座に確認します。", a: "無料・義務なし" },
-      { t: "確認して許可", d: "正しいプロフィールを確認し、編集の許可を与えます。Gmail、広告、個人データへのアクセスはありません。", a: "アカウントは非公開のまま" },
+      { t: "確認して許可", d: "正しいプロフィールを確認し、編集の許可を与えます。Gmail、広告、個人データへのアクセスはありません。", a: "Googleアカウントは非公開のまま" },
       { t: "約24時間で削除", d: "チームがプロフィールとすべての口コミを永久に削除します。お支払いはその後だけです。", a: "成功後にのみお支払い" },
     ],
     cta: "無料チェックを始める",
@@ -245,7 +245,7 @@ const sv = {
     sub: "En guidad, transparent process. Du gör nästan inget – vi sköter resten.",
     steps: [
       { t: "Gratis koll", d: "Ange företagsnamn. Vi hittar din profil och kollar direkt om borttagning är möjlig.", a: "Gratis & utan förpliktelse" },
-      { t: "Bekräfta & godkänn", d: "Du bekräftar rätt profil och ger redigeringsbehörighet. Ingen åtkomst till Gmail, annonser eller persondata.", a: "Ditt konto förblir privat" },
+      { t: "Bekräfta & godkänn", d: "Du bekräftar rätt profil och ger redigeringsbehörighet. Ingen åtkomst till Gmail, annonser eller persondata.", a: "Ditt Google-konto förblir privat" },
       { t: "Borttagen på ~24h", d: "Vårt team tar bort profilen och alla omdömen – permanent. Du betalar först efteråt.", a: "Betala först efter framgång" },
     ],
     cta: "Starta gratis koll",
@@ -447,7 +447,7 @@ const da = {
     sub: "En guidet, gennemsigtig proces. Du gør næsten intet – vi klarer resten.",
     steps: [
       { t: "Gratis tjek", d: "Indtast firmanavn. Vi finder din profil og tjekker straks, om fjernelse er mulig.", a: "Gratis & uforpligtende" },
-      { t: "Bekræft & godkend", d: "Du bekræfter den rigtige profil og giver redigeringstilladelse. Ingen adgang til Gmail, annoncer eller persondata.", a: "Din konto forbliver privat" },
+      { t: "Bekræft & godkend", d: "Du bekræfter den rigtige profil og giver redigeringstilladelse. Ingen adgang til Gmail, annoncer eller persondata.", a: "Din Google-konto forbliver privat" },
       { t: "Fjernet på ~24t", d: "Vores team fjerner profilen og alle anmeldelser – permanent. Du betaler først bagefter.", a: "Betal først efter succes" },
     ],
     cta: "Start gratis tjek",
@@ -649,7 +649,7 @@ const no = {
     sub: "En guidet, transparent prosess. Du gjør nesten ingenting – vi tar oss av resten.",
     steps: [
       { t: "Gratis sjekk", d: "Skriv inn firmanavn. Vi finner profilen din og sjekker straks om fjerning er mulig.", a: "Gratis & uforpliktende" },
-      { t: "Bekreft & godkjenn", d: "Du bekrefter riktig profil og gir redigeringstillatelse. Ingen tilgang til Gmail, annonser eller persondata.", a: "Kontoen din forblir privat" },
+      { t: "Bekreft & godkjenn", d: "Du bekrefter riktig profil og gir redigeringstillatelse. Ingen tilgang til Gmail, annonser eller persondata.", a: "Google-kontoen din forblir privat" },
       { t: "Fjernet på ~24t", d: "Teamet vårt fjerner profilen og alle omtaler – permanent. Du betaler først etterpå.", a: "Betal først etter suksess" },
     ],
     cta: "Start gratis sjekk",

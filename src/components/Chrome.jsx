@@ -356,7 +356,7 @@ function Footer({ onStart, onBlog, onAbout }) {
           <div className="foot-brand">
             <img className="foot-logo" src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
             <p>{t.footer.tagline}</p>
-            <div className="addr"><strong>{ftCo}</strong><br />{ftRest.join(" · ")}</div>
+            <div className="addr"><strong>{ftCo}</strong><br />{ftRest.join(" · ")}<br />UID: ATU72401536</div>
           </div>
           {cols.map((c, i) => (
             <div className="foot-col" key={i}>

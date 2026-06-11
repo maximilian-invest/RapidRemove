@@ -41,7 +41,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Un processo guidato e trasparente. Tu non fai quasi nulla: al resto pensiamo noi.",
       steps: [
         { t: "Analisi gratuita", d: "Inserisci il nome dell'azienda. Troviamo il profilo e verifichiamo subito se la rimozione è possibile.", a: "Gratis e senza impegno" },
-        { t: "Conferma e autorizza", d: "Confermi il profilo corretto e concedi l'autorizzazione alla modifica. Nessun accesso a Gmail, Ads o dati personali.", a: "Il tuo account resta privato" },
+        { t: "Conferma e autorizza", d: "Confermi il profilo corretto e concedi l'autorizzazione alla modifica. Nessun accesso a Gmail, Ads o dati personali.", a: "Il tuo account Google resta privato" },
         { t: "Rimosso in ~24 h", d: "Il nostro team elimina il profilo e tutte le recensioni, in modo permanente. Paghi solo dopo.", a: "Pagamento dopo il successo" },
       ],
       cta: "Avvia l'analisi gratuita",
@@ -243,7 +243,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Een begeleid, transparant proces. U doet bijna niets: de rest doen wij.",
       steps: [
         { t: "Gratis check", d: "Voer uw bedrijfsnaam in. We vinden uw profiel en checken direct of verwijderen mogelijk is.", a: "Gratis en vrijblijvend" },
-        { t: "Bevestigen en machtigen", d: "U bevestigt het juiste profiel en geeft bewerkingstoestemming. Geen toegang tot Gmail, Ads of persoonlijke gegevens.", a: "Uw account blijft privé" },
+        { t: "Bevestigen en machtigen", d: "U bevestigt het juiste profiel en geeft bewerkingstoestemming. Geen toegang tot Gmail, Ads of persoonlijke gegevens.", a: "Uw Google-account blijft privé" },
         { t: "Verwijderd in ~24 u", d: "Ons team verwijdert het profiel en alle reviews, permanent. U betaalt pas daarna.", a: "Betaling na succes" },
       ],
       cta: "Start de gratis check",
@@ -445,7 +445,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Um processo guiado e transparente. Você quase não faz nada: do resto tratamos nós.",
       steps: [
         { t: "Análise grátis", d: "Digite o nome da empresa. Encontramos o perfil e verificamos de imediato se a remoção é possível.", a: "Grátis e sem compromisso" },
-        { t: "Confirmar e autorizar", d: "Confirma o perfil correto e concede a permissão de edição. Sem acesso a Gmail, Ads ou dados pessoais.", a: "A sua conta permanece privada" },
+        { t: "Confirmar e autorizar", d: "Confirma o perfil correto e concede a permissão de edição. Sem acesso a Gmail, Ads ou dados pessoais.", a: "A sua conta Google permanece privada" },
         { t: "Removido em ~24 h", d: "A nossa equipa elimina o perfil e todas as avaliações, de forma permanente. Só paga depois.", a: "Pagamento após sucesso" },
       ],
       cta: "Iniciar a análise grátis",

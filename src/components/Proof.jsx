@@ -69,6 +69,7 @@ export const PRESS_LINKS = [
   { n: "SEO Online Consulting", u: "https://seo-online-consulting.de/google-unternehmensprofil-loeschen/", c: "#0a8f5b" },
   { n: "Finafix", u: "https://finafix.com/google-my-business-loeschen/", c: "#0f766e" },
   { n: "IT-Büro", u: "https://it-buero.eu/bewertung-bei-google-loschen/", c: "#5b2da8" },
+  { n: "Zanet", u: "https://www.youtube.com/@ZanetDesign", c: "#ff0000" },
 ];
 
 export const PRESS_LABEL = { de: "Bekannt aus", en: "As seen in", es: "Conocidos por", fr: "Vu dans", it: "Noti da", nl: "Bekend van", pt: "Conhecidos de", ja: "掲載メディア", sv: "Omnämnda i", da: "Kendt fra", no: "Omtalt i" };
