@@ -32,17 +32,24 @@ function useReveal() {
 
 /* ---- Count-up number ---- */
 function CountUp({ end, suffix = "", dur = 1600, format }) {
-  const [val, setVal] = React.useState(0);
+  // Startwert = Zielzahl, damit der SSR-/No-JS-Snapshot die ECHTE Zahl zeigt
+  // (vorher "0", was Crawler & Nutzer ohne JS als „0+ entfernte Profile" sahen).
+  const [val, setVal] = React.useState(end);
   const ref = React.useRef(null);
   const started = React.useRef(false);
   React.useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { setVal(end); return; } // keine Animation → echte Zahl stehen lassen
+    // Schon im Viewport beim Laden? → echte Zahl belassen (kein Flash, keine Animation).
+    const rect = el.getBoundingClientRect();
+    const inView = rect.top < (window.innerHeight || 0) && rect.bottom > 0;
+    if (inView) return;
+    setVal(0); // off-screen unsichtbar auf 0 setzen, dann beim Reinscrollen hochzählen
     const run = () => {
       if (started.current) return;
       started.current = true;
-      if (reduce) { setVal(end); return; }
       const t0 = performance.now();
       const tick = (now) => {
         const p = Math.min(1, (now - t0) / dur);
