@@ -794,7 +794,7 @@ function ratingAssessment(ratingStr, lang) {
 }
 
 /* ---- Profile card ---- */
-function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) {
+function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel, assessOk = false }) {
   const { lang } = useLang();
   const a = c.rating != null ? ratingAssessment(c.rating, lang) : null;
   return (
@@ -810,7 +810,7 @@ function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel }) 
               <span className="rv">{c.rating}</span>
               <span className="rc">· {c.reviews} {reviewsLabel}</span>
             </div>
-            <div className={"rate-assess " + a.tone}>{a.tone === "ok" ? <Icon.checkCircle /> : <Icon.alert />} {a.label}</div>
+            <div className={"rate-assess " + (assessOk ? "ok" : a.tone)}>{(assessOk || a.tone === "ok") ? <Icon.checkCircle /> : <Icon.alert />} {a.label}</div>
           </React.Fragment>
         )}
         {c.addr && <div className="profile-addr"><Icon.mapPin /> {c.addr}</div>}
@@ -1232,7 +1232,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex }) {
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
         <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
         <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
-        <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} />
+        <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} assessOk />
         <button type="button" className="wz-not-mine" onClick={() => go(0)}>{wm.notMine} <Icon.arrowRight size={15} /></button>
         <div className="wz-actions" style={{ marginTop: 18 }}>
           <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
