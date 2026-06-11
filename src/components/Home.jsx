@@ -672,8 +672,8 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
       <Hero onStart={onStart} />
       <TrustBar />
-      <ProfileDissolveDemo />
       <Problem id="problem" />
+      <ProfileDissolveDemo />
       <How id="how" onStart={onStart} />
       <VideoSection onStart={onStart} />
       <Why id="why" />

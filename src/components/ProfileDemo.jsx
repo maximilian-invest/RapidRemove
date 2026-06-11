@@ -163,9 +163,6 @@ function ProfileDissolveDemo() {
   })), []);
 
   const typed = query.slice(0, typedN);
-  const phaseLabel = phase === "search" ? (typedN < query.length ? g.phaseType : g.phaseSearch)
-    : phase === "deleting" ? c.phaseDel : phase === "removed" ? c.phaseDone : c.phaseFull;
-  const phaseCls = phase === "deleting" ? "del" : phase === "removed" ? "done" : "";
 
   const KP = (
     <div className="kpanel">
@@ -269,7 +266,6 @@ function ProfileDissolveDemo() {
         </div>
 
         <div className="demo-controls">
-          <span className={"demo-phaselabel " + phaseCls}>{phaseLabel}</span>
           <button className="demo-replay" onClick={replay}><Icon.refresh /> {c.replay}</button>
         </div>
         </div>

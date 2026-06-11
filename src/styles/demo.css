@@ -10,7 +10,7 @@
   .demo-split{display:grid;grid-template-columns:.85fr 1.3fr;gap:56px;align-items:center;}
   .demo-split .sec-head.center{text-align:left;margin:0;max-width:none;}
   .demo-split .demo-stage{margin:0;max-width:none;}
-  .demo-split .demo-controls{justify-content:flex-start;}
+  .demo-split .demo-controls{justify-content:center;}
 }
 .serp-main{min-width:0;}
 .serp-right{position:relative;align-self:start;}
