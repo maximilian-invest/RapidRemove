@@ -38,8 +38,8 @@ const article = {
     { t: "h2", id: "kosten", text: "What does it cost to have a review removed?", toc: "What it costs" },
     { t: "table", head: ["Route", "Cost", "Success"], rows: [
       ["Report yourself (form)", "free", "often low"],
-      ["Cheap providers", "approx. 19 – 49 € / review", "highly variable"],
-      ["Specialist lawyers (single review)", "approx. 100 – 159 € / review", "approx. 90 %, slow"],
+      ["Cheap providers", "approx. $20 – 55 / review", "highly variable"],
+      ["Specialist lawyers (single review)", "approx. $110 – 175 / review", "approx. 90 %, slow"],
       ["Profile removal (RapidRemove)", "fixed price, payable after success", "guaranteed (all reviews gone)"],
     ] },
 
@@ -66,7 +66,7 @@ const article = {
     { q: "Is there a form to have a Google review removed?", a: "Yes. Via the three-dot menu next to the review you reach „Report review“ and thus the report form. Track the status via the Google tool for managing reviews." },
     { q: "Can I have a Google review removed for free?", a: "Your own reviews yes. Third-party reviews you can report for free – whether Google removes them isn't guaranteed. For reliable removal there are paid services with a success fee." },
     { q: "How do I see whether my reported review was deleted?", a: "The review disappears from the profile and the average and review count change. No explicit status is shown – a before screenshot helps with the comparison." },
-    { q: "What does it cost to delete a Google review?", a: "From free (self-report) to 19–49 € (cheap services) to 100–159 € per review with a lawyer. For profile removal there's a fixed price, payable after success." },
+    { q: "What does it cost to delete a Google review?", a: "From free (self-report) to $20–55 (cheap services) to $110–175 per review with a lawyer. For profile removal there's a fixed price, payable after success." },
     { q: "Does RapidRemove delete individual reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. A single review with the profile kept is removed via reporting or a lawyer." },
   ],
   related: [

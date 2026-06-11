@@ -30,7 +30,7 @@ const article = {
     { t: "p", text: "The classic legal route relies on confronting Google with a legally reasoned removal request. Specialist lawyers can achieve success rates around 90 % for clearly unlawful reviews. The downsides:" },
     { t: "ul", items: [
       "**Duration:** the process often drags on for weeks to months.",
-      "**Cost:** usually billed per review; specialist firms are often around 100 to 159 € per case, partly plus court costs if you sue.",
+      "**Cost:** usually billed per review; specialist firms are often around $110 to $175 per case, partly plus court costs if you sue.",
       "**Risk:** the outcome isn't guaranteed, and you pay for the effort, not necessarily the result.",
     ] },
     { t: "p", text: "For a **single, clearly unlawful** review with a documentable set of facts, the legal route can make sense. With several reviews or a fundamentally damaged profile, it quickly becomes expensive and slow." },
@@ -64,7 +64,7 @@ const article = {
   ],
   faq: [
     { q: "Can I have a negative Google review removed?", a: "Yes, if it violates Google's guidelines (e.g. fake, no connection, insult). Purely factual opinions about real experiences are hard to remove." },
-    { q: "What does a lawyer cost to remove a Google review?", a: "Specialist firms are often around 100 to 159 € per review; with a lawsuit, court costs can be added. You usually pay for the effort, not a guaranteed result." },
+    { q: "What does a lawyer cost to remove a Google review?", a: "Specialist firms are often around $110 to $175 per review; with a lawsuit, court costs can be added. You usually pay for the effort, not a guaranteed result." },
     { q: "What exactly does RapidRemove remove – individual reviews or the profile?", a: "RapidRemove removes the entire Google Business Profile; all reviews disappear with it. Individual reviews with the profile kept are removed via reporting or a lawyer." },
     { q: "Is technical profile removal legal?", a: "Yes. It works within Google's guidelines and requires neither a lawyer nor direct contact with Google. Reputable providers work with a success fee and a guarantee." },
     { q: "What is the Streisand effect?", a: "When legal steps provoke the author and lead to further negative reviews. Technical removal avoids this risk because it works without confrontation." },
