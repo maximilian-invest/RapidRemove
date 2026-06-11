@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { asset } from "@/lib/base";
+import { pagePath } from "@/lib/page-routes";
 import { ARTICLE_SLUG } from "@/lib/article-google-profil";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
 import { Icon } from "@/components/Icons";
@@ -55,7 +56,7 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
 
   return (
     <div className="mag">
-      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} onOrm={onOrm} onDeindex={onDeindex} active="magazin" />
+      <Nav onNav={(id) => onGoHome(id)} onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset(pagePath("about", t.code)))} onOrm={onOrm} onDeindex={onDeindex} active="magazin" />
 
       {/* hero */}
       <section className="mag-hero">
@@ -164,7 +165,7 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
         </div>
       </section>
 
-      <Footer onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset("/ueber-uns/"))} />
+      <Footer onStart={() => onStart()} onBlog={() => window.scrollTo({ top: 0, behavior: "smooth" })} onAbout={() => (window.location.href = asset(pagePath("about", t.code)))} />
       <WhatsAppFloat />
     </div>
   );

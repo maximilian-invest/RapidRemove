@@ -7,6 +7,7 @@ import { LangContext } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 
 export default function MagazinStandalone({ lang: initialLang = "de", magCards = [] }) {
   const [lang] = React.useState(I18N[initialLang] ? initialLang : "de");
@@ -22,8 +23,8 @@ export default function MagazinStandalone({ lang: initialLang = "de", magCards =
       <Blog
         onStart={() => nav(hb + "?start=1")}
         onGoHome={(id) => nav(id && id !== "__top" ? hb + "#" + id : hb)}
-        onOrm={() => nav("/reputation-verdraengen/")}
-        onDeindex={() => nav("/presse-auslisten/")}
+        onOrm={() => nav(pagePath("orm", lang))}
+        onDeindex={() => nav(pagePath("deindex", lang))}
         magCards={magCards}
       />
     </LangContext.Provider>
