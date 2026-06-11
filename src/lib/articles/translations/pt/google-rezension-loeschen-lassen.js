@@ -16,7 +16,7 @@ const article = {
     { t: "note", title: "Nota", text: "Este artigo é um guia prático e não constitui aconselhamento jurídico." },
 
     { t: "h2", id: "eigene", text: "Remover a sua própria avaliação do Google", toc: "Remover a própria" },
-    { t: "p", text: "Uma avaliação que **escreveu você mesmo** pode removê-la gratuitamente a qualquer momento:" },
+    { t: "p", text: "Uma avaliação que **escreveu por si mesmo** pode removê-la gratuitamente a qualquer momento:" },
     { t: "ol", items: [
       "Abra o Google Maps no computador ou na app e inicie sessão.",
       "Clique no menu e depois em **«As suas contribuições»** ou «Avaliações».",
@@ -37,7 +37,7 @@ const article = {
 
     { t: "h2", id: "kosten", text: "Quanto custa mandar remover uma avaliação?", toc: "Quanto custa" },
     { t: "table", head: ["Caminho", "Custo", "Sucesso"], rows: [
-      ["Denunciar você mesmo (formulário)", "gratuito", "muitas vezes baixo"],
+      ["Denunciar por si mesmo (formulário)", "gratuito", "muitas vezes baixo"],
       ["Fornecedores baratos", "cerca de 19 – 49 € / avaliação", "muito variável"],
       ["Advogados especializados (avaliação isolada)", "cerca de 100 – 159 € / avaliação", "cerca de 90 %, lento"],
       ["Remoção do perfil (RapidRemove)", "preço fixo, a pagar após sucesso", "garantido (todas as avaliações fora)"],

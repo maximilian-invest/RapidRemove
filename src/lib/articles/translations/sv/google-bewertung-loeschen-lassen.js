@@ -69,7 +69,7 @@ const article = {
       ["Specialiserade advokater (enskild recension)", "100–159 € per recension", "ca 90 %, men långsamt"],
       ["Profilborttagning (RapidRemove)", "Fast pris, betalas efter framgång", "Alla recensioner borta – betalning endast vid framgång"],
     ] },
-    { t: "p", text: "Var försiktig med mycket billiga erbjudanden: kvalitet och support varierar ofta kraftigt. Se efter en **framgångsavgift** – seriösa leverantörer låter sig betalas först efter lyckad borttagning, så att du inte bär någon kostnadsrisk." },
+    { t: "p", text: "Var försiktig med mycket billiga erbjudanden: kvalitet och support varierar ofta kraftigt. Se efter en **framgångsarvode** – seriösa leverantörer låter sig betalas först efter lyckad borttagning, så att du inte bär någon kostnadsrisk." },
     { t: "cta", title: "Kontrollera nu gratis om dina recensioner kan tas bort.", text: "Ange ditt företagsnamn och se på sekunder om din profil och alla dess recensioner kan tas bort, och hur snabbt.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Med garanti", "Utan risk"] },
 
     { t: "h2", id: "vergleich", text: "Metoderna direkt jämförda", toc: "Direkt jämförelse" },

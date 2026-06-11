@@ -50,7 +50,7 @@ const article = {
     { t: "p", text: "Una recensione eliminata sparisce dal tuo profilo, e la tua **media di valutazione** e il **numero di recensioni** si adeguano. Non ti viene mostrato uno stato «eliminata» diretto; l'indicatore più affidabile è che la recensione e la sua valutazione non sono più visibili e la media cambia di conseguenza. Documenta prima lo stato di partenza con uno screenshot per avere il confronto prima-dopo." },
 
     { t: "h2", id: "profil-loeschen", text: "Soluzione permanente: far eliminare l'intero profilo", toc: "Eliminare tutto il profilo" },
-    { t: "p", text: "Se il modulo non funziona e più recensioni danneggiano in modo permanente il tuo profilo, la **rimozione del profilo** è la via più diretta. La differenza chiave: RapidRemove **non elimina singole recensioni, ma l'intero profilo dell'attività su Google**; tutte le recensioni spariscono con esso. Il risultato è una fedina pulita invece di una lotta per ogni stella." },
+    { t: "p", text: "Se il modulo non funziona e più recensioni danneggiano in modo permanente il tuo profilo, la **rimozione del profilo** è la via più diretta. La differenza chiave: RapidRemove **non elimina singole recensioni, ma l'intero profilo dell'attività su Google**; tutte le recensioni spariscono con esso. Il risultato è una nuova partenza invece di una lotta per ogni stella." },
     { t: "ul", items: [
       "**24 – 48 ore** invece di settimane o mesi",
       "**l'intero profilo, incluse tutte le recensioni**, in una volta",

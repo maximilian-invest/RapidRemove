@@ -47,7 +47,7 @@ const article = {
     { t: "p", text: "**Quer apenas tirar aquela avaliação de 1 estrela e manter o perfil?** Então a **denúncia** ao Google e – em caso de insucesso – o **caminho do advogado** são as opções certas. Precisamente numa avaliação de 1 estrela sem palavras, as hipóteses jurídicas são boas." },
     { t: "p", text: "**O seu perfil está permanentemente danificado por várias avaliações ou por avaliações injustas e quer um verdadeiro recomeço?** Então a **remoção do perfil** com a RapidRemove é o caminho mais direto: removemos o **perfil de empresa completo**, todas as avaliações desaparecem com ele – um verdadeiro recomeço; só paga em caso de êxito." },
     { t: "table", head: ["Caminho", "O que é removido", "Duração", "Sucesso", "Custo"], rows: [
-      ["Denunciar você mesmo", "avaliação isolada", "incerto", "baixo", "gratuito"],
+      ["Denunciar por si mesmo", "avaliação isolada", "incerto", "baixo", "gratuito"],
       ["Advogado", "avaliação isolada", "3 – 9 meses", "cerca de 90 %", "por avaliação, adiantado"],
       ["RapidRemove", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "pagamento em caso de êxito", "preço fixo após sucesso"],
     ] },

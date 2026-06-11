@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "Gli svantaggi: la procedura è **lunga** (spesso settimane o mesi), si fattura **per recensione** e comporta il rischio dell'**effetto Streisand**: le azioni legali possono provocare nuove «recensioni di vendetta». Con molte recensioni o un profilo gravemente danneggiato, la via dell'avvocato diventa presto costosa e lenta." },
 
     { t: "h2", id: "m3", text: "Metodo 3: far eliminare l'intero profilo (tutte le recensioni spariscono con esso)", toc: "Metodo 3: il profilo" },
-    { t: "p", text: "Qui sta la differenza decisiva, e l'approccio di RapidRemove: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Nel corso di questa rimozione, **tutte** le recensioni spariscono automaticamente con esso. Invece di litigare stella per stella – e aspettare la prossima recensione negativa – ottieni una **fedina pulita**: un vero nuovo inizio." },
+    { t: "p", text: "Qui sta la differenza decisiva, e l'approccio di RapidRemove: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Nel corso di questa rimozione, **tutte** le recensioni spariscono automaticamente con esso. Invece di litigare stella per stella – e aspettare la prossima recensione negativa – ottieni una **nuova partenza**: un vero nuovo inizio." },
     { t: "p", text: "È la soluzione giusta quando un profilo è danneggiato in modo permanente da molte recensioni o da recensioni ingiustificate. Tecnicamente il metodo lavora dentro la logica di Google e affronta il problema alla radice: il profilo stesso." },
     { t: "p", text: "I vantaggi in sintesi:" },
     { t: "ul", items: [

@@ -16,7 +16,7 @@ const article = {
     { t: "note", title: "Avviso", text: "Questo articolo offre un orientamento pratico e non costituisce consulenza legale. Per una valutazione legale del caso, consulta un avvocato." },
 
     { t: "h2", id: "was-ist", text: "Cos'è una recensione falsa?", toc: "Cos'è?" },
-    { t: "p", text: "Una recensione falsa è una recensione che **non riflette un'esperienza reale di un cliente**. Le fonti tipiche sono concorrenti che vogliono sabotare la tua reputazione, ex dipendenti scontenti, tentativi di estorsione («Paga, altrimenti arriva la recensione a 1 stella») o semplici scambi di persona con un'altra attività. Tali recensioni violano le linee guida di Google e sono quindi in linea di principio contestabili." },
+    { t: "p", text: "Una recensione falsa è una recensione che **non riflette un'esperienza reale di un cliente**. Le fonti tipiche sono concorrenti che vogliono sabotare la tua reputazione, ex dipendenti scontenti, tentativi di estorsione («Paga, altrimenti arriva la recensione a 1 stella») o semplici casi di confusione con un'altra attività. Tali recensioni violano le linee guida di Google e sono quindi in linea di principio contestabili." },
 
     { t: "h2", id: "erkennen", text: "Riconoscere le recensioni false su Google: 7 segnali d'allarme", toc: "7 segnali" },
     { t: "p", text: "Prima di agire, documenta la recensione (screenshot con data). Questi segni indicano una falsificazione:" },
@@ -26,7 +26,7 @@ const article = {
       "**Profilo senza storico**: l'account ha poche recensioni o solo negative.",
       "**Tempistica sospetta**: più recensioni negative in poco tempo (attacco coordinato).",
       "**Nessun cliente rintracciabile**: il nome non compare in nessun ordine o prenotazione.",
-      "**Contenuti estranei**: pubblicità, insulti o scambi di persona.",
+      "**Contenuti estranei**: pubblicità, insulti o confusione tra attività.",
       "**Formulazioni identiche**: testi ricorrenti che compaiono presso più aziende.",
     ] },
 
@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Liberarsi delle recensioni false: la soluzione definitiva", toc: "Soluzione definitiva" },
-    { t: "p", text: "Di fronte a un **attacco coordinato di recensioni false** con molte recensioni, segnalarle una a una è una corsa senza fine. Per questo RapidRemove segue un'altra strada: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Tutte le recensioni false spariscono nel corso della rimozione: riparti con una fedina pulita." },
+    { t: "p", text: "Di fronte a un **attacco coordinato di recensioni false** con molte recensioni, segnalarle una a una è una corsa senza fine. Per questo RapidRemove segue un'altra strada: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Tutte le recensioni false spariscono nel corso della rimozione: riparti con una nuova partenza." },
     { t: "table", rrCol: 3, head: ["Criterio", "Segnalare da soli", "Avvocato", "RapidRemove (rimozione profilo)"], rows: [
       ["Cosa viene rimosso", "singola recensione", "singola recensione", "tutto il profilo + tutte le recensioni"],
       ["Velocità", "incerto", "3 – 9 mesi", "24 – 48 h"],

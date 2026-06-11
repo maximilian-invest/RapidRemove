@@ -73,7 +73,7 @@ const article = {
     { t: "cta", title: "Verifique agora gratuitamente se as suas avaliações podem ser removidas.", text: "Introduza o nome da sua empresa e veja em segundos se o seu perfil e todas as suas avaliações podem ser removidos, e com que rapidez.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
 
     { t: "h2", id: "vergleich", text: "Os métodos comparados diretamente", toc: "Comparação direta" },
-    { t: "table", rrCol: 1, head: ["Critério", "RapidRemove (remoção do perfil)", "Advogado (via jurídica)", "Denunciar você mesmo"], rows: [
+    { t: "table", rrCol: 1, head: ["Critério", "RapidRemove (remoção do perfil)", "Advogado (via jurídica)", "Denunciar por si mesmo"], rows: [
       ["O que é removido", "Perfil inteiro + todas as avaliações", "Avaliação isolada", "Avaliação isolada"],
       ["Rapidez", "24 – 48 horas", "3 – 9 meses", "Indefinido"],
       ["Custo", "Preço fixo (após sucesso)", "Honorários por hora (adiantado)", "Gratuito"],

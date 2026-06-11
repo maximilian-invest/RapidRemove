@@ -54,7 +54,7 @@ const article = {
 
     { t: "h2", id: "loeschen", text: "Livrar-se das avaliações falsas – a solução definitiva", toc: "Solução definitiva" },
     { t: "p", text: "Num **ataque coordenado de avaliações falsas** com muitas avaliações, denunciar avaliações isoladas é um jogo do gato e do rato sem saída. Por isso, a RapidRemove segue outro caminho: **não removemos avaliações isoladas, mas todo o perfil de empresa do Google.** Todas as avaliações falsas desaparecem com a remoção – começa com um registo limpo." },
-    { t: "table", rrCol: 3, head: ["Critério", "Denunciar você mesmo", "Advogado", "RapidRemove (remoção do perfil)"], rows: [
+    { t: "table", rrCol: 3, head: ["Critério", "Denunciar por si mesmo", "Advogado", "RapidRemove (remoção do perfil)"], rows: [
       ["O que é removido", "avaliação isolada", "avaliação isolada", "perfil inteiro + todas as avaliações"],
       ["Rapidez", "incerto", "3 – 9 meses", "24 – 48 h"],
       ["Sucesso", "raro", "incerto", "garantido"],

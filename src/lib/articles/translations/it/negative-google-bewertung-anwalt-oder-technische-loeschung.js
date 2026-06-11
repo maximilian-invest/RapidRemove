@@ -39,7 +39,7 @@ const article = {
     { t: "p", text: "Un rischio spesso sottovalutato: le azioni legali possono provocare ancora di più il recensore. Il risultato è spesso un'ondata di nuove **«recensioni di vendetta»**: il problema cresce invece di ridursi. Questo fenomeno si chiama **effetto Streisand**. Una soluzione silenziosa e tecnica lo evita, perché lavora senza confronto diretto con l'autore." },
 
     { t: "h2", id: "technik", text: "Via 2: rimozione tecnica del profilo", toc: "Via 2: tecnica" },
-    { t: "p", text: "Qui sta la differenza centrale con la via dell'avvocato: RapidRemove **non** combatte singole recensioni, ma rimuove l'**intero profilo dell'attività su Google**. In questa rimozione, **tutte** le recensioni spariscono con esso: ottieni una fedina pulita invece di una lotta per ogni stella. Tecnicamente il metodo lavora dentro la logica di Google e affronta la radice: il profilo. Vantaggi:" },
+    { t: "p", text: "Qui sta la differenza centrale con la via dell'avvocato: RapidRemove **non** combatte singole recensioni, ma rimuove l'**intero profilo dell'attività su Google**. In questa rimozione, **tutte** le recensioni spariscono con esso: ottieni una nuova partenza invece di una lotta per ogni stella. Tecnicamente il metodo lavora dentro la logica di Google e affronta la radice: il profilo. Vantaggi:" },
     { t: "ul", items: [
       "**Velocità:** rimozione del profilo spesso in 24–48 ore anziché mesi.",
       "**Completo:** l'intero profilo, incluse tutte le recensioni, in una volta.",

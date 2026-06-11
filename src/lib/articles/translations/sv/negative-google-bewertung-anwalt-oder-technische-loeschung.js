@@ -58,7 +58,7 @@ const article = {
       ["Framgång", "Varaktigt – betalning endast vid framgång", "Osäkert (risk)"],
       ["Recensioner", "Alla borta (med profilen)", "Enskilda tvister"],
       ["Streisandrisk", "ingen", "finns"],
-      ["Insats", "Ingen (autopilot)", "Hög (bevis och möten)"],
+      ["Insats", "Ingen (autopilot)", "Hög (bevis och frister)"],
     ] },
     { t: "cta", title: "Vilken väg passar dig? Ta reda på det gratis.", text: "Ange ditt företagsnamn – vi kontrollerar på sekunder om och hur snabbt din profil inklusive alla recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Med garanti", "Utan risk"] },
   ],

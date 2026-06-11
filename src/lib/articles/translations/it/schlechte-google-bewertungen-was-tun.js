@@ -51,7 +51,7 @@ const article = {
       ["Avvocato", "singola recensione", "3 – 9 mesi", "ca. 90 %", "a recensione, anticipato"],
       ["RapidRemove", "**tutto il profilo + tutte le recensioni**", "24 – 48 h", "garantito", "prezzo fisso dopo il successo"],
     ] },
-    { t: "p", text: "Importante da capire: RapidRemove **non elimina singole recensioni, ma l'intero profilo dell'attività su Google**; tutte le recensioni spariscono con esso. È la soluzione giusta quando un profilo è danneggiato nel complesso e vuoi un vero nuovo inizio con la fedina pulita. La rimozione lavora dentro la logica di Google, senza rischio Streisand, e si paga solo **dopo il successo**. Chi vuole solo eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato." },
+    { t: "p", text: "Importante da capire: RapidRemove **non elimina singole recensioni, ma l'intero profilo dell'attività su Google**; tutte le recensioni spariscono con esso. È la soluzione giusta quando un profilo è danneggiato nel complesso e vuoi un vero nuovo inizio con la nuova partenza. La rimozione lavora dentro la logica di Google, senza rischio Streisand, e si paga solo **dopo il successo**. Chi vuole solo eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato." },
 
     { t: "h2", id: "vorbeugen", text: "Prevenire: più recensioni positive autentiche", toc: "Prevenire" },
     { t: "p", text: "La miglior difesa è una media solida. Chiedi attivamente una recensione ai clienti soddisfatti (es. con un QR code, un link nella firma e-mail o dopo una conclusione riuscita). Molte recensioni positive autentiche diluiscono l'influenza delle negative singole e proteggono la tua media nel tempo." },

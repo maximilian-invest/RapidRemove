@@ -44,7 +44,7 @@ const article = {
     ] },
 
     { t: "h2", id: "kostenlos-vs", text: "Gratis vs betalt: vad ger vad?", toc: "Gratis vs betalt" },
-    { t: "p", text: "Den kostnadsfria vägen via formuläret är alltid värd ett **första försök** – särskilt vid uppenbart skräp. Verkligheten är dock nedslående: Google granskar mestadels automatiserat och avvisar många anmälningar med standardtextblock. Uteblir framgången är en **professionell borttagning** nästa steg. Se efter en **framgångsavgift** – då bär du ingen kostnadsrisk om borttagningen inte lyckas." },
+    { t: "p", text: "Den kostnadsfria vägen via formuläret är alltid värd ett **första försök** – särskilt vid uppenbart skräp. Verkligheten är dock nedslående: Google granskar mestadels automatiserat och avvisar många anmälningar med standardtextblock. Uteblir framgången är en **professionell borttagning** nästa steg. Se efter en **framgångsarvode** – då bär du ingen kostnadsrisk om borttagningen inte lyckas." },
 
     { t: "h2", id: "geloescht-sehen", text: "Hur ser jag att en recension tagits bort?", toc: "Är den borttagen?" },
     { t: "p", text: "En borttagen recension försvinner från din profil, och ditt **betygssnitt** samt **antalet recensioner** anpassas. En direkt »borttagen»-status visas inte; den mest tillförlitliga indikatorn är att recensionen med dess stjärnbetyg inte längre syns och att snittet ändras därefter. Dokumentera utgångsläget i förväg med en skärmbild för att ha en före-efter-jämförelse." },
@@ -64,7 +64,7 @@ const article = {
   faq: [
     { q: "Kan jag ta bort en egen Google-recension igen?", a: "Ja. Öppna »Dina bidrag» i Google Maps, välj recensionen och klicka på »Ta bort recension» i trepunktsmenyn. Det är gratis och möjligt när som helst." },
     { q: "Finns det ett formulär för att ta bort en Google-recension?", a: "Ja. Via trepunktsmenyn bredvid recensionen når du »Rapportera recension» och därmed anmälningsformuläret. Statusen följer du via Googles verktyg för hantering av recensioner." },
-    { q: "Kan jag ta bort en Google-recension gratis?", a: "Egna recensioner ja. Andras recensioner kan du anmäla gratis – om Google tar bort dem är dock inte garanterat. För en säker borttagning finns betaltjänster med framgångsavgift." },
+    { q: "Kan jag ta bort en Google-recension gratis?", a: "Egna recensioner ja. Andras recensioner kan du anmäla gratis – om Google tar bort dem är dock inte garanterat. För en säker borttagning finns betaltjänster med framgångsarvode." },
     { q: "Hur ser jag om min anmälda recension tagits bort?", a: "Recensionen försvinner från profilen och betygssnittet samt antalet recensioner ändras. En uttrycklig status visas inte – en skärmbild i förväg hjälper vid jämförelsen." },
     { q: "Vad kostar det att ta bort en Google-recension?", a: "Från gratis (egen anmälan) via 19–49 € (billiga tjänster) till 100–159 € per recension hos advokat. Vid profilborttagning gäller ett fast pris, betalas efter framgång." },
     { q: "Tar RapidRemove bort enskilda recensioner?", a: "Nej. RapidRemove tar bort hela företagsprofilen; alla recensioner försvinner med. En enskild recension med profilen kvar tar man bort via anmälan eller en advokat." },
