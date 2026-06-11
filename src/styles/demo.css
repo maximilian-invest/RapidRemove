@@ -34,7 +34,7 @@
 .g-search .g-mic{width:18px;height:18px;flex:none;}
 
 /* tabs row */
-.serp-tabs{display:flex;gap:26px;padding:0 22px;border-bottom:1px solid var(--hairline);}
+.serp-tabs{display:flex;gap:26px;padding:0 22px;}
 .serp-tabs .tb{font-family:Arial, sans-serif;font-size:13.5px;color:var(--fg-muted);padding:13px 0;position:relative;}
 .serp-tabs .tb.on{color:#4285F4;font-weight:600;}
 .serp-tabs .tb.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:#4285F4;border-radius:3px 3px 0 0;}

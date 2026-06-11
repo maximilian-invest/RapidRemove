@@ -343,10 +343,11 @@ function Footer({ onStart, onBlog, onAbout }) {
   // 1 Unternehmen: Über uns · Magazin · Partner werden · Kontakt (Live-Chat)
   // 2 Rechtliches: Impressum · Datenschutz · AGB · Kundenportal
   const cols = t.footer.cols || [];
+  const [ftCo, ...ftRest] = (t.footer.addr || "").split(" \u00b7 "); // Firmenname + Adresse darunter
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
     [{ onClick: onAbout, href: asset("/ueber-uns/") }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset("/kontakt/") }],
-    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "mailto:helpdesk@rapid-remove.com" }],
+    [{ href: asset("/impressum/") }, { href: asset("/datenschutzerklaerung/") }, { href: "https://portal.rapid-remove.com/", ext: true }],
   ];
   return (
     <footer className="footer">
@@ -355,7 +356,7 @@ function Footer({ onStart, onBlog, onAbout }) {
           <div className="foot-brand">
             <img className="foot-logo" src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
             <p>{t.footer.tagline}</p>
-            <div className="addr">{t.footer.addr}</div>
+            <div className="addr"><strong>{ftCo}</strong><br />{ftRest.join(" · ")}</div>
           </div>
           {cols.map((c, i) => (
             <div className="foot-col" key={i}>
