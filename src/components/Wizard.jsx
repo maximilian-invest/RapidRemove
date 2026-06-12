@@ -982,6 +982,14 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [service, setService] = React.useState("remove");
   const [express, setExpress] = React.useState(false);
   const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — Schutz default ON
+  // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
+  const [ptInfo, setPtInfo] = React.useState(null);
+  React.useEffect(() => {
+    if (!ptInfo) return;
+    const close = () => setPtInfo(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [ptInfo]);
   const [contact, setContact] = React.useState({ name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
@@ -1295,14 +1303,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
   function StepProtect() {
     const protActive = protection !== null;
-    const [ptInfo, setPtInfo] = React.useState(null);
     const toggleInfo = (k) => (e) => { e.stopPropagation(); setPtInfo(ptInfo === k ? null : k); };
-    React.useEffect(() => {
-      if (!ptInfo) return;
-      const close = () => setPtInfo(null);
-      document.addEventListener("click", close);
-      return () => document.removeEventListener("click", close);
-    }, [ptInfo]);
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {conv.protStepLabel}</div>
