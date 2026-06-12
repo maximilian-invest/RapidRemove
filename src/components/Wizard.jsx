@@ -801,8 +801,8 @@ function openTidioChat(e) {
 function ContactLine({ lang }) {
   return (
     <div className="wz-contact">
-      {lang === "de" && <a href="tel:08000900001"><Icon.phone size={15} /> 0800 09 00 00 1</a>}
-      <a href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={15} /> helpdesk@rapid-remove.com</a>
+      {lang === "de" && <a className="wc-ic" href="tel:08000900001" aria-label="Anruf 0800 09 00 00 1" title="0800 09 00 00 1"><Icon.phone size={18} /></a>}
+      <a className="wc-ic" href="mailto:helpdesk@rapid-remove.com" aria-label="E-Mail" title="helpdesk@rapid-remove.com"><Icon.mail size={18} /></a>
     </div>
   );
 }
