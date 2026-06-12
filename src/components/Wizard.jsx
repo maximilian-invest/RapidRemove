@@ -1024,11 +1024,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const p = profileFor(lang);
   // Mit einem in der Live-Suche gewählten Profil starten wir direkt auf der
   // Machbarkeits-Karte (Schritt 3 / Index 2) – ohne erneute Profilsuche.
-  const [step, setStep] = React.useState(initialProfile ? 2 : 0);
+  const [step, setStep] = React.useState(initialProfile ? 1 : 0);
   const [name, setName] = React.useState(initialName || "");
   const [candidates, setCandidates] = React.useState(() =>
     initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang));
-  const [phase, setPhase] = React.useState(initialProfile ? "found" : "searching"); // searching | found | checking
+  const [phase, setPhase] = React.useState(initialProfile ? "checking" : "searching"); // searching | found | checking
   const [confetti, setConfetti] = React.useState(false);
   const [multi, setMulti] = React.useState(initialProfile ? false : true);
   const [selectedId, setSelectedId] = React.useState("p1");
@@ -1078,9 +1078,17 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     nameRef.current.focus();
   }, [step]);
 
-  // Mit konkretem Profil bleiben wir auf Schritt 3; sonst startet ein getippter Name die Suche.
+  // Von der Startseite mit konkretem Profil: kurze Prüf-Animation, dann Schritt 3 (Bestätigen) + Konfetti.
   React.useEffect(() => {
-    if (initialProfile) return;
+    if (initialProfile) {
+      const id = setTimeout(() => {
+        go(2);
+        setPhase("found");
+        setConfetti(true);
+        setTimeout(() => setConfetti(false), 3000);
+      }, 2400);
+      return () => clearTimeout(id);
+    }
     if (initialName && initialName.trim()) { startSearch(initialName); }
     // eslint-disable-next-line
   }, []);
@@ -1177,18 +1185,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       recommend: service, name, country, lang,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
-  // Zwischen Schritt 2 und 3: kurze „Profilprüfung", dann Konfetti + Bestätigung.
-  const proceedFromSearch = () => {
-    persistCheck();
-    setPhase("checking");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => {
-      go(2);
-      setPhase("found");
-      setConfetti(true);
-      setTimeout(() => setConfetti(false), 3000);
-    }, 2400);
-  };
+  const proceedFromSearch = () => { persistCheck(); go(2); };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
     setAcOpen(false);
@@ -1197,16 +1194,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setCandidates([{ ...profile, id: "p1", primary: true }]);
     setSelectedId("p1");
     setMulti(false);
-    // Erst kurze Profilprüfung-Animation zeigen, dann zur Bestätigung (Schritt 3) + Konfetti.
-    setPhase("checking");
-    go(1);
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => {
-      go(2);
-      setPhase("found");
-      setConfetti(true);
-      setTimeout(() => setConfetti(false), 3000);
-    }, 2400);
+    setPhase("found");
+    go(2);
   };
 
   const submit = () => {
