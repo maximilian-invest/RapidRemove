@@ -1391,10 +1391,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         )}
 
         <div className="svc-cta">
-          <div className="svc-total">
-            <span className="st-l">{conv.totalAfter}</span>
-            <span className="st-v">{fmtMoney(lang, oneTimeTotal)}{recurringNum > 0 && <em> + {money(lang, protPriceVal)} {conv.perMonthShort}</em>}</span>
-          </div>
           <div className="wz-actions">
             <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
             <button className="btn btn-primary grow" onClick={() => go(5)}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
