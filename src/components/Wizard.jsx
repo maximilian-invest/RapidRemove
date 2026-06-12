@@ -1327,6 +1327,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
         {protActive ? (
           <React.Fragment>
+        <div className="pt-section">
         <div className="pt-grid">
           <div className={"pt-card" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
             <div className="pt-head">
@@ -1367,6 +1368,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
             </div>
           </div>
+        </div>
         </div>
 
         <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
