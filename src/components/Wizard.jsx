@@ -1285,8 +1285,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepService() {
-    // Klick auf eine Option wählt sie und springt direkt zu Schritt 5 (Schutz).
-    const pick = (s) => { setService(s); if (s === "reset") setExpress(false); go(4); };
+    // Tippen wählt die Option (keine Vorselektion); weiter geht es per Button.
+    const pick = (s) => { setService(s); if (s === "reset") setExpress(false); };
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
@@ -1317,6 +1317,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
         <div className="wz-actions" style={{ marginTop: 22 }}>
           <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
+          <button className="btn btn-primary grow" onClick={() => go(4)} disabled={!service}>{wm.toProtect} <Icon.arrowRight size={18} /></button>
         </div>
       </div>
     );

@@ -188,6 +188,16 @@
 .opt-price{text-align:right;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;flex:none;}
 .opt-price small{display:block;font-size:12px;color:var(--fg-muted);font-weight:600;}
 @media(max-width:520px){.opt{flex-wrap:wrap;}.opt-price{width:100%;text-align:left;}}
+/* Schritt 4 mobil: Kacheln kompakter, damit ohne Scrollen alles sichtbar bleibt */
+@media(max-width:620px){
+  .opt-list{gap:10px;}
+  .opt{padding:14px;gap:12px;}
+  .opt-radio{width:20px;height:20px;margin-top:1px;}
+  .opt .opt-ic{width:36px;height:36px;border-radius:10px;}
+  .opt-main .ot{font-size:15px;}
+  .opt-main .od{font-size:12.5px;margin-top:2px;line-height:1.45;}
+  .opt-price{font-size:17px;}
+}
 
 /* toggle add-on */
 .addon{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:20px 22px;display:flex;gap:16px;align-items:center;background:#fff;}
