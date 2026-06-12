@@ -1031,6 +1031,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
   React.useEffect(() => { if (bodyRef.current) window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
 
+  // Schritt 4 (Leistung) wird immer ohne Vorauswahl betreten — auch beim Zurückkommen.
+  React.useEffect(() => { if (step === 3) setService(null); }, [step]);
+
   // Autofokus auf das Namensfeld nur am Desktop — am Handy soll sich die Tastatur
   // nicht ungefragt öffnen (sie erscheint erst, wenn man das Feld antippt).
   React.useEffect(() => {
@@ -1285,8 +1288,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepService() {
-    // Tippen wählt die Option und springt direkt weiter; der Weiter-Button geht
-    // ebenfalls (z. B. wenn man via Zurück auf Schritt 4 kommt). Keine Vorauswahl.
+    // Keine Vorauswahl: Tippen auf eine Leistung wählt sie und springt sofort weiter.
     const pick = (s) => { setService(s); if (s === "reset") setExpress(false); go(4); };
     return (
       <div className="wz-card">
@@ -1318,7 +1320,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
         <div className="wz-actions" style={{ marginTop: 22 }}>
           <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
-          <button className="btn btn-primary grow" onClick={() => go(4)} disabled={!service}>{wm.toProtect} <Icon.arrowRight size={18} /></button>
         </div>
       </div>
     );

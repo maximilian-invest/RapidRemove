@@ -187,16 +187,15 @@
 .opt-main .od{font-size:14px;color:var(--fg-2);line-height:1.55;margin-top:5px;}
 .opt-price{text-align:right;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;flex:none;}
 .opt-price small{display:block;font-size:12px;color:var(--fg-muted);font-weight:600;}
-@media(max-width:520px){.opt{flex-wrap:wrap;}.opt-price{width:100%;text-align:left;}}
-/* Schritt 4 mobil: Kacheln kompakter, damit ohne Scrollen alles sichtbar bleibt */
+/* Schritt 4 mobil: Preis rechts (nicht nach unten umbrechen), Kacheln etwas kompakter */
 @media(max-width:620px){
-  .opt-list{gap:10px;}
-  .opt{padding:14px;gap:12px;}
-  .opt-radio{width:20px;height:20px;margin-top:1px;}
-  .opt .opt-ic{width:36px;height:36px;border-radius:10px;}
-  .opt-main .ot{font-size:15px;}
-  .opt-main .od{font-size:12.5px;margin-top:2px;line-height:1.45;}
-  .opt-price{font-size:17px;}
+  .opt-list{gap:12px;}
+  .opt{padding:18px;gap:14px;}
+  .opt-radio{width:22px;height:22px;margin-top:2px;}
+  .opt .opt-ic{width:42px;height:42px;border-radius:11px;}
+  .opt-main .ot{font-size:16.5px;}
+  .opt-main .od{font-size:13.5px;margin-top:4px;line-height:1.5;}
+  .opt-price{font-size:20px;}
 }
 
 /* toggle add-on */
