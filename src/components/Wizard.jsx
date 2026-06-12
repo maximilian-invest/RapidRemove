@@ -1378,14 +1378,19 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
         <aside className="wz-aside">
-          <button type="button" className="hero-team below wz-expert" onClick={openTidioChat}>
-            <span className="ht-avas">
-              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={46} height={46} />
-              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={46} height={46} />
+          <div className="wz-expert">
+            <button type="button" className="we-main" onClick={openTidioChat}>
+              <span className="we-avas">
+                <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
+                <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
+              </span>
+              <span className="we-tx">{conv.expertCta}</span>
+            </button>
+            <span className="we-actions">
+              {lang === "de" && <a className="we-ic" href="tel:08000900001" aria-label="Anruf 0800 09 00 00 1"><Icon.phone size={17} /></a>}
+              <a className="we-ic" href="mailto:helpdesk@rapid-remove.com" aria-label="E-Mail"><Icon.mail size={17} /></a>
             </span>
-            <span className="ht-tx">{conv.expertCta}<Icon.arrowRight size={14} /></span>
-          </button>
-          <ContactLine lang={lang} />
+          </div>
           <Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} />
         </aside>
       </div>
