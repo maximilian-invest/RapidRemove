@@ -28,7 +28,7 @@ const ORDERS = [
   { id: "RR-204821", created: "03.06.2026 · 11:08", name: "Giulia Romano", email: "g.romano@ristoranteromano.it", phone: "+39 06 99221100",
     company: "Ristorante Romano", profile: "Ristorante Romano, Roma", reviews: 156, rating: "3,8",
     service: "remove", protection: "monthly", status: "done", pay: "paid", amount: 450, protAmount: 24.9, country: "IT",
-    note: "Profil erfolgreich gelöscht. Monitoring aktiv." },
+    note: "Profil erfolgreich gelöscht. Tägliche Überwachung aktiv." },
   { id: "RR-204799", created: "02.06.2026 · 16:55", name: "Lukas Maier", email: "l.maier@maier-immobilien.de", phone: "+49 89 33440011",
     company: "Maier Immobilien", profile: "Maier Immobilien, München", reviews: 23, rating: "2,1",
     service: "remove", protection: null, status: "done", pay: "paid", amount: 450, protAmount: 0, country: "DE",

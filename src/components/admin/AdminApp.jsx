@@ -191,7 +191,7 @@ async function sendOrderedPayLink(o, toast, onStatus) {
   try {
     const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
     const protectionLabel = o.protection
-      ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : ""))
+      ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : ""))
       : "";
     const expressLabel = o.express
       ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : ""))
@@ -594,7 +594,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
                 <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
                 <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                 <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-                {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
                 <div className="drow"><span className="dl">Notiz</span><span className="dv" style={{ fontWeight: 600, color: "var(--fg-2)", maxWidth: 280 }}>{o.note}</span></div>
               </React.Fragment>
             )}
@@ -714,7 +714,7 @@ function InvoiceView({ order, toast }) {
   const o = order || ORDERS.find((x) => x.pay === "paid");
   const inv = "RE-" + o.id.replace("RR-", "");
   const items = [{ name: SERVICES[o.service].name, desc: o.profile, amount: o.amount }];
-  if (o.protection && o.protAmount) items.push({ name: "Reputations-Schutz", desc: o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring (mtl.)" : "Monatlich", amount: o.protAmount });
+  if (o.protection && o.protAmount) items.push({ name: "Reputations-Schutz", desc: o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung (mtl.)" : "Monatlich", amount: o.protAmount });
   const net = items.reduce((s, i) => s + i.amount, 0);
   const vat = Math.round(net * 0.2 * 100) / 100;
   return (
@@ -794,7 +794,7 @@ function InvoiceModal({ order, onClose, onCompose, toast }) {
   const o = order;
   const inv = "RE-" + o.id.replace("RR-", "");
   const items = [{ name: SERVICES[o.service].name, desc: o.profile, amount: o.amount }];
-  if (o.protection && o.protAmount) items.push({ name: "Reputations-Schutz", desc: o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring (mtl.)" : "Monatlich", amount: o.protAmount });
+  if (o.protection && o.protAmount) items.push({ name: "Reputations-Schutz", desc: o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung (mtl.)" : "Monatlich", amount: o.protAmount });
   const net = items.reduce((s, i) => s + i.amount, 0);
   const vat = Math.round(net * 0.2 * 100) / 100;
   return (
@@ -1025,7 +1025,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const doSendMahnung = async () => {
     try {
       const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
-      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Monitoring" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
+      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
       toast("Mahnung an " + o.name + " gesendet ✓");
       onStatus(o, "done", true, true);
       reloadEvents(); setTimeout(reloadEvents, 900);
@@ -1140,7 +1140,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
               <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
               <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-              {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+              {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
               <div className="m-drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
               {o.businessStatus ? <div className="m-drow"><span className="dl">Status (Beauftragung)</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
               {o.placeId ? <div className="m-drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 10.5, wordBreak: "break-all", textAlign: "right" }}>{o.placeId}</span></div> : null}
@@ -1224,7 +1224,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
                   <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                   <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-                  {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                  {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
                   <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
                 </React.Fragment>
               )}
@@ -1340,7 +1340,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                       <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
                       <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                       <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
-                      {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Monitoring" : "Monatlich"}</span></div>}
+                      {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
                     </React.Fragment>
                   )}
                   <div className="drow"><span className="dl">Bestelldatum</span><span className="dv">{o.created}</span></div>
@@ -1454,7 +1454,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
   const tierName = (it) => {
     const v = (it.amount || 0) / 100;
     if (it.interval === "month" && v === 24.9) return "Monatlicher Schutz";
-    if (it.interval === "month" && v === 69.9) return "Schutz + Monitoring";
+    if (it.interval === "month" && v === 69.9) return "Schutz + Tägliche Überwachung";
     if (it.interval === "year" && v === 245) return "Jahresschutz";
     if (it.interval === "once" && v === 990) return "Lebenslanger Schutz";
     return null;

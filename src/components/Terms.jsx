@@ -105,7 +105,7 @@ TERMS.de = {
         "7.2. Wir informieren den Kunden über den Erfolgseintritt. Der Kunde kann binnen 7 Tagen Einwände erheben; andernfalls gilt die Leistung als abgenommen.",
       ] },
       { h: "8. Wiedereinstellungs-Schutz", ps: [
-        "8.1. Wird das entfernte Profil während eines aufrechten Wiedereinstellungs-Schutzes durch Dritte oder durch automatisierte Google-Prozesse erneut öffentlich eingestellt, entfernen wir es auf Mitteilung des Kunden hin kostenlos erneut. Der Schutzzeitraum richtet sich nach dem gewählten Schutz-Paket: beim **Monatlichen Schutz** und beim **Monitoring** für die Laufzeit des aufrechten Abonnements (jeweils monatlich kündbar), beim **Lebenslangen Schutz** dauerhaft. Beim Monitoring sowie beim Lebenslangen Schutz prüfen wir zusätzlich laufend selbst auf Wiedereinstellungen, ohne dass es einer Mitteilung des Kunden bedarf.",
+        "8.1. Wird das entfernte Profil während eines aufrechten Wiedereinstellungs-Schutzes durch Dritte oder durch automatisierte Google-Prozesse erneut öffentlich eingestellt, entfernen wir es auf Mitteilung des Kunden hin kostenlos erneut. Der Schutzzeitraum richtet sich nach dem gewählten Schutz-Paket: beim **Monatlichen Schutz** und bei der **Täglichen Überwachung** für die Laufzeit des aufrechten Abonnements (jeweils monatlich kündbar), beim **Lebenslangen Schutz** dauerhaft. Bei der Täglichen Überwachung sowie beim Lebenslangen Schutz prüfen wir zusätzlich laufend selbst auf Wiedereinstellungen, ohne dass es einer Mitteilung des Kunden bedarf.",
         "8.2. Nicht umfasst sind Profile, die der Kunde selbst oder mit seiner Zustimmung neu anlegt, sowie inhaltlich neue, abweichende Einträge Dritter (z. B. mit anderer Adresse/Firmierung), die kein Wiederaufleben des ursprünglichen Profils darstellen.",
       ] },
       { h: "9. Gewährleistung und Haftung", ps: [
@@ -202,7 +202,7 @@ TERMS.en = {
         "7.2. We inform the customer of the occurrence of success. The customer may raise objections within 7 days; otherwise the service is deemed accepted.",
       ] },
       { h: "8. Re-listing protection", ps: [
-        "8.1. If the removed profile is publicly re-listed by third parties or by automated Google processes during active re-listing protection, we will remove it again free of charge upon notification by the customer. The protection period depends on the chosen protection package: for **Monthly protection** and **Monitoring**, for the term of the active subscription (each cancellable monthly); for **Lifetime protection**, permanently. With Monitoring and Lifetime protection we additionally check for re-listings ourselves on an ongoing basis, without any notification by the customer being required.",
+        "8.1. If the removed profile is publicly re-listed by third parties or by automated Google processes during active re-listing protection, we will remove it again free of charge upon notification by the customer. The protection period depends on the chosen protection package: for **Monthly protection** and **Daily monitoring**, for the term of the active subscription (each cancellable monthly); for **Lifetime protection**, permanently. With Daily monitoring and Lifetime protection we additionally check for re-listings ourselves on an ongoing basis, without any notification by the customer being required.",
         "8.2. Not covered are profiles that the customer creates anew themselves or with their consent, as well as substantively new, deviating listings by third parties (e.g. with a different address/company name) that do not constitute a revival of the original profile.",
       ] },
       { h: "9. Warranty and liability", ps: [
@@ -299,7 +299,7 @@ TERMS.es = {
         "7.2. Informamos al cliente de la consecución del éxito. El cliente puede presentar objeciones en un plazo de 7 días; de lo contrario, el servicio se considera aceptado.",
       ] },
       { h: "8. Protección contra la republicación", ps: [
-        "8.1. Si el perfil eliminado vuelve a publicarse públicamente por terceros o por procesos automatizados de Google durante una protección contra republicación vigente, lo eliminaremos de nuevo gratuitamente previa comunicación del cliente. El periodo de protección depende del paquete elegido: con la **Protección mensual** y el **Monitoring**, durante la vigencia de la suscripción activa (cancelable mensualmente); con la **Protección de por vida**, de forma permanente. Con el Monitoring y la Protección de por vida comprobamos además nosotros mismos de forma continua si hay republicaciones, sin necesidad de comunicación del cliente.",
+        "8.1. Si el perfil eliminado vuelve a publicarse públicamente por terceros o por procesos automatizados de Google durante una protección contra republicación vigente, lo eliminaremos de nuevo gratuitamente previa comunicación del cliente. El periodo de protección depende del paquete elegido: con la **Protección mensual** y la **Monitorización diaria**, durante la vigencia de la suscripción activa (cancelable mensualmente); con la **Protección de por vida**, de forma permanente. Con la Monitorización diaria y la Protección de por vida comprobamos además nosotros mismos de forma continua si hay republicaciones, sin necesidad de comunicación del cliente.",
         "8.2. No están cubiertos los perfiles que el propio cliente cree de nuevo o que se creen con su consentimiento, ni las entradas de terceros sustancialmente nuevas y divergentes (p. ej. con otra dirección/denominación) que no constituyan un resurgimiento del perfil original.",
       ] },
       { h: "9. Garantía y responsabilidad", ps: [
@@ -396,7 +396,7 @@ TERMS.fr = {
         "7.2. Nous informons le client de la survenance du succès. Le client peut soulever des objections dans un délai de 7 jours ; à défaut, la prestation est réputée réceptionnée.",
       ] },
       { h: "8. Protection contre la republication", ps: [
-        "8.1. Si la fiche supprimée est de nouveau publiée publiquement par des tiers ou par des processus automatisés de Google pendant une protection contre la republication en cours, nous la supprimons de nouveau gratuitement sur notification du client. La période de protection dépend du forfait choisi : pour la **Protection mensuelle** et le **Monitoring**, pendant la durée de l'abonnement en cours (résiliable mensuellement) ; pour la **Protection à vie**, de façon permanente. Avec le Monitoring et la Protection à vie, nous vérifions en outre nous-mêmes en continu l'absence de republication, sans qu'une notification du client soit nécessaire.",
+        "8.1. Si la fiche supprimée est de nouveau publiée publiquement par des tiers ou par des processus automatisés de Google pendant une protection contre la republication en cours, nous la supprimons de nouveau gratuitement sur notification du client. La période de protection dépend du forfait choisi : pour la **Protection mensuelle** et la **Surveillance quotidienne**, pendant la durée de l'abonnement en cours (résiliable mensuellement) ; pour la **Protection à vie**, de façon permanente. Avec la Surveillance quotidienne et la Protection à vie, nous vérifions en outre nous-mêmes en continu l'absence de republication, sans qu'une notification du client soit nécessaire.",
         "8.2. Ne sont pas couvertes les fiches que le client crée lui-même ou avec son accord, ainsi que les inscriptions de tiers substantiellement nouvelles et divergentes (p. ex. avec une autre adresse/raison sociale) qui ne constituent pas une résurgence de la fiche d'origine.",
       ] },
       { h: "9. Garantie et responsabilité", ps: [
@@ -493,7 +493,7 @@ TERMS.it = {
         "7.2. Informiamo il cliente del verificarsi del successo. Il cliente può sollevare obiezioni entro 7 giorni; in caso contrario il servizio si considera accettato.",
       ] },
       { h: "8. Protezione contro la ripubblicazione", ps: [
-        "8.1. Se il profilo rimosso viene nuovamente pubblicato da terzi o da processi automatizzati di Google durante una protezione contro la ripubblicazione in corso, lo rimuoviamo di nuovo gratuitamente su segnalazione del cliente. Il periodo di protezione dipende dal pacchetto scelto: con la **Protezione mensile** e il **Monitoring** per la durata dell'abbonamento attivo (disdicibile mensilmente); con la **Protezione a vita** in modo permanente. Con il Monitoring e la Protezione a vita verifichiamo inoltre noi stessi in modo continuativo eventuali ripubblicazioni, senza necessità di segnalazione da parte del cliente.",
+        "8.1. Se il profilo rimosso viene nuovamente pubblicato da terzi o da processi automatizzati di Google durante una protezione contro la ripubblicazione in corso, lo rimuoviamo di nuovo gratuitamente su segnalazione del cliente. Il periodo di protezione dipende dal pacchetto scelto: con la **Protezione mensile** e il **Monitoraggio giornaliero** per la durata dell'abbonamento attivo (disdicibile mensilmente); con la **Protezione a vita** in modo permanente. Con il Monitoraggio giornaliero e la Protezione a vita verifichiamo inoltre noi stessi in modo continuativo eventuali ripubblicazioni, senza necessità di segnalazione da parte del cliente.",
         "8.2. Non sono coperti i profili che il cliente crea nuovamente da sé o con il suo consenso, né le voci di terzi sostanzialmente nuove e divergenti (ad es. con altro indirizzo/denominazione) che non costituiscono una rinascita del profilo originario.",
       ] },
       { h: "9. Garanzia e responsabilità", ps: [
@@ -590,7 +590,7 @@ TERMS.nl = {
         "7.2. Wij informeren de klant over het intreden van het succes. De klant kan binnen 7 dagen bezwaren indienen; anders geldt de dienst als geaccepteerd.",
       ] },
       { h: "8. Bescherming tegen herplaatsing", ps: [
-        "8.1. Wordt het verwijderde profiel tijdens een lopende herplaatsingsbescherming door derden of door geautomatiseerde Google-processen opnieuw openbaar geplaatst, dan verwijderen wij het op melding van de klant kosteloos opnieuw. De beschermingsperiode hangt af van het gekozen pakket: bij de **Maandelijkse bescherming** en bij **Monitoring** voor de looptijd van het lopende abonnement (telkens maandelijks opzegbaar), bij de **Levenslange bescherming** permanent. Bij Monitoring en bij de Levenslange bescherming controleren wij bovendien zelf doorlopend op herplaatsingen, zonder dat een melding van de klant nodig is.",
+        "8.1. Wordt het verwijderde profiel tijdens een lopende herplaatsingsbescherming door derden of door geautomatiseerde Google-processen opnieuw openbaar geplaatst, dan verwijderen wij het op melding van de klant kosteloos opnieuw. De beschermingsperiode hangt af van het gekozen pakket: bij de **Maandelijkse bescherming** en bij **Dagelijkse monitoring** voor de looptijd van het lopende abonnement (telkens maandelijks opzegbaar), bij de **Levenslange bescherming** permanent. Bij Dagelijkse monitoring en bij de Levenslange bescherming controleren wij bovendien zelf doorlopend op herplaatsingen, zonder dat een melding van de klant nodig is.",
         "8.2. Niet gedekt zijn profielen die de klant zelf of met zijn instemming opnieuw aanmaakt, alsmede inhoudelijk nieuwe, afwijkende vermeldingen van derden (bijv. met ander adres/andere firmanaam) die geen herleving van het oorspronkelijke profiel vormen.",
       ] },
       { h: "9. Garantie en aansprakelijkheid", ps: [
@@ -687,7 +687,7 @@ TERMS.pt = {
         "7.2. Informamos o cliente da ocorrência do êxito. O cliente pode apresentar objeções no prazo de 7 dias; caso contrário, o serviço considera-se aceite.",
       ] },
       { h: "8. Proteção contra republicação", ps: [
-        "8.1. Se o perfil removido voltar a ser publicado publicamente por terceiros ou por processos automatizados da Google durante uma proteção contra republicação em vigor, removemo-lo de novo gratuitamente mediante comunicação do cliente. O período de proteção depende do pacote escolhido: na **Proteção mensal** e no **Monitoring**, durante a vigência da subscrição ativa (cancelável mensalmente); na **Proteção vitalícia**, de forma permanente. No Monitoring e na Proteção vitalícia verificamos, além disso, nós próprios continuamente a existência de republicações, sem necessidade de comunicação do cliente.",
+        "8.1. Se o perfil removido voltar a ser publicado publicamente por terceiros ou por processos automatizados da Google durante uma proteção contra republicação em vigor, removemo-lo de novo gratuitamente mediante comunicação do cliente. O período de proteção depende do pacote escolhido: na **Proteção mensal** e na **Monitorização diária**, durante a vigência da subscrição ativa (cancelável mensalmente); na **Proteção vitalícia**, de forma permanente. Na Monitorização diária e na Proteção vitalícia verificamos, além disso, nós próprios continuamente a existência de republicações, sem necessidade de comunicação do cliente.",
         "8.2. Não estão abrangidos os perfis que o próprio cliente crie de novo ou que sejam criados com o seu consentimento, nem entradas de terceiros substancialmente novas e divergentes (p. ex. com outro endereço/denominação) que não constituam um renascimento do perfil original.",
       ] },
       { h: "9. Garantia e responsabilidade", ps: [
@@ -784,7 +784,7 @@ TERMS.ja = {
         "7.2. 当社は成功の発生を顧客に通知します。顧客は7日以内に異議を申し立てることができます。申し立てがない場合、サービスは検収されたものとみなされます。",
       ] },
       { h: "8. 再掲載保護", ps: [
-        "8.1. 有効な再掲載保護の期間中に、削除されたプロフィールが第三者またはGoogleの自動プロセスによって再び公開された場合、顧客からの通知により当社は無償で再度削除します。保護期間は選択した保護パッケージによります：**月額保護**および**モニタリング**では有効なサブスクリプションの期間中（いずれも月単位で解約可能）、**生涯保護**では恒久的。モニタリングおよび生涯保護では、顧客からの通知がなくても、当社自身が継続的に再掲載を確認します。",
+        "8.1. 有効な再掲載保護の期間中に、削除されたプロフィールが第三者またはGoogleの自動プロセスによって再び公開された場合、顧客からの通知により当社は無償で再度削除します。保護期間は選択した保護パッケージによります：**月額保護**および**毎日のモニタリング**では有効なサブスクリプションの期間中（いずれも月単位で解約可能）、**生涯保護**では恒久的。毎日のモニタリングおよび生涯保護では、顧客からの通知がなくても、当社自身が継続的に再掲載を確認します。",
         "8.2. 顧客自身がまたはその同意のもとで新規作成するプロフィール、および元のプロフィールの復活にあたらない、内容的に新しい第三者の別個の掲載（例：別の住所・商号）は対象外です。",
       ] },
       { h: "9. 保証と責任", ps: [
@@ -881,7 +881,7 @@ TERMS.sv = {
         "7.2. Vi informerar kunden när framgång inträtt. Kunden kan invända inom 7 dagar; annars anses tjänsten godkänd.",
       ] },
       { h: "8. Skydd mot återpublicering", ps: [
-        "8.1. Om den borttagna profilen under ett aktivt återpubliceringsskydd på nytt publiceras offentligt av tredje part eller genom Googles automatiserade processer tar vi bort den igen kostnadsfritt efter meddelande från kunden. Skyddsperioden beror på valt skyddspaket: vid **Månadsskydd** och **Monitoring** under det aktiva abonnemangets löptid (vardera uppsägbart månadsvis), vid **Livstidsskydd** permanent. Vid Monitoring och Livstidsskydd kontrollerar vi dessutom själva löpande om återpublicering skett, utan att något meddelande från kunden krävs.",
+        "8.1. Om den borttagna profilen under ett aktivt återpubliceringsskydd på nytt publiceras offentligt av tredje part eller genom Googles automatiserade processer tar vi bort den igen kostnadsfritt efter meddelande från kunden. Skyddsperioden beror på valt skyddspaket: vid **Månadsskydd** och **Daglig övervakning** under det aktiva abonnemangets löptid (vardera uppsägbart månadsvis), vid **Livstidsskydd** permanent. Vid Daglig övervakning och Livstidsskydd kontrollerar vi dessutom själva löpande om återpublicering skett, utan att något meddelande från kunden krävs.",
         "8.2. Omfattas gör inte profiler som kunden själv eller med dennes samtycke skapar på nytt, samt innehållsmässigt nya, avvikande poster från tredje part (t.ex. med annan adress/firma) som inte utgör ett återupplivande av den ursprungliga profilen.",
       ] },
       { h: "9. Garanti och ansvar", ps: [
@@ -978,7 +978,7 @@ TERMS.da = {
         "7.2. Vi informerer kunden om succesens indtræden. Kunden kan gøre indsigelse inden for 7 dage; ellers anses ydelsen for godkendt.",
       ] },
       { h: "8. Beskyttelse mod genoprettelse", ps: [
-        "8.1. Hvis den fjernede profil under en aktiv genoprettelsesbeskyttelse på ny offentliggøres af tredjepart eller af Googles automatiserede processer, fjerner vi den igen gratis efter meddelelse fra kunden. Beskyttelsesperioden afhænger af den valgte beskyttelsespakke: ved **Månedlig beskyttelse** og **Monitoring** i det aktive abonnements løbetid (begge kan opsiges månedligt), ved **Livstidsbeskyttelse** permanent. Ved Monitoring og Livstidsbeskyttelse kontrollerer vi desuden selv løbende for genoprettelser, uden at en meddelelse fra kunden er nødvendig.",
+        "8.1. Hvis den fjernede profil under en aktiv genoprettelsesbeskyttelse på ny offentliggøres af tredjepart eller af Googles automatiserede processer, fjerner vi den igen gratis efter meddelelse fra kunden. Beskyttelsesperioden afhænger af den valgte beskyttelsespakke: ved **Månedlig beskyttelse** og **Daglig overvågning** i det aktive abonnements løbetid (begge kan opsiges månedligt), ved **Livstidsbeskyttelse** permanent. Ved Daglig overvågning og Livstidsbeskyttelse kontrollerer vi desuden selv løbende for genoprettelser, uden at en meddelelse fra kunden er nødvendig.",
         "8.2. Ikke omfattet er profiler, som kunden selv eller med dennes samtykke opretter på ny, samt indholdsmæssigt nye, afvigende opslag fra tredjepart (f.eks. med anden adresse/andet firmanavn), der ikke udgør en genoplivning af den oprindelige profil.",
       ] },
       { h: "9. Garanti og ansvar", ps: [
@@ -1075,7 +1075,7 @@ TERMS.no = {
         "7.2. Vi informerer kunden om at suksessen har inntrådt. Kunden kan fremme innsigelser innen 7 dager; ellers anses tjenesten som godkjent.",
       ] },
       { h: "8. Beskyttelse mot gjenoppretting", ps: [
-        "8.1. Blir den fjernede profilen under en aktiv gjenopprettingsbeskyttelse på nytt offentlig publisert av tredjeparter eller av Googles automatiserte prosesser, fjerner vi den igjen gratis etter melding fra kunden. Beskyttelsesperioden avhenger av valgt beskyttelsespakke: ved **Månedlig beskyttelse** og **Monitoring** i det aktive abonnementets løpetid (begge kan sies opp månedlig), ved **Livsvarig beskyttelse** permanent. Ved Monitoring og Livsvarig beskyttelse sjekker vi i tillegg selv løpende for gjenopprettinger, uten at det kreves melding fra kunden.",
+        "8.1. Blir den fjernede profilen under en aktiv gjenopprettingsbeskyttelse på nytt offentlig publisert av tredjeparter eller av Googles automatiserte prosesser, fjerner vi den igjen gratis etter melding fra kunden. Beskyttelsesperioden avhenger av valgt beskyttelsespakke: ved **Månedlig beskyttelse** og **Daglig overvåking** i det aktive abonnementets løpetid (begge kan sies opp månedlig), ved **Livsvarig beskyttelse** permanent. Ved Daglig overvåking og Livsvarig beskyttelse sjekker vi i tillegg selv løpende for gjenopprettinger, uten at det kreves melding fra kunden.",
         "8.2. Ikke omfattet er profiler som kunden selv eller med dennes samtykke oppretter på nytt, samt innholdsmessig nye, avvikende oppføringer fra tredjeparter (f.eks. med annen adresse/annet firmanavn) som ikke utgjør en gjenoppliving av den opprinnelige profilen.",
       ] },
       { h: "9. Garanti og ansvar", ps: [
