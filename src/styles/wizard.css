@@ -38,6 +38,7 @@
 .wz-body.wide{max-width:920px;}
 .step-panel{animation:stepIn .5s var(--ease);}
 @keyframes stepIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@keyframes stepFade{from{opacity:0;}to{opacity:1;}}
 .step-panel.out{animation:stepOut .3s var(--ease) forwards;}
 @keyframes stepOut{to{opacity:0;transform:translateY(-12px);}}
 
@@ -355,7 +356,7 @@
 
 /* ---------- Two-column step layouts (card + aside) ---------- */
 .wz-grid-name,.wz-grid-confirm{display:grid;grid-template-columns:1.55fr .95fr;gap:26px;align-items:start;}
-@media(max-width:860px){.wz-grid-name,.wz-grid-confirm{grid-template-columns:1fr;}.wz-aside{order:-1;}}
+@media(max-width:860px){.wz-grid-name,.wz-grid-confirm{grid-template-columns:1fr;}.wz-aside{order:-1;}.wz-grid-name>.wz-aside{order:0;}}
 .wz-aside{display:flex;flex-direction:column;gap:16px;position:sticky;top:140px;}
 @media(max-width:860px){.wz-aside{position:static;}}
 
@@ -542,6 +543,9 @@
   .wz-secure{display:none;}            /* "verschlüsselt & sicher" raus auf Mobil */
 }
 @media(max-width:620px){
+  /* Kein transform in der Schritt-Animation, sonst „springt" die fixe Button-Leiste
+     (ein Transform-Vorfahre wird zum Bezug für position:fixed). Nur Opacity-Fade. */
+  .step-panel{animation-name:stepFade;}
   .wz-body{padding-left:14px;padding-right:14px;padding-bottom:88px;}
   .wz-card{padding:24px;}
   .wz-card.pad-lg{padding:24px;}

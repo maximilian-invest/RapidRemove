@@ -1197,8 +1197,16 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setCandidates([{ ...profile, id: "p1", primary: true }]);
     setSelectedId("p1");
     setMulti(false);
-    setPhase("found");
-    go(2);
+    // Erst kurze Profilprüfung-Animation zeigen, dann zur Bestätigung (Schritt 3) + Konfetti.
+    setPhase("checking");
+    go(1);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      go(2);
+      setPhase("found");
+      setConfetti(true);
+      setTimeout(() => setConfetti(false), 3000);
+    }, 2400);
   };
 
   const submit = () => {
