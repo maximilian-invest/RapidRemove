@@ -794,11 +794,11 @@ function ratingAssessment(ratingStr, lang) {
 }
 
 /* ---- Profile card ---- */
-function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel, assessOk = false }) {
+function ProfileCard({ c, selected, onClick, selectable = true, cta = false, reviewsLabel, assessOk = false }) {
   const { lang } = useLang();
   const a = c.rating != null ? ratingAssessment(c.rating, lang) : null;
   return (
-    <div className={"profile-card reveal-in" + (selected ? " sel" : "")} onClick={selectable ? onClick : undefined} style={!selectable ? { cursor: "default" } : null}>
+    <div className={"profile-card reveal-in" + (selected ? " sel" : "")} onClick={(selectable || cta) ? onClick : undefined} style={(!selectable && !cta) ? { cursor: "default" } : null} role={cta ? "button" : undefined} tabIndex={cta ? 0 : undefined} onKeyDown={cta ? (e) => { if ((e.key === "Enter" || e.key === " ") && onClick) { e.preventDefault(); onClick(); } } : undefined}>
       <div className="profile-thumb"><Icon.building /></div>
       <div className="profile-main">
         <div className="pn">{c.name}</div>
@@ -816,6 +816,7 @@ function ProfileCard({ c, selected, onClick, selectable = true, reviewsLabel, as
         {c.addr && <div className="profile-addr"><Icon.mapPin /> {c.addr}</div>}
       </div>
       {selectable && <div className="profile-radio"><Icon.check /></div>}
+      {!selectable && cta && <span className="nm-go"><Icon.arrowRight size={18} /></span>}
     </div>
   );
 }
@@ -1253,7 +1254,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
         <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
         <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
-        <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} assessOk />
+        <ProfileCard c={selected} selectable={false} cta onClick={() => { persistCheck(); go(3); }} reviewsLabel={w.s2.reviews} assessOk />
         <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
           <div className="profile-thumb"><Icon.search /></div>
           <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
