@@ -29,8 +29,19 @@ const BRAND_BLURB = {
   no: "RapidRemove — registrert østerriksk selskap for profesjonell fjerning av Google-bedriftsprofiler. Betaling først ved suksess.",
 };
 
+/* Eigenständige Descriptions je Seite (statt Brand-Boilerplate). Vorerst EN;
+   Sprachen ohne Eintrag fallen auf "<Name> · Brand-Blurb" zurück. */
+const PAGE_DESC = {
+  about: { en: "Who is behind RapidRemove: a registered Austrian company specializing in removing Google Business Profiles — over 1,000 cases, pay only after success." },
+  orm: { en: "Push negative Google results off page 1: strategy, content and monitoring to win back your online reputation — free initial analysis." },
+  deindex: { en: "Have negative press and unwanted Google results de-indexed — free initial legal review via our partner law firm, engagement only if realistic." },
+  kontakt: { en: "Talk to the RapidRemove team about removals, ongoing cases or partnerships — personal reply, usually within 24 hours." },
+  wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
+};
+
 export function pageMeta(key, lang) {
   const name = (PAGE_TITLE[key] && (PAGE_TITLE[key][lang] || PAGE_TITLE[key].en)) || "RapidRemove";
   const blurb = BRAND_BLURB[lang] || BRAND_BLURB.en;
-  return { name, title: `${name} — RapidRemove`, description: `${name} · ${blurb}` };
+  const desc = (PAGE_DESC[key] && PAGE_DESC[key][lang]) || `${name} · ${blurb}`;
+  return { name, title: `${name} — RapidRemove`, description: desc };
 }

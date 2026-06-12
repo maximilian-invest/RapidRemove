@@ -15,11 +15,12 @@ export function generateMetadata({ params }) {
   const { lang } = params;
   const t = I18N[lang] || I18N.en;
   const title = `${(t.hero.h1a + " " + t.hero.h1b).replace(/–/g, "").replace(/\s+/g, " ").trim()} — RapidRemove`;
+  const desc = t.seoHomeDesc || t.hero.lead;
   return {
     title,
-    description: t.hero.lead,
+    description: desc,
     alternates: { canonical: localeUrl(lang), languages: hreflangMap() },
-    openGraph: { type: "website", title, description: t.hero.lead, url: localeUrl(lang), siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE] },
+    openGraph: { type: "website", title, description: desc, url: localeUrl(lang), siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE] },
   };
 }
 

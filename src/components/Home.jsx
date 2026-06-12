@@ -102,6 +102,9 @@ Object.assign(WP_COPY, {
 });
 
 /* kleine Home-Labels, die früher nur DE/EN waren — jetzt in allen Sprachen */
+/* Typografische Anführungszeichen je Sprache (sonst erscheinen deutsche „…" auf EN/FR/ES). */
+const TYPO_QUOTES = { de: ["„", "“"], da: ["„", "“"], en: ["“", "”"], nl: ["“", "”"], sv: ["”", "”"], es: ["«", "»"], it: ["«", "»"], pt: ["«", "»"], no: ["«", "»"], fr: ["« ", " »"], ja: ["「", "」"] };
+
 const HOME_MISC = {
   de: { continueTyped: "So fortfahren – auch wenn nicht gelistet", verified: "Verifiziert", or: "oder" },
   en: { continueTyped: "Continue with this — even if not listed", verified: "Verified", or: "or" },
@@ -222,7 +225,7 @@ function Hero({ onStart }) {
                 ))}
                 <button type="button" className="hero-ac-item use" onClick={() => pick(name)}>
                   <Icon.arrowRight />
-                  <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{(HOME_MISC[lang] || HOME_MISC.en).continueTyped}</span></span>
+                  <span className="ac-tx"><span className="ac-n">{(TYPO_QUOTES[lang] || TYPO_QUOTES.en)[0]}{name.trim()}{(TYPO_QUOTES[lang] || TYPO_QUOTES.en)[1]}</span><span className="ac-a">{(HOME_MISC[lang] || HOME_MISC.en).continueTyped}</span></span>
                 </button>
               </div>
             )}

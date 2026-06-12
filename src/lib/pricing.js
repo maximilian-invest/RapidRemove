@@ -17,7 +17,8 @@ export const PRICES = {
 };
 
 export function profileFor(lang) {
-  return lang === "en" ? PRICES.en : PRICES.de;
+  // EN + JA sind Nicht-EU-Märkte -> USD; alle übrigen Sprachen -> EUR.
+  return lang === "en" || lang === "ja" ? PRICES.en : PRICES.de;
 }
 
 export function money(lang, amount) {

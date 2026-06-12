@@ -1,10 +1,11 @@
 /* RapidRemove — additional locales: JA, SV, DA, NO.
-   Mirrors the de/en structure in i18n.jsx. Non-US markets -> € pricing.
+   Mirrors the de/en structure in i18n.jsx. SV/DA/NO -> € pricing, JA -> $ (non-EU).
    Inner quotes use guillemets / corner brackets to stay safe in JS strings. */
 import React from "react";
 import { PRICES } from "@/lib/pricing";
 
-const P = PRICES.de; // € price profile
+const P = PRICES.de; // € price profile (SV/DA/NO — EU-nahe Märkte)
+const PJ = PRICES.en; // $-Profil — Japan ist Nicht-EU-Markt (Geo-Logik: non-EU -> USD)
 
 /* ===================== 日本語 (JA) ===================== */
 const ja = {
@@ -102,10 +103,10 @@ const ja = {
     sub: "時間料金なし、予想外の費用なし。必要なものをお選びください。",
     perf: "成功後にのみお支払い",
     anchorOldLabel: "一般的な方法",
-    anchorOldAmt: "2,400 €〜",
+    anchorOldAmt: "$2,400〜",
     anchorOldSub: "弁護士に3〜9か月 ― 成功保証なし、しばしばストライサンド効果を招きます。",
     anchorNewLabel: "RapidRemoveなら",
-    anchorNewAmt: "450 €〜",
+    anchorNewAmt: "$495〜",
     anchorNewSub: "定額・24時間以内・成功時のみ",
     whyTitle: "なぜこの価格に価値があるのか",
     whySub: "試行に対してではなく、ご自身では得られない結果に対してお支払いいただきます。",
@@ -114,14 +115,14 @@ const ja = {
       { t: "あなたの評判はもっと価値がある", d: "1件の偽レビューが毎月その何倍もの損失を生むことがあります。削除費用は多くの場合、最初の1週間で回収できます。" },
     ],
     cards: [
-      { name: "プロフィール削除", desc: "あなたのビジネスプロフィールとすべての口コミを永久に削除します。", price: P.deletion, feat: true, tag: "おすすめ",
+      { name: "プロフィール削除", desc: "あなたのビジネスプロフィールとすべての口コミを永久に削除します。", price: PJ.deletion, feat: true, tag: "おすすめ",
         feats: ["プロフィールを永久に削除", "すべての口コミが消える", "約24時間で対応", "前払い不要"], cta: "プロフィールを削除" },
-      { name: "削除＋リスタート", desc: "古いプロフィールを削除し、新しくクリーンなビジネスプロフィールを作成します。", price: P.reset, feat: false,
+      { name: "削除＋リスタート", desc: "古いプロフィールを削除し、新しくクリーンなビジネスプロフィールを作成します。", price: PJ.reset, feat: false,
         feats: ["「プロフィール削除」のすべて", "新しいクリーンなプロフィール", "正しい基本情報とカテゴリ", "良い口コミの準備完了"], cta: "削除＋リスタート" },
     ],
     protTitle: "オプションの保護",
     protDesc: "第三者はいつでもあなたのプロフィールをGoogleに再登録できます。私たちが監視し、無料で再び削除します。",
-    protPrice: P.protMonthly, protPer: "/ 月", protLifetime: P.protLifetime, protLifetimeLabel: "永久",
+    protPrice: PJ.protMonthly, protPer: "/ 月", protLifetime: PJ.protLifetime, protLifetimeLabel: "永久",
   },
   faq: {
     eyebrow: "よくある質問",
@@ -149,7 +150,7 @@ const ja = {
     cols: [
       { h: "製品", links: ["ご利用の流れ", "料金", "口コミ", "無料チェック"] },
       { h: "会社", links: ["会社概要", "ブログ / マガジン", "パートナーになる", "お問い合わせ"] },
-      { h: "法的事項", links: ["インプリント", "プライバシー", "利用規約", "撤回権について", "お客様ポータル"] },
+      { h: "法的事項", links: ["法的表示", "プライバシー", "利用規約", "撤回権について", "お客様ポータル"] },
     ],
     addr: "Simple Solution. OG・Salzgasse 2, 5400 Hallein, オーストリア・UID ATU72401536",
     rights: "全権利を留保します。",
@@ -351,7 +352,7 @@ const sv = {
     cols: [
       { h: "Produkt", links: ["Så funkar det", "Priser", "Omdömen", "Gratis koll"] },
       { h: "Företag", links: ["Om oss", "Blogg / Magasin", "Bli partner", "Kontakt"] },
-      { h: "Juridik", links: ["Imprint", "Integritet", "Allmänna villkor", "Ångerrätt", "Kundportal"] },
+      { h: "Juridik", links: ["Juridisk information", "Integritet", "Allmänna villkor", "Ångerrätt", "Kundportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österrike · momsnr ATU72401536",
     rights: "Alla rättigheter förbehållna.",
@@ -553,7 +554,7 @@ const da = {
     cols: [
       { h: "Produkt", links: ["Sådan virker det", "Priser", "Anmeldelser", "Gratis tjek"] },
       { h: "Virksomhed", links: ["Om os", "Blog / Magasin", "Bliv partner", "Kontakt"] },
-      { h: "Juridisk", links: ["Imprint", "Privatliv", "Handelsbetingelser", "Fortrydelsesret", "Kundeportal"] },
+      { h: "Juridisk", links: ["Juridisk meddelelse", "Privatliv", "Handelsbetingelser", "Fortrydelsesret", "Kundeportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østrig · momsnr. ATU72401536",
     rights: "Alle rettigheder forbeholdes.",
@@ -755,7 +756,7 @@ const no = {
     cols: [
       { h: "Produkt", links: ["Slik fungerer det", "Priser", "Omtaler", "Gratis sjekk"] },
       { h: "Selskap", links: ["Om oss", "Blogg / Magasin", "Bli partner", "Kontakt"] },
-      { h: "Juridisk", links: ["Imprint", "Personvern", "Vilkår", "Angrerett", "Kundeportal"] },
+      { h: "Juridisk", links: ["Juridisk informasjon", "Personvern", "Vilkår", "Angrerett", "Kundeportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østerrike · mva-nr. ATU72401536",
     rights: "Alle rettigheter forbeholdt.",

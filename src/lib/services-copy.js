@@ -86,9 +86,9 @@ export const ORM = {
     pricingH: "Transparent, goal-based.",
     pricingSub: "Starting values shown as “from” prices. We set the final plan after the audit.",
     packages: [
-      { name: "Reputation audit", price: "€290", per: "one-off", desc: "SERP analysis + action plan. Credited toward the retainer.", feats: ["Full page-1 analysis", "Assessment of each result", "Concrete action plan", "Personal consultation"], cta: "Start audit", feat: false },
-      { name: "Suppression retainer", price: "from €990", per: "/ month", desc: "Active build + suppression, goal- and term-based.", feats: ["Everything in the audit", "Active content build", "Ongoing suppression", "Monthly reporting"], cta: "Request audit", feat: true, tag: "Recommended" },
-      { name: "Monitoring protection", price: "from €49", per: "/ month", desc: "Page-1 monitoring + alerts, once the goal is reached.", feats: ["Daily SERP monitoring", "Instant alerts", "Quarterly report", "Fast response"], cta: "Request protection", feat: false },
+      { name: "Reputation audit", price: "$290", per: "one-off", desc: "SERP analysis + action plan. Credited toward the retainer.", feats: ["Full page-1 analysis", "Assessment of each result", "Concrete action plan", "Personal consultation"], cta: "Start audit", feat: false },
+      { name: "Suppression retainer", price: "from $990", per: "/ month", desc: "Active build + suppression, goal- and term-based.", feats: ["Everything in the audit", "Active content build", "Ongoing suppression", "Monthly reporting"], cta: "Request audit", feat: true, tag: "Recommended" },
+      { name: "Monitoring protection", price: "from $49", per: "/ month", desc: "Page-1 monitoring + alerts, once the goal is reached.", feats: ["Daily SERP monitoring", "Instant alerts", "Quarterly report", "Fast response"], cta: "Request protection", feat: false },
     ],
     trustEyebrow: "Trust",
     trustH: "Free initial analysis — then you decide.",

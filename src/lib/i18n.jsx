@@ -290,6 +290,7 @@ const I18N = {
   /* ===================== ENGLISH ===================== */
   en: {
     code: "en",
+    seoHomeDesc: "Google won't let you remove your own business profile. We do — permanently, legally, in 24 hours, including all reviews. You only pay after success.",
     riskReversal: "Zero risk · Pay only after successful removal",
     riskShort: "Pay ONLY after successful removal",
     nav: { how: "How it works", why: "Why us", pricing: "Pricing", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "About us", login: "Customer portal", cta: "Free check" },

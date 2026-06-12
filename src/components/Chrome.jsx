@@ -65,7 +65,13 @@ export function useRouteShell(initialLang, pageKey) {
 }
 
 /* ---- Count-up number ---- */
+/* Zahlformatierung folgt der Seitensprache (sonst zeigt z. B. EN „1.000" statt „1,000"). */
+const NUM_LOCALE = { de: "de-DE", en: "en-US", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "ja-JP", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
+/* Lokalisiertes „Home"-Label fürs mobile Menü. */
+const HOME_LABEL = { de: "Startseite", en: "Home", es: "Inicio", fr: "Accueil", it: "Home", nl: "Home", pt: "Início", ja: "ホーム", sv: "Hem", da: "Hjem", no: "Hjem" };
+
 function CountUp({ end, suffix = "", dur = 1600, format }) {
+  const { lang } = useLang();
   // Startwert = Zielzahl, damit der SSR-/No-JS-Snapshot die ECHTE Zahl zeigt
   // (vorher "0", was Crawler & Nutzer ohne JS als „0+ entfernte Profile" sahen).
   const [val, setVal] = React.useState(end);
@@ -97,7 +103,7 @@ function CountUp({ end, suffix = "", dur = 1600, format }) {
     io.observe(el);
     return () => io.disconnect();
   }, [end]);
-  const shown = format ? format(val) : val.toLocaleString("de-DE");
+  const shown = format ? format(val) : val.toLocaleString(NUM_LOCALE[lang] || "de-DE");
   return <span ref={ref}>{shown}{suffix}</span>;
 }
 
@@ -312,6 +318,8 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   const sv = SVC[t.code] || SVC.en;
   const svLabel = SVC_NAV_LABEL[t.code] || SVC_NAV_LABEL.en;
   const svcAct = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex() };
+  // Crawlbare Ziele für die Service-Links (SPA-Navigation übernimmt der onClick).
+  const svcHref = { core: asset(pagePath("wizard", t.code)), orm: asset(pagePath("orm", t.code)), deindex: asset(pagePath("deindex", t.code)) };
   const svcIcon = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shield);
   return (
     <React.Fragment>
@@ -326,11 +334,12 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
                   {sv.cards.map((c) => {
                     const I = svcIcon(c.ic);
                     return (
-                      <button className={"nav-dd-item" + (c.id === "core" ? " core" : "")} key={c.id}
-                        onClick={() => { setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
+                      <a className={"nav-dd-item" + (c.id === "core" ? " core" : "")} key={c.id} href={svcHref[c.id]}
+                        style={{ textDecoration: "none", color: "inherit" }}
+                        onClick={(e) => { e.preventDefault(); setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
                         <span className="nav-dd-ic"><I size={20} /></span>
                         <span className="nav-dd-tx"><span className="t">{c.t}</span><span className="d">{c.d}</span></span>
-                      </button>
+                      </a>
                     );
                   })}
                 </div>
@@ -355,9 +364,9 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             <LangToggle />
             <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
           </div>
-          <a onClick={goHome}>Home</a>
+          <a href={asset(localePath(t.code))} onClick={(e) => { e.preventDefault(); goHome(); }}>{HOME_LABEL[t.code] || "Home"}</a>
           {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
-          {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} onClick={() => { setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
+          {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} href={svcHref[c.id]} onClick={(e) => { e.preventDefault(); setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>

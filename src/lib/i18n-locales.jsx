@@ -211,6 +211,7 @@ import { PRICES } from "@/lib/pricing";
   /* ============ FRANÇAIS ============ */
   const fr = {
     code: "fr",
+    seoHomeDesc: "Google ne vous laisse pas supprimer votre fiche d'établissement. Nous, si — définitivement, légalement, en 24 h, tous les avis inclus. Paiement après succès.",
     riskReversal: "Zéro risque · Paiement seulement après suppression réussie",
     riskShort: "Vous payez UNIQUEMENT après la suppression réussie",
     nav: { how: "Comment ça marche", why: "Pourquoi nous", pricing: "Tarifs", reviews: "Avis", faq: "FAQ", magazin: "Magazine", about: "À propos", login: "Espace client", cta: "Analyse gratuite" },
