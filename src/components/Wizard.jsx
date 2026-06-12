@@ -989,7 +989,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [phase, setPhase] = React.useState(initialProfile ? "found" : "searching"); // searching | found
   const [multi, setMulti] = React.useState(initialProfile ? false : true);
   const [selectedId, setSelectedId] = React.useState("p1");
-  const [service, setService] = React.useState("remove");
+  const [service, setService] = React.useState(null);
   const [express, setExpress] = React.useState(false);
   const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
@@ -1278,6 +1278,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepService() {
+    // Klick auf eine Option wählt sie und springt direkt zu Schritt 5 (Schutz).
+    const pick = (s) => { setService(s); if (s === "reset") setExpress(false); go(4); };
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
@@ -1285,7 +1287,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s4.sub}</p>
 
         <div className="opt-list">
-          <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => setService("remove")}>
+          <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => pick("remove")}>
             <div className="opt-radio"></div>
             <div className="opt-ic"><Icon.trash size={22} /></div>
             <div className="opt-main">
@@ -1295,7 +1297,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             <div className="opt-price">{money(lang, p.deletion)}<small>{wm.afterSuccess}</small></div>
           </div>
 
-          <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => { setService("reset"); setExpress(false); }}>
+          <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => pick("reset")}>
             <div className="opt-radio"></div>
             <div className="opt-ic"><Icon.refresh size={22} /></div>
             <div className="opt-main">
@@ -1306,15 +1308,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
 
-        <div className="svc-cta">
-          <div className="svc-total">
-            <span className="st-l">{conv.subtotal}</span>
-            <span className="st-v">{fmtMoney(lang, leistungTotal)}</span>
-          </div>
-          <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => go(4)}>{wm.toProtect} <Icon.arrowRight size={18} /></button>
-          </div>
+        <div className="wz-actions" style={{ marginTop: 22 }}>
+          <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
         </div>
       </div>
     );
