@@ -356,7 +356,7 @@
 
 /* ---------- Two-column step layouts (card + aside) ---------- */
 .wz-grid-name,.wz-grid-confirm{display:grid;grid-template-columns:1.55fr .95fr;gap:26px;align-items:start;}
-@media(max-width:860px){.wz-grid-name,.wz-grid-confirm{grid-template-columns:1fr;}.wz-aside{order:-1;}.wz-grid-name>.wz-aside{order:0;}}
+@media(max-width:860px){.wz-grid-name,.wz-grid-confirm{grid-template-columns:1fr;}.wz-aside{order:-1;}.wz-grid-name>.wz-aside{order:0;}.wz-split .wz-aside{order:0;}}
 .wz-aside{display:flex;flex-direction:column;gap:16px;position:sticky;top:140px;}
 @media(max-width:860px){.wz-aside{position:static;}}
 
