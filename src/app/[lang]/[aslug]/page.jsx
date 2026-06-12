@@ -5,6 +5,7 @@
 import MagArticle from "@/components/MagArticle";
 import About from "@/components/About";
 import { Impressum, Datenschutz } from "@/components/Legal";
+import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute } from "@/components/ServicePages";
 import Kontakt from "@/components/Kontakt";
 import { uiFor, SITE_URL } from "@/lib/articles/registry";
@@ -20,6 +21,7 @@ export const dynamicParams = false;
 // Localized secondary pages share the same single dynamic segment as articles.
 const PAGE_COMPONENT = {
   about: About, impressum: Impressum, datenschutz: Datenschutz,
+  agb: Agb, widerruf: Widerruf,
   orm: OrmRoute, deindex: DeindexRoute, kontakt: Kontakt,
 };
 

@@ -375,7 +375,6 @@ function Footer({ onStart, onBlog, onAbout }) {
   // 0 Produkt: So funktioniert's · Preise · Bewertungen · Gratis-Check
   // 1 Unternehmen: Über uns · Magazin · Partner werden · Kontakt (Live-Chat)
   // 2 Rechtliches: Impressum · Datenschutz · AGB · Widerruf · Kundenportal
-  //   (AGB/Widerruf: deutsche Fassung — lokalisierte Fassungen folgen nach anwaltlicher Freigabe)
   const cols = t.footer.cols || [];
   // Footer-Adresse: Firma \u00b7 Adresse \u00b7 UID (Trennzeichen " \u00b7 " bzw. "\u30fb" f\u00fcr JA).
   // UID kommt eigenst\u00e4ndig unter die Adresse \u2013 sie steckt bereits in t.footer.addr.
@@ -386,7 +385,7 @@ function Footer({ onStart, onBlog, onAbout }) {
   const cells = [
     [{ href: hb + "#how" }, { href: hb + "#pricing" }, { href: hb + "#reviews" }, { onClick: onStart, href: hb + "?start=1" }],
     [{ onClick: onAbout, href: asset(pagePath("about", lang)) }, { onClick: onBlog, href: asset(magazinePath(lang)) }, { href: PARTNER_URL, ext: true }, { href: asset(pagePath("kontakt", lang)) }],
-    [{ href: asset(pagePath("impressum", lang)) }, { href: asset(pagePath("datenschutz", lang)) }, { href: asset("/agb/") }, { href: asset("/widerruf/") }, { href: "https://portal.rapid-remove.com/", ext: true }],
+    [{ href: asset(pagePath("impressum", lang)) }, { href: asset(pagePath("datenschutz", lang)) }, { href: asset(pagePath("agb", lang)) }, { href: asset(pagePath("widerruf", lang)) }, { href: "https://portal.rapid-remove.com/", ext: true }],
   ];
   return (
     <footer className="footer">

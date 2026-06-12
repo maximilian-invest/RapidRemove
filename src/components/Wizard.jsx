@@ -10,6 +10,7 @@ import { TrustpilotLive, PressBand } from "@/components/Proof";
 import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
+import { pagePath } from "@/lib/page-routes";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1676,11 +1677,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
             <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
               {ag.pre}
-              <a href={asset("/agb/")} target="_blank" rel="noopener noreferrer"
+              <a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
                 onClick={(e) => e.stopPropagation()}>{ag.agb}</a>
               {ag.mid}
-              <a href={asset("/widerruf/")} target="_blank" rel="noopener noreferrer"
+              <a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
                 onClick={(e) => e.stopPropagation()}>{ag.wid}</a>
               {ag.post}

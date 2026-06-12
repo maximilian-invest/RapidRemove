@@ -6,8 +6,12 @@ import * as React from "react";
 import { Hr, Section, Text } from "@react-email/components";
 import { brand, A, MailLang } from "./components";
 
-const AGB_URL = "https://www.rapid-remove.com/agb/";
-const WIDERRUF_URL = "https://www.rapid-remove.com/widerruf/";
+/* Lokalisierte Seiten-Slugs — synchron halten mit src/lib/page-routes.js (PAGE_SLUGS). */
+const SITE = "https://www.rapid-remove.com";
+const AGB_SLUG: Record<MailLang, string> = { de: "agb", en: "terms-and-conditions", es: "terminos-y-condiciones", fr: "cgv", it: "termini-e-condizioni", nl: "algemene-voorwaarden", pt: "termos-e-condicoes", ja: "terms", sv: "allmanna-villkor", da: "handelsbetingelser", no: "vilkar" };
+const WID_SLUG: Record<MailLang, string> = { de: "widerruf", en: "right-of-withdrawal", es: "desistimiento", fr: "retractation", it: "recesso", nl: "herroepingsrecht", pt: "retratacao", ja: "withdrawal", sv: "angerratt", da: "fortrydelsesret", no: "angrerett" };
+const agbUrl = (l: MailLang) => (l === "de" ? `${SITE}/agb/` : `${SITE}/${l}/${AGB_SLUG[l] || AGB_SLUG.en}/`);
+const widUrl = (l: MailLang) => (l === "de" ? `${SITE}/widerruf/` : `${SITE}/${l}/${WID_SLUG[l] || WID_SLUG.en}/`);
 
 const INTRO: Record<MailLang, { h: string; p: string; agb: string; wid: string }> = {
   de: { h: "AGB & Widerrufsbelehrung", p: "Nachstehend finden Sie unsere Allgemeinen Geschäftsbedingungen und die Widerrufsbelehrung im Volltext — sie sind Bestandteil dieser Bestätigung.", agb: "AGB online", wid: "Widerrufsbelehrung online" },
@@ -94,7 +98,7 @@ export function LegalSection({ lang = "de" }: { lang?: MailLang }) {
       <Text style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 800, color: brand.ink }}>{t.h}</Text>
       <Text style={{ margin: "0 0 6px", fontSize: 12, lineHeight: "1.55", color: brand.muted }}>{t.p}</Text>
       <Text style={{ margin: "0 0 10px", fontSize: 12, lineHeight: "1.55", color: brand.muted }}>
-        <A href={AGB_URL}>{t.agb}</A> · <A href={WIDERRUF_URL}>{t.wid}</A>
+        <A href={agbUrl(lang)}>{t.agb}</A> · <A href={widUrl(lang)}>{t.wid}</A>
       </Text>
       <GermanFullText />
     </Section>

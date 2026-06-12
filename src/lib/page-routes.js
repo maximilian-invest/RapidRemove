@@ -17,6 +17,8 @@ export const PAGE_SLUGS = {
   deindex: { de: "presse-auslisten", en: "press-deindexing", es: "desindexar-prensa", fr: "desindexation-presse", it: "deindicizzazione-stampa", nl: "pers-deindexeren", pt: "desindexar-imprensa", ja: "press-deindexing", sv: "avindexera-press", da: "afindeksere-presse", no: "avindeksere-presse" },
   kontakt: { de: "kontakt", en: "contact", es: "contacto", fr: "contact", it: "contatti", nl: "contact", pt: "contacto", ja: "contact", sv: "kontakt", da: "kontakt", no: "kontakt" },
   wizard: { de: "profil-pruefen", en: "check-profile", es: "comprobar-perfil", fr: "verifier-profil", it: "verifica-profilo", nl: "profiel-checken", pt: "verificar-perfil", ja: "check", sv: "kontrollera-profil", da: "tjek-profil", no: "sjekk-profil" },
+  agb: { de: "agb", en: "terms-and-conditions", es: "terminos-y-condiciones", fr: "cgv", it: "termini-e-condizioni", nl: "algemene-voorwaarden", pt: "termos-e-condicoes", ja: "terms", sv: "allmanna-villkor", da: "handelsbetingelser", no: "vilkar" },
+  widerruf: { de: "widerruf", en: "right-of-withdrawal", es: "desistimiento", fr: "retractation", it: "recesso", nl: "herroepingsrecht", pt: "retratacao", ja: "withdrawal", sv: "angerratt", da: "fortrydelsesret", no: "angrerett" },
 };
 
 export const PAGE_KEYS = Object.keys(PAGE_SLUGS);

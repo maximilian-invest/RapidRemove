@@ -11,6 +11,8 @@ export const PAGE_TITLE = {
   deindex: { de: "Presse auslisten", en: "Press de-indexing", es: "Desindexar prensa", fr: "Désindexation de presse", it: "Deindicizzazione stampa", nl: "Pers de-indexeren", pt: "Desindexar imprensa", ja: "プレス記事の削除", sv: "Avindexera press", da: "Afindeksér presse", no: "Avindekser presse" },
   kontakt: { de: "Kontakt", en: "Contact", es: "Contacto", fr: "Contact", it: "Contatti", nl: "Contact", pt: "Contacto", ja: "お問い合わせ", sv: "Kontakt", da: "Kontakt", no: "Kontakt" },
   wizard: { de: "Profil prüfen", en: "Check your profile", es: "Comprobar perfil", fr: "Vérifier la fiche", it: "Verifica profilo", nl: "Profiel checken", pt: "Verificar perfil", ja: "プロフィールを確認", sv: "Kontrollera profil", da: "Tjek profil", no: "Sjekk profil" },
+  agb: { de: "AGB", en: "Terms & Conditions", es: "Términos y condiciones", fr: "CGV", it: "Termini e condizioni", nl: "Algemene voorwaarden", pt: "Termos e condições", ja: "利用規約", sv: "Allmänna villkor", da: "Handelsbetingelser", no: "Vilkår" },
+  widerruf: { de: "Widerrufsbelehrung", en: "Right of withdrawal", es: "Derecho de desistimiento", fr: "Droit de rétractation", it: "Diritto di recesso", nl: "Herroepingsrecht", pt: "Direito de retratação", ja: "撤回権について", sv: "Ångerrätt", da: "Fortrydelsesret", no: "Angrerett" },
 };
 
 const BRAND_BLURB = {
