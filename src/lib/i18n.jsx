@@ -265,7 +265,7 @@ const I18N = {
         sumProfile: "Profil", sumService: "Leistung", sumProtect: "Schutz", sumDueNow: "Jetzt fällig", sumTotal: "Nach Erfolg",
         dueNow: "0", noneProtect: "Keiner",
         sumNote: "Bezahlung erst nach erfolgreicher Löschung.",
-        errName: "Bitte geben Sie Ihren Namen ein.", errEmail: "Bitte gültige E-Mail eingeben.",
+        errName: "Bitte geben Sie Ihren Namen ein.", errEmail: "Bitte gültige E-Mail eingeben.", errCompany: "Bitte geben Sie das zu löschende Profil an.",
       },
       s6: {
         badge: "Bestellung bestätigt",
@@ -542,7 +542,7 @@ const I18N = {
         sumProfile: "Profile", sumService: "Service", sumProtect: "Protection", sumDueNow: "Due now", sumTotal: "After success",
         dueNow: "0", noneProtect: "None",
         sumNote: "Payment only after successful removal.",
-        errName: "Please enter your name.", errEmail: "Please enter a valid email.",
+        errName: "Please enter your name.", errEmail: "Please enter a valid email.", errCompany: "Please enter the profile to be removed.",
       },
       s6: {
         badge: "Order confirmed",

@@ -1333,6 +1333,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     const er = {};
     if (!contact.name.trim()) er.name = w.s5.errName;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)) er.email = w.s5.errEmail;
+    if (!contact.company.trim()) er.company = w.s5.errCompany;
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
     if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
     setErrors(er);
@@ -1666,8 +1667,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             <div className="fld full">
               <input value={contact.phone} onChange={set("phone")} placeholder={w.s5.f.phone} aria-label={w.s5.f.phone} />
             </div>
-            <div className="fld full">
+            <div className={"fld full" + (errors.company ? " err" : "")}>
               <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company} />
+              {errors.company && <div className="emsg">{errors.company}</div>}
             </div>
           </div>
 
