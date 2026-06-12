@@ -768,6 +768,20 @@ const MULTI_PROFILE = {
   da: { t: "Slet flere profiler?", d: "Skriv til os – vi fjerner dem alle på én gang." },
   no: { t: "Slette flere profiler?", d: "Skriv til oss – vi fjerner alle på én gang." },
 };
+/* „Profil ist nicht in der Liste" — Fallback-Kachel + Text auf Schritt 3 (unklar identifiziert). */
+const NOT_IN_LIST = {
+  de: { tile: "Profil ist nicht in der Liste", h: "Ihr Profil wurde nicht eindeutig identifiziert", sub: "Kann aber so gut wie sicher gelöscht werden." },
+  en: { tile: "Profile not in the list", h: "Your profile wasn't uniquely identified", sub: "But it can almost certainly be removed." },
+  es: { tile: "El perfil no está en la lista", h: "Tu perfil no se identificó con exactitud", sub: "Pero casi con seguridad se puede eliminar." },
+  fr: { tile: "Le profil n'est pas dans la liste", h: "Votre fiche n'a pas été identifiée précisément", sub: "Mais elle peut presque certainement être supprimée." },
+  it: { tile: "Il profilo non è nell'elenco", h: "Il tuo profilo non è stato identificato con certezza", sub: "Ma può quasi sicuramente essere rimosso." },
+  nl: { tile: "Profiel staat niet in de lijst", h: "Uw profiel is niet eenduidig geïdentificeerd", sub: "Maar het kan vrijwel zeker worden verwijderd." },
+  pt: { tile: "O perfil não está na lista", h: "O seu perfil não foi identificado de forma inequívoca", sub: "Mas pode quase de certeza ser removido." },
+  ja: { tile: "プロフィールが一覧にありません", h: "プロフィールを一意に特定できませんでした", sub: "ただし、ほぼ確実に削除できます。" },
+  sv: { tile: "Profilen finns inte i listan", h: "Din profil kunde inte identifieras entydigt", sub: "Men den kan nästan säkert tas bort." },
+  da: { tile: "Profilen er ikke på listen", h: "Din profil blev ikke entydigt identificeret", sub: "Men den kan næsten med sikkerhed fjernes." },
+  no: { tile: "Profilen er ikke i listen", h: "Profilen din ble ikke entydig identifisert", sub: "Men den kan nesten helt sikkert fjernes." },
+};
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
   de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
@@ -1020,6 +1034,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const { t, lang } = useLang();
   const w = t.wizard;
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
+  const nil = NOT_IN_LIST[t.code] || NOT_IN_LIST.en;
   const conv = convFor(t.code);
   const p = profileFor(lang);
   // Mit einem in der Live-Suche gewählten Profil starten wir direkt auf der
@@ -1186,6 +1201,15 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
   const proceedFromSearch = () => { persistCheck(); go(2); };
+  // „Profil ist nicht in der Liste": mit dem getippten Namen weiter zu Schritt 3 (unklar identifiziert).
+  const pickNotInList = () => {
+    const c = { ...manualCandidate(name, lang)[0], id: "punsure", unverified: true };
+    setCandidates([c]);
+    setSelectedId("punsure");
+    setMulti(false);
+    setContact((x) => ({ ...x, company: name }));
+    go(2);
+  };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
     setAcOpen(false);
@@ -1290,6 +1314,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             {(multi ? candidates : candidates.filter((c) => c.primary)).map((c) => (
               <ProfileCard key={c.id} c={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} reviewsLabel={w.s2.reviews} />
             ))}
+            <div className="profile-card not-mine-card reveal-in" onClick={pickNotInList} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") pickNotInList(); }}>
+              <div className="profile-thumb"><Icon.search /></div>
+              <div className="profile-main"><div className="pn">{nil.tile}</div></div>
+              <span className="nm-go"><Icon.arrowRight size={18} /></span>
+            </div>
             <a className="profile-card reveal-in" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)} style={{ textDecoration: "none", color: "inherit" }}>
               <div className="profile-thumb"><Icon.building /></div>
               <div className="profile-main">
@@ -1313,8 +1342,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s3.h}</h1>
-        <p className="wz-sub" style={{ marginBottom: 20 }}>{w.s3.sub}</p>
+        <h1 className="wz-h" style={{ fontSize: 28 }}>{selected && selected.unverified ? nil.h : w.s3.h}</h1>
+        <p className="wz-sub" style={{ marginBottom: 20 }}>{selected && selected.unverified ? nil.sub : w.s3.sub}</p>
         <ProfileCard c={selected} selectable={false} cta onClick={() => { persistCheck(); go(3); }} reviewsLabel={w.s2.reviews} assessOk />
         <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
           <div className="profile-thumb"><Icon.search /></div>
