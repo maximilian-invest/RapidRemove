@@ -191,6 +191,9 @@
 
 /* ---------- Service / config options ---------- */
 .opt-list{display:flex;flex-direction:column;gap:14px;}
+/* kleine grüne Bestätigung auf Schritt 4 (Profil kann gelöscht werden) */
+.svc-ok{display:inline-flex;align-items:center;gap:7px;margin:0 0 18px;font-size:13.5px;font-weight:800;color:var(--success);}
+.svc-ok svg{color:var(--success);flex:none;}
 .opt{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:22px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);background:#fff;position:relative;}
 .opt:hover{border-color:var(--orange-300);}
 .opt.sel{border-color:var(--primary);background:var(--orange-50);box-shadow:0 0 0 3px rgba(255,128,0,.12);}

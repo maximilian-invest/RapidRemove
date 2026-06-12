@@ -81,7 +81,7 @@ const CONV = {
     protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
     protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
     protMonitorName: "Monitoring", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
-    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren", delOk: "Profil kann gelöscht werden",
     protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
@@ -147,7 +147,7 @@ const CONV = {
     protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
     protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
     protMonitorName: "Monitoring", protMonitorShort: "Daily monitoring & instant removal.",
-    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection", delOk: "Profile can be removed",
     protToggleOn: "On", protToggleOff: "Off",
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
@@ -993,11 +993,11 @@ function Confetti() {
 const ROUTER_COPY = {
   de: {
     routerEyebrow: "Kurz vorab", routerH: "Worum geht es?",
-    routerSub: "Damit wir Sie zur richtigen Lösung führen. Die meisten sind hier genau richtig:",
+    routerSub: "Wählen Sie Ihren gewünschten Service aus.",
     tiles: [
-      { id: "delete", ic: "trash", badge: "Häufigste", t: "Google-Profil oder Bewertungen loswerden", d: "Ihr Unternehmensprofil samt aller Bewertungen dauerhaft entfernen." },
+      { id: "delete", ic: "trash", badge: "Meistgewählt", t: "Google-Unternehmensprofil löschen", d: "Ihr Unternehmensprofil samt aller Bewertungen dauerhaft entfernen." },
       { id: "press", ic: "fileText", t: "Negative Presse oder Suchergebnisse", d: "Ein Artikel oder Treffer in der Google-Suche, der verschwinden soll." },
-      { id: "unsure", ic: "info", t: "Nicht sicher", d: "Zwei kurze Fragen — wir leiten Sie weiter." },
+      { id: "unsure", ic: "help", t: "Nicht sicher", d: "Zwei kurze Fragen — wir leiten Sie weiter." },
     ],
     qH: "Zwei kurze Fragen",
     q1: "Geht es um Ihr eigenes Google-Unternehmensprofil?",
@@ -1018,11 +1018,11 @@ const ROUTER_COPY = {
   },
   en: {
     routerEyebrow: "Quick start", routerH: "What's this about?",
-    routerSub: "So we guide you to the right solution. Most people are in the right place here:",
+    routerSub: "Choose your desired service.",
     tiles: [
-      { id: "delete", ic: "trash", badge: "Most common", t: "Get rid of a Google profile or reviews", d: "Permanently remove your business profile and all its reviews." },
+      { id: "delete", ic: "trash", badge: "Most chosen", t: "Delete your Google business profile", d: "Permanently remove your business profile and all its reviews." },
       { id: "press", ic: "fileText", t: "Negative press or search results", d: "An article or result in Google search you want gone." },
-      { id: "unsure", ic: "info", t: "Not sure", d: "Two quick questions — we'll route you." },
+      { id: "unsure", ic: "help", t: "Not sure", d: "Two quick questions — we'll route you." },
     ],
     qH: "Two quick questions",
     q1: "Is this about your own Google business profile?",
@@ -1114,7 +1114,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     if (initialProfile) {
       const id = setTimeout(() => {
         checkedRef.current = initialProfile.placeId || initialProfile.name;
-        go(2);
+        go(3); // eindeutiges Profil → Schritt 3 entfällt, direkt zu Schritt 4
         setPhase("found");
         setConfetti(true);
         setTimeout(() => setConfetti(false), 3000);
@@ -1219,14 +1219,16 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   };
   const proceedFromSearch = () => {
     persistCheck();
+    // Schritt 3 (Bestätigen) NUR bei unklar identifiziertem Profil.
+    if (selected && selected.unverified) { go(2); return; }
     const key = selected ? (selected.placeId || selected.name) : "";
-    // Gleiches Profil wie zuletzt geprüft → keine erneute Prüf-Animation.
-    if (key && key === checkedRef.current) { go(2); return; }
+    // Gleiches Profil wie zuletzt geprüft → ohne Animation direkt zu Schritt 4.
+    if (key && key === checkedRef.current) { go(3); return; }
     setPhase("checking");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => {
       checkedRef.current = key;
-      go(2);
+      go(3);
       setPhase("found");
       setConfetti(true);
       setTimeout(() => setConfetti(false), 3000);
@@ -1262,7 +1264,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       const nm = real ? real.name : fromLink;
       if (nm) { setName(nm); setContact((x) => ({ ...x, company: nm })); }
       checkedRef.current = real ? (real.placeId || real.name) : (fromLink || (selected && selected.name) || "");
+      go(3); // jetzt verifiziert → direkt zu Schritt 4
       setPhase("found");
+      setConfetti(true);
+      setTimeout(() => setConfetti(false), 3000);
     });
   };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
@@ -1273,9 +1278,18 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setCandidates([{ ...profile, id: "p1", primary: true }]);
     setSelectedId("p1");
     setMulti(false);
-    checkedRef.current = profile.placeId || profile.name;
-    setPhase("found");
-    go(2);
+    const key = profile.placeId || profile.name;
+    if (key && key === checkedRef.current) { go(3); return; }
+    setPhase("checking");
+    go(1);
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      checkedRef.current = key;
+      go(3);
+      setPhase("found");
+      setConfetti(true);
+      setTimeout(() => setConfetti(false), 3000);
+    }, 2400);
   };
 
   const submit = () => {
@@ -1438,7 +1452,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
         <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s4.h}</h1>
-        <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s4.sub}</p>
+        <p className="wz-sub" style={{ marginBottom: 14 }}>{w.s4.sub}</p>
+        <div className="svc-ok"><Icon.checkCircle size={16} /> {conv.delOk}</div>
 
         <div className="opt-list">
           <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => pick("remove")}>
@@ -1463,7 +1478,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         </div>
 
         <div className="wz-actions" style={{ marginTop: 22 }}>
-          <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
+          <button className="btn btn-secondary" onClick={() => go(selected && selected.unverified ? 2 : 1)}><Icon.arrowLeft size={17} /> {w.back}</button>
         </div>
       </div>
     );
@@ -1754,9 +1769,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             const I = Icon[tl.ic] || (tl.ic === "fileText" ? Icon.edit : Icon.trash);
             return (
               <button className={"router-tile" + (tl.id === "delete" ? " primary" : "")} key={tl.id} onClick={() => pick(tl.id)}>
+                {tl.badge && <span className="rt-badge">{tl.badge}</span>}
                 <span className="rt-ic"><I size={27} /></span>
                 <span className="rt-main">
-                  <span className="rt-t">{tl.t} {tl.badge && <span className="rt-badge">{tl.badge}</span>}</span>
+                  <span className="rt-t">{tl.t}</span>
                   <span className="rt-d">{tl.d}</span>
                 </span>
                 <Icon.arrowRight className="rt-arrow" size={20} />
