@@ -1010,8 +1010,17 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
   const acRef = React.useRef(null);
+  const nameRef = React.useRef(null);
 
   React.useEffect(() => { if (bodyRef.current) window.scrollTo({ top: 0, behavior: "smooth" }); }, [step]);
+
+  // Autofokus auf das Namensfeld nur am Desktop — am Handy soll sich die Tastatur
+  // nicht ungefragt öffnen (sie erscheint erst, wenn man das Feld antippt).
+  React.useEffect(() => {
+    if (step !== 0 || !nameRef.current) return;
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(max-width: 620px)").matches) return;
+    nameRef.current.focus();
+  }, [step]);
 
   // Mit konkretem Profil bleiben wir auf Schritt 3; sonst startet ein getippter Name die Suche.
   React.useEffect(() => {
@@ -1166,7 +1175,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <div className="hero-ac" ref={acRef}>
             <div className="wz-bigfield">
               <Icon.building size={22} />
-              <input className="wz-biginput" autoFocus placeholder={w.s1.placeholder} value={name}
+              <input className="wz-biginput" ref={nameRef} placeholder={w.s1.placeholder} value={name}
                 onChange={(e) => { setName(e.target.value); setAcOpen(true); }} onFocus={() => setAcOpen(true)}
                 onKeyDown={(e) => e.key === "Enter" && startSearch(name)} />
             </div>
