@@ -1382,8 +1382,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
         </div>
-
-        <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
           </React.Fragment>
         ) : (
           <React.Fragment>
