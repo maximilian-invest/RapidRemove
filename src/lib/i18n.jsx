@@ -261,7 +261,7 @@ const I18N = {
         payNote: "Es wird jetzt nichts belastet. Sie zahlen erst, wenn Ihr Profil gelöscht ist.",
         button: "Bestellung abschließen",
         processing: "Bestellung wird gesichert …",
-        sumTitle: "Ihre Bestellung",
+        sumTitle: "Ihr Auftrag",
         sumProfile: "Profil", sumService: "Leistung", sumProtect: "Schutz", sumDueNow: "Jetzt fällig", sumTotal: "Nach Erfolg",
         dueNow: "0", noneProtect: "Keiner",
         sumNote: "Bezahlung erst nach erfolgreicher Löschung.",
