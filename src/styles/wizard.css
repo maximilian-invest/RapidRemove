@@ -442,6 +442,10 @@
 @media(max-width:560px){.last-chance{flex-wrap:wrap;}.last-chance .btn{width:100%;}}
 
 .checkout-testi{margin-top:18px;}
+/* Checkout-Aside: Bestellung + Trust-Signal + Trustpilot als eine sticky Spalte */
+.wz-split .wz-aside{top:84px;}
+.wz-aside .summary{position:static;top:auto;}
+.wz-aside .checkout-testi{margin-top:0;}
 
 /* ---------- Summary additions ---------- */
 .sum-row .sv.ellip{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

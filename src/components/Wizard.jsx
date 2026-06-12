@@ -1393,33 +1393,14 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function OrderSummary() {
-    const monitorDelta = num(p.protMonitor) - num(p.protMonthly);
-    const protOn = protection !== null;
-    const schutzTier = protection === "lifetime" ? conv.tierLifetimeLabel : conv.tierMonthlyLabel;
     return (
       <div className="summary">
         <h3><Icon.cart size={20} /> {w.s5.sumTitle}</h3>
         <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div>
         <div className="sum-row"><span className="sl">{serviceName}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
 
-        {/* Add-ons: Schutz & Überwachung lassen sich hier deaktivieren, Express dazuschalten */}
+        {/* Express lässt sich hier zubuchen; der Schutz wird in Schritt 5 gewählt */}
         <div className="sum-opts">
-          <div className="sum-opt">
-            <span className="so-l"><Icon.shieldCheck size={16} /> {wm.schutz}{protOn ? <span className="so-tier"> · {schutzTier}</span> : null}</span>
-            <span className="so-r">
-              {protOn && <span className="so-price">{protection === "lifetime" ? `${money(lang, p.protLifetime)} ${conv.onceShort}` : `${money(lang, p.protMonthly)} ${conv.perMonthShort}`}</span>}
-              <button type="button" className={"switch sm" + (protOn ? " on" : "")} aria-label={wm.schutz} onClick={() => setProtection(protOn ? null : "monthly")}></button>
-            </span>
-          </div>
-          {(protection === "monthly" || protection === "monitor") && (
-            <div className="sum-opt">
-              <span className="so-l"><Icon.eye size={16} /> {wm.ueberw}</span>
-              <span className="so-r">
-                <span className="so-price">+{money(lang, monitorDelta)} {conv.perMonthShort}</span>
-                <button type="button" className={"switch sm" + (protection === "monitor" ? " on" : "")} aria-label={wm.ueberw} onClick={() => setProtection(protection === "monitor" ? "monthly" : "monitor")}></button>
-              </span>
-            </div>
-          )}
           <div className="sum-opt">
             <span className="so-l"><Icon.zap size={16} /> {wm.expressTile}</span>
             <span className="so-r">
@@ -1498,13 +1479,15 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <button className="btn btn-primary btn-block lg" style={{ marginTop: 16 }} onClick={submit}>
             <Icon.lock size={18} /> {w.s5.button}
           </button>
-          <div className="risk-banner lg" style={{ marginTop: 14 }}><Icon.shieldCheck /> {t.riskReversal}</div>
-          <div className="checkout-testi"><Testimonial q={conv.quotes[2]} /></div>
           <div className="wz-actions" style={{ marginTop: 18 }}>
             <button className="btn btn-secondary" onClick={() => go(4)}><Icon.arrowLeft size={17} /> {w.back}</button>
           </div>
         </div>
-        <OrderSummary />
+        <div className="wz-aside">
+          <OrderSummary />
+          <div className="checkout-testi"><Testimonial q={conv.quotes[2]} /></div>
+          <TrustpilotLive />
+        </div>
       </div>
     );
   }
