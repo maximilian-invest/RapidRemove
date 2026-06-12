@@ -65,7 +65,7 @@
 /* Sekundär-Kacheln (Schritt 2): kompakter + eng gruppiert (Karten oberhalb bleiben unverändert) */
 .nm-group{display:flex;flex-direction:column;gap:7px;}
 .nm-group .not-mine-card{margin-top:0;}
-.profile-card.not-mine-card{padding:12px 16px;}
+.profile-card.not-mine-card{padding:12px 16px;align-items:center;}
 .profile-card.not-mine-card .profile-thumb{width:44px;height:44px;}
 .profile-card.not-mine-card .profile-thumb svg{width:20px;height:20px;}
 .profile-card.not-mine-card .profile-main .pn{font-size:15px;}
@@ -138,7 +138,7 @@
 .pc-orb{position:relative;width:70px;height:70px;border-radius:50%;background:var(--orange-50);display:flex;align-items:center;justify-content:center;color:var(--primary);}
 .pc-ring{position:absolute;inset:-6px;border-radius:50%;border:3px solid var(--orange-200);border-top-color:var(--primary);animation:spin .9s linear infinite;}
 .pc-list{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:13px;width:100%;max-width:340px;}
-.pc-item{display:flex;align-items:center;gap:11px;font-family:var(--font-display);font-size:15.5px;font-weight:700;color:var(--fg);opacity:0;transform:translateY(7px);animation:pcIn .45s var(--ease) forwards;}
+.pc-item{display:flex;align-items:center;justify-content:center;gap:11px;font-family:var(--font-display);font-size:15.5px;font-weight:700;color:var(--fg);opacity:0;transform:translateY(7px);animation:pcIn .45s var(--ease) forwards;}
 .pc-chk{width:24px;height:24px;border-radius:50%;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;}
 @keyframes pcIn{to{opacity:1;transform:none;}}
 
@@ -205,6 +205,11 @@
 .opt-flag{position:absolute;top:-9px;right:18px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--primary);color:#fff;padding:3px 9px;border-radius:var(--r-pill);box-shadow:var(--shadow-sm);}
 /* Experten-CTA in der Schritt-1-Seitenspalte (öffnet Tidio) */
 .wz-expert{cursor:pointer;width:100%;}
+.hero-team.wz-expert .ht-tx{font-weight:600;}
+.wz-contact{display:flex;flex-direction:column;gap:8px;margin-top:2px;}
+.wz-contact a{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:var(--fg-2);text-decoration:none;}
+.wz-contact a:hover{color:var(--primary);}
+.wz-contact a svg{color:var(--primary);flex:none;}
 .opt{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:22px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);background:#fff;position:relative;}
 .opt:hover{border-color:var(--orange-300);}
 .opt.sel{border-color:var(--primary);background:var(--orange-50);box-shadow:0 0 0 3px rgba(255,128,0,.12);}

@@ -56,7 +56,7 @@ const CONV = {
       { biz: "Handwerksbetrieb", city: "Zürich", min: 33 },
     ],
     quotes: [
-      { q: "Innerhalb eines Tages war das gefälschte Profil weg. Hätte ich nicht für möglich gehalten.", a: "Martin K.", r: "Praxisinhaber, München" },
+      { q: "Wir kämpften seit Jahren mit dem Google-Profil. Dank RapidRemove und dem freundlichen Service war es innerhalb von einem Tag gelöscht.", a: "Martin K.", r: "Praxisinhaber, München" },
       { q: "Endlich wieder ruhig schlafen. Die haben mir das komplett abgenommen.", a: "Sabine R.", r: "Restaurantbesitzerin, Köln" },
       { q: "Schnell, diskret, professionell — und Zahlung wirklich erst nach Erfolg.", a: "Tobias W.", r: "Geschäftsführer, Berlin" },
     ],
@@ -122,7 +122,7 @@ const CONV = {
       { biz: "Trades business", city: "Zurich", min: 33 },
     ],
     quotes: [
-      { q: "The fake profile was gone within a day. I didn't think it was possible.", a: "Martin K.", r: "Practice owner, Munich" },
+      { q: "We struggled for years with the Google profile. Thanks to RapidRemove and the friendly service it was deleted within a single day.", a: "Martin K.", r: "Practice owner, Munich" },
       { q: "Finally sleeping well again. They took the whole thing off my hands.", a: "Sabine R.", r: "Restaurant owner, Cologne" },
       { q: "Fast, discreet, professional — and you really pay only after success.", a: "Tobias W.", r: "Managing director, Berlin" },
     ],
@@ -770,8 +770,8 @@ const MULTI_PROFILE = {
 };
 /* „Profil ist nicht in der Liste" — Fallback-Kachel + Text auf Schritt 3 (unklar identifiziert). */
 const NOT_IN_LIST = {
-  de: { tile: "Profil ist nicht in der Liste", h: "Ihr Profil wurde nicht eindeutig identifiziert", sub: "Kann aber so gut wie sicher gelöscht werden.", linkLabel: "Genauen Google-Maps-Link einfügen (optional)", checkBtn: "Profil prüfen", contBtn: "Mit diesem Profil fortfahren" },
-  en: { tile: "Profile not in the list", h: "Your profile wasn't uniquely identified", sub: "But it can almost certainly be removed.", linkLabel: "Paste the exact Google Maps link (optional)", checkBtn: "Check profile", contBtn: "Continue with this profile" },
+  de: { tile: "Profil ist nicht in der Liste?", h: "Ihr Profil wurde nicht eindeutig identifiziert", sub: "Kann aber so gut wie sicher gelöscht werden.", linkLabel: "Genauen Google-Maps-Link einfügen (optional)", checkBtn: "Profil prüfen", contBtn: "Mit diesem Profil fortfahren" },
+  en: { tile: "Profile not in the list?", h: "Your profile wasn't uniquely identified", sub: "But it can almost certainly be removed.", linkLabel: "Paste the exact Google Maps link (optional)", checkBtn: "Check profile", contBtn: "Continue with this profile" },
   es: { tile: "El perfil no está en la lista", h: "Tu perfil no se identificó con exactitud", sub: "Pero casi con seguridad se puede eliminar.", linkLabel: "Pega el enlace exacto de Google Maps (opcional)", checkBtn: "Comprobar perfil", contBtn: "Continuar con este perfil" },
   fr: { tile: "Le profil n'est pas dans la liste", h: "Votre fiche n'a pas été identifiée précisément", sub: "Mais elle peut presque certainement être supprimée.", linkLabel: "Collez le lien Google Maps exact (facultatif)", checkBtn: "Vérifier la fiche", contBtn: "Continuer avec cette fiche" },
   it: { tile: "Il profilo non è nell'elenco", h: "Il tuo profilo non è stato identificato con certezza", sub: "Ma può quasi sicuramente essere rimosso.", linkLabel: "Incolla il link esatto di Google Maps (facoltativo)", checkBtn: "Verifica profilo", contBtn: "Continua con questo profilo" },
@@ -796,6 +796,15 @@ function openTidioChat(e) {
   if (window.tidioChatApi) { run(); return; }
   const onReady = () => { run(); document.removeEventListener("tidioChat-ready", onReady); };
   document.addEventListener("tidioChat-ready", onReady);
+}
+// Telefon (nur DACH) + E-Mail als zusätzliche Kontaktwege.
+function ContactLine({ lang }) {
+  return (
+    <div className="wz-contact">
+      {lang === "de" && <a href="tel:08000900001"><Icon.phone size={15} /> 0800 09 00 00 1</a>}
+      <a href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={15} /> helpdesk@rapid-remove.com</a>
+    </div>
+  );
 }
 // Liest den Profilnamen aus einem vollständigen Google-Maps-Link (…/maps/place/Name/…).
 function extractMapsName(url) {
@@ -1228,6 +1237,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   };
   const proceedFromSearch = () => {
     persistCheck();
+    if (selected) setContact((c) => ({ ...c, company: selected.name }));
     // Schritt 3 (Bestätigen) NUR bei unklar identifiziertem Profil.
     if (selected && selected.unverified) { go(2); return; }
     const key = selected ? (selected.placeId || selected.name) : "";
@@ -1366,7 +1376,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <Icon.search size={19} /> {w.s1.button} <Icon.arrowRight size={18} />
             </button>
           </div>
-          <div className="risk-banner" style={{ marginTop: 18 }}><Icon.shieldCheck /> {t.riskReversal}</div>
         </div>
         <aside className="wz-aside">
           <button type="button" className="hero-team below wz-expert" onClick={openTidioChat}>
@@ -1374,9 +1383,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={46} height={46} />
               <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={46} height={46} />
             </span>
-            <span className="ht-tx"><b>{conv.expertCta}</b><Icon.arrowRight size={14} /></span>
+            <span className="ht-tx">{conv.expertCta}<Icon.arrowRight size={14} /></span>
           </button>
-          <Testimonial q={conv.quotes[0]} />
+          <ContactLine lang={lang} />
+          <Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} />
         </aside>
       </div>
     );
@@ -1659,7 +1669,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         </div>
         <div className="wz-aside">
           <OrderSummary />
-          <div className="checkout-testi"><Testimonial q={conv.quotes[2]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} /></div>
+          <div className="checkout-testi"><Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} /></div>
+          <ContactLine lang={lang} />
         </div>
       </div>
     );
