@@ -199,6 +199,7 @@
 .opt-main{flex:1;}
 .opt-main .ot{font-family:var(--font-display);font-weight:600;font-size:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .opt-main .obadge{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--orange-100);color:var(--orange-800);padding:3px 9px;border-radius:var(--r-pill);}
+.opt-main .obadge.obadge-pop{font-size:9.5px;letter-spacing:.02em;white-space:nowrap;padding:2px 7px;}
 .opt-main .od{font-size:14px;color:var(--fg-2);line-height:1.55;margin-top:5px;}
 .opt-price{text-align:right;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;flex:none;}
 .opt-price small{display:block;font-size:12px;color:var(--fg-muted);font-weight:600;}
