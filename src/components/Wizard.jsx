@@ -9,6 +9,7 @@ import { submitOrder, submitCheck } from "@/lib/order";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
+import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 const AGB_CONSENT = {
@@ -914,6 +915,16 @@ function Testimonial({ q, tp }) {
   );
 }
 
+/* Vanilla-JS-Ingestion-Animation (aus dem Design): erklärt, wie ein gelöschtes
+   Profil wieder zurückkommt. Wird in Schritt 5 gezeigt, wenn der Schutz aus ist. */
+function IngestionAnim({ lang }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    if (ref.current) return mountIngestionAnim(ref.current, { lang: lang === "de" ? "de" : "en" });
+  }, [lang]);
+  return <div ref={ref} className="pt-ingest" />;
+}
+
 /* ============ WIZARD ROOT ============ */
 /* ---- Router (erste Seite) + Presse-/Einzeltreffer-Flow (aus dem Design portiert).
    de + en ausformuliert; übrige Sprachen erben EN (wie im Design). ---- */
@@ -1376,7 +1387,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
           </React.Fragment>
         ) : (
-          <div className="pt-skip-warn"><Icon.alert size={22} /><span>{conv.protOffBody}</span></div>
+          <React.Fragment>
+            <div className="pt-skip-warn"><Icon.alert size={22} /><span>{conv.protOffBody}</span></div>
+            <IngestionAnim lang={lang} />
+          </React.Fragment>
         )}
 
         <div className="svc-cta">
