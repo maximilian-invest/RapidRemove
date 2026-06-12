@@ -596,9 +596,9 @@
 .pt-skip-row{text-align:center;margin-top:14px;}
 .pt-skip{background:none;border:none;padding:6px 10px;font-family:var(--font-body);font-size:14px;font-weight:700;color:var(--fg-2);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .pt-skip:hover{color:var(--fg);}
-.pt-skip-warn{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:16px;padding:11px 14px;border-radius:var(--r-md);background:var(--warning-soft);font-size:12.5px;font-weight:700;color:#92600c;}
-.pt-skip-warn svg{flex:none;color:var(--warning);}
-.pt-skip-warn span{flex:1;min-width:200px;}
+.pt-skip-warn{display:flex;align-items:flex-start;gap:12px;margin-top:18px;padding:18px 20px;border-radius:var(--r-lg);background:var(--warning-soft);font-size:15px;font-weight:700;line-height:1.55;color:#92600c;}
+.pt-skip-warn svg{flex:none;width:22px;height:22px;color:var(--warning);margin-top:1px;}
+.pt-skip-warn span{flex:1;min-width:0;}
 .pt-skip-undo{background:none;border:none;padding:0;font-family:var(--font-body);font-size:12.5px;font-weight:800;color:var(--primary);text-decoration:underline;text-underline-offset:3px;cursor:pointer;white-space:nowrap;}
 @media(max-width:640px){.pt-grid{gap:18px;}}
 /* Mobil: Preis in eigene Zeile, damit das Info-ⓘ IMMER direkt neben dem Namen sitzt (sonst springt es bei langen Namen zum Preis). */

@@ -1363,7 +1363,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
           </React.Fragment>
         ) : (
-          <div className="pt-skip-warn"><Icon.alert size={16} /><span>{conv.protOffBody}</span></div>
+          <div className="pt-skip-warn"><Icon.alert size={22} /><span>{conv.protOffBody}</span></div>
         )}
 
         <div className="svc-cta">
