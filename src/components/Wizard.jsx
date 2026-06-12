@@ -1378,6 +1378,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
         <aside className="wz-aside">
+          <ContactLine lang={lang} />
           <button type="button" className="wz-expert" onClick={openTidioChat}>
             <span className="we-avas">
               <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
@@ -1386,7 +1387,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             <span className="we-tx">{conv.expertCta}</span>
             <span className="we-arrow"><Icon.arrowRight size={16} /></span>
           </button>
-          <ContactLine lang={lang} />
           <Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} />
         </aside>
       </div>
