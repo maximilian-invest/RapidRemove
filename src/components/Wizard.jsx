@@ -1302,6 +1302,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepProtect() {
+    const protActive = protection !== null;
+    const toggleProt = () => setProtection(protActive ? null : "monthly");
     const toggleInfo = (k) => (e) => { e.stopPropagation(); setPtInfo(ptInfo === k ? null : k); };
     return (
       <div className="wz-card">
@@ -1309,6 +1311,13 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <h1 className="wz-h" style={{ fontSize: 28 }}>{conv.protH}</h1>
         <p className="wz-sub" style={{ marginBottom: 18 }}>{conv.protSub}</p>
 
+        <div className={"pt-toggle-row" + (protActive ? " on" : "")}>
+          <div className="pt-toggle-main"><Icon.shieldCheck size={18} /> <span className="pt-toggle-label">{wm.schutz}</span></div>
+          <button type="button" className={"switch" + (protActive ? " on" : "")} aria-label={wm.schutz} aria-pressed={protActive} onClick={toggleProt}></button>
+        </div>
+
+        {protActive ? (
+          <React.Fragment>
         <div className="pt-grid">
           <div className={"pt-card" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
             <div className="pt-head">
@@ -1349,20 +1358,13 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
             </div>
           </div>
-
-          <div className={"pt-card pt-none" + (protection === null ? " sel" : "")} onClick={() => setProtection(null)}>
-            <div className="pt-head">
-              <span className="pt-radio"></span>
-              <span className="pt-name">{conv.noProtLink}</span>
-              <span className="pt-info-wrap">
-                <button type="button" className={"pt-info" + (ptInfo === "none" ? " on" : "")} onClick={toggleInfo("none")} aria-label="Info" aria-expanded={ptInfo === "none"}><Icon.info size={15} /></button>
-                {ptInfo === "none" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protOffBody}</span>}
-              </span>
-            </div>
-          </div>
         </div>
 
         <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
+          </React.Fragment>
+        ) : (
+          <div className="pt-skip-warn"><Icon.alert size={16} /><span>{conv.protOffBody}</span></div>
+        )}
 
         <div className="svc-cta">
           <div className="svc-total">
