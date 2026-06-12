@@ -11,7 +11,7 @@ const article = {
     authorRole: "Experto en Google",
     date: "2026-06-04",
   },
-  dek: "¿Una reseña falsa de 1 estrella de alguien que nunca fue cliente? No estás solo. Las reseñas falsas son un fenómeno masivo: solo en Alemania el daño a la economía se estima en unos **3.800 millones de euros al año**. En esta guía aprenderás **cómo detectar reseñas falsas, denunciarlas a Google y, si Google no responde, eliminarlas definitivamente.**",
+  dek: "¿Una reseña falsa de 1 estrella de alguien que nunca fue cliente? No estás solo. Las reseñas falsas son un fenómeno masivo: según estimaciones del sector, el daño económico asciende a **miles de millones de euros al año**. En esta guía aprenderás **cómo detectar reseñas falsas, denunciarlas a Google y, si Google no responde, eliminarlas definitivamente.**",
   blocks: [
     { t: "note", title: "Aviso", text: "Este artículo ofrece orientación práctica y no constituye asesoramiento jurídico. Para una valoración legal de tu caso, consulta a un abogado." },
 

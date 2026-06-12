@@ -2,6 +2,7 @@
    Statically generated, SEO-first: rich metadata + JSON-LD structured data. */
 import Article from "@/components/Article";
 import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
+import { OG_IMAGE } from "@/lib/locales-meta";
 
 export const metadata = {
   title: ARTICLE_META.title,
@@ -14,6 +15,7 @@ export const metadata = {
     url: ARTICLE_META.url,
     siteName: "RapidRemove",
     locale: "de_DE",
+    images: [OG_IMAGE],
     publishedTime: ARTICLE_META.datePublished,
     modifiedTime: ARTICLE_META.dateModified,
     authors: [ARTICLE_META.author],

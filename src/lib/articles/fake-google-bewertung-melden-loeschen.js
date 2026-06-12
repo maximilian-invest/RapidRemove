@@ -14,7 +14,7 @@ const article = {
   category: "Reputation",
   iconKey: "starOff",
   readingMin: 8,
-  dek: "Eine gefälschte 1-Stern-Bewertung von jemandem, der nie Kunde war? Damit sind Sie nicht allein. Fake-Bewertungen sind ein Massenphänomen – der dadurch verursachte Schaden für die deutsche Wirtschaft wird auf rund **3,8 Milliarden Euro pro Jahr** geschätzt. In diesem Leitfaden erfahren Sie, **wie Sie Fake-Bewertungen erkennen, bei Google melden und – wenn Google nicht reagiert – endgültig löschen lassen.**",
+  dek: "Eine gefälschte 1-Stern-Bewertung von jemandem, der nie Kunde war? Damit sind Sie nicht allein. Fake-Bewertungen sind ein Massenphänomen – Branchenschätzungen beziffern den dadurch verursachten wirtschaftlichen Schaden auf **Milliardenhöhe pro Jahr**. In diesem Leitfaden erfahren Sie, **wie Sie Fake-Bewertungen erkennen, bei Google melden und – wenn Google nicht reagiert – endgültig löschen lassen.**",
   blocks: [
     { t: "note", title: "Hinweis", text: "Dieser Beitrag ist eine praktische Orientierung und keine Rechtsberatung. Für eine rechtliche Einschätzung im Einzelfall konsultieren Sie bitte einen Anwalt." },
 

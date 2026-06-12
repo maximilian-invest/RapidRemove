@@ -11,7 +11,7 @@ const article = {
     authorRole: "Esperto Google",
     date: "2026-06-04",
   },
-  dek: "Una recensione falsa a 1 stella da qualcuno che non è mai stato cliente? Non sei solo. Le recensioni false sono un fenomeno di massa: solo in Germania il danno all'economia è stimato in circa **3,8 miliardi di euro all'anno**. In questa guida scoprirai **come riconoscere le recensioni false, segnalarle a Google e – se Google non risponde – farle eliminare definitivamente.**",
+  dek: "Una recensione falsa a 1 stella da qualcuno che non è mai stato cliente? Non sei solo. Le recensioni false sono un fenomeno di massa: secondo le stime di settore il danno economico ammonta a **miliardi di euro ogni anno**. In questa guida scoprirai **come riconoscere le recensioni false, segnalarle a Google e – se Google non risponde – farle eliminare definitivamente.**",
   blocks: [
     { t: "note", title: "Avviso", text: "Questo articolo offre un orientamento pratico e non costituisce consulenza legale. Per una valutazione legale del caso, consulta un avvocato." },
 

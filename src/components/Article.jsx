@@ -9,6 +9,7 @@ import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 import { FAQ, ARTICLE_META } from "@/lib/article-google-profil";
+import { CLUSTER_CARDS } from "@/lib/articles/registry";
 
 const SECTIONS = [
   { id: "ueberblick", label: "Das Wichtigste in Kürze" },
@@ -276,6 +277,13 @@ function ArticleBody() {
               </div>
             ))}
           </div>
+
+          <h2 id="weiterlesen">Weiterlesen: passende Ratgeber aus dem Magazin</h2>
+          <ul>
+            {CLUSTER_CARDS.map((c) => (
+              <li key={c.slug}><a href={asset("/" + c.slug + "/")}>{c.title}</a></li>
+            ))}
+          </ul>
 
           <h2 id="fazit">Fazit: der schnellste, sicherste Weg zum sauberen Suchergebnis</h2>
           <p>

@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google expert",
     date: "2026-06-04",
   },
-  dek: "A fake 1-star review from someone who was never a customer? You're not alone. Fake reviews are a mass phenomenon – the damage to the German economy alone is estimated at around **3.8 billion euros a year**. In this guide you'll learn **how to identify fake reviews, report them to Google and – if Google doesn't respond – have them removed for good.**",
+  dek: "A fake 1-star review from someone who was never a customer? You're not alone. Fake reviews are a mass phenomenon – industry estimates put the resulting economic damage **in the billions every year**. In this guide you'll learn **how to identify fake reviews, report them to Google and – if Google doesn't respond – have them removed for good.**",
   blocks: [
     { t: "note", title: "Note", text: "This article offers practical guidance and is not legal advice. For a case-by-case legal assessment, please consult a lawyer." },
 

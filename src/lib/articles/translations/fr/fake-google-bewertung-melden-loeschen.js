@@ -11,7 +11,7 @@ const article = {
     authorRole: "Expert Google",
     date: "2026-06-04",
   },
-  dek: "Un faux avis 1 étoile de quelqu'un qui n'a jamais été client ? Vous n'êtes pas seul. Les faux avis sont un phénomène de masse – rien qu'en Allemagne, le préjudice pour l'économie est estimé à environ **3,8 milliards d'euros par an**. Dans ce guide, vous apprendrez **comment repérer les faux avis, les signaler à Google et – si Google ne réagit pas – les faire supprimer définitivement.**",
+  dek: "Un faux avis 1 étoile de quelqu'un qui n'a jamais été client ? Vous n'êtes pas seul. Les faux avis sont un phénomène de masse – selon les estimations du secteur, le préjudice économique se chiffre en **milliards d'euros chaque année**. Dans ce guide, vous apprendrez **comment repérer les faux avis, les signaler à Google et – si Google ne réagit pas – les faire supprimer définitivement.**",
   blocks: [
     { t: "note", title: "Remarque", text: "Cet article offre une orientation pratique et ne constitue pas un conseil juridique. Pour une appréciation juridique au cas par cas, consultez un avocat." },
 

@@ -18,7 +18,7 @@ const article = {
     { t: "h2", id: "gefahr", text: "Varför negativa Google-recensioner är så farliga", toc: "Varför farliga" },
     { t: "p", text: "98 % av konsumenterna läser recensioner online innan de väljer ett företag, enligt en studie från BrightLocal, och 87 % av dem använder Google. Ditt stjärnbetyg har blivit ett digitalt skyltfönster: det avgör om en intresserad klickar eller går vidare till konkurrenten." },
     { t: "p", text: "Det kniviga är den så kallade **negativitetsbiasen**: människor väger negativ information tyngre än positiv. En enda förödande recension kan upphäva effekten av ett dussin bra. Branschanalyser visar att företag under 4,0 i snitt bär 30 till 50 % högre kostnad per ny kund än aktörer över 4,5 stjärnor." },
-    { t: "p", text: "Särskilt bittert blir det vid **falska eller orättvisa recensioner** – från konkurrenter, missnöjda före detta anställda eller personer som aldrig varit kunder. Enbart i Tyskland uppskattas den ekonomiska skadan av falska negativa recensioner till omkring 3,8 miljarder euro per år." },
+    { t: "p", text: "Särskilt bittert blir det vid **falska eller orättvisa recensioner** – från konkurrenter, missnöjda före detta anställda eller personer som aldrig varit kunder. Enligt branschuppskattningar uppgår den årliga ekonomiska skadan av falska negativa recensioner till miljardbelopp." },
 
     { t: "h2", id: "angreifbar", text: "Dessa recensioner kan du ta bort (och dessa inte)", toc: "Vad går att ta bort?" },
     { t: "p", text: "Inte varje dålig recension går att bestrida. En saklig, om än negativ, skildring av en verklig kundupplevelse skyddas av yttrandefriheten och blir oftast kvar. Däremot finns **goda chanser till borttagning** för recensioner som bryter mot Googles riktlinjer:" },
