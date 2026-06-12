@@ -1285,8 +1285,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepService() {
-    // Tippen wählt die Option (keine Vorselektion); weiter geht es per Button.
-    const pick = (s) => { setService(s); if (s === "reset") setExpress(false); };
+    // Tippen wählt die Option und springt direkt weiter; der Weiter-Button geht
+    // ebenfalls (z. B. wenn man via Zurück auf Schritt 4 kommt). Keine Vorauswahl.
+    const pick = (s) => { setService(s); if (s === "reset") setExpress(false); go(4); };
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
