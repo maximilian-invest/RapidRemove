@@ -103,7 +103,7 @@ const CONV = {
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
     protOffAck: "Risiko verstanden – ohne Schutz fortfahren", protOffAcked: "Ohne Schutz bestätigt",
-    perMonthShort: "/ Mon.", onceShort: "einmalig",
+    perMonthShort: "/ Mon.", onceShort: "einmalig", monthlyPriceFmt: (m) => `mtl. ${m}`, cancelAnytime: "Jederzeit kündbar",
     keepProt: "9 von 10 Kunden behalten den Schutz",
     noProtLink: "Ich brauche keinen Schutz",
     noProtTitle: "Kein Schutz gewählt",
@@ -169,7 +169,7 @@ const CONV = {
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
     protOffAck: "I understand the risk — continue without protection", protOffAcked: "Continuing without protection",
-    perMonthShort: "/ mo.", onceShort: "once",
+    perMonthShort: "/ mo.", onceShort: "once", monthlyPriceFmt: (m) => `${m}/mo.`, cancelAnytime: "Cancel anytime",
     keepProt: "9 in 10 customers keep protection",
     noProtLink: "I don't need protection",
     noProtTitle: "No protection selected",
@@ -225,7 +225,7 @@ const CONV = {
     tierMonitorBadge: "Más popular", tierLifetimeBadge: "Mejor valor", protPopularBadge: "Elegido por el 90 % de los clientes",
     lifetimeMath: "Más barato que 4 años de protección mensual — y luego nunca más pagas.",
     monitorMath: "Para quienes quieren ir totalmente sobre seguro.",
-    perMonthShort: "/ mes", onceShort: "único",
+    perMonthShort: "/ mes", onceShort: "único", monthlyPriceFmt: (m) => `${m}/mes`, cancelAnytime: "Cancelable en cualquier momento",
     keepProt: "9 de cada 10 clientes mantienen la protección",
     noProtLink: "No necesito protección",
     noProtTitle: "Sin protección seleccionada",
@@ -281,7 +281,7 @@ const CONV = {
     tierMonitorBadge: "Le plus choisi", tierLifetimeBadge: "Meilleur rapport", protPopularBadge: "Choisi par 90 % des clients",
     lifetimeMath: "Moins cher que 4 ans de protection mensuelle — ensuite, plus jamais de paiement.",
     monitorMath: "Pour celles et ceux qui veulent une sécurité totale.",
-    perMonthShort: "/ mois", onceShort: "unique",
+    perMonthShort: "/ mois", onceShort: "unique", monthlyPriceFmt: (m) => `${m}/mois`, cancelAnytime: "Résiliable à tout moment",
     keepProt: "9 clients sur 10 gardent la protection",
     noProtLink: "Je n'ai pas besoin de protection",
     noProtTitle: "Aucune protection sélectionnée",
@@ -337,7 +337,7 @@ const CONV = {
     tierMonitorBadge: "Più scelto", tierLifetimeBadge: "Miglior valore", protPopularBadge: "Scelto dal 90% dei clienti",
     lifetimeMath: "Più conveniente di 4 anni di protezione mensile — poi non paghi mai più.",
     monitorMath: "Per chi vuole andare davvero sul sicuro.",
-    perMonthShort: "/ mese", onceShort: "una tantum",
+    perMonthShort: "/ mese", onceShort: "una tantum", monthlyPriceFmt: (m) => `${m}/mese`, cancelAnytime: "Annullabile in qualsiasi momento",
     keepProt: "9 clienti su 10 mantengono la protezione",
     noProtLink: "Non mi serve la protezione",
     noProtTitle: "Nessuna protezione selezionata",
@@ -393,7 +393,7 @@ const CONV = {
     tierMonitorBadge: "Populairst", tierLifetimeBadge: "Beste waarde", protPopularBadge: "Gekozen door 90% van de klanten",
     lifetimeMath: "Goedkoper dan 4 jaar maandbescherming — daarna nooit meer betalen.",
     monitorMath: "Voor wie helemaal zeker wil zijn.",
-    perMonthShort: "/ mnd", onceShort: "eenmalig",
+    perMonthShort: "/ mnd", onceShort: "eenmalig", monthlyPriceFmt: (m) => `${m}/mnd`, cancelAnytime: "Op elk moment opzegbaar",
     keepProt: "9 van de 10 klanten houden de bescherming",
     noProtLink: "Ik heb geen bescherming nodig",
     noProtTitle: "Geen bescherming gekozen",
@@ -449,7 +449,7 @@ const CONV = {
     tierMonitorBadge: "Mais escolhido", tierLifetimeBadge: "Melhor valor", protPopularBadge: "Escolhido por 90% dos clientes",
     lifetimeMath: "Mais barato do que 4 anos de proteção mensal — depois nunca mais paga.",
     monitorMath: "Para quem quer ficar totalmente descansado.",
-    perMonthShort: "/ mês", onceShort: "única",
+    perMonthShort: "/ mês", onceShort: "única", monthlyPriceFmt: (m) => `${m}/mês`, cancelAnytime: "Cancele quando quiser",
     keepProt: "9 em cada 10 clientes mantêm a proteção",
     noProtLink: "Não preciso de proteção",
     noProtTitle: "Nenhuma proteção selecionada",
@@ -505,7 +505,7 @@ const CONV = {
     tierMonitorBadge: "人気No.1", tierLifetimeBadge: "最もお得", protPopularBadge: "お客様の90%が選択",
     lifetimeMath: "月額保護4年分より安く — その後は二度と支払い不要。",
     monitorMath: "完全に万全を期したい方へ。",
-    perMonthShort: "/ 月", onceShort: "一回",
+    perMonthShort: "/ 月", onceShort: "一回", monthlyPriceFmt: (m) => `月額 ${m}`, cancelAnytime: "いつでも解約可能",
     keepProt: "10人中9人のお客様が保護を継続",
     noProtLink: "保護は不要です",
     noProtTitle: "保護が選択されていません",
@@ -561,7 +561,7 @@ const CONV = {
     tierMonitorBadge: "Populärast", tierLifetimeBadge: "Bäst värde", protPopularBadge: "Vald av 90 % av kunderna",
     lifetimeMath: "Billigare än 4 års månadsskydd — sedan betalar du aldrig igen.",
     monitorMath: "För dig som vill vara helt på den säkra sidan.",
-    perMonthShort: "/ mån", onceShort: "engång",
+    perMonthShort: "/ mån", onceShort: "engång", monthlyPriceFmt: (m) => `${m}/mån`, cancelAnytime: "Avsluta när som helst",
     keepProt: "9 av 10 kunder behåller skyddet",
     noProtLink: "Jag behöver inget skydd",
     noProtTitle: "Inget skydd valt",
@@ -617,7 +617,7 @@ const CONV = {
     tierMonitorBadge: "Mest valgte", tierLifetimeBadge: "Bedste værdi", protPopularBadge: "Valgt af 90 % af kunderne",
     lifetimeMath: "Billigere end 4 års månedsbeskyttelse — derefter betaler du aldrig igen.",
     monitorMath: "For dig, der vil være helt på den sikre side.",
-    perMonthShort: "/ md.", onceShort: "engang",
+    perMonthShort: "/ md.", onceShort: "engang", monthlyPriceFmt: (m) => `${m}/md.`, cancelAnytime: "Opsig når som helst",
     keepProt: "9 ud af 10 kunder beholder beskyttelsen",
     noProtLink: "Jeg har ikke brug for beskyttelse",
     noProtTitle: "Ingen beskyttelse valgt",
@@ -673,7 +673,7 @@ const CONV = {
     tierMonitorBadge: "Mest valgt", tierLifetimeBadge: "Best verdi", protPopularBadge: "Valgt av 90 % av kundene",
     lifetimeMath: "Billigere enn 4 års månedsbeskyttelse — deretter betaler du aldri igjen.",
     monitorMath: "For deg som vil være helt på den sikre siden.",
-    perMonthShort: "/ mnd", onceShort: "engang",
+    perMonthShort: "/ mnd", onceShort: "engang", monthlyPriceFmt: (m) => `${m}/mnd`, cancelAnytime: "Avslutt når som helst",
     keepProt: "9 av 10 kunder beholder beskyttelsen",
     noProtLink: "Jeg trenger ikke beskyttelse",
     noProtTitle: "Ingen beskyttelse valgt",
@@ -1553,7 +1553,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <div className="ot">{conv.protMonthlyName}</div>
               <div className="od">{wm.ptMonthlyNote}</div>
             </div>
-            <div className="opt-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></div>
+            <div className="opt-price">{conv.monthlyPriceFmt(money(lang, p.protMonthly))}<small>{conv.cancelAnytime}</small></div>
           </div>
 
           <div className={"opt" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
@@ -1563,7 +1563,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <div className="ot">{conv.protMonitorName}</div>
               <div className="od">{wm.ptMonitorNote}</div>
             </div>
-            <div className="opt-price">{money(lang, p.protMonitor)}<small>{conv.perMonthShort}</small></div>
+            <div className="opt-price">{conv.monthlyPriceFmt(money(lang, p.protMonitor))}<small>{conv.cancelAnytime}</small></div>
           </div>
 
           <div className={"opt" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
