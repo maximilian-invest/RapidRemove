@@ -188,7 +188,7 @@ const CONV = {
       { biz: "Empresa de reformas", city: "Murcia", min: 33 },
     ],
     quotes: [
-      { q: "En un solo día desapareció el perfil falso. No lo creía posible.", a: "Martín G.", r: "Propietario de clínica, Madrid" },
+      { q: "Llevábamos años luchando con el perfil de Google. Gracias a RapidRemove y a su amable servicio, se eliminó en un solo día.", a: "Martín G.", r: "Propietario de clínica, Madrid" },
       { q: "Por fin vuelvo a dormir tranquila. Se encargaron de todo.", a: "Sara R.", r: "Dueña de restaurante, Valencia" },
       { q: "Rápido, discreto, profesional — y de verdad se paga solo tras el éxito.", a: "Tomás V.", r: "Director general, Barcelona" },
     ],
@@ -218,7 +218,7 @@ const CONV = {
     lastChanceTitle: "Última oportunidad: añade exprés",
     lastChanceDesc: "Perfil eliminado en ~6 h en lugar de ~24 — sin recargo si no cumplimos las 6 h.",
     afterSuccess: "Todo se paga solo tras el éxito.",
-    protStepLabel: "Protección · Paso 5", subtotal: "Subtotal",
+    protStepLabel: "Protección · Paso 5", subtotal: "Subtotal", mostChosen: "Más elegido", protNoneName: "Sin protección", protNoneDesc: "Sin protección contra nuevas publicaciones.", checkingH: "Comprobando el perfil …", checkSteps: ["Perfil encontrado", "Reseñas analizadas", "Eliminación confirmada"], protOffContinue: "Continuar sin protección", delOk: "El perfil se puede eliminar", expertCta: "Habla con los expertos en Google",
     toProtect: "Continuar a protección", toCheckout: "Continuar al pago",
     totalAfter: "Total tras el éxito",
     doneCrossH: "¿Aún más para tu reputación?",
@@ -244,7 +244,7 @@ const CONV = {
       { biz: "Entreprise artisanale", city: "Genève", min: 33 },
     ],
     quotes: [
-      { q: "Le faux profil avait disparu en une journée. Je ne pensais pas cela possible.", a: "Martin C.", r: "Gérant de cabinet, Paris" },
+      { q: "Nous nous battions depuis des années avec la fiche Google. Grâce à RapidRemove et à son service aimable, elle a été supprimée en une seule journée.", a: "Martin C.", r: "Gérant de cabinet, Paris" },
       { q: "Je dors enfin tranquille. Ils ont tout pris en charge.", a: "Sophie R.", r: "Restauratrice, Marseille" },
       { q: "Rapide, discret, professionnel — et on ne paie vraiment qu'après le succès.", a: "Thomas V.", r: "Directeur général, Lyon" },
     ],
@@ -274,7 +274,7 @@ const CONV = {
     lastChanceTitle: "Dernière chance : ajouter l'express",
     lastChanceDesc: "Fiche supprimée en ~6 h au lieu de ~24 — sans supplément si nous dépassons les 6 h.",
     afterSuccess: "Tout n'est dû qu'après le succès.",
-    protStepLabel: "Protection · Étape 5", subtotal: "Sous-total",
+    protStepLabel: "Protection · Étape 5", subtotal: "Sous-total", mostChosen: "Le plus choisi", protNoneName: "Sans protection", protNoneDesc: "Sans protection contre une réinscription.", checkingH: "Vérification de la fiche …", checkSteps: ["Fiche trouvée", "Avis analysés", "Suppression confirmée"], protOffContinue: "Continuer sans protection", delOk: "La fiche peut être supprimée", expertCta: "Parlez aux experts Google",
     toProtect: "Continuer vers la protection", toCheckout: "Continuer vers le paiement",
     totalAfter: "Total après le succès",
     doneCrossH: "Encore plus pour votre réputation ?",
@@ -300,7 +300,7 @@ const CONV = {
       { biz: "Impresa artigiana", city: "Palermo", min: 33 },
     ],
     quotes: [
-      { q: "Nel giro di un giorno il profilo falso era sparito. Non lo credevo possibile.", a: "Marco G.", r: "Titolare di studio, Milano" },
+      { q: "Lottavamo da anni con il profilo Google. Grazie a RapidRemove e al servizio cortese, è stato eliminato in un solo giorno.", a: "Marco G.", r: "Titolare di studio, Milano" },
       { q: "Finalmente dormo di nuovo serena. Hanno fatto tutto loro.", a: "Sara R.", r: "Ristoratrice, Napoli" },
       { q: "Veloce, discreto, professionale — e si paga davvero solo dopo il successo.", a: "Tommaso V.", r: "Amministratore, Roma" },
     ],
@@ -330,7 +330,7 @@ const CONV = {
     lastChanceTitle: "Ultima occasione: aggiungi express",
     lastChanceDesc: "Profilo rimosso in ~6 h invece di ~24 — nessun supplemento se non rispettiamo le 6 h.",
     afterSuccess: "Tutto dovuto solo dopo il successo.",
-    protStepLabel: "Protezione · Passo 5", subtotal: "Subtotale",
+    protStepLabel: "Protezione · Passo 5", subtotal: "Subtotale", mostChosen: "Più scelto", protNoneName: "Nessuna protezione", protNoneDesc: "Senza protezione da nuove pubblicazioni.", checkingH: "Verifica del profilo …", checkSteps: ["Profilo trovato", "Recensioni analizzate", "Rimozione confermata"], protOffContinue: "Continua senza protezione", delOk: "Il profilo può essere rimosso", expertCta: "Parla con gli esperti di Google",
     toProtect: "Continua alla protezione", toCheckout: "Continua al pagamento",
     totalAfter: "Totale dopo il successo",
     doneCrossH: "Ancora di più per la tua reputazione?",
@@ -356,7 +356,7 @@ const CONV = {
       { biz: "Klusbedrijf", city: "Brugge", min: 33 },
     ],
     quotes: [
-      { q: "Binnen een dag was het nepprofiel weg. Ik dacht niet dat het kon.", a: "Mark V.", r: "Praktijkhouder, Amsterdam" },
+      { q: "We worstelden al jaren met het Google-profiel. Dankzij RapidRemove en de vriendelijke service was het binnen één dag verwijderd.", a: "Mark V.", r: "Praktijkhouder, Amsterdam" },
       { q: "Eindelijk weer rustig slapen. Ze hebben het volledig uit handen genomen.", a: "Sanne R.", r: "Restauranthouder, Den Haag" },
       { q: "Snel, discreet, professioneel — en je betaalt echt pas na succes.", a: "Tom W.", r: "Directeur, Rotterdam" },
     ],
@@ -386,7 +386,7 @@ const CONV = {
     lastChanceTitle: "Laatste kans: express toevoegen",
     lastChanceDesc: "Profiel verwijderd in ~6 u in plaats van ~24 — geen toeslag als we de 6 u niet halen.",
     afterSuccess: "Alles pas verschuldigd na succes.",
-    protStepLabel: "Bescherming · Stap 5", subtotal: "Subtotaal",
+    protStepLabel: "Bescherming · Stap 5", subtotal: "Subtotaal", mostChosen: "Meest gekozen", protNoneName: "Geen bescherming", protNoneDesc: "Geen bescherming tegen herplaatsing.", checkingH: "Profiel wordt gecontroleerd …", checkSteps: ["Profiel gevonden", "Reviews geanalyseerd", "Verwijdering bevestigd"], protOffContinue: "Doorgaan zonder bescherming", delOk: "Profiel kan worden verwijderd", expertCta: "Praat met de Google-experts",
     toProtect: "Verder naar bescherming", toCheckout: "Verder naar afrekenen",
     totalAfter: "Totaal na succes",
     doneCrossH: "Nog meer voor uw reputatie?",
@@ -412,7 +412,7 @@ const CONV = {
       { biz: "Empresa de remodelações", city: "Setúbal", min: 33 },
     ],
     quotes: [
-      { q: "Num único dia o perfil falso desapareceu. Não achei possível.", a: "Miguel G.", r: "Proprietário de clínica, Lisboa" },
+      { q: "Lutávamos há anos com o perfil do Google. Graças à RapidRemove e ao serviço simpático, foi eliminado num único dia.", a: "Miguel G.", r: "Proprietário de clínica, Lisboa" },
       { q: "Finalmente volto a dormir descansada. Trataram de tudo por mim.", a: "Sara R.", r: "Dona de restaurante, Braga" },
       { q: "Rápido, discreto, profissional — e paga-se mesmo só após o sucesso.", a: "Tomás V.", r: "Diretor-geral, Porto" },
     ],
@@ -442,7 +442,7 @@ const CONV = {
     lastChanceTitle: "Última oportunidade: adicionar expresso",
     lastChanceDesc: "Perfil removido em ~6 h em vez de ~24 — sem taxa se não cumprirmos as 6 h.",
     afterSuccess: "Tudo só é devido após o sucesso.",
-    protStepLabel: "Proteção · Passo 5", subtotal: "Subtotal",
+    protStepLabel: "Proteção · Passo 5", subtotal: "Subtotal", mostChosen: "Mais escolhido", protNoneName: "Sem proteção", protNoneDesc: "Sem proteção contra reaparecimento.", checkingH: "A verificar o perfil …", checkSteps: ["Perfil encontrado", "Avaliações analisadas", "Remoção confirmada"], protOffContinue: "Continuar sem proteção", delOk: "O perfil pode ser removido", expertCta: "Fale com os especialistas em Google",
     toProtect: "Continuar para a proteção", toCheckout: "Continuar para o pagamento",
     totalAfter: "Total após o sucesso",
     doneCrossH: "Ainda mais para a sua reputação?",
@@ -468,7 +468,7 @@ const CONV = {
       { biz: "工務店", city: "京都", min: 33 },
     ],
     quotes: [
-      { q: "1日で偽のプロフィールが消えました。可能だとは思いませんでした。", a: "佐藤 健", r: "クリニック経営、東京" },
+      { q: "Googleプロフィールに何年も悩まされていました。RapidRemoveと親切なサポートのおかげで、たった1日で削除できました。", a: "佐藤 健", r: "クリニック経営、東京" },
       { q: "ようやく安心して眠れます。すべて任せられました。", a: "鈴木 さや", r: "レストラン経営、横浜" },
       { q: "迅速・慎重・プロフェッショナル。しかも本当に成功後のみのお支払いです。", a: "高橋 亮", r: "代表取締役、大阪" },
     ],
@@ -498,7 +498,7 @@ const CONV = {
     lastChanceTitle: "最後のチャンス:エクスプレス追加",
     lastChanceDesc: "約24時間ではなく約6時間で削除 — 6時間に間に合わなければ追加料金なし。",
     afterSuccess: "お支払いはすべて成功後のみ。",
-    protStepLabel: "保護 · ステップ5", subtotal: "小計",
+    protStepLabel: "保護 · ステップ5", subtotal: "小計", mostChosen: "最も選ばれている", protNoneName: "保護なし", protNoneDesc: "再登録への保護はありません。", checkingH: "プロフィールを確認中 …", checkSteps: ["プロフィールを確認", "レビューを分析", "削除可能を確認"], protOffContinue: "保護なしで続行", delOk: "プロフィールは削除可能です", expertCta: "Googleの専門家に相談",
     toProtect: "保護へ進む", toCheckout: "支払いへ進む",
     totalAfter: "成功後の合計",
     doneCrossH: "評判のためにさらに?",
@@ -524,7 +524,7 @@ const CONV = {
       { biz: "Hantverksföretag", city: "Helsingborg", min: 33 },
     ],
     quotes: [
-      { q: "Inom en dag var den falska profilen borta. Trodde inte det var möjligt.", a: "Martin K.", r: "Mottagningsägare, Stockholm" },
+      { q: "Vi kämpade i åratal med Google-profilen. Tack vare RapidRemove och den vänliga servicen var den borttagen på en enda dag.", a: "Martin K.", r: "Mottagningsägare, Stockholm" },
       { q: "Äntligen sover jag gott igen. De tog hand om allt.", a: "Sara R.", r: "Restaurangägare, Malmö" },
       { q: "Snabbt, diskret, professionellt — och man betalar verkligen först efter resultat.", a: "Tobias V.", r: "VD, Göteborg" },
     ],
@@ -554,7 +554,7 @@ const CONV = {
     lastChanceTitle: "Sista chansen: lägg till express",
     lastChanceDesc: "Profil borttagen på ~6 h i stället för ~24 — inget tillägg om vi missar de 6 h.",
     afterSuccess: "Allt betalas först efter resultat.",
-    protStepLabel: "Skydd · Steg 5", subtotal: "Delsumma",
+    protStepLabel: "Skydd · Steg 5", subtotal: "Delsumma", mostChosen: "Mest vald", protNoneName: "Inget skydd", protNoneDesc: "Inget skydd mot återpublicering.", checkingH: "Kontrollerar profilen …", checkSteps: ["Profil hittad", "Omdömen analyserade", "Borttagning bekräftad"], protOffContinue: "Fortsätt utan skydd", delOk: "Profilen kan tas bort", expertCta: "Prata med Google-experterna",
     toProtect: "Fortsätt till skydd", toCheckout: "Fortsätt till kassan",
     totalAfter: "Totalt efter resultat",
     doneCrossH: "Ännu mer för ditt rykte?",
@@ -580,7 +580,7 @@ const CONV = {
       { biz: "Håndværksvirksomhed", city: "Vejle", min: 33 },
     ],
     quotes: [
-      { q: "Inden for en dag var den falske profil væk. Troede ikke, det var muligt.", a: "Martin K.", r: "Klinikejer, København" },
+      { q: "Vi kæmpede i årevis med Google-profilen. Takket være RapidRemove og den venlige service var den slettet på én enkelt dag.", a: "Martin K.", r: "Klinikejer, København" },
       { q: "Endelig sover jeg godt igen. De tog sig af det hele.", a: "Sara R.", r: "Restaurantejer, Odense" },
       { q: "Hurtigt, diskret, professionelt — og man betaler virkelig først efter resultat.", a: "Tobias V.", r: "Direktør, Aarhus" },
     ],
@@ -610,7 +610,7 @@ const CONV = {
     lastChanceTitle: "Sidste chance: tilføj ekspres",
     lastChanceDesc: "Profil fjernet på ~6 t i stedet for ~24 — intet gebyr, hvis vi ikke når de 6 t.",
     afterSuccess: "Alt forfalder først efter resultat.",
-    protStepLabel: "Beskyttelse · Trin 5", subtotal: "Subtotal",
+    protStepLabel: "Beskyttelse · Trin 5", subtotal: "Subtotal", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Ingen beskyttelse mod genopslag.", checkingH: "Tjekker profilen …", checkSteps: ["Profil fundet", "Anmeldelser analyseret", "Fjernelse bekræftet"], protOffContinue: "Fortsæt uden beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Tal med Google-eksperterne",
     toProtect: "Videre til beskyttelse", toCheckout: "Videre til betaling",
     totalAfter: "I alt efter resultat",
     doneCrossH: "Endnu mere for dit omdømme?",
@@ -636,7 +636,7 @@ const CONV = {
       { biz: "Håndverksbedrift", city: "Tromsø", min: 33 },
     ],
     quotes: [
-      { q: "I løpet av en dag var den falske profilen borte. Trodde ikke det var mulig.", a: "Martin K.", r: "Klinikkeier, Oslo" },
+      { q: "Vi kjempet i årevis med Google-profilen. Takket være RapidRemove og den vennlige servicen var den slettet på én enkelt dag.", a: "Martin K.", r: "Klinikkeier, Oslo" },
       { q: "Endelig sover jeg godt igjen. De tok seg av alt.", a: "Sara R.", r: "Restauranteier, Trondheim" },
       { q: "Raskt, diskré, profesjonelt — og du betaler virkelig først etter resultat.", a: "Tobias V.", r: "Daglig leder, Bergen" },
     ],
@@ -666,7 +666,7 @@ const CONV = {
     lastChanceTitle: "Siste sjanse: legg til ekspress",
     lastChanceDesc: "Profil fjernet på ~6 t i stedet for ~24 — ingen tillegg hvis vi ikke når de 6 t.",
     afterSuccess: "Alt forfaller først etter resultat.",
-    protStepLabel: "Beskyttelse · Trinn 5", subtotal: "Delsum",
+    protStepLabel: "Beskyttelse · Trinn 5", subtotal: "Delsum", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Ingen beskyttelse mot gjenoppretting.", checkingH: "Sjekker profilen …", checkSteps: ["Profil funnet", "Omtaler analysert", "Fjerning bekreftet"], protOffContinue: "Fortsett uten beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Snakk med Google-ekspertene",
     toProtect: "Videre til beskyttelse", toCheckout: "Videre til betaling",
     totalAfter: "Totalt etter resultat",
     doneCrossH: "Enda mer for omdømmet ditt?",
@@ -817,16 +817,16 @@ function extractMapsName(url) {
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
   de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express (< 6 Std.)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime", ptMonthlyNote: "Free removal if it reappears", ptMonitorNote: "Monthly protection with daily monitoring", ptLifetimeNote: "Pay once, protection forever with monitoring" },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes", ptMonthlyNote: "Eliminación gratuita si reaparece", ptMonitorNote: "Protección mensual con monitorización diaria", ptLifetimeNote: "Paga una vez, protección para siempre con monitorización" },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois", ptMonthlyNote: "Suppression gratuite en cas de réapparition", ptMonitorNote: "Protection mensuelle avec surveillance quotidienne", ptLifetimeNote: "Payez une fois, protection à vie avec surveillance" },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Ordine express (< 6 ore)", toProtect: "Vai alla protezione", ptCancelPill: "Disdici ogni mese", ptMonthlyNote: "Rimozione gratuita in caso di ricomparsa", ptMonitorNote: "Protezione mensile con monitoraggio quotidiano", ptLifetimeNote: "Paghi una volta, protezione per sempre con monitoraggio" },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoedopdracht (< 6 uur)", toProtect: "Verder naar bescherming", ptCancelPill: "Maandelijks opzegbaar", ptMonthlyNote: "Gratis verwijdering bij heropduiken", ptMonitorNote: "Maandelijkse bescherming met dagelijkse monitoring", ptLifetimeNote: "Eenmalig betalen, voor altijd bescherming met monitoring" },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Pedido expresso (< 6 horas)", toProtect: "Continuar para a proteção", ptCancelPill: "Cancelável mensalmente", ptMonthlyNote: "Remoção gratuita em caso de reaparecimento", ptMonitorNote: "Proteção mensal com monitorização diária", ptLifetimeNote: "Pague uma vez, proteção para sempre com monitorização" },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス依頼（6時間以内）", toProtect: "保護へ進む", ptCancelPill: "毎月解約可能", ptMonthlyNote: "再表示されたら無料で削除", ptMonitorNote: "毎日の監視付き月額保護", ptLifetimeNote: "一度の支払いで、モニタリング付きの永久保護" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Expressorder (< 6 timmar)", toProtect: "Vidare till skydd", ptCancelPill: "Sägs upp månadsvis", ptMonthlyNote: "Gratis borttagning vid återkomst", ptMonitorNote: "Månadsskydd med daglig övervakning", ptLifetimeNote: "Betala en gång, skydd för alltid med övervakning" },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspresordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Opsigeligt månedligt", ptMonthlyNote: "Gratis fjernelse ved genopdukken", ptMonitorNote: "Månedlig beskyttelse med daglig overvågning", ptLifetimeNote: "Betal én gang, beskyttelse for altid med overvågning" },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspressordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Kan sies opp månedlig", ptMonthlyNote: "Gratis fjerning ved gjenoppdukking", ptMonitorNote: "Månedlig beskyttelse med daglig overvåking", ptLifetimeNote: "Betal én gang, beskyttelse for alltid med overvåking" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express (< 6 h)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime", ptMonthlyNote: "Free removal if it reappears", ptMonitorNote: "Monthly protection with daily monitoring", ptLifetimeNote: "Pay once, protection forever with monitoring" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Exprés (< 6 h)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes", ptMonthlyNote: "Eliminación gratuita si reaparece", ptMonitorNote: "Protección mensual con monitorización diaria", ptLifetimeNote: "Paga una vez, protección para siempre con monitorización" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Express (< 6 h)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois", ptMonthlyNote: "Suppression gratuite en cas de réapparition", ptMonitorNote: "Protection mensuelle avec surveillance quotidienne", ptLifetimeNote: "Payez une fois, protection à vie avec surveillance" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Express (< 6 h)", toProtect: "Vai alla protezione", ptCancelPill: "Disdici ogni mese", ptMonthlyNote: "Rimozione gratuita in caso di ricomparsa", ptMonitorNote: "Protezione mensile con monitoraggio quotidiano", ptLifetimeNote: "Paghi una volta, protezione per sempre con monitoraggio" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoed (< 6 u)", toProtect: "Verder naar bescherming", ptCancelPill: "Maandelijks opzegbaar", ptMonthlyNote: "Gratis verwijdering bij heropduiken", ptMonitorNote: "Maandelijkse bescherming met dagelijkse monitoring", ptLifetimeNote: "Eenmalig betalen, voor altijd bescherming met monitoring" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Expresso (< 6 h)", toProtect: "Continuar para a proteção", ptCancelPill: "Cancelável mensalmente", ptMonthlyNote: "Remoção gratuita em caso de reaparecimento", ptMonitorNote: "Proteção mensal com monitorização diária", ptLifetimeNote: "Pague uma vez, proteção para sempre com monitorização" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス（6時間以内）", toProtect: "保護へ進む", ptCancelPill: "毎月解約可能", ptMonthlyNote: "再表示されたら無料で削除", ptMonitorNote: "毎日の監視付き月額保護", ptLifetimeNote: "一度の支払いで、モニタリング付きの永久保護" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Express (< 6 h)", toProtect: "Vidare till skydd", ptCancelPill: "Sägs upp månadsvis", ptMonthlyNote: "Gratis borttagning vid återkomst", ptMonitorNote: "Månadsskydd med daglig övervakning", ptLifetimeNote: "Betala en gång, skydd för alltid med övervakning" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspres (< 6 t)", toProtect: "Videre til beskyttelse", ptCancelPill: "Opsigeligt månedligt", ptMonthlyNote: "Gratis fjernelse ved genopdukken", ptMonitorNote: "Månedlig beskyttelse med daglig overvågning", ptLifetimeNote: "Betal én gang, beskyttelse for altid med overvågning" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspress (< 6 t)", toProtect: "Videre til beskyttelse", ptCancelPill: "Kan sies opp månedlig", ptMonthlyNote: "Gratis fjerning ved gjenoppdukking", ptMonitorNote: "Månedlig beskyttelse med daglig overvåking", ptLifetimeNote: "Betal én gang, beskyttelse for alltid med overvåking" },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -1378,19 +1378,15 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
         <aside className="wz-aside">
-          <div className="wz-expert">
-            <button type="button" className="we-main" onClick={openTidioChat}>
-              <span className="we-avas">
-                <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
-                <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
-              </span>
-              <span className="we-tx">{conv.expertCta}</span>
-            </button>
-            <span className="we-actions">
-              {lang === "de" && <a className="we-ic" href="tel:08000900001" aria-label="Anruf 0800 09 00 00 1"><Icon.phone size={17} /></a>}
-              <a className="we-ic" href="mailto:helpdesk@rapid-remove.com" aria-label="E-Mail"><Icon.mail size={17} /></a>
+          <button type="button" className="wz-expert" onClick={openTidioChat}>
+            <span className="we-avas">
+              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
+              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
             </span>
-          </div>
+            <span className="we-tx">{conv.expertCta}</span>
+            <span className="we-arrow"><Icon.arrowRight size={16} /></span>
+          </button>
+          <ContactLine lang={lang} />
           <Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} />
         </aside>
       </div>
