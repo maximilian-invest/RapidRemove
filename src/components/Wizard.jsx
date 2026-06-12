@@ -1767,8 +1767,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             );
           })}
         </div>
-        <div className="router-proof"><TrustpilotLive /></div>
-        <PressBand variant="bar" />
       </div>
     );
   }
