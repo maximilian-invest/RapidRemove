@@ -197,7 +197,7 @@
 .opt-radio{width:24px;height:24px;border-radius:50%;border:2px solid var(--hairline-strong);flex:none;margin-top:2px;display:flex;align-items:center;justify-content:center;transition:all var(--dur);}
 .opt.sel .opt-radio{border-color:var(--primary);background:var(--primary);}
 .opt.sel .opt-radio::after{content:"";width:9px;height:9px;border-radius:50%;background:#fff;}
-.opt-main{flex:1;}
+.opt-main{flex:1;min-width:0;}
 .opt-main .ot{font-family:var(--font-display);font-weight:600;font-size:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 .opt-main .obadge{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--orange-100);color:var(--orange-800);padding:3px 9px;border-radius:var(--r-pill);}
 .opt-main .obadge.obadge-pop{font-size:9.5px;letter-spacing:.02em;white-space:nowrap;padding:2px 7px;}
@@ -209,7 +209,7 @@
   .opt-list{gap:12px;}
   .opt{padding:18px;gap:14px;}
   .opt-radio{width:22px;height:22px;margin-top:2px;}
-  .opt .opt-ic{width:42px;height:42px;border-radius:11px;}
+  .opt .opt-ic{width:34px;height:34px;border-radius:10px;}
   .opt-main .ot{font-size:16.5px;}
   .opt-main .od{font-size:13.5px;margin-top:4px;line-height:1.5;}
   .opt-price{font-size:20px;}
@@ -388,7 +388,8 @@
 .stat-card .stat-lbl{font-size:13.5px;font-weight:700;color:rgba(255,255,255,.78);margin-top:8px;}
 
 /* ---------- option icon ---------- */
-.opt-ic{width:44px;height:44px;border-radius:12px;background:var(--neutral-100);display:flex;align-items:center;justify-content:center;color:var(--fg-2);flex:none;}
+.opt-ic{width:36px;height:36px;border-radius:11px;background:var(--neutral-100);display:flex;align-items:center;justify-content:center;color:var(--fg-2);flex:none;}
+.opt-ic svg{width:19px;height:19px;}
 .opt.sel .opt-ic{background:#fff;color:var(--primary);}
 
 /* ---------- Express order-bump ---------- */
