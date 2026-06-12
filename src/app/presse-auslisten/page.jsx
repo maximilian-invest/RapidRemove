@@ -9,13 +9,13 @@ const URL = `${SITE_URL}/presse-auslisten`;
 export const metadata = {
   title: "Negative Presse & Google-Treffer auslisten lassen — RapidRemove",
   description:
-    "Negative Presseartikel und unerwünschte Suchergebnisse aus Google auslisten lassen — kostenlose Erstprüfung durch unsere Partnerkanzlei. Bewertung nur, wenn eine Auslistung realistisch ist.",
+    "Negative Presseartikel und unerwünschte Suchergebnisse aus Google auslisten lassen — kostenlose Erstprüfung durch unsere Partnerkanzlei. Beauftragung nur, wenn eine Auslistung realistisch ist.",
   alternates: { canonical: URL, languages: pageHreflang("deindex") },
   openGraph: {
     type: "website",
     title: "Negative Presse & Google-Treffer auslisten lassen — RapidRemove",
     description:
-      "Negative Presse und Suchergebnisse aus Google entfernen lassen. Kostenlose Erstprüfung, klare Empfehlung, Festpreis nur bei realistischer Auslistung.",
+      "Negative Presse und Suchergebnisse aus Google entfernen lassen. Kostenlose Erstprüfung, klare Empfehlung — Aufwand individuell nach rechtlicher Prüfung.",
     url: URL,
     siteName: "RapidRemove",
     locale: "de_DE",

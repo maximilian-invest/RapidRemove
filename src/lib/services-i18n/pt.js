@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Proteger e despromover a reputação",
   h1: "Despromova os resultados negativos do Google — reconquiste a página 1.",
   lead: "O que fazer se o resultado negativo não pode ser apagado? Construímos conteúdo positivo e empurramos o negativo para fora da zona visível.",
-  cta: "Auditoria de reputação gratuita",
+  cta: "Análise inicial gratuita",
   assure: ["Análise inicial gratuita", "Despromoção mensurável", "Monitorização contínua"],
   problemEyebrow: "O problema",
   problemH: "Nem tudo pode ser apagado.",
-  problemSub: "Artigos de imprensa, fóruns, sites de terceiros — muito está protegido pela liberdade de imprensa ou por direitos alheios. Apagar não é então possível. Mas: o que cai para a página 2+ quase ninguém vê. 95 % dos cliques ficam na página 1.",
+  problemSub: "Artigos de imprensa, fóruns, sites de terceiros — muito está protegido pela liberdade de imprensa ou por direitos alheios. Apagar não é então possível. Mas: o que cai para a página 2+ quase ninguém vê. A grande maioria dos cliques fica na página 1.",
   stepsEyebrow: "Como funciona",
   stepsH: "De volta à página 1 em quatro passos.",
   steps: [

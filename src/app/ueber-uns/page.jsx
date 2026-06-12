@@ -6,13 +6,13 @@ import { pageHreflang } from "@/lib/page-routes";
 const URL = `${SITE_URL}/ueber-uns`;
 
 export const metadata = {
-  title: "Über uns — RapidRemove",
+  title: "Über uns — RapidRemove · Spezialisten für Google-Profil-Löschung",
   description:
-    "RapidRemove ist die führende Reputations-Agentur für die Löschung von Google-Unternehmensprofilen — eine eingetragene Firma aus Hallein, Österreich (Simple Solution. OG). Unsere Mission, unser Team und echte Firmendaten.",
+    "RapidRemove ist die spezialisierte Reputations-Agentur für die Löschung von Google-Unternehmensprofilen — eine eingetragene Firma aus Hallein, Österreich (Simple Solution. OG). Unsere Mission, unser Team und echte Firmendaten.",
   alternates: { canonical: URL, languages: pageHreflang("about") },
   openGraph: {
     type: "website",
-    title: "Über uns — RapidRemove",
+    title: "Über uns — RapidRemove · Spezialisten für Google-Profil-Löschung",
     description:
       "Führende Reputations-Agentur für die Löschung von Google-Profilen. Echte Firma aus Österreich, Bezahlung erst nach Erfolg.",
     url: URL,

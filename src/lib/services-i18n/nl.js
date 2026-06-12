@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Reputatie beschermen & terugdringen",
   h1: "Dring negatieve Google-resultaten terug — herover pagina 1.",
   lead: "Wat als het negatieve resultaat niet verwijderbaar is? Wij bouwen positieve content op en duwen het negatieve uit de zichtbare zone.",
-  cta: "Gratis reputatie-audit",
+  cta: "Gratis eerste analyse",
   assure: ["Gratis eerste analyse", "Meetbare terugdringing", "Doorlopende monitoring"],
   problemEyebrow: "Het probleem",
   problemH: "Niet alles is te verwijderen.",
-  problemSub: "Persartikelen, fora, websites van derden — veel is beschermd door persvrijheid of rechten van anderen. Verwijderen kan dan niet. Maar: wat naar pagina 2+ zakt, ziet vrijwel niemand. 95 % van alle klikken blijft op pagina 1.",
+  problemSub: "Persartikelen, fora, websites van derden — veel is beschermd door persvrijheid of rechten van anderen. Verwijderen kan dan niet. Maar: wat naar pagina 2+ zakt, ziet vrijwel niemand. Verreweg de meeste klikken blijven op pagina 1.",
   stepsEyebrow: "Zo werkt het",
   stepsH: "In vier stappen terug naar pagina 1.",
   steps: [

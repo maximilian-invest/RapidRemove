@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Beskyt & fortræng omdømme",
   h1: "Fortræng negative Google-resultater — generobr side 1.",
   lead: "Hvad gør man, hvis det negative resultat ikke kan fjernes? Vi opbygger positivt indhold og skubber det negative ud af den synlige zone.",
-  cta: "Gratis omdømme-audit",
+  cta: "Gratis første analyse",
   assure: ["Gratis første analyse", "Målbar fortrængning", "Løbende overvågning"],
   problemEyebrow: "Problemet",
   problemH: "Ikke alt kan fjernes.",
-  problemSub: "Presseartikler, fora, tredjepartssider — meget er beskyttet af pressefriheden eller andres rettigheder. Så er fjernelse ikke mulig. Men: det, der ryger på side 2+, ser stort set ingen. 95 % af alle klik bliver på side 1.",
+  problemSub: "Presseartikler, fora, tredjepartssider — meget er beskyttet af pressefriheden eller andres rettigheder. Så er fjernelse ikke mulig. Men: det, der ryger på side 2+, ser stort set ingen. Langt de fleste klik bliver på side 1.",
   stepsEyebrow: "Sådan virker det",
   stepsH: "Tilbage på side 1 i fire trin.",
   steps: [

@@ -7,13 +7,13 @@ import { pageHreflang } from "@/lib/page-routes";
 const URL = `${SITE_URL}/reputation-verdraengen`;
 
 export const metadata = {
-  title: "Negative Google-Treffer verdrängen — Seite 1 zurückerobern — RapidRemove",
+  title: "Negative Google-Treffer verdrängen — RapidRemove",
   description:
-    "Negative Suchergebnisse gezielt verdrängen und Ihre Online-Reputation auf Seite 1 zurückerobern. Strategie, positive Inhalte und Monitoring von der führenden Reputations-Agentur.",
+    "Negative Suchergebnisse gezielt verdrängen und Ihre Online-Reputation auf Seite 1 zurückerobern. Strategie, positive Inhalte und Monitoring von der spezialisierten Reputations-Agentur.",
   alternates: { canonical: URL, languages: pageHreflang("orm") },
   openGraph: {
     type: "website",
-    title: "Negative Google-Treffer verdrängen — Seite 1 zurückerobern — RapidRemove",
+    title: "Negative Google-Treffer verdrängen — RapidRemove",
     description:
       "Reputation schützen & negative Treffer verdrängen — Seite 1 von Google zurückerobern. Persönlich, diskret, messbar.",
     url: URL,

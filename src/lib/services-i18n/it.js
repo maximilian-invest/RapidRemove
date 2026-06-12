@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Proteggere e far retrocedere la reputazione",
   h1: "Fai retrocedere i risultati Google negativi — riconquista la pagina 1.",
   lead: "Cosa fare se il risultato negativo non si può eliminare? Costruiamo contenuti positivi e spingiamo il negativo fuori dall'area visibile.",
-  cta: "Audit di reputazione gratuito",
+  cta: "Prima analisi gratuita",
   assure: ["Analisi iniziale gratuita", "Retrocessione misurabile", "Monitoraggio continuo"],
   problemEyebrow: "Il problema",
   problemH: "Non tutto si può eliminare.",
-  problemSub: "Articoli di stampa, forum, siti di terzi — molto è protetto dalla libertà di stampa o dai diritti altrui. Eliminare allora non è possibile. Ma: ciò che scivola in pagina 2+ non lo vede quasi nessuno. Il 95 % dei clic resta in pagina 1.",
+  problemSub: "Articoli di stampa, forum, siti di terzi — molto è protetto dalla libertà di stampa o dai diritti altrui. Eliminare allora non è possibile. Ma: ciò che scivola in pagina 2+ non lo vede quasi nessuno. La stragrande maggioranza dei clic resta in pagina 1.",
   stepsEyebrow: "Come funziona",
   stepsH: "Di nuovo in pagina 1 in quattro passi.",
   steps: [

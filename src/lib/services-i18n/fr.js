@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Protéger et reléguer la réputation",
   h1: "Reléguez les résultats Google négatifs — reconquérez la page 1.",
   lead: "Que faire si le résultat négatif ne peut pas être supprimé ? Nous créons du contenu positif et repoussons le négatif hors de la zone visible.",
-  cta: "Audit de réputation gratuit",
+  cta: "Première analyse gratuite",
   assure: ["Analyse initiale gratuite", "Reléguer de façon mesurable", "Surveillance continue"],
   problemEyebrow: "Le problème",
   problemH: "Tout ne peut pas être supprimé.",
-  problemSub: "Articles de presse, forums, sites tiers — beaucoup est protégé par la liberté de la presse ou les droits d'autrui. La suppression est alors impossible. Mais : ce qui passe en page 2+ n'est presque vu par personne. 95 % des clics restent sur la page 1.",
+  problemSub: "Articles de presse, forums, sites tiers — beaucoup est protégé par la liberté de la presse ou les droits d'autrui. La suppression est alors impossible. Mais : ce qui passe en page 2+ n'est presque vu par personne. La grande majorité des clics restent sur la page 1.",
   stepsEyebrow: "Comment ça marche",
   stepsH: "De retour en page 1 en quatre étapes.",
   steps: [

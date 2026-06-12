@@ -7,7 +7,7 @@ import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 
 export const SERP_TXT = {
-  de: { q: "ihr name + unternehmen", own: "Ihre Website — Startseite", ownUrl: "ihre-website.de", neg: "Negativer Artikel über Ihr Unternehmen", negUrl: "presse-portal.de › artikel", negTag: "Presse", other: "Branchenverzeichnis — Eintrag", otherUrl: "verzeichnis.de", gone: "Aus der Google-Suche entfernt" },
+  de: { q: "Ihr Name + Unternehmen", own: "Ihre Website — Startseite", ownUrl: "ihre-website.de", neg: "Negativer Artikel über Ihr Unternehmen", negUrl: "presse-portal.de › artikel", negTag: "Presse", other: "Branchenverzeichnis — Eintrag", otherUrl: "verzeichnis.de", gone: "Aus der Google-Suche entfernt" },
   en: { q: "your name + company", own: "Your website — home", ownUrl: "your-website.com", neg: "Negative article about your business", negUrl: "press-portal.com › article", negTag: "Press", other: "Business directory — listing", otherUrl: "directory.com", gone: "Removed from Google Search" },
 };
 

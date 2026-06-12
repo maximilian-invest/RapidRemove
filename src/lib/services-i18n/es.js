@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Proteger y desplazar la reputación",
   h1: "Desplace los resultados negativos de Google — reconquiste la página 1.",
   lead: "¿Qué hacer si el resultado negativo no se puede borrar? Creamos contenido positivo y empujamos lo negativo fuera de la zona visible.",
-  cta: "Auditoría de reputación gratuita",
+  cta: "Análisis inicial gratuito",
   assure: ["Análisis inicial gratuito", "Desplazamiento medible", "Monitorización continua"],
   problemEyebrow: "El problema",
   problemH: "No todo se puede borrar.",
-  problemSub: "Artículos de prensa, foros, webs de terceros — mucho está protegido por la libertad de prensa o derechos ajenos. Entonces borrar no es posible. Pero: lo que cae a la página 2+ casi nadie lo ve. El 95 % de los clics se quedan en la página 1.",
+  problemSub: "Artículos de prensa, foros, webs de terceros — mucho está protegido por la libertad de prensa o derechos ajenos. Entonces borrar no es posible. Pero: lo que cae a la página 2+ casi nadie lo ve. La gran mayoría de los clics se quedan en la página 1.",
   stepsEyebrow: "Cómo funciona",
   stepsH: "De vuelta a la página 1 en cuatro pasos.",
   steps: [

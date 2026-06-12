@@ -13,11 +13,11 @@ const orm = {
   eyebrow: "Skydda & tränga undan rykte",
   h1: "Tryck ned negativa Google-resultat — återta sida 1.",
   lead: "Vad gör man om det negativa resultatet inte går att ta bort? Vi bygger positivt innehåll och tränger undan det negativa ur den synliga zonen.",
-  cta: "Gratis ryktesaudit",
+  cta: "Gratis första analys",
   assure: ["Gratis första analys", "Mätbar undanträngning", "Löpande övervakning"],
   problemEyebrow: "Problemet",
   problemH: "Allt går inte att ta bort.",
-  problemSub: "Pressartiklar, forum, tredjepartssidor — mycket skyddas av tryckfriheten eller andras rättigheter. Då är borttagning inte möjlig. Men: det som hamnar på sida 2+ ser nästan ingen. 95 % av alla klick stannar på sida 1.",
+  problemSub: "Pressartiklar, forum, tredjepartssidor — mycket skyddas av tryckfriheten eller andras rättigheter. Då är borttagning inte möjlig. Men: det som hamnar på sida 2+ ser nästan ingen. De allra flesta klicken stannar på sida 1.",
   stepsEyebrow: "Så fungerar det",
   stepsH: "Tillbaka till sida 1 i fyra steg.",
   steps: [
