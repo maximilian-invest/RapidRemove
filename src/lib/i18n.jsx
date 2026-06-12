@@ -252,7 +252,7 @@ const I18N = {
         button: "Weiter zum Checkout",
       },
       s5: {
-        eyebrow: "Checkout · Schritt 5",
+        eyebrow: "Checkout · Schritt 6",
         h: "Fast geschafft.",
         sub: "Bitte hinterlassen Sie die Daten für die Auftragserteilung. Nach Erfolg erhalten Sie einen Zahlungslink und eine Rechnung.",
         contact: "Kontakt", company: "Unternehmen",
@@ -529,7 +529,7 @@ const I18N = {
         button: "Continue to checkout",
       },
       s5: {
-        eyebrow: "Checkout · Step 5",
+        eyebrow: "Checkout · Step 6",
         h: "Almost there.",
         sub: "Enter only the essentials. You're charged only after successful removal.",
         contact: "Contact", company: "Company",
