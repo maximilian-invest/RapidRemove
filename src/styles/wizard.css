@@ -198,9 +198,9 @@
 
 /* ---------- Service / config options ---------- */
 .opt-list{display:flex;flex-direction:column;gap:14px;}
-/* kleine grüne Bestätigung auf Schritt 4 (Profil kann gelöscht werden) */
-.svc-ok{display:inline-flex;align-items:center;gap:7px;margin:0 0 18px;font-size:13.5px;font-weight:800;color:var(--success);}
-.svc-ok svg{color:var(--success);flex:none;}
+/* grüne Bestätigungs-Box auf Schritt 4 (Profil kann gelöscht werden) — gleiche Optik wie .sum-note im Checkout, volle Breite */
+.svc-ok{display:flex;align-items:flex-start;gap:8px;margin:0 0 18px;font-size:13px;color:var(--success);font-weight:700;background:var(--success-soft);padding:12px 14px;border-radius:var(--r-md);}
+.svc-ok svg{color:var(--success);flex:none;width:17px;height:17px;margin-top:1px;}
 /* Eck-Badge oben rechts auf .opt-Kacheln (Empfohlen / Meistgewählt) */
 .opt-flag{position:absolute;top:-9px;right:18px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--primary);color:#fff;padding:3px 9px;border-radius:var(--r-pill);box-shadow:var(--shadow-sm);}
 /* Experten-CTA in der Schritt-1-Seitenspalte (öffnet Tidio) */
