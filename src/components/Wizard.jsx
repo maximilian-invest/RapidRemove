@@ -1137,8 +1137,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     await minDelay;
     let list;
     if (results && results.length) {
+      // Nur die tatsächlich gefundenen Profile zeigen — kein Platzhalter mit dem getippten Titel.
       list = results.slice(0, 4);
-      if (nm.trim()) list = [...list, { ...manualCandidate(nm, lang)[0], id: "pmanual", primary: false }];
     }
     else if (placesEnabled()) list = manualCandidate(nm, lang);
     else list = makeCandidates(nm, lang);
