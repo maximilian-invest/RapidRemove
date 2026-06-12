@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Hvordan fjerner jeg min egen Google Maps-placering?", a: "Via »Din virksomhedsprofil« → indstillinger → tre-prikker-menuen → »Fjern virksomhedsprofilen« → »Fjern profilindhold og administratorer«. Bemærk: dette frakobler kun placeringen din konto, men fjerner den ikke fra Maps." },
-    { q: "Hvorfor bliver min Google Maps-placering stående synlig efter fjernelsen?", a: "Fordi det at fjerne den fra kontoen kun markerer placeringen som »Permanent lukket«. Placeringen og anmeldelserne bliver stående i Maps og søgningen. En fuldstændig fjernelse er kun mulig via et bureau." },
+    { q: "Hvorfor bliver min Google Maps-placering stående synlig efter fjernelsen?", a: "Fordi det at fjerne den fra kontoen kun markerer placeringen som »Permanent lukket«. Placeringen og anmeldelserne bliver stående i Maps og søgningen. Google tilbyder ikke selv en vej til dette; i praksis sker en fuldstændig fjernelse normalt via et specialiseret bureau." },
     { q: "Hvordan anmelder jeg en andens eller forkert placering?", a: "Åbn placeringen i Google Maps, »Foreslå en ændring« → »Rapportér som lukket eller fjern«, angiv begrundelsen (f.eks. »Findes ikke her«) og gem. Google gennemgår forslaget." },
     { q: "Hvordan fjerner jeg en dubleret Google-placering?", a: "Åbn dubletten i Maps, »Foreslå en ændring« → »Rapportér som lukket eller fjern« → vælg »Dublet af et andet sted«. Har begge placeringer anmeldelser, så lad dem hellere sammenlægge via Googles support." },
-    { q: "Kan jeg få fjernet en Google Maps-placering varigt?", a: "Fuldstændigt og varigt inklusive anmeldelserne er det kun muligt via et specialiseret bureau, da Google ikke tilbyder selvfjernelse. Den tekniske fjernelse sker ofte inden for 24 timer og med garanti." },
+    { q: "Kan jeg få fjernet en Google Maps-placering varigt?", a: "Fuldstændigt og varigt inklusive anmeldelserne sker det normalt via et specialiseret bureau, da Google ikke tilbyder selvfjernelse. Den tekniske fjernelse sker ofte inden for 24 timer — betaling først efter succes." },
   ],
   related: [
     { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

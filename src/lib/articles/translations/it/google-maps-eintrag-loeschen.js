@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Come elimino la mia scheda Google Maps?", a: "Tramite «Il tuo profilo dell'attività» → impostazioni → menu a tre puntini → «Rimuovi il profilo dell'attività» → «Rimuovi i contenuti del profilo e gli amministratori». Attenzione: questo scollega solo la scheda dal tuo account, non la rimuove da Maps." },
-    { q: "Perché la mia scheda Google Maps resta visibile dopo l'eliminazione?", a: "Perché rimuoverla dall'account contrassegna solo la scheda come «Chiusa definitivamente». La scheda e le recensioni restano in Maps e nella ricerca. Una rimozione completa è possibile solo tramite un'agenzia." },
+    { q: "Perché la mia scheda Google Maps resta visibile dopo l'eliminazione?", a: "Perché rimuoverla dall'account contrassegna solo la scheda come «Chiusa definitivamente». La scheda e le recensioni restano in Maps e nella ricerca. Google non offre una via diretta; nella pratica una rimozione completa riesce di norma tramite un'agenzia specializzata." },
     { q: "Come segnalo una scheda altrui o errata?", a: "In Google Maps apri la scheda, «Suggerisci una modifica» → «Segnala come chiuso o rimuovi», indica il motivo (es. «Non esiste») e salva. Google verifica il suggerimento." },
     { q: "Come elimino una scheda Google duplicata?", a: "Apri il duplicato in Maps, «Suggerisci una modifica» → «Segnala come chiuso o rimuovi» → scegli «Duplicato di un altro luogo». Se entrambe le schede hanno recensioni, falle piuttosto unire tramite l'assistenza Google." },
-    { q: "Posso far eliminare una scheda Google Maps in modo permanente?", a: "Del tutto e in modo permanente, incluse le recensioni, è possibile solo tramite un'agenzia specializzata, poiché Google non prevede l'auto-eliminazione. La rimozione tecnica avviene spesso in 24 ore e con garanzia." },
+    { q: "Posso far eliminare una scheda Google Maps in modo permanente?", a: "Del tutto e in modo permanente, incluse le recensioni, riesce di norma tramite un'agenzia specializzata, poiché Google non prevede l'auto-eliminazione. La rimozione tecnica avviene spesso in 24 ore — si paga solo dopo il successo." },
   ],
   related: [
     { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

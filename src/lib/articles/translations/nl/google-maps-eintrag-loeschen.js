@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Hoe verwijder ik mijn eigen Google Maps vermelding?", a: "Via „Je bedrijfsprofiel” → profielinstellingen → menu met drie puntjes → „Bedrijfsprofiel verwijderen” → „Profielinhoud en beheerders verwijderen”. Let op: dit koppelt de vermelding alleen van uw account los, maar verwijdert ze niet uit Maps." },
-    { q: "Waarom blijft mijn Google Maps vermelding na het verwijderen zichtbaar?", a: "Omdat verwijderen uit het account de vermelding alleen als „Permanent gesloten” markeert. Profiel en reviews blijven in Maps en zoekresultaten bestaan. Een volledige verwijdering is alleen via een bureau mogelijk." },
+    { q: "Waarom blijft mijn Google Maps vermelding na het verwijderen zichtbaar?", a: "Omdat verwijderen uit het account de vermelding alleen als „Permanent gesloten” markeert. Profiel en reviews blijven in Maps en zoekresultaten bestaan. Google biedt hiervoor zelf geen weg; in de praktijk lukt volledige verwijdering doorgaans via een gespecialiseerd bureau." },
     { q: "Hoe rapporteer ik een andermans of onjuiste vermelding?", a: "Open in Google Maps de vermelding, „Een wijziging voorstellen” → „Markeren als gesloten of verwijderen”, geef de reden op (bv. „Bestaat niet”) en sla op. Google beoordeelt het voorstel." },
     { q: "Hoe verwijder ik een dubbele Google vermelding?", a: "Open het duplicaat in Maps, „Een wijziging voorstellen” → „Markeren als gesloten of verwijderen” → kies „Duplicaat van een andere locatie”. Hebben beide vermeldingen reviews, laat ze dan liever via de Google-ondersteuning samenvoegen." },
-    { q: "Kan ik een Google Maps vermelding blijvend laten verwijderen?", a: "Volledig en blijvend inclusief reviews is dat alleen via een gespecialiseerd bureau mogelijk, omdat Google geen zelfverwijdering voorziet. De technische verwijdering gebeurt vaak binnen 24 uur en met garantie." },
+    { q: "Kan ik een Google Maps vermelding blijvend laten verwijderen?", a: "Volledig en blijvend inclusief reviews lukt dat doorgaans via een gespecialiseerd bureau, omdat Google geen zelfverwijdering voorziet. De technische verwijdering gebeurt vaak binnen 24 uur — betalen pas na succes." },
   ],
   related: [
     { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

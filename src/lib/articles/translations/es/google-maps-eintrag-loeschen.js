@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "¿Cómo elimino mi propia ficha de Google Maps?", a: "Mediante «Tu perfil de empresa» → configuración del perfil → menú de tres puntos → «Quitar el perfil de empresa» → «Quitar el contenido del perfil y los administradores». Atención: esto solo desvincula la ficha de tu cuenta, no la quita de Maps." },
-    { q: "¿Por qué sigue visible mi ficha de Google Maps tras eliminarla?", a: "Porque quitarla de la cuenta solo marca la ficha como «Cerrado permanentemente». El perfil y las reseñas permanecen en Maps y en la búsqueda. Una eliminación completa solo es posible mediante una agencia." },
+    { q: "¿Por qué sigue visible mi ficha de Google Maps tras eliminarla?", a: "Porque quitarla de la cuenta solo marca la ficha como «Cerrado permanentemente». El perfil y las reseñas permanecen en Maps y en la búsqueda. Google no ofrece una vía propia para ello; en la práctica, la eliminación completa suele lograrse mediante una agencia especializada." },
     { q: "¿Cómo denuncio una ficha ajena o errónea?", a: "En Google Maps abre la ficha, «Sugerir un cambio» → «Cerrar o quitar», indica el motivo (p. ej. «No existe») y guarda. Google revisa la sugerencia." },
     { q: "¿Cómo elimino una ficha de Google duplicada?", a: "Abre el duplicado en Maps, «Sugerir un cambio» → «Cerrar o quitar» → elige «Duplicado de otro lugar». Si ambas fichas tienen reseñas, mejor hazlas fusionar a través del soporte de Google." },
-    { q: "¿Puedo eliminar una ficha de Google Maps de forma permanente?", a: "De forma completa y permanente, incluidas las reseñas, solo es posible mediante una agencia especializada, ya que Google no prevé la autoeliminación. La eliminación técnica suele realizarse en 24 horas y con garantía." },
+    { q: "¿Puedo eliminar una ficha de Google Maps de forma permanente?", a: "De forma completa y permanente, incluidas las reseñas, suele lograrse mediante una agencia especializada, ya que Google no prevé la autoeliminación. La eliminación técnica suele realizarse en 24 horas — se paga solo tras el éxito." },
   ],
   related: [
     { label: "Eliminar el perfil de empresa de Google: ¿cómo se hace?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

@@ -3,6 +3,7 @@
 import MagazinStandalone from "@/components/MagazinStandalone";
 import { SITE_URL } from "@/lib/article-google-profil";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
+import { OG_IMAGE } from "@/lib/locales-meta";
 
 const URL = `${SITE_URL}/magazin`;
 
@@ -19,6 +20,7 @@ export const metadata = {
     url: URL,
     siteName: "RapidRemove",
     locale: "de_DE",
+    images: [OG_IMAGE],
   },
 };
 

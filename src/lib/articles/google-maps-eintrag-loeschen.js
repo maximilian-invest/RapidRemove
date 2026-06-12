@@ -28,7 +28,7 @@ const article = {
     { t: "cta", title: "Maps-Eintrag dauerhaft loswerden?", text: "Wir prüfen kostenlos, ob sich Ihr Google-Maps-Eintrag entfernen lässt.", btn: "Kostenlos prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "sichtbar", text: "Warum der Eintrag trotzdem sichtbar bleibt", toc: "Warum bleibt er?" },
-    { t: "p", text: "Das ist der entscheidende Punkt, den Google bewusst verschleiert: Das Entfernen aus Ihrem Konto bedeutet **nicht**, dass das Unternehmen aus Maps und der Suche verschwindet. Es wird lediglich aus Ihrem Konto gelöst und in der Regel als **„Dauerhaft geschlossen“** markiert. Profil und Bewertungen **bleiben bestehen**. Google positioniert sich in seinen Nutzungsbedingungen ausdrücklich gegen die vollständige Löschung von Unternehmensprofilen – eine restlose Entfernung ist daher allein über das eigene Konto praktisch nicht möglich." },
+    { t: "p", text: "Das ist der entscheidende Punkt, den Google bewusst verschleiert: Das Entfernen aus Ihrem Konto bedeutet **nicht**, dass das Unternehmen aus Maps und der Suche verschwindet. Es wird lediglich aus Ihrem Konto gelöst und in der Regel als **„Dauerhaft geschlossen“** markiert. Profil und Bewertungen **bleiben bestehen**. Google positioniert sich in seinen [Inhalts-Richtlinien](https://support.google.com/contributionpolicy/answer/7400114) ausdrücklich gegen die vollständige Löschung von Unternehmensprofilen – eine restlose Entfernung ist daher allein über das eigene Konto praktisch nicht möglich." },
 
     { t: "h2", id: "fremder", text: "Fremden oder falschen Eintrag melden", toc: "Fremder Eintrag" },
     { t: "p", text: "Für Einträge, die Ihnen nicht gehören (z. B. ein falscher oder veralteter Eintrag), nutzen Sie die Melde-Funktion:" },
@@ -62,10 +62,10 @@ const article = {
   ],
   faq: [
     { q: "Wie lösche ich meinen eigenen Google-Maps-Eintrag?", a: "Über „Mein Unternehmen“ → Profileinstellungen → Drei-Punkt-Menü → „Unternehmensprofil entfernen“ → „Profilinhalt und Administratoren entfernen“. Achtung: Das löst den Eintrag nur aus Ihrem Konto, entfernt ihn aber nicht aus Maps." },
-    { q: "Warum bleibt mein Google-Maps-Eintrag nach dem Löschen sichtbar?", a: "Weil das Entfernen aus dem Konto den Eintrag nur als „Dauerhaft geschlossen“ markiert. Profil und Bewertungen bleiben in Maps und Suche bestehen. Eine vollständige Löschung ist nur über eine Agentur möglich." },
+    { q: "Warum bleibt mein Google-Maps-Eintrag nach dem Löschen sichtbar?", a: "Weil das Entfernen aus dem Konto den Eintrag nur als „Dauerhaft geschlossen“ markiert. Profil und Bewertungen bleiben in Maps und Suche bestehen. Google selbst bietet dafür keinen Weg an; in der Praxis gelingt eine vollständige Löschung in der Regel über eine spezialisierte Agentur." },
     { q: "Wie melde ich einen fremden oder falschen Eintrag?", a: "In Google Maps den Eintrag öffnen, „Änderung vorschlagen“ → „Als geschlossen melden oder entfernen“, Grund angeben (z. B. „Gibt es hier nicht“) und speichern. Google prüft den Vorschlag." },
     { q: "Wie entferne ich einen doppelten Google-Eintrag?", a: "Das Duplikat in Maps öffnen, „Änderung vorschlagen“ → „Als geschlossen melden oder entfernen“ → „Duplikat eines anderen Orts“ wählen. Bei Bewertungen auf beiden Einträgen besser über den Google-Support zusammenführen lassen." },
-    { q: "Kann ich einen Google-Maps-Eintrag dauerhaft löschen lassen?", a: "Vollständig und dauerhaft inklusive Bewertungen ist das nur über eine spezialisierte Agentur möglich, da Google die Selbstlöschung nicht vorsieht. Die technische Löschung erfolgt oft innerhalb von 24 Stunden und mit Garantie." },
+    { q: "Kann ich einen Google-Maps-Eintrag dauerhaft löschen lassen?", a: "Vollständig und dauerhaft inklusive Bewertungen gelingt das in der Regel über eine spezialisierte Agentur, da Google die Selbstlöschung nicht vorsieht. Die technische Löschung erfolgt oft innerhalb von 24 Stunden – bezahlt wird erst nach Erfolg." },
   ],
   related: [
     { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

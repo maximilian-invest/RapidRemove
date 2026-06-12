@@ -24,7 +24,7 @@ const article = {
     ] },
 
     { t: "h2", id: "sichtbar", text: "Why the listing still stays visible", toc: "Why it stays" },
-    { t: "p", text: "This is the crucial point Google deliberately obscures: removing it from your account does **not** mean the business disappears from Maps and search. It is merely detached from your account and usually marked as **“Permanently closed”**. The profile and reviews **remain**. In its terms of service, Google explicitly positions itself against the full deletion of business profiles – so a complete removal via your own account alone is practically impossible." },
+    { t: "p", text: "This is the crucial point Google deliberately obscures: removing it from your account does **not** mean the business disappears from Maps and search. It is merely detached from your account and usually marked as **“Permanently closed”**. The profile and reviews **remain**. In its [content policies](https://support.google.com/contributionpolicy/answer/7400114), Google explicitly positions itself against the full deletion of business profiles – so a complete removal via your own account alone is practically impossible." },
 
     { t: "h2", id: "fremder", text: "Report a third-party or wrong listing", toc: "Third-party listing" },
     { t: "p", text: "For listings that aren't yours (e.g. a wrong or outdated entry), use the report function:" },
@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "How do I delete my own Google Maps listing?", a: "Via “Your Business Profile” → profile settings → three-dot menu → “Remove business profile” → “Remove profile content and managers”. Note: this only detaches the listing from your account, it doesn't remove it from Maps." },
-    { q: "Why does my Google Maps listing stay visible after deleting?", a: "Because removing it from the account only marks the listing as “Permanently closed”. Profile and reviews remain in Maps and search. A complete removal is only possible via an agency." },
+    { q: "Why does my Google Maps listing stay visible after deleting?", a: "Because removing it from the account only marks the listing as “Permanently closed”. Profile and reviews remain in Maps and search. Google itself offers no way to do this; in practice, a complete removal is usually achieved via a specialist agency." },
     { q: "How do I report a third-party or wrong listing?", a: "In Google Maps open the listing, “Suggest an edit” → “Close or remove”, give the reason (e.g. “Doesn't exist”) and save. Google reviews the suggestion." },
     { q: "How do I remove a duplicate Google listing?", a: "Open the duplicate in Maps, “Suggest an edit” → “Close or remove” → choose “Duplicate of another place”. If both listings have reviews, better have them merged via Google support." },
-    { q: "Can I have a Google Maps listing permanently removed?", a: "Completely and permanently, including reviews, is only possible via a specialist agency, since Google doesn't provide for self-deletion. Technical removal often happens within 24 hours and with a guarantee." },
+    { q: "Can I have a Google Maps listing permanently removed?", a: "Completely and permanently, including reviews, this is usually achieved via a specialist agency, since Google doesn't provide for self-deletion. Technical removal often happens within 24 hours — you pay only after success." },
   ],
   related: [
     { label: "Delete Google Business Profile – how does it work?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

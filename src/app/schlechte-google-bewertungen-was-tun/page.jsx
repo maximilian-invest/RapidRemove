@@ -3,6 +3,7 @@ import MagArticle from "@/components/MagArticle";
 import data from "@/lib/articles/schlechte-google-bewertungen-was-tun";
 import { SITE_URL, uiFor } from "@/lib/articles/registry";
 import { hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd } from "@/lib/articles/catalog";
+import { OG_IMAGE } from "@/lib/locales-meta";
 
 const url = `${SITE_URL}/${data.meta.slug}`;
 const ui = uiFor("de");
@@ -13,7 +14,7 @@ export const metadata = {
   title: data.meta.title,
   description: data.meta.description,
   alternates: { canonical: url, languages: hreflangForArticle(data.meta.slug) },
-  openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: "de_DE", publishedTime: data.meta.date, modifiedTime: data.meta.date, authors: [data.meta.author] },
+  openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: "de_DE", images: [OG_IMAGE], publishedTime: data.meta.date, modifiedTime: data.meta.date, authors: [data.meta.author] },
 };
 
 export default function Page() {

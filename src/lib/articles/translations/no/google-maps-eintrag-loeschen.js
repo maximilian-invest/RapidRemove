@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Hvordan fjerner jeg min egen Google Maps-oppføring?", a: "Via «Din bedriftsprofil» → innstillinger → tre-prikker-menyen → «Fjern bedriftsprofilen» → «Fjern profilinnhold og administratorer». Merk: dette kobler bare oppføringen fra kontoen din, men fjerner den ikke fra Maps." },
-    { q: "Hvorfor blir min Google Maps-oppføring stående synlig etter fjerningen?", a: "Fordi det å fjerne den fra kontoen bare merker oppføringen som «Permanent stengt». Oppføringen og anmeldelsene blir stående i Maps og søket. En fullstendig fjerning er bare mulig via et byrå." },
+    { q: "Hvorfor blir min Google Maps-oppføring stående synlig etter fjerningen?", a: "Fordi det å fjerne den fra kontoen bare merker oppføringen som «Permanent stengt». Oppføringen og anmeldelsene blir stående i Maps og søket. Google tilbyr ingen egen vei for dette; i praksis skjer en fullstendig fjerning normalt via et spesialisert byrå." },
     { q: "Hvordan rapporterer jeg en annens eller feil oppføring?", a: "Åpne oppføringen i Google Maps, «Foreslå en endring» → «Rapporter som stengt eller fjern», angi grunnen (f.eks. «Finnes ikke her») og lagre. Google gjennomgår forslaget." },
     { q: "Hvordan fjerner jeg en duplisert Google-oppføring?", a: "Åpne duplikatet i Maps, «Foreslå en endring» → «Rapporter som stengt eller fjern» → velg «Duplikat av et annet sted». Har begge oppføringene anmeldelser, så la dem heller slås sammen via Googles support." },
-    { q: "Kan jeg få fjernet en Google Maps-oppføring varig?", a: "Fullstendig og varig inkludert anmeldelsene er det bare mulig via et spesialisert byrå, siden Google ikke tilbyr selvfjerning. Den tekniske fjerningen skjer ofte innen 24 timer og med garanti." },
+    { q: "Kan jeg få fjernet en Google Maps-oppføring varig?", a: "Fullstendig og varig inkludert anmeldelsene skjer det normalt via et spesialisert byrå, siden Google ikke tilbyr selvfjerning. Den tekniske fjerningen skjer ofte innen 24 timer — betaling først etter suksess." },
   ],
   related: [
     { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

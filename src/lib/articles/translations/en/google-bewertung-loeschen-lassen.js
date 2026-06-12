@@ -16,7 +16,7 @@ const article = {
       { t: "note", title: "Important note", text: "This article offers an overview of practical options and is not legal advice. For specific legal questions, consult a lawyer you trust." },
 
       { t: "h2", id: "gefahr", text: "Why negative Google reviews are so dangerous", toc: "Why dangerous" },
-      { t: "p", text: "According to a BrightLocal study, 98% of consumers read online reviews before choosing a business – and 87% of them use Google. Your star rating has become a digital shop window: it decides whether a prospect clicks or moves on to a competitor." },
+      { t: "p", text: "According to a [BrightLocal study](https://www.brightlocal.com/research/local-consumer-review-survey/), 98% of consumers read online reviews before choosing a business – and 87% of them use Google. Your star rating has become a digital shop window: it decides whether a prospect clicks or moves on to a competitor." },
       { t: "p", text: "The tricky part is the so-called **negativity bias**: people weigh negative information more heavily than positive. A single devastating review can undo the effect of a dozen good ones. Industry data shows that businesses with a score below 4.0 carry, on average, 30 to 50% higher cost per new customer than providers above 4.5 stars." },
       { t: "p", text: "It's particularly damaging with **fake or unjustified reviews** – from competitors, disgruntled ex-employees or people who were never customers. Industry estimates put the economic damage from fake reviews in the billions each year." },
 
@@ -34,7 +34,7 @@ const article = {
       { t: "p", text: "Pure opinions such as “I didn't like it” are hard to remove, however, as long as they are based on a genuine contact." },
 
       { t: "h2", id: "m1", text: "Method 1: Report the review to Google yourself", toc: "Method 1: Report" },
-      { t: "p", text: "The free route is the report function. Here's how:" },
+      { t: "p", text: "The free route is [Google's report function](https://support.google.com/business/answer/4596773). Here's how:" },
       { t: "ol", items: [
         "Open your Google Business Profile and find the review in question.",
         "Click the three-dot menu next to the review.",

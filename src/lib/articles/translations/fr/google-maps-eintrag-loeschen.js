@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Comment supprimer ma propre fiche Google Maps ?", a: "Via « Votre fiche d'établissement » → paramètres → menu à trois points → « Supprimer la fiche d'établissement » → « Supprimer le contenu de la fiche et les administrateurs ». Attention : cela ne fait que détacher la fiche de votre compte, sans la retirer de Maps." },
-    { q: "Pourquoi ma fiche Google Maps reste-t-elle visible après suppression ?", a: "Parce que la retirer du compte ne fait que marquer la fiche comme « Définitivement fermé ». La fiche et les avis restent dans Maps et la recherche. Une suppression complète n'est possible que via une agence." },
+    { q: "Pourquoi ma fiche Google Maps reste-t-elle visible après suppression ?", a: "Parce que la retirer du compte ne fait que marquer la fiche comme « Définitivement fermé ». La fiche et les avis restent dans Maps et la recherche. Google ne propose aucun moyen direct ; en pratique, une suppression complète passe généralement par une agence spécialisée." },
     { q: "Comment signaler une fiche tierce ou erronée ?", a: "Dans Google Maps, ouvrez la fiche, « Suggérer une modification » → « Fermer ou supprimer », indiquez le motif (p. ex. « N'existe pas ici ») et enregistrez. Google examine la suggestion." },
     { q: "Comment supprimer une fiche Google en double ?", a: "Ouvrez le doublon dans Maps, « Suggérer une modification » → « Fermer ou supprimer » → choisissez « Doublon d'un autre lieu ». Si les deux fiches ont des avis, faites-les plutôt fusionner via le support Google." },
-    { q: "Puis-je faire supprimer une fiche Google Maps durablement ?", a: "De façon complète et durable, y compris les avis, ce n'est possible que via une agence spécialisée, car Google ne prévoit pas l'auto-suppression. La suppression technique se fait souvent en 24 heures et avec garantie." },
+    { q: "Puis-je faire supprimer une fiche Google Maps durablement ?", a: "De façon complète et durable, y compris les avis, cela passe généralement par une agence spécialisée, car Google ne prévoit pas l'auto-suppression. La suppression technique se fait souvent en 24 heures — paiement uniquement après succès." },
   ],
   related: [
     { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

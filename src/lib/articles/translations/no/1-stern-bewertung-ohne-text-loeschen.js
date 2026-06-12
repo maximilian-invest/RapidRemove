@@ -21,7 +21,7 @@ const article = {
     { t: "h2", id: "gerichte", text: "Hva domstolene sier", toc: "Hva domstolene sier" },
     { t: "p", text: "Rettspraksis støtter den linjen gjennom flere år:" },
     { t: "ul", items: [
-      "**Tingretten i Lübeck** slo allerede i 2018 fast at en Google-anmeldelse med én stjerne uten tekst må fjernes.",
+      "**Den tyske tingretten i Lübeck (Landgericht Lübeck)** slo allerede i 2018 fast at en Google-anmeldelse med én stjerne uten tekst må fjernes.",
       "Også nyere avgjørelser, også **Tysklands høyesterett (BGH)** bekrefter at det kommer an på en **virkelig opplevelse**; mangler en gjenkjennelig forretningskontakt, kan anmeldelsen være utillatelig.",
     ] },
     { t: "p", text: "Avgjørende er altså ikke om anmelderen formelt var kunde, men om en **virkelig kontakt** med bedriften din er sannsynlig. Ved en ordløs 1-stjerners anmeldelse er den ofte nettopp ikke det." },

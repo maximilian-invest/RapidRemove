@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Como removo a minha própria ficha do Google Maps?", a: "Por «O seu perfil de empresa» → definições → menu de três pontos → «Remover o perfil de empresa» → «Remover conteúdo do perfil e administradores». Atenção: isto apenas desvincula a ficha da sua conta, não a remove do Maps." },
-    { q: "Por que a minha ficha do Google Maps continua visível após a remoção?", a: "Porque removê-la da conta apenas a marca como «Encerrado definitivamente». A ficha e as avaliações permanecem no Maps e na pesquisa. Uma remoção completa só é possível através de uma agência." },
+    { q: "Por que a minha ficha do Google Maps continua visível após a remoção?", a: "Porque removê-la da conta apenas a marca como «Encerrado definitivamente». A ficha e as avaliações permanecem no Maps e na pesquisa. O Google não oferece uma via própria para isso; na prática, a remoção completa consegue-se normalmente através de uma agência especializada." },
     { q: "Como denuncio uma ficha de terceiros ou errada?", a: "No Google Maps abra a ficha, «Sugerir uma edição» → «Comunicar como encerrado ou remover», indique o motivo (p. ex. «Não existe») e guarde. O Google verifica a sugestão." },
     { q: "Como removo uma ficha do Google duplicada?", a: "Abra o duplicado no Maps, «Sugerir uma edição» → «Comunicar como encerrado ou remover» → escolha «Duplicado de outro lugar». Se ambas as fichas têm avaliações, mande-as antes fundir pelo apoio do Google." },
-    { q: "Posso mandar remover uma ficha do Google Maps de forma permanente?", a: "Por completo e de forma permanente, incluindo as avaliações, só é possível através de uma agência especializada, pois o Google não prevê a auto-remoção. A remoção técnica ocorre muitas vezes em 24 horas e com garantia." },
+    { q: "Posso mandar remover uma ficha do Google Maps de forma permanente?", a: "Por completo e de forma permanente, incluindo as avaliações, consegue-se normalmente através de uma agência especializada, pois o Google não prevê a auto-remoção. A remoção técnica ocorre muitas vezes em 24 horas — paga-se só após o sucesso." },
   ],
   related: [
     { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

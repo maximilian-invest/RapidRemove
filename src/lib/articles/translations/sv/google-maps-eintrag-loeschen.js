@@ -58,10 +58,10 @@ const article = {
   ],
   faq: [
     { q: "Hur tar jag bort min egen Google Maps-uppgift?", a: "Via »Din företagsprofil» → inställningar → trepunktsmenyn → »Ta bort företagsprofilen» → »Ta bort profilinnehåll och administratörer». Obs: detta kopplar bara loss uppgiften från ditt konto, men tar inte bort den från Maps." },
-    { q: "Varför blir min Google Maps-uppgift kvar synlig efter borttagningen?", a: "Eftersom att ta bort den från kontot bara markerar uppgiften som »Permanent stängt». Uppgiften och recensionerna blir kvar i Maps och sökningen. En fullständig borttagning är bara möjlig via en byrå." },
+    { q: "Varför blir min Google Maps-uppgift kvar synlig efter borttagningen?", a: "Eftersom att ta bort den från kontot bara markerar uppgiften som »Permanent stängt». Uppgiften och recensionerna blir kvar i Maps och sökningen. Google erbjuder ingen egen väg för detta; i praktiken sker en fullständig borttagning normalt via en specialiserad byrå." },
     { q: "Hur anmäler jag en annans eller felaktig uppgift?", a: "Öppna uppgiften i Google Maps, »Föreslå en ändring» → »Rapportera som stängt eller ta bort», ange skälet (t.ex. »Finns inte här») och spara. Google granskar förslaget." },
     { q: "Hur tar jag bort en dubblerad Google-uppgift?", a: "Öppna dubbletten i Maps, »Föreslå en ändring» → »Rapportera som stängt eller ta bort» → välj »Dubblett av en annan plats». Har båda uppgifterna recensioner, låt dem hellre slås samman via Googles support." },
-    { q: "Kan jag få en Google Maps-uppgift borttagen varaktigt?", a: "Fullständigt och varaktigt inklusive recensionerna är det bara möjligt via en specialiserad byrå, eftersom Google inte erbjuder självborttagning. Den tekniska borttagningen sker ofta inom 24 timmar och med garanti." },
+    { q: "Kan jag få en Google Maps-uppgift borttagen varaktigt?", a: "Fullständigt och varaktigt inklusive recensionerna sker det normalt via en specialiserad byrå, eftersom Google inte erbjuder självborttagning. Den tekniska borttagningen sker ofta inom 24 timmar — betalning först vid framgång." },
   ],
   related: [
     { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
