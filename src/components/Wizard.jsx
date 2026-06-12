@@ -81,7 +81,7 @@ const CONV = {
     protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
     protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
     protMonitorName: "Monitoring", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
-    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"],
     protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
@@ -147,7 +147,7 @@ const CONV = {
     protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
     protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
     protMonitorName: "Monitoring", protMonitorShort: "Daily monitoring & instant removal.",
-    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"],
     protToggleOn: "On", protToggleOff: "Off",
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
@@ -924,6 +924,41 @@ function IngestionAnim({ lang }) {
   return <div ref={ref} className="pt-ingest" />;
 }
 
+/* „Profil wird geprüft" — kurze Schein-Prüfung zwischen Schritt 2 und 3 (CSS-Stagger). */
+function CheckingAnim({ conv }) {
+  return (
+    <div className="prof-check">
+      <div className="pc-orb"><span className="pc-ring"></span><Icon.search size={26} /></div>
+      <h1 className="wz-h" style={{ fontSize: 23, textAlign: "center", margin: 0 }}>{conv.checkingH}</h1>
+      <ul className="pc-list">
+        {(conv.checkSteps || []).map((s, i) => (
+          <li className="pc-item" style={{ animationDelay: (0.45 + i * 0.6) + "s" }} key={i}>
+            <span className="pc-chk"><Icon.check size={13} /></span> {s}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/* Konfetti-Burst (reines CSS) als Overlay beim Erfolg auf Schritt 3. */
+function Confetti() {
+  const bits = React.useMemo(() => {
+    const cols = ["#ff8000", "#16a34a", "#2b7fff", "#fbbc04", "#e23b3b", "#9b5de5"];
+    return Array.from({ length: 80 }, (_, i) => ({
+      left: Math.random() * 100, delay: Math.random() * 0.35, dur: 2.2 + Math.random() * 1.4,
+      bg: cols[i % cols.length], w: 6 + Math.random() * 7, h: 9 + Math.random() * 7,
+    }));
+  }, []);
+  return (
+    <div className="confetti" aria-hidden="true">
+      {bits.map((b, i) => (
+        <span key={i} className="confetti-bit" style={{ left: b.left + "%", width: b.w, height: b.h, background: b.bg, animationDelay: b.delay + "s", animationDuration: b.dur + "s" }} />
+      ))}
+    </div>
+  );
+}
+
 /* ============ WIZARD ROOT ============ */
 /* ---- Router (erste Seite) + Presse-/Einzeltreffer-Flow (aus dem Design portiert).
    de + en ausformuliert; übrige Sprachen erben EN (wie im Design). ---- */
@@ -993,7 +1028,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [name, setName] = React.useState(initialName || "");
   const [candidates, setCandidates] = React.useState(() =>
     initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang));
-  const [phase, setPhase] = React.useState(initialProfile ? "found" : "searching"); // searching | found
+  const [phase, setPhase] = React.useState(initialProfile ? "found" : "searching"); // searching | found | checking
+  const [confetti, setConfetti] = React.useState(false);
   const [multi, setMulti] = React.useState(initialProfile ? false : true);
   const [selectedId, setSelectedId] = React.useState("p1");
   const [service, setService] = React.useState(null);
@@ -1141,7 +1177,18 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       recommend: service, name, country, lang,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
-  const proceedFromSearch = () => { persistCheck(); go(2); };
+  // Zwischen Schritt 2 und 3: kurze „Profilprüfung", dann Konfetti + Bestätigung.
+  const proceedFromSearch = () => {
+    persistCheck();
+    setPhase("checking");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      go(2);
+      setPhase("found");
+      setConfetti(true);
+      setTimeout(() => setConfetti(false), 3000);
+    }, 2400);
+  };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
     setAcOpen(false);
@@ -1214,14 +1261,10 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               </div>
             )}
           </div>
-          {w.s1.hint && (<p className="wz-hint"><Icon.info size={17} /> {w.s1.hint}</p>)}
           <div className="wz-actions">
             <button className="btn btn-primary lg grow" onClick={() => startSearch(name)} disabled={!name.trim()}>
               <Icon.search size={19} /> {w.s1.button} <Icon.arrowRight size={18} />
             </button>
-          </div>
-          <div className="wz-mini-assure">
-            {w.s1.assure.map((a, i) => <div key={i}><Icon.check /> {a}</div>)}
           </div>
           <div className="risk-banner" style={{ marginTop: 18 }}><Icon.shieldCheck /> {t.riskReversal}</div>
         </div>
@@ -1237,6 +1280,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     const mp = MULTI_PROFILE[t.code] || MULTI_PROFILE.en;
     return (
       <div className="wz-card">
+        {phase === "checking" ? <CheckingAnim conv={conv} /> : (<React.Fragment>
         <div className="wz-eyebrow"><Icon.mapPin size={14} /> {w.s2.eyebrow}</div>
         {phase === "searching"
           ? <div className="search-status"><span className="spin"></span> {w.s2.searching}</div>
@@ -1263,6 +1307,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             </div>
           </div>
         )}
+        </React.Fragment>)}
       </div>
     );
   }
@@ -1728,6 +1773,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         </div>
       </div>
       <ActivityToast />
+      {confetti && <Confetti />}
     </div>
   );
 }
