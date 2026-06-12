@@ -770,18 +770,24 @@ const MULTI_PROFILE = {
 };
 /* „Profil ist nicht in der Liste" — Fallback-Kachel + Text auf Schritt 3 (unklar identifiziert). */
 const NOT_IN_LIST = {
-  de: { tile: "Profil ist nicht in der Liste", h: "Ihr Profil wurde nicht eindeutig identifiziert", sub: "Kann aber so gut wie sicher gelöscht werden." },
-  en: { tile: "Profile not in the list", h: "Your profile wasn't uniquely identified", sub: "But it can almost certainly be removed." },
-  es: { tile: "El perfil no está en la lista", h: "Tu perfil no se identificó con exactitud", sub: "Pero casi con seguridad se puede eliminar." },
-  fr: { tile: "Le profil n'est pas dans la liste", h: "Votre fiche n'a pas été identifiée précisément", sub: "Mais elle peut presque certainement être supprimée." },
-  it: { tile: "Il profilo non è nell'elenco", h: "Il tuo profilo non è stato identificato con certezza", sub: "Ma può quasi sicuramente essere rimosso." },
-  nl: { tile: "Profiel staat niet in de lijst", h: "Uw profiel is niet eenduidig geïdentificeerd", sub: "Maar het kan vrijwel zeker worden verwijderd." },
-  pt: { tile: "O perfil não está na lista", h: "O seu perfil não foi identificado de forma inequívoca", sub: "Mas pode quase de certeza ser removido." },
-  ja: { tile: "プロフィールが一覧にありません", h: "プロフィールを一意に特定できませんでした", sub: "ただし、ほぼ確実に削除できます。" },
-  sv: { tile: "Profilen finns inte i listan", h: "Din profil kunde inte identifieras entydigt", sub: "Men den kan nästan säkert tas bort." },
-  da: { tile: "Profilen er ikke på listen", h: "Din profil blev ikke entydigt identificeret", sub: "Men den kan næsten med sikkerhed fjernes." },
-  no: { tile: "Profilen er ikke i listen", h: "Profilen din ble ikke entydig identifisert", sub: "Men den kan nesten helt sikkert fjernes." },
+  de: { tile: "Profil ist nicht in der Liste", h: "Ihr Profil wurde nicht eindeutig identifiziert", sub: "Kann aber so gut wie sicher gelöscht werden.", linkLabel: "Genauen Google-Maps-Link einfügen (optional)", checkBtn: "Profil prüfen", contBtn: "Mit diesem Profil fortfahren" },
+  en: { tile: "Profile not in the list", h: "Your profile wasn't uniquely identified", sub: "But it can almost certainly be removed.", linkLabel: "Paste the exact Google Maps link (optional)", checkBtn: "Check profile", contBtn: "Continue with this profile" },
+  es: { tile: "El perfil no está en la lista", h: "Tu perfil no se identificó con exactitud", sub: "Pero casi con seguridad se puede eliminar.", linkLabel: "Pega el enlace exacto de Google Maps (opcional)", checkBtn: "Comprobar perfil", contBtn: "Continuar con este perfil" },
+  fr: { tile: "Le profil n'est pas dans la liste", h: "Votre fiche n'a pas été identifiée précisément", sub: "Mais elle peut presque certainement être supprimée.", linkLabel: "Collez le lien Google Maps exact (facultatif)", checkBtn: "Vérifier la fiche", contBtn: "Continuer avec cette fiche" },
+  it: { tile: "Il profilo non è nell'elenco", h: "Il tuo profilo non è stato identificato con certezza", sub: "Ma può quasi sicuramente essere rimosso.", linkLabel: "Incolla il link esatto di Google Maps (facoltativo)", checkBtn: "Verifica profilo", contBtn: "Continua con questo profilo" },
+  nl: { tile: "Profiel staat niet in de lijst", h: "Uw profiel is niet eenduidig geïdentificeerd", sub: "Maar het kan vrijwel zeker worden verwijderd.", linkLabel: "Plak de exacte Google Maps-link (optioneel)", checkBtn: "Profiel controleren", contBtn: "Doorgaan met dit profiel" },
+  pt: { tile: "O perfil não está na lista", h: "O seu perfil não foi identificado de forma inequívoca", sub: "Mas pode quase de certeza ser removido.", linkLabel: "Cole o link exato do Google Maps (opcional)", checkBtn: "Verificar perfil", contBtn: "Continuar com este perfil" },
+  ja: { tile: "プロフィールが一覧にありません", h: "プロフィールを一意に特定できませんでした", sub: "ただし、ほぼ確実に削除できます。", linkLabel: "正確なGoogleマップのリンクを貼り付け（任意）", checkBtn: "プロフィールを確認", contBtn: "このプロフィールで続行" },
+  sv: { tile: "Profilen finns inte i listan", h: "Din profil kunde inte identifieras entydigt", sub: "Men den kan nästan säkert tas bort.", linkLabel: "Klistra in exakt Google Maps-länk (valfritt)", checkBtn: "Kontrollera profil", contBtn: "Fortsätt med denna profil" },
+  da: { tile: "Profilen er ikke på listen", h: "Din profil blev ikke entydigt identificeret", sub: "Men den kan næsten med sikkerhed fjernes.", linkLabel: "Indsæt det præcise Google Maps-link (valgfrit)", checkBtn: "Tjek profil", contBtn: "Fortsæt med denne profil" },
+  no: { tile: "Profilen er ikke i listen", h: "Profilen din ble ikke entydig identifisert", sub: "Men den kan nesten helt sikkert fjernes.", linkLabel: "Lim inn den nøyaktige Google Maps-lenken (valgfritt)", checkBtn: "Sjekk profil", contBtn: "Fortsett med denne profilen" },
 };
+// Erkennt echte Google-Maps-Links (Place, maps.google, App-/Kurz-Links).
+function isGMapsLink(u) {
+  const s = (u || "").trim().toLowerCase();
+  if (!/^https?:\/\//.test(s)) return false;
+  return /(google\.[a-z.]+\/maps|maps\.google\.|maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/)/.test(s);
+}
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
   de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
@@ -1045,6 +1051,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang));
   const [phase, setPhase] = React.useState(initialProfile ? "checking" : "searching"); // searching | found | checking
   const [confetti, setConfetti] = React.useState(false);
+  const [profileLink, setProfileLink] = React.useState("");
   const [multi, setMulti] = React.useState(initialProfile ? false : true);
   const [selectedId, setSelectedId] = React.useState("p1");
   const [service, setService] = React.useState(null);
@@ -1155,7 +1162,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       // Nur die tatsächlich gefundenen Profile zeigen — kein Platzhalter mit dem getippten Titel.
       list = results.slice(0, 4);
     }
-    else if (placesEnabled()) list = manualCandidate(nm, lang);
+    else if (placesEnabled()) list = [{ ...manualCandidate(nm, lang)[0], unverified: true }];
     else list = makeCandidates(nm, lang);
     setCandidates(list);
     setSelectedId(list[0].id);
@@ -1208,7 +1215,15 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setSelectedId("punsure");
     setMulti(false);
     setContact((x) => ({ ...x, company: name }));
+    setProfileLink("");
     go(2);
+  };
+  // Echter Maps-Link eingetragen → Profil „prüfen" (Animation), danach als verifiziert anzeigen.
+  const verifyWithLink = () => {
+    setCandidates((cs) => cs.map((c) => (c.id === selectedId ? { ...c, unverified: false, mapsUri: profileLink.trim() } : c)));
+    setPhase("checking");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => { setPhase("found"); }, 2400);
   };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
@@ -1339,21 +1354,41 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepConfirm() {
+    if (phase === "checking") return <div className="wz-card"><CheckingAnim conv={conv} /></div>;
+    const unsure = !!(selected && selected.unverified);
+    const linkOk = isGMapsLink(profileLink);
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{selected && selected.unverified ? nil.h : w.s3.h}</h1>
-        <p className="wz-sub" style={{ marginBottom: 20 }}>{selected && selected.unverified ? nil.sub : w.s3.sub}</p>
-        <ProfileCard c={selected} selectable={false} cta onClick={() => { persistCheck(); go(3); }} reviewsLabel={w.s2.reviews} assessOk />
-        <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
-          <div className="profile-thumb"><Icon.search /></div>
-          <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
-          <span className="nm-go"><Icon.arrowRight size={18} /></span>
-        </div>
-        <div className="wz-actions" style={{ marginTop: 18 }}>
-          <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-          <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
-        </div>
+        <h1 className="wz-h" style={{ fontSize: 28 }}>{unsure ? nil.h : w.s3.h}</h1>
+        <p className="wz-sub" style={{ marginBottom: 20 }}>{unsure ? nil.sub : w.s3.sub}</p>
+        <ProfileCard c={selected} selectable={false} cta={!unsure} onClick={() => { persistCheck(); go(3); }} reviewsLabel={w.s2.reviews} assessOk />
+        {unsure ? (
+          <React.Fragment>
+            <div className="fld full" style={{ marginTop: 16 }}>
+              <label>{nil.linkLabel}</label>
+              <input value={profileLink} onChange={(e) => setProfileLink(e.target.value)} placeholder="https://maps.google.com/…" inputMode="url" aria-label={nil.linkLabel} />
+            </div>
+            <div className="wz-actions" style={{ marginTop: 18 }}>
+              <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
+              {linkOk
+                ? <button className="btn btn-primary grow" onClick={verifyWithLink}>{nil.checkBtn} <Icon.arrowRight size={18} /></button>
+                : <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{nil.contBtn} <Icon.arrowRight size={18} /></button>}
+            </div>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
+            <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
+              <div className="profile-thumb"><Icon.search /></div>
+              <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
+              <span className="nm-go"><Icon.arrowRight size={18} /></span>
+            </div>
+            <div className="wz-actions" style={{ marginTop: 18 }}>
+              <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
+              <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
+            </div>
+          </React.Fragment>
+        )}
       </div>
     );
   }
