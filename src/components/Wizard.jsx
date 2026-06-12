@@ -81,7 +81,7 @@ const CONV = {
     protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
     protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
     protMonitorName: "Monitoring", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
-    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.",
     protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
@@ -147,7 +147,7 @@ const CONV = {
     protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
     protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
     protMonitorName: "Monitoring", protMonitorShort: "Daily monitoring & instant removal.",
-    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.",
     protToggleOn: "On", protToggleOff: "Off",
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
@@ -1326,67 +1326,57 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepProtect() {
-    const protActive = protection !== null;
-    const toggleProt = () => setProtection(protActive ? null : "monthly");
-    const toggleInfo = (k) => (e) => { e.stopPropagation(); setPtInfo(ptInfo === k ? null : k); };
+    // Gleiche Kachel-Darstellung wie Schritt 4 (.opt) — konsistentes Wizard-Bild.
+    // „Kein Schutz" ist eine eigene Kachel; bei Auswahl erscheint Warnung + Animation.
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {conv.protStepLabel}</div>
         <h1 className="wz-h" style={{ fontSize: 28 }}>{conv.protH}</h1>
-        <p className="wz-sub" style={{ marginBottom: 18 }}>{conv.protSub}</p>
+        <p className="wz-sub" style={{ marginBottom: 22 }}>{conv.protSub}</p>
 
-        <div className={"pt-toggle-row" + (protActive ? " on" : "")}>
-          <div className="pt-toggle-main"><Icon.shieldCheck size={18} /> <span className="pt-toggle-label">{wm.schutz}</span></div>
-          <button type="button" className={"switch" + (protActive ? " on" : "")} aria-label={wm.schutz} aria-pressed={protActive} onClick={toggleProt}></button>
-        </div>
-
-        {protActive ? (
-          <React.Fragment>
-        <div className="pt-section">
-        <div className="pt-grid">
-          <div className={"pt-card" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
-            <span className="pt-flag pt-flag-pop">{conv.protPopularBadge}</span>
-            <div className="pt-head">
-              <span className="pt-radio"></span>
-              <span className="pt-name">{conv.protMonthlyName}</span>
-              <span className="pt-info-wrap">
-                <button type="button" className={"pt-info" + (ptInfo === "monthly" ? " on" : "")} onClick={toggleInfo("monthly")} aria-label="Info" aria-expanded={ptInfo === "monthly"}><Icon.info size={15} /></button>
-                {ptInfo === "monthly" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protMonthlyShort}</span>}
-              </span>
-              <span className="pt-hp"><b>{money(lang, p.protMonthly)}</b><small>{conv.perMonthShort}</small></span>
+        <div className="opt-list">
+          <div className={"opt" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{conv.protMonthlyName} <span className="obadge">{conv.protPopularBadge}</span></div>
+              <div className="od">{wm.ptMonthlyNote}</div>
             </div>
-            <p className="pt-note">{wm.ptMonthlyNote}</p>
+            <div className="opt-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></div>
           </div>
 
-          <div className={"pt-card" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
-            <div className="pt-head">
-              <span className="pt-radio"></span>
-              <span className="pt-name">{conv.protMonitorName}</span>
-              <span className="pt-info-wrap">
-                <button type="button" className={"pt-info" + (ptInfo === "monitor" ? " on" : "")} onClick={toggleInfo("monitor")} aria-label="Info" aria-expanded={ptInfo === "monitor"}><Icon.info size={15} /></button>
-                {ptInfo === "monitor" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protMonitorShort}</span>}
-              </span>
-              <span className="pt-hp"><b>{money(lang, p.protMonitor)}</b><small>{conv.perMonthShort}</small></span>
+          <div className={"opt" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{conv.protMonitorName}</div>
+              <div className="od">{wm.ptMonitorNote}</div>
             </div>
-            <p className="pt-note">{wm.ptMonitorNote}</p>
+            <div className="opt-price">{money(lang, p.protMonitor)}<small>{conv.perMonthShort}</small></div>
           </div>
 
-          <div className={"pt-card" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
-            <div className="pt-head">
-              <span className="pt-radio"></span>
-              <span className="pt-name">{conv.protLifetimeName}</span>
-              <span className="pt-info-wrap">
-                <button type="button" className={"pt-info" + (ptInfo === "lifetime" ? " on" : "")} onClick={toggleInfo("lifetime")} aria-label="Info" aria-expanded={ptInfo === "lifetime"}><Icon.info size={15} /></button>
-                {ptInfo === "lifetime" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.tierLifetimeDesc}</span>}
-              </span>
-              <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
+          <div className={"opt" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{conv.protLifetimeName}</div>
+              <div className="od">{wm.ptLifetimeNote}</div>
             </div>
-            <p className="pt-note">{wm.ptLifetimeNote}</p>
+            <div className="opt-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></div>
+          </div>
+
+          <div className={"opt" + (protection === null ? " sel" : "")} onClick={() => setProtection(null)}>
+            <div className="opt-radio"></div>
+            <div className="opt-ic"><Icon.shield size={22} /></div>
+            <div className="opt-main">
+              <div className="ot">{conv.protNoneName}</div>
+              <div className="od">{conv.protNoneDesc}</div>
+            </div>
+            <div className="opt-price">{money(lang, 0)}</div>
           </div>
         </div>
-        </div>
-          </React.Fragment>
-        ) : (
+
+        {protection === null && (
           <React.Fragment>
             <div className="pt-skip-warn"><Icon.alert size={22} /><span>{conv.protOffBody}</span></div>
             <IngestionAnim lang={lang} />
