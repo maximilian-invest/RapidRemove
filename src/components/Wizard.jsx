@@ -788,6 +788,14 @@ function isGMapsLink(u) {
   if (!/^https?:\/\//.test(s)) return false;
   return /(google\.[a-z.]+\/maps|maps\.google\.|maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/)/.test(s);
 }
+// Liest den Profilnamen aus einem vollständigen Google-Maps-Link (…/maps/place/Name/…).
+function extractMapsName(url) {
+  try {
+    const m = (url || "").match(/\/maps\/place\/([^/@?]+)/);
+    if (m && m[1]) return decodeURIComponent(m[1].replace(/\+/g, " ")).trim();
+  } catch (e) {}
+  return "";
+}
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
   de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
@@ -1080,6 +1088,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [pressData, setPressData] = React.useState({ urls: [""], email: "", desc: "", orm: "" });
   const [pressDone, setPressDone] = React.useState(false);
   const checkSent = React.useRef(false);
+  const checkedRef = React.useRef(null); // Schlüssel des zuletzt geprüften Profils — keine Wiederholung bei gleicher Wahl
   const bodyRef = React.useRef(null);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
   const [sug, setSug] = React.useState([]);
@@ -1104,6 +1113,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   React.useEffect(() => {
     if (initialProfile) {
       const id = setTimeout(() => {
+        checkedRef.current = initialProfile.placeId || initialProfile.name;
         go(2);
         setPhase("found");
         setConfetti(true);
@@ -1207,7 +1217,21 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       recommend: service, name, country, lang,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
-  const proceedFromSearch = () => { persistCheck(); go(2); };
+  const proceedFromSearch = () => {
+    persistCheck();
+    const key = selected ? (selected.placeId || selected.name) : "";
+    // Gleiches Profil wie zuletzt geprüft → keine erneute Prüf-Animation.
+    if (key && key === checkedRef.current) { go(2); return; }
+    setPhase("checking");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      checkedRef.current = key;
+      go(2);
+      setPhase("found");
+      setConfetti(true);
+      setTimeout(() => setConfetti(false), 3000);
+    }, 2400);
+  };
   // „Profil ist nicht in der Liste": mit dem getippten Namen weiter zu Schritt 3 (unklar identifiziert).
   const pickNotInList = () => {
     const c = { ...manualCandidate(name, lang)[0], id: "punsure", unverified: true };
@@ -1216,14 +1240,30 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setMulti(false);
     setContact((x) => ({ ...x, company: name }));
     setProfileLink("");
+    checkedRef.current = c.placeId || c.name;
     go(2);
   };
-  // Echter Maps-Link eingetragen → Profil „prüfen" (Animation), danach als verifiziert anzeigen.
+  // Echter Maps-Link eingetragen → Profil „prüfen" und danach das ECHTE Profil aus dem Link anzeigen.
   const verifyWithLink = () => {
-    setCandidates((cs) => cs.map((c) => (c.id === selectedId ? { ...c, unverified: false, mapsUri: profileLink.trim() } : c)));
+    const fromLink = extractMapsName(profileLink);
+    const linkUri = profileLink.trim();
     setPhase("checking");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => { setPhase("found"); }, 2400);
+    const minDelay = new Promise((r) => setTimeout(r, 2400));
+    const lookup = (fromLink && placesEnabled())
+      ? searchProfiles(fromLink, lang).then((r) => (r && r.length ? r[0] : null)).catch(() => null)
+      : Promise.resolve(null);
+    Promise.all([lookup, minDelay]).then(([real]) => {
+      setCandidates((cs) => cs.map((c) => {
+        if (c.id !== selectedId) return c;
+        if (real) return { ...real, id: c.id, primary: true, unverified: false, mapsUri: linkUri };
+        return { ...c, name: fromLink || c.name, unverified: false, mapsUri: linkUri };
+      }));
+      const nm = real ? real.name : fromLink;
+      if (nm) { setName(nm); setContact((x) => ({ ...x, company: nm })); }
+      checkedRef.current = real ? (real.placeId || real.name) : (fromLink || (selected && selected.name) || "");
+      setPhase("found");
+    });
   };
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
@@ -1233,6 +1273,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     setCandidates([{ ...profile, id: "p1", primary: true }]);
     setSelectedId("p1");
     setMulti(false);
+    checkedRef.current = profile.placeId || profile.name;
     setPhase("found");
     go(2);
   };
