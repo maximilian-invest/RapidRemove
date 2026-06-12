@@ -73,7 +73,7 @@ const CONV = {
     tierMonthlyDesc: "Wir überwachen monatlich und entfernen erneute Einträge kostenlos.",
     tierMonitorDesc: "Tägliche Überwachung, sofortige Entfernung & Monats-Report. Maximale Sicherheit.",
     tierLifetimeDesc: "Einmal zahlen, nie wieder Sorgen — dauerhafter Schutz ohne laufende Kosten.",
-    tierMonitorBadge: "Beliebteste", tierLifetimeBadge: "Best Value",
+    tierMonitorBadge: "Beliebteste", tierLifetimeBadge: "Best Value", protPopularBadge: "Von 90 % der Kunden gewählt",
     lifetimeMath: "Günstiger als 4 Jahre Monatsschutz — danach nie wieder zahlen.",
     monitorMath: "Für alle, die ganz sichergehen wollen.",
     expTimeOn: "Gelöscht in ~6 Std.", expTimeOff: "In ~6 Std. statt ~24 Std.",
@@ -139,7 +139,7 @@ const CONV = {
     tierMonthlyDesc: "We monitor monthly and remove any re-listings for free.",
     tierMonitorDesc: "Daily monitoring, instant removal & monthly report. Maximum safety.",
     tierLifetimeDesc: "Pay once, never worry again — permanent protection with no recurring cost.",
-    tierMonitorBadge: "Most popular", tierLifetimeBadge: "Best value",
+    tierMonitorBadge: "Most popular", tierLifetimeBadge: "Best value", protPopularBadge: "Chosen by 90% of customers",
     lifetimeMath: "Cheaper than 4 years of monthly protection — then never pay again.",
     monitorMath: "For those who want to be completely safe.",
     expTimeOn: "Removed in ~6 h", expTimeOff: "In ~6 h instead of ~24 h",
@@ -205,7 +205,7 @@ const CONV = {
     tierMonthlyDesc: "Vigilamos cada mes y eliminamos las nuevas publicaciones gratis.",
     tierMonitorDesc: "Vigilancia diaria, eliminación inmediata e informe mensual. Máxima seguridad.",
     tierLifetimeDesc: "Paga una vez y olvídate — protección permanente sin costes recurrentes.",
-    tierMonitorBadge: "Más popular", tierLifetimeBadge: "Mejor valor",
+    tierMonitorBadge: "Más popular", tierLifetimeBadge: "Mejor valor", protPopularBadge: "Elegido por el 90 % de los clientes",
     lifetimeMath: "Más barato que 4 años de protección mensual — y luego nunca más pagas.",
     monitorMath: "Para quienes quieren ir totalmente sobre seguro.",
     perMonthShort: "/ mes", onceShort: "único",
@@ -261,7 +261,7 @@ const CONV = {
     tierMonthlyDesc: "Nous surveillons chaque mois et supprimons gratuitement toute réinscription.",
     tierMonitorDesc: "Surveillance quotidienne, suppression immédiate et rapport mensuel. Sécurité maximale.",
     tierLifetimeDesc: "Payez une fois, ne vous inquiétez plus — protection permanente sans frais récurrents.",
-    tierMonitorBadge: "Le plus choisi", tierLifetimeBadge: "Meilleur rapport",
+    tierMonitorBadge: "Le plus choisi", tierLifetimeBadge: "Meilleur rapport", protPopularBadge: "Choisi par 90 % des clients",
     lifetimeMath: "Moins cher que 4 ans de protection mensuelle — ensuite, plus jamais de paiement.",
     monitorMath: "Pour celles et ceux qui veulent une sécurité totale.",
     perMonthShort: "/ mois", onceShort: "unique",
@@ -317,7 +317,7 @@ const CONV = {
     tierMonthlyDesc: "Monitoriamo ogni mese e rimuoviamo gratis le nuove pubblicazioni.",
     tierMonitorDesc: "Monitoraggio quotidiano, rimozione immediata e report mensile. Massima sicurezza.",
     tierLifetimeDesc: "Paghi una volta e non ci pensi più — protezione permanente senza costi ricorrenti.",
-    tierMonitorBadge: "Più scelto", tierLifetimeBadge: "Miglior valore",
+    tierMonitorBadge: "Più scelto", tierLifetimeBadge: "Miglior valore", protPopularBadge: "Scelto dal 90% dei clienti",
     lifetimeMath: "Più conveniente di 4 anni di protezione mensile — poi non paghi mai più.",
     monitorMath: "Per chi vuole andare davvero sul sicuro.",
     perMonthShort: "/ mese", onceShort: "una tantum",
@@ -373,7 +373,7 @@ const CONV = {
     tierMonthlyDesc: "We monitoren maandelijks en verwijderen nieuwe plaatsingen gratis.",
     tierMonitorDesc: "Dagelijkse monitoring, directe verwijdering & maandrapport. Maximale zekerheid.",
     tierLifetimeDesc: "Eén keer betalen, nooit meer zorgen — permanente bescherming zonder vaste kosten.",
-    tierMonitorBadge: "Populairst", tierLifetimeBadge: "Beste waarde",
+    tierMonitorBadge: "Populairst", tierLifetimeBadge: "Beste waarde", protPopularBadge: "Gekozen door 90% van de klanten",
     lifetimeMath: "Goedkoper dan 4 jaar maandbescherming — daarna nooit meer betalen.",
     monitorMath: "Voor wie helemaal zeker wil zijn.",
     perMonthShort: "/ mnd", onceShort: "eenmalig",
@@ -429,7 +429,7 @@ const CONV = {
     tierMonthlyDesc: "Monitorizamos mensalmente e removemos novas publicações gratuitamente.",
     tierMonitorDesc: "Monitorização diária, remoção imediata e relatório mensal. Segurança máxima.",
     tierLifetimeDesc: "Pague uma vez e nunca mais se preocupe — proteção permanente sem custos recorrentes.",
-    tierMonitorBadge: "Mais escolhido", tierLifetimeBadge: "Melhor valor",
+    tierMonitorBadge: "Mais escolhido", tierLifetimeBadge: "Melhor valor", protPopularBadge: "Escolhido por 90% dos clientes",
     lifetimeMath: "Mais barato do que 4 anos de proteção mensal — depois nunca mais paga.",
     monitorMath: "Para quem quer ficar totalmente descansado.",
     perMonthShort: "/ mês", onceShort: "única",
@@ -485,7 +485,7 @@ const CONV = {
     tierMonthlyDesc: "毎月監視し、再登録を無料で削除します。",
     tierMonitorDesc: "毎日の監視、即時削除、月次レポート。最大限の安心。",
     tierLifetimeDesc: "一度のお支払いで以後安心 — 継続費用なしの永続保護。",
-    tierMonitorBadge: "人気No.1", tierLifetimeBadge: "最もお得",
+    tierMonitorBadge: "人気No.1", tierLifetimeBadge: "最もお得", protPopularBadge: "お客様の90%が選択",
     lifetimeMath: "月額保護4年分より安く — その後は二度と支払い不要。",
     monitorMath: "完全に万全を期したい方へ。",
     perMonthShort: "/ 月", onceShort: "一回",
@@ -541,7 +541,7 @@ const CONV = {
     tierMonthlyDesc: "Vi övervakar varje månad och tar bort nya publiceringar gratis.",
     tierMonitorDesc: "Daglig övervakning, omedelbar borttagning och månadsrapport. Maximal trygghet.",
     tierLifetimeDesc: "Betala en gång, slipp oroa dig — permanent skydd utan löpande kostnad.",
-    tierMonitorBadge: "Populärast", tierLifetimeBadge: "Bäst värde",
+    tierMonitorBadge: "Populärast", tierLifetimeBadge: "Bäst värde", protPopularBadge: "Vald av 90 % av kunderna",
     lifetimeMath: "Billigare än 4 års månadsskydd — sedan betalar du aldrig igen.",
     monitorMath: "För dig som vill vara helt på den säkra sidan.",
     perMonthShort: "/ mån", onceShort: "engång",
@@ -597,7 +597,7 @@ const CONV = {
     tierMonthlyDesc: "Vi overvåger månedligt og fjerner nye oprettelser gratis.",
     tierMonitorDesc: "Daglig overvågning, øjeblikkelig fjernelse og månedsrapport. Maksimal sikkerhed.",
     tierLifetimeDesc: "Betal én gang, og vær fri for bekymringer — permanent beskyttelse uden løbende udgifter.",
-    tierMonitorBadge: "Mest valgte", tierLifetimeBadge: "Bedste værdi",
+    tierMonitorBadge: "Mest valgte", tierLifetimeBadge: "Bedste værdi", protPopularBadge: "Valgt af 90 % af kunderne",
     lifetimeMath: "Billigere end 4 års månedsbeskyttelse — derefter betaler du aldrig igen.",
     monitorMath: "For dig, der vil være helt på den sikre side.",
     perMonthShort: "/ md.", onceShort: "engang",
@@ -653,7 +653,7 @@ const CONV = {
     tierMonthlyDesc: "Vi overvåker månedlig og fjerner nye oppføringer gratis.",
     tierMonitorDesc: "Daglig overvåking, umiddelbar fjerning og månedsrapport. Maksimal trygghet.",
     tierLifetimeDesc: "Betal én gang, slipp å bekymre deg — permanent beskyttelse uten løpende kostnad.",
-    tierMonitorBadge: "Mest valgt", tierLifetimeBadge: "Best verdi",
+    tierMonitorBadge: "Mest valgt", tierLifetimeBadge: "Best verdi", protPopularBadge: "Valgt av 90 % av kundene",
     lifetimeMath: "Billigere enn 4 års månedsbeskyttelse — deretter betaler du aldri igjen.",
     monitorMath: "For deg som vil være helt på den sikre siden.",
     perMonthShort: "/ mnd", onceShort: "engang",
@@ -722,7 +722,6 @@ function Stepper({ step, onNav }) {
           );
         })}
       </div>
-      <div className="stepper-count">{t.wizard.stepCount(step + 1, labels.length)}</div>
     </div>
   );
 }
@@ -771,17 +770,17 @@ const MULTI_PROFILE = {
 };
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung, wenn das Profil wieder auftaucht.", ptMonitorNote: "Tägliche Überwachung, damit das Profil nie wieder auftaucht." },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime", ptMonthlyNote: "Free removal if the profile reappears.", ptMonitorNote: "Daily monitoring so the profile never reappears." },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes", ptMonthlyNote: "Eliminación gratuita si el perfil reaparece.", ptMonitorNote: "Monitorización diaria para que el perfil no vuelva a aparecer." },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois", ptMonthlyNote: "Suppression gratuite si la fiche réapparaît.", ptMonitorNote: "Surveillance quotidienne pour que la fiche ne réapparaisse jamais." },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Ordine express (< 6 ore)", toProtect: "Vai alla protezione", ptCancelPill: "Disdici ogni mese", ptMonthlyNote: "Rimozione gratuita se il profilo riappare.", ptMonitorNote: "Monitoraggio quotidiano affinché il profilo non riappaia mai." },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoedopdracht (< 6 uur)", toProtect: "Verder naar bescherming", ptCancelPill: "Maandelijks opzegbaar", ptMonthlyNote: "Gratis verwijdering als het profiel weer opduikt.", ptMonitorNote: "Dagelijkse monitoring zodat het profiel nooit meer opduikt." },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Pedido expresso (< 6 horas)", toProtect: "Continuar para a proteção", ptCancelPill: "Cancelável mensalmente", ptMonthlyNote: "Remoção gratuita se o perfil reaparecer.", ptMonitorNote: "Monitorização diária para que o perfil nunca mais reapareça." },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス依頼（6時間以内）", toProtect: "保護へ進む", ptCancelPill: "毎月解約可能", ptMonthlyNote: "プロフィールが再表示されたら無料で削除します。", ptMonitorNote: "毎日監視し、プロフィールが二度と表示されないようにします。" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Expressorder (< 6 timmar)", toProtect: "Vidare till skydd", ptCancelPill: "Sägs upp månadsvis", ptMonthlyNote: "Gratis borttagning om profilen dyker upp igen.", ptMonitorNote: "Daglig övervakning så att profilen aldrig dyker upp igen." },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspresordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Opsigeligt månedligt", ptMonthlyNote: "Gratis fjernelse, hvis profilen dukker op igen.", ptMonitorNote: "Daglig overvågning, så profilen aldrig dukker op igen." },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspressordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Kan sies opp månedlig", ptMonthlyNote: "Gratis fjerning hvis profilen dukker opp igjen.", ptMonitorNote: "Daglig overvåking slik at profilen aldri dukker opp igjen." },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung, wenn das Profil wieder auftaucht.", ptMonitorNote: "Tägliche Überwachung, damit das Profil nie wieder auftaucht.", ptLifetimeNote: "Einmal zahlen für lebenslangen Schutz + Überwachung" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime", ptMonthlyNote: "Free removal if the profile reappears.", ptMonitorNote: "Daily monitoring so the profile never reappears.", ptLifetimeNote: "Pay once for lifetime protection + monitoring" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes", ptMonthlyNote: "Eliminación gratuita si el perfil reaparece.", ptMonitorNote: "Monitorización diaria para que el perfil no vuelva a aparecer.", ptLifetimeNote: "Pago único para protección de por vida + monitorización" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois", ptMonthlyNote: "Suppression gratuite si la fiche réapparaît.", ptMonitorNote: "Surveillance quotidienne pour que la fiche ne réapparaisse jamais.", ptLifetimeNote: "Paiement unique pour une protection à vie + surveillance" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Ordine express (< 6 ore)", toProtect: "Vai alla protezione", ptCancelPill: "Disdici ogni mese", ptMonthlyNote: "Rimozione gratuita se il profilo riappare.", ptMonitorNote: "Monitoraggio quotidiano affinché il profilo non riappaia mai.", ptLifetimeNote: "Pagamento unico per protezione a vita + monitoraggio" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoedopdracht (< 6 uur)", toProtect: "Verder naar bescherming", ptCancelPill: "Maandelijks opzegbaar", ptMonthlyNote: "Gratis verwijdering als het profiel weer opduikt.", ptMonitorNote: "Dagelijkse monitoring zodat het profiel nooit meer opduikt.", ptLifetimeNote: "Eenmalig betalen voor levenslange bescherming + monitoring" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Pedido expresso (< 6 horas)", toProtect: "Continuar para a proteção", ptCancelPill: "Cancelável mensalmente", ptMonthlyNote: "Remoção gratuita se o perfil reaparecer.", ptMonitorNote: "Monitorização diária para que o perfil nunca mais reapareça.", ptLifetimeNote: "Pagamento único para proteção vitalícia + monitorização" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス依頼（6時間以内）", toProtect: "保護へ進む", ptCancelPill: "毎月解約可能", ptMonthlyNote: "プロフィールが再表示されたら無料で削除します。", ptMonitorNote: "毎日監視し、プロフィールが二度と表示されないようにします。", ptLifetimeNote: "一度の支払いで生涯保護＋モニタリング" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Expressorder (< 6 timmar)", toProtect: "Vidare till skydd", ptCancelPill: "Sägs upp månadsvis", ptMonthlyNote: "Gratis borttagning om profilen dyker upp igen.", ptMonitorNote: "Daglig övervakning så att profilen aldrig dyker upp igen.", ptLifetimeNote: "Betala en gång för livslångt skydd + övervakning" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspresordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Opsigeligt månedligt", ptMonthlyNote: "Gratis fjernelse, hvis profilen dukker op igen.", ptMonitorNote: "Daglig overvågning, så profilen aldrig dukker op igen.", ptLifetimeNote: "Betal én gang for livslang beskyttelse + overvågning" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspressordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Kan sies opp månedlig", ptMonthlyNote: "Gratis fjerning hvis profilen dukker opp igjen.", ptMonitorNote: "Daglig overvåking slik at profilen aldri dukker opp igjen.", ptLifetimeNote: "Betal én gang for livsvarig beskyttelse + overvåking" },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -1343,6 +1342,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <div className="pt-section">
         <div className="pt-grid">
           <div className={"pt-card" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
+            <span className="pt-flag pt-flag-pop">{conv.protPopularBadge}</span>
             <div className="pt-head">
               <span className="pt-radio"></span>
               <span className="pt-name">{conv.protMonthlyName}</span>
@@ -1356,7 +1356,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
 
           <div className={"pt-card" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
-            <span className="pt-flag">{conv.tierMonitorBadge}</span>
             <div className="pt-head">
               <span className="pt-radio"></span>
               <span className="pt-name">{conv.protMonitorName}</span>
@@ -1370,7 +1369,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
 
           <div className={"pt-card" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
-            <span className="pt-flag">{conv.tierLifetimeBadge}</span>
             <div className="pt-head">
               <span className="pt-radio"></span>
               <span className="pt-name">{conv.protLifetimeName}</span>
@@ -1380,6 +1378,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               </span>
               <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
             </div>
+            <p className="pt-note">{wm.ptLifetimeNote}</p>
           </div>
         </div>
         </div>
