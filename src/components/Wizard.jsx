@@ -12,21 +12,37 @@ import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
+/* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
+   Die verlinkten Texte sind die deutsche Fassung (Vertragssprache Deutsch, Punkt 12.3 AGB);
+   lokalisierte Fassungen folgen nach anwaltlicher Freigabe. */
 const AGB_CONSENT = {
-  de: { pre: "Ich habe die ", link: "Datenschutzerklärung & AGB", post: " gelesen und stimme zu.", err: "Bitte bestätigen Sie die Datenschutzerklärung." },
-  en: { pre: "I have read and agree to the ", link: "Privacy Policy & Terms", post: ".", err: "Please confirm the privacy policy." },
-  es: { pre: "He leído y acepto la ", link: "Política de Privacidad y los Términos", post: ".", err: "Confirme la política de privacidad." },
-  fr: { pre: "J'ai lu et j'accepte la ", link: "politique de confidentialité et les CGV", post: ".", err: "Veuillez confirmer la politique de confidentialité." },
-  it: { pre: "Ho letto e accetto l'", link: "Informativa sulla privacy e i Termini", post: ".", err: "Conferma l'informativa sulla privacy." },
-  nl: { pre: "Ik heb het ", link: "privacybeleid & de voorwaarden", post: " gelezen en ga akkoord.", err: "Bevestig het privacybeleid." },
-  pt: { pre: "Li e aceito a ", link: "Política de Privacidade e os Termos", post: ".", err: "Confirme a política de privacidade." },
-  ja: { pre: "", link: "プライバシーポリシーと利用規約", post: "を読み、同意します。", err: "プライバシーポリシーに同意してください。" },
-  sv: { pre: "Jag har läst och godkänner ", link: "integritetspolicyn och villkoren", post: ".", err: "Bekräfta integritetspolicyn." },
-  da: { pre: "Jeg har læst og accepterer ", link: "privatlivspolitikken og vilkårene", post: ".", err: "Bekræft privatlivspolitikken." },
-  no: { pre: "Jeg har lest og godtar ", link: "personvernerklæringen og vilkårene", post: ".", err: "Bekreft personvernerklæringen." },
+  de: { pre: "Ich habe die ", agb: "AGB", mid: " und die ", wid: "Widerrufsbelehrung", post: " gelesen und akzeptiere sie.", err: "Bitte bestätigen Sie AGB und Widerrufsbelehrung." },
+  en: { pre: "I have read and accept the ", agb: "Terms & Conditions", mid: " and the ", wid: "withdrawal policy", post: ".", err: "Please confirm the Terms and the withdrawal policy." },
+  es: { pre: "He leído y acepto los ", agb: "Términos y Condiciones", mid: " y la ", wid: "información sobre desistimiento", post: ".", err: "Confirme los Términos y la información sobre desistimiento." },
+  fr: { pre: "J'ai lu et j'accepte les ", agb: "CGV", mid: " et l'", wid: "information sur le droit de rétractation", post: ".", err: "Veuillez confirmer les CGV et l'information sur la rétractation." },
+  it: { pre: "Ho letto e accetto i ", agb: "Termini e Condizioni", mid: " e l'", wid: "informativa sul recesso", post: ".", err: "Conferma i Termini e l'informativa sul recesso." },
+  nl: { pre: "Ik heb de ", agb: "algemene voorwaarden", mid: " en de ", wid: "herroepingsinformatie", post: " gelezen en accepteer ze.", err: "Bevestig de voorwaarden en de herroepingsinformatie." },
+  pt: { pre: "Li e aceito os ", agb: "Termos e Condições", mid: " e a ", wid: "informação sobre retratação", post: ".", err: "Confirme os Termos e a informação sobre retratação." },
+  ja: { pre: "", agb: "利用規約（AGB）", mid: "と", wid: "撤回権に関する説明", post: "を読み、同意します。", err: "利用規約と撤回権に関する説明に同意してください。" },
+  sv: { pre: "Jag har läst och godkänner ", agb: "villkoren (AGB)", mid: " och ", wid: "ångerrättsinformationen", post: ".", err: "Bekräfta villkoren och ångerrättsinformationen." },
+  da: { pre: "Jeg har læst og accepterer ", agb: "vilkårene (AGB)", mid: " og ", wid: "fortrydelsesoplysningerne", post: ".", err: "Bekræft vilkårene og fortrydelsesoplysningerne." },
+  no: { pre: "Jeg har lest og godtar ", agb: "vilkårene (AGB)", mid: " og ", wid: "angrerettsinformasjonen", post: ".", err: "Bekreft vilkårene og angrerettsinformasjonen." },
 };
-// Deutsche AGB/Datenschutz lokal; alle anderen Sprachen → englische GTC.
-const GTC_EN = "https://onecdn.io/media/rapidremovegtc-7e48fe7f-35be-4849-861a-e10de91526fd.pdf";
+/* Checkbox 2 (§ 18 Abs 1 Z 1 FAGG): ausdrückliches Verlangen auf vorzeitigen Leistungsbeginn
+   + Kenntnisnahme, dass das Widerrufsrecht bei vollständiger Erfüllung erlischt. */
+const FAGG_CONSENT = {
+  de: { txt: "Ich verlange ausdrücklich, dass RapidRemove vor Ablauf der Widerrufsfrist mit der Dienstleistung beginnt. Mir ist bekannt, dass ich mein Widerrufsrecht verliere, sobald die Dienstleistung vollständig erbracht ist.", err: "Bitte bestätigen Sie den vorzeitigen Leistungsbeginn." },
+  en: { txt: "I expressly request that RapidRemove begin the service before the withdrawal period expires. I am aware that I lose my right of withdrawal once the service has been performed in full.", err: "Please confirm the early start of the service." },
+  es: { txt: "Solicito expresamente que RapidRemove comience la prestación del servicio antes de que expire el plazo de desistimiento. Soy consciente de que pierdo mi derecho de desistimiento una vez que el servicio se haya prestado por completo.", err: "Confirme el inicio anticipado del servicio." },
+  fr: { txt: "Je demande expressément que RapidRemove commence la prestation avant l'expiration du délai de rétractation. Je reconnais perdre mon droit de rétractation dès que la prestation aura été entièrement exécutée.", err: "Veuillez confirmer le début anticipé de la prestation." },
+  it: { txt: "Chiedo espressamente che RapidRemove inizi la prestazione del servizio prima della scadenza del termine di recesso. Sono consapevole che perderò il diritto di recesso una volta che il servizio sarà stato eseguito integralmente.", err: "Conferma l'inizio anticipato del servizio." },
+  nl: { txt: "Ik verzoek uitdrukkelijk dat RapidRemove vóór het verstrijken van de herroepingstermijn met de dienst begint. Ik ben mij ervan bewust dat ik mijn herroepingsrecht verlies zodra de dienst volledig is uitgevoerd.", err: "Bevestig de vervroegde start van de dienst." },
+  pt: { txt: "Solicito expressamente que a RapidRemove inicie o serviço antes do termo do prazo de retratação. Estou ciente de que perco o meu direito de retratação assim que o serviço estiver integralmente prestado.", err: "Confirme o início antecipado do serviço." },
+  ja: { txt: "撤回期間の満了前にRapidRemoveがサービスの提供を開始することを明示的に求めます。サービスが完全に履行された時点で撤回権を失うことを了承しています。", err: "サービスの早期開始に同意してください。" },
+  sv: { txt: "Jag begär uttryckligen att RapidRemove påbörjar tjänsten innan ångerfristen löper ut. Jag är medveten om att jag förlorar min ångerrätt när tjänsten har fullgjorts helt.", err: "Bekräfta den förtida starten av tjänsten." },
+  da: { txt: "Jeg anmoder udtrykkeligt om, at RapidRemove påbegynder tjenesten, inden fortrydelsesfristen udløber. Jeg er bekendt med, at jeg mister min fortrydelsesret, så snart tjenesten er fuldt udført.", err: "Bekræft den tidlige start af tjenesten." },
+  no: { txt: "Jeg ber uttrykkelig om at RapidRemove starter tjenesten før angrefristen utløper. Jeg er innforstått med at jeg mister angreretten min så snart tjenesten er fullt utført.", err: "Bekreft tidlig oppstart av tjenesten." },
+};
 
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
@@ -1095,6 +1111,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
   const [agbOk, setAgbOk] = React.useState(false);
+  const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
@@ -1316,6 +1333,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     if (!contact.name.trim()) er.name = w.s5.errName;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)) er.email = w.s5.errEmail;
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
+    if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
     setErrors(er);
     if (Object.keys(er).length) return;
     setProcessing(true);
@@ -1332,6 +1350,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       reviews: selected ? selected.reviews : 0,
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId,
+      // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
+      // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
+      agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung aufgegeben.
     if (typeof window !== "undefined") {
@@ -1610,6 +1631,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   function StepCheckout() {
     const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
     const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
+    const fg = FAGG_CONSENT[t.code] || FAGG_CONSENT.en;
     if (processing) {
       return (
         <div className="wz-card">
@@ -1654,13 +1676,24 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
             <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
               {ag.pre}
-              <a href={t.code === "de" ? asset("/rapidremove-agb-datenschutz.pdf") : GTC_EN} target="_blank" rel="noopener noreferrer"
+              <a href={asset("/agb/")} target="_blank" rel="noopener noreferrer"
                 style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
-                onClick={(e) => e.stopPropagation()}>{ag.link}</a>
+                onClick={(e) => e.stopPropagation()}>{ag.agb}</a>
+              {ag.mid}
+              <a href={asset("/widerruf/")} target="_blank" rel="noopener noreferrer"
+                style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
+                onClick={(e) => e.stopPropagation()}>{ag.wid}</a>
               {ag.post}
             </span>
           </label>
           {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
+          <label className={"agb-consent" + (errors.fagg ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 12, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
+            <input type="checkbox" checked={faggOk}
+              onChange={(e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }}
+              style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
+            <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
+          </label>
+          {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
           <button className="btn btn-primary btn-block lg" style={{ marginTop: 16 }} onClick={submit}>
             <Icon.lock size={18} /> {w.s5.button}
           </button>

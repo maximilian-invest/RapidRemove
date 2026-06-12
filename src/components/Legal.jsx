@@ -515,8 +515,9 @@ const L = {
   },
 };
 
-/* Eigenständige Seiten-Hülle (Nav + Footer + Chat), Sprache aus rr_lang (Default DE). */
-function Shell({ initialLang = "de", pageKey, children }) {
+/* Eigenständige Seiten-Hülle (Nav + Footer + Chat), Sprache aus rr_lang (Default DE).
+   Exportiert, damit weitere Rechtsseiten (AGB, Widerruf) dieselbe Hülle nutzen. */
+export function Shell({ initialLang = "de", pageKey, children }) {
   const { lang, t, setLang, base } = useRouteShell(initialLang, pageKey);
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>

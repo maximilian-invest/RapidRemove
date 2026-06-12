@@ -1,6 +1,8 @@
-/* Template: Auftragsbestätigung / Order Confirmation (DE/EN). */
+/* Template: Auftragsbestätigung / Order Confirmation (DE/EN).
+   Enthält AGB + Widerrufsbelehrung im Volltext (dauerhafter Datenträger, FAGG). */
 import * as React from "react";
 import { EmailShell, P, NoteBox } from "./components";
+import { LegalSection } from "./legal";
 
 export interface AuftragsbestaetigungProps {
   lang?: "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
@@ -157,6 +159,7 @@ export default function Auftragsbestaetigung({ lang = "de", anrede }: Auftragsbe
         <strong>{t.noteBold}</strong>{t.note}
       </NoteBox>
       <P muted>{t.outro}</P>
+      <LegalSection lang={lang} />
     </EmailShell>
   );
 }

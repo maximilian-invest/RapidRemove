@@ -149,7 +149,7 @@ const ja = {
     cols: [
       { h: "製品", links: ["ご利用の流れ", "料金", "口コミ", "無料チェック"] },
       { h: "会社", links: ["会社概要", "ブログ / マガジン", "パートナーになる", "お問い合わせ"] },
-      { h: "法的事項", links: ["インプリント", "プライバシー", "お客様ポータル"] },
+      { h: "法的事項", links: ["インプリント", "プライバシー", "利用規約", "撤回権について", "お客様ポータル"] },
     ],
     addr: "Simple Solution. OG・Salzgasse 2, 5400 Hallein, オーストリア・UID ATU72401536",
     rights: "全権利を留保します。",
@@ -351,7 +351,7 @@ const sv = {
     cols: [
       { h: "Produkt", links: ["Så funkar det", "Priser", "Omdömen", "Gratis koll"] },
       { h: "Företag", links: ["Om oss", "Blogg / Magasin", "Bli partner", "Kontakt"] },
-      { h: "Juridik", links: ["Imprint", "Integritet", "Kundportal"] },
+      { h: "Juridik", links: ["Imprint", "Integritet", "Allmänna villkor", "Ångerrätt", "Kundportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österrike · momsnr ATU72401536",
     rights: "Alla rättigheter förbehållna.",
@@ -553,7 +553,7 @@ const da = {
     cols: [
       { h: "Produkt", links: ["Sådan virker det", "Priser", "Anmeldelser", "Gratis tjek"] },
       { h: "Virksomhed", links: ["Om os", "Blog / Magasin", "Bliv partner", "Kontakt"] },
-      { h: "Juridisk", links: ["Imprint", "Privatliv", "Kundeportal"] },
+      { h: "Juridisk", links: ["Imprint", "Privatliv", "Handelsbetingelser", "Fortrydelsesret", "Kundeportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østrig · momsnr. ATU72401536",
     rights: "Alle rettigheder forbeholdes.",
@@ -755,7 +755,7 @@ const no = {
     cols: [
       { h: "Produkt", links: ["Slik fungerer det", "Priser", "Omtaler", "Gratis sjekk"] },
       { h: "Selskap", links: ["Om oss", "Blogg / Magasin", "Bli partner", "Kontakt"] },
-      { h: "Juridisk", links: ["Imprint", "Personvern", "Kundeportal"] },
+      { h: "Juridisk", links: ["Imprint", "Personvern", "Vilkår", "Angrerett", "Kundeportal"] },
     ],
     addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østerrike · mva-nr. ATU72401536",
     rights: "Alle rettigheter forbeholdt.",

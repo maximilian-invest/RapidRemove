@@ -149,7 +149,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Producto", links: ["Cómo funciona", "Precios", "Opiniones", "Análisis gratis"] },
         { h: "Empresa", links: ["Sobre nosotros", "Blog / Revista", "Hazte socio", "Contacto"] },
-        { h: "Legal", links: ["Aviso legal", "Privacidad", "Portal de cliente"] },
+        { h: "Legal", links: ["Aviso legal", "Privacidad", "Términos y condiciones", "Derecho de desistimiento", "Portal de cliente"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536",
       rights: "Todos los derechos reservados.",
@@ -351,7 +351,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Produit", links: ["Comment ça marche", "Tarifs", "Avis", "Analyse gratuite"] },
         { h: "Entreprise", links: ["À propos", "Blog / Magazine", "Devenir partenaire", "Contact"] },
-        { h: "Légal", links: ["Mentions légales", "Confidentialité", "Espace client"] },
+        { h: "Légal", links: ["Mentions légales", "Confidentialité", "CGV", "Droit de rétractation", "Espace client"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536",
       rights: "Tous droits réservés.",

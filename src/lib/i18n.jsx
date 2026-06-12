@@ -153,7 +153,7 @@ const I18N = {
       cols: [
         { h: "Produkt", links: ["So funktioniert's", "Preise", "Bewertungen", "Gratis-Check"] },
         { h: "Unternehmen", links: ["Über uns", "Blog / Magazin", "Partner werden", "Kontakt"] },
-        { h: "Rechtliches", links: ["Impressum", "Datenschutz", "Kundenportal"] },
+        { h: "Rechtliches", links: ["Impressum", "Datenschutz", "AGB", "Widerruf", "Kundenportal"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österreich · UID ATU72401536",
       rights: "Alle Rechte vorbehalten.",
@@ -430,7 +430,7 @@ const I18N = {
       cols: [
         { h: "Product", links: ["How it works", "Pricing", "Reviews", "Free check"] },
         { h: "Company", links: ["About us", "Blog / Magazine", "Become a partner", "Contact"] },
-        { h: "Legal", links: ["Imprint", "Privacy", "Customer portal"] },
+        { h: "Legal", links: ["Imprint", "Privacy", "Terms & Conditions", "Right of withdrawal", "Customer portal"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · VAT ATU72401536",
       rights: "All rights reserved.",

@@ -147,7 +147,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Prodotto", links: ["Come funziona", "Prezzi", "Recensioni", "Analisi gratis"] },
         { h: "Azienda", links: ["Chi siamo", "Blog / Magazine", "Diventa partner", "Contatti"] },
-        { h: "Legale", links: ["Note legali", "Privacy", "Area clienti"] },
+        { h: "Legale", links: ["Note legali", "Privacy", "Termini e condizioni", "Diritto di recesso", "Area clienti"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · P.IVA ATU72401536",
       rights: "Tutti i diritti riservati.",
@@ -349,7 +349,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Product", links: ["Hoe het werkt", "Prijzen", "Reviews", "Gratis check"] },
         { h: "Bedrijf", links: ["Over ons", "Blog / Magazine", "Partner worden", "Contact"] },
-        { h: "Juridisch", links: ["Colofon", "Privacy", "Klantportaal"] },
+        { h: "Juridisch", links: ["Colofon", "Privacy", "Algemene voorwaarden", "Herroepingsrecht", "Klantportaal"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Oostenrijk · btw ATU72401536",
       rights: "Alle rechten voorbehouden.",
@@ -551,7 +551,7 @@ import { PRICES } from "@/lib/pricing";
       cols: [
         { h: "Produto", links: ["Como funciona", "Preços", "Avaliações", "Análise grátis"] },
         { h: "Empresa", links: ["Sobre nós", "Blog / Revista", "Seja parceiro", "Contacto"] },
-        { h: "Legal", links: ["Aviso legal", "Privacidade", "Portal do cliente"] },
+        { h: "Legal", links: ["Aviso legal", "Privacidade", "Termos e condições", "Direito de retratação", "Portal do cliente"] },
       ],
       addr: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Áustria · NIF ATU72401536",
       rights: "Todos os direitos reservados.",
