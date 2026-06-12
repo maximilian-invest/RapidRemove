@@ -1454,22 +1454,18 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s5.sub}</p>
           <div className="form-grid">
             <div className={"fld full" + (errors.name ? " err" : "")}>
-              <label>{w.s5.f.name}</label>
-              <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} />
+              <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} aria-label={w.s5.f.name} />
               {errors.name && <div className="emsg">{errors.name}</div>}
             </div>
             <div className={"fld full" + (errors.email ? " err" : "")}>
-              <label>{w.s5.f.email}</label>
-              <input value={contact.email} onChange={set("email")} placeholder="name@firma.com" />
+              <input value={contact.email} onChange={set("email")} placeholder="name@firma.com" aria-label={w.s5.f.email} />
               {errors.email && <div className="emsg">{errors.email}</div>}
             </div>
             <div className="fld full">
-              <label>{w.s5.f.phone}</label>
-              <input value={contact.phone} onChange={set("phone")} placeholder="+43 …" />
+              <input value={contact.phone} onChange={set("phone")} placeholder="+43 …" aria-label={w.s5.f.phone} />
             </div>
             <div className="fld full">
-              <label>{w.s5.f.company}</label>
-              <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} />
+              <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company} />
             </div>
           </div>
 
