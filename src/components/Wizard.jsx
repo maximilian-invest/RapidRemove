@@ -1371,17 +1371,14 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <ProfileCard key={c.id} c={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} reviewsLabel={w.s2.reviews} />
             ))}
             <div className="profile-card not-mine-card reveal-in" onClick={pickNotInList} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") pickNotInList(); }}>
-              <div className="profile-thumb"><Icon.search /></div>
+              <div className="profile-thumb"><Icon.help /></div>
               <div className="profile-main"><div className="pn">{nil.tile}</div></div>
               <span className="nm-go"><Icon.arrowRight size={18} /></span>
             </div>
-            <a className="profile-card reveal-in" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="profile-thumb"><Icon.building /></div>
-              <div className="profile-main">
-                <div className="pn">{mp.t}</div>
-                <div className="pcat">{mp.d}</div>
-              </div>
-              <div className="profile-radio"><Icon.check /></div>
+            <a className="profile-card not-mine-card reveal-in" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)} style={{ textDecoration: "none", color: "inherit" }}>
+              <div className="profile-thumb"><Icon.mail /></div>
+              <div className="profile-main"><div className="pn">{mp.t}</div></div>
+              <span className="nm-go"><Icon.arrowRight size={18} /></span>
             </a>
             <div className="wz-actions" style={{ marginTop: 6 }}>
               <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
