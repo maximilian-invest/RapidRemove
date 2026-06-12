@@ -564,8 +564,7 @@
 
 /* ===== Schritt 5: Schutz — Auswahlkarten (Design „Wizard Schritt 5") ===== */
 /* Master-Toggle ganz oben: an = Karten, aus = Warnung */
-.pt-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 16px;border:1.5px solid var(--hairline-strong);border-radius:var(--r-lg);background:#fff;margin-bottom:16px;transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);}
-.pt-toggle-row.on{border-color:var(--primary);background:var(--orange-50);box-shadow:0 0 0 4px var(--orange-50);}
+.pt-toggle-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;}
 .pt-toggle-main{display:flex;align-items:center;gap:9px;min-width:0;}
 .pt-toggle-main svg{flex:none;color:var(--fg-muted);transition:color var(--dur);}
 .pt-toggle-row.on .pt-toggle-main svg{color:var(--primary);}
