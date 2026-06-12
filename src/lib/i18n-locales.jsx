@@ -196,7 +196,7 @@ import { PRICES } from "@/lib/pricing";
     },
     wizard: {
       back: "Atrás", backHome: "Volver al inicio", secure: "Cifrado y seguro",
-      steps: ["Nombre", "Búsqueda", "Confirmar", "Servicio y protección", "Pago", "Listo"],
+      steps: ["Nombre", "Búsqueda", "Confirmar", "Servicio", "Protección", "Pago", "Listo"],
       stepCount: (a, b) => `Paso ${a} de ${b}`,
       s1: { eyebrow: "Análisis gratis · Paso 1", h: "¿Cómo se llama tu empresa?", sub: "Buscaremos en Google tu perfil de empresa real. Sin compromiso, gratis y en segundos.", placeholder: "p. ej. Clínica Müller, Madrid", button: "Buscar mi perfil", hint: "¿No aparece tu empresa? Escribe el nombre exacto. Si tu perfil está como «cerrado permanentemente», añade también la dirección y continúa.", assure: ["Sin registro", "Sin acceso a tu cuenta", "100 % confidencial"] },
       s2: { eyebrow: "Búsqueda · Paso 2", searching: "Buscando perfiles de empresa de Google…", foundBadge: "Perfil encontrado", h: "¿Es este tu perfil?", sub: "Hemos encontrado tu perfil en Google Maps. Comprueba que los datos coinciden.", multiH: "Hemos encontrado varias coincidencias", multiSub: "Elige el perfil correcto, en el mapa o en la lista de abajo.", button: "Analizar este perfil", reviews: "opiniones" },
@@ -398,7 +398,7 @@ import { PRICES } from "@/lib/pricing";
     },
     wizard: {
       back: "Retour", backHome: "Retour à l'accueil", secure: "Chiffré et sécurisé",
-      steps: ["Nom", "Recherche", "Confirmer", "Service & protection", "Paiement", "Terminé"],
+      steps: ["Nom", "Recherche", "Confirmer", "Service", "Protection", "Paiement", "Terminé"],
       stepCount: (a, b) => `Étape ${a} sur ${b}`,
       s1: { eyebrow: "Analyse gratuite · Étape 1", h: "Quel est le nom de votre entreprise ?", sub: "Nous chercherons votre vraie fiche d'établissement sur Google. Sans engagement, gratuit et en quelques secondes.", placeholder: "p. ex. Cabinet Müller, Paris", button: "Trouver ma fiche", hint: "Votre entreprise n'apparaît pas ? Saisissez le nom exact. Si votre fiche est en « définitivement fermé », ajoutez aussi l'adresse, puis continuez.", assure: ["Sans inscription", "Aucun accès à votre compte", "100 % confidentiel"] },
       s2: { eyebrow: "Recherche · Étape 2", searching: "Recherche de fiches d'établissement Google…", foundBadge: "Fiche trouvée", h: "Est-ce votre fiche ?", sub: "Nous avons trouvé votre fiche sur Google Maps. Vérifiez que les informations correspondent.", multiH: "Nous avons trouvé plusieurs résultats", multiSub: "Choisissez la bonne fiche, sur la carte ou dans la liste ci-dessous.", button: "Analyser cette fiche", reviews: "avis" },

@@ -770,17 +770,17 @@ const MULTI_PROFILE = {
 };
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)" },
-  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)" },
-  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)" },
-  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)" },
-  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Ordine express (< 6 ore)" },
-  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoedopdracht (< 6 uur)" },
-  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Pedido expresso (< 6 horas)" },
-  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス依頼（6時間以内）" },
-  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Expressorder (< 6 timmar)" },
-  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspresordre (< 6 timer)" },
-  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspressordre (< 6 timer)" },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar" },
+  en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime" },
+  es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes" },
+  fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois" },
+  it: { now: "Ora", afterSuccess: "dopo il successo", continueTyped: "Continua così, anche se non elencato", notMine: "Non è il tuo profilo?", schutz: "Protezione", schutzClaim: "Rimozione gratuita se il profilo riappare.", ueberw: "Monitoraggio", ueberwTxt: "Controlliamo ogni giorno se il profilo riappare.", inklusive: "Incluso", expressTile: "Ordine express (< 6 ore)", toProtect: "Vai alla protezione", ptCancelPill: "Disdici ogni mese" },
+  nl: { now: "Nu", afterSuccess: "na succes", continueTyped: "Zo doorgaan – ook als niet vermeld", notMine: "Niet uw profiel?", schutz: "Bescherming", schutzClaim: "Gratis verwijdering als het profiel weer opduikt.", ueberw: "Monitoring", ueberwTxt: "We controleren dagelijks of het profiel weer opduikt.", inklusive: "Inbegrepen", expressTile: "Spoedopdracht (< 6 uur)", toProtect: "Verder naar bescherming", ptCancelPill: "Maandelijks opzegbaar" },
+  pt: { now: "Agora", afterSuccess: "após o sucesso", continueTyped: "Continuar assim, mesmo se não listado", notMine: "Não é o seu perfil?", schutz: "Proteção", schutzClaim: "Remoção gratuita se o perfil reaparecer.", ueberw: "Monitorização", ueberwTxt: "Verificamos diariamente se o perfil reaparece.", inklusive: "Incluído", expressTile: "Pedido expresso (< 6 horas)", toProtect: "Continuar para a proteção", ptCancelPill: "Cancelável mensalmente" },
+  ja: { now: "現在", afterSuccess: "成功後", continueTyped: "リストになくても続行", notMine: "あなたのプロフィールではありませんか？", schutz: "保護", schutzClaim: "プロフィールが再表示されたら無料で削除します。", ueberw: "モニタリング", ueberwTxt: "プロフィールが再表示されないか毎日監視します。", inklusive: "込み", expressTile: "エクスプレス依頼（6時間以内）", toProtect: "保護へ進む", ptCancelPill: "毎月解約可能" },
+  sv: { now: "Nu", afterSuccess: "efter framgång", continueTyped: "Fortsätt ändå – även om den inte är listad", notMine: "Inte din profil?", schutz: "Skydd", schutzClaim: "Gratis borttagning om profilen dyker upp igen.", ueberw: "Övervakning", ueberwTxt: "Vi kontrollerar dagligen om profilen dyker upp igen.", inklusive: "Ingår", expressTile: "Expressorder (< 6 timmar)", toProtect: "Vidare till skydd", ptCancelPill: "Sägs upp månadsvis" },
+  da: { now: "Nu", afterSuccess: "efter succes", continueTyped: "Fortsæt alligevel – også hvis ikke anført", notMine: "Ikke din profil?", schutz: "Beskyttelse", schutzClaim: "Gratis fjernelse, hvis profilen dukker op igen.", ueberw: "Overvågning", ueberwTxt: "Vi tjekker dagligt, om profilen dukker op igen.", inklusive: "Inkluderet", expressTile: "Ekspresordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Opsigeligt månedligt" },
+  no: { now: "Nå", afterSuccess: "etter suksess", continueTyped: "Fortsett likevel – også om ikke oppført", notMine: "Ikke profilen din?", schutz: "Beskyttelse", schutzClaim: "Gratis fjerning hvis profilen dukker opp igjen.", ueberw: "Overvåking", ueberwTxt: "Vi sjekker daglig om profilen dukker opp igjen.", inklusive: "Inkludert", expressTile: "Ekspressordre (< 6 timer)", toProtect: "Videre til beskyttelse", ptCancelPill: "Kan sies opp månedlig" },
 };
 
 function ratingAssessment(ratingStr, lang) {
@@ -1144,7 +1144,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ event: "purchase", transaction_id: orderId, value: oneTimeTotal, currency: country === "US" ? "USD" : "EUR" });
     }
-    setTimeout(() => { setProcessing(false); setStep(5); }, 2400);
+    setTimeout(() => { setProcessing(false); setStep(6); }, 2400);
   };
 
   /* ---------- step bodies ---------- */
@@ -1251,11 +1251,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepService() {
-    const removePrice = num(p.deletion);
-    const monitorDelta = num(p.protMonitor) - num(p.protMonthly);
-    const protActive = protection !== null;
-    const monthlyTier = protection === "monthly" || protection === "monitor";
-    const blockNext = false;
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
@@ -1270,7 +1265,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <div className="ot">{w.s4.opt1.t} {w.s4.opt1.badge && <span className="obadge">{w.s4.opt1.badge}</span>}</div>
               <div className="od">{w.s4.opt1.d}</div>
             </div>
-            <div className="opt-price">{fmtMoney(lang, removePrice)}<small>{wm.afterSuccess}</small></div>
+            <div className="opt-price">{money(lang, p.deletion)}<small>{wm.afterSuccess}</small></div>
           </div>
 
           <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => { setService("reset"); setExpress(false); }}>
@@ -1284,54 +1279,83 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           </div>
         </div>
 
-        <div className="prot-tiles">
-          <div className={"opt prot-tile" + (protActive ? " sel" : "")}>
-            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">
-                {wm.schutz}
-                <span className="prot-info" tabIndex={0} role="button" aria-label="Info">
-                  <Icon.info size={15} />
-                  <span className="prot-info-pop">{conv.protLead}</span>
-                </span>
-              </div>
-              <div className="od">{wm.schutzClaim}</div>
-              {protActive && (
-                <div className="prot-tiers">
-                  <button type="button" className={"prot-tier" + (monthlyTier ? " on" : "")} onClick={() => { if (protection === "lifetime") setProtection("monthly"); }}>
-                    <span className="pt-name">{conv.tierMonthlyLabel}</span>
-                    <span className="pt-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></span>
-                  </button>
-                  <button type="button" className={"prot-tier" + (protection === "lifetime" ? " on" : "")} onClick={() => setProtection("lifetime")}>
-                    <span className="pt-name">{conv.tierLifetimeLabel}</span>
-                    <span className="pt-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></span>
-                  </button>
-                </div>
-              )}
+        <div className="svc-cta">
+          <div className="svc-total">
+            <span className="st-l">{conv.subtotal}</span>
+            <span className="st-v">{fmtMoney(lang, leistungTotal)}</span>
+          </div>
+          <div className="wz-actions">
+            <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-primary grow" onClick={() => go(4)}>{wm.toProtect} <Icon.arrowRight size={18} /></button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function StepProtect() {
+    const protActive = protection !== null;
+    const [ptInfo, setPtInfo] = React.useState(null);
+    const toggleInfo = (k) => (e) => { e.stopPropagation(); setPtInfo(ptInfo === k ? null : k); };
+    React.useEffect(() => {
+      if (!ptInfo) return;
+      const close = () => setPtInfo(null);
+      document.addEventListener("click", close);
+      return () => document.removeEventListener("click", close);
+    }, [ptInfo]);
+    return (
+      <div className="wz-card">
+        <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {conv.protStepLabel}</div>
+        <h1 className="wz-h" style={{ fontSize: 28 }}>{conv.protH}</h1>
+        <p className="wz-sub" style={{ marginBottom: 18 }}>{conv.protSub}</p>
+
+        <div className="pt-grid">
+          <div className={"pt-card" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
+            <div className="pt-head">
+              <span className="pt-radio"></span>
+              <span className="pt-name">{conv.protMonthlyName}</span>
+              <span className="pt-info-wrap">
+                <button type="button" className={"pt-info" + (ptInfo === "monthly" ? " on" : "")} onClick={toggleInfo("monthly")} aria-label="Info" aria-expanded={ptInfo === "monthly"}><Icon.info size={15} /></button>
+                {ptInfo === "monthly" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protMonthlyShort}</span>}
+              </span>
+              <span className="pt-hp"><b>{money(lang, p.protMonthly)}</b><small>{conv.perMonthShort}</small></span>
             </div>
-            <button type="button" className={"switch prot-toggle" + (protActive ? " on" : "")} aria-label="Schutz" onClick={() => setProtection(protActive ? null : "monthly")}></button>
+            <p className="pt-note">{wm.ptCancelPill}</p>
           </div>
 
-          {protActive && (
-            <div className={"opt prot-tile" + ((protection === "monitor" || protection === "lifetime") ? " sel" : "")}>
-              <div className="opt-ic"><Icon.eye size={22} /></div>
-              <div className="opt-main">
-                <div className="ot">{wm.ueberw}</div>
-                <div className="od">{wm.ueberwTxt}</div>
-              </div>
-              {protection === "lifetime" ? (
-                <span className="prot-incl"><Icon.check size={14} /> {wm.inklusive}</span>
-              ) : (
-                <span className="prot-mon-right">
-                  <span className="pt-price">+{fmtMoney(lang, monitorDelta)}<small>{conv.perMonthShort}</small></span>
-                  <button type="button" className={"switch prot-toggle" + (protection === "monitor" ? " on" : "")} aria-label="Überwachung" onClick={() => setProtection(protection === "monitor" ? "monthly" : "monitor")}></button>
-                </span>
-              )}
+          <div className={"pt-card" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
+            <span className="pt-flag">{conv.tierMonitorBadge}</span>
+            <div className="pt-head">
+              <span className="pt-radio"></span>
+              <span className="pt-name">{conv.protMonitorName}</span>
+              <span className="pt-info-wrap">
+                <button type="button" className={"pt-info" + (ptInfo === "monitor" ? " on" : "")} onClick={toggleInfo("monitor")} aria-label="Info" aria-expanded={ptInfo === "monitor"}><Icon.info size={15} /></button>
+                {ptInfo === "monitor" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protMonitorShort}</span>}
+              </span>
+              <span className="pt-hp"><b>{money(lang, p.protMonitor)}</b><small>{conv.perMonthShort}</small></span>
             </div>
-          )}
+            <p className="pt-note">{wm.ptCancelPill}</p>
+          </div>
+
+          <div className={"pt-card" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
+            <span className="pt-flag">{conv.tierLifetimeBadge}</span>
+            <div className="pt-head">
+              <span className="pt-radio"></span>
+              <span className="pt-name">{conv.protLifetimeName}</span>
+              <span className="pt-info-wrap">
+                <button type="button" className={"pt-info" + (ptInfo === "lifetime" ? " on" : "")} onClick={toggleInfo("lifetime")} aria-label="Info" aria-expanded={ptInfo === "lifetime"}><Icon.info size={15} /></button>
+                {ptInfo === "lifetime" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.tierLifetimeDesc}</span>}
+              </span>
+              <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
+            </div>
+          </div>
         </div>
 
-        <div className="risk-banner" style={{ marginTop: 20 }}><Icon.shieldCheck /> {t.riskReversal}</div>
+        <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
+
+        {protActive
+          ? <div className="pt-skip-row"><button className="pt-skip" onClick={() => setProtection(null)}>{conv.noProtLink}</button></div>
+          : <div className="pt-skip-warn"><Icon.alert size={15} /><span>{conv.protOffBody}</span><button className="pt-skip-undo" onClick={() => setProtection("monthly")}>{conv.addProtBack}</button></div>}
 
         <div className="svc-cta">
           <div className="svc-total">
@@ -1339,8 +1363,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             <span className="st-v">{fmtMoney(lang, oneTimeTotal)}{recurringNum > 0 && <em> + {money(lang, protPriceVal)} {conv.perMonthShort}</em>}</span>
           </div>
           <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(2)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" disabled={blockNext} onClick={() => { if (!blockNext) go(4); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
+            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-primary grow" onClick={() => go(5)}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
           </div>
         </div>
       </div>
@@ -1456,7 +1480,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <div className="risk-banner lg" style={{ marginTop: 14 }}><Icon.shieldCheck /> {t.riskReversal}</div>
           <div className="checkout-testi"><Testimonial q={conv.quotes[2]} /></div>
           <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-secondary" onClick={() => go(4)}><Icon.arrowLeft size={17} /> {w.back}</button>
           </div>
         </div>
         <OrderSummary />
@@ -1690,9 +1714,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     );
   }
 
-  const bodies = [StepName, StepSearch, StepConfirm, StepService, StepCheckout, StepDone];
+  const bodies = [StepName, StepSearch, StepConfirm, StepService, StepProtect, StepCheckout, StepDone];
   const Body = bodies[step];
-  const wideStep = [0, 4].includes(step) && !processing;
+  const wideStep = [0, 5].includes(step) && !processing;
 
   return (
     <div className="wz">

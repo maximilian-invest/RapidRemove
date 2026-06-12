@@ -196,7 +196,7 @@ const ja = {
   },
   wizard: {
     back: "戻る", backHome: "ホームへ", secure: "暗号化＆安全",
-    steps: ["会社名", "プロフィール検索", "確認", "サービスと保護", "お支払い", "完了"],
+    steps: ["会社名", "プロフィール検索", "確認", "サービス", "保護", "お支払い", "完了"],
     stepCount: (a, b) => `ステップ ${a} / ${b}`,
     s1: { eyebrow: "無料チェック・ステップ1", h: "会社名は何ですか？", sub: "Googleであなたの実際のビジネスプロフィールを検索します。義務なし、無料、数秒で。", placeholder: "例：Müller歯科医院, ベルリン", button: "プロフィールを検索", hint: "会社が表示されませんか？正確な名称を入力してください。プロフィールが「閉業」に設定されている場合は、住所も入力して次へ進んでください。", assure: ["登録不要", "アカウントへのアクセスなし", "100% 秘密厳守"] },
     s2: { eyebrow: "プロフィール検索・ステップ2", searching: "Googleビジネスプロフィールを検索中 …", foundBadge: "プロフィールが見つかりました", h: "これはあなたのプロフィールですか？", sub: "Googleマップであなたのビジネスプロフィールを見つけました。情報が正しいか確認してください。", multiH: "複数の候補が見つかりました", multiSub: "正しいプロフィールを ― 地図または下のリストから選んでください。", button: "このプロフィールを確認", reviews: "件のレビュー" },
@@ -398,7 +398,7 @@ const sv = {
   },
   wizard: {
     back: "Tillbaka", backHome: "Till startsidan", secure: "Krypterat & säkert",
-    steps: ["Företagsnamn", "Profilsökning", "Bekräfta", "Tjänst & skydd", "Betalning", "Klart"],
+    steps: ["Företagsnamn", "Profilsökning", "Bekräfta", "Tjänst", "Skydd", "Betalning", "Klart"],
     stepCount: (a, b) => `Steg ${a} av ${b}`,
     s1: { eyebrow: "Gratis koll · Steg 1", h: "Vad heter ditt företag?", sub: "Vi söker på Google efter din riktiga företagsprofil. Utan förpliktelse, gratis och på sekunder.", placeholder: "t.ex. Müller Tandvård, Berlin", button: "Hitta min profil", hint: "Visas inte ditt företag? Ange det exakta namnet. Om din profil är inställd på ”permanent stängt” lägger du även till adressen och fortsätter.", assure: ["Ingen registrering", "Ingen åtkomst till ditt konto", "100 % konfidentiellt"] },
     s2: { eyebrow: "Profilsökning · Steg 2", searching: "Söker bland Google-företagsprofiler …", foundBadge: "Profil hittad", h: "Är detta din profil?", sub: "Vi hittade din företagsprofil på Google Maps. Kontrollera att uppgifterna stämmer.", multiH: "Vi hittade flera träffar", multiSub: "Välj rätt profil – på kartan eller i listan nedan.", button: "Kontrollera denna profil", reviews: "omdömen" },
@@ -600,7 +600,7 @@ const da = {
   },
   wizard: {
     back: "Tilbage", backHome: "Til forsiden", secure: "Krypteret & sikkert",
-    steps: ["Firmanavn", "Profilsøgning", "Bekræft", "Ydelse & beskyttelse", "Betaling", "Færdig"],
+    steps: ["Firmanavn", "Profilsøgning", "Bekræft", "Ydelse", "Beskyttelse", "Betaling", "Færdig"],
     stepCount: (a, b) => `Trin ${a} af ${b}`,
     s1: { eyebrow: "Gratis tjek · Trin 1", h: "Hvad hedder din virksomhed?", sub: "Vi søger på Google efter din rigtige virksomhedsprofil. Uforpligtende, gratis og på sekunder.", placeholder: "f.eks. Müller Tandlæge, Berlin", button: "Find min profil", hint: "Vises din virksomhed ikke? Indtast det præcise navn. Hvis din profil er sat til “permanent lukket”, tilføj også adressen, og fortsæt.", assure: ["Ingen tilmelding", "Ingen adgang til din konto", "100 % fortroligt"] },
     s2: { eyebrow: "Profilsøgning · Trin 2", searching: "Søger blandt Google-virksomhedsprofiler …", foundBadge: "Profil fundet", h: "Er dette din profil?", sub: "Vi fandt din virksomhedsprofil på Google Maps. Tjek, at oplysningerne passer.", multiH: "Vi fandt flere resultater", multiSub: "Vælg den rigtige profil – på kortet eller i listen nedenfor.", button: "Tjek denne profil", reviews: "anmeldelser" },
@@ -802,7 +802,7 @@ const no = {
   },
   wizard: {
     back: "Tilbake", backHome: "Til forsiden", secure: "Kryptert & sikkert",
-    steps: ["Firmanavn", "Profilsøk", "Bekreft", "Tjeneste & beskyttelse", "Betaling", "Ferdig"],
+    steps: ["Firmanavn", "Profilsøk", "Bekreft", "Tjeneste", "Beskyttelse", "Betaling", "Ferdig"],
     stepCount: (a, b) => `Trinn ${a} av ${b}`,
     s1: { eyebrow: "Gratis sjekk · Trinn 1", h: "Hva heter bedriften din?", sub: "Vi søker på Google etter den ekte bedriftsprofilen din. Uforpliktende, gratis og på sekunder.", placeholder: "f.eks. Müller Tannlege, Berlin", button: "Finn profilen min", hint: "Vises ikke bedriften din? Skriv inn det nøyaktige navnet. Hvis profilen din er satt til «permanent stengt», legg også til adressen og fortsett.", assure: ["Ingen registrering", "Ingen tilgang til kontoen din", "100 % konfidensielt"] },
     s2: { eyebrow: "Profilsøk · Trinn 2", searching: "Søker blant Google-bedriftsprofiler …", foundBadge: "Profil funnet", h: "Er dette profilen din?", sub: "Vi fant bedriftsprofilen din på Google Maps. Sjekk at opplysningene stemmer.", multiH: "Vi fant flere treff", multiSub: "Velg riktig profil – på kartet eller i listen nedenfor.", button: "Sjekk denne profilen", reviews: "omtaler" },

@@ -200,7 +200,7 @@ const I18N = {
     },
     wizard: {
       back: "Zurück", backHome: "Zur Startseite", secure: "Verschlüsselt & sicher",
-      steps: ["Firmenname", "Profilsuche", "Bestätigen", "Leistung & Schutz", "Checkout", "Fertig"],
+      steps: ["Firmenname", "Profilsuche", "Bestätigen", "Leistung", "Schutz", "Checkout", "Fertig"],
       stepCount: (a, b) => `Schritt ${a} von ${b}`,
       s1: {
         eyebrow: "Gratis-Check · Schritt 1",
@@ -477,7 +477,7 @@ const I18N = {
     },
     wizard: {
       back: "Back", backHome: "Back to home", secure: "Encrypted & secure",
-      steps: ["Business name", "Profile search", "Confirm", "Service & Protection", "Checkout", "Done"],
+      steps: ["Business name", "Profile search", "Confirm", "Service", "Protection", "Checkout", "Done"],
       stepCount: (a, b) => `Step ${a} of ${b}`,
       s1: {
         eyebrow: "Free check · Step 1",
