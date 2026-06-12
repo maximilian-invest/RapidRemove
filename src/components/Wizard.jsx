@@ -1448,12 +1448,12 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} />
               {errors.name && <div className="emsg">{errors.name}</div>}
             </div>
-            <div className={"fld" + (errors.email ? " err" : "")}>
+            <div className={"fld full" + (errors.email ? " err" : "")}>
               <label>{w.s5.f.email}</label>
               <input value={contact.email} onChange={set("email")} placeholder="name@firma.com" />
               {errors.email && <div className="emsg">{errors.email}</div>}
             </div>
-            <div className="fld">
+            <div className="fld full">
               <label>{w.s5.f.phone}</label>
               <input value={contact.phone} onChange={set("phone")} placeholder="+43 …" />
             </div>
