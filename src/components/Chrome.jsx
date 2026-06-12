@@ -9,6 +9,7 @@ import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
 import { pagePath } from "@/lib/page-routes";
+import { consentLabel } from "@/components/Consent";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -411,7 +412,7 @@ function Footer({ onStart, onBlog, onAbout }) {
           ))}
         </div>
         <div className="foot-bottom">
-          <span>© {new Date().getFullYear()} Simple Solution. OG · {t.footer.rights}</span>
+          <span>© {new Date().getFullYear()} Simple Solution. OG · {t.footer.rights} · <button type="button" className="foot-consent" onClick={() => { if (typeof window !== "undefined" && window.rrConsentOpen) window.rrConsentOpen(); }}>{consentLabel(lang)}</button></span>
           <div className="foot-pay">
             {["PayPal", "Klarna", "VISA", "Mastercard", "iDEAL"].map((p) => <span className="pm" key={p}>{p}</span>)}
           </div>
