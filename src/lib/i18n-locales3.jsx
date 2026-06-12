@@ -17,7 +17,7 @@ const ja = {
     h1a: "Googleビジネスプロフィールを削除 ―",
     h1b: "永久に、合法的に、24時間以内に。",
     lead: "Googleでは自分のプロフィールを自分で削除できません。私たちなら可能です。すべての口コミを含めて削除し、お支払いは削除に成功した後のみです。",
-    trust: ["4.9", "260件以上のレビュー", "heise.de 推奨", "前払い不要", "1,000件以上のプロフィールを削除"],
+    trust: ["4.9", "260件以上のレビュー", "heise.de掲載", "前払い不要", "1,000件以上のプロフィールを削除"],
     assure: ["成功しなければ費用なし", "アカウントへのアクセスなし", "多くの場合、数分で返信"],
     cardEyebrow: "無料でチェック",
     cardTitle: "あなたのプロフィールは削除できますか？",
@@ -26,7 +26,7 @@ const ja = {
     button: "無料でチェック",
     foot: "義務なし・登録不要・秘密厳守",
   },
-  trustbar: { rating: "非常に高評価", reviews: "260件以上のレビュー：", legal: "100% 合法・弁護士による確認済み", heise: "heise.de が推奨", eu: "ドイツと世界の専門家", pay: "安全なお支払い" },
+  trustbar: { rating: "非常に高評価", reviews: "260件以上のレビュー：", legal: "100% 合法・弁護士による確認済み", heise: "heise.de に掲載", eu: "Google専門のエキスパート", pay: "安全なお支払い" },
   problem: {
     eyebrow: "課題",
     h2: "Googleはあなたのデータで稼ぎ ― 削除ボタンは用意しません。",
@@ -56,7 +56,7 @@ const ja = {
     rows: [
       { l: "スピード", rr: "約24時間", law: "3〜9か月", diy: "不可能" },
       { l: "費用", rr: "定額・成功時のみ", law: "300ユーロ以上/時", diy: "—" },
-      { l: "成功", rr: "保証", law: "不確実", diy: "不可" },
+      { l: "成功", rr: "成功時のみ支払い", law: "不確実", diy: "不可" },
       { l: "すべての口コミ削除", rr: "はい、すべて", law: "1件ずつ・手間", diy: "不可" },
       { l: "お客様の手間", rr: "ほぼゼロ", law: "大", diy: "大" },
       { l: "ストライサンドのリスク", rr: "なし", law: "高い", diy: "高い" },
@@ -93,7 +93,7 @@ const ja = {
     testimonials: [
       { q: "3件の偽レビューが何か月も私の医院を苦しめました。RapidRemoveは2日でプロフィールを消してくれました。もっと早く頼めばよかった。", n: "M. Berger", r: "歯科医院, デュッセルドルフ" },
       { q: "誠実で、速く、透明。実際にプロフィールが削除されてから支払いました。まさにこうあるべきです。", n: "T. Wagner", r: "自動車販売店, ウィーン" },
-      { q: "弁護士は2,400ユーロと4か月を要求しました。ここでは定額で24時間で完了。文句なしのおすすめです。", n: "S. Hoffmann", r: "建築事務所, ハンブルク" },
+      { q: "弁護士なら何か月もかかったでしょう。ここでは定額で24時間で完了。文句なしのおすすめです。", n: "S. Hoffmann", r: "建築事務所, ハンブルク" },
     ],
   },
   pricing: {
@@ -219,7 +219,7 @@ const sv = {
     h1a: "Ta bort din Google-företagsprofil –",
     h1b: "permanent, lagligt, på 24 timmar.",
     lead: "Google låter dig inte ta bort din egen profil. Det gör vi. Inklusive alla omdömen – och du betalar först när den är borttagen.",
-    trust: ["4,9", "260+ omdömen", "Rekommenderas av heise.de", "Ingen förskottsbetalning", "1 000+ profiler borttagna"],
+    trust: ["4,9", "260+ omdömen", "Omnämnda i heise.de", "Ingen förskottsbetalning", "1 000+ profiler borttagna"],
     assure: ["Ingen framgång, ingen kostnad", "Ingen åtkomst till ditt konto", "Svar oftast inom minuter"],
     cardEyebrow: "Kolla gratis",
     cardTitle: "Kan din profil tas bort?",
@@ -228,7 +228,7 @@ const sv = {
     button: "Kolla gratis",
     foot: "Utan förpliktelse · ingen registrering · konfidentiellt",
   },
-  trustbar: { rating: "Utmärkt", reviews: "260+ omdömen på", legal: "100 % lagligt & juridiskt granskat", heise: "Rekommenderas av heise.de", eu: "Experter från Tyskland och världen", pay: "Säker betalning" },
+  trustbar: { rating: "Utmärkt", reviews: "260+ omdömen på", legal: "100 % lagligt & juridiskt granskat", heise: "Omnämnda i heise.de", eu: "Specialiserade Google-experter", pay: "Säker betalning" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjänar på dina data – och ger dig ingen raderingsknapp.",
@@ -258,7 +258,7 @@ const sv = {
     rows: [
       { l: "Hastighet", rr: "~24 timmar", law: "3–9 månader", diy: "Inte möjligt" },
       { l: "Kostnad", rr: "Fast pris, endast vid framgång", law: "300 €+/timme", diy: "—" },
-      { l: "Framgång", rr: "Garanterad", law: "Osäker", diy: "Nej" },
+      { l: "Framgång", rr: "Betala endast vid framgång", law: "Osäker", diy: "Nej" },
       { l: "Alla omdömen borta", rr: "Ja, alla", law: "Ett i taget", diy: "Nej" },
       { l: "Din insats", rr: "I princip noll", law: "Hög", diy: "Hög" },
       { l: "Streisand-risk", rr: "Ingen", law: "Hög", diy: "Hög" },
@@ -421,7 +421,7 @@ const da = {
     h1a: "Slet din Google-virksomhedsprofil –",
     h1b: "permanent, lovligt, på 24 timer.",
     lead: "Google lader dig ikke slette din egen profil. Det gør vi. Inklusive alle anmeldelser – og du betaler først, når den er fjernet.",
-    trust: ["4,9", "260+ anmeldelser", "Anbefalet af heise.de", "Ingen forudbetaling", "1.000+ profiler fjernet"],
+    trust: ["4,9", "260+ anmeldelser", "Kendt fra heise.de", "Ingen forudbetaling", "1.000+ profiler fjernet"],
     assure: ["Ingen succes, ingen omkostning", "Ingen adgang til din konto", "Svar oftest inden for minutter"],
     cardEyebrow: "Tjek gratis",
     cardTitle: "Kan din profil slettes?",
@@ -430,7 +430,7 @@ const da = {
     button: "Tjek gratis",
     foot: "Uforpligtende · ingen tilmelding · fortroligt",
   },
-  trustbar: { rating: "Fremragende", reviews: "260+ anmeldelser på", legal: "100 % lovligt & juridisk gennemgået", heise: "Anbefalet af heise.de", eu: "Eksperter fra Tyskland og verden", pay: "Sikker betaling" },
+  trustbar: { rating: "Fremragende", reviews: "260+ anmeldelser på", legal: "100 % lovligt & juridisk gennemgået", heise: "Kendt fra heise.de", eu: "Specialiserede Google-eksperter", pay: "Sikker betaling" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjener på dine data – og giver dig ingen sletteknap.",
@@ -460,7 +460,7 @@ const da = {
     rows: [
       { l: "Hastighed", rr: "~24 timer", law: "3–9 måneder", diy: "Ikke muligt" },
       { l: "Omkostning", rr: "Fast pris, kun ved succes", law: "300 €+/time", diy: "—" },
-      { l: "Succes", rr: "Garanteret", law: "Usikker", diy: "Nej" },
+      { l: "Succes", rr: "Betal kun ved succes", law: "Usikker", diy: "Nej" },
       { l: "Alle anmeldelser væk", rr: "Ja, alle", law: "Én ad gangen", diy: "Nej" },
       { l: "Din indsats", rr: "Stort set nul", law: "Høj", diy: "Høj" },
       { l: "Streisand-risiko", rr: "Ingen", law: "Høj", diy: "Høj" },
@@ -623,7 +623,7 @@ const no = {
     h1a: "Slett din Google-bedriftsprofil –",
     h1b: "permanent, lovlig, på 24 timer.",
     lead: "Google lar deg ikke slette din egen profil. Det gjør vi. Inkludert alle omtaler – og du betaler først når den er fjernet.",
-    trust: ["4,9", "260+ omtaler", "Anbefalt av heise.de", "Ingen forskuddsbetaling", "1 000+ profiler fjernet"],
+    trust: ["4,9", "260+ omtaler", "Omtalt i heise.de", "Ingen forskuddsbetaling", "1 000+ profiler fjernet"],
     assure: ["Ingen suksess, ingen kostnad", "Ingen tilgang til kontoen din", "Svar oftest i løpet av minutter"],
     cardEyebrow: "Sjekk gratis",
     cardTitle: "Kan profilen din slettes?",
@@ -632,7 +632,7 @@ const no = {
     button: "Sjekk gratis",
     foot: "Uforpliktende · ingen registrering · konfidensielt",
   },
-  trustbar: { rating: "Utmerket", reviews: "260+ omtaler på", legal: "100 % lovlig & juridisk vurdert", heise: "Anbefalt av heise.de", eu: "Eksperter fra Tyskland og verden", pay: "Sikker betaling" },
+  trustbar: { rating: "Utmerket", reviews: "260+ omtaler på", legal: "100 % lovlig & juridisk vurdert", heise: "Omtalt i heise.de", eu: "Spesialiserte Google-eksperter", pay: "Sikker betaling" },
   problem: {
     eyebrow: "Problemet",
     h2: "Google tjener på dataene dine – og gir deg ingen slett-knapp.",
@@ -662,7 +662,7 @@ const no = {
     rows: [
       { l: "Hastighet", rr: "~24 timer", law: "3–9 måneder", diy: "Ikke mulig" },
       { l: "Kostnad", rr: "Fast pris, kun ved suksess", law: "300 €+/time", diy: "—" },
-      { l: "Suksess", rr: "Garantert", law: "Usikker", diy: "Nei" },
+      { l: "Suksess", rr: "Betal kun ved suksess", law: "Usikker", diy: "Nei" },
       { l: "Alle omtaler borte", rr: "Ja, alle", law: "Én om gangen", diy: "Nei" },
       { l: "Din innsats", rr: "Tilnærmet null", law: "Høy", diy: "Høy" },
       { l: "Streisand-risiko", rr: "Ingen", law: "Høy", diy: "Høy" },

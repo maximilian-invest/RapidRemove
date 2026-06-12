@@ -104,7 +104,7 @@ const CONV = {
     doneCrossSub: "Optional, jederzeit — unsere Ergänzungen rund um Ihre Online-Reputation.",
     xsOrmTitle: "Reputation verbessern", xsOrmDesc: "Negative Ergebnisse aus Google verdrängen lassen.", xsOrmPrice: "Auf Anfrage",
     xsPressTitle: "Presseartikel auslisten", xsPressDesc: "Unerwünschte Artikel aus den Suchergebnissen entfernen.", xsPressPrice: "Auf Anfrage",
-    asideBadges: ["DSGVO-konform", "Server in Deutschland"],
+    asideBadges: ["DSGVO-konform", "Server in der EU"],
   },
   en: {
     rating: "4.9", reviewsN: "260+ reviews", trustpilot: "Trustpilot",

@@ -17,7 +17,7 @@ import { PRICES } from "@/lib/pricing";
       h1a: "Elimina tu perfil de empresa de Google:",
       h1b: "de forma permanente, legal y en 24 horas.",
       lead: "Google no te deja borrar tu propio perfil. Nosotros sí. Incluidas todas las reseñas, y solo pagas tras la eliminación con éxito.",
-      trust: ["4,9", "260+ opiniones", "Recomendado por heise.de", "Sin pago por adelantado", "Más de 1.000 perfiles eliminados"],
+      trust: ["4,9", "260+ opiniones", "Conocidos por heise.de", "Sin pago por adelantado", "Más de 1.000 perfiles eliminados"],
       assure: ["Sin éxito, sin coste", "Sin acceso a tu cuenta", "Respuesta en minutos"],
       cardEyebrow: "Compruebe gratis",
       cardTitle: "¿Se puede borrar tu perfil?",
@@ -26,7 +26,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analizar gratis",
       foot: "Sin compromiso · sin registro · confidencial",
     },
-    trustbar: { rating: "Excelente", reviews: "260+ opiniones en", legal: "100 % legal y revisado por juristas", heise: "Recomendado por heise.de", eu: "Expertos de Alemania y del mundo", pay: "Pago seguro" },
+    trustbar: { rating: "Excelente", reviews: "260+ opiniones en", legal: "100 % legal y revisado por juristas", heise: "Conocidos por heise.de", eu: "Expertos especializados en Google", pay: "Pago seguro" },
     problem: {
       eyebrow: "El problema",
       h2: "Google gana con tus datos y no te da ningún botón de borrar.",
@@ -56,7 +56,7 @@ import { PRICES } from "@/lib/pricing";
       rows: [
         { l: "Velocidad", rr: "~24 horas", law: "3-9 meses", diy: "Imposible" },
         { l: "Coste", rr: "Precio fijo, solo si hay éxito", law: "Más de 300 €/hora", diy: "—" },
-        { l: "Éxito", rr: "Garantizado", law: "Incierto", diy: "No" },
+        { l: "Éxito", rr: "Pagas solo si hay éxito", law: "Incierto", diy: "No" },
         { l: "Todas las reseñas fuera", rr: "Sí, todas", law: "Una a una", diy: "No" },
         { l: "Tu esfuerzo", rr: "Prácticamente nulo", law: "Alto", diy: "Alto" },
         { l: "Riesgo Streisand", rr: "Ninguno", law: "Alto", diy: "Alto" },
@@ -93,7 +93,7 @@ import { PRICES } from "@/lib/pricing";
       testimonials: [
         { q: "Tres reseñas falsas lastraron mi consulta durante meses. RapidRemove eliminó el perfil en dos días. Debí venir antes.", n: "M. Berger", r: "Clínica dental, Düsseldorf" },
         { q: "Serio, rápido, transparente. Pagué solo cuando el perfil estaba realmente borrado. Así debe ser.", n: "T. Wagner", r: "Concesionario, Viena" },
-        { q: "El abogado pedía 2.400 € y cuatro meses. Aquí fue precio fijo y resuelto en 24 horas. Lo recomiendo.", n: "S. Hoffmann", r: "Estudio de arquitectura, Hamburgo" },
+        { q: "El abogado habría tardado meses. Aquí fue precio fijo y resuelto en 24 horas. Lo recomiendo.", n: "S. Hoffmann", r: "Estudio de arquitectura, Hamburgo" },
       ],
     },
     pricing: {
@@ -219,7 +219,7 @@ import { PRICES } from "@/lib/pricing";
       h1a: "Supprimez votre fiche d'établissement Google :",
       h1b: "définitivement, légalement, en 24 heures.",
       lead: "Google ne vous laisse pas supprimer votre propre fiche. Nous, si. Avec tous les avis, et vous ne payez qu'après la suppression réussie.",
-      trust: ["4,9", "260+ avis", "Recommandé par heise.de", "Sans paiement d'avance", "Plus de 1 000 fiches supprimées"],
+      trust: ["4,9", "260+ avis", "Vu sur heise.de", "Sans paiement d'avance", "Plus de 1 000 fiches supprimées"],
       assure: ["Sans succès, sans frais", "Aucun accès à votre compte", "Réponse en quelques minutes"],
       cardEyebrow: "Vérifiez gratuitement",
       cardTitle: "Votre fiche est-elle supprimable ?",
@@ -228,7 +228,7 @@ import { PRICES } from "@/lib/pricing";
       button: "Analyser gratuitement",
       foot: "Sans engagement · sans inscription · confidentiel",
     },
-    trustbar: { rating: "Excellent", reviews: "260+ avis sur", legal: "100 % légal et validé par des juristes", heise: "Recommandé par heise.de", eu: "Experts d'Allemagne et du monde entier", pay: "Paiement sécurisé" },
+    trustbar: { rating: "Excellent", reviews: "260+ avis sur", legal: "100 % légal et validé par des juristes", heise: "Vu sur heise.de", eu: "Experts Google spécialisés", pay: "Paiement sécurisé" },
     problem: {
       eyebrow: "Le problème",
       h2: "Google profite de vos données et ne vous donne aucun bouton supprimer.",
@@ -258,7 +258,7 @@ import { PRICES } from "@/lib/pricing";
       rows: [
         { l: "Rapidité", rr: "~24 heures", law: "3-9 mois", diy: "Impossible" },
         { l: "Coût", rr: "Prix fixe, seulement si succès", law: "Plus de 300 €/heure", diy: "—" },
-        { l: "Succès", rr: "Garanti", law: "Incertain", diy: "Non" },
+        { l: "Succès", rr: "Paiement seulement si succès", law: "Incertain", diy: "Non" },
         { l: "Tous les avis supprimés", rr: "Oui, tous", law: "Un par un", diy: "Non" },
         { l: "Votre effort", rr: "Quasi nul", law: "Élevé", diy: "Élevé" },
         { l: "Risque Streisand", rr: "Aucun", law: "Élevé", diy: "Élevé" },
@@ -295,7 +295,7 @@ import { PRICES } from "@/lib/pricing";
       testimonials: [
         { q: "Trois faux avis ont plombé mon cabinet pendant des mois. RapidRemove a supprimé la fiche en deux jours. J'aurais dû venir plus tôt.", n: "M. Berger", r: "Cabinet dentaire, Düsseldorf" },
         { q: "Sérieux, rapide, transparent. J'ai payé seulement une fois la fiche réellement supprimée. C'est exactement comme ça que ça doit marcher.", n: "T. Wagner", r: "Concessionnaire, Vienne" },
-        { q: "L'avocat voulait 2 400 € et quatre mois. Ici, prix fixe et réglé en 24 heures. Je recommande vivement.", n: "S. Hoffmann", r: "Cabinet d'architecture, Hambourg" },
+        { q: "L'avocat aurait pris des mois. Ici, prix fixe et réglé en 24 heures. Je recommande vivement.", n: "S. Hoffmann", r: "Cabinet d'architecture, Hambourg" },
       ],
     },
     pricing: {

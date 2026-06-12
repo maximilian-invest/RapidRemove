@@ -16,11 +16,11 @@ const I18N = {
     riskShort: "Zahlung NUR nach erfolgreicher Löschung",
     nav: { how: "So funktioniert's", why: "Warum wir", pricing: "Preise", reviews: "Bewertungen", faq: "FAQ", magazin: "Magazin", about: "Über uns", login: "Kundenportal", cta: "Gratis-Check" },
     hero: {
-      chip: "DSGVO-konform · Server in Deutschland · 100 % legal",
+      chip: "DSGVO-konform · Server in der EU · 100 % legal",
       h1a: "Wir löschen Ihr Google-Unternehmensprofil –",
       h1b: "dauerhaft, legal, in 24 Stunden.",
       lead: "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon. Inklusive aller Bewertungen, aus der Suche und von Google Maps.",
-      trust: ["4,9", "260+ Bewertungen", "Empfohlen von heise.de", "Keine Vorkasse", "Über 1.000 Profile entfernt"],
+      trust: ["4,9", "260+ Bewertungen", "Bekannt aus heise.de", "Keine Vorkasse", "Über 1.000 Profile entfernt"],
       assure: ["Kein Erfolg, keine Kosten", "Kein Zugriff auf Ihr Konto", "Antwort meist in Minuten"],
       cardEyebrow: "Kostenlos prüfen",
       cardTitle: "Ist Ihr Profil löschbar?",
@@ -29,7 +29,7 @@ const I18N = {
       button: "Löschbarkeit jetzt prüfen",
       foot: "Unverbindlich · keine Anmeldung · vertraulich",
     },
-    trustbar: { rating: "Ausgezeichnet", reviews: "260+ Bewertungen auf", legal: "100 % legal & juristisch geprüft", heise: "Empfohlen von heise.de", eu: "Experten aus Deutschland und der Welt", pay: "Sichere Zahlung" },
+    trustbar: { rating: "Ausgezeichnet", reviews: "260+ Bewertungen auf", legal: "100 % legal & juristisch geprüft", heise: "Bekannt aus heise.de", eu: "Spezialisierte Google-Experten", pay: "Sichere Zahlung" },
     problem: {
       eyebrow: "Das Problem",
       h2: "Google verdient an Ihren Daten – und gibt Ihnen keinen Löschen-Button.",
@@ -59,7 +59,7 @@ const I18N = {
       rows: [
         { l: "Geschwindigkeit", rr: "~24 Stunden", law: "3–9 Monate", diy: "Nicht möglich" },
         { l: "Kosten", rr: "Fixpreis, nur bei Erfolg", law: "300 €+ / Stunde", diy: "—" },
-        { l: "Erfolg", rr: "Garantiert", law: "Unsicher", diy: "Nein" },
+        { l: "Erfolg", rr: "Zahlung nur bei Erfolg", law: "Unsicher", diy: "Nein" },
         { l: "Alle Bewertungen weg", rr: "Ja, alle", law: "Einzeln, mühsam", diy: "Nein" },
         { l: "Ihr Aufwand", rr: "Praktisch null", law: "Hoch", diy: "Hoch" },
       ],
@@ -73,7 +73,7 @@ const I18N = {
       ncnpBody: "Keine Vorkasse, keine versteckten Kosten. Bleibt das Profil online, zahlen Sie nichts. So einfach.",
       items: [
         { t: "Eingetragenes Unternehmen aus Österreich", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österreich · UID ATU72401536." },
-        { t: "DSGVO-konform, EU-Unternehmen", d: "Server in Deutschland. Wir erhalten keinen Zugriff auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten. Diskrete Behandlung." },
+        { t: "DSGVO-konform, EU-Unternehmen", d: "Server in der EU. Wir erhalten keinen Zugriff auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten. Diskrete Behandlung." },
         { t: "100 % legal, juristisch geprüft", d: "Unsere Methode arbeitet über offizielle Schnittstellen und wurde von Juristen geprüft. Kein Graubereich." },
         { t: "Schutz bei Wiederauftauchen", d: "Trägt ein Dritter Ihr Profil erneut ein, entfernen wir es im Schutzzeitraum kostenlos wieder." },
       ],
@@ -95,7 +95,7 @@ const I18N = {
       testimonials: [
         { q: "Drei Fake-Bewertungen haben mein Geschäft monatelang belastet. RapidRemove hatte das Profil in zwei Tagen weg. Ich hätte früher kommen sollen.", n: "M. Berger", r: "Zahnarztpraxis, Düsseldorf" },
         { q: "Seriös, schnell, transparent. Bezahlt habe ich erst, als das Profil wirklich gelöscht war. Genau so muss das sein.", n: "T. Wagner", r: "Autohändler, Wien" },
-        { q: "Der Anwalt wollte 2.400 € und vier Monate. Hier war es ein Fixpreis und nach 24 Stunden erledigt. Klare Empfehlung.", n: "S. Hoffmann", r: "Architekturbüro, Hamburg" },
+        { q: "Der Anwalt hätte Monate gebraucht. Hier war es ein Fixpreis und nach 24 Stunden erledigt. Klare Empfehlung.", n: "S. Hoffmann", r: "Architekturbüro, Hamburg" },
       ],
     },
     pricing: {
@@ -298,7 +298,7 @@ const I18N = {
       h1a: "Delete your Google Business Profile –",
       h1b: "permanently, legally, in 24 hours.",
       lead: "Google won't let you delete your own profile. We will. Including every review – and you only pay after it's successfully removed.",
-      trust: ["4.9", "260+ reviews", "Recommended by heise.de", "No upfront payment", "1,000+ profiles removed"],
+      trust: ["4.9", "260+ reviews", "As seen on heise.de", "No upfront payment", "1,000+ profiles removed"],
       assure: ["No success, no cost", "No access to your account", "Reply usually in minutes"],
       cardEyebrow: "Check for free",
       cardTitle: "Can your profile be deleted?",
@@ -307,7 +307,7 @@ const I18N = {
       button: "Check for free",
       foot: "No obligation · no sign-up · confidential",
     },
-    trustbar: { rating: "Excellent", reviews: "260+ reviews on", legal: "100% legal & lawyer-reviewed", heise: "Recommended by heise.de", eu: "Experts from Germany and around the world", pay: "Secure payment" },
+    trustbar: { rating: "Excellent", reviews: "260+ reviews on", legal: "100% legal & lawyer-reviewed", heise: "As seen on heise.de", eu: "Specialized Google experts", pay: "Secure payment" },
     problem: {
       eyebrow: "The problem",
       h2: "Google profits from your data – and gives you no delete button.",
@@ -337,7 +337,7 @@ const I18N = {
       rows: [
         { l: "Speed", rr: "~24 hours", law: "3–9 months", diy: "Not possible" },
         { l: "Cost", rr: "Fixed price, only on success", law: "$300+ / hour", diy: "—" },
-        { l: "Success", rr: "Guaranteed", law: "Uncertain", diy: "No" },
+        { l: "Success", rr: "Pay only on success", law: "Uncertain", diy: "No" },
         { l: "All reviews gone", rr: "Yes, all", law: "One by one", diy: "No" },
         { l: "Your effort", rr: "Practically none", law: "High", diy: "High" },
         { l: "Streisand risk", rr: "None", law: "High", diy: "High" },
@@ -374,7 +374,7 @@ const I18N = {
       testimonials: [
         { q: "Three fake reviews weighed on my practice for months. RapidRemove had the profile gone in two days. I should have come sooner.", n: "M. Berger", r: "Dental practice, Düsseldorf" },
         { q: "Serious, fast, transparent. I only paid once the profile was actually deleted. That's exactly how it should work.", n: "T. Wagner", r: "Car dealer, Vienna" },
-        { q: "The lawyer wanted $2,400 and four months. Here it was a fixed price and done in 24 hours. Highly recommend.", n: "S. Hoffmann", r: "Architecture firm, Hamburg" },
+        { q: "The lawyer would have taken months. Here it was a fixed price and done in 24 hours. Highly recommend.", n: "S. Hoffmann", r: "Architecture firm, Hamburg" },
       ],
     },
     pricing: {
