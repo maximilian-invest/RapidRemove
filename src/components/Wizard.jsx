@@ -1302,7 +1302,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   }
 
   function StepProtect() {
-    const protActive = protection !== null;
     const toggleInfo = (k) => (e) => { e.stopPropagation(); setPtInfo(ptInfo === k ? null : k); };
     return (
       <div className="wz-card">
@@ -1350,13 +1349,20 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <span className="pt-hp"><b>{money(lang, p.protLifetime)}</b><small>{conv.onceShort}</small></span>
             </div>
           </div>
+
+          <div className={"pt-card pt-none" + (protection === null ? " sel" : "")} onClick={() => setProtection(null)}>
+            <div className="pt-head">
+              <span className="pt-radio"></span>
+              <span className="pt-name">{conv.noProtLink}</span>
+              <span className="pt-info-wrap">
+                <button type="button" className={"pt-info" + (ptInfo === "none" ? " on" : "")} onClick={toggleInfo("none")} aria-label="Info" aria-expanded={ptInfo === "none"}><Icon.info size={15} /></button>
+                {ptInfo === "none" && <span className="pt-pop" role="tooltip" onClick={(e) => e.stopPropagation()}>{conv.protOffBody}</span>}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div className="pt-proof"><Icon.shieldCheck size={15} /> {conv.keepProt}</div>
-
-        {protActive
-          ? <div className="pt-skip-row"><button className="pt-skip" onClick={() => setProtection(null)}>{conv.noProtLink}</button></div>
-          : <div className="pt-skip-warn"><Icon.alert size={15} /><span>{conv.protOffBody}</span><button className="pt-skip-undo" onClick={() => setProtection("monthly")}>{conv.addProtBack}</button></div>}
 
         <div className="svc-cta">
           <div className="svc-total">
