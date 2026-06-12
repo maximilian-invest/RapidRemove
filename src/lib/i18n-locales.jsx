@@ -158,7 +158,7 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "¿Se puede borrar tu perfil?", s: "Analiza gratis · sin pago previo", b: "Análisis gratis" },
     blog: {
       kicker: "La Revista",
-      h1: "Conocimiento de la agencia de reputación líder en eliminación de perfiles de Google.",
+      h1: "Conocimiento de la agencia especializada en la eliminación de perfiles de Google.",
       lead: "Análisis, casos prácticos y claridad sobre reputación online, reseñas falsas y tus derechos, de la mano del equipo detrás de más de 1.000 perfiles eliminados.",
       ribbonBadge: "Agencia especializada en reputación",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Más de ", React.createElement("b", null, n + " perfiles eliminados"), " en más de 30 países"),
@@ -360,7 +360,7 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "Votre fiche est-elle supprimable ?", s: "Analyse gratuite · sans avance", b: "Analyse gratuite" },
     blog: {
       kicker: "Le Magazine",
-      h1: "Le savoir de l'agence de réputation leader de la suppression de fiches Google.",
+      h1: "Le savoir de l'agence spécialisée dans la suppression de fiches Google.",
       lead: "Analyses, études de cas et franc-parler sur la réputation en ligne, les faux avis et vos droits, par l'équipe derrière plus de 1 000 fiches supprimées.",
       ribbonBadge: "Agence spécialisée en réputation",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Plus de ", React.createElement("b", null, n + " fiches supprimées"), " dans plus de 30 pays"),

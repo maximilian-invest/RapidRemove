@@ -135,7 +135,7 @@ const I18N = {
         { q: "Ist die Löschung dauerhaft?", a: "Ja, das Profil und alle Bewertungen werden permanent entfernt. Mit unserem optionalen Schutz entfernen wir es kostenlos erneut, falls es ein Dritter neu einträgt." },
         { q: "Warum ist das kostenpflichtig?", a: "Die Löschung erfordert echte Arbeit, Erfahrung und Verantwortung. Dafür zahlen Sie einen klaren Fixpreis – und ausschließlich dann, wenn wir erfolgreich sind." },
         { q: "Welche Zahlungsmethoden gibt es?", a: "PayPal, Kreditkarte, Klarna und weitere – verschlüsselt abgewickelt. Die Bezahlung erfolgt erst nach der erfolgreichen Löschung." },
-        { q: "Was passiert mit meinen Daten?", a: "Alle Daten werden DSGVO-konform und streng vertraulich verarbeitet – auf Servern in Deutschland. Auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten erhalten wir zu keinem Zeitpunkt Zugriff." },
+        { q: "Was passiert mit meinen Daten?", a: "Alle Daten werden DSGVO-konform und streng vertraulich verarbeitet – auf Servern in der EU. Auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten erhalten wir zu keinem Zeitpunkt Zugriff." },
         { q: "Wieso erlaubt Google mir nicht, das Profil selbst zu löschen?", a: "Google – und vor allem der Kartendienst Google Maps – lebt von den Daten der eingetragenen Unternehmen. Eine Möglichkeit, das Profil selbst zu löschen, gibt es deshalb bewusst nicht; es lässt sich lediglich auf „Dauerhaft geschlossen“ stellen. Mit unserer Software haben wir einen Weg gefunden, solche Profile rasch, restlos und vor allem legal aus dem System zu entfernen." },
         { q: "Wie lange dauert das?", a: "Die Entfernung dauert in der Regel rund 24 Stunden." },
         { q: "Wer steckt dahinter?", a: "Ein österreichisches Unternehmen: die Simple Solution. OG aus Hallein.", link: "/ueber-uns/", linkLabel: "Mehr über uns →" },
@@ -162,7 +162,7 @@ const I18N = {
     sticky: { t: "Ist Ihr Profil löschbar?", s: "Kostenlos prüfen · keine Vorkasse", b: "Gratis-Check" },
     blog: {
       kicker: "Das Magazin",
-      h1: "Wissen von der führenden Reputations-Agentur für Google-Profil-Löschung.",
+      h1: "Wissen von der spezialisierten Reputations-Agentur für Google-Profil-Löschung.",
       lead: "Analysen, Fallstudien und Klartext zu Online-Reputation, Fake-Bewertungen und Ihren Rechten – aus der Feder des Teams hinter über 1.000 entfernten Google-Profilen.",
       ribbonBadge: "Spezialisierte Reputations-Agentur",
       ribbonText: (n) => <React.Fragment>Über <b>{n} entfernte Profile</b> in 30+ Ländern</React.Fragment>,
@@ -439,7 +439,7 @@ const I18N = {
     sticky: { t: "Can your profile be deleted?", s: "Check free · no upfront payment", b: "Free check" },
     blog: {
       kicker: "The Magazine",
-      h1: "Insight from the leading reputation agency for Google profile removal.",
+      h1: "Insight from the reputation agency specialized in Google profile removal.",
       lead: "Analysis, case studies and plain talk on online reputation, fake reviews and your rights – from the team behind 1,000+ removed Google profiles.",
       ribbonBadge: "Specialized reputation agency",
       ribbonText: (n) => <React.Fragment>Over <b>{n} profiles removed</b> across 30+ countries</React.Fragment>,

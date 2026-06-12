@@ -14,7 +14,7 @@ export const metadata = {
     type: "website",
     title: "Über uns — RapidRemove · Spezialisten für Google-Profil-Löschung",
     description:
-      "Führende Reputations-Agentur für die Löschung von Google-Profilen. Echte Firma aus Österreich, Bezahlung erst nach Erfolg.",
+      "Spezialisierte Reputations-Agentur für die Löschung von Google-Profilen. Echte Firma aus Österreich, Bezahlung erst nach Erfolg.",
     url: URL,
     siteName: "RapidRemove",
     locale: "de_DE",

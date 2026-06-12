@@ -158,7 +158,7 @@ const ja = {
   sticky: { t: "プロフィールは削除できますか？", s: "無料チェック・前払い不要", b: "無料チェック" },
   blog: {
     kicker: "マガジン",
-    h1: "Googleプロフィール削除のリーディング評判管理エージェンシーによる知見。",
+    h1: "Googleプロフィール削除を専門とするエージェンシーによる知見。",
     lead: "オンライン評判、偽レビュー、あなたの権利についての分析、事例、率直な解説 ― 1,000件以上のプロフィールを削除してきたチームより。",
     ribbonBadge: "評判管理の専門エージェンシー",
     ribbonText: (n) => <React.Fragment><b>{n}件以上のプロフィールを削除</b>、30か国以上で</React.Fragment>,
@@ -360,7 +360,7 @@ const sv = {
   sticky: { t: "Kan din profil tas bort?", s: "Kolla gratis · ingen förskottsbetalning", b: "Gratis koll" },
   blog: {
     kicker: "Magasinet",
-    h1: "Insikter från den ledande byrån för online-rykte inom borttagning av Google-profiler.",
+    h1: "Insikter från byrån specialiserad på borttagning av Google-profiler.",
     lead: "Analyser, fallstudier och rak text om online-rykte, falska omdömen och dina rättigheter – från teamet bakom över 1 000 borttagna profiler.",
     ribbonBadge: "Specialiserade på online-rykte",
     ribbonText: (n) => <React.Fragment>Över <b>{n} profiler borttagna</b> i 30+ länder</React.Fragment>,
@@ -562,7 +562,7 @@ const da = {
   sticky: { t: "Kan din profil slettes?", s: "Tjek gratis · ingen forudbetaling", b: "Gratis tjek" },
   blog: {
     kicker: "Magasinet",
-    h1: "Indsigt fra verdensføreren i fjernelse af Google-profiler.",
+    h1: "Indsigt fra specialisterne i fjernelse af Google-profiler.",
     lead: "Analyser, casestudier og klar tale om online-omdømme, falske anmeldelser og dine rettigheder – fra teamet bag over 1.000 fjernede profiler.",
     ribbonBadge: "Specialiseret omdømmebureau",
     ribbonText: (n) => <React.Fragment>Over <b>{n} profiler fjernet</b> i 30+ lande</React.Fragment>,
@@ -764,7 +764,7 @@ const no = {
   sticky: { t: "Kan profilen din slettes?", s: "Sjekk gratis · ingen forskuddsbetaling", b: "Gratis sjekk" },
   blog: {
     kicker: "Magasinet",
-    h1: "Innsikt fra verdenslederen innen fjerning av Google-profiler.",
+    h1: "Innsikt fra spesialistene innen fjerning av Google-profiler.",
     lead: "Analyser, casestudier og klar tale om nettomdømme, falske omtaler og rettighetene dine – fra teamet bak over 1 000 fjernede profiler.",
     ribbonBadge: "Spesialisert omdømmebyrå",
     ribbonText: (n) => <React.Fragment>Over <b>{n} profiler fjernet</b> i 30+ land</React.Fragment>,

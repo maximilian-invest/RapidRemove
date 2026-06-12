@@ -255,19 +255,19 @@ function TrustBar() {
     <div key="eu" className="tb-item"><Icon.globe size={20} /> {t.trustbar.eu}</div>,
     <div key="pay" className="tb-item"><Icon.lock size={20} /> {t.trustbar.pay}</div>,
   ];
-  const COPIES = 4; // nahtloses Marquee (nur mobil)
+  const COPIES = 2; // nahtloses Marquee (nur mobil, rein dekorativ — Inhalt steht in .trustbar-inner)
   return (
     <div className="trustbar">
       {/* Desktop: statisch, im Inhaltsbereich (lenkt nicht vom CTA ab) */}
       <div className="container trustbar-inner">
         {items.flatMap((it, i) => i < items.length - 1 ? [it, <div className="tb-sep" key={"s" + i}></div>] : [it])}
       </div>
-      {/* Mobil: Leiste fährt von selbst durch */}
-      <div className="trustbar-track" aria-hidden={false}>
+      {/* Mobil: Leiste fährt von selbst durch — für Screenreader/Crawler ausgeblendet */}
+      <div className="trustbar-track" aria-hidden="true">
         {Array.from({ length: COPIES }).flatMap((_, c) =>
           items.flatMap((it, i) => [
-            React.cloneElement(it, { key: `i${c}-${i}`, ...(c > 0 ? { "aria-hidden": "true", tabIndex: -1 } : {}) }),
-            <div className="tb-sep" key={`s${c}-${i}`} aria-hidden="true"></div>,
+            React.cloneElement(it, { key: `i${c}-${i}`, tabIndex: -1 }),
+            <div className="tb-sep" key={`s${c}-${i}`}></div>,
           ])
         )}
       </div>
@@ -397,9 +397,9 @@ function TrustSecurity({ id }) {
             </div>
             <div className="team-card">
               <div className="team-top">
-                <div className="team-stack" data-comment-anchor="036ab80e57-b-256-17">
-                  {["MH", "ML"].map((x) => <span className="av" key={x}>{x}</span>)}
-                  {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
+                <div className="team-stack" role="img" aria-label="RapidRemove-Team" data-comment-anchor="036ab80e57-b-256-17">
+                  {["MH", "ML"].map((x) => <span className="av" key={x} aria-hidden="true">{x}</span>)}
+                  {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more" aria-hidden="true">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>

@@ -156,7 +156,7 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "Il tuo profilo è eliminabile?", s: "Analisi gratis · senza anticipo", b: "Analisi gratis" },
     blog: {
       kicker: "Il Magazine",
-      h1: "Il sapere dell'agenzia di reputazione leader nella rimozione dei profili Google.",
+      h1: "Il sapere dell'agenzia specializzata nella rimozione dei profili Google.",
       lead: "Analisi, casi studio e chiarezza su reputazione online, recensioni false e i tuoi diritti, dal team dietro oltre 1.000 profili rimossi.",
       ribbonBadge: "Agenzia specializzata in reputazione",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Oltre ", React.createElement("b", null, n + " profili rimossi"), " in più di 30 Paesi"),
@@ -358,7 +358,7 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "Is uw profiel te verwijderen?", s: "Gratis checken · geen vooruitbetaling", b: "Gratis check" },
     blog: {
       kicker: "Het Magazine",
-      h1: "Kennis van het toonaangevende reputatiebureau in het verwijderen van Google-profielen.",
+      h1: "Kennis van het reputatiebureau gespecialiseerd in het verwijderen van Google-profielen.",
       lead: "Analyses, casestudy's en heldere taal over online reputatie, nepreviews en uw rechten, van het team achter ruim 1.000 verwijderde profielen.",
       ribbonBadge: "Gespecialiseerd reputatiebureau",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Meer dan ", React.createElement("b", null, n + " profielen verwijderd"), " in 30+ landen"),
@@ -560,7 +560,7 @@ import { PRICES } from "@/lib/pricing";
     sticky: { t: "O seu perfil pode ser eliminado?", s: "Analise grátis · sem pagamento antecipado", b: "Análise grátis" },
     blog: {
       kicker: "A Revista",
-      h1: "Conhecimento da agência de reputação líder em remoção de perfis do Google.",
+      h1: "Conhecimento da agência especializada na remoção de perfis do Google.",
       lead: "Análises, casos de estudo e clareza sobre reputação online, avaliações falsas e os seus direitos, da equipa por trás de mais de 1.000 perfis removidos.",
       ribbonBadge: "Agência especializada em reputação",
       ribbonText: (n) => React.createElement(React.Fragment, null, "Mais de ", React.createElement("b", null, n + " perfis removidos"), " em mais de 30 países"),

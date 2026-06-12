@@ -90,13 +90,15 @@ export default function Consent() {
   const seg = pathname.split("/").filter(Boolean)[0];
   const lang = LANGS.some((l) => l.code === seg) ? seg : "de";
   const c = TXT[lang] || TXT.en;
-  const [open, setOpen] = React.useState(false);
+  // SSR-sichtbar: Der Banner steht im ausgelieferten HTML; eine gespeicherte
+  // Entscheidung blendet ihn direkt nach der Hydration wieder aus.
+  const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
     let stored = null;
     try { stored = localStorage.getItem(KEY); } catch (e) {}
-    if (stored === "granted") loadTrackers();
-    else if (stored !== "denied") setOpen(true);
+    if (stored === "granted") { setOpen(false); loadTrackers(); }
+    else if (stored === "denied") setOpen(false);
     window.rrConsentOpen = () => setOpen(true);
     return () => { if (window.rrConsentOpen) delete window.rrConsentOpen; };
   }, []);

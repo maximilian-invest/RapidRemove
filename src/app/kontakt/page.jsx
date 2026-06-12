@@ -7,7 +7,7 @@ const URL = `${SITE_URL}/kontakt`;
 
 export const metadata = {
   title: "Kontakt — RapidRemove",
-  description: "Sprechen Sie mit dem RapidRemove-Team: Frage zur Löschung, laufender Auftrag oder Partnerschaft. Antwort meist innerhalb weniger Stunden.",
+  description: "Sprechen Sie mit dem RapidRemove-Team: Frage zur Löschung, laufender Auftrag oder Partnerschaft. Antwort meist innerhalb von 24 Stunden.",
   alternates: { canonical: URL, languages: pageHreflang("kontakt") },
   openGraph: { type: "website", title: "Kontakt — RapidRemove", description: "Sprechen Sie persönlich mit unserem Team.", url: URL, siteName: "RapidRemove", locale: "de_DE" },
 };
