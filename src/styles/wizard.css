@@ -62,6 +62,13 @@
 .not-mine-card .profile-thumb{background:#fff;color:var(--fg-muted);}
 .not-mine-card .profile-thumb svg{width:22px;height:22px;}
 .not-mine-card .pn{color:var(--fg-2);}
+/* Sekundär-Kacheln (Schritt 2): kompakter + eng gruppiert (Karten oberhalb bleiben unverändert) */
+.nm-group{display:flex;flex-direction:column;gap:7px;}
+.nm-group .not-mine-card{margin-top:0;}
+.profile-card.not-mine-card{padding:12px 16px;}
+.profile-card.not-mine-card .profile-thumb{width:44px;height:44px;}
+.profile-card.not-mine-card .profile-thumb svg{width:20px;height:20px;}
+.profile-card.not-mine-card .profile-main .pn{font-size:15px;}
 .nm-go{margin-left:auto;align-self:center;color:var(--fg-muted);display:flex;transition:transform .15s,color .15s;}
 .not-mine-card:hover{border-color:var(--primary);}
 .profile-card:hover .nm-go{color:var(--primary);transform:translateX(3px);}
@@ -194,6 +201,10 @@
 /* kleine grüne Bestätigung auf Schritt 4 (Profil kann gelöscht werden) */
 .svc-ok{display:inline-flex;align-items:center;gap:7px;margin:0 0 18px;font-size:13.5px;font-weight:800;color:var(--success);}
 .svc-ok svg{color:var(--success);flex:none;}
+/* Eck-Badge oben rechts auf .opt-Kacheln (Empfohlen / Meistgewählt) */
+.opt-flag{position:absolute;top:-9px;right:18px;font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:var(--primary);color:#fff;padding:3px 9px;border-radius:var(--r-pill);box-shadow:var(--shadow-sm);}
+/* Experten-CTA in der Schritt-1-Seitenspalte (öffnet Tidio) */
+.wz-expert{cursor:pointer;width:100%;}
 .opt{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:22px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);background:#fff;position:relative;}
 .opt:hover{border-color:var(--orange-300);}
 .opt.sel{border-color:var(--primary);background:var(--orange-50);box-shadow:0 0 0 3px rgba(255,128,0,.12);}

@@ -81,7 +81,7 @@ const CONV = {
     protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
     protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
     protMonitorName: "Monitoring", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
-    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren", delOk: "Profil kann gelöscht werden",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren", delOk: "Profil kann gelöscht werden", expertCta: "Sprechen Sie mit den Google-Experten", mostChosen: "Meistgewählt",
     protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
@@ -147,7 +147,7 @@ const CONV = {
     protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
     protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
     protMonitorName: "Monitoring", protMonitorShort: "Daily monitoring & instant removal.",
-    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection", delOk: "Profile can be removed",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection", delOk: "Profile can be removed", expertCta: "Talk to the Google experts", mostChosen: "Most chosen",
     protToggleOn: "On", protToggleOff: "Off",
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
@@ -788,6 +788,15 @@ function isGMapsLink(u) {
   if (!/^https?:\/\//.test(s)) return false;
   return /(google\.[a-z.]+\/maps|maps\.google\.|maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/)/.test(s);
 }
+// Öffnet den Tidio-Live-Chat (robust, falls Tidio noch lädt).
+function openTidioChat(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  if (typeof window === "undefined") return;
+  const run = () => { try { if (!window.tidioChatApi) return; if (window.tidioChatApi.show) window.tidioChatApi.show(); window.tidioChatApi.open(); } catch (err) {} };
+  if (window.tidioChatApi) { run(); return; }
+  const onReady = () => { run(); document.removeEventListener("tidioChat-ready", onReady); };
+  document.addEventListener("tidioChat-ready", onReady);
+}
 // Liest den Profilnamen aus einem vollständigen Google-Maps-Link (…/maps/place/Name/…).
 function extractMapsName(url) {
   try {
@@ -798,7 +807,7 @@ function extractMapsName(url) {
 }
 /* ---- kleine Wizard-Labels, die früher nur DE/EN waren ---- */
 const WZ_MISC = {
-  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express-Auftrag (< 6 Stunden)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
+  de: { now: "Jetzt", afterSuccess: "nach Erfolg", continueTyped: "So fortfahren – auch wenn nicht gelistet", notMine: "Nicht Ihr Profil?", schutz: "Schutz", schutzClaim: "Kostenlose Entfernung, wenn das Profil wiederauftaucht.", ueberw: "Überwachung", ueberwTxt: "Wir überwachen täglich, ob das Profil wieder auftaucht.", inklusive: "Inklusive", expressTile: "Express (< 6 Std.)", toProtect: "Weiter zum Schutz", ptCancelPill: "Monatlich kündbar", ptMonthlyNote: "Kostenlose Entfernung bei Neuerscheinung", ptMonitorNote: "Monatlicher Schutz mit täglicher Überwachung", ptLifetimeNote: "Einmal zahlen, für immer Schutz mit Monitoring" },
   en: { now: "Now", afterSuccess: "after success", continueTyped: "Continue with this — even if not listed", notMine: "Not your profile?", schutz: "Protection", schutzClaim: "Free removal if the profile reappears.", ueberw: "Monitoring", ueberwTxt: "We check daily whether the profile reappears.", inklusive: "Included", expressTile: "Express order (< 6 hours)", toProtect: "Continue to protection", ptCancelPill: "Cancel anytime", ptMonthlyNote: "Free removal if it reappears", ptMonitorNote: "Monthly protection with daily monitoring", ptLifetimeNote: "Pay once, protection forever with monitoring" },
   es: { now: "Ahora", afterSuccess: "tras el éxito", continueTyped: "Continuar así, aunque no aparezca", notMine: "¿No es tu perfil?", schutz: "Protección", schutzClaim: "Eliminación gratuita si el perfil reaparece.", ueberw: "Monitorización", ueberwTxt: "Comprobamos a diario si el perfil reaparece.", inklusive: "Incluido", expressTile: "Pedido exprés (< 6 horas)", toProtect: "Continuar a la protección", ptCancelPill: "Cancelable cada mes", ptMonthlyNote: "Eliminación gratuita si reaparece", ptMonitorNote: "Protección mensual con monitorización diaria", ptLifetimeNote: "Paga una vez, protección para siempre con monitorización" },
   fr: { now: "Maintenant", afterSuccess: "après le succès", continueTyped: "Continuer ainsi, même si non répertorié", notMine: "Ce n'est pas votre fiche ?", schutz: "Protection", schutzClaim: "Suppression gratuite si la fiche réapparaît.", ueberw: "Surveillance", ueberwTxt: "Nous vérifions chaque jour si la fiche réapparaît.", inklusive: "Inclus", expressTile: "Commande express (< 6 heures)", toProtect: "Continuer vers la protection", ptCancelPill: "Résiliable chaque mois", ptMonthlyNote: "Suppression gratuite en cas de réapparition", ptMonitorNote: "Protection mensuelle avec surveillance quotidienne", ptLifetimeNote: "Payez une fois, protection à vie avec surveillance" },
@@ -1360,7 +1369,13 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <div className="risk-banner" style={{ marginTop: 18 }}><Icon.shieldCheck /> {t.riskReversal}</div>
         </div>
         <aside className="wz-aside">
-          <LiveCounter base={conv.counterBase} label={conv.counterLabel} sub={conv.successRate + " · " + conv.avgTime} />
+          <button type="button" className="hero-team below wz-expert" onClick={openTidioChat}>
+            <span className="ht-avas">
+              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={46} height={46} />
+              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={46} height={46} />
+            </span>
+            <span className="ht-tx"><b>{conv.expertCta}</b><Icon.arrowRight size={14} /></span>
+          </button>
           <Testimonial q={conv.quotes[0]} />
         </aside>
       </div>
@@ -1384,6 +1399,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             {(multi ? candidates : candidates.filter((c) => c.primary)).map((c) => (
               <ProfileCard key={c.id} c={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} reviewsLabel={w.s2.reviews} />
             ))}
+            <div className="nm-group">
             <div className="profile-card not-mine-card reveal-in" onClick={pickNotInList} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") pickNotInList(); }}>
               <div className="profile-thumb"><Icon.help /></div>
               <div className="profile-main"><div className="pn">{nil.tile}</div></div>
@@ -1394,6 +1410,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <div className="profile-main"><div className="pn">{mp.t}</div></div>
               <span className="nm-go"><Icon.arrowRight size={18} /></span>
             </a>
+            </div>
             <div className="wz-actions" style={{ marginTop: 6 }}>
               <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
               <button className="btn btn-primary grow" onClick={proceedFromSearch}>{w.s2.button} <Icon.arrowRight size={18} /></button>
@@ -1457,10 +1474,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
         <div className="opt-list">
           <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => pick("remove")}>
+            {w.s4.opt1.badge && <span className="opt-flag">{w.s4.opt1.badge}</span>}
             <div className="opt-radio"></div>
             <div className="opt-ic"><Icon.trash size={22} /></div>
             <div className="opt-main">
-              <div className="ot">{w.s4.opt1.t} {w.s4.opt1.badge && <span className="obadge">{w.s4.opt1.badge}</span>}</div>
+              <div className="ot">{w.s4.opt1.t}</div>
               <div className="od">{w.s4.opt1.d}</div>
             </div>
             <div className="opt-price">{money(lang, p.deletion)}<small>{wm.afterSuccess}</small></div>
@@ -1495,10 +1513,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
 
         <div className="opt-list">
           <div className={"opt" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
+            <span className="opt-flag">{conv.mostChosen}</span>
             <div className="opt-radio"></div>
             <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
             <div className="opt-main">
-              <div className="ot">{conv.protMonthlyName} <span className="obadge obadge-pop">{conv.protPopularBadge}</span></div>
+              <div className="ot">{conv.protMonthlyName}</div>
               <div className="od">{wm.ptMonthlyNote}</div>
             </div>
             <div className="opt-price">{money(lang, p.protMonthly)}<small>{conv.perMonthShort}</small></div>
@@ -1607,11 +1626,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               {errors.name && <div className="emsg">{errors.name}</div>}
             </div>
             <div className={"fld full" + (errors.email ? " err" : "")}>
-              <input value={contact.email} onChange={set("email")} placeholder="name@firma.com" aria-label={w.s5.f.email} />
+              <input value={contact.email} onChange={set("email")} placeholder={w.s5.f.email} aria-label={w.s5.f.email} />
               {errors.email && <div className="emsg">{errors.email}</div>}
             </div>
             <div className="fld full">
-              <input value={contact.phone} onChange={set("phone")} placeholder="+43 …" aria-label={w.s5.f.phone} />
+              <input value={contact.phone} onChange={set("phone")} placeholder={w.s5.f.phone} aria-label={w.s5.f.phone} />
             </div>
             <div className="fld full">
               <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company} />

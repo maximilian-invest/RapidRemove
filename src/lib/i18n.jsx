@@ -256,7 +256,7 @@ const I18N = {
         h: "Fast geschafft.",
         sub: "Bitte hinterlassen Sie die Daten für die Auftragserteilung. Nach Erfolg erhalten Sie einen Zahlungslink und eine Rechnung.",
         contact: "Kontakt", company: "Unternehmen",
-        f: { name: "Ihr Name", email: "E-Mail", phone: "Telefon (optional)", company: "Zu löschendes Profil", profileUrl: "Google-Profil-Link (falls vorhanden)" },
+        f: { name: "Ihr Name", email: "Ihre E-Mail", phone: "Ihre Telefonnummer (optional)", company: "Zu löschendes Profil", profileUrl: "Google-Profil-Link (falls vorhanden)" },
         payTitle: "Zahlungsart",
         payNote: "Es wird jetzt nichts belastet. Sie zahlen erst, wenn Ihr Profil gelöscht ist.",
         button: "Bestellung abschließen",
