@@ -898,14 +898,23 @@ function ActivityToast() {
   );
 }
 
-function Testimonial({ q }) {
-  return (
-    <div className="testi">
+function Testimonial({ q, href, tpLabel }) {
+  const body = (
+    <React.Fragment>
       <div className="testi-stars">{[0,1,2,3,4].map(i => <Icon.star key={i} size={14} />)}</div>
       <p className="testi-q">„{q.q}"</p>
       <div className="testi-a"><span className="ta-av">{q.a.charAt(0)}</span><span><b>{q.a}</b><small>{q.r}</small></span></div>
-    </div>
+      {href && (
+        <span className="testi-tp">
+          <span className="tp-sq" style={{ "--tpsq": "16px" }}><Icon.star /></span>
+          <span className="testi-tp-tx">{tpLabel}</span>
+          <Icon.arrowRight size={14} />
+        </span>
+      )}
+    </React.Fragment>
   );
+  if (href) return <a className="testi testi-link" href={href} target="_blank" rel="noopener noreferrer">{body}</a>;
+  return <div className="testi">{body}</div>;
 }
 
 /* ============ WIZARD ROOT ============ */
@@ -1421,6 +1430,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   function StepCheckout() {
     const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
     const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
+    const tpUrl = t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
     if (processing) {
       return (
         <div className="wz-card">
@@ -1485,8 +1495,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         </div>
         <div className="wz-aside">
           <OrderSummary />
-          <div className="checkout-testi"><Testimonial q={conv.quotes[2]} /></div>
-          <TrustpilotLive />
+          <div className="checkout-testi"><Testimonial q={conv.quotes[2]} href={tpUrl} tpLabel={t.social && t.social.tpLink} /></div>
         </div>
       </div>
     );

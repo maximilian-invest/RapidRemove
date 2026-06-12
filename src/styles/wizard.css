@@ -349,6 +349,13 @@
 .testi-a .ta-av{width:38px;height:38px;border-radius:50%;background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:16px;flex:none;}
 .testi-a b{font-size:13.5px;display:block;color:var(--fg);}
 .testi-a small{font-size:12px;color:var(--fg-muted);font-weight:700;}
+/* Bewertung als Link zu Trustpilot (statt eigener Trustpilot-Sektion) */
+.testi-link{display:block;text-decoration:none;color:inherit;transition:border-color var(--dur),box-shadow var(--dur);}
+.testi-link:hover{border-color:var(--orange-300);box-shadow:var(--shadow-sm);}
+.testi-tp{display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:13px;border-top:1px solid var(--hairline);font-family:var(--font-display);font-weight:700;font-size:13px;color:var(--fg);}
+.testi-tp .testi-tp-tx{margin-right:auto;}
+.testi-tp>svg{color:var(--fg-muted);transition:transform .15s,color .15s;}
+.testi-link:hover .testi-tp>svg{color:#00b67a;transform:translateX(3px);}
 
 .aside-badges{display:flex;flex-direction:column;gap:9px;}
 .aside-badges span{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:var(--fg-2);}
