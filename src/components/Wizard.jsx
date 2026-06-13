@@ -1768,9 +1768,6 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <h4>{w.s6.nextTitle}</h4>
           <p>{w.s6.nextBody}</p>
         </div>
-        <div className="ty-next" style={{ background: "var(--orange-50)", borderColor: "var(--orange-200)" }}>
-          <p style={{ display: "flex", gap: 10, alignItems: "flex-start" }}><Icon.star size={18} style={{ color: "var(--primary)", flex: "none", marginTop: 1 }} /> {w.s6.reviewHint}</p>
-        </div>
 
         {(onOrm || onDeindex) && (
           <div className="done-cross">
@@ -1802,8 +1799,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         )}
 
         <div className="ty-cta-row">
-          <button className="btn btn-primary lg" onClick={() => window.open("#", "_self")}>{w.s6.portal} <Icon.arrowRight size={18} /></button>
-          <button className="btn btn-secondary lg" onClick={onExit}>{w.s6.home}</button>
+          <button className="btn btn-primary lg" onClick={onExit}>{w.s6.home} <Icon.arrowRight size={18} /></button>
         </div>
       </div>
     );
