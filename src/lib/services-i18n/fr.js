@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "Votre réputation, protégée sous tous les angles.",
   trioSub: "La suppression du profil est notre service principal. Si un résultat ne peut pas être supprimé, nous le reléguons ou le déréférençons.",
   cards: [
-    { id: "core", tag: "Notre service principal", ic: "trash", t: "Supprimer le profil Google", d: "Supprimez définitivement la fiche d'établissement et tous ses avis — paiement après succès seulement.", link: "Vers le contrôle gratuit" },
-    { id: "orm", tag: "Option", ic: "eye", t: "Reléguer la réputation", d: "Repoussez les résultats négatifs non supprimables hors de la page 1 de Google.", link: "En savoir plus" },
-    { id: "deindex", tag: "Intermédiation", ic: "fileText", t: "Déréférencer la presse", d: "Faites déréférencer la presse négative de la recherche Google — évaluation gratuite.", link: "En savoir plus" },
+    { id: "core", tag: "Notre service principal", ic: "trash", t: "Supprimer le profil Google", d: "Supprimez définitivement la fiche d'établissement et tous ses avis — paiement après succès seulement.", dNav: "Fiche et avis — supprimés", link: "Vers le contrôle gratuit" },
+    { id: "orm", tag: "Option", ic: "eye", t: "Reléguer la réputation", d: "Repoussez les résultats négatifs non supprimables hors de la page 1 de Google.", dNav: "Résultats négatifs hors page 1", link: "En savoir plus" },
+    { id: "deindex", tag: "Intermédiation", ic: "fileText", t: "Déréférencer la presse", d: "Faites déréférencer la presse négative de la recherche Google — évaluation gratuite.", dNav: "Désindexer la presse de Google", link: "En savoir plus" },
   ],
 };
 const orm = {

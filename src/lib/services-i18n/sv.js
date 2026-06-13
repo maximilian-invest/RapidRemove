@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "Ditt rykte — skyddat från alla håll.",
   trioSub: "Profilborttagning är vår kärntjänst. Går ett resultat inte att ta bort, tränger vi undan det eller avindexerar det.",
   cards: [
-    { id: "core", tag: "Vår kärntjänst", ic: "trash", t: "Ta bort Google-profil", d: "Ta bort företagsprofilen och alla recensioner permanent — du betalar först efter framgång.", link: "Till gratiskollen" },
-    { id: "orm", tag: "Tillägg", ic: "eye", t: "Tränga undan rykte", d: "Tryck ned negativa resultat som inte går att ta bort från sida 1 i Google.", link: "Läs mer" },
-    { id: "deindex", tag: "Förmedling", ic: "fileText", t: "Avindexera press", d: "Få negativ press avindexerad från Google-sökningen — gratis bedömning.", link: "Läs mer" },
+    { id: "core", tag: "Vår kärntjänst", ic: "trash", t: "Ta bort Google-profil", d: "Ta bort företagsprofilen och alla recensioner permanent — du betalar först efter framgång.", dNav: "Profil & omdömen — borta", link: "Till gratiskollen" },
+    { id: "orm", tag: "Tillägg", ic: "eye", t: "Tränga undan rykte", d: "Tryck ned negativa resultat som inte går att ta bort från sida 1 i Google.", dNav: "Negativa träffar bort från sida 1", link: "Läs mer" },
+    { id: "deindex", tag: "Förmedling", ic: "fileText", t: "Avindexera press", d: "Få negativ press avindexerad från Google-sökningen — gratis bedömning.", dNav: "Avindexera press från Google", link: "Läs mer" },
   ],
 };
 const orm = {

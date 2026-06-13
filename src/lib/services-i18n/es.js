@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "Su reputación, protegida desde todos los ángulos.",
   trioSub: "La eliminación del perfil es nuestro servicio principal. Si un resultado no se puede borrar, lo desplazamos o lo retiramos del índice.",
   cards: [
-    { id: "core", tag: "Nuestro servicio principal", ic: "trash", t: "Eliminar perfil de Google", d: "Elimine de forma permanente el perfil de empresa y todas sus reseñas — paga solo tras el éxito.", link: "Al chequeo gratuito" },
-    { id: "orm", tag: "Add-on", ic: "eye", t: "Desplazar la reputación", d: "Empuje los resultados negativos que no se pueden borrar fuera de la página 1 de Google.", link: "Saber más" },
-    { id: "deindex", tag: "Intermediación", ic: "fileText", t: "Retirar prensa del índice", d: "Retire prensa negativa del índice de búsqueda de Google — evaluación gratuita.", link: "Saber más" },
+    { id: "core", tag: "Nuestro servicio principal", ic: "trash", t: "Eliminar perfil de Google", d: "Elimine de forma permanente el perfil de empresa y todas sus reseñas — paga solo tras el éxito.", dNav: "Perfil y reseñas — eliminados", link: "Al chequeo gratuito" },
+    { id: "orm", tag: "Add-on", ic: "eye", t: "Desplazar la reputación", d: "Empuje los resultados negativos que no se pueden borrar fuera de la página 1 de Google.", dNav: "Resultados negativos fuera de página 1", link: "Saber más" },
+    { id: "deindex", tag: "Intermediación", ic: "fileText", t: "Retirar prensa del índice", d: "Retire prensa negativa del índice de búsqueda de Google — evaluación gratuita.", dNav: "Retirar prensa de Google", link: "Saber más" },
   ],
 };
 const orm = {

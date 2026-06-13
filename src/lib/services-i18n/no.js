@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "Ditt omdømme — beskyttet fra alle kanter.",
   trioSub: "Profilfjerning er vår kjernetjeneste. Kan et resultat ikke fjernes, fortrenger vi det eller får det avindeksert.",
   cards: [
-    { id: "core", tag: "Vår kjernetjeneste", ic: "trash", t: "Fjern Google-profil", d: "Fjern bedriftsprofilen og alle anmeldelser permanent — du betaler først etter suksess.", link: "Til gratis-sjekken" },
-    { id: "orm", tag: "Tillegg", ic: "eye", t: "Fortrenge omdømme", d: "Skyv negative resultater som ikke kan fjernes, ned fra side 1 i Google.", link: "Les mer" },
-    { id: "deindex", tag: "Formidling", ic: "fileText", t: "Avindeksere presse", d: "Få negativ presse avindeksert fra Google-søket — gratis vurdering.", link: "Les mer" },
+    { id: "core", tag: "Vår kjernetjeneste", ic: "trash", t: "Fjern Google-profil", d: "Fjern bedriftsprofilen og alle anmeldelser permanent — du betaler først etter suksess.", dNav: "Profil & omtaler — borte", link: "Til gratis-sjekken" },
+    { id: "orm", tag: "Tillegg", ic: "eye", t: "Fortrenge omdømme", d: "Skyv negative resultater som ikke kan fjernes, ned fra side 1 i Google.", dNav: "Negative treff vekk fra side 1", link: "Les mer" },
+    { id: "deindex", tag: "Formidling", ic: "fileText", t: "Avindeksere presse", d: "Få negativ presse avindeksert fra Google-søket — gratis vurdering.", dNav: "Fjern presse fra Google", link: "Les mer" },
   ],
 };
 const orm = {

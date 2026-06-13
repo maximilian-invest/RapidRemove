@@ -338,7 +338,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
                         style={{ textDecoration: "none", color: "inherit" }}
                         onClick={(e) => { e.preventDefault(); setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
                         <span className="nav-dd-ic"><I size={20} /></span>
-                        <span className="nav-dd-tx"><span className="t">{c.t}</span><span className="d">{c.d}</span></span>
+                        <span className="nav-dd-tx"><span className="t">{c.t}</span><span className="d">{c.dNav || c.d}</span></span>
                       </a>
                     );
                   })}

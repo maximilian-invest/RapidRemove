@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "La tua reputazione, protetta da ogni lato.",
   trioSub: "La rimozione del profilo è il nostro servizio principale. Se un risultato non si può eliminare, lo facciamo retrocedere o deindicizzare.",
   cards: [
-    { id: "core", tag: "Il nostro servizio principale", ic: "trash", t: "Eliminare il profilo Google", d: "Rimuovi in modo permanente il profilo dell'attività e tutte le recensioni — paghi solo dopo il successo.", link: "Alla verifica gratuita" },
-    { id: "orm", tag: "Add-on", ic: "eye", t: "Far retrocedere la reputazione", d: "Spingi i risultati negativi non eliminabili fuori dalla pagina 1 di Google.", link: "Scopri di più" },
-    { id: "deindex", tag: "Intermediazione", ic: "fileText", t: "Deindicizzare la stampa", d: "Fai deindicizzare la stampa negativa dalla ricerca Google — verifica gratuita.", link: "Scopri di più" },
+    { id: "core", tag: "Il nostro servizio principale", ic: "trash", t: "Eliminare il profilo Google", d: "Rimuovi in modo permanente il profilo dell'attività e tutte le recensioni — paghi solo dopo il successo.", dNav: "Profilo e recensioni — via", link: "Alla verifica gratuita" },
+    { id: "orm", tag: "Add-on", ic: "eye", t: "Far retrocedere la reputazione", d: "Spingi i risultati negativi non eliminabili fuori dalla pagina 1 di Google.", dNav: "Risultati negativi fuori pagina 1", link: "Scopri di più" },
+    { id: "deindex", tag: "Intermediazione", ic: "fileText", t: "Deindicizzare la stampa", d: "Fai deindicizzare la stampa negativa dalla ricerca Google — verifica gratuita.", dNav: "Rimuovere stampa da Google", link: "Scopri di più" },
   ],
 };
 const orm = {

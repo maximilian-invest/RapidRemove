@@ -4,9 +4,9 @@ const svc = {
   trioTitle: "Uw reputatie — van alle kanten beschermd.",
   trioSub: "Profielverwijdering is onze kernservice. Kan een resultaat niet worden verwijderd, dan dringen we het terug of laten we het deïndexeren.",
   cards: [
-    { id: "core", tag: "Onze kernservice", ic: "trash", t: "Google-profiel verwijderen", d: "Verwijder het bedrijfsprofiel en alle reviews definitief — u betaalt pas na succes.", link: "Naar de gratis check" },
-    { id: "orm", tag: "Add-on", ic: "eye", t: "Reputatie terugdringen", d: "Dring negatieve resultaten die niet verwijderbaar zijn terug van pagina 1 van Google.", link: "Meer weten" },
-    { id: "deindex", tag: "Bemiddeling", ic: "fileText", t: "Pers deïndexeren", d: "Laat negatieve pers uit de Google-zoekresultaten deïndexeren — gratis beoordeling.", link: "Meer weten" },
+    { id: "core", tag: "Onze kernservice", ic: "trash", t: "Google-profiel verwijderen", d: "Verwijder het bedrijfsprofiel en alle reviews definitief — u betaalt pas na succes.", dNav: "Profiel & reviews — weg", link: "Naar de gratis check" },
+    { id: "orm", tag: "Add-on", ic: "eye", t: "Reputatie terugdringen", d: "Dring negatieve resultaten die niet verwijderbaar zijn terug van pagina 1 van Google.", dNav: "Negatieve resultaten van pagina 1", link: "Meer weten" },
+    { id: "deindex", tag: "Bemiddeling", ic: "fileText", t: "Pers deïndexeren", d: "Laat negatieve pers uit de Google-zoekresultaten deïndexeren — gratis beoordeling.", dNav: "Pers uit Google halen", link: "Meer weten" },
   ],
 };
 const orm = {

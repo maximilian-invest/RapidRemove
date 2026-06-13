@@ -17,9 +17,9 @@ export const SVC = {
     trioTitle: "Ihr Ruf — von allen Seiten geschützt.",
     trioSub: "Die Profil-Löschung ist unser Kernservice. Lässt sich ein Treffer nicht löschen, verdrängen oder listen wir ihn aus.",
     cards: [
-      { id: "core", tag: "Unser Kernservice", ic: "trash", t: "Google-Profil löschen", d: "Unternehmensprofil samt aller Bewertungen dauerhaft entfernen — Zahlung erst nach Erfolg.", link: "Zum Gratis-Check" },
-      { id: "orm", tag: "Add-on", ic: "eye", t: "Reputation verdrängen", d: "Negative Treffer, die nicht löschbar sind, von Seite 1 der Google-Suche verdrängen.", link: "Mehr erfahren" },
-      { id: "deindex", tag: "Vermittlung", ic: "fileText", t: "Presse auslisten", d: "Negative Presse aus der Google-Suche auslisten lassen — kostenlose Prüfung.", link: "Mehr erfahren" },
+      { id: "core", tag: "Unser Kernservice", ic: "trash", t: "Google-Profil löschen", d: "Unternehmensprofil samt aller Bewertungen dauerhaft entfernen — Zahlung erst nach Erfolg.", dNav: "Profil & Bewertungen — dauerhaft weg", link: "Zum Gratis-Check" },
+      { id: "orm", tag: "Add-on", ic: "eye", t: "Reputation verdrängen", d: "Negative Treffer, die nicht löschbar sind, von Seite 1 der Google-Suche verdrängen.", dNav: "Negative Treffer von Seite 1", link: "Mehr erfahren" },
+      { id: "deindex", tag: "Vermittlung", ic: "fileText", t: "Presse auslisten", d: "Negative Presse aus der Google-Suche auslisten lassen — kostenlose Prüfung.", dNav: "Presse aus Google auslisten", link: "Mehr erfahren" },
     ],
   },
   en: {
@@ -27,9 +27,9 @@ export const SVC = {
     trioTitle: "Your reputation — protected from every angle.",
     trioSub: "Profile removal is our core service. If a result can't be deleted, we suppress or de-index it.",
     cards: [
-      { id: "core", tag: "Our core service", ic: "trash", t: "Delete Google profile", d: "Permanently remove the business profile and all its reviews — pay only after success.", link: "To the free check" },
-      { id: "orm", tag: "Add-on", ic: "eye", t: "Suppress reputation", d: "Push negative results that can't be deleted off page 1 of Google search.", link: "Learn more" },
-      { id: "deindex", tag: "Brokered", ic: "fileText", t: "De-list press", d: "Have negative press de-indexed from Google search — free assessment.", link: "Learn more" },
+      { id: "core", tag: "Our core service", ic: "trash", t: "Delete Google profile", d: "Permanently remove the business profile and all its reviews — pay only after success.", dNav: "Profile & reviews — gone for good", link: "To the free check" },
+      { id: "orm", tag: "Add-on", ic: "eye", t: "Suppress reputation", d: "Push negative results that can't be deleted off page 1 of Google search.", dNav: "Negative results off page 1", link: "Learn more" },
+      { id: "deindex", tag: "Brokered", ic: "fileText", t: "De-list press", d: "Have negative press de-indexed from Google search — free assessment.", dNav: "De-list press from Google", link: "Learn more" },
     ],
   },
 };
