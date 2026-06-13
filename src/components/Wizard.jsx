@@ -807,6 +807,46 @@ function ContactLine({ lang }) {
     </div>
   );
 }
+/* Kontakt-Box im Checkout (höchste Absprungrate): Gesichter + alle direkten Kanäle. */
+const CHECKOUT_HELP = {
+  de: { title: "Fragen vor dem Abschluss?", sub: "Wir sind direkt für Sie da – meist Antwort in Minuten.", chat: "Live-Chat", email: "E-Mail", phone: "Anrufen" },
+  en: { title: "Questions before you finish?", sub: "We're right here for you — usually a reply within minutes.", chat: "Live chat", email: "Email", phone: "Call us" },
+  es: { title: "¿Dudas antes de terminar?", sub: "Estamos aquí para ayudarte: normalmente respondemos en minutos.", chat: "Chat en vivo", email: "Correo", phone: "Llamar" },
+  fr: { title: "Une question avant de finaliser ?", sub: "Nous sommes là pour vous — réponse en quelques minutes en général.", chat: "Chat en direct", email: "E-mail", phone: "Appeler" },
+  it: { title: "Domande prima di concludere?", sub: "Siamo qui per te — di solito rispondiamo in pochi minuti.", chat: "Chat dal vivo", email: "E-mail", phone: "Chiama" },
+  nl: { title: "Vragen voordat u afrondt?", sub: "We staan direct voor u klaar — meestal antwoord binnen enkele minuten.", chat: "Livechat", email: "E-mail", phone: "Bellen" },
+  pt: { title: "Dúvidas antes de finalizar?", sub: "Estamos aqui para si — normalmente respondemos em minutos.", chat: "Chat ao vivo", email: "E-mail", phone: "Ligar" },
+  ja: { title: "ご購入前にご質問は？", sub: "すぐに対応します — たいてい数分で返信します。", chat: "ライブチャット", email: "メール", phone: "電話" },
+  sv: { title: "Frågor innan du slutför?", sub: "Vi finns här för dig — oftast svar inom några minuter.", chat: "Livechatt", email: "E-post", phone: "Ring oss" },
+  da: { title: "Spørgsmål inden du afslutter?", sub: "Vi er klar til at hjælpe — som regel svar inden for få minutter.", chat: "Livechat", email: "E-mail", phone: "Ring" },
+  no: { title: "Spørsmål før du fullfører?", sub: "Vi er her for deg — vanligvis svar i løpet av minutter.", chat: "Live-chat", email: "E-post", phone: "Ring" },
+};
+function CheckoutHelp({ lang }) {
+  const tx = CHECKOUT_HELP[lang] || CHECKOUT_HELP.en;
+  const isDe = lang === "de";
+  const phoneHref = isDe ? "tel:08000900001" : "tel:+4362459305300";
+  const phoneTitle = isDe ? "0800 09 00 00 1" : "+43 6245 9305300";
+  return (
+    <div className="co-help">
+      <div className="co-help-head">
+        <span className="we-avas">
+          <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={44} height={44} />
+          <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={44} height={44} />
+        </span>
+        <div className="co-help-tx">
+          <strong>{tx.title}</strong>
+          <span>{tx.sub}</span>
+        </div>
+      </div>
+      <div className="co-help-grid">
+        <button type="button" className="co-ch" onClick={openTidioChat}><Icon.message size={17} /> {tx.chat}</button>
+        <a className="co-ch wa" href="https://wa.me/4362459305300" target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={17} /> WhatsApp</a>
+        <a className="co-ch" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={17} /> {tx.email}</a>
+        <a className="co-ch" href={phoneHref} title={phoneTitle}><Icon.phone size={17} /> {tx.phone}</a>
+      </div>
+    </div>
+  );
+}
 // Liest den Profilnamen aus einem vollständigen Google-Maps-Link (…/maps/place/Name/…).
 function extractMapsName(url) {
   try {
@@ -1635,52 +1675,58 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
           <div className="wz-eyebrow"><Icon.lock size={14} /> {w.s5.eyebrow}</div>
           <h1 className="wz-h" style={{ fontSize: 26 }}>{w.s5.h}</h1>
           <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s5.sub}</p>
-          <div className="form-grid">
-            <div className={"fld full" + (errors.name ? " err" : "")}>
-              <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} aria-label={w.s5.f.name} />
-              {errors.name && <div className="emsg">{errors.name}</div>}
+          <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
+            <div className="form-grid">
+              <div className={"fld full" + (errors.name ? " err" : "")}>
+                <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} aria-label={w.s5.f.name}
+                  type="text" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" />
+                {errors.name && <div className="emsg">{errors.name}</div>}
+              </div>
+              <div className={"fld full" + (errors.email ? " err" : "")}>
+                <input value={contact.email} onChange={set("email")} placeholder={w.s5.f.email} aria-label={w.s5.f.email}
+                  type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="off" spellCheck={false} enterKeyHint="next" />
+                {errors.email && <div className="emsg">{errors.email}</div>}
+              </div>
+              <div className="fld full">
+                <input value={contact.phone} onChange={set("phone")} placeholder={w.s5.f.phone} aria-label={w.s5.f.phone}
+                  type="tel" name="tel" autoComplete="tel" inputMode="tel" enterKeyHint="next" />
+              </div>
+              <div className={"fld full" + (errors.company ? " err" : "")}>
+                <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company}
+                  type="text" name="organization" autoComplete="organization" enterKeyHint="done" />
+                {errors.company && <div className="emsg">{errors.company}</div>}
+              </div>
             </div>
-            <div className={"fld full" + (errors.email ? " err" : "")}>
-              <input value={contact.email} onChange={set("email")} placeholder={w.s5.f.email} aria-label={w.s5.f.email} />
-              {errors.email && <div className="emsg">{errors.email}</div>}
-            </div>
-            <div className="fld full">
-              <input value={contact.phone} onChange={set("phone")} placeholder={w.s5.f.phone} aria-label={w.s5.f.phone} />
-            </div>
-            <div className={"fld full" + (errors.company ? " err" : "")}>
-              <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company} />
-              {errors.company && <div className="emsg">{errors.company}</div>}
-            </div>
-          </div>
 
-          <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
-            <input type="checkbox" checked={agbOk}
-              onChange={(e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }}
-              style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
-            <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
-              {ag.pre}
-              <a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer"
-                style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
-                onClick={(e) => e.stopPropagation()}>{ag.agb}</a>
-              {ag.mid}
-              <a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer"
-                style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
-                onClick={(e) => e.stopPropagation()}>{ag.wid}</a>
-              {ag.post}
-            </span>
-          </label>
-          {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
-          <button className="btn btn-primary btn-block lg" style={{ marginTop: 16 }} onClick={submit}>
-            <Icon.lock size={18} /> {w.s5.button}
-          </button>
+            <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={agbOk}
+                onChange={(e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }}
+                style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
+              <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
+                {ag.pre}
+                <a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer"
+                  style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
+                  onClick={(e) => e.stopPropagation()}>{ag.agb}</a>
+                {ag.mid}
+                <a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer"
+                  style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
+                  onClick={(e) => e.stopPropagation()}>{ag.wid}</a>
+                {ag.post}
+              </span>
+            </label>
+            {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
+            <button type="submit" className="btn btn-primary btn-block lg" style={{ marginTop: 16 }}>
+              <Icon.lock size={18} /> {w.s5.button}
+            </button>
+          </form>
           <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button className="btn btn-secondary" onClick={() => go(4)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button type="button" className="btn btn-secondary" onClick={() => go(4)}><Icon.arrowLeft size={17} /> {w.back}</button>
           </div>
         </div>
         <div className="wz-aside">
           <OrderSummary />
+          <CheckoutHelp lang={lang} />
           <div className="checkout-testi"><Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} /></div>
-          <ContactLine lang={lang} />
         </div>
       </div>
     );
