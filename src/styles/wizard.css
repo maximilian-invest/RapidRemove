@@ -244,6 +244,7 @@
 .opt-main .od{font-size:14px;color:var(--fg-2);line-height:1.55;margin-top:5px;}
 .opt-price{text-align:right;font-family:var(--font-display);font-weight:700;font-size:22px;white-space:nowrap;flex:none;}
 .opt-price small{display:block;font-size:12px;color:var(--fg-muted);font-weight:600;}
+.opt-price .opt-per{font-size:12px;font-weight:600;color:var(--fg-muted);}
 /* Schritt 4 mobil: Preis rechts (nicht nach unten umbrechen), Kacheln etwas kompakter */
 @media(max-width:620px){
   .opt-list{gap:12px;}

@@ -239,7 +239,7 @@ const I18N = {
       s4: {
         eyebrow: "Leistung wählen · Schritt 4",
         h: "Was sollen wir für Sie tun?",
-        sub: "Wählen Sie Ihre Leistung. Der optionale Schutz bewahrt Sie vor einer erneuten Eintragung durch Dritte.",
+        sub: "Wählen Sie die Leistung, die zu Ihnen passt.",
         opt1: { t: "Profil entfernen", badge: "Empfohlen", d: "Nie wieder Bewertungen" },
         opt2: { t: "Profil + Neustart", d: "Mit 0 Bewertungen neu starten" },
         addonTitle: "Schutz hinzufügen",
@@ -517,7 +517,7 @@ const I18N = {
       s4: {
         eyebrow: "Choose service · Step 4",
         h: "What should we do for you?",
-        sub: "Choose your service. Optional protection keeps you safe from a third party re-listing your profile.",
+        sub: "Choose the service that fits you best.",
         opt1: { t: "Remove profile", badge: "Recommended", d: "Never any reviews again" },
         opt2: { t: "Profile + restart", d: "Start fresh with 0 reviews" },
         addonTitle: "Add protection",
