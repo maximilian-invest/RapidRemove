@@ -24,7 +24,14 @@
 .nav-dd-tx .t .pin{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--orange-800);background:var(--orange-100);padding:2px 7px;border-radius:var(--r-pill);}
 .nav-dd-tx .d{font-size:12.5px;color:var(--fg-2);margin-top:13px;line-height:1.4;}
 @media(min-width:1161px){.nav-dd-tx .t{padding-bottom:3px;}}
-.sheet-sub{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);padding:14px 8px 4px;}
+/* Mobiles "Leistungen"-Akkordeon: zeigt klar, dass es Unterpunkte hat (Chevron),
+   und grenzt die Leistungen sichtbar von den Top-Links (z. B. "Über uns") ab. */
+.sheet-acc-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;background:none;border:none;border-bottom:1px solid var(--hairline);padding:15px 8px;font-family:var(--font-body);font-weight:700;font-size:17px;color:var(--fg);cursor:pointer;text-align:left;}
+.sheet-acc-btn svg{width:18px;height:18px;color:var(--fg-muted);transition:transform var(--dur);flex:none;}
+.sheet-acc.open .sheet-acc-btn svg{transform:rotate(180deg);}
+.sheet-acc-items{display:flex;flex-direction:column;margin:4px 0 4px 8px;padding-left:14px;border-left:2px solid var(--orange-200);}
+.sheet-panel .sheet-acc-items a{font-size:15px;font-weight:600;color:var(--fg-2);padding:12px 8px;}
+.sheet-panel .sheet-acc-items a:last-child{border-bottom:none;}
 
 /* ---- Homepage: secondary services trio ---- */
 .svc-trio{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}

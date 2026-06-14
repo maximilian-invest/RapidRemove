@@ -292,6 +292,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
   const [ddOpen, setDdOpen] = React.useState(false);
+  const [svcOpen, setSvcOpen] = React.useState(false); // mobiles "Leistungen"-Akkordeon
   const ddRef = React.useRef(null);
   React.useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -365,8 +366,18 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
             <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
           </div>
           <a href={asset(localePath(t.code))} onClick={(e) => { e.preventDefault(); goHome(); }}>{HOME_LABEL[t.code] || "Home"}</a>
-          {(onOrm || onDeindex) && <div className="sheet-sub">{svLabel}</div>}
-          {(onOrm || onDeindex) && sv.cards.filter((c) => c.id !== "core").map((c) => <a key={c.id} href={svcHref[c.id]} onClick={(e) => { e.preventDefault(); setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
+          {(onOrm || onDeindex) && (
+            <div className={"sheet-acc" + (svcOpen ? " open" : "")}>
+              <button className="sheet-acc-btn" onClick={() => setSvcOpen((o) => !o)} aria-expanded={svcOpen}>
+                {svLabel} <Icon.chevronDown />
+              </button>
+              {svcOpen && (
+                <div className="sheet-acc-items">
+                  {sv.cards.map((c) => <a key={c.id} href={svcHref[c.id]} onClick={(e) => { e.preventDefault(); setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
+                </div>
+              )}
+            </div>
+          )}
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
