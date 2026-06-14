@@ -23,6 +23,7 @@
 .nav-dd-tx .t{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--fg);display:flex;align-items:center;gap:7px;}
 .nav-dd-tx .t .pin{font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--orange-800);background:var(--orange-100);padding:2px 7px;border-radius:var(--r-pill);}
 .nav-dd-tx .d{font-size:12.5px;color:var(--fg-2);margin-top:13px;line-height:1.4;}
+@media(min-width:1161px){.nav-dd-tx .t{padding-bottom:3px;}}
 .sheet-sub{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--fg-muted);padding:14px 8px 4px;}
 
 /* ---- Homepage: secondary services trio ---- */
