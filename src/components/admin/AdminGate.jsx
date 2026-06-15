@@ -94,16 +94,18 @@ export function AdminGate() {
       }
       setCanFace(avail);
       setFaceReason(avail ? "" : reason);
-      if (face === "1") { setMode("faceid"); return; }                 // dauerhaft → per Face ID entsperren (Token wird beim Entsperren geprüft)
-      if (session) {
-        // Gespeicherte Sitzung NICHT blind übernehmen: erst gegen den Server prüfen.
-        // So fällt ein veralteter Token (z. B. nachdem ADMIN_TOKEN geändert wurde) sauber auf
-        // den Login zurück, statt scheinbar eingeloggt zu sein und überall mit HTTP 401 auf
-        // Demo-Daten zu laufen. Bei Netzfehler (Server nicht erreichbar) bleibt es wie bisher.
+      if (face === "1") { setMode("faceid"); return; }                 // Face ID aktiv → per Face ID entsperren
+      // Dauerhaft eingeloggt bleiben: gespeicherten Token (localStorage, sonst alte Sitzung)
+      // gegen den Server prüfen und übernehmen. Veralteter Token (Passwort geändert) ODER
+      // Netzfehler werden sauber behandelt (Login bzw. „wie bisher").
+      let saved = "";
+      try { saved = localStorage.getItem(KEY) || ""; } catch (e) {}
+      if (!saved) saved = session;
+      if (saved) {
         let ok = false, reachable = true;
-        try { ok = await verifyAdmin(session); } catch (e) { reachable = false; }
-        if (ok || !reachable) { setAdminToken(session); setMode("authed"); return; }
-        try { sessionStorage.removeItem(KEY); } catch (e) {}
+        try { ok = await verifyAdmin(saved); } catch (e) { reachable = false; }
+        if (ok || !reachable) { setAdminToken(saved); setMode("authed"); return; }
+        try { localStorage.removeItem(KEY); sessionStorage.removeItem(KEY); } catch (e) {}
       }
       setMode("password");
     })();
@@ -117,10 +119,10 @@ export function AdminGate() {
       const ok = await verifyAdmin(pw.trim());
       if (!ok) { setErr("Falsches Passwort."); return; }
       setAdminToken(pw.trim());
+      // Dauerhaft angemeldet bleiben — überlebt App-/Tab-Schließen (kein erneutes Passwort).
+      try { localStorage.setItem(KEY, pw.trim()); } catch (e) {}
       try { sessionStorage.setItem(KEY, pw.trim()); } catch (e) {}
-      let faceOn = "";
-      try { faceOn = localStorage.getItem(FACE_KEY) || ""; } catch (e) {}
-      setMode(canFace && faceOn !== "1" ? "enroll" : "authed"); // Face ID anbieten, wenn möglich & noch nicht aktiv
+      setMode("authed");
     } catch (e) {
       setErr(e.message || "Anmeldung fehlgeschlagen.");
     } finally { setBusy(false); }
