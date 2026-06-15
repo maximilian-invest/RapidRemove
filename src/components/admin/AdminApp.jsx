@@ -648,7 +648,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             </div>
             <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
             <div className="drow"><span className="dl">Telefon</span><span className="dv">{o.phone}</span></div>
-            {o.affiliate ? <div className="drow"><span className="dl">Affiliate</span><span className="dv"><b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b></span></div> : null}
+            <div className="drow"><span className="dl">Affiliate</span><span className="dv">{o.affiliate ? <b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b> : <span style={{ color: "var(--fg-muted)" }}>— (kein Affiliate)</span>}</span></div>
             <div className="cust-acts">
               <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
               <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
@@ -1456,7 +1456,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     </React.Fragment>
                   )}
                   <div className="drow"><span className="dl">Bestelldatum</span><span className="dv">{o.created}</span></div>
-                  {o.affiliate ? <div className="drow"><span className="dl">Affiliate</span><span className="dv"><b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b></span></div> : null}
+                  <div className="drow"><span className="dl">Affiliate</span><span className="dv">{o.affiliate ? <b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b> : <span style={{ color: "var(--fg-muted)" }}>— (kein Affiliate)</span>}</span></div>
                   <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Auftragswert</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "kostenlose Prüfung"}</span></div>
                 </div>
               )}

@@ -1605,7 +1605,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     // Admin/Push direkt sichtbar ist, von welchem Affiliate die Bestellung kommt.
     const fprCookie = (n) => (typeof document !== "undefined" && (document.cookie.match(new RegExp("(?:^|;\\s*)" + n + "=([^;]+)")) || [])[1]) || "";
     const fprTid = fprCookie("_fprom_tid");
-    const fprRef = fprCookie("_fprom_ref");
+    // Affiliate-Code: bevorzugt der selbst aus ?fpr= gesicherte Wert (rr_aff),
+    // sonst FirstPromoters _fprom_ref-Cookie (Format/Existenz nicht garantiert).
+    const fprRef = fprCookie("rr_aff") || fprCookie("_fprom_ref");
     // Bestellung im Hintergrund ans ops-Backend. Profil-Nachweis (Place-ID etc.) inklusive.
     submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,

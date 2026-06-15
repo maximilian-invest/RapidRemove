@@ -212,6 +212,8 @@ app.post("/order", async (req, reply) => {
   // Kann unten aus der track/sale-Antwort (Promoter-Name) angereichert werden.
   let affiliate = clip(b.fprRef, 200);
   if (affiliate) { try { affiliate = decodeURIComponent(affiliate); } catch (e) { /* roher Wert ok */ } affiliate = affiliate.replace(/[<>\r\n]/g, "").trim().slice(0, 120); }
+  // Diagnose: zeigt bei jeder Bestellung im Log, was zur Affiliate-Zuordnung ankam.
+  app.log.info({ orderId, isPress, hasFPR: hasFirstPromoter(), fprRefIn: clip(b.fprRef, 120), fprTidIn: b.fprTid ? "yes" : "no", affiliate }, "Order: Affiliate-Eingang");
 
   const t = TEMPLATES[isPress ? "presse-eingang" : "auftragsbestaetigung"];
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
@@ -287,7 +289,7 @@ app.post("/order", async (req, reply) => {
         });
         if (fr.ok) {
           if (fr.promoter && !affiliate) affiliate = fr.promoter; // Promoter-Name aus FP-Antwort, falls Cookie-Code fehlte
-          app.log.info({ orderId, saleTotal, promoter: fr.promoter || "" }, "FirstPromoter Sale erfasst");
+          app.log.info({ orderId, saleTotal, promoter: fr.promoter || "", fprRaw: fr.raw || "" }, "FirstPromoter Sale erfasst");
         } else if (!fr.skipped) app.log.warn({ fpr: fr }, "FirstPromoter Sale nicht erfasst");
       } catch (e) { app.log.error({ err: e }, "FirstPromoter fehlgeschlagen"); }
     }

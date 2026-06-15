@@ -106,6 +106,21 @@ export default function Consent() {
     return () => { if (window.rrConsentOpen) delete window.rrConsentOpen; };
   }, []);
 
+  // Affiliate-Attribution: den Partner-Code aus dem Link (?fpr=… / ?ref=… / ?via=…)
+  // als first-party Cookie „rr_aff" sichern. So ist beim späteren Checkout sicher
+  // erkennbar, von welchem Affiliate die Bestellung kam — unabhängig davon, welche
+  // Cookies FirstPromoter setzt. Funktionale Zuordnung zum werbenden Partner (kein
+  // Analytics-/Marketing-Tracking), läuft daher auch ohne Cookie-Einwilligung.
+  React.useEffect(() => {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const ref = p.get("fpr") || p.get("ref") || p.get("via") || p.get("fp_ref");
+      if (ref && ref.trim()) {
+        document.cookie = "rr_aff=" + encodeURIComponent(ref.trim().slice(0, 120)) + "; path=/; max-age=7776000; SameSite=Lax";
+      }
+    } catch (e) { /* Attribution ist optional */ }
+  }, []);
+
   const decide = (granted) => {
     try { localStorage.setItem(KEY, granted ? "granted" : "denied"); } catch (e) {}
     setOpen(false);

@@ -21,7 +21,7 @@ export function hasFirstPromoter(): boolean {
   return !!process.env.FPR_API_KEY;
 }
 
-export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean; promoter?: string };
+export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean; promoter?: string; raw?: string };
 
 /** Liest – defensiv, da das Response-Schema variieren kann – den lesbaren
  *  Promoter/Affiliate-Namen aus der track/sale-Antwort. Leerstring, wenn nicht da. */
@@ -80,7 +80,8 @@ export async function trackSale(opts: {
     }
     let promoter = "";
     try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
-    return { ok: true, status: res.status, promoter };
+    // raw (gekürzt) zurückgeben, damit das tatsächliche Response-Schema im Log sichtbar ist.
+    return { ok: true, status: res.status, promoter, raw: txt.slice(0, 600) };
   } catch (e: any) {
     return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };
   }
