@@ -251,11 +251,17 @@
   .opt-list{gap:12px;}
   .opt{padding:18px;gap:14px;}
   .opt-radio{width:22px;height:22px;margin-top:2px;}
-  .opt .opt-ic{width:34px;height:34px;border-radius:10px;}
+  /* Auswahl-Tiles mobil ohne führendes Icon (zu wenig Platz). */
+  .opt .opt-ic{display:none;}
+  .profile-card .profile-thumb{display:none;}
   .opt-main .ot{font-size:16.5px;}
   .opt-main .od{font-size:13.5px;margin-top:4px;line-height:1.5;}
   .opt-price{font-size:20px;}
+  /* Checkout: Abschließen-Button wandert in die untere Leiste (neben „Zurück"). */
+  .co-submit-desktop{display:none;}
 }
+.co-submit-mobile{display:none;}
+@media(max-width:620px){ .co-submit-mobile{display:inline-flex;} }
 
 /* toggle add-on */
 .addon{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:20px 22px;display:flex;gap:16px;align-items:center;background:#fff;}

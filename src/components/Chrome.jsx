@@ -188,7 +188,7 @@ function NavTel() {
   if (lang !== "de") {
     return (
       <a className="nav-wa wide" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-        <Icon.whatsapp size={17} /><span>{WA_LABEL[lang] || WA_LABEL.en}</span>
+        <Icon.whatsapp size={17} /><span className="wa-full">{WA_LABEL[lang] || WA_LABEL.en}</span><span className="wa-short">WhatsApp</span>
       </a>
     );
   }
