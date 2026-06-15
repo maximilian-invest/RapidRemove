@@ -581,7 +581,11 @@ a.tb-item:hover{color:var(--primary);}
 .video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
 
 /* ---------- Sticky mobile CTA ---------- */
-.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:70;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-top:1px solid var(--hairline);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:none;gap:10px;align-items:center;box-shadow:0 -6px 24px rgba(28,25,22,.08);}
+/* Hintergrund deckend (#fff) und OHNE backdrop-filter: ein fixiertes Bottom-Bar
+   mit blur ruckelt/„rutscht" auf Mobil-Browsern, weil der Blur bei jedem Scroll-
+   Frame (ein-/ausfahrende Adressleiste) neu berechnet wird. Deckend = stabil,
+   genau wie die m-tabbar im Admin-Panel. */
+.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:70;background:#fff;border-top:1px solid var(--hairline);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:none;gap:10px;align-items:center;box-shadow:0 -6px 24px rgba(28,25,22,.08);}
 .sticky-cta .sc-meta{flex:1;min-width:0;}
 .sticky-cta .sc-meta b{font-family:var(--font-display);font-size:14px;display:block;}
 .sticky-cta .sc-meta span{font-size:12px;color:var(--fg-2);}
