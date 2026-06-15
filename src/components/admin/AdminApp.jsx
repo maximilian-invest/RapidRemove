@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -243,7 +243,59 @@ function Sidebar({ view, setView, counts, open, live }) {
 }
 
 /* ---------- Topbar ---------- */
-function Topbar({ title, onBurger, query, setQuery }) {
+// VAPID-Public-Key (base64url) → Uint8Array für pushManager.subscribe.
+function urlB64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const raw = atob(base64);
+  const out = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+  return out;
+}
+
+/* Glocke = Web-Push-Schalter: aktiviert Benachrichtigungen für die installierte App. */
+function PushBell({ toast }) {
+  const [state, setState] = React.useState("idle"); // idle | on | busy | unsupported | blocked
+  React.useEffect(() => {
+    if (typeof window === "undefined" || !("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) { setState("unsupported"); return; }
+    if (Notification.permission === "denied") { setState("blocked"); return; }
+    navigator.serviceWorker.getRegistration()
+      .then((reg) => (reg ? reg.pushManager.getSubscription() : null))
+      .then((sub) => { if (sub) setState("on"); })
+      .catch(() => {});
+  }, []);
+
+  const enable = async () => {
+    if (state === "on") { toast("Benachrichtigungen sind bereits aktiv ✓"); return; }
+    if (state === "unsupported") { toast("Push wird hier nicht unterstützt – die App vom Home-Bildschirm öffnen."); return; }
+    setState("busy");
+    try {
+      const reg = await navigator.serviceWorker.register(asset("/sw.js"));
+      await navigator.serviceWorker.ready;
+      const perm = await Notification.requestPermission();
+      if (perm !== "granted") { setState(perm === "denied" ? "blocked" : "idle"); toast("Benachrichtigungen nicht erlaubt."); return; }
+      const key = await fetchVapidKey();
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(key) });
+      await savePushSub(sub.toJSON ? sub.toJSON() : sub);
+      setState("on");
+      toast("Push-Benachrichtigungen aktiviert ✓");
+    } catch (e) {
+      setState("idle");
+      toast("Push fehlgeschlagen: " + (e.message || e));
+    }
+  };
+
+  const label = state === "on" ? "Benachrichtigungen aktiv" : state === "blocked" ? "Benachrichtigungen blockiert – im Gerät/Browser erlauben" : state === "unsupported" ? "Push hier nicht verfügbar – App vom Home-Bildschirm öffnen" : "Benachrichtigungen aktivieren";
+  return (
+    <button className="icon-btn" onClick={enable} disabled={state === "busy"} title={label} aria-label={label}>
+      <AI.bell />
+      <span className="dot" style={{ background: state === "on" ? "var(--success)" : state === "blocked" ? "var(--danger)" : undefined }}></span>
+    </button>
+  );
+}
+
+function Topbar({ title, onBurger, query, setQuery, toast }) {
   return (
     <div className="topbar">
       <button className="icon-btn burger" onClick={onBurger}><Icon.menu /></button>
@@ -253,7 +305,7 @@ function Topbar({ title, onBurger, query, setQuery }) {
         <input placeholder="Bestellung, Kunde oder E-Mail suchen…" value={query} onChange={(e) => setQuery(e.target.value)} />
       </div>
       <div className="tb-right">
-        <button className="icon-btn"><AI.bell /><span className="dot"></span></button>
+        <PushBell toast={toast} />
         <button className="btn btn-pri"><AI.plus /> Neue Bestellung</button>
       </div>
     </div>
@@ -1670,7 +1722,7 @@ function AdminApp() {
     <div className="adm">
       <Sidebar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} open={sideOpen} live={live} />
       <div className="main">
-        <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} />
+        <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} toast={toast} />
         {body}
       </div>
       <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />

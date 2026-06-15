@@ -7,10 +7,11 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { sendPush } from "./integrations/push";
+import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
@@ -236,14 +237,27 @@ app.post("/order", async (req, reply) => {
     result.notify = true;
   } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
 
-  // 2b) Handy-Push (opt-in: ntfy/Pushover) – best effort, blockiert die Antwort nicht.
-  // Tap auf die Push öffnet das Admin-Panel direkt bei dieser Bestellung.
-  try {
+  // 2b) Push-Benachrichtigung – best effort, blockiert die Antwort nicht.
+  // Tap öffnet das Admin-Panel direkt bei dieser Bestellung.
+  {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
-    const lines = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean);
+    const ptitle = `${heading} – ${company || name || email}`;
+    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
     const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
-    await sendPush(`${heading} – ${company || name || email}`, lines.join("\n"), adminUrl);
-  } catch (e) { app.log.error({ err: e }, "Push-Benachrichtigung fehlgeschlagen"); }
+    // Web-Push an die installierte Admin-App (öffnet die App selbst beim Tap)
+    try {
+      if (hasWebPush() && dbReady()) {
+        const subs = await listPushSubscriptions();
+        if (subs.length) {
+          const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
+          for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
+        }
+      }
+    } catch (e) { app.log.error({ err: e }, "Web-Push fehlgeschlagen"); }
+    // ntfy/Pushover (Fallback/zusätzlich, opt-in)
+    try { await sendPush(ptitle, pbody, adminUrl); }
+    catch (e) { app.log.error({ err: e }, "Push-Benachrichtigung fehlgeschlagen"); }
+  }
 
   // 3) Bestellung in der Datenbank speichern (falls DATABASE_URL gesetzt)
   try {
@@ -330,6 +344,20 @@ app.post("/check", async (req, reply) => {
 app.post("/admin/verify", async (req) => {
   const b = (req.body || {}) as Record<string, unknown>;
   return { ok: !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN };
+});
+
+// Öffentlicher VAPID-Public-Key – der Browser braucht ihn für die Push-Subscription.
+app.get("/push/vapid", async () => ({ ok: hasWebPush(), publicKey: vapidPublicKey() }));
+
+// Admin: Web-Push-Subscription der installierten App speichern (token-geschützt).
+app.post("/admin/push-subscribe", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const sub = b.subscription as { endpoint?: string; keys?: { p256dh?: string; auth?: string } } | undefined;
+  if (!sub?.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) return reply.code(400).send({ ok: false, error: "ungültige Subscription" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  try { await savePushSubscription(sub as { endpoint: string; keys: { p256dh: string; auth: string } }); return { ok: true }; }
+  catch (e: unknown) { return reply.code(500).send({ ok: false, error: (e as Error)?.message || "Fehler" }); }
 });
 
 // Admin-Dashboard: SMS an die Kunden-Telefonnummer (ClickSend), token-geschützt.

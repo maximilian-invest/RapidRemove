@@ -2,7 +2,9 @@
   "name": "rapidremove-ops",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "description": "RapidRemove Ops-Backend: E-Mail-Versand (Microsoft 365 Graph) + React-Email-Templates, Automationen, Admin-Panel. Ersetzt MailerSend + make.com.",
   "scripts": {
     "start": "tsx src/server.ts",
@@ -19,12 +21,14 @@
     "pg": "8.x",
     "react": "18.x",
     "react-dom": "18.x",
-    "tsx": "4.x"
+    "tsx": "4.x",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@types/node": "22.x",
     "@types/pg": "8.x",
     "@types/react": "18.x",
-    "typescript": "5.x"
+    "typescript": "5.x",
+    "@types/web-push": "^3.6.4"
   }
 }

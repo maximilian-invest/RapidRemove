@@ -47,6 +47,28 @@ export async function fetchPayLinkUrl({ service, protection, currency, serviceAm
   return j.url;
 }
 
+/** Holt den öffentlichen VAPID-Schlüssel fürs Web-Push-Abo (ohne Auth). */
+export async function fetchVapidKey() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/push/vapid");
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok || !j.publicKey) throw new Error(j.error || "Web-Push im Backend nicht konfiguriert (VAPID-Schlüssel fehlen).");
+  return j.publicKey;
+}
+
+/** Speichert die Web-Push-Subscription der installierten Admin-App im Backend. */
+export async function savePushSub(subscription) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/push-subscribe", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, subscription }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return true;
+}
+
 /** Sendet eine SMS an die Kunden-Telefonnummer über das ops-Backend (ClickSend). */
 export async function sendSms({ to, message, orderId, country }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");

@@ -121,6 +121,34 @@ export async function initDb(): Promise<void> {
     CREATE INDEX IF NOT EXISTS upsell_jobs_due
       ON upsell_jobs (send_at) WHERE sent_at IS NULL AND canceled = false
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      endpoint   text PRIMARY KEY,
+      p256dh     text NOT NULL,
+      auth       text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+}
+
+export async function savePushSubscription(sub: { endpoint: string; keys: { p256dh: string; auth: string } }): Promise<void> {
+  if (!pool || !sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) return;
+  await pool.query(
+    `INSERT INTO push_subscriptions (endpoint, p256dh, auth) VALUES ($1,$2,$3)
+     ON CONFLICT (endpoint) DO UPDATE SET p256dh=$2, auth=$3`,
+    [sub.endpoint, sub.keys.p256dh, sub.keys.auth],
+  );
+}
+
+export async function listPushSubscriptions(): Promise<{ endpoint: string; keys: { p256dh: string; auth: string } }[]> {
+  if (!pool) return [];
+  const r = await pool.query(`SELECT endpoint, p256dh, auth FROM push_subscriptions`);
+  return r.rows.map((x: { endpoint: string; p256dh: string; auth: string }) => ({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } }));
+}
+
+export async function deletePushSubscription(endpoint: string): Promise<void> {
+  if (!pool || !endpoint) return;
+  await pool.query(`DELETE FROM push_subscriptions WHERE endpoint=$1`, [endpoint]);
 }
 
 export type OrderInput = {
