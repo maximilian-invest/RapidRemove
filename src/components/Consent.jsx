@@ -97,11 +97,15 @@ export default function Consent() {
   const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (isAdmin) return; // Admin: weder Banner noch GTM laden
+    if (isAdmin) return; // Admin: kein Tracking, kein Banner
+    // GTM/Tracking laden jetzt UNABHÄNGIG von der Cookie-Einwilligung (auf ausdrücklichen
+    // Wunsch — bewusst nicht DSGVO-konform). So feuern die GTM-Events (und FirstPromoter)
+    // auch ohne Zustimmung; das Ablehnen stoppt das bereits geladene Tracking nicht.
+    loadTrackers();
     let stored = null;
     try { stored = localStorage.getItem(KEY); } catch (e) {}
-    if (stored === "granted") loadTrackers();
-    else if (stored !== "denied") setOpen(true);
+    // Banner nur als Hinweis zeigen, solange noch keine Entscheidung vorliegt.
+    if (stored !== "granted" && stored !== "denied") setOpen(true);
     window.rrConsentOpen = () => setOpen(true);
     return () => { if (window.rrConsentOpen) delete window.rrConsentOpen; };
   }, []);
