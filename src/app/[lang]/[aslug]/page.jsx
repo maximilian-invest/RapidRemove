@@ -15,6 +15,7 @@ import { I18N } from "@/lib/i18n";
 import {
   articleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd, magCardsFor,
 } from "@/lib/articles/catalog";
+import { authorFor, roleFor, authorPath } from "@/lib/authors";
 import { pageParams, pageForSlug, pageUrl, pageHreflang } from "@/lib/page-routes";
 import { pageMeta } from "@/lib/page-meta";
 
@@ -99,8 +100,10 @@ export default function Page({ params }) {
   }
   const r = resolveLocalized(params.lang, params.aslug);
   const ui = uiFor(params.lang);
+  // Autor deterministisch über den deutschen Slug — sprachübergreifend derselbe Artikel, derselbe Autor.
+  const author = authorFor(r.deSlug);
   const data = {
-    meta: r.t.meta,
+    meta: { ...r.t.meta, author: author.name, authorRole: roleFor(author, params.lang), authorHref: authorPath(author) },
     dek: r.t.dek,
     blocks: r.t.blocks,
     faq: r.t.faq,
@@ -110,7 +113,7 @@ export default function Page({ params }) {
   };
   const related = resolveRelated(params.lang, r.t.related);
   const url = `${SITE_URL}/${params.lang}/${r.t.meta.slug}`;
-  const jsonLd = buildArticleJsonLd(r.t.meta, r.t.faq, params.lang, ui, url);
+  const jsonLd = buildArticleJsonLd(r.t.meta, r.t.faq, params.lang, ui, url, r.deSlug);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

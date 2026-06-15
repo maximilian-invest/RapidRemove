@@ -4,6 +4,7 @@ import { SITE_URL } from "@/lib/article-google-profil";
 import { magazineUrl } from "@/lib/locales-meta";
 import { TRANSLATIONS } from "@/lib/articles/translations";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
+import { authorFor, authorPersonLd } from "@/lib/authors";
 
 import a1 from "@/lib/articles/google-bewertung-loeschen-lassen";
 import a2 from "@/lib/articles/fake-google-bewertung-melden-loeschen";
@@ -47,7 +48,7 @@ const monthYear = (iso, lang) => {
   catch (e) { return ""; }
 };
 export function magCardsFor(lang) {
-  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: `/${c.slug}/` }));
+  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: `/${c.slug}/`, author: authorFor(c.slug).name }));
   const cards = CLUSTER_CARDS.map((c) => {
     const t = tFor(lang, c.slug);
     if (!t) return null;
@@ -55,12 +56,12 @@ export function magCardsFor(lang) {
       slug: t.meta.slug, href: `/${lang}/${t.meta.slug}/`,
       cat: t.category || c.cat, thm: c.thm, icon: c.icon,
       title: t.meta.title, excerpt: t.meta.description,
-      author: t.meta.author || c.author, read: c.read,
+      author: authorFor(c.slug).name, read: c.read,
       date: (t.meta.date && monthYear(t.meta.date, lang)) || c.date,
     };
   }).filter(Boolean);
   // EN: das übersetzte Flaggschiff als erste (Titel-)Story einreihen.
-  return lang === "en" ? [EN_HUB_CARD, ...cards] : cards;
+  return lang === "en" ? [{ ...EN_HUB_CARD, author: authorFor("google-unternehmensprofil-loeschen").name }, ...cards] : cards;
 }
 
 // [lang]/[aslug] params for every translated article.
@@ -119,7 +120,7 @@ export function resolveRelated(lang, relatedList) {
 }
 
 // Localized Article + BreadcrumbList + FAQPage JSON-LD.
-export function buildArticleJsonLd(meta, faq, lang, ui, url) {
+export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -131,7 +132,7 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url) {
         datePublished: meta.date,
         dateModified: meta.date,
         inLanguage: lang,
-        author: { "@type": "Person", name: meta.author, url: `${SITE_URL}/ueber-uns` },
+        author: authorPersonLd(authorFor(deSlug || meta.slug)),
         publisher: { "@type": "Organization", name: "RapidRemove", logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/rapidremove-logo-full.png` } },
         mainEntityOfPage: { "@type": "WebPage", "@id": url },
         keywords: (meta.keywords || []).join(", "),

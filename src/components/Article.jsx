@@ -10,6 +10,10 @@ import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 import { FAQ, ARTICLE_META } from "@/lib/article-google-profil";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
+import { authorFor, authorPath, roleFor } from "@/lib/authors";
+
+// Hub-Artikel: deterministisch zugeordneter Autor (gleicher Schlüssel wie überall).
+const HUB_AUTHOR = authorFor("google-unternehmensprofil-loeschen");
 
 const SECTIONS = [
   { id: "ueberblick", label: "Das Wichtigste in Kürze" },
@@ -72,8 +76,8 @@ function ArticleBody() {
           <h1>{ARTICLE_META.h1}</h1>
           <p className="art-dek">{ARTICLE_META.description}</p>
           <div className="art-meta">
-            <img className="am-ava" src={asset(ARTICLE_META.authorImage)} alt={ARTICLE_META.author} style={{ objectFit: "cover" }} />
-            <span className="am-author">{ARTICLE_META.author}</span>
+            <img className="am-ava" src={asset(HUB_AUTHOR.image)} alt={HUB_AUTHOR.name} style={{ objectFit: "cover" }} />
+            <a className="am-author" href={asset(authorPath(HUB_AUTHOR))} style={{ color: "inherit", textDecoration: "none" }}>{HUB_AUTHOR.name}</a>
             <span className="am-dot" />
             <span><Icon.clock />{ARTICLE_META.readingMin} Min. Lesezeit</span>
             <span className="am-dot" />
@@ -304,10 +308,10 @@ function ArticleBody() {
           <div className="art-updated"><Icon.checkCircle /> Zuletzt aktualisiert: Juni 2026 · juristisch geprüft</div>
 
           <div className="art-author">
-            <img className="aa-ava" src={asset(ARTICLE_META.authorImage)} alt={ARTICLE_META.author} style={{ objectFit: "cover" }} />
+            <img className="aa-ava" src={asset(HUB_AUTHOR.image)} alt={HUB_AUTHOR.name} style={{ objectFit: "cover" }} />
             <div>
-              <div className="aa-name">{ARTICLE_META.author}</div>
-              <div className="aa-role">{ARTICLE_META.authorRole}</div>
+              <a className="aa-name" href={asset(authorPath(HUB_AUTHOR))} style={{ color: "inherit", textDecoration: "none" }}>{HUB_AUTHOR.name}</a>
+              <div className="aa-role">{roleFor(HUB_AUTHOR, "de")}</div>
             </div>
           </div>
 

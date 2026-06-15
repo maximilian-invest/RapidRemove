@@ -3,6 +3,7 @@
 import Article from "@/components/Article";
 import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
 import { OG_IMAGE } from "@/lib/locales-meta";
+import { authorFor, authorPersonLd } from "@/lib/authors";
 
 export const metadata = {
   title: ARTICLE_META.title,
@@ -38,7 +39,7 @@ const jsonLd = {
       datePublished: ARTICLE_META.datePublished,
       dateModified: ARTICLE_META.dateModified,
       inLanguage: "de-DE",
-      author: { "@type": "Person", name: ARTICLE_META.author, image: `${SITE_URL}${ARTICLE_META.authorImage}`, url: `${SITE_URL}/ueber-uns`, jobTitle: ARTICLE_META.authorRole },
+      author: authorPersonLd(authorFor("google-unternehmensprofil-loeschen")),
       publisher: {
         "@type": "Organization",
         name: "RapidRemove",

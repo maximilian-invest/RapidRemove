@@ -1,6 +1,7 @@
 /* RapidRemove — magazine article registry: link resolution + JSON-LD + listing.
    The new SEO cluster lives at root-level slugs (slug = primary keyword). */
 import { SITE_URL } from "@/lib/article-google-profil";
+import { authorFor, authorPersonLd } from "@/lib/authors";
 
 export { SITE_URL };
 
@@ -63,7 +64,7 @@ export function buildJsonLd(meta, faq) {
         datePublished: meta.date,
         dateModified: meta.date,
         inLanguage: "de-DE",
-        author: { "@type": "Person", name: meta.author },
+        author: authorPersonLd(authorFor(meta.slug)),
         publisher: {
           "@type": "Organization",
           name: "RapidRemove",
