@@ -60,6 +60,10 @@
 .router-tile .rt-ic{width:54px;height:54px;border-radius:14px;background:var(--orange-50);display:flex;align-items:center;justify-content:center;flex:none;}
 .router-tile.primary .rt-ic{background:#fff;}
 .router-tile .rt-ic svg{width:27px;height:27px;color:var(--primary);}
+/* Mobil: führendes Icon der Auswahlkacheln ausblenden (mehr Platz für Text).
+   Höhere Spezifität (.router-tiles .router-tile .rt-ic) als die Basisregel,
+   damit es sie unabhängig von der CSS-Ladereihenfolge sicher überschreibt. */
+@media(max-width:620px){.router-tiles .router-tile .rt-ic{display:none;}}
 .router-tile .rt-main{flex:1;}
 .router-tile .rt-main .rt-t{font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--fg);display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
 .router-tile .rt-main .rt-d{font-size:13.5px;color:var(--fg-2);margin-top:3px;line-height:1.45;}
