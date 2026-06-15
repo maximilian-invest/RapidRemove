@@ -13,6 +13,7 @@ import { AblaufVideo } from "@/components/AblaufVideo";
 import { TrustpilotLive, PRESS_LABEL, PRESS_LINKS } from "@/components/Proof";
 
 
+const WHATSAPP_URL = "https://wa.me/43624593053000";
 const TEAM_COPY = {
   de: { title: "Ein eingespieltes Team kümmert sich um Ihren Fall.", sub: "Spezialisten für Online-Reputation und Google – persönlich, diskret und schnell erreichbar.", stats: ["Persönlicher Ansprechpartner", "Antwort oft in Minuten", "100 % diskret"], more: "" },
   en: { title: "A whole team handles your case.", sub: "Specialists in online reputation and law — across 30+ countries, reachable around the clock.", stats: ["40+ specialists", "30+ countries", "Reply in minutes"], more: "+35" },
@@ -400,12 +401,14 @@ function TrustSecurity({ id }) {
             </div>
             <div className="team-card">
               <div className="team-top">
-                <div className="team-stack" role="img" aria-label="RapidRemove-Team" data-comment-anchor="036ab80e57-b-256-17">
-                  {["MH", "ML"].map((x) => <span className="av" key={x} aria-hidden="true">{x}</span>)}
+                <div className="team-stack">
+                  <img className="av" src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian Hölzl" width={46} height={46} />
+                  <img className="av" src={asset("/assets/matthias-lang.webp")} alt="Matthias Lang" width={46} height={46} />
                   {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more" aria-hidden="true">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>
+                  <a title="WhatsApp" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={20} /></a>
                   {t.code === "de" && <a title="Telefon · 0800 0900001" href="tel:08000900001"><Icon.phone size={20} /></a>}
                   <a title="E-Mail · helpdesk@rapid-remove.com" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={20} /></a>
                 </div>

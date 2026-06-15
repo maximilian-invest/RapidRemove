@@ -68,7 +68,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Sabemos que confías a desconocidos el acceso a tu perfil. Por eso la confianza es la base de todo lo que hacemos.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "Pagas únicamente tras la eliminación con éxito.",
-      ncnpBody: "Sin pago por adelantado, sin costes ocultos. Si el perfil sigue online, no pagas nada. Así de simple.",
+      ncnpBody: "Sin pago por adelantado, sin costes ocultos. Si el perfil sigue online, no pagas nada.",
       items: [
         { t: "Empresa registrada en Austria", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · CIF ATU72401536." },
         { t: "Conforme al RGPD, empresa de la UE", d: "Servidores en la UE. No accedemos a tu cuenta de Google, Gmail, Ads ni datos personales. Trato discreto." },
@@ -271,7 +271,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Nous savons que vous confiez à des inconnus l'accès à votre fiche. C'est pourquoi la confiance est au cœur de tout ce que nous faisons.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "Vous payez uniquement après la suppression réussie.",
-      ncnpBody: "Sans paiement d'avance, sans frais cachés. Si la fiche reste en ligne, vous ne payez rien. Aussi simple que ça.",
+      ncnpBody: "Sans paiement d'avance, sans frais cachés. Si la fiche reste en ligne, vous ne payez rien.",
       items: [
         { t: "Entreprise enregistrée en Autriche", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Autriche · TVA ATU72401536." },
         { t: "Conforme au RGPD, entreprise de l'UE", d: "Serveurs dans l'UE. Aucun accès à votre compte Google, Gmail, Ads ou données personnelles. Traitement discret." },

@@ -66,7 +66,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Sappiamo che affidi a sconosciuti l'accesso al tuo profilo. Per questo la fiducia è alla base di tutto ciò che facciamo.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "Paghi esclusivamente dopo la rimozione riuscita.",
-      ncnpBody: "Senza anticipo, senza costi nascosti. Se il profilo resta online, non paghi nulla. Semplice così.",
+      ncnpBody: "Senza anticipo, senza costi nascosti. Se il profilo resta online, non paghi nulla.",
       items: [
         { t: "Azienda registrata in Austria", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · P.IVA ATU72401536." },
         { t: "Conforme al GDPR, azienda UE", d: "Server nell'UE. Non accediamo al tuo account Google, Gmail, Ads o dati personali. Trattamento riservato." },
@@ -268,7 +268,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "We weten dat u vreemden toegang tot uw profiel geeft. Daarom staat vertrouwen centraal in alles wat we doen.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "U betaalt uitsluitend na succesvolle verwijdering.",
-      ncnpBody: "Geen vooruitbetaling, geen verborgen kosten. Blijft het profiel online, dan betaalt u niets. Zo simpel is het.",
+      ncnpBody: "Geen vooruitbetaling, geen verborgen kosten. Blijft het profiel online, dan betaalt u niets.",
       items: [
         { t: "Geregistreerd bedrijf uit Oostenrijk", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Oostenrijk · btw ATU72401536." },
         { t: "AVG-conform, EU-bedrijf", d: "Servers in de EU. We krijgen geen toegang tot uw Google-account, Gmail, Ads of persoonlijke gegevens. Discrete afhandeling." },
@@ -470,7 +470,7 @@ import { PRICES } from "@/lib/pricing";
       sub: "Sabemos que confia a desconhecidos o acesso ao seu perfil. Por isso a confiança é a base de tudo o que fazemos.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "Você paga exclusivamente após a remoção bem-sucedida.",
-      ncnpBody: "Sem pagamento antecipado, sem custos ocultos. Se o perfil ficar online, não paga nada. Simples assim.",
+      ncnpBody: "Sem pagamento antecipado, sem custos ocultos. Se o perfil ficar online, não paga nada.",
       items: [
         { t: "Empresa registada na Áustria", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Áustria · NIF ATU72401536." },
         { t: "Conforme o RGPD, empresa da UE", d: "Servidores na UE. Não acedemos à sua conta Google, Gmail, Ads ou dados pessoais. Tratamento discreto." },

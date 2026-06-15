@@ -70,7 +70,7 @@ const I18N = {
       sub: "Ihre Reputation in unsere Hände zu legen, ist Vertrauenssache. Deshalb setzen wir auf maximale Transparenz, strikte Diskretion – und Bezahlung erst nach Erfolg.",
       ncnpBadge: "Zahlung nur bei Erfolg",
       ncnpTitle: "Sie zahlen ausschließlich nach erfolgreicher Löschung.",
-      ncnpBody: "Keine Vorkasse, keine versteckten Kosten. Bleibt das Profil online, zahlen Sie nichts. So einfach.",
+      ncnpBody: "Keine Vorkasse, keine versteckten Kosten. Bleibt das Profil online, zahlen Sie nichts.",
       items: [
         { t: "Eingetragenes Unternehmen aus Österreich", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österreich · UID ATU72401536." },
         { t: "DSGVO-konform, EU-Unternehmen", d: "Server in der EU. Wir erhalten keinen Zugriff auf Ihr Google-Konto, Gmail, Ads oder persönliche Daten. Diskrete Behandlung." },
@@ -350,7 +350,7 @@ const I18N = {
       sub: "We know you're giving strangers access to your profile. That's why we built trust into everything we do.",
       ncnpBadge: "No Cure · No Pay",
       ncnpTitle: "You only pay after successful removal.",
-      ncnpBody: "No upfront payment, no hidden costs. If the profile stays online, you pay nothing. It's that simple.",
+      ncnpBody: "No upfront payment, no hidden costs. If the profile stays online, you pay nothing.",
       items: [
         { t: "Registered company in Austria", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Austria · VAT ATU72401536." },
         { t: "GDPR-compliant, EU company", d: "EU servers. We get no access to your Google account, Gmail, Ads or personal data. Handled discreetly." },

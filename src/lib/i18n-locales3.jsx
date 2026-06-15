@@ -69,7 +69,7 @@ const ja = {
     sub: "見知らぬ相手にプロフィールへのアクセスを委ねることを私たちは理解しています。だからこそ、信頼をすべての基盤にしました。",
     ncnpBadge: "No Cure・No Pay",
     ncnpTitle: "削除に成功した後にのみお支払いいただきます。",
-    ncnpBody: "前払いなし、隠れた費用なし。プロフィールがオンラインのままなら、お支払いは不要です。とてもシンプルです。",
+    ncnpBody: "前払いなし、隠れた費用なし。プロフィールがオンラインのままなら、お支払いは不要です。",
     items: [
       { t: "オーストリアの登録企業", d: "Simple Solution. OG・Salzgasse 2, 5400 Hallein, オーストリア・UID ATU72401536。" },
       { t: "GDPR準拠のEU企業", d: "EUサーバー。Googleアカウント、Gmail、広告、個人データにアクセスしません。秘密厳守で対応します。" },
@@ -271,7 +271,7 @@ const sv = {
     sub: "Vi vet att du ger främlingar åtkomst till din profil. Därför har vi byggt förtroende i allt vi gör.",
     ncnpBadge: "No Cure · No Pay",
     ncnpTitle: "Du betalar endast efter lyckad borttagning.",
-    ncnpBody: "Ingen förskottsbetalning, inga dolda kostnader. Förblir profilen online betalar du inget. Så enkelt är det.",
+    ncnpBody: "Ingen förskottsbetalning, inga dolda kostnader. Förblir profilen online betalar du inget.",
     items: [
       { t: "Registrerat företag i Österrike", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Österrike · momsnr ATU72401536." },
       { t: "GDPR-anpassat EU-företag", d: "EU-servrar. Vi får ingen åtkomst till ditt Google-konto, Gmail, annonser eller persondata. Diskret hantering." },
@@ -473,7 +473,7 @@ const da = {
     sub: "Vi ved, at du giver fremmede adgang til din profil. Derfor har vi bygget tillid ind i alt, hvad vi gør.",
     ncnpBadge: "No Cure · No Pay",
     ncnpTitle: "Du betaler kun efter vellykket fjernelse.",
-    ncnpBody: "Ingen forudbetaling, ingen skjulte omkostninger. Forbliver profilen online, betaler du intet. Så enkelt er det.",
+    ncnpBody: "Ingen forudbetaling, ingen skjulte omkostninger. Forbliver profilen online, betaler du intet.",
     items: [
       { t: "Registreret virksomhed i Østrig", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østrig · momsnr. ATU72401536." },
       { t: "GDPR-overholdende EU-virksomhed", d: "EU-servere. Vi får ingen adgang til din Google-konto, Gmail, annoncer eller persondata. Diskret håndtering." },
@@ -675,7 +675,7 @@ const no = {
     sub: "Vi vet at du gir fremmede tilgang til profilen din. Derfor har vi bygget tillit inn i alt vi gjør.",
     ncnpBadge: "No Cure · No Pay",
     ncnpTitle: "Du betaler kun etter vellykket fjerning.",
-    ncnpBody: "Ingen forskuddsbetaling, ingen skjulte kostnader. Forblir profilen på nett, betaler du ingenting. Så enkelt er det.",
+    ncnpBody: "Ingen forskuddsbetaling, ingen skjulte kostnader. Forblir profilen på nett, betaler du ingenting.",
     items: [
       { t: "Registrert selskap i Østerrike", d: "Simple Solution. OG · Salzgasse 2, 5400 Hallein, Østerrike · mva-nr. ATU72401536." },
       { t: "GDPR-tilpasset EU-selskap", d: "EU-servere. Vi får ingen tilgang til Google-kontoen din, Gmail, annonser eller persondata. Diskret håndtering." },

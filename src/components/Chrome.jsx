@@ -146,6 +146,13 @@ function LangToggle() {
    „Trotzdem anrufen" + „Live-Chat öffnen". ---- */
 const TEL_NUMBER = "tel:08000900001";
 const WHATSAPP_URL = "https://wa.me/43624593053000";
+// „Schreiben Sie uns auf WhatsApp" – breiter Button außerhalb DACH (dort steht keine Telefonnummer).
+const WA_LABEL = {
+  de: "Auf WhatsApp schreiben", en: "Write us on WhatsApp", es: "Escríbenos por WhatsApp",
+  fr: "Écrivez-nous sur WhatsApp", it: "Scrivici su WhatsApp", nl: "Schrijf ons op WhatsApp",
+  pt: "Fale connosco no WhatsApp", ja: "WhatsAppでご連絡", sv: "Skriv till oss på WhatsApp",
+  da: "Skriv til os på WhatsApp", no: "Skriv til oss på WhatsApp",
+};
 const TEL_HOURS = { from: 9, to: 17 };
 const TEL_NOTE = {
   de: ["Telefonisch erreichbar: 9–17 Uhr (MEZ).", "Trotzdem anrufen", "Live-Chat öffnen"],
@@ -176,8 +183,15 @@ function NavTel() {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
-  // Die 0800-Nummer funktioniert nur aus DACH → nur auf der deutschsprachigen Site zeigen.
-  if (lang !== "de") return null;
+  // Außerhalb DACH steht keine (0800-)Telefonnummer → stattdessen ein breiterer
+  // WhatsApp-Button mit Text. In DACH: Telefonnummer + kompaktes WhatsApp-Icon.
+  if (lang !== "de") {
+    return (
+      <a className="nav-wa wide" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+        <Icon.whatsapp size={17} /><span>{WA_LABEL[lang] || WA_LABEL.en}</span>
+      </a>
+    );
+  }
   const tx = TEL_NOTE[lang] || TEL_NOTE.en;
   const onClick = (e) => {
     const h = viennaHour();
@@ -415,7 +429,7 @@ function Footer({ onStart, onBlog, onAbout }) {
       <div className="container">
         <div className="foot-grid">
           <div className="foot-brand">
-            <img className="foot-logo" src={asset("/assets/rapidremove-logo-white.png")} alt="RapidRemove" />
+            <img className="foot-logo" src={asset("/assets/rapidremove-logo-weiss.png")} alt="RapidRemove" />
             <p>{t.footer.tagline}</p>
             <div className="addr"><strong>{ftCo}</strong><br />{ftMid.join(" · ")}{ftUid ? <><br />{ftUid}</> : null}</div>
           </div>
