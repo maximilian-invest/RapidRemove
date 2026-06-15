@@ -30,6 +30,12 @@ export const metadata = {
     locale: "de_DE",
     images: [{ url: "https://assets.simplesolution.at/rapid-remove-product-image.jpg" }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "RapidRemove — Google-Unternehmensprofil löschen lassen",
+    description: "Dauerhaft, legal, in 24 Stunden. Bezahlung erst nach erfolgreicher Löschung.",
+    images: ["https://assets.simplesolution.at/rapid-remove-product-image.jpg"],
+  },
 };
 
 export const viewport = {
@@ -43,6 +49,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="de">
       <body>
+        <link rel="preconnect" href="https://assets.simplesolution.at" />
+        <link rel="dns-prefetch" href="https://code.tidio.co" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         {/* Tracking (GTM, FirstPromoter, Attribution) lädt consent-gated über <Consent /> am Ende des Body. */}
 
         {/* Structured data (site-wide): Organization + Service + Rich-Snippets
@@ -50,7 +59,7 @@ export default function RootLayout({ children }) {
            (Drittquelle, deshalb als Review mit author=Trustpilot ausgewiesen).
            Hinweis: Google zeigt self-serving Rating-Markup ggf. nicht an. */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org","@type":"Organization","url":"https://www.rapid-remove.com","logo":"https://assets.simplesolution.at/logo-rapid-remove.png","name":"RapidRemove","description":"RapidRemove is an Austrian company specializing in the removal of Google Business Profiles and online reputation management. Based in Hallein, Salzburg.","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","address":{"@type":"PostalAddress","streetAddress":"Salzgasse 2","addressLocality":"Hallein","addressRegion":"Salzburg","postalCode":"5400","addressCountry":"AT"},"vatID":"ATU72401536","image":"https://assets.simplesolution.at/rapid-remove-product-image.jpg","sameAs":["https://www.trustpilot.com/review/rapid-remove.com"]}` }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Service","name":"Google Business Profile Removal Service","description":"Complete and permanent removal of a Google Business Profile, including all reviews. Specialized online reputation management via Google's official channels.","provider":{"@type":"Organization","name":"RapidRemove","logo":"https://assets.simplesolution.at/rapid-remove-logo.jpg","url":"https://www.rapid-remove.com","contactPoint":{"@type":"ContactPoint","contactType":"Customer Service","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","hoursAvailable":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"17:00","address":{"@type":"PostalAddress","addressLocality":"Hallein","addressCountry":"AT","streetAddress":"Salzgasse 2","postalCode":"5400"}}]}},"areaServed":{"@type":"Place","name":"Worldwide"},"serviceType":"Online Reputation Management","offers":{"@type":"Offer","url":"https://www.rapid-remove.com/profil-pruefen/","priceCurrency":"EUR","price":"450","itemCondition":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"}}` }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Service","name":"Google Business Profile Removal Service","description":"Complete and permanent removal of a Google Business Profile, including all reviews. Specialized online reputation management via Google's official channels.","provider":{"@type":"Organization","name":"RapidRemove","logo":"https://assets.simplesolution.at/rapid-remove-logo.jpg","url":"https://www.rapid-remove.com","contactPoint":{"@type":"ContactPoint","contactType":"Customer Service","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","hoursAvailable":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"17:00","address":{"@type":"PostalAddress","addressLocality":"Hallein","addressCountry":"AT","streetAddress":"Salzgasse 2","postalCode":"5400"}}]}},"areaServed":{"@type":"Place","name":"Worldwide"},"serviceType":"Online Reputation Management","offers":{"@type":"Offer","url":"https://www.rapid-remove.com/profil-pruefen","priceCurrency":"EUR","price":"450","itemCondition":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"}}` }} />
 
         {/* Rich snippet: Organisation-Rating (Quelle: Trustpilot) */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"AggregateRating","ratingValue":"4.9","reviewCount":"266","itemReviewed":{"@type":"Organization","name":"RapidRemove","url":"https://www.rapid-remove.com"}}` }} />

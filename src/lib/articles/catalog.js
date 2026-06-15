@@ -127,6 +127,7 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url) {
         "@type": "Article",
         headline: meta.h1 || meta.title,
         description: meta.description,
+        image: "https://assets.simplesolution.at/rapid-remove-product-image.jpg",
         datePublished: meta.date,
         dateModified: meta.date,
         inLanguage: lang,

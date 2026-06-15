@@ -34,6 +34,7 @@ const jsonLd = {
       "@type": "Article",
       headline: ARTICLE_META.h1,
       description: ARTICLE_META.description,
+      image: "https://assets.simplesolution.at/rapid-remove-product-image.jpg",
       datePublished: ARTICLE_META.datePublished,
       dateModified: ARTICLE_META.dateModified,
       inLanguage: "de-DE",
