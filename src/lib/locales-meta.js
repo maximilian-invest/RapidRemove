@@ -12,9 +12,15 @@ export const NON_DEFAULT_LOCALES = LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 export const localePath = (l) => (l === DEFAULT_LOCALE ? "/" : `/${l}/`);
 export const localeUrl = (l) => `${SITE_URL}${l === DEFAULT_LOCALE ? "/" : `/${l}`}`;
 
-// Magazin-Übersicht pro Sprache — echte, crawlbare Route (DE: /magazin, sonst /<code>/magazin).
-export const magazinePath = (l) => (l === DEFAULT_LOCALE ? "/magazin/" : `/${l}/magazin/`);
-export const magazineUrl = (l) => `${SITE_URL}${l === DEFAULT_LOCALE ? "/magazin" : `/${l}/magazin`}`;
+// Magazin-Übersicht pro Sprache mit LOKALISIERTEM Slug (DE: /magazin, FR: /fr/magazine,
+// ES: /es/revista …) — bessere SEO/UX als ein deutscher Slug in allen Sprachen.
+export const MAGAZINE_SLUG = {
+  de: "magazin", en: "magazine", es: "revista", fr: "magazine", it: "rivista",
+  nl: "magazine", pt: "revista", ja: "magazine", sv: "magasin", da: "magasin", no: "magasin",
+};
+export const magazineSlug = (l) => MAGAZINE_SLUG[l] || "magazin";
+export const magazinePath = (l) => (l === DEFAULT_LOCALE ? `/${magazineSlug(l)}/` : `/${l}/${magazineSlug(l)}/`);
+export const magazineUrl = (l) => `${SITE_URL}${l === DEFAULT_LOCALE ? `/${magazineSlug(l)}` : `/${l}/${magazineSlug(l)}`}`;
 
 // og:locale je Sprache (für vollständige Social-/SEO-Auszeichnung).
 export const OG_LOCALE = {
