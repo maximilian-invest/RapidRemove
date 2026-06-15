@@ -1395,10 +1395,8 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       agbConsent: true, consentAt: new Date().toISOString(),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung abgeschlossen.
-    // „order" mit E-Mail + Telefon in der Datenschicht; „purchase" bleibt für bestehende Tags.
-    const txCurrency = country === "US" ? "USD" : "EUR";
-    gtmPush("order", { email: contact.email, phone: contact.phone, transaction_id: orderId, value: oneTimeTotal, currency: txCurrency });
-    gtmPush("purchase", { transaction_id: orderId, value: oneTimeTotal, currency: txCurrency });
+    // „order" mit E-Mail + Telefon in der Datenschicht.
+    gtmPush("order", { email: contact.email, phone: contact.phone, transaction_id: orderId, value: oneTimeTotal, currency: country === "US" ? "USD" : "EUR" });
     setTimeout(() => { setProcessing(false); setStep(6); }, 2400);
   };
 
