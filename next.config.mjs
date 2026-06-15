@@ -25,6 +25,9 @@ const nextConfig = {
             { source: "/es/revista", destination: "/es/magazin", permanent: true },
             { source: "/es/revista/:path*", destination: "/es/magazin/:path*", permanent: true },
             { source: "/en/about", destination: "/en/about-us", permanent: true },
+            // 301 von den alten (backlink-starken) Blog-URLs auf die neuen Hub-Artikel (SEO-Migration).
+            { source: "/how-to-remove-google-business-profile", destination: "/en/delete-google-business-profile", permanent: true },
+            { source: "/google-unternehmensprofil-loeschen-wie-geht-das", destination: "/magazin/google-unternehmensprofil-loeschen", permanent: true },
           ];
         },
       }),
