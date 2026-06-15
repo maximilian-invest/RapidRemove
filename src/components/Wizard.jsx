@@ -798,6 +798,14 @@ function openTidioChat(e) {
   const onReady = () => { run(); document.removeEventListener("tidioChat-ready", onReady); };
   document.addEventListener("tidioChat-ready", onReady);
 }
+/* Benanntes Event in die GTM-Datenschicht schieben. No-op auf dem Server; vor dem
+   Consent geladenen GTM liegen die Events in window.dataLayer und werden verarbeitet,
+   sobald GTM (nach Einwilligung) lädt. */
+function gtmPush(event, data) {
+  if (typeof window === "undefined") return;
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...(data || {}) });
+}
 // Telefon (nur DACH) + E-Mail als zusätzliche Kontaktwege.
 function ContactLine({ lang }) {
   return (
@@ -1160,6 +1168,15 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   // Schritt 4 (Leistung) wird immer ohne Vorauswahl betreten — auch beim Zurückkommen.
   React.useEffect(() => { if (step === 3) setService(null); }, [step]);
 
+  // GTM-/dataLayer-Funnel-Events. initiate_checkout beim Öffnen des Wizards
+  // (= Aufruf der Profil-prüfen-Ansicht); die Schritt-Events einmalig pro Sitzung.
+  const gtmFired = React.useRef({});
+  React.useEffect(() => { gtmPush("initiate_checkout"); }, []);
+  React.useEffect(() => {
+    if (step === 3 && !gtmFired.current.check_profile) { gtmFired.current.check_profile = true; gtmPush("check_profile"); }      // „Schritt 4" (Leistung wählen)
+    if (step === 5 && !gtmFired.current.add_to_cart) { gtmFired.current.add_to_cart = true; gtmPush("add_to_cart"); }            // „Schritt 6" (Checkout)
+  }, [step]);
+
   // Autofokus auf das Namensfeld nur am Desktop — am Handy soll sich die Tastatur
   // nicht ungefragt öffnen (sie erscheint erst, wenn man das Feld antippt).
   React.useEffect(() => {
@@ -1377,11 +1394,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       // Einwilligung (Nachweis): AGB/Widerruf akzeptiert, inkl. Zeitstempel.
       agbConsent: true, consentAt: new Date().toISOString(),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
-    // Conversion ans dataLayer (Google Tag Manager): Bestellung aufgegeben.
-    if (typeof window !== "undefined") {
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ event: "purchase", transaction_id: orderId, value: oneTimeTotal, currency: country === "US" ? "USD" : "EUR" });
-    }
+    // Conversion ans dataLayer (Google Tag Manager): Bestellung abgeschlossen.
+    // „order" mit E-Mail + Telefon in der Datenschicht; „purchase" bleibt für bestehende Tags.
+    const txCurrency = country === "US" ? "USD" : "EUR";
+    gtmPush("order", { email: contact.email, phone: contact.phone, transaction_id: orderId, value: oneTimeTotal, currency: txCurrency });
+    gtmPush("purchase", { transaction_id: orderId, value: oneTimeTotal, currency: txCurrency });
     setTimeout(() => { setProcessing(false); setStep(6); }, 2400);
   };
 
