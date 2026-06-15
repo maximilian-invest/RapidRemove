@@ -34,7 +34,7 @@ const DUE_MAHN: Record<string, string> = { de: "umgehend", en: "now", es: "ahora
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "*";
 // Öffentliche Site-URL (für Links in E-Mails, z. B. Fragebogen-Seite). NICHT SITE_ORIGIN nehmen (kann "*" sein).
 const SITE_URL = (process.env.SITE_URL || "https://rapid-remove.com").replace(/\/+$/, "");
-const FORM_FIELDS = ["verified", "smsOk", "nameChange", "owner", "payment48"];
+const FORM_FIELDS = ["verified", "smsOk", "payment48"];
 app.addHook("onRequest", async (req, reply) => {
   reply.header("Access-Control-Allow-Origin", SITE_ORIGIN);
   reply.header("Vary", "Origin");

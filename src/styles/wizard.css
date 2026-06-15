@@ -229,8 +229,9 @@
 .co-ch{display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:var(--r-md);border:1.5px solid var(--hairline-strong);background:#fff;color:var(--fg);font-family:var(--font-body);font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;transition:border-color var(--dur),background var(--dur);}
 .co-ch:hover{border-color:var(--orange-300);background:var(--orange-50);}
 .co-ch svg{flex:none;color:var(--primary);}
-.co-ch.wa{color:#1f8a4c;}
-.co-ch.wa svg{color:#25d366;}
+.co-ch.wa{background:#25d366;border-color:#25d366;color:#fff;}
+.co-ch.wa svg{color:#fff;}
+.co-ch.wa:hover{background:#1faa52;border-color:#1faa52;color:#fff;}
 .opt{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:22px;display:flex;gap:16px;align-items:flex-start;cursor:pointer;transition:border-color var(--dur),box-shadow var(--dur),background var(--dur);background:#fff;position:relative;}
 .opt:hover{border-color:var(--orange-300);}
 .opt.sel{border-color:var(--primary);background:var(--orange-50);box-shadow:0 0 0 3px rgba(255,128,0,.12);}
