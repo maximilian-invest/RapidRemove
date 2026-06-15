@@ -19,6 +19,36 @@ const article = {
   blocks: [
     { t: "note", title: "Note", text: "This guide is a practical overview and not legal advice. For binding advice on your situation, consult a qualified professional." },
 
+    { t: "h2", id: "herkunft", text: "Who created this profile in the first place?", toc: "Who created the profile?" },
+    { t: "p", text: "Most business owners who contact us never created their profile themselves — and are honestly surprised it exists at all. That isn't the exception; it's the rule. A Google Business Profile is rarely set up actively by the owner. Far more often, someone else adds it, or Google generates it completely automatically. To understand why such a listing is so hard to get rid of later, it helps to know how it got there in the first place. There are essentially three ways." },
+    { t: "anim", caption: "Three ways a business profile comes into existence — usually without the owner lifting a finger." },
+    { t: "h3", text: "Way 1: Someone adds the place by hand" },
+    { t: "p", text: "Any Google user can tap an address or an empty spot in the Maps app and choose “Add a missing place.” That lets anyone list a business without having anything to do with it — customers, former employees, competitors, or particularly active Maps users (Local Guides)." },
+    { t: "p", text: "It isn't entirely unchecked, though. Before a reported place goes live, an automatic review runs in the background:" },
+    { t: "ul", items: [
+      "**Location:** Is the user actually near the place they want to add? This stops someone in Berlin from inventing a café in Munich for a laugh.",
+      "**Duplicate check:** Is there already a similar name or the same category at that coordinate or right next door?",
+      "**Web cross-check:** Google searches for the name in parallel to see whether the business shows up online at all.",
+    ] },
+    { t: "p", text: "If the picture is consistent, the pin goes live — visible to everyone as an **unclaimed profile**." },
+    { t: "h3", text: "Way 2: Google creates the profile itself from web data" },
+    { t: "p", text: "This is the route few people expect: Google creates profiles in large numbers on its own — without the owner's involvement or consent. The reason is simple. Google wants to map the real world as completely as possible and doesn't wait for a new business to step forward." },
+    { t: "p", text: "To do that, Google's crawlers continuously scan the web for so-called **NAP data** — Name, Address, Phone. From these fragments the system assembles a profile, triggered for example by:" },
+    { t: "ul", items: [
+      "**Structured data on the website:** If a company's site embeds the standardized **LocalBusiness** markup in its source code (machine-readable details per Schema.org), Google reads the address, phone number and opening hours cleanly and directly.",
+      "**Digital footprints across the web:** Google combines details from Facebook pages, Instagram profiles, mentions in local media and entries in online phone directories.",
+      "**Consistency matching:** When the same business with the same address shows up repeatedly and consistently — on its own website, on Facebook and in a local blog, say — Google automatically creates a new Maps listing from it.",
+    ] },
+    { t: "p", text: "Most owners only notice once they suddenly spot the “Claim this business” button on the map." },
+    { t: "h3", text: "Way 3: Bulk import from official registries" },
+    { t: "p", text: "The third route is often underestimated: Google ingests data at scale from official sources and from data aggregators it has agreements with." },
+    { t: "ul", items: [
+      "**Commercial and trade registries:** As soon as a business is registered with the trade office or in the commercial register, those details flow to Google at regular intervals — usually via intermediary databases.",
+      "**Directories:** Google reconciles its maps with the Yellow Pages and the phone-book registries of each country. A new entry there can automatically trigger a new pin on Maps.",
+    ] },
+    { t: "p", text: "That's how a profile can appear shortly after you register your business — without you ever having gone to Google yourself." },
+    { t: "p", text: "**Why this matters:** However the profile came about, the consequence is the same: once it exists, it collects reviews and shows up in Search and Maps. You don't have to have created it or manage it to be affected by it — which is exactly why simply ignoring it won't do. You still have to remove it actively." },
+
     { t: "h2", id: "why", text: "Why there is no simple “delete” button", toc: "No delete button" },
     { t: "p", text: "Search for how to delete a Google Business Profile and you quickly hit a wall. You can mark a business as **“permanently closed”** or remove it from your own account – but a clear button that says **“delete this listing and all its reviews”** does not exist for owners. That is not an oversight: Google treats the profile and its reviews as useful information for searchers and keeps control on its side." },
     { t: "warn", title: "“Permanently closed” ≠ deleted", text: "Marking your business closed does **not** remove it. The listing, name, address, photos and **all reviews stay publicly visible** in Google Search and Google Maps – now with a struck-through “Permanently closed” label on top. To potential customers that often looks **worse** than before." },

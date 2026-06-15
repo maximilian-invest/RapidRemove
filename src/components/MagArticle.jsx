@@ -9,6 +9,7 @@ import { asset } from "@/lib/base";
 import { magazinePath } from "@/lib/locales-meta";
 import { pagePath } from "@/lib/page-routes";
 import { uiFor } from "@/lib/articles/registry";
+import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
 /* inline **bold** + [label](https://url) external links */
 function inline(text, k = "i") {
@@ -24,6 +25,18 @@ function inline(text, k = "i") {
   }
   if (last < s.length) out.push(<React.Fragment key={k + idx++}>{s.slice(last)}</React.Fragment>);
   return out;
+}
+
+// Animation zur Entstehung eines Profils (dieselbe wie im Wizard bei „ohne Schutz").
+function ArticleIngestAnim({ caption, lang }) {
+  const ref = React.useRef(null);
+  React.useEffect(() => { if (ref.current) return mountIngestionAnim(ref.current, { lang: lang === "de" ? "de" : "en" }); }, [lang]);
+  return (
+    <figure style={{ margin: "28px 0" }}>
+      <div ref={ref} className="pt-ingest" />
+      {caption && <figcaption style={{ textAlign: "center", fontSize: 14, color: "var(--fg-muted)", marginTop: 12 }}>{caption}</figcaption>}
+    </figure>
+  );
 }
 
 function Body({ data, lang, ui, related }) {
@@ -71,6 +84,7 @@ function Body({ data, lang, ui, related }) {
     switch (b.t) {
       case "h2": return <h2 id={b.id} key={i}>{b.text}</h2>;
       case "h3": return <h3 key={i}>{b.text}</h3>;
+      case "anim": return <ArticleIngestAnim caption={b.caption} lang={lang} key={i} />;
       case "p": return <p key={i}>{inline(b.text)}</p>;
       case "lead": return <p className="lead-p" key={i}>{inline(b.text)}</p>;
       case "ul": return <ul key={i}>{b.items.map((it, j) => <li key={j}>{inline(it)}</li>)}</ul>;
