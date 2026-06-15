@@ -10,6 +10,7 @@ import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
+import { sendPush } from "./integrations/push";
 import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
@@ -218,7 +219,7 @@ app.post("/order", async (req, reply) => {
 
   // 2) interne Benachrichtigung an das Postfach
   try {
-    const notify = process.env.NOTIFY_TO || process.env.MAIL_FROM || "info@rapid-remove.com";
+    const notify = process.env.NOTIFY_TO || "helpdesk@rapid-remove.com";
     const row = (l: string, v: string) =>
       v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "";
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
@@ -234,6 +235,13 @@ app.post("/order", async (req, reply) => {
     await sendMail({ to: notify, subject: `${heading} – ${company || name || email}`, html: adminHtml, replyTo: email });
     result.notify = true;
   } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
+
+  // 2b) Handy-Push (opt-in: ntfy/Pushover) – best effort, blockiert die Antwort nicht.
+  try {
+    const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
+    const lines = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean);
+    await sendPush(`${heading} – ${company || name || email}`, lines.join("\n"), SITE_URL + "/admin");
+  } catch (e) { app.log.error({ err: e }, "Push-Benachrichtigung fehlgeschlagen"); }
 
   // 3) Bestellung in der Datenbank speichern (falls DATABASE_URL gesetzt)
   try {

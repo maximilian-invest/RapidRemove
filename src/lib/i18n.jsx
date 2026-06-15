@@ -276,7 +276,7 @@ const I18N = {
         pipe: [
           { t: "Bestellung eingegangen", d: "Wir haben Ihre Anfrage erhalten und prüfen die Details.", now: false, done: true },
           { t: "In Bearbeitung", d: "Unser Team leitet die Löschung über die offiziellen Schnittstellen ein.", now: true, done: false },
-          { t: "Profil gelöscht", d: "Ihr Profil und alle Bewertungen sind entfernt. Erst jetzt wird gezahlt.", now: false, done: false },
+          { t: "Profil gelöscht", d: "Ihr Profil und alle Bewertungen sind entfernt. Sie erhalten einen Zahlungslink.", now: false, done: false },
         ],
         nextTitle: "Ihr nächster Schritt",
         nextBody: "Sie müssen nichts weiter tun. Wir halten Sie per E-Mail auf dem Laufenden.",
@@ -554,7 +554,7 @@ const I18N = {
         pipe: [
           { t: "Order received", d: "We've received your request and are reviewing the details.", now: false, done: true },
           { t: "In progress", d: "Our team initiates the removal through the official channels.", now: true, done: false },
-          { t: "Profile deleted", d: "Your profile and all reviews are removed. Only now are you charged.", now: false, done: false },
+          { t: "Profile deleted", d: "Your profile and all reviews are removed. You'll receive a payment link.", now: false, done: false },
         ],
         nextTitle: "Your next step",
         nextBody: "There's nothing more for you to do. We'll keep you posted by email.",
