@@ -291,7 +291,9 @@ button{font-family:inherit;}
   .side{display:none;}
   .burger{display:none;}
   .adm > .main{padding-bottom:calc(80px + env(safe-area-inset-bottom, 0px));}
-  .m-tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--hairline);padding:7px 6px calc(10px + env(safe-area-inset-bottom, 16px));}
+  /* Opaker Hintergrund statt backdrop-blur: ein geblurrtes position:fixed-Element
+     „wandert"/flackert auf Mobil beim Scrollen (Repaint-Bug). Solid = stabil. */
+  .m-tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:55;background:#fff;border-top:1px solid var(--hairline);box-shadow:0 -2px 12px rgba(28,25,22,.06);padding:7px 6px calc(10px + env(safe-area-inset-bottom, 16px));}
   .m-tab{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 2px;color:var(--fg-muted);position:relative;font-family:inherit;}
   .m-tab:active{transform:scale(.93);}
   .m-tab svg{width:24px;height:24px;}

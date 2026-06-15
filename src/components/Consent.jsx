@@ -90,11 +90,14 @@ export default function Consent() {
   const seg = pathname.split("/").filter(Boolean)[0];
   const lang = LANGS.some((l) => l.code === seg) ? seg : "de";
   const c = TXT[lang] || TXT.en;
+  // Internes Admin-Panel: kein Consent-Banner, kein Tracking.
+  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
   // SSR-sichtbar: Der Banner steht im ausgelieferten HTML; eine gespeicherte
   // Entscheidung blendet ihn direkt nach der Hydration wieder aus.
   const [open, setOpen] = React.useState(true);
 
   React.useEffect(() => {
+    if (isAdmin) { setOpen(false); return; } // Admin: weder Banner noch GTM laden
     let stored = null;
     try { stored = localStorage.getItem(KEY); } catch (e) {}
     if (stored === "granted") { setOpen(false); loadTrackers(); }
@@ -109,7 +112,7 @@ export default function Consent() {
     if (granted) loadTrackers();
   };
 
-  if (!open) return null;
+  if (isAdmin || !open) return null;
   return (
     <div className="consent" role="dialog" aria-live="polite" aria-label={c.settings}>
       <div className="consent-card">
