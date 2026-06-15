@@ -29,6 +29,21 @@ const AGB_CONSENT = {
   da: { pre: "Jeg har læst og accepterer ", agb: "vilkårene (AGB)", mid: " og ", wid: "fortrydelsesoplysningerne", post: ".", err: "Bekræft vilkårene og fortrydelsesoplysningerne." },
   no: { pre: "Jeg har lest og godtar ", agb: "vilkårene (AGB)", mid: " og ", wid: "angrerettsinformasjonen", post: ".", err: "Bekreft vilkårene og angrerettsinformasjonen." },
 };
+/* Checkbox 2 (§ 18 Abs 1 Z 1 FAGG): ausdrückliches Verlangen auf vorzeitigen Leistungsbeginn
+   + Kenntnisnahme, dass das Widerrufsrecht bei vollständiger Erfüllung erlischt. */
+const FAGG_CONSENT = {
+  de: { txt: "Ich verlange ausdrücklich, dass RapidRemove vor Ablauf der Widerrufsfrist mit der Dienstleistung beginnt. Mir ist bekannt, dass ich mein Widerrufsrecht verliere, sobald die Dienstleistung vollständig erbracht ist.", err: "Bitte bestätigen Sie den vorzeitigen Leistungsbeginn." },
+  en: { txt: "I expressly request that RapidRemove begin the service before the withdrawal period expires. I am aware that I lose my right of withdrawal once the service has been performed in full.", err: "Please confirm the early start of the service." },
+  es: { txt: "Solicito expresamente que RapidRemove comience la prestación del servicio antes de que expire el plazo de desistimiento. Soy consciente de que pierdo mi derecho de desistimiento una vez que el servicio se haya prestado por completo.", err: "Confirme el inicio anticipado del servicio." },
+  fr: { txt: "Je demande expressément que RapidRemove commence la prestation avant l'expiration du délai de rétractation. Je reconnais perdre mon droit de rétractation dès que la prestation aura été entièrement exécutée.", err: "Veuillez confirmer le début anticipé de la prestation." },
+  it: { txt: "Chiedo espressamente che RapidRemove inizi la prestazione del servizio prima della scadenza del termine di recesso. Sono consapevole che perderò il diritto di recesso una volta che il servizio sarà stato eseguito integralmente.", err: "Conferma l'inizio anticipato del servizio." },
+  nl: { txt: "Ik verzoek uitdrukkelijk dat RapidRemove vóór het verstrijken van de herroepingstermijn met de dienst begint. Ik ben mij ervan bewust dat ik mijn herroepingsrecht verlies zodra de dienst volledig is uitgevoerd.", err: "Bevestig de vervroegde start van de dienst." },
+  pt: { txt: "Solicito expressamente que a RapidRemove inicie o serviço antes do termo do prazo de retratação. Estou ciente de que perco o meu direito de retratação assim que o serviço estiver integralmente prestado.", err: "Confirme o início antecipado do serviço." },
+  ja: { txt: "撤回期間の満了前にRapidRemoveがサービスの提供を開始することを明示的に求めます。サービスが完全に履行された時点で撤回権を失うことを了承しています。", err: "サービスの早期開始に同意してください。" },
+  sv: { txt: "Jag begär uttryckligen att RapidRemove påbörjar tjänsten innan ångerfristen löper ut. Jag är medveten om att jag förlorar min ångerrätt när tjänsten har fullgjorts helt.", err: "Bekräfta den förtida starten av tjänsten." },
+  da: { txt: "Jeg anmoder udtrykkeligt om, at RapidRemove påbegynder tjenesten, inden fortrydelsesfristen udløber. Jeg er bekendt med, at jeg mister min fortrydelsesret, så snart tjenesten er fuldt udført.", err: "Bekræft den tidlige start af tjenesten." },
+  no: { txt: "Jeg ber uttrykkelig om at RapidRemove starter tjenesten før angrefristen utløper. Jeg er innforstått med at jeg mister angreretten min så snart tjenesten er fullt utført.", err: "Bekreft tidlig oppstart av tjenesten." },
+};
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -1365,6 +1380,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
   const [agbOk, setAgbOk] = React.useState(false);
+  const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
@@ -1596,6 +1612,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)) er.email = w.s5.errEmail;
     if (!contact.company.trim()) er.company = w.s5.errCompany;
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
+    if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
     setErrors(er);
     if (Object.keys(er).length) return;
     setProcessing(true);
@@ -1620,8 +1637,9 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       reviews: selected ? selected.reviews : 0,
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
-      // Einwilligung (Nachweis): AGB/Widerruf akzeptiert, inkl. Zeitstempel.
-      agbConsent: true, consentAt: new Date().toISOString(),
+      // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
+      // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
+      agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung abgeschlossen.
     // „order" mit E-Mail + Telefon in der Datenschicht.
@@ -1902,6 +1920,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   function StepCheckout() {
     const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
     const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
+    const fg = FAGG_CONSENT[t.code] || FAGG_CONSENT.en;
     if (processing) {
       return (
         <div className="wz-card">
@@ -1963,6 +1982,13 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               </span>
             </label>
             {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
+            <label className={"agb-consent" + (errors.fagg ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 12, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={faggOk}
+                onChange={(e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }}
+                style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
+              <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
+            </label>
+            {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
             <button type="submit" className="btn btn-primary btn-block lg co-submit-desktop" style={{ marginTop: 16 }}>
               <Icon.lock size={18} /> {w.s5.button}
             </button>
