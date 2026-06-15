@@ -1597,12 +1597,17 @@ function AdminApp() {
         if (alive && data) {
           setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db);
           // Nach einem Reload den zuvor geöffneten Kunden wieder aufschlagen → man bleibt an derselben Stelle.
+          // Deep-Link (Push/Mail): /admin?order=RR-XXX öffnet diese Bestellung direkt (Vorrang vor gemerktem Kunden).
           try {
-            const savedId = localStorage.getItem("rr_admin_detail");
+            let targetId = null;
+            try { targetId = new URLSearchParams(window.location.search).get("order"); } catch (e) {}
+            const savedId = targetId || localStorage.getItem("rr_admin_detail");
             if (savedId) {
               const rec = (data.orders || []).find((x) => x.id === savedId) || (data.checks || []).find((x) => x.id === savedId);
               if (rec) setDetail(rec);
             }
+            // ?order= aus der URL entfernen, damit spätere In-App-Navigation nicht daran „klebt".
+            if (targetId) { try { const u = new URL(window.location.href); u.searchParams.delete("order"); window.history.replaceState(null, "", u); } catch (e) {} }
           } catch (e) {}
         }
       } catch (e) { /* ohne Backend bleibt es leer — keine Demo-Daten */ }

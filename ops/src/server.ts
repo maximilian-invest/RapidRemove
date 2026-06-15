@@ -237,10 +237,12 @@ app.post("/order", async (req, reply) => {
   } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
 
   // 2b) Handy-Push (opt-in: ntfy/Pushover) – best effort, blockiert die Antwort nicht.
+  // Tap auf die Push öffnet das Admin-Panel direkt bei dieser Bestellung.
   try {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
     const lines = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean);
-    await sendPush(`${heading} – ${company || name || email}`, lines.join("\n"), SITE_URL + "/admin");
+    const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
+    await sendPush(`${heading} – ${company || name || email}`, lines.join("\n"), adminUrl);
   } catch (e) { app.log.error({ err: e }, "Push-Benachrichtigung fehlgeschlagen"); }
 
   // 3) Bestellung in der Datenbank speichern (falls DATABASE_URL gesetzt)
