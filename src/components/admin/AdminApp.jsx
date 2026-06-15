@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -513,12 +513,29 @@ function Orders({ orders, openOrder, query }) {
   );
 }
 
+/* SMS-Vorlage „Zahlungslink" je Sprache (kurz, mit Link). */
+const PAYLINK_SMS = {
+  de: (n, url) => `Hallo ${n}, Ihr Zahlungslink für RapidRemove: ${url} – Zahlung erst nach erfolgreicher Löschung.`,
+  en: (n, url) => `Hello ${n}, your RapidRemove payment link: ${url} – pay only after successful removal.`,
+  es: (n, url) => `Hola ${n}, tu enlace de pago de RapidRemove: ${url} – pagas solo tras la eliminación con éxito.`,
+  fr: (n, url) => `Bonjour ${n}, votre lien de paiement RapidRemove : ${url} – paiement seulement après suppression réussie.`,
+  it: (n, url) => `Ciao ${n}, il tuo link di pagamento RapidRemove: ${url} – paghi solo dopo la rimozione riuscita.`,
+  nl: (n, url) => `Hallo ${n}, uw RapidRemove-betaallink: ${url} – betaling pas na succesvolle verwijdering.`,
+  pt: (n, url) => `Olá ${n}, o seu link de pagamento RapidRemove: ${url} – pagamento só após remoção bem-sucedida.`,
+  ja: (n, url) => `${n} 様、RapidRemoveのお支払いリンク: ${url} – 削除成功後にのみお支払いです。`,
+  sv: (n, url) => `Hej ${n}, din RapidRemove-betallänk: ${url} – betala först efter lyckad borttagning.`,
+  da: (n, url) => `Hej ${n}, dit RapidRemove-betalingslink: ${url} – betaling først efter vellykket fjernelse.`,
+  no: (n, url) => `Hei ${n}, din RapidRemove-betalingslenke: ${url} – betaling først etter vellykket fjerning.`,
+};
+const payLinkSmsText = (o, url) => (PAYLINK_SMS[o.lang] || PAYLINK_SMS.en)(o.name || "", url);
+
 /* ---------- Order drawer ---------- */
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
   const now = useNow(1000);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [smsMsg, setSmsMsg] = React.useState("");
   const [smsBusy, setSmsBusy] = React.useState(false);
+  const [smsLinkBusy, setSmsLinkBusy] = React.useState(false);
   if (!order) return <React.Fragment><div className="drawer-scrim"></div><div className="drawer"></div></React.Fragment>;
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Ansicht
@@ -585,6 +602,23 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             </div>
             {smsOpen && (
               <div className="sms-box">
+                <div className="sms-tpls">
+                  <button className="btn btn-ghost btn-sm" disabled={smsLinkBusy}
+                    onClick={async () => {
+                      setSmsLinkBusy(true);
+                      try {
+                        const url = await fetchPayLinkUrl({
+                          service: o.service, protection: o.protection || "none",
+                          currency: o.country === "US" ? "usd" : "eur",
+                          serviceAmount: o.amount || 0,
+                          protAmount: (o.protection && o.protAmount) ? o.protAmount : 0,
+                          protType: o.protection || "", express: !!o.express,
+                        });
+                        setSmsMsg(payLinkSmsText(o, url));
+                      } catch (e) { toast("Zahlungslink: " + e.message); }
+                      finally { setSmsLinkBusy(false); }
+                    }}><AI.creditCard /> {smsLinkBusy ? "Lädt…" : "Zahlungslink einfügen"}</button>
+                </div>
                 <textarea className="sms-ta" value={smsMsg} onChange={(e) => setSmsMsg(e.target.value)} maxLength={612} rows={3}
                   placeholder={"SMS an " + o.phone + " …"} />
                 <div className="sms-foot">

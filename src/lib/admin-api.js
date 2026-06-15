@@ -34,6 +34,19 @@ export async function sendAdminEmail({ to, subject, text, orderId, label }) {
   return res.json().catch(() => ({ ok: true }));
 }
 
+/** Löst den passenden Zahlungslink für eine Bestellung auf (ohne Versand) – für die SMS-Vorlage. */
+export async function fetchPayLinkUrl({ service, protection, currency, serviceAmount, protAmount, protType, express, url }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/paylink-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, service, protection, currency, serviceAmount, protAmount, protType, express, url: url || "" }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j.url;
+}
+
 /** Sendet eine SMS an die Kunden-Telefonnummer über das ops-Backend (ClickSend). */
 export async function sendSms({ to, message, orderId, country }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");

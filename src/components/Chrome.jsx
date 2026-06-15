@@ -145,7 +145,7 @@ function LangToggle() {
    Außerhalb der Zeiten blockt der Klick und zeigt einen Hinweis mit
    „Trotzdem anrufen" + „Live-Chat öffnen". ---- */
 const TEL_NUMBER = "tel:08000900001";
-const WHATSAPP_URL = "https://wa.me/4362459305300";
+const WHATSAPP_URL = "https://wa.me/43624593053000";
 const TEL_HOURS = { from: 9, to: 17 };
 const TEL_NOTE = {
   de: ["Telefonisch erreichbar: 9–17 Uhr (MEZ).", "Trotzdem anrufen", "Live-Chat öffnen"],

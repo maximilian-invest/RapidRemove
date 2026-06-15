@@ -848,7 +848,7 @@ function CheckoutHelp({ lang }) {
       </div>
       <div className="co-help-grid">
         <button type="button" className="co-ch" onClick={openTidioChat}><Icon.message size={17} /> {tx.chat}</button>
-        <a className="co-ch wa" href="https://wa.me/4362459305300" target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={17} /> WhatsApp</a>
+        <a className="co-ch wa" href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={17} /> WhatsApp</a>
         <a className="co-ch" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={17} /> {tx.email}</a>
         <a className="co-ch" href={phoneHref} title={phoneTitle}><Icon.phone size={17} /> {tx.phone}</a>
       </div>

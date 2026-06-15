@@ -436,6 +436,47 @@ app.post("/admin/setup-express", async (req, reply) => {
   }
 });
 
+// Löst den passenden Stripe-Zahlungslink für eine Bestellung auf (ohne Versand):
+// 0) direkt gewählter aktiver Link, 1) hinterlegter Link, 2) Betrag-Match. KEIN Erstellen in Stripe.
+async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: string; available?: string[]; error?: string; code?: number }> {
+  const service = clip(b.service, 40);
+  const protection = clip(b.protection, 20) || "none";
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const express = b.express === true || b.express === "true" || b.express === 1 || b.express === "1";
+  const chosenUrl = clip(b.url, 300);
+  let url: string | undefined;
+  let available: string[] = [];
+  if (chosenUrl) {
+    if (!hasSecretKey()) return { code: 400, error: "STRIPE_SECRET_KEY nicht gesetzt" };
+    try { const links = await listPaymentLinks(); if (links.some((l) => l.url === chosenUrl)) url = chosenUrl; }
+    catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
+    if (!url) return { code: 400, error: "Unbekannter oder inaktiver Zahlungslink." };
+  }
+  if (!url) url = payLinkFor(service, protection, currency, express);
+  if (!url) {
+    if (!hasSecretKey()) return { code: 400, error: "STRIPE_SECRET_KEY nicht gesetzt" };
+    const serviceAmount = Number(b.serviceAmount) || 0;
+    const protAmount = Number(b.protAmount) || 0;
+    const protType = clip(b.protType, 20);
+    const items: { amount: number; interval: string }[] = [];
+    if (serviceAmount > 0) items.push({ amount: Math.round(serviceAmount * 100), interval: "once" });
+    if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "monthly" || protType === "monitor" ? "month" : "once" });
+    try { const m = await matchPaymentLink(items); url = m.url; available = m.available; }
+    catch (e) { app.log.error({ err: e }, "Payment-Link-Suche fehlgeschlagen"); }
+  }
+  if (!url) return { code: 400, error: `Kein passender Stripe-Zahlungslink gefunden (${service}|${protection}|${currency}).`, available };
+  return { url, available };
+}
+
+// Admin-Dashboard: Zahlungslink nur AUFLÖSEN (für SMS-Vorlage) – ohne Versand.
+app.post("/admin/paylink-url", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const r = await resolvePayLink(b);
+  if (!r.url) return reply.code(r.code || 400).send({ ok: false, error: r.error, available: r.available });
+  return { ok: true, url: r.url };
+});
+
 // Admin-Dashboard: echten Stripe-Zahlungslink erstellen + dem Kunden mailen
 app.post("/admin/paylink", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
@@ -446,29 +487,9 @@ app.post("/admin/paylink", async (req, reply) => {
   const protection = clip(b.protection, 20) || "none";
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const express = b.express === true || b.express === "true" || b.express === 1 || b.express === "1";
-  // KEIN Erstellen in Stripe. 0) direkt gewählter aktiver Link, 1) manueller Override, 2) Betrag-Match.
-  const chosenUrl = clip(b.url, 300);
-  let url: string | undefined;
-  let available: string[] = [];
-  if (chosenUrl) {
-    if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
-    try { const links = await listPaymentLinks(); if (links.some((l) => l.url === chosenUrl)) url = chosenUrl; }
-    catch (e) { app.log.error({ err: e }, "Link-Validierung fehlgeschlagen"); }
-    if (!url) return reply.code(400).send({ ok: false, error: "Unbekannter oder inaktiver Zahlungslink." });
-  }
-  if (!url) url = payLinkFor(service, protection, currency, express);
-  if (!url) {
-    if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
-    const serviceAmount = Number(b.serviceAmount) || 0;
-    const protAmount = Number(b.protAmount) || 0;
-    const protType = clip(b.protType, 20);
-    const items: { amount: number; interval: string }[] = [];
-    if (serviceAmount > 0) items.push({ amount: Math.round(serviceAmount * 100), interval: "once" });
-    if (protAmount > 0) items.push({ amount: Math.round(protAmount * 100), interval: protType === "monthly" || protType === "monitor" ? "month" : "once" });
-    try { const m = await matchPaymentLink(items); url = m.url; available = m.available; }
-    catch (e) { app.log.error({ err: e }, "Payment-Link-Suche fehlgeschlagen"); }
-  }
-  if (!url) return reply.code(400).send({ ok: false, error: `Kein passender Stripe-Zahlungslink gefunden (${service}|${protection}|${currency}).`, available });
+  const r = await resolvePayLink(b);
+  if (!r.url) return reply.code(r.code || 400).send({ ok: false, error: r.error, available: r.available });
+  const url = r.url;
   const orderId = clip(b.orderId, 40);
   const total = Number(b.total) || 0;
   try {
