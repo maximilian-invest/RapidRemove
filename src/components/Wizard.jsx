@@ -853,8 +853,8 @@ function CheckoutHelp({ lang }) {
     <div className="co-help">
       <div className="co-help-head">
         <span className="we-avas">
-          <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={44} height={44} />
-          <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={44} height={44} />
+          <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={44} height={44} loading="lazy" decoding="async" />
+          <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={44} height={44} loading="lazy" decoding="async" />
         </span>
         <div className="co-help-tx">
           <strong>{tx.title}</strong>

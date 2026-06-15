@@ -402,8 +402,8 @@ function TrustSecurity({ id }) {
             <div className="team-card">
               <div className="team-top">
                 <div className="team-stack">
-                  <img className="av" src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian Hölzl" width={46} height={46} />
-                  <img className="av" src={asset("/assets/matthias-lang.webp")} alt="Matthias Lang" width={46} height={46} />
+                  <img className="av" src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian Hölzl" width={46} height={46} loading="lazy" decoding="async" />
+                  <img className="av" src={asset("/assets/matthias-lang.webp")} alt="Matthias Lang" width={46} height={46} loading="lazy" decoding="async" />
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>

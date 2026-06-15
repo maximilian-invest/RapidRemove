@@ -312,7 +312,7 @@ function AboutInner() {
               <div className={"ab-member reveal d" + ((i % 4) + 1)} key={i}>
                 <div className={"m-photo " + m.thm}>
                   {m.img
-                    ? <img src={asset(m.img)} alt={m.n} />
+                    ? <img src={asset(m.img)} alt={m.n} loading="lazy" decoding="async" />
                     : <span className="m-initial">{m.n[0]}</span>}
                 </div>
                 <div className="m-name">{m.n}</div>

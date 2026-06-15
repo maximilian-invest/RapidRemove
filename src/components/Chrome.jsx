@@ -428,7 +428,7 @@ function Footer({ onStart, onBlog, onAbout }) {
       <div className="container">
         <div className="foot-grid">
           <div className="foot-brand">
-            <img className="foot-logo" src={asset("/assets/rapidremove-logo-weiss.png")} alt="RapidRemove" />
+            <img className="foot-logo" src={asset("/assets/rapidremove-logo-weiss.png")} alt="RapidRemove" loading="lazy" decoding="async" />
             <p>{t.footer.tagline}</p>
             <div className="addr"><strong>{ftCo}</strong><br />{ftMid.join(" · ")}{ftUid ? <><br />{ftUid}</> : null}</div>
           </div>

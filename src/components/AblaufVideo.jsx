@@ -62,7 +62,7 @@ function ImageSprite({ src, x = 0, y = 0, width = 400, height = 300, entryDur = 
   }
   return (
     <div style={{ position: "absolute", left: x, top: y, width, height, opacity, transform: `scale(${scale})`, transformOrigin: "center", borderRadius: radius, overflow: "hidden", willChange: "transform,opacity" }}>
-      <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: fit, display: "block" }} />
+      <img src={src} alt="" loading="lazy" decoding="async" style={{ width: "100%", height: "100%", objectFit: fit, display: "block" }} />
     </div>
   );
 }
