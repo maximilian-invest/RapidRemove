@@ -97,6 +97,7 @@ function OrderRow({ o, onClick, now }) {
       <div className="m-main">
         <div className="nm">{o.name}</div>
         <div className="meta">{SERVICES[o.service].name} · {o.id}</div>
+        {o.affiliate ? <div className="aff-chip">via {o.affiliate}</div> : null}
       </div>
       <div className="right">
         <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
@@ -602,6 +603,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             <div className="dt-id">{o.id}</div>
             <div className="dt-sub">{o.created} · {o.country}</div>
             <div style={{ marginTop: 6 }}><OrderTimer since={o.createdAt} status={o.status} now={now} seconds /></div>
+            {o.affiliate ? <div className="aff-badge"><Icon.user size={13} /> Affiliate: <b>{o.affiliate}</b></div> : null}
           </div>
           <button className="btn btn-sec btn-sm" style={{ marginLeft: "auto" }} onClick={() => onOpenFull(o)}><Icon.user /> Volle Kundenakte</button>
           <button className="drawer-close" onClick={onClose}><Icon.x /></button>
@@ -646,6 +648,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             </div>
             <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
             <div className="drow"><span className="dl">Telefon</span><span className="dv">{o.phone}</span></div>
+            {o.affiliate ? <div className="drow"><span className="dl">Affiliate</span><span className="dv"><b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b></span></div> : null}
             <div className="cust-acts">
               <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
               <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
@@ -1453,6 +1456,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                     </React.Fragment>
                   )}
                   <div className="drow"><span className="dl">Bestelldatum</span><span className="dv">{o.created}</span></div>
+                  {o.affiliate ? <div className="drow"><span className="dl">Affiliate</span><span className="dv"><b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b></span></div> : null}
                   <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Auftragswert</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "kostenlose Prüfung"}</span></div>
                 </div>
               )}

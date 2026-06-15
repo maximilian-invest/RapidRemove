@@ -1600,9 +1600,12 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     if (Object.keys(er).length) return;
     setProcessing(true);
     persistCheck();
-    // Affiliate-Attribution (FirstPromoter): Tracking-ID aus dem _fprom_tid-Cookie
-    // mitschicken, damit das ops-Backend den Sale dem werbenden Partner zuordnen kann.
-    const fprTid = (typeof document !== "undefined" && (document.cookie.match(/(?:^|;\s*)_fprom_tid=([^;]+)/) || [])[1]) || "";
+    // Affiliate-Attribution (FirstPromoter): Tracking-ID (_fprom_tid) für die Sale-
+    // Zuordnung UND den lesbaren Partner-Code (_fprom_ref) mitschicken, damit im
+    // Admin/Push direkt sichtbar ist, von welchem Affiliate die Bestellung kommt.
+    const fprCookie = (n) => (typeof document !== "undefined" && (document.cookie.match(new RegExp("(?:^|;\\s*)" + n + "=([^;]+)")) || [])[1]) || "";
+    const fprTid = fprCookie("_fprom_tid");
+    const fprRef = fprCookie("_fprom_ref");
     // Bestellung im Hintergrund ans ops-Backend. Profil-Nachweis (Place-ID etc.) inklusive.
     submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
@@ -1614,7 +1617,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
       category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
       reviews: selected ? selected.reviews : 0,
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
-      country, checkId, saleTotal: oneTimeTotal, fprTid,
+      country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
       // Einwilligung (Nachweis): AGB/Widerruf akzeptiert, inkl. Zeitstempel.
       agbConsent: true, consentAt: new Date().toISOString(),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });

@@ -21,7 +21,19 @@ export function hasFirstPromoter(): boolean {
   return !!process.env.FPR_API_KEY;
 }
 
-export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean };
+export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean; promoter?: string };
+
+/** Liest – defensiv, da das Response-Schema variieren kann – den lesbaren
+ *  Promoter/Affiliate-Namen aus der track/sale-Antwort. Leerstring, wenn nicht da. */
+function extractPromoter(obj: any): string {
+  if (!obj || typeof obj !== "object") return "";
+  const pick = (x: any) =>
+    x ? String(x.name || x.full_name || x.email || x.cust_id || x.username || x.default_ref_id || x.ref_id || "").trim() : "";
+  const p = obj.promoter || (obj.lead && obj.lead.promoter) || (obj.referral && obj.referral.promoter) || (obj.sale && obj.sale.promoter);
+  const s = pick(p);
+  if (s) return s;
+  return String(obj.ref_id || obj.promoter_name || "").trim();
+}
 
 /**
  * Meldet einen Sale an FirstPromoter.
@@ -62,11 +74,13 @@ export async function trackSale(opts: {
       headers: { "x-api-key": key, "Content-Type": "application/x-www-form-urlencoded" },
       body: params.toString(),
     });
+    const txt = await res.text().catch(() => "");
     if (!res.ok) {
-      const txt = await res.text().catch(() => "");
       return { ok: false, status: res.status, error: `HTTP ${res.status}: ${txt.slice(0, 200)}`.trim() };
     }
-    return { ok: true, status: res.status };
+    let promoter = "";
+    try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
+    return { ok: true, status: res.status, promoter };
   } catch (e: any) {
     return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };
   }

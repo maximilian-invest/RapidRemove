@@ -206,6 +206,12 @@ app.post("/order", async (req, reply) => {
   // bekommt dafür die Eingangsbestätigung „Wir prüfen Ihren Fall" statt der
   // Auftragsbestätigung fürs Profil-Löschen.
   const isPress = service === "deindex";
+  // Affiliate (FirstPromoter): lesbarer Partner-Code aus dem _fprom_ref-Cookie,
+  // vom Browser mitgeschickt. Wird in interner Mail, Push und Admin angezeigt,
+  // damit sofort sichtbar ist, von welchem Partner die Bestellung kommt.
+  // Kann unten aus der track/sale-Antwort (Promoter-Name) angereichert werden.
+  let affiliate = clip(b.fprRef, 200);
+  if (affiliate) { try { affiliate = decodeURIComponent(affiliate); } catch (e) { /* roher Wert ok */ } affiliate = affiliate.replace(/[<>\r\n]/g, "").trim().slice(0, 120); }
 
   const t = TEMPLATES[isPress ? "presse-eingang" : "auftragsbestaetigung"];
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
@@ -227,6 +233,7 @@ app.post("/order", async (req, reply) => {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
     const adminHtml =
       `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">${heading}</h2>` +
+      (affiliate ? `<div style="display:inline-block;background:#fff5ec;border:1px solid #ffd9b3;color:#c2410c;font-weight:700;font-size:13px;border-radius:8px;padding:6px 12px;margin:0 0 12px">Affiliate: ${escapeHtml(affiliate)}</div>` : "") +
       `<table style="border-collapse:collapse;font-size:14px">` +
       row("Name", name) + row("E-Mail", email) + row("Telefon", phone) + row("Unternehmen", company) +
       row("Profil", profile) + row("Leistung", service) + row("Schutz", protection) +
@@ -243,7 +250,7 @@ app.post("/order", async (req, reply) => {
   {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
     const ptitle = `${heading} – ${company || name || email}`;
-    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
+    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), affiliate ? "Affiliate: " + affiliate : "", [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
     const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
     // Web-Push an die installierte Admin-App (öffnet die App selbst beim Tap)
     try {
@@ -278,8 +285,10 @@ app.post("/order", async (req, reply) => {
           currency: clip(b.country, 6) === "US" ? "USD" : "EUR",
           tid: fprTid || undefined,
         });
-        if (fr.ok) app.log.info({ orderId, saleTotal }, "FirstPromoter Sale erfasst");
-        else if (!fr.skipped) app.log.warn({ fpr: fr }, "FirstPromoter Sale nicht erfasst");
+        if (fr.ok) {
+          if (fr.promoter && !affiliate) affiliate = fr.promoter; // Promoter-Name aus FP-Antwort, falls Cookie-Code fehlte
+          app.log.info({ orderId, saleTotal, promoter: fr.promoter || "" }, "FirstPromoter Sale erfasst");
+        } else if (!fr.skipped) app.log.warn({ fpr: fr }, "FirstPromoter Sale nicht erfasst");
       } catch (e) { app.log.error({ err: e }, "FirstPromoter fehlgeschlagen"); }
     }
   }
@@ -289,6 +298,7 @@ app.post("/order", async (req, reply) => {
     if (dbReady()) {
       const id = orderId || ("RR-" + Math.floor(100000 + Math.random() * 899999));
       const checkId = clip(b.checkId, 40);
+      b.affiliate = affiliate; // aufgelösten Partner im raw-JSON mitspeichern → Admin zeigt ihn an
       await insertOrder({
         id, name, email, phone, company, lang, profile, service, protection,
         country: clip(b.country, 6) || "DE",

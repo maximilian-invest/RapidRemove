@@ -102,6 +102,7 @@ function mapOrder(r) {
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
+    affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",
   };
 }
 function mapCheck(r) {
