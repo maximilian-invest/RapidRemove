@@ -404,7 +404,6 @@ function TrustSecurity({ id }) {
                 <div className="team-stack">
                   <img className="av" src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian Hölzl" width={46} height={46} />
                   <img className="av" src={asset("/assets/matthias-lang.webp")} alt="Matthias Lang" width={46} height={46} />
-                  {(TEAM_COPY[t.code] || TEAM_COPY.en).more ? <span className="av more" aria-hidden="true">{(TEAM_COPY[t.code] || TEAM_COPY.en).more}</span> : null}
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>

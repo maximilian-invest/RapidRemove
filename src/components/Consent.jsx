@@ -92,16 +92,16 @@ export default function Consent() {
   const c = TXT[lang] || TXT.en;
   // Internes Admin-Panel: kein Consent-Banner, kein Tracking.
   const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
-  // SSR-sichtbar: Der Banner steht im ausgelieferten HTML; eine gespeicherte
-  // Entscheidung blendet ihn direkt nach der Hydration wieder aus.
-  const [open, setOpen] = React.useState(true);
+  // Startet unsichtbar und erscheint NUR, wenn noch keine Entscheidung vorliegt.
+  // So blitzt der Banner bei jeder Navigation für bereits entschiedene Nutzer nicht auf.
+  const [open, setOpen] = React.useState(false);
 
   React.useEffect(() => {
-    if (isAdmin) { setOpen(false); return; } // Admin: weder Banner noch GTM laden
+    if (isAdmin) return; // Admin: weder Banner noch GTM laden
     let stored = null;
     try { stored = localStorage.getItem(KEY); } catch (e) {}
-    if (stored === "granted") { setOpen(false); loadTrackers(); }
-    else if (stored === "denied") setOpen(false);
+    if (stored === "granted") loadTrackers();
+    else if (stored !== "denied") setOpen(true);
     window.rrConsentOpen = () => setOpen(true);
     return () => { if (window.rrConsentOpen) delete window.rrConsentOpen; };
   }, []);

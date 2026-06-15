@@ -378,8 +378,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
       <div className={"sheet" + (open ? " open" : "")} onClick={() => setOpen(false)}>
         <div className="sheet-panel" onClick={(e) => e.stopPropagation()}>
           <div className="sheet-top">
-            <LangToggle />
-            <button className="sheet-close" onClick={() => setOpen(false)}><Icon.x /></button>
+            <button className="sheet-close" onClick={() => setOpen(false)} style={{ marginLeft: "auto" }}><Icon.x /></button>
           </div>
           <a href={asset(localePath(t.code))} onClick={(e) => { e.preventDefault(); goHome(); }}>{HOME_LABEL[t.code] || "Home"}</a>
           {(onOrm || onDeindex) && (

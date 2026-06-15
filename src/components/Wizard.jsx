@@ -1507,7 +1507,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
               <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
               {linkOk
                 ? <button className="btn btn-primary grow" onClick={verifyWithLink}>{nil.checkBtn} <Icon.arrowRight size={18} /></button>
-                : <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{nil.contBtn} <Icon.arrowRight size={18} /></button>}
+                : <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>}
             </div>
           </React.Fragment>
         ) : (
@@ -1519,7 +1519,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             </div>
             <div className="wz-actions" style={{ marginTop: 18 }}>
               <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{w.s3.button} <Icon.arrowRight size={18} /></button>
+              <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
             </div>
           </React.Fragment>
         )}
