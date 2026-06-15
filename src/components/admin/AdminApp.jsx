@@ -679,10 +679,6 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
                       }
                       finally { setSmsLinkBusy(false); }
                     }}><AI.creditCard /> {smsLinkBusy ? "Lädt…" : "Zahlungslink einfügen"}</button>
-                  <button className="btn btn-ghost btn-sm" type="button"
-                    onClick={() => setSmsMsg(payLinkSmsText(o, PAYLINK_PLACEHOLDER))}>
-                    <AI.creditCard /> Vorlage · Link selbst
-                  </button>
                 </div>
                 <textarea className="sms-ta" value={smsMsg} onChange={(e) => setSmsMsg(e.target.value)} maxLength={612} rows={3}
                   placeholder={"SMS an " + o.phone + " …"} />
@@ -1560,10 +1556,6 @@ function SmsModal({ order, onClose, toast }) {
                   toast("Kein hinterlegter Stripe-Link — Vorlage eingefügt, Link bitte ersetzen.");
                 } finally { setLinkBusy(false); }
               }}><AI.creditCard /> {linkBusy ? "Lädt…" : "Zahlungslink einfügen"}</button>
-            <button className="btn btn-ghost btn-sm" type="button"
-              onClick={() => setText(payLinkSmsText(o, PAYLINK_PLACEHOLDER))}>
-              <AI.creditCard /> Vorlage · Link selbst
-            </button>
           </div>
           <div className="fld"><label>Nachricht ({text.length}/612)</label><textarea maxLength={612} style={{ minHeight: 100 }} value={text} onChange={(e) => setText(e.target.value)}></textarea></div>
         </div>
