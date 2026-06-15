@@ -254,6 +254,7 @@
   /* Auswahl-Tiles mobil ohne führendes Icon (zu wenig Platz). */
   .opt .opt-ic{display:none;}
   .profile-card .profile-thumb{display:none;}
+  .router-tile .rt-ic{display:none;}
   .opt-main .ot{font-size:16.5px;}
   .opt-main .od{font-size:13.5px;margin-top:4px;line-height:1.5;}
   .opt-price{font-size:20px;}
