@@ -11,12 +11,26 @@ import { localePath } from "@/lib/locales-meta";
 import { FAQ, ARTICLE_META } from "@/lib/article-google-profil";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
 import { authorFor, authorPath, roleFor } from "@/lib/authors";
+import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
 // Hub-Artikel: deterministisch zugeordneter Autor (gleicher Schlüssel wie überall).
 const HUB_AUTHOR = authorFor("google-unternehmensprofil-loeschen");
 
+// Animation zur Entstehung eines Profils (dieselbe wie im Wizard bei „ohne Schutz").
+function ArticleIngestAnim() {
+  const ref = React.useRef(null);
+  React.useEffect(() => { if (ref.current) return mountIngestionAnim(ref.current, { lang: "de" }); }, []);
+  return (
+    <figure style={{ margin: "28px 0" }}>
+      <div ref={ref} className="pt-ingest" />
+      <figcaption style={{ textAlign: "center", fontSize: 14, color: "var(--fg-muted)", marginTop: 12 }}>Drei Wege, wie ein Unternehmensprofil entsteht – meist ganz ohne Zutun des Inhabers.</figcaption>
+    </figure>
+  );
+}
+
 const SECTIONS = [
   { id: "ueberblick", label: "Das Wichtigste in Kürze" },
+  { id: "herkunft", label: "Wer hat das Profil angelegt?" },
   { id: "selbst-loeschen", label: "Kann man das Profil selbst löschen?" },
   { id: "geschlossen", label: "„Geschlossen“ ist keine Löschung" },
   { id: "optionen", label: "Welche Optionen Sie haben" },
@@ -108,6 +122,62 @@ function ArticleBody() {
             Die ehrliche Antwort ist leider komplizierter, als Google es Sie glauben lässt. Dieser Leitfaden zeigt
             Ihnen, was wirklich funktioniert – Schritt für Schritt, ohne Marketing-Geschwafel.
           </p>
+
+          <h2 id="herkunft">Wer hat dieses Profil überhaupt angelegt?</h2>
+          <p>
+            Die meisten Unternehmer, die uns kontaktieren, haben ihr Profil nie selbst erstellt – und sind ehrlich
+            überrascht, dass es existiert. Das ist kein Einzelfall, sondern der Normalfall. Ein Google-Unternehmensprofil
+            entsteht in den seltensten Fällen aktiv durch den Inhaber. Viel häufiger legt es jemand anderes an, oder
+            Google generiert es vollautomatisch. Wer verstehen will, warum sich so ein Eintrag später so schwer wieder
+            loswerden lässt, sollte zuerst wissen, wie er dorthin gekommen ist. Im Wesentlichen gibt es drei Wege.
+          </p>
+
+          <ArticleIngestAnim />
+
+          <h3>Weg 1: Jemand fügt den Ort von Hand hinzu</h3>
+          <p>
+            Jeder Google-Nutzer kann in der Maps-App auf eine Adresse oder eine freie Fläche tippen und „Fehlenden Ort
+            hinzufügen“ wählen. Damit lässt sich ein Unternehmen eintragen, ohne dass man irgendetwas damit zu tun hat –
+            das machen Kunden, ehemalige Mitarbeiter, Wettbewerber oder besonders aktive Maps-Nutzer (Local Guides).
+          </p>
+          <p>Ganz ungeprüft geht das allerdings nicht. Bevor ein gemeldeter Ort sichtbar wird, läuft im Hintergrund eine automatische Prüfung:</p>
+          <ul>
+            <li><strong>Standort:</strong> Befindet sich der Nutzer tatsächlich in der Nähe des Ortes, den er anlegen will? Das verhindert, dass jemand aus Berlin spaßeshalber ein Café in München erfindet.</li>
+            <li><strong>Dubletten-Check:</strong> Gibt es an dieser Koordinate oder direkt nebenan schon einen ähnlichen Namen oder dieselbe Kategorie?</li>
+            <li><strong>Abgleich mit dem Web:</strong> Google sucht parallel nach dem Namen, um zu prüfen, ob das Geschäft online überhaupt irgendwo auftaucht.</li>
+          </ul>
+          <p>Passt das Bild zusammen, wird der Punkt freigeschaltet – und ist dann als <strong>nicht beanspruchtes Profil</strong> für alle sichtbar.</p>
+
+          <h3>Weg 2: Google erstellt das Profil selbst aus Web-Daten</h3>
+          <p>
+            Das ist der Weg, mit dem die wenigsten rechnen: Google legt Profile in großer Zahl eigenständig an – ohne
+            Zutun und ohne Zustimmung des Inhabers. Der Hintergrund ist simpel: Google will die reale Welt möglichst
+            lückenlos abbilden und wartet nicht darauf, dass ein neuer Betrieb sich selbst meldet.
+          </p>
+          <p>
+            Dafür durchsuchen Googles Crawler laufend das Internet nach sogenannten <strong>NAP-Daten</strong> – Name,
+            Adresse, Telefonnummer (engl. <em>Name, Address, Phone</em>). Aus diesen Bruchstücken setzt das System ein
+            Profil zusammen, ausgelöst zum Beispiel durch:
+          </p>
+          <ul>
+            <li><strong>Strukturierte Daten auf der Website:</strong> Hinterlegt eine Firmenseite im Quelltext das standardisierte <code>LocalBusiness</code>-Markup (maschinenlesbare Angaben nach Schema.org), liest Google Adresse, Telefon und Öffnungszeiten direkt und sauber aus.</li>
+            <li><strong>Digitale Spuren im Netz:</strong> Google kombiniert Angaben aus Facebook-Seiten, Instagram-Profilen, Erwähnungen in Lokalmedien und Einträgen in Online-Telefonbüchern.</li>
+            <li><strong>Konsistenz-Abgleich:</strong> Taucht derselbe Betrieb mit derselben Adresse mehrfach übereinstimmend auf – etwa auf der eigenen Website, bei Facebook und in einem lokalen Blog – erstellt Google daraus automatisch einen neuen Eintrag auf Maps.</li>
+          </ul>
+          <p>Die meisten Inhaber bemerken das erst, wenn sie auf der Karte plötzlich den Button „Als Inhaber beanspruchen“ sehen.</p>
+
+          <h3>Weg 3: Massen-Import aus offiziellen Registern</h3>
+          <p>
+            Der dritte Weg wird oft unterschätzt: Google übernimmt Daten in großem Stil aus offiziellen Quellen und von
+            Datenaggregatoren, mit denen feste Vereinbarungen bestehen.
+          </p>
+          <ul>
+            <li><strong>Handels- und Gewerberegister:</strong> Sobald ein Unternehmen beim Gewerbeamt oder im Handelsregister angemeldet ist, fließen diese Angaben – meist über zwischengeschaltete Datenbanken – in regelmäßigen Abständen zu Google.</li>
+            <li><strong>Branchenbücher:</strong> Google gleicht seine Karten mit den Gelben Seiten und den Telefonbuch-Registern des jeweiligen Landes ab. Ein neuer Eintrag dort kann automatisch einen neuen Punkt auf Maps auslösen.</li>
+          </ul>
+          <p>So kann ein Profil entstehen, kurz nachdem Sie Ihr Gewerbe angemeldet haben – ganz ohne dass Sie selbst je bei Google waren.</p>
+
+          <p><strong>Warum das wichtig ist:</strong> Wie das Profil entstanden ist, ändert nichts an der Folge: Sobald es existiert, sammelt es Bewertungen und erscheint in Suche und Maps. Sie müssen es also weder angelegt haben noch verwalten, um davon betroffen zu sein – und genau deshalb reicht es auch nicht, sich einfach nicht darum zu kümmern. Loswerden muss man es trotzdem aktiv.</p>
 
           <h2 id="selbst-loeschen">Kann man ein Google-Unternehmensprofil selbst löschen?</h2>
           <p>

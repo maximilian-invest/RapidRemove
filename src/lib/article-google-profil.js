@@ -14,11 +14,11 @@ export const ARTICLE_META = {
   description:
     "Google lässt Ihr Unternehmensprofil nicht einfach löschen. Die Anleitung zeigt, warum „dauerhaft geschlossen“ keine Löschung ist – und wie es wirklich geht.",
   datePublished: "2026-05-12",
-  dateModified: "2026-06-04",
+  dateModified: "2026-06-15",
   author: "Maximilian Hölzl",
   authorRole: "Gründer & Reputations-Experte, RapidRemove",
   authorImage: "/assets/maximilian-hoelzl.jpg",
-  readingMin: 11,
+  readingMin: 13,
   keywords: [
     "Google Unternehmensprofil löschen",
     "Google My Business löschen",
