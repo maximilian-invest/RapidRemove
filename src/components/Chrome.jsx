@@ -145,6 +145,7 @@ function LangToggle() {
    Außerhalb der Zeiten blockt der Klick und zeigt einen Hinweis mit
    „Trotzdem anrufen" + „Live-Chat öffnen". ---- */
 const TEL_NUMBER = "tel:08000900001";
+const WHATSAPP_URL = "https://wa.me/4362459305300";
 const TEL_HOURS = { from: 9, to: 17 };
 const TEL_NOTE = {
   de: ["Telefonisch erreichbar: 9–17 Uhr (MEZ).", "Trotzdem anrufen", "Live-Chat öffnen"],
@@ -187,6 +188,7 @@ function NavTel() {
   return (
     <span className="nav-tel-wrap" ref={ref}>
       <a className="nav-tel" href={TEL_NUMBER} onClick={onClick} aria-label="Telefon 0800 09 00 00 1"><Icon.phone size={15} /><span>0800 09 00 00 1</span></a>
+      <a className="nav-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><Icon.whatsapp size={17} /></a>
       {note && (
         <span className="nav-tel-note">
           <b>{tx[0]}</b>
@@ -305,7 +307,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
   const links = [
-    ["pricing", t.nav.pricing], ["reviews", t.nav.reviews], ["magazin", t.nav.magazin], ["about", t.nav.about],
+    ["pricing", t.nav.pricing], ["magazin", t.nav.magazin], ["about", t.nav.about],
   ];
   const goTo = (id) => { setOpen(false); if (id === "magazin") { onBlog && onBlog(); } else if (id === "about") { onAbout && onAbout(); } else { onNav(id); } };
   // Logo / „Home": zur Startseite DER AKTUELLEN SPRACHE (DE = "/", sonst "/<code>/"); auf der Startseite nur nach oben scrollen.
