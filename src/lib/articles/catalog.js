@@ -5,6 +5,7 @@ import { magazineUrl } from "@/lib/locales-meta";
 import { TRANSLATIONS } from "@/lib/articles/translations";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
 import { authorFor, authorPersonLd } from "@/lib/authors";
+import { HUB_PATH, HUB_CARD } from "@/lib/articles/hubs";
 
 import a1 from "@/lib/articles/google-bewertung-loeschen-lassen";
 import a2 from "@/lib/articles/fake-google-bewertung-melden-loeschen";
@@ -19,16 +20,19 @@ export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a
 export { TRANSLATIONS };
 
 const FLAGSHIP_SLUG = "google-unternehmensprofil-loeschen-wie-geht-das";
-const FLAGSHIP_PATH = "/magazin/google-unternehmensprofil-loeschen/";
-const EN_HUB_PATH = "/en/delete-google-business-profile/"; // EN-Übersetzung des Flaggschiffs
-// Karte für das EN-Magazin (leichtgewichtig, ohne Artikel-Body).
-const EN_HUB_CARD = {
-  slug: "delete-google-business-profile", href: EN_HUB_PATH, cat: "Google policy",
-  thm: "thm-orange", icon: "trash",
-  title: "Delete Google Business Profile: Complete Guide (2026)",
-  excerpt: "Why “permanently closed” isn't deletion — and how to remove your Google Business Profile and all its reviews for good.",
-  author: "Maximilian Hölzl", read: 9, date: "June 2026",
-};
+
+// Lightweight magazine "Titelgeschichte" card for a localized hub, built from the
+// shared HUB_CARD/HUB_PATH registry (the heavy article body lives in its route).
+function hubCardFor(lang) {
+  const h = HUB_CARD[lang];
+  if (!h) return null;
+  return {
+    slug: h.slug, href: HUB_PATH[lang], cat: h.cat, thm: "thm-orange", icon: "trash",
+    title: h.title, excerpt: h.excerpt,
+    author: authorFor("google-unternehmensprofil-loeschen").name, read: 11,
+    date: monthYear("2026-06-04", lang) || "2026",
+  };
+}
 
 export const homeBase = (lang) => (lang === "de" ? "/" : `/${lang}/`);
 export const tFor = (lang, deSlug) => (TRANSLATIONS[lang] || {})[deSlug];
@@ -60,8 +64,9 @@ export function magCardsFor(lang) {
       date: (t.meta.date && monthYear(t.meta.date, lang)) || c.date,
     };
   }).filter(Boolean);
-  // EN: das übersetzte Flaggschiff als erste (Titel-)Story einreihen.
-  return lang === "en" ? [{ ...EN_HUB_CARD, author: authorFor("google-unternehmensprofil-loeschen").name }, ...cards] : cards;
+  // Lokalisierter Hub als erste (Titel-)Story einreihen, wo vorhanden.
+  const hub = hubCardFor(lang);
+  return hub ? [hub, ...cards] : cards;
 }
 
 // [lang]/[aslug] params for every translated article.
@@ -113,9 +118,19 @@ export function resolveRelated(lang, relatedList) {
     // Flagship-Hub gibt es bislang nur auf Deutsch → in Fremdsprachen NICHT auf den
     // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte
     // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
-    if (slug === FLAGSHIP_SLUG) href = lang === "de" ? FLAGSHIP_PATH : lang === "en" ? EN_HUB_PATH : null;
+    if (slug === FLAGSHIP_SLUG) href = HUB_PATH[lang] || null;
     else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;
+  }).filter(Boolean);
+}
+
+// Localized "read next" links for the hub: the cluster articles in `lang`
+// (label = the localized article title, href = its on-site path).
+export function relatedHubLinks(lang, deSlugs) {
+  return (deSlugs || []).map((s) => {
+    const href = localizedPath(lang, s);
+    const t = lang === "de" ? DE_ARTICLES[s] : tFor(lang, s);
+    return href && t ? { label: t.meta.title, href } : null;
   }).filter(Boolean);
 }
 

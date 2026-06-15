@@ -3,6 +3,7 @@ import { LOCALES, localeUrl, magazineUrl } from "@/lib/locales-meta";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
 import { articleParams } from "@/lib/articles/catalog";
 import { PAGE_KEYS, pageUrl } from "@/lib/page-routes";
+import { HUB_PATH } from "@/lib/articles/hubs";
 
 export default function sitemap() {
   const homes = LOCALES.map((l) => ({
@@ -39,9 +40,15 @@ export default function sitemap() {
       secondary.push({ url: pageUrl(key, l), lastModified: new Date(), changeFrequency: "monthly", priority: prio[key] || 0.5 });
     }
   }
+  // Lead/Hub article ("Delete Google Business Profile") in every non-DE language
+  // (DE is added below via ARTICLE_META.url).
+  const hubs = Object.keys(HUB_PATH).filter((l) => l !== "de").map((l) => ({
+    url: `${SITE_URL}${HUB_PATH[l].replace(/\/$/, "")}`,
+    lastModified: new Date("2026-06-04"), changeFrequency: "monthly", priority: 0.8,
+  }));
   return [
     ...homes,
-    { url: `${SITE_URL}/en/delete-google-business-profile`, lastModified: new Date("2026-06-04"), changeFrequency: "monthly", priority: 0.8 },
+    ...hubs,
     { url: `${SITE_URL}/magazin`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     ...magazines,
     ...secondary,
