@@ -172,6 +172,17 @@ export async function insertOrder(o: OrderInput): Promise<void> {
   );
 }
 
+/** Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).
+ *  Push-Abos (Admin-Geräte) bleiben erhalten. Einmalig vor dem echten Start. */
+export async function wipeOrderData(): Promise<{ orders: number; checks: number; events: number; upsell: number }> {
+  if (!pool) return { orders: 0, checks: 0, events: 0, upsell: 0 };
+  const o = await pool.query(`DELETE FROM orders`);
+  const c = await pool.query(`DELETE FROM checks`);
+  const e = await pool.query(`DELETE FROM events`);
+  const u = await pool.query(`DELETE FROM upsell_jobs`);
+  return { orders: o.rowCount || 0, checks: c.rowCount || 0, events: e.rowCount || 0, upsell: u.rowCount || 0 };
+}
+
 export type CheckInput = {
   id: string; profile?: string; category?: string; rating?: string; reviews?: number;
   flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;

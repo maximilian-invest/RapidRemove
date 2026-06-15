@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale } from "./integrations/firstpromoter";
@@ -453,22 +453,57 @@ app.post("/admin/data", async (req, reply) => {
   return { ok: true, db: dbReady(), orders, checks };
 });
 
-// Admin-Dashboard: Abos & Umsatz live aus Stripe (read-only, 60s gecacht)
+// Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).
+// Push-Abos bleiben. Doppelt abgesichert: Admin-Token + Bestätigungswort.
+app.post("/admin/reset-data", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (String(b.confirm || "") !== "ALLE-TESTDATEN-LOESCHEN") return reply.code(400).send({ ok: false, error: "Bestätigung fehlt: confirm muss 'ALLE-TESTDATEN-LOESCHEN' sein" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  try {
+    const r = await wipeOrderData();
+    app.log.warn({ wiped: r }, "Admin: Testdaten gelöscht (Live-Go)");
+    return { ok: true, ...r };
+  } catch (e) {
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
+// Admin-Dashboard: Abos & Umsatz live aus Stripe (read-only). Stale-while-revalidate:
+// Der gecachte Stand wird SOFORT zurückgegeben, die Auffrischung läuft im Hintergrund —
+// so wartet das Dashboard nie auf die (mehrere Sekunden langen) Stripe-Abrufe.
 let stripeCache: { ts: number; data: unknown } | null = null;
+let stripeInFlight: Promise<void> | null = null;
+function refreshStripeCache(): Promise<void> {
+  if (stripeInFlight) return stripeInFlight;
+  stripeInFlight = (async () => {
+    try { stripeCache = { ts: Date.now(), data: await getStripeMetrics() }; }
+    catch (e) { app.log.error({ err: e }, "Stripe-Kennzahlen-Refresh fehlgeschlagen"); }
+    finally { stripeInFlight = null; }
+  })();
+  return stripeInFlight;
+}
+// Cache beim Start vorwärmen → der erste Dashboard-Aufruf ist sofort da.
+if (hasSecretKey()) refreshStripeCache();
+
 app.post("/admin/stripe", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   if (!hasSecretKey()) return { ok: true, connected: false, error: "STRIPE_SECRET_KEY nicht gesetzt" };
+  const STALE = 300_000; // 5 Min
+  if (stripeCache) {
+    const stale = Date.now() - stripeCache.ts > STALE;
+    if (stale) refreshStripeCache().catch(() => {}); // im Hintergrund auffrischen, nicht blockieren
+    return { ok: true, connected: true, ...(stale ? { stale: true } : {}), ...(stripeCache.data as Record<string, unknown>) };
+  }
+  // Kaltstart (noch kein Cache): auf den – evtl. schon laufenden – ersten Abruf warten.
   try {
-    if (!stripeCache || Date.now() - stripeCache.ts > 300_000) {
-      stripeCache = { ts: Date.now(), data: await getStripeMetrics() };
-    }
-    return { ok: true, connected: true, ...(stripeCache.data as Record<string, unknown>) };
+    await refreshStripeCache();
+    const cached = stripeCache as { ts: number; data: unknown } | null;
+    if (cached) return { ok: true, connected: true, ...(cached.data as Record<string, unknown>) };
+    return { ok: true, connected: false, error: "Stripe-Daten konnten nicht geladen werden" };
   } catch (e) {
-    app.log.error({ err: e }, "Stripe-Kennzahlen fehlgeschlagen");
-    // Letzten guten Stand weiterreichen statt auf Demo zu fallen (verhindert Flackern bei Timeouts/Rate-Limit).
-    if (stripeCache) return { ok: true, connected: true, stale: true, ...(stripeCache.data as Record<string, unknown>) };
-    return { ok: true, connected: false, error: String((e as Error)?.message || e).slice(0, 240) };
+    return reply.code(200).send({ ok: true, connected: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
 });
 

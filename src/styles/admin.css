@@ -43,6 +43,9 @@ button{font-family:inherit;}
 .icon-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--hairline);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--fg-2);transition:all .15s;position:relative;}
 .icon-btn:hover{border-color:var(--primary);color:var(--primary);}
 .icon-btn svg{width:19px;height:19px;}
+.icon-btn:disabled{cursor:default;opacity:.7;}
+@keyframes adm-spin{to{transform:rotate(360deg);}}
+.tb-refresh.busy svg{animation:adm-spin .8s linear infinite;}
 .icon-btn .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;}
 
 .content{padding:28px;flex:1;max-width:1320px;width:100%;}

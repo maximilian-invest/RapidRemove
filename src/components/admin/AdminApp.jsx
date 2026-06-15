@@ -296,7 +296,7 @@ function PushBell({ toast }) {
   );
 }
 
-function Topbar({ title, onBurger, query, setQuery, toast }) {
+function Topbar({ title, onBurger, query, setQuery, toast, onRefresh, refreshing }) {
   return (
     <div className="topbar">
       <button className="icon-btn burger" onClick={onBurger}><Icon.menu /></button>
@@ -306,6 +306,7 @@ function Topbar({ title, onBurger, query, setQuery, toast }) {
         <input placeholder="Bestellung, Kunde oder E-Mail suchen…" value={query} onChange={(e) => setQuery(e.target.value)} />
       </div>
       <div className="tb-right">
+        <button className={"icon-btn tb-refresh" + (refreshing ? " busy" : "")} onClick={onRefresh} disabled={refreshing} title="Daten aktualisieren" aria-label="Aktualisieren"><Icon.refresh /></button>
         <PushBell toast={toast} />
         <button className="btn btn-pri"><AI.plus /> Neue Bestellung</button>
       </div>
@@ -1669,6 +1670,7 @@ function AdminApp() {
   const [checks, setChecks] = React.useState([]);
   const [live, setLive] = React.useState(false);
   const [stripeCustomers, setStripeCustomers] = React.useState([]);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [view, setView] = React.useState(() => { try { return localStorage.getItem("rr_admin_view") || "dashboard"; } catch (e) { return "dashboard"; } });
   const [active, setActive] = React.useState(null); // order in drawer
   const [compose, setCompose] = React.useState(null); // {order, template}
@@ -1682,34 +1684,42 @@ function AdminApp() {
   const [toastMsg, setToastMsg] = React.useState(null);
   const toast = (m) => { setToastMsg(m); setTimeout(() => setToastMsg(null), 2600); };
 
+  // Daten (neu) laden — von der Aktualisieren-Schaltfläche und beim Start.
+  const reload = async ({ silent } = {}) => {
+    if (!silent) setRefreshing(true);
+    let data = null;
+    try {
+      data = await fetchAdminData();
+      if (data) { setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db); }
+    } catch (e) { /* ohne Backend bleibt es leer — keine Demo-Daten */ }
+    try {
+      const s = await fetchStripe();
+      if (s && s.connected) setStripeCustomers(s.customersList || []);
+    } catch (e) { /* Stripe optional */ }
+    if (!silent) { setRefreshing(false); toast("Daten aktualisiert ✓"); }
+    return data;
+  };
+
   React.useEffect(() => {
     let alive = true;
     (async () => {
-      try {
-        const data = await fetchAdminData();
-        if (alive && data) {
-          setOrders(data.orders || []); setChecks(data.checks || []); setLive(!!data.db);
-          // Nach einem Reload den zuvor geöffneten Kunden wieder aufschlagen → man bleibt an derselben Stelle.
-          // Deep-Link (Push/Mail): /admin?order=RR-XXX öffnet diese Bestellung direkt (Vorrang vor gemerktem Kunden).
-          try {
-            let targetId = null;
-            try { targetId = new URLSearchParams(window.location.search).get("order"); } catch (e) {}
-            const savedId = targetId || localStorage.getItem("rr_admin_detail");
-            if (savedId) {
-              const rec = (data.orders || []).find((x) => x.id === savedId) || (data.checks || []).find((x) => x.id === savedId);
-              if (rec) setDetail(rec);
-            }
-            // ?order= aus der URL entfernen, damit spätere In-App-Navigation nicht daran „klebt".
-            if (targetId) { try { const u = new URL(window.location.href); u.searchParams.delete("order"); window.history.replaceState(null, "", u); } catch (e) {} }
-          } catch (e) {}
-        }
-      } catch (e) { /* ohne Backend bleibt es leer — keine Demo-Daten */ }
-      try {
-        const s = await fetchStripe();
-        if (alive && s && s.connected) setStripeCustomers(s.customersList || []);
-      } catch (e) { /* Stripe optional */ }
+      const data = await reload({ silent: true });
+      if (alive && data) {
+        // Deep-Link (Push/Mail) bzw. zuletzt geöffneten Kunden wieder aufschlagen.
+        try {
+          let targetId = null;
+          try { targetId = new URLSearchParams(window.location.search).get("order"); } catch (e) {}
+          const savedId = targetId || localStorage.getItem("rr_admin_detail");
+          if (savedId) {
+            const rec = (data.orders || []).find((x) => x.id === savedId) || (data.checks || []).find((x) => x.id === savedId);
+            if (rec) setDetail(rec);
+          }
+          if (targetId) { try { const u = new URL(window.location.href); u.searchParams.delete("order"); window.history.replaceState(null, "", u); } catch (e) {} }
+        } catch (e) {}
+      }
     })();
     return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Navigation über einen Browser-Reload hinweg merken: aktueller Bereich + offener Kunde.
@@ -1763,7 +1773,7 @@ function AdminApp() {
     <div className="adm">
       <Sidebar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} open={sideOpen} live={live} />
       <div className="main">
-        <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} toast={toast} />
+        <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} toast={toast} onRefresh={() => reload()} refreshing={refreshing} />
         {body}
       </div>
       <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />
