@@ -17,8 +17,8 @@ export const SVC = {
     trioTitle: "Ihr Ruf — von allen Seiten geschützt.",
     trioSub: "Die Profil-Löschung ist unser Kernservice. Lässt sich ein Treffer nicht löschen, verdrängen oder listen wir ihn aus.",
     cards: [
-      { id: "core", tag: "Unser Kernservice", ic: "trash", t: "Google-Profil löschen", d: "Unternehmensprofil samt aller Bewertungen dauerhaft entfernen — Zahlung erst nach Erfolg.", dNav: "Profil & Bewertungen — dauerhaft weg", link: "Zum Gratis-Check" },
-      { id: "orm", tag: "Add-on", ic: "eye", t: "Reputation verdrängen", d: "Negative Treffer, die nicht löschbar sind, von Seite 1 der Google-Suche verdrängen.", dNav: "Negative Treffer von Seite 1", link: "Mehr erfahren" },
+      { id: "core", tag: "Unser Kernservice", ic: "trash", t: "Google-Profil löschen", d: "Unternehmensprofil samt aller Bewertungen dauerhaft entfernen — Zahlung erst nach Erfolg.", dNav: "Profil und Bewertungen dauerhaft entfernen", link: "Zum Gratis-Check" },
+      { id: "orm", tag: "Add-on", ic: "eye", t: "Reputation verdrängen", d: "Negative Treffer, die nicht löschbar sind, von Seite 1 der Google-Suche verdrängen.", dNav: "Negative Treffer von Seite 1 entfernen", link: "Mehr erfahren" },
       { id: "deindex", tag: "Vermittlung", ic: "fileText", t: "Presse auslisten", d: "Negative Presse aus der Google-Suche auslisten lassen — kostenlose Prüfung.", dNav: "Presse aus Google auslisten", link: "Mehr erfahren" },
     ],
   },
