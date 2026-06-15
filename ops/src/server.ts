@@ -10,6 +10,7 @@ import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
+import { hasFirstPromoter, trackSale } from "./integrations/firstpromoter";
 import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor } from "./paymentLinks";
@@ -257,6 +258,30 @@ app.post("/order", async (req, reply) => {
     // ntfy/Pushover (Fallback/zusätzlich, opt-in)
     try { await sendPush(ptitle, pbody, adminUrl); }
     catch (e) { app.log.error({ err: e }, "Push-Benachrichtigung fehlgeschlagen"); }
+  }
+
+  // 2c) FirstPromoter: Affiliate-Sale erfassen (best effort, blockiert die Antwort nie).
+  // Nur echte (kostenpflichtige) Bestellungen – die kostenlose Presse-Prüfung nicht.
+  // event_id = Bestell-Nr. → keine doppelten Provisionen. Provisionen erscheinen in
+  // FirstPromoter zunächst als „ausstehend"; final freigeben, sobald der Kunde zahlt.
+  if (!isPress && hasFirstPromoter()) {
+    const fprTid = clip(b.fprTid, 200);
+    // Einmalbetrag (Leistung + Express + ggf. lebenslanger Schutz). Laufende
+    // Monatsbeträge werden hier nicht als Sale gemeldet (kein Zahlungs-Webhook dafür).
+    const saleTotal = Number(b.saleTotal) || ((Number(b.amount) || 0) + (protection === "lifetime" ? (Number(b.protAmount) || 0) : 0));
+    if (saleTotal > 0) {
+      try {
+        const fr = await trackSale({
+          email,
+          eventId: orderId || ("RR-" + Math.floor(100000 + Math.random() * 899999)),
+          amount: saleTotal,
+          currency: clip(b.country, 6) === "US" ? "USD" : "EUR",
+          tid: fprTid || undefined,
+        });
+        if (fr.ok) app.log.info({ orderId, saleTotal }, "FirstPromoter Sale erfasst");
+        else if (!fr.skipped) app.log.warn({ fpr: fr }, "FirstPromoter Sale nicht erfasst");
+      } catch (e) { app.log.error({ err: e }, "FirstPromoter fehlgeschlagen"); }
+    }
   }
 
   // 3) Bestellung in der Datenbank speichern (falls DATABASE_URL gesetzt)
