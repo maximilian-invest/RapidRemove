@@ -388,7 +388,9 @@ button{font-family:inherit;}
 .m-trust{display:flex;align-items:center;justify-content:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--fg-muted);margin-top:18px;}
 .m-trust svg{width:14px;height:14px;color:var(--success);}
 @media(max-width:760px){
-  .topbar .search,.topbar .tb-right{display:none;}
+  /* Suche & „Neue Bestellung" raus, aber die Glocke (Push-Schalter) bleibt sichtbar. */
+  .topbar .search{display:none;}
+  .topbar .tb-right .btn-pri{display:none;}
 }
 @media(prefers-reduced-motion:reduce){.m-detail{animation:none;}}
 
