@@ -82,7 +82,7 @@ const CONV = {
     protLead: "Dritte – oft Mitbewerber – können Ihr Profil jederzeit wieder eintragen. Mit Schutz entfernen wir es kostenlos erneut.",
     protMonthlyName: "Monatlicher Schutz", protMonthlyShort: "Keine laufende Überwachung – Sie melden uns einen erneuten Eintrag, wir entfernen ihn gratis.",
     protMonitorName: "Automatische Überwachung", protMonitorShort: "Tägl. Überwachung & Sofort-Entfernung.",
-    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Ohne Schutz gegen erneute Einträge.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren", delOk: "Profil kann gelöscht werden", expertCta: "Sprechen Sie mit den Google-Experten", mostChosen: "Meistgewählt",
+    protLifetimeName: "Lebenslanger Schutz", protLifetimeShort: "Einmal zahlen, nie wieder Sorgen — dauerhaft.", protNoneName: "Kein Schutz", protNoneDesc: "Kann auch später gewählt werden.", checkingH: "Profil wird geprüft …", checkSteps: ["Profil gefunden", "Bewertungen analysiert", "Löschbarkeit bestätigt"], protOffContinue: "Ohne Schutz fortfahren", delOk: "Profil kann gelöscht werden", expertCta: "Sprechen Sie mit den Google-Experten", mostChosen: "Meistgewählt",
     protToggleOn: "Aktiviert", protToggleOff: "Deaktiviert",
     protOffTitle: "Ungeschützt – das ist riskant",
     protOffBody: "Ohne Schutz entfernen wir ein erneut eingetragenes Profil NICHT kostenlos. Dritte – oft Mitbewerber – tragen es erfahrungsgemäß häufig wieder ein. Das Risiko tragen dann Sie allein.",
@@ -148,7 +148,7 @@ const CONV = {
     protLead: "Third parties — often competitors — can re-list your profile anytime. With protection we remove it again for free.",
     protMonthlyName: "Monthly protection", protMonthlyShort: "No active monitoring — you report a re-listing and we remove it for free.",
     protMonitorName: "Automatic monitoring", protMonitorShort: "Daily monitoring & instant removal.",
-    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "No safeguard against re-listings.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection", delOk: "Profile can be removed", expertCta: "Talk to the Google experts", mostChosen: "Most chosen",
+    protLifetimeName: "Lifetime protection", protLifetimeShort: "Pay once, never worry again — permanent.", protNoneName: "No protection", protNoneDesc: "Can also be added later.", checkingH: "Checking profile …", checkSteps: ["Profile found", "Reviews analyzed", "Removability confirmed"], protOffContinue: "Continue without protection", delOk: "Profile can be removed", expertCta: "Talk to the Google experts", mostChosen: "Most chosen",
     protToggleOn: "On", protToggleOff: "Off",
     protOffTitle: "Unprotected — this is risky",
     protOffBody: "Without protection we will NOT remove a re-listed profile for free. Third parties — often competitors — frequently re-list it. You'd carry that risk alone.",
@@ -219,7 +219,7 @@ const CONV = {
     lastChanceTitle: "Última oportunidad: añade exprés",
     lastChanceDesc: "Perfil eliminado en ~6 h en lugar de ~24 — sin recargo si no cumplimos las 6 h.",
     afterSuccess: "Todo se paga solo tras el éxito.",
-    protStepLabel: "Protección · Paso 5", subtotal: "Subtotal", mostChosen: "Más elegido", protNoneName: "Sin protección", protNoneDesc: "Sin protección contra nuevas publicaciones.", checkingH: "Comprobando el perfil …", checkSteps: ["Perfil encontrado", "Reseñas analizadas", "Eliminación confirmada"], protOffContinue: "Continuar sin protección", delOk: "El perfil se puede eliminar", expertCta: "Habla con los expertos en Google",
+    protStepLabel: "Protección · Paso 5", subtotal: "Subtotal", mostChosen: "Más elegido", protNoneName: "Sin protección", protNoneDesc: "También se puede elegir más tarde.", checkingH: "Comprobando el perfil …", checkSteps: ["Perfil encontrado", "Reseñas analizadas", "Eliminación confirmada"], protOffContinue: "Continuar sin protección", delOk: "El perfil se puede eliminar", expertCta: "Habla con los expertos en Google",
     toProtect: "Continuar", toCheckout: "Continuar",
     totalAfter: "Total tras el éxito",
     doneCrossH: "¿Aún más para tu reputación?",
@@ -275,7 +275,7 @@ const CONV = {
     lastChanceTitle: "Dernière chance : ajouter l'express",
     lastChanceDesc: "Fiche supprimée en ~6 h au lieu de ~24 — sans supplément si nous dépassons les 6 h.",
     afterSuccess: "Tout n'est dû qu'après le succès.",
-    protStepLabel: "Protection · Étape 5", subtotal: "Sous-total", mostChosen: "Le plus choisi", protNoneName: "Sans protection", protNoneDesc: "Sans protection contre une réinscription.", checkingH: "Vérification de la fiche …", checkSteps: ["Fiche trouvée", "Avis analysés", "Suppression confirmée"], protOffContinue: "Continuer sans protection", delOk: "La fiche peut être supprimée", expertCta: "Parlez aux experts Google",
+    protStepLabel: "Protection · Étape 5", subtotal: "Sous-total", mostChosen: "Le plus choisi", protNoneName: "Sans protection", protNoneDesc: "Peut aussi être choisi plus tard.", checkingH: "Vérification de la fiche …", checkSteps: ["Fiche trouvée", "Avis analysés", "Suppression confirmée"], protOffContinue: "Continuer sans protection", delOk: "La fiche peut être supprimée", expertCta: "Parlez aux experts Google",
     toProtect: "Continuer", toCheckout: "Continuer",
     totalAfter: "Total après le succès",
     doneCrossH: "Encore plus pour votre réputation ?",
@@ -331,7 +331,7 @@ const CONV = {
     lastChanceTitle: "Ultima occasione: aggiungi express",
     lastChanceDesc: "Profilo rimosso in ~6 h invece di ~24 — nessun supplemento se non rispettiamo le 6 h.",
     afterSuccess: "Tutto dovuto solo dopo il successo.",
-    protStepLabel: "Protezione · Passo 5", subtotal: "Subtotale", mostChosen: "Più scelto", protNoneName: "Nessuna protezione", protNoneDesc: "Senza protezione da nuove pubblicazioni.", checkingH: "Verifica del profilo …", checkSteps: ["Profilo trovato", "Recensioni analizzate", "Rimozione confermata"], protOffContinue: "Continua senza protezione", delOk: "Il profilo può essere rimosso", expertCta: "Parla con gli esperti di Google",
+    protStepLabel: "Protezione · Passo 5", subtotal: "Subtotale", mostChosen: "Più scelto", protNoneName: "Nessuna protezione", protNoneDesc: "Può essere scelto anche in seguito.", checkingH: "Verifica del profilo …", checkSteps: ["Profilo trovato", "Recensioni analizzate", "Rimozione confermata"], protOffContinue: "Continua senza protezione", delOk: "Il profilo può essere rimosso", expertCta: "Parla con gli esperti di Google",
     toProtect: "Continua", toCheckout: "Continua",
     totalAfter: "Totale dopo il successo",
     doneCrossH: "Ancora di più per la tua reputazione?",
@@ -387,7 +387,7 @@ const CONV = {
     lastChanceTitle: "Laatste kans: express toevoegen",
     lastChanceDesc: "Profiel verwijderd in ~6 u in plaats van ~24 — geen toeslag als we de 6 u niet halen.",
     afterSuccess: "Alles pas verschuldigd na succes.",
-    protStepLabel: "Bescherming · Stap 5", subtotal: "Subtotaal", mostChosen: "Meest gekozen", protNoneName: "Geen bescherming", protNoneDesc: "Geen bescherming tegen herplaatsing.", checkingH: "Profiel wordt gecontroleerd …", checkSteps: ["Profiel gevonden", "Reviews geanalyseerd", "Verwijdering bevestigd"], protOffContinue: "Doorgaan zonder bescherming", delOk: "Profiel kan worden verwijderd", expertCta: "Praat met de Google-experts",
+    protStepLabel: "Bescherming · Stap 5", subtotal: "Subtotaal", mostChosen: "Meest gekozen", protNoneName: "Geen bescherming", protNoneDesc: "Kan ook later worden gekozen.", checkingH: "Profiel wordt gecontroleerd …", checkSteps: ["Profiel gevonden", "Reviews geanalyseerd", "Verwijdering bevestigd"], protOffContinue: "Doorgaan zonder bescherming", delOk: "Profiel kan worden verwijderd", expertCta: "Praat met de Google-experts",
     toProtect: "Verder", toCheckout: "Verder",
     totalAfter: "Totaal na succes",
     doneCrossH: "Nog meer voor uw reputatie?",
@@ -443,7 +443,7 @@ const CONV = {
     lastChanceTitle: "Última oportunidade: adicionar expresso",
     lastChanceDesc: "Perfil removido em ~6 h em vez de ~24 — sem taxa se não cumprirmos as 6 h.",
     afterSuccess: "Tudo só é devido após o sucesso.",
-    protStepLabel: "Proteção · Passo 5", subtotal: "Subtotal", mostChosen: "Mais escolhido", protNoneName: "Sem proteção", protNoneDesc: "Sem proteção contra reaparecimento.", checkingH: "A verificar o perfil …", checkSteps: ["Perfil encontrado", "Avaliações analisadas", "Remoção confirmada"], protOffContinue: "Continuar sem proteção", delOk: "O perfil pode ser removido", expertCta: "Fale com os especialistas em Google",
+    protStepLabel: "Proteção · Passo 5", subtotal: "Subtotal", mostChosen: "Mais escolhido", protNoneName: "Sem proteção", protNoneDesc: "Também pode ser escolhido mais tarde.", checkingH: "A verificar o perfil …", checkSteps: ["Perfil encontrado", "Avaliações analisadas", "Remoção confirmada"], protOffContinue: "Continuar sem proteção", delOk: "O perfil pode ser removido", expertCta: "Fale com os especialistas em Google",
     toProtect: "Continuar", toCheckout: "Continuar",
     totalAfter: "Total após o sucesso",
     doneCrossH: "Ainda mais para a sua reputação?",
@@ -499,7 +499,7 @@ const CONV = {
     lastChanceTitle: "最後のチャンス:エクスプレス追加",
     lastChanceDesc: "約24時間ではなく約6時間で削除 — 6時間に間に合わなければ追加料金なし。",
     afterSuccess: "お支払いはすべて成功後のみ。",
-    protStepLabel: "保護 · ステップ5", subtotal: "小計", mostChosen: "最も選ばれている", protNoneName: "保護なし", protNoneDesc: "再登録への保護はありません。", checkingH: "プロフィールを確認中 …", checkSteps: ["プロフィールを確認", "レビューを分析", "削除可能を確認"], protOffContinue: "保護なしで続行", delOk: "プロフィールは削除可能です", expertCta: "Googleの専門家に相談",
+    protStepLabel: "保護 · ステップ5", subtotal: "小計", mostChosen: "最も選ばれている", protNoneName: "保護なし", protNoneDesc: "後からでも選択できます。", checkingH: "プロフィールを確認中 …", checkSteps: ["プロフィールを確認", "レビューを分析", "削除可能を確認"], protOffContinue: "保護なしで続行", delOk: "プロフィールは削除可能です", expertCta: "Googleの専門家に相談",
     toProtect: "次へ", toCheckout: "次へ",
     totalAfter: "成功後の合計",
     doneCrossH: "評判のためにさらに?",
@@ -555,7 +555,7 @@ const CONV = {
     lastChanceTitle: "Sista chansen: lägg till express",
     lastChanceDesc: "Profil borttagen på ~6 h i stället för ~24 — inget tillägg om vi missar de 6 h.",
     afterSuccess: "Allt betalas först efter resultat.",
-    protStepLabel: "Skydd · Steg 5", subtotal: "Delsumma", mostChosen: "Mest vald", protNoneName: "Inget skydd", protNoneDesc: "Inget skydd mot återpublicering.", checkingH: "Kontrollerar profilen …", checkSteps: ["Profil hittad", "Omdömen analyserade", "Borttagning bekräftad"], protOffContinue: "Fortsätt utan skydd", delOk: "Profilen kan tas bort", expertCta: "Prata med Google-experterna",
+    protStepLabel: "Skydd · Steg 5", subtotal: "Delsumma", mostChosen: "Mest vald", protNoneName: "Inget skydd", protNoneDesc: "Kan även väljas senare.", checkingH: "Kontrollerar profilen …", checkSteps: ["Profil hittad", "Omdömen analyserade", "Borttagning bekräftad"], protOffContinue: "Fortsätt utan skydd", delOk: "Profilen kan tas bort", expertCta: "Prata med Google-experterna",
     toProtect: "Fortsätt", toCheckout: "Fortsätt",
     totalAfter: "Totalt efter resultat",
     doneCrossH: "Ännu mer för ditt rykte?",
@@ -611,7 +611,7 @@ const CONV = {
     lastChanceTitle: "Sidste chance: tilføj ekspres",
     lastChanceDesc: "Profil fjernet på ~6 t i stedet for ~24 — intet gebyr, hvis vi ikke når de 6 t.",
     afterSuccess: "Alt forfalder først efter resultat.",
-    protStepLabel: "Beskyttelse · Trin 5", subtotal: "Subtotal", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Ingen beskyttelse mod genopslag.", checkingH: "Tjekker profilen …", checkSteps: ["Profil fundet", "Anmeldelser analyseret", "Fjernelse bekræftet"], protOffContinue: "Fortsæt uden beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Tal med Google-eksperterne",
+    protStepLabel: "Beskyttelse · Trin 5", subtotal: "Subtotal", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Kan også vælges senere.", checkingH: "Tjekker profilen …", checkSteps: ["Profil fundet", "Anmeldelser analyseret", "Fjernelse bekræftet"], protOffContinue: "Fortsæt uden beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Tal med Google-eksperterne",
     toProtect: "Videre", toCheckout: "Videre",
     totalAfter: "I alt efter resultat",
     doneCrossH: "Endnu mere for dit omdømme?",
@@ -667,7 +667,7 @@ const CONV = {
     lastChanceTitle: "Siste sjanse: legg til ekspress",
     lastChanceDesc: "Profil fjernet på ~6 t i stedet for ~24 — ingen tillegg hvis vi ikke når de 6 t.",
     afterSuccess: "Alt forfaller først etter resultat.",
-    protStepLabel: "Beskyttelse · Trinn 5", subtotal: "Delsum", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Ingen beskyttelse mot gjenoppretting.", checkingH: "Sjekker profilen …", checkSteps: ["Profil funnet", "Omtaler analysert", "Fjerning bekreftet"], protOffContinue: "Fortsett uten beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Snakk med Google-ekspertene",
+    protStepLabel: "Beskyttelse · Trinn 5", subtotal: "Delsum", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Kan også velges senere.", checkingH: "Sjekker profilen …", checkSteps: ["Profil funnet", "Omtaler analysert", "Fjerning bekreftet"], protOffContinue: "Fortsett uten beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Snakk med Google-ekspertene",
     toProtect: "Videre", toCheckout: "Videre",
     totalAfter: "Totalt etter resultat",
     doneCrossH: "Enda mer for omdømmet ditt?",
@@ -1711,7 +1711,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
             </div>
             <div className="wz-actions" style={{ marginTop: 6 }}>
               <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              <button className="btn btn-primary grow" onClick={proceedFromSearch}>{w.s2.button} <Icon.arrowRight size={18} /></button>
+              <button className="btn btn-primary grow" onClick={proceedFromSearch}><span className="wz-lbl-full">{w.s2.button}</span><span className="wz-lbl-short">{conv.toCheckout}</span> <Icon.arrowRight size={18} /></button>
             </div>
           </div>
         )}
@@ -1866,7 +1866,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
         <div className="svc-cta">
           <div className="wz-actions">
             <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => go(5)}>{protection === null ? conv.protOffContinue : conv.toCheckout} <Icon.arrowRight size={18} /></button>
+            <button className="btn btn-primary grow" onClick={() => go(5)}>{protection === null ? <React.Fragment><span className="wz-lbl-full">{conv.protOffContinue}</span><span className="wz-lbl-short">{conv.toCheckout}</span></React.Fragment> : conv.toCheckout} <Icon.arrowRight size={18} /></button>
           </div>
         </div>
       </div>

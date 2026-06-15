@@ -264,6 +264,10 @@
 .co-submit-mobile{display:none;}
 @media(max-width:620px){ .co-submit-mobile{display:inline-flex;} }
 
+/* Button-Label kürzen: Volltext auf Desktop, „Weiter" mobil (in der fixen Leiste). */
+.wz-lbl-short{display:none;}
+@media(max-width:620px){ .wz-lbl-full{display:none;} .wz-lbl-short{display:inline;} }
+
 /* toggle add-on */
 .addon{border:1.5px solid var(--hairline);border-radius:var(--r-lg);padding:20px 22px;display:flex;gap:16px;align-items:center;background:#fff;}
 .addon.on{border-color:var(--primary);background:var(--orange-50);}

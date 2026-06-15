@@ -9,6 +9,7 @@ import { pagePath } from "@/lib/page-routes";
 import { fetchProfileById } from "@/lib/places";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
+import { WhatsAppFloat } from "@/components/Chrome";
 
 export default function App({ initialLang = "de", initialView = null, magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
@@ -85,6 +86,9 @@ export default function App({ initialLang = "de", initialView = null, magCards =
       {route === "home"
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
         : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
+      {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
+          im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
+      <WhatsAppFloat hideBubble={route === "wizard"} />
     </LangContext.Provider>
   );
 }

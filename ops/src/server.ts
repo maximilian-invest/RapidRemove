@@ -221,11 +221,15 @@ app.post("/order", async (req, reply) => {
   const html = await render(React.createElement(t.component, props));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
-  // 1) Kundenbestätigung (Presse: Eingangs-/Prüfungsbestätigung, sonst Auftragsbestätigung)
-  try {
-    await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
-    result.customer = true;
-  } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
+  // 1) Kundenbestätigung — nur noch für Presse-Anfragen (Eingangsbestätigung der kostenlosen
+  //    Prüfung). Die Auftragsbestätigung per E-Mail bei Bestellungen ist abgeschaltet (auf
+  //    Wunsch); der Kunde erhält den nächsten Schritt (Zahlungslink) separat.
+  if (isPress) {
+    try {
+      await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+      result.customer = true;
+    } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
+  }
 
   // 2) interne Benachrichtigung an das Postfach
   try {

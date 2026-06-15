@@ -396,7 +396,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
-          <button className="btn btn-primary" onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
+          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
         </div>
       </div>
     </React.Fragment>
@@ -468,11 +468,15 @@ function StickyCTA({ onStart }) {
 }
 
 /* ---- Chat-Widget: Tidio (ersetzt den früheren WhatsApp-Float; eigenes Bubble rechts unten) ---- */
-function WhatsAppFloat() {
+function WhatsAppFloat({ hideBubble = false }) {
   // Tidio positioniert sein iframe per Inline-Style und überschreibt Stylesheet-Regeln.
   // Deshalb: Versatz MOBIL direkt als Inline-Style mit important-Priorität setzen und
   // dauerhaft durchsetzen (Tidio schreibt seine Styles gelegentlich neu). Gilt nur für
   // die geschlossene Bubble — der geöffnete Chat bleibt unangetastet (Vollbild).
+  // hideBubble (im Wizard, mobil): geschlossene Bubble komplett ausblenden; der über
+  // einen Button geöffnete Chat wird beim 'open'-Event wieder eingeblendet.
+  const hideRef = React.useRef(hideBubble);
+  hideRef.current = hideBubble;
   React.useEffect(() => {
     const MQ = window.matchMedia("(max-width: 920px)");
     let open = false;
@@ -480,6 +484,8 @@ function WhatsAppFloat() {
     const apply = () => {
       const f = document.getElementById("tidio-chat-iframe");
       if (!f) return;
+      if (hideRef.current && MQ.matches && !open) { f.style.setProperty("display", "none", "important"); return; }
+      f.style.removeProperty("display");
       if (MQ.matches && !open) f.style.setProperty("bottom", LIFT, "important");
       else f.style.removeProperty("bottom");
     };
@@ -489,11 +495,8 @@ function WhatsAppFloat() {
     document.addEventListener("tidioChat-open", onOpen);
     document.addEventListener("tidioChat-close", onClose);
     if (MQ.addEventListener) MQ.addEventListener("change", apply); else MQ.addListener(apply);
-    // Durchsetzen: falls Tidio den Inline-Style neu setzt oder das iframe später erscheint.
-    const iv = setInterval(() => {
-      const f = document.getElementById("tidio-chat-iframe");
-      if (f && MQ.matches && !open && f.style.getPropertyValue("bottom") !== LIFT) apply();
-    }, 700);
+    // Durchsetzen: Tidio überschreibt Inline-Styles; außerdem wechselt hideBubble ohne Remount.
+    const iv = setInterval(apply, 600);
     apply();
     return () => {
       clearInterval(iv);

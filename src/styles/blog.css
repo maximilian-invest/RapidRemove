@@ -36,6 +36,8 @@
 .article-meta .am-ava{width:34px;height:34px;border-radius:50%;background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:14px;}
 .article-meta .am-dot{width:3px;height:3px;border-radius:50%;background:var(--hairline-strong);}
 @media(max-width:880px){.feat-article{grid-template-columns:1fr;}.feat-thumb{min-height:240px;}}
+/* Mobil: Titelgeschichte kompakter (weniger Padding/Höhe). */
+@media(max-width:620px){.feat-article{margin-top:26px;}.feat-thumb{min-height:150px;padding:18px;}.feat-body{padding:22px 20px;}.feat-body h2{margin-bottom:10px;}.feat-body p{margin-bottom:16px;}}
 
 /* ---- Authority stats band ---- */
 .mag-authority{background:var(--ink-canvas);color:#fff;padding:64px 0;position:relative;overflow:hidden;}

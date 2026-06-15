@@ -5,7 +5,7 @@ import { pagePath } from "@/lib/page-routes";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
-import { useReveal, CountUp, Nav, Footer, StickyCTA, WhatsAppFloat, openChat } from "@/components/Chrome";
+import { useReveal, CountUp, Nav, Footer, StickyCTA, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
@@ -693,7 +693,6 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <FinalCTA onStart={onStart} />
       <Footer onStart={() => onStart()} onBlog={onBlog} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
       <StickyCTA onStart={() => onStart()} />
-      <WhatsAppFloat />
     </React.Fragment>);
 
 }
