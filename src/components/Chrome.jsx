@@ -480,11 +480,23 @@ function WhatsAppFloat({ hideBubble = false }) {
   React.useEffect(() => {
     const MQ = window.matchMedia("(max-width: 920px)");
     let open = false;
+    let lastHide = null;
     const LIFT = "calc(106px + env(safe-area-inset-bottom))";
     const apply = () => {
+      const wantHide = hideRef.current && MQ.matches && !open;
+      // Offizielle Tidio-API – blendet den Launcher zuverlässig aus (unabhängig vom DOM-Aufbau).
+      if (wantHide !== lastHide) {
+        try {
+          if (window.tidioChatApi) {
+            if (wantHide) window.tidioChatApi.hide(); else window.tidioChatApi.show();
+            lastHide = wantHide; // erst als erledigt markieren, wenn die API wirklich da war
+          }
+        } catch (e) {}
+      }
+      // Fallback direkt am iframe + Mobil-Versatz der geschlossenen Bubble.
       const f = document.getElementById("tidio-chat-iframe");
       if (!f) return;
-      if (hideRef.current && MQ.matches && !open) { f.style.setProperty("display", "none", "important"); return; }
+      if (wantHide) { f.style.setProperty("display", "none", "important"); return; }
       f.style.removeProperty("display");
       if (MQ.matches && !open) f.style.setProperty("bottom", LIFT, "important");
       else f.style.removeProperty("bottom");
