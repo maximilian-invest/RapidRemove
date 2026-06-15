@@ -581,6 +581,7 @@ const PAYLINK_SMS = {
   no: (n, url) => `Hei ${n}, din RapidRemove-betalingslenke: ${url} – betaling først etter vellykket fjerning.`,
 };
 const payLinkSmsText = (o, url) => (PAYLINK_SMS[o.lang] || PAYLINK_SMS.en)(o.name || "", url);
+const PAYLINK_PLACEHOLDER = "[Zahlungslink hier einfügen]";
 
 /* ---------- Order drawer ---------- */
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
@@ -670,9 +671,18 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
                           protType: o.protection || "", express: !!o.express,
                         });
                         setSmsMsg(payLinkSmsText(o, url));
-                      } catch (e) { toast("Zahlungslink: " + e.message); }
+                      } catch (e) {
+                        // Kein passender Stripe-Link (häufig im DACH-Raum) → trotzdem die
+                        // Vorlage einsetzen; der Link wird dann manuell eingefügt.
+                        setSmsMsg(payLinkSmsText(o, PAYLINK_PLACEHOLDER));
+                        toast("Kein hinterlegter Stripe-Link — Vorlage eingefügt, Link bitte ersetzen.");
+                      }
                       finally { setSmsLinkBusy(false); }
                     }}><AI.creditCard /> {smsLinkBusy ? "Lädt…" : "Zahlungslink einfügen"}</button>
+                  <button className="btn btn-ghost btn-sm" type="button"
+                    onClick={() => setSmsMsg(payLinkSmsText(o, PAYLINK_PLACEHOLDER))}>
+                    <AI.creditCard /> Vorlage · Link selbst
+                  </button>
                 </div>
                 <textarea className="sms-ta" value={smsMsg} onChange={(e) => setSmsMsg(e.target.value)} maxLength={612} rows={3}
                   placeholder={"SMS an " + o.phone + " …"} />
@@ -1518,8 +1528,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 /* ---------- SMS modal ---------- */
 function SmsModal({ order, onClose, toast }) {
   const [text, setText] = React.useState("");
-  React.useEffect(() => { if (order) setText("Hallo " + order.name.split(" ")[0] + ", kurze Info zu Ihrer Bestellung " + order.id + ": "); }, [order]);
+  const [busy, setBusy] = React.useState(false);
+  const [linkBusy, setLinkBusy] = React.useState(false);
+  React.useEffect(() => { if (order) setText("Hallo " + (order.name || "").split(" ")[0] + ", kurze Info zu Ihrer Bestellung " + order.id + ": "); }, [order]);
   if (!order) return <div className="modal-scrim"></div>;
+  const o = order;
   return (
     <div className="modal-scrim open" onClick={onClose}>
       <div className="modal" style={{ width: 480 }} onClick={(e) => e.stopPropagation()}>
@@ -1529,12 +1542,44 @@ function SmsModal({ order, onClose, toast }) {
           <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
         </div>
         <div className="modal-body">
-          <div className="fld"><label>Nachricht ({text.length}/160)</label><textarea maxLength={160} style={{ minHeight: 100 }} value={text} onChange={(e) => setText(e.target.value)}></textarea></div>
+          <div className="sms-tpls" style={{ marginBottom: 10 }}>
+            <button className="btn btn-ghost btn-sm" type="button" disabled={linkBusy}
+              onClick={async () => {
+                setLinkBusy(true);
+                try {
+                  const url = await fetchPayLinkUrl({
+                    service: o.service, protection: o.protection || "none",
+                    currency: o.country === "US" ? "usd" : "eur",
+                    serviceAmount: o.amount || 0,
+                    protAmount: (o.protection && o.protAmount) ? o.protAmount : 0,
+                    protType: o.protection || "", express: !!o.express,
+                  });
+                  setText(payLinkSmsText(o, url));
+                } catch (e) {
+                  setText(payLinkSmsText(o, PAYLINK_PLACEHOLDER));
+                  toast("Kein hinterlegter Stripe-Link — Vorlage eingefügt, Link bitte ersetzen.");
+                } finally { setLinkBusy(false); }
+              }}><AI.creditCard /> {linkBusy ? "Lädt…" : "Zahlungslink einfügen"}</button>
+            <button className="btn btn-ghost btn-sm" type="button"
+              onClick={() => setText(payLinkSmsText(o, PAYLINK_PLACEHOLDER))}>
+              <AI.creditCard /> Vorlage · Link selbst
+            </button>
+          </div>
+          <div className="fld"><label>Nachricht ({text.length}/612)</label><textarea maxLength={612} style={{ minHeight: 100 }} value={text} onChange={(e) => setText(e.target.value)}></textarea></div>
         </div>
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto" }}>Versand per SMS-Gateway</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" onClick={() => { onClose(); toast("SMS an " + order.name + " gesendet ✓"); }}><AI.send /> Senden</button>
+          <button className="btn btn-pri" disabled={busy || !text.trim()}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await sendSms({ to: o.phone, message: text, orderId: o.id, country: o.country });
+                toast("SMS an " + o.name + " gesendet ✓");
+                onClose();
+              } catch (e) { toast("SMS fehlgeschlagen: " + e.message); }
+              finally { setBusy(false); }
+            }}><AI.send /> {busy ? "Senden…" : "Senden"}</button>
         </div>
       </div>
     </div>
