@@ -108,7 +108,7 @@ export function langUrlsForArticle(deSlug) {
 // Resolve an article's "related" list to same-language on-site links (de fallback).
 export function resolveRelated(lang, relatedList) {
   return (relatedList || []).map((r) => {
-    const slug = r.url.replace(/^https?:\/\/rapid-remove\.com\//, "").replace(/\/$/, "");
+    const slug = r.url.replace(/^https?:\/\/(www\.)?rapid-remove\.com\//, "").replace(/\/$/, "");
     let href = null;
     // Flagship-Hub gibt es bislang nur auf Deutsch → in Fremdsprachen NICHT auf den
     // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte

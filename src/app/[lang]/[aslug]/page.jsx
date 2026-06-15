@@ -66,7 +66,7 @@ export function generateMetadata({ params }) {
     title: m.title,
     description: m.description,
     alternates: { canonical: url, languages: hreflangForArticle(r.deSlug) },
-    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE], publishedTime: m.date, modifiedTime: m.date, authors: [m.author] },
+    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE], publishedTime: m.date, modifiedTime: m.date, authors: [authorFor(r.deSlug).name] },
   };
 }
 

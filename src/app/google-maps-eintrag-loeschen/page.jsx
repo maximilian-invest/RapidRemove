@@ -1,9 +1,14 @@
 /* Route: /google-maps-eintrag-loeschen (German SEO article, with hreflang to translations) */
 import MagArticle from "@/components/MagArticle";
-import data from "@/lib/articles/google-maps-eintrag-loeschen";
+import source from "@/lib/articles/google-maps-eintrag-loeschen";
 import { SITE_URL, uiFor } from "@/lib/articles/registry";
 import { hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd } from "@/lib/articles/catalog";
 import { OG_IMAGE } from "@/lib/locales-meta";
+import { authorFor, roleFor, authorPath } from "@/lib/authors";
+
+// Autor deterministisch über den deutschen Slug (neues Autorensystem) — Byline + Link auf /autor/…
+const author = authorFor(source.meta.slug);
+const data = { ...source, meta: { ...source.meta, author: author.name, authorRole: roleFor(author, "de"), authorHref: authorPath(author) } };
 
 const url = `${SITE_URL}/${data.meta.slug}`;
 const ui = uiFor("de");
