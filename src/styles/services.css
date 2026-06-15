@@ -48,6 +48,8 @@
 .svc-card .s-link svg{width:16px;height:16px;transition:transform var(--dur);}
 .svc-card:hover .s-link svg{transform:translateX(3px);}
 @media(max-width:880px){.svc-trio{grid-template-columns:1fr;}}
+/* Mobil: Service-Karten ohne führendes Icon (konsistent mit den Wizard-Tiles, mehr Platz). */
+@media(max-width:620px){.svc-card .si{display:none;}}
 
 /* ---- Wizard router (Step 0) ---- */
 .router{max-width:680px;margin:0 auto;}
