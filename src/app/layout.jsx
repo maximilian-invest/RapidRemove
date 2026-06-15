@@ -45,12 +45,18 @@ export default function RootLayout({ children }) {
       <body>
         {/* Tracking (GTM, FirstPromoter, Attribution) lädt consent-gated über <Consent /> am Ende des Body. */}
 
-        {/* Structured data (site-wide): Organization + Service. Kein eigenes
-           Review-/Rating-/Product-Markup für die eigene Organisation (Google
-           untersagt self-serving Bewertungs-Markup). URLs einheitlich non-www
-           (= canonical). Trustpilot nur als sameAs-Verweis, ohne Rating. */}
+        {/* Structured data (site-wide): Organization + Service + Rich-Snippets
+           (AggregateRating/Review/Product). Bewertungen stammen von Trustpilot
+           (Drittquelle, deshalb als Review mit author=Trustpilot ausgewiesen).
+           Hinweis: Google zeigt self-serving Rating-Markup ggf. nicht an. */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org","@type":"Organization","url":"https://rapid-remove.com","logo":"https://assets.simplesolution.at/logo-rapid-remove.png","name":"RapidRemove","description":"RapidRemove is an Austrian company specializing in the removal of Google Business Profiles and online reputation management. Based in Hallein, Salzburg.","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","address":{"@type":"PostalAddress","streetAddress":"Salzgasse 2","addressLocality":"Hallein","addressRegion":"Salzburg","postalCode":"5400","addressCountry":"AT"},"vatID":"ATU72401536","image":"https://assets.simplesolution.at/rapid-remove-product-image.jpg","sameAs":["https://www.trustpilot.com/review/rapid-remove.com"]}` }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Service","name":"Google Business Profile Removal Service","description":"Complete and permanent removal of a Google Business Profile, including all reviews. Specialized online reputation management via Google's official channels.","provider":{"@type":"Organization","name":"RapidRemove","logo":"https://assets.simplesolution.at/rapid-remove-logo.jpg","url":"https://rapid-remove.com","contactPoint":{"@type":"ContactPoint","contactType":"Customer Service","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","hoursAvailable":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"17:00","address":{"@type":"PostalAddress","addressLocality":"Hallein","addressCountry":"AT","streetAddress":"Salzgasse 2","postalCode":"5400"}}]}},"areaServed":{"@type":"Place","name":"Worldwide"},"serviceType":"Online Reputation Management","offers":{"@type":"Offer","url":"https://rapid-remove.com/profil-pruefen/","priceCurrency":"EUR","price":"450","itemCondition":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"}}` }} />
+
+        {/* Rich snippet: Organisation-Rating (Quelle: Trustpilot) */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"AggregateRating","ratingValue":"4.9","reviewCount":"266","itemReviewed":{"@type":"Organization","name":"RapidRemove","url":"https://www.rapid-remove.com"}}` }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Review","author":{"@type":"Organization","name":"Trustpilot"},"reviewRating":{"@type":"Rating","ratingValue":"4.9"},"reviewBody":"Ratings are sourced from Trustpilot.","itemReviewed":{"@type":"Organization","name":"RapidRemove","url":"https://www.rapid-remove.com"},"url":"https://www.trustpilot.com/review/rapid-remove.com"}` }} />
+        {/* Rich snippet: Produkt-Bewertungen */}
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Product","name":"RapidRemove","image":"https://assets.simplesolution.at/logo-rapid-remove.png","aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":266,"bestRating":5}}` }} />
 
         {children}
         <Consent />
