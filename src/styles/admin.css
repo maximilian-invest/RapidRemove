@@ -196,7 +196,13 @@ button{font-family:inherit;}
 .cust-head .ca{width:46px;height:46px;border-radius:50%;background:var(--orange-100);color:var(--orange-800);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:18px;flex:none;}
 .cust-head .cn{font-family:var(--font-display);font-weight:600;font-size:16px;}
 .cust-head .cm{font-size:13px;color:var(--fg-muted);}
-.cust-acts{display:flex;gap:8px;margin-top:14px;}
+.cust-acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+/* SMS-Composer (klappt unter den Kontakt-Aktionen auf) */
+.sms-box{margin-top:10px;border:1px solid var(--hairline,#e7e2db);border-radius:12px;padding:10px;background:var(--neutral-50,#faf8f5);}
+.sms-ta{width:100%;border:1px solid var(--hairline,#e7e2db);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:14px;line-height:1.5;color:var(--fg,#1c1916);resize:vertical;background:#fff;}
+.sms-ta:focus{outline:none;border-color:var(--primary,#ff8000);box-shadow:0 0 0 3px rgba(255,128,0,.14);}
+.sms-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px;}
+.sms-count{font-size:12px;font-weight:700;color:var(--fg-muted,#8a8079);}
 
 /* ---- Email templates ---- */
 .tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}

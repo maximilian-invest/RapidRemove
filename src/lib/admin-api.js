@@ -34,6 +34,23 @@ export async function sendAdminEmail({ to, subject, text, orderId, label }) {
   return res.json().catch(() => ({ ok: true }));
 }
 
+/** Sendet eine SMS an die Kunden-Telefonnummer über das ops-Backend (ClickSend). */
+export async function sendSms({ to, message, orderId, country }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/send-sms", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, to, message, orderId: orderId || "", country: country || "" }),
+  });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    let msg = "HTTP " + res.status;
+    try { const j = JSON.parse(t); if (j && j.error) msg = j.error; } catch (e) { if (t) msg += " · " + t.slice(0, 120); }
+    throw new Error(msg);
+  }
+  return res.json().catch(() => ({ ok: true }));
+}
+
 /* ---- Live-Daten fürs Dashboard (DB-Zeilen → Admin-Anzeigeform) ---- */
 function fmtDate(iso) {
   const d = new Date(iso);

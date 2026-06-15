@@ -4,7 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -516,6 +516,9 @@ function Orders({ orders, openOrder, query }) {
 /* ---------- Order drawer ---------- */
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
   const now = useNow(1000);
+  const [smsOpen, setSmsOpen] = React.useState(false);
+  const [smsMsg, setSmsMsg] = React.useState("");
+  const [smsBusy, setSmsBusy] = React.useState(false);
   if (!order) return <React.Fragment><div className="drawer-scrim"></div><div className="drawer"></div></React.Fragment>;
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Ansicht
@@ -577,8 +580,28 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
             <div className="cust-acts">
               <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
               <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
-              <a className="btn btn-sec btn-sm" href="#"><Icon.whatsapp /> WhatsApp</a>
+              <a className="btn btn-sec btn-sm" href={"https://wa.me/" + o.phone.replace(/[^0-9]/g, "")} target="_blank" rel="noopener noreferrer"><Icon.whatsapp /> WhatsApp</a>
+              {o.phone ? <button className={"btn btn-sm" + (smsOpen ? " btn-pri" : " btn-sec")} onClick={() => setSmsOpen((v) => !v)}><Icon.message /> SMS senden</button> : null}
             </div>
+            {smsOpen && (
+              <div className="sms-box">
+                <textarea className="sms-ta" value={smsMsg} onChange={(e) => setSmsMsg(e.target.value)} maxLength={612} rows={3}
+                  placeholder={"SMS an " + o.phone + " …"} />
+                <div className="sms-foot">
+                  <span className="sms-count">{smsMsg.length}/612</span>
+                  <button className="btn btn-pri btn-sm" disabled={smsBusy || !smsMsg.trim()}
+                    onClick={async () => {
+                      setSmsBusy(true);
+                      try {
+                        await sendSms({ to: o.phone, message: smsMsg, orderId: o.id, country: o.country });
+                        toast("SMS an " + o.name + " gesendet ✓");
+                        setSmsMsg(""); setSmsOpen(false);
+                      } catch (e) { toast("SMS fehlgeschlagen: " + e.message); }
+                      finally { setSmsBusy(false); }
+                    }}><AI.send /> {smsBusy ? "Senden…" : "Senden"}</button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* profile / service (Presse: zu prüfende Inhalte statt Google-Profil) */}

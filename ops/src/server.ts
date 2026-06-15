@@ -9,6 +9,7 @@ import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
+import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
@@ -319,6 +320,27 @@ app.post("/check", async (req, reply) => {
 app.post("/admin/verify", async (req) => {
   const b = (req.body || {}) as Record<string, unknown>;
   return { ok: !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN };
+});
+
+// Admin-Dashboard: SMS an die Kunden-Telefonnummer (ClickSend), token-geschützt.
+app.post("/admin/send-sms", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = clip(b.to, 32);
+  const message = clip(b.message, 612);
+  const country = (clip(b.country, 2).toUpperCase() || undefined);
+  if (!to || (to.replace(/[^0-9]/g, "").length < 6)) return reply.code(400).send({ ok: false, error: "ungültige Telefonnummer" });
+  if (!message) return reply.code(400).send({ ok: false, error: "Nachricht fehlt" });
+  if (!hasClickSend()) return reply.code(503).send({ ok: false, error: "SMS nicht konfiguriert (CLICKSEND_USERNAME/CLICKSEND_API_KEY im Backend setzen)" });
+  try {
+    const r = await sendSms(to, message, country);
+    if (!r.ok) return reply.code(502).send({ ok: false, error: r.error || "SMS-Versand fehlgeschlagen" });
+    const oid = clip(b.orderId, 40);
+    if (oid) await insertEvent({ orderId: oid, type: "sms", title: "SMS gesendet", detail: "an " + to + " · " + message.slice(0, 100) });
+    return { ok: true, status: r.status };
+  } catch (e: any) {
+    return reply.code(500).send({ ok: false, error: e?.message || "Fehler beim SMS-Versand" });
+  }
 });
 
 // Admin-Dashboard: frei verfasste E-Mail aus dem Composer versenden (token-geschützt)
