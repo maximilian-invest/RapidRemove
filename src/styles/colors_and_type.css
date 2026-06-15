@@ -10,7 +10,9 @@
    Hanken Grotesk    → body / UI / labels (clear, full ä ö ü ß)
    The active brand pairing. Swap for licensed faces if available.
    ------------------------------------------------------------ */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap');
+/* Google-Fonts werden per <link rel="stylesheet"> im <head> (src/app/layout.jsx)
+   geladen — schneller als @import (kein serieller Download über die Haupt-CSS),
+   inkl. Preconnect zu fonts.gstatic.com. display=swap bleibt aktiv. */
 
 :root {
   /* ===== Brand orange scale ===== */

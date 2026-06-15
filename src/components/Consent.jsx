@@ -68,21 +68,28 @@ function runAttribution() {
 function loadTrackers() {
   if (typeof window === "undefined" || window.__rrTrackersLoaded) return;
   window.__rrTrackersLoaded = true;
-  // Google Tag Manager
+  // Billige Vorbereitung SOFORT: dataLayer + Queues stehen, Events/Klicks sammeln sich darin.
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-  const g = document.createElement("script");
-  g.async = true; g.src = "https://www.googletagmanager.com/gtm.js?id=" + GTM_ID;
-  document.head.appendChild(g);
-  // FirstPromoter (Affiliate)
   const w = window;
   w.fpr = w.fpr || function () { w.fpr.q = w.fpr.q || []; w.fpr.q[arguments[0] === "set" ? "unshift" : "push"](arguments); };
   w.fpr("init", { cid: FPR_CID });
   w.fpr("click");
-  const f = document.createElement("script");
-  f.async = true; f.src = "https://cdn.firstpromoter.com/fpr.js";
-  document.head.appendChild(f);
   runAttribution();
+  // Schwere Skripte (gtm.js, fpr.js) erst nach 'load' + im Idle anhängen → blockiert den
+  // kritischen Renderpfad nicht (CWV). GTM/FirstPromoter verarbeiten die gequeueten
+  // Events/Klicks beim Laden nach.
+  const inject = () => {
+    const g = document.createElement("script");
+    g.async = true; g.src = "https://www.googletagmanager.com/gtm.js?id=" + GTM_ID;
+    document.head.appendChild(g);
+    const f = document.createElement("script");
+    f.async = true; f.src = "https://cdn.firstpromoter.com/fpr.js";
+    document.head.appendChild(f);
+  };
+  const ric = window.requestIdleCallback || ((cb) => setTimeout(cb, 1));
+  if (document.readyState === "complete") ric(inject);
+  else window.addEventListener("load", () => ric(inject), { once: true });
 }
 
 export default function Consent() {

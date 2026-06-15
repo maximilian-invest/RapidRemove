@@ -477,6 +477,19 @@ function WhatsAppFloat({ hideBubble = false }) {
   // einen Button geöffnete Chat wird beim 'open'-Event wieder eingeblendet.
   const hideRef = React.useRef(hideBubble);
   hideRef.current = hideBubble;
+  // Tidio erst bei erster Interaktion (oder nach kurzer Idle-Zeit) laden — hält den
+  // kritischen Renderpfad frei (CWV). Ein Klick auf einen Chat-Button zählt als Interaktion;
+  // openTidioChat wartet ohnehin auf 'tidioChat-ready'.
+  const [tidioLoad, setTidioLoad] = React.useState(false);
+  React.useEffect(() => {
+    if (tidioLoad) return;
+    const evs = ["pointerdown", "keydown", "touchstart", "scroll"];
+    let timer;
+    const trigger = () => { evs.forEach((e) => window.removeEventListener(e, trigger)); clearTimeout(timer); setTidioLoad(true); };
+    evs.forEach((e) => window.addEventListener(e, trigger, { passive: true }));
+    timer = setTimeout(trigger, 5000); // Fallback: Bubble erscheint auch ohne Interaktion
+    return () => { evs.forEach((e) => window.removeEventListener(e, trigger)); clearTimeout(timer); };
+  }, [tidioLoad]);
   React.useEffect(() => {
     const MQ = window.matchMedia("(max-width: 920px)");
     let open = false;
@@ -518,7 +531,7 @@ function WhatsAppFloat({ hideBubble = false }) {
       if (MQ.removeEventListener) MQ.removeEventListener("change", apply); else MQ.removeListener(apply);
     };
   }, []);
-  return <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" />;
+  return tidioLoad ? <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" /> : null;
 }
 
 /* Öffnet den Tidio-Live-Chat. Ersetzt frühere WhatsApp-/„Kontakt"-Links überall auf der Seite.

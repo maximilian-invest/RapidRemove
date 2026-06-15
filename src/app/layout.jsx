@@ -49,6 +49,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="de">
       <body>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" />
         <link rel="preconnect" href="https://assets.simplesolution.at" />
         <link rel="dns-prefetch" href="https://code.tidio.co" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
