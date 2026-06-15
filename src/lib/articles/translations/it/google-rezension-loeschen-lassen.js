@@ -59,7 +59,7 @@ const article = {
       "**nuovo inizio opzionale** con un profilo pulito",
     ] },
     { t: "warn", title: "Importante", text: "La rimozione del profilo elimina il **profilo completo**, non una singola recensione. Chi vuole solo eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato." },
-    { t: "cta", title: "Profilo danneggiato in modo permanente? Verifica gratis la fattibilità.", text: "In pochi secondi vedrai se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },
+    { t: "cta", title: "Profilo danneggiato in modo permanente? Verifica gratis la fattibilità.", text: "In pochi secondi vedrai se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },
   ],
   faq: [
     { q: "Posso eliminare la mia recensione Google?", a: "Sì. In Google Maps apri «I tuoi contributi», seleziona la recensione e premi «Elimina recensione» nel menu a tre puntini. È gratis e possibile in qualsiasi momento." },
@@ -70,10 +70,10 @@ const article = {
     { q: "RapidRemove elimina singole recensioni?", a: "No. RapidRemove rimuove l'intero profilo dell'attività; tutte le recensioni spariscono con esso. Una singola recensione mantenendo il profilo si rimuove tramite segnalazione o un avvocato." },
   ],
   related: [
-    { label: "Eliminare recensioni Google: costi e metodi", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

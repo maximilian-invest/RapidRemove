@@ -45,7 +45,7 @@ const article = {
       ["Spezialisierte Anwälte (Einzelrezension)", "ca. 100 – 159 € / Rezension", "ca. 90 %, langsam"],
       ["Profil-Löschung (RapidRemove)", "Fixpreis, zahlbar nach Erfolg", "garantiert (alle Rezensionen weg)"],
     ] },
-    { t: "cta", title: "Rezension hält sich hartnäckig?", text: "Firmennamen eingeben – kostenlose Einschätzung in Sekunden.", btn: "Gratis-Check starten", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Rezension hält sich hartnäckig?", text: "Firmennamen eingeben – kostenlose Einschätzung in Sekunden.", btn: "Gratis-Check starten", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "kostenlos-vs", text: "Kostenlos vs. kostenpflichtig: was bringt was?", toc: "Kostenlos vs. bezahlt" },
     { t: "p", text: "Der kostenlose Weg über das Formular lohnt sich immer als **erster Versuch** – besonders bei offensichtlichem Spam. Die Realität ist allerdings ernüchternd: Google prüft überwiegend automatisiert und lehnt viele Meldungen mit Standard-Textbausteinen ab. Bleibt der Erfolg aus, ist eine **professionelle Löschung** der nächste Schritt. Achten Sie dabei auf **Erfolgshonorar** – so tragen Sie kein Kostenrisiko, wenn die Löschung nicht klappt." },
@@ -63,7 +63,7 @@ const article = {
       "**optionaler Neuanfang** mit sauberem Profil",
     ] },
     { t: "warn", title: "Wichtig", text: "Die Profil-Löschung entfernt das **gesamte Profil**, nicht eine einzelne Rezension. Wer nur eine einzelne Rezension entfernen und das Profil behalten möchte, nutzt das Melden oder den Anwaltsweg." },
-    { t: "cta", title: "Profil dauerhaft beschädigt? Prüfen Sie die Löschbarkeit – kostenlos.", text: "In Sekunden sehen Sie, ob und wie schnell sich Ihr Profil samt aller Rezensionen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
+    { t: "cta", title: "Profil dauerhaft beschädigt? Prüfen Sie die Löschbarkeit – kostenlos.", text: "In Sekunden sehen Sie, ob und wie schnell sich Ihr Profil samt aller Rezensionen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
   ],
   faq: [
     { q: "Kann ich eine eigene Google-Rezension wieder löschen?", a: "Ja. Öffnen Sie in Google Maps „Meine Beiträge“, wählen Sie die Rezension und klicken Sie im Drei-Punkt-Menü auf „Rezension löschen“. Das ist kostenlos und jederzeit möglich." },
@@ -74,11 +74,11 @@ const article = {
     { q: "Löscht RapidRemove einzelne Rezensionen?", a: "Nein. RapidRemove entfernt das gesamte Unternehmensprofil; alle Rezensionen verschwinden dabei mit. Eine einzelne Rezension bei Erhalt des Profils entfernt man über das Melden oder einen Anwalt." },
   ],
   related: [
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Schlechte Google-Bewertung – was tun?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

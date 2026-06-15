@@ -70,7 +70,7 @@ const article = {
       ["プロフィール削除（RapidRemove）", "定額・成功後払い", "全クチコミ消去・成功時のみ支払い"],
     ] },
     { t: "p", text: "極端に安い提案には注意が必要です。品質やサポートが大きく異なることが多いからです。**成功報酬**かどうかを確認しましょう。良心的な提供者は削除成功後にのみ請求するため、費用リスクを負いません。" },
-    { t: "cta", title: "あなたのクチコミが削除できるか、今すぐ無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証付き", "リスクなし"] },
+    { t: "cta", title: "あなたのクチコミが削除できるか、今すぐ無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証付き", "リスクなし"] },
 
     { t: "h2", id: "vergleich", text: "手段を直接比較", toc: "直接比較" },
     { t: "table", rrCol: 1, head: ["基準", "RapidRemove（プロフィール削除）", "弁護士（法的手段）", "自分で報告"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "ストライサンド効果とは？", a: "クチコミへの法的手段がかえって投稿者を刺激し、さらなる悪評を招くことです。技術的削除は直接対決なしに機能するため、このリスクを避けられます。" },
   ],
   related: [
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Googleの偽クチコミを報告して削除する", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "コメントなしの星1つのクチコミを削除する", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "弁護士か技術的削除か：本当に得なのは？", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "弁護士か技術的削除か：本当に得なのは？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

@@ -59,7 +59,7 @@ const article = {
       "クリーンなプロフィールで**任意の再出発**",
     ] },
     { t: "warn", title: "重要", text: "プロフィール削除は**プロフィール全体**を取り除くもので、クチコミ1件ではありません。クチコミ1件だけ消してプロフィールを残したい人は、報告か弁護士の道を使います。" },
-    { t: "cta", title: "プロフィールが恒久的に傷ついた？削除可能性を無料で確認。", text: "数秒で、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが分かります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
+    { t: "cta", title: "プロフィールが恒久的に傷ついた？削除可能性を無料で確認。", text: "数秒で、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが分かります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
     { q: "自分のGoogleクチコミを削除できますか？", a: "はい。Googleマップで「自分の投稿」を開き、クチコミを選んで3点メニューの「クチコミを削除」をクリックします。無料でいつでも可能です。" },
@@ -70,10 +70,10 @@ const article = {
     { q: "RapidRemoveは個々のクチコミを削除しますか？", a: "いいえ。RapidRemoveはビジネスプロフィール全体を削除し、すべてのクチコミが一緒に消えます。プロフィールを残して個々のクチコミを消すには、報告か弁護士で行います。" },
   ],
   related: [
-    { label: "Googleのクチコミを削除：費用と手段", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Googleの偽クチコミを報告して削除する", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Googleのクチコミを削除：費用と手段", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

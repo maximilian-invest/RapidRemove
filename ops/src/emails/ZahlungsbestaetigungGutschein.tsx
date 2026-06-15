@@ -163,7 +163,7 @@ export function subject(p: ZahlungsbestaetigungGutscheinProps = {}): string {
 
 export default function ZahlungsbestaetigungGutschein({
   lang = "de",
-  invoiceUrl = "https://rapid-remove.com",
+  invoiceUrl = "https://www.rapid-remove.com",
   friendUrl = "https://www.rapid-remove.com/de?friend={{email}}",
 }: ZahlungsbestaetigungGutscheinProps = {}) {
   const t = T[lang] || T.de;

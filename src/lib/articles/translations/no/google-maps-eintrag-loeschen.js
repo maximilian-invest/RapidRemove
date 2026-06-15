@@ -54,7 +54,7 @@ const article = {
       "**SEO-vennlig:** nettstedet og rangeringen din forblir uberørt",
       "**Garantert:** dukker profilen opp igjen via tredjepart, fjernes den uten kostnad",
     ] },
-    { t: "cta", title: "Sjekk gratis om din Maps-oppføring kan fjernes.", text: "Skriv inn bedriftsnavnet – vi sjekker på sekunder om og hvor raskt profilen din inkludert alle anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
+    { t: "cta", title: "Sjekk gratis om din Maps-oppføring kan fjernes.", text: "Skriv inn bedriftsnavnet – vi sjekker på sekunder om og hvor raskt profilen din inkludert alle anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
   ],
   faq: [
     { q: "Hvordan fjerner jeg min egen Google Maps-oppføring?", a: "Via «Din bedriftsprofil» → innstillinger → tre-prikker-menyen → «Fjern bedriftsprofilen» → «Fjern profilinnhold og administratorer». Merk: dette kobler bare oppføringen fra kontoen din, men fjerner den ikke fra Maps." },
@@ -64,10 +64,10 @@ const article = {
     { q: "Kan jeg få fjernet en Google Maps-oppføring varig?", a: "Fullstendig og varig inkludert anmeldelsene skjer det normalt via et spesialisert byrå, siden Google ikke tilbyr selvfjerning. Den tekniske fjerningen skjer ofte innen 24 timer — betaling først etter suksess." },
   ],
   related: [
-    { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Fjerne Google-anmeldelser: pris og metoder", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Rapporter og fjern en falsk Google-anmeldelse", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Fjerne Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Rapporter og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

@@ -59,7 +59,7 @@ const article = {
       "**optional fresh start** with a clean profile",
     ] },
     { t: "warn", title: "Important", text: "Profile removal removes the **entire profile**, not a single review. Anyone who only wants to remove one review and keep the profile should use reporting or the legal route." },
-    { t: "cta", title: "Profile permanently damaged? Check removability – for free.", text: "In seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
+    { t: "cta", title: "Profile permanently damaged? Check removability – for free.", text: "In seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [
     { q: "Can I delete my own Google review?", a: "Yes. In Google Maps open “Your contributions”, select the review and click “Delete review” in the three-dot menu. It's free and possible at any time." },
@@ -70,10 +70,10 @@ const article = {
     { q: "Does RapidRemove delete individual reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. A single review with the profile kept is removed via reporting or a lawyer." },
   ],
   related: [
-    { label: "Remove Google reviews: costs & methods", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Report and remove a fake Google review", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Lawyer or technical removal – what's really worth it?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Delete Google Business Profile – how does it work?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Report and remove a fake Google review", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Lawyer or technical removal – what's really worth it?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Delete Google Business Profile – how does it work?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

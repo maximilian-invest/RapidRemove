@@ -24,7 +24,7 @@ Vorgehen:
    Wichtig: `redirects()` greift nur im Server-Build (Railway), **nicht** im statischen
    GitHub-Pages-Export (`GITHUB_PAGES=true`) — der Launch-Host muss der Server-Build sein.
 4. **Host-Konsolidierung:** `www.rapid-remove.com` vs. `rapid-remove.com` festlegen
-   (metadataBase nutzt aktuell `https://rapid-remove.com`, das Schema-Markup teils `www.`).
+   (metadataBase nutzt aktuell `https://www.rapid-remove.com`, das Schema-Markup teils `www.`).
    Auf Host-Ebene (Railway/DNS) eine Variante per 301 auf die kanonische umleiten und
    das Schema-Markup vereinheitlichen.
 

@@ -70,7 +70,7 @@ const article = {
       ["Suppression de la fiche (RapidRemove)", "Prix fixe, payable après succès", "Tous les avis partis – paiement en cas de succès"],
     ] },
     { t: "p", text: "Méfiez-vous des offres très bon marché : la qualité et le support fluctuent souvent beaucoup. Recherchez des **honoraires de résultat** – les prestataires sérieux ne se font payer qu'après une suppression réussie, vous ne portez donc aucun risque financier." },
-    { t: "cta", title: "Vérifiez maintenant gratuitement si vos avis peuvent être supprimés.", text: "Saisissez le nom de votre entreprise et voyez en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
+    { t: "cta", title: "Vérifiez maintenant gratuitement si vos avis peuvent être supprimés.", text: "Saisissez le nom de votre entreprise et voyez en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
 
     { t: "h2", id: "vergleich", text: "Comparaison directe des méthodes", toc: "Comparaison directe" },
     { t: "table", rrCol: 1, head: ["Critère", "RapidRemove (suppression de fiche)", "Avocat (voie juridique)", "Signaler soi-même"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "Qu'est-ce que l'effet Streisand ?", a: "Lorsque les démarches juridiques contre un avis provoquent l'auteur et entraînent d'autres avis négatifs. La suppression technique évite ce risque car elle travaille sans confrontation directe." },
   ],
   related: [
-    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Signaler et supprimer un faux avis Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Supprimer un avis 1 étoile sans texte", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Supprimer un avis 1 étoile sans texte", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

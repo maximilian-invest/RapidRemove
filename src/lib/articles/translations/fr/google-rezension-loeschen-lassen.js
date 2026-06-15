@@ -59,7 +59,7 @@ const article = {
       "**nouveau départ en option** avec une fiche propre",
     ] },
     { t: "warn", title: "Important", text: "La suppression de la fiche retire la **fiche complète**, pas un avis isolé. Qui veut seulement supprimer un avis et conserver la fiche utilise le signalement ou la voie de l'avocat." },
-    { t: "cta", title: "Fiche durablement endommagée ? Vérifiez gratuitement la faisabilité.", text: "En quelques secondes, vous verrez si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
+    { t: "cta", title: "Fiche durablement endommagée ? Vérifiez gratuitement la faisabilité.", text: "En quelques secondes, vous verrez si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
   ],
   faq: [
     { q: "Puis-je supprimer mon propre avis Google ?", a: "Oui. Dans Google Maps, ouvrez « Vos contributions », sélectionnez l'avis et cliquez sur « Supprimer l'avis » dans le menu à trois points. C'est gratuit et possible à tout moment." },
@@ -70,10 +70,10 @@ const article = {
     { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Non. RapidRemove supprime toute la fiche d'établissement ; tous les avis disparaissent avec. Un avis isolé en conservant la fiche se supprime via le signalement ou un avocat." },
   ],
   related: [
-    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Signaler et supprimer un faux avis Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

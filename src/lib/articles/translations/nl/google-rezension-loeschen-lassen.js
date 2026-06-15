@@ -59,7 +59,7 @@ const article = {
       "**optionele nieuwe start** met een schoon profiel",
     ] },
     { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **hele profiel**, niet één review. Wie alleen één review wil verwijderen en het profiel wil behouden, gebruikt rapporteren of de advocatenweg." },
-    { t: "cta", title: "Profiel blijvend beschadigd? Controleer gratis de verwijderbaarheid.", text: "Binnen seconden ziet u of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
+    { t: "cta", title: "Profiel blijvend beschadigd? Controleer gratis de verwijderbaarheid.", text: "Binnen seconden ziet u of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
     { q: "Kan ik een eigen Google review weer verwijderen?", a: "Ja. Open in Google Maps „Je bijdragen”, kies de review en klik in het menu met drie puntjes op „Review verwijderen”. Dat is gratis en op elk moment mogelijk." },
@@ -70,10 +70,10 @@ const article = {
     { q: "Verwijdert RapidRemove losse reviews?", a: "Nee. RapidRemove verwijdert het hele bedrijfsprofiel; alle reviews verdwijnen daarbij mee. Een losse review met behoud van het profiel verwijdert u via rapporteren of een advocaat." },
   ],
   related: [
-    { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Slechte Google review – wat te doen?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Slechte Google review – wat te doen?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

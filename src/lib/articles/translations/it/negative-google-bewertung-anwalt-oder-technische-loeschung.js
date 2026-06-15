@@ -60,7 +60,7 @@ const article = {
       ["Rischio Streisand", "nessuno", "presente"],
       ["Impegno", "Nullo (pilota automatico)", "Alto (prove e scadenze)"],
     ] },
-    { t: "cta", title: "Quale via fa per te? Scoprilo gratis.", text: "Inserisci il nome della tua azienda: verifichiamo in pochi secondi se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://rapid-remove.com/", trust: ["Analisi gratis", "Con garanzia", "Senza rischio"] },
+    { t: "cta", title: "Quale via fa per te? Scoprilo gratis.", text: "Inserisci il nome della tua azienda: verifichiamo in pochi secondi se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Con garanzia", "Senza rischio"] },
   ],
   faq: [
     { q: "Posso far eliminare una recensione Google negativa?", a: "Sì, se viola le linee guida di Google (es. falsa, nessun collegamento, insulto). Le opinioni puramente oggettive su esperienze reali sono difficili da eliminare." },
@@ -71,10 +71,10 @@ const article = {
     { q: "Le recensioni Google negative sono perseguibili?", a: "Un'opinione onesta no. Le affermazioni di fatti deliberatamente false, gli insulti o le denigrazioni possono avere conseguenze legali. Questa non è consulenza legale." },
   ],
   related: [
-    { label: "Eliminare recensioni Google: costi e metodi", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Eliminare una recensione a 1 stella senza testo", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Recensione negativa su Google: cosa fare?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Eliminare una recensione a 1 stella senza testo", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Recensione negativa su Google: cosa fare?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

@@ -36,7 +36,7 @@ const DUE_MAHN: Record<string, string> = { de: "umgehend", en: "now", es: "ahora
 // SITE_ORIGIN optional auf die Site-URL setzen; sonst "*" (Endpunkt ist nicht credentialed).
 const SITE_ORIGIN = process.env.SITE_ORIGIN || "*";
 // Öffentliche Site-URL (für Links in E-Mails, z. B. Fragebogen-Seite). NICHT SITE_ORIGIN nehmen (kann "*" sein).
-const SITE_URL = (process.env.SITE_URL || "https://rapid-remove.com").replace(/\/+$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 const FORM_FIELDS = ["verified", "smsOk", "payment48"];
 app.addHook("onRequest", async (req, reply) => {
   reply.header("Access-Control-Allow-Origin", SITE_ORIGIN);
@@ -167,7 +167,7 @@ app.get("/tp-count", async () => {
   }
   try {
     const res = await fetch("https://at.trustpilot.com/review/rapid-remove.com", {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0; +https://rapid-remove.com)" },
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0; +https://www.rapid-remove.com)" },
     });
     const html = await res.text();
     const m = html.match(/"reviewCount"\s*:\s*"?(\d+)/) || html.match(/"numberOfReviews"\s*:\s*(\d+)/);

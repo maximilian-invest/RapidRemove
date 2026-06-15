@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "«Muchas gracias por tu comentario. Sentimos que tu visita no cumpliera tus expectativas. No es lo que pretendemos. Por favor, escríbenos un momento a [contacto] para aclarar el caso y encontrar una solución.»" },
     { t: "p", text: "Mantente objetivo, no menciones detalles internos y no te pongas a la defensiva. Ante una crítica justificada, una respuesta honesta y orientada a la solución suele ser el mejor cuidado de la reputación." },
 
-    { t: "cta", title: "¿Reseña injustificada? Comprueba la eliminabilidad gratis.", text: "Introduce el nombre de tu empresa y verás en segundos si tu perfil y todas sus reseñas se pueden eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },
+    { t: "cta", title: "¿Reseña injustificada? Comprueba la eliminabilidad gratis.", text: "Introduce el nombre de tu empresa y verás en segundos si tu perfil y todas sus reseñas se pueden eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://www.rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },
 
     { t: "h2", id: "melden", text: "Cuándo merece la pena denunciar", toc: "¿Cuándo denunciar?" },
     { t: "p", text: "Si una reseña infringe las directrices de Google, deberías denunciarla. Hay buenas posibilidades con:" },
@@ -65,10 +65,10 @@ const article = {
     { q: "¿Merece la pena denunciar a Google?", a: "Como primer paso gratuito sí, sobre todo ante spam evidente. Pero como Google rechaza muchas denuncias de forma automatizada, queda el abogado para casos sueltos persistentes y la eliminación del perfil para un perfil gravemente dañado." },
   ],
   related: [
-    { label: "Eliminar reseñas de Google: costes y métodos", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Abogado o eliminación técnica: ¿qué merece la pena?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Denunciar y eliminar una reseña falsa de Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Eliminar una reseña de 1 estrella sin texto", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Eliminar reseñas de Google: costes y métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Abogado o eliminación técnica: ¿qué merece la pena?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Denunciar y eliminar una reseña falsa de Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Eliminar una reseña de 1 estrella sin texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
   ],
 };
 export default article;

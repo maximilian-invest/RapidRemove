@@ -133,7 +133,7 @@ export function subject(p: ReaktivierungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Reaktivierung({ lang = "de", portalUrl = "https://rapid-remove.com" }: ReaktivierungProps = {}) {
+export default function Reaktivierung({ lang = "de", portalUrl = "https://www.rapid-remove.com" }: ReaktivierungProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

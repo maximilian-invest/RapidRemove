@@ -59,7 +59,7 @@ const article = {
       "**valgfri ny start** med en ren profil",
     ] },
     { t: "warn", title: "Vigtigt", text: "Profilfjernelsen fjerner **hele profilen**, ikke en enkelt anmeldelse. Den, der kun vil fjerne en enkelt anmeldelse og beholde profilen, bruger anmeldelsen eller advokatvejen." },
-    { t: "cta", title: "Profil varigt beskadiget? Tjek muligheden for fjernelse – gratis.", text: "På sekunder ser du, om og hvor hurtigt din profil inklusive alle anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
+    { t: "cta", title: "Profil varigt beskadiget? Tjek muligheden for fjernelse – gratis.", text: "På sekunder ser du, om og hvor hurtigt din profil inklusive alle anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
   ],
   faq: [
     { q: "Kan jeg fjerne en egen Google-anmeldelse igen?", a: "Ja. Åbn »Dine bidrag« i Google Maps, vælg anmeldelsen og klik på »Slet anmeldelse« i tre-prikker-menuen. Det er gratis og muligt når som helst." },
@@ -70,10 +70,10 @@ const article = {
     { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Nej. RapidRemove fjerner hele virksomhedsprofilen; alle anmeldelser forsvinder med. En enkelt anmeldelse med profilen bevaret fjerner man via anmeldelsen eller en advokat." },
   ],
   related: [
-    { label: "Fjern Google-anmeldelser: pris og metoder", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Fjern Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

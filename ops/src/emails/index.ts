@@ -55,7 +55,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
       total: "668,90 € (netto)",
       expressLabel: "Beschleunigt (≤6 h) · +149 €",
       protectionLabel: "Enthält monatlichen Schutz + Überwachung",
-      upgradeUrl: "https://rapid-remove.com/",
+      upgradeUrl: "https://www.rapid-remove.com/",
       due: "sofort",
       payUrl: "https://buy.stripe.com/test_00000000",
     },
@@ -204,7 +204,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Mitwirkung",
     component: Fragebogen,
     subject: fragebogenSubject,
-    sample: { lang: "de", formUrl: "https://rapid-remove.com/auftrag/RR-000000" },
+    sample: { lang: "de", formUrl: "https://www.rapid-remove.com/auftrag/RR-000000" },
   },
 };
 

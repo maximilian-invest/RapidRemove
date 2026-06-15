@@ -70,7 +70,7 @@ const article = {
       ["Profilborttagning (RapidRemove)", "Fast pris, betalas efter framgång", "Alla recensioner borta – betalning endast vid framgång"],
     ] },
     { t: "p", text: "Var försiktig med mycket billiga erbjudanden: kvalitet och support varierar ofta kraftigt. Se efter en **framgångsarvode** – seriösa leverantörer låter sig betalas först efter lyckad borttagning, så att du inte bär någon kostnadsrisk." },
-    { t: "cta", title: "Kontrollera nu gratis om dina recensioner kan tas bort.", text: "Ange ditt företagsnamn och se på sekunder om din profil och alla dess recensioner kan tas bort, och hur snabbt.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Med garanti", "Utan risk"] },
+    { t: "cta", title: "Kontrollera nu gratis om dina recensioner kan tas bort.", text: "Ange ditt företagsnamn och se på sekunder om din profil och alla dess recensioner kan tas bort, och hur snabbt.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Med garanti", "Utan risk"] },
 
     { t: "h2", id: "vergleich", text: "Metoderna direkt jämförda", toc: "Direkt jämförelse" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (profilborttagning)", "Advokat (juridisk väg)", "Rapportera själv"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "Vad är Streisandeffekten?", a: "När juridiska steg mot en recension just provocerar upphovspersonen och leder till fler negativa recensioner. Teknisk borttagning undviker den risken eftersom den arbetar utan direkt konfrontation." },
   ],
   related: [
-    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Anmäla och ta bort en falsk Google-recension", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Ta bort en 1-stjärnig recension utan text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Advokat eller teknisk borttagning: vad lönar sig?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Anmäla och ta bort en falsk Google-recension", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Advokat eller teknisk borttagning: vad lönar sig?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

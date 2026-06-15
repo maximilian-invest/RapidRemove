@@ -52,7 +52,7 @@ const article = {
       ["RapidRemove", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "pagamento em caso de êxito", "preço fixo após sucesso"],
     ] },
     { t: "p", text: "Na remoção do perfil só paga **após o sucesso** e, graças à garantia, um perfil que reapareça é removido gratuitamente." },
-    { t: "cta", title: "Verifique gratuitamente se a sua avaliação de 1 estrela é removível.", text: "Introduza o nome da empresa – encontramos o seu perfil e verificamos em segundos se e com que rapidez pode ser removido.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
+    { t: "cta", title: "Verifique gratuitamente se a sua avaliação de 1 estrela é removível.", text: "Introduza o nome da empresa – encontramos o seu perfil e verificamos em segundos se e com que rapidez pode ser removido.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
   ],
   faq: [
     { q: "Posso mandar remover uma avaliação de 1 estrela sem texto?", a: "Em muitos casos, sim. Como não é reconhecível qualquer relação com uma experiência real, falta muitas vezes à avaliação a base jurídica; tribunais como o de Lübeck e o de Recurso de Colónia confirmaram tais direitos à remoção." },
@@ -63,10 +63,10 @@ const article = {
     { q: "Com que rapidez nos livramos das avaliações?", a: "Pela remoção do perfil, muitas vezes em 24 a 48 horas – bastante mais rápido do que a via jurídica de vários meses para uma avaliação isolada." },
   ],
   related: [
-    { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Avaliação negativa no Google – o que fazer?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Avaliação negativa no Google – o que fazer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

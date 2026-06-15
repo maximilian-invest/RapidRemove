@@ -54,7 +54,7 @@ const article = {
       "**SEO-vriendelijk:** uw website en uw ranking blijven onaangetast",
       "**Gegarandeerd:** verschijnt het profiel via derden weer, dan wordt het gratis verwijderd",
     ] },
-    { t: "cta", title: "Controleer gratis of uw Maps-vermelding verwijderbaar is.", text: "Voer uw bedrijfsnaam in – we controleren binnen seconden of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
+    { t: "cta", title: "Controleer gratis of uw Maps-vermelding verwijderbaar is.", text: "Voer uw bedrijfsnaam in – we controleren binnen seconden of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
     { q: "Hoe verwijder ik mijn eigen Google Maps vermelding?", a: "Via „Je bedrijfsprofiel” → profielinstellingen → menu met drie puntjes → „Bedrijfsprofiel verwijderen” → „Profielinhoud en beheerders verwijderen”. Let op: dit koppelt de vermelding alleen van uw account los, maar verwijdert ze niet uit Maps." },
@@ -64,10 +64,10 @@ const article = {
     { q: "Kan ik een Google Maps vermelding blijvend laten verwijderen?", a: "Volledig en blijvend inclusief reviews lukt dat doorgaans via een gespecialiseerd bureau, omdat Google geen zelfverwijdering voorziet. De technische verwijdering gebeurt vaak binnen 24 uur — betalen pas na succes." },
   ],
   related: [
-    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Google reviews verwijderen: kosten en methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Een valse Google review rapporteren en verwijderen", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Slechte Google review – wat te doen?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google reviews verwijderen: kosten en methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Een valse Google review rapporteren en verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Slechte Google review – wat te doen?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

@@ -70,7 +70,7 @@ const article = {
       ["Profilfjernelse (RapidRemove)", "Fast pris, betales efter succes", "Alle anmeldelser væk – betaling kun ved succes"],
     ] },
     { t: "p", text: "Vær forsigtig med meget billige tilbud: kvalitet og support varierer ofte kraftigt. Hold øje med et **succeshonorar** – seriøse udbydere lader sig først betale efter vellykket fjernelse, så du ikke bærer nogen omkostningsrisiko." },
-    { t: "cta", title: "Tjek nu gratis, om dine anmeldelser kan fjernes.", text: "Indtast dit virksomhedsnavn, og se på sekunder, om din profil og alle dens anmeldelser kan fjernes, og hvor hurtigt.", btn: "Tjek mulighed for fjernelse", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Med garanti", "Uden risiko"] },
+    { t: "cta", title: "Tjek nu gratis, om dine anmeldelser kan fjernes.", text: "Indtast dit virksomhedsnavn, og se på sekunder, om din profil og alle dens anmeldelser kan fjernes, og hvor hurtigt.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Med garanti", "Uden risiko"] },
 
     { t: "h2", id: "vergleich", text: "Metoderne direkte sammenlignet", toc: "Direkte sammenligning" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (profilfjernelse)", "Advokat (juridisk vej)", "Rapportér selv"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "Hvad er Streisand-effekten?", a: "Når juridiske skridt mod en anmeldelse netop provokerer ophavspersonen og fører til flere negative anmeldelser. Teknisk fjernelse undgår den risiko, fordi den arbejder uden direkte konfrontation." },
   ],
   related: [
-    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Advokat eller teknisk fjernelse: hvad betaler sig?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Advokat eller teknisk fjernelse: hvad betaler sig?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

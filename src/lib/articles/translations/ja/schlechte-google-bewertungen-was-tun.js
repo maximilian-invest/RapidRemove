@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "「ご意見をいただき、誠にありがとうございます。ご来店がご期待に沿えなかったこと、申し訳なく思います。私たちの目指すところではありません。事情を確認し解決策をご提案できるよう、[連絡先]まで一度ご連絡いただけますか。」" },
     { t: "p", text: "客観性を保ち、社内の詳細には触れず、防御的にならないこと。正当な批判には、誠実で解決志向の返信がしばしば最良の評判ケアになります。" },
 
-    { t: "cta", title: "不当なクチコミ？削除可能性を無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
+    { t: "cta", title: "不当なクチコミ？削除可能性を無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
 
     { t: "h2", id: "melden", text: "報告が報われるのはいつか", toc: "いつ報告？" },
     { t: "p", text: "クチコミがGoogleのガイドラインに違反するなら、報告すべきです。次の場合は見込みが十分あります。" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Googleへの報告は本当に意味がある？", a: "最初の無料の一歩としては、特に明白なスパムには意味があります。ただGoogleは多くの報告を自動で却下するため、しつこい個別案件には弁護士、根本的に傷ついたプロフィールにはプロフィール削除が残ります。" },
   ],
   related: [
-    { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "コメントなしの星1つのクチコミを削除する", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

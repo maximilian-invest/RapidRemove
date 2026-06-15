@@ -1,7 +1,7 @@
 /* RapidRemove — flagship SEO article: metadata + FAQ (shared by the
    server route for <head>/JSON-LD and by the client article for rendering). */
 
-export const SITE_URL = "https://rapid-remove.com";
+export const SITE_URL = "https://www.rapid-remove.com";
 export const ARTICLE_SLUG = "magazin/google-unternehmensprofil-loeschen";
 
 export const ARTICLE_META = {

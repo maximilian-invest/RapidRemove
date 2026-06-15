@@ -60,7 +60,7 @@ const article = {
       ["Streisand risk", "none", "present"],
       ["Effort", "Zero (autopilot)", "High (evidence & deadlines)"],
     ] },
-    { t: "cta", title: "Which route suits you? Find out for free.", text: "Enter your business name – we'll check in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
+    { t: "cta", title: "Which route suits you? Find out for free.", text: "Enter your business name – we'll check in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
   ],
   faq: [
     { q: "Can I have a negative Google review removed?", a: "Yes, if it violates Google's guidelines (e.g. fake, no connection, insult). Purely factual opinions about real experiences are hard to remove." },
@@ -71,10 +71,10 @@ const article = {
     { q: "Are negative Google reviews punishable?", a: "An honest opinion is not. Deliberately false factual claims, insults or abusive criticism can have legal consequences. This is not legal advice." },
   ],
   related: [
-    { label: "Remove Google reviews: costs & methods", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Report and remove a fake Google review", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Remove a 1-star review without text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Bad Google review – what to do?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Report and remove a fake Google review", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Remove a 1-star review without text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Bad Google review – what to do?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

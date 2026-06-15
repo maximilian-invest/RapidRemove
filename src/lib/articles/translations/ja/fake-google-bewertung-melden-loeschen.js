@@ -64,7 +64,7 @@ const article = {
     ] },
     { t: "p", text: "決定的な利点は、**削除成功後にのみ**支払う点です。第三者経由でプロフィールが再表示されても、保証の範囲で無料で削除されます。" },
     { t: "warn", title: "重要", text: "プロフィール削除は**ビジネスプロフィール全体**を取り除くもので、偽クチコミ1件ではありません。クチコミ1件だけ削除してプロフィールを残したい場合は、Googleへの報告か弁護士の道が適切です。" },
-    { t: "cta", title: "偽クチコミ攻撃？削除可能性を無料で確認。", text: "会社名を入力すれば、プロフィールと全偽クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
+    { t: "cta", title: "偽クチコミ攻撃？削除可能性を無料で確認。", text: "会社名を入力すれば、プロフィールと全偽クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
     { q: "Googleの偽クチコミはどう見分けますか？", a: "典型的なサインは、サービスとの関連の欠如、コメントなしの星1つ、クチコミ履歴のないプロフィール、複数の悪評の不自然なタイミング、無関係または侮辱的な内容です。" },
@@ -75,10 +75,10 @@ const article = {
     { q: "偽クチコミはどれくらい早く片づきますか？", a: "プロフィール削除なら多くは24〜48時間で結果が出ます——数か月かかる法的手段よりはるかに速いです。" },
   ],
   related: [
-    { label: "Googleのクチコミを削除：費用と手段の比較", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "コメントなしの星1つのクチコミを削除する", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Googleの悪いクチコミ——どうする？", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Googleのクチコミを削除：費用と手段の比較", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Googleの悪いクチコミ——どうする？", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

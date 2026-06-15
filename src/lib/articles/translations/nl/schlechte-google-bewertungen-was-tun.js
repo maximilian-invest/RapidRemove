@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "„Hartelijk dank voor uw feedback. Het spijt ons dat uw bezoek niet aan uw verwachtingen voldeed. Dat is niet wat wij nastreven. Neem kort contact met ons op via [contact], zodat we de zaak kunnen ophelderen en een oplossing kunnen vinden.”" },
     { t: "p", text: "Blijf zakelijk, noem geen interne details en ga niet in de verdediging. Bij terechte kritiek is een eerlijk, oplossingsgericht antwoord vaak de beste reputatiezorg." },
 
-    { t: "cta", title: "Onterechte review? Controleer gratis de verwijderbaarheid.", text: "Voer uw bedrijfsnaam in en zie binnen seconden of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
+    { t: "cta", title: "Onterechte review? Controleer gratis de verwijderbaarheid.", text: "Voer uw bedrijfsnaam in en zie binnen seconden of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
 
     { t: "h2", id: "melden", text: "Wanneer rapporteren loont", toc: "Wanneer rapporteren?" },
     { t: "p", text: "Schendt een review de richtlijnen van Google, dan zou u ze moeten rapporteren. Goede kansen zijn er bij:" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Loont rapporteren bij Google eigenlijk wel?", a: "Als eerste, gratis stap ja – vooral bij overduidelijke spam. Maar omdat Google veel meldingen geautomatiseerd afwijst, blijft voor hardnekkige losse gevallen de advocaat, en voor een fundamenteel beschadigd profiel de profielverwijdering." },
   ],
   related: [
-    { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Een Google review verwijderen: formulier, kosten en gids", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Een Google review verwijderen: formulier, kosten en gids", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

@@ -52,7 +52,7 @@ const article = {
       ["RapidRemove", "**hela profilen + alla recensioner**", "24–48 tim", "betalning vid framgång", "fast pris efter framgång"],
     ] },
     { t: "p", text: "Vid profilborttagningen betalar du först **efter framgång**, och tack vare garantin tas en profil som dyker upp igen bort utan kostnad." },
-    { t: "cta", title: "Kontrollera gratis om din 1-stjärniga recension går att ta bort.", text: "Ange företagsnamnet – vi hittar din profil och kontrollerar på sekunder om och hur snabbt den kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
+    { t: "cta", title: "Kontrollera gratis om din 1-stjärniga recension går att ta bort.", text: "Ange företagsnamnet – vi hittar din profil och kontrollerar på sekunder om och hur snabbt den kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
     { q: "Kan jag ta bort en 1-stjärnig recension utan text?", a: "I många fall ja. Eftersom ingen koppling till en verklig upplevelse är igenkännbar saknar recensionen ofta den rättsliga grunden; tyska domstolar som Landgericht Lübeck och Tysklands högsta domstol (BGH) har bekräftat sådana anspråk på borttagning." },
@@ -63,10 +63,10 @@ const article = {
     { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar – betydligt snabbare än den flera månader långa rättsliga vägen för en enskild recension." },
   ],
   related: [
-    { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Ta bort en Google-recension: formulär, kostnad och guide", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Dålig Google-recension – vad göra?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Ta bort en Google-recension: formulär, kostnad och guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Dålig Google-recension – vad göra?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

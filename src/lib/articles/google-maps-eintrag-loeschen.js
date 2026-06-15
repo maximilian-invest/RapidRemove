@@ -25,7 +25,7 @@ const article = {
       "Gehen Sie über das **Drei-Punkt-Menü** zu **„Unternehmensprofil entfernen“**.",
       "Wählen Sie **„Profilinhalt und Administratoren entfernen“** und bestätigen Sie.",
     ] },
-    { t: "cta", title: "Maps-Eintrag dauerhaft loswerden?", text: "Wir prüfen kostenlos, ob sich Ihr Google-Maps-Eintrag entfernen lässt.", btn: "Kostenlos prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Maps-Eintrag dauerhaft loswerden?", text: "Wir prüfen kostenlos, ob sich Ihr Google-Maps-Eintrag entfernen lässt.", btn: "Kostenlos prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "sichtbar", text: "Warum der Eintrag trotzdem sichtbar bleibt", toc: "Warum bleibt er?" },
     { t: "p", text: "Das ist der entscheidende Punkt, den Google bewusst verschleiert: Das Entfernen aus Ihrem Konto bedeutet **nicht**, dass das Unternehmen aus Maps und der Suche verschwindet. Es wird lediglich aus Ihrem Konto gelöst und in der Regel als **„Dauerhaft geschlossen“** markiert. Profil und Bewertungen **bleiben bestehen**. Google positioniert sich in seinen [Inhalts-Richtlinien](https://support.google.com/contributionpolicy/answer/7400114) ausdrücklich gegen die vollständige Löschung von Unternehmensprofilen – eine restlose Entfernung ist daher allein über das eigene Konto praktisch nicht möglich." },
@@ -58,7 +58,7 @@ const article = {
       "**SEO-freundlich:** Ihre Website und Ihr Ranking bleiben unberührt",
       "**Garantiert:** Taucht das Profil durch Dritte wieder auf, wird es kostenlos entfernt",
     ] },
-    { t: "cta", title: "Prüfen Sie kostenlos, ob Ihr Maps-Eintrag löschbar ist.", text: "Firmennamen eingeben – wir prüfen in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
+    { t: "cta", title: "Prüfen Sie kostenlos, ob Ihr Maps-Eintrag löschbar ist.", text: "Firmennamen eingeben – wir prüfen in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
   ],
   faq: [
     { q: "Wie lösche ich meinen eigenen Google-Maps-Eintrag?", a: "Über „Mein Unternehmen“ → Profileinstellungen → Drei-Punkt-Menü → „Unternehmensprofil entfernen“ → „Profilinhalt und Administratoren entfernen“. Achtung: Das löst den Eintrag nur aus Ihrem Konto, entfernt ihn aber nicht aus Maps." },
@@ -68,10 +68,10 @@ const article = {
     { q: "Kann ich einen Google-Maps-Eintrag dauerhaft löschen lassen?", a: "Vollständig und dauerhaft inklusive Bewertungen gelingt das in der Regel über eine spezialisierte Agentur, da Google die Selbstlöschung nicht vorsieht. Die technische Löschung erfolgt oft innerhalb von 24 Stunden – bezahlt wird erst nach Erfolg." },
   ],
   related: [
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Fake-Bewertung bei Google melden und löschen", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Fake-Bewertung bei Google melden und löschen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Schlechte Google-Bewertung – was tun?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

@@ -188,7 +188,7 @@ export function subject(p: AboDeaktiviertProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function AboDeaktiviert({ lang = "de", reactivateUrl = "https://rapid-remove.com" }: AboDeaktiviertProps = {}) {
+export default function AboDeaktiviert({ lang = "de", reactivateUrl = "https://www.rapid-remove.com" }: AboDeaktiviertProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

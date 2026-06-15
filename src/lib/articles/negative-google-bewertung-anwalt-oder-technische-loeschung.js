@@ -37,7 +37,7 @@ const article = {
       "**Risiko:** Der Ausgang ist nicht garantiert, und Sie zahlen für die Bemühung, nicht zwingend für das Ergebnis.",
     ] },
     { t: "p", text: "Bei einer **einzelnen, klar rechtswidrigen** Bewertung mit dokumentierbarem Sachverhalt kann der Anwaltsweg sinnvoll sein. Bei mehreren Bewertungen oder einem grundlegend beschädigten Profil wird er schnell teuer und langsam." },
-    { t: "cta", title: "Anwalt oder Technik – was lohnt sich für Sie?", text: "Lassen Sie es uns in Sekunden prüfen, kostenlos und unverbindlich.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Anwalt oder Technik – was lohnt sich für Sie?", text: "Lassen Sie es uns in Sekunden prüfen, kostenlos und unverbindlich.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "streisand", text: "Der Streisand-Effekt: Wenn Recht haben nach hinten losgeht", toc: "Streisand-Effekt" },
     { t: "p", text: "Ein oft unterschätztes Risiko: Rechtliche Schritte können den Rezensenten erst recht provozieren. Das Ergebnis ist nicht selten eine Welle neuer **„Rache-Bewertungen“** – das Problem wird größer statt kleiner. Dieses Phänomen heißt **Streisand-Effekt**. Eine lautlose, technische Lösung vermeidet ihn, weil sie ohne direkte Konfrontation mit dem Verfasser arbeitet." },
@@ -64,7 +64,7 @@ const article = {
       ["Streisand-Risiko", "keines", "vorhanden"],
       ["Aufwand", "Null (Autopilot)", "Hoch (Belege & Termine)"],
     ] },
-    { t: "cta", title: "Welcher Weg passt zu Ihnen? Finden Sie es kostenlos heraus.", text: "Geben Sie Ihren Firmennamen ein – wir prüfen in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Welcher Weg passt zu Ihnen? Finden Sie es kostenlos heraus.", text: "Geben Sie Ihren Firmennamen ein – wir prüfen in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
   ],
   faq: [
     { q: "Kann ich eine negative Google-Bewertung löschen lassen?", a: "Ja, wenn sie gegen Googles Richtlinien verstößt (z. B. Fake, fehlender Bezug, Beleidigung). Rein sachliche Meinungen zu echten Erfahrungen sind dagegen schwer zu entfernen." },
@@ -75,12 +75,12 @@ const article = {
     { q: "Sind negative Google-Bewertungen strafbar?", a: "Eine ehrliche Meinung nicht. Bewusst falsche Tatsachenbehauptungen, Beleidigungen oder Schmähkritik können jedoch rechtliche Folgen haben. Dies ist keine Rechtsberatung." },
   ],
   related: [
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
-    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://www.rapid-remove.com/google-maps-eintrag-loeschen" },
+    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Schlechte Google-Bewertung – was tun?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

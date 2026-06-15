@@ -145,7 +145,7 @@ export function subject(p: ResetProps = {}): string {
 }
 
 export default function Reset({
-  lang = "de", confirmUrl = "https://rapid-remove.com", cancelUrl = "mailto:helpdesk@rapid-remove.com",
+  lang = "de", confirmUrl = "https://www.rapid-remove.com", cancelUrl = "mailto:helpdesk@rapid-remove.com",
 }: ResetProps = {}) {
   const t = T[lang] || T.de;
   return (

@@ -38,7 +38,7 @@ const article = {
     ] },
     { t: "warn", title: "Wichtig", text: "Dieser Weg entfernt den **kompletten Eintrag**, nicht eine einzelne Rezension. Wer nur eine Bewertung loswerden und den Eintrag behalten möchte, nutzt das Melden oder den Anwaltsweg." },
 
-    { t: "cta", title: "Firmeneintrag prüfen lassen – kostenlos.", text: "Geben Sie Ihren Firmennamen ein – wir prüfen in Sekunden, ob und wie schnell sich Ihr Eintrag samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Firmeneintrag prüfen lassen – kostenlos.", text: "Geben Sie Ihren Firmennamen ein – wir prüfen in Sekunden, ob und wie schnell sich Ihr Eintrag samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Einzelne Bewertungen oder den ganzen Eintrag?", toc: "Einzeln vs. ganz" },
     { t: "p", text: "Geht es Ihnen nur um eine einzelne ungerechtfertigte Bewertung, ist das **Melden** oder der Anwaltsweg richtig – mehr dazu unter [Google Bewertung löschen lassen](/google-bewertung-loeschen-lassen/). Ist der Eintrag insgesamt beschädigt und Sie wollen einen echten Neuanfang, ist die vollständige Entfernung der direktere Weg." },
@@ -59,7 +59,7 @@ const article = {
     ] },
     { t: "p", text: "Mit anderen Worten: Über das Standard-Interface lässt sich der öffentliche Firmeneintrag nicht dauerhaft entfernen. Genau dafür gibt es die professionelle, vollständige Löschung." },
 
-    { t: "cta", title: "Firma dauerhaft aus Google entfernen?", text: "Machen Sie den kostenlosen Löschbarkeits-Check – in Sekunden, unverbindlich.", btn: "Jetzt prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Firma dauerhaft aus Google entfernen?", text: "Machen Sie den kostenlosen Löschbarkeits-Check – in Sekunden, unverbindlich.", btn: "Jetzt prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
   ],
   faq: [
     { q: "Kann ich meine Firma selbst bei Google löschen?", a: "Sie können den Eintrag als „dauerhaft geschlossen“ markieren oder aus Ihrem Konto entfernen – beides löscht aber nicht den öffentlichen Eintrag. Er bleibt mit allen Bewertungen in Suche und Maps sichtbar. Eine vollständige Entfernung läuft über die offiziellen Google-Prozesse." },
@@ -70,9 +70,9 @@ const article = {
     { q: "Was kostet das Löschen des Firmeneintrags?", a: "RapidRemove arbeitet mit einem Fixpreis, zahlbar erst nach Erfolg. Anbieter für Einzelbewertungen und Anwälte rechnen meist pro Bewertung ab, oft ohne garantiertes Ergebnis." },
   ],
   related: [
-    { label: "Google-Unternehmensprofil löschen – die vollständige Anleitung", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Google Maps Eintrag löschen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
+    { label: "Google-Unternehmensprofil löschen – die vollständige Anleitung", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Google Maps Eintrag löschen", url: "https://www.rapid-remove.com/google-maps-eintrag-loeschen" },
   ],
 };
 export default article;

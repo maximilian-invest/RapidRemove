@@ -54,7 +54,7 @@ const article = {
       "**SEOに優しい：**サイトと検索順位は無傷",
       "**保証：**第三者経由で再表示されても無料で削除",
     ] },
-    { t: "cta", title: "あなたのマップ情報が削除できるか、無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
+    { t: "cta", title: "あなたのマップ情報が削除できるか、無料で確認。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
     { q: "自分のGoogleマップ情報はどう削除しますか？", a: "「Googleビジネスプロフィール」→設定→3点メニュー→「ビジネスプロフィールを削除」→「プロフィールのコンテンツと管理者を削除」で行います。注意：これは情報をアカウントから切り離すだけで、マップからは削除しません。" },
@@ -64,10 +64,10 @@ const article = {
     { q: "Googleマップの情報を恒久的に削除してもらえますか？", a: "クチコミも含めて完全かつ恒久的にとなると、Googleが自己削除を用意していないため、通常は専門業者を通じて行います。技術的削除は多くの場合24時間以内で、支払いは成功後のみです。" },
   ],
   related: [
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Googleのクチコミを削除：費用と手段", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Googleの偽クチコミを報告して削除する", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Googleの悪いクチコミ——どうする？", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Googleのクチコミを削除：費用と手段", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Googleの悪いクチコミ——どうする？", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

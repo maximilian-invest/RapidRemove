@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "“Thank you for your feedback. We're sorry your visit didn't meet your expectations. That doesn't reflect our standards. Please get in touch briefly at [contact] so we can clarify the matter and find a solution.”" },
     { t: "p", text: "Stay factual, don't mention internal details, and don't go on the defensive. For justified criticism, an honest, solution-oriented reply is often the best reputation care." },
 
-    { t: "cta", title: "Unjustified review? Check removability – for free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
+    { t: "cta", title: "Unjustified review? Check removability – for free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
 
     { t: "h2", id: "melden", text: "When reporting is worth it", toc: "When to report?" },
     { t: "p", text: "If a review violates Google's guidelines, you should report it. Good chances exist for:" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Is reporting to Google worth it at all?", a: "As a first, free step yes – especially for obvious spam. But since Google rejects many reports automatically, the lawyer remains for stubborn individual cases, and profile removal for a fundamentally damaged profile." },
   ],
   related: [
-    { label: "Remove Google reviews: costs & methods", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Lawyer or technical removal – what's really worth it?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Report and remove a fake Google review", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Remove a 1-star review without text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Lawyer or technical removal – what's really worth it?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Report and remove a fake Google review", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Remove a 1-star review without text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
   ],
 };
 export default article;

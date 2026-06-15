@@ -64,7 +64,7 @@ const article = {
     ] },
     { t: "p", text: "Den afgørende fordel: du betaler først **efter vellykket fjernelse**, og dukker profilen op igen via tredjepart, fjernes den uden beregning inden for rammerne af garantien." },
     { t: "warn", title: "Vigtigt", text: "Profilfjernelsen fjerner **hele virksomhedsprofilen**, ikke en enkelt falsk anmeldelse. Vil du kun fjerne én anmeldelse og beholde din profil, er anmeldelsen til Google eller advokatvejen de passende muligheder." },
-    { t: "cta", title: "Falsk angreb? Tjek muligheden for fjernelse – gratis.", text: "Indtast virksomhedsnavnet – vi tjekker på sekunder, om og hvor hurtigt din profil inklusive alle falske anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
+    { t: "cta", title: "Falsk angreb? Tjek muligheden for fjernelse – gratis.", text: "Indtast virksomhedsnavnet – vi tjekker på sekunder, om og hvor hurtigt din profil inklusive alle falske anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
   ],
   faq: [
     { q: "Hvordan genkender jeg en falsk Google-anmeldelse?", a: "Typiske tegn er manglende sammenhæng med ydelsen, 1 stjerne uden tekst, en profil uden anmeldelseshistorik, påfaldende timing for flere negative anmeldelser samt uvedkommende eller krænkende indhold." },
@@ -75,10 +75,10 @@ const article = {
     { q: "Hvor hurtigt slipper man af med de falske anmeldelser?", a: "Via profilfjernelse er der ofte resultater inden for 24 til 48 timer – betydeligt hurtigere end den flere måneder lange retlige vej." },
   ],
   related: [
-    { label: "Fjern Google-anmeldelser: pris og metoder sammenlignet", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Dårlig Google-anmeldelse – hvad gør man?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Fjern Google-anmeldelser: pris og metoder sammenlignet", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Dårlig Google-anmeldelse – hvad gør man?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

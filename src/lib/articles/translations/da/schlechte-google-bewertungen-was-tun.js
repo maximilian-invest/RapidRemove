@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "»Mange tak for din feedback. Vi beklager, at dit besøg ikke levede op til dine forventninger. Det er ikke, hvad vi stræber efter. Skriv gerne kort til [kontakt], så vi kan opklare sagen og finde en løsning.«" },
     { t: "p", text: "Forbliv saglig, nævn ingen interne detaljer, og gå ikke i forsvar. Ved berettiget kritik er et ærligt, løsningsorienteret svar ofte den bedste omdømmepleje." },
 
-    { t: "cta", title: "Uretfærdig anmeldelse? Tjek muligheden for fjernelse – gratis.", text: "Indtast dit virksomhedsnavn, og se på sekunder, om og hvor hurtigt din profil inklusive alle anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
+    { t: "cta", title: "Uretfærdig anmeldelse? Tjek muligheden for fjernelse – gratis.", text: "Indtast dit virksomhedsnavn, og se på sekunder, om og hvor hurtigt din profil inklusive alle anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
 
     { t: "h2", id: "melden", text: "Hvornår det betaler sig at anmelde", toc: "Hvornår anmelde?" },
     { t: "p", text: "Overtræder en anmeldelse Googles retningslinjer, bør du anmelde den. Gode chancer er der ved:" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Betaler det sig overhovedet at anmelde til Google?", a: "Som et første, gratis skridt ja – især ved åbenlyst spam. Men da Google afviser mange anmeldelser automatiseret, er der ved vedholdende enkeltsager advokaten tilbage, og ved en grundlæggende beskadiget profil profilfjernelsen." },
   ],
   related: [
-    { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Få fjernet en Google-anmeldelse: formular, pris og guide", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Få fjernet en Google-anmeldelse: formular, pris og guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

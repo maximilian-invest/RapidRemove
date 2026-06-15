@@ -64,7 +64,7 @@ const article = {
     ] },
     { t: "p", text: "Den avgörande fördelen: du betalar först **efter lyckad borttagning**, och dyker profilen upp igen via tredje part tas den bort utan kostnad inom ramen för garantin." },
     { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela företagsprofilen**, inte en enskild falsk recension. Vill du bara ta bort en recension och behålla din profil är anmälan till Google eller advokatvägen de passande alternativen." },
-    { t: "cta", title: "Falsk attack? Kontrollera borttagbarheten – gratis.", text: "Ange företagsnamnet – vi kontrollerar på sekunder om och hur snabbt din profil inklusive alla falska recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
+    { t: "cta", title: "Falsk attack? Kontrollera borttagbarheten – gratis.", text: "Ange företagsnamnet – vi kontrollerar på sekunder om och hur snabbt din profil inklusive alla falska recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
     { q: "Hur känner jag igen en falsk Google-recension?", a: "Typiska tecken är saknad koppling till tjänsten, 1 stjärna utan text, en profil utan recensionshistorik, påfallande tajming för flera negativa recensioner samt ovidkommande eller kränkande innehåll." },
@@ -75,10 +75,10 @@ const article = {
     { q: "Hur snabbt blir man av med de falska recensionerna?", a: "Via profilborttagning finns resultat ofta inom 24 till 48 timmar – betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [
-    { label: "Ta bort Google-recensioner: kostnad och metoder jämförda", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Ta bort en 1-stjärnig recension utan text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Dålig Google-recension – vad göra?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Ta bort Google-recensioner: kostnad och metoder jämförda", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Dålig Google-recension – vad göra?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

@@ -70,7 +70,7 @@ const article = {
       ["Profielverwijdering (RapidRemove)", "Vaste prijs, betaalbaar na succes", "Alle reviews weg – betaling alleen bij succes"],
     ] },
     { t: "p", text: "Wees voorzichtig met heel goedkope aanbiedingen: kwaliteit en support wisselen vaak sterk. Let op een **succesfee** – serieuze aanbieders laten zich pas na geslaagde verwijdering betalen, zodat u geen kostenrisico draagt." },
-    { t: "cta", title: "Controleer nu gratis of uw reviews verwijderd kunnen worden.", text: "Voer uw bedrijfsnaam in en zie binnen seconden of uw profiel en al zijn reviews verwijderd kunnen worden, en hoe snel.", btn: "Verwijderbaarheid checken", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
+    { t: "cta", title: "Controleer nu gratis of uw reviews verwijderd kunnen worden.", text: "Voer uw bedrijfsnaam in en zie binnen seconden of uw profiel en al zijn reviews verwijderd kunnen worden, en hoe snel.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
 
     { t: "h2", id: "vergleich", text: "De methoden direct vergeleken", toc: "Directe vergelijking" },
     { t: "table", rrCol: 1, head: ["Criterium", "RapidRemove (profielverwijdering)", "Advocaat (juridische weg)", "Zelf rapporteren"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "Wat is het Streisand-effect?", a: "Wanneer juridische stappen tegen een review de auteur juist uitlokken en tot meer negatieve reviews leiden. Technische verwijdering vermijdt dit risico omdat ze zonder directe confrontatie werkt." },
   ],
   related: [
-    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Een valse Google review rapporteren en verwijderen", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Advocaat of technische verwijdering: wat loont echt?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Een valse Google review rapporteren en verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Advocaat of technische verwijdering: wat loont echt?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

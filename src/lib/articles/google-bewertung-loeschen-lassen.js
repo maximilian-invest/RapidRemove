@@ -73,7 +73,7 @@ const article = {
       ["Profil-Löschung (RapidRemove)", "Fixpreis, zahlbar nach Erfolg", "Alle Bewertungen weg – Zahlung nur bei Erfolg"],
     ] },
     { t: "p", text: "Bei sehr günstigen Angeboten ist Vorsicht geboten: Oft schwanken Qualität und Support erheblich. Achten Sie auf **Erfolgshonorar** – seriöse Anbieter lassen sich erst nach erfolgreicher Löschung bezahlen, sodass Sie kein Kostenrisiko tragen." },
-    { t: "cta", title: "Prüfen Sie jetzt kostenlos, ob Ihre Bewertungen löschbar sind.", text: "Firmennamen eingeben – in Sekunden sehen Sie, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Prüfen Sie jetzt kostenlos, ob Ihre Bewertungen löschbar sind.", text: "Firmennamen eingeben – in Sekunden sehen Sie, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "vergleich", text: "Der direkte Vergleich der Methoden", toc: "Direkter Vergleich" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (Profil-Löschung)", "Anwalt (Rechtsweg)", "Selbst melden"], rows: [
@@ -84,7 +84,7 @@ const article = {
       ["Aufwand", "Null", "Hoch", "Mittel"],
       ["Alle Bewertungen weg", "Ja (mit dem Profil)", "Nein (Einzelverfahren)", "Nein (je einzeln)"],
     ] },
-    { t: "cta", title: "Bereit, Ihre Bewertungen loszuwerden?", text: "Machen Sie den kostenlosen Löschbarkeits-Check – in Sekunden und unverbindlich.", btn: "Jetzt prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Bereit, Ihre Bewertungen loszuwerden?", text: "Machen Sie den kostenlosen Löschbarkeits-Check – in Sekunden und unverbindlich.", btn: "Jetzt prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
   ],
   faq: [
     { q: "Löscht RapidRemove einzelne Bewertungen?", a: "Nein. RapidRemove entfernt das gesamte Google-Unternehmensprofil – dabei verschwinden alle Bewertungen automatisch mit. Eine einzelne Rezension zu entfernen und das Profil zu behalten, ist über das Melden bei Google oder einen Anwalt möglich, nicht über die Profil-Löschung." },
@@ -95,11 +95,11 @@ const article = {
     { q: "Was ist der Streisand-Effekt?", a: "Wenn rechtliche Schritte gegen eine Bewertung den Rezensenten erst recht provozieren und zu weiteren Negativbewertungen führen. Die technische Löschung vermeidet dieses Risiko, da sie ohne direkte Konfrontation arbeitet." },
   ],
   related: [
-    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Fake-Bewertung bei Google melden und löschen", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Anwalt oder technische Löschung – was lohnt sich wirklich?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://www.rapid-remove.com/google-maps-eintrag-loeschen" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Fake-Bewertung bei Google melden und löschen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Anwalt oder technische Löschung – was lohnt sich wirklich?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

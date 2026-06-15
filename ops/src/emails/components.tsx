@@ -158,7 +158,7 @@ export function GiftCard({ amount }: { amount: string }) {
 /** Support-Footer im Inhalt: „Fragen? Wir sind für Sie da!“
     phone=true → Telefonzeile · chat=true → Chat-Button. */
 export function Support({
-  lang = "de", phone = false, chat = false, chatUrl = "https://rapid-remove.com",
+  lang = "de", phone = false, chat = false, chatUrl = "https://www.rapid-remove.com",
 }: { lang?: MailLang; phone?: boolean; chat?: boolean; chatUrl?: string }) {
   const tel = <A href={`tel:${PHONE}`}>{PHONE}</A>;
   const mailA = <A href={`mailto:${HELPDESK}`}>{HELPDESK}</A>;

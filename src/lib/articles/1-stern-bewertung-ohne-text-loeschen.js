@@ -54,9 +54,9 @@ const article = {
       ["Anwalt", "einzelne Bewertung", "3 – 9 Monate", "ca. 90 %", "pro Bewertung, Vorkasse"],
       ["RapidRemove", "**ganzes Profil + alle Bewertungen**", "24 – 48 Std.", "Zahlung nur bei Erfolg", "Fixpreis nach Erfolg"],
     ] },
-    { t: "cta", title: "Wortlose 1-Stern-Bewertung loswerden?", text: "Prüfen Sie kostenlos, ob und wie schnell sich Ihr Profil bereinigen lässt.", btn: "Gratis prüfen", href: "https://rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
+    { t: "cta", title: "Wortlose 1-Stern-Bewertung loswerden?", text: "Prüfen Sie kostenlos, ob und wie schnell sich Ihr Profil bereinigen lässt.", btn: "Gratis prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
     { t: "p", text: "Bei der Profil-Löschung zahlen Sie erst **nach Erfolg**, und dank Garantie wird ein erneut auftauchendes Profil kostenlos entfernt." },
-    { t: "cta", title: "Prüfen Sie kostenlos, ob Ihre 1-Stern-Bewertung löschbar ist.", text: "Firmennamen eingeben – wir finden Ihr Profil und prüfen in Sekunden, ob und wie schnell es sich entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
+    { t: "cta", title: "Prüfen Sie kostenlos, ob Ihre 1-Stern-Bewertung löschbar ist.", text: "Firmennamen eingeben – wir finden Ihr Profil und prüfen in Sekunden, ob und wie schnell es sich entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
   ],
   faq: [
     { q: "Kann ich eine 1-Stern-Bewertung ohne Text löschen lassen?", a: "In vielen Fällen ja. Da kein Bezug zu einer echten Erfahrung erkennbar ist, fehlt der Bewertung oft die rechtliche Grundlage – das LG Lübeck (Az. 9 O 59/17) und der BGH (Az. VI ZR 34/15) haben entsprechende Prüf- und Löschansprüche bestätigt." },
@@ -67,11 +67,11 @@ const article = {
     { q: "Wie schnell ist man die Bewertungen los?", a: "Über die Profil-Löschung häufig innerhalb von 24 bis 48 Stunden – deutlich schneller als der mehrmonatige Rechtsweg für eine Einzelbewertung." },
   ],
   related: [
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Schlechte Google-Bewertung – was tun?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Schlechte Google-Bewertung – was tun?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

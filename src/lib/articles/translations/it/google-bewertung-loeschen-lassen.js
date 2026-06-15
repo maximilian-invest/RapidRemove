@@ -70,7 +70,7 @@ const article = {
       ["Rimozione del profilo (RapidRemove)", "Prezzo fisso, pagabile dopo il successo", "Tutte le recensioni via – pagamento in caso di successo"],
     ] },
     { t: "p", text: "Attenzione alle offerte molto economiche: qualità e assistenza oscillano spesso parecchio. Cerca un **onorario di successo**: i fornitori seri si fanno pagare solo dopo la rimozione riuscita, così non corri rischi di costo." },
-    { t: "cta", title: "Verifica ora gratis se le tue recensioni si possono eliminare.", text: "Inserisci il nome della tua azienda e vedi in pochi secondi se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://rapid-remove.com/", trust: ["Analisi gratis", "Con garanzia", "Senza rischio"] },
+    { t: "cta", title: "Verifica ora gratis se le tue recensioni si possono eliminare.", text: "Inserisci il nome della tua azienda e vedi in pochi secondi se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Con garanzia", "Senza rischio"] },
 
     { t: "h2", id: "vergleich", text: "Il confronto diretto dei metodi", toc: "Confronto diretto" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (rimozione profilo)", "Avvocato (via legale)", "Segnalare da soli"], rows: [
@@ -91,10 +91,10 @@ const article = {
     { q: "Cos'è l'effetto Streisand?", a: "Quando le azioni legali contro una recensione provocano l'autore e portano ad altre recensioni negative. La rimozione tecnica evita questo rischio perché lavora senza confronto diretto." },
   ],
   related: [
-    { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Eliminare una recensione a 1 stella senza testo", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Eliminare una recensione a 1 stella senza testo", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

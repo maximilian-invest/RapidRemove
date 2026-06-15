@@ -144,7 +144,7 @@ export function subject(p: NeuesAboProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function NeuesAbo({ lang = "de", portalUrl = "https://rapid-remove.com" }: NeuesAboProps = {}) {
+export default function NeuesAbo({ lang = "de", portalUrl = "https://www.rapid-remove.com" }: NeuesAboProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

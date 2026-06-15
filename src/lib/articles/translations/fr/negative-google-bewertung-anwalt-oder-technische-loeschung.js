@@ -60,7 +60,7 @@ const article = {
       ["Risque Streisand", "aucun", "présent"],
       ["Effort", "Nul (pilote automatique)", "Élevé (preuves et délais)"],
     ] },
-    { t: "cta", title: "Quelle voie vous convient ? Découvrez-le gratuitement.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
+    { t: "cta", title: "Quelle voie vous convient ? Découvrez-le gratuitement.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
   ],
   faq: [
     { q: "Puis-je faire supprimer un avis Google négatif ?", a: "Oui, s'il enfreint les règles de Google (p. ex. faux, absence de lien, insulte). Les opinions purement factuelles sur des expériences réelles sont difficiles à supprimer." },
@@ -71,10 +71,10 @@ const article = {
     { q: "Les avis Google négatifs sont-ils punissables ?", a: "Une opinion honnête, non. Les allégations de faits délibérément fausses, les insultes ou les propos diffamatoires peuvent avoir des conséquences juridiques. Ceci n'est pas un conseil juridique." },
   ],
   related: [
-    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Signaler et supprimer un faux avis Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Supprimer un avis 1 étoile sans texte", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Mauvais avis Google : que faire ?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Supprimer un avis 1 étoile sans texte", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Mauvais avis Google : que faire ?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

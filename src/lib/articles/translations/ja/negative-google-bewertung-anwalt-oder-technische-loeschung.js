@@ -60,7 +60,7 @@ const article = {
       ["ストライサンドのリスク", "なし", "あり"],
       ["手間", "なし（自動）", "大（証拠・期日）"],
     ] },
-    { t: "cta", title: "あなたに合う道は？無料で確かめましょう。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://rapid-remove.com/", trust: ["無料診断", "保証付き", "リスクなし"] },
+    { t: "cta", title: "あなたに合う道は？無料で確かめましょう。", text: "会社名を入力すれば、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証付き", "リスクなし"] },
   ],
   faq: [
     { q: "Googleの低評価クチコミを削除してもらえますか？", a: "はい、Googleのガイドラインに違反していれば（例：偽・関連性なし・侮辱）。実際の体験についての純粋に事実に即した意見は、逆に削除が難しいです。" },
@@ -71,10 +71,10 @@ const article = {
     { q: "Googleの低評価クチコミは罰せられますか？", a: "正直な意見は罰せられません。ただし故意に事実と異なる主張・侮辱・誹謗は法的結果を招きえます。これは法的助言ではありません。" },
   ],
   related: [
-    { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "コメントなしの星1つのクチコミを削除する", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Googleの悪いクチコミ——どうする？", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Googleビジネスプロフィールを削除するには？", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Googleの悪いクチコミ——どうする？", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

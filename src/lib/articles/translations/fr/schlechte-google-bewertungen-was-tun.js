@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "« Merci beaucoup pour votre retour. Nous sommes désolés que votre visite n'ait pas répondu à vos attentes. Cela ne correspond pas à nos exigences. Merci de nous écrire brièvement à [contact] afin que nous puissions clarifier la situation et trouver une solution. »" },
     { t: "p", text: "Restez factuel, ne donnez pas de détails internes et ne vous mettez pas sur la défensive. Face à une critique justifiée, une réponse honnête et orientée solution est souvent le meilleur soin de réputation." },
 
-    { t: "cta", title: "Avis injustifié ? Vérifiez gratuitement la faisabilité.", text: "Saisissez le nom de votre entreprise et voyez en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
+    { t: "cta", title: "Avis injustifié ? Vérifiez gratuitement la faisabilité.", text: "Saisissez le nom de votre entreprise et voyez en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
 
     { t: "h2", id: "melden", text: "Quand le signalement en vaut la peine", toc: "Quand signaler ?" },
     { t: "p", text: "Si un avis enfreint les règles de Google, vous devriez le signaler. De bonnes chances existent pour :" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Le signalement à Google en vaut-il la peine ?", a: "Comme première étape gratuite oui, surtout pour du spam évident. Mais Google rejetant beaucoup de signalements de façon automatisée, l'avocat reste pour les cas isolés tenaces, et la suppression de la fiche pour une fiche gravement endommagée." },
   ],
   related: [
-    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Signaler et supprimer un faux avis Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Supprimer un avis 1 étoile sans texte", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Supprimer un avis 1 étoile sans texte", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
   ],
 };
 export default article;

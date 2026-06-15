@@ -32,7 +32,7 @@ const article = {
     { t: "quote", text: "«Muito obrigado pelo seu feedback. Lamentamos que a sua visita não tenha correspondido às suas expectativas. Não é a isso que aspiramos. Por favor, escreva-nos brevemente para [contacto] para que possamos esclarecer o caso e encontrar uma solução.»" },
     { t: "p", text: "Mantenha-se objetivo, não revele pormenores internos e não se ponha na defensiva. Perante uma crítica justificada, uma resposta honesta e orientada para a solução é muitas vezes o melhor cuidado da reputação." },
 
-    { t: "cta", title: "Avaliação injusta? Verifique a removibilidade – grátis.", text: "Introduza o nome da sua empresa e veja em segundos se e com que rapidez o seu perfil e todas as suas avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
+    { t: "cta", title: "Avaliação injusta? Verifique a removibilidade – grátis.", text: "Introduza o nome da sua empresa e veja em segundos se e com que rapidez o seu perfil e todas as suas avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
 
     { t: "h2", id: "melden", text: "Quando vale a pena denunciar", toc: "Quando denunciar?" },
     { t: "p", text: "Se uma avaliação viola as diretrizes do Google, deve denunciá-la. Há boas hipóteses com:" },
@@ -65,10 +65,10 @@ const article = {
     { q: "Vale mesmo a pena denunciar ao Google?", a: "Como primeiro passo gratuito, sim – sobretudo perante spam evidente. Mas como o Google rejeita muitas denúncias de forma automatizada, resta o advogado para casos isolados persistentes, e a remoção do perfil para um perfil fundamentalmente danificado." },
   ],
   related: [
-    { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

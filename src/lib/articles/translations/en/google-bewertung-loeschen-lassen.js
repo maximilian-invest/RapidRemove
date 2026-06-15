@@ -70,7 +70,7 @@ const article = {
         ["Profile removal (RapidRemove)", "Fixed price, payable after success", "All reviews gone – pay only on success"],
       ] },
       { t: "p", text: "Be careful with very cheap offers: quality and support often fluctuate considerably. Look for a **success fee** – reputable providers only get paid after successful removal, so you bear no cost risk." },
-      { t: "cta", title: "Check now, for free, whether your reviews can be removed.", text: "Enter your business name – in seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
+      { t: "cta", title: "Check now, for free, whether your reviews can be removed.", text: "Enter your business name – in seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
 
       { t: "h2", id: "vergleich", text: "The methods compared directly", toc: "Direct comparison" },
       { t: "table", rrCol: 1, head: ["Criterion", "RapidRemove (profile removal)", "Lawyer (legal route)", "Report yourself"], rows: [
@@ -91,10 +91,10 @@ const article = {
       { q: "What is the Streisand effect?", a: "When legal steps against a review provoke the reviewer into further negative reviews. Technical removal avoids this risk because it works without direct confrontation." },
     ],
     related: [
-      { label: "Delete Google Business Profile – how does it work?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-      { label: "Report and remove a fake Google review", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-      { label: "Remove a 1-star review without text", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-      { label: "Lawyer or technical removal – what's really worth it?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+      { label: "Delete Google Business Profile – how does it work?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+      { label: "Report and remove a fake Google review", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+      { label: "Remove a 1-star review without text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+      { label: "Lawyer or technical removal – what's really worth it?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     ],
 };
 export default article;

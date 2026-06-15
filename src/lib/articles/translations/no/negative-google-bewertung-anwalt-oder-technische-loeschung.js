@@ -60,7 +60,7 @@ const article = {
       ["Streisand-risiko", "ingen", "finnes"],
       ["Innsats", "Ingen (autopilot)", "Høy (bevis og møter)"],
     ] },
-    { t: "cta", title: "Hvilken vei passer for deg? Finn det ut gratis.", text: "Skriv inn bedriftsnavnet ditt – vi sjekker på sekunder om og hvor raskt profilen din inkludert alle anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://rapid-remove.com/", trust: ["Gratis analyse", "Med garanti", "Uten risiko"] },
+    { t: "cta", title: "Hvilken vei passer for deg? Finn det ut gratis.", text: "Skriv inn bedriftsnavnet ditt – vi sjekker på sekunder om og hvor raskt profilen din inkludert alle anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Med garanti", "Uten risiko"] },
   ],
   faq: [
     { q: "Kan jeg få fjernet en negativ Google-anmeldelse?", a: "Ja, hvis den bryter Googles retningslinjer (f.eks. falsk, manglende sammenheng, fornærmelse). Rent saklige meninger om virkelige opplevelser er derimot vanskelige å fjerne." },
@@ -71,10 +71,10 @@ const article = {
     { q: "Er negative Google-anmeldelser straffbare?", a: "En ærlig mening ikke. Bevisst falske faktapåstander, fornærmelser eller sjikane kan imidlertid få rettslige følger. Dette er ikke juridisk rådgivning." },
   ],
   related: [
-    { label: "Få fjernet en Google-anmeldelse: skjema, pris og guide", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Fjerne en 1-stjerners anmeldelse uten tekst", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Få fjernet en Google-anmeldelse: skjema, pris og guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Fjerne en 1-stjerners anmeldelse uten tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

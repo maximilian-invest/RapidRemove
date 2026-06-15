@@ -54,7 +54,7 @@ const article = {
       "**Compatible SEO :** votre site et votre classement restent intacts",
       "**Garanti :** si la fiche réapparaît via des tiers, elle est supprimée gratuitement",
     ] },
-    { t: "cta", title: "Vérifiez gratuitement si votre fiche Maps peut être supprimée.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
+    { t: "cta", title: "Vérifiez gratuitement si votre fiche Maps peut être supprimée.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
   ],
   faq: [
     { q: "Comment supprimer ma propre fiche Google Maps ?", a: "Via « Votre fiche d'établissement » → paramètres → menu à trois points → « Supprimer la fiche d'établissement » → « Supprimer le contenu de la fiche et les administrateurs ». Attention : cela ne fait que détacher la fiche de votre compte, sans la retirer de Maps." },
@@ -64,10 +64,10 @@ const article = {
     { q: "Puis-je faire supprimer une fiche Google Maps durablement ?", a: "De façon complète et durable, y compris les avis, cela passe généralement par une agence spécialisée, car Google ne prévoit pas l'auto-suppression. La suppression technique se fait souvent en 24 heures — paiement uniquement après succès." },
   ],
   related: [
-    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Signaler et supprimer un faux avis Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Mauvais avis Google : que faire ?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Mauvais avis Google : que faire ?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

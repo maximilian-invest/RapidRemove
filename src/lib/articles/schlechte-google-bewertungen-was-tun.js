@@ -35,7 +35,7 @@ const article = {
     { t: "quote", text: "„Vielen Dank für Ihr Feedback. Es tut uns leid, dass Ihr Besuch nicht Ihren Erwartungen entsprach. Das entspricht nicht unserem Anspruch. Bitte melden Sie sich kurz unter [Kontakt], damit wir den Fall klären und eine Lösung finden können.“" },
     { t: "p", text: "Bleiben Sie sachlich, nennen Sie keine internen Details und gehen Sie nicht in die Verteidigung. Bei einer berechtigten Kritik ist eine ehrliche, lösungsorientierte Antwort oft die beste Reputationspflege." },
 
-    { t: "cta", title: "Ungerechtfertigte Bewertung? Prüfen Sie die Löschbarkeit – kostenlos.", text: "Geben Sie Ihren Firmennamen ein und sehen Sie in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
+    { t: "cta", title: "Ungerechtfertigte Bewertung? Prüfen Sie die Löschbarkeit – kostenlos.", text: "Geben Sie Ihren Firmennamen ein und sehen Sie in Sekunden, ob und wie schnell sich Ihr Profil samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Analyse gratis", "Garantie", "Kein Risiko"] },
 
     { t: "h2", id: "melden", text: "Wann sich Melden lohnt", toc: "Wann melden?" },
     { t: "p", text: "Verstößt eine Bewertung gegen Googles Richtlinien, sollten Sie sie melden. Gute Chancen bestehen bei:" },
@@ -68,12 +68,12 @@ const article = {
     { q: "Lohnt sich das Melden bei Google überhaupt?", a: "Als erster, kostenloser Schritt ja – besonders bei offensichtlichem Spam. Da Google aber viele Meldungen automatisiert ablehnt, bleibt bei hartnäckigen Einzelfällen der Anwalt, und bei einem grundlegend beschädigten Profil die Profil-Löschung." },
   ],
   related: [
-    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://rapid-remove.com/google-maps-eintrag-loeschen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
-    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://www.rapid-remove.com/google-maps-eintrag-loeschen" },
+    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

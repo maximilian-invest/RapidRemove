@@ -111,7 +111,7 @@ export function subject(p: FragebogenProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Fragebogen({ lang = "de", formUrl = "https://rapid-remove.com" }: FragebogenProps = {}) {
+export default function Fragebogen({ lang = "de", formUrl = "https://www.rapid-remove.com" }: FragebogenProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

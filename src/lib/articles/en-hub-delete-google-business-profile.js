@@ -37,7 +37,7 @@ const article = {
     { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one review gone while keeping the profile, use reporting or the legal route instead." },
 
     { t: "h2", id: "single-vs-profile", text: "Single reviews vs. the whole profile", toc: "Reviews vs. profile" },
-    { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear a single unfair review while keeping the profile, see our guide on how to [have a Google review removed](https://rapid-remove.com/en/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },
+    { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear a single unfair review while keeping the profile, see our guide on how to [have a Google review removed](https://www.rapid-remove.com/en/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },
 
     { t: "h2", id: "cost", text: "What it costs", toc: "What it costs" },
     { t: "p", text: "Prices vary widely by provider type:" },
@@ -48,7 +48,7 @@ const article = {
       ["Profile removal (RapidRemove)", "Fixed price, payable after success", "All reviews gone – pay only on success"],
     ] },
 
-    { t: "cta", title: "See whether your profile can be removed – free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
+    { t: "cta", title: "See whether your profile can be removed – free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
 
     { t: "h2", id: "diy", text: "Step-by-step: what you can do yourself", toc: "Do it yourself" },
     { t: "p", text: "Inside your Google Business Profile you have two owner options – and it helps to know what each really does:" },
@@ -59,7 +59,7 @@ const article = {
     ] },
     { t: "p", text: "In other words: the standard interface is not built to remove the public listing for good. That is why a complete, professional removal is the dependable path when the reviews really need to go." },
 
-    { t: "cta", title: "Ready to remove your profile for good?", text: "Run the free removability check – in seconds, no obligation.", btn: "Start free check", href: "https://rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
+    { t: "cta", title: "Ready to remove your profile for good?", text: "Run the free removability check – in seconds, no obligation.", btn: "Start free check", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
   ],
   faq: [
     { q: "Can I delete my Google Business Profile myself?", a: "You can mark it “permanently closed” or remove it from your account, but neither deletes the public listing – it stays visible in Search and Maps with all its reviews. A complete removal goes through Google's official processes." },

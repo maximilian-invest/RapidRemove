@@ -54,7 +54,7 @@ const article = {
       "**Amigo do SEO:** o seu site e o seu ranking permanecem intactos",
       "**Garantido:** se o perfil reaparecer através de terceiros, é removido gratuitamente",
     ] },
-    { t: "cta", title: "Verifique gratuitamente se a sua ficha do Maps é removível.", text: "Introduza o nome da empresa – verificamos em segundos se e com que rapidez o seu perfil e todas as avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
+    { t: "cta", title: "Verifique gratuitamente se a sua ficha do Maps é removível.", text: "Introduza o nome da empresa – verificamos em segundos se e com que rapidez o seu perfil e todas as avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
   ],
   faq: [
     { q: "Como removo a minha própria ficha do Google Maps?", a: "Por «O seu perfil de empresa» → definições → menu de três pontos → «Remover o perfil de empresa» → «Remover conteúdo do perfil e administradores». Atenção: isto apenas desvincula a ficha da sua conta, não a remove do Maps." },
@@ -64,10 +64,10 @@ const article = {
     { q: "Posso mandar remover uma ficha do Google Maps de forma permanente?", a: "Por completo e de forma permanente, incluindo as avaliações, consegue-se normalmente através de uma agência especializada, pois o Google não prevê a auto-remoção. A remoção técnica ocorre muitas vezes em 24 horas — paga-se só após o sucesso." },
   ],
   related: [
-    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Remover avaliações do Google: custos e métodos", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Denunciar e remover uma avaliação falsa do Google", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Avaliação negativa no Google – o que fazer?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Remover avaliações do Google: custos e métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Denunciar e remover uma avaliação falsa do Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Avaliação negativa no Google – o que fazer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;

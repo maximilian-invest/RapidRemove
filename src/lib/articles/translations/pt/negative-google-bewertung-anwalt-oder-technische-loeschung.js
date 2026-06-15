@@ -60,7 +60,7 @@ const article = {
       ["Risco Streisand", "nenhum", "presente"],
       ["Esforço", "Nenhum (piloto automático)", "Elevado (provas e prazos)"],
     ] },
-    { t: "cta", title: "Que caminho combina consigo? Descubra gratuitamente.", text: "Introduza o nome da sua empresa – verificamos em segundos se e com que rapidez o seu perfil e todas as avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
+    { t: "cta", title: "Que caminho combina consigo? Descubra gratuitamente.", text: "Introduza o nome da sua empresa – verificamos em segundos se e com que rapidez o seu perfil e todas as avaliações podem ser removidos.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
   ],
   faq: [
     { q: "Posso mandar remover uma avaliação negativa do Google?", a: "Sim, se violar as diretrizes do Google (p. ex. falsa, sem relação, insulto). Opiniões puramente objetivas sobre experiências reais são, pelo contrário, difíceis de remover." },
@@ -71,10 +71,10 @@ const article = {
     { q: "As avaliações negativas do Google são puníveis?", a: "Uma opinião honesta não. Mas afirmações de facto deliberadamente falsas, insultos ou crítica difamatória podem ter consequências jurídicas. Isto não é aconselhamento jurídico." },
   ],
   related: [
-    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://rapid-remove.com/google-rezension-loeschen-lassen" },
-    { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Avaliação negativa no Google – o que fazer?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
-    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
+    { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Avaliação negativa no Google – o que fazer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
   ],
 };
 export default article;

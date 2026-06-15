@@ -54,7 +54,7 @@ const article = {
       "**SEO-friendly:** your website and ranking stay untouched",
       "**Guaranteed:** if the profile reappears via third parties, it's removed for free",
     ] },
-    { t: "cta", title: "Check for free whether your Maps listing can be removed.", text: "Enter your business name – we'll check in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
+    { t: "cta", title: "Check for free whether your Maps listing can be removed.", text: "Enter your business name – we'll check in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [
     { q: "How do I delete my own Google Maps listing?", a: "Via “Your Business Profile” → profile settings → three-dot menu → “Remove business profile” → “Remove profile content and managers”. Note: this only detaches the listing from your account, it doesn't remove it from Maps." },
@@ -64,10 +64,10 @@ const article = {
     { q: "Can I have a Google Maps listing permanently removed?", a: "Completely and permanently, including reviews, this is usually achieved via a specialist agency, since Google doesn't provide for self-deletion. Technical removal often happens within 24 hours — you pay only after success." },
   ],
   related: [
-    { label: "Delete Google Business Profile – how does it work?", url: "https://rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
-    { label: "Remove Google reviews: costs & methods", url: "https://rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Report and remove a fake Google review", url: "https://rapid-remove.com/fake-google-bewertung-melden-loeschen" },
-    { label: "Bad Google review – what to do?", url: "https://rapid-remove.com/schlechte-google-bewertungen-was-tun" },
+    { label: "Delete Google Business Profile – how does it work?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
+    { label: "Report and remove a fake Google review", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Bad Google review – what to do?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
   ],
 };
 export default article;
