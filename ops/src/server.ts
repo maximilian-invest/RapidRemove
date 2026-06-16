@@ -515,6 +515,40 @@ app.post("/admin/send", async (req, reply) => {
   }
 });
 
+// Dedizierter Mail-Versand über das Helpdesk-Postfach (Microsoft Graph), gedacht
+// fürs automatisierte/agentische Senden. Eigenes Token MAIL_TOKEN statt des
+// allmächtigen ADMIN_TOKEN → eng begrenzte Berechtigung. Ohne gesetztes
+// MAIL_TOKEN ist der Endpoint deaktiviert (opt-in).
+//   POST /mail/send  { token, to, subject, text | html, cc?, from?, replyTo? }
+app.post("/mail/send", async (req, reply) => {
+  const MAIL_TOKEN = (process.env.MAIL_TOKEN || "").trim();
+  if (!MAIL_TOKEN) return reply.code(503).send({ ok: false, error: "MAIL_TOKEN nicht gesetzt – Endpoint deaktiviert" });
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (String(b.token || "") !== MAIL_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.to || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const subject = String(b.subject || "").trim() || "RapidRemove";
+  const cc = String(b.cc || "").split(/[,;\s]+/).filter((e) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e));
+  const from = String(b.from || "").trim() || undefined;       // z. B. helpdesk@rapid-remove.com (Default: MAIL_FROM)
+  const replyTo = String(b.replyTo || "").trim() || undefined;
+  // Entweder fertiges HTML (b.html) ODER Plaintext (b.text) → ins Standard-Layout gehüllt.
+  let html: string;
+  if (typeof b.html === "string" && b.html.trim()) {
+    html = b.html;
+  } else {
+    const safe = escapeHtml(String(b.text || "")).replace(/\n/g, "<br>");
+    if (!safe) return reply.code(400).send({ ok: false, error: "text oder html fehlt" });
+    html = `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px"><div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div><div>${safe}</div></div>`;
+  }
+  try {
+    const r = await sendMail({ to, subject, html, from, replyTo, cc: cc.length ? cc : undefined });
+    return { ok: true, to, subject, status: r.status, requestId: r.requestId };
+  } catch (e: any) {
+    app.log.error({ err: e }, "mail/send fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: "send failed: " + (e?.message || "") });
+  }
+});
+
 // Admin-Dashboard: Live-Daten (Bestellungen + Prüfungen) aus der DB
 app.post("/admin/data", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
