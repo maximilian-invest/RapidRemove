@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale } from "./integrations/firstpromoter";
@@ -498,6 +498,19 @@ app.post("/admin/reset-data", async (req, reply) => {
   } catch (e) {
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
+});
+
+// Admin: Bestellung einem Bearbeiter zuweisen (max | matthias | null).
+app.post("/admin/order-assign", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = String(b.orderId || "");
+  const who = b.assignee == null || b.assignee === "" ? null : String(b.assignee);
+  if (!id) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
+  if (who && !["max", "matthias"].includes(who)) return reply.code(400).send({ ok: false, error: "ungültige Zuweisung" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  try { const ok = await setOrderAssignee(id, who); return { ok, assignee: who }; }
+  catch (e) { return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) }); }
 });
 
 // Admin: alle 301-Weiterleitungen auflisten (inkl. deaktivierte).

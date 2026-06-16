@@ -5,8 +5,9 @@ import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
 import { DangerZone } from "./AdminDanger";
+import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, fetchVapidKey, savePushSub } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, setOrderAssignee, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -102,6 +103,7 @@ function OrderRow({ o, onClick, now }) {
         {o.affiliate ? <div className="aff-chip">via {o.affiliate}</div> : null}
       </div>
       <div className="right">
+        {o.assignee ? <AssigneeAvatar who={o.assignee} size={24} /> : null}
         <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
         <StatusBadge status={o.status} />
         <OrderTimer since={o.createdAt} status={o.status} now={now} />
@@ -588,7 +590,7 @@ const payLinkSmsText = (o, url) => (PAYLINK_SMS[o.lang] || PAYLINK_SMS.en)(o.nam
 const PAYLINK_PLACEHOLDER = "[Zahlungslink hier einfügen]";
 
 /* ---------- Order drawer ---------- */
-function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast }) {
+function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign, toast }) {
   const now = useNow(1000);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [smsMsg, setSmsMsg] = React.useState("");
@@ -614,6 +616,9 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, toast })
           <button className="drawer-close" onClick={onClose}><Icon.x /></button>
         </div>
         <div className="drawer-body">
+          <div className="dsec" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", paddingBottom: 12 }}>
+            <AssignControl order={o} onAssign={onAssign} />
+          </div>
           {/* status pipeline */}
           <div className="dsec">
             <h3><Icon.zap /> Status aktualisieren <span className="right"><StatusBadge status={o.status} /></span></h3>
@@ -1053,7 +1058,7 @@ function FragebogenBlock({ form, onRequest }) {
 }
 
 /* ---------- Customer detail (full CRM record) ---------- */
-function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, toast }) {
+function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, onAssign, toast }) {
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Detailansicht
   const isMobile = useIsMobile();
@@ -1225,6 +1230,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
           </div>
         </div>
+        <div style={{ padding: "0 16px 10px" }}><AssignControl order={o} onAssign={onAssign} compact /></div>
         <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge pay={o.pay} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
           {o.status !== "storniert"
             ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
@@ -1331,6 +1337,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <span className="m"><Icon.phone /> {o.phone}</span>
             <span className="m"><Icon.globe /> {o.country}</span>
           </div>
+          <div style={{ marginTop: 12 }}><AssignControl order={o} onAssign={onAssign} /></div>
         </div>
       </div>
 
@@ -1746,6 +1753,15 @@ function AdminApp() {
     setOrderStatus({ orderId: o.id, status: id, pay: nextPay, label }).catch((e) => toast("Status nicht gespeichert: " + e.message));
     if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
+  // Bestellung Max/Matthias zuweisen (oder entfernen) — lokal sofort, dann persistiert.
+  const setAssignee = (o, who) => {
+    const upd = (x) => x && x.id === o.id ? { ...x, assignee: who } : x;
+    setOrders((list) => list.map(upd));
+    setActive(upd); setDetail(upd);
+    setOrderAssignee({ orderId: o.id, assignee: who }).catch((e) => toast("Zuweisung nicht gespeichert: " + e.message));
+    const name = who === "max" ? "Max" : who === "matthias" ? "Matthias" : null;
+    toast(name ? "Bestellung " + o.id + " → " + name : "Zuweisung entfernt");
+  };
   const goInvoice = (o) => { setInvoiceModal(o); };
   // „Auftrag stornieren" öffnet jetzt die Storno-Zahlungslink-Auswahl (stornoOrder);
   // als „storniert" markiert der Storno-Dialog die Bestellung nach dem Versand.
@@ -1765,7 +1781,7 @@ function AdminApp() {
   };
 
   let body;
-  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} toast={toast} />;
+  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onAssign={setAssignee} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates />;
@@ -1783,7 +1799,7 @@ function AdminApp() {
       </div>
       <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />
       <OrderDrawer order={active} onClose={() => setActive(null)} onStatus={setStatus} onOpenFull={openDetail}
-        onCompose={(o, t) => setCompose({ order: o, template: t })} toast={toast} />
+        onCompose={(o, t) => setCompose({ order: o, template: t })} onAssign={setAssignee} toast={toast} />
       <EmailComposer data={compose} onClose={() => setCompose(null)} toast={toast} />
       <InvoiceModal order={invoiceModal} onClose={() => setInvoiceModal(null)} onCompose={(o, t) => setCompose({ order: o, template: t })} toast={toast} />
       <SmsModal order={smsOrder} onClose={() => setSmsOrder(null)} toast={toast} />

@@ -103,6 +103,7 @@ function mapOrder(r) {
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",
+    assignee: r.assignee || null,
   };
 }
 function mapCheck(r) {
@@ -246,6 +247,19 @@ export async function fetchEmailPreview(eventId) {
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   return res.json();
+}
+
+/** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null). */
+export async function setOrderAssignee({ orderId, assignee }) {
+  if (!OPS || !orderId) return { ok: false };
+  const res = await fetch(OPS + "/admin/order-assign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId, assignee: assignee || null }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
 }
 
 /** Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).

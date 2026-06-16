@@ -62,7 +62,8 @@ export async function initDb(): Promise<void> {
       note        text,
       check_id    text,
       raw         jsonb,
-      form        jsonb
+      form        jsonb,
+      assignee    text
     )
   `);
   // Selbstheilung: fehlende Spalten ergänzen, falls die Tabelle aus einer älteren Version stammt.
@@ -74,7 +75,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS service text, ADD COLUMN IF NOT EXISTS protection text,
       ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS prot_amount numeric, ADD COLUMN IF NOT EXISTS status text,
       ADD COLUMN IF NOT EXISTS pay text, ADD COLUMN IF NOT EXISTS note text, ADD COLUMN IF NOT EXISTS check_id text,
-      ADD COLUMN IF NOT EXISTS raw jsonb, ADD COLUMN IF NOT EXISTS form jsonb
+      ADD COLUMN IF NOT EXISTS raw jsonb, ADD COLUMN IF NOT EXISTS form jsonb,
+      ADD COLUMN IF NOT EXISTS assignee text
   `);
   await pool.query(`
     ALTER TABLE checks
@@ -283,6 +285,13 @@ export async function updateOrderStatus(id: string, status: string, pay?: string
   const r = pay
     ? await pool.query(`UPDATE orders SET status=$2, pay=$3 WHERE id=$1`, [id, status, pay])
     : await pool.query(`UPDATE orders SET status=$2 WHERE id=$1`, [id, status]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null = entfernen). */
+export async function setOrderAssignee(id: string, assignee: string | null): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE orders SET assignee=$2 WHERE id=$1`, [id, assignee || null]);
   return (r.rowCount ?? 0) > 0;
 }
 
