@@ -449,10 +449,12 @@ app.get("/admin/fpr-test", async (req, reply) => {
   // Optional: Kandidaten-Key zum Testen direkt mitgeben (?key=…), ohne Railway-Env
   // neu zu deployen. Sonst wird der hinterlegte FPR_API_KEY benutzt.
   const key = (String(q.key || "").trim() || undefined) as string | undefined;
+  // Optional v2: ?accountId=… → benutzt Bearer + Account-ID gegen die v2-API. Ohne → v1 (x-api-key).
+  const accountId = (String(q.accountId || q.account || "").trim() || undefined) as string | undefined;
   if (!email) return reply.code(400).send({ ok: false, error: "Parameter email fehlt – z. B. ?email=test@example.com&ref=matthew" });
-  const signup = await trackSignup({ email, refId, tid, key });
-  const sale = await trackSale({ email, eventId: "TEST-" + Date.now(), amount, currency: "EUR", tid, refId, key });
-  return { ok: true, configured: hasFirstPromoter(), keySource: key ? "query" : "env", input: { email, refId, tid, amount }, signup, sale };
+  const signup = await trackSignup({ email, refId, tid, key, accountId });
+  const sale = await trackSale({ email, eventId: "TEST-" + Date.now(), amount, currency: "EUR", tid, refId, key, accountId });
+  return { ok: true, configured: hasFirstPromoter(), api: accountId ? "v2" : "v1", keySource: key ? "query" : "env", input: { email, refId, tid, amount }, signup, sale };
 });
 
 // Öffentlicher VAPID-Public-Key – der Browser braucht ihn für die Push-Subscription.

@@ -1,46 +1,79 @@
 /*
- * FirstPromoter – Affiliate-Sales serverseitig erfassen (ohne SDK, nur fetch,
- * wie clicksend.ts/stripe.ts). Wenn eine Bestellung über den Link eines
- * Affiliate-Partners reinkommt, meldet das ops-Backend den Sale an FirstPromoter;
- * der Partner sieht die Bestellung dann in seinem Dashboard.
+ * FirstPromoter – Affiliate-Referrals/Sales serverseitig erfassen (ohne SDK, nur fetch).
+ * Unterstützt BEIDE API-Generationen, automatisch gewählt anhand der Account-ID:
  *
- * Zugangsdaten LAZY aus der Umgebung (Server startet auch ohne Konfiguration):
+ *   v1 (legacy):  https://firstpromoter.com/api/v1/track/...
+ *                 Header  x-api-key: <KEY>          Body: form-urlencoded
+ *   v2 (aktuell): https://api.firstpromoter.com/api/v2/track/...
+ *                 Header  Authorization: Bearer <KEY> + Account-ID: <ID>   Body: JSON
  *
- *   FPR_API_KEY   Account-API-Key aus dem FirstPromoter-Dashboard
- *                 (Settings → Integrations → Manage API Keys). NICHT im Code/Repo!
+ * Liegt eine Account-ID vor (FPR_ACCOUNT_ID oder opts.accountId), wird v2 benutzt,
+ * sonst v1. Zugangsdaten LAZY aus der Umgebung (Server startet auch ohne):
  *
- * Hinweis: Der öffentliche `cid` (im Frontend in fpr.js) ist NICHT der API-Key.
- * Die Zuordnung Klick → Sale läuft über die Tracking-ID `tid` aus dem Cookie
- * `_fprom_tid`, die der Browser beim Checkout mitschickt. Ohne `tid` versucht
- * FirstPromoter, anhand der E-Mail einen bestehenden Referral zu finden.
+ *   FPR_API_KEY      v1-API-Key ODER v2-Bearer-Token. NICHT im Code/Repo!
+ *   FPR_ACCOUNT_ID   nur v2: Account-ID aus FirstPromoter → Settings → Integrations.
+ *
+ * Hinweis: Der öffentliche `cid` (Frontend/fpr.js) ist NICHT der API-Key. Die Zuordnung
+ * Klick → Sale läuft über die Tracking-ID `tid` (Cookie _fprom_tid) oder die Promoter-
+ * Ref-ID `ref_id` aus dem Link (?via=matthew → ref_id "matthew").
  */
 
-const ENDPOINT = "https://firstpromoter.com/api/v1/track/sale";
-const SIGNUP_ENDPOINT = "https://firstpromoter.com/api/v1/track/signup";
+const V1_BASE = "https://firstpromoter.com/api/v1";
+const V2_BASE = "https://api.firstpromoter.com/api/v2";
 
 export function hasFirstPromoter(): boolean {
   return !!process.env.FPR_API_KEY;
 }
 
-export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean; promoter?: string; raw?: string };
+export type FprSaleResult = { ok: boolean; status?: number; error?: string; skipped?: boolean; promoter?: string; raw?: string; api?: "v1" | "v2" };
 
-/** Liest – defensiv, da das Response-Schema variieren kann – den lesbaren
- *  Promoter/Affiliate-Namen aus der track/sale-Antwort. Leerstring, wenn nicht da. */
+/** Liest – defensiv, da das Response-Schema variiert – den Promoter-/Affiliate-Namen. */
 function extractPromoter(obj: any): string {
   if (!obj || typeof obj !== "object") return "";
+  const o = obj.data || obj;
   const pick = (x: any) =>
     x ? String(x.name || x.full_name || x.email || x.cust_id || x.username || x.default_ref_id || x.ref_id || "").trim() : "";
-  const p = obj.promoter || (obj.lead && obj.lead.promoter) || (obj.referral && obj.referral.promoter) || (obj.sale && obj.sale.promoter);
+  const p = o.promoter || (o.lead && o.lead.promoter) || (o.referral && o.referral.promoter) || (o.sale && o.sale.promoter);
   const s = pick(p);
   if (s) return s;
-  return String(obj.ref_id || obj.promoter_name || "").trim();
+  return String(o.ref_id || o.promoter_name || "").trim();
+}
+
+/** Ein Tracking-Call gegen v1 (x-api-key/form) oder v2 (Bearer + Account-ID/JSON). */
+async function fprPost(path: string, params: Record<string, unknown>, key: string, accountId?: string): Promise<{ status: number; txt: string }> {
+  let res: Response;
+  if (accountId) {
+    const body: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== "") body[k] = v;
+    res = await fetch(V2_BASE + path, {
+      method: "POST",
+      headers: { Authorization: "Bearer " + key, "Account-ID": accountId, "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(body),
+    });
+  } else {
+    const form = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && v !== "") form.set(k, String(v));
+    res = await fetch(V1_BASE + path, {
+      method: "POST",
+      headers: { "x-api-key": key, "Content-Type": "application/x-www-form-urlencoded" },
+      body: form.toString(),
+    });
+  }
+  const txt = await res.text().catch(() => "");
+  return { status: res.status, txt };
+}
+
+function done(status: number, txt: string, accountId?: string): FprSaleResult {
+  const api = accountId ? "v2" : "v1";
+  if (status < 200 || status >= 300) return { ok: false, status, error: `HTTP ${status}: ${txt.slice(0, 200)}`.trim(), raw: txt.slice(0, 600), api };
+  let promoter = "";
+  try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
+  return { ok: true, status, promoter, raw: txt.slice(0, 600), api };
 }
 
 /**
- * Meldet einen Sale an FirstPromoter.
- * @param amount  Bruttobetrag in der Hauptwährungseinheit (z. B. Euro) – wird in Cent umgerechnet.
- * @param eventId Eindeutige ID (Bestell-Nr.) – verhindert doppelte Sales/Provisionen.
- * @param tid     Tracking-ID aus dem _fprom_tid-Cookie (Klick → Partner-Zuordnung).
+ * Meldet einen Sale an FirstPromoter (bucht ihn auf das Referral).
+ * @param amount Bruttobetrag in der Hauptwährungseinheit (z. B. Euro) – wird in Cent umgerechnet.
  */
 export async function trackSale(opts: {
   email: string;
@@ -52,42 +85,25 @@ export async function trackSale(opts: {
   uid?: string;
   plan?: string;
   key?: string;
+  accountId?: string;
 }): Promise<FprSaleResult> {
   const key = opts.key || process.env.FPR_API_KEY;
+  const accountId = opts.accountId || process.env.FPR_ACCOUNT_ID || undefined;
   if (!key) return { ok: false, skipped: true, error: "FirstPromoter nicht konfiguriert (FPR_API_KEY)" };
-
   const amountCents = Math.round((Number(opts.amount) || 0) * 100);
   if (!opts.email || amountCents <= 0) return { ok: false, skipped: true, error: "kein Betrag oder keine E-Mail" };
-  // Zuordnung Klick → Sale geht über die Tracking-ID `tid` (Cookie _fprom_tid) ODER –
-  // wenn die fehlt (Cookie noch nicht gesetzt, abgelehnt, SameSite) – über die
-  // Affiliate-Ref-ID aus dem ?fpr=-Link (Cookie rr_aff). Fehlt beides, kann
-  // FirstPromoter nichts zuordnen und wir sparen uns den Call.
   if (!opts.tid && !opts.refId) return { ok: false, skipped: true, error: "weder Tracking-ID (tid) noch Affiliate-Ref (ref_id) – kein Affiliate" };
 
-  const params = new URLSearchParams();
-  params.set("email", opts.email);
-  params.set("event_id", opts.eventId);
-  params.set("amount", String(amountCents));
-  if (opts.currency) params.set("currency", opts.currency);
-  if (opts.tid) params.set("tid", opts.tid);
-  if (opts.refId) params.set("ref_id", opts.refId);
-  if (opts.uid) params.set("uid", opts.uid);
-  if (opts.plan) params.set("plan", opts.plan);
+  const params: Record<string, unknown> = { email: opts.email, event_id: opts.eventId, amount: amountCents };
+  if (opts.currency) params.currency = opts.currency;
+  if (opts.tid) params.tid = opts.tid;
+  if (opts.refId) params.ref_id = opts.refId;
+  if (opts.uid) params.uid = opts.uid;
+  if (opts.plan) params.plan = opts.plan;
 
   try {
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "x-api-key": key, "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
-    const txt = await res.text().catch(() => "");
-    if (!res.ok) {
-      return { ok: false, status: res.status, error: `HTTP ${res.status}: ${txt.slice(0, 200)}`.trim() };
-    }
-    let promoter = "";
-    try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
-    // raw (gekürzt) zurückgeben, damit das tatsächliche Response-Schema im Log sichtbar ist.
-    return { ok: true, status: res.status, promoter, raw: txt.slice(0, 600) };
+    const { status, txt } = await fprPost("/track/sale", params, key, accountId);
+    return done(status, txt, accountId);
   } catch (e: any) {
     return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };
   }
@@ -95,9 +111,7 @@ export async function trackSale(opts: {
 
 /**
  * Legt in FirstPromoter ein Referral an: ordnet die Kunden-E-Mail dem Promoter zu.
- * ERST dadurch entsteht ein Referral, dem anschließend ein Sale zugeordnet werden
- * kann. Zuordnung über `tid` (Cookie _fprom_tid) bevorzugt, sonst `ref_id` – das ist
- * der Promoter-Code aus dem Link (?via=matthew → ref_id "matthew").
+ * Zuordnung über `tid` (Cookie _fprom_tid) bevorzugt, sonst `ref_id` (?via=…).
  */
 export async function trackSignup(opts: {
   email: string;
@@ -105,29 +119,23 @@ export async function trackSignup(opts: {
   tid?: string;
   uid?: string;
   key?: string;
+  accountId?: string;
 }): Promise<FprSaleResult> {
   const key = opts.key || process.env.FPR_API_KEY;
+  const accountId = opts.accountId || process.env.FPR_ACCOUNT_ID || undefined;
   if (!key) return { ok: false, skipped: true, error: "FirstPromoter nicht konfiguriert (FPR_API_KEY)" };
   if (!opts.email && !opts.uid) return { ok: false, skipped: true, error: "keine E-Mail/uid" };
   if (!opts.tid && !opts.refId) return { ok: false, skipped: true, error: "weder Tracking-ID (tid) noch Affiliate-Ref (ref_id)" };
 
-  const params = new URLSearchParams();
-  if (opts.email) params.set("email", opts.email);
-  if (opts.tid) params.set("tid", opts.tid);
-  if (opts.refId) params.set("ref_id", opts.refId);
-  if (opts.uid) params.set("uid", opts.uid);
+  const params: Record<string, unknown> = {};
+  if (opts.email) params.email = opts.email;
+  if (opts.tid) params.tid = opts.tid;
+  if (opts.refId) params.ref_id = opts.refId;
+  if (opts.uid) params.uid = opts.uid;
 
   try {
-    const res = await fetch(SIGNUP_ENDPOINT, {
-      method: "POST",
-      headers: { "x-api-key": key, "Content-Type": "application/x-www-form-urlencoded" },
-      body: params.toString(),
-    });
-    const txt = await res.text().catch(() => "");
-    if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}: ${txt.slice(0, 200)}`.trim(), raw: txt.slice(0, 600) };
-    let promoter = "";
-    try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
-    return { ok: true, status: res.status, promoter, raw: txt.slice(0, 600) };
+    const { status, txt } = await fprPost("/track/signup", params, key, accountId);
+    return done(status, txt, accountId);
   } catch (e: any) {
     return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };
   }
