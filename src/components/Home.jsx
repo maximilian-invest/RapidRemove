@@ -42,6 +42,11 @@ const HERO_FLOAT = {
   pt: { done: "Perfil eliminado", sub: "Todas as avaliações fora" }
 };
 
+/* Preis-Hinweis direkt unter der Headline: „ab 450 € · Zahlung erst nach Erfolg".
+   Der Preis kommt währungsabhängig aus pricing.js (EUR „450 €" / USD „$495"). */
+const HERO_PRICE_FROM = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", ja: "", sv: "från", da: "fra", no: "fra" };
+const HERO_PAY_AFTER = { de: "Zahlung erst nach Erfolg", en: "pay only after success", es: "pagas solo tras el éxito", fr: "paiement après succès", it: "paghi solo dopo il successo", nl: "betalen pas na succes", pt: "paga só após o sucesso", ja: "成功後にのみお支払い", sv: "betala först efter framgång", da: "betal først efter succes", no: "betal først etter suksess" };
+
 const WP_COPY = {
   de: { eyebrow: "Unser Ansatz", title: "Wir löschen keine Einzelbewertungen — sondern das ganze Profil.",
     lead: "Einzelne Bewertungen zu entfernen ist mühsam und ungewiss: Google lehnt oft ab, und für jede gelöschte Bewertung tauchen neue auf. Wir gehen das Problem an der Wurzel an.",
@@ -199,6 +204,15 @@ function Hero({ onStart }) {
       <div className="container hero-grid">
         <div>
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
+          <div className="hero-pricetag hs hs3">
+            <Icon.shieldCheck size={15} />
+            <span>
+              {lang === "ja"
+                ? <><b>{money(lang, profileFor(lang).deletion)}</b>から</>
+                : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b></>}
+              <span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}
+            </span>
+          </div>
           <p className="lead hs hs3">{t.hero.lead}</p>
           <div className="hero-proof hs hs5">
             <div style={{ width: "100%" }}>

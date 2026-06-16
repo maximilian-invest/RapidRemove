@@ -12,7 +12,7 @@ const ja = {
   code: "ja",
   riskReversal: "リスクゼロ・削除成功後にのみお支払い",
   riskShort: "削除成功後にのみお支払い",
-  nav: { how: "ご利用の流れ", why: "選ばれる理由", pricing: "料金", reviews: "口コミ", faq: "よくある質問", magazin: "マガジン", about: "会社概要", login: "お客様ポータル", cta: "無料チェック" },
+  nav: { how: "ご利用の流れ", why: "選ばれる理由", pricing: "料金", reviews: "口コミ", faq: "よくある質問", magazin: "マガジン", about: "会社概要", login: "お客様ポータル", cta: "無料チェック", ctaResume: "続ける" },
   hero: {
     chip: "GDPR準拠・EUサーバー・100% 合法",
     h1a: "Googleビジネスプロフィールを削除 ―",
@@ -214,7 +214,7 @@ const sv = {
   code: "sv",
   riskReversal: "Noll risk · Betala först efter lyckad borttagning",
   riskShort: "Betala ENDAST efter lyckad borttagning",
-  nav: { how: "Så funkar det", why: "Varför oss", pricing: "Priser", reviews: "Omdömen", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundportal", cta: "Gratis koll" },
+  nav: { how: "Så funkar det", why: "Varför oss", pricing: "Priser", reviews: "Omdömen", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundportal", cta: "Gratis koll", ctaResume: "Fortsätt" },
   hero: {
     chip: "GDPR-anpassad · EU-servrar · 100 % lagligt",
     h1a: "Ta bort din Google-företagsprofil –",
@@ -416,7 +416,7 @@ const da = {
   code: "da",
   riskReversal: "Nul risiko · Betal først efter vellykket fjernelse",
   riskShort: "Betal KUN efter vellykket fjernelse",
-  nav: { how: "Sådan virker det", why: "Hvorfor os", pricing: "Priser", reviews: "Anmeldelser", faq: "FAQ", magazin: "Magasin", about: "Om os", login: "Kundeportal", cta: "Gratis tjek" },
+  nav: { how: "Sådan virker det", why: "Hvorfor os", pricing: "Priser", reviews: "Anmeldelser", faq: "FAQ", magazin: "Magasin", about: "Om os", login: "Kundeportal", cta: "Gratis tjek", ctaResume: "Fortsæt" },
   hero: {
     chip: "GDPR-overholdende · EU-servere · 100 % lovligt",
     h1a: "Slet din Google-virksomhedsprofil –",
@@ -618,7 +618,7 @@ const no = {
   code: "no",
   riskReversal: "Null risiko · Betal først etter vellykket fjerning",
   riskShort: "Betal KUN etter vellykket fjerning",
-  nav: { how: "Slik fungerer det", why: "Hvorfor oss", pricing: "Priser", reviews: "Omtaler", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundeportal", cta: "Gratis sjekk" },
+  nav: { how: "Slik fungerer det", why: "Hvorfor oss", pricing: "Priser", reviews: "Omtaler", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundeportal", cta: "Gratis sjekk", ctaResume: "Fortsett" },
   hero: {
     chip: "GDPR-tilpasset · EU-servere · 100 % lovlig",
     h1a: "Slett din Google-bedriftsprofil –",

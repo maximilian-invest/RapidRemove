@@ -154,7 +154,8 @@ section{position:relative;}
   /* Rückkehrer mit geprüftem Profil: „Weitermachen" doch in der oberen Leiste
      zeigen (kompakt); dafür weicht die Telefonnummer, damit nichts überläuft. */
   .nav-right .btn-primary.nav-cta-resume{display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 12px;font-size:12.5px;}
-  .nav-right:has(.btn-primary.nav-cta-resume) .nav-tel-wrap{display:none;}
+  .nav-right:has(.btn-primary.nav-cta-resume) .nav-tel-wrap,
+  .nav-right:has(.btn-primary.nav-cta-resume) > .nav-wa{display:none;}
   /* Telefonnummer bleibt sichtbar — kompakter, damit nichts überlappt */
   .nav-tel{padding:6px 9px;font-size:12.5px;gap:5px;}
   .langmenu-btn .lm-code{display:none;}
@@ -199,6 +200,11 @@ section{position:relative;}
 .hero h1{font-family:var(--font-display);font-weight:700;font-size:clamp(38px,5.2vw,60px);line-height:1.03;letter-spacing:-.6px;margin:18px 0 0;color:var(--fg);text-wrap:balance;overflow-wrap:break-word;hyphens:auto;}
 .hero h1 .hl{color:var(--primary);}
 .hero .lead{font-size:19px;line-height:1.6;color:var(--fg-2);margin:22px 0 0;max-width:540px;text-wrap:pretty;}
+/* Preis-Hinweis direkt unter der Headline */
+.hero-pricetag{display:inline-flex;align-items:center;gap:9px;margin:16px 0 0;padding:7px 14px;background:var(--neutral-50);border:1px solid var(--hairline);border-radius:var(--r-pill);font-size:14.5px;font-weight:700;color:var(--fg-2);max-width:100%;}
+.hero-pricetag svg{color:var(--success);flex:none;}
+.hero-pricetag b{color:var(--fg);font-weight:800;}
+.hero-pricetag .sep{margin:0 8px;color:var(--fg-muted);}
 .hero-trustline{display:flex;align-items:center;gap:14px 18px;margin-top:28px;flex-wrap:wrap;font-size:13.5px;font-weight:700;color:var(--fg-2);}
 .hero-trustline .dot{width:4px;height:4px;border-radius:50%;background:var(--hairline-strong);}
 .hero-trustline b{color:var(--fg);}
@@ -596,6 +602,10 @@ a.tb-item:hover{color:var(--primary);}
 .sticky-cta .btn{flex:none;}
 /* Rechts Platz für die Tidio-Bubble freihalten → der Gratis-Check-Button rückt nach links. */
 @media(max-width:920px){.sticky-cta{display:flex;padding-right:86px;}}
+/* Mobil: Footer-Unterkante über die fixierte Sticky-CTA heben, damit die
+   Zahlungsarten (.foot-pay) nicht hinter der Leiste verschwinden. Nur auf
+   Seiten mit Sticky-CTA (Startseite) und nur solange die Leiste sichtbar ist. */
+@media(max-width:920px){body:has(.sticky-cta) .footer{padding-bottom:calc(96px + env(safe-area-inset-bottom));}}
 
 /* ---------- WhatsApp float ---------- */
 .wa-float{position:fixed;right:22px;bottom:22px;z-index:65;width:58px;height:58px;border-radius:50%;background:#25d366;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(37,211,102,.4);cursor:pointer;transition:transform var(--dur) var(--ease);border:none;}
