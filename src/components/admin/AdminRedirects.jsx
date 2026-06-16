@@ -135,7 +135,6 @@ export function RedirectsDashboard({ toast }) {
                   <th style={{ padding: "11px 14px", fontWeight: 700 }}>Quelle → Ziel</th>
                   <th style={{ padding: "11px 8px", fontWeight: 700 }}>Typ</th>
                   <th style={{ padding: "11px 8px", fontWeight: 700 }}>Status</th>
-                  <th style={{ padding: "11px 8px", fontWeight: 700, textAlign: "right" }}>Treffer</th>
                   <th style={{ padding: "11px 14px", fontWeight: 700, textAlign: "right" }}>Aktionen</th>
                 </tr>
               </thead>
@@ -152,7 +151,6 @@ export function RedirectsDashboard({ toast }) {
                         {r.enabled ? "● aktiv" : "○ aus"}
                       </button>
                     </td>
-                    <td style={{ padding: "11px 8px", textAlign: "right", color: C.muted, fontVariantNumeric: "tabular-nums" }}>{r.hits ?? 0}</td>
                     <td style={{ padding: "11px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
                       <a href={origin + r.source} target="_blank" rel="noopener noreferrer" title="Testen" style={{ ...ghost, display: "inline-flex", alignItems: "center", textDecoration: "none", marginRight: 6 }}>Test ↗</a>
                       <button style={{ ...ghost, marginRight: 6 }} onClick={() => edit(r)}>Bearbeiten</button>
