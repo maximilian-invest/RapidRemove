@@ -191,7 +191,7 @@ function Hero({ onStart }) {
   const [resume, setResume] = React.useState(null);
   React.useEffect(() => { setResume(getResumeProfile()); }, []);
   const showResume = !!(resume && resume.placeId && !name.trim());
-  const goResume = () => { if (resume && resume.placeId) window.location.href = asset(pagePath("wizard", lang)) + "?p=" + encodeURIComponent(resume.placeId); };
+  const goResume = () => { window.location.href = asset(pagePath("wizard", lang)) + "?resume=1"; };
   return (
     <section className="hero">
       <div className="hero-glow"></div>

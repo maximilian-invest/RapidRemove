@@ -7,6 +7,7 @@ import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
 import { pagePath } from "@/lib/page-routes";
 import { fetchProfileById } from "@/lib/places";
+import { loadWizardSnapshot } from "@/lib/resume";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
 import { WhatsAppFloat } from "@/components/Chrome";
@@ -16,6 +17,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   const [route, setRoute] = React.useState(initialView === "wizard" ? "wizard" : "home"); // home | wizard
   const [seed, setSeed] = React.useState("");
   const [seedProfile, setSeedProfile] = React.useState(null);
+  const [resumeSnap, setResumeSnap] = React.useState(null);
   const [homeScroll, setHomeScroll] = React.useState(null);
 
   // Eigene, lokalisierte Wizard-URL (z. B. /profil-pruefen, /it/verifica-profilo);
@@ -30,7 +32,14 @@ export default function App({ initialLang = "de", initialView = null, magCards =
       const params = new URLSearchParams(window.location.search);
       const view = params.get("view");
       const pid = params.get("p");
-      if (initialView === "wizard" || params.get("start") === "1" || pid) {
+      // „Weitermachen": gespeicherten Wizard-Stand wiederherstellen (Schritt + Auswahlen).
+      if (params.get("resume") === "1") {
+        setRoute("wizard");
+        const snap = loadWizardSnapshot();
+        if (snap) setResumeSnap(snap);
+        else if (pid) fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
+      }
+      else if (initialView === "wizard" || params.get("start") === "1" || pid) {
         setRoute("wizard");
         if (pid) fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
       }
@@ -85,7 +94,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
     <LangContext.Provider value={{ lang, t, setLang }}>
       {route === "home"
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
-        : <Wizard key={(seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
+        : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
       {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
           im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
       <WhatsAppFloat hideBubble={route === "wizard"} />

@@ -327,7 +327,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   const [resume, setResume] = React.useState(null);
   React.useEffect(() => { setResume(getResumeProfile()); }, []);
   const resumeLabel = t.nav.ctaResume || "Weitermachen";
-  const goResume = () => { if (resume && resume.placeId) window.location.href = asset(pagePath("wizard", t.code)) + "?p=" + encodeURIComponent(resume.placeId); };
+  const goResume = () => { window.location.href = asset(pagePath("wizard", t.code)) + "?resume=1"; };
   const ctaLabel = resume ? resumeLabel : t.nav.cta;
   const ctaClick = resume ? goResume : onStart;
   const links = [

@@ -6,7 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
-import { setResumeProfile, clearResumeProfile } from "@/lib/resume";
+import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
@@ -1348,27 +1348,30 @@ const ROUTER_COPY = {
 };
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
-function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelectProfile }) {
+function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onDeindex, onSelectProfile }) {
   const { t, lang } = useLang();
   const w = t.wizard;
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
   const nil = NOT_IN_LIST[t.code] || NOT_IN_LIST.en;
   const conv = convFor(t.code);
   const p = profileFor(lang);
+  // „Weitermachen": gespeicherter Stand (geprüftes Profil + Schritt + Auswahlen +
+  // Kontaktdaten). Ist er gesetzt, startet der Wizard GENAU dort wieder.
+  const R = (initialResume && initialResume.placeId) ? initialResume : null;
   // Mit einem in der Live-Suche gewählten Profil starten wir direkt auf der
   // Machbarkeits-Karte (Schritt 3 / Index 2) – ohne erneute Profilsuche.
-  const [step, setStep] = React.useState(initialProfile ? 1 : 0);
-  const [name, setName] = React.useState(initialName || "");
+  const [step, setStep] = React.useState(R ? R.step : (initialProfile ? 1 : 0));
+  const [name, setName] = React.useState(R ? (R.name || "") : (initialName || ""));
   const [candidates, setCandidates] = React.useState(() =>
-    initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang));
-  const [phase, setPhase] = React.useState(initialProfile ? "checking" : "searching"); // searching | found | checking
+    R ? (R.candidates || []) : (initialProfile ? [{ ...initialProfile, id: "p1", primary: true }] : makeCandidates(initialName, lang)));
+  const [phase, setPhase] = React.useState(R ? "found" : (initialProfile ? "checking" : "searching")); // searching | found | checking
   const [confetti, setConfetti] = React.useState(false);
   const [profileLink, setProfileLink] = React.useState("");
-  const [multi, setMulti] = React.useState(initialProfile ? false : true);
-  const [selectedId, setSelectedId] = React.useState("p1");
-  const [service, setService] = React.useState(null);
-  const [express, setExpress] = React.useState(false);
-  const [protection, setProtection] = React.useState("monthly"); // null | monthly | monitor | lifetime — Schutz default ON
+  const [multi, setMulti] = React.useState(R ? !!R.multi : (initialProfile ? false : true));
+  const [selectedId, setSelectedId] = React.useState(R ? (R.selectedId || "p1") : "p1");
+  const [service, setService] = React.useState(R ? (R.service ?? null) : null);
+  const [express, setExpress] = React.useState(R ? !!R.express : false);
+  const [protection, setProtection] = React.useState(R ? (R.protection ?? null) : "monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
   React.useEffect(() => {
@@ -1377,7 +1380,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     document.addEventListener("click", close);
     return () => document.removeEventListener("click", close);
   }, [ptInfo]);
-  const [contact, setContact] = React.useState({ name: "", email: "", phone: "", company: initialName || "", url: "" });
+  const [contact, setContact] = React.useState(R && R.contact ? R.contact : { name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
   const [agbOk, setAgbOk] = React.useState(false);
@@ -1387,13 +1390,13 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
   // (generischer „Gratis-Check"). Mit Hero-Suche bleibt der Lösch-Flow unverändert.
   const rc = routerCopy(t.code);
-  const [routed, setRouted] = React.useState(!!(initialName && initialName.trim()) || !!initialProfile);
+  const [routed, setRouted] = React.useState(R ? true : (!!(initialName && initialName.trim()) || !!initialProfile));
   const [pressMode, setPressMode] = React.useState(false);
   const [unsureStep, setUnsureStep] = React.useState(0);
   const [pressData, setPressData] = React.useState({ urls: [""], email: "", desc: "", orm: "" });
   const [pressDone, setPressDone] = React.useState(false);
   const checkSent = React.useRef(false);
-  const checkedRef = React.useRef(null); // Schlüssel des zuletzt geprüften Profils — keine Wiederholung bei gleicher Wahl
+  const checkedRef = React.useRef(R ? R.placeId : null); // Schlüssel des zuletzt geprüften Profils — keine Wiederholung bei gleicher Wahl
   const bodyRef = React.useRef(null);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
   const [sug, setSug] = React.useState([]);
@@ -1461,11 +1464,17 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   // Gewähltes Profil an die App melden → placeId landet als ?p= in der URL (teilbar).
   const selPlaceId = (selected && selected.placeId) || "";
   React.useEffect(() => { if (onSelectProfile) onSelectProfile(selPlaceId); }, [selPlaceId]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Sobald ein Profil geprüft ist („found"), placeId + Name lokal merken → der
-  // Haupt-CTA zeigt für Rückkehrer „Weitermachen" statt „Gratis-Check".
+  // Fortschritt fürs „Weitermachen" sichern: sobald ein Profil geprüft ist
+  // („found"), den GANZEN Stand (Schritt + Auswahlen + Kontaktdaten) lokal
+  // speichern — solange die Bestellung noch nicht abgeschickt ist (step < 6).
   React.useEffect(() => {
-    if (phase === "found" && selPlaceId) setResumeProfile({ placeId: selPlaceId, name: (selected && selected.name) || "" });
-  }, [phase, selPlaceId]); // eslint-disable-line react-hooks/exhaustive-deps
+    if (phase === "found" && selPlaceId && !processing && step < 6) {
+      saveWizardSnapshot({
+        placeId: selPlaceId, name: (selected && selected.name) || "",
+        step, candidates, selectedId, multi, service, express, protection, contact, routed,
+      });
+    }
+  }, [phase, selPlaceId, step, candidates, selectedId, multi, service, express, protection, contact, routed, processing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startSearch = (n) => {
     const nm = (n != null ? n : name);

@@ -1,23 +1,32 @@
-/* „Weitermachen": merkt sich das zuletzt im Wizard GEPRÜFTE Profil (placeId +
-   Name) lokal im Browser. Damit zeigt der Haupt-CTA für Rückkehrer
-   „Weitermachen"/„Mit Löschung fortfahren" statt „Gratis-Check" und führt
-   direkt zurück ins geprüfte Profil. */
+/* „Weitermachen": speichert den Fortschritt im Wizard (geprüftes Profil + Schritt
+   + alle Auswahlen + Kontaktdaten) lokal im Browser, damit Rückkehrer GENAU dort
+   weitermachen, wo sie waren — nicht nur beim geprüften Profil, sondern auf dem
+   richtigen Schritt mit denselben Eingaben. Wird nach abgeschickter Bestellung
+   wieder gelöscht. */
 const KEY = "rr_resume";
 const MAX_AGE = 30 * 86400000; // 30 Tage gültig
 
-export function setResumeProfile(p) {
+/** Vollständigen Wizard-Stand speichern (braucht eine placeId = geprüftes Profil). */
+export function saveWizardSnapshot(snap) {
   try {
-    if (!p || !p.placeId) return;
-    localStorage.setItem(KEY, JSON.stringify({ placeId: String(p.placeId), name: String(p.name || ""), ts: Date.now() }));
+    if (!snap || !snap.placeId) return;
+    localStorage.setItem(KEY, JSON.stringify({ ...snap, ts: Date.now() }));
   } catch (e) {}
 }
 
-export function getResumeProfile() {
+/** Vollständigen Wizard-Stand laden (oder null, wenn keiner/zu alt). */
+export function loadWizardSnapshot() {
   try {
     const o = JSON.parse(localStorage.getItem(KEY) || "null");
-    if (o && o.placeId && (!o.ts || Date.now() - o.ts < MAX_AGE)) return { placeId: o.placeId, name: o.name || "" };
+    if (o && o.placeId && (!o.ts || Date.now() - o.ts < MAX_AGE)) return o;
   } catch (e) {}
   return null;
+}
+
+/** Schlanke Info fürs CTA-Label (placeId + Name) — aus dem gespeicherten Stand. */
+export function getResumeProfile() {
+  const o = loadWizardSnapshot();
+  return o ? { placeId: o.placeId, name: o.name || "" } : null;
 }
 
 export function clearResumeProfile() {
