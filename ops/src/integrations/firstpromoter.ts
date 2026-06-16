@@ -16,6 +16,7 @@
  */
 
 const ENDPOINT = "https://firstpromoter.com/api/v1/track/sale";
+const SIGNUP_ENDPOINT = "https://firstpromoter.com/api/v1/track/signup";
 
 export function hasFirstPromoter(): boolean {
   return !!process.env.FPR_API_KEY;
@@ -85,6 +86,45 @@ export async function trackSale(opts: {
     let promoter = "";
     try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
     // raw (gekürzt) zurückgeben, damit das tatsächliche Response-Schema im Log sichtbar ist.
+    return { ok: true, status: res.status, promoter, raw: txt.slice(0, 600) };
+  } catch (e: any) {
+    return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };
+  }
+}
+
+/**
+ * Legt in FirstPromoter ein Referral an: ordnet die Kunden-E-Mail dem Promoter zu.
+ * ERST dadurch entsteht ein Referral, dem anschließend ein Sale zugeordnet werden
+ * kann. Zuordnung über `tid` (Cookie _fprom_tid) bevorzugt, sonst `ref_id` – das ist
+ * der Promoter-Code aus dem Link (?via=matthew → ref_id "matthew").
+ */
+export async function trackSignup(opts: {
+  email: string;
+  refId?: string;
+  tid?: string;
+  uid?: string;
+}): Promise<FprSaleResult> {
+  const key = process.env.FPR_API_KEY;
+  if (!key) return { ok: false, skipped: true, error: "FirstPromoter nicht konfiguriert (FPR_API_KEY)" };
+  if (!opts.email && !opts.uid) return { ok: false, skipped: true, error: "keine E-Mail/uid" };
+  if (!opts.tid && !opts.refId) return { ok: false, skipped: true, error: "weder Tracking-ID (tid) noch Affiliate-Ref (ref_id)" };
+
+  const params = new URLSearchParams();
+  if (opts.email) params.set("email", opts.email);
+  if (opts.tid) params.set("tid", opts.tid);
+  if (opts.refId) params.set("ref_id", opts.refId);
+  if (opts.uid) params.set("uid", opts.uid);
+
+  try {
+    const res = await fetch(SIGNUP_ENDPOINT, {
+      method: "POST",
+      headers: { "x-api-key": key, "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+    const txt = await res.text().catch(() => "");
+    if (!res.ok) return { ok: false, status: res.status, error: `HTTP ${res.status}: ${txt.slice(0, 200)}`.trim(), raw: txt.slice(0, 600) };
+    let promoter = "";
+    try { promoter = extractPromoter(JSON.parse(txt)); } catch (e) { /* Antwort kein JSON – egal */ }
     return { ok: true, status: res.status, promoter, raw: txt.slice(0, 600) };
   } catch (e: any) {
     return { ok: false, error: "Netzwerkfehler: " + (e?.message || "unbekannt") };

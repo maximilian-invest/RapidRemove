@@ -10,7 +10,7 @@ import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
-import { hasFirstPromoter, trackSale } from "./integrations/firstpromoter";
+import { hasFirstPromoter, trackSale, trackSignup } from "./integrations/firstpromoter";
 import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor } from "./paymentLinks";
@@ -314,8 +314,20 @@ app.post("/order", async (req, reply) => {
   // FirstPromoter zunächst als „ausstehend"; final freigeben, sobald der Kunde zahlt.
   if (!isPress && hasFirstPromoter()) {
     const fprTid = clip(b.fprTid, 200);
-    // Einmalbetrag (Leistung + Express + ggf. lebenslanger Schutz). Laufende
-    // Monatsbeträge werden hier nicht als Sale gemeldet (kein Zahlungs-Webhook dafür).
+    const refId = affiliate || undefined; // Promoter-Code aus ?via= (= ref_id) sichern, bevor affiliate ggf. überschrieben wird
+    // 1) Referral anlegen: Kunden-E-Mail dem Promoter zuweisen. OHNE diesen Schritt
+    //    existiert in FirstPromoter kein Referral, dem ein Sale zugeordnet werden kann.
+    if (refId || fprTid) {
+      try {
+        const sg = await trackSignup({ email, refId, tid: fprTid || undefined });
+        if (sg.ok) {
+          if (sg.promoter && !affiliate) affiliate = sg.promoter;
+          app.log.info({ orderId, promoter: sg.promoter || "", fprRaw: sg.raw || "" }, "FirstPromoter Referral angelegt");
+        } else if (!sg.skipped) app.log.warn({ orderId, fpr: sg }, "FirstPromoter Referral NICHT angelegt");
+      } catch (e) { app.log.error({ err: e }, "FirstPromoter Signup fehlgeschlagen"); }
+    }
+    // 2) Sale auf das Referral buchen. Einmalbetrag (Leistung + Express + ggf.
+    //    lebenslanger Schutz); laufende Monatsbeträge nicht (kein Zahlungs-Webhook).
     const saleTotal = Number(b.saleTotal) || ((Number(b.amount) || 0) + (protection === "lifetime" ? (Number(b.protAmount) || 0) : 0));
     if (saleTotal > 0) {
       try {
@@ -325,7 +337,7 @@ app.post("/order", async (req, reply) => {
           amount: saleTotal,
           currency: clip(b.country, 6) === "US" ? "USD" : "EUR",
           tid: fprTid || undefined,
-          refId: affiliate || undefined, // Fallback-Zuordnung über die ?fpr=-Ref-ID, falls keine tid
+          refId,
         });
         if (fr.ok) {
           if (fr.promoter && !affiliate) affiliate = fr.promoter; // Promoter-Name aus FP-Antwort, falls Cookie-Code fehlte
@@ -421,6 +433,23 @@ app.post("/check", async (req, reply) => {
 app.post("/admin/verify", async (req) => {
   const b = (req.body || {}) as Record<string, unknown>;
   return { ok: !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN };
+});
+
+// FirstPromoter-Diagnose (im Browser aufrufbar): legt einen Test-Referral + Test-Sale an
+// und gibt die ROHEN FirstPromoter-Antworten zurück, damit sofort sichtbar ist, ob die
+// API die Calls akzeptiert (Status/Fehlertext). Aufruf z. B.:
+//   /admin/fpr-test?token=<ADMIN_TOKEN>&email=test@example.com&ref=matthew
+app.get("/admin/fpr-test", async (req, reply) => {
+  const q = (req.query || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(q.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const email = String(q.email || "").trim();
+  const refId = (String(q.ref || q.via || "").trim() || undefined) as string | undefined;
+  const tid = (String(q.tid || "").trim() || undefined) as string | undefined;
+  const amount = Number(q.amount) || 1;
+  if (!email) return reply.code(400).send({ ok: false, error: "Parameter email fehlt – z. B. ?email=test@example.com&ref=matthew" });
+  const signup = await trackSignup({ email, refId, tid });
+  const sale = await trackSale({ email, eventId: "TEST-" + Date.now(), amount, currency: "EUR", tid, refId });
+  return { ok: true, configured: hasFirstPromoter(), input: { email, refId, tid, amount }, signup, sale };
 });
 
 // Öffentlicher VAPID-Public-Key – der Browser braucht ihn für die Push-Subscription.
