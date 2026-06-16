@@ -248,6 +248,20 @@ export async function fetchEmailPreview(eventId) {
   return res.json();
 }
 
+/** Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).
+ *  Installierte Admin-Geräte (Web-Push) bleiben erhalten. */
+export async function resetTestData() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/reset-data", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, confirm: "ALLE-TESTDATEN-LOESCHEN" }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j; // { ok, orders, checks, events, upsell }
+}
+
 /* ---- 301-Weiterleitungen (im Admin pflegbar) ---- */
 /** Alle Weiterleitungen laden (inkl. deaktivierte). */
 export async function fetchRedirects() {

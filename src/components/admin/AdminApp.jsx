@@ -4,6 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
+import { DangerZone } from "./AdminDanger";
 import { asset } from "@/lib/base";
 import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -1778,6 +1779,7 @@ function AdminApp() {
       <div className="main">
         <Topbar title={TITLES[view]} onBurger={() => setSideOpen((o) => !o)} query={query} setQuery={setQuery} toast={toast} onRefresh={() => reload()} refreshing={refreshing} />
         {body}
+        {view === "dashboard" && !detail ? <DangerZone toast={toast} onDone={() => reload()} /> : null}
       </div>
       <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />
       <OrderDrawer order={active} onClose={() => setActive(null)} onStatus={setStatus} onOpenFull={openDetail}
