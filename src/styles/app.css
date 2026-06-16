@@ -156,6 +156,16 @@ section{position:relative;}
   .nav-right .btn-primary.nav-cta-resume{display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 12px;font-size:12.5px;}
   .nav-right:has(.btn-primary.nav-cta-resume) .nav-tel-wrap,
   .nav-right:has(.btn-primary.nav-cta-resume) > .nav-wa{display:none;}
+  /* Pre-Paint: Inline-Script in layout.jsx setzt html.rr-resume sofort, wenn ein
+     gespeicherter Wizard-Stand existiert → WhatsApp/Tel von Anfang an ausgeblendet,
+     damit das Symbol bei Rückkehrern nicht kurz aufblitzt, bevor „Weitermachen" lädt. */
+  html.rr-resume .nav-right .nav-tel-wrap,
+  html.rr-resume .nav-right > .nav-wa{display:none;}
+  /* „Weitermachen" zuerst, Sprachwahl rechts daneben (vor dem Burger) → das rechts
+     ausgerichtete Sprach-Dropdown bleibt am rechten Rand und wird nicht links abgeschnitten. */
+  .nav-right:has(.btn-primary.nav-cta-resume) .btn-primary.nav-cta-resume{order:1;}
+  .nav-right:has(.btn-primary.nav-cta-resume) .langmenu{order:2;}
+  .nav-right:has(.btn-primary.nav-cta-resume) .nav-burger{order:3;}
   /* Telefonnummer bleibt sichtbar — kompakter, damit nichts überlappt */
   .nav-tel{padding:6px 9px;font-size:12.5px;gap:5px;}
   .langmenu-btn .lm-code{display:none;}

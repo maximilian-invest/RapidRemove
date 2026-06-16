@@ -49,6 +49,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="de">
       <body>
+        {/* Pre-Paint: „Weitermachen"-Zustand (gespeicherter Wizard-Stand in localStorage)
+           noch vor dem ersten Rendern erkennen und html.rr-resume setzen. So blendet das
+           CSS auf Mobil die WhatsApp/Telefon-Schaltfläche sofort aus, statt sie kurz
+           aufblitzen zu lassen, bevor React den Zustand nach dem Mount liest.
+           Gültigkeit (30 Tage) deckungsgleich mit resume.js (MAX_AGE). */}
+        <script dangerouslySetInnerHTML={{ __html: "try{var o=JSON.parse(localStorage.getItem('rr_resume')||'null');if(o&&o.placeId&&(!o.ts||Date.now()-o.ts<2592000000))document.documentElement.classList.add('rr-resume');}catch(e){}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" />
