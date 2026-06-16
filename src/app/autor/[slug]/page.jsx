@@ -24,8 +24,8 @@ export function generateMetadata({ params }) {
 
 // Hub + Cluster, gefiltert nach deterministischer Autor-Zuordnung.
 function articlesForAuthor(a) {
-  const HUB = { slug: "google-unternehmensprofil-loeschen", title: "Google-Unternehmensprofil löschen lassen", href: "/google-unternehmensprofil-loeschen/" };
-  const all = [HUB, ...CLUSTER_CARDS.map((c) => ({ slug: c.slug, title: c.title, href: `/${c.slug}/` }))];
+  const HUB = { slug: "google-unternehmensprofil-loeschen", title: "Google-Unternehmensprofil löschen lassen", href: "/magazin/google-unternehmensprofil-loeschen/" };
+  const all = [HUB, ...CLUSTER_CARDS.map((c) => ({ slug: c.slug, title: c.title, href: `/magazin/${c.slug}/` }))];
   return all.filter((art) => authorFor(art.slug).slug === a.slug);
 }
 

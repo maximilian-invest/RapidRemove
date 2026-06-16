@@ -27,7 +27,7 @@ const article = {
     ] },
 
     { t: "h2", id: "herkunft", text: "Zuerst verstehen: Warum existiert der Eintrag überhaupt?", toc: "Warum existiert er?" },
-    { t: "p", text: "Viele Inhaber wundern sich, dass es ihren Maps-Eintrag gibt – sie haben ihn nie selbst angelegt. Das ist der Normalfall: Maps-Einträge entstehen durch andere Nutzer, durch Googles automatische Datenerfassung aus dem Web oder durch Importe aus offiziellen Registern. Wie genau das passiert, lesen Sie ausführlich im Leitfaden [Google-Unternehmensprofil löschen](/google-unternehmensprofil-loeschen/). Wichtig hier: Weil der Eintrag selten von Ihnen stammt, haben Sie über das normale Konto-Menü auch nur begrenzte Kontrolle darüber." },
+    { t: "p", text: "Viele Inhaber wundern sich, dass es ihren Maps-Eintrag gibt – sie haben ihn nie selbst angelegt. Das ist der Normalfall: Maps-Einträge entstehen durch andere Nutzer, durch Googles automatische Datenerfassung aus dem Web oder durch Importe aus offiziellen Registern. Wie genau das passiert, lesen Sie ausführlich im Leitfaden [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/). Wichtig hier: Weil der Eintrag selten von Ihnen stammt, haben Sie über das normale Konto-Menü auch nur begrenzte Kontrolle darüber." },
     { t: "p", text: "Welcher Weg für Sie der richtige ist, hängt davon ab, um welche Art Eintrag es geht. Es gibt vier typische Fälle." },
 
     { t: "h2", id: "eigener", text: "Fall 1: Den eigenen Google-Maps-Eintrag entfernen", toc: "Fall 1: Eigener Eintrag" },

@@ -5,21 +5,28 @@
    meta so hreflang, the magazine grid, related-link resolution and the sitemap
    all share one source of truth — without importing the heavy article bodies. */
 import { SITE_URL } from "@/lib/article-google-profil";
+import { magazineSlug } from "@/lib/locales-meta";
 
-// Root-relative paths WITH trailing slash (on-site links / langUrls / card href).
-export const HUB_PATH = {
-  de: "/google-unternehmensprofil-loeschen/",
-  en: "/en/delete-google-business-profile/",
-  es: "/es/eliminar-perfil-de-empresa-google/",
-  pt: "/pt/eliminar-perfil-empresa-google/",
-  it: "/it/eliminare-profilo-attivita-google/",
-  fr: "/fr/supprimer-profil-etablissement-google/",
-  ja: "/ja/google-business-profile-sakujo/",
-  no: "/no/slett-google-bedriftsprofil/",
-  sv: "/sv/radera-google-foretagsprofil/",
-  da: "/da/slet-google-virksomhedsprofil/",
-  nl: "/nl/google-bedrijfsprofiel-verwijderen/",
+// Hub-Slug je Sprache. Der Hub liegt – wie jeder Artikel – unter dem Magazin-Slug.
+export const HUB_SLUG = {
+  de: "google-unternehmensprofil-loeschen",
+  en: "delete-google-business-profile",
+  es: "eliminar-perfil-de-empresa-google",
+  pt: "eliminar-perfil-empresa-google",
+  it: "eliminare-profilo-attivita-google",
+  fr: "supprimer-profil-etablissement-google",
+  ja: "google-business-profile-sakujo",
+  no: "slett-google-bedriftsprofil",
+  sv: "radera-google-foretagsprofil",
+  da: "slet-google-virksomhedsprofil",
+  nl: "google-bedrijfsprofiel-verwijderen",
 };
+
+// Root-relative paths WITH trailing slash (on-site links / langUrls / card href):
+//   DE /magazin/<slug>/, andere /<lang>/<magazineSlug>/<slug>/.
+const artPath = (lang, slug) =>
+  lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`;
+export const HUB_PATH = Object.fromEntries(Object.keys(HUB_SLUG).map((l) => [l, artPath(l, HUB_SLUG[l])]));
 
 export const hubPath = (lang) => HUB_PATH[lang] || null;
 export const hubUrl = (lang) => (HUB_PATH[lang] ? SITE_URL + HUB_PATH[lang].replace(/\/$/, "") : null);

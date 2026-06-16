@@ -21,7 +21,7 @@ const article = {
     { t: "note", title: "Hinweis", text: "Dieser Beitrag gibt einen praktischen Überblick und ersetzt keine Rechtsberatung." },
 
     { t: "h2", id: "was", text: "Was heißt „Firma bei Google löschen“ eigentlich?", toc: "Was heißt das?" },
-    { t: "p", text: "Mit „Firma bei Google löschen“ ist fast immer das **Google-Unternehmensprofil** gemeint – der Eintrag mit Name, Adresse, Öffnungszeiten, Fotos und **Bewertungen**, der in der Google-Suche und in Google Maps erscheint. Genau dieser öffentliche Eintrag soll weg. Die ausführliche Schritt-für-Schritt-Anleitung dazu finden Sie in unserem Leitfaden [Google-Unternehmensprofil löschen](/google-unternehmensprofil-loeschen/)." },
+    { t: "p", text: "Mit „Firma bei Google löschen“ ist fast immer das **Google-Unternehmensprofil** gemeint – der Eintrag mit Name, Adresse, Öffnungszeiten, Fotos und **Bewertungen**, der in der Google-Suche und in Google Maps erscheint. Genau dieser öffentliche Eintrag soll weg. Die ausführliche Schritt-für-Schritt-Anleitung dazu finden Sie in unserem Leitfaden [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/)." },
 
     { t: "h2", id: "kein-button", text: "Warum es keinen einfachen Löschen-Button gibt", toc: "Kein Löschen-Button" },
     { t: "p", text: "Sie können Ihre Firma „als dauerhaft geschlossen markieren“ oder die Verwaltung aus Ihrem Konto entfernen – einen klaren Button „Diesen Eintrag und alle Bewertungen endgültig löschen“ gibt es für Unternehmer aber nicht. Google betrachtet den Eintrag als nützliche Information für Suchende und behält die Kontrolle." },
@@ -41,7 +41,7 @@ const article = {
     { t: "cta", title: "Firmeneintrag prüfen lassen – kostenlos.", text: "Geben Sie Ihren Firmennamen ein – wir prüfen in Sekunden, ob und wie schnell sich Ihr Eintrag samt aller Bewertungen entfernen lässt.", btn: "Löschbarkeit prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Einzelne Bewertungen oder den ganzen Eintrag?", toc: "Einzeln vs. ganz" },
-    { t: "p", text: "Geht es Ihnen nur um eine einzelne ungerechtfertigte Bewertung, ist das **Melden** oder der Anwaltsweg richtig – mehr dazu unter [Google Bewertung löschen lassen](/google-bewertung-loeschen-lassen/). Ist der Eintrag insgesamt beschädigt und Sie wollen einen echten Neuanfang, ist die vollständige Entfernung der direktere Weg." },
+    { t: "p", text: "Geht es Ihnen nur um eine einzelne ungerechtfertigte Bewertung, ist das **Melden** oder der Anwaltsweg richtig – mehr dazu unter [Google Bewertung löschen lassen](/magazin/google-bewertung-loeschen-lassen/). Ist der Eintrag insgesamt beschädigt und Sie wollen einen echten Neuanfang, ist die vollständige Entfernung der direktere Weg." },
 
     { t: "h2", id: "kosten", text: "Was kostet das Löschen des Firmeneintrags?", toc: "Was es kostet" },
     { t: "p", text: "Die Preise unterscheiden sich stark je nach Anbieter:" },

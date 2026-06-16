@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "»Permanent stängd» är *inte* detsamma som raderad", toc: "»Stängd» ≠ raderad" },
     { t: "p", text: "Det alternativ Google erbjuder dig heter »Markera som permanent stängt». Många tror att det innebär att profilen raderas — men det gör det inte. Det är bara en **statusetikett**." },
     { t: "warn", title: "Det här händer faktiskt när du väljer »stängd»", text: "Din profil fortsätter att visas i Google Sök och Google Maps — med namn, adress, foton och **samtliga recensioner**. Det enda som tillkommer är en överkryssad text som säger »Permanent stängd». För potentiella kunder ser det ofta *sämre* ut än tidigare." },
-    { t: "p", text: "Med andra ord: den som »stänger» sin profil blir inte av med uppgifterna och recensionerna — i värsta fall gör det problemet ännu synligare. En **riktig radering** tar däremot bort hela [Google Maps-posten](/sv/ta-bort-google-maps-foretag/) inklusive alla recensioner." },
+    { t: "p", text: "Med andra ord: den som »stänger» sin profil blir inte av med uppgifterna och recensionerna — i värsta fall gör det problemet ännu synligare. En **riktig radering** tar däremot bort hela [Google Maps-posten](/sv/magasin/ta-bort-google-maps-foretag/) inklusive alla recensioner." },
 
     { t: "h2", id: "optionen", text: "Vilka alternativ du faktiskt har", toc: "Vilka alternativ" },
     { t: "p", text: "Realistiskt sett finns det tre vägar för att bli av med en oönskad profil — med mycket olika resultat:" },
@@ -74,7 +74,7 @@ const article = {
       ["Framgång", "Nej", "Oviss", "Garanterad (No Cure, No Pay)"],
       ["Din arbetsinsats", "Hög", "Hög", "Praktiskt taget noll"],
     ] },
-    { t: "p", text: "DIY-vägen slutar nästan alltid med »permanent stängd». Advokatvägen är dyr, långsam och osäker — och utlöser inte sällan [Streisand-effekten](/sv/negativ-google-recension-advokat/) där uppmärksamheten i stället ökar. Kvar finns den tredje vägen: professionell och fullständig borttagning." },
+    { t: "p", text: "DIY-vägen slutar nästan alltid med »permanent stängd». Advokatvägen är dyr, långsam och osäker — och utlöser inte sällan [Streisand-effekten](/sv/magasin/negativ-google-recension-advokat/) där uppmärksamheten i stället ökar. Kvar finns den tredje vägen: professionell och fullständig borttagning." },
 
     { t: "h2", id: "anleitung", text: "Guide: redigera profilen via Google själv", toc: "Steg för steg" },
     { t: "p", text: "Om du vill försöka på egen hand, här är hur det faktiskt ser ut. Räkna med att bästa möjliga resultat är »stängd» — inte »raderad»." },
@@ -88,8 +88,8 @@ const article = {
     { t: "cta", title: "Vill du hellre direkt kolla om din profil kan raderas?", text: "Ange ditt företagsnamn — vi hittar din riktiga Google-profil och kontrollerar på sekunder om och hur snabbt den kan tas bort. Utan förbehåll och gratis.", btn: "Starta gratis kontroll", href: "/sv/?start=1", trust: ["Betalning sker först efter lyckad radering"] },
 
     { t: "h2", id: "einzeln", text: "Radera enstaka recensioner eller ta bort hela profilen?", toc: "Recensioner eller profil?" },
-    { t: "p", text: "Många börjar med att försöka [anmäla](/sv/ta-bort-falska-google-recensioner/) enstaka dåliga recensioner till Google. Det är mödosamt och osäkert: Google avslår anmälningar ofta, varje recension måste motiveras separat — och för varje borttagen recension dyker snabbt nya upp. Du bekämpar symtomen." },
-    { t: "p", text: "Det hållbara angreppssättet tar tag i roten: **tas hela profilen bort försvinner alla recensioner på en gång** — falska recensioner inkluderade. Permanent i stället för styckevis. Det är just därför vi medvetet inte tar bort enstaka recensioner, utan hela profilen. Den som i ett första steg vill [ta bort enstaka Google-recensioner](/sv/ta-bort-google-recensioner/) hittar där metoderna och kostnaderna i jämförelse." },
+    { t: "p", text: "Många börjar med att försöka [anmäla](/sv/magasin/ta-bort-falska-google-recensioner/) enstaka dåliga recensioner till Google. Det är mödosamt och osäkert: Google avslår anmälningar ofta, varje recension måste motiveras separat — och för varje borttagen recension dyker snabbt nya upp. Du bekämpar symtomen." },
+    { t: "p", text: "Det hållbara angreppssättet tar tag i roten: **tas hela profilen bort försvinner alla recensioner på en gång** — falska recensioner inkluderade. Permanent i stället för styckevis. Det är just därför vi medvetet inte tar bort enstaka recensioner, utan hela profilen. Den som i ett första steg vill [ta bort enstaka Google-recensioner](/sv/magasin/ta-bort-google-recensioner/) hittar där metoderna och kostnaderna i jämförelse." },
     { t: "tip", title: "Den avgörande fördelen", text: "En borttagen profil kan varken visa gamla *eller* nya recensioner. Problemet är inte förflyttat — det är löst." },
 
     { t: "h2", id: "legal", text: "Är det lagligt att radera profilen?", toc: "Är det lagligt?" },

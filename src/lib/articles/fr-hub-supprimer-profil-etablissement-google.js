@@ -67,7 +67,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "« Définitivement fermé » n'est pas une suppression", toc: "« Fermé » ≠ supprimé" },
     { t: "p", text: "L'option que Google vous propose s'appelle « Marquer comme définitivement fermé ». Beaucoup pensent que c'est une suppression — mais ce n'en est pas une. C'est simplement un **libellé de statut**." },
     { t: "warn", title: "Voici ce qui se passe vraiment avec « fermé »", text: "Votre fiche reste visible dans la recherche Google et sur Google Maps — avec le nom, l'adresse, les photos et **la totalité des avis**. Seule différence : un bandeau « Définitivement fermé » s'affiche en travers. Aux yeux de vos clients potentiels, cela donne souvent une impression *pire* qu'avant." },
-    { t: "p", text: "Autrement dit : marquer son établissement comme « fermé » ne fait pas disparaître la fiche ni les avis — cela peut même rendre le problème plus visible encore. Une **vraie suppression**, elle, retire l'intégralité de la [fiche Google Maps](/fr/supprimer-fiche-google-maps/) avec tous les avis associés." },
+    { t: "p", text: "Autrement dit : marquer son établissement comme « fermé » ne fait pas disparaître la fiche ni les avis — cela peut même rendre le problème plus visible encore. Une **vraie suppression**, elle, retire l'intégralité de la [fiche Google Maps](/fr/magazine/supprimer-fiche-google-maps/) avec tous les avis associés." },
 
     { t: "h2", id: "optionen", text: "Les options qui s'offrent réellement à vous", toc: "Vos options réelles" },
     { t: "p", text: "Concrètement, il existe trois façons de se débarrasser d'une fiche indésirable — avec des résultats très différents :" },
@@ -79,7 +79,7 @@ const article = {
       ["Résultat garanti", "Non", "Incertain", "Garanti (No Cure, No Pay)"],
       ["Votre temps et énergie", "Élevés", "Élevés", "Pratiquement nuls"],
     ] },
-    { t: "p", text: "La voie autonome aboutit presque toujours à « définitivement fermé ». La voie juridique est coûteuse, lente et incertaine — et déclenche souvent l'[effet Streisand](/fr/supprimer-avis-negatif-google-avocat-ou-technique/), qui attire encore plus l'attention sur le problème. Il reste donc une troisième option : la suppression professionnelle et complète." },
+    { t: "p", text: "La voie autonome aboutit presque toujours à « définitivement fermé ». La voie juridique est coûteuse, lente et incertaine — et déclenche souvent l'[effet Streisand](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/), qui attire encore plus l'attention sur le problème. Il reste donc une troisième option : la suppression professionnelle et complète." },
 
     { t: "h2", id: "anleitung", text: "Guide : modifier ou supprimer sa fiche via Google", toc: "Guide via Google" },
     { t: "p", text: "Si vous souhaitez d'abord tenter par vous-même, voici comment cela se déroule concrètement. Anticipez le fait que le meilleur résultat que vous puissiez espérer est « fermé » — pas « supprimé »." },
@@ -94,8 +94,8 @@ const article = {
     { t: "cta", title: "Préférez vérifier directement si votre fiche peut être supprimée ?", text: "Entrez le nom de votre entreprise — nous retrouvons votre vraie fiche Google et vérifions en quelques secondes si elle peut être supprimée, et dans quel délai. Sans engagement et sans frais.", btn: "Lancer le diagnostic gratuit", href: "/fr/?start=1", trust: ["Paiement uniquement après suppression confirmée"] },
 
     { t: "h2", id: "einzeln", text: "Supprimer des avis individuels ou retirer toute la fiche ?", toc: "Avis isolés ou fiche ?" },
-    { t: "p", text: "Beaucoup commencent par essayer de [signaler](/fr/supprimer-faux-avis-google/) les mauvais avis un par un auprès de Google. C'est fastidieux et aléatoire : Google rejette fréquemment ces signalements, chaque avis doit être justifié séparément — et pour chaque avis retiré, de nouveaux peuvent apparaître rapidement. Vous combattez des symptômes." },
-    { t: "p", text: "L'approche durable s'attaque à la racine : **en supprimant toute la fiche, tous les avis disparaissent en même temps** — faux avis inclus. Une solution définitive, pas une rustine. C'est précisément pour cela que nous ne supprimons pas des avis isolés, mais le profil dans son intégralité. Ceux qui souhaitent dans un premier temps [faire supprimer des avis Google individuellement](/fr/supprimer-avis-google/) trouveront là-bas les méthodes et une comparaison des coûts." },
+    { t: "p", text: "Beaucoup commencent par essayer de [signaler](/fr/magazine/supprimer-faux-avis-google/) les mauvais avis un par un auprès de Google. C'est fastidieux et aléatoire : Google rejette fréquemment ces signalements, chaque avis doit être justifié séparément — et pour chaque avis retiré, de nouveaux peuvent apparaître rapidement. Vous combattez des symptômes." },
+    { t: "p", text: "L'approche durable s'attaque à la racine : **en supprimant toute la fiche, tous les avis disparaissent en même temps** — faux avis inclus. Une solution définitive, pas une rustine. C'est précisément pour cela que nous ne supprimons pas des avis isolés, mais le profil dans son intégralité. Ceux qui souhaitent dans un premier temps [faire supprimer des avis Google individuellement](/fr/magazine/supprimer-avis-google/) trouveront là-bas les méthodes et une comparaison des coûts." },
     { t: "tip", title: "L'avantage décisif", text: "Une fiche supprimée ne peut plus afficher d'anciens avis *ni* en accumuler de nouveaux. Le problème n'est pas déplacé — il est éliminé." },
 
     { t: "h2", id: "legal", text: "Est-ce légal ?", toc: "Est-ce légal ?" },

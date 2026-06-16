@@ -1,7 +1,7 @@
 /* RapidRemove — article catalog: German sources + translations + i18n helpers.
    Server-side only (heavy). Used by the article route pages, not the renderer. */
 import { SITE_URL } from "@/lib/article-google-profil";
-import { magazineUrl } from "@/lib/locales-meta";
+import { magazineUrl, magazineSlug } from "@/lib/locales-meta";
 import { TRANSLATIONS } from "@/lib/articles/translations";
 import { CLUSTER_CARDS } from "@/lib/articles/registry";
 import { authorFor, authorPersonLd } from "@/lib/authors";
@@ -14,12 +14,20 @@ import a4 from "@/lib/articles/schlechte-google-bewertungen-was-tun";
 import a5 from "@/lib/articles/1-stern-bewertung-ohne-text-loeschen";
 import a6 from "@/lib/articles/google-rezension-loeschen-lassen";
 import a7 from "@/lib/articles/google-maps-eintrag-loeschen";
+import a8 from "@/lib/articles/firma-bei-google-loeschen";
 
-const DE_LIST = [a1, a2, a3, a4, a5, a6, a7];
+const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8];
 export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a]));
 export { TRANSLATIONS };
 
 const FLAGSHIP_SLUG = "google-unternehmensprofil-loeschen-wie-geht-das";
+
+// EINHEITLICH: jeder Artikel liegt unter dem Magazin-Slug.
+//   DE:     /magazin/<slug>/
+//   andere: /<lang>/<magazineSlug>/<slug>/   (magazine | revista | rivista | magasin)
+export const articlePath = (lang, slug) =>
+  lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`;
+export const articleUrl = (lang, slug) => SITE_URL + articlePath(lang, slug).replace(/\/$/, "");
 
 // Lightweight magazine "Titelgeschichte" card for a localized hub, built from the
 // shared HUB_CARD/HUB_PATH registry (the heavy article body lives in its route).
@@ -39,9 +47,9 @@ export const tFor = (lang, deSlug) => (TRANSLATIONS[lang] || {})[deSlug];
 
 // On-site path for an article in a given language (null if not translated).
 export function localizedPath(lang, deSlug) {
-  if (lang === "de") return `/${deSlug}/`;
+  if (lang === "de") return articlePath("de", deSlug);
   const t = tFor(lang, deSlug);
-  return t ? `/${lang}/${t.meta.slug}/` : null;
+  return t ? articlePath(lang, t.meta.slug) : null;
 }
 
 // Lightweight, client-safe magazine cards for a language (no article bodies):
@@ -52,12 +60,12 @@ const monthYear = (iso, lang) => {
   catch (e) { return ""; }
 };
 export function magCardsFor(lang) {
-  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: `/${c.slug}/`, author: authorFor(c.slug).name }));
+  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: articlePath("de", c.slug), author: authorFor(c.slug).name }));
   const cards = CLUSTER_CARDS.map((c) => {
     const t = tFor(lang, c.slug);
     if (!t) return null;
     return {
-      slug: t.meta.slug, href: `/${lang}/${t.meta.slug}/`,
+      slug: t.meta.slug, href: articlePath(lang, t.meta.slug),
       cat: t.category || c.cat, thm: c.thm, icon: c.icon,
       title: t.meta.title, excerpt: t.meta.description,
       author: authorFor(c.slug).name, read: c.read,
@@ -69,12 +77,13 @@ export function magCardsFor(lang) {
   return hub ? [hub, ...cards] : cards;
 }
 
-// [lang]/[aslug] params for every translated article.
-export function articleParams() {
+// [lang]/[aslug]/[aslug2] params for every translated article (aslug = magazine slug).
+export function nestedArticleParams() {
   const out = [];
   for (const lang of Object.keys(TRANSLATIONS)) {
+    const aslug = magazineSlug(lang);
     for (const deSlug of Object.keys(TRANSLATIONS[lang])) {
-      out.push({ lang, aslug: TRANSLATIONS[lang][deSlug].meta.slug });
+      out.push({ lang, aslug, aslug2: TRANSLATIONS[lang][deSlug].meta.slug });
     }
   }
   return out;
@@ -91,21 +100,21 @@ export function resolveLocalized(lang, aslug) {
 
 // hreflang alternates (absolute URLs) for all language versions of an article.
 export function hreflangForArticle(deSlug) {
-  const m = { de: `${SITE_URL}/${deSlug}` };
+  const m = { de: articleUrl("de", deSlug) };
   for (const lang of Object.keys(TRANSLATIONS)) {
     const t = TRANSLATIONS[lang][deSlug];
-    if (t) m[lang] = `${SITE_URL}/${lang}/${t.meta.slug}`;
+    if (t) m[lang] = articleUrl(lang, t.meta.slug);
   }
-  m["x-default"] = `${SITE_URL}/${deSlug}`;
+  m["x-default"] = articleUrl("de", deSlug);
   return m;
 }
 
 // Root-relative URLs per language for the in-page language switcher.
 export function langUrlsForArticle(deSlug) {
-  const m = { de: `/${deSlug}/` };
+  const m = { de: articlePath("de", deSlug) };
   for (const lang of Object.keys(TRANSLATIONS)) {
     const t = TRANSLATIONS[lang][deSlug];
-    if (t) m[lang] = `/${lang}/${t.meta.slug}/`;
+    if (t) m[lang] = articlePath(lang, t.meta.slug);
   }
   return m;
 }

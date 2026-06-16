@@ -34,7 +34,7 @@ const jsonLd = {
       description:
         "Ratgeber rund um Google-Bewertungen, Unternehmensprofile und Online-Reputation.",
       isPartOf: { "@type": "WebSite", name: "RapidRemove", url: SITE_URL },
-      hasPart: CLUSTER_SLUGS.map((s) => ({ "@type": "WebPage", url: `${SITE_URL}/${s}` })),
+      hasPart: CLUSTER_SLUGS.map((s) => ({ "@type": "WebPage", url: `${SITE_URL}/magazin/${s}` })),
     },
     {
       "@type": "BreadcrumbList",

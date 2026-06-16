@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "„Permanent gesloten” is *geen* verwijdering", toc: "„Gesloten” ≠ verwijderd" },
     { t: "p", text: "De optie die Google u biedt, heet „Als permanent gesloten markeren”. Velen beschouwen dat als verwijdering – maar dat is het niet. Het is slechts een **statuslabel**." },
     { t: "warn", title: "Wat er bij „gesloten” écht gebeurt", text: "Uw profiel blijft zichtbaar in Google Zoeken en Google Maps – inclusief naam, adres, foto's en **alle reviews**. Daarboven prijkt enkel een doorgestreept „Permanent gesloten”. Voor potentiële klanten ziet dat er vaak *slechter* uit dan daarvoor." },
-    { t: "p", text: "Met andere woorden: wie „sluit”, raakt de vermelding en de reviews niet kwijt – en maakt het probleem in sommige gevallen zelfs zichtbaarder. Een **echte verwijdering** daarentegen verwijdert de volledige [Google Maps-vermelding](/nl/google-maps-vermelding-verwijderen/) inclusief alle reviews volledig uit het zicht." },
+    { t: "p", text: "Met andere woorden: wie „sluit”, raakt de vermelding en de reviews niet kwijt – en maakt het probleem in sommige gevallen zelfs zichtbaarder. Een **echte verwijdering** daarentegen verwijdert de volledige [Google Maps-vermelding](/nl/magazine/google-maps-vermelding-verwijderen/) inclusief alle reviews volledig uit het zicht." },
 
     { t: "h2", id: "optionen", text: "Welke opties u echt heeft", toc: "Welke opties u heeft" },
     { t: "p", text: "Realistisch gezien zijn er drie manieren om een ongewenst profiel kwijt te raken – met sterk uiteenlopende resultaten:" },
@@ -74,7 +74,7 @@ const article = {
       ["Succes", "Nee", "Ongewis", "Gegarandeerd (No Cure, No Pay)"],
       ["Uw inspanning", "Hoog", "Hoog", "Praktisch nul"],
     ] },
-    { t: "p", text: "De doe-het-zelf-weg eindigt bijna altijd bij „permanent gesloten”. De advocatenweg is duur, traag en onzeker – en leidt niet zelden tot het [Streisand-effect](/nl/negatieve-google-review-verwijderen-advocaat/), waarbij de aandacht juist toeneemt. Blijft de derde weg over: de professionele, volledige verwijdering." },
+    { t: "p", text: "De doe-het-zelf-weg eindigt bijna altijd bij „permanent gesloten”. De advocatenweg is duur, traag en onzeker – en leidt niet zelden tot het [Streisand-effect](/nl/magazine/negatieve-google-review-verwijderen-advocaat/), waarbij de aandacht juist toeneemt. Blijft de derde weg over: de professionele, volledige verwijdering." },
 
     { t: "h2", id: "anleitung", text: "Handleiding: profiel via Google zelf bewerken", toc: "Stap voor stap" },
     { t: "p", text: "Als u het eerst zelf wilt proberen, hier het werkelijke verloop. Reken erop dat het resultaat in het beste geval „gesloten” is – niet „verwijderd”." },
@@ -88,8 +88,8 @@ const article = {
     { t: "cta", title: "Liever direct controleren of uw profiel verwijderbaar is?", text: "Voer uw bedrijfsnaam in – wij vinden uw echte Google-profiel en controleren in seconden of en hoe snel het kan worden verwijderd. Vrijblijvend en gratis.", btn: "Gratis check starten", href: "/nl/?start=1", trust: ["Betaling pas na succesvolle verwijdering"] },
 
     { t: "h2", id: "einzeln", text: "Afzonderlijke reviews verwijderen of het hele profiel laten verwijderen?", toc: "Reviews of profiel?" },
-    { t: "p", text: "Velen beginnen met de poging om afzonderlijke slechte reviews bij Google te [melden](/nl/valse-google-reviews-verwijderen/). Dat is moeizaam en onzeker: Google wijst meldingen regelmatig af, elke review moet afzonderlijk worden onderbouwd – en voor elke verwijderde review duiken er snel nieuwe op. U bestrijdt de symptomen." },
-    { t: "p", text: "De duurzame aanpak pakt de oorzaak aan: **wordt het volledige profiel verwijderd, verdwijnen alle reviews in één klap** – inclusief nep-reviews. Definitief in plaats van stukjeswerk. Precies daarom verwijderen wij bewust geen afzonderlijke reviews, maar het complete profiel. Wie eerst alleen [afzonderlijke Google-reviews wil laten verwijderen](/nl/google-reviews-verwijderen/), vindt daar de methodes en kosten in vergelijking." },
+    { t: "p", text: "Velen beginnen met de poging om afzonderlijke slechte reviews bij Google te [melden](/nl/magazine/valse-google-reviews-verwijderen/). Dat is moeizaam en onzeker: Google wijst meldingen regelmatig af, elke review moet afzonderlijk worden onderbouwd – en voor elke verwijderde review duiken er snel nieuwe op. U bestrijdt de symptomen." },
+    { t: "p", text: "De duurzame aanpak pakt de oorzaak aan: **wordt het volledige profiel verwijderd, verdwijnen alle reviews in één klap** – inclusief nep-reviews. Definitief in plaats van stukjeswerk. Precies daarom verwijderen wij bewust geen afzonderlijke reviews, maar het complete profiel. Wie eerst alleen [afzonderlijke Google-reviews wil laten verwijderen](/nl/magazine/google-reviews-verwijderen/), vindt daar de methodes en kosten in vergelijking." },
     { t: "tip", title: "Het doorslaggevende voordeel", text: "Een verwijderd profiel kan geen oude én geen nieuwe reviews meer tonen. Het probleem is daarmee niet verschoven, maar opgelost." },
 
     { t: "h2", id: "legal", text: "Is verwijdering legaal?", toc: "Is het legaal?" },

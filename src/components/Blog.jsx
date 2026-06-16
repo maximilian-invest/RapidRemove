@@ -50,7 +50,7 @@ function Blog({ onStart, onGoHome, onOrm, onDeindex, magCards = [] }) {
   const hasCards = !deMode && magCards && magCards.length > 0;
   const featured = deMode ? b.articles[0] : (hasCards ? magCards[0] : b.articles[0]);
   const featuredHref = deMode ? asset("/" + ARTICLE_SLUG + "/") : (hasCards ? asset(magCards[0].href) : undefined);
-  const gridSource = deMode ? CLUSTER_CARDS : (hasCards ? magCards.slice(1) : b.articles.slice(1));
+  const gridSource = deMode ? CLUSTER_CARDS.map((c) => ({ ...c, href: "/magazin/" + c.slug + "/" })) : (hasCards ? magCards.slice(1) : b.articles.slice(1));
   const filtered = cat === b.cats[0] ? gridSource : gridSource.filter((a) => a.cat === cat);
   // Filterchips: nur Kategorien zeigen, die tatsächlich Artikel liefern (erste = „Alle").
   const availableCats = b.cats.filter((c, i) => i === 0 || gridSource.some((a) => a.cat === c));

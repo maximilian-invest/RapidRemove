@@ -67,7 +67,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "«Definitivamente chiusa» non è un'eliminazione", toc: "«Chiusa» ≠ eliminata" },
     { t: "p", text: "L'opzione che Google ti offre si chiama «Contrassegna come definitivamente chiusa». Molti la scambiano per un'eliminazione — ma non lo è. È solo un'**etichetta di stato**." },
     { t: "warn", title: "Cosa succede davvero con «chiusa»", text: "Il tuo profilo rimane visibile nella Ricerca Google e in Google Maps — compresi nome, indirizzo, foto e **tutte le recensioni**. Sopra campeggia soltanto un «Definitivamente chiusa» barrato. Per i potenziali clienti questo aspetto è spesso *peggiore* di prima." },
-    { t: "p", text: "In altre parole: chi «chiude» non si libera della scheda né delle recensioni — anzi, in certi casi rende il problema ancora più visibile. Una **vera eliminazione**, invece, rimuove completamente la [scheda su Google Maps](/it/eliminare-scheda-google-maps/) insieme a tutte le recensioni." },
+    { t: "p", text: "In altre parole: chi «chiude» non si libera della scheda né delle recensioni — anzi, in certi casi rende il problema ancora più visibile. Una **vera eliminazione**, invece, rimuove completamente la [scheda su Google Maps](/it/rivista/eliminare-scheda-google-maps/) insieme a tutte le recensioni." },
 
     { t: "h2", id: "optionen", text: "Quali sono le opzioni reali", toc: "Le opzioni reali" },
     { t: "p", text: "Concretamente esistono tre strade per liberarsi di un profilo indesiderato — con risultati molto diversi:" },
@@ -79,7 +79,7 @@ const article = {
       ["Risultato garantito", "No", "Incerto", "Garantito (No Cure, No Pay)"],
       ["Impegno richiesto", "Alto", "Alto", "Praticamente zero"],
     ] },
-    { t: "p", text: "La strada fai-da-te si conclude quasi sempre con «definitivamente chiusa». Quella dell'avvocato è costosa, lenta e incerta — e non di rado scatena il [cosiddetto effetto Streisand](/it/eliminare-recensione-negativa-google-avvocato-o-tecnica/), aumentando l'attenzione proprio su ciò che si voleva far sparire. Resta la terza strada: la rimozione professionale e completa." },
+    { t: "p", text: "La strada fai-da-te si conclude quasi sempre con «definitivamente chiusa». Quella dell'avvocato è costosa, lenta e incerta — e non di rado scatena il [cosiddetto effetto Streisand](/it/rivista/eliminare-recensione-negativa-google-avvocato-o-tecnica/), aumentando l'attenzione proprio su ciò che si voleva far sparire. Resta la terza strada: la rimozione professionale e completa." },
 
     { t: "h2", id: "anleitung", text: "Guida: modificare il profilo tramite Google", toc: "Guida via Google" },
     { t: "p", text: "Se vuoi provare prima da solo, ecco il flusso reale. Aspettati che il risultato migliore raggiungibile sia «chiusa» — non «eliminata»." },
@@ -94,8 +94,8 @@ const article = {
     { t: "cta", title: "Preferisci verificare subito se il tuo profilo è eliminabile?", text: "Inserisci il nome della tua attività — troviamo il tuo profilo Google reale e verifichiamo in pochi secondi se e con quale rapidità può essere rimosso. Senza impegno e gratuitamente.", btn: "Avvia il check gratuito", href: "/it/?start=1", trust: ["Pagamento solo dopo l'eliminazione avvenuta"] },
 
     { t: "h2", id: "einzeln", text: "Eliminare le singole recensioni o rimuovere l'intero profilo?", toc: "Singole o intero?" },
-    { t: "p", text: "In molti iniziano cercando di [segnalare](/it/eliminare-recensioni-false-google/) le singole recensioni negative a Google. È un percorso faticoso e dall'esito incerto: Google rigetta spesso le segnalazioni, ogni recensione va motivata singolarmente — e per ogni recensione rimossa ne spuntano subito di nuove. Si combattono i sintomi, non la causa." },
-    { t: "p", text: "L'approccio sostenibile agisce alla radice: **rimuovendo l'intero profilo, tutte le recensioni scompaiono in un colpo solo** — comprese quelle false e quelle di ritorsione. Un risultato definitivo, non un rattoppo. È esattamente per questo che noi non eliminiamo le singole recensioni, ma il profilo completo. Chi per ora desidera far [eliminare singole recensioni Google](/it/eliminare-recensioni-google/) trova lì i metodi e i costi a confronto." },
+    { t: "p", text: "In molti iniziano cercando di [segnalare](/it/rivista/eliminare-recensioni-false-google/) le singole recensioni negative a Google. È un percorso faticoso e dall'esito incerto: Google rigetta spesso le segnalazioni, ogni recensione va motivata singolarmente — e per ogni recensione rimossa ne spuntano subito di nuove. Si combattono i sintomi, non la causa." },
+    { t: "p", text: "L'approccio sostenibile agisce alla radice: **rimuovendo l'intero profilo, tutte le recensioni scompaiono in un colpo solo** — comprese quelle false e quelle di ritorsione. Un risultato definitivo, non un rattoppo. È esattamente per questo che noi non eliminiamo le singole recensioni, ma il profilo completo. Chi per ora desidera far [eliminare singole recensioni Google](/it/rivista/eliminare-recensioni-google/) trova lì i metodi e i costi a confronto." },
     { t: "tip", title: "Il vantaggio decisivo", text: "Un profilo rimosso non può più mostrare né le vecchie né le nuove recensioni. Il problema non è rimandato — è risolto." },
 
     { t: "h2", id: "legal", text: "È legale farlo eliminare?", toc: "È legale?" },

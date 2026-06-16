@@ -118,7 +118,7 @@ function ArticleBody() {
             Sie googeln Ihr Unternehmen – und sehen ein Profil, das Sie so nicht mehr wollen: voller alter
             Fake- oder Rachebewertungen, mit falschen Daten, oder schlicht ein Eintrag, aus dem Sie endgültig
             raus möchten. Die naheliegende Frage: <strong>Wie kann ich mein Google-Unternehmensprofil löschen?</strong>{" "}
-            (Viele suchen auch schlicht nach <a href={asset("/firma-bei-google-loeschen/")}>„Firma bei Google löschen"</a> – gemeint ist dasselbe.){" "}
+            (Viele suchen auch schlicht nach <a href={asset("/magazin/firma-bei-google-loeschen/")}>„Firma bei Google löschen"</a> – gemeint ist dasselbe.){" "}
             Die ehrliche Antwort ist leider komplizierter, als Google es Sie glauben lässt. Dieser Leitfaden zeigt
             Ihnen, was wirklich funktioniert – Schritt für Schritt, ohne Marketing-Geschwafel.
           </p>
@@ -211,7 +211,7 @@ function ArticleBody() {
           <p>
             Mit anderen Worten: Wer „schließt“, wird den Eintrag und die Bewertungen nicht los – er macht das Problem
             unter Umständen sogar sichtbarer. Eine <strong>echte Löschung</strong> dagegen entfernt den kompletten
-            <a href={asset("/google-maps-eintrag-loeschen/")}> Google-Maps-Eintrag</a> samt aller Bewertungen aus der Anzeige.
+            <a href={asset("/magazin/google-maps-eintrag-loeschen/")}> Google-Maps-Eintrag</a> samt aller Bewertungen aus der Anzeige.
           </p>
 
           <h2 id="optionen">Welche Optionen Sie wirklich haben</h2>
@@ -238,7 +238,7 @@ function ArticleBody() {
           </div>
           <p>
             Der DIY-Weg endet fast immer bei „dauerhaft geschlossen“. Der Anwaltsweg ist teuer, langsam und ungewiss –
-            und löst nicht selten den <a href={asset("/negative-google-bewertung-anwalt-oder-technische-loeschung/")}>Streisand-Effekt</a> aus, bei dem die
+            und löst nicht selten den <a href={asset("/magazin/negative-google-bewertung-anwalt-oder-technische-loeschung/")}>Streisand-Effekt</a> aus, bei dem die
             Aufmerksamkeit erst recht steigt. Bleibt der dritte Weg: die professionelle, vollständige Entfernung.
           </p>
 
@@ -279,7 +279,7 @@ function ArticleBody() {
 
           <h2 id="bewertungen">Einzelne Bewertungen löschen oder das ganze Profil entfernen?</h2>
           <p>
-            Viele starten mit dem Versuch, einzelne schlechte Bewertungen über Google zu <a href={asset("/fake-google-bewertung-melden-loeschen/")}><strong>melden</strong></a>. Das ist
+            Viele starten mit dem Versuch, einzelne schlechte Bewertungen über Google zu <a href={asset("/magazin/fake-google-bewertung-melden-loeschen/")}><strong>melden</strong></a>. Das ist
             mühsam und ungewiss: Google lehnt Meldungen häufig ab, jede Bewertung muss einzeln begründet werden – und
             für jede entfernte Bewertung tauchen schnell neue auf. Sie kämpfen gegen Symptome.
           </p>
@@ -287,7 +287,7 @@ function ArticleBody() {
             Der nachhaltige Ansatz setzt an der Wurzel an: <strong>Wird das gesamte Profil entfernt, verschwinden alle
             Bewertungen auf einen Schlag</strong> – Fake-Bewertungen inklusive. Endgültig statt Stückwerk. Genau deshalb
             löschen wir bewusst keine Einzelbewertungen, sondern das komplette Profil. Wer zunächst nur
-            <a href={asset("/google-bewertung-loeschen-lassen/")}> einzelne Google-Bewertungen löschen lassen</a> möchte,
+            <a href={asset("/magazin/google-bewertung-loeschen-lassen/")}> einzelne Google-Bewertungen löschen lassen</a> möchte,
             findet dort die Methoden und Kosten im Vergleich.
           </p>
           <div className="callout tip">
@@ -355,7 +355,7 @@ function ArticleBody() {
           <h2 id="weiterlesen">Weiterlesen: passende Ratgeber aus dem Magazin</h2>
           <ul>
             {CLUSTER_CARDS.map((c) => (
-              <li key={c.slug}><a href={asset("/" + c.slug + "/")}>{c.title}</a></li>
+              <li key={c.slug}><a href={asset("/magazin/" + c.slug + "/")}>{c.title}</a></li>
             ))}
           </ul>
 

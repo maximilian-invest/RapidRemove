@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "«Encerrado definitivamente» não é uma eliminação", toc: "«Encerrado» ≠ eliminado" },
     { t: "p", text: "A opção que o Google disponibiliza chama-se «Marcar como encerrado definitivamente». Muitos pensam que isto equivale a eliminar — mas não é assim. É apenas um **rótulo de estado**." },
     { t: "warn", title: "O que acontece realmente com «encerrado»", text: "O seu perfil continua visível na Pesquisa Google e no Google Maps — incluindo nome, morada, fotos e **todas as avaliações**. Por cima aparece apenas um «Encerrado definitivamente» riscado. Para potenciais clientes, isso muitas vezes parece *pior* do que antes." },
-    { t: "p", text: "Por outras palavras: quem «encerra» não livra o registo das avaliações — e pode até tornar o problema mais visível. Uma **verdadeira eliminação**, por outro lado, remove a [ficha do Google Maps](/pt/remover-ficha-google-maps/) completa e todas as avaliações da visualização." },
+    { t: "p", text: "Por outras palavras: quem «encerra» não livra o registo das avaliações — e pode até tornar o problema mais visível. Uma **verdadeira eliminação**, por outro lado, remove a [ficha do Google Maps](/pt/revista/remover-ficha-google-maps/) completa e todas as avaliações da visualização." },
 
     { t: "h2", id: "optionen", text: "Quais são as opções reais", toc: "As opções reais" },
     { t: "p", text: "Na prática existem três caminhos para se livrar de um perfil indesejado — com resultados muito diferentes:" },
@@ -74,7 +74,7 @@ const article = {
       ["Sucesso", "Não", "Incerto", "Garantido (No Cure, No Pay)"],
       ["O seu esforço", "Elevado", "Elevado", "Praticamente nulo"],
     ] },
-    { t: "p", text: "O caminho DIY acaba quase sempre em «encerrado definitivamente». O caminho do advogado é caro, lento e incerto — e não raramente desencadeia o [efeito Streisand](/pt/avaliacao-negativa-google-advogado/), em que a atenção aumenta precisamente por causa da tentativa de remoção. Resta o terceiro caminho: a remoção profissional e completa." },
+    { t: "p", text: "O caminho DIY acaba quase sempre em «encerrado definitivamente». O caminho do advogado é caro, lento e incerto — e não raramente desencadeia o [efeito Streisand](/pt/revista/avaliacao-negativa-google-advogado/), em que a atenção aumenta precisamente por causa da tentativa de remoção. Resta o terceiro caminho: a remoção profissional e completa." },
 
     { t: "h2", id: "anleitung", text: "Guia: editar o perfil pelo próprio Google", toc: "Guia passo a passo" },
     { t: "p", text: "Se quiser tentar primeiro por conta própria, aqui está o processo real. Prepare-se para que o resultado seja, na melhor das hipóteses, «encerrado» — não «eliminado»." },
@@ -88,8 +88,8 @@ const article = {
     { t: "cta", title: "Prefere verificar diretamente se o seu perfil pode ser eliminado?", text: "Introduza o nome da sua empresa — encontramos o seu perfil real do Google e verificamos em segundos se e com que rapidez pode ser removido. Sem compromisso e sem custo.", btn: "Iniciar verificação gratuita", href: "/pt/?start=1", trust: ["Pagamento só após eliminação com sucesso"] },
 
     { t: "h2", id: "einzeln", text: "Eliminar avaliações individuais ou remover o perfil completo?", toc: "Avaliações ou perfil?" },
-    { t: "p", text: "Muitos começam por tentar [denunciar](/pt/remover-avaliacoes-falsas-google/) avaliações negativas individuais ao Google. É trabalhoso e incerto: o Google recusa frequentemente as denúncias, cada avaliação tem de ser justificada separadamente — e por cada avaliação removida surgem rapidamente novas. Está a combater sintomas." },
-    { t: "p", text: "A abordagem sustentável atua na raiz: **se o perfil completo for removido, todas as avaliações desaparecem de uma só vez** — incluindo avaliações falsas. De forma definitiva, em vez de remendos. É precisamente por isso que removemos conscientemente não avaliações individuais, mas o perfil completo. Quem quiser primeiro [remover avaliações do Google](/pt/remover-avaliacoes-google/) individualmente encontrará aí os métodos e os custos comparados." },
+    { t: "p", text: "Muitos começam por tentar [denunciar](/pt/revista/remover-avaliacoes-falsas-google/) avaliações negativas individuais ao Google. É trabalhoso e incerto: o Google recusa frequentemente as denúncias, cada avaliação tem de ser justificada separadamente — e por cada avaliação removida surgem rapidamente novas. Está a combater sintomas." },
+    { t: "p", text: "A abordagem sustentável atua na raiz: **se o perfil completo for removido, todas as avaliações desaparecem de uma só vez** — incluindo avaliações falsas. De forma definitiva, em vez de remendos. É precisamente por isso que removemos conscientemente não avaliações individuais, mas o perfil completo. Quem quiser primeiro [remover avaliações do Google](/pt/revista/remover-avaliacoes-google/) individualmente encontrará aí os métodos e os custos comparados." },
     { t: "tip", title: "A vantagem decisiva", text: "Um perfil removido não pode exibir nem avaliações antigas nem novas. O problema não fica adiado — fica resolvido." },
 
     { t: "h2", id: "legal", text: "É legal eliminar?", toc: "É legal?" },

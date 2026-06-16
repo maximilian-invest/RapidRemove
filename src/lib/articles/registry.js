@@ -5,16 +5,18 @@ import { authorFor, authorPersonLd } from "@/lib/authors";
 
 export { SITE_URL };
 
-// Slug (as referenced inside the article copy) -> on-site route path (no basePath).
+// Slug (as referenced inside the article copy) -> on-site route path. JEDER Artikel
+// liegt unter /magazin/<slug> (der alte „…-wie-geht-das"-Slug zeigt auf den Hub).
 export const ROUTE_BY_SLUG = {
-  "google-unternehmensprofil-loeschen-wie-geht-das": "/google-unternehmensprofil-loeschen/",
-  "schlechte-google-bewertungen-was-tun": "/schlechte-google-bewertungen-was-tun/",
-  "1-stern-bewertung-ohne-text-loeschen": "/1-stern-bewertung-ohne-text-loeschen/",
-  "google-rezension-loeschen-lassen": "/google-rezension-loeschen-lassen/",
-  "negative-google-bewertung-anwalt-oder-technische-loeschung": "/negative-google-bewertung-anwalt-oder-technische-loeschung/",
-  "google-bewertung-loeschen-lassen": "/google-bewertung-loeschen-lassen/",
-  "fake-google-bewertung-melden-loeschen": "/fake-google-bewertung-melden-loeschen/",
-  "google-maps-eintrag-loeschen": "/google-maps-eintrag-loeschen/",
+  "google-unternehmensprofil-loeschen-wie-geht-das": "/magazin/google-unternehmensprofil-loeschen/",
+  "schlechte-google-bewertungen-was-tun": "/magazin/schlechte-google-bewertungen-was-tun/",
+  "1-stern-bewertung-ohne-text-loeschen": "/magazin/1-stern-bewertung-ohne-text-loeschen/",
+  "google-rezension-loeschen-lassen": "/magazin/google-rezension-loeschen-lassen/",
+  "negative-google-bewertung-anwalt-oder-technische-loeschung": "/magazin/negative-google-bewertung-anwalt-oder-technische-loeschung/",
+  "google-bewertung-loeschen-lassen": "/magazin/google-bewertung-loeschen-lassen/",
+  "fake-google-bewertung-melden-loeschen": "/magazin/fake-google-bewertung-melden-loeschen/",
+  "google-maps-eintrag-loeschen": "/magazin/google-maps-eintrag-loeschen/",
+  "firma-bei-google-loeschen": "/magazin/firma-bei-google-loeschen/",
 };
 
 // The cluster slugs that have their own statically-exported page (for sitemap + magazine).

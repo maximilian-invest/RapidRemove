@@ -2,26 +2,23 @@
    - translated cluster articles (magazine), and
    - the localized secondary pages (about · impressum · datenschutz · orm ·
      deindex · kontakt), each rendered in the route's language. */
-import MagArticle from "@/components/MagArticle";
 import MagazinStandalone from "@/components/MagazinStandalone";
 import About from "@/components/About";
 import { Impressum, Datenschutz } from "@/components/Legal";
 import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute } from "@/components/ServicePages";
 import Kontakt from "@/components/Kontakt";
-import { uiFor, SITE_URL } from "@/lib/articles/registry";
+import { SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, NON_DEFAULT_LOCALES, magazineSlug, magazineUrl, magazineHreflangMap } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
-import {
-  articleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated, buildArticleJsonLd, magCardsFor,
-} from "@/lib/articles/catalog";
-import { authorFor, roleFor, authorPath } from "@/lib/authors";
+import { magCardsFor } from "@/lib/articles/catalog";
 import { pageParams, pageForSlug, pageUrl, pageHreflang } from "@/lib/page-routes";
 import { pageMeta } from "@/lib/page-meta";
 
 export const dynamicParams = false;
 
-// Localized secondary pages share the same single dynamic segment as articles.
+// Localized secondary pages + the magazine index share this single dynamic segment.
+// (Artikel liegen jetzt eine Ebene tiefer unter [lang]/[aslug]/[aslug2].)
 const PAGE_COMPONENT = {
   about: About, impressum: Impressum, datenschutz: Datenschutz,
   agb: Agb, widerruf: Widerruf,
@@ -29,9 +26,9 @@ const PAGE_COMPONENT = {
 };
 
 export function generateStaticParams() {
-  // Magazin-Übersicht je Sprache (lokalisierter Slug) zusätzlich zu Artikeln + Sekundärseiten.
+  // Magazin-Übersicht je Sprache (lokalisierter Slug) + Sekundärseiten.
   const mags = NON_DEFAULT_LOCALES.map((lang) => ({ lang, aslug: magazineSlug(lang) }));
-  return [...articleParams(), ...pageParams(), ...mags];
+  return [...pageParams(), ...mags];
 }
 
 export function generateMetadata({ params }) {
@@ -58,16 +55,7 @@ export function generateMetadata({ params }) {
       openGraph: { type: "website", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE] },
     };
   }
-  const r = resolveLocalized(params.lang, params.aslug);
-  if (!r) return {};
-  const m = r.t.meta;
-  const url = `${SITE_URL}/${params.lang}/${m.slug}`;
-  return {
-    title: m.title,
-    description: m.description,
-    alternates: { canonical: url, languages: hreflangForArticle(r.deSlug) },
-    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE], publishedTime: m.date, modifiedTime: m.date, authors: [authorFor(r.deSlug).name] },
-  };
+  return {};
 }
 
 export default function Page({ params }) {
@@ -98,26 +86,5 @@ export default function Page({ params }) {
     const C = PAGE_COMPONENT[key];
     return <C initialLang={params.lang} />;
   }
-  const r = resolveLocalized(params.lang, params.aslug);
-  const ui = uiFor(params.lang);
-  // Autor deterministisch über den deutschen Slug — sprachübergreifend derselbe Artikel, derselbe Autor.
-  const author = authorFor(r.deSlug);
-  const data = {
-    meta: { ...r.t.meta, author: author.name, authorRole: roleFor(author, params.lang), authorHref: authorPath(author) },
-    dek: r.t.dek,
-    blocks: r.t.blocks,
-    faq: r.t.faq,
-    category: r.t.category || r.de.category,
-    iconKey: r.de.iconKey,
-    readingMin: r.de.readingMin,
-  };
-  const related = resolveRelated(params.lang, r.t.related);
-  const url = `${SITE_URL}/${params.lang}/${r.t.meta.slug}`;
-  const jsonLd = buildArticleJsonLd(r.t.meta, r.t.faq, params.lang, ui, url, r.deSlug);
-  return (
-    <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <MagArticle data={data} lang={params.lang} ui={ui} langUrls={langUrlsForArticle(r.deSlug)} related={related} />
-    </>
-  );
+  return null;
 }

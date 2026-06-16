@@ -1,7 +1,7 @@
 import { ARTICLE_META, SITE_URL } from "@/lib/article-google-profil";
 import { LOCALES, localeUrl, magazineUrl } from "@/lib/locales-meta";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
-import { articleParams } from "@/lib/articles/catalog";
+import { nestedArticleParams, articleUrl } from "@/lib/articles/catalog";
 import { PAGE_KEYS, pageUrl } from "@/lib/page-routes";
 import { HUB_PATH } from "@/lib/articles/hubs";
 
@@ -13,13 +13,13 @@ export default function sitemap() {
     priority: l === "de" ? 1 : 0.9,
   }));
   const cluster = CLUSTER_SLUGS.map((s) => ({
-    url: `${SITE_URL}/${s}`,
+    url: articleUrl("de", s),
     lastModified: new Date("2026-06-04"),
     changeFrequency: "monthly",
     priority: 0.8,
   }));
-  const translated = articleParams().map(({ lang, aslug }) => ({
-    url: `${SITE_URL}/${lang}/${aslug}`,
+  const translated = nestedArticleParams().map(({ lang, aslug2 }) => ({
+    url: articleUrl(lang, aslug2),
     lastModified: new Date("2026-06-04"),
     changeFrequency: "monthly",
     priority: 0.7,

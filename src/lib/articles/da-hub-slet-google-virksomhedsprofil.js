@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "»Permanent lukket« er ikke en sletning", toc: "»Lukket« ≠ slettet" },
     { t: "p", text: "Den mulighed, Google tilbyder, hedder »Markér som permanent lukket«. Mange opfatter det som en sletning — men det er det ikke. Det er kun et **statusmærkat**." },
     { t: "warn", title: "Hvad »lukket« rent faktisk betyder", text: "Din profil forbliver synlig i Google Søgning og Google Maps — inklusive navn, adresse, billeder og **alle anmeldelser**. Ovenpå sidder blot et overstreget »Permanent lukket«. For potentielle kunder ser det ofte *værre* ud end før." },
-    { t: "p", text: "Med andre ord: den, der »lukker«, slipper hverken af med opslaget eller anmeldelserne — i visse tilfælde gøres problemet endda mere synligt. En **ægte sletning** fjerner derimod hele [Google Maps-opslaget](/da/fjern-google-maps-virksomhed/) inkl. alle anmeldelser." },
+    { t: "p", text: "Med andre ord: den, der »lukker«, slipper hverken af med opslaget eller anmeldelserne — i visse tilfælde gøres problemet endda mere synligt. En **ægte sletning** fjerner derimod hele [Google Maps-opslaget](/da/magasin/fjern-google-maps-virksomhed/) inkl. alle anmeldelser." },
 
     { t: "h2", id: "optionen", text: "De muligheder du reelt har", toc: "Dine muligheder" },
     { t: "p", text: "Der er realistisk set tre veje til at komme af med en uønsket profil — med meget forskelligt resultat:" },
@@ -74,7 +74,7 @@ const article = {
       ["Succes", "Nej", "Usikker", "Garanteret (No Cure, No Pay)"],
       ["Dit tidsforbrug", "Højt", "Højt", "Praktisk talt nul"],
     ] },
-    { t: "p", text: "DIY-vejen ender næsten altid ved »permanent lukket«. Advokatvejen er dyr, langsom og usikker — og udløser ikke sjældent [Streisand-effekten](/da/negativ-google-anmeldelse-advokat/), hvor opmærksomheden tværtimod stiger. Tilbage er den tredje vej: den professionelle, fuldstændige fjernelse." },
+    { t: "p", text: "DIY-vejen ender næsten altid ved »permanent lukket«. Advokatvejen er dyr, langsom og usikker — og udløser ikke sjældent [Streisand-effekten](/da/magasin/negativ-google-anmeldelse-advokat/), hvor opmærksomheden tværtimod stiger. Tilbage er den tredje vej: den professionelle, fuldstændige fjernelse." },
 
     { t: "h2", id: "anleitung", text: "Vejledning: Rediger profilen direkte via Google", toc: "Vejledning trin for trin" },
     { t: "p", text: "Vil du prøve det selv først, er her det reelle forløb. Regn med, at resultatet i bedste fald bliver »lukket« — ikke »slettet«." },
@@ -88,8 +88,8 @@ const article = {
     { t: "cta", title: "Vil du hellere have tjekket, om din profil kan slettes?", text: "Indtast dit firmanavn — vi finder din rigtige Google-profil og tjekker på sekunder, om og hvor hurtigt den kan fjernes. Uforpligtende og gratis.", btn: "Start gratis tjek", href: "/da/?start=1", trust: ["Betaling kun efter vellykket sletning"] },
 
     { t: "h2", id: "einzeln", text: "Enkeltanmeldelser eller hele profilen?", toc: "Anmeldelser eller profil?" },
-    { t: "p", text: "Mange starter med at forsøge at [anmelde](/da/fjern-falske-google-anmeldelser/) individuelle dårlige anmeldelser til Google. Det er besværligt og usikkert: Google afviser anmeldelser hyppigt, hver enkelt anmeldelse skal begrundes separat — og for hver fjernet anmeldelse dukker der hurtigt nye op. Du bekæmper symptomerne." },
-    { t: "p", text: "Den holdbare tilgang rammer ved roden: **Fjernes hele profilen, forsvinder alle anmeldelser på én gang** — inkl. falske anmeldelser. Endeligt frem for stykkevis. Netop derfor fjerner vi bevidst ikke enkeltanmeldelser, men den komplette profil. Den, der foreløbig kun vil have [enkeltanmeldelser fjernet fra Google](/da/fjern-google-anmeldelser/), finder metoderne og priserne sammenlignet der." },
+    { t: "p", text: "Mange starter med at forsøge at [anmelde](/da/magasin/fjern-falske-google-anmeldelser/) individuelle dårlige anmeldelser til Google. Det er besværligt og usikkert: Google afviser anmeldelser hyppigt, hver enkelt anmeldelse skal begrundes separat — og for hver fjernet anmeldelse dukker der hurtigt nye op. Du bekæmper symptomerne." },
+    { t: "p", text: "Den holdbare tilgang rammer ved roden: **Fjernes hele profilen, forsvinder alle anmeldelser på én gang** — inkl. falske anmeldelser. Endeligt frem for stykkevis. Netop derfor fjerner vi bevidst ikke enkeltanmeldelser, men den komplette profil. Den, der foreløbig kun vil have [enkeltanmeldelser fjernet fra Google](/da/magasin/fjern-google-anmeldelser/), finder metoderne og priserne sammenlignet der." },
     { t: "tip", title: "Den afgørende fordel", text: "En fjernet profil kan hverken vise gamle *eller* nye anmeldelser. Problemet er dermed ikke skubbet videre — det er løst." },
 
     { t: "h2", id: "legal", text: "Er det lovligt at slette profilen?", toc: "Er det lovligt?" },

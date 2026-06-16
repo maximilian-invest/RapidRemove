@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "geschlossen", text: "«Cerrado definitivamente» no es una eliminación", toc: "«Cerrado» ≠ eliminado" },
     { t: "p", text: "La opción que Google le ofrece se llama «Marcar como cerrado definitivamente». Muchos la confunden con una eliminación — pero no lo es. Es únicamente una **etiqueta de estado**." },
     { t: "warn", title: "Lo que ocurre realmente con «cerrado»", text: "Su perfil sigue siendo visible en la Búsqueda de Google y en Google Maps — incluidos nombre, dirección, fotos y **todas las reseñas**. Lo único que aparece encima es un tachado con «Cerrado definitivamente». Para los posibles clientes, eso suele verse *peor* que antes." },
-    { t: "p", text: "Dicho de otro modo: quien «cierra» no se deshace de la ficha ni de las reseñas — en algunos casos hasta hace el problema más llamativo. Una **eliminación real**, en cambio, borra por completo la [ficha de Google Maps](/es/eliminar-ficha-de-google-maps/) junto con todas las reseñas." },
+    { t: "p", text: "Dicho de otro modo: quien «cierra» no se deshace de la ficha ni de las reseñas — en algunos casos hasta hace el problema más llamativo. Una **eliminación real**, en cambio, borra por completo la [ficha de Google Maps](/es/revista/eliminar-ficha-de-google-maps/) junto con todas las reseñas." },
 
     { t: "h2", id: "optionen", text: "Qué opciones tiene realmente", toc: "Qué opciones tiene" },
     { t: "p", text: "En la práctica existen tres caminos para deshacerse de un perfil no deseado — con resultados muy distintos:" },
@@ -74,7 +74,7 @@ const article = {
       ["Resultado", "No", "Incierto", "Garantizado (No Cure, No Pay)"],
       ["Su esfuerzo", "Alto", "Alto", "Prácticamente ninguno"],
     ] },
-    { t: "p", text: "El camino del bricolaje casi siempre termina en «cerrado definitivamente». El camino del abogado es caro, lento e incierto — y no pocas veces desencadena el [efecto Streisand](/es/eliminar-resena-negativa-de-google-abogado/), en el que la atención aumenta precisamente por intentar suprimir algo. Queda el tercer camino: la eliminación profesional y completa." },
+    { t: "p", text: "El camino del bricolaje casi siempre termina en «cerrado definitivamente». El camino del abogado es caro, lento e incierto — y no pocas veces desencadena el [efecto Streisand](/es/revista/eliminar-resena-negativa-de-google-abogado/), en el que la atención aumenta precisamente por intentar suprimir algo. Queda el tercer camino: la eliminación profesional y completa." },
 
     { t: "h2", id: "anleitung", text: "Guía: cómo gestionar el perfil a través del propio Google", toc: "Guía paso a paso" },
     { t: "p", text: "Si quiere intentarlo primero por su cuenta, aquí tiene el proceso real. Tenga en cuenta que el mejor resultado que puede esperar es «cerrado», no «eliminado»." },
@@ -88,8 +88,8 @@ const article = {
     { t: "cta", title: "¿Prefiere saber directamente si su perfil puede eliminarse?", text: "Introduzca el nombre de su empresa — encontramos su perfil de Google real y comprobamos en segundos si puede eliminarse y con qué rapidez. Sin compromiso y sin coste.", btn: "Empezar verificación gratuita", href: "/es/?start=1", trust: ["Pago solo tras la eliminación exitosa"] },
 
     { t: "h2", id: "einzeln", text: "¿Eliminar reseñas individuales o borrar el perfil entero?", toc: "¿Reseñas o perfil?" },
-    { t: "p", text: "Muchos empiezan intentando denunciar reseñas negativas concretas a [Google](/es/eliminar-resenas-falsas-de-google/). Es un proceso agotador e incierto: Google rechaza las denuncias con frecuencia, cada reseña debe justificarse por separado — y por cada una que desaparece, no tardan en surgir nuevas. Está combatiendo síntomas, no la causa." },
-    { t: "p", text: "El enfoque sostenible va a la raíz del problema: **si se elimina el perfil completo, todas las reseñas desaparecen de un golpe** — incluidas las falsas y las de represalia. Definitivo, no a medias. Por eso, deliberadamente no eliminamos reseñas individuales, sino el perfil completo. Quien desee primero [eliminar reseñas de Google de forma individual](/es/eliminar-resenas-de-google/) encontrará allí los métodos y los costes comparados." },
+    { t: "p", text: "Muchos empiezan intentando denunciar reseñas negativas concretas a [Google](/es/revista/eliminar-resenas-falsas-de-google/). Es un proceso agotador e incierto: Google rechaza las denuncias con frecuencia, cada reseña debe justificarse por separado — y por cada una que desaparece, no tardan en surgir nuevas. Está combatiendo síntomas, no la causa." },
+    { t: "p", text: "El enfoque sostenible va a la raíz del problema: **si se elimina el perfil completo, todas las reseñas desaparecen de un golpe** — incluidas las falsas y las de represalia. Definitivo, no a medias. Por eso, deliberadamente no eliminamos reseñas individuales, sino el perfil completo. Quien desee primero [eliminar reseñas de Google de forma individual](/es/revista/eliminar-resenas-de-google/) encontrará allí los métodos y los costes comparados." },
     { t: "tip", title: "La ventaja decisiva", text: "Un perfil eliminado no puede mostrar reseñas antiguas ni nuevas. El problema no se desplaza — se resuelve." },
 
     { t: "h2", id: "legal", text: "¿Es legal eliminarlo?", toc: "¿Es legal?" },
