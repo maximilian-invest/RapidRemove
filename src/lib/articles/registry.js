@@ -17,6 +17,7 @@ export const ROUTE_BY_SLUG = {
   "fake-google-bewertung-melden-loeschen": "/magazin/fake-google-bewertung-melden-loeschen/",
   "google-maps-eintrag-loeschen": "/magazin/google-maps-eintrag-loeschen/",
   "firma-bei-google-loeschen": "/magazin/firma-bei-google-loeschen/",
+  "was-kostet-eine-schlechte-google-bewertung": "/magazin/was-kostet-eine-schlechte-google-bewertung/",
 };
 
 // The cluster slugs that have their own statically-exported page (for sitemap + magazine).
@@ -29,6 +30,7 @@ export const CLUSTER_SLUGS = [
   "google-rezension-loeschen-lassen",
   "google-maps-eintrag-loeschen",
   "firma-bei-google-loeschen",
+  "was-kostet-eine-schlechte-google-bewertung",
 ];
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
@@ -41,6 +43,7 @@ export const CLUSTER_CARDS = [
   { slug: "1-stern-bewertung-ohne-text-loeschen", cat: "Recht", thm: "thm-plum", icon: "gavel", title: "1-Stern-Bewertung ohne Text löschen lassen", excerpt: "Warum wortlose 1-Stern-Bewertungen oft löschbar sind – Rechtslage (LG Lübeck, BGH) & Anleitung.", author: "Matthias Lang", read: 7, date: "Februar 2026" },
   { slug: "google-rezension-loeschen-lassen", cat: "Anleitung", thm: "thm-blue", icon: "edit", title: "Google Rezension löschen lassen: Formular & Kosten", excerpt: "Eigene und fremde Rezensionen entfernen – kostenlos melden oder dauerhaft löschen lassen.", author: "Maximilian Hölzl", read: 7, date: "Dezember 2025" },
   { slug: "firma-bei-google-loeschen", cat: "Google-Policy", thm: "thm-ink", icon: "building", title: "Firma bei Google löschen: so entfernen Sie den Eintrag", excerpt: "Warum „als geschlossen markieren“ den Eintrag nicht löscht – und wie Sie ihn samt aller Bewertungen wirklich entfernen.", author: "Maximilian Hölzl", read: 7, date: "April 2026" },
+  { slug: "was-kostet-eine-schlechte-google-bewertung", cat: "Reputation", thm: "thm-amber", icon: "card", title: "Was kostet eine schlechte Google-Bewertung wirklich?", excerpt: "Was eine schlechte Bewertung an Umsatz kostet – Studienzahlen, eine einfache Rechnung und ab wann sich Handeln lohnt.", author: "Maximilian Hölzl", read: 6, date: "Mai 2026" },
 ];
 
 // Resolve a rapid-remove.com URL (or bare slug) to an on-site path, or null if it

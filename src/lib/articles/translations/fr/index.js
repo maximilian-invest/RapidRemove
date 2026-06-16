@@ -7,6 +7,7 @@ import a5 from "@/lib/articles/translations/fr/1-stern-bewertung-ohne-text-loesc
 import a6 from "@/lib/articles/translations/fr/google-rezension-loeschen-lassen";
 import a7 from "@/lib/articles/translations/fr/google-maps-eintrag-loeschen";
 import a8 from "@/lib/articles/translations/fr/firma-bei-google-loeschen";
+import a9 from "@/lib/articles/translations/fr/was-kostet-eine-schlechte-google-bewertung";
 export default {
   "google-bewertung-loeschen-lassen": a1,
   "fake-google-bewertung-melden-loeschen": a2,
@@ -16,4 +17,5 @@ export default {
   "google-rezension-loeschen-lassen": a6,
   "google-maps-eintrag-loeschen": a7,
   "firma-bei-google-loeschen": a8,
+  "was-kostet-eine-schlechte-google-bewertung": a9,
 };

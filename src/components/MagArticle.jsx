@@ -11,18 +11,19 @@ import { pagePath } from "@/lib/page-routes";
 import { uiFor } from "@/lib/articles/registry";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
-/* inline **bold** + [label](url) links. Absolute (https://) → external (new tab);
-   root-relative (/…) → on-site link via asset() (same tab, base-path aware). */
+/* inline **bold**, *italic*, and [label](url) links. Absolute (https://) → external
+   (new tab); root-relative (/…) → on-site link via asset() (same tab, base-path aware). */
 function inline(text, k = "i") {
   const s = String(text);
-  const re = /\*\*(.+?)\*\*|\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g;
+  const re = /\*\*(.+?)\*\*|\*([^*\n]+?)\*|\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]*)\)/g;
   const out = [];
   let last = 0, m, idx = 0;
   while ((m = re.exec(s)) !== null) {
     if (m.index > last) out.push(<React.Fragment key={k + idx++}>{s.slice(last, m.index)}</React.Fragment>);
     if (m[1] !== undefined) out.push(<strong key={k + idx++}>{m[1]}</strong>);
-    else if (/^https?:\/\//.test(m[3])) out.push(<a key={k + idx++} href={m[3]} target="_blank" rel="noopener noreferrer">{m[2]}</a>);
-    else out.push(<a key={k + idx++} href={asset(m[3])}>{m[2]}</a>);
+    else if (m[2] !== undefined) out.push(<em key={k + idx++}>{m[2]}</em>);
+    else if (/^https?:\/\//.test(m[4])) out.push(<a key={k + idx++} href={m[4]} target="_blank" rel="noopener noreferrer">{m[3]}</a>);
+    else out.push(<a key={k + idx++} href={asset(m[4])}>{m[3]}</a>);
     last = re.lastIndex;
   }
   if (last < s.length) out.push(<React.Fragment key={k + idx++}>{s.slice(last)}</React.Fragment>);
