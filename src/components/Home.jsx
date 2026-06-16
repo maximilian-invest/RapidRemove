@@ -7,6 +7,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
+import { getResumeProfile } from "@/lib/resume";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 import { AblaufVideo } from "@/components/AblaufVideo";
@@ -184,6 +185,13 @@ function Hero({ onStart }) {
   // „Schritt 3" (Machbarkeit); der getippte Text bleibt ein String (normale Suche).
   const pick = (val) => { setAcOpen(false); onStart(val); };
   const showAc = acOpen && name.trim().length >= 2;
+  // Rückkehrer mit bereits geprüftem Profil: bei LEEREM Suchfeld wird der Button
+  // zu „Weitermachen" und führt direkt zurück ins geprüfte Profil. Sobald etwas
+  // eingetippt ist, bleibt es die normale „Löschbarkeit prüfen"-Suche.
+  const [resume, setResume] = React.useState(null);
+  React.useEffect(() => { setResume(getResumeProfile()); }, []);
+  const showResume = !!(resume && resume.placeId && !name.trim());
+  const goResume = () => { if (resume && resume.placeId) window.location.href = asset(pagePath("wizard", lang)) + "?p=" + encodeURIComponent(resume.placeId); };
   return (
     <section className="hero">
       <div className="hero-glow"></div>
@@ -231,8 +239,8 @@ function Hero({ onStart }) {
               </div>
             )}
           </div>
-          <button className="btn btn-primary btn-block lg cta-glow" onClick={go}>
-            <Icon.search size={19} /> {t.hero.button} <Icon.arrowRight size={18} />
+          <button className="btn btn-primary btn-block lg cta-glow" onClick={showResume ? goResume : go}>
+            {showResume ? <Icon.arrowRight size={19} /> : <Icon.search size={19} />} {showResume ? (t.nav.ctaResume || "Weitermachen") : t.hero.button}{showResume ? null : <> <Icon.arrowRight size={18} /></>}
           </button>
         </div>
         <a className="hero-team below hs hs5" href={asset(pagePath("about", lang))}>
