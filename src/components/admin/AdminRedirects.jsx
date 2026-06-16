@@ -2,6 +2,7 @@
 import React from "react";
 import { fetchRedirects, saveRedirect, deleteRedirect } from "@/lib/admin-api";
 import { AdminIcon as AI } from "./AdminIcons";
+import { BUILTIN_REDIRECTS } from "@/lib/builtin-redirects.mjs";
 
 /* 301/302-Weiterleitungen verwalten. Speichert im ops-Backend; die Middleware
    der Marketing-Site übernimmt aktive Regeln binnen ~1 Minute (ohne Deploy). */
@@ -71,6 +72,14 @@ export function RedirectsDashboard({ toast }) {
     const s = q.trim().toLowerCase();
     return !s || r.source.toLowerCase().includes(s) || String(r.destination).toLowerCase().includes(s);
   });
+
+  // Fest im Code hinterlegte Weiterleitungen (read-only) — ohne die, deren Quelle
+  // bereits im Portal/DB angelegt ist, plus aktiver Filter.
+  const norm = (s) => { let x = String(s || ""); if (!x.startsWith("/")) x = "/" + x; if (x.length > 1) x = x.replace(/\/+$/, ""); return x; };
+  const dbSources = new Set(list.map((r) => norm(r.source)));
+  const builtins = BUILTIN_REDIRECTS
+    .filter((r) => !dbSources.has(norm(r.source)))
+    .filter((r) => { const s = q.trim().toLowerCase(); return !s || r.source.toLowerCase().includes(s) || r.destination.toLowerCase().includes(s); });
 
   return (
     <div style={{ padding: "18px 20px 60px", maxWidth: 1040, margin: "0 auto" }}>
@@ -163,6 +172,47 @@ export function RedirectsDashboard({ toast }) {
           </div>
         )}
       </div>
+
+      {/* Fest im Code hinterlegte Weiterleitungen (read-only) */}
+      {builtins.length > 0 ? (
+        <div style={{ marginTop: 24 }}>
+          <div style={{ fontWeight: 800, fontSize: 14, color: C.ink, marginBottom: 4 }}>Fest hinterlegt (im Code)</div>
+          <div style={{ fontSize: 12.5, color: C.muted, marginBottom: 10, lineHeight: 1.5, maxWidth: 760 }}>
+            Diese {builtins.length} Weiterleitungen stehen im Quellcode (next.config) und sind hier nur zur Übersicht — Änderungen daran erfolgen im Code. Quellen, die du oben im Portal anlegst, werden hier automatisch ausgeblendet.
+          </div>
+          <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
+                <thead>
+                  <tr style={{ textAlign: "left", color: C.muted, fontSize: 11.5, textTransform: "uppercase", letterSpacing: ".04em" }}>
+                    <th style={{ padding: "11px 14px", fontWeight: 700 }}>Quelle → Ziel</th>
+                    <th style={{ padding: "11px 8px", fontWeight: 700 }}>Typ</th>
+                    <th style={{ padding: "11px 8px", fontWeight: 700 }}>Status</th>
+                    <th style={{ padding: "11px 14px", fontWeight: 700, textAlign: "right" }}>Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {builtins.map((r, i) => (
+                    <tr key={i} style={{ borderTop: `1px solid ${C.border}` }}>
+                      <td style={{ padding: "11px 14px" }}>
+                        <div style={{ fontWeight: 700, color: C.ink, wordBreak: "break-all" }}>{r.source}</div>
+                        <div style={{ color: C.muted, wordBreak: "break-all", display: "flex", alignItems: "center", gap: 5 }}><AI.external size={12} /> {r.destination}</div>
+                      </td>
+                      <td style={{ padding: "11px 8px", fontWeight: 800, color: C.ok }}>301</td>
+                      <td style={{ padding: "11px 8px" }}>
+                        <span style={{ fontSize: 11.5, fontWeight: 800, color: C.muted, background: C.soft, border: `1px solid ${C.border}`, borderRadius: 6, padding: "2px 7px" }}>fest</span>
+                      </td>
+                      <td style={{ padding: "11px 14px", textAlign: "right", whiteSpace: "nowrap" }}>
+                        <a href={origin + r.source} target="_blank" rel="noopener noreferrer" title="Testen" style={{ ...ghost, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Test ↗</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
