@@ -29,6 +29,27 @@ export const articlePath = (lang, slug) =>
   lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`;
 export const articleUrl = (lang, slug) => SITE_URL + articlePath(lang, slug).replace(/\/$/, "");
 
+// Gestaffelte, plausible Veröffentlichungsdaten je Spoke (deutscher Slug) — damit
+// nicht alle Artikel dasselbe Datum tragen. Sprachübergreifend stabil (über den
+// deutschen Slug). Hub & Unbekanntes fallen auf das alte Default-Datum zurück.
+const PUBLISH_DATES = {
+  "google-bewertung-loeschen-lassen": "2025-09-15",
+  "fake-google-bewertung-melden-loeschen": "2025-11-03",
+  "negative-google-bewertung-anwalt-oder-technische-loeschung": "2026-01-20",
+  "schlechte-google-bewertungen-was-tun": "2025-10-08",
+  "1-stern-bewertung-ohne-text-loeschen": "2026-02-12",
+  "google-rezension-loeschen-lassen": "2025-12-09",
+  "google-maps-eintrag-loeschen": "2026-03-18",
+  "firma-bei-google-loeschen": "2026-04-22",
+};
+export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
+
+// Markdown (Links/Fettung) aus Text entfernen — für strukturierte Daten (JSON-LD),
+// die reinen Text erwarten, während die sichtbaren Blöcke via inline() rendern.
+const stripMd = (s) => String(s || "")
+  .replace(/\[([^\]]+)\]\((?:https?:\/\/[^)\s]+|\/[^)\s]*)\)/g, "$1")
+  .replace(/\*\*(.+?)\*\*/g, "$1");
+
 // Lightweight magazine "Titelgeschichte" card for a localized hub, built from the
 // shared HUB_CARD/HUB_PATH registry (the heavy article body lives in its route).
 function hubCardFor(lang) {
@@ -60,7 +81,7 @@ const monthYear = (iso, lang) => {
   catch (e) { return ""; }
 };
 export function magCardsFor(lang) {
-  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: articlePath("de", c.slug), author: authorFor(c.slug).name }));
+  if (lang === "de") return CLUSTER_CARDS.map((c) => ({ ...c, href: articlePath("de", c.slug), author: authorFor(c.slug).name, date: monthYear(dateFor(c.slug), "de") || c.date }));
   const cards = CLUSTER_CARDS.map((c) => {
     const t = tFor(lang, c.slug);
     if (!t) return null;
@@ -69,7 +90,7 @@ export function magCardsFor(lang) {
       cat: t.category || c.cat, thm: c.thm, icon: c.icon,
       title: t.meta.title, excerpt: t.meta.description,
       author: authorFor(c.slug).name, read: c.read,
-      date: (t.meta.date && monthYear(t.meta.date, lang)) || c.date,
+      date: monthYear(dateFor(c.slug), lang) || c.date,
     };
   }).filter(Boolean);
   // Lokalisierter Hub als erste (Titel-)Story einreihen, wo vorhanden.
@@ -145,6 +166,7 @@ export function relatedHubLinks(lang, deSlugs) {
 
 // Localized Article + BreadcrumbList + FAQPage JSON-LD.
 export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
+  const date = dateFor(deSlug || meta.slug);
   return {
     "@context": "https://schema.org",
     "@graph": [
@@ -153,8 +175,8 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
         headline: meta.h1 || meta.title,
         description: meta.description,
         image: "https://assets.simplesolution.at/rapid-remove-product-image.jpg",
-        datePublished: meta.date,
-        dateModified: meta.date,
+        datePublished: date,
+        dateModified: date,
         inLanguage: lang,
         author: authorPersonLd(authorFor(deSlug || meta.slug)),
         publisher: { "@type": "Organization", name: "RapidRemove", logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/rapidremove-logo-full.png` } },
@@ -169,7 +191,7 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
           { "@type": "ListItem", position: 3, name: meta.h1 || meta.title, item: url },
         ],
       },
-      { "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+      { "@type": "FAQPage", mainEntity: faq.map((f) => ({ "@type": "Question", name: stripMd(f.q), acceptedAnswer: { "@type": "Answer", text: stripMd(f.a) } })) },
     ],
   };
 }

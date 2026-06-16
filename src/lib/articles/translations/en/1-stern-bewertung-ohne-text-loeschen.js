@@ -21,8 +21,8 @@ const article = {
     { t: "h2", id: "gerichte", text: "What the courts say", toc: "What courts say" },
     { t: "p", text: "Case law has supported this line for years:" },
     { t: "ul", items: [
-      "Under **German case law**, the Regional Court (Landgericht) of Lübeck ruled in 2018 (case 9 O 59/17) that a Google review with one star and no text must be removed.",
-      "Germany’s Federal Court of Justice (BGH, case VI ZR 34/15) likewise requires review platforms to check whether a **genuine business contact** exists. Note: in the US, Section 230 of the CDA largely shields platforms such as Google, so the legal route there differs.",
+      "Under **German case law**, the Regional Court (Landgericht) of Lübeck ruled in 2018 (case [9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17)) that a Google review with one star and no text must be removed.",
+      "Germany’s Federal Court of Justice (BGH, case [VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)) likewise requires review platforms to check whether a **genuine business contact** exists. Note: in the US, Section 230 of the CDA largely shields platforms such as Google, so the legal route there differs.",
     ] },
     { t: "p", text: "So what matters is not whether the reviewer was formally a customer, but whether a **real contact** with your business is plausible. With a wordless 1-star review, that's often precisely not the case." },
 
@@ -55,7 +55,7 @@ const article = {
     { t: "cta", title: "Check for free whether your 1-star review can be removed.", text: "Enter your business name – we'll find your profile and check in seconds whether and how fast it can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [
-    { q: "Can I have a 1-star review without text removed?", a: "In many cases yes. Since there's no recognisable connection to a real experience, the review often lacks the legal basis – German courts (LG Lübeck, case 9 O 59/17; Federal Court of Justice, VI ZR 34/15) have confirmed such removal claims. In the US, the situation differs (Section 230 CDA)." },
+    { q: "Can I have a 1-star review without text removed?", a: "In many cases yes. Since there's no recognisable connection to a real experience, the review often lacks the legal basis – German courts (LG Lübeck, case [9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17); Federal Court of Justice, [VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)) have confirmed such removal claims. In the US, the situation differs (Section 230 CDA)." },
     { q: "Is a 1-star review without text punishable?", a: "The review itself usually isn't. But if it was given without a real occasion, it can be impermissible and give rise to a civil removal claim. This is not legal advice." },
     { q: "How do I report a star rating without a comment?", a: "Click the three-dot menu next to the review, choose “Report review” and give the missing service connection as the reason. Track the status via the Google tool for managing reviews." },
     { q: "What if Google doesn't remove the review?", a: "For a single review, a specifically reasoned objection via a lawyer helps. If your profile is damaged overall and you want a fresh start, profile removal via RapidRemove is the most reliable route – all reviews disappear with the profile." },

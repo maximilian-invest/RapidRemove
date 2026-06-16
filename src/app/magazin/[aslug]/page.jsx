@@ -5,10 +5,10 @@ import Article from "@/components/Article";
 import MagArticle from "@/components/MagArticle";
 import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
 import { uiFor } from "@/lib/articles/registry";
-import { DE_ARTICLES, resolveRelated, buildArticleJsonLd, hreflangForArticle, langUrlsForArticle, articleUrl } from "@/lib/articles/catalog";
+import { DE_ARTICLES, resolveRelated, buildArticleJsonLd, hreflangForArticle, langUrlsForArticle, articleUrl, dateFor } from "@/lib/articles/catalog";
 import { hubHreflang } from "@/lib/articles/hubs";
 import { OG_IMAGE } from "@/lib/locales-meta";
-import { authorFor, authorPersonLd } from "@/lib/authors";
+import { authorFor, authorPersonLd, roleFor, authorPath } from "@/lib/authors";
 
 export const dynamicParams = false;
 const HUB = "google-unternehmensprofil-loeschen";
@@ -30,11 +30,12 @@ export function generateMetadata({ params }) {
   const data = DE_ARTICLES[params.aslug];
   if (!data) return {};
   const url = articleUrl("de", params.aslug);
+  const date = dateFor(params.aslug);
   return {
     title: data.meta.title,
     description: data.meta.description,
     alternates: { canonical: url, languages: hreflangForArticle(params.aslug) },
-    openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: "de_DE", images: [OG_IMAGE], publishedTime: data.meta.date, modifiedTime: data.meta.date, authors: [data.meta.author] },
+    openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: "de_DE", images: [OG_IMAGE], publishedTime: date, modifiedTime: date, authors: [authorFor(params.aslug).name] },
   };
 }
 
@@ -77,11 +78,16 @@ export default function Page({ params }) {
       </>
     );
   }
-  const data = DE_ARTICLES[params.aslug];
+  const base = DE_ARTICLES[params.aslug];
+  const author = authorFor(params.aslug);
+  // Byline DETERMINISTISCH aus authorFor (deckungsgleich mit der Autorenseite,
+  // verlinkt auf /autor/<slug>/ statt /ueber-uns) + gestaffeltes Datum.
+  const meta = { ...base.meta, date: dateFor(params.aslug), author: author.name, authorRole: roleFor(author, "de"), authorHref: authorPath(author) };
+  const data = { ...base, meta };
   const ui = uiFor("de");
   const url = articleUrl("de", params.aslug);
-  const related = resolveRelated("de", data.related);
-  const jsonLd = buildArticleJsonLd(data.meta, data.faq, "de", ui, url);
+  const related = resolveRelated("de", base.related);
+  const jsonLd = buildArticleJsonLd(meta, base.faq, "de", ui, url, params.aslug);
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />

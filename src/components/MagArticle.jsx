@@ -146,7 +146,7 @@ function Body({ data, lang, ui, related }) {
                 {data.faq.map((f, i) => (
                   <div className={"faq-row" + (openFaq === i ? " open" : "")} key={i}>
                     <button className="faq-q" onClick={() => setOpenFaq(openFaq === i ? -1 : i)}>{f.q} <Icon.chevronDown /></button>
-                    <div className="faq-a"><div className="faq-a-inner"><p>{f.a}</p></div></div>
+                    <div className="faq-a"><div className="faq-a-inner"><p>{inline(f.a)}</p></div></div>
                   </div>
                 ))}
               </div>

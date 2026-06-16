@@ -5,7 +5,7 @@ import { uiFor, SITE_URL, CLUSTER_SLUGS } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, magazineSlug } from "@/lib/locales-meta";
 import {
   nestedArticleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated,
-  buildArticleJsonLd, relatedHubLinks, articleUrl,
+  buildArticleJsonLd, relatedHubLinks, articleUrl, dateFor,
 } from "@/lib/articles/catalog";
 import { authorFor, roleFor, authorPath } from "@/lib/authors";
 import { HUB_SLUG, hubHreflang, hubLangUrls } from "@/lib/articles/hubs";
@@ -41,7 +41,7 @@ export function generateMetadata({ params }) {
     title: m.title,
     description: m.description,
     alternates: { canonical: url, languages: hreflangForArticle(r.deSlug) },
-    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE], publishedTime: m.date, modifiedTime: m.date, authors: [authorFor(r.deSlug).name] },
+    openGraph: { type: "article", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE], publishedTime: dateFor(r.deSlug), modifiedTime: dateFor(r.deSlug), authors: [authorFor(r.deSlug).name] },
   };
 }
 
@@ -49,10 +49,13 @@ export default function Page({ params }) {
   const { lang, aslug2 } = params;
   const ui = uiFor(lang);
   if (isHub(lang, aslug2)) {
-    const data = HUBS[lang];
+    const hub = HUBS[lang];
+    const hubAuthor = authorFor("google-unternehmensprofil-loeschen");
+    // Hub-Byline ebenfalls auf die Autorenseite verlinken (statt /ueber-uns).
+    const data = { ...hub, meta: { ...hub.meta, author: hubAuthor.name, authorRole: roleFor(hubAuthor, lang), authorHref: authorPath(hubAuthor) } };
     const url = articleUrl(lang, aslug2);
     const related = relatedHubLinks(lang, CLUSTER_SLUGS);
-    const jsonLd = buildArticleJsonLd(data.meta, data.faq, lang, ui, url, "google-unternehmensprofil-loeschen");
+    const jsonLd = buildArticleJsonLd(hub.meta, hub.faq, lang, ui, url, "google-unternehmensprofil-loeschen");
     return (
       <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -63,7 +66,7 @@ export default function Page({ params }) {
   const r = resolveLocalized(lang, aslug2);
   const author = authorFor(r.deSlug);
   const data = {
-    meta: { ...r.t.meta, author: author.name, authorRole: roleFor(author, lang), authorHref: authorPath(author) },
+    meta: { ...r.t.meta, date: dateFor(r.deSlug), author: author.name, authorRole: roleFor(author, lang), authorHref: authorPath(author) },
     dek: r.t.dek,
     blocks: r.t.blocks,
     faq: r.t.faq,
