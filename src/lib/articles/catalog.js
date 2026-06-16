@@ -164,6 +164,26 @@ export function relatedHubLinks(lang, deSlugs) {
   }).filter(Boolean);
 }
 
+// Artikel eines Autors in der Zielsprache: lokalisierter Titel + Pfad + die
+// Karten-Optik (thm/icon) fürs Thumbnail. Hub + Cluster, deterministisch zugeordnet.
+const HUB_DE_TITLE = "Google-Unternehmensprofil löschen lassen";
+export function articlesForAuthor(lang, authorSlug) {
+  const out = [];
+  if (authorFor("google-unternehmensprofil-loeschen").slug === authorSlug && HUB_PATH[lang]) {
+    const title = lang === "de" ? HUB_DE_TITLE : ((HUB_CARD[lang] && HUB_CARD[lang].title) || HUB_DE_TITLE);
+    out.push({ slug: "google-unternehmensprofil-loeschen", title, href: HUB_PATH[lang], thm: "thm-orange", icon: "trash" });
+  }
+  for (const c of CLUSTER_CARDS) {
+    if (authorFor(c.slug).slug !== authorSlug) continue;
+    const href = localizedPath(lang, c.slug);
+    if (!href) continue; // in dieser Sprache nicht übersetzt → überspringen
+    const t = lang === "de" ? null : tFor(lang, c.slug);
+    const title = lang === "de" ? c.title : ((t && t.meta.title) || c.title);
+    out.push({ slug: c.slug, title, href, thm: c.thm, icon: c.icon });
+  }
+  return out;
+}
+
 // Localized Article + BreadcrumbList + FAQPage JSON-LD.
 export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
   const date = dateFor(deSlug || meta.slug);

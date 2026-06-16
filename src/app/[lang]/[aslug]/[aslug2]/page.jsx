@@ -7,7 +7,7 @@ import {
   nestedArticleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated,
   buildArticleJsonLd, relatedHubLinks, articleUrl, dateFor,
 } from "@/lib/articles/catalog";
-import { authorFor, roleFor, authorPath } from "@/lib/authors";
+import { authorFor, roleFor, authorPathFor } from "@/lib/authors";
 import { HUB_SLUG, hubHreflang, hubLangUrls } from "@/lib/articles/hubs";
 import { HUBS } from "@/lib/articles/hub-data";
 
@@ -52,7 +52,7 @@ export default function Page({ params }) {
     const hub = HUBS[lang];
     const hubAuthor = authorFor("google-unternehmensprofil-loeschen");
     // Hub-Byline ebenfalls auf die Autorenseite verlinken (statt /ueber-uns).
-    const data = { ...hub, meta: { ...hub.meta, author: hubAuthor.name, authorRole: roleFor(hubAuthor, lang), authorHref: authorPath(hubAuthor) } };
+    const data = { ...hub, meta: { ...hub.meta, author: hubAuthor.name, authorRole: roleFor(hubAuthor, lang), authorHref: authorPathFor(hubAuthor, lang) } };
     const url = articleUrl(lang, aslug2);
     const related = relatedHubLinks(lang, CLUSTER_SLUGS);
     const jsonLd = buildArticleJsonLd(hub.meta, hub.faq, lang, ui, url, "google-unternehmensprofil-loeschen");
@@ -66,7 +66,7 @@ export default function Page({ params }) {
   const r = resolveLocalized(lang, aslug2);
   const author = authorFor(r.deSlug);
   const data = {
-    meta: { ...r.t.meta, date: dateFor(r.deSlug), author: author.name, authorRole: roleFor(author, lang), authorHref: authorPath(author) },
+    meta: { ...r.t.meta, date: dateFor(r.deSlug), author: author.name, authorRole: roleFor(author, lang), authorHref: authorPathFor(author, lang) },
     dek: r.t.dek,
     blocks: r.t.blocks,
     faq: r.t.faq,
