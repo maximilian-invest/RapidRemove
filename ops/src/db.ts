@@ -129,6 +129,20 @@ export async function initDb(): Promise<void> {
       created_at timestamptz NOT NULL DEFAULT now()
     )
   `);
+  // 301/302-Weiterleitungen, im Admin-Portal pflegbar; die Middleware der
+  // Marketing-Site liest die aktiven Regeln über /redirects.json (gecacht).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS redirects (
+      id          bigserial PRIMARY KEY,
+      source      text NOT NULL UNIQUE,
+      destination text NOT NULL,
+      code        integer NOT NULL DEFAULT 301,
+      enabled     boolean NOT NULL DEFAULT true,
+      hits        bigint NOT NULL DEFAULT 0,
+      created_at  timestamptz NOT NULL DEFAULT now(),
+      updated_at  timestamptz NOT NULL DEFAULT now()
+    )
+  `);
 }
 
 export async function savePushSubscription(sub: { endpoint: string; keys: { p256dh: string; auth: string } }): Promise<void> {
@@ -149,6 +163,60 @@ export async function listPushSubscriptions(): Promise<{ endpoint: string; keys:
 export async function deletePushSubscription(endpoint: string): Promise<void> {
   if (!pool || !endpoint) return;
   await pool.query(`DELETE FROM push_subscriptions WHERE endpoint=$1`, [endpoint]);
+}
+
+/* ---- 301/302-Weiterleitungen (Admin-pflegbar) ---- */
+export type RedirectRow = {
+  id: number; source: string; destination: string; code: number;
+  enabled: boolean; hits: number; created_at: string; updated_at: string;
+};
+
+/** Alle Weiterleitungen (inkl. deaktivierte) – für die Admin-Verwaltung. */
+export async function listRedirects(): Promise<RedirectRow[]> {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT id, source, destination, code, enabled, hits, created_at, updated_at
+       FROM redirects ORDER BY created_at DESC`,
+  );
+  return r.rows as RedirectRow[];
+}
+
+/** Nur AKTIVE Regeln (schlank) – für die öffentliche /redirects.json der Middleware. */
+export async function listEnabledRedirects(): Promise<{ source: string; destination: string; code: number }[]> {
+  if (!pool) return [];
+  const r = await pool.query(`SELECT source, destination, code FROM redirects WHERE enabled = true`);
+  return r.rows as { source: string; destination: string; code: number }[];
+}
+
+const REDIRECT_CODES = [301, 302, 307, 308];
+
+/** Anlegen (per source) oder aktualisieren (per id). Liefert die gespeicherte Zeile. */
+export async function upsertRedirect(x: { id?: number | null; source: string; destination: string; code?: number; enabled?: boolean }): Promise<RedirectRow | null> {
+  if (!pool) return null;
+  const code = x.code && REDIRECT_CODES.includes(x.code) ? x.code : 301;
+  const enabled = x.enabled !== false;
+  if (x.id) {
+    const r = await pool.query(
+      `UPDATE redirects SET source=$2, destination=$3, code=$4, enabled=$5, updated_at=now() WHERE id=$1
+       RETURNING id, source, destination, code, enabled, hits, created_at, updated_at`,
+      [x.id, x.source, x.destination, code, enabled],
+    );
+    return (r.rows[0] as RedirectRow) || null;
+  }
+  const r = await pool.query(
+    `INSERT INTO redirects (source, destination, code, enabled) VALUES ($1,$2,$3,$4)
+     ON CONFLICT (source) DO UPDATE SET destination=EXCLUDED.destination, code=EXCLUDED.code,
+       enabled=EXCLUDED.enabled, updated_at=now()
+     RETURNING id, source, destination, code, enabled, hits, created_at, updated_at`,
+    [x.source, x.destination, code, enabled],
+  );
+  return (r.rows[0] as RedirectRow) || null;
+}
+
+export async function deleteRedirect(id: number): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`DELETE FROM redirects WHERE id=$1`, [id]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 export type OrderInput = {

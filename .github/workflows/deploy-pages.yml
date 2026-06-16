@@ -24,6 +24,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Der statische Export (output: export) unterstützt keine Middleware. Die
+      # Laufzeit-Weiterleitungen gibt es nur im Node-Betrieb (Railway); für den
+      # Pages-Export wird die Datei daher entfernt.
+      - name: Remove middleware (not supported by static export)
+        run: rm -f src/middleware.ts
       - name: Build static export
         run: npm run build
         env:

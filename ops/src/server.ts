@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect } from "./db";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale } from "./integrations/firstpromoter";
@@ -62,6 +62,23 @@ const escapeHtml = (s: string) =>
   String(s).replace(/[<>&]/g, (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;"));
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 
+// 301-Weiterleitungen: Quelle immer als sauberer Pfad ("/alt"), Ziel als Pfad
+// oder absolute URL. Tolerant gegenüber eingefügten vollständigen URLs.
+function normRedirectSource(input: string): string {
+  let s = String(input || "").trim().replace(/^https?:\/\/[^/]+/i, "");
+  s = s.split("#")[0].split("?")[0];
+  if (!s.startsWith("/")) s = "/" + s;
+  if (s.length > 1) s = s.replace(/\/+$/, "");
+  return s;
+}
+function normRedirectDest(input: string): string {
+  const s = String(input || "").trim();
+  if (/^https?:\/\//i.test(s)) return s;
+  let p = s.split("#")[0];
+  if (!p.startsWith("/")) p = "/" + p;
+  return p;
+}
+
 // Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
 app.register(stripeWebhook);
 
@@ -70,6 +87,20 @@ app.get("/health", async () => {
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
   return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), orders, checks, ...(dbError ? { dbError } : {}) };
+});
+
+// Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
+// Bewusst ohne Token (Regeln sind kein Geheimnis) und kurz gecacht.
+app.get("/redirects.json", async (_req, reply) => {
+  reply.header("Access-Control-Allow-Origin", "*");
+  try {
+    const rules = await listEnabledRedirects();
+    reply.header("Cache-Control", "public, max-age=60");
+    return rules;
+  } catch (e) {
+    reply.header("Cache-Control", "public, max-age=30");
+    return [];
+  }
 });
 
 // Übersicht aller Templates (nach Gruppe sortiert, im Markendesign)
@@ -467,6 +498,45 @@ app.post("/admin/reset-data", async (req, reply) => {
   } catch (e) {
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
+});
+
+// Admin: alle 301-Weiterleitungen auflisten (inkl. deaktivierte).
+app.post("/admin/redirects", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return { ok: true, db: false, redirects: [] };
+  try { return { ok: true, db: true, redirects: await listRedirects() }; }
+  catch (e) { return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) }); }
+});
+
+// Admin: Weiterleitung anlegen (ohne id) oder aktualisieren (mit id).
+app.post("/admin/redirects/save", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const source = normRedirectSource(String(b.source || ""));
+  const destination = normRedirectDest(String(b.destination || ""));
+  if (source.length < 2) return reply.code(400).send({ ok: false, error: "Quelle (Pfad) fehlt." });
+  if (!destination) return reply.code(400).send({ ok: false, error: "Ziel fehlt." });
+  if (source === destination) return reply.code(400).send({ ok: false, error: "Quelle und Ziel sind identisch." });
+  const code = Number(b.code) || 301;
+  try {
+    const redirect = await upsertRedirect({ id: b.id ? Number(b.id) : null, source, destination, code, enabled: b.enabled !== false });
+    return { ok: true, redirect };
+  } catch (e) {
+    const msg = String((e as Error)?.message || e);
+    if (/duplicate key|unique/i.test(msg)) return reply.code(409).send({ ok: false, error: "Diese Quelle ist bereits angelegt." });
+    return reply.code(500).send({ ok: false, error: msg.slice(0, 240) });
+  }
+});
+
+// Admin: Weiterleitung löschen.
+app.post("/admin/redirects/delete", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  try { return { ok: await deleteRedirect(Number(b.id)) }; }
+  catch (e) { return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) }); }
 });
 
 // Admin-Dashboard: Abos & Umsatz live aus Stripe (read-only). Stale-while-revalidate:

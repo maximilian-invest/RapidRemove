@@ -248,6 +248,46 @@ export async function fetchEmailPreview(eventId) {
   return res.json();
 }
 
+/* ---- 301-Weiterleitungen (im Admin pflegbar) ---- */
+/** Alle Weiterleitungen laden (inkl. deaktivierte). */
+export async function fetchRedirects() {
+  if (!OPS) return { db: false, redirects: [] };
+  const res = await fetch(OPS + "/admin/redirects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  return { db: !!j.db, redirects: j.redirects || [] };
+}
+
+/** Weiterleitung anlegen (ohne id) oder aktualisieren (mit id). */
+export async function saveRedirect({ id, source, destination, code, enabled }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/redirects/save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, id: id || null, source, destination, code: code || 301, enabled: enabled !== false }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j.redirect;
+}
+
+/** Weiterleitung löschen. */
+export async function deleteRedirect(id) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/redirects/delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, id }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return true;
+}
+
 /** Bestell-Status dauerhaft im Backend setzen (bleibt bis zur nächsten Änderung). */
 export async function setOrderStatus({ orderId, status, pay, label }) {
   if (!OPS || !orderId || !status) return { ok: false };

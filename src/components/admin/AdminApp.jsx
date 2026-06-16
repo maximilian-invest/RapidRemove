@@ -3,6 +3,7 @@ import React from "react";
 import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
+import { RedirectsDashboard } from "./AdminRedirects";
 import { asset } from "@/lib/base";
 import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -219,6 +220,7 @@ function Sidebar({ view, setView, counts, open, live }) {
     ["subs", AI.euro, "Abos & Umsatz"],
     ["templates", Icon.mail, "E-Mail-Vorlagen"],
     ["customers", AI.users, "Kunden"],
+    ["redirects", AI.external, "Weiterleitungen"],
   ];
   return (
     <aside className={"side" + (open ? " open" : "")}>
@@ -1663,7 +1665,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -1767,6 +1769,7 @@ function AdminApp() {
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "templates") body = <Templates />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
+  else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
 
   return (
