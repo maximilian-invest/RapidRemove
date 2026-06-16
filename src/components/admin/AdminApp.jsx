@@ -430,7 +430,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
                 {orders.map((o) => (
                   <tr key={o.id} onClick={() => openOrder(o)}>
                     <td><span className="oid">{o.id}</span><div className="muted">{o.created.split("·")[1]}</div></td>
-                    <td><div className="cust">{o.name}<div className="sub">{o.company}</div></div></td>
+                    <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 9 }}>{o.assignee ? <AssigneeAvatar who={o.assignee} size={26} /> : null}<div>{o.name}<div className="sub">{o.company}</div></div></div></td>
                     <td>{SERVICES[o.service].name}</td>
                     <td><StatusBadge status={o.status} /></td>
                     <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span></td>

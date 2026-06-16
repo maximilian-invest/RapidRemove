@@ -262,25 +262,29 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
   }
 
-  // 2) interne Benachrichtigung an das Postfach
-  try {
-    const notify = process.env.NOTIFY_TO || "helpdesk@rapid-remove.com";
-    const row = (l: string, v: string) =>
-      v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "";
-    const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
-    const adminHtml =
-      `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">${heading}</h2>` +
-      (affiliate ? `<div style="display:inline-block;background:#fff5ec;border:1px solid #ffd9b3;color:#c2410c;font-weight:700;font-size:13px;border-radius:8px;padding:6px 12px;margin:0 0 12px">Affiliate: ${escapeHtml(affiliate)}</div>` : "") +
-      `<table style="border-collapse:collapse;font-size:14px">` +
-      row("Name", name) + row("E-Mail", email) + row("Telefon", phone) + row("Unternehmen", company) +
-      row("Profil", profile) + row("Leistung", service) + row("Schutz", protection) +
-      row("Sprache", lang) + row("Bestell-Nr.", orderId) +
-      `</table>` +
-      (note ? `<div style="margin-top:14px"><div style="color:#6b6259;font-size:13px;margin-bottom:4px">${isPress ? "Zu prüfende Inhalte" : "Notiz"}</div><pre style="white-space:pre-wrap;font:inherit;background:#faf6f0;border-radius:8px;padding:10px 12px;margin:0">${escapeHtml(note)}</pre></div>` : "") +
-      `</div>`;
-    await sendMail({ to: notify, subject: `${heading} – ${company || name || email}`, html: adminHtml, replyTo: email });
-    result.notify = true;
-  } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
+  // 2) interne Benachrichtigung per E-Mail — ABGESCHALTET, sofern NOTIFY_TO nicht
+  //    explizit gesetzt ist. Bestell-Mails an helpdesk@ entfallen damit; die
+  //    Benachrichtigung über neue Bestellungen läuft über Push + Admin-Portal.
+  const notify = (process.env.NOTIFY_TO || "").trim();
+  if (notify) {
+    try {
+      const row = (l: string, v: string) =>
+        v ? `<tr><td style="padding:3px 14px 3px 0;color:#6b6259">${l}</td><td style="padding:3px 0;font-weight:600">${escapeHtml(v)}</td></tr>` : "";
+      const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
+      const adminHtml =
+        `<div style="font-family:system-ui,sans-serif;color:#1c1916"><h2 style="color:#ff8000;margin:0 0 10px">${heading}</h2>` +
+        (affiliate ? `<div style="display:inline-block;background:#fff5ec;border:1px solid #ffd9b3;color:#c2410c;font-weight:700;font-size:13px;border-radius:8px;padding:6px 12px;margin:0 0 12px">Affiliate: ${escapeHtml(affiliate)}</div>` : "") +
+        `<table style="border-collapse:collapse;font-size:14px">` +
+        row("Name", name) + row("E-Mail", email) + row("Telefon", phone) + row("Unternehmen", company) +
+        row("Profil", profile) + row("Leistung", service) + row("Schutz", protection) +
+        row("Sprache", lang) + row("Bestell-Nr.", orderId) +
+        `</table>` +
+        (note ? `<div style="margin-top:14px"><div style="color:#6b6259;font-size:13px;margin-bottom:4px">${isPress ? "Zu prüfende Inhalte" : "Notiz"}</div><pre style="white-space:pre-wrap;font:inherit;background:#faf6f0;border-radius:8px;padding:10px 12px;margin:0">${escapeHtml(note)}</pre></div>` : "") +
+        `</div>`;
+      await sendMail({ to: notify, subject: `${heading} – ${company || name || email}`, html: adminHtml, replyTo: email });
+      result.notify = true;
+    } catch (e) { app.log.error({ err: e }, "interne Benachrichtigung fehlgeschlagen"); }
+  }
 
   // 2b) Push-Benachrichtigung – best effort, blockiert die Antwort nicht.
   // Tap öffnet das Admin-Panel direkt bei dieser Bestellung.
