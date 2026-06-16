@@ -2,7 +2,9 @@
    server route for <head>/JSON-LD and by the client article for rendering). */
 
 export const SITE_URL = "https://www.rapid-remove.com";
-export const ARTICLE_SLUG = "magazin/google-unternehmensprofil-loeschen";
+// URL-Vereinheitlichung: Artikel liegen flach an der Wurzel (der Magazin-Index
+// bleibt unter /magazin/). Alte Magazin-Unterseite → 301 (siehe builtin-redirects).
+export const ARTICLE_SLUG = "google-unternehmensprofil-loeschen";
 
 export const ARTICLE_META = {
   slug: ARTICLE_SLUG,

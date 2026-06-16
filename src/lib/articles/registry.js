@@ -7,7 +7,7 @@ export { SITE_URL };
 
 // Slug (as referenced inside the article copy) -> on-site route path (no basePath).
 export const ROUTE_BY_SLUG = {
-  "google-unternehmensprofil-loeschen-wie-geht-das": "/magazin/google-unternehmensprofil-loeschen/",
+  "google-unternehmensprofil-loeschen-wie-geht-das": "/google-unternehmensprofil-loeschen/",
   "schlechte-google-bewertungen-was-tun": "/schlechte-google-bewertungen-was-tun/",
   "1-stern-bewertung-ohne-text-loeschen": "/1-stern-bewertung-ohne-text-loeschen/",
   "google-rezension-loeschen-lassen": "/google-rezension-loeschen-lassen/",

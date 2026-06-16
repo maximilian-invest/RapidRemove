@@ -19,5 +19,7 @@ export const BUILTIN_REDIRECTS = [
   { source: "/en/about", destination: "/en/about-us", permanent: true },
   // 301 von den alten (backlink-starken) Blog-URLs auf die neuen Hub-Artikel (SEO-Migration).
   { source: "/how-to-remove-google-business-profile", destination: "/en/delete-google-business-profile", permanent: true },
-  { source: "/google-unternehmensprofil-loeschen-wie-geht-das", destination: "/magazin/google-unternehmensprofil-loeschen", permanent: true },
+  { source: "/google-unternehmensprofil-loeschen-wie-geht-das", destination: "/google-unternehmensprofil-loeschen", permanent: true },
+  // Hub-Artikel von der Magazin-Unterseite auf die flache Wurzel-URL (URL-Vereinheitlichung).
+  { source: "/magazin/google-unternehmensprofil-loeschen", destination: "/google-unternehmensprofil-loeschen", permanent: true },
 ];

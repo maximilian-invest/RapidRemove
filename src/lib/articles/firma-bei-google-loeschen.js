@@ -21,7 +21,7 @@ const article = {
     { t: "note", title: "Hinweis", text: "Dieser Beitrag gibt einen praktischen Überblick und ersetzt keine Rechtsberatung." },
 
     { t: "h2", id: "was", text: "Was heißt „Firma bei Google löschen“ eigentlich?", toc: "Was heißt das?" },
-    { t: "p", text: "Mit „Firma bei Google löschen“ ist fast immer das **Google-Unternehmensprofil** gemeint – der Eintrag mit Name, Adresse, Öffnungszeiten, Fotos und **Bewertungen**, der in der Google-Suche und in Google Maps erscheint. Genau dieser öffentliche Eintrag soll weg. Die ausführliche Schritt-für-Schritt-Anleitung dazu finden Sie in unserem Leitfaden [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/)." },
+    { t: "p", text: "Mit „Firma bei Google löschen“ ist fast immer das **Google-Unternehmensprofil** gemeint – der Eintrag mit Name, Adresse, Öffnungszeiten, Fotos und **Bewertungen**, der in der Google-Suche und in Google Maps erscheint. Genau dieser öffentliche Eintrag soll weg. Die ausführliche Schritt-für-Schritt-Anleitung dazu finden Sie in unserem Leitfaden [Google-Unternehmensprofil löschen](/google-unternehmensprofil-loeschen/)." },
 
     { t: "h2", id: "kein-button", text: "Warum es keinen einfachen Löschen-Button gibt", toc: "Kein Löschen-Button" },
     { t: "p", text: "Sie können Ihre Firma „als dauerhaft geschlossen markieren“ oder die Verwaltung aus Ihrem Konto entfernen – einen klaren Button „Diesen Eintrag und alle Bewertungen endgültig löschen“ gibt es für Unternehmer aber nicht. Google betrachtet den Eintrag als nützliche Information für Suchende und behält die Kontrolle." },

@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/article-google-profil";
 
 // Root-relative paths WITH trailing slash (on-site links / langUrls / card href).
 export const HUB_PATH = {
-  de: "/magazin/google-unternehmensprofil-loeschen/",
+  de: "/google-unternehmensprofil-loeschen/",
   en: "/en/delete-google-business-profile/",
   es: "/es/eliminar-perfil-de-empresa-google/",
   pt: "/pt/eliminar-perfil-empresa-google/",

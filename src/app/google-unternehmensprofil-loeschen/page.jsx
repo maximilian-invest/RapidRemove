@@ -1,4 +1,5 @@
-/* Route: /magazin/google-unternehmensprofil-loeschen
+/* Route: /google-unternehmensprofil-loeschen  (DE-Hub, flach an der Wurzel)
+   URL-Vereinheitlichung: früher /magazin/google-unternehmensprofil-loeschen → 301.
    Statically generated, SEO-first: rich metadata + JSON-LD structured data. */
 import Article from "@/components/Article";
 import { ARTICLE_META, FAQ, SITE_URL } from "@/lib/article-google-profil";
@@ -53,7 +54,9 @@ const jsonLd = {
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/` },
+        // Kategorie-Breadcrumb „Magazin" zeigt weiter auf den Magazin-Index …
         { "@type": "ListItem", position: 2, name: "Magazin", item: `${SITE_URL}/magazin` },
+        // … der Artikel selbst liegt jetzt flach an der Wurzel.
         { "@type": "ListItem", position: 3, name: "Google-Unternehmensprofil löschen", item: ARTICLE_META.url },
       ],
     },
