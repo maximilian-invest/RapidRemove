@@ -325,6 +325,7 @@ app.post("/order", async (req, reply) => {
           amount: saleTotal,
           currency: clip(b.country, 6) === "US" ? "USD" : "EUR",
           tid: fprTid || undefined,
+          refId: affiliate || undefined, // Fallback-Zuordnung über die ?fpr=-Ref-ID, falls keine tid
         });
         if (fr.ok) {
           if (fr.promoter && !affiliate) affiliate = fr.promoter; // Promoter-Name aus FP-Antwort, falls Cookie-Code fehlte

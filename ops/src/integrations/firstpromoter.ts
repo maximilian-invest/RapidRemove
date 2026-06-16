@@ -47,6 +47,7 @@ export async function trackSale(opts: {
   amount: number;
   currency?: string;
   tid?: string;
+  refId?: string;
   uid?: string;
   plan?: string;
 }): Promise<FprSaleResult> {
@@ -55,9 +56,11 @@ export async function trackSale(opts: {
 
   const amountCents = Math.round((Number(opts.amount) || 0) * 100);
   if (!opts.email || amountCents <= 0) return { ok: false, skipped: true, error: "kein Betrag oder keine E-Mail" };
-  // Ohne tid UND ohne bekannte Referral-E-Mail kann FirstPromoter nichts zuordnen –
-  // dann sparen wir uns den Call. (tid fehlt z. B., wenn der Besucher Cookies abgelehnt hat.)
-  if (!opts.tid) return { ok: false, skipped: true, error: "keine Tracking-ID (tid) – kein Affiliate-Klick" };
+  // Zuordnung Klick → Sale geht über die Tracking-ID `tid` (Cookie _fprom_tid) ODER –
+  // wenn die fehlt (Cookie noch nicht gesetzt, abgelehnt, SameSite) – über die
+  // Affiliate-Ref-ID aus dem ?fpr=-Link (Cookie rr_aff). Fehlt beides, kann
+  // FirstPromoter nichts zuordnen und wir sparen uns den Call.
+  if (!opts.tid && !opts.refId) return { ok: false, skipped: true, error: "weder Tracking-ID (tid) noch Affiliate-Ref (ref_id) – kein Affiliate" };
 
   const params = new URLSearchParams();
   params.set("email", opts.email);
@@ -65,6 +68,7 @@ export async function trackSale(opts: {
   params.set("amount", String(amountCents));
   if (opts.currency) params.set("currency", opts.currency);
   if (opts.tid) params.set("tid", opts.tid);
+  if (opts.refId) params.set("ref_id", opts.refId);
   if (opts.uid) params.set("uid", opts.uid);
   if (opts.plan) params.set("plan", opts.plan);
 
