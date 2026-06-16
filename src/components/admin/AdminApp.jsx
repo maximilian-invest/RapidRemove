@@ -555,7 +555,7 @@ function Orders({ orders, openOrder, query }) {
               {list.map((o) => (
                 <tr key={o.id} onClick={() => openOrder(o)}>
                   <td><span className="oid">{o.id}</span><div className="muted">{o.created}</div><OrderTimer since={o.createdAt} status={o.status} now={now} /></td>
-                  <td><div className="cust">{o.name}<div className="sub">{o.email}</div></div></td>
+                  <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 9 }}>{o.assignee ? <AssigneeAvatar who={o.assignee} size={26} /> : null}<div>{o.name}<div className="sub">{o.email}</div></div></div></td>
                   <td>{SERVICES[o.service].name}{o.protection ? <div className="muted">+ Schutz</div> : null}</td>
                   <td><PayBadge pay={o.pay} /></td>
                   <td><StatusBadge status={o.status} /></td>

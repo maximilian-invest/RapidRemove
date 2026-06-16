@@ -84,7 +84,7 @@
 .tm-plum{background:linear-gradient(150deg,#9d4488,#7c2d6b);}
 
 /* company facts card */
-.ab-company{padding:0 0 80px;}
+.ab-company{padding:0;}
 .ab-co-card{background:var(--neutral-50);border:1px solid var(--hairline);border-radius:var(--r-xl);padding:40px;display:grid;grid-template-columns:1.1fr 1fr;gap:40px;align-items:center;}
 .ab-co-card h2{font-family:var(--font-display);font-weight:600;font-size:28px;letter-spacing:-.3px;margin:0 0 10px;}
 .ab-co-card .co-sub{font-size:15.5px;color:var(--fg-2);line-height:1.6;margin:0 0 22px;}

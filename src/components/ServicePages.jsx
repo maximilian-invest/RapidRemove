@@ -102,7 +102,7 @@ export function OrmPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex }
 
       <section className="band tight soft">
         <div className="container">
-          <div className="sec-head center reveal">
+          <div className="sec-head center reveal" style={{ marginBottom: 0 }}>
             <span className="eyebrow"><Icon.alert size={15} /> {o.problemEyebrow}</span>
             <h2>{o.problemH}</h2>
             <p>{o.problemSub}</p>
@@ -201,7 +201,7 @@ export function DeindexPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeind
 
       <section className="band tight soft">
         <div className="container">
-          <div className="sec-head center reveal">
+          <div className="sec-head center reveal" style={{ marginBottom: 0 }}>
             <span className="eyebrow"><Icon.info size={15} /> {d.whatEyebrow}</span>
             <h2>{d.whatH}</h2>
             <p>{d.whatSub}</p>

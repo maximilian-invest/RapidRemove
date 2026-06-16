@@ -8,7 +8,6 @@ import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
-import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
@@ -2163,7 +2162,11 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     const setUrl = (i) => (e) => { const urls = pressData.urls.slice(); urls[i] = e.target.value; setPressData({ ...pressData, urls }); };
     const addUrl = () => setPressData({ ...pressData, urls: [...pressData.urls, ""] });
     const rmUrl = (i) => () => setPressData({ ...pressData, urls: pressData.urls.filter((_, j) => j !== i) });
+    const pressUrlsOk = (pressData.urls || []).some((u) => u && u.trim());
+    const pressEmailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((pressData.email || "").trim());
+    const pressCanSubmit = pressUrlsOk && pressEmailOk;
     const submitPress = () => {
+      if (!pressCanSubmit) return;
       const urls = (pressData.urls || []).filter((u) => u && u.trim());
       // Landet im Admin-Panel als Bestellung „deindex" (Presse auslisten – Prüfung):
       // Links + Beschreibung als Notiz, damit die Partnerkanzlei sie prüfen kann.
@@ -2188,14 +2191,13 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
         <div className="wz-eyebrow"><Icon.edit size={14} /> {rc.pressIntakeH}</div>
         <h1 className="wz-h" style={{ fontSize: 26 }}>{rc.pressIntakeH}</h1>
         <p className="wz-sub">{rc.pressIntakeSub}</p>
-        <PressSerpDemo />
         <div className="press-price">
           <div className="pp-ic"><Icon.info /></div>
           <div className="pp-body"><b>{rc.pressPriceH}</b><p>{rc.pressPriceSub}</p></div>
         </div>
         <div className="form-grid">
           <div className="fld full">
-            <label>{rc.pressUrl}</label>
+            <label>{rc.pressUrl} <span style={{ color: "var(--danger)" }}>*</span></label>
             <div className="url-list">
               {pressData.urls.map((u, i) => (
                 <div className="url-row" key={i}>
@@ -2206,7 +2208,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
               <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rc.pressAddUrl}</button>
             </div>
           </div>
-          <div className="fld full"><label>{rc.pressEmail}</label><input value={pressData.email} onChange={set("email")} placeholder="name@firma.com" /></div>
+          <div className="fld full"><label>{rc.pressEmail} <span style={{ color: "var(--danger)" }}>*</span></label><input value={pressData.email} onChange={set("email")} placeholder="name@firma.com" /></div>
           <div className="fld full"><label>{rc.pressDesc}</label><input value={pressData.desc} onChange={set("desc")} placeholder="" /></div>
         </div>
         <div className="press-alt">
@@ -2217,8 +2219,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
             <button type="button" className={"pa-opt" + (pressData.orm === "no" ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: "no" })}>{rc.pressAltNo}</button>
           </div>
         </div>
-        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} disabled={!pressData.orm} onClick={submitPress}><Icon.shieldCheck size={18} /> {rc.pressBtn}</button>
-        {!pressData.orm ? <div className="pa-req">{rc.pressAltReq}</div> : null}
+        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} disabled={!pressCanSubmit} onClick={submitPress}><Icon.shieldCheck size={18} /> {rc.pressBtn}</button>
         <div className="wz-actions" style={{ marginTop: 16 }}>
           <button className="btn btn-secondary" onClick={() => setPressMode(false)}><Icon.arrowLeft size={17} /> {w.back}</button>
         </div>
