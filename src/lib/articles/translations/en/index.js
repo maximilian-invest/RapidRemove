@@ -6,6 +6,7 @@ import a4 from "@/lib/articles/translations/en/schlechte-google-bewertungen-was-
 import a5 from "@/lib/articles/translations/en/1-stern-bewertung-ohne-text-loeschen";
 import a6 from "@/lib/articles/translations/en/google-rezension-loeschen-lassen";
 import a7 from "@/lib/articles/translations/en/google-maps-eintrag-loeschen";
+import a8 from "@/lib/articles/translations/en/firma-bei-google-loeschen";
 
 export default {
   "google-bewertung-loeschen-lassen": a1,
@@ -15,4 +16,5 @@ export default {
   "1-stern-bewertung-ohne-text-loeschen": a5,
   "google-rezension-loeschen-lassen": a6,
   "google-maps-eintrag-loeschen": a7,
+  "firma-bei-google-loeschen": a8,
 };
