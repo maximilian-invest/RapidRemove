@@ -18,6 +18,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   const [seed, setSeed] = React.useState("");
   const [seedProfile, setSeedProfile] = React.useState(null);
   const [resumeSnap, setResumeSnap] = React.useState(null);
+  const [bootDone, setBootDone] = React.useState(false); // Deep-Link-Effekt gelaufen? (verhindert „kurz vorab"-Aufblitzen beim Weitermachen)
   const [homeScroll, setHomeScroll] = React.useState(null);
 
   // Eigene, lokalisierte Wizard-URL (z. B. /profil-pruefen, /it/verifica-profilo);
@@ -36,8 +37,14 @@ export default function App({ initialLang = "de", initialView = null, magCards =
       if (params.get("resume") === "1") {
         setRoute("wizard");
         const snap = loadWizardSnapshot();
-        if (snap) setResumeSnap(snap);
-        else if (pid) fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
+        if (snap && snap.step != null && Array.isArray(snap.candidates) && snap.candidates.length) {
+          setResumeSnap(snap); // vollständiger Stand → exakt dort weitermachen
+        } else if (snap && snap.placeId) {
+          // älterer/teilweiser Stand → wenigstens das geprüfte Profil laden (Schritt „Machbarkeit")
+          fetchProfileById(snap.placeId, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
+        } else if (pid) {
+          fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
+        }
       }
       else if (initialView === "wizard" || params.get("start") === "1" || pid) {
         setRoute("wizard");
@@ -51,6 +58,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
     } catch (e) {}
     try { localStorage.setItem("rr_lang", lang); } catch (e) {}
     document.documentElement.lang = lang;
+    setBootDone(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -94,7 +102,11 @@ export default function App({ initialLang = "de", initialView = null, magCards =
     <LangContext.Provider value={{ lang, t, setLang }}>
       {route === "home"
         ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
-        : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
+        : !bootDone
+          // Erst nach dem Deep-Link-Effekt rendern → beim „Weitermachen" kein Aufblitzen
+          // der „kurz vorab"-Startseite; der Wizard startet direkt im gespeicherten Schritt.
+          ? <div style={{ minHeight: "82vh" }} aria-hidden />
+          : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
       {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
           im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
       <WhatsAppFloat hideBubble={route === "wizard"} />
