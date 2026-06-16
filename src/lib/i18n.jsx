@@ -14,7 +14,7 @@ const I18N = {
     code: "de",
     riskReversal: "Null Risiko · Zahlung nur nach erfolgreicher Löschung",
     riskShort: "Zahlung NUR nach erfolgreicher Löschung",
-    nav: { how: "So funktioniert's", why: "Warum wir", pricing: "Preise", reviews: "Bewertungen", faq: "FAQ", magazin: "Magazin", about: "Über uns", login: "Kundenportal", cta: "Gratis-Check" },
+    nav: { how: "So funktioniert's", why: "Warum wir", pricing: "Preise", reviews: "Bewertungen", faq: "FAQ", magazin: "Magazin", about: "Über uns", login: "Kundenportal", cta: "Gratis-Check", ctaResume: "Weitermachen" },
     hero: {
       chip: "DSGVO-konform · Server in der EU · 100 % legal",
       h1a: "Wir löschen Ihr Google-Unternehmensprofil –",
@@ -293,7 +293,7 @@ const I18N = {
     seoHomeDesc: "Google won't let you remove your own business profile. We do — permanently, legally, in 24 hours, including all reviews. You only pay after success.",
     riskReversal: "Zero risk · Pay only after successful removal",
     riskShort: "Pay ONLY after successful removal",
-    nav: { how: "How it works", why: "Why us", pricing: "Pricing", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "About us", login: "Customer portal", cta: "Free check" },
+    nav: { how: "How it works", why: "Why us", pricing: "Pricing", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "About us", login: "Customer portal", cta: "Free check", ctaResume: "Continue" },
     hero: {
       chip: "GDPR-compliant · EU servers · 100% legal",
       h1a: "Delete your Google Business Profile –",

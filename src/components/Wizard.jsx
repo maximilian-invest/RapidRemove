@@ -6,6 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
+import { setResumeProfile, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import { PressSerpDemo } from "@/components/SerpDemo";
 import OrderForm from "@/components/OrderForm";
@@ -1460,6 +1461,11 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
   // Gewähltes Profil an die App melden → placeId landet als ?p= in der URL (teilbar).
   const selPlaceId = (selected && selected.placeId) || "";
   React.useEffect(() => { if (onSelectProfile) onSelectProfile(selPlaceId); }, [selPlaceId]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Sobald ein Profil geprüft ist („found"), placeId + Name lokal merken → der
+  // Haupt-CTA zeigt für Rückkehrer „Weitermachen" statt „Gratis-Check".
+  React.useEffect(() => {
+    if (phase === "found" && selPlaceId) setResumeProfile({ placeId: selPlaceId, name: (selected && selected.name) || "" });
+  }, [phase, selPlaceId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const startSearch = (n) => {
     const nm = (n != null ? n : name);
@@ -1617,6 +1623,7 @@ function Wizard({ initialName, initialProfile, onExit, onOrm, onDeindex, onSelec
     if (Object.keys(er).length) return;
     setProcessing(true);
     persistCheck();
+    clearResumeProfile(); // Bestellung abgeschickt → Funnel abgeschlossen, CTA zurück auf „Gratis-Check"
     // Affiliate-Attribution (FirstPromoter): Tracking-ID (_fprom_tid) für die Sale-
     // Zuordnung UND den lesbaren Partner-Code (_fprom_ref) mitschicken, damit im
     // Admin/Push direkt sichtbar ist, von welchem Affiliate die Bestellung kommt.

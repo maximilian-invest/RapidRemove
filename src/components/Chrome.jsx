@@ -9,6 +9,7 @@ import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
 import { pagePath } from "@/lib/page-routes";
+import { getResumeProfile } from "@/lib/resume";
 import { consentLabel } from "@/components/Consent";
 
 
@@ -320,6 +321,15 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
+  // Rückkehrer mit bereits geprüftem Profil: CTA wird „Weitermachen" und führt
+  // direkt zurück ins geprüfte Profil (?p=placeId). Erst nach Mount lesen → kein
+  // Hydration-Mismatch (Server rendert den Standard-CTA).
+  const [resume, setResume] = React.useState(null);
+  React.useEffect(() => { setResume(getResumeProfile()); }, []);
+  const resumeLabel = t.nav.ctaResume || "Weitermachen";
+  const goResume = () => { if (resume && resume.placeId) window.location.href = asset(pagePath("wizard", t.code)) + "?p=" + encodeURIComponent(resume.placeId); };
+  const ctaLabel = resume ? resumeLabel : t.nav.cta;
+  const ctaClick = resume ? goResume : onStart;
   const links = [
     ["pricing", t.nav.pricing], ["magazin", t.nav.magazin], ["about", t.nav.about],
   ];
@@ -369,7 +379,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           <div className="nav-right">
             <NavTel />
             <LangToggle />
-            <button className="btn btn-primary sm" onClick={onStart}><span className="ico"><Icon.search size={17} /></span>{t.nav.cta}</button>
+            <button className={"btn btn-primary sm" + (resume ? " nav-cta-resume" : "")} onClick={ctaClick}><span className="ico">{resume ? <Icon.arrowRight size={17} /> : <Icon.search size={17} />}</span>{ctaLabel}</button>
             <button className="nav-burger" onClick={() => setOpen(true)} aria-label="Menu"><Icon.menu /></button>
           </div>
         </div>
@@ -396,7 +406,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
           {links.map(([id, label]) => <a key={id} onClick={() => goTo(id)}>{label}</a>)}
           <a href={asset(pagePath("kontakt", t.code))}>{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[3]) || "Kontakt"}</a>
           <a href={PARTNER_URL} target="_blank" rel="noopener noreferrer">{(t.footer.cols && t.footer.cols[1] && t.footer.cols[1].links[2]) || "Partner werden"}</a>
-          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => { setOpen(false); onStart(); }}><Icon.search size={18} />{t.nav.cta}</button>
+          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => { setOpen(false); ctaClick(); }}>{resume ? <Icon.arrowRight size={18} /> : <Icon.search size={18} />}{ctaLabel}</button>
         </div>
       </div>
     </React.Fragment>

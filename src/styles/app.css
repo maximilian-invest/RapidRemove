@@ -151,6 +151,10 @@ section{position:relative;}
   .nav-inner{gap:10px;}
   .nav-right{gap:7px;}
   .nav-right .btn-primary{display:none;}
+  /* Rückkehrer mit geprüftem Profil: „Weitermachen" doch in der oberen Leiste
+     zeigen (kompakt); dafür weicht die Telefonnummer, damit nichts überläuft. */
+  .nav-right .btn-primary.nav-cta-resume{display:inline-flex;align-items:center;gap:5px;height:38px;padding:0 12px;font-size:12.5px;}
+  .nav-right:has(.btn-primary.nav-cta-resume) .nav-tel-wrap{display:none;}
   /* Telefonnummer bleibt sichtbar — kompakter, damit nichts überlappt */
   .nav-tel{padding:6px 9px;font-size:12.5px;gap:5px;}
   .langmenu-btn .lm-code{display:none;}
