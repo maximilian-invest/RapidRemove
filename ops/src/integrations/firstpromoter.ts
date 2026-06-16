@@ -51,8 +51,9 @@ export async function trackSale(opts: {
   refId?: string;
   uid?: string;
   plan?: string;
+  key?: string;
 }): Promise<FprSaleResult> {
-  const key = process.env.FPR_API_KEY;
+  const key = opts.key || process.env.FPR_API_KEY;
   if (!key) return { ok: false, skipped: true, error: "FirstPromoter nicht konfiguriert (FPR_API_KEY)" };
 
   const amountCents = Math.round((Number(opts.amount) || 0) * 100);
@@ -103,8 +104,9 @@ export async function trackSignup(opts: {
   refId?: string;
   tid?: string;
   uid?: string;
+  key?: string;
 }): Promise<FprSaleResult> {
-  const key = process.env.FPR_API_KEY;
+  const key = opts.key || process.env.FPR_API_KEY;
   if (!key) return { ok: false, skipped: true, error: "FirstPromoter nicht konfiguriert (FPR_API_KEY)" };
   if (!opts.email && !opts.uid) return { ok: false, skipped: true, error: "keine E-Mail/uid" };
   if (!opts.tid && !opts.refId) return { ok: false, skipped: true, error: "weder Tracking-ID (tid) noch Affiliate-Ref (ref_id)" };
