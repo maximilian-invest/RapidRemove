@@ -17,8 +17,9 @@ import a7 from "@/lib/articles/google-maps-eintrag-loeschen";
 import a8 from "@/lib/articles/firma-bei-google-loeschen";
 import a9 from "@/lib/articles/was-kostet-eine-schlechte-google-bewertung";
 import a10 from "@/lib/articles/google-sterne-conversion";
+import a11 from "@/lib/articles/negative-bewertung-ignorieren-antworten-loeschen";
 
-const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10];
+const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11];
 export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a]));
 export { TRANSLATIONS };
 
@@ -45,6 +46,7 @@ const PUBLISH_DATES = {
   "firma-bei-google-loeschen": "2026-04-22",
   "was-kostet-eine-schlechte-google-bewertung": "2026-05-20",
   "google-sterne-conversion": "2026-06-02",
+  "negative-bewertung-ignorieren-antworten-loeschen": "2026-06-09",
 };
 export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
 

@@ -64,9 +64,16 @@ const BIO_I18N = {
 
 const KEYS = ["maximilian-hoelzl", "matthias-lang"];
 
+// Explizite Autor-Zuordnung, wo die Redaktion bewusst von der Hash-Verteilung
+// abweicht. Keyed über den deutschen Slug → bleibt sprachübergreifend stabil.
+const AUTHOR_OVERRIDES = {
+  "negative-bewertung-ignorieren-antworten-loeschen": "maximilian-hoelzl",
+};
+
 /** Deterministische, sprachübergreifend stabile Zuordnung Artikel → Autor (via deutschem Slug). */
 export function authorFor(deSlug) {
   const s = String(deSlug || "x");
+  if (AUTHOR_OVERRIDES[s]) return AUTHORS[AUTHOR_OVERRIDES[s]];
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
   return AUTHORS[KEYS[Math.abs(h) % KEYS.length]];
