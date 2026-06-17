@@ -8,10 +8,12 @@ import a6 from "@/lib/articles/translations/no/google-rezension-loeschen-lassen"
 import a7 from "@/lib/articles/translations/no/google-maps-eintrag-loeschen";
 import a8 from "@/lib/articles/translations/no/firma-bei-google-loeschen";
 import a9 from "@/lib/articles/translations/no/was-kostet-eine-schlechte-google-bewertung";
+import a10 from "@/lib/articles/translations/no/google-sterne-conversion";
 export default {
   "google-bewertung-loeschen-lassen": a1, "fake-google-bewertung-melden-loeschen": a2,
   "negative-google-bewertung-anwalt-oder-technische-loeschung": a3, "schlechte-google-bewertungen-was-tun": a4,
   "1-stern-bewertung-ohne-text-loeschen": a5, "google-rezension-loeschen-lassen": a6, "google-maps-eintrag-loeschen": a7,
   "firma-bei-google-loeschen": a8,
   "was-kostet-eine-schlechte-google-bewertung": a9,
+  "google-sterne-conversion": a10,
 };
