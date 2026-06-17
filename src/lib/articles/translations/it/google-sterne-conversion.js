@@ -56,7 +56,7 @@ const article = {
   ],
   related: [
     { label: "Quanto costa davvero una recensione negativa su Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Recensione negativa: ignorare, rispondere o eliminare?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Recensione negativa: ignorare, rispondere o eliminare?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Eliminare le recensioni false su Google: riconoscere, segnalare e rimuovere", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };

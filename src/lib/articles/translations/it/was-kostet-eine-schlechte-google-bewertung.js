@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Cosa conviene fare – e cosa no", toc: "Cosa conviene" },
     { t: "p", text: "Non ogni recensione va combattuta. A una critica onesta e circostanziata si risponde meglio con serenità – dimostra agli altri lettori la capacità di gestire il feedback. Diverso è il caso delle recensioni **infondate, false o illegali**: qui agire conviene quasi sempre, perché la perdita di fatturato continuata supera il costo della rimozione." },
-    { t: "p", text: "La strada giusta dipende dal caso specifico – confrontiamo le opzioni in dettaglio in [Recensione negativa: ignorare, rispondere o eliminare?](/it/rivista/eliminare-recensione-negativa-google-avvocato-o-tecnica/) e [Eliminare le recensioni Google](/it/rivista/eliminare-recensioni-google/). Se il profilo è compromesso nel complesso, la [cancellazione completa del profilo](/it/rivista/eliminare-profilo-attivita-google/) può essere il taglio più netto." },
+    { t: "p", text: "La strada giusta dipende dal caso specifico – confrontiamo le opzioni in dettaglio in [Recensione negativa: ignorare, rispondere o eliminare?](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/) e [Eliminare le recensioni Google](/it/rivista/eliminare-recensioni-google/). Se il profilo è compromesso nel complesso, la [cancellazione completa del profilo](/it/rivista/eliminare-profilo-attivita-google/) può essere il taglio più netto." },
 
     { t: "cta", title: "Scopri cosa si può fare sul tuo profilo – gratuitamente.", text: "Inserisci il nome dell'attività – verifichiamo in pochi secondi se e con quale rapidità è possibile rimuovere le recensioni problematiche o l'intero profilo.", btn: "Inizia l'analisi gratuita", href: "https://www.rapid-remove.com/", trust: ["Analisi gratuita", "Con garanzia", "Senza rischi"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Quanto influiscono le stelle Google sul tasso di clic e sulla conversione?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Recensione negativa: ignorare, rispondere o eliminare?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Recensione negativa: ignorare, rispondere o eliminare?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Eliminare le recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

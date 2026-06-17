@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Wat loont – en wat niet", toc: "Wat loont" },
     { t: "p", text: "Niet elke review hoeft bestreden te worden. Op een eerlijke, zakelijke kritiek antwoordt u het beste zelfverzekerd – dat toont andere lezers uw houding. Anders is het bij **onterechte, nep- of onrechtmatige** reviews: hier loont ingrijpen bijna altijd, omdat het doorlopende omzetverlies de kosten van verwijdering doorgaans ruimschoots overstijgt." },
-    { t: "p", text: "Welke weg de juiste is, hangt af van het geval – de opties vergelijken we in detail onder [Negatieve review: negeren, reageren of verwijderen?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/) en [Google reviews verwijderen](/nl/magazine/google-reviews-verwijderen/). Is het profiel als geheel beschadigd, dan kan de volledige [profielverwijdering](/nl/magazine/google-bedrijfsprofiel-verwijderen/) de schoonste ingreep zijn." },
+    { t: "p", text: "Welke weg de juiste is, hangt af van het geval – de opties vergelijken we in detail onder [Negatieve review: negeren, reageren of verwijderen?](/nl/magazine/negatieve-review-negeren-reageren-verwijderen/) en [Google reviews verwijderen](/nl/magazine/google-reviews-verwijderen/). Is het profiel als geheel beschadigd, dan kan de volledige [profielverwijdering](/nl/magazine/google-bedrijfsprofiel-verwijderen/) de schoonste ingreep zijn." },
 
     { t: "cta", title: "Ontdek wat er aan uw profiel te doen valt – gratis.", text: "Voer uw bedrijfsnaam in – wij controleren binnen seconden of en hoe snel problematische reviews of het profiel verwijderd kunnen worden.", btn: "Gratis check starten", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inclusief garantie", "Zonder risico"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Hoe sterk beïnvloeden Google-sterren de doorklikratio en conversie?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Negatieve review: negeren, reageren of verwijderen?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negatieve review: negeren, reageren of verwijderen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Google reviews verwijderen: kosten & methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

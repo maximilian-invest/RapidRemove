@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "O que vale a pena — e o que não vale", toc: "O que vale a pena" },
     { t: "p", text: "Nem toda a avaliação precisa de ser combatida. Uma crítica honesta e factual responde-se com serenidade — isso mostra carácter aos outros leitores. A situação é diferente com avaliações **injustificadas, falsas ou ilegais**: aqui, agir quase sempre compensa, porque a perda de receita contínua supera o custo da solução." },
-    { t: "p", text: "O caminho certo depende do caso — comparamos as opções em detalhe em [Avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-google-advogado/) e [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/). Se o perfil estiver globalmente comprometido, a [eliminação completa do perfil](/pt/revista/eliminar-perfil-empresa-google/) pode ser o corte mais limpo." },
+    { t: "p", text: "O caminho certo depende do caso — comparamos as opções em detalhe em [Avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/) e [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/). Se o perfil estiver globalmente comprometido, a [eliminação completa do perfil](/pt/revista/eliminar-perfil-empresa-google/) pode ser o corte mais limpo." },
 
     { t: "cta", title: "Verifique gratuitamente o que é possível fazer com o seu perfil.", text: "Introduza o nome da empresa — analisamos em segundos se é possível remover avaliações problemáticas ou o perfil, e com que rapidez.", btn: "Iniciar análise gratuita", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Como as estrelas do Google influenciam a taxa de cliques e a conversão?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Avaliação negativa: ignorar, responder ou remover?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Avaliação negativa: ignorar, responder ou remover?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Remover avaliações do Google: custos e métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "What's Worth Acting On — and What Isn't", toc: "What's Worth It" },
     { t: "p", text: "Not every bad review needs to be fought. An honest, factual complaint is best handled with a composed public response — it shows other readers how you operate. It's a different story for **unjustified, fake, or unlawful** reviews: acting almost always pays off there, because the ongoing revenue loss exceeds the cost of removal." },
-    { t: "p", text: "The right approach depends on the specifics — we compare the options in detail in [Negative Review: Ignore, Respond, or Remove?](/en/magazine/negative-google-review-lawyer-or-removal/) and [How to Remove a Google Review](/en/magazine/remove-google-reviews/). If your profile is damaged overall, a full [profile deletion](/en/magazine/delete-google-business-profile/) may be the cleanest solution." },
+    { t: "p", text: "The right approach depends on the specifics — we compare the options in detail in [Negative Review: Ignore, Respond, or Remove?](/en/magazine/negative-review-ignore-respond-remove/) and [How to Remove a Google Review](/en/magazine/remove-google-reviews/). If your profile is damaged overall, a full [profile deletion](/en/magazine/delete-google-business-profile/) may be the cleanest solution." },
 
     { t: "cta", title: "Find Out What's Possible for Your Profile — Free.", text: "Enter your business name — we'll check in seconds whether problematic reviews or the profile can be removed, and how quickly.", btn: "Start Free Check", href: "https://www.rapid-remove.com/", trust: ["Free Analysis", "Includes Guarantee", "No Risk"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "How Much Do Google Stars Affect Click-Through Rate and Conversion?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Negative Review: Ignore, Respond, or Remove?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negative Review: Ignore, Respond, or Remove?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "How to Remove a Google Review: Costs and Methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

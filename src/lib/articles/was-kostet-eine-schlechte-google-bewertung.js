@@ -53,7 +53,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Was sich lohnt – und was nicht", toc: "Was sich lohnt" },
     { t: "p", text: "Nicht jede Bewertung muss bekämpft werden. Eine ehrliche, sachliche Kritik beantwortet man am besten souverän – das zeigt anderen Lesern Haltung. Anders sieht es bei **unberechtigten, gefälschten oder rechtswidrigen** Bewertungen aus: Hier lohnt sich Handeln fast immer, weil der laufende Umsatzverlust die Lösung übersteigt." },
-    { t: "p", text: "Welcher Weg der richtige ist, hängt vom Fall ab – die Optionen vergleichen wir im Detail unter [Negative Bewertung: ignorieren, antworten oder löschen?](/magazin/negative-google-bewertung-anwalt-oder-technische-loeschung/) und [Google Bewertung löschen lassen](/magazin/google-bewertung-loeschen-lassen/). Ist das Profil insgesamt beschädigt, kann die vollständige [Profil-Löschung](/magazin/google-unternehmensprofil-loeschen/) der sauberste Schnitt sein." },
+    { t: "p", text: "Welcher Weg der richtige ist, hängt vom Fall ab – die Optionen vergleichen wir im Detail unter [Negative Bewertung: ignorieren, antworten oder löschen?](/magazin/negative-bewertung-ignorieren-antworten-loeschen/) und [Google Bewertung löschen lassen](/magazin/google-bewertung-loeschen-lassen/). Ist das Profil insgesamt beschädigt, kann die vollständige [Profil-Löschung](/magazin/google-unternehmensprofil-loeschen/) der sauberste Schnitt sein." },
 
     { t: "cta", title: "Prüfen, was sich an Ihrem Profil machen lässt – kostenlos.", text: "Firmennamen eingeben – wir prüfen in Sekunden, ob und wie schnell sich problematische Bewertungen bzw. das Profil entfernen lassen.", btn: "Gratis-Check starten", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
@@ -67,7 +67,7 @@ const article = {
   ],
   related: [
     { label: "Wie stark beeinflussen Google-Sterne Klickrate & Conversion?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

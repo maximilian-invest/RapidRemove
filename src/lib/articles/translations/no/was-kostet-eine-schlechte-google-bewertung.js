@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Hva som lønner seg – og hva som ikke gjør det", toc: "Hva som lønner seg" },
     { t: "p", text: "Ikke enhver anmeldelse trenger å bekjempes. Ærlig, saklig kritikk besvarer man best på en rolig og profesjonell måte – det viser andre lesere at du er seriøs. Annerledes er det med **uberettigede, falske eller ulovlige** anmeldelser: Her lønner det seg nesten alltid å handle, fordi det løpende omsetningstapet overstiger kostnadene ved å fjerne dem." },
-    { t: "p", text: "Hvilken vei som er riktig, avhenger av den konkrete saken – vi sammenligner alternativene i detalj under [Negativ anmeldelse: ignorere, svare eller fjerne?](/no/magasin/negativ-google-anmeldelse-advokat/) og [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Er profilen totalt sett skadet, kan en fullstendig [profilsletting](/no/magasin/slett-google-bedriftsprofil/) være det reneste kuttet." },
+    { t: "p", text: "Hvilken vei som er riktig, avhenger av den konkrete saken – vi sammenligner alternativene i detalj under [Negativ anmeldelse: ignorere, svare eller fjerne?](/no/magasin/negativ-anmeldelse-ignorere-svare-fjerne/) og [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Er profilen totalt sett skadet, kan en fullstendig [profilsletting](/no/magasin/slett-google-bedriftsprofil/) være det reneste kuttet." },
 
     { t: "cta", title: "Sjekk hva som kan gjøres med profilen din – gratis.", text: "Skriv inn bedriftsnavnet – vi sjekker på sekunder om og hvor raskt problematiske anmeldelser eller profilen kan fjernes.", btn: "Start gratis sjekk", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inkl. garanti", "Uten risiko"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Hvor sterkt påvirker Google-stjerner klikkfrekvens og konvertering?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Negativ anmeldelse: ignorere, svare eller fjerne?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negativ anmeldelse: ignorere, svare eller fjerne?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Fjern Google-anmeldelser: kostnader og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

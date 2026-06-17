@@ -56,7 +56,7 @@ const article = {
   ],
   related: [
     { label: "Combien coûte vraiment un mauvais avis Google ?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Faux avis Google : identifier, signaler et supprimer", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };

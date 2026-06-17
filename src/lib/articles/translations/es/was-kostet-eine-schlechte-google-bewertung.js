@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Qué merece la pena hacer — y qué no", toc: "Qué merece la pena" },
     { t: "p", text: "No hay que combatir cada reseña. Una crítica honesta y fundada se responde mejor con serenidad — demuestra al resto de los lectores cómo gestionas el feedback. Distinto es el caso de las reseñas **injustificadas, falsas o ilegales**: aquí casi siempre vale la pena actuar, porque la pérdida continua de ventas supera el coste de la solución." },
-    { t: "p", text: "El camino adecuado depende del caso — comparamos las opciones en detalle en [Reseña negativa: ¿ignorar, responder o eliminar?](/es/revista/eliminar-resena-negativa-de-google-abogado/) y [Eliminar reseñas de Google](/es/revista/eliminar-resenas-de-google/). Si el perfil está dañado en su conjunto, la [eliminación completa del perfil](/es/revista/eliminar-perfil-de-empresa-google/) puede ser el corte más limpio." },
+    { t: "p", text: "El camino adecuado depende del caso — comparamos las opciones en detalle en [Reseña negativa: ¿ignorar, responder o eliminar?](/es/revista/resena-negativa-ignorar-responder-eliminar/) y [Eliminar reseñas de Google](/es/revista/eliminar-resenas-de-google/). Si el perfil está dañado en su conjunto, la [eliminación completa del perfil](/es/revista/eliminar-perfil-de-empresa-google/) puede ser el corte más limpio." },
 
     { t: "cta", title: "Comprueba gratis qué se puede hacer con tu perfil.", text: "Introduce el nombre de tu empresa — analizamos en segundos si las reseñas problemáticas o el perfil pueden eliminarse, y con qué rapidez.", btn: "Análisis gratuito", href: "https://www.rapid-remove.com/", trust: ["Análisis gratuito", "Con garantía", "Sin riesgo"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "¿Cómo influyen las estrellas de Google en la tasa de clics y la conversión?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Reseña negativa: ¿ignorar, responder o eliminar?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Reseña negativa: ¿ignorar, responder o eliminar?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Eliminar reseñas de Google: costes y métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

@@ -56,7 +56,7 @@ const article = {
   ],
   related: [
     { label: "Googleの低評価口コミは実際いくらの損失になるか", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "低評価口コミへの対応：無視・返答・削除の選び方", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "低評価口コミへの対応：無視・返答・削除の選び方", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Googleのやらせ口コミを見分け、通報・削除する方法", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };

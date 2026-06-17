@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "対処が割に合う場合とそうでない場合", toc: "対処の判断" },
     { t: "p", text: "すべての口コミに対応する必要はありません。正直で具体的な批判であれば、落ち着いて返答するのが最善です。他の閲覧者にどう対応するかを示す機会になります。一方、**不当・虚偽・違法**な口コミについては、継続的な売上損失が解決コストを上回ることが多いため、ほぼ必ず対処する価値があります。" },
-    { t: "p", text: "どの方法が適切かはケースによって異なります。選択肢の詳細については[低評価口コミへの対応：無視・返答・削除の選び方](/ja/magazine/google-teihyoka-kuchikomi-bengoshi/)と[Google口コミを削除する方法](/ja/magazine/google-kuchikomi-sakujo/)をご参照ください。プロフィール全体がダメージを受けている場合は、[プロフィール削除](/ja/magazine/google-business-profile-sakujo/)が最もすっきりした解決策になることもあります。" },
+    { t: "p", text: "どの方法が適切かはケースによって異なります。選択肢の詳細については[低評価口コミへの対応：無視・返答・削除の選び方](/ja/magazine/warui-kuchikomi-taio/)と[Google口コミを削除する方法](/ja/magazine/google-kuchikomi-sakujo/)をご参照ください。プロフィール全体がダメージを受けている場合は、[プロフィール削除](/ja/magazine/google-business-profile-sakujo/)が最もすっきりした解決策になることもあります。" },
 
     { t: "cta", title: "プロフィールの状況を無料で確認する", text: "店舗名を入力するだけで、問題のある口コミやプロフィールを削除できるか、どのくらいの期間がかかるかを数秒で確認できます。", btn: "無料チェックを始める", href: "https://www.rapid-remove.com/", trust: ["無料分析", "保証付き", "リスクなし"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Google星評価はクリック率とコンバージョンにどう影響するか", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "低評価口コミへの対応：無視・返答・削除の選び方", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "低評価口コミへの対応：無視・返答・削除の選び方", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Google口コミを削除する方法：費用と手順", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

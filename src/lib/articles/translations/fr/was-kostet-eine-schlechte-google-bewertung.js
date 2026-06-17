@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Ce qui vaut la peine – et ce qui n'en vaut pas", toc: "Ce qui vaut la peine" },
     { t: "p", text: "Toutes les critiques ne méritent pas d'être combattues. Une critique honnête et factuelle se répond de façon posée – cela montre aux autres lecteurs votre état d'esprit. La situation est différente pour les avis **non fondés, frauduleux ou illicites** : agir vaut presque toujours la peine, car la perte continue de chiffre d'affaires dépasse le coût de la suppression." },
-    { t: "p", text: "Le bon chemin dépend du cas – nous comparons les options en détail dans [Avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/) et [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/). Si le profil est globalement compromis, la [suppression complète du profil](/fr/magazine/supprimer-profil-etablissement-google/) peut être la solution la plus nette." },
+    { t: "p", text: "Le bon chemin dépend du cas – nous comparons les options en détail dans [Avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/) et [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/). Si le profil est globalement compromis, la [suppression complète du profil](/fr/magazine/supprimer-profil-etablissement-google/) peut être la solution la plus nette." },
 
     { t: "cta", title: "Vérifiez gratuitement ce qui peut être fait sur votre profil.", text: "Entrez le nom de votre entreprise – nous vérifions en quelques secondes si des avis problématiques (ou le profil entier) peuvent être supprimés, et dans quel délai.", btn: "Démarrer l'analyse gratuite", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Comment les étoiles Google influencent-elles le taux de clic et la conversion ?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

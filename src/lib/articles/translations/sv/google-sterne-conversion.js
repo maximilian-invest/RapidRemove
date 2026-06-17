@@ -56,7 +56,7 @@ const article = {
   ],
   related: [
     { label: "Vad kostar en dålig Google-recension egentligen?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Negativ recension: ignorera, svara eller ta bort?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negativ recension: ignorera, svara eller ta bort?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Ta bort falska Google-recensioner", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };

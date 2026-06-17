@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Vad som lönar sig – och vad som inte gör det", toc: "Vad som lönar sig" },
     { t: "p", text: "Inte varje recension måste bekämpas. En ärlig, saklig kritik bemöter man bäst med sunt förnuft – det visar andra läsare hur ni hanterar feedback. Annorlunda ser det ut med **obefogade, fabricerade eller rättsstridiga** recensioner: här lönar sig agerande nästan alltid, eftersom den löpande omsättningsförlusten överstiger kostnaden för borttagning." },
-    { t: "p", text: "Vilken väg som är rätt beror på fallet – alternativen jämför vi i detalj under [Negativ recension: ignorera, svara eller ta bort?](/sv/magasin/negativ-google-recension-advokat/) och [Ta bort Google-recensioner](/sv/magasin/ta-bort-google-recensioner/). Är profilen totalt skadad kan en fullständig [profilradering](/sv/magasin/radera-google-foretagsprofil/) vara den renaste lösningen." },
+    { t: "p", text: "Vilken väg som är rätt beror på fallet – alternativen jämför vi i detalj under [Negativ recension: ignorera, svara eller ta bort?](/sv/magasin/negativ-recension-ignorera-svara-ta-bort/) och [Ta bort Google-recensioner](/sv/magasin/ta-bort-google-recensioner/). Är profilen totalt skadad kan en fullständig [profilradering](/sv/magasin/radera-google-foretagsprofil/) vara den renaste lösningen." },
 
     { t: "cta", title: "Kontrollera vad som kan göras med er profil – kostnadsfritt.", text: "Ange företagsnamnet – vi kollar på sekunder om och hur snabbt problematiska recensioner eller profilen kan tas bort.", btn: "Starta gratis analys", href: "https://www.rapid-remove.com/", trust: ["Kostnadsfri analys", "Inkl. garanti", "Utan risk"] },
 
@@ -63,7 +63,7 @@ const article = {
   ],
   related: [
     { label: "Hur mycket påverkar Google-stjärnor klickfrekvens och konvertering?", url: "https://www.rapid-remove.com/google-sterne-conversion" },
-    { label: "Negativ recension: ignorera, svara eller ta bort?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negativ recension: ignorera, svara eller ta bort?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Ta bort Google-recensioner: kostnader och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

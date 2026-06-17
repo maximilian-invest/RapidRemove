@@ -60,7 +60,7 @@ const article = {
   ],
   related: [
     { label: "Was kostet eine schlechte Google-Bewertung wirklich?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Fake Google-Bewertung erkennen, melden & löschen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };

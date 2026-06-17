@@ -56,7 +56,7 @@ const article = {
   ],
   related: [
     { label: "Wat kost een slechte Google-review werkelijk?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Negatieve review: negeren, reageren of verwijderen?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Negatieve review: negeren, reageren of verwijderen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Valse Google-reviews herkennen, melden & verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
   ],
 };
