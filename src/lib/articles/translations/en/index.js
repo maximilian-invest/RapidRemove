@@ -10,6 +10,7 @@ import a8 from "@/lib/articles/translations/en/firma-bei-google-loeschen";
 import a9 from "@/lib/articles/translations/en/was-kostet-eine-schlechte-google-bewertung";
 import a10 from "@/lib/articles/translations/en/google-sterne-conversion";
 import a11 from "@/lib/articles/translations/en/negative-bewertung-ignorieren-antworten-loeschen";
+import a12 from "@/lib/articles/translations/en/online-reputationsmanagement";
 
 export default {
   "google-bewertung-loeschen-lassen": a1,
@@ -23,4 +24,5 @@ export default {
   "was-kostet-eine-schlechte-google-bewertung": a9,
   "google-sterne-conversion": a10,
   "negative-bewertung-ignorieren-antworten-loeschen": a11,
+  "online-reputationsmanagement": a12,
 };

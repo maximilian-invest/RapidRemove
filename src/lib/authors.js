@@ -68,6 +68,7 @@ const KEYS = ["maximilian-hoelzl", "matthias-lang"];
 // abweicht. Keyed über den deutschen Slug → bleibt sprachübergreifend stabil.
 const AUTHOR_OVERRIDES = {
   "negative-bewertung-ignorieren-antworten-loeschen": "maximilian-hoelzl",
+  "online-reputationsmanagement": "maximilian-hoelzl",
 };
 
 /** Deterministische, sprachübergreifend stabile Zuordnung Artikel → Autor (via deutschem Slug). */

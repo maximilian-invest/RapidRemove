@@ -20,6 +20,7 @@ export const ROUTE_BY_SLUG = {
   "was-kostet-eine-schlechte-google-bewertung": "/magazin/was-kostet-eine-schlechte-google-bewertung/",
   "google-sterne-conversion": "/magazin/google-sterne-conversion/",
   "negative-bewertung-ignorieren-antworten-loeschen": "/magazin/negative-bewertung-ignorieren-antworten-loeschen/",
+  "online-reputationsmanagement": "/magazin/online-reputationsmanagement/",
 };
 
 // The cluster slugs that have their own statically-exported page (for sitemap + magazine).
@@ -35,6 +36,7 @@ export const CLUSTER_SLUGS = [
   "was-kostet-eine-schlechte-google-bewertung",
   "google-sterne-conversion",
   "negative-bewertung-ignorieren-antworten-loeschen",
+  "online-reputationsmanagement",
 ];
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
@@ -50,6 +52,7 @@ export const CLUSTER_CARDS = [
   { slug: "was-kostet-eine-schlechte-google-bewertung", cat: "Reputation", thm: "thm-amber", icon: "card", title: "Was kostet eine schlechte Google-Bewertung wirklich?", excerpt: "Was eine schlechte Bewertung an Umsatz kostet – Studienzahlen, eine einfache Rechnung und ab wann sich Handeln lohnt.", author: "Maximilian Hölzl", read: 6, date: "Mai 2026" },
   { slug: "google-sterne-conversion", cat: "Reputation", thm: "thm-teal", icon: "zap", title: "Google-Sterne & Conversion: Wie stark Bewertungen wirken", excerpt: "Sterne entscheiden schon im Suchergebnis über den Klick – warum 0,1 Stern den Unterschied macht und wo der Sweet Spot liegt.", author: "Maximilian Hölzl", read: 6, date: "Juni 2026" },
   { slug: "negative-bewertung-ignorieren-antworten-loeschen", cat: "Reputation", thm: "thm-blue", icon: "eye", title: "Negative Bewertung: ignorieren, antworten oder löschen?", excerpt: "Echte Kritik, Fake oder rechtswidrig? Die klare Entscheidungshilfe – wann ignorieren, wann antworten und wann löschen lassen.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
+  { slug: "online-reputationsmanagement", cat: "Reputation", thm: "thm-ink", icon: "shieldCheck", title: "Online-Reputationsmanagement für Unternehmen – der Leitfaden", excerpt: "Bewertungen, Seite-1-Treffer und Presse aktiv steuern: die drei Hebel des ORM – entfernen, verdrängen, aufbauen – und wo Bordmittel an Grenzen stoßen.", author: "Maximilian Hölzl", read: 8, date: "Juni 2026" },
 ];
 
 // Resolve a rapid-remove.com URL (or bare slug) to an on-site path, or null if it
