@@ -1,4 +1,4 @@
-/* Route: /<lang>/autor/<slug> — Autorenprofil in den übrigen Sprachen (E-E-A-T).
+/* Route: /<lang>/author/<slug> — Autorenprofil in den übrigen Sprachen (E-E-A-T).
    DE liegt unter /autor/<slug>; dieselbe Seite, lokalisiert (Bio/Rolle/Artikel). */
 import AuthorPage from "@/components/AuthorPage";
 import { AUTHORS, authorUrlFor, authorPersonLd, roleFor, bioFor, authorHreflang } from "@/lib/authors";
