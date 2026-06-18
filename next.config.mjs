@@ -24,6 +24,24 @@ if (isPages) {
   // src/lib/builtin-redirects.mjs – dieselbe Liste zeigt das Admin-Portal
   // read-only an). Im statischen Export nicht unterstützt, daher nur hier.
   nextConfig.redirects = async () => BUILTIN_REDIRECTS;
+
+  // HTML-Dokumente (z. B. /magazin) tragen keinen Content-Hash in der URL,
+  // daher kann ein CDN sie nach einem Deploy veraltet ausliefern. Shared
+  // Caches werden angewiesen, kurz zu cachen und dann zu revalidieren (max.
+  // ~60 s alt), während im Hintergrund die frische Version geholt wird.
+  // Gehashte Assets unter /_next/* behalten ihr langlebiges Immutable-Caching.
+  // Nur im Node-Betrieb (Railway) gesetzt – mit output:"export" inkompatibel.
+  nextConfig.headers = async () => [
+    {
+      source: "/((?!_next/).*)",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, max-age=0, s-maxage=60, stale-while-revalidate=86400",
+        },
+      ],
+    },
+  ];
 }
 
 export default nextConfig;
