@@ -1,6 +1,6 @@
 /* JA — presseartikel-aus-google-entfernen (記事の非表示・削除 · pillar) */
 const article = {
-  category: "法務",
+  category: "法律",
   meta: {
     slug: "google-press-sakujo",
     title: "Googleのネガティブな記事を非表示・削除する方法",

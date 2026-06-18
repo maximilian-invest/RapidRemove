@@ -1,6 +1,6 @@
 /* JA — negative-bewertung-ignorieren-antworten-loeschen (無視・返答・削除の選び方) */
 const article = {
-  category: "Reputation",
+  category: "評判",
   meta: {
     slug: "warui-kuchikomi-taio",
     title: "低評価のGoogle口コミ：無視・返答・削除の正しい選び方",

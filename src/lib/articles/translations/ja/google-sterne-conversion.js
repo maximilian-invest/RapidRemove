@@ -1,6 +1,6 @@
 /* JA — google-sterne-conversion (Google星評価とコンバージョン) */
 const article = {
-  category: "Reputation",
+  category: "評判",
   meta: {
     slug: "google-hoshi-conversion",
     title: "Googleの星評価はクリック率とコンバージョンにどう影響するか",

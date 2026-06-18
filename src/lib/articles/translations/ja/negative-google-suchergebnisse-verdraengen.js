@@ -1,6 +1,6 @@
 /* JA — negative-google-suchergebnisse-verdraengen (押し下げ・削除) */
 const article = {
-  category: "Reputation",
+  category: "評判",
   meta: {
     slug: "google-negative-kekka-taisaku",
     title: "Googleのネガティブな検索結果を押し下げる・削除する方法",

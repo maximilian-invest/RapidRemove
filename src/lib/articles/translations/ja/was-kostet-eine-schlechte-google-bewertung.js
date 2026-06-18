@@ -1,6 +1,6 @@
 /* JA — was-kostet-eine-schlechte-google-bewertung (低評価口コミの損失) */
 const article = {
-  category: "Reputation",
+  category: "評判",
   meta: {
     slug: "warui-kuchikomi-cost",
     title: "Googleの低評価口コミは実際いくらの損失になるか",

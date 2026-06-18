@@ -1,6 +1,6 @@
 /* JA — online-reputationsmanagement (オンライン評判管理 · pillar) */
 const article = {
-  category: "Reputation",
+  category: "評判",
   meta: {
     slug: "online-hyoban-kanri",
     title: "オンライン評判管理（ORM）企業向けガイド",
