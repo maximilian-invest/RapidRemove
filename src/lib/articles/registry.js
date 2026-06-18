@@ -22,6 +22,7 @@ export const ROUTE_BY_SLUG = {
   "negative-bewertung-ignorieren-antworten-loeschen": "/magazin/negative-bewertung-ignorieren-antworten-loeschen/",
   "online-reputationsmanagement": "/magazin/online-reputationsmanagement/",
   "negative-google-suchergebnisse-verdraengen": "/magazin/negative-google-suchergebnisse-verdraengen/",
+  "presseartikel-aus-google-entfernen": "/magazin/presseartikel-aus-google-entfernen/",
 };
 
 // The cluster slugs that have their own statically-exported page (for sitemap + magazine).
@@ -39,6 +40,7 @@ export const CLUSTER_SLUGS = [
   "negative-bewertung-ignorieren-antworten-loeschen",
   "online-reputationsmanagement",
   "negative-google-suchergebnisse-verdraengen",
+  "presseartikel-aus-google-entfernen",
 ];
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
@@ -56,6 +58,7 @@ export const CLUSTER_CARDS = [
   { slug: "negative-bewertung-ignorieren-antworten-loeschen", cat: "Reputation", thm: "thm-blue", icon: "eye", title: "Negative Bewertung: ignorieren, antworten oder löschen?", excerpt: "Echte Kritik, Fake oder rechtswidrig? Die klare Entscheidungshilfe – wann ignorieren, wann antworten und wann löschen lassen.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
   { slug: "online-reputationsmanagement", cat: "Reputation", thm: "thm-ink", icon: "shieldCheck", title: "Online-Reputationsmanagement für Unternehmen – der Leitfaden", excerpt: "Bewertungen, Seite-1-Treffer und Presse aktiv steuern: die drei Hebel des ORM – entfernen, verdrängen, aufbauen – und wo Bordmittel an Grenzen stoßen.", author: "Maximilian Hölzl", read: 8, date: "Juni 2026" },
   { slug: "negative-google-suchergebnisse-verdraengen", cat: "Reputation", thm: "thm-teal", icon: "search", title: "Negative Google-Suchergebnisse verdrängen oder entfernen", excerpt: "Entfernen oder von Seite 1 verdrängen? Welcher Weg sich für welchen Treffer eignet, was realistisch geht – und wie lange es dauert.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
+  { slug: "presseartikel-aus-google-entfernen", cat: "Recht", thm: "thm-plum", icon: "gavel", title: "Negative Presseartikel aus Google entfernen und auslisten", excerpt: "Auslisten, verdrängen oder Recht auf Vergessenwerden: welcher Weg bei welchem Presseartikel greift – und wie man den Streisand-Effekt vermeidet.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
 ];
 
 // Resolve a rapid-remove.com URL (or bare slug) to an on-site path, or null if it
