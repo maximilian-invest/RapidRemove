@@ -80,11 +80,12 @@ export function authorFor(deSlug) {
   return AUTHORS[KEYS[Math.abs(h) % KEYS.length]];
 }
 
-// DE liegt unter /autor/<slug>/, andere Sprachen unter /<lang>/autor/<slug>/.
+// DE liegt unter /autor/<slug>/; die Fremdsprachen unter /<lang>/author/<slug>/
+// ("autor" ist deutsch – in den nicht-deutschen URLs der internationale Begriff).
 export const authorPath = (a) => `/autor/${a.slug}/`;
-export const authorPathFor = (a, lang) => (lang === "de" ? `/autor/${a.slug}/` : `/${lang}/autor/${a.slug}/`);
+export const authorPathFor = (a, lang) => (lang === "de" ? `/autor/${a.slug}/` : `/${lang}/author/${a.slug}/`);
 export const authorUrl = (a) => `${SITE_URL}/autor/${a.slug}`;
-export const authorUrlFor = (a, lang) => `${SITE_URL}${lang === "de" ? "" : "/" + lang}/autor/${a.slug}`;
+export const authorUrlFor = (a, lang) => `${SITE_URL}${lang === "de" ? `/autor/${a.slug}` : `/${lang}/author/${a.slug}`}`;
 
 export const roleFor = (a, lang) => ROLE_I18N[lang] || ROLE_I18N.en;
 export const bioFor = (a, lang) => (BIO_I18N[a.slug] && (BIO_I18N[a.slug][lang] || BIO_I18N[a.slug].en)) || "";
