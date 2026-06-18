@@ -42,7 +42,7 @@ const article = {
     { t: "h3", text: "Hebel 1: Entfernen" },
     { t: "p", text: "Was rechtswidrig, gefälscht oder unberechtigt ist, gehört weg. Dazu zählen Fake-Bewertungen, rechtswidrige 1-Sterne, falsche Tatsachenbehauptungen – und im Extremfall ein komplettes, beschädigtes [Unternehmensprofil](/magazin/google-unternehmensprofil-loeschen/). Entfernen ist der direkteste Hebel, weil das Problem an der Wurzel verschwindet." },
     { t: "h3", text: "Hebel 2: Verdrängen" },
-    { t: "p", text: "Nicht alles lässt sich löschen – etwa ein rechtmäßiger, aber alter Negativartikel. Hier setzt das **Verdrängen** an: gezielt starke, positive Inhalte aufbauen und optimieren, sodass die unerwünschten Treffer von Seite 1 auf spätere Seiten rutschen. Da kaum jemand über Seite 1 hinausklickt, ist „von Seite 1 verdrängt“ in der Praxis fast so gut wie „weg“. Mehr dazu unter [negative Suchergebnisse verdrängen](/reputation-verdraengen/)." },
+    { t: "p", text: "Nicht alles lässt sich löschen – etwa ein rechtmäßiger, aber alter Negativartikel. Hier setzt das **Verdrängen** an: gezielt starke, positive Inhalte aufbauen und optimieren, sodass die unerwünschten Treffer von Seite 1 auf spätere Seiten rutschen. Da kaum jemand über Seite 1 hinausklickt, ist „von Seite 1 verdrängt“ in der Praxis fast so gut wie „weg“. Mehr dazu unter [negative Suchergebnisse verdrängen](/magazin/negative-google-suchergebnisse-verdraengen/)." },
     { t: "h3", text: "Hebel 3: Aufbauen" },
     { t: "p", text: "Die Grundlage: aktiv echte, positive Bewertungen einholen, eigene Profile und Inhalte pflegen und einen glaubwürdigen Schnitt über 4,0 halten. Das macht Sie robuster gegen einzelne Negativstimmen – und reduziert den Schaden, falls doch mal etwas passiert." },
 

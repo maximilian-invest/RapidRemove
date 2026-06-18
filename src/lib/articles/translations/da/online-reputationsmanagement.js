@@ -38,7 +38,7 @@ const article = {
     { t: "h3", text: "Løftestang 1: Fjerne" },
     { t: "p", text: "Det, der er retsstridigt, falskt eller uberettiget, skal væk. Det gælder falske anmeldelser, retsstridige 1-stjernere, usande kendsgerningspåstande – og i yderste tilfælde en komplet, beskadiget [virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/). Fjernelse er den mest direkte løftestang, fordi problemet forsvinder ved roden." },
     { t: "h3", text: "Løftestang 2: Fortrænge" },
-    { t: "p", text: "Ikke alt lader sig slette – f.eks. en lovlig, men gammel negativ artikel. Her kommer **fortrængning** ind: man bygger og styrker målrettet stærkt, positivt indhold (egne sider, profiler, bidrag, omtaler), som Google vurderer som mere relevant. Med tiden rykker disse frem – og det uønskede resultat glider til side 2 eller længere ned, hvor næsten ingen ser det. Mere om det under [fjern negative Google-resultater](/da/omdoemmestyring/)." },
+    { t: "p", text: "Ikke alt lader sig slette – f.eks. en lovlig, men gammel negativ artikel. Her kommer **fortrængning** ind: man bygger og styrker målrettet stærkt, positivt indhold (egne sider, profiler, bidrag, omtaler), som Google vurderer som mere relevant. Med tiden rykker disse frem – og det uønskede resultat glider til side 2 eller længere ned, hvor næsten ingen ser det. Mere om det under [fjern negative Google-resultater](/da/magasin/fjern-negative-google-resultater/)." },
     { t: "h3", text: "Løftestang 3: Opbygge" },
     { t: "p", text: "Grundlaget: aktivt indhente ægte, positive anmeldelser, passe egne profiler og indhold og holde et troværdigt gennemsnit over 4,0. Det gør jer mere robuste mod enkeltstående negative stemmer – og mindsker skaden, hvis noget alligevel sker." },
 

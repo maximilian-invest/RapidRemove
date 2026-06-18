@@ -38,7 +38,7 @@ const article = {
     { t: "h3", text: "Verktyg 1: Ta bort" },
     { t: "p", text: "Det som är rättsstridigt, fabricerat eller obefogat ska bort. Det gäller fejkrecensioner, rättsstridiga 1-stjärnor, falska faktapåståenden – och i extremfall en fullständigt skadad [företagsprofil](/sv/magasin/radera-google-foretagsprofil/). Borttagning är det mest direkta verktyget, eftersom problemet försvinner vid källan." },
     { t: "h3", text: "Verktyg 2: Tränga undan" },
-    { t: "p", text: "Inte allt går att ta bort – till exempel en legitim men gammal negativartikel. Här sätter **undanträngning** in: man bygger upp och optimerar målmedvetet starka, positiva innehåll så att oönskade träffar glider från sida 1 till senare sidor. Eftersom nästan ingen klickar förbi sida 1 är ”undanträngt från sida 1” i praktiken nästan lika bra som ”borttaget”. Mer om det hittar du under [tränga undan negativa sökresultat](/sv/rykteshantering/)." },
+    { t: "p", text: "Inte allt går att ta bort – till exempel en legitim men gammal negativartikel. Här sätter **undanträngning** in: man bygger upp och optimerar målmedvetet starka, positiva innehåll så att oönskade träffar glider från sida 1 till senare sidor. Eftersom nästan ingen klickar förbi sida 1 är ”undanträngt från sida 1” i praktiken nästan lika bra som ”borttaget”. Mer om det hittar du under [tränga undan negativa sökresultat](/sv/magasin/ta-bort-negativa-google-resultat/)." },
     { t: "h3", text: "Verktyg 3: Bygga upp" },
     { t: "p", text: "Grunden: aktivt hämta in genuina, positiva recensioner, underhålla egna profiler och innehåll och hålla ett trovärdigt snitt över 4,0. Det gör er mer motståndskraftiga mot enstaka negativa röster – och begränsar skadan om något ändå inträffar." },
 

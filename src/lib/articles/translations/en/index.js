@@ -11,6 +11,7 @@ import a9 from "@/lib/articles/translations/en/was-kostet-eine-schlechte-google-
 import a10 from "@/lib/articles/translations/en/google-sterne-conversion";
 import a11 from "@/lib/articles/translations/en/negative-bewertung-ignorieren-antworten-loeschen";
 import a12 from "@/lib/articles/translations/en/online-reputationsmanagement";
+import a13 from "@/lib/articles/translations/en/negative-google-suchergebnisse-verdraengen";
 
 export default {
   "google-bewertung-loeschen-lassen": a1,
@@ -25,4 +26,5 @@ export default {
   "google-sterne-conversion": a10,
   "negative-bewertung-ignorieren-antworten-loeschen": a11,
   "online-reputationsmanagement": a12,
+  "negative-google-suchergebnisse-verdraengen": a13,
 };
