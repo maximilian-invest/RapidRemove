@@ -13,6 +13,7 @@ import a11 from "@/lib/articles/translations/pt/negative-bewertung-ignorieren-an
 import a12 from "@/lib/articles/translations/pt/online-reputationsmanagement";
 import a13 from "@/lib/articles/translations/pt/negative-google-suchergebnisse-verdraengen";
 import a14 from "@/lib/articles/translations/pt/presseartikel-aus-google-entfernen";
+import a17 from "@/lib/articles/translations/pt/trustpilot-bewertung-loeschen";
 export default {
   "google-bewertung-loeschen-lassen": a1, "fake-google-bewertung-melden-loeschen": a2,
   "negative-google-bewertung-anwalt-oder-technische-loeschung": a3, "schlechte-google-bewertungen-was-tun": a4,
@@ -24,4 +25,5 @@ export default {
   "online-reputationsmanagement": a12,
   "negative-google-suchergebnisse-verdraengen": a13,
   "presseartikel-aus-google-entfernen": a14,
+  "trustpilot-bewertung-loeschen": a17,
 };
