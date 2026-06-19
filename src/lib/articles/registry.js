@@ -23,6 +23,9 @@ export const ROUTE_BY_SLUG = {
   "online-reputationsmanagement": "/magazin/online-reputationsmanagement/",
   "negative-google-suchergebnisse-verdraengen": "/magazin/negative-google-suchergebnisse-verdraengen/",
   "presseartikel-aus-google-entfernen": "/magazin/presseartikel-aus-google-entfernen/",
+  "jameda-bewertung-loeschen": "/magazin/jameda-bewertung-loeschen/",
+  "kununu-bewertung-loeschen": "/magazin/kununu-bewertung-loeschen/",
+  "trustpilot-bewertung-loeschen": "/magazin/trustpilot-bewertung-loeschen/",
 };
 
 // The cluster slugs that have their own statically-exported page (for sitemap + magazine).
@@ -41,6 +44,9 @@ export const CLUSTER_SLUGS = [
   "online-reputationsmanagement",
   "negative-google-suchergebnisse-verdraengen",
   "presseartikel-aus-google-entfernen",
+  "jameda-bewertung-loeschen",
+  "kununu-bewertung-loeschen",
+  "trustpilot-bewertung-loeschen",
 ];
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
@@ -59,6 +65,9 @@ export const CLUSTER_CARDS = [
   { slug: "online-reputationsmanagement", cat: "Reputation", thm: "thm-ink", icon: "shieldCheck", title: "Online-Reputationsmanagement für Unternehmen – der Leitfaden", excerpt: "Bewertungen, Seite-1-Treffer und Presse aktiv steuern: die drei Hebel des ORM – entfernen, verdrängen, aufbauen – und wo Bordmittel an Grenzen stoßen.", author: "Maximilian Hölzl", read: 8, date: "Juni 2026" },
   { slug: "negative-google-suchergebnisse-verdraengen", cat: "Reputation", thm: "thm-teal", icon: "search", title: "Negative Google-Suchergebnisse verdrängen oder entfernen", excerpt: "Entfernen oder von Seite 1 verdrängen? Welcher Weg sich für welchen Treffer eignet, was realistisch geht – und wie lange es dauert.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
   { slug: "presseartikel-aus-google-entfernen", cat: "Recht", thm: "thm-plum", icon: "gavel", title: "Negative Presseartikel aus Google entfernen und auslisten", excerpt: "Auslisten, verdrängen oder Recht auf Vergessenwerden: welcher Weg bei welchem Presseartikel greift – und wie man den Streisand-Effekt vermeidet.", author: "Maximilian Hölzl", read: 7, date: "Juni 2026" },
+  { slug: "jameda-bewertung-loeschen", cat: "Recht", thm: "thm-teal", icon: "gavel", title: "Jameda-Bewertung löschen lassen: Leitfaden für Ärzte", excerpt: "Welche Arztbewertungen löschbar sind, was die BGH-Urteile bedeuten – und warum der fehlende Behandlungskontakt der stärkste Hebel ist.", author: "Maximilian Hölzl", read: 13, date: "Juli 2026" },
+  { slug: "kununu-bewertung-loeschen", cat: "Recht", thm: "thm-blue", icon: "gavel", title: "Kununu-Bewertung löschen lassen: Leitfaden für Arbeitgeber", excerpt: "Welche Arbeitgeber-Bewertungen entfernbar sind: das Prüf-, Abmahn- und Auskunftsverfahren Schritt für Schritt – und was wirklich wirkt.", author: "Maximilian Hölzl", read: 13, date: "Juli 2026" },
+  { slug: "trustpilot-bewertung-loeschen", cat: "Recht", thm: "thm-ink", icon: "gavel", title: "Trustpilot-Bewertung löschen lassen: der Leitfaden", excerpt: "Melden, Verfasser oder Rechtsweg: welcher Weg welche Trustpilot-Bewertung entfernt – und warum die 1-Monats-Frist für den Eilantrag zählt.", author: "Maximilian Hölzl", read: 13, date: "Juli 2026" },
 ];
 
 // Resolve a rapid-remove.com URL (or bare slug) to an on-site path, or null if it

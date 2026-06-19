@@ -21,8 +21,11 @@ import a11 from "@/lib/articles/negative-bewertung-ignorieren-antworten-loeschen
 import a12 from "@/lib/articles/online-reputationsmanagement";
 import a13 from "@/lib/articles/negative-google-suchergebnisse-verdraengen";
 import a14 from "@/lib/articles/presseartikel-aus-google-entfernen";
+import a15 from "@/lib/articles/jameda-bewertung-loeschen";
+import a16 from "@/lib/articles/kununu-bewertung-loeschen";
+import a17 from "@/lib/articles/trustpilot-bewertung-loeschen";
 
-const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14];
+const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17];
 export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a]));
 export { TRANSLATIONS };
 
@@ -53,6 +56,9 @@ const PUBLISH_DATES = {
   "online-reputationsmanagement": "2026-06-16",
   "negative-google-suchergebnisse-verdraengen": "2026-06-23",
   "presseartikel-aus-google-entfernen": "2026-06-30",
+  "jameda-bewertung-loeschen": "2026-07-07",
+  "kununu-bewertung-loeschen": "2026-07-14",
+  "trustpilot-bewertung-loeschen": "2026-07-21",
 };
 export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
 
