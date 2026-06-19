@@ -9,6 +9,7 @@ export const PAGE_TITLE = {
   datenschutz: { de: "Datenschutz", en: "Privacy policy", es: "Política de privacidad", fr: "Politique de confidentialité", it: "Informativa privacy", nl: "Privacybeleid", pt: "Política de privacidade", ja: "プライバシーポリシー", sv: "Integritetspolicy", da: "Privatlivspolitik", no: "Personvern" },
   orm: { de: "Reputation verdrängen", en: "Reputation management", es: "Gestión de reputación", fr: "Gestion de réputation", it: "Gestione della reputazione", nl: "Reputatiebeheer", pt: "Gestão de reputação", ja: "オンライン評判管理", sv: "Rykteshantering", da: "Omdømmestyring", no: "Omdømmehåndtering" },
   deindex: { de: "Presse auslisten", en: "Press de-indexing", es: "Desindexar prensa", fr: "Désindexation de presse", it: "Deindicizzazione stampa", nl: "Pers de-indexeren", pt: "Desindexar imprensa", ja: "プレス記事の削除", sv: "Avindexera press", da: "Afindeksér presse", no: "Avindekser presse" },
+  seo: { de: "SEO & Sichtbarkeit", en: "SEO & visibility", es: "SEO y visibilidad", fr: "SEO et visibilité", it: "SEO e visibilità", nl: "SEO & zichtbaarheid", pt: "SEO e visibilidade", ja: "SEO・可視性", sv: "SEO och synlighet", da: "SEO og synlighed", no: "SEO og synlighet" },
   kontakt: { de: "Kontakt", en: "Contact", es: "Contacto", fr: "Contact", it: "Contatti", nl: "Contact", pt: "Contacto", ja: "お問い合わせ", sv: "Kontakt", da: "Kontakt", no: "Kontakt" },
   wizard: { de: "Profil prüfen", en: "Check your profile", es: "Comprobar perfil", fr: "Vérifier la fiche", it: "Verifica profilo", nl: "Profiel checken", pt: "Verificar perfil", ja: "プロフィールを確認", sv: "Kontrollera profil", da: "Tjek profil", no: "Sjekk profil" },
   agb: { de: "AGB", en: "Terms & Conditions", es: "Términos y condiciones", fr: "CGV", it: "Termini e condizioni", nl: "Algemene voorwaarden", pt: "Termos e condições", ja: "利用規約", sv: "Allmänna villkor", da: "Handelsbetingelser", no: "Vilkår" },
@@ -35,6 +36,7 @@ const PAGE_DESC = {
   about: { en: "Who is behind RapidRemove: a registered Austrian company specializing in removing Google Business Profiles — over 1,000 cases, pay only after success." },
   orm: { en: "Push negative Google results off page 1: strategy, content and monitoring to win back your online reputation — free initial analysis." },
   deindex: { en: "Have negative press and unwanted Google results de-indexed — free initial legal review via our partner law firm, engagement only if realistic." },
+  seo: { en: "Get found on Google by the right customers: local, organic and measurable SEO with transparent monthly reporting — free SEO analysis, no lock-in contracts." },
   kontakt: { en: "Talk to the RapidRemove team about removals, ongoing cases or partnerships — personal reply, usually within 24 hours." },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
 };

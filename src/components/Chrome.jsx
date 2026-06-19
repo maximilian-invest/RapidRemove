@@ -60,6 +60,7 @@ export function useRouteShell(initialLang, pageKey) {
     onAbout: () => nav(pagePath("about", lang)),
     onOrm: () => nav(pagePath("orm", lang)),
     onDeindex: () => nav(pagePath("deindex", lang)),
+    onSeo: () => nav(pagePath("seo", lang)),
     onKontakt: () => nav(pagePath("kontakt", lang)),
   };
   return { lang, t, setLang, toTop, nav, home, base };
@@ -304,7 +305,7 @@ function LangHint({ currentLang }) {
   );
 }
 
-function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
+function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active }) {
   const { t } = useLang();
   const [scrolled, setScrolled] = React.useState(false);
   const [open, setOpen] = React.useState(false);
@@ -344,9 +345,14 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
   };
   const sv = SVC[t.code] || SVC.en;
   const svLabel = SVC_NAV_LABEL[t.code] || SVC_NAV_LABEL.en;
-  const svcAct = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex() };
+  // Nur tatsächlich übergebene Handler aufnehmen — fehlt einer (z. B. onSeo auf
+  // einer Seite ohne SPA-Verdrahtung), navigiert der Link über sein href.
+  const svcAct = { core: () => onStart() };
+  if (onOrm) svcAct.orm = () => onOrm();
+  if (onDeindex) svcAct.deindex = () => onDeindex();
+  if (onSeo) svcAct.seo = () => onSeo();
   // Crawlbare Ziele für die Service-Links (SPA-Navigation übernimmt der onClick).
-  const svcHref = { core: asset(pagePath("wizard", t.code)), orm: asset(pagePath("orm", t.code)), deindex: asset(pagePath("deindex", t.code)) };
+  const svcHref = { core: asset(pagePath("wizard", t.code)), orm: asset(pagePath("orm", t.code)), deindex: asset(pagePath("deindex", t.code)), seo: asset(pagePath("seo", t.code)) };
   const svcIcon = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shield);
   return (
     <React.Fragment>
@@ -354,7 +360,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
         <div className="container nav-inner">
           <img className="nav-logo" src={asset("/assets/rapidremove-icon.png")} alt="RapidRemove" onClick={goHome} />
           <div className="nav-links">
-            {(onOrm || onDeindex) && (
+            {(onOrm || onDeindex || onSeo) && (
               <div className={"nav-dd" + (ddOpen ? " open" : "")} ref={ddRef}>
                 <button className="nav-dd-btn" onClick={() => setDdOpen((o) => !o)}>{svLabel} <Icon.chevronDown /></button>
                 <div className="nav-dd-pop">
@@ -363,7 +369,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
                     return (
                       <a className={"nav-dd-item" + (c.id === "core" ? " core" : "")} key={c.id} href={svcHref[c.id]}
                         style={{ textDecoration: "none", color: "inherit" }}
-                        onClick={(e) => { e.preventDefault(); setDdOpen(false); (svcAct[c.id] || (() => {}))(); }}>
+                        onClick={(e) => { if (svcAct[c.id]) { e.preventDefault(); setDdOpen(false); svcAct[c.id](); } }}>
                         <span className="nav-dd-ic"><I size={20} /></span>
                         <span className="nav-dd-tx"><span className="t">{c.t}</span><span className="d">{c.dNav || c.d}</span></span>
                       </a>
@@ -398,7 +404,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, active }) {
               </button>
               {svcOpen && (
                 <div className="sheet-acc-items">
-                  {sv.cards.map((c) => <a key={c.id} href={svcHref[c.id]} onClick={(e) => { e.preventDefault(); setOpen(false); (svcAct[c.id] || (() => {}))(); }}>{c.t}</a>)}
+                  {sv.cards.map((c) => <a key={c.id} href={svcHref[c.id]} onClick={(e) => { if (svcAct[c.id]) { e.preventDefault(); setOpen(false); svcAct[c.id](); } }}>{c.t}</a>)}
                 </div>
               )}
             </div>

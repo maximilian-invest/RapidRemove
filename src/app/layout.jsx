@@ -9,6 +9,7 @@ import "@/styles/about.css";
 import "@/styles/kontakt.css";
 import "@/styles/demo.css";
 import "@/styles/services.css";
+import "@/styles/seo.css";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 

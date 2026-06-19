@@ -676,7 +676,7 @@ function WholeProfile() {
 }
 
 /* ============ HOME ROOT ============ */
-function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
+function Home({ onStart, onBlog, onOrm, onDeindex, onSeo, scrollTarget, onScrolled }) {
   const { lang } = useLang();
   useReveal();
   React.useEffect(() => {
@@ -698,7 +698,7 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
   };
   return (
     <React.Fragment>
-      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
+      <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onSeo={onSeo} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
       <Hero onStart={onStart} />
       <TrustBar />
       <Problem id="problem" />
@@ -708,7 +708,7 @@ function Home({ onStart, onBlog, onOrm, onDeindex, scrollTarget, onScrolled }) {
       <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
-      <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} />
+      <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} onSeo={onSeo} />
       <TrustSecurity id="trust" />
       <Pricing id="pricing" onStart={onStart} />
       <FAQ id="faq" />

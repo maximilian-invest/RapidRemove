@@ -93,6 +93,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   // Eigene, crawlbare Leistungsseiten (SEO) statt In-App-Ansicht.
   const openOrm = () => { window.location.href = asset(pagePath("orm", lang)); };
   const openDeindex = () => { window.location.href = asset(pagePath("deindex", lang)); };
+  const openSeo = () => { window.location.href = asset(pagePath("seo", lang)); };
   const goHome = (id) => { setHomeScroll(id || "__top"); setRoute("home"); setUrl(homeUrl); window.scrollTo({ top: 0 }); };
   const onAbout = () => { window.location.href = asset(pagePath("about", lang)); };
   // Der Wizard meldet das aktuell gewählte Profil → placeId in die URL spiegeln (?p=).
@@ -101,7 +102,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   return (
     <LangContext.Provider value={{ lang, t, setLang }}>
       {route === "home"
-        ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
+        ? <Home onStart={startWizard} onBlog={openBlog} onOrm={openOrm} onDeindex={openDeindex} onSeo={openSeo} scrollTarget={homeScroll} onScrolled={() => setHomeScroll(null)} />
         : !bootDone
           // Erst nach dem Deep-Link-Effekt rendern → beim „Weitermachen" kein Aufblitzen
           // der „kurz vorab"-Startseite; der Wizard startet direkt im gespeicherten Schritt.

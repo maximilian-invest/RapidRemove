@@ -164,12 +164,185 @@ export const DEIDX = {
   },
 };
 
+/* SEO & visibility landing page (DE + EN authored; other locales fall back to EN
+   via SEO[t.code] || SEO.en in the component). */
+export const SEO = {
+  de: {
+    metaTitle: "SEO-Agentur: bei Google gefunden werden | RapidRemove",
+    eyebrow: "SEO & Sichtbarkeit",
+    h1: "Bei Google gefunden werden – von den richtigen Kunden.",
+    lead: "Wir bringen Ihr Unternehmen nach oben: lokal, organisch und messbar. Transparentes monatliches Reporting, keine leeren Versprechen.",
+    cta: "Kostenlose SEO-Analyse",
+    secondary: "Pakete ansehen",
+    trust: ["Über 1.000 Projekte", "Transparentes Reporting", "Keine Knebelverträge"],
+    problemEyebrow: "Das Problem",
+    problemH: "Wer auf Seite 2 steht, existiert für Google-Nutzer nicht.",
+    problemSub: "Die allermeisten Klicks bleiben auf Seite 1. Wenn Ihre Wettbewerber dort oben stehen und Sie nicht, verlieren Sie Kunden – jeden Tag, ohne es zu merken. Gute Leistung allein reicht nicht, wenn niemand Sie findet.",
+    leversEyebrow: "Unsere Lösung",
+    leversH: "Vier Hebel, ein Ziel: mehr sichtbare, kaufbereite Besucher.",
+    levers: [
+      { ic: "mapPin", t: "Local SEO", d: "Ganz oben in Ihrer Region: Google-Profil, Maps & lokale Suchbegriffe." },
+      { ic: "gauge", t: "OnPage & Technik", d: "Schnelle, saubere Seiten, die Google und Nutzer lieben." },
+      { ic: "fileText", t: "Content", d: "Inhalte, nach denen Ihre Kunden wirklich suchen (und die ranken)." },
+      { ic: "link2", t: "Autorität & Backlinks", d: "Vertrauenssignale, die Sie über die Konkurrenz heben." },
+    ],
+    stepsEyebrow: "So funktioniert's",
+    stepsH: "Transparent in vier Schritten.",
+    steps: [
+      { t: "Analyse", d: "Wir prüfen Rankings, Technik und Wettbewerb – kostenlos." },
+      { t: "Strategie", d: "Klarer Maßnahmenplan mit Prioritäten und Zielen." },
+      { t: "Umsetzung", d: "Wir setzen um: Technik, Content, lokal, Backlinks." },
+      { t: "Reporting", d: "Monatlich nachvollziehbar, welche Zahlen sich bewegen." },
+    ],
+    pricingEyebrow: "Pakete",
+    pricingH: "Klare monatliche Pakete. Keine Knebelverträge.",
+    pricingSub: "Einstieg über die kostenlose Analyse – danach das passende Paket. Mindestlaufzeit 3 Monate (SEO braucht etwas Anlauf), danach monatlich kündbar.",
+    planNames: ["Local", "Wachstum", "Performance"],
+    planIdeal: ["lokale Betriebe", "wachsende Unternehmen", "Marktführerschaft"],
+    planRec: "Empfohlen",
+    rows: [
+      { label: "Local SEO / Google-Profil", vals: ["✓", "✓", "✓"] },
+      { label: "OnPage & Technik", vals: ["Basis", "erweitert", "umfassend"] },
+      { label: "Content / Monat", vals: ["1 Artikel", "4 Artikel", "8+ Artikel"] },
+      { label: "Backlinks / Autorität", vals: ["–", "✓", "✓ (Digital PR)"] },
+      { label: "Reporting", vals: ["monatlich", "monatlich + Call", "monatlich + Strategie"] },
+    ],
+    prices: ["ab 490 €", "ab 990 €", "ab 1.900 €"],
+    pricePer: "/ Monat",
+    pricingCta: "Kostenlose SEO-Analyse starten",
+    riskReversal: "Erst die Analyse, dann entscheiden Sie. Keine Vorkasse für das Erstgespräch.",
+    trustEyebrow: "Vertrauen",
+    trustH: "Ergebnisse statt Versprechen.",
+    trustPoints: [
+      { ic: "barChart", t: "Transparentes Reporting", d: "Sie sehen monatlich, was sich bewegt." },
+      { ic: "refresh", t: "Keine Knebelverträge", d: "Nach 3 Monaten monatlich kündbar." },
+      { ic: "users", t: "Spezialisten-Team", d: "Über 1.000 Projekte in 30+ Ländern." },
+    ],
+    xsEyebrow: "Mehr als SEO",
+    xsH: "Sichtbar werden – und sichtbar gut dastehen.",
+    xsSub: "SEO bringt Besucher. Ob sie zu Kunden werden, entscheidet Ihr Ruf. Wir decken beides ab:",
+    crossSell: [
+      { id: "core", ic: "trash", t: "Google-Profil löschen", d: "Unerwünschte Profile & Bewertungen dauerhaft entfernen." },
+      { id: "orm", ic: "eye", t: "Reputation verdrängen", d: "Negative Treffer von Seite 1 schieben." },
+      { id: "deindex", ic: "fileText", t: "Presse auslisten", d: "Negative Presse aus Google nehmen." },
+      { id: "kontakt", ic: "sparkle", t: "Komplettpaket Online-Präsenz", d: "Website + Profil + SEO + Content + Bewertungen aus einer Hand." },
+    ],
+    faqEyebrow: "Häufige Fragen",
+    faqH: "Gut zu wissen.",
+    faq: [
+      { q: "Wie schnell sehe ich Ergebnisse?", a: "Erste Bewegungen oft nach 4–8 Wochen, spürbare Effekte meist nach 3–6 Monaten. SEO ist nachhaltig, nicht sofort." },
+      { q: "Garantiert ihr Platz 1?", a: "Nein – seriös ist das niemand. Wir maximieren Ihre Chancen mit der besten Strategie und zeigen den Fortschritt transparent." },
+      { q: "Gibt es eine Mindestlaufzeit?", a: "3 Monate, damit Maßnahmen greifen. Danach monatlich kündbar." },
+      { q: "Was kostet es genau?", a: "Die Pakete starten bei 490 €/Monat. Den finalen Plan legen wir nach der kostenlosen Analyse fest." },
+      { q: "Macht ihr auch nur Local SEO?", a: "Ja – das „Local“-Paket ist genau dafür." },
+      { q: "Übernehmt ihr auch Content & Website?", a: "Ja, im Wachstum-/Performance-Paket bzw. über das Komplettpaket." },
+    ],
+    finalH: "Finden Sie heraus, wo Sie stehen – kostenlos.",
+    finalSub: "In der kostenlosen SEO-Analyse sehen Sie Ihre Rankings, die größten Hebel und was realistisch möglich ist. Unverbindlich.",
+    finalCta: "Kostenlose SEO-Analyse anfordern",
+    serpQuery: "ihre leistung + ihre stadt",
+    serpYou: "Ihr Unternehmen",
+    serpBefore: "Platz 8",
+    serpAfter: "Platz 1",
+  },
+  en: {
+    metaTitle: "SEO agency: get found on Google | RapidRemove",
+    eyebrow: "SEO & visibility",
+    h1: "Get found on Google – by the right customers.",
+    lead: "We move your business up: local, organic and measurable. Transparent monthly reporting, no empty promises.",
+    cta: "Free SEO analysis",
+    secondary: "See packages",
+    trust: ["Over 1,000 projects", "Transparent reporting", "No lock-in contracts"],
+    problemEyebrow: "The problem",
+    problemH: "If you're on page 2, you don't exist to Google users.",
+    problemSub: "The vast majority of clicks stay on page 1. If your competitors are up there and you're not, you lose customers – every day, without noticing. Doing great work isn't enough if no one finds you.",
+    leversEyebrow: "Our solution",
+    leversH: "Four levers, one goal: more visible, ready-to-buy visitors.",
+    levers: [
+      { ic: "mapPin", t: "Local SEO", d: "Right at the top in your region: Google profile, Maps & local search terms." },
+      { ic: "gauge", t: "OnPage & technical", d: "Fast, clean pages that Google and users love." },
+      { ic: "fileText", t: "Content", d: "Content your customers actually search for (and that ranks)." },
+      { ic: "link2", t: "Authority & backlinks", d: "Trust signals that lift you above the competition." },
+    ],
+    stepsEyebrow: "How it works",
+    stepsH: "Transparent in four steps.",
+    steps: [
+      { t: "Analysis", d: "We review rankings, technical health and competition – free of charge." },
+      { t: "Strategy", d: "A clear action plan with priorities and goals." },
+      { t: "Execution", d: "We deliver: technical, content, local, backlinks." },
+      { t: "Reporting", d: "Monthly, transparent on which numbers are moving." },
+    ],
+    pricingEyebrow: "Packages",
+    pricingH: "Clear monthly packages. No lock-in contracts.",
+    pricingSub: "Start with the free analysis – then the right package. Minimum term 3 months (SEO needs a runway), cancellable monthly after that.",
+    planNames: ["Local", "Growth", "Performance"],
+    planIdeal: ["local businesses", "growing companies", "market leadership"],
+    planRec: "Recommended",
+    rows: [
+      { label: "Local SEO / Google profile", vals: ["✓", "✓", "✓"] },
+      { label: "OnPage & technical", vals: ["basic", "extended", "comprehensive"] },
+      { label: "Content / month", vals: ["1 article", "4 articles", "8+ articles"] },
+      { label: "Backlinks / authority", vals: ["–", "✓", "✓ (Digital PR)"] },
+      { label: "Reporting", vals: ["monthly", "monthly + call", "monthly + strategy"] },
+    ],
+    prices: ["from €490", "from €990", "from €1,900"],
+    pricePer: "/ month",
+    pricingCta: "Start the free SEO analysis",
+    riskReversal: "First the analysis, then you decide. No upfront payment for the initial call.",
+    trustEyebrow: "Trust",
+    trustH: "Results, not promises.",
+    trustPoints: [
+      { ic: "barChart", t: "Transparent reporting", d: "You see monthly what's moving." },
+      { ic: "refresh", t: "No lock-in contracts", d: "Cancellable monthly after 3 months." },
+      { ic: "users", t: "Specialist team", d: "Over 1,000 projects in 30+ countries." },
+    ],
+    xsEyebrow: "More than SEO",
+    xsH: "Get visible – and look good while you're at it.",
+    xsSub: "SEO brings visitors. Whether they become customers is decided by your reputation. We cover both:",
+    crossSell: [
+      { id: "core", ic: "trash", t: "Delete Google profile", d: "Permanently remove unwanted profiles & reviews." },
+      { id: "orm", ic: "eye", t: "Suppress reputation", d: "Push negative results off page 1." },
+      { id: "deindex", ic: "fileText", t: "De-list press", d: "Remove negative press from Google." },
+      { id: "kontakt", ic: "sparkle", t: "Complete online presence", d: "Website + profile + SEO + content + reviews from one source." },
+    ],
+    faqEyebrow: "FAQ",
+    faqH: "Good to know.",
+    faq: [
+      { q: "How fast will I see results?", a: "First movements often after 4–8 weeks, noticeable effects usually after 3–6 months. SEO is sustainable, not instant." },
+      { q: "Do you guarantee position 1?", a: "No – no reputable agency does. We maximise your chances with the best strategy and show progress transparently." },
+      { q: "Is there a minimum term?", a: "3 months, so measures can take effect. Cancellable monthly after that." },
+      { q: "What exactly does it cost?", a: "Packages start at €490/month. We set the final plan after the free analysis." },
+      { q: "Do you do local SEO only?", a: "Yes – the “Local” package is exactly for that." },
+      { q: "Do you handle content & website too?", a: "Yes, in the Growth/Performance package or via the complete package." },
+    ],
+    finalH: "Find out where you stand – for free.",
+    finalSub: "In the free SEO analysis you'll see your rankings, the biggest levers and what's realistically possible. No obligation.",
+    finalCta: "Request the free SEO analysis",
+    serpQuery: "your service + your city",
+    serpYou: "Your business",
+    serpBefore: "Position 8",
+    serpAfter: "Position 1",
+  },
+};
+
 /* Merge in the other 9 locales (full translations; EN as last-resort safety). */
 const EXTRA = { es, fr, it, nl, pt, ja, sv, da, no };
 for (const [k, m] of Object.entries(EXTRA)) {
   SVC[k] = (m && m.svc) || SVC.en;
   ORM[k] = (m && m.orm) || ORM.en;
   DEIDX[k] = (m && m.deidx) || DEIDX.en;
+}
+
+/* The SEO service card — surfaced in the homepage trio + the Leistungen nav of
+   every locale (DE/EN authored; other locales fall back to the EN card). */
+const SEO_CARD = {
+  de: { id: "seo", tag: "Sichtbarkeit", ic: "trendUp", t: "SEO & Sichtbarkeit", d: "Bei Google nach oben — lokal, organisch und messbar. Kostenlose SEO-Analyse.", dNav: "Bei Google nach oben — lokal & organisch", link: "Mehr erfahren" },
+  en: { id: "seo", tag: "Visibility", ic: "trendUp", t: "SEO & visibility", d: "Climb in Google — local, organic and measurable. Free SEO analysis.", dNav: "Climb in Google — local & organic", link: "Learn more" },
+};
+for (const k of Object.keys(SVC)) {
+  if (SVC[k] && Array.isArray(SVC[k].cards) && !SVC[k].cards.some((c) => c.id === "seo")) {
+    SVC[k] = { ...SVC[k], cards: [...SVC[k].cards, SEO_CARD[k] || SEO_CARD.en] };
+  }
 }
 
 /* Localized "Services" nav label. */
