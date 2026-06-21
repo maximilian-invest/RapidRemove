@@ -18,6 +18,10 @@ export interface PaymentLinkProps {
   due: string;
   /** Stripe-Zahlungslink für den Button */
   payUrl: string;
+  /** Leistungs-Key der Bestellung. Bei "reset" (Profil-Löschung + Neuaufsetzen, 850 €)
+   *  wird die reine Lösch-Formulierung durch „gelöscht und neu aufgesetzt – frischer
+   *  Start mit 0 Bewertungen" ersetzt. Alle anderen Werte → Standard-Lösch-Text. */
+  service?: string;
 }
 
 const T = {
@@ -210,12 +214,74 @@ const T = {
   },
 };
 
+/* Überschreibungen für den Reset-Auftrag ("reset", 850 €): Profil wird NICHT nur gelöscht,
+   sondern gelöscht UND neu aufgesetzt – frischer Start mit 0 Bewertungen. Nur die Felder,
+   die sich von der reinen Löschung unterscheiden; alles andere kommt aus T. */
+const RESET: Record<string, { preview: string; introBold: string; important: string }> = {
+  de: {
+    preview: "Ihr Profil wurde gelöscht und neu aufgesetzt – bitte begleichen Sie die offene Rechnung.",
+    introBold: "erfolgreich gelöscht und neu aufgesetzt wurde – ein frischer Start mit 0 Bewertungen.",
+    important: " Bitte beachten Sie, dass wir Ihr neu aufgesetztes Profil bis zur vollständigen Zahlung zurückhalten und im Falle der Nichtzahlung die bisherigen Bewertungen wiederherstellen.",
+  },
+  en: {
+    preview: "Your profile has been deleted and freshly set up – please settle the open invoice.",
+    introBold: "successfully deleted and freshly set up – a fresh start with 0 reviews.",
+    important: " Please note that we will withhold your newly set-up profile until full payment is made and, in case of non-payment, restore the previous reviews.",
+  },
+  es: {
+    preview: "Su perfil ha sido eliminado y reconfigurado: le rogamos que abone la factura pendiente.",
+    introBold: "eliminado y reconfigurado por completo: un nuevo comienzo con 0 reseñas.",
+    important: " Tenga en cuenta que mantendremos su perfil recién configurado retenido hasta el pago íntegro y, en caso de impago, restableceremos las reseñas anteriores.",
+  },
+  fr: {
+    preview: "Votre fiche a été supprimée puis recréée : merci de régler la facture en attente.",
+    introBold: "supprimée puis entièrement recréée : un nouveau départ avec 0 avis.",
+    important: " Veuillez noter que nous conserverons votre fiche nouvellement recréée jusqu'au paiement intégral et, en cas de non-paiement, nous rétablirons les avis précédents.",
+  },
+  it: {
+    preview: "Il suo profilo è stato eliminato e ricreato da zero: la preghiamo di saldare la fattura in sospeso.",
+    introBold: "eliminato e ricreato completamente: un nuovo inizio con 0 recensioni.",
+    important: " La informiamo che tratterremo il suo profilo appena ricreato fino al pagamento completo e, in caso di mancato pagamento, ripristineremo le recensioni precedenti.",
+  },
+  nl: {
+    preview: "Uw profiel is verwijderd en opnieuw opgezet – gelieve de openstaande factuur te voldoen.",
+    introBold: "succesvol is verwijderd en opnieuw opgezet – een frisse start met 0 beoordelingen.",
+    important: " Houd er rekening mee dat wij uw opnieuw opgezette profiel tot de volledige betaling vasthouden en bij niet-betaling de eerdere beoordelingen herstellen.",
+  },
+  pt: {
+    preview: "O seu perfil foi eliminado e recriado de raiz – queira regularizar a fatura em aberto.",
+    introBold: "eliminado e recriado por completo – um recomeço com 0 avaliações.",
+    important: " Tenha em atenção que reteremos o seu perfil recém-criado até ao pagamento integral e, em caso de não pagamento, reporemos as avaliações anteriores.",
+  },
+  ja: {
+    preview: "お客様のプロフィールは削除され、新たに作成されました。未払いの請求書のお支払いをお願いいたします。",
+    introBold: "正常に削除され、新たに作成されましたことをお知らせいたします（口コミ0件での新たなスタート）。",
+    important: " お支払いが完了するまで新たに作成したプロフィールは保留され、未払いの場合は以前の口コミが復元されますのでご了承ください。",
+  },
+  sv: {
+    preview: "Din profil har raderats och skapats på nytt – vänligen betala den utestående fakturan.",
+    introBold: "raderats och skapats helt på nytt – en nystart med 0 omdömen.",
+    important: " Observera att vi håller kvar din nyskapade profil till dess att full betalning har skett och, vid utebliven betalning, återställer de tidigare omdömena.",
+  },
+  da: {
+    preview: "Din profil er blevet slettet og oprettet på ny – betal venligst den udestående faktura.",
+    introBold: "slettet og oprettet helt på ny – en frisk start med 0 anmeldelser.",
+    important: " Bemærk venligst, at vi tilbageholder din nyoprettede profil indtil fuld betaling og, i tilfælde af manglende betaling, genskaber de tidligere anmeldelser.",
+  },
+  no: {
+    preview: "Profilen din er slettet og opprettet på nytt – vennligst gjør opp den utestående fakturaen.",
+    introBold: "slettet og opprettet helt på nytt – en frisk start med 0 anmeldelser.",
+    important: " Vær oppmerksom på at vi holder tilbake den nyopprettede profilen din til full betaling er mottatt, og ved manglende betaling gjenoppretter de tidligere anmeldelsene.",
+  },
+};
+
 export function subject(p: PaymentLinkProps): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl }: PaymentLinkProps) {
-  const t = T[lang] || T.de;
+export default function PaymentLink({ lang = "de", total, protectionLabel, expressLabel, upgradeUrl, due, payUrl, service }: PaymentLinkProps) {
+  const base = T[lang] || T.de;
+  const t = service === "reset" ? { ...base, ...(RESET[lang] || RESET.de) } : base;
   const label = { fontSize: 14, fontWeight: 700, color: brand.text, margin: 0 } as const;
   const val = { fontSize: 14, color: brand.text, margin: 0 } as const;
   return (

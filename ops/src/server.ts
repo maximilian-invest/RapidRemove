@@ -140,21 +140,21 @@ app.get("/", async (_req, reply) => {
 // Einzelne Vorschau (HTML im Browser)
 app.get("/preview/:key", async (req, reply) => {
   const { key } = req.params as { key: string };
-  const { lang, variant } = req.query as { lang?: string; variant?: string };
+  const { lang, variant, service } = req.query as { lang?: string; variant?: string; service?: string };
   const t = TEMPLATES[key];
   if (!t) return reply.code(404).type("text/html").send("Unbekanntes Template");
-  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}) };
+  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}), ...(service ? { service } : {}) };
   const html = await render(React.createElement(t.component, props));
   return reply.type("text/html").send(html);
 });
 
 // Test-Versand per Link (mit ADMIN_TOKEN geschützt)
 app.get("/send-test", async (req, reply) => {
-  const { key = "auftragsbestaetigung", to, token, lang, variant } = req.query as Record<string, string>;
+  const { key = "auftragsbestaetigung", to, token, lang, variant, service } = req.query as Record<string, string>;
   if (!ADMIN_TOKEN || token !== ADMIN_TOKEN) return reply.code(401).send("unauthorized");
   const t = TEMPLATES[key];
   if (!t || !to) return reply.code(400).send("Parameter fehlen: key, to");
-  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}) };
+  const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}), ...(service ? { service } : {}) };
   const html = await render(React.createElement(t.component, props));
   await sendMail({ to, subject: t.subject(props), html });
   return { sent: to, template: key };
@@ -770,7 +770,7 @@ app.post("/admin/paylink", async (req, reply) => {
       : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
     const tlang = mailLang(b.lang);
     const due = tplKey === "mahnung" ? (DUE_MAHN[tlang] || DUE_MAHN.en) : (DUE_NOW[tlang] || DUE_NOW.en);
-    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined };
+    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
