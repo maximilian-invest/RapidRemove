@@ -775,6 +775,34 @@ app.post("/admin/paylink", async (req, reply) => {
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
     if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
+
+    // 🤑 Hype-Push fürs Team, wenn ein ECHTER Zahlungslink rausgeht (NICHT bei Mahnung/Storno).
+    // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.
+    if (tplKey !== "mahnung" && (b.celebrate === true || b.celebrate === "true")) {
+      try {
+        let assignee: string | null = null, company: string | null = null;
+        if (orderId && dbReady()) {
+          const ob = await getOrderBasic(orderId);
+          assignee = ob?.assignee || null;
+          company = ob?.company || null;
+        }
+        const WHO: Record<string, string> = { max: "Max", matthias: "Matthias" };
+        const who = (assignee && (WHO[assignee.toLowerCase()] || assignee.charAt(0).toUpperCase() + assignee.slice(1))) || "Das Team";
+        const kunde = company || clip(b.name, 80) || to;
+        const ptitle = `GLÖSCHT von ${who} 🤑💰`;
+        const pbody = `GULDEN SCHIESSEN!!${kunde ? `\n${kunde}` : ""}`;
+        const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
+        if (hasWebPush() && dbReady()) {
+          const subs = await listPushSubscriptions();
+          if (subs.length) {
+            const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
+            for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
+          }
+        }
+        await sendPush(ptitle, pbody, adminUrl);
+      } catch (e) { app.log.error({ err: e }, "Hype-Push (Zahlungslink) fehlgeschlagen"); }
+    }
+
     return { ok: true, url };
   } catch (e) {
     app.log.error({ err: e }, "Zahlungslink-Mail fehlgeschlagen");

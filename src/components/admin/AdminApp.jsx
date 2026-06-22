@@ -205,7 +205,7 @@ async function sendOrderedPayLink(o, toast, onStatus) {
       to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur",
       service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0,
       protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "",
-      total: tot, protectionLabel, express: !!o.express, expressLabel, lang: o.lang || "de",
+      total: tot, protectionLabel, express: !!o.express, expressLabel, lang: o.lang || "de", celebrate: true,
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
@@ -1630,7 +1630,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
   const send = async () => {
     if (!sel) return;
     try {
-      await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url });
+      await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url, celebrate: !storno });
       if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
       onClose(); toast((storno ? "Storno-Link (" : "Zahlungslink (") + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
     } catch (e) { toast((storno ? "Storno-Link" : "Zahlungslink") + " fehlgeschlagen: " + e.message); }
