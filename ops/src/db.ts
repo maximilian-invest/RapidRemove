@@ -288,6 +288,28 @@ export async function updateOrderStatus(id: string, status: string, pay?: string
   return (r.rowCount ?? 0) > 0;
 }
 
+/**
+ * Markiert die jüngste noch OFFENE Bestellung zu einer E-Mail als bezahlt
+ * (für die automatische Zahlungszuordnung aus dem Stripe-Webhook).
+ * Trifft genau eine Bestellung (die neueste mit pay≠'paid') und gibt deren ID
+ * zurück – oder null, wenn keine offene Bestellung zu dieser E-Mail existiert.
+ * Idempotent: bei erneutem Aufruf (Stripe-Retry) gibt es nichts Offenes mehr → null.
+ */
+export async function markOrderPaidByEmail(email: string): Promise<string | null> {
+  if (!pool || !email) return null;
+  const r = await pool.query(
+    `UPDATE orders SET pay='paid'
+       WHERE id = (
+         SELECT id FROM orders
+          WHERE lower(email) = lower($1) AND pay IS DISTINCT FROM 'paid'
+          ORDER BY created_at DESC LIMIT 1
+       )
+     RETURNING id`,
+    [email],
+  );
+  return (r.rows[0]?.id as string) ?? null;
+}
+
 /** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null = entfernen). */
 export async function setOrderAssignee(id: string, assignee: string | null): Promise<boolean> {
   if (!pool || !id) return false;

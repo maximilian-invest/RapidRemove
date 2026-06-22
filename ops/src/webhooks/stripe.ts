@@ -27,7 +27,7 @@ import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
 import {
-  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent,
+  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail,
 } from "../db.js";
 
 type Lang = "de" | "en";
@@ -172,15 +172,53 @@ async function maybeSendSchutzhinweis(
   }
 }
 
+/**
+ * Automatische Zahlungszuordnung: passt die Stripe-Kunden-E-Mail zu einer offenen
+ * Bestellung, wird deren Status auf „bezahlt" gesetzt (Übersicht: pay = paid statt
+ * ausstehend). Trifft die jüngste offene Bestellung dieser E-Mail. Best effort.
+ * Abo-Verlängerungen (billing_reason = "subscription_cycle") sind ausgenommen –
+ * die zahlen nur den laufenden Schutz und sollen keine neue Bestellung „bezahlen".
+ */
+async function autoMatchPayment(app: FastifyInstance, obj: any, source: string): Promise<void> {
+  const email: string | undefined = obj?.customer_email || obj?.customer_details?.email || undefined;
+  if (!dbReady() || !email) return;
+  if (obj?.billing_reason === "subscription_cycle") {
+    app.log.info(`Webhook: Auto-Zuordnung übersprungen (Abo-Verlängerung) für ${email}`);
+    return;
+  }
+  try {
+    const oid = await markOrderPaidByEmail(email);
+    if (oid) {
+      app.log.info(`Webhook: Bestellung ${oid} automatisch als bezahlt markiert (${email}, ${source})`);
+      await insertEvent({ orderId: oid, type: "pay", title: "Zahlung eingegangen", detail: `Automatisch via Stripe zugeordnet (${email})`, auto: true });
+    } else {
+      app.log.info(`Webhook: keine offene Bestellung für ${email} – keine Auto-Zuordnung (${source})`);
+    }
+  } catch (e) {
+    app.log.error(`Webhook: automatische Zahlungszuordnung fehlgeschlagen: ${(e as Error).message}`);
+  }
+}
+
 async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
   const obj = event?.data?.object ?? {};
   switch (event?.type) {
     case "invoice.paid":
     case "invoice.payment_succeeded": {
       const lang: Lang = (obj.currency || "").toLowerCase() === "eur" ? "de" : "en";
+      // Zahlung zuerst der Bestellung zuordnen (Übersicht: bezahlt), dann Mails.
+      await autoMatchPayment(app, obj, event.type);
       await sendInvoiceMail(app.log, obj, lang);
       await maybeSendSchutzhinweis(app.log, obj, lang);
       // TODO M3: sevDesk-Beleg (createContact → uploadVoucher → createVoucher)
+      return;
+    }
+    case "checkout.session.completed": {
+      // Direkter „Payment-Link bezahlt"-Beleg (deckt auch Einmalzahlungen ohne Rechnung ab).
+      if (obj?.payment_status && obj.payment_status !== "paid" && obj.payment_status !== "no_payment_required") {
+        app.log.info(`Webhook: checkout.session ${obj?.id} nicht bezahlt (${obj?.payment_status}) – ignoriert`);
+        return;
+      }
+      await autoMatchPayment(app, obj, "checkout.session.completed");
       return;
     }
     case "customer.subscription.created": {
