@@ -13,6 +13,10 @@ export interface MahnungProps {
   due: string;
   /** Stripe-Zahlungslink für den Button */
   payUrl: string;
+  /** Leistungs-Key der Bestellung. Bei "reset" (Profil-Löschung + Neuaufsetzen, 850 €)
+   *  spricht die Mahnung von „Löschen und Neuaufsetzen" und droht mit der
+   *  Wiederherstellung der bisherigen Bewertungen statt des Profils. */
+  service?: string;
 }
 
 const T = {
@@ -161,12 +165,74 @@ const T = {
   },
 };
 
+/* Überschreibungen für den Reset-Auftrag ("reset", 850 €): Profil wurde gelöscht UND neu
+   aufgesetzt; bei Nichtzahlung werden die bisherigen Bewertungen wiederhergestellt (nicht
+   "das Profil wieder auf Google eingestellt"). Nur die abweichenden Felder. */
+const RESET: Record<string, { intro: string; preview: string; warn: string }> = {
+  de: {
+    intro: "die Rechnung für das erfolgreiche Löschen und Neuaufsetzen Ihres Google-Profils ist noch ",
+    preview: "Ihre Rechnung ist offen. Ohne Zahlung stellen wir die bisherigen Bewertungen wieder her.",
+    warn: "Zahlen Sie jetzt – sonst stellen wir die bisherigen Bewertungen wieder her.",
+  },
+  en: {
+    intro: "the invoice for the successful deletion and fresh setup of your Google profile is still ",
+    preview: "Your invoice is open. Without payment we will restore the previous reviews.",
+    warn: "Pay now – otherwise we will restore the previous reviews.",
+  },
+  es: {
+    intro: "la factura por la eliminación y reconfiguración de su perfil de Google sigue ",
+    preview: "Su factura está pendiente. Sin el pago, restableceremos las reseñas anteriores.",
+    warn: "Pague ahora; de lo contrario, restableceremos las reseñas anteriores.",
+  },
+  fr: {
+    intro: "la facture relative à la suppression et à la recréation de votre fiche Google est toujours ",
+    preview: "Votre facture est en attente. Sans paiement, nous rétablirons les avis précédents.",
+    warn: "Payez maintenant, sinon nous rétablirons les avis précédents.",
+  },
+  it: {
+    intro: "la fattura per la riuscita rimozione e ricreazione del suo profilo Google è ancora ",
+    preview: "La sua fattura è in sospeso. Senza il pagamento ripristineremo le recensioni precedenti.",
+    warn: "Paghi ora, altrimenti ripristineremo le recensioni precedenti.",
+  },
+  nl: {
+    intro: "de factuur voor de succesvolle verwijdering en heropbouw van uw Google-profiel staat nog ",
+    preview: "Uw factuur staat open. Zonder betaling herstellen we de eerdere beoordelingen.",
+    warn: "Betaal nu – anders herstellen we de eerdere beoordelingen.",
+  },
+  pt: {
+    intro: "a fatura pela eliminação e recriação bem-sucedidas do seu perfil do Google continua ",
+    preview: "A sua fatura está pendente. Sem o pagamento, reporemos as avaliações anteriores.",
+    warn: "Pague agora; caso contrário, reporemos as avaliações anteriores.",
+  },
+  ja: {
+    intro: "お客様のGoogleプロフィールの削除および再作成の完了に関する請求書が、いまだ",
+    preview: "請求書が未払いです。お支払いがない場合、以前の口コミを復元いたします。",
+    warn: "今すぐお支払いください。お支払いがない場合、以前の口コミを復元いたします。",
+  },
+  sv: {
+    intro: "fakturan för den lyckade borttagningen och nyuppsättningen av din Google-profil är fortfarande ",
+    preview: "Din faktura är obetald. Utan betalning återställer vi de tidigare omdömena.",
+    warn: "Betala nu – annars återställer vi de tidigare omdömena.",
+  },
+  da: {
+    intro: "fakturaen for den vellykkede fjernelse og nyoprettelse af din Google-profil er fortsat ",
+    preview: "Din faktura er ubetalt. Uden betaling genskaber vi de tidligere anmeldelser.",
+    warn: "Betal nu – ellers genskaber vi de tidligere anmeldelser.",
+  },
+  no: {
+    intro: "fakturaen for den vellykkede fjerningen og nyopprettelsen av Google-profilen din er fortsatt ",
+    preview: "Fakturaen din er ubetalt. Uten betaling gjenoppretter vi de tidligere anmeldelsene.",
+    warn: "Betal nå – ellers gjenoppretter vi de tidligere anmeldelsene.",
+  },
+};
+
 export function subject(p: MahnungProps): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Mahnung({ lang = "de", total, due, payUrl }: MahnungProps) {
-  const t = T[lang] || T.de;
+export default function Mahnung({ lang = "de", total, due, payUrl, service }: MahnungProps) {
+  const base = T[lang] || T.de;
+  const t = service === "reset" ? { ...base, ...(RESET[lang] || RESET.de) } : base;
   const label = { fontSize: 14, fontWeight: 700, color: brand.text, margin: 0 } as const;
   const val = { fontSize: 14, color: brand.text, margin: 0 } as const;
   return (
