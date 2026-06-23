@@ -317,6 +317,24 @@
 .pp-id .pp-vol{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-family:var(--font-display);font-weight:800;font-size:19px;color:var(--fg);font-variant-numeric:tabular-nums;}
 .pp-id .pp-vol span{font-family:var(--font-body);font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-muted);}
 
+/* ============================================================
+   AUFTEILUNG: GELÖSCHT (Level) vs. BEZAHLT (Umsatz)
+   ============================================================ */
+.pc-split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.pc-split .psp{background:var(--neutral-50);border:1px solid var(--hairline);border-radius:var(--r-md);padding:10px 8px;text-align:center;}
+.pc-split .psp-v{font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;color:var(--fg);}
+.pc-split .psp-l{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--fg-muted);margin-top:5px;}
+.pc-split .psp.bezahlt{background:rgba(22,163,74,.08);border-color:rgba(22,163,74,.28);}
+.pc-split .psp.bezahlt .psp-v{color:#15803d;}
+/* Profil-Hero: kompakte Chips */
+.pp-id .pp-split{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;}
+.pp-id .pp-split .pps{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;letter-spacing:.02em;padding:4px 10px;border-radius:999px;background:var(--neutral-50);border:1px solid var(--hairline);color:var(--fg);font-variant-numeric:tabular-nums;}
+.pp-id .pp-split .pps.bezahlt{background:rgba(22,163,74,.10);border-color:rgba(22,163,74,.30);color:#15803d;}
+/* Recent: bezahlt/offen-Badge */
+.recent .rmeta .rpay{font-weight:800;}
+.recent .rmeta .rpay.yes{color:#15803d;}
+.recent .rmeta .rpay.no{color:var(--fg-muted);}
+
 /* Head-to-Head: zwei Segment-Controls (Metrik + Zeitraum) + breitere €-Spalte */
 .h2h-head{flex-wrap:wrap;}
 .h2h-ctrls{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;}

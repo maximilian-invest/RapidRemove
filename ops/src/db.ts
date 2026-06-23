@@ -375,7 +375,7 @@ export async function getOrderBasic(id: string): Promise<{ id: string; name: str
 export async function deletionsForGamification(): Promise<DeletionRow[]> {
   if (!pool) return [];
   const r = await pool.query(
-    `SELECT id, assignee, service, country, amount, company,
+    `SELECT id, assignee, service, country, amount, company, pay,
             COALESCE(done_at, created_at) AS done_at,
             COALESCE(raw->>'express','') = 'true' AS express
        FROM orders
@@ -394,6 +394,7 @@ export async function deletionsForGamification(): Promise<DeletionRow[]> {
     company: x.company ?? null,
     doneAt: x.done_at instanceof Date ? x.done_at.toISOString() : String(x.done_at),
     express: x.express === true,
+    paid: x.pay === "paid", // echte Zahlung (Reconciler/Stripe) – treibt den Umsatz, NICHT den Rang
   }));
 }
 

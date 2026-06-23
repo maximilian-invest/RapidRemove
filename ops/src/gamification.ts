@@ -28,6 +28,7 @@ export interface DeletionRow {
   company: string | null;
   doneAt: string; // ISO-Zeitstempel der Löschung (done_at, ersatzweise created_at)
   express: boolean;
+  paid: boolean;  // echt bezahlt (pay='paid') – zählt für den Umsatz, NICHT für den Rang
 }
 
 export interface Rank { key: string; name: string; emoji: string; min: number; }
@@ -134,13 +135,15 @@ function evaluate(sorted: DeletionRow[]): AchievementResult[] {
 
 export interface BoardPerson {
   id: Assignee; name: string; full: string; img: string;
-  count: number;
+  count: number;       // Löschungen gesamt – treibt Rang/Level
+  paidCount: number;   // davon echt bezahlt (pay='paid')
   rank: Rank; next: Rank | null; toNext: number; progress: number; level: number;
   today: number; week: number; month: number;
-  /** Umsatz (Summe der Auftragsbeträge der gezählten Löschungen), gesamt + Zeiträume. */
+  paidToday: number; paidWeek: number; paidMonth: number;
+  /** Umsatz – NUR aus echt bezahlten Aufträgen (pay='paid'), gesamt + Zeiträume. */
   volume: number; volumeToday: number; volumeWeek: number; volumeMonth: number;
   achievements: AchievementResult[]; unlockedCount: number;
-  recent: { id: string; company: string | null; service: string | null; at: string }[];
+  recent: { id: string; company: string | null; service: string | null; at: string; paid: boolean }[];
 }
 
 /** Vollständige Statistik einer Person aus ALLEN Lösch-Zeilen. */
@@ -155,16 +158,20 @@ export function personStats(person: Assignee, rows: DeletionRow[]): BoardPerson 
   const inToday = mine.filter((r) => vDay(r.doneAt) === todayKey);
   const inWeek = mine.filter((r) => Date.parse(r.doneAt) >= weekAgo);
   const inMonth = mine.filter((r) => vDay(r.doneAt).slice(0, 7) === monthKey);
-  const sum = (arr: DeletionRow[]) => Math.round(arr.reduce((s, r) => s + (r.amount || 0), 0));
+  const paidIn = (arr: DeletionRow[]) => arr.filter((r) => r.paid);
+  // Umsatz NUR aus echt bezahlten Aufträgen (pay='paid').
+  const sum = (arr: DeletionRow[]) => Math.round(paidIn(arr).reduce((s, r) => s + (r.amount || 0), 0));
   return {
     ...PEOPLE[person],
     count,
+    paidCount: paidIn(mine).length,
     rank: ri.rank, next: ri.next, toNext: ri.toNext, progress: ri.progress, level: ri.level,
     today: inToday.length, week: inWeek.length, month: inMonth.length,
+    paidToday: paidIn(inToday).length, paidWeek: paidIn(inWeek).length, paidMonth: paidIn(inMonth).length,
     volume: sum(mine), volumeToday: sum(inToday), volumeWeek: sum(inWeek), volumeMonth: sum(inMonth),
     achievements: ach,
     unlockedCount: ach.filter((a) => a.unlocked).length,
-    recent: [...mine].reverse().slice(0, 6).map((r) => ({ id: r.id, company: r.company, service: r.service, at: r.doneAt })),
+    recent: [...mine].reverse().slice(0, 6).map((r) => ({ id: r.id, company: r.company, service: r.service, at: r.doneAt, paid: r.paid })),
   };
 }
 

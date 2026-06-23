@@ -301,11 +301,17 @@ function PersonCard({ person: p, isLeader, onOpen, delay }) {
           <span className="lvl">Level {p.level}</span>
         </div>
 
-        {/* Umsatz / Volumen */}
+        {/* Umsatz / Volumen — NUR echt bezahlte Aufträge */}
         <div className={"pc-vol " + cls}>
           <span className="pv-ic">💰</span>
           <span className="pv-val">{money(p.volume)}</span>
-          <span className="pv-lbl">Umsatz gesamt</span>
+          <span className="pv-lbl">Umsatz · nur bezahlt</span>
+        </div>
+
+        {/* Aufteilung: gelöscht (treibt Level) vs. echt bezahlt (treibt Umsatz) */}
+        <div className="pc-split">
+          <div className="psp geloescht"><div className="psp-v">{p.count}</div><div className="psp-l">🗑️ Gelöscht</div></div>
+          <div className="psp bezahlt"><div className="psp-v">{p.paidCount ?? 0}</div><div className="psp-l">✅ Bezahlt</div></div>
         </div>
 
         <div className="pc-prog">
@@ -390,6 +396,7 @@ function RecentList({ recent }) {
               <div className="rco">{r.company}</div>
               <div className="rmeta">
                 <span className={"rsvc " + r.service}>{svc.name}</span>
+                <span className={"rpay " + (r.paid ? "yes" : "no")}>{r.paid ? "✅ bezahlt" : "⏳ offen"}</span>
                 <span>{r.id}</span>
                 <span>· {clock(r.at)} Uhr</span>
               </div>
@@ -420,7 +427,11 @@ function PersonProfile({ person: p, onBack }) {
             <div className="nm">{p.name}</div>
             <div className="fl">{p.full}</div>
             <div className="rk"><span className="em">{p.rank.emoji}</span> {p.rank.name} <span className="lvl">Level {p.level}</span></div>
-            <div className="pp-vol">💰 {money(p.volume)} <span>Umsatz gesamt</span></div>
+            <div className="pp-vol">💰 {money(p.volume)} <span>Umsatz · nur bezahlt</span></div>
+            <div className="pp-split">
+              <span className="pps geloescht">🗑️ {p.count} Gelöscht</span>
+              <span className="pps bezahlt">✅ {p.paidCount ?? 0} Bezahlt</span>
+            </div>
           </div>
           <div className="pp-hero-prog">
             <div className="pp-top" style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "var(--fg-2)", marginBottom: 8 }}>
@@ -480,8 +491,8 @@ const DEMO = {
   people: {
     max: {
       id: "max", name: "Max", full: "Maximilian Hölzl", img: "/assets/maximilian-hoelzl.jpg",
-      count: 52, rank: rankByKey("ritter"), next: rankByKey("profi"), toNext: 23, progress: 0.08, level: 5,
-      today: 2, week: 9, month: 21, unlockedCount: 10,
+      count: 52, paidCount: 47, rank: rankByKey("ritter"), next: rankByKey("profi"), toNext: 23, progress: 0.08, level: 5,
+      today: 2, week: 9, month: 21, paidToday: 1, paidWeek: 7, paidMonth: 18, unlockedCount: 10,
       volume: 24180, volumeToday: 900, volumeWeek: 4150, volumeMonth: 9870,
       achievements: [
         mkAch("blut", "Erstes Blut", "🩸", "Erste abgeschlossene Löschung", { unlocked: true, unlockedAt: "12.02.2026", have: 52, need: 1 }),
@@ -500,18 +511,18 @@ const DEMO = {
         mkAch("serie", "Serien-Täter", "🔥", "5 Tage in Folge gelöscht", { have: 4, need: 5 }),
       ],
       recent: [
-        { id: "RR-2041", company: "Zahnarztpraxis Dr. Berger", service: "reset", at: "2026-06-22T14:10:00Z" },
-        { id: "RR-2038", company: "Autohaus Wagner GmbH", service: "express", at: "2026-06-22T09:02:00Z" },
-        { id: "RR-2034", company: "Salon Schmidt", service: "remove", at: "2026-06-21T18:40:00Z" },
-        { id: "RR-2029", company: "Café Morgentau", service: "remove", at: "2026-06-20T11:25:00Z" },
-        { id: "RR-2024", company: "Fitness Forum Linz", service: "express", at: "2026-06-19T07:48:00Z" },
-        { id: "RR-2019", company: "Immobilien Gruber KG", service: "remove", at: "2026-06-18T16:05:00Z" },
+        { id: "RR-2041", company: "Zahnarztpraxis Dr. Berger", service: "reset", at: "2026-06-22T14:10:00Z", paid: true },
+        { id: "RR-2038", company: "Autohaus Wagner GmbH", service: "express", at: "2026-06-22T09:02:00Z", paid: true },
+        { id: "RR-2034", company: "Salon Schmidt", service: "remove", at: "2026-06-21T18:40:00Z", paid: false },
+        { id: "RR-2029", company: "Café Morgentau", service: "remove", at: "2026-06-20T11:25:00Z", paid: true },
+        { id: "RR-2024", company: "Fitness Forum Linz", service: "express", at: "2026-06-19T07:48:00Z", paid: true },
+        { id: "RR-2019", company: "Immobilien Gruber KG", service: "remove", at: "2026-06-18T16:05:00Z", paid: true },
       ],
     },
     matthias: {
       id: "matthias", name: "Matthias", full: "Matthias Lang", img: "/assets/matthias-lang.webp",
-      count: 38, rank: rankByKey("sternejaeger"), next: rankByKey("ritter"), toNext: 12, progress: 0.40, level: 4,
-      today: 1, week: 6, month: 15, unlockedCount: 7,
+      count: 38, paidCount: 33, rank: rankByKey("sternejaeger"), next: rankByKey("ritter"), toNext: 12, progress: 0.40, level: 4,
+      today: 1, week: 6, month: 15, paidToday: 1, paidWeek: 5, paidMonth: 12, unlockedCount: 7,
       volume: 16740, volumeToday: 450, volumeWeek: 2640, volumeMonth: 6480,
       achievements: [
         mkAch("blut", "Erstes Blut", "🩸", "Erste abgeschlossene Löschung", { unlocked: true, unlockedAt: "28.02.2026", have: 38, need: 1 }),
@@ -530,12 +541,12 @@ const DEMO = {
         mkAch("highscore", "Tages-Highscore", "🚀", "5 Löschungen an einem Tag", { have: 3, need: 5 }),
       ],
       recent: [
-        { id: "RR-2040", company: "Pizzeria Bella Vita", service: "remove", at: "2026-06-22T13:20:00Z" },
-        { id: "RR-2035", company: "Kanzlei Hofer & Partner", service: "reset", at: "2026-06-21T15:55:00Z" },
-        { id: "RR-2031", company: "Elektro Steiner GmbH", service: "remove", at: "2026-06-20T10:12:00Z" },
-        { id: "RR-2027", company: "Hotel Alpenblick", service: "express", at: "2026-06-19T22:30:00Z" },
-        { id: "RR-2022", company: "Bäckerei Sonnberg", service: "remove", at: "2026-06-17T09:40:00Z" },
-        { id: "RR-2016", company: "Tierarztpraxis Dr. Reiter", service: "reset", at: "2026-06-15T14:00:00Z" },
+        { id: "RR-2040", company: "Pizzeria Bella Vita", service: "remove", at: "2026-06-22T13:20:00Z", paid: true },
+        { id: "RR-2035", company: "Kanzlei Hofer & Partner", service: "reset", at: "2026-06-21T15:55:00Z", paid: true },
+        { id: "RR-2031", company: "Elektro Steiner GmbH", service: "remove", at: "2026-06-20T10:12:00Z", paid: false },
+        { id: "RR-2027", company: "Hotel Alpenblick", service: "express", at: "2026-06-19T22:30:00Z", paid: true },
+        { id: "RR-2022", company: "Bäckerei Sonnberg", service: "remove", at: "2026-06-17T09:40:00Z", paid: true },
+        { id: "RR-2016", company: "Tierarztpraxis Dr. Reiter", service: "reset", at: "2026-06-15T14:00:00Z", paid: true },
       ],
     },
   },
