@@ -137,6 +137,8 @@ export interface BoardPerson {
   count: number;
   rank: Rank; next: Rank | null; toNext: number; progress: number; level: number;
   today: number; week: number; month: number;
+  /** Umsatz (Summe der Auftragsbeträge der gezählten Löschungen), gesamt + Zeiträume. */
+  volume: number; volumeToday: number; volumeWeek: number; volumeMonth: number;
   achievements: AchievementResult[]; unlockedCount: number;
   recent: { id: string; company: string | null; service: string | null; at: string }[];
 }
@@ -150,13 +152,16 @@ export function personStats(person: Assignee, rows: DeletionRow[]): BoardPerson 
   const todayKey = vDay(new Date().toISOString());
   const monthKey = todayKey.slice(0, 7);
   const weekAgo = Date.now() - 7 * 86400000;
+  const inToday = mine.filter((r) => vDay(r.doneAt) === todayKey);
+  const inWeek = mine.filter((r) => Date.parse(r.doneAt) >= weekAgo);
+  const inMonth = mine.filter((r) => vDay(r.doneAt).slice(0, 7) === monthKey);
+  const sum = (arr: DeletionRow[]) => Math.round(arr.reduce((s, r) => s + (r.amount || 0), 0));
   return {
     ...PEOPLE[person],
     count,
     rank: ri.rank, next: ri.next, toNext: ri.toNext, progress: ri.progress, level: ri.level,
-    today: mine.filter((r) => vDay(r.doneAt) === todayKey).length,
-    week: mine.filter((r) => Date.parse(r.doneAt) >= weekAgo).length,
-    month: mine.filter((r) => vDay(r.doneAt).slice(0, 7) === monthKey).length,
+    today: inToday.length, week: inWeek.length, month: inMonth.length,
+    volume: sum(mine), volumeToday: sum(inToday), volumeWeek: sum(inWeek), volumeMonth: sum(inMonth),
     achievements: ach,
     unlockedCount: ach.filter((a) => a.unlocked).length,
     recent: [...mine].reverse().slice(0, 6).map((r) => ({ id: r.id, company: r.company, service: r.service, at: r.doneAt })),
@@ -169,6 +174,8 @@ export interface Board {
     allTime: Record<Assignee, number>;
     week: Record<Assignee, number>;
     month: Record<Assignee, number>;
+    /** Umsatzvergleich (€) je Zeitraum. */
+    volume: { allTime: Record<Assignee, number>; week: Record<Assignee, number>; month: Record<Assignee, number> };
     leader: Assignee | "tie";
   };
   updatedAt: string;
@@ -185,6 +192,11 @@ export function buildBoard(rows: DeletionRow[]): Board {
       allTime: { max: max.count, matthias: matthias.count },
       week: { max: max.week, matthias: matthias.week },
       month: { max: max.month, matthias: matthias.month },
+      volume: {
+        allTime: { max: max.volume, matthias: matthias.volume },
+        week: { max: max.volumeWeek, matthias: matthias.volumeWeek },
+        month: { max: max.volumeMonth, matthias: matthias.volumeMonth },
+      },
       leader,
     },
     updatedAt: new Date().toISOString(),

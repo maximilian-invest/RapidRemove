@@ -61,6 +61,8 @@ function fmtDate(v) {
   }
   return v;
 }
+/* Umsatz/Volumen in € (de-DE, ohne Nachkommastellen). */
+const money = (n) => Math.round(n || 0).toLocaleString("de-DE") + " €";
 
 /* ---- Mini-Icon-Set (Lucide-Stil) ---- */
 const GS = ({ size = 20, children, ...p }) => (
@@ -119,34 +121,43 @@ function AchievementGrid({ achievements, large }) {
 /* ---- Head-to-Head ---- */
 function HeadToHead({ h2h, people }) {
   const [scope, setScope] = React.useState("allTime");
+  const [metric, setMetric] = React.useState("count"); // count | volume
   const scopes = [["allTime", "Allzeit"], ["month", "Monat"], ["week", "Woche"]];
-  const data = h2h[scope];
+  const isVol = metric === "volume";
+  const data = (isVol && h2h.volume ? h2h.volume[scope] : h2h[scope]) || { max: 0, matthias: 0 };
   const max = Math.max(data.max, data.matthias, 1);
   const leader = data.max === data.matthias ? "tie" : (data.max > data.matthias ? "max" : "matthias");
   const lead = leader === "tie" ? null : people[leader];
   const diff = Math.abs(data.max - data.matthias);
+  const fmt = (v) => (isVol ? money(v) : v);
   return (
-    <div className="h2h gm-rise" style={{ animationDelay: ".12s" }}>
+    <div className={"h2h gm-rise" + (isVol ? " vol" : "")} style={{ animationDelay: ".12s" }}>
       <div className="h2h-head">
         <h2><GIcon.swords size={20} style={{ color: "var(--primary)" }} /> Head-to-Head</h2>
-        <div className="h2h-seg">
-          {scopes.map(([id, lbl]) => (
-            <button key={id} className={scope === id ? "on" : ""} onClick={() => setScope(id)}>{lbl}</button>
-          ))}
+        <div className="h2h-ctrls">
+          <div className="h2h-seg">
+            <button className={metric === "count" ? "on" : ""} onClick={() => setMetric("count")}>Löschungen</button>
+            <button className={metric === "volume" ? "on" : ""} onClick={() => setMetric("volume")}>Umsatz</button>
+          </div>
+          <div className="h2h-seg">
+            {scopes.map(([id, lbl]) => (
+              <button key={id} className={scope === id ? "on" : ""} onClick={() => setScope(id)}>{lbl}</button>
+            ))}
+          </div>
         </div>
       </div>
       <div className="h2h-body">
         <div className={"h2h-winner" + (leader === "tie" ? " tie" : "")}>
           {leader === "tie"
-            ? <span className="pill"><GIcon.swords size={15} /> Gleichstand — {data.max} : {data.matthias}</span>
-            : <span className="pill"><span style={{ fontSize: 15 }}>👑</span> {lead.name} führt mit +{diff} {diff === 1 ? "Löschung" : "Löschungen"}</span>}
+            ? <span className="pill"><GIcon.swords size={15} /> Gleichstand — {fmt(data.max)} : {fmt(data.matthias)}</span>
+            : <span className="pill"><span style={{ fontSize: 15 }}>👑</span> {lead.name} führt mit +{fmt(diff)}{isVol ? "" : (diff === 1 ? " Löschung" : " Löschungen")}</span>}
         </div>
         <div className="h2h-bars">
           {["max", "matthias"].map((id) => (
             <div key={id} className={"h2h-row " + id}>
               <div className="who"><img src={asset(people[id].img)} alt={people[id].name} />{people[id].name}</div>
               <div className="h2h-track"><div className={"h2h-fill " + id} style={{ width: Math.max(8, Math.round((data[id] / max) * 100)) + "%" }}></div></div>
-              <div className="val">{data[id]}</div>
+              <div className="val">{fmt(data[id])}</div>
             </div>
           ))}
         </div>
@@ -290,6 +301,13 @@ function PersonCard({ person: p, isLeader, onOpen, delay }) {
           <span className="lvl">Level {p.level}</span>
         </div>
 
+        {/* Umsatz / Volumen */}
+        <div className={"pc-vol " + cls}>
+          <span className="pv-ic">💰</span>
+          <span className="pv-val">{money(p.volume)}</span>
+          <span className="pv-lbl">Umsatz gesamt</span>
+        </div>
+
         <div className="pc-prog">
           <div className="pp-top">
             <b>{p.count} Löschungen</b>
@@ -402,6 +420,7 @@ function PersonProfile({ person: p, onBack }) {
             <div className="nm">{p.name}</div>
             <div className="fl">{p.full}</div>
             <div className="rk"><span className="em">{p.rank.emoji}</span> {p.rank.name} <span className="lvl">Level {p.level}</span></div>
+            <div className="pp-vol">💰 {money(p.volume)} <span>Umsatz gesamt</span></div>
           </div>
           <div className="pp-hero-prog">
             <div className="pp-top" style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 700, color: "var(--fg-2)", marginBottom: 8 }}>
@@ -463,6 +482,7 @@ const DEMO = {
       id: "max", name: "Max", full: "Maximilian Hölzl", img: "/assets/maximilian-hoelzl.jpg",
       count: 52, rank: rankByKey("ritter"), next: rankByKey("profi"), toNext: 23, progress: 0.08, level: 5,
       today: 2, week: 9, month: 21, unlockedCount: 10,
+      volume: 24180, volumeToday: 900, volumeWeek: 4150, volumeMonth: 9870,
       achievements: [
         mkAch("blut", "Erstes Blut", "🩸", "Erste abgeschlossene Löschung", { unlocked: true, unlockedAt: "12.02.2026", have: 52, need: 1 }),
         mkAch("zehn", "Zweistellig", "🔟", "10 Löschungen erreicht", { unlocked: true, unlockedAt: "03.03.2026", have: 52, need: 10 }),
@@ -492,6 +512,7 @@ const DEMO = {
       id: "matthias", name: "Matthias", full: "Matthias Lang", img: "/assets/matthias-lang.webp",
       count: 38, rank: rankByKey("sternejaeger"), next: rankByKey("ritter"), toNext: 12, progress: 0.40, level: 4,
       today: 1, week: 6, month: 15, unlockedCount: 7,
+      volume: 16740, volumeToday: 450, volumeWeek: 2640, volumeMonth: 6480,
       achievements: [
         mkAch("blut", "Erstes Blut", "🩸", "Erste abgeschlossene Löschung", { unlocked: true, unlockedAt: "28.02.2026", have: 38, need: 1 }),
         mkAch("zehn", "Zweistellig", "🔟", "10 Löschungen erreicht", { unlocked: true, unlockedAt: "21.03.2026", have: 38, need: 10 }),
@@ -518,7 +539,11 @@ const DEMO = {
       ],
     },
   },
-  h2h: { allTime: { max: 52, matthias: 38 }, week: { max: 9, matthias: 6 }, month: { max: 21, matthias: 15 }, leader: "max" },
+  h2h: {
+    allTime: { max: 52, matthias: 38 }, week: { max: 9, matthias: 6 }, month: { max: 21, matthias: 15 },
+    volume: { allTime: { max: 24180, matthias: 16740 }, week: { max: 4150, matthias: 2640 }, month: { max: 9870, matthias: 6480 } },
+    leader: "max",
+  },
 };
 
 /* ============================================================
