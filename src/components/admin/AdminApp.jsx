@@ -215,7 +215,7 @@ async function sendOrderedPayLink(o, toast, onStatus) {
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
-    if (onStatus) onStatus(o, "done", true, true);
+    if (onStatus) onStatus(o, "done", true, true, { paylinkSent: true });
   } catch (e) {
     toast("Kein passender Link — bitte „Anderen Link wählen“: " + (e.message || e));
   }
@@ -1171,7 +1171,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
       await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
       toast("Mahnung an " + o.name + " gesendet ✓");
-      onStatus(o, "done", true, true);
+      onStatus(o, "done", true, true, { paylinkSent: true, mahnungCount: (o.mahnungCount || 0) + 1 });
       reloadEvents(); setTimeout(reloadEvents, 900);
     } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); }
   };
@@ -1648,7 +1648,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
     if (!sel) return;
     try {
       await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url, celebrate: !storno });
-      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
+      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true, storno ? undefined : { paylinkSent: true }); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
       onClose(); toast((storno ? "Storno-Link (" : "Zahlungslink (") + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
     } catch (e) { toast((storno ? "Storno-Link" : "Zahlungslink") + " fehlgeschlagen: " + e.message); }
   };
@@ -1759,9 +1759,9 @@ function AdminApp() {
   const counts = { new: orders.filter((o) => o.status === "new").length };
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
-  const setStatus = (o, id, silent, keepPay) => {
+  const setStatus = (o, id, silent, keepPay, patch) => {
     const nextPay = (!keepPay && id === "done" && o.pay === "pending") ? "paid" : o.pay;
-    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay } : x;
+    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay, ...(patch || {}) } : x;
     setOrders((list) => list.map(upd));
     setActive(upd);
     setDetail(upd);
