@@ -6,6 +6,7 @@
  * das Dashboard zeigt dann weiter die Demo-Daten (db:false).
  */
 import { Pool } from "pg";
+import type { DeletionRow } from "./gamification";
 
 const url = process.env.DATABASE_URL || "";
 // Railway-intern (.railway.internal) und localhost brauchen kein SSL; öffentliche Proxy-URLs schon.
@@ -59,6 +60,7 @@ export async function initDb(): Promise<void> {
       prot_amount numeric,
       status      text NOT NULL DEFAULT 'new',
       pay         text NOT NULL DEFAULT 'pending',
+      done_at     timestamptz,
       note        text,
       check_id    text,
       raw         jsonb,
@@ -76,8 +78,11 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS prot_amount numeric, ADD COLUMN IF NOT EXISTS status text,
       ADD COLUMN IF NOT EXISTS pay text, ADD COLUMN IF NOT EXISTS note text, ADD COLUMN IF NOT EXISTS check_id text,
       ADD COLUMN IF NOT EXISTS raw jsonb, ADD COLUMN IF NOT EXISTS form jsonb,
-      ADD COLUMN IF NOT EXISTS assignee text
+      ADD COLUMN IF NOT EXISTS assignee text, ADD COLUMN IF NOT EXISTS done_at timestamptz
   `);
+  // Backfill: bereits abgeschlossene Löschungen bekommen einen done_at-Zeitstempel
+  // (Näherung über das Erstelldatum), damit die Gamification rückwirkend greift.
+  await pool.query(`UPDATE orders SET done_at = created_at WHERE status='done' AND done_at IS NULL`);
   await pool.query(`
     ALTER TABLE checks
       ADD COLUMN IF NOT EXISTS profile text, ADD COLUMN IF NOT EXISTS category text, ADD COLUMN IF NOT EXISTS rating text,
@@ -282,9 +287,11 @@ export async function linkCheck(checkId: string, orderId: string): Promise<void>
  *  Gibt true zurück, wenn eine Bestellung mit dieser ID aktualisiert wurde. */
 export async function updateOrderStatus(id: string, status: string, pay?: string): Promise<boolean> {
   if (!pool || !id || !status) return false;
+  // done_at wird beim ERSTEN Wechsel auf "done" gesetzt (für zeitbasierte Gamification).
+  const doneClause = `, done_at = CASE WHEN $2 = 'done' THEN COALESCE(done_at, now()) ELSE done_at END`;
   const r = pay
-    ? await pool.query(`UPDATE orders SET status=$2, pay=$3 WHERE id=$1`, [id, status, pay])
-    : await pool.query(`UPDATE orders SET status=$2 WHERE id=$1`, [id, status]);
+    ? await pool.query(`UPDATE orders SET status=$2, pay=$3${doneClause} WHERE id=$1`, [id, status, pay])
+    : await pool.query(`UPDATE orders SET status=$2${doneClause} WHERE id=$1`, [id, status]);
   return (r.rowCount ?? 0) > 0;
 }
 
@@ -325,10 +332,37 @@ export async function setOrderForm(id: string, form: unknown): Promise<boolean> 
 }
 
 /** Minimal-Infos zu einer Bestellung (für die öffentliche Fragebogen-Seite + Push-Texte). */
-export async function getOrderBasic(id: string): Promise<{ id: string; name: string | null; company: string | null; assignee: string | null; lang: string | null; form: unknown } | null> {
+export async function getOrderBasic(id: string): Promise<{ id: string; name: string | null; company: string | null; assignee: string | null; status: string | null; service: string | null; lang: string | null; form: unknown } | null> {
   if (!pool || !id) return null;
-  const r = await pool.query(`SELECT id, name, company, assignee, lang, form FROM orders WHERE id=$1`, [id]);
+  const r = await pool.query(`SELECT id, name, company, assignee, status, service, lang, form FROM orders WHERE id=$1`, [id]);
   return r.rows[0] || null;
+}
+
+/** Alle „echten" abgeschlossenen Löschungen (status=done, remove/reset/express)
+ *  mit Betreuer – Rohdaten für die Gamification-Engine. Backfill inklusive. */
+export async function deletionsForGamification(): Promise<DeletionRow[]> {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT id, assignee, service, country, amount, company,
+            COALESCE(done_at, created_at) AS done_at,
+            COALESCE(raw->>'express','') = 'true' AS express
+       FROM orders
+      WHERE status = 'done'
+        AND assignee IN ('max','matthias')
+        AND service = ANY($1::text[])
+      ORDER BY COALESCE(done_at, created_at) ASC`,
+    [["remove", "reset", "express"]],
+  );
+  return r.rows.map((x: any) => ({
+    id: String(x.id),
+    assignee: x.assignee ?? null,
+    service: x.service ?? null,
+    country: x.country ?? null,
+    amount: x.amount == null ? null : Number(x.amount),
+    company: x.company ?? null,
+    doneAt: x.done_at instanceof Date ? x.done_at.toISOString() : String(x.done_at),
+    express: x.express === true,
+  }));
 }
 
 export async function listOrders(limit = 200): Promise<Record<string, unknown>[]> {

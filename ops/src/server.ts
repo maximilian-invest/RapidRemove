@@ -7,7 +7,8 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
+import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale, trackSignup } from "./integrations/firstpromoter";
@@ -780,17 +781,33 @@ app.post("/admin/paylink", async (req, reply) => {
     // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.
     if (tplKey !== "mahnung" && (b.celebrate === true || b.celebrate === "true")) {
       try {
-        let assignee: string | null = null, company: string | null = null;
+        let assignee: string | null = null, company: string | null = null, oStatus: string | null = null, oService: string | null = null;
         if (orderId && dbReady()) {
           const ob = await getOrderBasic(orderId);
           assignee = ob?.assignee || null;
           company = ob?.company || null;
+          oStatus = ob?.status || null;
+          oService = ob?.service || null;
         }
-        const WHO: Record<string, string> = { max: "Max", matthias: "Matthias" };
-        const who = (assignee && (WHO[assignee.toLowerCase()] || assignee.charAt(0).toUpperCase() + assignee.slice(1))) || "Das Team";
+        const isPerson = assignee === "max" || assignee === "matthias";
+        const who = isPerson ? PEOPLE[assignee as Assignee].name : "Das Team";
         const kunde = company || clip(b.name, 80) || to;
+
+        // Gamification: Lösch-Counter + Rang dieser Person (diese Löschung mitgezählt,
+        // falls der Auftrag noch nicht auf "done" steht – der Frontend-Statuswechsel
+        // passiert erst nach diesem Aufruf).
+        let rankLine = "", levelUpLine = "";
+        if (isPerson && dbReady()) {
+          const base = personStats(assignee as Assignee, await deletionsForGamification()).count;
+          const counts = oService ? DELETION_SERVICES.has(oService) : true;
+          const n = base + (counts && oStatus !== "done" ? 1 : 0);
+          const ri = rankInfo(n);
+          rankLine = ` · #${n} · ${ri.rank.emoji} ${ri.rank.name}`;
+          if (n > 0 && ri.rank.key !== rankInfo(n - 1).rank.key) levelUpLine = `\n🏆 Neuer Rang: ${ri.rank.name}!`;
+        }
+
         const ptitle = `GLÖSCHT von ${who} 🤑💰`;
-        const pbody = `GULDEN SCHIESSEN!!${kunde ? `\n${kunde}` : ""}`;
+        const pbody = `GULDEN SCHIESSEN!!${rankLine}${kunde ? `\n${kunde}` : ""}${levelUpLine}`;
         const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
         if (hasWebPush() && dbReady()) {
           const subs = await listPushSubscriptions();
@@ -807,6 +824,20 @@ app.post("/admin/paylink", async (req, reply) => {
   } catch (e) {
     app.log.error({ err: e }, "Zahlungslink-Mail fehlgeschlagen");
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
+// Admin-Dashboard: Gamification-Leaderboard (Lösch-Counter, Ränge, Achievements).
+// Wird live aus den Bestellungen (status=done, echte Löschung) abgeleitet – Vergangenheit inklusive.
+app.post("/admin/gamification", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return { ok: true, db: false, board: null };
+  try {
+    return { ok: true, db: true, board: buildBoard(await deletionsForGamification()) };
+  } catch (e) {
+    app.log.error({ err: e }, "Gamification-Abruf fehlgeschlagen");
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
   }
 });
 

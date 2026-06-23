@@ -155,6 +155,20 @@ export async function fetchStripe() {
   };
 }
 
+/** Gamification-Leaderboard (Lösch-Counter, Ränge, Achievements je Betreuer).
+ *  Gibt null zurück, wenn kein ops-Backend / keine DB. */
+export async function fetchGamification() {
+  if (!OPS) return null;
+  const res = await fetch(OPS + "/admin/gamification", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN }),
+  });
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  return j && j.db ? j.board : null;
+}
+
 /** Echte E-Mail-Vorlagen aus dem ops-Backend (key, label, group, subject). */
 export async function fetchTemplates() {
   if (!OPS) return [];
