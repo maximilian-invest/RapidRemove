@@ -302,6 +302,11 @@ function SubsDashboard({ toast }) {
   const SUBS = (liveData && liveData.subs) || SUBS_SAMPLE;
   const PLANS = (liveData && liveData.plans) || PLANS_SAMPLE;
   const PAYMENTS = (liveData && liveData.payments) || PAYMENTS_SAMPLE;
+  const PAYMENTS_ALL = (liveData && liveData.paymentsAll && liveData.paymentsAll.length) ? liveData.paymentsAll : PAYMENTS;
+  const [payQuery, setPayQuery] = React.useState("");
+  const payShown = payQuery.trim()
+    ? PAYMENTS_ALL.filter((p) => (((p.name || "") + " " + (p.plan || "")).toLowerCase().includes(payQuery.trim().toLowerCase())))
+    : PAYMENTS_ALL;
   const REV = (liveData && liveData.rev) || { day: DAILY_REV_SAMPLE, week: WEEKLY_REV_SAMPLE, month: MONTHLY_REV_SAMPLE };
   const series = REV[range] || [];
   const maxDay = Math.max(1, ...series.map((d) => d.v));
@@ -390,9 +395,11 @@ function SubsDashboard({ toast }) {
 
       <div className="panel rise" style={{ marginTop: 22, animationDelay: "0.26s" }}>
         <div className="panel-head">
-          <div><h2>Letzte Zahlungen</h2><div className="ph-sub">Monat · Zeile anklicken für Details</div></div>
-          <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span className="rg-badge">{SUBS.paidInvoices} Rg.</span>
+          <div><h2>Alle Zahlungen</h2><div className="ph-sub">Alle bezahlten Rechnungen · neueste zuerst · Zeile anklicken für Details</div></div>
+          <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <input value={payQuery} onChange={(e) => setPayQuery(e.target.value)} placeholder="Zahlung suchen (Name)…"
+              style={{ border: "1px solid var(--hairline)", borderRadius: "var(--r-pill)", padding: "7px 13px", fontSize: 13, fontWeight: 600, minWidth: 180, color: "var(--fg)", background: "var(--neutral-50)" }} />
+            <span className="rg-badge">{PAYMENTS_ALL.length} Zahlungen</span>
             <button className="btn btn-pri btn-sm" disabled={recBusy || !liveData} onClick={runReconcile}
               title={!liveData ? "Stripe nicht verbunden" : "Bezahlte Löschungen/Resets den Bestellungen zuordnen (Abos ausgenommen)"}>
               {recBusy ? "Gleiche ab…" : "Zahlungen zuordnen"}
@@ -407,8 +414,9 @@ function SubsDashboard({ toast }) {
             {recRes.unmatched.length ? <div style={{ marginTop: 6 }}>⚠ Kein Treffer: {recRes.unmatched.slice(0, 12).join(" · ")}{recRes.unmatched.length > 12 ? " …" : ""}</div> : null}
           </div>
         ) : null}
-        <div className="paylist">
-          {PAYMENTS.map((p, i) => {
+        <div className="paylist" style={{ maxHeight: 540, overflowY: "auto" }}>
+          {payShown.length === 0 ? <div style={{ padding: 14, color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5 }}>Keine Zahlung gefunden{payQuery ? ` für „${payQuery}"` : ""}.</div> : null}
+          {payShown.map((p, i) => {
             const [cls, label] = PAY_STATUS[p.status] || ["pay-pend", p.status];
             return (
               <div className="payrow" key={i} onClick={() => note(p.name + " · " + p.plan)}>
