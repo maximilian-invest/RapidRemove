@@ -104,6 +104,8 @@ function mapOrder(r) {
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",
     assignee: r.assignee || null,
+    mahnungCount: Number(r.mahnung_count) || 0,
+    paylinkSent: (Number(r.paylink_count) || 0) > 0,
   };
 }
 function mapCheck(r) {

@@ -137,6 +137,8 @@ button{font-family:inherit;}
 .pay-badge.paid{color:var(--success);}
 .pay-badge.pending{color:var(--warning);}
 .pay-badge.failed{color:var(--danger);}
+.pay-badge.sent{color:#2563eb;}
+.pay-badge.mahn{color:#ea580c;}
 
 /* ---- Right-side drawer (order detail) ---- */
 .drawer-scrim{position:fixed;inset:0;background:rgba(28,25,22,.42);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s;}

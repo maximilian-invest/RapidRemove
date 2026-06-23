@@ -31,12 +31,17 @@ function CheckBadge({ status }) {
   const [cls, label] = map[status] || ["st-pending", status];
   return <span className={"badge-st " + cls}><span className="d"></span>{label}</span>;
 }
-function PayBadge({ pay }) {
-  const map = {
-    paid: ["paid", Icon.checkCircle, "Bezahlt"], pending: ["pending", Icon.clock, "Ausstehend"], failed: ["failed", Icon.alert, "Fehlgeschlagen"], refunded: ["failed", AI.refund, "Erstattet"],
-  };
-  const [cls, I, label] = map[pay] || ["pending", Icon.clock, pay];
-  return <span className={"pay-badge " + cls}><I />{label}</span>;
+function PayBadge({ o }) {
+  if (!o || o.status === "storniert") return null; // Stornierte Bestellungen: keine Zahlungsanzeige
+  if (o.pay === "paid") return <span className="pay-badge paid"><Icon.checkCircle />Bezahlt</span>;
+  if (o.pay === "refunded") return <span className="pay-badge failed"><AI.refund />Erstattet</span>;
+  if (o.pay === "failed") return <span className="pay-badge failed"><Icon.alert />Fehlgeschlagen</span>;
+  // Offen → granular nach Zahlungs-Aktivität (gesendete Mahnungen / Zahlungslink).
+  const m = Number(o.mahnungCount) || 0;
+  if (m === 1) return <span className="pay-badge mahn"><Icon.mail />Mahnung gesandt</span>;
+  if (m > 1) return <span className="pay-badge mahn"><Icon.mail />{m} Mahnungen gesandt</span>;
+  if (o.paylinkSent) return <span className="pay-badge sent"><AI.send />Zahlungslink gesandt</span>;
+  return <span className="pay-badge pending"><Icon.clock />Ausstehend</span>;
 }
 function initials(name) { return name.split(" ").filter(Boolean).slice(-2).map((s) => s[0]).join("").toUpperCase(); }
 /* Stabile Avatar-Farbe aus dem Namen (mobile Bestell-/Kundenkarten). */
@@ -560,7 +565,7 @@ function Orders({ orders, openOrder, query }) {
                   <td><span className="oid">{o.id}</span><div className="muted">{o.created}</div><OrderTimer since={o.createdAt} status={o.status} now={now} /></td>
                   <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 9 }}>{o.assignee ? <AssigneeAvatar who={o.assignee} size={26} /> : null}<div>{o.name}<div className="sub">{o.email}</div></div></div></td>
                   <td>{SERVICES[o.service].name}{o.protection ? <div className="muted">+ Schutz</div> : null}</td>
-                  <td><PayBadge pay={o.pay} /></td>
+                  <td><PayBadge o={o} /></td>
                   <td><StatusBadge status={o.status} /></td>
                   <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span></td>
                 </tr>
@@ -733,7 +738,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
           {/* payment / stripe — bei Presse-Auslistung (kostenlose Prüfung) ausgeblendet */}
           {!isPress && (
           <div className="dsec">
-            <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
+            <h3><Icon.lock /> Zahlung <span className="right"><PayBadge o={o} /></span></h3>
             <div className="stripe-box" style={{ marginBottom: 14 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
@@ -1243,7 +1248,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           </div>
         </div>
         <div style={{ padding: "0 16px 10px" }}><AssignControl order={o} onAssign={onAssign} compact /></div>
-        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge pay={o.pay} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
+        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge o={o} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
           {o.status !== "storniert"
             ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -1290,7 +1295,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 
         {!isPress && (
         <div className="m-dsec">
-          <h3><Icon.lock /> Zahlung <span className="right"><PayBadge pay={o.pay} /></span></h3>
+          <h3><Icon.lock /> Zahlung <span className="right"><PayBadge o={o} /></span></h3>
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
           {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
@@ -1337,7 +1342,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
         <div>
-          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> {!isPress && <PayBadge pay={o.pay} />}
+          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> {!isPress && <PayBadge o={o} />}
             {o.status !== "storniert"
               ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
               : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -1504,7 +1509,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           {/* billing / stripe — bei Presse-Auslistung (kostenlose Prüfung) komplett ausgeblendet */}
           {!isPress && (
           <div className="dsec">
-            <h3><Icon.lock /> Abrechnung <span className="right"><PayBadge pay={o.pay} /></span></h3>
+            <h3><Icon.lock /> Abrechnung <span className="right"><PayBadge o={o} /></span></h3>
             <div className="stripe-box" style={{ marginBottom: 12 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
