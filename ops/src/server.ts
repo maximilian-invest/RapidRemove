@@ -810,7 +810,10 @@ app.post("/admin/paylink", async (req, reply) => {
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
-    if (orderId) await insertEvent({ orderId, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
+    // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
+    // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
+    // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title, detail: `${money} · ${service}${express ? "+express" : ""}|${protection} · an ${to}`, html, subject: t.subject(props as any) });
 
     // 🤑 Hype-Push fürs Team, wenn ein ECHTER Zahlungslink rausgeht (NICHT bei Mahnung/Storno).
     // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.
