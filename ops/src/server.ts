@@ -487,7 +487,11 @@ app.post("/admin/send-sms", async (req, reply) => {
     const r = await sendSms(to, message, country);
     if (!r.ok) return reply.code(502).send({ ok: false, error: r.error || "SMS-Versand fehlgeschlagen" });
     const oid = clip(b.orderId, 40);
-    if (oid) await insertEvent({ orderId: oid, type: "sms", title: "SMS gesendet", detail: "an " + to + " · " + message.slice(0, 100) });
+    if (oid) {
+      await insertEvent({ orderId: oid, type: "sms", title: "SMS gesendet", detail: "an " + to + " · " + message.slice(0, 100) });
+      // Enthält die SMS einen Zahlungslink, gilt sie als gesendeter Zahlungslink → Status „Zahlungslink gesandt".
+      if (/stripe\.com/i.test(message)) await insertEvent({ orderId: oid, type: "pay", title: "Zahlungslink gesendet", detail: "per SMS an " + to });
+    }
     return { ok: true, status: r.status };
   } catch (e: any) {
     return reply.code(500).send({ ok: false, error: e?.message || "Fehler beim SMS-Versand" });

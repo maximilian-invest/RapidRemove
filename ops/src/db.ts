@@ -404,7 +404,7 @@ export async function listOrders(limit = 200): Promise<Record<string, unknown>[]
   const r = await pool.query(
     `SELECT o.*,
             (SELECT count(*) FROM events e WHERE e.order_id = o.id AND e.type = 'pay' AND e.title LIKE 'Mahnung%')      AS mahnung_count,
-            (SELECT count(*) FROM events e WHERE e.order_id = o.id AND e.type = 'pay' AND e.title LIKE 'Zahlungslink%') AS paylink_count
+            (SELECT count(*) FROM events e WHERE e.order_id = o.id AND ((e.type = 'pay' AND e.title LIKE 'Zahlungslink%') OR (e.type = 'sms' AND e.detail ILIKE '%stripe.com%'))) AS paylink_count
        FROM orders o ORDER BY o.created_at DESC LIMIT $1`,
     [limit],
   );
