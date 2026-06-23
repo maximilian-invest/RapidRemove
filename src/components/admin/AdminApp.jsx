@@ -33,14 +33,15 @@ function CheckBadge({ status }) {
 }
 function PayBadge({ o }) {
   if (!o || o.status === "storniert") return null; // Stornierte Bestellungen: keine Zahlungsanzeige
-  if (o.pay === "paid") return <span className="pay-badge paid"><Icon.checkCircle />Bezahlt</span>;
-  if (o.pay === "refunded") return <span className="pay-badge failed"><AI.refund />Erstattet</span>;
-  if (o.pay === "failed") return <span className="pay-badge failed"><Icon.alert />Fehlgeschlagen</span>;
-  // Offen → granular nach Zahlungs-Aktivität (gesendete Mahnungen / Zahlungslink).
+  const pay = o.pay;
+  if (pay === "paid") return <span className="pay-badge paid"><Icon.checkCircle />Bezahlt</span>;
+  if (pay === "refunded") return <span className="pay-badge failed"><AI.refund />Erstattet</span>;
+  if (pay === "failed") return <span className="pay-badge failed"><Icon.alert />Fehlgeschlagen</span>;
+  // Mahnung(en): genaue Anzahl aus den Events, falls verfügbar – sonst Status aus dem pay-Feld.
   const m = Number(o.mahnungCount) || 0;
-  if (m === 1) return <span className="pay-badge mahn"><Icon.mail />Mahnung gesandt</span>;
   if (m > 1) return <span className="pay-badge mahn"><Icon.mail />{m} Mahnungen gesandt</span>;
-  if (o.paylinkSent) return <span className="pay-badge sent"><AI.send />Zahlungslink gesandt</span>;
+  if (pay === "mahnung" || m === 1) return <span className="pay-badge mahn"><Icon.mail />Mahnung gesandt</span>;
+  if (pay === "sent" || o.paylinkSent) return <span className="pay-badge sent"><AI.send />Zahlungslink gesandt</span>;
   return <span className="pay-badge pending"><Icon.clock />Ausstehend</span>;
 }
 function initials(name) { return name.split(" ").filter(Boolean).slice(-2).map((s) => s[0]).join("").toUpperCase(); }
@@ -215,7 +216,7 @@ async function sendOrderedPayLink(o, toast, onStatus) {
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
-    if (onStatus) onStatus(o, "done", true, true, { paylinkSent: true });
+    if (onStatus) onStatus(o, "done", true, true, { pay: "sent" });
   } catch (e) {
     toast("Kein passender Link — bitte „Anderen Link wählen“: " + (e.message || e));
   }
@@ -520,10 +521,10 @@ function Orders({ orders, openOrder, query }) {
     ["new", "Neu", orders.filter((o) => o.status === "new").length],
     ["progress", "In Bearbeitung", orders.filter((o) => o.status === "progress").length],
     ["done", "Gelöscht", orders.filter((o) => o.status === "done").length],
-    ["pending", "Zahlung offen", orders.filter((o) => o.pay === "pending" || o.pay === "failed").length],
+    ["pending", "Zahlung offen", orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay)).length],
   ];
   let list = orders;
-  if (filter === "pending") list = orders.filter((o) => o.pay === "pending" || o.pay === "failed");
+  if (filter === "pending") list = orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay));
   else if (filter !== "all") list = orders.filter((o) => o.status === filter);
   if (query.trim()) {
     const q = query.toLowerCase();
@@ -1171,7 +1172,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
       await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
       toast("Mahnung an " + o.name + " gesendet ✓");
-      onStatus(o, "done", true, true, { paylinkSent: true, mahnungCount: (o.mahnungCount || 0) + 1 });
+      onStatus(o, "done", true, true, { pay: "mahnung" });
       reloadEvents(); setTimeout(reloadEvents, 900);
     } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); }
   };
@@ -1648,7 +1649,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
     if (!sel) return;
     try {
       await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url, celebrate: !storno });
-      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true, storno ? undefined : { paylinkSent: true }); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
+      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true, storno ? undefined : { pay: "sent" }); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
       onClose(); toast((storno ? "Storno-Link (" : "Zahlungslink (") + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
     } catch (e) { toast((storno ? "Storno-Link" : "Zahlungslink") + " fehlgeschlagen: " + e.message); }
   };
@@ -1760,8 +1761,11 @@ function AdminApp() {
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
   const setStatus = (o, id, silent, keepPay, patch) => {
-    const nextPay = (!keepPay && id === "done" && o.pay === "pending") ? "paid" : o.pay;
-    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay, ...(patch || {}) } : x;
+    // patch.pay erlaubt einen expliziten Zahlungsstatus (z. B. "sent" = Zahlungslink gesandt,
+    // "mahnung" = Mahnung gesandt) – wird über /admin/order-status dauerhaft gespeichert
+    // und überlebt damit jeden Reload (unabhängig von Events/Zählern).
+    const nextPay = (patch && patch.pay) ? patch.pay : ((!keepPay && id === "done" && o.pay === "pending") ? "paid" : o.pay);
+    const upd = (x) => x && x.id === o.id ? { ...x, status: id, pay: nextPay } : x;
     setOrders((list) => list.map(upd));
     setActive(upd);
     setDetail(upd);
