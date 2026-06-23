@@ -240,10 +240,10 @@ function Sidebar({ view, setView, counts, open, live }) {
         </button>
       ))}
       <div className="side-foot">
-        <div className="ava">MK</div>
+        <div className="ava">RR</div>
         <div>
-          <div className="nm">Matthias K.</div>
-          <div className="rl">Inhaber · Admin</div>
+          <div className="nm">RapidRemove</div>
+          <div className="rl">Admin</div>
         </div>
       </div>
     </aside>
