@@ -1692,6 +1692,7 @@ function AdminApp() {
   const [smsOrder, setSmsOrder] = React.useState(null);
   const [payLinkOrder, setPayLinkOrder] = React.useState(null);
   const [stornoOrder, setStornoOrder] = React.useState(null);
+  const [assignAsk, setAssignAsk] = React.useState(null); // Übernahme-Bestätigung (bereits zugewiesen)
   const [query, setQuery] = React.useState("");
   const [sideOpen, setSideOpen] = React.useState(false);
   const [toastMsg, setToastMsg] = React.useState(null);
@@ -1757,13 +1758,27 @@ function AdminApp() {
     if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
   // Bestellung Max/Matthias zuweisen (oder entfernen) — lokal sofort, dann persistiert.
-  const setAssignee = (o, who) => {
+  const doAssign = (o, who) => {
     const upd = (x) => x && x.id === o.id ? { ...x, assignee: who } : x;
     setOrders((list) => list.map(upd));
     setActive(upd); setDetail(upd);
     setOrderAssignee({ orderId: o.id, assignee: who }).catch((e) => toast("Zuweisung nicht gespeichert: " + e.message));
     const name = who === "max" ? "Max" : who === "matthias" ? "Matthias" : null;
     toast(name ? "Bestellung " + o.id + " → " + name : "Zuweisung entfernt");
+  };
+  const setAssignee = (o, who) => {
+    // Übernahme eines bereits von jemand ANDEREM bearbeiteten Auftrags → erst bestätigen.
+    if (who && o.assignee && o.assignee !== who) {
+      const cur = o.assignee === "max" ? "Max" : o.assignee === "matthias" ? "Matthias" : o.assignee;
+      setAssignAsk({
+        title: "Auftrag übernehmen?",
+        message: "Bereits von " + cur + " in Bearbeitung. Wirklich übernehmen?",
+        confirmLabel: "Übernehmen",
+        onConfirm: () => doAssign(o, who),
+      });
+      return;
+    }
+    doAssign(o, who);
   };
   const goInvoice = (o) => { setInvoiceModal(o); };
   // „Auftrag stornieren" öffnet jetzt die Storno-Zahlungslink-Auswahl (stornoOrder);
@@ -1809,6 +1824,7 @@ function AdminApp() {
       <SmsModal order={smsOrder} onClose={() => setSmsOrder(null)} toast={toast} />
       <PayLinkModal order={payLinkOrder} onClose={() => setPayLinkOrder(null)} toast={toast} onStatus={setStatus} />
       <PayLinkModal order={stornoOrder} mode="storno" onClose={() => setStornoOrder(null)} toast={toast} onStatus={setStatus} />
+      <ConfirmDialog ask={assignAsk} onClose={() => setAssignAsk(null)} />
       <div className={"toast" + (toastMsg ? " show" : "")}><Icon.checkCircle />{toastMsg}</div>
     </div>
   );
