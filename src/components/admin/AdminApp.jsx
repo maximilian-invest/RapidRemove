@@ -1289,13 +1289,28 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 
   // Verlauf/Aktivitäten – wiederverwendbar für Desktop-Tab UND mobile Ansicht.
   const actChip = { marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" };
+  // Konsistenz-Fallback: Sagt der Zahlungsstatus „gesandt"/„Mahnung", fehlt aber der passende
+  // Verlauf-Eintrag (z. B. bei VOR dem Logging-Update versendeten Mails), wird er aus dem
+  // Zahlungsstatus abgeleitet ergänzt — so widersprechen sich Badge und Verlauf nie.
+  const synthChip = { marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--fg-muted)", background: "var(--neutral-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap" };
+  const evList = events || [];
+  const hasLinkEvt = evList.some((e) => /zahlungslink/i.test(e.t || ""));
+  const hasMahnEvt = evList.some((e) => /mahnung/i.test(e.t || ""));
+  const synthEvents = [];
+  if (events) {
+    if ((o.pay === "mahnung" || (Number(o.mahnungCount) || 0) > 0) && !hasMahnEvt)
+      synthEvents.push({ id: "synth-mahn", ic: "pay", t: "Mahnung gesendet", d: "aus Zahlungsstatus abgeleitet – vor dem Protokoll-Update gesendet (keine Vorschau)", time: "", synthetic: true });
+    if ((o.pay === "sent" || o.pay === "mahnung") && !hasLinkEvt)
+      synthEvents.push({ id: "synth-link", ic: "pay", t: "Zahlungslink gesendet", d: "aus Zahlungsstatus abgeleitet – vor dem Protokoll-Update gesendet (keine Vorschau)", time: "", synthetic: true });
+  }
+  const shownEvents = [...synthEvents, ...evList];
   const activityTimeline = (
     <div className="act">
-      {(events || []).length ? (events || []).map((a, i) => (
-        <div className="act-item" key={i}>
+      {shownEvents.length ? shownEvents.map((a, i) => (
+        <div className="act-item" key={a.id || i}>
           <div className="act-rail"></div>
           <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : a.ic === "assign" ? <Icon.users /> : <Icon.fileText />}</div>
-          <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={actChip}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={actChip}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+          <div className="act-body"><div className="at">{a.t}{a.synthetic ? <span style={synthChip}>abgeleitet</span> : null}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={actChip}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={actChip}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
         </div>
       )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
     </div>
