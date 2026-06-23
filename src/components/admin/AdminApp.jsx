@@ -1080,15 +1080,15 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const [notes, setNotes] = React.useState(o.note || "");
   const [tab, setTab] = React.useState("activity");
   const [events, setEvents] = React.useState(null);
-  // Verlauf pro KUNDE (über die E-Mail) laden, nicht strikt pro Bestellung: So
-  // erscheinen auch versendete Zahlungslink-/Mahnung-Mails, die serverseitig an
-  // eine andere Order-Zeile desselben Kunden bzw. per E-Mail-Fallback verknüpft
-  // wurden — sonst fehlt der „Zahlungslink gesendet"-Eintrag, obwohl die Mail
-  // real versendet wurde (im Gesendet-Ordner sichtbar). Limit 100 verhindert,
-  // dass der Verlauf bei Mehrfachbestellern ins Unendliche wächst.
+  // Verlauf STRIKT pro Bestellung (orderId) — jede Bestellung hat ihren eigenen,
+  // eindeutigen Verlauf, auch wenn derselbe Kunde mehrfach mit derselben E-Mail
+  // bestellt (kein Vermischen mehrerer Aufträge). Voraussetzung: Jedes Event wird
+  // serverseitig mit der korrekten orderId protokolliert — gilt seit dem Backend-Fix
+  // auch für Zahlungslink-/Mahnung-Mails, die damit zuverlässig im jeweiligen
+  // Auftrag erscheinen.
   const reloadEvents = React.useCallback(() => {
-    fetchEvents(o.id, o.email).then((ev) => setEvents(ev)).catch(() => {});
-  }, [o.id, o.email]);
+    fetchEvents(o.id).then((ev) => setEvents(ev)).catch(() => {});
+  }, [o.id]);
   React.useEffect(() => { reloadEvents(); }, [reloadEvents]);
   // Betreuer geändert (zugewiesen/gewechselt) → Verlauf kurz danach nachladen,
   // damit das serverseitig protokollierte Ereignis sofort erscheint.
