@@ -6,6 +6,7 @@ import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
+import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, setOrderAssignee, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -221,6 +222,7 @@ function Sidebar({ view, setView, counts, open, live }) {
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
     ["subs", AI.euro, "Abos & Umsatz"],
+    ["liga", AI.trophy, "Löschungs-Liga"],
     ["templates", Icon.mail, "E-Mail-Vorlagen"],
     ["customers", AI.users, "Kunden"],
     ["redirects", AI.external, "Weiterleitungen"],
@@ -325,6 +327,7 @@ function MobileTabBar({ view, setView, counts }) {
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
     ["subs", AI.euro, "Umsatz"],
+    ["liga", AI.trophy, "Liga"],
     ["templates", Icon.mail, "Vorlagen"],
     ["customers", AI.users, "Kunden"],
   ];
@@ -1673,7 +1676,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -1784,6 +1787,7 @@ function AdminApp() {
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onAssign={setAssignee} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
+  else if (view === "liga") body = <GamifyLiga />;
   else if (view === "templates") body = <Templates />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;

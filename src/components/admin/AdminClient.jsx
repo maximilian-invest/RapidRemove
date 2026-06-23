@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import "@/styles/admin.css";
+import "@/styles/gamify.css";
 import { AdminGate } from "./AdminGate";
 
 /* Das Dashboard ist rein client-seitig (nutzt window/document, Animationen).
