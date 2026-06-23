@@ -3,7 +3,7 @@ import React from "react";
 import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SUBS as SUBS_SAMPLE, PLANS as PLANS_SAMPLE, DAILY_REV as DAILY_REV_SAMPLE, WEEKLY_REV as WEEKLY_REV_SAMPLE, MONTHLY_REV as MONTHLY_REV_SAMPLE, PAYMENTS as PAYMENTS_SAMPLE } from "@/lib/admin-data";
-import { fetchStripe, setupExpressLinks } from "@/lib/admin-api";
+import { fetchStripe, setupExpressLinks, reconcilePayments } from "@/lib/admin-api";
 const AI = AdminIcon;
 const Icon = { ...BaseIcon, ...AdminIcon };
 /* RapidRemove Admin — Abos & Umsatz (Reputations-Schutz Abonnements über Stripe) */
@@ -274,6 +274,18 @@ function SubsDashboard({ toast }) {
   const [loading, setLoading] = React.useState(true);
   const [detail, setDetail] = React.useState(null);
   const [range, setRange] = React.useState("day");
+  const [recBusy, setRecBusy] = React.useState(false);
+  const [recRes, setRecRes] = React.useState(null);
+  const [recErr, setRecErr] = React.useState("");
+  const runReconcile = async () => {
+    setRecBusy(true); setRecErr("");
+    try {
+      const j = await reconcilePayments();
+      setRecRes(j);
+      if (toast) toast(j.matched.length ? `${j.matched.length} Zahlung(en) zugeordnet ✓` : "Keine neuen Zuordnungen");
+    } catch (e) { setRecErr(e.message || "Abgleich fehlgeschlagen"); }
+    finally { setRecBusy(false); }
+  };
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -379,8 +391,22 @@ function SubsDashboard({ toast }) {
       <div className="panel rise" style={{ marginTop: 22, animationDelay: "0.26s" }}>
         <div className="panel-head">
           <div><h2>Letzte Zahlungen</h2><div className="ph-sub">Monat · Zeile anklicken für Details</div></div>
-          <div className="ph-right"><span className="rg-badge">{SUBS.paidInvoices} Rg.</span></div>
+          <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span className="rg-badge">{SUBS.paidInvoices} Rg.</span>
+            <button className="btn btn-pri btn-sm" disabled={recBusy || !liveData} onClick={runReconcile}
+              title={!liveData ? "Stripe nicht verbunden" : "Bezahlte Löschungen/Resets den Bestellungen zuordnen (Abos ausgenommen)"}>
+              {recBusy ? "Gleiche ab…" : "Zahlungen zuordnen"}
+            </button>
+          </div>
         </div>
+        {recErr ? <div style={{ margin: "2px 2px 12px", color: "var(--danger)", fontWeight: 700, fontSize: 13 }}>{recErr}</div> : null}
+        {recRes ? (
+          <div style={{ margin: "2px 2px 14px", background: "var(--neutral-50)", border: "1px solid var(--hairline)", borderRadius: 10, padding: "11px 14px", fontSize: 13, fontWeight: 600, color: "var(--fg-2)", lineHeight: 1.55 }}>
+            <span><b style={{ color: "var(--fg)" }}>{recRes.matched.length}</b> neu zugeordnet · {recRes.alreadyAssigned} bereits zugeordnet · <b>{recRes.unmatched.length}</b> ohne passende Bestellung <span style={{ color: "var(--fg-muted)" }}>({recRes.scanned} Zahlungen geprüft)</span></span>
+            {recRes.matched.length ? <div style={{ marginTop: 6, color: "#15803d" }}>✓ {recRes.matched.map((m) => m.name + " (" + m.orderId + ")").join(" · ")}</div> : null}
+            {recRes.unmatched.length ? <div style={{ marginTop: 6 }}>⚠ Kein Treffer: {recRes.unmatched.slice(0, 12).join(" · ")}{recRes.unmatched.length > 12 ? " …" : ""}</div> : null}
+          </div>
+        ) : null}
         <div className="paylist">
           {PAYMENTS.map((p, i) => {
             const [cls, label] = PAY_STATUS[p.status] || ["pay-pend", p.status];

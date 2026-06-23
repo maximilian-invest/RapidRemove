@@ -210,6 +210,20 @@ export async function sendPayLink({ to, name, orderId, currency, service, protec
   return j;
 }
 
+/** Gleicht bezahlte Einmalzahlungen (Löschung/Reset, ohne Abos) aus Stripe mit den
+ *  Bestellungen ab und setzt Treffer auf „bezahlt". Liefert den Abgleich-Report. */
+export async function reconcilePayments() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/reconcile-payments", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j; // { ok, scanned, matched:[{name,orderId}], alreadyAssigned, unmatched:[name] }
+}
+
 /** Legt die Express-Zahlungslinks in Stripe an (alle Kombinationen). apply=false → Trockenlauf. */
 export async function setupExpressLinks({ apply } = {}) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");

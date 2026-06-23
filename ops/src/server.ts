@@ -17,6 +17,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
+import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "55default";
@@ -707,6 +708,21 @@ app.post("/admin/setup-express", async (req, reply) => {
   }
 });
 
+// Admin-Dashboard: bezahlte Einmalzahlungen (Löschung/Reset, ohne Abos) aus Stripe
+// den Bestellungen zuordnen → pay = "bezahlt". Per E-Mail ODER Name/Firma.
+app.post("/admin/reconcile-payments", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+  if (!dbReady()) return reply.code(400).send({ ok: false, error: "keine DB verbunden" });
+  try {
+    return await reconcilePaymentsOnce(app.log);
+  } catch (e) {
+    app.log.error({ err: e }, "Zahlungs-Abgleich fehlgeschlagen");
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
+  }
+});
+
 // Löst den passenden Stripe-Zahlungslink für eine Bestellung auf (ohne Versand):
 // 0) direkt gewählter aktiver Link, 1) hinterlegter Link, 2) Betrag-Match. KEIN Erstellen in Stripe.
 async function resolvePayLink(b: Record<string, unknown>): Promise<{ url?: string; available?: string[]; error?: string; code?: number }> {
@@ -909,6 +925,7 @@ async function start() {
     const addr = await app.listen({ host: "0.0.0.0", port });
     app.log.info(`ops läuft auf ${addr}`);
     startUpsellWorker(app);
+    startPaymentReconciler(app);
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();

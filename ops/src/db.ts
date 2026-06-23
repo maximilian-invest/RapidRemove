@@ -317,6 +317,38 @@ export async function markOrderPaidByEmail(email: string): Promise<string | null
   return (r.rows[0]?.id as string) ?? null;
 }
 
+/**
+ * Ordnet eine Stripe-Zahlung einer Bestellung zu (für den Zahlungs-Abgleich).
+ * Matcht per E-Mail ODER Name/Firma (case-insensitiv, getrimmt) – z. B. „Michelle
+ * Buffin" oder „Vimagos Digital Solutions GmbH". Markiert die JÜNGSTE offene,
+ * nicht stornierte Treffer-Bestellung als bezahlt. Liefert den Status:
+ *   marked  – eine offene Bestellung wurde auf „bezahlt" gesetzt
+ *   already – es gibt zwar eine passende Bestellung, sie ist aber schon bezahlt
+ *   none    – keine passende Bestellung gefunden
+ */
+export async function reconcileOrderForPayment(email: string, name: string): Promise<{ status: "marked" | "already" | "none"; id?: string; orderName?: string | null }> {
+  if (!pool) return { status: "none" };
+  const em = (email || "").trim();
+  const nm = (name || "").trim();
+  if (!em && !nm) return { status: "none" };
+  const cond = `(($1 <> '' AND lower(email) = lower($1))
+             OR ($2 <> '' AND lower(btrim(name)) = lower(btrim($2)))
+             OR ($2 <> '' AND lower(btrim(company)) = lower(btrim($2))))`;
+  const upd = await pool.query(
+    `UPDATE orders SET pay='paid'
+       WHERE id = (
+         SELECT id FROM orders
+          WHERE pay IS DISTINCT FROM 'paid' AND COALESCE(status,'') <> 'storniert' AND ${cond}
+          ORDER BY created_at DESC LIMIT 1
+       )
+     RETURNING id, name`,
+    [em, nm],
+  );
+  if (upd.rows[0]) return { status: "marked", id: upd.rows[0].id as string, orderName: (upd.rows[0].name as string) ?? null };
+  const any = await pool.query(`SELECT 1 FROM orders WHERE ${cond} LIMIT 1`, [em, nm]);
+  return { status: any.rows[0] ? "already" : "none" };
+}
+
 /** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null = entfernen). */
 export async function setOrderAssignee(id: string, assignee: string | null): Promise<boolean> {
   if (!pool || !id) return false;

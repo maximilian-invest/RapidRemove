@@ -281,6 +281,35 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }
 
+export interface DeletionPayment { id: string; name: string; email: string; amount: number; cur: string; created: number; desc: string; }
+
+/** Bezahlte EINMAL-Zahlungen (Löschung/Reset/Express) aus Stripe — Abos ausgenommen.
+ *  Eine bezahlte Rechnung zählt, wenn sie mindestens eine einmalige Position hat
+ *  (price.recurring == null) und KEINE reine Abo-Verlängerung ist (billing_reason
+ *  ≠ subscription_cycle). Liefert Name + E-Mail zum Abgleich mit den Bestellungen. */
+export async function listDeletionPayments(months = 12): Promise<DeletionPayment[]> {
+  const since = Math.floor(Date.now() / 1000) - months * 31 * 86400;
+  const invoices = await stripeList<any>(`invoices?status=paid&created[gte]=${since}&limit=100`, 6);
+  const out: DeletionPayment[] = [];
+  for (const inv of invoices) {
+    if (inv.billing_reason === "subscription_cycle") continue;            // reine Abo-Verlängerung
+    const lines: any[] = inv.lines?.data || [];
+    const oneTime = lines.filter((l) => !(l.price && l.price.recurring)); // nur einmalige Positionen
+    if (!oneTime.length) continue;                                        // reine Abo-Rechnung → überspringen
+    out.push({
+      id: inv.id,
+      name: inv.customer_name || "",
+      email: inv.customer_email || "",
+      amount: Math.round(oneTime.reduce((s, l) => s + (l.amount || 0), 0)) / 100,
+      cur: (inv.currency || "eur").toUpperCase(),
+      created: inv.created || 0,
+      desc: oneTime[0]?.description || oneTime[0]?.price?.nickname || "",
+    });
+  }
+  out.sort((a, b) => b.created - a.created);
+  return out;
+}
+
 /* ── Bestehende Zahlungslinks LESEN + zum Szenario matchen (read-only) ──
    Es wird NICHTS in Stripe erstellt. Wir lesen nur die vorhandenen
    Payment-Links und ihre Positionen und wählen den passenden aus. */
