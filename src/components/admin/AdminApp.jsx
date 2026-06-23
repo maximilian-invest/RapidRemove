@@ -1243,6 +1243,21 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       </div>
     </div>
   ) : null;
+
+  // Verlauf/Aktivitäten – wiederverwendbar für Desktop-Tab UND mobile Ansicht.
+  const actChip = { marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" };
+  const activityTimeline = (
+    <div className="act">
+      {(events || []).length ? (events || []).map((a, i) => (
+        <div className="act-item" key={i}>
+          <div className="act-rail"></div>
+          <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : a.ic === "assign" ? <Icon.users /> : <Icon.fileText />}</div>
+          <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={actChip}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={actChip}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+        </div>
+      )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
+    </div>
+  );
+
   if (isMobile) return (
     <div className="m-detail">
       {tplModalEl}
@@ -1342,6 +1357,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div className="m-dsec">
           <h3><Icon.fileText /> Fragebogen</h3>
           <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.clock /> Verlauf</h3>
+          {activityTimeline}
         </div>
       </div>
     </div>
@@ -1482,17 +1502,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   </div>
                 </div>
               )}
-              {tab === "activity" && (
-                <div className="act">
-                  {(events || []).length ? (events || []).map((a, i) => (
-                    <div className="act-item" key={i}>
-                      <div className="act-rail"></div>
-                      <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : a.ic === "assign" ? <Icon.users /> : <Icon.fileText />}</div>
-                      <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
-                    </div>
-                  )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
-                </div>
-              )}
+              {tab === "activity" && activityTimeline}
               {tab === "order" && (
                 <div>
                   {isPress ? <PressInfo o={o} /> : (
