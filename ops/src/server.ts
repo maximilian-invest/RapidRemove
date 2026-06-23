@@ -584,8 +584,23 @@ app.post("/admin/order-assign", async (req, reply) => {
   if (!id) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
   if (who && !["max", "matthias"].includes(who)) return reply.code(400).send({ ok: false, error: "ungültige Zuweisung" });
   if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
-  try { const ok = await setOrderAssignee(id, who); return { ok, assignee: who }; }
-  catch (e) { return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) }); }
+  try {
+    const prev = (await getOrderBasic(id))?.assignee || null;
+    const ok = await setOrderAssignee(id, who);
+    // Betreuer-Aktivität protokollieren: Hinzufügen, Wechsel oder Entfernen.
+    if (ok && prev !== who) {
+      const NAME: Record<string, string> = { max: "Max", matthias: "Matthias" };
+      const nm = (x: string | null) => (x ? (NAME[x] || x) : null);
+      const title = who && !prev ? `${nm(who)} als Betreuer hinzugefügt`
+        : who && prev ? `Betreuerwechsel: ${nm(prev)} → ${nm(who)}`
+        : "Betreuer entfernt";
+      const detail = who && !prev ? "im Dashboard zugewiesen"
+        : who && prev ? `${nm(who)} hat den Auftrag übernommen`
+        : `${nm(prev)} ist nicht mehr zugewiesen`;
+      await insertEvent({ orderId: id, type: "assign", title, detail });
+    }
+    return { ok, assignee: who };
+  } catch (e) { return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) }); }
 });
 
 // Admin: alle 301-Weiterleitungen auflisten (inkl. deaktivierte).

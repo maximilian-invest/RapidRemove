@@ -1076,6 +1076,15 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     fetchEvents(o.id).then((ev) => setEvents(ev)).catch(() => {});
   }, [o.id]);
   React.useEffect(() => { reloadEvents(); }, [reloadEvents]);
+  // Betreuer geändert (zugewiesen/gewechselt) → Verlauf kurz danach nachladen,
+  // damit das serverseitig protokollierte Ereignis sofort erscheint.
+  const assignFirst = React.useRef(true);
+  React.useEffect(() => {
+    if (assignFirst.current) { assignFirst.current = false; return; }
+    const t1 = setTimeout(reloadEvents, 800);
+    const t2 = setTimeout(reloadEvents, 1800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [o.assignee]); // eslint-disable-line react-hooks/exhaustive-deps
   // 1:1-Vorschau der EXAKT versendeten Mail (richtige Sprache, richtiger Zahlungslink) zu Kontrollzwecken.
   const [mailPreview, setMailPreview] = React.useState(null); // null | {loading} | {ok,html,subject} | {error}
   const openMailPreview = (id) => {
@@ -1459,7 +1468,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   {(events || []).length ? (events || []).map((a, i) => (
                     <div className="act-item" key={i}>
                       <div className="act-rail"></div>
-                      <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : <Icon.fileText />}</div>
+                      <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : a.ic === "assign" ? <Icon.users /> : <Icon.fileText />}</div>
                       <div className="act-body"><div className="at">{a.t}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={{ marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 8px 1px 6px", textTransform: "uppercase", letterSpacing: ".03em", verticalAlign: "middle", whiteSpace: "nowrap", cursor: "pointer" }}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
                     </div>
                   )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}

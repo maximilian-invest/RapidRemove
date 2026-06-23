@@ -438,6 +438,7 @@ button{font-family:inherit;}
 .act-ic.pay{background:var(--success-soft);color:var(--success);border-color:#bfe8cd;}
 .act-ic.status{background:var(--warning-soft);color:var(--warning);border-color:#f5d6a0;}
 .act-ic.note{background:var(--neutral-100);color:var(--fg-2);}
+.act-ic.assign{background:var(--info-soft);color:#1b56b8;border-color:#bcd4f5;}
 .act-body .at{font-weight:700;font-size:13.5px;}
 .act-body .ad{font-size:12.5px;color:var(--fg-muted);margin-top:1px;}
 .act-body .atime{font-size:11.5px;color:var(--fg-muted);font-weight:700;margin-top:3px;}
