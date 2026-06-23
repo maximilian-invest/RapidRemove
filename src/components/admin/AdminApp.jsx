@@ -199,7 +199,7 @@ function fillVars(text, o) {
 
 /* Sendet dem Kunden mit EINEM Klick genau den Zahlungslink, der zu seiner
    Bestellung passt (Betrag/Leistung/Schutz) — ohne Auswahl-Liste. */
-async function sendOrderedPayLink(o, toast, onStatus) {
+async function sendOrderedPayLink(o, toast, onStatus, onFail) {
   try {
     const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
     const protectionLabel = o.protection
@@ -218,7 +218,9 @@ async function sendOrderedPayLink(o, toast, onStatus) {
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
     if (onStatus) onStatus(o, "done", true, true, { pay: "sent" });
   } catch (e) {
-    toast("Kein passender Link — bitte „Anderen Link wählen“: " + (e.message || e));
+    // Kein automatisch passender Link → Auswahl-Dialog öffnen, statt still zu scheitern.
+    toast("Kein automatisch passender Link — bitte Link auswählen.");
+    if (onFail) onFail(o);
   }
 }
 
@@ -599,7 +601,7 @@ const payLinkSmsText = (o, url) => (PAYLINK_SMS[o.lang] || PAYLINK_SMS.en)(o.nam
 const PAYLINK_PLACEHOLDER = "[Zahlungslink hier einfügen]";
 
 /* ---------- Order drawer ---------- */
-function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign, toast }) {
+function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign, onPayLink, toast }) {
   const now = useNow(1000);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [smsMsg, setSmsMsg] = React.useState("");
@@ -620,6 +622,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             <div className="dt-sub">{o.created} · {o.country}</div>
             <div style={{ marginTop: 6 }}><OrderTimer since={o.createdAt} status={o.status} now={now} seconds /></div>
             {o.affiliate ? <div className="aff-badge"><Icon.user size={13} /> Affiliate: <b>{o.affiliate}</b></div> : null}
+            {o.source && o.source.kind !== "direct" ? <div className="aff-badge" style={{ background: "var(--neutral-50)", color: "var(--fg-2)", borderColor: "var(--hairline)" }}><Icon.external size={13} /> Quelle: <b>{o.source.label}</b></div> : null}
           </div>
           <button className="btn btn-sec btn-sm" style={{ marginLeft: "auto" }} onClick={() => onOpenFull(o)}><Icon.user /> Volle Kundenakte</button>
           <button className="drawer-close" onClick={onClose}><Icon.x /></button>
@@ -668,6 +671,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             <div className="drow"><span className="dl">E-Mail</span><span className="dv">{o.email}</span></div>
             <div className="drow"><span className="dl">Telefon</span><span className="dv">{o.phone}</span></div>
             <div className="drow"><span className="dl">Affiliate</span><span className="dv">{o.affiliate ? <b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b> : <span style={{ color: "var(--fg-muted)" }}>— (kein Affiliate)</span>}</span></div>
+            <div className="drow"><span className="dl">Quelle</span><span className="dv">{o.source ? o.source.label : "—"}</span></div>
             <div className="cust-acts">
               <button className="btn btn-sec btn-sm" onClick={() => onCompose(o, TEMPLATES[0])}><Icon.mail /> E-Mail</button>
               <a className="btn btn-sec btn-sm" href={"tel:" + o.phone.replace(/\s/g, "")}><Icon.phone /> Anrufen</a>
@@ -749,7 +753,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
           </div>
@@ -1091,6 +1095,15 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     const t2 = setTimeout(reloadEvents, 1800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [o.assignee]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Zahlungsstatus geändert (Zahlungslink/Mahnung gesendet, bezahlt) → Verlauf nachladen,
+  // damit das „Zahlungslink gesendet"-Ereignis (inkl. Vorschau) sofort im Verlauf erscheint.
+  const payFirst = React.useRef(true);
+  React.useEffect(() => {
+    if (payFirst.current) { payFirst.current = false; return; }
+    const t1 = setTimeout(reloadEvents, 900);
+    const t2 = setTimeout(reloadEvents, 2000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [o.pay]); // eslint-disable-line react-hooks/exhaustive-deps
   // 1:1-Vorschau der EXAKT versendeten Mail (richtige Sprache, richtiger Zahlungslink) zu Kontrollzwecken.
   const [mailPreview, setMailPreview] = React.useState(null); // null | {loading} | {ok,html,subject} | {error}
   const openMailPreview = (id) => {
@@ -1300,7 +1313,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
           {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
-          {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
+          {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
         </div>
         )}
@@ -1492,6 +1505,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
                   )}
                   <div className="drow"><span className="dl">Bestelldatum</span><span className="dv">{o.created}</span></div>
                   <div className="drow"><span className="dl">Affiliate</span><span className="dv">{o.affiliate ? <b style={{ color: "var(--primary, #ff8000)" }}>{o.affiliate}</b> : <span style={{ color: "var(--fg-muted)" }}>— (kein Affiliate)</span>}</span></div>
+                  <div className="drow"><span className="dl">Quelle</span><span className="dv">{o.source ? o.source.label : "—"}</span></div>
                   <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Auftragswert</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "kostenlose Prüfung"}</span></div>
                 </div>
               )}
@@ -1519,7 +1533,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div className="drow"><span className="dl">Rechnungsbetrag</span><span className="dv">{o.amount ? money(o.amount, o.country) : "—"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
               {o.amount ? <button className="btn btn-sec btn-sm" onClick={sendMahnung}><Icon.mail /> Mahnung senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
@@ -1836,7 +1850,7 @@ function AdminApp() {
       </div>
       <MobileTabBar view={view} setView={(v) => { setView(v); setDetail(null); setSideOpen(false); }} counts={counts} />
       <OrderDrawer order={active} onClose={() => setActive(null)} onStatus={setStatus} onOpenFull={openDetail}
-        onCompose={(o, t) => setCompose({ order: o, template: t })} onAssign={setAssignee} toast={toast} />
+        onCompose={(o, t) => setCompose({ order: o, template: t })} onAssign={setAssignee} onPayLink={(o) => setPayLinkOrder(o)} toast={toast} />
       <EmailComposer data={compose} onClose={() => setCompose(null)} toast={toast} />
       <InvoiceModal order={invoiceModal} onClose={() => setInvoiceModal(null)} onCompose={(o, t) => setCompose({ order: o, template: t })} toast={toast} />
       <SmsModal order={smsOrder} onClose={() => setSmsOrder(null)} toast={toast} />

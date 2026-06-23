@@ -1,5 +1,6 @@
 /* RapidRemove — root layout: design tokens + global styles, metadata */
 import Consent from "@/components/Consent";
+import Attribution from "@/components/Attribution";
 import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
@@ -78,6 +79,7 @@ export default function RootLayout({ children }) {
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Product","name":"RapidRemove","image":"https://assets.simplesolution.at/logo-rapid-remove.png","aggregateRating":{"@type":"AggregateRating","ratingValue":"4.9","reviewCount":266,"bestRating":5}}` }} />
 
         {children}
+        <Attribution />
         <Consent />
       </body>
     </html>

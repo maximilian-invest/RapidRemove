@@ -1,5 +1,6 @@
 /* Admin-Dashboard ↔ ops-Backend: Login-Prüfung + echter E-Mail-Versand.
  * Die ops-URL kommt aus NEXT_PUBLIC_OPS_URL (gleiches Backend wie der Wizard). */
+import { deriveSource } from "@/lib/attribution";
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 
 let TOKEN = "";
@@ -106,6 +107,7 @@ function mapOrder(r) {
     assignee: r.assignee || null,
     mahnungCount: Number(r.mahnung_count) || 0,
     paylinkSent: (Number(r.paylink_count) || 0) > 0,
+    source: deriveSource(r.raw || {}), // { kind, label } – Herkunft (Google Ads/Affiliate/Direkt …)
   };
 }
 function mapCheck(r) {
