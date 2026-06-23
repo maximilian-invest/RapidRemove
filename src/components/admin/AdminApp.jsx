@@ -44,6 +44,26 @@ function PayBadge({ o }) {
   if (pay === "sent" || o.paylinkSent) return <span className="pay-badge sent"><AI.send />Zahlungslink gesandt</span>;
   return <span className="pay-badge pending"><Icon.clock />Ausstehend</span>;
 }
+/* Herkunft/Quelle als prominentes, farbcodiertes Badge (Google Ads/Affiliate/Direkt …). */
+const SOURCE_STYLE = {
+  google_ads: { bg: "#e8f0fe", fg: "#1a73e8", bd: "#bcd3fb" },
+  ms_ads:     { bg: "#e9f3ff", fg: "#0067b8", bd: "#c4e0ff" },
+  meta_ads:   { bg: "#eceefb", fg: "#4456c7", bd: "#d3d9f7" },
+  affiliate:  { bg: "var(--orange-50)", fg: "var(--primary)", bd: "#ffd6ab" },
+  organic:    { bg: "#e9f9ef", fg: "#15803d", bd: "#bce7cb" },
+  referral:   { bg: "#f3effc", fg: "#7c3aed", bd: "#e0d4fb" },
+  utm:        { bg: "#fff6e6", fg: "#b45309", bd: "#fbe0b0" },
+  direct:     { bg: "var(--neutral-50)", fg: "var(--fg-2)", bd: "var(--hairline)" },
+};
+function SourceBadge({ source, big }) {
+  if (!source) return null;
+  const s = SOURCE_STYLE[source.kind] || SOURCE_STYLE.direct;
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: s.bg, color: s.fg, border: "1px solid " + s.bd, borderRadius: 999, padding: big ? "5px 13px" : "3px 10px", fontSize: big ? 13 : 11.5, fontWeight: 700, lineHeight: 1.15, whiteSpace: "nowrap" }}>
+      <Icon.external size={big ? 15 : 12} /> Quelle:&nbsp;<b style={{ fontWeight: 800 }}>{source.label}</b>
+    </span>
+  );
+}
 function initials(name) { return name.split(" ").filter(Boolean).slice(-2).map((s) => s[0]).join("").toUpperCase(); }
 /* Stabile Avatar-Farbe aus dem Namen (mobile Bestell-/Kundenkarten). */
 const avaColor = (s) => { let h = 0; for (let i = 0; i < (s || "").length; i++) h = s.charCodeAt(i) + ((h << 5) - h); return `hsl(${Math.abs(h) % 360} 58% 52%)`; };
@@ -624,7 +644,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             <div className="dt-sub">{o.created} · {o.country}</div>
             <div style={{ marginTop: 6 }}><OrderTimer since={o.createdAt} status={o.status} now={now} seconds /></div>
             {o.affiliate ? <div className="aff-badge"><Icon.user size={13} /> Affiliate: <b>{o.affiliate}</b></div> : null}
-            {o.source && o.source.kind !== "direct" ? <div className="aff-badge" style={{ background: "var(--neutral-50)", color: "var(--fg-2)", borderColor: "var(--hairline)" }}><Icon.external size={13} /> Quelle: <b>{o.source.label}</b></div> : null}
+            {o.source ? <div style={{ marginTop: 7 }}><SourceBadge source={o.source} big /></div> : null}
           </div>
           <button className="btn btn-sec btn-sm" style={{ marginLeft: "auto" }} onClick={() => onOpenFull(o)}><Icon.user /> Volle Kundenakte</button>
           <button className="drawer-close" onClick={onClose}><Icon.x /></button>
@@ -1299,6 +1319,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600, marginTop: 2 }}>{o.company} · {o.id}</div>
           </div>
         </div>
+        {o.source ? <div style={{ padding: "0 16px 10px" }}><SourceBadge source={o.source} big /></div> : null}
         <div style={{ padding: "0 16px 10px" }}><AssignControl order={o} onAssign={onAssign} compact /></div>
         <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge o={o} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
           {o.status !== "storniert"
@@ -1405,6 +1426,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
           </div>
           <div className="cd-sub">{o.company} · {o.id}</div>
+          {o.source ? <div style={{ marginTop: 9 }}><SourceBadge source={o.source} big /></div> : null}
           <div className="cd-meta-row">
             <OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
             <span className="m"><Icon.mail /> {o.email}</span>
