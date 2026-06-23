@@ -27,8 +27,9 @@ import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
 import {
-  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail,
+  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic,
 } from "../db.js";
+import { notifyPaymentReceived } from "../notify.js";
 
 type Lang = "de" | "en";
 
@@ -191,6 +192,13 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
     if (oid) {
       app.log.info(`Webhook: Bestellung ${oid} automatisch als bezahlt markiert (${email}, ${source})`);
       await insertEvent({ orderId: oid, type: "pay", title: "Zahlung eingegangen", detail: `Automatisch via Stripe zugeordnet (${email})`, auto: true });
+      // 💰 Team-Push „Zahlung eingegangen" (real-time). Betrag in Minor-Units → /100.
+      try {
+        const amount = Number(obj?.amount_paid ?? obj?.amount_total ?? obj?.total ?? 0) / 100 || undefined;
+        let who: string | null = obj?.customer_name || obj?.customer_details?.name || email;
+        try { const ob = await getOrderBasic(oid); if (ob) who = ob.company || ob.name || who; } catch { /* ignore */ }
+        await notifyPaymentReceived({ who, amount, cur: obj?.currency, orderId: oid });
+      } catch (e) { app.log.error(`Webhook: Zahlungs-Push fehlgeschlagen: ${(e as Error).message}`); }
     } else {
       app.log.info(`Webhook: keine offene Bestellung für ${email} – keine Auto-Zuordnung (${source})`);
     }

@@ -14,6 +14,7 @@
 import type { FastifyInstance } from "fastify";
 import { hasSecretKey, listDeletionPayments } from "./integrations/stripe";
 import { dbReady, reconcileOrderForPayment, insertEvent } from "./db";
+import { notifyPaymentReceived } from "./notify";
 
 export interface ReconcileReport {
   ok: true;
@@ -37,7 +38,9 @@ export async function reconcilePaymentsOnce(log?: FastifyInstance["log"]): Promi
       const r = await reconcileOrderForPayment(p.email, p.name);
       if (r.status === "marked") {
         matched.push({ name: label, orderId: r.id! });
-        await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung zugeordnet", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
+        await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung eingegangen", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
+        // 💰 Team-Push „Zahlung eingegangen" für neu zugeordnete Zahlungen.
+        await notifyPaymentReceived({ who: label, amount: p.amount, cur: p.cur, orderId: r.id }).catch(() => {});
       } else if (r.status === "already") {
         alreadyAssigned++;
       } else {

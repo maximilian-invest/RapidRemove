@@ -137,7 +137,7 @@ function HeadToHead({ h2h, people }) {
         <div className="h2h-ctrls">
           <div className="h2h-seg">
             <button className={metric === "count" ? "on" : ""} onClick={() => setMetric("count")}>Löschungen</button>
-            <button className={metric === "volume" ? "on" : ""} onClick={() => setMetric("volume")}>Umsatz</button>
+            <button className={metric === "volume" ? "on" : ""} onClick={() => setMetric("volume")}>Zahlungseingänge</button>
           </div>
           <div className="h2h-seg">
             {scopes.map(([id, lbl]) => (
@@ -305,7 +305,7 @@ function PersonCard({ person: p, isLeader, onOpen, delay }) {
         <div className={"pc-vol " + cls}>
           <span className="pv-ic">💰</span>
           <span className="pv-val">{money(p.volume)}</span>
-          <span className="pv-lbl">Umsatz · nur bezahlt</span>
+          <span className="pv-lbl">Zahlungseingänge</span>
         </div>
 
         {/* Aufteilung: gelöscht (treibt Level) vs. echt bezahlt (treibt Umsatz) */}
@@ -427,7 +427,7 @@ function PersonProfile({ person: p, onBack }) {
             <div className="nm">{p.name}</div>
             <div className="fl">{p.full}</div>
             <div className="rk"><span className="em">{p.rank.emoji}</span> {p.rank.name} <span className="lvl">Level {p.level}</span></div>
-            <div className="pp-vol">💰 {money(p.volume)} <span>Umsatz · nur bezahlt</span></div>
+            <div className="pp-vol">💰 {money(p.volume)} <span>Zahlungseingänge</span></div>
             <div className="pp-split">
               <span className="pps geloescht">🗑️ {p.count} Gelöscht</span>
               <span className="pps bezahlt">✅ {p.paidCount ?? 0} Bezahlt</span>
