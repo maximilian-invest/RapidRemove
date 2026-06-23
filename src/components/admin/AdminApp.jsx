@@ -216,7 +216,9 @@ async function sendOrderedPayLink(o, toast, onStatus, onFail) {
     });
     toast("Zahlungslink an " + o.name + " gesendet ✓");
     // Kunde hat den Zahlungslink erhalten → Profil gilt als gelöscht (Zahlung bleibt offen).
-    if (onStatus) onStatus(o, "done", true, true, { pay: "sent" });
+    // „Profil gelöscht" nur EINMAL protokollieren – ist der Auftrag schon „done", wird
+    // nur der Zahlungsstatus aktualisiert (kein erneuter Status-Eintrag pro Sendung).
+    if (onStatus) onStatus(o, "done", true, true, { pay: "sent", noEvent: o.status === "done" });
   } catch (e) {
     // Kein automatisch passender Link → Auswahl-Dialog öffnen, statt still zu scheitern.
     toast("Kein automatisch passender Link — bitte Link auswählen.");
@@ -1184,16 +1186,33 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     }
     return latest;
   }, [events]);
+  // Mahnlauf: Anzahl bereits gesendeter Mahnungen → bestimmt die Stufe.
+  // 0 gesendet → Stufe 1 (Zahlungserinnerung). ab 1 gesendet → Stufe 2 (LETZTE Mahnung: Inkasso + Wiederherstellung).
+  const mahnungCount = React.useMemo(() => (events || []).filter((e) => /mahnung/i.test(e.t || "")).length, [events]);
+  const mahnStage = mahnungCount >= 1 ? 2 : 1;
+  const mahnLabel = mahnStage === 2 ? "Letzte Mahnung (Inkasso)" : "Mahnung";
   const doSendMahnung = async () => {
     try {
       const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
-      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung" });
-      toast("Mahnung an " + o.name + " gesendet ✓");
-      onStatus(o, "done", true, true, { pay: "mahnung" });
+      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung", stage: mahnStage });
+      toast(mahnLabel + " an " + o.name + " gesendet ✓");
+      // Status „Profil gelöscht" nur 1× (beim ersten Mal) – danach nur Zahlungsstatus.
+      onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
       reloadEvents(); setTimeout(reloadEvents, 900);
-    } catch (e) { toast("Mahnung fehlgeschlagen: " + e.message); }
+    } catch (e) { toast(mahnLabel + " fehlgeschlagen: " + e.message); }
   };
   const sendMahnung = () => {
+    // Stufe 2 (letzte Mahnung mit Inkasso) immer aktiv bestätigen lassen – das ist eine harte Eskalation.
+    if (mahnStage === 2) {
+      setAsk({
+        danger: true,
+        title: "Letzte Mahnung senden? (Inkasso)",
+        message: `An ${o.name} wurde bereits eine Mahnung gesendet. Diese 2. Mahnung droht mit Übergabe an ein Inkassobüro UND Wiederherstellung des Profils/der Bewertungen. Wirklich senden?`,
+        confirmLabel: "Letzte Mahnung senden",
+        onConfirm: doSendMahnung,
+      });
+      return;
+    }
     const elapsed = lastMahnungTs ? Date.now() - lastMahnungTs : Infinity;
     if (elapsed < MAHN_WINDOW_MS) {
       const mins = Math.max(1, Math.round(elapsed / 60000));
@@ -1549,7 +1568,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount ? <button className="btn btn-sec btn-sm" onClick={sendMahnung}><Icon.mail /> Mahnung senden</button> : null}
+              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage === 2 ? "btn-danger" : "btn-sec")} onClick={sendMahnung}><Icon.mail /> {mahnStage === 2 ? "Letzte Mahnung (Inkasso)" : "Mahnung senden"}</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
             <div style={{ marginTop: 14, borderTop: "1px solid var(--hairline)", paddingTop: 6 }}>
@@ -1677,7 +1696,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
     if (!sel) return;
     try {
       await sendPayLink({ to: order.email, name: order.name, orderId: order.id, currency: linkCur(sel), total: linkTotal(sel), protectionLabel: linkLabel(sel), lang: order.lang || "de", url: sel.url, celebrate: !storno });
-      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true, storno ? undefined : { pay: "sent" }); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht
+      if (onStatus) onStatus(order, storno ? "storniert" : "done", true, true, storno ? undefined : { pay: "sent", noEvent: order.status === "done" }); // Storno-Link → storniert; sonst Zahlungslink erhalten → Profil gelöscht (nur 1×)
       onClose(); toast((storno ? "Storno-Link (" : "Zahlungslink (") + linkLabel(sel) + ") an " + order.name + " gesendet ✓");
     } catch (e) { toast((storno ? "Storno-Link" : "Zahlungslink") + " fehlgeschlagen: " + e.message); }
   };
@@ -1799,8 +1818,12 @@ function AdminApp() {
     setDetail(upd);
     const s = STATUS_FLOW.find((s) => s.id === id);
     const label = s ? s.label : id;
+    // noEvent: nur Status/Zahlung speichern, KEINEN „Status → …"-Eintrag schreiben
+    // (z. B. wenn der Auftrag schon „done" ist und nur der Zahlungsstatus via
+    // Zahlungslink/Mahnung aktualisiert wird → „Profil gelöscht" nur 1×, nicht pro Sendung).
+    const noEvent = !!(patch && patch.noEvent);
     // Dauerhaft im Backend speichern (bleibt bis zur nächsten Änderung).
-    setOrderStatus({ orderId: o.id, status: id, pay: nextPay, label }).catch((e) => toast("Status nicht gespeichert: " + e.message));
+    setOrderStatus({ orderId: o.id, status: id, pay: nextPay, label, noEvent }).catch((e) => toast("Status nicht gespeichert: " + e.message));
     if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
   // Bestellung Max/Matthias zuweisen (oder entfernen) — lokal sofort, dann persistiert.

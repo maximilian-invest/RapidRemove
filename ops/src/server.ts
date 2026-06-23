@@ -806,10 +806,13 @@ app.post("/admin/paylink", async (req, reply) => {
       : `${total.toLocaleString("de-DE", { minimumFractionDigits: total % 1 ? 2 : 0 })} €`;
     const tlang = mailLang(b.lang);
     const due = tplKey === "mahnung" ? (DUE_MAHN[tlang] || DUE_MAHN.en) : (DUE_NOW[tlang] || DUE_NOW.en);
-    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined };
+    // Mahnstufe (nur für die Mahnung relevant): 2 = letzte Mahnung mit Inkasso-Androhung.
+    const stage = tplKey === "mahnung" && Number(b.stage) === 2 ? 2 : undefined;
+    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
-    const title = tplKey === "mahnung" ? "Mahnung gesendet" : "Zahlungslink gesendet";
+    // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
+    const title = tplKey === "mahnung" ? (stage === 2 ? "Mahnung gesendet · 2. Stufe (Inkasso)" : "Mahnung gesendet") : "Zahlungslink gesendet";
     // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
     // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
     // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
@@ -935,7 +938,11 @@ app.post("/admin/order-status", async (req, reply) => {
   const ok = await updateOrderStatus(id, status, pay);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
   const label = clip(b.label, 80) || status;
-  await insertEvent({ orderId: id, type: "status", title: `Status → ${label}`, detail: pay ? `Zahlung: ${pay} · im Dashboard gesetzt` : "im Dashboard gesetzt" });
+  // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
+  // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes
+  // „Profil gelöscht" pro Sendung; der Status wird nur einmal protokolliert).
+  if (b.noEvent !== true && b.noEvent !== "true")
+    await insertEvent({ orderId: id, type: "status", title: `Status → ${label}`, detail: pay ? `Zahlung: ${pay} · im Dashboard gesetzt` : "im Dashboard gesetzt" });
   return { ok: true };
 });
 
