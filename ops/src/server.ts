@@ -425,6 +425,10 @@ app.post("/check", async (req, reply) => {
         reviews: Number(b.reviews) || 0, recommend: clip(b.recommend, 40) || "remove",
         name: clip(b.name, 160), email: clip(b.email, 160) || undefined,
         country: clip(b.country, 6) || "DE", lang: clip(b.lang, 5) || "de",
+        // Funnel-Tracking: erreichte Wizard-Stufe (1–4), gesehener Preis, Herkunft.
+        step: b.step != null ? Number(b.step) || undefined : undefined,
+        amount: b.amount != null ? Number(b.amount) || undefined : undefined,
+        source: clip(b.source, 40) || undefined,
       });
     }
   } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }

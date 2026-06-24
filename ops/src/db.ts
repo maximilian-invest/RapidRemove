@@ -88,7 +88,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS profile text, ADD COLUMN IF NOT EXISTS category text, ADD COLUMN IF NOT EXISTS rating text,
       ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS flagged integer, ADD COLUMN IF NOT EXISTS recommend text,
       ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS country text,
-      ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text
+      ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
+      ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text
   `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
@@ -261,19 +262,27 @@ export async function wipeOrderData(): Promise<{ orders: number; checks: number;
 export type CheckInput = {
   id: string; profile?: string; category?: string; rating?: string; reviews?: number;
   flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;
+  step?: number; amount?: number; source?: string;
 };
 
 export async function upsertCheck(c: CheckInput): Promise<void> {
   if (!pool) return;
+  // Partielles Upsert: leere Felder eines Folge-Updates (z. B. reines Schritt-Update
+  // aus dem Funnel) überschreiben bestehende Werte NICHT (COALESCE). `step` wandert
+  // nur nach oben (GREATEST) – so bleibt die erreichte Trichter-Tiefe erhalten.
   await pool.query(
-    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      ON CONFLICT (id) DO UPDATE SET
-       profile=EXCLUDED.profile, category=EXCLUDED.category, rating=EXCLUDED.rating,
-       reviews=EXCLUDED.reviews, recommend=EXCLUDED.recommend, name=EXCLUDED.name,
-       email=COALESCE(EXCLUDED.email, checks.email)`,
+       profile=COALESCE(EXCLUDED.profile, checks.profile), category=COALESCE(EXCLUDED.category, checks.category),
+       rating=COALESCE(EXCLUDED.rating, checks.rating), reviews=COALESCE(EXCLUDED.reviews, checks.reviews),
+       flagged=COALESCE(EXCLUDED.flagged, checks.flagged), recommend=COALESCE(EXCLUDED.recommend, checks.recommend),
+       name=COALESCE(EXCLUDED.name, checks.name), email=COALESCE(EXCLUDED.email, checks.email),
+       amount=COALESCE(EXCLUDED.amount, checks.amount), source=COALESCE(EXCLUDED.source, checks.source),
+       step=GREATEST(COALESCE(checks.step,0), COALESCE(EXCLUDED.step,0))`,
     [c.id, c.profile || null, c.category || null, c.rating || null, c.reviews ?? null, c.flagged ?? null,
-     c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null],
+     c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null,
+     c.step ?? null, c.amount ?? null, c.source || null],
   );
 }
 

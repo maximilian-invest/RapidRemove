@@ -6,7 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
-import { readAttribution } from "@/lib/attribution";
+import { readAttribution, deriveSource } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
@@ -1414,9 +1414,9 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   const gtmFired = React.useRef({});
   React.useEffect(() => { gtmPush("initiate_checkout"); }, []);
   React.useEffect(() => {
-    if (step === 3 && !gtmFired.current.check_profile) { gtmFired.current.check_profile = true; gtmPush("check_profile"); }      // „Schritt 4" (Leistung wählen)
-    if (step === 5 && !gtmFired.current.add_to_cart) { gtmFired.current.add_to_cart = true; gtmPush("add_to_cart"); }            // „Schritt 6" (Checkout)
-  }, [step]);
+    if (step === 3 && !gtmFired.current.check_profile) { gtmFired.current.check_profile = true; gtmPush("check_profile"); updateCheckStep(2); }  // „Schritt 4" (Leistung/Preis gesehen)
+    if (step === 5 && !gtmFired.current.add_to_cart) { gtmFired.current.add_to_cart = true; gtmPush("add_to_cart"); updateCheckStep(3); }        // „Schritt 6" (Checkout erreicht)
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Autofokus auf das Namensfeld nur am Desktop — am Handy soll sich die Tastatur
   // nicht ungefragt öffnen (sie erscheint erst, wenn man das Feld antippt).
@@ -1537,17 +1537,28 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   const leistungTotal = servicePriceNum + (express ? num(p.express) : 0);
 
   const country = lang === "en" ? "US" : "DE";
+  // Funnel-Insights: Headline-Preis (z. B. 450/850 €) + Herkunft der Prüfung.
+  const checkAmt = num(service === "reset" ? p.reset : p.deletion) || 0;
+  const checkSource = deriveSource({ attribution: readAttribution() }).kind;
   const persistCheck = (prof) => {
     if (checkSent.current) return;
     checkSent.current = true;
     // prof kann direkt übergeben werden (State ist asynchron – beim Direkt-Pick/Link
     // ist `selected` noch nicht aktualisiert). Fällt sonst auf `selected` zurück.
-    const p = prof || selected;
+    const sp = prof || selected;
     submitCheck({
-      checkId, profile: p ? p.name : name, category: p ? (p.cat || "") : "",
-      rating: p ? (p.rating || "") : "", reviews: p ? (p.reviews || 0) : 0,
-      recommend: service, name: name || (p ? p.name : ""), country, lang,
+      checkId, profile: sp ? sp.name : name, category: sp ? (sp.cat || "") : "",
+      rating: sp ? (sp.rating || "") : "", reviews: sp ? (sp.reviews || 0) : 0,
+      recommend: service, name: name || (sp ? sp.name : ""), country, lang,
+      step: 1, amount: checkAmt || undefined, source: checkSource, // Funnel: Stufe 1 + Preis + Quelle
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
+  };
+  // Funnel-Stufe nachschärfen (nur aufwärts, einmal je Stufe): 2 = Preis gesehen, 3 = Checkout, 4 = Zahlung.
+  const stepFired = React.useRef({});
+  const updateCheckStep = (n) => {
+    if (!checkId || stepFired.current[n]) return;
+    stepFired.current[n] = true;
+    submitCheck({ checkId, step: n }).catch(() => {});
   };
   const proceedFromSearch = () => {
     persistCheck();
@@ -1638,6 +1649,8 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     if (Object.keys(er).length) return;
     setProcessing(true);
     persistCheck();
+    // Funnel: Zahlung/Bestellung gestartet (Stufe 4) + finaler Gesamtpreis.
+    submitCheck({ checkId, step: 4, amount: oneTimeTotal || undefined, source: checkSource }).catch(() => {});
     clearResumeProfile(); // Bestellung abgeschickt → Funnel abgeschlossen, CTA zurück auf „Gratis-Check"
     // Affiliate-Attribution (FirstPromoter): Tracking-ID (_fprom_tid) für die Sale-
     // Zuordnung UND den lesbaren Partner-Code (_fprom_ref) mitschicken, damit im

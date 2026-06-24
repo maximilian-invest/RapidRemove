@@ -112,9 +112,11 @@ function mapOrder(r) {
 }
 function mapCheck(r) {
   return {
-    id: r.id, created: fmtDate(r.created_at), profile: r.profile || "", name: r.name || "—", email: r.email || "",
+    id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, profile: r.profile || "", name: r.name || "—", email: r.email || "",
     rating: r.rating || "—", reviews: Number(r.reviews) || 0, flagged: Number(r.flagged) || 0,
     recommend: r.recommend || "remove", status: r.status || "neu", orderId: r.order_id || null,
+    // Funnel-Insights: erreichte Stufe (1–4), gesehener Preis, Herkunft.
+    step: Number(r.step) || 1, amount: r.amount != null ? Number(r.amount) : null, source: r.source || null,
   };
 }
 

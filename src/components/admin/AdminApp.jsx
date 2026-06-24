@@ -393,6 +393,21 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
     { ic: AI.euro, label: "Umsatz (bezahlt)", val: money(revenue, "DE"), d: "+12,4 % ggü. Vorwoche", up: true },
     { ic: AI.trendUp, label: "Prüfung → Auftrag", val: (checks.length ? Math.round(checks.filter((c) => c.status === "konvertiert").length / checks.length * 100) : 0) + " %", d: "Konversionsrate", up: true },
   ];
+  // ── Prüfungs-Trichter & Insights ──
+  // Erreichte Stufe je Prüfung (konvertierte zählen als Stufe 4, auch ohne Alt-Tracking).
+  const stepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
+  const FUNNEL = [{ key: 1, label: "Profil geprüft" }, { key: 2, label: "Preis/Leistung gesehen" }, { key: 3, label: "Checkout erreicht" }, { key: 4, label: "Zahlung gestartet" }];
+  const funnelCounts = FUNNEL.map((f) => ({ ...f, n: checks.filter((c) => stepOf(c) >= f.key).length }));
+  const convCount = checks.filter((c) => c.status === "konvertiert").length;
+  const checksTotal = checks.length;
+  const pctOf = (n) => (checksTotal ? Math.round((n / checksTotal) * 100) : 0);
+  const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
+  const bySource = {};
+  for (const c of checks) { const k = c.source || "direct"; bySource[k] = bySource[k] || { n: 0, conv: 0 }; bySource[k].n++; if (c.status === "konvertiert") bySource[k].conv++; }
+  const sourceRows = Object.entries(bySource).map(([k, v]) => ({ k, label: SRC_LABEL[k] || k, ...v })).sort((a, b) => b.n - a.n);
+  const convRate = (arr) => (arr.length ? Math.round((arr.filter((c) => c.status === "konvertiert").length / arr.length) * 100) : 0);
+  const withReviews = checks.filter((c) => (Number(c.reviews) || 0) > 0);
+  const noReviews = checks.filter((c) => (Number(c.reviews) || 0) === 0);
   if (isMobile) {
     const mobileKpis = kpis.filter((k) => k.label !== "Umsatz (bezahlt)" && k.label !== "Prüfung → Auftrag");
     return (
@@ -494,6 +509,55 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
               <span className="sb-logo">stripe</span>
               <div style={{ fontSize: 12.5, color: "var(--fg-2)", fontWeight: 700 }}>Live verbunden</div>
               <span className="sb-status"><span className="badge-st st-done"><span className="d"></span>Aktiv</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Prüfungs-Trichter & Insights (woran scheitern Abschlüsse?) */}
+      <div className="panel" style={{ marginTop: 22 }}>
+        <div className="panel-head">
+          <h2><AI.trendUp style={{ width: 17, height: 17, verticalAlign: "-3px", marginRight: 7, color: "var(--primary)" }} />Prüfungs-Trichter</h2>
+          <div className="ph-right"><span className="muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{checksTotal} Prüfungen → {convCount} Aufträge ({pctOf(convCount)} %)</span></div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 28, padding: "20px 22px" }}>
+          <div>
+            {funnelCounts.map((f, i) => {
+              const drop = i > 0 ? funnelCounts[i - 1].n - f.n : 0;
+              return (
+                <div key={f.key} style={{ marginBottom: 15 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 700, marginBottom: 6 }}>
+                    <span>{f.key}. {f.label}{i > 0 && drop > 0 ? <span style={{ color: "var(--danger)", fontWeight: 700, marginLeft: 8 }}>−{drop} abgesprungen</span> : null}</span>
+                    <span style={{ fontFamily: "var(--font-display)" }}>{f.n} · {pctOf(f.n)} %</span>
+                  </div>
+                  <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
+                    <div style={{ width: pctOf(f.n) + "%", height: "100%", background: "var(--primary)", borderRadius: 5 }}></div>
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ marginTop: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 800, marginBottom: 6, color: "var(--success)" }}>
+                <span>✓ Auftrag abgeschlossen</span><span style={{ fontFamily: "var(--font-display)" }}>{convCount} · {pctOf(convCount)} %</span>
+              </div>
+              <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
+                <div style={{ width: pctOf(convCount) + "%", height: "100%", background: "var(--success)", borderRadius: 5 }}></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", color: "var(--fg-muted)", marginBottom: 8 }}>Quelle · Prüfungen → Aufträge</div>
+            {sourceRows.length ? sourceRows.map((s) => (
+              <div key={s.k} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600, padding: "5px 0", borderBottom: "1px solid var(--hairline)" }}>
+                <span>{s.label}</span><span style={{ fontWeight: 800 }}>{s.n} → {s.conv} <span style={{ color: "var(--fg-muted)", fontWeight: 700 }}>({s.n ? Math.round((s.conv / s.n) * 100) : 0} %)</span></span>
+              </div>
+            )) : <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>Noch keine Quellen-Daten.</div>}
+            <div style={{ fontSize: 12, fontWeight: 800, textTransform: "uppercase", letterSpacing: ".04em", color: "var(--fg-muted)", margin: "16px 0 8px" }}>Profil-Qualität · Abschlussquote</div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600, padding: "5px 0", borderBottom: "1px solid var(--hairline)" }}>
+              <span>Mit Bewertungen</span><span style={{ fontWeight: 800 }}>{withReviews.length} <span style={{ color: "var(--fg-muted)", fontWeight: 700 }}>({convRate(withReviews)} %)</span></span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600, padding: "5px 0" }}>
+              <span>Ohne Bewertungen (0)</span><span style={{ fontWeight: 800 }}>{noReviews.length} <span style={{ color: "var(--fg-muted)", fontWeight: 700 }}>({convRate(noReviews)} %)</span></span>
             </div>
           </div>
         </div>
