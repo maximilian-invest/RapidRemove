@@ -1431,6 +1431,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     if (initialProfile) {
       const id = setTimeout(() => {
         checkedRef.current = initialProfile.placeId || initialProfile.name;
+        persistCheck(initialProfile); // mit konkretem Profil gestartet → Prüfung zählen
         go(3); // eindeutiges Profil → Schritt 3 entfällt, direkt zu Schritt 4
         setPhase("found");
         setConfetti(true);
@@ -1536,13 +1537,16 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   const leistungTotal = servicePriceNum + (express ? num(p.express) : 0);
 
   const country = lang === "en" ? "US" : "DE";
-  const persistCheck = () => {
+  const persistCheck = (prof) => {
     if (checkSent.current) return;
     checkSent.current = true;
+    // prof kann direkt übergeben werden (State ist asynchron – beim Direkt-Pick/Link
+    // ist `selected` noch nicht aktualisiert). Fällt sonst auf `selected` zurück.
+    const p = prof || selected;
     submitCheck({
-      checkId, profile: selected ? selected.name : name, category: selected ? selected.cat : "",
-      rating: selected ? selected.rating : "", reviews: selected ? selected.reviews : 0,
-      recommend: service, name, country, lang,
+      checkId, profile: p ? p.name : name, category: p ? (p.cat || "") : "",
+      rating: p ? (p.rating || "") : "", reviews: p ? (p.reviews || 0) : 0,
+      recommend: service, name: name || (p ? p.name : ""), country, lang,
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
   const proceedFromSearch = () => {
@@ -1593,6 +1597,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
       const nm = real ? real.name : fromLink;
       if (nm) { setName(nm); setContact((x) => ({ ...x, company: nm })); }
       checkedRef.current = real ? (real.placeId || real.name) : (fromLink || (selected && selected.name) || "");
+      persistCheck(real || (nm ? { name: nm } : null)); // Profil per Link verifiziert → Prüfung zählen
       go(3); // jetzt verifiziert → direkt zu Schritt 4
       setPhase("found");
       setConfetti(true);
@@ -1607,6 +1612,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     setCandidates([{ ...profile, id: "p1", primary: true }]);
     setSelectedId("p1");
     setMulti(false);
+    persistCheck(profile); // Profil ausgewählt → Prüfung IMMER zählen
     const key = profile.placeId || profile.name;
     if (key && key === checkedRef.current) { go(3); return; }
     setPhase("checking");
