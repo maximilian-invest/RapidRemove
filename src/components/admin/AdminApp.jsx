@@ -1206,11 +1206,13 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     }
     return latest;
   }, [events]);
-  // Mahnlauf: Anzahl bereits gesendeter Mahnungen → bestimmt die Stufe.
-  // 0 gesendet → Stufe 1 (Zahlungserinnerung). ab 1 gesendet → Stufe 2 (LETZTE Mahnung: Inkasso + Wiederherstellung).
+  // Mahnlauf (4 Stufen): bereits gesendete Stufen bestimmen die NÄCHSTE Stufe.
+  //  0 gesendet → Stufe 1 (Zahlungserinnerung) · 1 → Stufe 2 (2. Erinnerung) ·
+  //  2 → Stufe 3 (Mahnung, Inkasso) · ab 3 → Stufe 4 (letzte Mahnung, Reaktivierung).
   const mahnungCount = React.useMemo(() => (events || []).filter((e) => /mahnung/i.test(e.t || "")).length, [events]);
-  const mahnStage = mahnungCount >= 1 ? 2 : 1;
-  const mahnLabel = mahnStage === 2 ? "Letzte Mahnung (Inkasso)" : "Mahnung";
+  const mahnStage = Math.min(mahnungCount + 1, 4);
+  const mahnLabel = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" }[mahnStage];
+  const mahnBtnLabel = { 1: "Zahlungserinnerung senden", 2: "2. Erinnerung senden", 3: "Mahnung senden", 4: "Letzte Mahnung (Reaktivierung)" }[mahnStage];
   const doSendMahnung = async () => {
     try {
       const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
@@ -1222,13 +1224,15 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
     } catch (e) { toast(mahnLabel + " fehlgeschlagen: " + e.message); }
   };
   const sendMahnung = () => {
-    // Stufe 2 (letzte Mahnung mit Inkasso) immer aktiv bestätigen lassen – das ist eine harte Eskalation.
-    if (mahnStage === 2) {
+    // Ab Stufe 3 (scharf: Inkasso bzw. Reaktivierung) immer aktiv bestätigen lassen.
+    if (mahnStage >= 3) {
       setAsk({
         danger: true,
-        title: "Letzte Mahnung senden? (Inkasso)",
-        message: `An ${o.name} wurde bereits eine Mahnung gesendet. Diese 2. Mahnung droht mit Übergabe an ein Inkassobüro UND Wiederherstellung des Profils/der Bewertungen. Wirklich senden?`,
-        confirmLabel: "Letzte Mahnung senden",
+        title: mahnStage === 4 ? "Letzte Mahnung senden? (Reaktivierung + Inkasso)" : "Mahnung senden? (Inkasso)",
+        message: mahnStage === 4
+          ? `An ${o.name} geht die LETZTE Mahnung: Zahlung noch HEUTE – sonst ${o.service === "reset" ? "Wiederherstellung der bisherigen Bewertungen" : "Reaktivierung des Profils"} und Übergabe an ein Inkassobüro. Wirklich senden?`
+          : `An ${o.name} geht eine Mahnung mit Androhung von Inkasso und ${o.service === "reset" ? "Wiederherstellung der bisherigen Bewertungen" : "Wiederherstellung des Profils"}. Wirklich senden?`,
+        confirmLabel: mahnBtnLabel,
         onConfirm: doSendMahnung,
       });
       return;
@@ -1239,9 +1243,9 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       const ago = mins < 60 ? `vor ${mins} Min` : `vor ${Math.floor(mins / 60)} Std ${String(mins % 60).padStart(2, "0")} Min`;
       setAsk({
         danger: true,
-        title: "Achtung: Mahnung vor Kurzem versandt",
-        message: `An ${o.name} wurde bereits ${ago} eine Mahnung gesendet. Eine weitere Mahnung so kurz danach kann den Kunden verärgern. Möchten Sie trotzdem senden?`,
-        confirmLabel: "Mahnung trotzdem senden",
+        title: "Achtung: zuletzt vor Kurzem versandt",
+        message: `An ${o.name} wurde bereits ${ago} eine Mahnung/Erinnerung gesendet. Erneut so kurz danach kann den Kunden verärgern. Trotzdem senden?`,
+        confirmLabel: "Trotzdem senden",
         onConfirm: doSendMahnung,
       });
     } else {
@@ -1605,7 +1609,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage === 2 ? "btn-danger" : "btn-sec")} onClick={sendMahnung}><Icon.mail /> {mahnStage === 2 ? "Letzte Mahnung (Inkasso)" : "Mahnung senden"}</button> : null}
+              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung}><Icon.mail /> {mahnBtnLabel}</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
             <div style={{ marginTop: 14, borderTop: "1px solid var(--hairline)", paddingTop: 6 }}>
