@@ -397,13 +397,15 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
   // Erreichte Stufe je Prüfung (konvertierte zählen als Stufe 4, auch ohne Alt-Tracking).
   const stepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
   const FUNNEL = [{ key: 1, label: "Profil geprüft" }, { key: 2, label: "Preis/Leistung gesehen" }, { key: 3, label: "Checkout erreicht" }, { key: 4, label: "Zahlung gestartet" }];
-  const funnelCounts = FUNNEL.map((f) => ({ ...f, n: checks.filter((c) => stepOf(c) >= f.key).length }));
-  const convCount = checks.filter((c) => c.status === "konvertiert").length;
-  const checksTotal = checks.length;
-  const pctOf = (n) => (checksTotal ? Math.round((n / checksTotal) * 100) : 0);
+  // Trichter NUR über Prüfungen MIT Funnel-Daten (Alt-Prüfungen ohne Tracking würden Stufe 1 verzerren).
+  const tracked = checks.filter((c) => c.step != null || c.status === "konvertiert");
+  const funnelTotal = tracked.length;
+  const funnelCounts = FUNNEL.map((f) => ({ ...f, n: tracked.filter((c) => stepOf(c) >= f.key).length }));
+  const convCount = tracked.filter((c) => c.status === "konvertiert").length;
+  const pctOf = (n) => (funnelTotal ? Math.round((n / funnelTotal) * 100) : 0);
   const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
   const bySource = {};
-  for (const c of checks) { const k = c.source || "direct"; bySource[k] = bySource[k] || { n: 0, conv: 0 }; bySource[k].n++; if (c.status === "konvertiert") bySource[k].conv++; }
+  for (const c of checks) { if (!c.source) continue; bySource[c.source] = bySource[c.source] || { n: 0, conv: 0 }; bySource[c.source].n++; if (c.status === "konvertiert") bySource[c.source].conv++; }
   const sourceRows = Object.entries(bySource).map(([k, v]) => ({ k, label: SRC_LABEL[k] || k, ...v })).sort((a, b) => b.n - a.n);
   const convRate = (arr) => (arr.length ? Math.round((arr.filter((c) => c.status === "konvertiert").length / arr.length) * 100) : 0);
   const withReviews = checks.filter((c) => (Number(c.reviews) || 0) > 0);
@@ -525,7 +527,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
       <div className="panel" style={{ marginTop: 22 }}>
         <div className="panel-head">
           <h2><AI.trendUp style={{ width: 17, height: 17, verticalAlign: "-3px", marginRight: 7, color: "var(--primary)" }} />Prüfungs-Trichter</h2>
-          <div className="ph-right"><span className="muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{checksTotal} Prüfungen → {convCount} Aufträge ({pctOf(convCount)} %)</span></div>
+          <div className="ph-right"><span className="muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{funnelTotal} mit Funnel-Daten → {convCount} Aufträge ({pctOf(convCount)} %)</span></div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 28, padding: "20px 22px" }}>
           <div>
@@ -580,7 +582,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
         </div>
         <div className="tbl-scroll">
           <table className="tbl">
-            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Auffällig</th><th>Empfehlung</th><th>Abbruch bei</th><th>Status</th></tr></thead>
+            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Abbruch bei</th><th>Status</th></tr></thead>
             <tbody>
               {checks.map((c) => {
                 const linked = c.orderId ? orders.find((o) => o.id === c.orderId) : null;
@@ -590,11 +592,11 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
                     <td><span className="oid">{c.id}</span><div className="muted">{c.created.split("·")[1]}</div></td>
                     <td><div className="cust">{c.profile}<div className="sub">{c.name !== "—" ? c.name : c.email}</div></div></td>
                     <td><span className="amt" style={{ fontFamily: "var(--font-display)" }}>{c.rating}★</span><div className="muted">{c.reviews} Bew.</div></td>
-                    <td><span className={"flag-pill " + (c.flagged >= 10 ? "hi" : c.flagged >= 4 ? "mid" : "lo")}>{c.flagged + " verdächtig"}</span></td>
-                    <td>{SERVICES[c.recommend].name}</td>
                     <td>{c.status === "konvertiert"
                       ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>✓ beauftragt</span>
-                      : <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 800, padding: "3px 9px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
+                      : c.step == null
+                        ? <span style={{ color: "var(--fg-muted)", fontWeight: 700 }} title="Vor Einführung des Funnel-Trackings geprüft – keine Stufen-Daten">—</span>
+                        : <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 800, padding: "3px 9px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
                     </td>
                     <td>
                       <CheckBadge status={c.status} />
