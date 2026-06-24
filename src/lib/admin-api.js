@@ -310,6 +310,20 @@ export async function resetTestData() {
   return j; // { ok, orders, checks, events, upsell }
 }
 
+/** Setzt NUR die Profil-Prüfungen (Funnel/Leads) zurück. Bestellungen, Zahlungen
+ *  und der Verlauf bleiben unberührt. */
+export async function resetChecks() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/reset-checks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, confirm: "PRUEFUNGEN-LOESCHEN" }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j; // { ok, checks }
+}
+
 /* ---- 301-Weiterleitungen (im Admin pflegbar) ---- */
 /** Alle Weiterleitungen laden (inkl. deaktivierte). */
 export async function fetchRedirects() {

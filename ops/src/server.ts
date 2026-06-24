@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
@@ -577,6 +577,22 @@ app.post("/admin/reset-data", async (req, reply) => {
   try {
     const r = await wipeOrderData();
     app.log.warn({ wiped: r }, "Admin: Testdaten gelöscht (Live-Go)");
+    return { ok: true, ...r };
+  } catch (e) {
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
+// Admin: NUR die Profil-Prüfungen zurücksetzen (Bestellungen/Zahlungen/Verlauf bleiben).
+// Doppelt abgesichert: Admin-Token + Bestätigungswort.
+app.post("/admin/reset-checks", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (String(b.confirm || "") !== "PRUEFUNGEN-LOESCHEN") return reply.code(400).send({ ok: false, error: "Bestätigung fehlt: confirm muss 'PRUEFUNGEN-LOESCHEN' sein" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  try {
+    const r = await wipeChecks();
+    app.log.warn({ wiped: r }, "Admin: Prüfungen zurückgesetzt");
     return { ok: true, ...r };
   } catch (e) {
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });

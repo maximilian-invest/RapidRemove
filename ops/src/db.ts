@@ -259,6 +259,14 @@ export async function wipeOrderData(): Promise<{ orders: number; checks: number;
   return { orders: o.rowCount || 0, checks: c.rowCount || 0, events: e.rowCount || 0, upsell: u.rowCount || 0 };
 }
 
+/** Setzt NUR die Profil-Prüfungen zurück (Funnel/Leads). Bestellungen, Zahlungen
+ *  und der Aktivitäts-Verlauf bleiben unberührt. Nicht umkehrbar. */
+export async function wipeChecks(): Promise<{ checks: number }> {
+  if (!pool) return { checks: 0 };
+  const c = await pool.query(`DELETE FROM checks`);
+  return { checks: c.rowCount || 0 };
+}
+
 export type CheckInput = {
   id: string; profile?: string; category?: string; rating?: string; reviews?: number;
   flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;
