@@ -408,6 +408,13 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
   const convRate = (arr) => (arr.length ? Math.round((arr.filter((c) => c.status === "konvertiert").length / arr.length) * 100) : 0);
   const withReviews = checks.filter((c) => (Number(c.reviews) || 0) > 0);
   const noReviews = checks.filter((c) => (Number(c.reviews) || 0) === 0);
+  // Abbruchstelle je Prüfung (erreichte Stufe). Tiefer = „heißer" Lead (fast bezahlt).
+  const DROP = {
+    1: { t: "Profil-Auswahl", bg: "var(--neutral-100)", fg: "var(--fg-2)" },
+    2: { t: "Preis/Leistung", bg: "#fff7e6", fg: "#b45309" },
+    3: { t: "Checkout", bg: "#ffe9d6", fg: "#c2410c" },
+    4: { t: "Zahlung", bg: "#fdecec", fg: "#b42318" },
+  };
   if (isMobile) {
     const mobileKpis = kpis.filter((k) => k.label !== "Umsatz (bezahlt)" && k.label !== "Prüfung → Auftrag");
     return (
@@ -573,10 +580,11 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
         </div>
         <div className="tbl-scroll">
           <table className="tbl">
-            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Auffällig</th><th>Empfehlung</th><th>Status</th></tr></thead>
+            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Auffällig</th><th>Empfehlung</th><th>Abbruch bei</th><th>Status</th></tr></thead>
             <tbody>
               {checks.map((c) => {
                 const linked = c.orderId ? orders.find((o) => o.id === c.orderId) : null;
+                const d = DROP[stepOf(c)] || DROP[1];
                 return (
                   <tr key={c.id} onClick={() => linked ? openCheck(linked) : null} style={{ cursor: linked ? "pointer" : "default" }}>
                     <td><span className="oid">{c.id}</span><div className="muted">{c.created.split("·")[1]}</div></td>
@@ -584,6 +592,10 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
                     <td><span className="amt" style={{ fontFamily: "var(--font-display)" }}>{c.rating}★</span><div className="muted">{c.reviews} Bew.</div></td>
                     <td><span className={"flag-pill " + (c.flagged >= 10 ? "hi" : c.flagged >= 4 ? "mid" : "lo")}>{c.flagged + " verdächtig"}</span></td>
                     <td>{SERVICES[c.recommend].name}</td>
+                    <td>{c.status === "konvertiert"
+                      ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>✓ beauftragt</span>
+                      : <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 800, padding: "3px 9px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
+                    </td>
                     <td>
                       <CheckBadge status={c.status} />
                       {c.orderId ? <div className="muted" style={{ marginTop: 3 }}>{c.orderId}</div> : null}
