@@ -3,6 +3,7 @@
    Eigenständige Hülle wie Article/Legal: LangContext aus rr_lang, echte URLs.
    Formular sendet an das ops-Backend (/contact); WhatsApp-Kanal → Tidio-Live-Chat. */
 import React from "react";
+import "@/styles/kontakt.css";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat, useReveal, openChat, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";

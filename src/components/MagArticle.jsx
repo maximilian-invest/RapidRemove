@@ -1,6 +1,7 @@
 "use client";
 /* RapidRemove — generic magazine article renderer (data-driven, SEO editorial, i18n). */
 import React from "react";
+import "@/styles/article.css";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
 import { LangContext } from "@/lib/lang-context";

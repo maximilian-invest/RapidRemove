@@ -4,10 +4,11 @@ import Attribution from "@/components/Attribution";
 import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
-import "@/styles/blog.css";
-import "@/styles/article.css";
-import "@/styles/about.css";
-import "@/styles/kontakt.css";
+// Seiten-spezifische Stylesheets (blog/article/about/kontakt) werden NICHT mehr global
+// geladen, sondern in ihren Komponenten (Blog/Article/MagArticle/About/Kontakt) importiert,
+// damit sie nicht das Rendern der Startseite blockieren (kleinerer FCP/LCP auf Mobil).
+// Verifiziert: keiner dieser Selektoren matcht die Startseite. services.css/seo.css bleiben
+// global, weil die Startseite sie nutzt (Nav-Dropdown, Services-Trio, .svc-trio.quad).
 import "@/styles/demo.css";
 import "@/styles/services.css";
 import "@/styles/seo.css";

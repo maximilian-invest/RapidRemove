@@ -1,6 +1,7 @@
 "use client";
 /* RapidRemove — About / Über uns page (standalone route). */
 import React from "react";
+import "@/styles/about.css";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat, useReveal, CountUp, useRouteShell } from "@/components/Chrome";
 import { FinalCTA } from "@/components/Home";

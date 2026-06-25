@@ -2,6 +2,7 @@
 /* RapidRemove — flagship magazine article (detail page).
    "Google-Unternehmensprofil löschen – wie geht das?" — SEO-first, German. */
 import React from "react";
+import "@/styles/article.css";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat } from "@/components/Chrome";
 import { LangContext } from "@/lib/lang-context";

@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import "@/styles/blog.css";
 import { asset } from "@/lib/base";
 import { pagePath } from "@/lib/page-routes";
 import { ARTICLE_SLUG } from "@/lib/article-google-profil";
