@@ -540,14 +540,18 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
             {funnelCounts.map((f, i) => {
               const dropHere = dropAt(f.key).length;       // genau hier abgesprungen (nicht konvertiert)
               const sel = funnelOpen === f.key;
-              const clickable = dropHere > 0;
+              const clickable = funnelTotal > 0;           // bei vorhandenen Funnel-Daten ist jede Stufe anklickbar
               return (
                 <div key={f.key}
                   onClick={clickable ? () => setFunnelOpen(sel ? null : f.key) : undefined}
-                  title={clickable ? "Abgesprungene Kunden anzeigen" : undefined}
+                  title={clickable ? "Abgesprungene Kunden bei dieser Stufe anzeigen" : undefined}
+                  className={clickable ? "funnel-step" : undefined}
                   style={{ cursor: clickable ? "pointer" : "default", borderRadius: 8, padding: "6px 8px", margin: "0 -8px 9px", background: sel ? "var(--neutral-100)" : "transparent" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 700, marginBottom: 6 }}>
-                    <span>{f.key}. {f.label}{dropHere > 0 ? <span style={{ color: "var(--danger)", fontWeight: 700, marginLeft: 8 }}>−{dropHere} abgesprungen {sel ? "▾" : "›"}</span> : null}</span>
+                    <span>{f.key}. {f.label}
+                      {dropHere > 0 ? <span style={{ color: "var(--danger)", fontWeight: 700, marginLeft: 8 }}>−{dropHere} abgesprungen</span> : null}
+                      {clickable ? <span style={{ color: "var(--fg-muted)", fontWeight: 700, marginLeft: 6 }}>{sel ? "▾" : "›"}</span> : null}
+                    </span>
                     <span style={{ fontFamily: "var(--font-display)" }}>{f.n} · {pctOf(f.n)} %</span>
                   </div>
                   <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
@@ -557,11 +561,12 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
               );
             })}
             <div
-              onClick={convCount > 0 ? () => setFunnelOpen(funnelOpen === "conv" ? null : "conv") : undefined}
-              title={convCount > 0 ? "Abgeschlossene Aufträge anzeigen" : undefined}
-              style={{ cursor: convCount > 0 ? "pointer" : "default", borderRadius: 8, padding: "6px 8px", margin: "4px -8px 0", background: funnelOpen === "conv" ? "var(--neutral-100)" : "transparent" }}>
+              onClick={funnelTotal > 0 ? () => setFunnelOpen(funnelOpen === "conv" ? null : "conv") : undefined}
+              title={funnelTotal > 0 ? "Abgeschlossene Aufträge anzeigen" : undefined}
+              className={funnelTotal > 0 ? "funnel-step" : undefined}
+              style={{ cursor: funnelTotal > 0 ? "pointer" : "default", borderRadius: 8, padding: "6px 8px", margin: "4px -8px 0", background: funnelOpen === "conv" ? "var(--neutral-100)" : "transparent" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 800, marginBottom: 6, color: "var(--success)" }}>
-                <span>✓ Auftrag abgeschlossen{convCount > 0 ? <span style={{ fontWeight: 700, marginLeft: 8 }}>{funnelOpen === "conv" ? "▾" : "›"}</span> : null}</span><span style={{ fontFamily: "var(--font-display)" }}>{convCount} · {pctOf(convCount)} %</span>
+                <span>✓ Auftrag abgeschlossen{funnelTotal > 0 ? <span style={{ fontWeight: 700, marginLeft: 8, color: "var(--fg-muted)" }}>{funnelOpen === "conv" ? "▾" : "›"}</span> : null}</span><span style={{ fontFamily: "var(--font-display)" }}>{convCount} · {pctOf(convCount)} %</span>
               </div>
               <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
                 <div style={{ width: pctOf(convCount) + "%", height: "100%", background: "var(--success)", borderRadius: 5 }}></div>
@@ -602,7 +607,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
               </button>
             </div>
             {selCohort.length === 0 ? (
-              <div style={{ color: "var(--fg-muted)", fontSize: 13.5, padding: "6px 0" }}>Niemand ist hier abgesprungen. 🎉</div>
+              <div style={{ color: "var(--fg-muted)", fontSize: 13.5, padding: "6px 0" }}>{funnelOpen === "conv" ? "Noch keine abgeschlossenen Aufträge." : "Niemand ist bei dieser Stufe abgesprungen. 🎉"}</div>
             ) : (
               <div className="tbl-scroll">
                 <table className="tbl">

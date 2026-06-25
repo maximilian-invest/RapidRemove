@@ -72,6 +72,8 @@ button{font-family:inherit;}
 @media(max-width:1000px){.grid-2{grid-template-columns:1fr;}}
 .tbl-scroll{max-height:360px;overflow-y:auto;}
 .tbl-scroll thead th{position:sticky;top:0;z-index:1;background:#fff;}
+.funnel-step{transition:background .12s;}
+.funnel-step:hover{background:var(--neutral-100)!important;}
 .flag-pill{display:inline-flex;align-items:center;font-weight:800;font-size:11.5px;padding:3px 9px;border-radius:var(--r-pill);white-space:nowrap;}
 .flag-pill.hi{background:var(--danger-soft);color:#b42318;}
 .flag-pill.mid{background:var(--warning-soft);color:#92600c;}
