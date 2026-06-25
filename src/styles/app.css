@@ -644,9 +644,14 @@ a.tb-item:hover{color:var(--primary);}
 
 /* Mobil: Hero ohne Einblend-Animation sofort anzeigen. Die opacity:0-Startphase
    verzögert sonst das LCP-Element (große Überschrift) und drückt die mobile
-   Core-Web-Vitals-LCP über 2,5 s. Desktop (>920px) behält die Animation. */
+   Core-Web-Vitals-LCP über 2,5 s. Desktop (>920px) behält die Animation.
+   Zusätzlich oberhalb des Folds laufende Dauer-Animationen drosseln: ctaGlow
+   animiert box-shadow (NICHT compositet → ständiges Main-Thread-Paint, von
+   Lighthouse als „nicht zusammengesetzte Animation" markiert). Auf Mobil aus. */
 @media(max-width:920px){
   .hs{opacity:1;transform:none;animation:none;}
+  .cta-glow{animation:none;}
+  .cta-glow::after{animation:none;}
 }
 
 @media(prefers-reduced-motion:reduce){
