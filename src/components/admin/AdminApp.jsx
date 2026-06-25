@@ -1298,6 +1298,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const automationForKey = (key) => AUTOMATIONS.find((a) => a.keys.includes(key));
   const automationForTitle = (title) => AUTOMATIONS.find((a) => a.match && a.match.test(title || ""));
   const GENERIC_AUTO = { title: "Automatisch versendet", trigger: "Diese Nachricht wurde vom System automatisch ausgelöst (z. B. durch ein Stripe-Ereignis).", how: "Es war kein manuelles Zutun nötig — der Versand erfolgte automatisch im Hintergrund." };
+  // Für NICHT-Mail-Automatik (z. B. Zahlungsabgleich): hier wurde NICHTS an den Kunden gesendet.
+  const GENERIC_AUTO_EVENT = { title: "Automatisch erfasst", trigger: "Dieser Eintrag wurde vom System automatisch erzeugt — z. B. beim automatischen Stripe-Zahlungsabgleich.", how: "Es wurde KEINE E-Mail an den Kunden gesendet. Der Eintrag dient nur eurer internen Übersicht." };
   const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno"];
   const sendReal = (key, label) => {
     setAsk({
@@ -1455,7 +1457,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div className="act-item" key={a.id || i}>
           <div className="act-rail"></div>
           <div className={"act-ic " + a.ic}>{a.ic === "mail" ? <Icon.mail /> : a.ic === "pay" ? <Icon.card /> : a.ic === "status" ? <Icon.zap /> : a.ic === "assign" ? <Icon.users /> : <Icon.fileText />}</div>
-          <div className="act-body"><div className="at">{a.t}{a.synthetic ? <span style={synthChip}>abgeleitet</span> : null}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(automationForTitle(a.t) || GENERIC_AUTO)} style={actChip}><Icon.zap size={11} /> automatisch versendet</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={actChip}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
+          <div className="act-body"><div className="at">{a.t}{a.synthetic ? <span style={synthChip}>abgeleitet</span> : null}{a.auto ? <button type="button" title="Automatik erklären" onClick={() => setAutoInfo(a.ic === "mail" ? (automationForTitle(a.t) || GENERIC_AUTO) : GENERIC_AUTO_EVENT)} style={actChip}><Icon.zap size={11} /> {a.ic === "mail" ? "automatisch versendet" : a.ic === "pay" ? "automatisch erfasst" : "automatisch"}</button> : null}{a.hasHtml ? <button type="button" title="Exakt versendete Mail 1:1 ansehen" onClick={() => openMailPreview(a.id)} style={actChip}><Icon.eye size={11} /> Vorschau</button> : null}</div><div className="ad">{a.d}</div><div className="atime">{a.time}</div></div>
         </div>
       )) : <div style={{ color: "var(--fg-muted)", fontWeight: 600, fontSize: 13.5, padding: 8 }}>{events === null ? "Lädt…" : "Noch keine Aktivität erfasst."}</div>}
     </div>
