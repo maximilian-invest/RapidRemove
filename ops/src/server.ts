@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
@@ -973,6 +973,21 @@ app.post("/admin/order-status", async (req, reply) => {
   // „Profil gelöscht" pro Sendung; der Status wird nur einmal protokolliert).
   if (b.noEvent !== true && b.noEvent !== "true")
     await insertEvent({ orderId: id, type: "status", title: `Status → ${label}`, detail: pay ? `Zahlung: ${pay} · im Dashboard gesetzt` : "im Dashboard gesetzt" });
+  return { ok: true };
+});
+
+// Admin: fälschlich (automatisch) erfasste Zahlung korrigieren → pay zurück auf 'pending'
+// und Auto-Zuordnung für diesen Auftrag sperren, damit Webhook/Reconciler ihn nicht erneut
+// als bezahlt markieren. Danach lässt sich wieder ein Zahlungslink senden.
+app.post("/admin/order-correct-pay", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = clip(b.orderId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "orderId erforderlich" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const ok = await correctOrderPayment(id);
+  if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  await insertEvent({ orderId: id, type: "pay", title: "Zahlung als unbezahlt markiert (Korrektur)", detail: "Fälschlich erfasste Zahlung zurückgesetzt · automatische Zuordnung für diesen Auftrag deaktiviert" });
   return { ok: true };
 });
 

@@ -78,7 +78,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS prot_amount numeric, ADD COLUMN IF NOT EXISTS status text,
       ADD COLUMN IF NOT EXISTS pay text, ADD COLUMN IF NOT EXISTS note text, ADD COLUMN IF NOT EXISTS check_id text,
       ADD COLUMN IF NOT EXISTS raw jsonb, ADD COLUMN IF NOT EXISTS form jsonb,
-      ADD COLUMN IF NOT EXISTS assignee text, ADD COLUMN IF NOT EXISTS done_at timestamptz
+      ADD COLUMN IF NOT EXISTS assignee text, ADD COLUMN IF NOT EXISTS done_at timestamptz,
+      ADD COLUMN IF NOT EXISTS pay_locked boolean DEFAULT false
   `);
   // Backfill: bereits abgeschlossene Löschungen bekommen einen done_at-Zeitstempel
   // (Näherung über das Erstelldatum), damit die Gamification rückwirkend greift.
@@ -325,13 +326,24 @@ export async function markOrderPaidByEmail(email: string): Promise<string | null
     `UPDATE orders SET pay='paid'
        WHERE id = (
          SELECT id FROM orders
-          WHERE lower(email) = lower($1) AND pay IS DISTINCT FROM 'paid'
+          WHERE lower(email) = lower($1) AND pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE
           ORDER BY created_at DESC LIMIT 1
        )
      RETURNING id`,
     [email],
   );
   return (r.rows[0]?.id as string) ?? null;
+}
+
+/** Korrigiert eine FÄLSCHLICH erfasste Zahlung: setzt pay zurück auf 'pending' UND sperrt
+ *  die automatische Zuordnung (pay_locked) für diesen Auftrag – sonst würde der Stripe-
+ *  Webhook/Reconciler ihn binnen Minuten erneut als bezahlt markieren. Manuelles Setzen
+ *  (z. B. Status → „Profil gelöscht" oder echter späterer Zahlungseingang im Dashboard)
+ *  bleibt möglich, da updateOrderStatus den Lock NICHT prüft. */
+export async function correctOrderPayment(id: string): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE orders SET pay='pending', pay_locked=true WHERE id=$1`, [id]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 /**
@@ -355,7 +367,7 @@ export async function reconcileOrderForPayment(email: string, name: string): Pro
     `UPDATE orders SET pay='paid'
        WHERE id = (
          SELECT id FROM orders
-          WHERE pay IS DISTINCT FROM 'paid' AND COALESCE(status,'') <> 'storniert' AND ${cond}
+          WHERE pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE AND COALESCE(status,'') <> 'storniert' AND ${cond}
           ORDER BY created_at DESC LIMIT 1
        )
      RETURNING id, name`,

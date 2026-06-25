@@ -380,3 +380,18 @@ export async function setOrderStatus({ orderId, status, pay, label, noEvent }) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/** Korrigiert eine FÄLSCHLICH erfasste Zahlung: setzt sie zurück auf „ausstehend" und
+ *  sperrt die automatische Zuordnung für diesen Auftrag (sonst wird er erneut als bezahlt
+ *  markiert). Danach lässt sich wieder ein Zahlungslink senden. */
+export async function correctOrderPayment({ orderId }) {
+  if (!OPS || !orderId) return { ok: false };
+  const res = await fetch(OPS + "/admin/order-correct-pay", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
