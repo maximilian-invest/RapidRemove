@@ -92,6 +92,15 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
       ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text
   `);
+  // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
+  // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS reconciled_payments (
+      invoice_id  text PRIMARY KEY,
+      order_id    text,
+      created_at  timestamptz NOT NULL DEFAULT now()
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
       id          bigserial PRIMARY KEY,
@@ -355,7 +364,7 @@ export async function correctOrderPayment(id: string): Promise<boolean> {
  *   already – es gibt zwar eine passende Bestellung, sie ist aber schon bezahlt
  *   none    – keine passende Bestellung gefunden
  */
-export async function reconcileOrderForPayment(email: string, name: string): Promise<{ status: "marked" | "already" | "none"; id?: string; orderName?: string | null }> {
+export async function reconcileOrderForPayment(email: string, name: string, createdTs = 0): Promise<{ status: "marked" | "already" | "none"; id?: string; orderName?: string | null }> {
   if (!pool) return { status: "none" };
   const em = (email || "").trim();
   const nm = (name || "").trim();
@@ -363,19 +372,41 @@ export async function reconcileOrderForPayment(email: string, name: string): Pro
   const cond = `(($1 <> '' AND lower(email) = lower($1))
              OR ($2 <> '' AND lower(btrim(name)) = lower(btrim($2)))
              OR ($2 <> '' AND lower(btrim(company)) = lower(btrim($2))))`;
+  // Zeitgrenze: eine Zahlung kann nur eine Bestellung betreffen, die es zum Zahlungszeitpunkt
+  // schon gab. Bestellungen, die deutlich NACH der Zahlung erstellt wurden ($3 = Stripe-
+  // Zeitstempel der Zahlung, Unix-Sek.), werden ausgeschlossen – so markiert eine alte/fremde
+  // Zahlung keine NEUE Bestellung fälschlich als bezahlt. $3 = 0 → keine Grenze.
+  const timeCond = `($3 = 0 OR created_at <= to_timestamp($3) + interval '7 days')`;
   const upd = await pool.query(
     `UPDATE orders SET pay='paid'
        WHERE id = (
          SELECT id FROM orders
-          WHERE pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE AND COALESCE(status,'') <> 'storniert' AND ${cond}
+          WHERE pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE AND COALESCE(status,'') <> 'storniert' AND ${cond} AND ${timeCond}
           ORDER BY created_at DESC LIMIT 1
        )
      RETURNING id, name`,
-    [em, nm],
+    [em, nm, createdTs],
   );
   if (upd.rows[0]) return { status: "marked", id: upd.rows[0].id as string, orderName: (upd.rows[0].name as string) ?? null };
-  const any = await pool.query(`SELECT 1 FROM orders WHERE ${cond} LIMIT 1`, [em, nm]);
+  const any = await pool.query(`SELECT 1 FROM orders WHERE ${cond} AND ${timeCond} LIMIT 1`, [em, nm, createdTs]);
   return { status: any.rows[0] ? "already" : "none" };
+}
+
+/** Schon verarbeitete Stripe-Zahlung? Jede Rechnung darf HÖCHSTENS EINE Bestellung als
+ *  bezahlt markieren – sonst würde dieselbe echte Zahlung bei jedem Lauf erneut der jeweils
+ *  neuesten offenen Treffer-Bestellung gutgeschrieben (falsche „bezahlt" + Push). */
+export async function isPaymentReconciled(invoiceId: string): Promise<boolean> {
+  if (!pool || !invoiceId) return false;
+  const r = await pool.query(`SELECT 1 FROM reconciled_payments WHERE invoice_id=$1`, [invoiceId]);
+  return !!r.rows[0];
+}
+/** Merkt eine Stripe-Zahlung als verarbeitet vor (einmalig, idempotent). */
+export async function recordReconciledPayment(invoiceId: string, orderId: string | null): Promise<void> {
+  if (!pool || !invoiceId) return;
+  await pool.query(
+    `INSERT INTO reconciled_payments (invoice_id, order_id) VALUES ($1,$2) ON CONFLICT (invoice_id) DO NOTHING`,
+    [invoiceId, orderId || null],
+  );
 }
 
 /** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null = entfernen). */

@@ -13,7 +13,7 @@
  */
 import type { FastifyInstance } from "fastify";
 import { hasSecretKey, listDeletionPayments } from "./integrations/stripe";
-import { dbReady, reconcileOrderForPayment, insertEvent } from "./db";
+import { dbReady, reconcileOrderForPayment, insertEvent, isPaymentReconciled, recordReconciledPayment } from "./db";
 import { notifyPaymentReceived } from "./notify";
 
 export interface ReconcileReport {
@@ -35,13 +35,21 @@ export async function reconcilePaymentsOnce(log?: FastifyInstance["log"]): Promi
   for (const p of pays) {
     const label = p.name || p.email || p.id;
     try {
-      const r = await reconcileOrderForPayment(p.email, p.name);
+      // Jede Stripe-Rechnung NUR EINMAL verarbeiten – sonst wird dieselbe echte Zahlung bei
+      // jedem Lauf erneut der neuesten offenen Treffer-Bestellung gutgeschrieben (= falsche
+      // „bezahlt"-Markierung + Push für Kunden, die NICHT gezahlt haben).
+      if (await isPaymentReconciled(p.id)) { alreadyAssigned++; continue; }
+      const r = await reconcileOrderForPayment(p.email, p.name, p.created);
       if (r.status === "marked") {
         matched.push({ name: label, orderId: r.id! });
+        await recordReconciledPayment(p.id, r.id || null);     // einmalig „verbraucht"
         await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung eingegangen", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
         // 💰 Team-Push „Zahlung eingegangen" für neu zugeordnete Zahlungen.
         await notifyPaymentReceived({ who: label, amount: p.amount, cur: p.cur, orderId: r.id }).catch(() => {});
       } else if (r.status === "already") {
+        // Treffer existiert & ist bereits bezahlt → Zahlung vormerken, damit sie nicht später
+        // eine neu eingehende Bestellung fälschlich markiert.
+        await recordReconciledPayment(p.id, null);
         alreadyAssigned++;
       } else {
         unmatched.push(label);
