@@ -13,6 +13,7 @@ import "@/styles/services.css";
 import "@/styles/seo.css";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap";
 
 export const metadata = {
   metadataBase: new URL("https://www.rapid-remove.com"),
@@ -59,7 +60,13 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: "try{var o=JSON.parse(localStorage.getItem('rr_resume')||'null');if(o&&o.placeId&&(!o.ts||Date.now()-o.ts<2592000000))document.documentElement.classList.add('rr-resume');}catch(e){}" }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" />
+        {/* Schriften NICHT render-blockierend laden: per Inline-Skript als media="print"
+           einhängen und nach dem Laden auf "all" schalten. So rendert die Seite sofort
+           (Fallback-Font, display=swap), der Web-Font tauscht nach — deutlich bessere
+           mobile LCP, da kein blockierender CSS-Round-Trip zu Google. <noscript>-Fallback. */}
+        <link rel="preload" as="style" href={FONT_HREF} />
+        <script dangerouslySetInnerHTML={{ __html: "(function(){var l=document.createElement('link');l.rel='stylesheet';l.href=" + JSON.stringify(FONT_HREF) + ";l.media='print';l.onload=function(){this.media='all'};document.head.appendChild(l);})();" }} />
+        <noscript><link rel="stylesheet" href={FONT_HREF} /></noscript>
         <link rel="preconnect" href="https://assets.simplesolution.at" />
         <link rel="dns-prefetch" href="https://code.tidio.co" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />

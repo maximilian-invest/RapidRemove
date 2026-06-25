@@ -642,6 +642,13 @@ a.tb-item:hover{color:var(--primary);}
 .hs1{animation-delay:.05s;}.hs2{animation-delay:.18s;}.hs3{animation-delay:.31s;}.hs4{animation-delay:.44s;}.hs5{animation-delay:.57s;}.hs6{animation-delay:.7s;}
 @keyframes heroIn{to{opacity:1;transform:none;}}
 
+/* Mobil: Hero ohne Einblend-Animation sofort anzeigen. Die opacity:0-Startphase
+   verzögert sonst das LCP-Element (große Überschrift) und drückt die mobile
+   Core-Web-Vitals-LCP über 2,5 s. Desktop (>920px) behält die Animation. */
+@media(max-width:920px){
+  .hs{opacity:1;transform:none;animation:none;}
+}
+
 @media(prefers-reduced-motion:reduce){
   *{animation-duration:.001ms!important;animation-delay:0ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important;}
   .reveal{opacity:1;transform:none;}
