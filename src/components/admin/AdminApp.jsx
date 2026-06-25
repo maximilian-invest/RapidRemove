@@ -377,6 +377,7 @@ function MobileTabBar({ view, setView, counts }) {
 /* ---------- Dashboard ---------- */
 function Dashboard({ orders, checks, openOrder, openCheck }) {
   const isMobile = useIsMobile();
+  const [funnelOpen, setFunnelOpen] = React.useState(null); // angeklickte Trichter-Stufe (1–4 | "conv") → Abbrecher-Liste
   const newCount = orders.filter((o) => o.status === "new").length;
   const progressCount = orders.filter((o) => o.status === "progress").length;
   const revenue = orders.filter((o) => o.pay === "paid").reduce((s, o) => s + o.amount, 0);
@@ -403,6 +404,11 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
   const funnelCounts = FUNNEL.map((f) => ({ ...f, n: tracked.filter((c) => stepOf(c) >= f.key).length }));
   const convCount = tracked.filter((c) => c.status === "konvertiert").length;
   const pctOf = (n) => (funnelTotal ? Math.round((n / funnelTotal) * 100) : 0);
+  // Genau bei dieser Stufe abgesprungen: hat sie erreicht, ging aber nicht weiter und wurde kein Auftrag.
+  const dropAt = (key) => tracked.filter((c) => c.status !== "konvertiert" && stepOf(c) === key);
+  const convChecks = tracked.filter((c) => c.status === "konvertiert");
+  const selCohort = funnelOpen == null ? [] : funnelOpen === "conv" ? convChecks : dropAt(funnelOpen);
+  const selLabel = funnelOpen === "conv" ? "Auftrag abgeschlossen" : funnelOpen != null ? (FUNNEL[funnelOpen - 1] || {}).label : "";
   const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
   const bySource = {};
   for (const c of checks) { if (!c.source) continue; bySource[c.source] = bySource[c.source] || { n: 0, conv: 0 }; bySource[c.source].n++; if (c.status === "konvertiert") bySource[c.source].conv++; }
@@ -532,26 +538,37 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
         <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 28, padding: "20px 22px" }}>
           <div>
             {funnelCounts.map((f, i) => {
-              const drop = i > 0 ? funnelCounts[i - 1].n - f.n : 0;
+              const dropHere = dropAt(f.key).length;       // genau hier abgesprungen (nicht konvertiert)
+              const sel = funnelOpen === f.key;
+              const clickable = dropHere > 0;
               return (
-                <div key={f.key} style={{ marginBottom: 15 }}>
+                <div key={f.key}
+                  onClick={clickable ? () => setFunnelOpen(sel ? null : f.key) : undefined}
+                  title={clickable ? "Abgesprungene Kunden anzeigen" : undefined}
+                  style={{ cursor: clickable ? "pointer" : "default", borderRadius: 8, padding: "6px 8px", margin: "0 -8px 9px", background: sel ? "var(--neutral-100)" : "transparent" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 700, marginBottom: 6 }}>
-                    <span>{f.key}. {f.label}{i > 0 && drop > 0 ? <span style={{ color: "var(--danger)", fontWeight: 700, marginLeft: 8 }}>−{drop} abgesprungen</span> : null}</span>
+                    <span>{f.key}. {f.label}{dropHere > 0 ? <span style={{ color: "var(--danger)", fontWeight: 700, marginLeft: 8 }}>−{dropHere} abgesprungen {sel ? "▾" : "›"}</span> : null}</span>
                     <span style={{ fontFamily: "var(--font-display)" }}>{f.n} · {pctOf(f.n)} %</span>
                   </div>
                   <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
-                    <div style={{ width: pctOf(f.n) + "%", height: "100%", background: "var(--primary)", borderRadius: 5 }}></div>
+                    <div style={{ width: pctOf(f.n) + "%", height: "100%", background: sel ? "var(--danger)" : "var(--primary)", borderRadius: 5 }}></div>
                   </div>
                 </div>
               );
             })}
-            <div style={{ marginTop: 4 }}>
+            <div
+              onClick={convCount > 0 ? () => setFunnelOpen(funnelOpen === "conv" ? null : "conv") : undefined}
+              title={convCount > 0 ? "Abgeschlossene Aufträge anzeigen" : undefined}
+              style={{ cursor: convCount > 0 ? "pointer" : "default", borderRadius: 8, padding: "6px 8px", margin: "4px -8px 0", background: funnelOpen === "conv" ? "var(--neutral-100)" : "transparent" }}>
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, fontWeight: 800, marginBottom: 6, color: "var(--success)" }}>
-                <span>✓ Auftrag abgeschlossen</span><span style={{ fontFamily: "var(--font-display)" }}>{convCount} · {pctOf(convCount)} %</span>
+                <span>✓ Auftrag abgeschlossen{convCount > 0 ? <span style={{ fontWeight: 700, marginLeft: 8 }}>{funnelOpen === "conv" ? "▾" : "›"}</span> : null}</span><span style={{ fontFamily: "var(--font-display)" }}>{convCount} · {pctOf(convCount)} %</span>
               </div>
               <div style={{ height: 10, background: "var(--neutral-100)", borderRadius: 5, overflow: "hidden" }}>
                 <div style={{ width: pctOf(convCount) + "%", height: "100%", background: "var(--success)", borderRadius: 5 }}></div>
               </div>
+            </div>
+            <div style={{ marginTop: 12, fontSize: 12, color: "var(--fg-muted)", fontWeight: 600 }}>
+              Tipp: Auf eine Stufe klicken, um die abgesprungenen Kunden zu sehen.
             </div>
           </div>
           <div>
@@ -570,6 +587,47 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
             </div>
           </div>
         </div>
+        {funnelOpen != null ? (
+          <div style={{ borderTop: "1px solid var(--hairline)", padding: "16px 22px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>
+                {funnelOpen === "conv"
+                  ? <>✓ Abgeschlossene Aufträge</>
+                  : <>Abgesprungen bei „{selLabel}"</>}
+                <span style={{ color: "var(--fg-muted)", fontWeight: 700 }}> · {selCohort.length} {selCohort.length === 1 ? "Kunde" : "Kunden"}</span>
+              </div>
+              <button onClick={() => setFunnelOpen(null)}
+                style={{ border: "1px solid var(--hairline)", background: "transparent", borderRadius: 8, padding: "5px 11px", fontSize: 12.5, fontWeight: 700, color: "var(--fg-2)", cursor: "pointer" }}>
+                Schließen ✕
+              </button>
+            </div>
+            {selCohort.length === 0 ? (
+              <div style={{ color: "var(--fg-muted)", fontSize: 13.5, padding: "6px 0" }}>Niemand ist hier abgesprungen. 🎉</div>
+            ) : (
+              <div className="tbl-scroll">
+                <table className="tbl">
+                  <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Kontakt</th><th>Preis gesehen</th><th>Quelle</th></tr></thead>
+                  <tbody>
+                    {selCohort.map((c) => {
+                      const linked = c.orderId ? orders.find((o) => o.id === c.orderId) : null;
+                      return (
+                        <tr key={c.id} onClick={() => linked ? openCheck(linked) : null} style={{ cursor: linked ? "pointer" : "default" }}>
+                          <td><span className="oid">{c.id}</span><div className="muted">{c.created}</div></td>
+                          <td><div className="cust">{c.profile || "—"}<div className="sub">{c.name && c.name !== "—" ? c.name : (c.email || "—")}</div></div></td>
+                          <td>{c.email
+                            ? <a href={"mailto:" + c.email} onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 700 }}>{c.email}</a>
+                            : <span className="muted">kein Kontakt</span>}</td>
+                          <td><span className="amt">{c.amount ? money(c.amount, "DE") : "—"}</span></td>
+                          <td>{SRC_LABEL[c.source] || c.source || <span className="muted">—</span>}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        ) : null}
       </div>
 
       {/* Geprüfte Profile (Leads aus dem kostenlosen Prüf-Tool) */}
