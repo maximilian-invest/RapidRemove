@@ -605,11 +605,20 @@ app.post("/admin/order-assign", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const id = String(b.orderId || "");
   const who = b.assignee == null || b.assignee === "" ? null : String(b.assignee);
+  const force = b.force === true || b.force === "true"; // Übernahme trotz bestehender Zuweisung wurde bestätigt
   if (!id) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
   if (who && !["max", "matthias"].includes(who)) return reply.code(400).send({ ok: false, error: "ungültige Zuweisung" });
   if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
   try {
     const prev = (await getOrderBasic(id))?.assignee || null;
+    // Übernahme-Schutz (server-autoritativ, frischer prev aus der DB): Ist der Auftrag BEREITS
+    // einem ANDEREN Betreuer zugewiesen und wurde die Übernahme nicht bestätigt (force), NICHT
+    // überschreiben — Konflikt melden, damit der Client das Übernahme-Pop-up zeigt. Greift auch,
+    // wenn der Client noch nicht wusste, dass schon jemand zugewiesen war. Erstzuweisung (kein
+    // prev) und Entfernen (who=null) laufen ohne Rückfrage durch.
+    if (who && prev && prev !== who && !force) {
+      return reply.code(409).send({ ok: false, conflict: true, current: prev });
+    }
     const ok = await setOrderAssignee(id, who);
     // Betreuer-Aktivität protokollieren: Hinzufügen, Wechsel oder Entfernen.
     if (ok && prev !== who) {

@@ -2010,29 +2010,33 @@ function AdminApp() {
     setOrderStatus({ orderId: o.id, status: id, pay: nextPay, label, noEvent }).catch((e) => toast("Status nicht gespeichert: " + e.message));
     if (!silent) toast(s ? "Status „" + label + "“ gesetzt" : "Status aktualisiert");
   };
-  // Bestellung Max/Matthias zuweisen (oder entfernen) — lokal sofort, dann persistiert.
-  const doAssign = (o, who) => {
-    const upd = (x) => x && x.id === o.id ? { ...x, assignee: who } : x;
-    setOrders((list) => list.map(upd));
-    setActive(upd); setDetail(upd);
-    setOrderAssignee({ orderId: o.id, assignee: who }).catch((e) => toast("Zuweisung nicht gespeichert: " + e.message));
-    const name = who === "max" ? "Max" : who === "matthias" ? "Matthias" : null;
-    toast(name ? "Bestellung " + o.id + " → " + name : "Zuweisung entfernt");
+  const assigneeName = (x) => x === "max" ? "Max" : x === "matthias" ? "Matthias" : x;
+  // Bestellung Max/Matthias zuweisen (oder entfernen) — SERVER-AUTORITATIV: der Server kennt den
+  // aktuellen Betreuer frisch aus der DB und meldet eine Übernahme als Konflikt zurück. So greift
+  // die Rückfrage auch dann, wenn dieser Client noch nicht mitbekommen hat, dass bereits jemand
+  // zugewiesen ist (früher prüfte der Client nur seine — evtl. veralteten — lokalen Daten).
+  const doAssign = async (o, who, force) => {
+    try {
+      const res = await setOrderAssignee({ orderId: o.id, assignee: who, force: !!force });
+      if (res && res.conflict) {
+        // Bereits einem ANDEREN Betreuer zugewiesen → Übernahme erst bestätigen lassen.
+        setAssignAsk({
+          title: "Auftrag übernehmen?",
+          message: "Dieser Auftrag ist bereits " + assigneeName(res.current) + " zugewiesen. Wirklich übernehmen?",
+          confirmLabel: "Übernehmen",
+          onConfirm: () => doAssign(o, who, true),
+        });
+        return;
+      }
+      const upd = (x) => x && x.id === o.id ? { ...x, assignee: who } : x;
+      setOrders((list) => list.map(upd));
+      setActive(upd); setDetail(upd);
+      toast(who ? "Bestellung " + o.id + " → " + assigneeName(who) : "Zuweisung entfernt");
+    } catch (e) { toast("Zuweisung nicht gespeichert: " + e.message); }
   };
-  const setAssignee = (o, who) => {
-    // Übernahme eines bereits von jemand ANDEREM bearbeiteten Auftrags → erst bestätigen.
-    if (who && o.assignee && o.assignee !== who) {
-      const cur = o.assignee === "max" ? "Max" : o.assignee === "matthias" ? "Matthias" : o.assignee;
-      setAssignAsk({
-        title: "Auftrag übernehmen?",
-        message: "Bereits von " + cur + " in Bearbeitung. Wirklich übernehmen?",
-        confirmLabel: "Übernehmen",
-        onConfirm: () => doAssign(o, who),
-      });
-      return;
-    }
-    doAssign(o, who);
-  };
+  // Erstzuweisung (noch kein Betreuer) läuft ohne Rückfrage; bei bestehender Zuweisung eines
+  // ANDEREN Betreuers meldet der Server einen Konflikt und doAssign zeigt das Pop-up.
+  const setAssignee = (o, who) => doAssign(o, who, false);
   const goInvoice = (o) => { setInvoiceModal(o); };
   // „Auftrag stornieren" öffnet jetzt die Storno-Zahlungslink-Auswahl (stornoOrder);
   // als „storniert" markiert der Storno-Dialog die Bestellung nach dem Versand.

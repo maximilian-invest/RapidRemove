@@ -283,15 +283,19 @@ export async function fetchEmailPreview(eventId) {
   return res.json();
 }
 
-/** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null). */
-export async function setOrderAssignee({ orderId, assignee }) {
+/** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null).
+ *  `force` = bereits bestätigte Übernahme eines fremd zugewiesenen Auftrags.
+ *  Liefert bei Konflikt { ok:false, conflict:true, current } statt zu werfen. */
+export async function setOrderAssignee({ orderId, assignee, force }) {
   if (!OPS || !orderId) return { ok: false };
   const res = await fetch(OPS + "/admin/order-assign", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, orderId, assignee: assignee || null }),
+    body: JSON.stringify({ token: TOKEN, orderId, assignee: assignee || null, force: !!force }),
   });
   const j = await res.json().catch(() => ({}));
+  // 409 = bereits einem anderen Betreuer zugewiesen → kein Fehler, sondern Konflikt zur Rückfrage.
+  if (res.status === 409 && j && j.conflict) return { ok: false, conflict: true, current: j.current || null };
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
