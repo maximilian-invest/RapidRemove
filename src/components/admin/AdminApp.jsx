@@ -374,10 +374,52 @@ function MobileTabBar({ view, setView, counts }) {
   );
 }
 
+/* Wiederholungs-Prüfungen desselben Kunden zu EINEM Eintrag zusammenfassen: gleiches
+   Google-Profil ODER gleiche E-Mail (transitiv per Union-Find). So verwässern Mehrfach-
+   Prüfungen (1 Kunde prüft 5×, beauftragt 1×) nicht mehr Zähler & Quote — der Eintrag zählt
+   als 1 Prüfung und gilt als konvertiert, sobald IRGENDEINE davon beauftragt wurde.
+   `dupes` = Anzahl zusammengefasster Prüfungen (fürs „N× geprüft"-Label). */
+function dedupeChecks(list) {
+  const arr = list || [];
+  if (arr.length < 2) return arr.map((c) => ({ ...c, dupes: 1 }));
+  const norm = (s) => (s || "").trim().toLowerCase();
+  const parent = arr.map((_, i) => i);
+  const find = (i) => { while (parent[i] !== i) { parent[i] = parent[parent[i]]; i = parent[i]; } return i; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[ra] = rb; };
+  const byP = new Map(), byE = new Map();
+  arr.forEach((c, i) => {
+    const p = norm(c.profile), e = norm(c.email);
+    if (p) { if (byP.has(p)) union(i, byP.get(p)); else byP.set(p, i); }
+    if (e) { if (byE.has(e)) union(i, byE.get(e)); else byE.set(e, i); }
+  });
+  const groups = new Map();
+  arr.forEach((c, i) => { const r = find(i); const g = groups.get(r); if (g) g.push(c); else groups.set(r, [c]); });
+  const byNewest = (a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
+  const out = [];
+  for (const g of groups.values()) {
+    if (g.length === 1) { out.push({ ...g[0], dupes: 1 }); continue; }
+    const base = [...g].sort(byNewest)[0];                              // jüngste Prüfung = Repräsentant
+    const conv = g.find((c) => c.status === "konvertiert");
+    const maxStep = Math.max(0, ...g.map((c) => Number(c.step) || 0));  // tiefste je erreichte Funnel-Stufe
+    out.push({
+      ...base,
+      status: conv ? "konvertiert" : base.status,
+      orderId: conv ? conv.orderId : base.orderId,
+      step: maxStep > 0 ? maxStep : (base.step != null ? base.step : null),
+      source: g.map((c) => c.source).find(Boolean) || base.source || null,
+      amount: conv ? conv.amount : base.amount,
+      dupes: g.length,
+    });
+  }
+  return out.sort(byNewest);
+}
+
 /* ---------- Dashboard ---------- */
-function Dashboard({ orders, checks, openOrder, openCheck }) {
+function Dashboard({ orders, checks: rawChecks, openOrder, openCheck }) {
   const isMobile = useIsMobile();
   const [funnelOpen, setFunnelOpen] = React.useState(null); // angeklickte Trichter-Stufe (1–4 | "conv") → Abbrecher-Liste
+  // Mehrfach-Prüfungen desselben Kunden zusammenfassen → ehrliche Zähler & Konversionsquote.
+  const checks = dedupeChecks(rawChecks);
   const newCount = orders.filter((o) => o.status === "new").length;
   const progressCount = orders.filter((o) => o.status === "progress").length;
   const revenue = orders.filter((o) => o.pay === "paid").reduce((s, o) => s + o.amount, 0);
@@ -653,7 +695,7 @@ function Dashboard({ orders, checks, openOrder, openCheck }) {
                 return (
                   <tr key={c.id} onClick={() => linked ? openCheck(linked) : null} style={{ cursor: linked ? "pointer" : "default" }}>
                     <td><span className="oid">{c.id}</span><div className="muted">{c.created.split("·")[1]}</div></td>
-                    <td><div className="cust">{c.profile}<div className="sub">{c.name !== "—" ? c.name : c.email}</div></div></td>
+                    <td><div className="cust">{c.profile}{c.dupes > 1 ? <span title={c.dupes + "× geprüft (zusammengefasst)"} style={{ marginLeft: 7, fontSize: 10.5, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap", verticalAlign: "middle" }}>{c.dupes}× geprüft</span> : null}<div className="sub">{c.name !== "—" ? c.name : c.email}</div></div></td>
                     <td><span className="amt" style={{ fontFamily: "var(--font-display)" }}>{c.rating}★</span><div className="muted">{c.reviews} Bew.</div></td>
                     <td>{c.status === "konvertiert"
                       ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>✓ beauftragt</span>
