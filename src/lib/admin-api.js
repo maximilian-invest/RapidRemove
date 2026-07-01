@@ -101,6 +101,7 @@ function mapOrder(r) {
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
+    paypal: !!(r.raw && r.raw.paypal), // Kunde wünscht PayPal-Zahlung (10 % Rabatt)
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",

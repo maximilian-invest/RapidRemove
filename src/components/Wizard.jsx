@@ -1396,6 +1396,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   const [processing, setProcessing] = React.useState(false);
   const [agbOk, setAgbOk] = React.useState(false);
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
+  const [paypalWanted, setPaypalWanted] = React.useState(false); // PayPal-Rabatt-Opt-in (nur außerhalb DACH)
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
@@ -1684,6 +1685,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
       attribution: readAttribution(), // Herkunft (First-Touch) → Admin „Quelle"
+      paypal: paypalWanted, // Kunde will per PayPal zahlen (10 % Rabatt) – nur außerhalb DACH angeboten
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
@@ -2036,12 +2038,14 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
               <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
             </label>
             {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
-            {/* PayPal-Rabatt-Hinweis am Formular-Ende — NUR außerhalb DACH (lang !== "de") */}
+            {/* PayPal-Rabatt: Opt-in-Häkchen am Formular-Ende — NUR außerhalb DACH (lang !== "de").
+                Die Auswahl wird als paypal:true mit der Bestellung gespeichert → im Admin sichtbar. */}
             {lang !== "de" && conv.paypalNote ? (
-              <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "center", background: "#f0f6ff", border: "1px solid #cfe0ff", borderRadius: 12, padding: "11px 14px", fontSize: 13.5, lineHeight: 1.45, color: "#1c3a66", fontWeight: 700 }}>
-                <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }} aria-hidden="true">💳</span>
-                <span>{conv.paypalNote}</span>
-              </div>
+              <label style={{ marginTop: 16, display: "flex", gap: 10, alignItems: "flex-start", background: paypalWanted ? "#e3effe" : "#f0f6ff", border: "1px solid " + (paypalWanted ? "#7fb2f0" : "#cfe0ff"), borderRadius: 12, padding: "12px 14px", fontSize: 13.5, lineHeight: 1.45, color: "#1c3a66", fontWeight: 700, cursor: "pointer" }}>
+                <input type="checkbox" checked={paypalWanted} onChange={(e) => setPaypalWanted(e.target.checked)}
+                  style={{ marginTop: 1, width: 18, height: 18, flexShrink: 0, accentColor: "#0070ba", cursor: "pointer" }} />
+                <span><span aria-hidden="true">💳 </span>{conv.paypalNote}</span>
+              </label>
             ) : null}
             <button type="submit" className="btn btn-primary btn-block lg co-submit-desktop" style={{ marginTop: 16 }}>
               <Icon.lock size={18} /> {w.s5.button}

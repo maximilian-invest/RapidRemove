@@ -949,6 +949,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
           {!isPress && (
           <div className="dsec">
             <h3><Icon.lock /> Zahlung <span className="right"><PayBadge o={o} /></span></h3>
+          {o.paypal ? <div style={{ margin: "10px 0 0", background: "#e3effe", border: "1px solid #7fb2f0", borderRadius: 10, padding: "9px 12px", fontSize: 12.5, fontWeight: 800, color: "#1c3a66", display: "flex", gap: 8, alignItems: "center", lineHeight: 1.35 }}><span aria-hidden="true">💳</span> Kunde möchte per PayPal zahlen → 10 % Rabatt gewähren</div> : null}
             <div className="stripe-box" style={{ marginBottom: 14 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
@@ -1573,6 +1574,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         {!isPress && (
         <div className="m-dsec">
           <h3><Icon.lock /> Zahlung <span className="right"><PayBadge o={o} /></span></h3>
+          {o.paypal ? <div style={{ margin: "10px 0 0", background: "#e3effe", border: "1px solid #7fb2f0", borderRadius: 10, padding: "9px 12px", fontSize: 12.5, fontWeight: 800, color: "#1c3a66", display: "flex", gap: 8, alignItems: "center", lineHeight: 1.35 }}><span aria-hidden="true">💳</span> Kunde möchte per PayPal zahlen → 10 % Rabatt gewähren</div> : null}
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
           {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
@@ -1785,6 +1787,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           {!isPress && (
           <div className="dsec">
             <h3><Icon.lock /> Abrechnung <span className="right"><PayBadge o={o} /></span></h3>
+              {o.paypal ? <div style={{ margin: "10px 0 0", background: "#e3effe", border: "1px solid #7fb2f0", borderRadius: 10, padding: "9px 12px", fontSize: 12.5, fontWeight: 800, color: "#1c3a66", display: "flex", gap: 8, alignItems: "center", lineHeight: 1.35 }}><span aria-hidden="true">💳</span> Kunde möchte per PayPal zahlen → 10 % Rabatt gewähren</div> : null}
             <div className="stripe-box" style={{ marginBottom: 12 }}>
               <span className="sb-logo">stripe</span>
               <span className="sb-card"><AI.creditCard /> <span className="dots">•••• 4242</span></span>
