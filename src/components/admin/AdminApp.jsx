@@ -1253,6 +1253,7 @@ function AutomationInfo({ info, onClose }) {
 function FragebogenBlock({ form, onRequest }) {
   const f = form || {};
   const filled = !!f.filledAt;
+  const pp = (typeof f.paypal === "string") ? f.paypal.trim() : ""; // PayPal-Wunsch (E-Mail) aus dem Fragebogen – nur außerhalb DACH abgefragt
   return (
     <React.Fragment>
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
@@ -1271,6 +1272,11 @@ function FragebogenBlock({ form, onRequest }) {
             </div>
           );
         })}
+        {/* PayPal-Wunsch aus dem Fragebogen (Feld „PayPal-E-Mail für 10 % Rabatt", nur außerhalb DACH) */}
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", fontSize: 13, marginTop: 3, borderTop: "1px solid var(--hairline)", paddingTop: 9 }}>
+          <span style={{ color: "var(--fg-2)", fontWeight: 600 }}>💳 PayPal-Zahlung (10 % Rabatt)</span>
+          <span style={{ fontWeight: 800, flex: "none", color: pp ? "#1c6ef0" : "var(--fg-muted)", textAlign: "right", maxWidth: "62%", overflowWrap: "anywhere" }}>{pp || "—"}</span>
+        </div>
       </div>
     </React.Fragment>
   );

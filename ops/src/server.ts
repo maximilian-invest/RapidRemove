@@ -388,6 +388,8 @@ app.post("/order-form", async (req, reply) => {
   const ans = (b.form && typeof b.form === "object") ? (b.form as Record<string, unknown>) : {};
   const form: Record<string, unknown> = { filledAt: new Date().toISOString() };
   for (const k of FORM_FIELDS) { const v = clip(ans[k], 6); if (v === "ja" || v === "nein") form[k] = v; }
+  const paypal = clip(ans.paypal, 200);   // optionaler PayPal-Wunsch (E-Mail) für 10 % Rabatt – nur außerhalb DACH abgefragt
+  if (paypal) form.paypal = paypal;
   try {
     const ok = await setOrderForm(id, form);
     if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });

@@ -116,7 +116,6 @@ const CONV = {
     protStepLabel: "Schutz · Schritt 5", subtotal: "Zwischensumme",
     toProtect: "Weiter", toCheckout: "Weiter",
     totalAfter: "Gesamt nach Erfolg",
-    paypalNote: "PayPal-E-Mail für 10 % Rabatt (optional)",
     doneCrossH: "Noch mehr für Ihren Ruf?",
     doneCrossSub: "Optional, jederzeit — unsere Ergänzungen rund um Ihre Online-Reputation.",
     xsOrmTitle: "Reputation verbessern", xsOrmDesc: "Negative Ergebnisse aus Google verdrängen lassen.", xsOrmPrice: "Auf Anfrage",
@@ -183,7 +182,6 @@ const CONV = {
     protStepLabel: "Protection · Step 5", subtotal: "Subtotal",
     toProtect: "Continue", toCheckout: "Continue",
     totalAfter: "Total after success",
-    paypalNote: "PayPal email for 10% off (optional)",
     doneCrossH: "More for your reputation?",
     doneCrossSub: "Optional, anytime — our add-ons around your online reputation.",
     xsOrmTitle: "Improve reputation", xsOrmDesc: "Push negative results out of Google search.", xsOrmPrice: "On request",
@@ -240,7 +238,6 @@ const CONV = {
     protStepLabel: "Protección · Paso 5", subtotal: "Subtotal", mostChosen: "Más elegido", protNoneName: "Sin protección", protNoneDesc: "También se puede elegir más tarde.", checkingH: "Comprobando el perfil …", checkSteps: ["Perfil encontrado", "Reseñas analizadas", "Eliminación confirmada"], protOffContinue: "Continuar sin protección", delOk: "El perfil se puede eliminar", expertCta: "Habla con los expertos en Google",
     toProtect: "Continuar", toCheckout: "Continuar",
     totalAfter: "Total tras el éxito",
-    paypalNote: "Correo de PayPal para 10 % de descuento (opcional)",
     doneCrossH: "¿Aún más para tu reputación?",
     doneCrossSub: "Opcional, cuando quieras — nuestros complementos para tu reputación online.",
     xsOrmTitle: "Mejorar la reputación", xsOrmDesc: "Desplaza los resultados negativos de Google.", xsOrmPrice: "Bajo consulta",
@@ -297,7 +294,6 @@ const CONV = {
     protStepLabel: "Protection · Étape 5", subtotal: "Sous-total", mostChosen: "Le plus choisi", protNoneName: "Sans protection", protNoneDesc: "Peut aussi être choisi plus tard.", checkingH: "Vérification de la fiche …", checkSteps: ["Fiche trouvée", "Avis analysés", "Suppression confirmée"], protOffContinue: "Continuer sans protection", delOk: "La fiche peut être supprimée", expertCta: "Parlez aux experts Google",
     toProtect: "Continuer", toCheckout: "Continuer",
     totalAfter: "Total après le succès",
-    paypalNote: "E-mail PayPal pour 10 % de réduction (facultatif)",
     doneCrossH: "Encore plus pour votre réputation ?",
     doneCrossSub: "En option, à tout moment — nos compléments pour votre réputation en ligne.",
     xsOrmTitle: "Améliorer la réputation", xsOrmDesc: "Faites reculer les résultats négatifs dans Google.", xsOrmPrice: "Sur demande",
@@ -354,7 +350,6 @@ const CONV = {
     protStepLabel: "Protezione · Passo 5", subtotal: "Subtotale", mostChosen: "Più scelto", protNoneName: "Nessuna protezione", protNoneDesc: "Può essere scelto anche in seguito.", checkingH: "Verifica del profilo …", checkSteps: ["Profilo trovato", "Recensioni analizzate", "Rimozione confermata"], protOffContinue: "Continua senza protezione", delOk: "Il profilo può essere rimosso", expertCta: "Parla con gli esperti di Google",
     toProtect: "Continua", toCheckout: "Continua",
     totalAfter: "Totale dopo il successo",
-    paypalNote: "E-mail PayPal per 10% di sconto (facoltativo)",
     doneCrossH: "Ancora di più per la tua reputazione?",
     doneCrossSub: "Opzionale, quando vuoi — i nostri servizi aggiuntivi per la tua reputazione online.",
     xsOrmTitle: "Migliorare la reputazione", xsOrmDesc: "Fai retrocedere i risultati negativi su Google.", xsOrmPrice: "Su richiesta",
@@ -411,7 +406,6 @@ const CONV = {
     protStepLabel: "Bescherming · Stap 5", subtotal: "Subtotaal", mostChosen: "Meest gekozen", protNoneName: "Geen bescherming", protNoneDesc: "Kan ook later worden gekozen.", checkingH: "Profiel wordt gecontroleerd …", checkSteps: ["Profiel gevonden", "Reviews geanalyseerd", "Verwijdering bevestigd"], protOffContinue: "Doorgaan zonder bescherming", delOk: "Profiel kan worden verwijderd", expertCta: "Praat met de Google-experts",
     toProtect: "Verder", toCheckout: "Verder",
     totalAfter: "Totaal na succes",
-    paypalNote: "PayPal-e-mail voor 10% korting (optioneel)",
     doneCrossH: "Nog meer voor uw reputatie?",
     doneCrossSub: "Optioneel, altijd — onze aanvullingen voor uw online reputatie.",
     xsOrmTitle: "Reputatie verbeteren", xsOrmDesc: "Negatieve resultaten uit Google wegdrukken.", xsOrmPrice: "Op aanvraag",
@@ -468,7 +462,6 @@ const CONV = {
     protStepLabel: "Proteção · Passo 5", subtotal: "Subtotal", mostChosen: "Mais escolhido", protNoneName: "Sem proteção", protNoneDesc: "Também pode ser escolhido mais tarde.", checkingH: "A verificar o perfil …", checkSteps: ["Perfil encontrado", "Avaliações analisadas", "Remoção confirmada"], protOffContinue: "Continuar sem proteção", delOk: "O perfil pode ser removido", expertCta: "Fale com os especialistas em Google",
     toProtect: "Continuar", toCheckout: "Continuar",
     totalAfter: "Total após o sucesso",
-    paypalNote: "E-mail PayPal para 10% de desconto (opcional)",
     doneCrossH: "Ainda mais para a sua reputação?",
     doneCrossSub: "Opcional, quando quiser — os nossos complementos para a sua reputação online.",
     xsOrmTitle: "Melhorar a reputação", xsOrmDesc: "Faça recuar os resultados negativos do Google.", xsOrmPrice: "Sob consulta",
@@ -525,7 +518,6 @@ const CONV = {
     protStepLabel: "保護 · ステップ5", subtotal: "小計", mostChosen: "最も選ばれている", protNoneName: "保護なし", protNoneDesc: "後からでも選択できます。", checkingH: "プロフィールを確認中 …", checkSteps: ["プロフィールを確認", "レビューを分析", "削除可能を確認"], protOffContinue: "保護なしで続行", delOk: "プロフィールは削除可能です", expertCta: "Googleの専門家に相談",
     toProtect: "次へ", toCheckout: "次へ",
     totalAfter: "成功後の合計",
-    paypalNote: "PayPalのメールアドレス（10%割引・任意）",
     doneCrossH: "評判のためにさらに?",
     doneCrossSub: "任意・いつでも — オンライン評判に関する追加サービス。",
     xsOrmTitle: "評判を改善", xsOrmDesc: "Googleの否定的な検索結果を押し下げます。", xsOrmPrice: "お問い合わせ",
@@ -582,7 +574,6 @@ const CONV = {
     protStepLabel: "Skydd · Steg 5", subtotal: "Delsumma", mostChosen: "Mest vald", protNoneName: "Inget skydd", protNoneDesc: "Kan även väljas senare.", checkingH: "Kontrollerar profilen …", checkSteps: ["Profil hittad", "Omdömen analyserade", "Borttagning bekräftad"], protOffContinue: "Fortsätt utan skydd", delOk: "Profilen kan tas bort", expertCta: "Prata med Google-experterna",
     toProtect: "Fortsätt", toCheckout: "Fortsätt",
     totalAfter: "Totalt efter resultat",
-    paypalNote: "PayPal-e-post för 10 % rabatt (valfritt)",
     doneCrossH: "Ännu mer för ditt rykte?",
     doneCrossSub: "Valfritt, när som helst — våra tillägg för ditt rykte online.",
     xsOrmTitle: "Förbättra ryktet", xsOrmDesc: "Tryck ner negativa resultat i Google.", xsOrmPrice: "På förfrågan",
@@ -639,7 +630,6 @@ const CONV = {
     protStepLabel: "Beskyttelse · Trin 5", subtotal: "Subtotal", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Kan også vælges senere.", checkingH: "Tjekker profilen …", checkSteps: ["Profil fundet", "Anmeldelser analyseret", "Fjernelse bekræftet"], protOffContinue: "Fortsæt uden beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Tal med Google-eksperterne",
     toProtect: "Videre", toCheckout: "Videre",
     totalAfter: "I alt efter resultat",
-    paypalNote: "PayPal-e-mail for 10 % rabat (valgfrit)",
     doneCrossH: "Endnu mere for dit omdømme?",
     doneCrossSub: "Valgfrit, når som helst — vores tillæg til dit online omdømme.",
     xsOrmTitle: "Forbedr omdømmet", xsOrmDesc: "Skub negative resultater ned i Google.", xsOrmPrice: "På forespørgsel",
@@ -696,7 +686,6 @@ const CONV = {
     protStepLabel: "Beskyttelse · Trinn 5", subtotal: "Delsum", mostChosen: "Mest valgt", protNoneName: "Ingen beskyttelse", protNoneDesc: "Kan også velges senere.", checkingH: "Sjekker profilen …", checkSteps: ["Profil funnet", "Omtaler analysert", "Fjerning bekreftet"], protOffContinue: "Fortsett uten beskyttelse", delOk: "Profilen kan fjernes", expertCta: "Snakk med Google-ekspertene",
     toProtect: "Videre", toCheckout: "Videre",
     totalAfter: "Totalt etter resultat",
-    paypalNote: "PayPal-e-post for 10 % rabatt (valgfritt)",
     doneCrossH: "Enda mer for omdømmet ditt?",
     doneCrossSub: "Valgfritt, når som helst — våre tillegg for omdømmet ditt på nett.",
     xsOrmTitle: "Forbedre omdømmet", xsOrmDesc: "Skyv negative resultater ned i Google.", xsOrmPrice: "På forespørsel",
@@ -1684,7 +1673,6 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
       attribution: readAttribution(), // Herkunft (First-Touch) → Admin „Quelle"
-      paypal: (contact.paypal || "").trim(), // PayPal-E-Mail/Wunsch (10 % Rabatt) – nur außerhalb DACH abgefragt
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
@@ -2011,13 +1999,6 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
                   type="text" name="organization" autoComplete="organization" enterKeyHint="done" />
                 {errors.company && <div className="emsg">{errors.company}</div>}
               </div>
-              {/* Zusätzliches Feld – genau wie die anderen – NUR außerhalb DACH (lang !== "de"): PayPal-Rabatt */}
-              {lang !== "de" ? (
-                <div className="fld full">
-                  <input value={contact.paypal || ""} onChange={set("paypal")} placeholder={conv.paypalNote} aria-label={conv.paypalNote}
-                    type="text" name="paypal" autoComplete="off" enterKeyHint="done" />
-                </div>
-              ) : null}
             </div>
 
             <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
