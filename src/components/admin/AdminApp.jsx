@@ -1250,7 +1250,7 @@ function AutomationInfo({ info, onClose }) {
 }
 
 /* ---------- Fragebogen-Block (Status „ausgefüllt?" + Antworten, im Bestell-Detail) ---------- */
-function FragebogenBlock({ form, onRequest }) {
+function FragebogenBlock({ form, dach, onRequest }) {
   const f = form || {};
   const filled = !!f.filledAt;
   const pp = (typeof f.paypal === "string") ? f.paypal.trim() : ""; // PayPal-Wunsch (E-Mail) aus dem Fragebogen – nur außerhalb DACH abgefragt
@@ -1272,11 +1272,13 @@ function FragebogenBlock({ form, onRequest }) {
             </div>
           );
         })}
-        {/* PayPal-Wunsch aus dem Fragebogen (Feld „PayPal-E-Mail für 10 % Rabatt", nur außerhalb DACH) */}
-        <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", fontSize: 13, marginTop: 3, borderTop: "1px solid var(--hairline)", paddingTop: 9 }}>
-          <span style={{ color: "var(--fg-2)", fontWeight: 600 }}>💳 PayPal-Zahlung (10 % Rabatt)</span>
-          <span style={{ fontWeight: 800, flex: "none", color: pp ? "#1c6ef0" : "var(--fg-muted)", textAlign: "right", maxWidth: "62%", overflowWrap: "anywhere" }}>{pp || "—"}</span>
-        </div>
+        {/* PayPal-Wunsch aus dem Fragebogen (Feld „PayPal-E-Mail für 10 % Rabatt") – NUR außerhalb DACH */}
+        {!dach ? (
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", fontSize: 13, marginTop: 3, borderTop: "1px solid var(--hairline)", paddingTop: 9 }}>
+            <span style={{ color: "var(--fg-2)", fontWeight: 600 }}>💳 PayPal-Zahlung (10 % Rabatt)</span>
+            <span style={{ fontWeight: 800, flex: "none", color: pp ? "#1c6ef0" : "var(--fg-muted)", textAlign: "right", maxWidth: "62%", overflowWrap: "anywhere" }}>{pp || "—"}</span>
+          </div>
+        ) : null}
       </div>
     </React.Fragment>
   );
@@ -1613,7 +1615,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
 
         <div className="m-dsec">
           <h3><Icon.fileText /> Fragebogen</h3>
-          <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
+          <FragebogenBlock form={o.form} dach={o.lang === "de"} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
         </div>
 
         <div className="m-dsec">
@@ -1706,7 +1708,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="panel">
             <div className="panel-head"><h2>Fragebogen</h2></div>
             <div style={{ padding: "18px 22px" }}>
-              <FragebogenBlock form={o.form} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
+              <FragebogenBlock form={o.form} dach={o.lang === "de"} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
             </div>
           </div>
 
