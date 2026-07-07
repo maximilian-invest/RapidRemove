@@ -24,6 +24,7 @@ import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung"
 import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
 import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang";
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
+import PaypalAngebot, { subject as paypalAngebotSubject } from "./PaypalAngebot";
 
 export interface TemplateEntry {
   label: string;
@@ -87,6 +88,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: Verzoegerung,
     subject: verzoegerungSubject,
     sample: de,
+  },
+  "paypal-angebot": {
+    label: "PayPal-Vorteil · 10 % (außerhalb DACH)",
+    group: "Bestellung",
+    component: PaypalAngebot,
+    subject: paypalAngebotSubject,
+    sample: { lang: "en", name: "Alex", hasSub: false },
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────

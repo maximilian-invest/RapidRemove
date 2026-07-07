@@ -1359,7 +1359,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       confirmLabel: "Senden",
       onConfirm: async () => {
         try {
-          await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de" });
+          await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", hasSub: o.protection === "monthly" || o.protection === "monitor" });
           bumpTplUsage(key); setUsage(readTplUsage()); // Nutzung für „Am häufigsten verwendet" zählen
           // Status-Automatik: Storno-Mail → storniert, Reaktivierungs-Mail → wieder aktiv.
           let note = "";
@@ -1373,8 +1373,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
   const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
+  // Vorlagen, die NUR außerhalb DACH angeboten werden (z. B. der PayPal-Vorteil).
+  const NON_DACH_ONLY = new Set(["paypal-angebot"]);
+  const isDach = (o.lang || "de") === "de";
   const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
-  const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key));
+  const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key) && !(isDach && NON_DACH_ONLY.has(t.key)));
   const topUsed = [...sendableTpls].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 6);
   const renderTplBtn = (t) => {
     const auto = automationForKey(t.key);

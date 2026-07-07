@@ -920,12 +920,22 @@ app.post("/admin/send-template", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.to || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  const t = TEMPLATES[clip(b.key, 60)];
+  const key = clip(b.key, 60);
+  const t = TEMPLATES[key];
   if (!t) return reply.code(400).send({ ok: false, error: "unknown template" });
   const orderId = clip(b.orderId, 40);
   try {
     const tlang = mailLang(b.lang);
-    const props = { ...(t.sample as object), lang: tlang, formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined };
+    // „PayPal-Vorteil" ist NUR außerhalb DACH vorgesehen – serverseitige Sperre (der
+    // Admin blendet die Vorlage für DE-Bestellungen ohnehin aus).
+    if (key === "paypal-angebot" && tlang === "de")
+      return reply.code(400).send({ ok: false, error: "Diese Vorlage ist nur außerhalb DACH vorgesehen." });
+    const props = {
+      ...(t.sample as object), lang: tlang,
+      name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
+      hasSub: b.hasSub === true || b.hasSub === "true", // laufender Schutz (Abo) → Bündel-Angebot
+      formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
+    };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject: t.subject(props as any) });
