@@ -3,8 +3,8 @@
  * Logik 1:1 aus den make.com-Blueprints abgeleitet:
  *
  *   invoice.paid                  → Rechnungs-Mail mit PDF-Anhang + Rechnungslink
- *                                     (DE bei EUR, sonst EN); BCC an Trustpilot nur
- *                                     bei billing_reason = "manual" (Review-Einladung)
+ *                                     (DE bei EUR, sonst EN); BCC an Trustpilot bei jeder
+ *                                     Zahlung außer Abo-Verlängerung (Review-Einladung)
  *                                   + Upsell-Serie „Hinweis zum Schutzmodell"
  *                                     (3 Mails über 2 Wochen, Tag 0/7/14), falls die
  *                                     Zahlung eine Einmal-Löschung ohne Abo war
@@ -93,7 +93,7 @@ async function fetchBuffer(url: string): Promise<Buffer> {
  * Rechnungs-/Zahlungsbestätigungs-Mail wie make.com (Module 32/34/49/50):
  *   – immer mit angehängtem Rechnungs-PDF ({number}.pdf) und dem
  *     hosted_invoice_url als Download-Link in der Mail,
- *   – BCC an Trustpilot NUR bei billing_reason = "manual" (Review-Einladung),
+ *   – BCC an Trustpilot bei JEDER Zahlung (Review-Einladung) – außer Abo-Verlängerungen,
  *   – Sprache nach Rechnungswährung (EUR → de, sonst → en).
  * Das PDF wird best-effort geladen (make.com „Ignore" auf dem Datei-Download):
  *   schlägt der Download fehl, geht die Mail trotzdem – nur ohne Anhang.
@@ -110,7 +110,10 @@ async function sendInvoiceMail(
       log.error(`Webhook: Rechnungs-PDF nicht ladbar (Mail ohne Anhang): ${(e as Error).message}`);
     }
   }
-  const bcc = obj?.billing_reason === "manual" ? [TRUSTPILOT_BCC] : undefined;
+  // Trustpilot-Review-Einladung per BCC bei JEDER Zahlungs-/Rechnungs-Mail – außer bei
+  // reinen Abo-Verlängerungen (subscription_cycle), sonst bekäme derselbe Kunde monatlich
+  // eine neue Einladung. So stößt jede echte Zahlung eine Bewertungs-Einladung an.
+  const bcc = obj?.billing_reason === "subscription_cycle" ? undefined : [TRUSTPILOT_BCC];
   await sendTemplate(
     log, "zahlungsbestaetigung", lang, obj?.customer_email,
     { invoiceUrl: obj?.hosted_invoice_url || undefined },
