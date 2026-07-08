@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, setOrderAssignee, fetchVapidKey, savePushSub } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -1285,7 +1285,7 @@ function FragebogenBlock({ form, dach, onRequest }) {
 }
 
 /* ---------- Customer detail (full CRM record) ---------- */
-function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, onCorrectPay, onAssign, toast }) {
+function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, onCorrectPay, onMarkPaid, onAssign, toast }) {
   const o = order;
   const isPress = o.service === "deindex"; // Presse-/Suchergebnis-Auslistung → eigene Detailansicht
   const isMobile = useIsMobile();
@@ -1595,6 +1595,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
           {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
+          {o.pay !== "paid" && o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
           {o.pay === "paid" ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
         </div>
         )}
@@ -1814,6 +1815,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
               {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung}><Icon.mail /> {mahnBtnLabel}</button> : null}
+              {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
@@ -2117,6 +2119,22 @@ function AdminApp() {
       toast("Korrektur fehlgeschlagen: " + e.message);
     }
   };
+  // Zahlung MANUELL als eingegangen erfassen (z. B. PayPal/Überweisung außerhalb Stripe) →
+  // pay = 'paid', Status bleibt. Sonst bliebe der Auftrag ewig „offen". Reversibel über
+  // „Zahlung korrigieren". Optimistisch, mit Rollback auf den vorherigen Zahlungsstatus.
+  const doMarkPaid = async (o) => {
+    const prevPay = o.pay;
+    const upd = (x) => x && x.id === o.id ? { ...x, pay: "paid" } : x;
+    setOrders((list) => list.map(upd)); setDetail(upd); setActive(upd);
+    try {
+      await markOrderPaid({ orderId: o.id });
+      toast("Zahlung von " + o.name + " manuell erfasst ✓");
+    } catch (e) {
+      const back = (x) => x && x.id === o.id ? { ...x, pay: prevPay } : x;
+      setOrders((list) => list.map(back)); setDetail(back); setActive(back);
+      toast("Als bezahlt markieren fehlgeschlagen: " + e.message);
+    }
+  };
   const doReactivate = async (o) => {
     const upd = (x) => x && x.id === o.id ? { ...x, status: "progress", pay: "pending" } : x;
     setOrders((list) => list.map(upd));
@@ -2132,7 +2150,7 @@ function AdminApp() {
   };
 
   let body;
-  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onCorrectPay={doCorrectPay} onAssign={setAssignee} toast={toast} />;
+  if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onCorrectPay={doCorrectPay} onMarkPaid={doMarkPaid} onAssign={setAssignee} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;

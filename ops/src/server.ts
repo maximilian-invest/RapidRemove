@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
@@ -1000,6 +1000,22 @@ app.post("/admin/order-correct-pay", async (req, reply) => {
   const ok = await correctOrderPayment(id);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
   await insertEvent({ orderId: id, type: "pay", title: "Zahlung als unbezahlt markiert (Korrektur)", detail: "Fälschlich erfasste Zahlung zurückgesetzt · automatische Zuordnung für diesen Auftrag deaktiviert" });
+  return { ok: true };
+});
+
+// Admin: Zahlung MANUELL als eingegangen erfassen (z. B. PayPal/Überweisung außerhalb
+// Stripe) → pay = 'paid', Status bleibt unverändert. Sonst bliebe der Auftrag ewig „offen",
+// weil der automatische Stripe-Abgleich diese Zahlung nie sieht.
+app.post("/admin/order-mark-paid", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = clip(b.orderId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "orderId erforderlich" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const method = clip(b.method, 40); // optionaler Hinweis, z. B. „PayPal"
+  const ok = await markOrderPaidById(id);
+  if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  await insertEvent({ orderId: id, type: "pay", title: "Zahlung eingegangen (manuell erfasst)", detail: method ? `Manuell im Dashboard als bezahlt markiert · ${method}` : "Manuell im Dashboard als bezahlt markiert" });
   return { ok: true };
 });
 

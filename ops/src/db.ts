@@ -355,6 +355,15 @@ export async function correctOrderPayment(id: string): Promise<boolean> {
   return (r.rowCount ?? 0) > 0;
 }
 
+/** Manuell als bezahlt markieren (z. B. PayPal/Überweisung außerhalb Stripe) – OHNE
+ *  Statuswechsel. Für Zahlungen, die der automatische Stripe-Abgleich nie sieht, damit
+ *  der Auftrag nicht ewig auf „offen" bleibt. */
+export async function markOrderPaidById(id: string): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [id]);
+  return (r.rowCount ?? 0) > 0;
+}
+
 /**
  * Ordnet eine Stripe-Zahlung einer Bestellung zu (für den Zahlungs-Abgleich).
  * Matcht per E-Mail ODER Name/Firma (case-insensitiv, getrimmt) – z. B. „Michelle

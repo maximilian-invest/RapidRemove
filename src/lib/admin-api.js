@@ -396,3 +396,16 @@ export async function correctOrderPayment({ orderId }) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/** Zahlung manuell als eingegangen erfassen (z. B. PayPal/Überweisung außerhalb Stripe). */
+export async function markOrderPaid({ orderId, method }) {
+  if (!OPS || !orderId) return { ok: false };
+  const res = await fetch(OPS + "/admin/order-mark-paid", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId, method }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
