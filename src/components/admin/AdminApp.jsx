@@ -1362,9 +1362,13 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", hasSub: o.protection === "monthly" || o.protection === "monitor" });
           bumpTplUsage(key); setUsage(readTplUsage()); // Nutzung für „Am häufigsten verwendet" zählen
           // Status-Automatik: Storno-Mail → storniert, Reaktivierungs-Mail → wieder aktiv.
+          // PayPal-Vorteil (nach Löschung) → Auftrag „Gelöscht", Zahlung bleibt OFFEN
+          // (keepPay=true verhindert das Auto-Umschalten auf „bezahlt"; der PayPal-Eingang
+          //  kommt separat, nicht über Stripe).
           let note = "";
           if (STORNO_KEYS.includes(key)) { onStatus(o, "storniert", true); note = " · Bestellung storniert"; }
           else if (key === "reaktivierung") { onStatus(o, "progress", true); note = " · Auftrag reaktiviert"; }
+          else if (key === "paypal-angebot") { onStatus(o, "done", true, true, { noEvent: o.status === "done" }); note = " · als gelöscht markiert (Zahlung offen)"; }
           toast(label + " an " + o.name + " gesendet ✓" + note);
           reloadEvents(); setTimeout(reloadEvents, 900); // Verlauf sofort aktualisieren → Mail-Eintrag inkl. „Vorschau" erscheint direkt
         } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
