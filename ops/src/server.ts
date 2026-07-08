@@ -928,7 +928,7 @@ app.post("/admin/send-template", async (req, reply) => {
     const tlang = mailLang(b.lang);
     // „PayPal-Vorteil" ist NUR außerhalb DACH vorgesehen – serverseitige Sperre (der
     // Admin blendet die Vorlage für DE-Bestellungen ohnehin aus).
-    if (key === "paypal-angebot" && tlang === "de")
+    if ((key === "paypal-angebot" || key === "paypal-erinnerung") && tlang === "de")
       return reply.code(400).send({ ok: false, error: "Diese Vorlage ist nur außerhalb DACH vorgesehen." });
     const props = {
       ...(t.sample as object), lang: tlang,

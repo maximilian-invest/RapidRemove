@@ -1377,8 +1377,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
   const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
-  // Vorlagen, die NUR außerhalb DACH angeboten werden (z. B. der PayPal-Vorteil).
-  const NON_DACH_ONLY = new Set(["paypal-angebot"]);
+  // Vorlagen, die NUR außerhalb DACH angeboten werden (PayPal-Vorteil + -Erinnerung).
+  const NON_DACH_ONLY = new Set(["paypal-angebot", "paypal-erinnerung"]);
   const isDach = (o.lang || "de") === "de";
   const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
   const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key) && !(isDach && NON_DACH_ONLY.has(t.key)));

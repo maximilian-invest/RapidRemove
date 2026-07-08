@@ -25,6 +25,7 @@ import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
 import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang";
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 import PaypalAngebot, { subject as paypalAngebotSubject } from "./PaypalAngebot";
+import PaypalErinnerung, { subject as paypalErinnerungSubject } from "./PaypalErinnerung";
 
 export interface TemplateEntry {
   label: string;
@@ -95,6 +96,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalAngebot,
     subject: paypalAngebotSubject,
     sample: { lang: "en", name: "Alex", hasSub: false },
+  },
+  "paypal-erinnerung": {
+    label: "PayPal-Zahlungserinnerung · 48 Std. (außerhalb DACH)",
+    group: "Bestellung",
+    component: PaypalErinnerung,
+    subject: paypalErinnerungSubject,
+    sample: { lang: "en", name: "Alex" },
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────
