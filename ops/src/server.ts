@@ -64,6 +64,48 @@ const escapeHtml = (s: string) =>
   String(s).replace(/[<>&]/g, (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;"));
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
 
+/** „GLÖSCHT"-Hype-Push fürs Team (Web-Push an die installierte App + ntfy/Pushover),
+ *  inkl. Gamification-Rang der zugewiesenen Person. Wird beim Zahlungslink-Versand UND
+ *  beim PayPal-Angebot ausgelöst – beide bedeuten „Profil gelöscht, Zahlung angestoßen".
+ *  Best effort: Fehler kippen den Aufrufer nicht. */
+async function fireDeletionHypePush(orderId: string, name: string, to: string): Promise<void> {
+  try {
+    let assignee: string | null = null, company: string | null = null, oStatus: string | null = null, oService: string | null = null;
+    if (orderId && dbReady()) {
+      const ob = await getOrderBasic(orderId);
+      assignee = ob?.assignee || null;
+      company = ob?.company || null;
+      oStatus = ob?.status || null;
+      oService = ob?.service || null;
+    }
+    const isPerson = assignee === "max" || assignee === "matthias";
+    const who = isPerson ? PEOPLE[assignee as Assignee].name : "Das Team";
+    const kunde = company || clip(name, 80) || to;
+    // Gamification: Lösch-Counter + Rang (diese Löschung mitgezählt, falls der Auftrag noch
+    // nicht auf "done" steht – der Frontend-Statuswechsel passiert erst nach diesem Aufruf).
+    let rankLine = "", levelUpLine = "";
+    if (isPerson && dbReady()) {
+      const base = personStats(assignee as Assignee, await deletionsForGamification()).count;
+      const counts = oService ? DELETION_SERVICES.has(oService) : true;
+      const n = base + (counts && oStatus !== "done" ? 1 : 0);
+      const ri = rankInfo(n);
+      rankLine = ` · #${n} · ${ri.rank.emoji} ${ri.rank.name}`;
+      if (n > 0 && ri.rank.key !== rankInfo(n - 1).rank.key) levelUpLine = `\n🏆 Neuer Rang: ${ri.rank.name}!`;
+    }
+    const ptitle = `GLÖSCHT von ${who} 🤑💰`;
+    const pbody = `GULDEN SCHIESSEN!!${rankLine}${kunde ? `\n${kunde}` : ""}${levelUpLine}`;
+    const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
+    if (hasWebPush() && dbReady()) {
+      const subs = await listPushSubscriptions();
+      if (subs.length) {
+        const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
+        for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
+      }
+    }
+    await sendPush(ptitle, pbody, adminUrl);
+  } catch (e) { app.log.error({ err: e }, "Hype-Push fehlgeschlagen"); }
+}
+
 // 301-Weiterleitungen: Quelle immer als sauberer Pfad ("/alt"), Ziel als Pfad
 // oder absolute URL. Tolerant gegenüber eingefügten vollständigen URLs.
 function normRedirectSource(input: string): string {
@@ -853,44 +895,7 @@ app.post("/admin/paylink", async (req, reply) => {
     // 🤑 Hype-Push fürs Team, wenn ein ECHTER Zahlungslink rausgeht (NICHT bei Mahnung/Storno).
     // `celebrate` kommt nur vom normalen "Zahlungslink senden"; Storno sendet celebrate=false.
     if (tplKey !== "mahnung" && (b.celebrate === true || b.celebrate === "true")) {
-      try {
-        let assignee: string | null = null, company: string | null = null, oStatus: string | null = null, oService: string | null = null;
-        if (orderId && dbReady()) {
-          const ob = await getOrderBasic(orderId);
-          assignee = ob?.assignee || null;
-          company = ob?.company || null;
-          oStatus = ob?.status || null;
-          oService = ob?.service || null;
-        }
-        const isPerson = assignee === "max" || assignee === "matthias";
-        const who = isPerson ? PEOPLE[assignee as Assignee].name : "Das Team";
-        const kunde = company || clip(b.name, 80) || to;
-
-        // Gamification: Lösch-Counter + Rang dieser Person (diese Löschung mitgezählt,
-        // falls der Auftrag noch nicht auf "done" steht – der Frontend-Statuswechsel
-        // passiert erst nach diesem Aufruf).
-        let rankLine = "", levelUpLine = "";
-        if (isPerson && dbReady()) {
-          const base = personStats(assignee as Assignee, await deletionsForGamification()).count;
-          const counts = oService ? DELETION_SERVICES.has(oService) : true;
-          const n = base + (counts && oStatus !== "done" ? 1 : 0);
-          const ri = rankInfo(n);
-          rankLine = ` · #${n} · ${ri.rank.emoji} ${ri.rank.name}`;
-          if (n > 0 && ri.rank.key !== rankInfo(n - 1).rank.key) levelUpLine = `\n🏆 Neuer Rang: ${ri.rank.name}!`;
-        }
-
-        const ptitle = `GLÖSCHT von ${who} 🤑💰`;
-        const pbody = `GULDEN SCHIESSEN!!${rankLine}${kunde ? `\n${kunde}` : ""}${levelUpLine}`;
-        const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
-        if (hasWebPush() && dbReady()) {
-          const subs = await listPushSubscriptions();
-          if (subs.length) {
-            const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
-            for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
-          }
-        }
-        await sendPush(ptitle, pbody, adminUrl);
-      } catch (e) { app.log.error({ err: e }, "Hype-Push (Zahlungslink) fehlgeschlagen"); }
+      await fireDeletionHypePush(orderId, String(b.name || ""), to);
     }
 
     return { ok: true, url };
@@ -939,6 +944,9 @@ app.post("/admin/send-template", async (req, reply) => {
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject: t.subject(props as any) });
+    // PayPal-Angebot ist der „Profil gelöscht + Zahlung angestoßen"-Schritt (außerhalb DACH)
+    // → dieselbe Team-Hype-Push wie beim Zahlungslink-Versand.
+    if (key === "paypal-angebot") await fireDeletionHypePush(orderId, clip(b.name, 120), to);
     return { ok: true };
   } catch (e) {
     app.log.error({ err: e }, "send-template fehlgeschlagen");
