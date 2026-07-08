@@ -245,12 +245,12 @@ export async function setupExpressLinks({ apply } = {}) {
 }
 
 /** Sendet eine echte, gebrandete Vorlage (z. B. Rechte benötigt, Adresse) an den Kunden. */
-export async function sendTemplate({ key, to, orderId, lang, name, hasSub }) {
+export async function sendTemplate({ key, to, orderId, lang, name, hasSub, hasProtection }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/send-template", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, key, to, orderId, lang, name, hasSub }),
+    body: JSON.stringify({ token: TOKEN, key, to, orderId, lang, name, hasSub, hasProtection }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

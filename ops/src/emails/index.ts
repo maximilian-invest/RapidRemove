@@ -26,6 +26,7 @@ import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang"
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 import PaypalAngebot, { subject as paypalAngebotSubject } from "./PaypalAngebot";
 import PaypalErinnerung, { subject as paypalErinnerungSubject } from "./PaypalErinnerung";
+import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject } from "./PaypalZahlungBestaetigt";
 
 export interface TemplateEntry {
   label: string;
@@ -103,6 +104,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalErinnerung,
     subject: paypalErinnerungSubject,
     sample: { lang: "en", name: "Alex" },
+  },
+  "paypal-zahlung-bestaetigt": {
+    label: "PayPal-Zahlung bestätigt (+ Schutz aktiv, außerhalb DACH)",
+    group: "Bestellung",
+    component: PaypalZahlungBestaetigt,
+    subject: paypalZahlungBestaetigtSubject,
+    sample: { lang: "en", name: "Alex", hasProtection: true },
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────

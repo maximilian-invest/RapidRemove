@@ -933,12 +933,13 @@ app.post("/admin/send-template", async (req, reply) => {
     const tlang = mailLang(b.lang);
     // „PayPal-Vorteil" ist NUR außerhalb DACH vorgesehen – serverseitige Sperre (der
     // Admin blendet die Vorlage für DE-Bestellungen ohnehin aus).
-    if ((key === "paypal-angebot" || key === "paypal-erinnerung") && tlang === "de")
+    if ((key === "paypal-angebot" || key === "paypal-erinnerung" || key === "paypal-zahlung-bestaetigt") && tlang === "de")
       return reply.code(400).send({ ok: false, error: "Diese Vorlage ist nur außerhalb DACH vorgesehen." });
     const props = {
       ...(t.sample as object), lang: tlang,
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
       hasSub: b.hasSub === true || b.hasSub === "true", // laufender Schutz (Abo) → Bündel-Angebot
+      hasProtection: b.hasProtection === true || b.hasProtection === "true", // Schutz gebucht → „Schutz aktiv"
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
     const html = await render(React.createElement(t.component, props as any));
