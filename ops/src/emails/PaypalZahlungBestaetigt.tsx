@@ -7,14 +7,40 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, brand, type MailLang } from "./components";
 
+/** Berechnete Ersparnis – vorformatierte Beträge in der Währung der Bestellung. */
+export interface OfferData {
+  regular: string; paypal: string; savings: string;
+  sub?: { monthly: string; regular: string; paypal: string } | null;
+}
+
 export interface PaypalZahlungBestaetigtProps {
   lang?: MailLang;
   /** Vorname/Name des Kunden für die persönliche Anrede. */
   name?: string;
   /** Kunde hat einen Schutz gebucht (monthly/monitor/lifetime) → „Schutz ist jetzt aktiv". */
   hasProtection?: boolean;
+  /** Berechnete Ersparnis (konkrete Beträge) → „du hast X gespart". */
+  offer?: OfferData | null;
   /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
   _overrides?: Record<string, string>;
+}
+
+/** „Du hast gespart"-Zeile mit Platzhalter ({save}=Ersparnis). */
+const OFFER_T: Record<string, { savedLine: string }> = {
+  en: { savedLine: "And by paying via PayPal, you saved {save} — smart move!" },
+  es: { savedLine: "Y al pagar con PayPal, has ahorrado {save}. ¡Buena decisión!" },
+  fr: { savedLine: "Et en payant via PayPal, tu as économisé {save} — bien joué !" },
+  it: { savedLine: "E pagando con PayPal hai risparmiato {save} — ottima scelta!" },
+  nl: { savedLine: "En door met PayPal te betalen heb je {save} bespaard — slim!" },
+  pt: { savedLine: "E ao pagares com PayPal, poupaste {save} — boa escolha!" },
+  ja: { savedLine: "PayPalでのお支払いにより、{save}お得になりました。" },
+  sv: { savedLine: "Och genom att betala med PayPal sparade du {save} — smart!" },
+  da: { savedLine: "Og ved at betale med PayPal sparede du {save} — smart!" },
+  no: { savedLine: "Og ved å betale med PayPal sparte du {save} — smart!" },
+};
+
+function fillOffer(s: string, o?: OfferData | null): string {
+  return (s || "").replace(/\{save\}/g, (o && o.savings) || "");
 }
 
 interface Entry {
@@ -140,14 +166,16 @@ export function subject(p: PaypalZahlungBestaetigtProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalZahlungBestaetigt({ lang = "en", name = "", hasProtection = false, _overrides }: PaypalZahlungBestaetigtProps = {}) {
+export default function PaypalZahlungBestaetigt({ lang = "en", name = "", hasProtection = false, offer, _overrides }: PaypalZahlungBestaetigtProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
+  const ot = OFFER_T[lang] || OFFER_T.en;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting(who)}</strong></P>
       <P>{t.p1}</P>
       <P>{t.p2}</P>
+      {offer ? <P><strong style={{ color: brand.tintText }}>{fillOffer(ot.savedLine, offer)}</strong></P> : null}
 
       {hasProtection ? (
         <NoteBox>

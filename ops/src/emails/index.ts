@@ -100,7 +100,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: PaypalAngebot,
     subject: paypalAngebotSubject,
-    sample: { lang: "en", name: "Alex", hasSub: false },
+    sample: { lang: "en", name: "Alex", hasSub: true, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: { monthly: "$24.90", regular: "$298.80", paypal: "$249" } } },
     texts: paypalAngebotTexts,
   },
   "paypal-erinnerung": {
@@ -108,7 +108,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: PaypalErinnerung,
     subject: paypalErinnerungSubject,
-    sample: { lang: "en", name: "Alex" },
+    sample: { lang: "en", name: "Alex", offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
     texts: paypalErinnerungTexts,
   },
   "paypal-zahlung-bestaetigt": {
@@ -116,7 +116,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: PaypalZahlungBestaetigt,
     subject: paypalZahlungBestaetigtSubject,
-    sample: { lang: "en", name: "Alex", hasProtection: true },
+    sample: { lang: "en", name: "Alex", hasProtection: true, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
     texts: paypalZahlungBestaetigtTexts,
   },
 

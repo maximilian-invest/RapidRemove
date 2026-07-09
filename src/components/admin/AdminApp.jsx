@@ -1381,6 +1381,27 @@ function FragebogenBlock({ form, dach, onRequest }) {
   );
 }
 
+/* Ersparnis für die PayPal-Mails: Einmal-Teile (Löschung/Express/Lifetime) −10 %; Monats-Abo
+   (monthly/monitor) = 12 Monate zum Preis von 10 (2 Monate gratis). Beträge in Bestell-Währung. */
+function computeOffer(o) {
+  const oneTimeReg = (Number(o.amount) || 0)
+    + (o.express && o.expressAmount ? Number(o.expressAmount) : 0)
+    + (o.protection === "lifetime" && o.protAmount ? Number(o.protAmount) : 0);
+  const oneTimePP = Math.round(oneTimeReg * 90) / 100; // −10 %
+  const isSub = o.protection === "monthly" || o.protection === "monitor";
+  const monthly = isSub && o.protAmount ? Number(o.protAmount) : 0;
+  const subReg = Math.round(monthly * 12 * 100) / 100;
+  const subPP = Math.round(monthly * 10 * 100) / 100;  // 12 Monate zum Preis von 10
+  const regTotal = Math.round((oneTimeReg + subReg) * 100) / 100;
+  const ppTotal = Math.round((oneTimePP + subPP) * 100) / 100;
+  const save = Math.round((regTotal - ppTotal) * 100) / 100;
+  const m = (n) => money(n, o.country);
+  return {
+    regular: m(regTotal), paypal: m(ppTotal), savings: m(save),
+    sub: isSub ? { monthly: m(monthly), regular: m(subReg), paypal: m(subPP) } : null,
+  };
+}
+
 /* ---------- Customer detail (full CRM record) ---------- */
 function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, onPayLink, onStorno, onReactivate, onCorrectPay, onMarkPaid, onAssign, toast }) {
   const o = order;
@@ -1456,7 +1477,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       confirmLabel: "Senden",
       onConfirm: async () => {
         try {
-          await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none") });
+          await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o) });
           bumpTplUsage(key); setUsage(readTplUsage()); // Nutzung für „Am häufigsten verwendet" zählen
           // Status-Automatik: Storno-Mail → storniert, Reaktivierungs-Mail → wieder aktiv.
           // PayPal-Vorteil (nach Löschung) → Auftrag „Gelöscht", Zahlung bleibt OFFEN

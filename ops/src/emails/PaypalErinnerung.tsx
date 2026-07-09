@@ -7,12 +7,38 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, brand, type MailLang } from "./components";
 
+/** Berechnete Ersparnis – vorformatierte Beträge in der Währung der Bestellung. */
+export interface OfferData {
+  regular: string; paypal: string; savings: string;
+  sub?: { monthly: string; regular: string; paypal: string } | null;
+}
+
 export interface PaypalErinnerungProps {
   lang?: MailLang;
   /** Vorname/Name des Kunden für die persönliche Anrede. */
   name?: string;
+  /** Berechnete Ersparnis (konkrete Beträge) – erinnert an den PayPal-Vorteil. */
+  offer?: OfferData | null;
   /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
   _overrides?: Record<string, string>;
+}
+
+/** Ersparnis-Erinnerung mit Platzhaltern ({pp}=PayPal-Preis, {reg}=regulär, {save}=Ersparnis). */
+const OFFER_T: Record<string, { savingsLine: string }> = {
+  en: { savingsLine: "And don’t forget: with PayPal it’s only {pp} instead of {reg} — {save} saved." },
+  es: { savingsLine: "Y no olvides: con PayPal son solo {pp} en lugar de {reg} — ahorras {save}." },
+  fr: { savingsLine: "Et n’oublie pas : avec PayPal, c’est seulement {pp} au lieu de {reg} — {save} d’économie." },
+  it: { savingsLine: "E non dimenticare: con PayPal sono solo {pp} invece di {reg} — risparmi {save}." },
+  nl: { savingsLine: "En vergeet niet: met PayPal is het maar {pp} in plaats van {reg} — {save} bespaard." },
+  pt: { savingsLine: "E não te esqueças: com PayPal são apenas {pp} em vez de {reg} — poupas {save}." },
+  ja: { savingsLine: "お忘れなく:PayPalなら{reg}のところわずか{pp}——{save}お得です。" },
+  sv: { savingsLine: "Och glöm inte: med PayPal är det bara {pp} istället för {reg} — du sparar {save}." },
+  da: { savingsLine: "Og husk: med PayPal er det kun {pp} i stedet for {reg} — du sparer {save}." },
+  no: { savingsLine: "Og husk: med PayPal er det bare {pp} i stedet for {reg} — du sparer {save}." },
+};
+
+function fillOffer(s: string, o?: OfferData | null): string {
+  return (s || "").replace(/\{pp\}/g, (o && o.paypal) || "").replace(/\{reg\}/g, (o && o.regular) || "").replace(/\{save\}/g, (o && o.savings) || "");
 }
 
 interface Entry {
@@ -148,14 +174,16 @@ export function subject(p: PaypalErinnerungProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalErinnerung({ lang = "en", name = "", _overrides }: PaypalErinnerungProps = {}) {
+export default function PaypalErinnerung({ lang = "en", name = "", offer, _overrides }: PaypalErinnerungProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
+  const ot = OFFER_T[lang] || OFFER_T.en;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting(who)}</strong></P>
       <P>{t.p1}</P>
       <P>{t.p2}</P>
+      {offer ? <P><strong style={{ color: brand.tintText }}>{fillOffer(ot.savingsLine, offer)}</strong></P> : null}
 
       <NoteBox>
         <strong style={{ color: brand.tintText, fontSize: 15 }}>{t.deadline}</strong>

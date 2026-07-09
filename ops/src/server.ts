@@ -985,6 +985,7 @@ app.post("/admin/send-template", async (req, reply) => {
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
       hasSub: b.hasSub === true || b.hasSub === "true", // laufender Schutz (Abo) → Bündel-Angebot
       hasProtection: b.hasProtection === true || b.hasProtection === "true", // Schutz gebucht → „Schutz aktiv"
+      offer: (b.offer && typeof b.offer === "object") ? b.offer : undefined, // berechnete Ersparnis (Beträge)
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
     const { html, subject } = await renderTemplate(key, props as any);

@@ -7,14 +7,45 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, brand, type MailLang } from "./components";
 
+/** Berechnete Ersparnis – vorformatierte Beträge in der Währung der Bestellung. */
+export interface OfferData {
+  regular: string; paypal: string; savings: string;
+  sub?: { monthly: string; regular: string; paypal: string } | null;
+}
+
 export interface PaypalAngebotProps {
   lang?: MailLang;
   /** Vorname/Name des Kunden für die persönliche Anrede. */
   name?: string;
   /** Kunde hat einen laufenden Schutz (Abo: monthly/monitor) → Bündel-Angebot + 2 Monate gratis. */
   hasSub?: boolean;
+  /** Berechnete Ersparnis (konkrete Beträge). Ohne offer → generische „10 %"-Formulierung. */
+  offer?: OfferData | null;
   /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
   _overrides?: Record<string, string>;
+}
+
+/** Ersparnis-Zeilen mit Platzhaltern ({pp}=PayPal-Preis, {reg}=regulär, {save}=Ersparnis,
+ *  {monthly}=Monatspreis, {subReg}=Abo regulär/Jahr, {subPP}=Abo über PayPal). */
+const OFFER_T: Record<string, { savingsLine: string; subLine: string }> = {
+  de: { savingsLine: "Mit PayPal zahlst du {pp} statt {reg} – das sind {save} gespart.", subLine: "Dein Schutz kostet normalerweise {monthly}/Monat. Über PayPal: 12 Monate zum Preis von 10 – {subPP} statt {subReg}." },
+  en: { savingsLine: "With PayPal you pay {pp} instead of {reg} — that’s {save} saved.", subLine: "Your protection is normally {monthly}/month. Via PayPal you get 12 months for the price of 10 — {subPP} instead of {subReg}." },
+  es: { savingsLine: "Con PayPal pagas {pp} en lugar de {reg}: ahorras {save}.", subLine: "Tu protección cuesta normalmente {monthly}/mes. Con PayPal: 12 meses al precio de 10 — {subPP} en lugar de {subReg}." },
+  fr: { savingsLine: "Avec PayPal, tu paies {pp} au lieu de {reg} — soit {save} d’économie.", subLine: "Ta protection coûte normalement {monthly}/mois. Avec PayPal : 12 mois au prix de 10 — {subPP} au lieu de {subReg}." },
+  it: { savingsLine: "Con PayPal paghi {pp} invece di {reg} — risparmi {save}.", subLine: "La tua protezione costa normalmente {monthly}/mese. Con PayPal: 12 mesi al prezzo di 10 — {subPP} invece di {subReg}." },
+  nl: { savingsLine: "Met PayPal betaal je {pp} in plaats van {reg} — dat scheelt {save}.", subLine: "Je bescherming kost normaal {monthly}/maand. Met PayPal: 12 maanden voor de prijs van 10 — {subPP} in plaats van {subReg}." },
+  pt: { savingsLine: "Com PayPal pagas {pp} em vez de {reg} — poupas {save}.", subLine: "A tua proteção custa normalmente {monthly}/mês. Com PayPal: 12 meses ao preço de 10 — {subPP} em vez de {subReg}." },
+  ja: { savingsLine: "PayPalなら{reg}のところ{pp}——{save}お得です。", subLine: "保護は通常{monthly}/月です。PayPalなら12か月分を10か月分の価格で——{subReg}のところ{subPP}。" },
+  sv: { savingsLine: "Med PayPal betalar du {pp} istället för {reg} — du sparar {save}.", subLine: "Ditt skydd kostar normalt {monthly}/månad. Med PayPal: 12 månader till priset av 10 — {subPP} istället för {subReg}." },
+  da: { savingsLine: "Med PayPal betaler du {pp} i stedet for {reg} — du sparer {save}.", subLine: "Din beskyttelse koster normalt {monthly}/måned. Med PayPal: 12 måneder til prisen for 10 — {subPP} i stedet for {subReg}." },
+  no: { savingsLine: "Med PayPal betaler du {pp} i stedet for {reg} — du sparer {save}.", subLine: "Beskyttelsen din koster normalt {monthly}/måned. Med PayPal: 12 måneder til prisen for 10 — {subPP} i stedet for {subReg}." },
+};
+
+/** Platzhalter in den Ersparnis-Zeilen mit den konkreten Beträgen füllen. */
+function fillOffer(s: string, o?: OfferData | null): string {
+  return (s || "")
+    .replace(/\{pp\}/g, (o && o.paypal) || "").replace(/\{reg\}/g, (o && o.regular) || "").replace(/\{save\}/g, (o && o.savings) || "")
+    .replace(/\{monthly\}/g, (o && o.sub && o.sub.monthly) || "").replace(/\{subReg\}/g, (o && o.sub && o.sub.regular) || "").replace(/\{subPP\}/g, (o && o.sub && o.sub.paypal) || "");
 }
 
 interface Entry {
@@ -185,9 +216,10 @@ export function subject(p: PaypalAngebotProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalAngebot({ lang = "en", name = "", hasSub = false, _overrides }: PaypalAngebotProps = {}) {
+export default function PaypalAngebot({ lang = "en", name = "", hasSub = false, offer, _overrides }: PaypalAngebotProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
+  const ot = OFFER_T[lang] || OFFER_T.en;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting(who)}</strong></P>
@@ -196,8 +228,17 @@ export default function PaypalAngebot({ lang = "en", name = "", hasSub = false, 
       <P>{t.offerIntro}</P>
 
       <NoteBox>
-        <strong style={{ color: brand.tintText, fontSize: 15 }}>{t.offerMain}</strong>
-        {hasSub ? <><br /><br />{t.offerSub}</> : null}
+        {offer ? (
+          <>
+            <strong style={{ color: brand.tintText, fontSize: 15 }}>{fillOffer(ot.savingsLine, offer)}</strong>
+            {offer.sub ? <><br /><br />{fillOffer(ot.subLine, offer)}</> : null}
+          </>
+        ) : (
+          <>
+            <strong style={{ color: brand.tintText, fontSize: 15 }}>{t.offerMain}</strong>
+            {hasSub ? <><br /><br />{t.offerSub}</> : null}
+          </>
+        )}
       </NoteBox>
 
       <P muted>{t.caveat}</P>
