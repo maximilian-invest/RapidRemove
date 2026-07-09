@@ -7,7 +7,8 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride } from "./db";
+import { renderTemplate, editableFields } from "./renderTemplate";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
@@ -188,7 +189,7 @@ app.get("/preview/:key", async (req, reply) => {
   const t = TEMPLATES[key];
   if (!t) return reply.code(404).type("text/html").send("Unbekanntes Template");
   const props = { ...t.sample, ...(lang ? { lang } : {}), ...(variant ? { variant: Number(variant) } : {}), ...(service ? { service } : {}) };
-  const html = await render(React.createElement(t.component, props));
+  const { html } = await renderTemplate(key, props);
   return reply.type("text/html").send(html);
 });
 
@@ -765,9 +766,53 @@ app.post("/admin/templates", async (req, reply) => {
   const templates = Object.entries(TEMPLATES).map(([key, t]) => {
     let subject = "";
     try { subject = (t.subject as (p: any) => string)(t.sample as any); } catch { /* Betreff optional */ }
-    return { key, label: t.label, group: t.group, subject };
+    return { key, label: t.label, group: t.group, subject, editable: !!t.texts };
   });
   return { ok: true, templates };
+});
+
+// Admin: Detail einer Vorlage zum Bearbeiten – editierbare Felder, Default-Texte je Sprache
+// und die bereits gespeicherten Overrides. Nur Vorlagen mit `texts` sind bearbeitbar.
+app.post("/admin/template-detail", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const key = clip(b.key, 60);
+  const t = TEMPLATES[key];
+  if (!t) return reply.code(404).send({ ok: false, error: "unknown template" });
+  if (!t.texts) return { ok: true, key, editable: false, langs: [], fields: [], defaults: {}, overrides: {} };
+  const langs = Object.keys(t.texts);
+  const fields = editableFields(t.texts, "en");
+  const defaults: Record<string, Record<string, string>> = {};
+  for (const l of langs) {
+    const row = (t.texts[l] || {}) as Record<string, unknown>;
+    const d: Record<string, string> = {};
+    for (const f of fields) if (typeof row[f] === "string") d[f] = row[f] as string;
+    defaults[l] = d;
+  }
+  let overrides: Record<string, Record<string, string>> = {};
+  try { overrides = await getTemplateOverrides(key); } catch { /* DB weg → nur Defaults */ }
+  return { ok: true, key, editable: true, label: t.label, langs, fields, defaults, overrides };
+});
+
+// Admin: bearbeitete Texte einer Vorlage für EINE Sprache speichern. Nur editierbare
+// String-Felder werden übernommen (schützt Funktionsfelder wie greeting vor Überschreiben).
+app.post("/admin/template-save", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const key = clip(b.key, 60);
+  const t = TEMPLATES[key];
+  if (!t || !t.texts) return reply.code(400).send({ ok: false, error: "Vorlage nicht bearbeitbar" });
+  const lang = clip(b.lang, 5);
+  if (!lang || !t.texts[lang]) return reply.code(400).send({ ok: false, error: "Sprache unbekannt" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const allowed = new Set(editableFields(t.texts, lang));
+  const incoming = (b.fields && typeof b.fields === "object") ? (b.fields as Record<string, unknown>) : {};
+  const fields: Record<string, string> = {};
+  for (const [k, v] of Object.entries(incoming)) if (allowed.has(k) && typeof v === "string") fields[k] = clip(v, 4000);
+  const ok = await saveTemplateOverride(key, lang, fields);
+  if (!ok) return reply.code(500).send({ ok: false, error: "Speichern fehlgeschlagen" });
+  await insertEvent({ type: "mail", title: `Vorlage „${t.label}" bearbeitet (${lang})`, detail: "Text im Admin geändert", auto: false });
+  return { ok: true };
 });
 
 // Admin-Dashboard: alle AKTIVEN Stripe-Zahlungslinks auflisten (read-only).
@@ -942,9 +987,9 @@ app.post("/admin/send-template", async (req, reply) => {
       hasProtection: b.hasProtection === true || b.hasProtection === "true", // Schutz gebucht → „Schutz aktiv"
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
-    const html = await render(React.createElement(t.component, props as any));
-    await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
-    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject: t.subject(props as any) });
+    const { html, subject } = await renderTemplate(key, props as any);
+    await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject });
     // PayPal-Angebot ist der „Profil gelöscht + Zahlung angestoßen"-Schritt (außerhalb DACH)
     // → dieselbe Team-Hype-Push wie beim Zahlungslink-Versand.
     if (key === "paypal-angebot") await fireDeletionHypePush(orderId, clip(b.name, 120), to);

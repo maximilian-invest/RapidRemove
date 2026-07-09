@@ -24,9 +24,9 @@ import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung"
 import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
 import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang";
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
-import PaypalAngebot, { subject as paypalAngebotSubject } from "./PaypalAngebot";
-import PaypalErinnerung, { subject as paypalErinnerungSubject } from "./PaypalErinnerung";
-import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject } from "./PaypalZahlungBestaetigt";
+import PaypalAngebot, { subject as paypalAngebotSubject, T as paypalAngebotTexts } from "./PaypalAngebot";
+import PaypalErinnerung, { subject as paypalErinnerungSubject, T as paypalErinnerungTexts } from "./PaypalErinnerung";
+import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
 
 export interface TemplateEntry {
   label: string;
@@ -35,6 +35,10 @@ export interface TemplateEntry {
   component: React.ComponentType<any>;
   subject: (props: any) => string;
   sample: Record<string, unknown>;
+  /** Default-Texte je Sprache (nur gesetzt, wenn die Vorlage im Admin bearbeitbar ist).
+   *  Editierbar sind daraus die String-Felder; Funktionen (z. B. greeting) bleiben im Code.
+   *  `any`, weil die per-Vorlage-Entry-Typen keine String-Index-Signatur haben. */
+  texts?: Record<string, any>;
 }
 
 const de = { lang: "de" as const };
@@ -97,6 +101,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalAngebot,
     subject: paypalAngebotSubject,
     sample: { lang: "en", name: "Alex", hasSub: false },
+    texts: paypalAngebotTexts,
   },
   "paypal-erinnerung": {
     label: "PayPal-Zahlungserinnerung · 48 Std. (außerhalb DACH)",
@@ -104,6 +109,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalErinnerung,
     subject: paypalErinnerungSubject,
     sample: { lang: "en", name: "Alex" },
+    texts: paypalErinnerungTexts,
   },
   "paypal-zahlung-bestaetigt": {
     label: "PayPal-Zahlung bestätigt (+ Schutz aktiv, außerhalb DACH)",
@@ -111,6 +117,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalZahlungBestaetigt,
     subject: paypalZahlungBestaetigtSubject,
     sample: { lang: "en", name: "Alex", hasProtection: true },
+    texts: paypalZahlungBestaetigtTexts,
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────

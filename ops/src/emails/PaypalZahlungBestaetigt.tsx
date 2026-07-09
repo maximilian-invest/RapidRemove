@@ -13,6 +13,8 @@ export interface PaypalZahlungBestaetigtProps {
   name?: string;
   /** Kunde hat einen Schutz gebucht (monthly/monitor/lifetime) → „Schutz ist jetzt aktiv". */
   hasProtection?: boolean;
+  /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
+  _overrides?: Record<string, string>;
 }
 
 interface Entry {
@@ -21,7 +23,7 @@ interface Entry {
   p1: string; p2: string; protectionActive: string; close: string; signoff: string;
 }
 
-const T: Record<string, Entry> = {
+export const T: Record<string, Entry> = {
   en: {
     subject: "Payment received – thank you!",
     preview: "We’ve received your PayPal payment – all done.",
@@ -138,8 +140,8 @@ export function subject(p: PaypalZahlungBestaetigtProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalZahlungBestaetigt({ lang = "en", name = "", hasProtection = false }: PaypalZahlungBestaetigtProps = {}) {
-  const t = T[lang] || T.en;
+export default function PaypalZahlungBestaetigt({ lang = "en", name = "", hasProtection = false, _overrides }: PaypalZahlungBestaetigtProps = {}) {
+  const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

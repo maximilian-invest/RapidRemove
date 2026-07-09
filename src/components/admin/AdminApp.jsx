@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText } from "@/lib/admin-api";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -1012,10 +1012,103 @@ function EmailComposer({ data, onClose, toast }) {
   );
 }
 
+const LANG_NAMES = { de: "Deutsch", en: "English", es: "Español", fr: "Français", it: "Italiano", nl: "Nederlands", pt: "Português", ja: "日本語", sv: "Svenska", da: "Dansk", no: "Norsk" };
+
+/* ---------- Vorlagen-Editor: Texte pro Sprache bearbeiten (Overrides in der DB) ---------- */
+function TemplateEditor({ tpl, onClose, toast }) {
+  const opsBase = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
+  const [detail, setDetail] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  const [lang, setLang] = React.useState("en");
+  const [draft, setDraft] = React.useState({});      // { feld: override-text } für die aktuelle Sprache
+  const [saving, setSaving] = React.useState(false);
+  const [pvNonce, setPvNonce] = React.useState(0);   // erzwingt Vorschau-Reload nach dem Speichern
+  React.useEffect(() => {
+    let alive = true;
+    fetchTemplateDetail(tpl.key)
+      .then((d) => { if (!alive) return; setDetail(d); const l = (d.langs || []).includes("en") ? "en" : ((d.langs || [])[0] || "en"); setLang(l); setDraft({ ...((d.overrides && d.overrides[l]) || {}) }); })
+      .catch((e) => { if (alive) setErr(e.message || "Fehler"); });
+    return () => { alive = false; };
+  }, [tpl.key]);
+  const switchLang = (l) => { setLang(l); setDraft({ ...((detail.overrides && detail.overrides[l]) || {}) }); };
+  const setField = (f, v) => setDraft((d) => ({ ...d, [f]: v }));
+  const clearField = (f) => setDraft((d) => { const n = { ...d }; delete n[f]; return n; });
+  const save = async () => {
+    setSaving(true);
+    try {
+      await saveTemplateText({ key: tpl.key, lang, fields: draft });
+      setDetail((d) => ({ ...d, overrides: { ...(d.overrides || {}), [lang]: { ...draft } } }));
+      setPvNonce((n) => n + 1);
+      toast && toast("Vorlage gespeichert ✓");
+    } catch (e) { toast && toast("Speichern fehlgeschlagen: " + e.message); }
+    setSaving(false);
+  };
+  const notEditable = detail && detail.editable === false;
+  return (
+    <div className="modal-scrim open" onClick={onClose}>
+      <div className="modal" style={{ width: 880, maxWidth: "96vw", maxHeight: "92vh", display: "flex", flexDirection: "column" }} onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon.mail size={19} style={{ color: "var(--primary)" }} /></span>
+          <div><h3>Vorlage bearbeiten</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{tpl.label}</div></div>
+          <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
+        </div>
+        <div className="modal-body" style={{ overflow: "auto" }}>
+          {err ? <div className="empty"><Icon.mail /><p>{err}</p></div> : null}
+          {!detail && !err ? <div style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 600 }}>Lädt…</div> : null}
+          {notEditable ? <div className="empty"><Icon.mail /><p>Diese Vorlage ist noch nicht bearbeitbar — kommt in Kürze.</p></div> : null}
+          {detail && detail.editable ? (
+            <React.Fragment>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "var(--fg-2)" }}>Sprache:</span>
+                <select value={lang} onChange={(e) => switchLang(e.target.value)} style={{ padding: "7px 10px", borderRadius: 8, border: "1px solid var(--hairline)", fontWeight: 700, fontSize: 13 }}>
+                  {detail.langs.map((l) => <option key={l} value={l}>{LANG_NAMES[l] || l}</option>)}
+                </select>
+                <span style={{ fontSize: 12, color: "var(--fg-muted)", fontWeight: 600 }}>Leeres Feld = Standardtext wird verwendet</span>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {detail.fields.map((f) => {
+                  const def = (detail.defaults && detail.defaults[lang] && detail.defaults[lang][f]) || "";
+                  const val = draft[f] !== undefined ? draft[f] : "";
+                  const overridden = (val || "").trim() !== "";
+                  return (
+                    <div key={f}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", letterSpacing: ".03em" }}>{f}</span>
+                        {overridden ? <span style={{ fontSize: 11, fontWeight: 700, color: "var(--primary)" }}>· geändert</span> : <span style={{ fontSize: 11, fontWeight: 600, color: "var(--fg-muted)" }}>· Standard</span>}
+                        {overridden ? <button className="btn btn-ghost btn-sm" style={{ marginLeft: "auto", padding: "2px 8px", fontSize: 11 }} onClick={() => clearField(f)}>↺ Standard</button> : null}
+                      </div>
+                      <textarea value={val} onChange={(e) => setField(f, e.target.value)} placeholder={def}
+                        rows={Math.min(6, Math.max(2, Math.ceil(((def && def.length) || 40) / 70)))}
+                        style={{ width: "100%", boxSizing: "border-box", padding: "9px 11px", borderRadius: 8, border: "1px solid " + (overridden ? "var(--primary)" : "var(--hairline)"), fontSize: 13.5, lineHeight: 1.5, fontFamily: "inherit", resize: "vertical" }} />
+                    </div>
+                  );
+                })}
+              </div>
+              {opsBase ? (
+                <div style={{ marginTop: 16 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "var(--fg-2)", textTransform: "uppercase", letterSpacing: ".03em", marginBottom: 6 }}>Vorschau (gespeicherter Stand)</div>
+                  <iframe key={pvNonce} title="Vorschau" src={opsBase + "/preview/" + tpl.key + "?lang=" + lang + "&_=" + pvNonce} style={{ width: "100%", height: 420, border: "1px solid var(--hairline)", borderRadius: 10, background: "#fff" }} />
+                </div>
+              ) : null}
+            </React.Fragment>
+          ) : null}
+        </div>
+        {detail && detail.editable ? (
+          <div style={{ padding: "12px 22px", borderTop: "1px solid var(--hairline)", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <button className="btn btn-pri" onClick={save} disabled={saving}><Icon.checkCircle size={16} /> {saving ? "Speichert…" : "Speichern (" + (LANG_NAMES[lang] || lang) + ")"}</button>
+            <span style={{ fontSize: 12, color: "var(--fg-muted)", fontWeight: 600 }}>Gespeichert wird nur die aktuelle Sprache. Vorschau lädt nach dem Speichern neu.</span>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 /* ---------- Templates (echte ops-Vorlagen + Vorschau) ---------- */
-function Templates() {
+function Templates({ toast }) {
   const [tpls, setTpls] = React.useState(null);
   const [err, setErr] = React.useState("");
+  const [editing, setEditing] = React.useState(null);
   React.useEffect(() => {
     let alive = true;
     (async () => {
@@ -1047,10 +1140,14 @@ function Templates() {
                   ? <React.Fragment><a href={opsBase + "/preview/" + t.key} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}><Icon.eye /> Vorschau DE</a> · <a href={opsBase + "/preview/" + t.key + "?lang=en"} target="_blank" rel="noreferrer" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>EN</a></React.Fragment>
                   : <span>Vorschau (ops-URL fehlt)</span>}
               </div>
+              {t.editable
+                ? <button className="btn btn-sec btn-sm" style={{ marginTop: 10, width: "100%" }} onClick={() => setEditing(t)}>✏️ Bearbeiten</button>
+                : <div style={{ marginTop: 10, fontSize: 11.5, color: "var(--fg-muted)", fontWeight: 600 }}>Bearbeiten folgt in Kürze</div>}
             </div>
           ))}
         </div>
       </div>
+      {editing ? <TemplateEditor tpl={editing} onClose={() => setEditing(null)} toast={toast} /> : null}
     </div>
   );
 }
@@ -2154,7 +2251,7 @@ function AdminApp() {
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;
-  else if (view === "templates") body = <Templates />;
+  else if (view === "templates") body = <Templates toast={toast} />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;

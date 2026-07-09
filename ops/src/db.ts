@@ -101,6 +101,17 @@ export async function initDb(): Promise<void> {
       created_at  timestamptz NOT NULL DEFAULT now()
     )
   `);
+  // Bearbeitbare E-Mail-Vorlagen: pro Vorlage × Sprache die im Admin überschriebenen
+  // Textfelder. Fehlt ein Feld/eine Sprache, greift der Default aus dem Code (emails/*.tsx).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS template_overrides (
+      tkey        text NOT NULL,
+      lang        text NOT NULL,
+      fields      jsonb NOT NULL DEFAULT '{}'::jsonb,
+      updated_at  timestamptz NOT NULL DEFAULT now(),
+      PRIMARY KEY (tkey, lang)
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS events (
       id          bigserial PRIMARY KEY,
@@ -362,6 +373,33 @@ export async function markOrderPaidById(id: string): Promise<boolean> {
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [id]);
   return (r.rowCount ?? 0) > 0;
+}
+
+/** Alle im Admin gespeicherten Text-Overrides einer Vorlage → { [lang]: { feld: text } }. */
+export async function getTemplateOverrides(tkey: string): Promise<Record<string, Record<string, string>>> {
+  if (!pool || !tkey) return {};
+  const r = await pool.query(`SELECT lang, fields FROM template_overrides WHERE tkey=$1`, [tkey]);
+  const out: Record<string, Record<string, string>> = {};
+  for (const row of r.rows) out[row.lang] = (row.fields || {}) as Record<string, string>;
+  return out;
+}
+
+/** Text-Overrides einer Vorlage für EINE Sprache speichern. Leere Felder werden entfernt,
+ *  damit wieder der Code-Default greift (statt eines leeren Textes). */
+export async function saveTemplateOverride(tkey: string, lang: string, fields: Record<string, string>): Promise<boolean> {
+  if (!pool || !tkey || !lang) return false;
+  const clean: Record<string, string> = {};
+  for (const [k, v] of Object.entries(fields || {})) { if (typeof v === "string" && v.trim() !== "") clean[k] = v; }
+  if (Object.keys(clean).length === 0) {
+    await pool.query(`DELETE FROM template_overrides WHERE tkey=$1 AND lang=$2`, [tkey, lang]);
+    return true;
+  }
+  await pool.query(
+    `INSERT INTO template_overrides (tkey, lang, fields, updated_at) VALUES ($1,$2,$3,now())
+     ON CONFLICT (tkey, lang) DO UPDATE SET fields=$3, updated_at=now()`,
+    [tkey, lang, JSON.stringify(clean)],
+  );
+  return true;
 }
 
 /**

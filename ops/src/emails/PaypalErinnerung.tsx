@@ -11,6 +11,8 @@ export interface PaypalErinnerungProps {
   lang?: MailLang;
   /** Vorname/Name des Kunden für die persönliche Anrede. */
   name?: string;
+  /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
+  _overrides?: Record<string, string>;
 }
 
 interface Entry {
@@ -19,7 +21,7 @@ interface Entry {
   p1: string; p2: string; deadline: string; consequence: string; close: string; signoff: string;
 }
 
-const T: Record<string, Entry> = {
+export const T: Record<string, Entry> = {
   en: {
     subject: "Reminder: your payment is still open (48 hours)",
     preview: "A quick reminder – please complete your payment within 48 hours.",
@@ -146,8 +148,8 @@ export function subject(p: PaypalErinnerungProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalErinnerung({ lang = "en", name = "" }: PaypalErinnerungProps = {}) {
-  const t = T[lang] || T.en;
+export default function PaypalErinnerung({ lang = "en", name = "", _overrides }: PaypalErinnerungProps = {}) {
+  const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

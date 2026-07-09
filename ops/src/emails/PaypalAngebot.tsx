@@ -13,6 +13,8 @@ export interface PaypalAngebotProps {
   name?: string;
   /** Kunde hat einen laufenden Schutz (Abo: monthly/monitor) → Bündel-Angebot + 2 Monate gratis. */
   hasSub?: boolean;
+  /** Im Admin bearbeitete Text-Overrides (überschreiben die Default-Texte pro Feld). */
+  _overrides?: Record<string, string>;
 }
 
 interface Entry {
@@ -22,7 +24,7 @@ interface Entry {
   offerMain: string; offerSub: string; caveat: string; close: string; signoff: string;
 }
 
-const T: Record<string, Entry> = {
+export const T: Record<string, Entry> = {
   de: {
     subject: "Update zu deinem Business-Profil / Dein PayPal-Vorteil",
     preview: "Dein Profil ist gelöscht – und ein PayPal-Vorteil für dich.",
@@ -183,8 +185,8 @@ export function subject(p: PaypalAngebotProps = {}): string {
   return (T[p.lang || "en"] || T.en).subject;
 }
 
-export default function PaypalAngebot({ lang = "en", name = "", hasSub = false }: PaypalAngebotProps = {}) {
-  const t = T[lang] || T.en;
+export default function PaypalAngebot({ lang = "en", name = "", hasSub = false, _overrides }: PaypalAngebotProps = {}) {
+  const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const who = (name || "").trim();
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>

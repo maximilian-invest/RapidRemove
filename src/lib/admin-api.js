@@ -189,6 +189,32 @@ export async function fetchTemplates() {
   return j.templates || [];
 }
 
+/** Detail einer Vorlage zum Bearbeiten: editierbare Felder, Default-Texte + gespeicherte Overrides. */
+export async function fetchTemplateDetail(key) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/template-detail", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, key }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
+/** Bearbeitete Texte einer Vorlage für EINE Sprache speichern. */
+export async function saveTemplateText({ key, lang, fields }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/template-save", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, key, lang, fields }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
 /** Liste der AKTIVEN Stripe-Zahlungslinks (id, url, items[]) zum Auswählen. */
 export async function fetchPayLinks() {
   if (!OPS) return [];
