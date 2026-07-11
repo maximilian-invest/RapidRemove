@@ -15,8 +15,6 @@ import { type MailLang } from "./components";
 
 export interface RueckgewinnungProps {
   lang?: MailLang;
-  /** Name des Ansprechpartners (falls bekannt) für die persönliche Anrede. */
-  name?: string;
   /** Unternehmens-/Profilname aus der Prüfung — ersetzt {company} in den Texten. */
   company?: string;
   /** Absender-Name in der Signatur (persönliche Note). */
@@ -27,7 +25,9 @@ export interface RueckgewinnungProps {
 
 interface Entry {
   subject: string;
-  greeting: (n: string) => string;
+  /** Neutrale, landesübliche Anrede — KEINE Namens-Einsetzung (das „Name"-Feld einer
+   *  Prüfung ist fast immer der Firmenname, „Guten Tag Candy Shop," wäre peinlich). */
+  greeting: string;
   /** Fallback für {company}, wenn kein Firmenname vorliegt. */
   noCompany: string;
   p1: string; p2: string; offer: string; close: string; optOut: string; signoff: string;
@@ -36,7 +36,7 @@ interface Entry {
 export const T: Record<string, Entry> = {
   de: {
     subject: "Ihr Google-Unternehmensprofil – dürfen wir nachfragen?",
-    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    greeting: "Sehr geehrte Damen und Herren,",
     noCompany: "Ihr Google-Unternehmensprofil",
     p1: "vor Kurzem wurde auf unserer Plattform geprüft, ob sich {company} dauerhaft von Google entfernen lässt – die Prüfung war positiv, ein Auftrag wurde jedoch nicht erteilt.",
     p2: "Mich interessiert ehrlich: Woran lag es? Am Preis, am Leistungsumfang – oder an etwas anderem?",
@@ -47,7 +47,7 @@ export const T: Record<string, Entry> = {
   },
   en: {
     subject: "Your Google Business Profile – may I ask a quick question?",
-    greeting: (n) => (n ? `Hello ${n},` : "Hello,"),
+    greeting: "Dear Sir or Madam,",
     noCompany: "your Google Business Profile",
     p1: "a short while ago, {company} was checked on our platform to see whether it can be permanently removed from Google – the check was positive, but no order was placed.",
     p2: "I’m genuinely curious: what was the reason? The price, the scope of the service – or something else?",
@@ -58,7 +58,7 @@ export const T: Record<string, Entry> = {
   },
   es: {
     subject: "Su perfil de empresa de Google: ¿puedo hacerle una pregunta?",
-    greeting: (n) => (n ? `Buenos días ${n}:` : "Buenos días:"),
+    greeting: "Estimados señores:",
     noCompany: "su perfil de empresa de Google",
     p1: "hace poco se comprobó en nuestra plataforma si {company} puede eliminarse de Google de forma permanente. La comprobación fue positiva, pero no se realizó ningún pedido.",
     p2: "Me interesa saberlo con sinceridad: ¿cuál fue el motivo? ¿El precio, el alcance del servicio… u otra cosa?",
@@ -69,7 +69,7 @@ export const T: Record<string, Entry> = {
   },
   fr: {
     subject: "Votre fiche d’établissement Google – puis-je vous poser une question ?",
-    greeting: (n) => (n ? `Bonjour ${n},` : "Bonjour,"),
+    greeting: "Madame, Monsieur,",
     noCompany: "votre fiche d’établissement Google",
     p1: "il y a peu, il a été vérifié sur notre plateforme si {company} peut être définitivement supprimée de Google – la vérification était positive, mais aucune commande n’a été passée.",
     p2: "J’aimerais sincèrement comprendre : quelle en était la raison ? Le prix, l’étendue de la prestation – ou autre chose ?",
@@ -80,7 +80,7 @@ export const T: Record<string, Entry> = {
   },
   it: {
     subject: "Il suo profilo aziendale Google – posso farle una domanda?",
-    greeting: (n) => (n ? `Buongiorno ${n},` : "Buongiorno,"),
+    greeting: "Gentili Signore e Signori,",
     noCompany: "il suo profilo aziendale Google",
     p1: "poco tempo fa è stato verificato sulla nostra piattaforma se {company} può essere rimosso definitivamente da Google – la verifica ha avuto esito positivo, ma non è stato effettuato alcun ordine.",
     p2: "Mi interessa sinceramente: qual è stato il motivo? Il prezzo, l’ambito del servizio – o qualcos’altro?",
@@ -91,7 +91,7 @@ export const T: Record<string, Entry> = {
   },
   nl: {
     subject: "Uw Google-bedrijfsprofiel – mag ik iets vragen?",
-    greeting: (n) => (n ? `Goedendag ${n},` : "Goedendag,"),
+    greeting: "Geachte heer/mevrouw,",
     noCompany: "uw Google-bedrijfsprofiel",
     p1: "onlangs is op ons platform gecontroleerd of {company} permanent van Google verwijderd kan worden – de controle was positief, maar er is geen opdracht geplaatst.",
     p2: "Ik ben oprecht benieuwd: waar lag het aan? De prijs, de omvang van de dienst – of iets anders?",
@@ -102,7 +102,7 @@ export const T: Record<string, Entry> = {
   },
   pt: {
     subject: "O seu perfil de empresa no Google – posso fazer uma pergunta?",
-    greeting: (n) => (n ? `Bom dia ${n},` : "Bom dia,"),
+    greeting: "Exmos. Senhores,",
     noCompany: "o seu perfil de empresa no Google",
     p1: "há pouco tempo foi verificado na nossa plataforma se {company} pode ser removido permanentemente do Google – a verificação foi positiva, mas não foi feita nenhuma encomenda.",
     p2: "Interessa-me sinceramente saber: qual foi o motivo? O preço, o âmbito do serviço – ou outra coisa?",
@@ -113,7 +113,7 @@ export const T: Record<string, Entry> = {
   },
   ja: {
     subject: "貴社のGoogleビジネスプロフィールについて – 一つお伺いしてもよろしいですか?",
-    greeting: (n) => (n ? `${n}様` : "ご担当者様"),
+    greeting: "ご担当者様",
     noCompany: "貴社のGoogleビジネスプロフィール",
     p1: "先日、当社のプラットフォームで{company}がGoogleから完全に削除できるかどうかの確認が行われました。確認結果は「削除可能」でしたが、ご依頼には至りませんでした。",
     p2: "率直にお伺いしたいのですが、理由は何だったのでしょうか。価格でしょうか、サービス内容でしょうか、それとも別の理由でしょうか。",
@@ -124,7 +124,7 @@ export const T: Record<string, Entry> = {
   },
   sv: {
     subject: "Din Google Företagsprofil – får jag ställa en snabb fråga?",
-    greeting: (n) => (n ? `Hej ${n},` : "Hej,"),
+    greeting: "Hej,",
     noCompany: "din Google Företagsprofil",
     p1: "nyligen kontrollerades det på vår plattform om {company} kan tas bort permanent från Google – kontrollen var positiv, men ingen beställning gjordes.",
     p2: "Jag är uppriktigt nyfiken: vad berodde det på? Priset, tjänstens omfattning – eller något annat?",
@@ -135,7 +135,7 @@ export const T: Record<string, Entry> = {
   },
   da: {
     subject: "Din Google Virksomhedsprofil – må jeg stille et hurtigt spørgsmål?",
-    greeting: (n) => (n ? `Goddag ${n},` : "Goddag,"),
+    greeting: "Hej,",
     noCompany: "din Google Virksomhedsprofil",
     p1: "for nylig blev det tjekket på vores platform, om {company} kan fjernes permanent fra Google – tjekket var positivt, men der blev ikke afgivet nogen ordre.",
     p2: "Jeg er oprigtigt nysgerrig: hvad var årsagen? Prisen, ydelsens omfang – eller noget andet?",
@@ -146,7 +146,7 @@ export const T: Record<string, Entry> = {
   },
   no: {
     subject: "Din Google bedriftsprofil – kan jeg stille et raskt spørsmål?",
-    greeting: (n) => (n ? `God dag ${n},` : "God dag,"),
+    greeting: "Hei,",
     noCompany: "din Google bedriftsprofil",
     p1: "nylig ble det sjekket på plattformen vår om {company} kan fjernes permanent fra Google – sjekken var positiv, men ingen bestilling ble lagt inn.",
     p2: "Jeg er oppriktig nysgjerrig: hva var grunnen? Prisen, tjenestens omfang – eller noe annet?",
@@ -161,9 +161,8 @@ export function subject(p: RueckgewinnungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Rueckgewinnung({ lang = "de", name = "", company = "", senderName = "Maximilian Hölzl", _overrides }: RueckgewinnungProps = {}) {
+export default function Rueckgewinnung({ lang = "de", company = "", senderName = "Maximilian Hölzl", _overrides }: RueckgewinnungProps = {}) {
   const t = { ...(T[lang] || T.de), ...(_overrides || {}) } as Entry;
-  const who = (name || "").trim();
   const co = (company || "").trim() || t.noCompany;
   const fill = (s: string) => (s || "").replace(/\{company\}/g, co);
   // Schlichter 1:1-Mail-Look: Systemschrift, linksbündig, keine Karten/Farben/Logos.
@@ -173,7 +172,7 @@ export default function Rueckgewinnung({ lang = "de", name = "", company = "", s
       <Head />
       <Body style={{ margin: 0, background: "#ffffff", padding: "24px 20px" }}>
         <Container style={{ maxWidth: 560, margin: "0" }}>
-          <Text style={p}>{t.greeting(who)}</Text>
+          <Text style={p}>{t.greeting}</Text>
           <Text style={p}>{fill(t.p1)}</Text>
           <Text style={p}>{fill(t.p2)}</Text>
           <Text style={p}>{fill(t.offer)}</Text>

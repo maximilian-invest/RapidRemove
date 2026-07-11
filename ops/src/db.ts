@@ -92,7 +92,7 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
       ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text,
       ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text,
-      ADD COLUMN IF NOT EXISTS enriched_at timestamptz
+      ADD COLUMN IF NOT EXISTS enriched_at timestamptz, ADD COLUMN IF NOT EXISTS rueckgewinnung_at timestamptz
   `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
@@ -345,6 +345,17 @@ export async function markCheckEnriched(id: string, email: string | null): Promi
   const r = await pool.query(
     `UPDATE checks SET enriched_at = now(), email = COALESCE(NULLIF(email,''), $2) WHERE id=$1`,
     [id, email || null],
+  );
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** Rückgewinnungs-Angebot als „gesendet am jetzt" vermerken (nur, falls noch nicht gesetzt,
+ *  damit der erste Versand-Zeitpunkt erhalten bleibt). Für „Angebot gesandt am …" im Admin. */
+export async function markCheckRueckgewinnung(id: string): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(
+    `UPDATE checks SET rueckgewinnung_at = COALESCE(rueckgewinnung_at, now()) WHERE id=$1`,
+    [id],
   );
   return (r.rowCount ?? 0) > 0;
 }

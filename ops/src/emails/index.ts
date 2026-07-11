@@ -125,7 +125,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: Rueckgewinnung,
     subject: rueckgewinnungSubject,
-    sample: { lang: "de", name: "", company: "Muster GmbH" },
+    sample: { lang: "de", company: "Muster GmbH" },
     texts: rueckgewinnungTexts,
   },
 

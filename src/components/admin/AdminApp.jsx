@@ -417,6 +417,8 @@ function dedupeChecks(list) {
       placeId: base.placeId || g.map((c) => c.placeId).find(Boolean) || "",
       mapsUri: base.mapsUri || g.map((c) => c.mapsUri).find(Boolean) || "",
       addr: base.addr || g.map((c) => c.addr).find(Boolean) || "",
+      // Rückgewinnung gilt für die ganze Gruppe als gesendet (frühester Versand-Zeitpunkt).
+      rueckgewinnungAt: g.map((c) => c.rueckgewinnungAt).filter(Boolean).sort()[0] || null,
       dupes: g.length,
     });
   }
@@ -709,9 +711,14 @@ const CHECK_DROP = {
   4: { t: "Zahlung", bg: "#fdecec", fg: "#b42318" },
 };
 const checkStepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
+// Nur http(s)-Links zulassen – blockt javascript:/data: aus Alt-Daten (XSS-Schutz beim <a href>).
+const safeHttp = (u) => {
+  if (!u) return "";
+  try { return /^https?:$/.test(new URL(u, "https://x").protocol) && /^https?:\/\//i.test(u) ? u : ""; } catch { return ""; }
+};
 // Klickbarer Google-Link zum geprüften Profil: gespeicherter Maps-Link > Place-ID > Namenssuche.
 const checkMapsUrl = (c) =>
-  c.mapsUri
+  safeHttp(c.mapsUri)
   || (c.placeId ? "https://www.google.com/maps/place/?q=place_id:" + encodeURIComponent(c.placeId) : "")
   || (c.profile ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.profile + (c.addr ? " " + c.addr : "")) : "");
 const checkWebSearchUrl = (c) => "https://www.google.com/search?q=" + encodeURIComponent('"' + (c.profile || "") + '" ' + (c.addr || "") + " email kontakt");
@@ -806,13 +813,15 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
     const { check: c, email } = confirmSend;
     setSending(true);
     try {
-      await sendTemplate({ key: "rueckgewinnung", to: email, lang: c.lang || "de", name: c.name !== "—" ? (c.name || "") : "", company: c.profile || "" });
-      setSent((m) => ({ ...m, [c.id]: true }));
+      await sendTemplate({ key: "rueckgewinnung", to: email, checkId: c.id, lang: c.lang || "de", name: c.name !== "—" ? (c.name || "") : "", company: c.profile || "" });
+      setSent((m) => ({ ...m, [c.id]: new Date().toISOString() })); // Sofort-Anzeige; Server hält den Zeitpunkt dauerhaft
       toast("Rückgewinnung an " + email + " gesendet ✓");
       setConfirmSend(null);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setSending(false);
   };
+  // „Angebot gesandt am …": Zeitpunkt kompakt (DD.MM.YYYY) für die Aktionsspalte.
+  const fmtSent = (iso) => { try { return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" }); } catch (e) { return ""; } };
 
   return (
     <div className="content">
@@ -900,17 +909,23 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
                       {cand && cand.error ? <div style={{ marginTop: 4, fontSize: 10.5, fontWeight: 600, color: "var(--danger)", ...ell }} title={cand.error}>{cand.error}</div> : null}
                     </td>
                     <td style={{ ...tdS, whiteSpace: "nowrap", textAlign: "right" }}>
-                      {c.status !== "konvertiert" ? (
-                        <div style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
-                          <button className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail-Recherche erneut ausführen (läuft beim Öffnen automatisch)">
-                            {enriching === c.id ? "…" : <Icon.refresh size={13} />}
-                          </button>
-                          <a className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={13} /></a>
-                          {sent[c.id]
-                            ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 11.5 }} title="Rückgewinnung gesendet">✓ gesendet</span>
-                            : <button className="btn btn-pri btn-sm" style={{ padding: "4px 10px" }} disabled={!em} title={em ? "Rückgewinnungs-Mail senden" : "Zuerst E-Mail hinterlegen"} onClick={() => setConfirmSend({ check: c, email: em })}><Icon.mail size={13} /> Angebot</button>}
-                        </div>
-                      ) : null}
+                      {c.status !== "konvertiert" ? (() => {
+                        const sentAt = sent[c.id] || c.rueckgewinnungAt;
+                        if (sentAt) return (
+                          <span title={"Rückgewinnungs-Angebot gesendet am " + fmtSent(sentAt)} style={{ display: "inline-block", lineHeight: 1.25, color: "var(--success)", fontWeight: 800, fontSize: 11, whiteSpace: "nowrap" }}>
+                            ✓ Angebot gesandt<br />am {fmtSent(sentAt)}
+                          </span>
+                        );
+                        return (
+                          <div style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
+                            <button className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail-Recherche erneut ausführen (läuft beim Öffnen automatisch)">
+                              {enriching === c.id ? "…" : <Icon.refresh size={13} />}
+                            </button>
+                            <a className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={13} /></a>
+                            <button className="btn btn-pri btn-sm" style={{ padding: "4px 10px" }} disabled={!em} title={em ? "Rückgewinnungs-Mail senden" : "Zuerst E-Mail hinterlegen"} onClick={() => setConfirmSend({ check: c, email: em })}><Icon.mail size={13} /> Angebot</button>
+                          </div>
+                        );
+                      })() : null}
                     </td>
                   </tr>
                 );

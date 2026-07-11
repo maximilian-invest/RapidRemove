@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
@@ -65,6 +65,13 @@ const allowCheck = (ip: string) => throttle(checkHits, ip, 30);
 const escapeHtml = (s: string) =>
   String(s).replace(/[<>&]/g, (c) => (c === "<" ? "&lt;" : c === ">" ? "&gt;" : "&amp;"));
 const clip = (v: unknown, n: number) => String(v ?? "").trim().slice(0, n);
+/** Nur http/https-URLs durchlassen (blockt javascript:/data: – XSS-Schutz, da Links
+ *  aus der öffentlichen /check-Route später im Admin als <a href> gerendert werden). */
+const httpUrl = (v: unknown, n: number): string => {
+  const s = clip(v, n);
+  if (!s) return "";
+  try { return /^https?:$/.test(new URL(s).protocol) ? s : ""; } catch { return ""; }
+};
 
 /** „GLÖSCHT"-Hype-Push fürs Team (Web-Push an die installierte App + ntfy/Pushover),
  *  inkl. Gamification-Rang der zugewiesenen Person. Wird beim Zahlungslink-Versand UND
@@ -477,7 +484,7 @@ app.post("/check", async (req, reply) => {
         source: clip(b.source, 40) || undefined,
         // Google-Profil-Bezug (für klickbare Profile + Lead-Recherche im Admin).
         placeId: clip(b.placeId, 120) || undefined,
-        mapsUri: clip(b.mapsUri, 400) || undefined,
+        mapsUri: httpUrl(b.mapsUri, 400) || undefined,
         addr: clip(b.addr, 250) || undefined,
       });
     }
@@ -1047,6 +1054,9 @@ app.post("/admin/send-template", async (req, reply) => {
     // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
     // der Eintrag bleibt über die E-Mail auffindbar (Kunden-Verlauf lädt per E-Mail).
     await insertEvent({ orderId: orderId || undefined, email: to, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject });
+    // Rückgewinnung an einen Prüfungs-Lead: Sende-Zeitpunkt am Check vermerken, damit im
+    // Admin dauerhaft „Angebot gesandt am …" erscheint (überlebt Reload/Neu-Laden).
+    if (key === "rueckgewinnung") { const cid = clip(b.checkId, 40); if (cid) await markCheckRueckgewinnung(cid); }
     // PayPal-Angebot ist der „Profil gelöscht + Zahlung angestoßen"-Schritt (außerhalb DACH)
     // → dieselbe Team-Hype-Push wie beim Zahlungslink-Versand.
     if (key === "paypal-angebot") await fireDeletionHypePush(orderId, clip(b.name, 120), to);
