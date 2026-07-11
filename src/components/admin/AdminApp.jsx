@@ -835,8 +835,16 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
           ))}
         </div>
         <div className="tbl-scroll" style={{ marginTop: 10 }}>
-          <table className="tbl">
-            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Abbruch bei</th><th>Kontakt</th><th>Status</th><th>Aktionen</th></tr></thead>
+          {/* Kompakt: 5 schmale Spalten, eine Zeile pro Profil, kein horizontales Scrollen. */}
+          <table className="tbl" style={{ fontSize: 12.5, tableLayout: "fixed", width: "100%" }}>
+            <colgroup><col style={{ width: "26%" }} /><col style={{ width: "9%" }} /><col style={{ width: "15%" }} /><col style={{ width: "30%" }} /><col style={{ width: "20%" }} /></colgroup>
+            <thead><tr>
+              <th style={{ padding: "8px 10px" }}>Google-Profil</th>
+              <th style={{ padding: "8px 6px" }}>Bew.</th>
+              <th style={{ padding: "8px 6px" }}>Status</th>
+              <th style={{ padding: "8px 10px" }}>Kontakt</th>
+              <th style={{ padding: "8px 10px", textAlign: "right" }}>Aktionen</th>
+            </tr></thead>
             <tbody>
               {list.map((c) => {
                 const linked = c.orderId ? orders.find((o) => o.id === c.orderId) : null;
@@ -844,70 +852,70 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
                 const em = effEmail(c);
                 const cand = cands[c.id];
                 const mapsUrl = checkMapsUrl(c);
+                const tdS = { padding: "7px 10px", verticalAlign: "middle" };
+                const ell = { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" };
                 return (
-                  <tr key={c.id}>
-                    <td><span className="oid">{c.id}</span><div className="muted">{c.created}</div></td>
-                    <td>
-                      <div className="cust">
+                  <tr key={c.id} title={c.id + " · " + c.created}>
+                    <td style={tdS}>
+                      <div style={ell}>
                         {mapsUrl
-                          ? <a href={mapsUrl} target="_blank" rel="noreferrer" title="Google-Profil öffnen" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>{c.profile || "—"} <Icon.external size={12} style={{ verticalAlign: "-1px" }} /></a>
-                          : (c.profile || "—")}
-                        {c.dupes > 1 ? <span title={c.dupes + "× geprüft (zusammengefasst)"} style={{ marginLeft: 7, fontSize: 10.5, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap", verticalAlign: "middle" }}>{c.dupes}×</span> : null}
-                        {c.addr ? <div className="sub" style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={c.addr}>{c.addr}</div> : null}
+                          ? <a href={mapsUrl} target="_blank" rel="noreferrer" title={"Google-Profil öffnen: " + (c.profile || "")} style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>{c.profile || "—"}</a>
+                          : <span style={{ fontWeight: 700 }}>{c.profile || "—"}</span>}
+                        {c.dupes > 1 ? <span title={c.dupes + "× geprüft (zusammengefasst)"} style={{ marginLeft: 5, fontSize: 10, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "0 5px", whiteSpace: "nowrap" }}>{c.dupes}×</span> : null}
                       </div>
+                      <div className="sub" style={{ ...ell, fontSize: 10.5 }} title={c.addr || ""}>{c.created.split("·")[0]}{c.addr ? " · " + c.addr : ""}</div>
                     </td>
-                    <td><span className="amt" style={{ fontFamily: "var(--font-display)" }}>{c.rating}★</span><div className="muted">{c.reviews} Bew.</div></td>
-                    <td>{c.status === "konvertiert"
-                      ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>✓ beauftragt</span>
-                      : c.step == null
-                        ? <span style={{ color: "var(--fg-muted)", fontWeight: 700 }} title="Vor Einführung des Funnel-Trackings geprüft – keine Stufen-Daten">—</span>
-                        : <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 800, padding: "3px 9px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
+                    <td style={{ ...tdS, padding: "7px 6px", whiteSpace: "nowrap" }}>
+                      <span className="amt" style={{ fontFamily: "var(--font-display)", fontSize: 12.5 }}>{c.rating}★</span>
+                      <span className="muted" style={{ fontSize: 10.5 }}> {c.reviews}</span>
                     </td>
-                    <td style={{ minWidth: 190 }}>
-                      {c.name !== "—" && c.name ? <div style={{ fontWeight: 700, fontSize: 12.5 }}>{c.name}</div> : null}
+                    <td style={{ ...tdS, padding: "7px 6px", whiteSpace: "nowrap" }}>
+                      {c.status === "konvertiert"
+                        ? (linked
+                          ? <button onClick={() => openOrder(linked)} title={"Auftrag öffnen: " + c.orderId} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--success)", fontWeight: 800, fontSize: 12, padding: 0 }}>✓ beauftragt →</button>
+                          : <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12 }}>✓ beauftragt</span>)
+                        : c.step == null
+                          ? <span style={{ color: "var(--fg-muted)", fontWeight: 700 }} title="Vor Einführung des Funnel-Trackings geprüft – keine Stufen-Daten">—</span>
+                          : <span title={"Abbruch bei: " + d.t} style={{ display: "inline-block", fontSize: 10.5, fontWeight: 800, padding: "2px 8px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
+                    </td>
+                    <td style={tdS}>
                       {em
-                        ? <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                            <a href={"mailto:" + em} style={{ color: "var(--primary)", fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>{em}</a>
-                            <button title="E-Mail ändern" onClick={() => { setSaved((m) => ({ ...m, [c.id]: "" })); setDrafts((m) => ({ ...m, [c.id]: em })); }} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--fg-muted)", padding: 0 }}>✎</button>
+                        ? <div style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 0 }}>
+                            <a href={"mailto:" + em} title={em} style={{ ...ell, color: "var(--primary)", fontWeight: 700, fontSize: 12, textDecoration: "none", flex: "1 1 auto" }}>{em}</a>
+                            <button title="E-Mail ändern" onClick={() => { setSaved((m) => ({ ...m, [c.id]: "" })); setDrafts((m) => ({ ...m, [c.id]: em })); }} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--fg-muted)", padding: 0, flex: "none" }}>✎</button>
                           </div>
-                        : <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                            <input value={drafts[c.id] || ""} onChange={(e) => setDrafts((m) => ({ ...m, [c.id]: e.target.value }))} placeholder="E-Mail eintragen…"
-                              style={{ padding: "5px 8px", borderRadius: 7, border: "1px solid var(--hairline)", fontSize: 12, fontWeight: 600, width: 150 }} />
-                            <button className="btn btn-sec btn-sm" style={{ padding: "4px 9px" }} disabled={!(drafts[c.id] || "").includes("@")} onClick={() => doSaveEmail(c, drafts[c.id])}>✓</button>
+                        : <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <input value={drafts[c.id] || ""} onChange={(e) => setDrafts((m) => ({ ...m, [c.id]: e.target.value }))} placeholder="E-Mail…"
+                              style={{ padding: "4px 7px", borderRadius: 7, border: "1px solid var(--hairline)", fontSize: 11.5, fontWeight: 600, width: "100%", minWidth: 0, boxSizing: "border-box" }} />
+                            <button className="btn btn-sec btn-sm" style={{ padding: "3px 8px", flex: "none" }} disabled={!(drafts[c.id] || "").includes("@")} onClick={() => doSaveEmail(c, drafts[c.id])}>✓</button>
                           </div>}
+                      {c.name !== "—" && c.name ? <div className="sub" style={{ ...ell, fontSize: 10.5 }} title={c.name}>{c.name}</div> : null}
                       {cand && cand.emails ? (
-                        <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--fg-muted)" }}>Gefunden auf {(() => { try { return new URL(cand.website).hostname; } catch (e) { return "der Website"; } })()}:</span>
+                        <div style={{ marginTop: 5, display: "flex", flexWrap: "wrap", gap: 4 }}>
                           {cand.emails.map((e) => (
-                            <button key={e} className="btn btn-sec btn-sm" style={{ padding: "3px 9px", fontSize: 11.5 }} onClick={() => doSaveEmail(c, e)} title="Diese E-Mail übernehmen">{e} ✓</button>
+                            <button key={e} className="btn btn-sec btn-sm" style={{ padding: "2px 8px", fontSize: 11 }} onClick={() => doSaveEmail(c, e)} title={"Übernehmen (gefunden auf " + (() => { try { return new URL(cand.website).hostname; } catch (err) { return "der Website"; } })() + ")"}>{e} ✓</button>
                           ))}
                         </div>
                       ) : null}
-                      {cand && cand.error ? <div style={{ marginTop: 5, fontSize: 11, fontWeight: 600, color: "var(--danger)" }}>{cand.error}</div> : null}
+                      {cand && cand.error ? <div style={{ marginTop: 4, fontSize: 10.5, fontWeight: 600, color: "var(--danger)", ...ell }} title={cand.error}>{cand.error}</div> : null}
                     </td>
-                    <td>
-                      <CheckBadge status={c.status} />
-                      {linked ? <div><button onClick={() => openOrder(linked)} style={{ marginTop: 3, border: "none", background: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: 12, padding: 0 }}>{c.orderId} →</button></div> : null}
-                    </td>
-                    <td style={{ whiteSpace: "nowrap" }}>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        {c.status !== "konvertiert" ? (
-                          <React.Fragment>
-                            <button className="btn btn-sec btn-sm" disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail-Recherche erneut ausführen (läuft beim Öffnen automatisch)">
-                              {enriching === c.id ? "sucht…" : <React.Fragment><Icon.refresh size={14} /> erneut suchen</React.Fragment>}
-                            </button>
-                            <a className="btn btn-sec btn-sm" href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={14} /></a>
-                            {sent[c.id]
-                              ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap" }}>✓ gesendet</span>
-                              : <button className="btn btn-pri btn-sm" disabled={!em} title={em ? "Rückgewinnungs-Mail senden" : "Zuerst E-Mail hinterlegen"} onClick={() => setConfirmSend({ check: c, email: em })}><Icon.mail size={14} /> Angebot</button>}
-                          </React.Fragment>
-                        ) : null}
-                      </div>
+                    <td style={{ ...tdS, whiteSpace: "nowrap", textAlign: "right" }}>
+                      {c.status !== "konvertiert" ? (
+                        <div style={{ display: "inline-flex", gap: 5, alignItems: "center" }}>
+                          <button className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail-Recherche erneut ausführen (läuft beim Öffnen automatisch)">
+                            {enriching === c.id ? "…" : <Icon.refresh size={13} />}
+                          </button>
+                          <a className="btn btn-sec btn-sm" style={{ padding: "4px 8px" }} href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={13} /></a>
+                          {sent[c.id]
+                            ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 11.5 }} title="Rückgewinnung gesendet">✓ gesendet</span>
+                            : <button className="btn btn-pri btn-sm" style={{ padding: "4px 10px" }} disabled={!em} title={em ? "Rückgewinnungs-Mail senden" : "Zuerst E-Mail hinterlegen"} onClick={() => setConfirmSend({ check: c, email: em })}><Icon.mail size={13} /> Angebot</button>}
+                        </div>
+                      ) : null}
                     </td>
                   </tr>
                 );
               })}
-              {!list.length ? <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--fg-muted)", fontWeight: 600, padding: 26 }}>Keine Prüfungen in dieser Ansicht.</td></tr> : null}
+              {!list.length ? <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--fg-muted)", fontWeight: 600, padding: 26 }}>Keine Prüfungen in dieser Ansicht.</td></tr> : null}
             </tbody>
           </table>
         </div>
