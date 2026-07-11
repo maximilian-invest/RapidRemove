@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched } from "@/lib/admin-api";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
@@ -411,6 +411,12 @@ function dedupeChecks(list) {
       step: maxStep > 0 ? maxStep : (base.step != null ? base.step : null),
       source: g.map((c) => c.source).find(Boolean) || base.source || null,
       amount: conv ? conv.amount : base.amount,
+      // Kontakt-/Profil-Bezug aus der ganzen Gruppe zusammenführen (jüngster Eintrag
+      // hat z. B. bei manueller Eingabe keine Place-ID, ein älterer aber schon).
+      email: base.email || g.map((c) => c.email).find(Boolean) || "",
+      placeId: base.placeId || g.map((c) => c.placeId).find(Boolean) || "",
+      mapsUri: base.mapsUri || g.map((c) => c.mapsUri).find(Boolean) || "",
+      addr: base.addr || g.map((c) => c.addr).find(Boolean) || "",
       dupes: g.length,
     });
   }
@@ -725,6 +731,42 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
   const effEmail = (c) => (saved[c.id] !== undefined ? saved[c.id] : (c.email || ""));
   const openCount = checks.filter((c) => c.status !== "konvertiert").length;
   const convCount = checks.length - openCount;
+
+  // AUTOMATISCHE Lead-Recherche beim Öffnen der Ansicht: alle offenen Prüfungen ohne
+  // E-Mail, die noch nie recherchiert wurden (enrichedAt leer), werden nacheinander
+  // abgearbeitet — Website via Places (Browser-Key), E-Mail-Scan + Speichern macht das
+  // ops-Backend (autosave). Auch ergebnislose Versuche werden markiert (kein Endlos-Retry).
+  const [autoProg, setAutoProg] = React.useState(null); // { done, total, found } | "done"
+  const autoRan = React.useRef(false);
+  React.useEffect(() => {
+    if (autoRan.current) return;
+    const queue = checks.filter((c) => c.status !== "konvertiert" && !effEmail(c) && c.placeId && !c.enrichedAt).slice(0, 10);
+    if (!queue.length) return;
+    autoRan.current = true;
+    let alive = true;
+    (async () => {
+      let found = 0;
+      for (let i = 0; i < queue.length; i++) {
+        const c = queue[i];
+        if (!alive) return;
+        setAutoProg({ done: i, total: queue.length, found });
+        try {
+          const prof = await fetchProfileById(c.placeId, "de");
+          if (prof && prof.website) {
+            const r = await enrichCheckEmails({ website: prof.website, checkId: c.id, autosave: true });
+            if (r.saved) { found++; if (alive) setSaved((m) => ({ ...m, [c.id]: r.saved })); }
+          } else {
+            await markCheckEnriched({ checkId: c.id }); // keine Website bekannt → nicht erneut versuchen
+          }
+        } catch (e) { /* einzelner Fehlschlag stoppt die Reihe nicht */ }
+      }
+      if (!alive) return;
+      setAutoProg("done");
+      if (found) toast(found + " E-Mail(s) automatisch gefunden ✓");
+    })();
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checks.length]);
   const list = checks
     .filter((c) => (filter === "all" ? true : filter === "conv" ? c.status === "konvertiert" : c.status !== "konvertiert"))
     .filter((c) => {
@@ -778,6 +820,11 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
         <div className="panel-head">
           <h2><Icon.search style={{ width: 17, height: 17, verticalAlign: "-3px", marginRight: 7, color: "var(--primary)" }} />Geprüfte Profile</h2>
           <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {autoProg && autoProg !== "done"
+              ? <span style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)", whiteSpace: "nowrap" }}>🔎 Auto-Recherche… {autoProg.done}/{autoProg.total}</span>
+              : autoProg === "done"
+                ? <span style={{ fontSize: 12, fontWeight: 700, color: "var(--success)", whiteSpace: "nowrap" }}>✓ Auto-Recherche abgeschlossen</span>
+                : null}
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen (Profil, Name, E-Mail…)"
               style={{ padding: "7px 11px", borderRadius: 8, border: "1px solid var(--hairline)", fontSize: 13, fontWeight: 600, minWidth: 190 }} />
           </div>
@@ -846,8 +893,8 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
                       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                         {c.status !== "konvertiert" ? (
                           <React.Fragment>
-                            <button className="btn btn-sec btn-sm" disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail automatisch suchen (Website des Unternehmens)">
-                              {enriching === c.id ? "sucht…" : <React.Fragment><Icon.search size={14} /> E-Mail finden</React.Fragment>}
+                            <button className="btn btn-sec btn-sm" disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail-Recherche erneut ausführen (läuft beim Öffnen automatisch)">
+                              {enriching === c.id ? "sucht…" : <React.Fragment><Icon.refresh size={14} /> erneut suchen</React.Fragment>}
                             </button>
                             <a className="btn btn-sec btn-sm" href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={14} /></a>
                             {sent[c.id]

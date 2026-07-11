@@ -120,6 +120,7 @@ function mapCheck(r) {
     step: r.step != null ? Number(r.step) : null, amount: r.amount != null ? Number(r.amount) : null, source: r.source || null,
     // Google-Profil-Bezug (nur bei neueren Prüfungen vorhanden): Maps-Link, Place-ID, Adresse.
     placeId: r.place_id || "", mapsUri: r.maps_uri || "", addr: r.addr || "", lang: r.lang || "de", country: r.country || "DE",
+    enrichedAt: r.enriched_at || null, // Auto-E-Mail-Recherche bereits gelaufen (auch ohne Fund)
   };
 }
 
@@ -438,17 +439,31 @@ export async function saveCheckEmail({ checkId, email }) {
   return j;
 }
 
-/** Lead-Recherche: Unternehmens-Website serverseitig nach Kontakt-E-Mails durchsuchen. */
-export async function enrichCheckEmails({ website }) {
+/** Lead-Recherche: Unternehmens-Website serverseitig nach Kontakt-E-Mails durchsuchen.
+ *  Mit checkId + autosave speichert der Server den besten Treffer direkt am Check. */
+export async function enrichCheckEmails({ website, checkId, autosave }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/check-enrich", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, website }),
+    body: JSON.stringify({ token: TOKEN, website, checkId, autosave }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
-  return j; // { ok, website, emails: [...] }
+  return j; // { ok, website, emails: [...], saved }
+}
+
+/** Prüfung als automatisch recherchiert markieren (kein erneuter Auto-Versuch). */
+export async function markCheckEnriched({ checkId }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/check-enrich-mark", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, checkId }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
 }
 
 /** Zahlung manuell als eingegangen erfassen (z. B. PayPal/Überweisung außerhalb Stripe). */

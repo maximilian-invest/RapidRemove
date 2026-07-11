@@ -7,8 +7,9 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
+import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
 import { hasClickSend, sendSms } from "./integrations/clicksend";
@@ -662,54 +663,38 @@ app.post("/admin/check-email", async (req, reply) => {
   return { ok: true };
 });
 
-/* Lead-Recherche: Unternehmens-Website nach Kontakt-E-Mails durchsuchen. Die Website
-   ermittelt der Admin clientseitig über Google Places (websiteUri, Browser-Key); dieses
-   Backend lädt nur die Seite(n) und extrahiert Adressen — der Browser kann fremde
-   Websites wegen CORS nicht selbst lesen. */
-const EMAIL_RX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
-const EMAIL_JUNK = /\.(png|jpe?g|gif|webp|svg|css|js|woff2?)$|example\.|sentry|wixpress|schema\.org|@\dx\./i;
-const privateHost = (h: string): boolean => {
-  const host = h.toLowerCase();
-  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal") || host.includes(":")) return true;
-  const m = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/); // IP-Literale: private/reservierte Bereiche blocken (SSRF)
-  if (!m) return false;
-  const a = Number(m[1]), c = Number(m[2]);
-  return a === 10 || a === 127 || a === 0 || (a === 172 && c >= 16 && c <= 31) || (a === 192 && c === 168) || (a === 169 && c === 254);
-};
-async function fetchPageText(url: string): Promise<string> {
-  const ctl = new AbortController();
-  const timer = setTimeout(() => ctl.abort(), 6000);
-  try {
-    const res = await fetch(url, { signal: ctl.signal, redirect: "follow", headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0)" } });
-    if (!res.ok) return "";
-    const buf = await res.arrayBuffer();
-    return Buffer.from(buf.slice(0, 400_000)).toString("utf8"); // Größen-Deckel pro Seite
-  } catch { return ""; } finally { clearTimeout(timer); }
-}
+/* Lead-Recherche: Unternehmens-Website nach Kontakt-E-Mails durchsuchen (Scan-Logik in
+   leadEnrich.ts). Die Website ermittelt der Admin clientseitig über Google Places
+   (websiteUri, Browser-Key); dieses Backend lädt nur die Seite(n) und extrahiert
+   Adressen — der Browser kann fremde Websites wegen CORS nicht selbst lesen.
+   Mit checkId + autosave speichert der Server den besten Treffer direkt am Check und
+   markiert die Prüfung als recherchiert (Basis der automatischen Recherche im Admin). */
 app.post("/admin/check-enrich", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
-  let site = String(b.website || "").trim();
-  if (!site) return reply.code(400).send({ ok: false, error: "website erforderlich" });
-  if (!/^https?:\/\//i.test(site)) site = "https://" + site;
-  let u: URL;
-  try { u = new URL(site); } catch { return reply.code(400).send({ ok: false, error: "ungültige Website" }); }
-  if (!/^https?:$/.test(u.protocol) || privateHost(u.hostname)) return reply.code(400).send({ ok: false, error: "unzulässige Website" });
-  // Startseite + gängige Kontakt-/Impressum-Pfade absuchen, bis genug Kandidaten da sind.
-  const pages = [u.href, u.origin + "/kontakt", u.origin + "/contact", u.origin + "/impressum", u.origin + "/contact-us"];
-  const seen = new Set<string>();
-  const emails: string[] = [];
-  for (const p of pages) {
-    if (emails.length >= 5) break;
-    const html = await fetchPageText(p);
-    for (const m of html.matchAll(EMAIL_RX)) {
-      const e = m[0].toLowerCase();
-      if (EMAIL_JUNK.test(e) || seen.has(e)) continue;
-      seen.add(e); emails.push(e);
-      if (emails.length >= 5) break;
-    }
+  const u = normalizeWebsite(String(b.website || ""));
+  if (!u) return reply.code(400).send({ ok: false, error: "ungültige/unzulässige Website" });
+  const emails = await scanWebsiteEmails(u);
+  const checkId = clip(b.checkId, 40);
+  const autosave = b.autosave === true || b.autosave === "true";
+  let saved = "";
+  if (checkId && autosave && dbReady()) {
+    saved = pickBestEmail(emails, u.hostname);
+    await markCheckEnriched(checkId, saved || null); // auch ohne Fund markieren (kein Endlos-Retry)
   }
-  return { ok: true, website: u.href, emails };
+  return { ok: true, website: u.href, emails, saved };
+});
+
+// Auto-Recherche ohne Website (z. B. Google kennt keine): nur als recherchiert markieren,
+// damit die automatische Suche dieselbe Prüfung nicht bei jedem Öffnen erneut anfasst.
+app.post("/admin/check-enrich-mark", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = clip(b.checkId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "checkId erforderlich" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  await markCheckEnriched(id, null);
+  return { ok: true };
 });
 
 // Admin: Bestellung einem Bearbeiter zuweisen (max | matthias | null).
@@ -1154,6 +1139,7 @@ async function start() {
     app.log.info(`ops läuft auf ${addr}`);
     startUpsellWorker(app);
     startPaymentReconciler(app);
+    startLeadEnrichWorker(app);   // Auto-E-Mail-Recherche (aktiv nur mit GOOGLE_MAPS_API_KEY)
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();

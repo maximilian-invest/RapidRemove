@@ -91,7 +91,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS country text,
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
       ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text,
-      ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text
+      ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text,
+      ADD COLUMN IF NOT EXISTS enriched_at timestamptz
   `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
@@ -322,6 +323,29 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
 export async function setCheckEmail(id: string, email: string): Promise<boolean> {
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE checks SET email=$2 WHERE id=$1`, [id, email || null]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** Offene Prüfungen ohne E-Mail, die noch nicht automatisch recherchiert wurden. */
+export async function listChecksToEnrich(limit = 8): Promise<{ id: string; place_id: string }[]> {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT id, place_id FROM checks
+      WHERE COALESCE(email,'') = '' AND enriched_at IS NULL AND COALESCE(place_id,'') <> ''
+        AND COALESCE(status,'') <> 'konvertiert'
+      ORDER BY created_at DESC LIMIT $1`,
+    [limit],
+  );
+  return r.rows as { id: string; place_id: string }[];
+}
+
+/** Auto-Recherche-Ergebnis vermerken: enriched_at setzen; E-Mail nur ergänzen, nie überschreiben. */
+export async function markCheckEnriched(id: string, email: string | null): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(
+    `UPDATE checks SET enriched_at = now(), email = COALESCE(NULLIF(email,''), $2) WHERE id=$1`,
+    [id, email || null],
+  );
   return (r.rowCount ?? 0) > 0;
 }
 
