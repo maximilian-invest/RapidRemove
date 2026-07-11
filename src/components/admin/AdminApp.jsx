@@ -146,7 +146,8 @@ function ProfileLinks({ o }) {
   const base = (o.profile || o.company || "").trim();
   if (!base) return "—";
   const q = o.addr ? base + " " + o.addr : (o.company && o.company !== o.profile ? o.company : base);
-  const mapsHref = o.mapsUri || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q));
+  // safeHttp: nur http(s) zulassen – blockt javascript:/data: aus Alt-Bestellungen (XSS-Schutz).
+  const mapsHref = safeHttp(o.mapsUri) || ("https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q));
   const searchHref = "https://www.google.com/search?q=" + encodeURIComponent(q);
   return (
     <span className="prof-links">
@@ -162,6 +163,7 @@ function ProfileLinks({ o }) {
 const BIZ_STATUS = { OPERATIONAL: "Aktiv (gelistet)", CLOSED_TEMPORARILY: "Vorübergehend geschlossen", CLOSED_PERMANENTLY: "Dauerhaft geschlossen" };
 const bizStatus = (s) => BIZ_STATUS[s] || s || "—";
 function ProfilNachweis({ o }) {
+  const mapsHref = safeHttp(o.mapsUri); // nur http(s) → XSS-Schutz gegen javascript:/data:
   return (
     <div>
       <div style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em", margin: "0 0 8px" }}>Stand der Beauftragung · {o.created}</div>
@@ -170,7 +172,7 @@ function ProfilNachweis({ o }) {
       <div className="drow"><span className="dl">Bewertung</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
       {o.businessStatus ? <div className="drow"><span className="dl">Status</span><span className="dv">{bizStatus(o.businessStatus)}</span></div> : null}
       <div className="drow"><span className="dl">Google Place-ID</span><span className="dv" style={{ fontFamily: "monospace", fontSize: 11, wordBreak: "break-all", textAlign: "right" }}>{o.placeId || "—"}</span></div>
-      {o.mapsUri ? <a className="btn btn-sec btn-sm" href={o.mapsUri} target="_blank" rel="noopener noreferrer" style={{ marginTop: 12, width: "100%" }}><Icon.mapPin /> Profil auf Google Maps öffnen</a> : null}
+      {mapsHref ? <a className="btn btn-sec btn-sm" href={mapsHref} target="_blank" rel="noopener noreferrer" style={{ marginTop: 12, width: "100%" }}><Icon.mapPin /> Profil auf Google Maps öffnen</a> : null}
     </div>
   );
 }

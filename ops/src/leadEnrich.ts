@@ -11,7 +11,11 @@
  */
 import type { FastifyInstance } from "fastify";
 import { lookup } from "node:dns/promises";
-import { isIP } from "node:net";
+import { lookup as lookupCb } from "node:dns";
+import { isIP, type LookupFunction } from "node:net";
+import { request as httpRequest, type IncomingMessage } from "node:http";
+import { request as httpsRequest } from "node:https";
+import { createGunzip, createInflate, createBrotliDecompress } from "node:zlib";
 import { dbReady, listChecksToEnrich, markCheckEnriched } from "./db";
 
 const EMAIL_RX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
@@ -83,17 +87,33 @@ export const privateHost = (h: string): boolean => {
 };
 
 /** SSRF-Schutz (mit DNS-Auflösung): blockt, wenn der Host auf eine private IP zeigt.
- *  Schließt „öffentlicher Name → interne IP" – der Rest-Fall DNS-Rebinding bleibt bei
- *  reinem fetch ohne IP-Pinning nur eng begrenzt möglich (Best-Effort-Worker). */
+ *  Vorprüfung (klare Ablehnung); die eigentliche Durchsetzung passiert beim Connect
+ *  über pinnedLookup (kein TOCTOU-Fenster). IPv6-Literale kommen mit Klammern an. */
 async function hostAllowed(hostname: string): Promise<boolean> {
-  if (privateHost(hostname)) return false;
-  if (isIP(hostname)) return !privateIp(hostname); // Literal schon geprüft, aber sicher ist sicher
+  const h = String(hostname || "").replace(/^\[|\]$/g, "");
+  if (privateHost(h)) return false;
+  if (isIP(h)) return !privateIp(h);
   try {
-    const addrs = await lookup(hostname, { all: true });
+    const addrs = await lookup(h, { all: true });
     if (!addrs.length) return false;
     return addrs.every((a) => !privateIp(a.address)); // ein einziger privater Treffer blockt
   } catch { return false; }
 }
+
+/** DNS-Auflösung, die dem Socket NUR vorab-validierte öffentliche IP(s) zurückgibt.
+ *  Da der Socket exakt diese IP verbindet, gibt es kein TOCTOU-/DNS-Rebinding-Fenster
+ *  zwischen Prüfung und Verbindung (anders als bei fetch, das selbst neu auflöst).
+ *  Der SNI/Host-Name bleibt der echte Hostname → TLS-Zertifikat bleibt gültig. */
+const pinnedLookup: LookupFunction = (hostname, options, cb) => {
+  lookupCb(hostname, { all: true }, (err, addresses) => {
+    if (err) return (cb as (e: Error | null) => void)(err);
+    const list = (addresses as unknown as { address: string; family: number }[]) || [];
+    if (!list.length || list.some((a) => privateIp(a.address)))
+      return (cb as (e: Error | null) => void)(new Error("SSRF blockiert: private Adresse"));
+    if ((options as { all?: boolean }).all) return (cb as unknown as (e: null, a: unknown) => void)(null, list);
+    (cb as (e: null, a: string, f: number) => void)(null, list[0].address, list[0].family);
+  });
+};
 
 /** Website-Eingabe normalisieren (https ergänzen) und validieren; null = unzulässig. */
 export function normalizeWebsite(site: string): URL | null {
@@ -107,27 +127,58 @@ export function normalizeWebsite(site: string): URL | null {
   } catch { return null; }
 }
 
-/** Antwort-Body streamen und bei MAX_BYTES hart abschneiden (kein Voll-Puffern). */
-async function readCapped(res: Response): Promise<string> {
-  const body = res.body;
-  if (!body) return "";
-  const reader = body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (value) {
-        chunks.push(value);
-        total += value.length;
-        if (total >= MAX_BYTES) break;
-      }
-    }
-  } finally {
-    try { await reader.cancel(); } catch { /* egal */ }
-  }
-  return Buffer.concat(chunks).subarray(0, MAX_BYTES).toString("utf8");
+/** Antwort ggf. entpacken (fetch macht das automatisch, node:http nicht). */
+function decompress(res: IncomingMessage): NodeJS.ReadableStream {
+  const enc = String(res.headers["content-encoding"] || "").toLowerCase();
+  if (enc === "gzip" || enc === "x-gzip") return res.pipe(createGunzip());
+  if (enc === "deflate") return res.pipe(createInflate());
+  if (enc === "br") return res.pipe(createBrotliDecompress());
+  return res;
+}
+
+type OneResult = { status: number; location: string; body: string };
+
+/** EINE Anfrage – IP-gepinnt (pinnedLookup), Redirects NICHT automatisch, Body gedeckelt.
+ *  Über node:http(s) statt fetch, weil nur so die verbundene IP == die geprüfte IP ist. */
+function requestOnce(u: URL, signal: AbortSignal): Promise<OneResult> {
+  return new Promise((resolve) => {
+    const https = u.protocol === "https:";
+    const doRequest = https ? httpsRequest : httpRequest;
+    const req = doRequest(
+      {
+        protocol: u.protocol,
+        hostname: u.hostname.replace(/^\[|\]$/g, ""), // reiner Host für SNI/DNS (ohne []-Klammern)
+        port: u.port || (https ? 443 : 80),
+        path: (u.pathname || "/") + (u.search || ""),
+        method: "GET",
+        lookup: pinnedLookup, // erzwingt: verbundene IP == geprüfte öffentliche IP
+        signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0)",
+          Accept: "text/html,application/xhtml+xml",
+          "Accept-Encoding": "gzip, deflate, br",
+        },
+      },
+      (res) => {
+        const status = res.statusCode || 0;
+        const location = String(res.headers.location || "");
+        if (status >= 300 && status < 400) { res.resume(); return resolve({ status, location, body: "" }); }
+        const chunks: Buffer[] = [];
+        let total = 0;
+        let settled = false;
+        const cap = () => Buffer.concat(chunks).subarray(0, MAX_BYTES).toString("utf8");
+        const finish = (body: string) => { if (settled) return; settled = true; try { req.destroy(); } catch { /* egal */ } resolve({ status, location, body }); };
+        let stream: NodeJS.ReadableStream;
+        try { stream = decompress(res); } catch { res.resume(); return resolve({ status, location, body: "" }); }
+        stream.on("data", (c: Buffer) => { if (settled) return; chunks.push(c); total += c.length; if (total >= MAX_BYTES) finish(cap()); });
+        stream.on("end", () => finish(cap()));
+        stream.on("error", () => finish(""));
+        res.on("error", () => finish(""));
+      },
+    );
+    req.on("error", () => resolve({ status: 0, location: "", body: "" }));
+    req.end();
+  });
 }
 
 /** SSRF-sicherer GET: Schema/Host je Hop prüfen, Redirects manuell folgen, Body gedeckelt. */
@@ -139,21 +190,15 @@ async function fetchPageText(url: string): Promise<string> {
   try {
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
       if (!/^https?:$/.test(current.protocol)) return "";
-      if (!(await hostAllowed(current.hostname))) return "";
-      const res = await fetch(current.href, {
-        signal: ctl.signal,
-        redirect: "manual", // jeden Hop selbst re-validieren (302 → interne IP blocken)
-        headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0)" },
-      });
-      if (res.status >= 300 && res.status < 400) {
-        const loc = res.headers.get("location");
-        try { await res.body?.cancel(); } catch { /* egal */ }
-        if (!loc) return "";
-        try { current = new URL(loc, current); } catch { return ""; }
-        continue; // nächste Runde re-validiert Schema + Host + DNS erneut
+      if (!(await hostAllowed(current.hostname))) return ""; // Vorprüfung; Pinning setzt es beim Connect endgültig durch
+      const r = await requestOnce(current, ctl.signal);
+      if (r.status >= 300 && r.status < 400) {
+        if (!r.location) return "";
+        try { current = new URL(r.location, current); } catch { return ""; }
+        continue; // nächster Hop re-validiert Schema + Host + IP-Pin erneut
       }
-      if (!res.ok) return "";
-      return await readCapped(res);
+      if (r.status < 200 || r.status >= 300) return "";
+      return r.body;
     }
     return ""; // zu viele Redirects
   } catch { return ""; } finally { clearTimeout(timer); }

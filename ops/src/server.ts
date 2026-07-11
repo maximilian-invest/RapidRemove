@@ -405,6 +405,9 @@ app.post("/order", async (req, reply) => {
     if (dbReady()) {
       const id = orderId || ("RR-" + Math.floor(100000 + Math.random() * 899999));
       const checkId = clip(b.checkId, 40);
+      // Öffentliche Route: Maps-Link auf http/https begrenzen, bevor er im raw-JSON landet
+      // und später im Admin als <a href> gerendert wird (XSS-Schutz gegen javascript:/data:).
+      b.mapsUri = httpUrl(b.mapsUri, 400);
       b.affiliate = affiliate; // aufgelösten Partner im raw-JSON mitspeichern → Admin zeigt ihn an
       await insertOrder({
         id, name, email, phone, company, lang, profile, service, protection,
