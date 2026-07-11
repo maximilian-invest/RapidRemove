@@ -27,6 +27,7 @@ import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 import PaypalAngebot, { subject as paypalAngebotSubject, T as paypalAngebotTexts } from "./PaypalAngebot";
 import PaypalErinnerung, { subject as paypalErinnerungSubject, T as paypalErinnerungTexts } from "./PaypalErinnerung";
 import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
+import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
   label: string;
@@ -118,6 +119,14 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: paypalZahlungBestaetigtSubject,
     sample: { lang: "en", name: "Alex", hasProtection: true, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
     texts: paypalZahlungBestaetigtTexts,
+  },
+  rueckgewinnung: {
+    label: "Rückgewinnung (geprüft, nicht beauftragt)",
+    group: "Bestellung",
+    component: Rueckgewinnung,
+    subject: rueckgewinnungSubject,
+    sample: { lang: "de", name: "", company: "Muster GmbH" },
+    texts: rueckgewinnungTexts,
   },
 
   // ── Mitwirkung des Kunden nötig ──────────────────────────────────

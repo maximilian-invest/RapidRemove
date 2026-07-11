@@ -90,7 +90,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS reviews integer, ADD COLUMN IF NOT EXISTS flagged integer, ADD COLUMN IF NOT EXISTS recommend text,
       ADD COLUMN IF NOT EXISTS name text, ADD COLUMN IF NOT EXISTS email text, ADD COLUMN IF NOT EXISTS country text,
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
-      ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text
+      ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text,
+      ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text
   `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
@@ -291,7 +292,7 @@ export async function wipeChecks(): Promise<{ checks: number }> {
 export type CheckInput = {
   id: string; profile?: string; category?: string; rating?: string; reviews?: number;
   flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;
-  step?: number; amount?: number; source?: string;
+  step?: number; amount?: number; source?: string; placeId?: string; mapsUri?: string; addr?: string;
 };
 
 export async function upsertCheck(c: CheckInput): Promise<void> {
@@ -300,19 +301,28 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
   // aus dem Funnel) überschreiben bestehende Werte NICHT (COALESCE). `step` wandert
   // nur nach oben (GREATEST) – so bleibt die erreichte Trichter-Tiefe erhalten.
   await pool.query(
-    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source,place_id,maps_uri,addr)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
      ON CONFLICT (id) DO UPDATE SET
        profile=COALESCE(EXCLUDED.profile, checks.profile), category=COALESCE(EXCLUDED.category, checks.category),
        rating=COALESCE(EXCLUDED.rating, checks.rating), reviews=COALESCE(EXCLUDED.reviews, checks.reviews),
        flagged=COALESCE(EXCLUDED.flagged, checks.flagged), recommend=COALESCE(EXCLUDED.recommend, checks.recommend),
        name=COALESCE(EXCLUDED.name, checks.name), email=COALESCE(EXCLUDED.email, checks.email),
        amount=COALESCE(EXCLUDED.amount, checks.amount), source=COALESCE(EXCLUDED.source, checks.source),
+       place_id=COALESCE(EXCLUDED.place_id, checks.place_id), maps_uri=COALESCE(EXCLUDED.maps_uri, checks.maps_uri),
+       addr=COALESCE(EXCLUDED.addr, checks.addr),
        step=GREATEST(COALESCE(checks.step,0), COALESCE(EXCLUDED.step,0))`,
     [c.id, c.profile || null, c.category || null, c.rating || null, c.reviews ?? null, c.flagged ?? null,
      c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null,
-     c.step ?? null, c.amount ?? null, c.source || null],
+     c.step ?? null, c.amount ?? null, c.source || null, c.placeId || null, c.mapsUri || null, c.addr || null],
   );
+}
+
+/** Recherchierte/nachgetragene Lead-E-Mail an einer Prüfung speichern (leer = entfernen). */
+export async function setCheckEmail(id: string, email: string): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE checks SET email=$2 WHERE id=$1`, [id, email || null]);
+  return (r.rowCount ?? 0) > 0;
 }
 
 /** Verknüpft eine Prüfung mit der daraus entstandenen Bestellung. */

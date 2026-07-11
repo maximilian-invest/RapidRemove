@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { buildBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
@@ -474,6 +474,10 @@ app.post("/check", async (req, reply) => {
         step: b.step != null ? Number(b.step) || undefined : undefined,
         amount: b.amount != null ? Number(b.amount) || undefined : undefined,
         source: clip(b.source, 40) || undefined,
+        // Google-Profil-Bezug (für klickbare Profile + Lead-Recherche im Admin).
+        placeId: clip(b.placeId, 120) || undefined,
+        mapsUri: clip(b.mapsUri, 400) || undefined,
+        addr: clip(b.addr, 250) || undefined,
       });
     }
   } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }
@@ -642,6 +646,70 @@ app.post("/admin/reset-checks", async (req, reply) => {
   } catch (e) {
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
+});
+
+// Admin: recherchierte/nachgetragene Lead-E-Mail an einer Prüfung speichern (leer = entfernen).
+app.post("/admin/check-email", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const id = clip(b.checkId, 40);
+  if (!id) return reply.code(400).send({ ok: false, error: "checkId erforderlich" });
+  const email = clip(b.email, 160);
+  if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "ungültige E-Mail" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const ok = await setCheckEmail(id, email);
+  if (!ok) return reply.code(404).send({ ok: false, error: "Prüfung nicht gefunden" });
+  return { ok: true };
+});
+
+/* Lead-Recherche: Unternehmens-Website nach Kontakt-E-Mails durchsuchen. Die Website
+   ermittelt der Admin clientseitig über Google Places (websiteUri, Browser-Key); dieses
+   Backend lädt nur die Seite(n) und extrahiert Adressen — der Browser kann fremde
+   Websites wegen CORS nicht selbst lesen. */
+const EMAIL_RX = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi;
+const EMAIL_JUNK = /\.(png|jpe?g|gif|webp|svg|css|js|woff2?)$|example\.|sentry|wixpress|schema\.org|@\dx\./i;
+const privateHost = (h: string): boolean => {
+  const host = h.toLowerCase();
+  if (host === "localhost" || host.endsWith(".local") || host.endsWith(".internal") || host.includes(":")) return true;
+  const m = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/); // IP-Literale: private/reservierte Bereiche blocken (SSRF)
+  if (!m) return false;
+  const a = Number(m[1]), c = Number(m[2]);
+  return a === 10 || a === 127 || a === 0 || (a === 172 && c >= 16 && c <= 31) || (a === 192 && c === 168) || (a === 169 && c === 254);
+};
+async function fetchPageText(url: string): Promise<string> {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 6000);
+  try {
+    const res = await fetch(url, { signal: ctl.signal, redirect: "follow", headers: { "User-Agent": "Mozilla/5.0 (compatible; RapidRemove/1.0)" } });
+    if (!res.ok) return "";
+    const buf = await res.arrayBuffer();
+    return Buffer.from(buf.slice(0, 400_000)).toString("utf8"); // Größen-Deckel pro Seite
+  } catch { return ""; } finally { clearTimeout(timer); }
+}
+app.post("/admin/check-enrich", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  let site = String(b.website || "").trim();
+  if (!site) return reply.code(400).send({ ok: false, error: "website erforderlich" });
+  if (!/^https?:\/\//i.test(site)) site = "https://" + site;
+  let u: URL;
+  try { u = new URL(site); } catch { return reply.code(400).send({ ok: false, error: "ungültige Website" }); }
+  if (!/^https?:$/.test(u.protocol) || privateHost(u.hostname)) return reply.code(400).send({ ok: false, error: "unzulässige Website" });
+  // Startseite + gängige Kontakt-/Impressum-Pfade absuchen, bis genug Kandidaten da sind.
+  const pages = [u.href, u.origin + "/kontakt", u.origin + "/contact", u.origin + "/impressum", u.origin + "/contact-us"];
+  const seen = new Set<string>();
+  const emails: string[] = [];
+  for (const p of pages) {
+    if (emails.length >= 5) break;
+    const html = await fetchPageText(p);
+    for (const m of html.matchAll(EMAIL_RX)) {
+      const e = m[0].toLowerCase();
+      if (EMAIL_JUNK.test(e) || seen.has(e)) continue;
+      seen.add(e); emails.push(e);
+      if (emails.length >= 5) break;
+    }
+  }
+  return { ok: true, website: u.href, emails };
 });
 
 // Admin: Bestellung einem Bearbeiter zuweisen (max | matthias | null).
@@ -983,6 +1051,7 @@ app.post("/admin/send-template", async (req, reply) => {
     const props = {
       ...(t.sample as object), lang: tlang,
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
+      company: clip(b.company, 160) || undefined,      // Unternehmens-/Profilname (z. B. Rückgewinnung)
       hasSub: b.hasSub === true || b.hasSub === "true", // laufender Schutz (Abo) → Bündel-Angebot
       hasProtection: b.hasProtection === true || b.hasProtection === "true", // Schutz gebucht → „Schutz aktiv"
       offer: (b.offer && typeof b.offer === "object") ? b.offer : undefined, // berechnete Ersparnis (Beträge)
@@ -990,7 +1059,9 @@ app.post("/admin/send-template", async (req, reply) => {
     };
     const { html, subject } = await renderTemplate(key, props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-    if (orderId) await insertEvent({ orderId, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject });
+    // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
+    // der Eintrag bleibt über die E-Mail auffindbar (Kunden-Verlauf lädt per E-Mail).
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject });
     // PayPal-Angebot ist der „Profil gelöscht + Zahlung angestoßen"-Schritt (außerhalb DACH)
     // → dieselbe Team-Hype-Push wie beim Zahlungslink-Versand.
     if (key === "paypal-angebot") await fireDeletionHypePush(orderId, clip(b.name, 120), to);

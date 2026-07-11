@@ -8,7 +8,8 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails } from "@/lib/admin-api";
+import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 const AI = AdminIcon;
@@ -251,6 +252,7 @@ function Sidebar({ view, setView, counts, open, live }) {
   const items = [
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
+    ["checks", Icon.search, "Geprüfte Profile"],
     ["subs", AI.euro, "Abos & Umsatz"],
     ["liga", AI.trophy, "Löschungs-Liga"],
     ["templates", Icon.mail, "E-Mail-Vorlagen"],
@@ -356,6 +358,7 @@ function MobileTabBar({ view, setView, counts }) {
   const tabs = [
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
+    ["checks", Icon.search, "Profile"],
     ["subs", AI.euro, "Umsatz"],
     ["liga", AI.trophy, "Liga"],
     ["templates", Icon.mail, "Vorlagen"],
@@ -415,7 +418,7 @@ function dedupeChecks(list) {
 }
 
 /* ---------- Dashboard ---------- */
-function Dashboard({ orders, checks: rawChecks, openOrder, openCheck }) {
+function Dashboard({ orders, checks: rawChecks, openOrder, openCheck, onOpenChecks }) {
   const isMobile = useIsMobile();
   const [funnelOpen, setFunnelOpen] = React.useState(null); // angeklickte Trichter-Stufe (1–4 | "conv") → Abbrecher-Liste
   // Mehrfach-Prüfungen desselben Kunden zusammenfassen → ehrliche Zähler & Konversionsquote.
@@ -677,25 +680,135 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck }) {
         ) : null}
       </div>
 
-      {/* Geprüfte Profile (Leads aus dem kostenlosen Prüf-Tool) */}
+      {/* Geprüfte Profile leben jetzt im eigenen Bereich (Sidebar) – hier nur der Absprung. */}
       <div className="panel" style={{ marginTop: 22 }}>
         <div className="panel-head">
           <h2><Icon.search style={{ width: 17, height: 17, verticalAlign: "-3px", marginRight: 7, color: "var(--primary)" }} />Geprüfte Profile</h2>
-          <div className="ph-right">
-            <span className="muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{checks.length} Prüfungen · {checks.filter((c) => c.status === "neu").length} unbearbeitet</span>
+          <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span className="muted" style={{ fontSize: 13, color: "var(--fg-muted)", fontWeight: 700 }}>{checks.length} Prüfungen · {checks.filter((c) => c.status !== "konvertiert").length} nicht beauftragt</span>
+            {onOpenChecks ? <button className="btn btn-sec btn-sm" onClick={onOpenChecks}><Icon.search size={15} /> Alle geprüften Profile öffnen</button> : null}
           </div>
         </div>
-        <div className="tbl-scroll">
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Geprüfte Profile: eigener Bereich (Leads aus dem Prüf-Tool) ---------- */
+// Abbruchstelle je Prüfung (erreichte Stufe) – identische Farblogik wie im Dashboard-Trichter.
+const CHECK_DROP = {
+  1: { t: "Profil-Auswahl", bg: "var(--neutral-100)", fg: "var(--fg-2)" },
+  2: { t: "Preis/Leistung", bg: "#fff7e6", fg: "#b45309" },
+  3: { t: "Checkout", bg: "#ffe9d6", fg: "#c2410c" },
+  4: { t: "Zahlung", bg: "#fdecec", fg: "#b42318" },
+};
+const checkStepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
+// Klickbarer Google-Link zum geprüften Profil: gespeicherter Maps-Link > Place-ID > Namenssuche.
+const checkMapsUrl = (c) =>
+  c.mapsUri
+  || (c.placeId ? "https://www.google.com/maps/place/?q=place_id:" + encodeURIComponent(c.placeId) : "")
+  || (c.profile ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.profile + (c.addr ? " " + c.addr : "")) : "");
+const checkWebSearchUrl = (c) => "https://www.google.com/search?q=" + encodeURIComponent('"' + (c.profile || "") + '" ' + (c.addr || "") + " email kontakt");
+
+function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
+  const checks = dedupeChecks(rawChecks);
+  const [filter, setFilter] = React.useState("open"); // open | conv | all
+  const [q, setQ] = React.useState("");
+  const [saved, setSaved] = React.useState({});           // checkId -> gespeicherte E-Mail (Session)
+  const [drafts, setDrafts] = React.useState({});         // checkId -> Eingabefeld-Inhalt
+  const [enriching, setEnriching] = React.useState(null); // checkId der laufenden Recherche
+  const [cands, setCands] = React.useState({});           // checkId -> { website, emails[] } | { error }
+  const [confirmSend, setConfirmSend] = React.useState(null); // { check, email }
+  const [sending, setSending] = React.useState(false);
+  const [sent, setSent] = React.useState({});             // checkId -> true nach Versand (Session)
+
+  const effEmail = (c) => (saved[c.id] !== undefined ? saved[c.id] : (c.email || ""));
+  const openCount = checks.filter((c) => c.status !== "konvertiert").length;
+  const convCount = checks.length - openCount;
+  const list = checks
+    .filter((c) => (filter === "all" ? true : filter === "conv" ? c.status === "konvertiert" : c.status !== "konvertiert"))
+    .filter((c) => {
+      const needle = q.trim().toLowerCase();
+      if (!needle) return true;
+      return (c.profile + " " + c.name + " " + effEmail(c) + " " + (c.addr || "") + " " + c.id).toLowerCase().includes(needle);
+    });
+
+  // Automatische Lead-Recherche: Places (Browser-Key) liefert die Unternehmens-Website,
+  // das ops-Backend durchsucht sie nach Kontakt-E-Mails (CORS verhindert das im Browser).
+  const doEnrich = async (c) => {
+    setEnriching(c.id);
+    setCands((m) => ({ ...m, [c.id]: undefined }));
+    try {
+      if (!c.placeId) throw new Error("keine Place-ID gespeichert (ältere Prüfung) — bitte Web-Suche nutzen");
+      const prof = await fetchProfileById(c.placeId, "de");
+      if (!prof || !prof.website) throw new Error("Google kennt keine Website zu diesem Profil — bitte Web-Suche nutzen");
+      const r = await enrichCheckEmails({ website: prof.website });
+      const emails = r.emails || [];
+      setCands((m) => ({ ...m, [c.id]: emails.length ? { website: r.website, emails } : { error: "keine E-Mail auf der Website gefunden — bitte Web-Suche nutzen" } }));
+    } catch (e) {
+      setCands((m) => ({ ...m, [c.id]: { error: e.message } }));
+    }
+    setEnriching(null);
+  };
+  const doSaveEmail = async (c, email) => {
+    const v = (email || "").trim();
+    try {
+      await saveCheckEmail({ checkId: c.id, email: v });
+      setSaved((m) => ({ ...m, [c.id]: v }));
+      setCands((m) => ({ ...m, [c.id]: undefined }));
+      setDrafts((m) => ({ ...m, [c.id]: "" }));
+      toast(v ? "E-Mail gespeichert ✓" : "E-Mail entfernt");
+    } catch (e) { toast("Speichern fehlgeschlagen: " + e.message); }
+  };
+  const doSend = async () => {
+    const { check: c, email } = confirmSend;
+    setSending(true);
+    try {
+      await sendTemplate({ key: "rueckgewinnung", to: email, lang: c.lang || "de", name: c.name !== "—" ? (c.name || "") : "", company: c.profile || "" });
+      setSent((m) => ({ ...m, [c.id]: true }));
+      toast("Rückgewinnung an " + email + " gesendet ✓");
+      setConfirmSend(null);
+    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setSending(false);
+  };
+
+  return (
+    <div className="content">
+      <div className="panel">
+        <div className="panel-head">
+          <h2><Icon.search style={{ width: 17, height: 17, verticalAlign: "-3px", marginRight: 7, color: "var(--primary)" }} />Geprüfte Profile</h2>
+          <div className="ph-right" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Suchen (Profil, Name, E-Mail…)"
+              style={{ padding: "7px 11px", borderRadius: 8, border: "1px solid var(--hairline)", fontSize: 13, fontWeight: 600, minWidth: 190 }} />
+          </div>
+        </div>
+        <div style={{ padding: "12px 22px 0", display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {[["open", "Nicht beauftragt", openCount], ["conv", "Beauftragt", convCount], ["all", "Alle", checks.length]].map(([k, lab, n]) => (
+            <button key={k} className={"chipf" + (filter === k ? " on" : "")} onClick={() => setFilter(k)}>{lab} <span className="ct">{n}</span></button>
+          ))}
+        </div>
+        <div className="tbl-scroll" style={{ marginTop: 10 }}>
           <table className="tbl">
-            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Abbruch bei</th><th>Status</th></tr></thead>
+            <thead><tr><th>Prüfung</th><th>Google-Profil</th><th>Bewertung</th><th>Abbruch bei</th><th>Kontakt</th><th>Status</th><th>Aktionen</th></tr></thead>
             <tbody>
-              {checks.map((c) => {
+              {list.map((c) => {
                 const linked = c.orderId ? orders.find((o) => o.id === c.orderId) : null;
-                const d = DROP[stepOf(c)] || DROP[1];
+                const d = CHECK_DROP[checkStepOf(c)] || CHECK_DROP[1];
+                const em = effEmail(c);
+                const cand = cands[c.id];
+                const mapsUrl = checkMapsUrl(c);
                 return (
-                  <tr key={c.id} onClick={() => linked ? openCheck(linked) : null} style={{ cursor: linked ? "pointer" : "default" }}>
-                    <td><span className="oid">{c.id}</span><div className="muted">{c.created.split("·")[1]}</div></td>
-                    <td><div className="cust">{c.profile}{c.dupes > 1 ? <span title={c.dupes + "× geprüft (zusammengefasst)"} style={{ marginLeft: 7, fontSize: 10.5, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap", verticalAlign: "middle" }}>{c.dupes}× geprüft</span> : null}<div className="sub">{c.name !== "—" ? c.name : c.email}</div></div></td>
+                  <tr key={c.id}>
+                    <td><span className="oid">{c.id}</span><div className="muted">{c.created}</div></td>
+                    <td>
+                      <div className="cust">
+                        {mapsUrl
+                          ? <a href={mapsUrl} target="_blank" rel="noreferrer" title="Google-Profil öffnen" style={{ color: "var(--primary)", fontWeight: 700, textDecoration: "none" }}>{c.profile || "—"} <Icon.external size={12} style={{ verticalAlign: "-1px" }} /></a>
+                          : (c.profile || "—")}
+                        {c.dupes > 1 ? <span title={c.dupes + "× geprüft (zusammengefasst)"} style={{ marginLeft: 7, fontSize: 10.5, fontWeight: 800, color: "var(--primary)", background: "var(--orange-50)", border: "1px solid var(--hairline)", borderRadius: 999, padding: "1px 7px", whiteSpace: "nowrap", verticalAlign: "middle" }}>{c.dupes}×</span> : null}
+                        {c.addr ? <div className="sub" style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={c.addr}>{c.addr}</div> : null}
+                      </div>
+                    </td>
                     <td><span className="amt" style={{ fontFamily: "var(--font-display)" }}>{c.rating}★</span><div className="muted">{c.reviews} Bew.</div></td>
                     <td>{c.status === "konvertiert"
                       ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12.5, whiteSpace: "nowrap" }}>✓ beauftragt</span>
@@ -703,17 +816,79 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck }) {
                         ? <span style={{ color: "var(--fg-muted)", fontWeight: 700 }} title="Vor Einführung des Funnel-Trackings geprüft – keine Stufen-Daten">—</span>
                         : <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 800, padding: "3px 9px", borderRadius: 999, background: d.bg, color: d.fg, whiteSpace: "nowrap" }}>{d.t}</span>}
                     </td>
+                    <td style={{ minWidth: 190 }}>
+                      {c.name !== "—" && c.name ? <div style={{ fontWeight: 700, fontSize: 12.5 }}>{c.name}</div> : null}
+                      {em
+                        ? <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <a href={"mailto:" + em} style={{ color: "var(--primary)", fontWeight: 700, fontSize: 12.5, textDecoration: "none" }}>{em}</a>
+                            <button title="E-Mail ändern" onClick={() => { setSaved((m) => ({ ...m, [c.id]: "" })); setDrafts((m) => ({ ...m, [c.id]: em })); }} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--fg-muted)", padding: 0 }}>✎</button>
+                          </div>
+                        : <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                            <input value={drafts[c.id] || ""} onChange={(e) => setDrafts((m) => ({ ...m, [c.id]: e.target.value }))} placeholder="E-Mail eintragen…"
+                              style={{ padding: "5px 8px", borderRadius: 7, border: "1px solid var(--hairline)", fontSize: 12, fontWeight: 600, width: 150 }} />
+                            <button className="btn btn-sec btn-sm" style={{ padding: "4px 9px" }} disabled={!(drafts[c.id] || "").includes("@")} onClick={() => doSaveEmail(c, drafts[c.id])}>✓</button>
+                          </div>}
+                      {cand && cand.emails ? (
+                        <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--fg-muted)" }}>Gefunden auf {(() => { try { return new URL(cand.website).hostname; } catch (e) { return "der Website"; } })()}:</span>
+                          {cand.emails.map((e) => (
+                            <button key={e} className="btn btn-sec btn-sm" style={{ padding: "3px 9px", fontSize: 11.5 }} onClick={() => doSaveEmail(c, e)} title="Diese E-Mail übernehmen">{e} ✓</button>
+                          ))}
+                        </div>
+                      ) : null}
+                      {cand && cand.error ? <div style={{ marginTop: 5, fontSize: 11, fontWeight: 600, color: "var(--danger)" }}>{cand.error}</div> : null}
+                    </td>
                     <td>
                       <CheckBadge status={c.status} />
-                      {c.orderId ? <div className="muted" style={{ marginTop: 3 }}>{c.orderId}</div> : null}
+                      {linked ? <div><button onClick={() => openOrder(linked)} style={{ marginTop: 3, border: "none", background: "none", cursor: "pointer", color: "var(--primary)", fontWeight: 700, fontSize: 12, padding: 0 }}>{c.orderId} →</button></div> : null}
+                    </td>
+                    <td style={{ whiteSpace: "nowrap" }}>
+                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                        {c.status !== "konvertiert" ? (
+                          <React.Fragment>
+                            <button className="btn btn-sec btn-sm" disabled={enriching === c.id} onClick={() => doEnrich(c)} title="E-Mail automatisch suchen (Website des Unternehmens)">
+                              {enriching === c.id ? "sucht…" : <React.Fragment><Icon.search size={14} /> E-Mail finden</React.Fragment>}
+                            </button>
+                            <a className="btn btn-sec btn-sm" href={checkWebSearchUrl(c)} target="_blank" rel="noreferrer" title="Manuelle Web-Suche nach dem Unternehmen"><Icon.globe size={14} /></a>
+                            {sent[c.id]
+                              ? <span style={{ color: "var(--success)", fontWeight: 800, fontSize: 12, whiteSpace: "nowrap" }}>✓ gesendet</span>
+                              : <button className="btn btn-pri btn-sm" disabled={!em} title={em ? "Rückgewinnungs-Mail senden" : "Zuerst E-Mail hinterlegen"} onClick={() => setConfirmSend({ check: c, email: em })}><Icon.mail size={14} /> Angebot</button>}
+                          </React.Fragment>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 );
               })}
+              {!list.length ? <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--fg-muted)", fontWeight: 600, padding: 26 }}>Keine Prüfungen in dieser Ansicht.</td></tr> : null}
             </tbody>
           </table>
         </div>
       </div>
+
+      {confirmSend ? (
+        <div className="modal-scrim open" onClick={() => setConfirmSend(null)}>
+          <div className="modal" style={{ width: 480, maxWidth: "94vw" }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <span style={{ width: 36, height: 36, borderRadius: 10, background: "var(--orange-50)", display: "flex", alignItems: "center", justifyContent: "center" }}><Icon.mail size={19} style={{ color: "var(--primary)" }} /></span>
+              <div><h3>Rückgewinnung senden</h3><div style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 600 }}>{confirmSend.check.profile || confirmSend.check.id}</div></div>
+              <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={() => setConfirmSend(null)}><Icon.x /></button>
+            </div>
+            <div className="modal-body">
+              <p style={{ margin: "0 0 10px", fontSize: 13.5, fontWeight: 600, lineHeight: 1.55 }}>
+                Vorlage <strong>„Rückgewinnung (geprüft, nicht beauftragt)"</strong> in Sprache <strong>{(confirmSend.check.lang || "de").toUpperCase()}</strong> an <strong>{confirmSend.email}</strong> senden?
+              </p>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "var(--fg-muted)", lineHeight: 1.5 }}>
+                Hinweis: Der Empfänger hat evtl. nicht selbst geprüft (Kaltkontakt) — die Vorlage ist deshalb neutral formuliert und enthält eine Abmelde-Zeile.
+              </p>
+            </div>
+            <div style={{ padding: "12px 22px", borderTop: "1px solid var(--hairline)", display: "flex", gap: 10 }}>
+              <button className="btn btn-pri" disabled={sending} onClick={doSend}><Icon.mail size={15} /> {sending ? "Sendet…" : "Senden"}</button>
+              <button className="btn btn-sec" onClick={() => setConfirmSend(null)}>Abbrechen</button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -2104,7 +2279,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -2270,12 +2445,13 @@ function AdminApp() {
   let body;
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onCorrectPay={doCorrectPay} onMarkPaid={doMarkPaid} onAssign={setAssignee} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
+  else if (view === "checks") body = <ChecksView checks={checks} orders={orders} openOrder={openDetail} toast={toast} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;
   else if (view === "templates") body = <Templates toast={toast} />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
-  else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} />;
+  else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} onOpenChecks={() => setView("checks")} />;
 
   return (
     <div className="adm">

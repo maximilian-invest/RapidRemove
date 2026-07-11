@@ -111,7 +111,7 @@ export function manualCandidate(query, lang = "de") {
    per ?p=<placeId> geteilter Wizard-Link wieder zum vollen Profil auflösen. */
 const DETAIL_FIELD_MASK = [
   "id", "displayName", "formattedAddress", "rating", "userRatingCount",
-  "primaryTypeDisplayName", "businessStatus", "googleMapsUri",
+  "primaryTypeDisplayName", "businessStatus", "googleMapsUri", "websiteUri",
 ].join(",");
 
 /** Lädt ein Profil per placeId; liefert es im Wizard-Kandidatenformat oder null. */
@@ -129,6 +129,7 @@ export async function fetchProfileById(placeId, lang = "de") {
       cat: p.primaryTypeDisplayName?.text || "", rating: fmtRating(p.rating, lang),
       reviews: p.userRatingCount || 0, addr: p.formattedAddress || "",
       mapsUri: p.googleMapsUri || "", businessStatus: p.businessStatus || "", primary: true,
+      website: p.websiteUri || "", // Unternehmens-Website (für die Lead-Recherche im Admin)
     };
   } catch (e) { return null; }
 }

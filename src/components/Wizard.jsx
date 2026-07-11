@@ -1551,6 +1551,8 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
       rating: sp ? (sp.rating || "") : "", reviews: sp ? (sp.reviews || 0) : 0,
       recommend: service, name: name || (sp ? sp.name : ""), country, lang,
       step: 1, amount: checkAmt || undefined, source: checkSource, // Funnel: Stufe 1 + Preis + Quelle
+      // Google-Profil-Bezug → Admin „Geprüfte Profile": klickbarer Maps-Link + Lead-Recherche.
+      placeId: sp ? (sp.placeId || "") : "", mapsUri: sp ? (sp.mapsUri || "") : "", addr: sp ? (sp.addr || "") : "",
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
   // Funnel-Stufe nachschärfen (nur aufwärts, einmal je Stufe): 2 = Preis gesehen, 3 = Checkout, 4 = Zahlung.

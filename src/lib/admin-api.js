@@ -118,6 +118,8 @@ function mapCheck(r) {
     recommend: r.recommend || "remove", status: r.status || "neu", orderId: r.order_id || null,
     // Funnel-Insights: erreichte Stufe (1–4) – null = keine Funnel-Daten (Alt-Prüfung); Preis; Herkunft.
     step: r.step != null ? Number(r.step) : null, amount: r.amount != null ? Number(r.amount) : null, source: r.source || null,
+    // Google-Profil-Bezug (nur bei neueren Prüfungen vorhanden): Maps-Link, Place-ID, Adresse.
+    placeId: r.place_id || "", mapsUri: r.maps_uri || "", addr: r.addr || "", lang: r.lang || "de", country: r.country || "DE",
   };
 }
 
@@ -271,12 +273,12 @@ export async function setupExpressLinks({ apply } = {}) {
 }
 
 /** Sendet eine echte, gebrandete Vorlage (z. B. Rechte benötigt, Adresse) an den Kunden. */
-export async function sendTemplate({ key, to, orderId, lang, name, hasSub, hasProtection, offer }) {
+export async function sendTemplate({ key, to, orderId, lang, name, company, hasSub, hasProtection, offer }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/send-template", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, key, to, orderId, lang, name, hasSub, hasProtection, offer }),
+    body: JSON.stringify({ token: TOKEN, key, to, orderId, lang, name, company, hasSub, hasProtection, offer }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
@@ -421,6 +423,32 @@ export async function correctOrderPayment({ orderId }) {
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
+}
+
+/** Recherchierte Lead-E-Mail an einer Prüfung speichern (leer = entfernen). */
+export async function saveCheckEmail({ checkId, email }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/check-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, checkId, email }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
+/** Lead-Recherche: Unternehmens-Website serverseitig nach Kontakt-E-Mails durchsuchen. */
+export async function enrichCheckEmails({ website }) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/check-enrich", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, website }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j; // { ok, website, emails: [...] }
 }
 
 /** Zahlung manuell als eingegangen erfassen (z. B. PayPal/Überweisung außerhalb Stripe). */
