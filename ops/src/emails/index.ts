@@ -26,6 +26,7 @@ import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang"
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 import PaypalAngebot, { subject as paypalAngebotSubject, T as paypalAngebotTexts } from "./PaypalAngebot";
 import PaypalErinnerung, { subject as paypalErinnerungSubject, T as paypalErinnerungTexts } from "./PaypalErinnerung";
+import PaypalMahnung, { subject as paypalMahnungSubject } from "./PaypalMahnung";
 import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
@@ -111,6 +112,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: paypalErinnerungSubject,
     sample: { lang: "en", name: "Alex", offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
     texts: paypalErinnerungTexts,
+  },
+  "paypal-mahnung": {
+    label: "PayPal-Mahnung · 4-stufig (außerhalb DACH)",
+    group: "Bestellung",
+    component: PaypalMahnung,
+    subject: paypalMahnungSubject,
+    sample: { lang: "en", name: "Alex", stage: 1, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
   },
   "paypal-zahlung-bestaetigt": {
     label: "PayPal-Zahlung bestätigt (+ Schutz aktiv, außerhalb DACH)",

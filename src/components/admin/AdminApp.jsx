@@ -1740,10 +1740,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       },
     });
   };
-  // Datenabhängige Vorlagen (brauchen Betrag/Link) laufen über den Zahlungslink-Dialog.
-  const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung"]);
-  // Vorlagen, die NUR außerhalb DACH angeboten werden (PayPal-Vorteil + -Erinnerung).
-  const NON_DACH_ONLY = new Set(["paypal-angebot", "paypal-erinnerung", "paypal-zahlung-bestaetigt"]);
+  // Datenabhängige Vorlagen (brauchen Betrag/Link/Stufe) laufen über eigene Flows,
+  // nicht über die generische Vorlagen-Liste (Zahlungslink-Dialog bzw. Mahnung-Button).
+  const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung", "paypal-mahnung"]);
+  // Vorlagen, die NUR außerhalb DACH angeboten werden (PayPal-Vorteil + -Erinnerung + -Mahnung).
+  const NON_DACH_ONLY = new Set(["paypal-angebot", "paypal-erinnerung", "paypal-zahlung-bestaetigt", "paypal-mahnung"]);
   const isDach = (o.lang || "de") === "de";
   const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
   const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key) && !(isDach && NON_DACH_ONLY.has(t.key)));
@@ -1779,11 +1780,19 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const mahnStage = Math.min(mahnungCount + 1, 4);
   const mahnLabel = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" }[mahnStage];
   const mahnBtnLabel = { 1: "Zahlungserinnerung senden", 2: "2. Erinnerung senden", 3: "Mahnung senden", 4: "Letzte Mahnung (Reaktivierung)" }[mahnStage];
+  // PayPal-Kunden (Zahlung außerhalb Stripe): Mahnung als Text-Mahnlauf per Vorlage, die auf
+  // den separat gesendeten PayPal-Link verweist – KEIN Stripe-Zahlungslink. Nur außerhalb DACH.
+  const usePaypalMahnung = !!o.paypal && (o.lang || "de") !== "de";
   const doSendMahnung = async () => {
     try {
-      const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
-      await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung", stage: mahnStage });
-      toast(mahnLabel + " an " + o.name + " gesendet ✓");
+      if (usePaypalMahnung) {
+        // Text-Mahnlauf (Stufe 1–4) für PayPal – verweist auf den bereits gesendeten PayPal-Link.
+        await sendTemplate({ key: "paypal-mahnung", to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, offer: computeOffer(o), stage: mahnStage });
+      } else {
+        const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
+        await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung", stage: mahnStage });
+      }
+      toast(mahnLabel + (usePaypalMahnung ? " (PayPal)" : "") + " an " + o.name + " gesendet ✓");
       // Status „Profil gelöscht" nur 1× (beim ersten Mal) – danach nur Zahlungsstatus.
       onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
       reloadEvents(); setTimeout(reloadEvents, 900);
@@ -2179,7 +2188,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung}><Icon.mail /> {mahnBtnLabel}</button> : null}
+              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung} title={usePaypalMahnung ? "Text-Mahnung – verweist auf den gesendeten PayPal-Link" : "Mahnung mit Stripe-Zahlungslink"}><Icon.mail /> {mahnBtnLabel}{usePaypalMahnung ? " (PayPal)" : ""}</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}

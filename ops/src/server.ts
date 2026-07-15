@@ -1041,8 +1041,10 @@ app.post("/admin/send-template", async (req, reply) => {
     const tlang = mailLang(b.lang);
     // „PayPal-Vorteil" ist NUR außerhalb DACH vorgesehen – serverseitige Sperre (der
     // Admin blendet die Vorlage für DE-Bestellungen ohnehin aus).
-    if ((key === "paypal-angebot" || key === "paypal-erinnerung" || key === "paypal-zahlung-bestaetigt") && tlang === "de")
+    if ((key === "paypal-angebot" || key === "paypal-erinnerung" || key === "paypal-zahlung-bestaetigt" || key === "paypal-mahnung") && tlang === "de")
       return reply.code(400).send({ ok: false, error: "Diese Vorlage ist nur außerhalb DACH vorgesehen." });
+    // Mahnstufe 1–4 (nur PayPal-Mahnung). Default 1 (freundliche Zahlungserinnerung).
+    const stage = key === "paypal-mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
     const props = {
       ...(t.sample as object), lang: tlang,
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
@@ -1050,13 +1052,20 @@ app.post("/admin/send-template", async (req, reply) => {
       hasSub: b.hasSub === true || b.hasSub === "true", // laufender Schutz (Abo) → Bündel-Angebot
       hasProtection: b.hasProtection === true || b.hasProtection === "true", // Schutz gebucht → „Schutz aktiv"
       offer: (b.offer && typeof b.offer === "object") ? b.offer : undefined, // berechnete Ersparnis (Beträge)
+      service: clip(b.service, 40) || undefined,       // „reset" → Mahnung droht mit Wiederherstellung der Bewertungen
+      stage,                                            // PayPal-Mahnstufe (1–4)
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
     const { html, subject } = await renderTemplate(key, props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    // Titel der PayPal-Mahnung startet mit „Mahnung" (für die Mahnstufen-Zählung via /mahnung/i).
+    const PP_STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
+    const evtTitle = key === "paypal-mahnung"
+      ? `Mahnung gesendet · Stufe ${stage} (PayPal, ${PP_STAGE_LABEL[stage as number] || ""})`
+      : t.label + " gesendet";
     // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
     // der Eintrag bleibt über die E-Mail auffindbar (Kunden-Verlauf lädt per E-Mail).
-    await insertEvent({ orderId: orderId || undefined, email: to, type: "mail", title: t.label + " gesendet", detail: "an " + to, html, subject });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "mail", title: evtTitle, detail: "an " + to, html, subject });
     // Rückgewinnung an einen Prüfungs-Lead: Sende-Zeitpunkt am Check vermerken, damit im
     // Admin dauerhaft „Angebot gesandt am …" erscheint (überlebt Reload/Neu-Laden).
     if (key === "rueckgewinnung") { const cid = clip(b.checkId, 40); if (cid) await markCheckRueckgewinnung(cid); }
