@@ -966,24 +966,38 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
 }
 
 /* ---------- Orders list ---------- */
+// Inkasso-Kandidaten: Leistung erbracht (Profil „gelöscht"), aber unbezahlt UND die
+// Löschung liegt mehr als 30 Tage zurück → überfällige offene Forderung.
+const INKASSO_DAYS = 30;
+const INKASSO_MS = INKASSO_DAYS * 24 * 3600 * 1000;
+const overdueDays = (o, now) => (o.doneAt ? Math.floor((now - new Date(o.doneAt).getTime()) / 86400000) : null);
+const isInkasso = (o, now) => o.status === "done" && !["paid", "refunded"].includes(o.pay) && !!o.doneAt && (now - new Date(o.doneAt).getTime()) > INKASSO_MS;
+
 function Orders({ orders, openOrder, query }) {
   const isMobile = useIsMobile();
   const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
   const [filter, setFilter] = React.useState("all");
+  const inkassoOrders = orders.filter((o) => isInkasso(o, now));
   const filters = [
     ["all", "Alle", orders.length],
     ["new", "Neu", orders.filter((o) => o.status === "new").length],
     ["progress", "In Bearbeitung", orders.filter((o) => o.status === "progress").length],
     ["done", "Gelöscht", orders.filter((o) => o.status === "done").length],
     ["pending", "Zahlung offen", orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay)).length],
+    ["inkasso", "Inkasso", inkassoOrders.length],
   ];
   let list = orders;
   if (filter === "pending") list = orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay));
+  else if (filter === "inkasso") list = inkassoOrders;
   else if (filter !== "all") list = orders.filter((o) => o.status === filter);
   if (query.trim()) {
     const q = query.toLowerCase();
     list = list.filter((o) => (o.name + o.email + o.id + o.company).toLowerCase().includes(q));
   }
+  // Kontextbezogener Leer-Hinweis: im Inkasso-Reiter ist „leer" die gute Nachricht.
+  const emptyMsg = filter === "inkasso"
+    ? "Keine überfälligen Forderungen – alle gelöschten Aufträge sind bezahlt oder jünger als 30 Tage. 🎉"
+    : "Keine Bestellungen in diesem Filter.";
   if (isMobile) return (
     <div className="content">
       <div className="m-chips">
@@ -994,7 +1008,7 @@ function Orders({ orders, openOrder, query }) {
       {list.length ? (
         <div className="m-list">{list.map((o) => <OrderRow key={o.id} o={o} now={now} onClick={() => openOrder(o)} />)}</div>
       ) : (
-        <div className="m-empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
+        <div className="m-empty"><AI.inbox /><p>{emptyMsg}</p></div>
       )}
     </div>
   );
@@ -1022,13 +1036,13 @@ function Orders({ orders, openOrder, query }) {
                   <td>{SERVICES[o.service].name}{o.protection ? <div className="muted">+ Schutz</div> : null}</td>
                   <td><PayBadge o={o} /></td>
                   <td><StatusBadge status={o.status} /></td>
-                  <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span></td>
+                  <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>{filter === "inkasso" ? <div className="muted" style={{ color: "var(--danger)", fontWeight: 700, fontSize: 11.5, whiteSpace: "nowrap" }}>seit {overdueDays(o, now)} T. überfällig</div> : null}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <div className="empty"><AI.inbox /><p>Keine Bestellungen in diesem Filter.</p></div>
+          <div className="empty"><AI.inbox /><p>{emptyMsg}</p></div>
         )}
       </div>
     </div>

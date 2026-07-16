@@ -96,7 +96,7 @@ function fmtDate(iso) {
 }
 function mapOrder(r) {
   return {
-    id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, name: r.name || "", email: r.email || "", phone: r.phone || "",
+    id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, doneAt: r.done_at || null, name: r.name || "", email: r.email || "", phone: r.phone || "",
     company: r.company || "", profile: r.profile || "", reviews: Number(r.reviews) || 0, rating: r.rating || "—",
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
