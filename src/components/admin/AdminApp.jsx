@@ -972,24 +972,32 @@ const INKASSO_DAYS = 30;
 const INKASSO_MS = INKASSO_DAYS * 24 * 3600 * 1000;
 const overdueDays = (o, now) => (o.doneAt ? Math.floor((now - new Date(o.doneAt).getTime()) / 86400000) : null);
 const isInkasso = (o, now) => o.status === "done" && !["paid", "refunded"].includes(o.pay) && !!o.doneAt && (now - new Date(o.doneAt).getTime()) > INKASSO_MS;
+// „Zahlung offen": Leistung erbracht (Profil „gelöscht") UND unbezahlt. Schließt stornierte
+// (Status ≠ done) und noch nicht gelieferte Aufträge aus – die schulden noch nichts.
+const OFFEN_PAY = ["pending", "sent", "mahnung", "failed"];
+const isZahlungOffen = (o) => o.status === "done" && OFFEN_PAY.includes(o.pay);
+const ASSIGNEE_OPTS = [["all", "Alle Betreuer"], ["max", "Max"], ["matthias", "Matthias"], ["none", "Nicht zugewiesen"]];
 
 function Orders({ orders, openOrder, query }) {
   const isMobile = useIsMobile();
   const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
   const [filter, setFilter] = React.useState("all");
-  const inkassoOrders = orders.filter((o) => isInkasso(o, now));
+  const [assignee, setAssignee] = React.useState("all"); // Betreuer-Filter (Max/Matthias/nicht zugewiesen)
+  // Zuerst nach Betreuer eingrenzen – Zähler UND Liste beziehen sich danach auf diese Auswahl.
+  const scoped = orders.filter((o) => (assignee === "all" ? true : assignee === "none" ? !o.assignee : o.assignee === assignee));
+  const inkassoOrders = scoped.filter((o) => isInkasso(o, now));
   const filters = [
-    ["all", "Alle", orders.length],
-    ["new", "Neu", orders.filter((o) => o.status === "new").length],
-    ["progress", "In Bearbeitung", orders.filter((o) => o.status === "progress").length],
-    ["done", "Gelöscht", orders.filter((o) => o.status === "done").length],
-    ["pending", "Zahlung offen", orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay)).length],
+    ["all", "Alle", scoped.length],
+    ["new", "Neu", scoped.filter((o) => o.status === "new").length],
+    ["progress", "In Bearbeitung", scoped.filter((o) => o.status === "progress").length],
+    ["done", "Gelöscht", scoped.filter((o) => o.status === "done").length],
+    ["pending", "Zahlung offen", scoped.filter(isZahlungOffen).length],
     ["inkasso", "Inkasso", inkassoOrders.length],
   ];
-  let list = orders;
-  if (filter === "pending") list = orders.filter((o) => ["pending", "sent", "mahnung", "failed"].includes(o.pay));
+  let list = scoped;
+  if (filter === "pending") list = scoped.filter(isZahlungOffen);
   else if (filter === "inkasso") list = inkassoOrders;
-  else if (filter !== "all") list = orders.filter((o) => o.status === filter);
+  else if (filter !== "all") list = scoped.filter((o) => o.status === filter);
   if (query.trim()) {
     const q = query.toLowerCase();
     list = list.filter((o) => (o.name + o.email + o.id + o.company).toLowerCase().includes(q));
@@ -1000,6 +1008,10 @@ function Orders({ orders, openOrder, query }) {
     : "Keine Bestellungen in diesem Filter.";
   if (isMobile) return (
     <div className="content">
+      <select value={assignee} onChange={(e) => setAssignee(e.target.value)} title="Nach Betreuer filtern"
+        style={{ width: "100%", marginBottom: 10, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontWeight: 700, background: "#fff", color: "var(--fg)" }}>
+        {ASSIGNEE_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+      </select>
       <div className="m-chips">
         {filters.map(([id, label, n]) => (
           <button key={id} className={"m-chip" + (filter === id ? " on" : "")} onClick={() => setFilter(id)}>{label} <span className="ct">{n}</span></button>
@@ -1023,7 +1035,13 @@ function Orders({ orders, openOrder, query }) {
               </button>
             ))}
           </div>
-          <div className="ph-right"><button className="btn btn-sec btn-sm"><AI.download /> Export</button></div>
+          <div className="ph-right" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select value={assignee} onChange={(e) => setAssignee(e.target.value)} title="Nach Betreuer filtern"
+              style={{ padding: "7px 11px", borderRadius: 8, border: "1px solid var(--hairline)", fontSize: 13, fontWeight: 700, background: "#fff", color: "var(--fg)", cursor: "pointer" }}>
+              {ASSIGNEE_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            </select>
+            <button className="btn btn-sec btn-sm"><AI.download /> Export</button>
+          </div>
         </div>
         {list.length ? (
           <table className="tbl">
