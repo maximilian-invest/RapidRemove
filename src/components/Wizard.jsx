@@ -1350,7 +1350,7 @@ const ROUTER_COPY = {
 };
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
-function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onDeindex, onSelectProfile }) {
+function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit, onOrm, onDeindex, onSelectProfile }) {
   const { t, lang } = useLang();
   const w = t.wizard;
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
@@ -1431,6 +1431,8 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   // Von der Startseite mit konkretem Profil: kurze Prüf-Animation, dann Schritt 3 (Bestätigen) + Konfetti.
   React.useEffect(() => {
     if (initialProfile) {
+      // Profil aus der Live-Suche der Startseite: die Prüfung startet jetzt.
+      trackLead(leadSource);
       const id = setTimeout(() => {
         checkedRef.current = initialProfile.placeId || initialProfile.name;
         persistCheck(initialProfile); // mit konkretem Profil gestartet → Prüfung zählen
@@ -1441,7 +1443,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
       }, 2400);
       return () => clearTimeout(id);
     }
-    if (initialName && initialName.trim()) { startSearch(initialName); }
+    if (initialName && initialName.trim()) { startSearch(initialName, leadSource); }
     // eslint-disable-next-line
   }, []);
 
@@ -1479,9 +1481,23 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     }
   }, [phase, selPlaceId, step, candidates, selectedId, multi, service, express, protection, contact, routed, processing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const startSearch = (n) => {
+  /* Meta-Pixel „Gratis-Check abgeschickt". Sitzt hier, weil der Wizard die
+     EINZIGE Stelle ist, durch die jede Prüfung läuft — auch die, die nie über
+     App.startWizard kommt: Einstieg über Nav/Sticky/Footer/Preise (öffnet den
+     Wizard ohne Namen) und die elf Check-Seiten (/profil-pruefen,
+     /en/check-profile, …), die den Wizard direkt rendern.
+     `src` benennt das Feld: „hero"/„cta_band" von der Startseite, „wizard" für
+     das Namensfeld hier. Leer = kein Lead (z. B. „Weitermachen").
+     Bewusst OHNE den eingegebenen Firmennamen. */
+  const trackLead = (src) => {
+    if (!src) return;
+    track("Lead", { content_name: "gratis_check", content_category: src });
+  };
+
+  const startSearch = (n, src) => {
     const nm = (n != null ? n : name);
-    if (!nm.trim()) return;
+    if (!nm.trim()) return; // leeres Feld: keine Prüfung, kein Lead
+    trackLead(src === undefined ? "wizard" : src);
     setName(nm);
     setContact((c) => ({ ...c, company: nm }));
     setPhase("searching");
@@ -1622,6 +1638,7 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
   // Direktwahl eines eindeutigen Profils aus der Live-Suche → gleich zu Schritt 3.
   const pickProfile = (profile) => {
     setAcOpen(false);
+    trackLead("wizard");
     setName(profile.name || "");
     setContact((c) => ({ ...c, company: profile.name || "" }));
     setCandidates([{ ...profile, id: "p1", primary: true }]);

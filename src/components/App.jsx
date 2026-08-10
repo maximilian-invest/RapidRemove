@@ -11,7 +11,6 @@ import { loadWizardSnapshot } from "@/lib/resume";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
 import { WhatsAppFloat } from "@/components/Chrome";
-import { track } from "@/lib/metaPixel";
 
 export default function App({ initialLang = "de", initialView = null, magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
@@ -21,6 +20,12 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   const [resumeSnap, setResumeSnap] = React.useState(null);
   const [bootDone, setBootDone] = React.useState(false); // Deep-Link-Effekt gelaufen? (verhindert „kurz vorab"-Aufblitzen beim Weitermachen)
   const [homeScroll, setHomeScroll] = React.useState(null);
+  // Herkunft des Gratis-Checks fürs Meta-Pixel („hero" / „cta_band" von der
+  // Startseite). Default „wizard": Einstieg über Nav/Sticky/Footer/Preise oder
+  // direkt auf einer Check-Seite (/profil-pruefen, /en/check-profile, …) — dort
+  // wird startWizard nie aufgerufen, geprüft wird trotzdem. Beim „Weitermachen"
+  // auf null gesetzt: ein wiederaufgenommener Stand ist kein neuer Check.
+  const [leadSource, setLeadSource] = React.useState("wizard");
 
   // Eigene, lokalisierte Wizard-URL (z. B. /profil-pruefen, /it/verifica-profilo);
   // die placeId des gewählten Profils hängt als ?p= dran (teil-/wiederherstellbar).
@@ -37,6 +42,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
       // „Weitermachen": gespeicherten Wizard-Stand wiederherstellen (Schritt + Auswahlen).
       if (params.get("resume") === "1") {
         setRoute("wizard");
+        setLeadSource(null); // „Weitermachen" — der Check wurde bereits gezählt
         const snap = loadWizardSnapshot();
         if (snap && snap.step != null && Array.isArray(snap.candidates) && snap.candidates.length) {
           setResumeSnap(snap); // vollständiger Stand → exakt dort weitermachen
@@ -82,15 +88,10 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   // der Wizard direkt zu „Schritt 3" (Machbarkeit) – die Profilsuche entfällt.
   // `source` benennt das Check-Feld, aus dem die Prüfung kommt („hero" / „cta_band").
   // Die reinen „Gratis-Check"-Schaltflächen (Nav, Preise, Footer, Sticky) rufen ohne
-  // source auf — sie starten keine Prüfung, sondern öffnen nur den Wizard.
+  // source auf — sie öffnen nur den Wizard, geprüft wird dort in dessen Namensfeld.
   const startWizard = (arg, source) => {
     const obj = arg && typeof arg === "object";
-    // Meta-Pixel „Lead": nur, wenn wirklich geprüft wird — Profil aus der Live-Suche
-    // gewählt ODER ein Name eingetippt. Nicht bei leerem Feld. Bewusst OHNE den
-    // eingegebenen Firmennamen (bei Einzelunternehmern ein Personenbezug).
-    if (source && (obj || (typeof arg === "string" && arg.trim()))) {
-      track("Lead", { content_name: "gratis_check", content_category: source });
-    }
+    setLeadSource(source || "wizard");
     if (obj) { setSeed(arg.name || ""); setSeedProfile(arg); }
     else { setSeed(typeof arg === "string" ? arg : ""); setSeedProfile(null); }
     setRoute("wizard");
@@ -117,7 +118,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
           // Erst nach dem Deep-Link-Effekt rendern → beim „Weitermachen" kein Aufblitzen
           // der „kurz vorab"-Startseite; der Wizard startet direkt im gespeicherten Schritt.
           ? <div style={{ minHeight: "82vh" }} aria-hidden />
-          : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
+          : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} leadSource={leadSource} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
       {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
           im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
       <WhatsAppFloat hideBubble={route === "wizard"} />
