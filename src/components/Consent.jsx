@@ -15,17 +15,17 @@ const GTM_ID = "GTM-KQH66GNX";
 const FPR_CID = "2ykmmr9o";
 
 const TXT = {
-  de: { t: "Wir verwenden Cookies für Analyse, Marketing und Affiliate-Tracking (z. B. Google Tag Manager). Diese laden erst nach Ihrer Einwilligung — die Website funktioniert auch ohne.", link: "Datenschutzerklärung", accept: "Akzeptieren", decline: "Ablehnen", settings: "Cookie-Einstellungen" },
-  en: { t: "We use cookies for analytics, marketing and affiliate tracking (e.g. Google Tag Manager). They only load after your consent — the site also works without them.", link: "Privacy policy", accept: "Accept", decline: "Decline", settings: "Cookie settings" },
-  es: { t: "Utilizamos cookies para análisis, marketing y seguimiento de afiliados (p. ej., Google Tag Manager). Solo se cargan con su consentimiento; el sitio también funciona sin ellas.", link: "Política de privacidad", accept: "Aceptar", decline: "Rechazar", settings: "Configuración de cookies" },
-  fr: { t: "Nous utilisons des cookies à des fins d'analyse, de marketing et de suivi d'affiliation (p. ex. Google Tag Manager). Ils ne se chargent qu'après votre consentement — le site fonctionne aussi sans.", link: "Politique de confidentialité", accept: "Accepter", decline: "Refuser", settings: "Paramètres des cookies" },
-  it: { t: "Utilizziamo cookie per analisi, marketing e tracciamento affiliati (es. Google Tag Manager). Si caricano solo dopo il suo consenso — il sito funziona anche senza.", link: "Informativa sulla privacy", accept: "Accetta", decline: "Rifiuta", settings: "Impostazioni cookie" },
-  nl: { t: "Wij gebruiken cookies voor analyse, marketing en affiliate-tracking (bijv. Google Tag Manager). Ze laden pas na uw toestemming — de site werkt ook zonder.", link: "Privacyverklaring", accept: "Accepteren", decline: "Weigeren", settings: "Cookie-instellingen" },
-  pt: { t: "Utilizamos cookies para análise, marketing e rastreio de afiliados (p. ex., Google Tag Manager). Só são carregados após o seu consentimento — o site também funciona sem eles.", link: "Política de privacidade", accept: "Aceitar", decline: "Recusar", settings: "Definições de cookies" },
-  ja: { t: "当サイトでは、分析・マーケティング・アフィリエイト計測のためにCookie（例：Google Tag Manager）を使用します。読み込みは同意後にのみ行われ、同意がなくてもサイトはご利用いただけます。", link: "プライバシーポリシー", accept: "同意する", decline: "同意しない", settings: "Cookie設定" },
-  sv: { t: "Vi använder cookies för analys, marknadsföring och affiliate-spårning (t.ex. Google Tag Manager). De laddas först efter ditt samtycke — webbplatsen fungerar även utan.", link: "Integritetspolicy", accept: "Acceptera", decline: "Avböj", settings: "Cookie-inställningar" },
-  da: { t: "Vi bruger cookies til analyse, marketing og affiliate-tracking (f.eks. Google Tag Manager). De indlæses først efter dit samtykke — siden fungerer også uden.", link: "Privatlivspolitik", accept: "Accepter", decline: "Afvis", settings: "Cookie-indstillinger" },
-  no: { t: "Vi bruker informasjonskapsler til analyse, markedsføring og affiliate-sporing (f.eks. Google Tag Manager). De lastes først etter ditt samtykke — siden fungerer også uten.", link: "Personvernerklæring", accept: "Godta", decline: "Avslå", settings: "Cookie-innstillinger" },
+  de: { t: "Wir verwenden Cookies für Analyse, Marketing und Affiliate-Tracking (z. B. Google Tag Manager, Meta-Pixel). Diese laden erst nach Ihrer Einwilligung — die Website funktioniert auch ohne.", link: "Datenschutzerklärung", accept: "Akzeptieren", decline: "Ablehnen", settings: "Cookie-Einstellungen" },
+  en: { t: "We use cookies for analytics, marketing and affiliate tracking (e.g. Google Tag Manager, Meta Pixel). They only load after your consent — the site also works without them.", link: "Privacy policy", accept: "Accept", decline: "Decline", settings: "Cookie settings" },
+  es: { t: "Utilizamos cookies para análisis, marketing y seguimiento de afiliados (p. ej., Google Tag Manager, píxel de Meta). Solo se cargan con su consentimiento; el sitio también funciona sin ellas.", link: "Política de privacidad", accept: "Aceptar", decline: "Rechazar", settings: "Configuración de cookies" },
+  fr: { t: "Nous utilisons des cookies à des fins d'analyse, de marketing et de suivi d'affiliation (p. ex. Google Tag Manager, pixel Meta). Ils ne se chargent qu'après votre consentement — le site fonctionne aussi sans.", link: "Politique de confidentialité", accept: "Accepter", decline: "Refuser", settings: "Paramètres des cookies" },
+  it: { t: "Utilizziamo cookie per analisi, marketing e tracciamento affiliati (es. Google Tag Manager, Meta Pixel). Si caricano solo dopo il suo consenso — il sito funziona anche senza.", link: "Informativa sulla privacy", accept: "Accetta", decline: "Rifiuta", settings: "Impostazioni cookie" },
+  nl: { t: "Wij gebruiken cookies voor analyse, marketing en affiliate-tracking (bijv. Google Tag Manager, Meta-pixel). Ze laden pas na uw toestemming — de site werkt ook zonder.", link: "Privacyverklaring", accept: "Accepteren", decline: "Weigeren", settings: "Cookie-instellingen" },
+  pt: { t: "Utilizamos cookies para análise, marketing e rastreio de afiliados (p. ex., Google Tag Manager, pixel da Meta). Só são carregados após o seu consentimento — o site também funciona sem eles.", link: "Política de privacidade", accept: "Aceitar", decline: "Recusar", settings: "Definições de cookies" },
+  ja: { t: "当サイトでは、分析・マーケティング・アフィリエイト計測のためにCookie（例：Google Tag Manager、Metaピクセル）を使用します。読み込みは同意後にのみ行われ、同意がなくてもサイトはご利用いただけます。", link: "プライバシーポリシー", accept: "同意する", decline: "同意しない", settings: "Cookie設定" },
+  sv: { t: "Vi använder cookies för analys, marknadsföring och affiliate-spårning (t.ex. Google Tag Manager, Meta-pixel). De laddas först efter ditt samtycke — webbplatsen fungerar även utan.", link: "Integritetspolicy", accept: "Acceptera", decline: "Avböj", settings: "Cookie-inställningar" },
+  da: { t: "Vi bruger cookies til analyse, marketing og affiliate-tracking (f.eks. Google Tag Manager, Meta-pixel). De indlæses først efter dit samtykke — siden fungerer også uden.", link: "Privatlivspolitik", accept: "Accepter", decline: "Afvis", settings: "Cookie-indstillinger" },
+  no: { t: "Vi bruker informasjonskapsler til analyse, markedsføring og affiliate-sporing (f.eks. Google Tag Manager, Meta-pixel). De lastes først etter ditt samtykke — siden fungerer også uten.", link: "Personvernerklæring", accept: "Godta", decline: "Avslå", settings: "Cookie-innstillinger" },
 };
 
 export const consentLabel = (lang) => (TXT[lang] || TXT.en).settings;
@@ -134,6 +134,10 @@ export default function Consent() {
 
   const decide = (granted) => {
     try { localStorage.setItem(KEY, granted ? "granted" : "denied"); } catch (e) {}
+    // Alles, was auf die Einwilligung wartet (Meta-Pixel), sofort informieren.
+    // Ohne dieses Event startet das Pixel erst beim nächsten Seitenaufruf — und
+    // damit ginge genau der Besuch verloren, für den gerade bezahlt wurde.
+    try { window.dispatchEvent(new Event("rr:consent-changed")); } catch (e) {}
     setOpen(false);
     if (granted) loadTrackers();
   };

@@ -11,6 +11,7 @@ import { I18N } from "@/lib/i18n";
 import { pagePath } from "@/lib/page-routes";
 import { getResumeProfile } from "@/lib/resume";
 import { consentLabel } from "@/components/Consent";
+import { trackContact } from "@/lib/metaPixel";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -189,7 +190,7 @@ function NavTel() {
   // WhatsApp-Button mit Text. In DACH: Telefonnummer + kompaktes WhatsApp-Icon.
   if (lang !== "de") {
     return (
-      <a className="nav-wa wide" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+      <a className="nav-wa wide" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}>
         <Icon.whatsapp size={17} /><span className="wa-full">{WA_LABEL[lang] || WA_LABEL.en}</span><span className="wa-short">WhatsApp</span>
       </a>
     );
@@ -197,18 +198,20 @@ function NavTel() {
   const tx = TEL_NOTE[lang] || TEL_NOTE.en;
   const onClick = (e) => {
     const h = viennaHour();
-    if (h >= TEL_HOURS.from && h < TEL_HOURS.to) return; // innerhalb der Zeiten: normal anrufen
+    // Nur zählen, wenn der Anruf wirklich zustande kommt — außerhalb der Zeiten
+    // blockt der Klick und zeigt nur den Hinweis.
+    if (h >= TEL_HOURS.from && h < TEL_HOURS.to) { trackContact("phone"); return; }
     e.preventDefault();
     setNote(true);
   };
   return (
     <span className="nav-tel-wrap" ref={ref}>
       <a className="nav-tel" href={TEL_NUMBER} onClick={onClick} aria-label="Telefon 0800 09 00 00 1"><Icon.phone size={15} /><span>0800 09 00 00 1</span></a>
-      <a className="nav-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp"><Icon.whatsapp size={17} /></a>
+      <a className="nav-wa" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" title="WhatsApp" onClick={() => trackContact("whatsapp")}><Icon.whatsapp size={17} /></a>
       {note && (
         <span className="nav-tel-note">
           <b>{tx[0]}</b>
-          <a href={TEL_NUMBER} onClick={() => setNote(false)}>{tx[1]}</a>
+          <a href={TEL_NUMBER} onClick={() => { trackContact("phone"); setNote(false); }}>{tx[1]}</a>
           <button type="button" onClick={() => { setNote(false); openChat(); }}>{tx[2]}</button>
         </span>
       )}
@@ -555,6 +558,7 @@ function WhatsAppFloat({ hideBubble = false }) {
 function openChat(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (typeof window === "undefined") return;
+  trackContact("chat"); // ein Ort für alle Chat-Einstiege der Seite
   const go = () => {
     try {
       if (!window.tidioChatApi) return;

@@ -12,6 +12,7 @@ import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
+import { track, trackContact } from "@/lib/metaPixel";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -809,6 +810,7 @@ function isGMapsLink(u) {
 function openTidioChat(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (typeof window === "undefined") return;
+  trackContact("chat");
   const run = () => { try { if (!window.tidioChatApi) return; if (window.tidioChatApi.show) window.tidioChatApi.show(); window.tidioChatApi.open(); } catch (err) {} };
   if (window.tidioChatApi) { run(); return; }
   const onReady = () => { run(); document.removeEventListener("tidioChat-ready", onReady); };
@@ -826,7 +828,7 @@ function gtmPush(event, data) {
 function ContactLine({ lang }) {
   return (
     <div className="wz-contact">
-      {lang === "de" && <a className="wc-ic" href="tel:08000900001" aria-label="Anruf 0800 09 00 00 1" title="0800 09 00 00 1"><Icon.phone size={18} /></a>}
+      {lang === "de" && <a className="wc-ic" href="tel:08000900001" aria-label="Anruf 0800 09 00 00 1" title="0800 09 00 00 1" onClick={() => trackContact("phone")}><Icon.phone size={18} /></a>}
       <a className="wc-ic" href="mailto:helpdesk@rapid-remove.com" aria-label="E-Mail" title="helpdesk@rapid-remove.com"><Icon.mail size={18} /></a>
     </div>
   );
@@ -864,9 +866,9 @@ function CheckoutHelp({ lang }) {
       </div>
       <div className="co-help-grid">
         <button type="button" className="co-ch" onClick={openTidioChat}><Icon.message size={17} /> {tx.chat}</button>
-        <a className="co-ch wa" href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={17} /> WhatsApp</a>
+        <a className="co-ch wa" href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}><Icon.whatsapp size={17} /> WhatsApp</a>
         <a className="co-ch" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={17} /> {tx.email}</a>
-        <a className="co-ch" href={phoneHref} title={phoneTitle}><Icon.phone size={17} /> {tx.phone}</a>
+        <a className="co-ch" href={phoneHref} title={phoneTitle} onClick={() => trackContact("phone")}><Icon.phone size={17} /> {tx.phone}</a>
       </div>
     </div>
   );
@@ -1651,6 +1653,9 @@ function Wizard({ initialName, initialProfile, initialResume, onExit, onOrm, onD
     if (Object.keys(er).length) return;
     setProcessing(true);
     persistCheck();
+    // Meta-Pixel: Auftrag erteilt (Profil bestätigt und freigegeben). Bewusst OHNE
+    // Firmenname, E-Mail, Telefon oder Auftragsnummer — nur die Art der Leistung.
+    track("InitiateCheckout", { content_name: "profil_loeschung" });
     // Funnel: Zahlung/Bestellung gestartet (Stufe 4) + finaler Gesamtpreis.
     submitCheck({ checkId, step: 4, amount: oneTimeTotal || undefined, source: checkSource }).catch(() => {});
     clearResumeProfile(); // Bestellung abgeschickt → Funnel abgeschlossen, CTA zurück auf „Gratis-Check"

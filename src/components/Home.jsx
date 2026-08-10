@@ -12,6 +12,7 @@ import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
 import { AblaufVideo } from "@/components/AblaufVideo";
 import { TrustpilotLive, PRESS_LABEL, PRESS_LINKS } from "@/components/Proof";
+import { trackContact } from "@/lib/metaPixel";
 
 
 const WHATSAPP_URL = "https://wa.me/43624593053000";
@@ -170,7 +171,9 @@ function Hero({ onStart }) {
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
   const acRef = React.useRef(null);
-  const go = (n) => onStart(typeof n === "string" ? n : name);
+  // „hero" / „cta_band" unterscheiden die beiden Check-Felder der Startseite im
+  // Meta-Pixel-Lead (content_category) — beide feuern, aber getrennt auswertbar.
+  const go = (n) => onStart(typeof n === "string" ? n : name, "hero");
   // Live-Suche: getippten Namen entprellt in der Places-API nachschlagen.
   React.useEffect(() => {
     const q = name.trim();
@@ -188,7 +191,7 @@ function Hero({ onStart }) {
   }, []);
   // Konkrete Auswahl aus der Live-Suche: ein Profil-Objekt springt direkt zu
   // „Schritt 3" (Machbarkeit); der getippte Text bleibt ein String (normale Suche).
-  const pick = (val) => { setAcOpen(false); onStart(val); };
+  const pick = (val) => { setAcOpen(false); onStart(val, "hero"); };
   const showAc = acOpen && name.trim().length >= 2;
   // Rückkehrer mit bereits geprüftem Profil: bei LEEREM Suchfeld wird der Button
   // zu „Weitermachen" und führt direkt zurück ins geprüfte Profil. Sobald etwas
@@ -429,8 +432,8 @@ function TrustSecurity({ id }) {
                 </div>
                 <div className="pacts">
                   <a title="Live-Chat" href="#chat" onClick={openChat}><Icon.message size={20} /></a>
-                  <a title="WhatsApp" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer"><Icon.whatsapp size={20} /></a>
-                  {t.code === "de" && <a title="Telefon · 0800 0900001" href="tel:08000900001"><Icon.phone size={20} /></a>}
+                  <a title="WhatsApp" href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}><Icon.whatsapp size={20} /></a>
+                  {t.code === "de" && <a title="Telefon · 0800 0900001" href="tel:08000900001" onClick={() => trackContact("phone")}><Icon.phone size={20} /></a>}
                   <a title="E-Mail · helpdesk@rapid-remove.com" href="mailto:helpdesk@rapid-remove.com"><Icon.mail size={20} /></a>
                 </div>
               </div>
@@ -599,9 +602,9 @@ export function FinalCTA({ onStart }) {
               <Icon.search />
               <input className="input" placeholder={t.cta.placeholder} value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && onStart(name)} />
+              onKeyDown={(e) => e.key === "Enter" && onStart(name, "cta_band")} />
             </div>
-            <button className="btn btn-primary lg" onClick={() => onStart(name)}>{t.cta.button} <Icon.arrowRight size={18} /></button>
+            <button className="btn btn-primary lg" onClick={() => onStart(name, "cta_band")}>{t.cta.button} <Icon.arrowRight size={18} /></button>
           </div>
           <div className="trustrow">
             {t.cta.trust.map((x, i) => <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 7 }}><Icon.check /> {x}</span>)}

@@ -12,6 +12,7 @@ import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
 import { pagePath } from "@/lib/page-routes";
 import { submitContact } from "@/lib/order";
+import { trackContact } from "@/lib/metaPixel";
 import { FinalCTA, FAQ } from "@/components/Home";
 
 const PHONE_LABEL = { de: "Telefon", en: "Phone", es: "Teléfono", fr: "Téléphone", it: "Telefono", nl: "Telefoon", pt: "Telefone", ja: "電話", sv: "Telefon", da: "Telefon", no: "Telefon" };
@@ -338,7 +339,10 @@ function KontaktBody({ onStart, onBlog, onAbout }) {
                 {[...k.channels, ...(lang === "de" ? [{ ic: "phone", t: PHONE_LABEL[lang] || PHONE_LABEL.en, d: PHONE_DISPLAY, href: PHONE_HREF }] : [])].map((c, i) => {
                   const I = Icon[c.ic] || Icon.mail;
                   const ext = c.href && c.href.indexOf("http") === 0;
-                  const onClick = c.chat ? (e) => { e.preventDefault(); openChat(); } : undefined;
+                  // Chat zählt openChat() selbst; Telefon hier (Mail ist kein Meta-Event).
+                  const onClick = c.chat
+                    ? (e) => { e.preventDefault(); openChat(); }
+                    : (c.href && c.href.indexOf("tel:") === 0 ? () => trackContact("phone") : undefined);
                   return (
                     <a className="kt-ch" key={i} href={c.href || "#chat"} onClick={onClick} target={ext ? "_blank" : undefined} rel={ext ? "noreferrer" : undefined}>
                       <span className="cic"><I size={20} /></span>
