@@ -11,6 +11,7 @@ import { loadWizardSnapshot } from "@/lib/resume";
 import { Home } from "@/components/Home";
 import { Wizard } from "@/components/Wizard";
 import { WhatsAppFloat } from "@/components/Chrome";
+import { track } from "@/lib/metaPixel";
 
 export default function App({ initialLang = "de", initialView = null, magCards = [] }) {
   const lang = I18N[initialLang] ? initialLang : "de";
@@ -79,8 +80,17 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   // Vom Hero/Live-Suche: entweder ein String (getippter Firmenname) oder ein
   // konkretes Profil-Objekt (in der Live-Suche angeklickt). Mit Profil springt
   // der Wizard direkt zu „Schritt 3" (Machbarkeit) – die Profilsuche entfällt.
-  const startWizard = (arg) => {
+  // `source` benennt das Check-Feld, aus dem die Prüfung kommt („hero" / „cta_band").
+  // Die reinen „Gratis-Check"-Schaltflächen (Nav, Preise, Footer, Sticky) rufen ohne
+  // source auf — sie starten keine Prüfung, sondern öffnen nur den Wizard.
+  const startWizard = (arg, source) => {
     const obj = arg && typeof arg === "object";
+    // Meta-Pixel „Lead": nur, wenn wirklich geprüft wird — Profil aus der Live-Suche
+    // gewählt ODER ein Name eingetippt. Nicht bei leerem Feld. Bewusst OHNE den
+    // eingegebenen Firmennamen (bei Einzelunternehmern ein Personenbezug).
+    if (source && (obj || (typeof arg === "string" && arg.trim()))) {
+      track("Lead", { content_name: "gratis_check", content_category: source });
+    }
     if (obj) { setSeed(arg.name || ""); setSeedProfile(arg); }
     else { setSeed(typeof arg === "string" ? arg : ""); setSeedProfile(null); }
     setRoute("wizard");

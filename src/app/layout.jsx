@@ -1,6 +1,8 @@
 /* RapidRemove — root layout: design tokens + global styles, metadata */
+import { Suspense } from "react";
 import Consent from "@/components/Consent";
 import Attribution from "@/components/Attribution";
+import MetaPixel from "@/components/MetaPixel";
 import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
@@ -89,6 +91,13 @@ export default function RootLayout({ children }) {
         {children}
         <Attribution />
         <Consent />
+        {/* Meta-Pixel (Datensatz 1985417835506997) — lädt consent-gated, zählt
+            Client-Navigationen mit. <Suspense> hält die Komponente auch dann
+            aus dem statischen Prerender heraus, wenn sie später wieder an
+            useSearchParams hängt (das erzwingt die Grenze sonst zur Build-Zeit). */}
+        <Suspense fallback={null}>
+          <MetaPixel />
+        </Suspense>
       </body>
     </html>
   );
