@@ -108,7 +108,11 @@ function mapOrder(r) {
     assignee: r.assignee || null,
     mahnungCount: Number(r.mahnung_count) || 0,
     paylinkSent: (Number(r.paylink_count) || 0) > 0,
-    source: deriveSource(r.raw || {}), // { kind, label } – Herkunft (Google Ads/Affiliate/Direkt …)
+    // Herkunft: `source` ist der Last-Touch (raw.attribution) – die Quelle, die zählt.
+    // `sourceFirst` ist der unveränderliche First-Touch, als zweite Perspektive.
+    source: deriveSource(r.raw || {}), // { kind, label } – Google Ads/Meta Ads/Affiliate/Direkt …
+    sourceFirst: (r.raw && r.raw.attributionFirst) ? deriveSource({ attribution: r.raw.attributionFirst }) : null,
+    utmContent: (r.raw && (r.raw.utmContent || (r.raw.attribution && r.raw.attribution.utm_content))) || "",
   };
 }
 function mapCheck(r) {
@@ -117,7 +121,11 @@ function mapCheck(r) {
     rating: r.rating || "—", reviews: Number(r.reviews) || 0, flagged: Number(r.flagged) || 0,
     recommend: r.recommend || "remove", status: r.status || "neu", orderId: r.order_id || null,
     // Funnel-Insights: erreichte Stufe (1–4) – null = keine Funnel-Daten (Alt-Prüfung); Preis; Herkunft.
+    // `source` = Last-Touch (die Quelle, die zählt), `sourceFirst` = First-Touch (Zusatz).
     step: r.step != null ? Number(r.step) : null, amount: r.amount != null ? Number(r.amount) : null, source: r.source || null,
+    sourceFirst: r.source_first || null, utmSource: r.utm_source || "", utmCampaign: r.utm_campaign || "",
+    utmContent: r.utm_content || "", utmMedium: r.utm_medium || "", clickId: r.click_id || "",
+    refHost: r.referrer || "", landing: r.landing || "",
     // Google-Profil-Bezug (nur bei neueren Prüfungen vorhanden): Maps-Link, Place-ID, Adresse.
     placeId: r.place_id || "", mapsUri: r.maps_uri || "", addr: r.addr || "", lang: r.lang || "de", country: r.country || "DE",
     enrichedAt: r.enriched_at || null, // Auto-E-Mail-Recherche bereits gelaufen (auch ohne Fund)

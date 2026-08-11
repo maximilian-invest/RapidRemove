@@ -6,7 +6,7 @@ import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck } from "@/lib/order";
-import { readAttribution, deriveSource } from "@/lib/attribution";
+import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
@@ -1557,7 +1557,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   const country = lang === "en" ? "US" : "DE";
   // Funnel-Insights: Headline-Preis (z. B. 450/850 €) + Herkunft der Prüfung.
   const checkAmt = num(service === "reset" ? p.reset : p.deletion) || 0;
-  const checkSource = deriveSource({ attribution: readAttribution() }).kind;
+  // Herkunft: Last-Touch ist die Quelle, die zählt; First-Touch geht als zweite
+  // Perspektive mit. Dazu die einzelnen Kampagnenfelder (utm_content trägt den
+  // Motivschlüssel, z. B. „B03_melden") — damit im Admin sichtbar wird, welches
+  // Motiv die Anfrage gebracht hat, nicht nur aus welchem Kanal sie kam.
+  const attr = attributionPayload();
+  const checkSource = attr.source;
   const persistCheck = (prof) => {
     if (checkSent.current) return;
     checkSent.current = true;
@@ -1569,6 +1574,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
       rating: sp ? (sp.rating || "") : "", reviews: sp ? (sp.reviews || 0) : 0,
       recommend: service, name: name || (sp ? sp.name : ""), country, lang,
       step: 1, amount: checkAmt || undefined, source: checkSource, // Funnel: Stufe 1 + Preis + Quelle
+      // Herkunft serverseitig festhalten — im localStorage sieht sie niemand,
+      // der die Anfrage bearbeitet.
+      sourceFirst: attr.sourceFirst, utmSource: attr.utmSource, utmMedium: attr.utmMedium,
+      utmCampaign: attr.utmCampaign, utmContent: attr.utmContent, clickId: attr.clickId,
+      referrer: attr.referrer, landing: attr.landing,
+      attribution: attr.attribution, attributionFirst: attr.attributionFirst,
       // Google-Profil-Bezug → Admin „Geprüfte Profile": klickbarer Maps-Link + Lead-Recherche.
       placeId: sp ? (sp.placeId || "") : "", mapsUri: sp ? (sp.mapsUri || "") : "", addr: sp ? (sp.addr || "") : "",
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
@@ -1696,7 +1707,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
       reviews: selected ? selected.reviews : 0,
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
-      attribution: readAttribution(), // Herkunft (First-Touch) → Admin „Quelle"
+      // Herkunft → Admin „Quelle". `attribution` ist der Last-Touch (die Quelle,
+      // die zählt); der First-Touch geht daneben als zweite Perspektive mit.
+      attribution: readLastTouch(), attributionFirst: readAttribution(),
+      utmContent: attributionPayload().utmContent,
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),

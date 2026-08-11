@@ -485,6 +485,19 @@ app.post("/check", async (req, reply) => {
         step: b.step != null ? Number(b.step) || undefined : undefined,
         amount: b.amount != null ? Number(b.amount) || undefined : undefined,
         source: clip(b.source, 40) || undefined,
+        // Herkunft ausgeschrieben: `source` ist der Last-Touch (die Quelle, die
+        // zählt), `sourceFirst` der unveränderliche First-Touch. utm_content
+        // trägt den Motivschlüssel der Anzeige.
+        sourceFirst: clip(b.sourceFirst, 40) || undefined,
+        utmSource: clip(b.utmSource, 120) || undefined,
+        utmMedium: clip(b.utmMedium, 120) || undefined,
+        utmCampaign: clip(b.utmCampaign, 200) || undefined,
+        utmContent: clip(b.utmContent, 200) || undefined,
+        clickId: clip(b.clickId, 260) || undefined,
+        referrer: clip(b.referrer, 200) || undefined,
+        landing: clip(b.landing, 200) || undefined,
+        attribution: b.attribution && typeof b.attribution === "object" ? b.attribution : undefined,
+        attributionFirst: b.attributionFirst && typeof b.attributionFirst === "object" ? b.attributionFirst : undefined,
         // Google-Profil-Bezug (für klickbare Profile + Lead-Recherche im Admin).
         placeId: clip(b.placeId, 120) || undefined,
         mapsUri: httpUrl(b.mapsUri, 400) || undefined,
