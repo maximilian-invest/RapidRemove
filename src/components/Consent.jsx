@@ -30,40 +30,18 @@ const TXT = {
 
 export const consentLabel = (lang) => (TXT[lang] || TXT.en).settings;
 
-function getCookie(name) { return (document.cookie.match("(^|;) *" + name + "=([^;]*)") || [])[2]; }
-
-/* Quellen-Attribution (referrer/src/friend/tid) — vorher inline im Layout, jetzt consent-gated. */
-function runAttribution() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    let referrer = "direct";
-    if (!document.referrer.includes("rapid-remove.com")) {
-      if (params.get("gclid")) referrer = "g_ads";
-      else if (params.get("utm") === "reddit_ads") referrer = "reddit_ads";
-      else if (document.referrer) {
-        if (document.referrer.includes("google")) referrer = "organic_google";
-        else if (document.referrer.includes("bing")) referrer = "organic_bing";
-        else if (document.referrer.includes("trustpilot")) referrer = "trustpilot";
-        else if (document.referrer.includes("chatgpt")) referrer = "chatgpt";
-        else if (document.referrer.includes("youtube")) referrer = "youtube";
-        else if (document.referrer.includes("reddit")) referrer = "reddit";
-        else referrer = document.referrer;
-      }
-      document.cookie = "referrer=" + referrer + "; path=/; max-age=3600";
-    }
-    const url = new URL(window.location.href);
-    const src = getCookie("referrer");
-    if (src) { url.searchParams.set("src", src); window.history.replaceState(null, null, url); }
-    if (params.get("friend")) {
-      document.cookie = "friend=" + params.get("friend") + "; path=/; max-age=2592000";
-    } else {
-      const friend = getCookie("friend");
-      if (friend) { url.searchParams.set("friend", friend); window.history.replaceState(null, null, url); }
-    }
-    const tid = getCookie("_fprom_tid");
-    if (tid) { url.searchParams.set("tid", tid); window.history.replaceState(null, null, url); }
-  } catch (e) { /* Attribution ist optional */ }
-}
+/* ENTFERNT: runAttribution().
+   Der Pfad kannte nur gclid und utm=reddit_ads — weder utm_source noch fbclid.
+   Er schrieb ein „referrer"-Cookie und hängte ?src=/?friend=/?tid= an die URL,
+   und weil er UTM ignorierte, stand dort bei einem bezahlten Meta-Klick
+   „src=direct". Gelesen hat diese Werte niemand: weder das Frontend noch das
+   ops-Backend — die Quelle im Admin kommt aus lib/attribution.js. Der Pfad hat
+   also nichts geliefert, aber bei der Fehlersuche eine falsche Ursache
+   vorgetäuscht. Die korrekte Herkunft geht jetzt aus <Attribution /> an
+   window.dataLayer (Event „rr_attribution"), damit GTM sie weiter sieht —
+   ohne die Adresszeile zu verschmutzen.
+   HINWEIS: Falls ein GTM-Tag noch den URL-Parameter „src" ausliest, muss es auf
+   die dataLayer-Variable rr_source umgestellt werden. */
 
 function loadTrackers() {
   if (typeof window === "undefined" || window.__rrTrackersLoaded) return;
@@ -75,7 +53,6 @@ function loadTrackers() {
   w.fpr = w.fpr || function () { w.fpr.q = w.fpr.q || []; w.fpr.q[arguments[0] === "set" ? "unshift" : "push"](arguments); };
   w.fpr("init", { cid: FPR_CID });
   w.fpr("click");
-  runAttribution();
   // Schwere Skripte (gtm.js, fpr.js) erst nach 'load' + im Idle anhängen → blockiert den
   // kritischen Renderpfad nicht (CWV). GTM/FirstPromoter verarbeiten die gequeueten
   // Events/Klicks beim Laden nach.

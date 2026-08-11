@@ -94,6 +94,20 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text,
       ADD COLUMN IF NOT EXISTS enriched_at timestamptz, ADD COLUMN IF NOT EXISTS rueckgewinnung_at timestamptz
   `);
+  // Herkunft der Prüfung (nur NEUE, nullable Spalten – kein Backfill, bestehende
+  // Spalten unangetastet). `source` bleibt was es war und trägt ab jetzt den
+  // LAST-Touch; `source_first` den unveränderlichen First-Touch. Die einzelnen
+  // Kampagnenfelder liegen ausgeschrieben daneben, damit man ohne JSON-Zugriff
+  // nach Kampagne und Motiv (utm_content) auswerten kann.
+  await pool.query(`
+    ALTER TABLE checks
+      ADD COLUMN IF NOT EXISTS source_first text,
+      ADD COLUMN IF NOT EXISTS utm_source text, ADD COLUMN IF NOT EXISTS utm_medium text,
+      ADD COLUMN IF NOT EXISTS utm_campaign text, ADD COLUMN IF NOT EXISTS utm_content text,
+      ADD COLUMN IF NOT EXISTS click_id text, ADD COLUMN IF NOT EXISTS referrer text,
+      ADD COLUMN IF NOT EXISTS landing text,
+      ADD COLUMN IF NOT EXISTS attribution jsonb, ADD COLUMN IF NOT EXISTS attribution_first jsonb
+  `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
   await pool.query(`
@@ -294,6 +308,10 @@ export type CheckInput = {
   id: string; profile?: string; category?: string; rating?: string; reviews?: number;
   flagged?: number; recommend?: string; name?: string; email?: string; country?: string; lang?: string;
   step?: number; amount?: number; source?: string; placeId?: string; mapsUri?: string; addr?: string;
+  // Herkunft: `source` = Last-Touch (zählt), `sourceFirst` = First-Touch (Zusatz).
+  sourceFirst?: string; utmSource?: string; utmMedium?: string; utmCampaign?: string;
+  utmContent?: string; clickId?: string; referrer?: string; landing?: string;
+  attribution?: unknown; attributionFirst?: unknown;
 };
 
 export async function upsertCheck(c: CheckInput): Promise<void> {
@@ -302,9 +320,18 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
   // aus dem Funnel) überschreiben bestehende Werte NICHT (COALESCE). `step` wandert
   // nur nach oben (GREATEST) – so bleibt die erreichte Trichter-Tiefe erhalten.
   await pool.query(
-    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source,place_id,maps_uri,addr)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
+    `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source,place_id,maps_uri,addr,
+                         source_first,utm_source,utm_medium,utm_campaign,utm_content,click_id,referrer,landing,attribution,attribution_first)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
+             $18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
      ON CONFLICT (id) DO UPDATE SET
+       source_first=COALESCE(EXCLUDED.source_first, checks.source_first),
+       utm_source=COALESCE(EXCLUDED.utm_source, checks.utm_source), utm_medium=COALESCE(EXCLUDED.utm_medium, checks.utm_medium),
+       utm_campaign=COALESCE(EXCLUDED.utm_campaign, checks.utm_campaign), utm_content=COALESCE(EXCLUDED.utm_content, checks.utm_content),
+       click_id=COALESCE(EXCLUDED.click_id, checks.click_id), referrer=COALESCE(EXCLUDED.referrer, checks.referrer),
+       landing=COALESCE(EXCLUDED.landing, checks.landing),
+       attribution=COALESCE(EXCLUDED.attribution, checks.attribution),
+       attribution_first=COALESCE(EXCLUDED.attribution_first, checks.attribution_first),
        profile=COALESCE(EXCLUDED.profile, checks.profile), category=COALESCE(EXCLUDED.category, checks.category),
        rating=COALESCE(EXCLUDED.rating, checks.rating), reviews=COALESCE(EXCLUDED.reviews, checks.reviews),
        flagged=COALESCE(EXCLUDED.flagged, checks.flagged), recommend=COALESCE(EXCLUDED.recommend, checks.recommend),
@@ -315,7 +342,11 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
        step=GREATEST(COALESCE(checks.step,0), COALESCE(EXCLUDED.step,0))`,
     [c.id, c.profile || null, c.category || null, c.rating || null, c.reviews ?? null, c.flagged ?? null,
      c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null,
-     c.step ?? null, c.amount ?? null, c.source || null, c.placeId || null, c.mapsUri || null, c.addr || null],
+     c.step ?? null, c.amount ?? null, c.source || null, c.placeId || null, c.mapsUri || null, c.addr || null,
+     c.sourceFirst || null, c.utmSource || null, c.utmMedium || null, c.utmCampaign || null,
+     c.utmContent || null, c.clickId || null, c.referrer || null, c.landing || null,
+     c.attribution ? JSON.stringify(c.attribution) : null,
+     c.attributionFirst ? JSON.stringify(c.attributionFirst) : null],
   );
 }
 
