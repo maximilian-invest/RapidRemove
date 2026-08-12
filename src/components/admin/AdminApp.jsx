@@ -412,6 +412,12 @@ function dedupeChecks(list) {
       orderId: conv ? conv.orderId : base.orderId,
       step: maxStep > 0 ? maxStep : (base.step != null ? base.step : null),
       source: g.map((c) => c.source).find(Boolean) || base.source || null,
+      // Herkunfts-Zusatz aus der ganzen Gruppe: der Motivschlüssel steckt oft nur
+      // an einer der zusammengefassten Prüfungen.
+      sourceFirst: g.map((c) => c.sourceFirst).find(Boolean) || base.sourceFirst || null,
+      utmContent: g.map((c) => c.utmContent).find(Boolean) || base.utmContent || "",
+      utmCampaign: g.map((c) => c.utmCampaign).find(Boolean) || base.utmCampaign || "",
+      refHost: g.map((c) => c.refHost).find(Boolean) || base.refHost || "",
       amount: conv ? conv.amount : base.amount,
       // Kontakt-/Profil-Bezug aus der ganzen Gruppe zusammenführen (jüngster Eintrag
       // hat z. B. bei manueller Eingabe keine Place-ID, ein älterer aber schon).
@@ -464,7 +470,7 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck, onOpenChec
   const convChecks = tracked.filter((c) => c.status === "konvertiert");
   const selCohort = funnelOpen == null ? [] : funnelOpen === "conv" ? convChecks : dropAt(funnelOpen);
   const selLabel = funnelOpen === "conv" ? "Auftrag abgeschlossen" : funnelOpen != null ? (FUNNEL[funnelOpen - 1] || {}).label : "";
-  const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
+  // SRC_LABEL liegt jetzt auf Modulebene (auch von „Geprüfte Profile" genutzt).
   const bySource = {};
   for (const c of checks) { if (!c.source) continue; bySource[c.source] = bySource[c.source] || { n: 0, conv: 0 }; bySource[c.source].n++; if (c.status === "konvertiert") bySource[c.source].conv++; }
   const sourceRows = Object.entries(bySource).map(([k, v]) => ({ k, label: SRC_LABEL[k] || k, ...v })).sort((a, b) => b.n - a.n);
@@ -713,6 +719,19 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck, onOpenChec
   );
 }
 
+/* Lesbare Bezeichnung je Herkunfts-Kürzel (Last-Touch aus lib/attribution.js). */
+const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", tiktok_ads: "TikTok Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
+/* „Social Media" fasst die bezahlten sozialen Kanäle zusammen. Meta trennt
+   Facebook und Instagram nicht — beide kommen als meta_ads an; welche Platzierung
+   es war, steht nur im Ads Manager unter „Aufschlüsselung → Platzierung". */
+const SOCIAL_KINDS = ["meta_ads", "tiktok_ads"];
+/* Herkunft, die dem Betrachter etwas sagt: bei Verweisen den Host dazu. */
+const srcLabelOf = (c) => {
+  if (!c || !c.source) return "";
+  if (c.source === "referral" && c.refHost) return "Verweis: " + c.refHost;
+  return SRC_LABEL[c.source] || c.source;
+};
+
 /* ---------- Geprüfte Profile: eigener Bereich (Leads aus dem Prüf-Tool) ---------- */
 // Abbruchstelle je Prüfung (erreichte Stufe) – identische Farblogik wie im Dashboard-Trichter.
 const CHECK_DROP = {
@@ -737,6 +756,7 @@ const checkWebSearchUrl = (c) => "https://www.google.com/search?q=" + encodeURIC
 function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
   const checks = dedupeChecks(rawChecks);
   const [filter, setFilter] = React.useState("open"); // open | conv | all
+  const [srcFilter, setSrcFilter] = React.useState("all"); // all | social | <kind>
   const [q, setQ] = React.useState("");
   const [saved, setSaved] = React.useState({});           // checkId -> gespeicherte E-Mail (Session)
   const [drafts, setDrafts] = React.useState({});         // checkId -> Eingabefeld-Inhalt
@@ -785,12 +805,31 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
     return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checks.length]);
+  // Herkunfts-Filter: „Social Media" bündelt die bezahlten sozialen Kanäle,
+  // sonst wird auf ein einzelnes Kürzel gefiltert. Prüfungen ohne Herkunft
+  // (vor der Umstellung) laufen unter „Unbekannt".
+  const matchesSrc = (c) => {
+    if (srcFilter === "all") return true;
+    if (srcFilter === "social") return SOCIAL_KINDS.includes(c.source);
+    if (srcFilter === "none") return !c.source;
+    return c.source === srcFilter;
+  };
+  const srcCount = (k) => checks.filter((c) => (k === "social" ? SOCIAL_KINDS.includes(c.source) : k === "none" ? !c.source : c.source === k)).length;
+  // Nur Herkünfte anbieten, die tatsächlich vorkommen — sonst steht die Leiste voll leerer Filter.
+  const srcChips = [["all", "Alle Quellen", checks.length]]
+    .concat([["social", "Social Media"], ["google_ads", "Google Ads"], ["ms_ads", "Microsoft Ads"],
+             ["affiliate", "Affiliate"], ["utm", "UTM"], ["organic", "Organisch"],
+             ["referral", "Verweis"], ["direct", "Direkt"], ["none", "Unbekannt"]]
+      .map(([k, lab]) => [k, lab, srcCount(k)]).filter(([, , n]) => n > 0));
+
   const list = checks
     .filter((c) => (filter === "all" ? true : filter === "conv" ? c.status === "konvertiert" : c.status !== "konvertiert"))
+    .filter(matchesSrc)
     .filter((c) => {
       const needle = q.trim().toLowerCase();
       if (!needle) return true;
-      return (c.profile + " " + c.name + " " + effEmail(c) + " " + (c.addr || "") + " " + c.id).toLowerCase().includes(needle);
+      return (c.profile + " " + c.name + " " + effEmail(c) + " " + (c.addr || "") + " " + c.id
+        + " " + srcLabelOf(c) + " " + (c.utmContent || "") + " " + (c.utmCampaign || "")).toLowerCase().includes(needle);
     });
 
   // Automatische Lead-Recherche: Places (Browser-Key) liefert die Unternehmens-Website,
@@ -854,15 +893,24 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
             <button key={k} className={"chipf" + (filter === k ? " on" : "")} onClick={() => setFilter(k)}>{lab} <span className="ct">{n}</span></button>
           ))}
         </div>
+        {/* Herkunft: eigene Filterleiste. „Social Media" beantwortet direkt,
+            wer über die bezahlten sozialen Kanäle geprüft hat. */}
+        <div style={{ padding: "10px 22px 0", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: 11.5, fontWeight: 800, color: "var(--fg-muted)", textTransform: "uppercase", letterSpacing: ".04em" }}>Quelle</span>
+          {srcChips.map(([k, lab, n]) => (
+            <button key={k} className={"chipf" + (srcFilter === k ? " on" : "")} onClick={() => setSrcFilter(k)}>{lab} <span className="ct">{n}</span></button>
+          ))}
+        </div>
         <div className="tbl-scroll" style={{ marginTop: 10 }}>
-          {/* Kompakt: 5 schmale Spalten, eine Zeile pro Profil, kein horizontales Scrollen. */}
+          {/* Kompakt: 6 schmale Spalten, eine Zeile pro Profil, kein horizontales Scrollen. */}
           <table className="tbl" style={{ fontSize: 12.5, tableLayout: "fixed", width: "100%" }}>
-            <colgroup><col style={{ width: "26%" }} /><col style={{ width: "9%" }} /><col style={{ width: "15%" }} /><col style={{ width: "30%" }} /><col style={{ width: "20%" }} /></colgroup>
+            <colgroup><col style={{ width: "24%" }} /><col style={{ width: "7%" }} /><col style={{ width: "13%" }} /><col style={{ width: "24%" }} /><col style={{ width: "13%" }} /><col style={{ width: "19%" }} /></colgroup>
             <thead><tr>
               <th style={{ padding: "8px 10px" }}>Google-Profil</th>
               <th style={{ padding: "8px 6px" }}>Bew.</th>
               <th style={{ padding: "8px 6px" }}>Status</th>
               <th style={{ padding: "8px 10px" }}>Kontakt</th>
+              <th style={{ padding: "8px 10px" }}>Quelle</th>
               <th style={{ padding: "8px 10px", textAlign: "right" }}>Aktionen</th>
             </tr></thead>
             <tbody>
@@ -919,6 +967,24 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
                       ) : null}
                       {cand && cand.error ? <div style={{ marginTop: 4, fontSize: 10.5, fontWeight: 600, color: "var(--danger)", ...ell }} title={cand.error}>{cand.error}</div> : null}
                     </td>
+                    {/* Quelle = Last-Touch. Darunter der Motivschlüssel aus utm_content
+                        (welche Anzeige die Prüfung gebracht hat) bzw. die Kampagne. */}
+                    <td style={tdS}>
+                      {c.source ? (
+                        <span
+                          title={"Herkunft: " + srcLabelOf(c) + (c.utmCampaign ? " · Kampagne " + c.utmCampaign : "") + (c.sourceFirst && c.sourceFirst !== c.source ? " · zuerst über " + (SRC_LABEL[c.sourceFirst] || c.sourceFirst) : "")}
+                          style={{
+                            display: "inline-block", maxWidth: "100%", ...ell,
+                            fontSize: 11, fontWeight: 800, borderRadius: 999, padding: "1px 8px",
+                            border: "1px solid var(--hairline)",
+                            background: SOCIAL_KINDS.includes(c.source) ? "var(--orange-50, #fff7e6)" : "var(--neutral-100)",
+                            color: SOCIAL_KINDS.includes(c.source) ? "var(--primary)" : "var(--fg-2)",
+                          }}>{srcLabelOf(c)}</span>
+                      ) : <span className="muted" style={{ fontSize: 11 }}>—</span>}
+                      {c.utmContent
+                        ? <div className="sub" style={{ ...ell, fontSize: 10.5, fontWeight: 700 }} title={"Anzeigenmotiv: " + c.utmContent}>{c.utmContent}</div>
+                        : (c.utmCampaign ? <div className="sub" style={{ ...ell, fontSize: 10.5 }} title={c.utmCampaign}>{c.utmCampaign}</div> : null)}
+                    </td>
                     <td style={{ ...tdS, whiteSpace: "nowrap", textAlign: "right" }}>
                       {c.status !== "konvertiert" ? (() => {
                         const sentAt = sent[c.id] || c.rueckgewinnungAt;
@@ -941,7 +1007,7 @@ function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
                   </tr>
                 );
               })}
-              {!list.length ? <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--fg-muted)", fontWeight: 600, padding: 26 }}>Keine Prüfungen in dieser Ansicht.</td></tr> : null}
+              {!list.length ? <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--fg-muted)", fontWeight: 600, padding: 26 }}>Keine Prüfungen in dieser Ansicht.</td></tr> : null}
             </tbody>
           </table>
         </div>
