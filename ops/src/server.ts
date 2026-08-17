@@ -20,6 +20,10 @@ import { payLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { startUpsellWorker } from "./upsell";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
+import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
+import { claimCapiSend, releaseCapiSend } from "./db";
+
+
 
 const app = Fastify({ logger: true, trustProxy: true });
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "55default";
@@ -418,8 +422,37 @@ app.post("/order", async (req, reply) => {
         amount: Number(b.amount) || 0,
         protAmount: Number(b.protAmount) || 0,
         note, checkId, raw: b,
+        // Herkunft + Conversions-API-Kennungen in eigene Spalten spiegeln.
+        source: clip(b.source, 40), sourceFirst: clip(b.sourceFirst, 40),
+        utmSource: clip(b.utmSource, 120), utmMedium: clip(b.utmMedium, 120),
+        utmCampaign: clip(b.utmCampaign, 200), utmContent: clip(b.utmContent, 200),
+        referrer: clip(b.referrer, 200), landing: clip(b.landing, 200),
+        fbclid: clip(b.fbclid, 260), fbclidTs: clip(b.fbclidTs, 40),
+        fbc: clip(b.fbc, 300), fbp: clip(b.fbp, 120),
+        consentMarketing: b.consentMarketing === true,
+        eventSourceUrl: httpUrl(b.eventSourceUrl, 500),
+        clientIp: String(req.ip || "").slice(0, 60),
+        clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
       });
       if (checkId) await linkCheck(checkId, id);
+      // Serverseitiges InitiateCheckout: Auftrag erteilt, Profil freigegeben.
+      if (capiEnabled() && b.consentMarketing === true && await claimCapiSend("orders", "capi_checkout_at", id)) {
+        const r = await capiSend({
+          eventName: "InitiateCheckout",
+          eventId: id,                                  // Order-ID ist stabil und eindeutig
+          eventSourceUrl: httpUrl(b.eventSourceUrl, 500) || null,
+          consentMarketing: true,
+          user: {
+            email, phone, country: clip(b.country, 6) || "DE",
+            fbc: clip(b.fbc, 300) || null, fbp: clip(b.fbp, 120) || null,
+            clientIp: String(req.ip || "").slice(0, 60),
+            clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
+          },
+          customData: { content_name: "profil_loeschung" },
+        });
+        if (!r.ok) { await releaseCapiSend("orders", "capi_checkout_at", id); app.log.warn({ id, error: r.error }, "CAPI InitiateCheckout fehlgeschlagen"); }
+        else if (!r.skipped) app.log.info({ id, received: r.received, match: r.matchKeys }, "CAPI InitiateCheckout gesendet");
+      }
       await insertEvent({ orderId: id, type: "order", title: isPress ? "Presse-Prüfung angefragt" : "Bestellung eingegangen", detail: `${id} erstellt` });
       if (result.customer) await insertEvent({ orderId: id, type: "mail", title: isPress ? "Eingangsbestätigung Presse gesendet" : "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
       result.saved = true;
@@ -502,7 +535,43 @@ app.post("/check", async (req, reply) => {
         placeId: clip(b.placeId, 120) || undefined,
         mapsUri: httpUrl(b.mapsUri, 400) || undefined,
         addr: clip(b.addr, 250) || undefined,
+        // Conversions API: Kennungen am Datensatz festhalten. Sie werden IMMER
+        // gespeichert — die eigene Datenbank beantwortet „aus welchem Kanal kam
+        // die Anfrage" auch ohne Einwilligung, weil die Daten das Haus nicht
+        // verlassen. Gesendet wird nur bei consent_marketing.
+        fbclid: clip(b.fbclid, 260) || undefined,
+        fbclidTs: clip(b.fbclidTs, 40) || undefined,
+        fbc: clip(b.fbc, 300) || undefined,
+        fbp: clip(b.fbp, 120) || undefined,
+        consentMarketing: b.consentMarketing === true,
+        leadEventId: clip(b.leadEventId, 80) || undefined,
+        eventSourceUrl: httpUrl(b.eventSourceUrl, 500) || undefined,
+        clientIp: String(req.ip || "").slice(0, 60) || undefined,
+        clientUa: String(req.headers["user-agent"] || "").slice(0, 400) || undefined,
       });
+      // Serverseitiges Lead — dasselbe event_id wie im Browser, damit Meta
+      // dedupliziert statt doppelt zu zählen. Nur beim ERSTEN Aufruf je Prüfung
+      // (die Funnel-Updates senden weder Einwilligung noch Ereignis-ID mit).
+      if (capiEnabled() && b.consentMarketing === true && b.leadEventId) {
+        if (await claimCapiSend("checks", "capi_lead_at", id)) {
+          const r = await capiSend({
+            eventName: "Lead",
+            eventId: String(b.leadEventId).slice(0, 80),
+            eventSourceUrl: httpUrl(b.eventSourceUrl, 500) || null,
+            consentMarketing: true,
+            user: {
+              email: clip(b.email, 160) || null, phone: null,
+              country: clip(b.country, 6) || "DE",
+              fbc: clip(b.fbc, 300) || null, fbp: clip(b.fbp, 120) || null,
+              clientIp: String(req.ip || "").slice(0, 60),
+              clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
+            },
+            customData: { content_name: "gratis_check" },
+          });
+          if (!r.ok) { await releaseCapiSend("checks", "capi_lead_at", id); app.log.warn({ id, error: r.error }, "CAPI Lead fehlgeschlagen"); }
+          else if (!r.skipped) app.log.info({ id, received: r.received, match: r.matchKeys }, "CAPI Lead gesendet");
+        }
+      }
     }
   } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }
   return { ok: true, id };
@@ -1125,6 +1194,7 @@ app.post("/admin/order-status", async (req, reply) => {
   if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
   const ok = await updateOrderStatus(id, status, pay);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes
@@ -1161,6 +1231,7 @@ app.post("/admin/order-mark-paid", async (req, reply) => {
   const method = clip(b.method, 40); // optionaler Hinweis, z. B. „PayPal"
   const ok = await markOrderPaidById(id);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  void sendPurchaseForOrder(id, app.log);
   await insertEvent({ orderId: id, type: "pay", title: "Zahlung eingegangen (manuell erfasst)", detail: method ? `Manuell im Dashboard als bezahlt markiert · ${method}` : "Manuell im Dashboard als bezahlt markiert" });
   return { ok: true };
 });

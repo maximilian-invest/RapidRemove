@@ -12,7 +12,7 @@ import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
-import { track, trackContact } from "@/lib/metaPixel";
+import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1389,6 +1389,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
+  // EINE Ereignis-ID für den Gratis-Check, geteilt zwischen Browser-Pixel und
+  // dem serverseitigen Lead der Conversions API. Ohne identische ID zählt Meta
+  // denselben Check zweimal statt ihn zu deduplizieren.
+  const [leadEventId] = React.useState(() => newEventId());
   // Erste Seite (Router): nur zeigen, wenn der Wizard OHNE Profil/Namen geöffnet wurde
   // (generischer „Gratis-Check"). Mit Hero-Suche bleibt der Lösch-Flow unverändert.
   const rc = routerCopy(t.code);
@@ -1491,7 +1495,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
      Bewusst OHNE den eingegebenen Firmennamen. */
   const trackLead = (src) => {
     if (!src) return;
-    track("Lead", { content_name: "gratis_check", content_category: src });
+    track("Lead", { content_name: "gratis_check", content_category: src }, leadEventId);
   };
 
   const startSearch = (n, src) => {
@@ -1563,6 +1567,18 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   // Motiv die Anfrage gebracht hat, nicht nur aus welchem Kanal sie kam.
   const attr = attributionPayload();
   const checkSource = attr.source;
+  // Identifikatoren für die Conversions API. Sie werden IMMER am Datensatz
+  // gespeichert (die eigene Datenbank beantwortet „aus welchem Kanal kam der
+  // Auftrag" auch ohne Einwilligung — die Daten verlassen das Haus nicht).
+  // Ob daraus ein Server-Event an Meta wird, entscheidet allein consentMarketing.
+  const capiIds = {
+    fbclid: (attr.attribution && attr.attribution.fbclid) || "",
+    fbclidTs: (attr.attribution && attr.attribution.fbclid && attr.attribution.ts) || "",
+    fbc: fbcFrom(attr.attribution),
+    fbp: readFbp(),
+    consentMarketing: hasMarketingConsent(),
+    eventSourceUrl: typeof window !== "undefined" ? window.location.href.split("#")[0].slice(0, 500) : "",
+  };
   const persistCheck = (prof) => {
     if (checkSent.current) return;
     checkSent.current = true;
@@ -1580,6 +1596,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
       utmCampaign: attr.utmCampaign, utmContent: attr.utmContent, clickId: attr.clickId,
       referrer: attr.referrer, landing: attr.landing,
       attribution: attr.attribution, attributionFirst: attr.attributionFirst,
+      // Conversions API: Klick-/Browser-Kennungen, Einwilligung und die geteilte
+      // Ereignis-ID. Der Server sendet daraus das Lead-Ereignis — aber nur,
+      // wenn consentMarketing wahr ist.
+      ...capiIds, leadEventId,
       // Google-Profil-Bezug → Admin „Geprüfte Profile": klickbarer Maps-Link + Lead-Recherche.
       placeId: sp ? (sp.placeId || "") : "", mapsUri: sp ? (sp.mapsUri || "") : "", addr: sp ? (sp.addr || "") : "",
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
@@ -1710,7 +1730,11 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
       // Herkunft → Admin „Quelle". `attribution` ist der Last-Touch (die Quelle,
       // die zählt); der First-Touch geht daneben als zweite Perspektive mit.
       attribution: readLastTouch(), attributionFirst: readAttribution(),
-      utmContent: attributionPayload().utmContent,
+      utmSource: attr.utmSource, utmMedium: attr.utmMedium, utmCampaign: attr.utmCampaign,
+      utmContent: attr.utmContent, sourceFirst: attr.sourceFirst, source: attr.source,
+      referrer: attr.referrer, landing: attr.landing,
+      // Conversions API (serverseitiges InitiateCheckout / späteres Purchase).
+      ...capiIds, leadEventId,
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),

@@ -15,6 +15,7 @@ import type { FastifyInstance } from "fastify";
 import { hasSecretKey, listDeletionPayments } from "./integrations/stripe";
 import { dbReady, reconcileOrderForPayment, insertEvent, isPaymentReconciled, recordReconciledPayment } from "./db";
 import { notifyPaymentReceived } from "./notify";
+import { sendPurchaseForOrder } from "./integrations/metaCapi";
 
 export interface ReconcileReport {
   ok: true;
@@ -43,6 +44,7 @@ export async function reconcilePaymentsOnce(log?: FastifyInstance["log"]): Promi
       if (r.status === "marked") {
         matched.push({ name: label, orderId: r.id! });
         await recordReconciledPayment(p.id, r.id || null);     // einmalig „verbraucht"
+        void sendPurchaseForOrder(r.id || "", log); // bezahlt + gelöscht → Meta melden
         await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung eingegangen", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
         // 💰 Team-Push „Zahlung eingegangen" für neu zugeordnete Zahlungen.
         await notifyPaymentReceived({ who: label, amount: p.amount, cur: p.cur, orderId: r.id }).catch(() => {});
