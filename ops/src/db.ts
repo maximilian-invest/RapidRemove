@@ -108,6 +108,35 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS landing text,
       ADD COLUMN IF NOT EXISTS attribution jsonb, ADD COLUMN IF NOT EXISTS attribution_first jsonb
   `);
+  // Conversions API: Klick-/Browser-Kennungen + Einwilligung. `fbc` hat das von
+  // Meta geforderte Format fb.1.<ms>.<fbclid>; der Zeitstempel ist der Moment,
+  // in dem die fbclid ZUERST gesehen wurde. Ohne fbc gibt es keine Zuordnung
+  // zur Anzeige, egal wie sauber der Rest ist.
+  // consent_marketing entscheidet allein darüber, ob ein Server-Event rausgeht.
+  await pool.query(`
+    ALTER TABLE checks
+      ADD COLUMN IF NOT EXISTS fbclid text, ADD COLUMN IF NOT EXISTS fbclid_ts timestamptz,
+      ADD COLUMN IF NOT EXISTS fbc text, ADD COLUMN IF NOT EXISTS fbp text,
+      ADD COLUMN IF NOT EXISTS consent_marketing boolean,
+      ADD COLUMN IF NOT EXISTS lead_event_id text, ADD COLUMN IF NOT EXISTS event_source_url text,
+      ADD COLUMN IF NOT EXISTS client_ip text, ADD COLUMN IF NOT EXISTS client_ua text,
+      ADD COLUMN IF NOT EXISTS capi_lead_at timestamptz
+  `);
+  // Dieselbe Herkunft an der Bestellung (bisher nur im raw-JSON) + die
+  // Kennungen, die das spätere Purchase-Ereignis braucht.
+  await pool.query(`
+    ALTER TABLE orders
+      ADD COLUMN IF NOT EXISTS source text, ADD COLUMN IF NOT EXISTS source_first text,
+      ADD COLUMN IF NOT EXISTS utm_source text, ADD COLUMN IF NOT EXISTS utm_medium text,
+      ADD COLUMN IF NOT EXISTS utm_campaign text, ADD COLUMN IF NOT EXISTS utm_content text,
+      ADD COLUMN IF NOT EXISTS referrer text, ADD COLUMN IF NOT EXISTS landing text,
+      ADD COLUMN IF NOT EXISTS fbclid text, ADD COLUMN IF NOT EXISTS fbclid_ts timestamptz,
+      ADD COLUMN IF NOT EXISTS fbc text, ADD COLUMN IF NOT EXISTS fbp text,
+      ADD COLUMN IF NOT EXISTS consent_marketing boolean,
+      ADD COLUMN IF NOT EXISTS event_source_url text,
+      ADD COLUMN IF NOT EXISTS client_ip text, ADD COLUMN IF NOT EXISTS client_ua text,
+      ADD COLUMN IF NOT EXISTS capi_checkout_at timestamptz, ADD COLUMN IF NOT EXISTS capi_purchase_at timestamptz
+  `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
   await pool.query(`
@@ -269,19 +298,34 @@ export type OrderInput = {
   country?: string; lang?: string; profile?: string; category?: string; rating?: string;
   reviews?: number; service?: string; protection?: string; amount?: number; protAmount?: number;
   note?: string; checkId?: string; raw?: unknown;
+  // Herkunft + Conversions-API-Kennungen, gespiegelt aus dem raw-JSON in
+  // eigene Spalten, damit man ohne JSON-Zugriff nach Kanal und Motiv auswerten
+  // kann und das spätere Purchase-Ereignis alles findet, was es braucht.
+  source?: string; sourceFirst?: string; utmSource?: string; utmMedium?: string;
+  utmCampaign?: string; utmContent?: string; referrer?: string; landing?: string;
+  fbclid?: string; fbclidTs?: string; fbc?: string; fbp?: string;
+  consentMarketing?: boolean; eventSourceUrl?: string; clientIp?: string; clientUa?: string;
 };
 
 export async function insertOrder(o: OrderInput): Promise<void> {
   if (!pool) return;
   await pool.query(
     `INSERT INTO orders
-       (id,name,email,phone,company,country,lang,profile,category,rating,reviews,service,protection,amount,prot_amount,note,check_id,raw)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
+       (id,name,email,phone,company,country,lang,profile,category,rating,reviews,service,protection,amount,prot_amount,note,check_id,raw,
+        source,source_first,utm_source,utm_medium,utm_campaign,utm_content,referrer,landing,
+        fbclid,fbclid_ts,fbc,fbp,consent_marketing,event_source_url,client_ip,client_ua)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,
+             $19,$20,$21,$22,$23,$24,$25,$26,
+             $27,$28,$29,$30,$31,$32,$33,$34)
      ON CONFLICT (id) DO NOTHING`,
     [o.id, o.name || null, o.email || null, o.phone || null, o.company || null, o.country || null,
      o.lang || null, o.profile || null, o.category || null, o.rating || null, o.reviews ?? null,
      o.service || null, o.protection || null, o.amount ?? null, o.protAmount ?? null, o.note || null,
-     o.checkId || null, o.raw ? JSON.stringify(o.raw) : null],
+     o.checkId || null, o.raw ? JSON.stringify(o.raw) : null,
+     o.source || null, o.sourceFirst || null, o.utmSource || null, o.utmMedium || null,
+     o.utmCampaign || null, o.utmContent || null, o.referrer || null, o.landing || null,
+     o.fbclid || null, o.fbclidTs || null, o.fbc || null, o.fbp || null,
+     o.consentMarketing ?? null, o.eventSourceUrl || null, o.clientIp || null, o.clientUa || null],
   );
 }
 
@@ -312,6 +356,10 @@ export type CheckInput = {
   sourceFirst?: string; utmSource?: string; utmMedium?: string; utmCampaign?: string;
   utmContent?: string; clickId?: string; referrer?: string; landing?: string;
   attribution?: unknown; attributionFirst?: unknown;
+  // Conversions API: Klick-/Browser-Kennungen + Einwilligung.
+  fbclid?: string; fbclidTs?: string; fbc?: string; fbp?: string;
+  consentMarketing?: boolean; leadEventId?: string; eventSourceUrl?: string;
+  clientIp?: string; clientUa?: string;
 };
 
 export async function upsertCheck(c: CheckInput): Promise<void> {
@@ -321,9 +369,11 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
   // nur nach oben (GREATEST) – so bleibt die erreichte Trichter-Tiefe erhalten.
   await pool.query(
     `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source,place_id,maps_uri,addr,
-                         source_first,utm_source,utm_medium,utm_campaign,utm_content,click_id,referrer,landing,attribution,attribution_first)
+                         source_first,utm_source,utm_medium,utm_campaign,utm_content,click_id,referrer,landing,attribution,attribution_first,
+                         fbclid,fbclid_ts,fbc,fbp,consent_marketing,lead_event_id,event_source_url,client_ip,client_ua)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
-             $18,$19,$20,$21,$22,$23,$24,$25,$26,$27)
+             $18,$19,$20,$21,$22,$23,$24,$25,$26,$27,
+             $28,$29,$30,$31,$32,$33,$34,$35,$36)
      ON CONFLICT (id) DO UPDATE SET
        source_first=COALESCE(EXCLUDED.source_first, checks.source_first),
        utm_source=COALESCE(EXCLUDED.utm_source, checks.utm_source), utm_medium=COALESCE(EXCLUDED.utm_medium, checks.utm_medium),
@@ -332,6 +382,12 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
        landing=COALESCE(EXCLUDED.landing, checks.landing),
        attribution=COALESCE(EXCLUDED.attribution, checks.attribution),
        attribution_first=COALESCE(EXCLUDED.attribution_first, checks.attribution_first),
+       fbclid=COALESCE(EXCLUDED.fbclid, checks.fbclid), fbclid_ts=COALESCE(EXCLUDED.fbclid_ts, checks.fbclid_ts),
+       fbc=COALESCE(EXCLUDED.fbc, checks.fbc), fbp=COALESCE(EXCLUDED.fbp, checks.fbp),
+       consent_marketing=COALESCE(EXCLUDED.consent_marketing, checks.consent_marketing),
+       lead_event_id=COALESCE(EXCLUDED.lead_event_id, checks.lead_event_id),
+       event_source_url=COALESCE(EXCLUDED.event_source_url, checks.event_source_url),
+       client_ip=COALESCE(EXCLUDED.client_ip, checks.client_ip), client_ua=COALESCE(EXCLUDED.client_ua, checks.client_ua),
        profile=COALESCE(EXCLUDED.profile, checks.profile), category=COALESCE(EXCLUDED.category, checks.category),
        rating=COALESCE(EXCLUDED.rating, checks.rating), reviews=COALESCE(EXCLUDED.reviews, checks.reviews),
        flagged=COALESCE(EXCLUDED.flagged, checks.flagged), recommend=COALESCE(EXCLUDED.recommend, checks.recommend),
@@ -346,7 +402,10 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
      c.sourceFirst || null, c.utmSource || null, c.utmMedium || null, c.utmCampaign || null,
      c.utmContent || null, c.clickId || null, c.referrer || null, c.landing || null,
      c.attribution ? JSON.stringify(c.attribution) : null,
-     c.attributionFirst ? JSON.stringify(c.attributionFirst) : null],
+     c.attributionFirst ? JSON.stringify(c.attributionFirst) : null,
+     c.fbclid || null, c.fbclidTs || null, c.fbc || null, c.fbp || null,
+     c.consentMarketing ?? null, c.leadEventId || null, c.eventSourceUrl || null,
+     c.clientIp || null, c.clientUa || null],
   );
 }
 
@@ -445,6 +504,49 @@ export async function correctOrderPayment(id: string): Promise<boolean> {
 /** Manuell als bezahlt markieren (z. B. PayPal/Überweisung außerhalb Stripe) – OHNE
  *  Statuswechsel. Für Zahlungen, die der automatische Stripe-Abgleich nie sieht, damit
  *  der Auftrag nicht ewig auf „offen" bleibt. */
+/* ---- Conversions API: Datenzugriff ---------------------------------- */
+
+export type CapiOrderRow = {
+  id: string; email: string | null; phone: string | null; country: string | null;
+  amount: string | number | null; prot_amount: string | number | null;
+  fbc: string | null; fbp: string | null; consent_marketing: boolean | null;
+  event_source_url: string | null; client_ip: string | null; client_ua: string | null;
+  status: string | null; pay: string | null;
+  capi_checkout_at: string | null; capi_purchase_at: string | null;
+};
+
+/** Alles, was ein serverseitiges Ereignis zu einer Bestellung braucht. */
+export async function getOrderForCapi(id: string): Promise<CapiOrderRow | null> {
+  if (!pool || !id) return null;
+  const r = await pool.query(
+    `SELECT id,email,phone,country,amount,prot_amount,fbc,fbp,consent_marketing,
+            event_source_url,client_ip,client_ua,status,pay,capi_checkout_at,capi_purchase_at
+       FROM orders WHERE id=$1`, [id]);
+  return (r.rows[0] as CapiOrderRow) || null;
+}
+
+/**
+ * Setzt den Sende-Zeitstempel — aber nur, wenn er noch leer ist, und meldet per
+ * Rückgabewert, ob DIESER Aufruf ihn gesetzt hat. Damit sendet auch bei
+ * gleichzeitigem Stripe-Webhook und Abgleich-Lauf höchstens einer das Ereignis.
+ */
+export async function claimCapiSend(
+  table: "orders" | "checks", column: "capi_purchase_at" | "capi_checkout_at" | "capi_lead_at", id: string,
+): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(
+    `UPDATE ${table} SET ${column}=now() WHERE id=$1 AND ${column} IS NULL RETURNING id`, [id]);
+  return (r.rowCount ?? 0) > 0;
+}
+
+/** Sende-Markierung zurücknehmen, wenn der Versand fehlschlug (erneuter Versuch möglich). */
+export async function releaseCapiSend(
+  table: "orders" | "checks", column: "capi_purchase_at" | "capi_checkout_at" | "capi_lead_at", id: string,
+): Promise<void> {
+  if (!pool || !id) return;
+  await pool.query(`UPDATE ${table} SET ${column}=NULL WHERE id=$1`, [id]);
+}
+
 export async function markOrderPaidById(id: string): Promise<boolean> {
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [id]);

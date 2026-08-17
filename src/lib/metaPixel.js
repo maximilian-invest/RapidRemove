@@ -70,13 +70,35 @@ function eventId() {
     : Date.now() + "-" + Math.random().toString(36).slice(2);
 }
 
-/** Standard-Event. Läuft still ins Leere, wenn keine Einwilligung vorliegt. */
-export function track(event, params) {
+/** Standard-Event. Läuft still ins Leere, wenn keine Einwilligung vorliegt.
+ *  `id` erlaubt eine vorgegebene event_id — die MUSS mit dem serverseitigen
+ *  Ereignis der Conversions API übereinstimmen, sonst zählt Meta doppelt. */
+export function track(event, params, id) {
   if (typeof window === "undefined" || !hasMarketingConsent()) return false;
   initMetaPixel();
   if (!window.fbq) return false;
-  window.fbq("track", event, params || {}, { eventID: eventId() });
+  window.fbq("track", event, params || {}, { eventID: id || eventId() });
   return true;
+}
+
+/** Neue, stabile Ereignis-ID (für die Deduplizierung Browser ↔ Server). */
+export function newEventId() { return eventId(); }
+
+/** Wert des _fbp-Cookies (setzt fbevents.js selbst, nur mit Einwilligung). */
+export function readFbp() {
+  if (typeof document === "undefined") return "";
+  const m = document.cookie.match(/(?:^|;\s*)_fbp=([^;]+)/);
+  return m ? m[1] : "";
+}
+
+/** Klick-Kennung im von Meta geforderten Format: fb.1.<ms>.<fbclid>.
+ *  Der Zeitstempel ist der Moment, in dem die fbclid ZUERST gesehen wurde —
+ *  nicht der des Kaufs. Deshalb kommt er aus dem gespeicherten Touch. */
+export function fbcFrom(touch) {
+  const t = touch || {};
+  if (!t.fbclid) return "";
+  const ms = Date.parse(t.ts || "");
+  return "fb.1." + (ms > 0 ? ms : Date.now()) + "." + t.fbclid;
 }
 
 export function trackPageView() {
