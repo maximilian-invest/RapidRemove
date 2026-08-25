@@ -679,3 +679,19 @@ a.tb-item:hover{color:var(--primary);}
 /* Footer-Link „Cookie-Einstellungen" (öffnet den Consent-Banner erneut) */
 .foot-consent{background:none;border:none;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer;opacity:.85;}
 .foot-consent:hover{opacity:1;}
+
+/* ---------- Announcement bar (nur außerhalb DACH) — Handoff „rapid_new_launch" ---------- */
+.announce{position:relative;overflow:hidden;background:linear-gradient(90deg,var(--orange-600),var(--primary) 45%,var(--orange-600));background-size:200% 100%;animation:an-flow 6s linear infinite;color:var(--on-primary);cursor:pointer;}
+.announce::after{content:"";position:absolute;top:0;bottom:0;left:-40%;width:34%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.38),transparent);transform:skewX(-18deg);animation:an-shine 3.2s var(--ease) infinite;pointer-events:none;}
+@keyframes an-flow{from{background-position:0 0;}to{background-position:-200% 0;}}
+@keyframes an-shine{0%{left:-40%;}55%{left:115%;}100%{left:115%;}}
+.announce:hover{filter:brightness(1.05);}
+.announce-inner{display:flex;align-items:center;justify-content:center;gap:12px;min-height:46px;padding-top:8px;padding-bottom:8px;font-family:var(--font-body);font-size:15px;font-weight:800;letter-spacing:.1px;}
+.announce .an-pill{display:inline-flex;align-items:center;gap:5px;background:var(--white);color:var(--orange-700);font-family:var(--font-display);font-weight:700;font-size:12px;letter-spacing:.6px;text-transform:uppercase;padding:4px 12px;border-radius:var(--r-pill);white-space:nowrap;animation:an-pulse 1.8s var(--ease) infinite;}
+@keyframes an-pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(255,255,255,.55);}50%{transform:scale(1.06);box-shadow:0 0 0 7px rgba(255,255,255,0);}}
+.announce .an-tx{min-width:0;}
+.announce svg{flex:none;color:var(--on-primary);}
+.announce .an-pill svg{color:var(--orange-600);}
+.announce .an-arrow{animation:an-nudge 1.4s var(--ease) infinite;}
+@keyframes an-nudge{0%,100%{transform:translateX(0);}50%{transform:translateX(5px);}}
+@media (prefers-reduced-motion:reduce){.announce,.announce::after,.announce .an-pill,.announce .an-arrow{animation:none;}}
