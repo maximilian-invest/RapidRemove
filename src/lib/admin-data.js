@@ -6,6 +6,7 @@ const SERVICES = {
   express:  { name: "Express-Löschung", price: 690 },
   deindex:  { name: "Presse auslisten (Prüfung)", price: 0 },
   orm:      { name: "Reputations-Audit", price: 290 },
+  reviews:  { name: "Einzelne Bewertungen löschen", price: 179 }, // je Bewertung, nur außerhalb DACH
 };
 
 const ORDERS = [

@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice } from "@/lib/admin-api";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
@@ -1290,6 +1290,11 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
                 <h3><Icon.fileText /> Auszulistende Inhalte</h3>
                 <PressInfo o={o} />
               </React.Fragment>
+            ) : o.service === "reviews" ? (
+              <React.Fragment>
+                <h3><Icon.starOff /> Zu löschende Bewertungen</h3>
+                <ReviewsInvoicePanel o={o} toast={toast} />
+              </React.Fragment>
             ) : (
               <React.Fragment>
                 <h3><Icon.building /> Profil & Leistung</h3>
@@ -1316,7 +1321,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
           </div>
@@ -1324,6 +1329,55 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
         </div>
       </div>
     </React.Fragment>
+  );
+}
+
+/* ---------- Bewertungs-Produkt: Links + Löschbestätigung/Rechnung ---------- */
+/* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
+   fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
+function ReviewsInvoicePanel({ o, toast }) {
+  const urls = o.reviewUrls && o.reviewUrls.length ? o.reviewUrls : [];
+  const [sel, setSel] = React.useState({});   // url -> true (gelöscht)
+  const [sending, setSending] = React.useState(false);
+  const [sentAt, setSentAt] = React.useState(null);
+  const chosen = urls.filter((u) => sel[u]);
+  const cur = o.country === "US" ? "usd" : "eur";
+  const per = cur === "usd" ? "$179" : "179 €";
+  const total = chosen.length * 179;
+  const fmtTotal = cur === "usd" ? "$" + total.toLocaleString("en-US") : total.toLocaleString("de-DE") + " €";
+  const send = async () => {
+    if (!chosen.length || sending) return;
+    setSending(true);
+    try {
+      const r = await sendReviewsInvoice({
+        orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur,
+        removedUrls: chosen, submittedCount: urls.length,
+      });
+      setSentAt(new Date());
+      toast(`Löschbestätigung + Rechnung über ${r.total} an ${o.email} gesendet ✓`);
+    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setSending(false);
+  };
+  if (!urls.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungs-Links am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
+  return (
+    <div>
+      <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
+        {urls.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
+      </div>
+      {urls.map((u) => (
+        <label key={u} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
+          <input type="checkbox" checked={!!sel[u]} onChange={() => setSel((m) => ({ ...m, [u]: !m[u] }))} style={{ marginTop: 2 }} />
+          <a href={u} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 600, wordBreak: "break-all" }}>{u}</a>
+        </label>
+      ))}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
+        <span style={{ fontWeight: 800 }}>{chosen.length} gelöscht × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span></span>
+        <button className="btn btn-pri btn-sm" disabled={!chosen.length || sending} onClick={send}>
+          <AI.send /> {sending ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
+        </button>
+      </div>
+      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — fällig heute. Zahlungseingang wie gewohnt über den Stripe-Abgleich; danach Status auf „Gelöscht" stellen.</div> : null}
+    </div>
   );
 }
 
@@ -2077,7 +2131,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
           {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
-          {o.amount ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+          {o.amount && o.service !== "reviews" ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
           {o.pay !== "paid" && o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
           {o.pay === "paid" ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
@@ -2149,9 +2203,11 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div className="cd-col">
           {/* profile & service (Presse: zu prüfende Inhalte statt Google-Profil) */}
           <div className="panel">
-            <div className="panel-head"><h2>{isPress ? "Auszulistende Inhalte" : "Profil & Leistung"}</h2></div>
+            <div className="panel-head"><h2>{isPress ? "Auszulistende Inhalte" : o.service === "reviews" ? "Zu löschende Bewertungen" : "Profil & Leistung"}</h2></div>
             <div style={{ padding: "18px 22px" }}>
-              {isPress ? <PressInfo o={o} /> : (
+              {isPress ? <PressInfo o={o} /> : o.service === "reviews" ? (
+                <ReviewsInvoicePanel o={o} toast={toast} />
+              ) : (
                 <React.Fragment>
                   <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
                   <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
@@ -2299,7 +2355,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div className="drow"><span className="dl">Rechnungsbetrag</span><span className="dv">{o.amount ? money(o.amount, o.country) : "—"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
               {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung} title={usePaypalMahnung ? "Text-Mahnung – verweist auf den gesendeten PayPal-Link" : "Mahnung mit Stripe-Zahlungslink"}><Icon.mail /> {mahnBtnLabel}{usePaypalMahnung ? " (PayPal)" : ""}</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}

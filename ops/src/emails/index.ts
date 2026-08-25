@@ -28,6 +28,8 @@ import PaypalAngebot, { subject as paypalAngebotSubject, T as paypalAngebotTexts
 import PaypalErinnerung, { subject as paypalErinnerungSubject, T as paypalErinnerungTexts } from "./PaypalErinnerung";
 import PaypalMahnung, { subject as paypalMahnungSubject } from "./PaypalMahnung";
 import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
+import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubject, T as auftragsbestaetigungReviewsTexts } from "./AuftragsbestaetigungReviews";
+import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
@@ -119,6 +121,22 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: PaypalMahnung,
     subject: paypalMahnungSubject,
     sample: { lang: "en", name: "Alex", stage: 1, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
+  },
+  "auftragsbestaetigung-reviews": {
+    label: "Auftragsbestätigung Bewertungs-Löschung (außerhalb DACH)",
+    group: "Bestellung",
+    component: AuftragsbestaetigungReviews,
+    subject: auftragsbestaetigungReviewsSubject,
+    sample: { lang: "en", name: "Alex", urls: ["https://maps.app.goo.gl/example1", "https://maps.app.goo.gl/example2"], per: "$179", total: "$358", orderId: "RR-123456" },
+    texts: auftragsbestaetigungReviewsTexts,
+  },
+  "loeschbestaetigung-reviews": {
+    label: "Löschbestätigung + Rechnung Bewertungen (außerhalb DACH)",
+    group: "Bestellung",
+    component: LoeschbestaetigungReviews,
+    subject: loeschbestaetigungReviewsSubject,
+    sample: { lang: "en", name: "Alex", removedUrls: ["https://maps.app.goo.gl/example1"], submittedCount: 2, per: "$179", total: "$179", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
+    texts: loeschbestaetigungReviewsTexts,
   },
   "paypal-zahlung-bestaetigt": {
     label: "PayPal-Zahlung bestätigt (+ Schutz aktiv, außerhalb DACH)",

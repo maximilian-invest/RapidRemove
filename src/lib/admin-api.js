@@ -99,6 +99,8 @@ function mapOrder(r) {
     id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, doneAt: r.done_at || null, name: r.name || "", email: r.email || "", phone: r.phone || "",
     company: r.company || "", profile: r.profile || "", reviews: Number(r.reviews) || 0, rating: r.rating || "—",
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
+    // Bewertungs-Produkt: eingereichte Links (aus dem raw-JSON der Bestellung).
+    reviewUrls: (r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean) : [],
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
     paypal: (r.form && typeof r.form.paypal === "string") ? r.form.paypal : "", // PayPal-Wunsch (10 % Rabatt) aus dem Fragebogen – nur außerhalb DACH abgefragt
@@ -482,6 +484,19 @@ export async function markOrderPaid({ orderId, method }) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ token: TOKEN, orderId, method }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
+/** Bewertungs-Produkt: Löschbestätigung + Rechnung senden (nur markierte Links werden berechnet). */
+export async function sendReviewsInvoice(payload) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/reviews-invoice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(payload || {}) }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));

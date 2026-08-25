@@ -1348,6 +1348,182 @@ const ROUTER_COPY = {
     pressDoneH: "Forespørsel mottatt — vi tar kontakt.", pressDoneSub: "Vi vurderer saken din gratis og kommer tilbake med en ærlig vurdering. Ingen kostnad, ingen forpliktelse.",
   },
 };
+/* ---- Produkt „Einzelne Bewertungen löschen" (NICHT in DACH) --------------
+   Eigener Copy-Block statt Erweiterung von ROUTER_COPY: so bleiben die
+   bestehenden elf Sprachblöcke unangetastet und die Kachel lässt sich sauber
+   ausblenden. Preis je Bewertung kommt aus pricing.js (profileFor(lang).review).
+   Die beiden Bedingungen (max. 4 Wochen alt, muss Text enthalten) stehen
+   bewusst als Pflicht-Hinweis im Formular — jeder Kunde muss sie sehen. */
+const REVIEW_COPY = {
+  de: {
+    tileT: "Einzelne Bewertungen löschen", tileD: "Einzelne Bewertungen aus Ihrem Google-Profil entfernen — das Profil bleibt bestehen.",
+    h: "Welche Bewertungen sollen weg?", sub: "Fügen Sie den Link zu jeder Bewertung ein. Sie können beliebig viele hinzufügen.",
+    howH: "So kommen Sie an den Link einer Bewertung",
+    how1: "Öffnen Sie die Bewertung bei Google.", how2: "Tippen Sie auf die drei Punkte und wählen Sie „Teilen“.", how3: "Kopieren Sie den Link und fügen Sie ihn unten ein.",
+    rulesH: "Zwei Bedingungen — bitte vorher prüfen",
+    rule1: "Die Bewertung darf nicht älter als 4 Wochen sein.",
+    rule2: "Die Bewertung muss Text enthalten — reine Sternebewertungen ohne Text lassen sich so nicht entfernen.",
+    urlLabel: "Link zur Bewertung", addUrl: "Weitere Bewertung hinzufügen",
+    per: "je Bewertung", total: "Gesamt", btn: "Weiter zum Checkout",
+    need: "Bitte fügen Sie mindestens einen Bewertungs-Link ein.",
+    service: "Einzelne Bewertungen löschen",
+    payH: 'Bezahlung — zu Ihren Gunsten', pay1: 'Sie zahlen nur für tatsächlich gelöschte Bewertungen — {per} je Löschung. Wird von 5 nur eine gelöscht, zahlen Sie nur diese eine.', pay2: 'Fällig am Tag der Löschung — Sie erhalten am selben Tag die Löschbestätigung mit der Rechnung.',
+  },
+  en: {
+    tileT: "Delete individual reviews", tileD: "Remove single reviews from your Google profile — the profile itself stays.",
+    h: "Which reviews should go?", sub: "Paste the link to each review. You can add as many as you like.",
+    howH: "How to get the link to a review",
+    how1: "Open the review on Google.", how2: "Tap the three dots and choose “Share”.", how3: "Copy the link and paste it below.",
+    rulesH: "Two conditions — please check before ordering",
+    rule1: "The review must not be older than 4 weeks.",
+    rule2: "The review must contain text — star-only ratings cannot be removed this way.",
+    urlLabel: "Link to the review", addUrl: "Add another review",
+    per: "per review", total: "Total", btn: "Continue to checkout",
+    need: "Please paste at least one review link.",
+    service: "Removal of individual reviews",
+    payH: 'Billing — in your favour', pay1: 'You only pay for reviews we actually remove — {per} each. If we remove just one out of five, you pay for that one only.', pay2: "Due on the day of removal — you'll receive the confirmation with the invoice the same day.",
+  },
+  es: {
+    tileT: "Eliminar reseñas concretas", tileD: "Elimina reseñas sueltas de tu perfil de Google — el perfil se mantiene.",
+    h: "¿Qué reseñas deben desaparecer?", sub: "Pega el enlace de cada reseña. Puedes añadir tantas como quieras.",
+    howH: "Cómo obtener el enlace de una reseña",
+    how1: "Abre la reseña en Google.", how2: "Toca los tres puntos y elige «Compartir».", how3: "Copia el enlace y pégalo abajo.",
+    rulesH: "Dos condiciones — compruébalas antes de encargar",
+    rule1: "La reseña no puede tener más de 4 semanas.",
+    rule2: "La reseña debe contener texto: las valoraciones solo con estrellas no se pueden eliminar así.",
+    urlLabel: "Enlace a la reseña", addUrl: "Añadir otra reseña",
+    per: "por reseña", total: "Total", btn: "Continuar al pago",
+    need: "Pega al menos un enlace de reseña.",
+    service: "Eliminación de reseñas concretas",
+    payH: 'Facturación — a tu favor', pay1: 'Solo pagas por las reseñas realmente eliminadas: {per} por cada una. Si de cinco solo quitamos una, pagas solo esa.', pay2: 'Vence el día de la eliminación: ese mismo día recibes la confirmación con la factura.',
+  },
+  fr: {
+    tileT: "Supprimer des avis isolés", tileD: "Retire des avis isolés de ta fiche Google — la fiche elle-même reste en ligne.",
+    h: "Quels avis doivent disparaître ?", sub: "Colle le lien de chaque avis. Tu peux en ajouter autant que tu veux.",
+    howH: "Comment obtenir le lien d'un avis",
+    how1: "Ouvre l'avis sur Google.", how2: "Appuie sur les trois points et choisis « Partager ».", how3: "Copie le lien et colle-le ci-dessous.",
+    rulesH: "Deux conditions — à vérifier avant de commander",
+    rule1: "L'avis ne doit pas dater de plus de 4 semaines.",
+    rule2: "L'avis doit contenir du texte : les notes composées uniquement d'étoiles ne peuvent pas être retirées ainsi.",
+    urlLabel: "Lien vers l'avis", addUrl: "Ajouter un autre avis",
+    per: "par avis", total: "Total", btn: "Continuer vers le paiement",
+    need: "Colle au moins un lien d'avis.",
+    service: "Suppression d'avis isolés",
+    payH: 'Facturation — en ta faveur', pay1: "Tu ne paies que les avis réellement supprimés — {per} par avis. Si nous n'en retirons qu'un sur cinq, tu ne paies que celui-là.", pay2: 'À régler le jour de la suppression — tu reçois la confirmation avec la facture le jour même.',
+  },
+  it: {
+    tileT: "Eliminare singole recensioni", tileD: "Rimuovi singole recensioni dal tuo profilo Google — il profilo resta online.",
+    h: "Quali recensioni devono sparire?", sub: "Incolla il link di ogni recensione. Puoi aggiungerne quante vuoi.",
+    howH: "Come ottenere il link di una recensione",
+    how1: "Apri la recensione su Google.", how2: "Tocca i tre puntini e scegli «Condividi».", how3: "Copia il link e incollalo qui sotto.",
+    rulesH: "Due condizioni — da verificare prima di ordinare",
+    rule1: "La recensione non deve avere più di 4 settimane.",
+    rule2: "La recensione deve contenere testo: le valutazioni con sole stelle non si possono rimuovere così.",
+    urlLabel: "Link alla recensione", addUrl: "Aggiungi un'altra recensione",
+    per: "per recensione", total: "Totale", btn: "Prosegui al checkout",
+    need: "Incolla almeno un link a una recensione.",
+    service: "Rimozione di singole recensioni",
+    payH: 'Fatturazione — a tuo favore', pay1: 'Paghi solo le recensioni davvero rimosse — {per} ciascuna. Se su cinque ne togliamo una sola, paghi solo quella.', pay2: 'Da saldare il giorno della rimozione — lo stesso giorno ricevi la conferma con la fattura.',
+  },
+  nl: {
+    tileT: "Losse reviews verwijderen", tileD: "Verwijder losse reviews uit je Google-profiel — het profiel zelf blijft staan.",
+    h: "Welke reviews moeten weg?", sub: "Plak de link naar elke review. Je kunt er zoveel toevoegen als je wilt.",
+    howH: "Zo kom je aan de link van een review",
+    how1: "Open de review op Google.", how2: "Tik op de drie puntjes en kies 'Delen'.", how3: "Kopieer de link en plak hem hieronder.",
+    rulesH: "Twee voorwaarden — controleer dit vooraf",
+    rule1: "De review mag niet ouder zijn dan 4 weken.",
+    rule2: "De review moet tekst bevatten — beoordelingen met alleen sterren kunnen zo niet worden verwijderd.",
+    urlLabel: "Link naar de review", addUrl: "Nog een review toevoegen",
+    per: "per review", total: "Totaal", btn: "Verder naar afrekenen",
+    need: "Plak minstens één reviewlink.",
+    service: "Verwijdering van losse reviews",
+    payH: 'Facturering — in jouw voordeel', pay1: 'Je betaalt alleen voor daadwerkelijk verwijderde reviews — {per} per stuk. Halen we er van vijf maar één weg, dan betaal je alleen die ene.', pay2: 'Te voldoen op de dag van verwijdering — je ontvangt diezelfde dag de bevestiging met de factuur.',
+  },
+  pt: {
+    tileT: "Eliminar avaliações individuais", tileD: "Remove avaliações isoladas do teu perfil Google — o perfil mantém-se.",
+    h: "Que avaliações devem sair?", sub: "Cola o link de cada avaliação. Podes adicionar as que quiseres.",
+    howH: "Como obter o link de uma avaliação",
+    how1: "Abre a avaliação no Google.", how2: "Toca nos três pontos e escolhe «Partilhar».", how3: "Copia o link e cola-o abaixo.",
+    rulesH: "Duas condições — verifica antes de encomendar",
+    rule1: "A avaliação não pode ter mais de 4 semanas.",
+    rule2: "A avaliação tem de conter texto — classificações só com estrelas não podem ser removidas assim.",
+    urlLabel: "Link para a avaliação", addUrl: "Adicionar outra avaliação",
+    per: "por avaliação", total: "Total", btn: "Continuar para o pagamento",
+    need: "Cola pelo menos um link de avaliação.",
+    service: "Remoção de avaliações individuais",
+    payH: 'Faturação — a teu favor', pay1: 'Só pagas pelas avaliações realmente removidas — {per} cada. Se de cinco removermos só uma, pagas apenas essa.', pay2: 'Vence no dia da remoção — nesse mesmo dia recebes a confirmação com a fatura.',
+  },
+  ja: {
+    tileT: "個別の口コミを削除", tileD: "Googleプロフィールから個別の口コミだけを削除します。プロフィール自体は残ります。",
+    h: "どの口コミを削除しますか？", sub: "各口コミのリンクを貼り付けてください。件数に制限はありません。",
+    howH: "口コミのリンクを取得する方法",
+    how1: "Googleで対象の口コミを開きます。", how2: "三点メニューから「共有」を選びます。", how3: "リンクをコピーして下に貼り付けます。",
+    rulesH: "2つの条件 — ご依頼前にご確認ください",
+    rule1: "口コミの投稿から4週間以内であること。",
+    rule2: "口コミに本文があること。星のみの評価はこの方法では削除できません。",
+    urlLabel: "口コミのリンク", addUrl: "口コミを追加",
+    per: "1件あたり", total: "合計", btn: "お支払いへ進む",
+    need: "口コミのリンクを1件以上貼り付けてください。",
+    service: "個別の口コミの削除",
+    payH: 'お支払い — お客様に有利な形です', pay1: '実際に削除できた口コミの分だけ、1件{per}をお支払いいただきます。5件中1件のみ削除の場合は、その1件分だけです。', pay2: 'お支払いは削除当日が期日です。同日に削除確認と請求書をお送りします。',
+  },
+  sv: {
+    tileT: "Ta bort enskilda omdömen", tileD: "Ta bort enskilda omdömen från din Google-profil — profilen ligger kvar.",
+    h: "Vilka omdömen ska bort?", sub: "Klistra in länken till varje omdöme. Du kan lägga till hur många du vill.",
+    howH: "Så får du länken till ett omdöme",
+    how1: "Öppna omdömet på Google.", how2: "Tryck på de tre prickarna och välj ”Dela”.", how3: "Kopiera länken och klistra in den nedan.",
+    rulesH: "Två villkor — kontrollera innan du beställer",
+    rule1: "Omdömet får inte vara äldre än 4 veckor.",
+    rule2: "Omdömet måste innehålla text — betyg med enbart stjärnor kan inte tas bort på detta sätt.",
+    urlLabel: "Länk till omdömet", addUrl: "Lägg till ett omdöme till",
+    per: "per omdöme", total: "Totalt", btn: "Vidare till kassan",
+    need: "Klistra in minst en omdömeslänk.",
+    service: "Borttagning av enskilda omdömen",
+    payH: 'Fakturering — till din fördel', pay1: 'Du betalar bara för omdömen som faktiskt tas bort — {per} per styck. Tar vi bara bort ett av fem betalar du bara för det.', pay2: 'Förfaller samma dag som borttagningen — samma dag får du bekräftelsen med fakturan.',
+  },
+  da: {
+    tileT: "Slet enkelte anmeldelser", tileD: "Fjern enkelte anmeldelser fra din Google-profil — profilen bliver stående.",
+    h: "Hvilke anmeldelser skal væk?", sub: "Indsæt linket til hver anmeldelse. Du kan tilføje så mange, du vil.",
+    howH: "Sådan får du linket til en anmeldelse",
+    how1: "Åbn anmeldelsen på Google.", how2: "Tryk på de tre prikker og vælg „Del“.", how3: "Kopiér linket og indsæt det nedenfor.",
+    rulesH: "To betingelser — tjek inden du bestiller",
+    rule1: "Anmeldelsen må ikke være ældre end 4 uger.",
+    rule2: "Anmeldelsen skal indeholde tekst — bedømmelser med kun stjerner kan ikke fjernes på denne måde.",
+    urlLabel: "Link til anmeldelsen", addUrl: "Tilføj endnu en anmeldelse",
+    per: "pr. anmeldelse", total: "I alt", btn: "Videre til kassen",
+    need: "Indsæt mindst ét anmeldelseslink.",
+    service: "Fjernelse af enkelte anmeldelser",
+    payH: 'Fakturering — til din fordel', pay1: 'Du betaler kun for anmeldelser, der faktisk fjernes — {per} pr. stk. Fjerner vi kun én ud af fem, betaler du kun for den ene.', pay2: 'Forfalder på fjernelsesdagen — samme dag modtager du bekræftelsen med fakturaen.',
+  },
+  no: {
+    tileT: "Slett enkeltomtaler", tileD: "Fjern enkeltomtaler fra Google-profilen din — profilen blir stående.",
+    h: "Hvilke omtaler skal bort?", sub: "Lim inn lenken til hver omtale. Du kan legge til så mange du vil.",
+    howH: "Slik får du lenken til en omtale",
+    how1: "Åpne omtalen på Google.", how2: "Trykk på de tre prikkene og velg «Del».", how3: "Kopier lenken og lim den inn nedenfor.",
+    rulesH: "To betingelser — sjekk før du bestiller",
+    rule1: "Omtalen kan ikke være eldre enn 4 uker.",
+    rule2: "Omtalen må inneholde tekst — vurderinger med bare stjerner kan ikke fjernes på denne måten.",
+    urlLabel: "Lenke til omtalen", addUrl: "Legg til en omtale til",
+    per: "per omtale", total: "Totalt", btn: "Videre til kassen",
+    need: "Lim inn minst én omtalelenke.",
+    service: "Fjerning av enkeltomtaler",
+    payH: 'Fakturering — til din fordel', pay1: 'Du betaler kun for omtaler som faktisk fjernes — {per} per stykk. Fjerner vi bare én av fem, betaler du kun for den ene.', pay2: 'Forfaller samme dag som fjerningen — samme dag får du bekreftelsen med fakturaen.',
+  },
+};
+const reviewCopy = (code) => REVIEW_COPY[code] || REVIEW_COPY.en;
+
+/* Produkt ist in DACH NICHT verfügbar. Verlässliches Signal ist die Sprache
+   (Deutsch = DACH, wie bei den nur-außerhalb-DACH-Mailvorlagen). Ist zusätzlich
+   ein Land bekannt (rr_geo, nur mit Geo-Einwilligung gesetzt), sperrt auch das. */
+function reviewsBlocked(langCode) {
+  if (langCode === "de") return true;
+  try {
+    const g = JSON.parse(localStorage.getItem("rr_geo") || "null");
+    if (g && ["DE", "AT", "CH"].includes(String(g.cc || "").toUpperCase())) return true;
+  } catch (e) { /* kein localStorage → nur Sprachregel */ }
+  return false;
+}
+
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
 function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit, onOrm, onDeindex, onSelectProfile }) {
@@ -1398,6 +1574,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   const rc = routerCopy(t.code);
   const [routed, setRouted] = React.useState(R ? true : (!!(initialName && initialName.trim()) || !!initialProfile));
   const [pressMode, setPressMode] = React.useState(false);
+  // Produkt „Einzelne Bewertungen löschen" (außerhalb DACH). Eigener Zweig:
+  // Links sammeln → direkt in den Checkout, ohne Profilsuche/Schutz.
+  const [reviewMode, setReviewMode] = React.useState(false);
+  const [reviewUrls, setReviewUrls] = React.useState([""]);
+  const [reviewErr, setReviewErr] = React.useState("");
+  const rv = reviewCopy(t.code);
   const [unsureStep, setUnsureStep] = React.useState(0);
   const [pressData, setPressData] = React.useState({ urls: [""], email: "", desc: "", orm: "" });
   const [pressDone, setPressDone] = React.useState(false);
@@ -1550,13 +1732,20 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   };
 
   /* pricing */
-  const servicePriceNum = num(service === "remove" ? p.deletion : p.reset);
-  const serviceName = service === "remove" ? w.s4.opt1.t : w.s4.opt2.t;
+  // Bewertungs-Produkt: Preis = Anzahl gültiger Links × Stückpreis. Kein
+  // Express, kein Schutz — beides gibt es nur beim Profil-Produkt.
+  const reviewList = (reviewUrls || []).map((u) => (u || "").trim()).filter(Boolean);
+  const reviewCount = reviewList.length;
+  const servicePriceNum = reviewMode
+    ? reviewCount * num(p.review)
+    : num(service === "remove" ? p.deletion : p.reset);
+  const serviceName = reviewMode ? rv.service : (service === "remove" ? w.s4.opt1.t : w.s4.opt2.t);
   const protLabel = protection === "monthly" ? conv.tierMonthlyLabel : protection === "monitor" ? conv.tierMonitorLabel : protection === "lifetime" ? conv.tierLifetimeLabel : null;
   const protPriceVal = protection === "monthly" ? p.protMonthly : protection === "monitor" ? p.protMonitor : protection === "lifetime" ? p.protLifetime : null;
   const recurringNum = (protection === "monthly" || protection === "monitor") ? num(protPriceVal) : 0;
-  const oneTimeTotal = servicePriceNum + (express ? num(p.express) : 0) + (protection === "lifetime" ? num(p.protLifetime) : 0);
-  const leistungTotal = servicePriceNum + (express ? num(p.express) : 0);
+  const oneTimeTotal = reviewMode ? servicePriceNum
+    : servicePriceNum + (express ? num(p.express) : 0) + (protection === "lifetime" ? num(p.protLifetime) : 0);
+  const leistungTotal = reviewMode ? servicePriceNum : servicePriceNum + (express ? num(p.express) : 0);
 
   const country = lang === "en" ? "US" : "DE";
   // Funnel-Insights: Headline-Preis (z. B. 450/850 €) + Herkunft der Prüfung.
@@ -1718,9 +1907,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
     // Bestellung im Hintergrund ans ops-Backend. Profil-Nachweis (Place-ID etc.) inklusive.
     submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
-      company: contact.company, service, protection: protection || "",
+      company: contact.company, service: reviewMode ? "reviews" : service, protection: reviewMode ? "" : (protection || ""),
+      // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
+      // die Bewertungen vor sich, die der Kunde bezahlt hat.
+      ...(reviewMode ? { note: `${rv.service} (${reviewCount} × ${money(lang, p.review)}):\n${reviewList.join("\n")}`, reviewUrls: reviewList, reviewCount } : {}),
       express: !!express, expressAmount: express ? num(p.express) : 0,
-      profile: selected ? selected.name : "", orderId, lang,
+      profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
       placeId: selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",
       category: selected ? selected.cat : "", rating: selected ? selected.rating : "",
@@ -1993,6 +2185,16 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
     return (
       <div className="summary">
         <h3><Icon.cart size={20} /> {w.s5.sumTitle}</h3>
+        {reviewMode ? (
+          <React.Fragment>
+            <div className="sum-row"><span className="sl">{rv.service}</span><span className="sv">{reviewCount} × {money(lang, p.review)}</span></div>
+            <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(lang, w.s5.dueNow)}</span></div>
+            <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
+            {/* Statt des generischen Hinweises die konkreten Abrechnungsregeln. */}
+            <div className="sum-note"><Icon.shieldCheck /> {(rv.pay1 || "").replace("{per}", money(lang, p.review))} {rv.pay2}</div>
+          </React.Fragment>
+        ) : (
+          <React.Fragment>
         <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div>
         <div className="sum-row"><span className="sl">{serviceName}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
 
@@ -2011,6 +2213,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
         <div className="sum-total"><span className="sl">{w.s5.sumTotal}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
         {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {conv.perMonthShort}</b></div>}
         <div className="sum-note"><Icon.shieldCheck /> {w.s5.sumNote}</div>
+          </React.Fragment>
+        )}
       </div>
     );
   }
@@ -2022,10 +2226,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
     if (processing) {
       return (
         <div className="wz-card">
+          {/* Im Bewertungs-Zweig gibt es kein geprüftes Profil zum Anzeigen. */}
+          {reviewMode ? null : (
           <div className="del-demo removing removed">
             <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} />
             <div className="del-stamp"><div className="ok"><div className="ring"><Icon.check /></div></div></div>
           </div>
+          )}
           <div className="processing">
             <div className="ring"></div>
             <b>{w.s5.processing}</b>
@@ -2189,7 +2396,17 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
 
   /* ---- erste Seite: Service-Router (mit den anderen Dienstleistungen) ---- */
   function RouterScreen() {
-    const pick = (id) => { if (id === "delete") setRouted(true); else if (id === "press") setPressMode(true); else setUnsureStep(1); };
+    const pick = (id) => {
+      if (id === "delete") setRouted(true);
+      else if (id === "press") setPressMode(true);
+      else if (id === "reviews") setReviewMode(true);
+      else setUnsureStep(1);
+    };
+    // Bewertungs-Kachel nur außerhalb DACH — direkt hinter der Hauptkachel,
+    // weil sie inhaltlich am nächsten dran ist.
+    const routerTiles = reviewsBlocked(t.code)
+      ? rc.tiles
+      : [rc.tiles[0], { id: "reviews", ic: "starOff", t: rv.tileT, d: rv.tileD }, ...rc.tiles.slice(1)];
     if (unsureStep > 0) {
       return (
         <div className="wz-card pad-lg router">
@@ -2220,7 +2437,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
         <h1 className="wz-h" style={{ fontSize: 30 }}>{rc.routerH}</h1>
         <p className="wz-sub">{rc.routerSub}</p>
         <div className="router-tiles">
-          {rc.tiles.map((tl) => {
+          {routerTiles.map((tl) => {
             const I = Icon[tl.ic] || (tl.ic === "fileText" ? Icon.edit : Icon.trash);
             return (
               <button className={"router-tile" + (tl.id === "delete" ? " primary" : "")} key={tl.id} onClick={() => pick(tl.id)}>
@@ -2240,6 +2457,75 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   }
 
   /* ---- Wizard fürs Löschen einzelner Treffer in der Google-Suche (Presse/Auslistung) ---- */
+  /* Bewertungs-Eingabe: Links über die Teilen-Funktion sammeln, „+" für weitere.
+     Die beiden Bedingungen stehen als Pflicht-Kasten darüber, nicht im Fußnotentext. */
+  function ReviewIntake() {
+    const setUrl = (i) => (e) => { const u = reviewUrls.slice(); u[i] = e.target.value; setReviewUrls(u); setReviewErr(""); };
+    const addUrl = () => setReviewUrls([...reviewUrls, ""]);
+    const rmUrl = (i) => () => setReviewUrls(reviewUrls.filter((_, j) => j !== i));
+    const cont = () => {
+      if (!reviewCount) { setReviewErr(rv.need); return; }
+      setContact((c) => ({ ...c, company: c.company || "" }));
+      go(5); // direkt in den Checkout — keine Profilsuche, kein Schutzschritt
+    };
+    return (
+      <div className="wz-card pad-lg">
+        <div className="wz-eyebrow"><Icon.starOff size={14} /> {rv.tileT}</div>
+        <h1 className="wz-h" style={{ fontSize: 26 }}>{rv.h}</h1>
+        <p className="wz-sub">{rv.sub}</p>
+
+        <div className="press-price">
+          <div className="pp-ic"><Icon.info /></div>
+          <div className="pp-body">
+            <b>{rv.howH}</b>
+            <p>1. {rv.how1}<br />2. {rv.how2}<br />3. {rv.how3}</p>
+          </div>
+        </div>
+
+        {/* Pflicht-Hinweis: muss jeder Kunde sehen, bevor er bezahlt. */}
+        <div className="press-alt" style={{ borderColor: "var(--danger)" }}>
+          <b><Icon.alert size={15} /> {rv.rulesH}</b>
+          <p style={{ margin: "6px 0 0" }}><b>1.</b> {rv.rule1}<br /><b>2.</b> {rv.rule2}</p>
+        </div>
+
+        {/* Abrechnungsregeln: nur gelöschte Bewertungen zahlen, fällig am Löschtag. */}
+        <div className="press-alt">
+          <b><Icon.shieldCheck size={15} /> {rv.payH}</b>
+          <p style={{ margin: "6px 0 0" }}>{(rv.pay1 || "").replace("{per}", money(lang, p.review))}<br />{rv.pay2}</p>
+        </div>
+
+        <div className="form-grid" style={{ marginTop: 18 }}>
+          <div className="fld full">
+            <label>{rv.urlLabel} <span style={{ color: "var(--danger)" }}>*</span></label>
+            <div className="url-list">
+              {reviewUrls.map((u, i) => (
+                <div className="url-row" key={i}>
+                  <input value={u} onChange={setUrl(i)} placeholder="https://…" />
+                  {reviewUrls.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
+                </div>
+              ))}
+              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rv.addUrl}</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="summary" style={{ marginTop: 18 }}>
+          <div className="sum-row"><span className="sl">{money(lang, p.review)} {rv.per}</span><span className="sv">{reviewCount} ×</span></div>
+          <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
+        </div>
+
+        {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
+
+        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} onClick={cont}>
+          <Icon.arrowRight size={18} /> {rv.btn}
+        </button>
+        <div className="wz-actions" style={{ marginTop: 16 }}>
+          <button className="btn btn-secondary" onClick={() => setReviewMode(false)}><Icon.arrowLeft size={17} /> {w.back}</button>
+        </div>
+      </div>
+    );
+  }
+
   function PressIntake() {
     const set = (k) => (e) => setPressData({ ...pressData, [k]: e.target.value });
     const setUrl = (i) => (e) => { const urls = pressData.urls.slice(); urls[i] = e.target.value; setPressData({ ...pressData, urls }); };
@@ -2310,7 +2596,17 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
     );
   }
 
-  if (!routed && !pressMode) {
+  // Bewertungs-Zweig: eigene Eingabe, danach der reguläre Checkout (step 5/6).
+  if (reviewMode && step < 5) {
+    return (
+      <div className="wz">
+        {Top}
+        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"rev"}>{ReviewIntake()}</div></div>
+      </div>
+    );
+  }
+
+  if (!routed && !pressMode && !reviewMode) {
     return (
       <div className="wz">
         {Top}
@@ -2335,7 +2631,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   return (
     <div className="wz">
       {Top}
-      <Stepper step={step} onNav={canStepBack ? go : null} />
+      {reviewMode ? null : <Stepper step={step} onNav={canStepBack ? go : null} />}
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
