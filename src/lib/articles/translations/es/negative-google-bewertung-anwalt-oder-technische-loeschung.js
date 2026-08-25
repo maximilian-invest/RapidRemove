@@ -48,7 +48,7 @@ const article = {
       "**Compatible con el SEO:** web y posicionamiento se mantienen; un perfil nuevo y limpio es opcional.",
       "**Discreción:** sin correspondencia, sin riesgo Streisand.",
     ] },
-    { t: "warn", title: "Importante", text: "Esta vía elimina el **perfil completo**, no una reseña individual. Quien quiera eliminar una reseña y conservar el perfil debe usar la denuncia o la vía del abogado." },
+    { t: "warn", title: "Importante", text: "Esta vía elimina el **perfil completo**, no una reseña individual. Quien quiera eliminar una reseña y conservar el perfil debe usar la denuncia o la vía del abogado. Desde hace poco, RapidRemove también ofrece exactamente eso: [eliminación de reseñas individuales](https://www.rapid-remove.com/es/eliminar-una-resena/) – se paga por reseña realmente eliminada, solo tras el éxito." },
 
     { t: "h2", id: "vergleich", text: "Abogado vs. técnica: la comparación directa", toc: "Comparación directa" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (eliminación de perfil)", "Abogado (vía legal)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "¿Puedo eliminar una reseña negativa de Google?", a: "Sí, si infringe las directrices de Google (p. ej. falsa, sin relación, insulto). Las opiniones puramente objetivas sobre experiencias reales son difíciles de eliminar." },
     { q: "¿Cuánto cuesta un abogado para eliminar una reseña de Google?", a: "Los despachos especializados suelen rondar los 100 a 159 € por reseña; con demanda pueden añadirse costas judiciales. Normalmente se paga el esfuerzo, no un resultado garantizado." },
-    { q: "¿Qué elimina exactamente RapidRemove: reseñas individuales o el perfil?", a: "RapidRemove elimina todo el perfil de empresa de Google; todas las reseñas desaparecen con él. Las reseñas sueltas conservando el perfil se eliminan mediante la denuncia o un abogado." },
+    { q: "¿Qué elimina exactamente RapidRemove: reseñas individuales o el perfil?", a: "Ambas cosas, según el caso. Para una reseña injusta concreta existe la [eliminación de reseñas individuales](https://www.rapid-remove.com/es/eliminar-una-resena/) – 179 € por reseña eliminada, se paga solo tras el éxito (máx. 4 semanas, con texto). Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas es la vía más completa." },
     { q: "¿Es legal la eliminación técnica del perfil?", a: "Sí. Trabaja dentro de las directrices de Google y no requiere abogado ni contacto directo con Google. Los proveedores serios trabajan con honorario de éxito y garantía." },
     { q: "¿Qué es el efecto Streisand?", a: "Cuando las acciones legales provocan al autor y dan lugar a más reseñas negativas. La eliminación técnica evita ese riesgo porque trabaja sin confrontación." },
     { q: "¿Son delito las reseñas negativas de Google?", a: "Una opinión honesta no. Las afirmaciones de hechos deliberadamente falsas, los insultos o las descalificaciones sí pueden tener consecuencias legales. Esto no es asesoramiento jurídico." },

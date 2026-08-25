@@ -48,7 +48,7 @@ const article = {
       "**Compatible SEO :** site et classement préservés ; une fiche neuve et propre est en option.",
       "**Discrétion :** aucune correspondance, aucun risque Streisand.",
     ] },
-    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Qui veut supprimer un avis et conserver la fiche utilise le signalement ou la voie de l'avocat." },
+    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Qui veut supprimer un avis et conserver la fiche utilise le signalement ou la voie de l'avocat. Depuis peu, RapidRemove propose aussi exactement cela : [suppression d'avis isolés](https://www.rapid-remove.com/fr/supprimer-un-avis/) – payée par avis réellement supprimé, uniquement en cas de succès." },
 
     { t: "h2", id: "vergleich", text: "Avocat vs. technique : la comparaison directe", toc: "Comparaison directe" },
     { t: "table", rrCol: 1, head: ["Critère", "RapidRemove (suppression de fiche)", "Avocat (voie juridique)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Puis-je faire supprimer un avis Google négatif ?", a: "Oui, s'il enfreint les règles de Google (p. ex. faux, absence de lien, insulte). Les opinions purement factuelles sur des expériences réelles sont difficiles à supprimer." },
     { q: "Combien coûte un avocat pour supprimer un avis Google ?", a: "Les cabinets spécialisés sont souvent autour de 100 à 159 € par avis ; en cas de procès, des frais de justice peuvent s'ajouter. On paie en général l'effort, pas un résultat garanti." },
-    { q: "Que supprime exactement RapidRemove : des avis isolés ou la fiche ?", a: "RapidRemove supprime toute la fiche d'établissement Google ; tous les avis disparaissent avec. Les avis isolés en conservant la fiche se suppriment via le signalement ou un avocat." },
+    { q: "Que supprime exactement RapidRemove : des avis isolés ou la fiche ?", a: "Les deux, selon le cas. Pour un avis injuste précis, il existe la [suppression d'avis isolés](https://www.rapid-remove.com/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès (4 semaines max., avec texte). Si la fiche est endommagée dans son ensemble, supprimer la fiche complète avec tous ses avis est la voie la plus complète." },
     { q: "La suppression technique de la fiche est-elle légale ?", a: "Oui. Elle travaille dans les règles de Google et ne nécessite ni avocat ni contact direct avec Google. Les prestataires sérieux travaillent avec des honoraires de résultat et une garantie." },
     { q: "Qu'est-ce que l'effet Streisand ?", a: "Lorsque les démarches juridiques provoquent l'auteur et entraînent d'autres avis négatifs. La suppression technique évite ce risque car elle travaille sans confrontation." },
     { q: "Les avis Google négatifs sont-ils punissables ?", a: "Une opinion honnête, non. Les allégations de faits délibérément fausses, les insultes ou les propos diffamatoires peuvent avoir des conséquences juridiques. Ceci n'est pas un conseil juridique." },

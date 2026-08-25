@@ -67,7 +67,7 @@ const article = {
     { q: "Posso remover uma avaliação do Google gratuitamente?", a: "As suas, sim. As de terceiros pode denunciá-las gratuitamente, mas que o Google as remova não é garantido. Para uma remoção segura existem serviços pagos com comissão de sucesso." },
     { q: "Como vejo se a minha avaliação denunciada foi removida?", a: "A avaliação desaparece do perfil e a média e o número de avaliações mudam. Não é mostrado um estado explícito; uma captura de ecrã anterior ajuda a comparar." },
     { q: "Quanto custa remover uma avaliação do Google?", a: "De grátis (denúncia própria) a 19–49 € (serviços baratos) ou 100–159 € por avaliação com um advogado. Na remoção do perfil vale um preço fixo, a pagar após sucesso." },
-    { q: "A RapidRemove remove avaliações isoladas?", a: "Não. A RapidRemove remove todo o perfil de empresa; todas as avaliações desaparecem com ele. Uma avaliação isolada mantendo o perfil remove-se pela denúncia ou por um advogado." },
+    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](https://www.rapid-remove.com/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; a avaliação não pode ter mais de 4 semanas e tem de conter texto. Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
   ],
   related: [
     { label: "Remover avaliações do Google: custos e métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

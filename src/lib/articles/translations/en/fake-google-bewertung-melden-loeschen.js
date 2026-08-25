@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Getting rid of fake reviews – the definitive solution", toc: "The definitive fix" },
-    { t: "p", text: "With a **coordinated fake attack** involving many reviews, reporting individual ones is a hopeless game of cat and mouse. That's why RapidRemove takes a different approach: **we don't delete individual reviews, we remove the entire Google Business Profile.** All fake reviews disappear in the course of the removal – you start with a clean slate." },
+    { t: "p", text: "With a **coordinated fake attack** involving many reviews, reporting individual ones is a hopeless game of cat and mouse. That's why RapidRemove takes a different approach: **with this method we don't go review by review – we remove the entire Google Business Profile.** All fake reviews disappear in the course of the removal – you start with a clean slate." },
     { t: "table", rrCol: 3, head: ["Criterion", "Report yourself", "Lawyer", "RapidRemove (profile removal)"], rows: [
       ["What is removed", "single review", "single review", "whole profile + all reviews"],
       ["Speed", "uncertain", "3 – 9 months", "24 – 48 h"],
@@ -71,7 +71,7 @@ const article = {
     { q: "How do I report a fake review to Google?", a: "Via the three-dot menu next to the review, click “Report review”, select the violation and submit. You can track the status via the Google tool for managing reviews." },
     { q: "Are fake reviews punishable?", a: "Deliberately false reviews can have civil, competition-law and partly criminal consequences. In practice the author is often anonymous, which is why removing the review is usually the faster lever than a complaint. This is not legal advice." },
     { q: "What can I do if Google doesn't remove the fake review?", a: "If the report is rejected, the legal route remains for a single review. If the profile is damaged by many fakes, profile removal via RapidRemove is the most reliable way: the entire profile is removed, all reviews disappear with it." },
-    { q: "Does RapidRemove delete individual fake reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. To remove a single review while keeping the profile, use reporting or a lawyer." },
+    { q: "Does RapidRemove delete individual fake reviews?", a: "Yes, meanwhile it does: [remove a single Google review](https://www.rapid-remove.com/en/remove-single-reviews/) – $179 per removed review, paid only on success; the review must be no older than 4 weeks and contain text. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
     { q: "How fast are the fake reviews gone?", a: "Via profile removal, results are often possible within 24 to 48 hours – far faster than the months-long legal route." },
   ],
   related: [

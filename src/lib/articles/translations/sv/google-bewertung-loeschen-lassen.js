@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "Nackdelarna: förfarandet är **långdraget** (ofta veckor till månader), faktureras **per recension** och bär risken för **Streisandeffekten** – juridiska steg kan provocera fram nya »hämndrecensioner». Vid många recensioner eller en i grunden skadad profil blir advokatvägen snabbt dyr och långsam." },
 
     { t: "h2", id: "m3", text: "Metod 3: ta bort hela profilen (alla recensioner försvinner med den)", toc: "Metod 3: profilen" },
-    { t: "p", text: "Här ligger den avgörande skillnaden – och RapidRemoves angreppssätt: **vi tar inte bort enskilda recensioner, utan hela Google-företagsprofilen.** Vid den borttagningen försvinner **alla** recensioner automatiskt med. I stället för att tvista stjärna för stjärna – och vänta på nästa dåliga recension – får du ett **rent blad**: en verklig nystart." },
+    { t: "p", text: "Här ligger den avgörande skillnaden – och RapidRemoves angreppssätt: **med den här metoden går vi inte recension för recension – vi tar bort hela Google-företagsprofilen.** Vid den borttagningen försvinner **alla** recensioner automatiskt med. I stället för att tvista stjärna för stjärna – och vänta på nästa dåliga recension – får du ett **rent blad**: en verklig nystart." },
     { t: "p", text: "Det är rätt lösning när en profil är varaktigt skadad av många eller orättvisa recensioner. Tekniskt fungerar metoden inom Googles logik och angriper problemet vid roten: själva profilen." },
     { t: "p", text: "Fördelarna i korthet:" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**SEO-vänligt:** din webbplats och ranking behålls",
       "**Valfri nystart:** efter borttagningen kan en ren, ny profil byggas upp",
     ] },
-    { t: "warn", title: "Viktigt", text: "Den här vägen tar bort **hela profilen**, inte en enskild recension. Vill du bara ta bort en recension och behålla profilen behöver du rapporteringen eller advokatvägen." },
+    { t: "warn", title: "Viktigt", text: "Den här vägen tar bort **hela profilen**, inte en enskild recension. Vill du bara ta bort en recension och behålla profilen behöver du rapporteringen eller advokatvägen. Sedan nyligen erbjuder RapidRemove även precis det: [borttagning av enskilda recensioner](https://www.rapid-remove.com/sv/ta-bort-omdome/) – du betalar per faktiskt borttagen recension, först vid framgång." },
 
     { t: "h2", id: "kosten", text: "Vad kostar det att ta bort en Google-recension?", toc: "Vad det kostar" },
     { t: "p", text: "Priserna varierar kraftigt beroende på typ av leverantör:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Nej. RapidRemove tar bort hela Google-företagsprofilen; alla recensioner försvinner med den. Att ta bort en enskild recension och behålla profilen går via rapportering till Google eller en advokat, inte via profilborttagning." },
+    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja, numera: [ta bort en enskild Google-recension](https://www.rapid-remove.com/sv/ta-bort-omdome/) – 179 € per borttagen recension, betalas först vid framgång; recensionen får vara högst 4 veckor gammal och måste innehålla text. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
     { q: "Kan jag själv ta bort en Google-recension?", a: "Som företag kan du bara rapportera någon annans recension, inte ta bort den. Om Google tar bort den avgör företaget – ofta nekande. Dina egna recensioner kan du ta bort när som helst." },
     { q: "Hur lång tid tar det att ta bort en Google-recension?", a: "Via rapporteringsfunktionen dagar till veckor med osäkert utfall, via en advokat ofta flera månader, via teknisk borttagning oftast 24 till 48 timmar." },
     { q: "Vad kostar det att ta bort en negativ Google-recension?", a: "Beroende på metod mellan ca 20 € (billiga, osäkra tjänster) och 159 € per recension (advokat). Vid teknisk borttagning via RapidRemove betalar du ett fast pris och först efter lyckad borttagning." },

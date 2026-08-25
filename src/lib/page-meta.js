@@ -41,7 +41,18 @@ const PAGE_DESC = {
   seo: { en: "Get found on Google by the right customers: local, organic and measurable SEO with transparent monthly reporting — free SEO analysis, no lock-in contracts." },
   kontakt: { en: "Talk to the RapidRemove team about removals, ongoing cases or partnerships — personal reply, usually within 24 hours." },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
-  reviews: { en: "Have a single unfair or fake Google review removed — $179 / 179 € per removed review, charged only on success. Honest assessment first, nothing upfront." },
+  reviews: {
+    en: "Have a single unfair or fake Google review removed — $179 per removed review, charged only on success. Honest assessment first, nothing upfront.",
+    es: "Elimina una reseña de Google injusta o falsa — 179 € por reseña eliminada, se cobra solo tras el éxito. Primero una valoración honesta, nada por adelantado.",
+    fr: "Faites supprimer un avis Google injuste ou faux — 179 € par avis supprimé, débité uniquement en cas de succès. D'abord une évaluation honnête, rien d'avance.",
+    it: "Fai rimuovere una recensione Google ingiusta o falsa — 179 € per recensione rimossa, addebito solo in caso di successo. Prima una valutazione onesta, niente in anticipo.",
+    nl: "Laat één oneerlijke of valse Google-review verwijderen — € 179 per verwijderde review, betaald alleen bij succes. Eerst een eerlijke inschatting, niets vooraf.",
+    pt: "Remova uma avaliação do Google injusta ou falsa — 179 € por avaliação removida, cobrado só em caso de sucesso. Primeiro uma análise honesta, nada adiantado.",
+    ja: "不当な、または虚偽のGoogle口コミを1件から削除 — 削除1件につき$179、お支払いは成功時のみ。まず正直な見立てから、前払いなし。",
+    sv: "Få ett orättvist eller falskt Google-omdöme borttaget — 179 € per borttaget omdöme, betalas först vid framgång. Först en ärlig bedömning, inget i förskott.",
+    da: "Få en urimelig eller falsk Google-anmeldelse fjernet — 179 € pr. fjernet anmeldelse, betales først ved succes. Først en ærlig vurdering, intet på forhånd.",
+    no: "Få en urettferdig eller falsk Google-omtale fjernet — 179 € per fjernet omtale, betales først ved suksess. Først en ærlig vurdering, ingenting på forskudd.",
+  },
 };
 
 export function pageMeta(key, lang) {

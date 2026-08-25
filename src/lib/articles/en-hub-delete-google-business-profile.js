@@ -64,7 +64,7 @@ const article = {
       "**SEO-friendly:** your website and rankings stay intact; a clean new profile is optional",
       "**Discreet:** no correspondence with reviewers, no Streisand risk",
     ] },
-    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one review gone while keeping the profile, use reporting or the legal route instead." },
+    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one review gone while keeping the profile, use reporting or the legal route instead. Since recently, RapidRemove offers exactly that as well: [removal of individual reviews](https://www.rapid-remove.com/en/remove-single-reviews/) – you pay per review actually removed, only on success." },
 
     { t: "h2", id: "single-vs-profile", text: "Single reviews vs. the whole profile", toc: "Reviews vs. profile" },
     { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear a single unfair review while keeping the profile, see our guide on how to [have a Google review removed](https://www.rapid-remove.com/en/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },

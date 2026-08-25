@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Liberarsi delle recensioni false: la soluzione definitiva", toc: "Soluzione definitiva" },
-    { t: "p", text: "Di fronte a un **attacco coordinato di recensioni false** con molte recensioni, segnalarle una a una è una corsa senza fine. Per questo RapidRemove segue un'altra strada: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Tutte le recensioni false spariscono nel corso della rimozione: riparti con una nuova partenza." },
+    { t: "p", text: "Di fronte a un **attacco coordinato di recensioni false** con molte recensioni, segnalarle una a una è una corsa senza fine. Per questo RapidRemove segue un'altra strada: **con questo metodo non andiamo recensione per recensione: rimuoviamo l'intero profilo dell'attività su Google.** Tutte le recensioni false spariscono nel corso della rimozione: riparti con una nuova partenza." },
     { t: "table", rrCol: 3, head: ["Criterio", "Segnalare da soli", "Avvocato", "RapidRemove (rimozione profilo)"], rows: [
       ["Cosa viene rimosso", "singola recensione", "singola recensione", "tutto il profilo + tutte le recensioni"],
       ["Velocità", "incerto", "3 – 9 mesi", "24 – 48 h"],
@@ -71,7 +71,7 @@ const article = {
     { q: "Come segnalo una recensione falsa a Google?", a: "Tramite il menu a tre puntini accanto alla recensione, premi «Segnala recensione», seleziona la violazione e invia. Puoi seguire lo stato con lo strumento Google per la gestione delle recensioni." },
     { q: "Le recensioni false sono perseguibili?", a: "Le recensioni deliberatamente false possono avere conseguenze civili, di concorrenza e in parte penali. Nella pratica l'autore è spesso anonimo, perciò rimuovere la recensione è di solito la leva più rapida di una denuncia. Questa non è consulenza legale." },
     { q: "Cosa posso fare se Google non rimuove la recensione falsa?", a: "Se la segnalazione viene respinta, resta la via dell'avvocato per una singola recensione. Se il profilo è danneggiato da molte false, la rimozione del profilo con RapidRemove è la più affidabile: l'intero profilo viene rimosso, tutte le recensioni spariscono con esso." },
-    { q: "RapidRemove elimina singole recensioni false?", a: "No. RapidRemove rimuove l'intero profilo dell'attività; tutte le recensioni spariscono con esso. Per rimuovere una singola recensione mantenendo il profilo, sono competenti la segnalazione o un avvocato." },
+    { q: "RapidRemove elimina singole recensioni false?", a: "Sì, ora sì: [rimuovere una recensione Google](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – 179 € per recensione rimossa, si paga solo in caso di successo; la recensione non deve avere più di 4 settimane e deve contenere testo. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
     { q: "In quanto tempo si eliminano le recensioni false?", a: "Tramite la rimozione del profilo, spesso in 24–48 ore, molto più rapidamente della via legale di diversi mesi." },
   ],
   related: [

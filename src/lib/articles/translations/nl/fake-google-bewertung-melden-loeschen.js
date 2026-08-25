@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Valse reviews kwijtraken – de definitieve oplossing", toc: "Definitieve oplossing" },
-    { t: "p", text: "Bij een **gecoördineerde valse aanval** met veel reviews is het rapporteren van losse reviews een kansloos kat-en-muisspel. RapidRemove kiest daarom een andere weg: **wij verwijderen geen losse reviews, maar het hele Google-bedrijfsprofiel.** Alle valse reviews verdwijnen bij de verwijdering mee – u start met een schone lei." },
+    { t: "p", text: "Bij een **gecoördineerde valse aanval** met veel reviews is het rapporteren van losse reviews een kansloos kat-en-muisspel. RapidRemove kiest daarom een andere weg: **bij deze methode gaan we niet review voor review te werk, maar verwijderen we het hele Google-bedrijfsprofiel.** Alle valse reviews verdwijnen bij de verwijdering mee – u start met een schone lei." },
     { t: "table", rrCol: 3, head: ["Criterium", "Zelf rapporteren", "Advocaat", "RapidRemove (profielverwijdering)"], rows: [
       ["Wat wordt verwijderd", "losse review", "losse review", "heel profiel + alle reviews"],
       ["Snelheid", "onzeker", "3 – 9 maanden", "24 – 48 uur"],
@@ -71,7 +71,7 @@ const article = {
     { q: "Hoe rapporteer ik een valse review bij Google?", a: "Klik via het menu met drie puntjes naast de review op „Review rapporteren”, kies de overtreding en verstuur de melding. De status volgt u via de Google-tool voor het beheer van reviews." },
     { q: "Zijn valse reviews strafbaar?", a: "Bewust valse reviews kunnen civiel-, mededingings- en deels strafrechtelijke gevolgen hebben. In de praktijk is de auteur echter vaak anoniem, waardoor verwijdering van de review meestal de snellere hefboom is dan een aangifte. Dit is geen juridisch advies." },
     { q: "Wat kan ik doen als Google de valse review niet verwijdert?", a: "Als de melding wordt afgewezen, blijft voor een losse review de advocatenweg. Is het profiel door veel valse reviews beschadigd, dan is profielverwijdering via RapidRemove de betrouwbaarste weg: het hele profiel wordt verwijderd, alle reviews verdwijnen mee." },
-    { q: "Verwijdert RapidRemove losse valse reviews?", a: "Nee. RapidRemove verwijdert het hele bedrijfsprofiel; alle reviews verdwijnen daarbij mee. Voor het verwijderen van een losse review met behoud van het profiel zijn rapporteren of een advocaat bevoegd." },
+    { q: "Verwijdert RapidRemove losse valse reviews?", a: "Ja, inmiddels wel: [één Google-review verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – € 179 per verwijderde review, betalen alleen bij succes; de review mag maximaal 4 weken oud zijn en moet tekst bevatten. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
     { q: "Hoe snel ben je de valse reviews kwijt?", a: "Via profielverwijdering zijn resultaten vaak binnen 24 tot 48 uur mogelijk – aanzienlijk sneller dan de juridische weg van meerdere maanden." },
   ],
   related: [

@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "Gli svantaggi: la procedura è **lunga** (spesso settimane o mesi), si fattura **per recensione** e comporta il rischio dell'**effetto Streisand**: le azioni legali possono provocare nuove «recensioni di vendetta». Con molte recensioni o un profilo gravemente danneggiato, la via dell'avvocato diventa presto costosa e lenta." },
 
     { t: "h2", id: "m3", text: "Metodo 3: far eliminare l'intero profilo (tutte le recensioni spariscono con esso)", toc: "Metodo 3: il profilo" },
-    { t: "p", text: "Qui sta la differenza decisiva, e l'approccio di RapidRemove: **non eliminiamo singole recensioni, ma l'intero profilo dell'attività su Google.** Nel corso di questa rimozione, **tutte** le recensioni spariscono automaticamente con esso. Invece di litigare stella per stella – e aspettare la prossima recensione negativa – ottieni una **nuova partenza**: un vero nuovo inizio." },
+    { t: "p", text: "Qui sta la differenza decisiva, e l'approccio di RapidRemove: **con questo metodo non andiamo recensione per recensione: rimuoviamo l'intero profilo dell'attività su Google.** Nel corso di questa rimozione, **tutte** le recensioni spariscono automaticamente con esso. Invece di litigare stella per stella – e aspettare la prossima recensione negativa – ottieni una **nuova partenza**: un vero nuovo inizio." },
     { t: "p", text: "È la soluzione giusta quando un profilo è danneggiato in modo permanente da molte recensioni o da recensioni ingiustificate. Tecnicamente il metodo lavora dentro la logica di Google e affronta il problema alla radice: il profilo stesso." },
     { t: "p", text: "I vantaggi in sintesi:" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**Compatibile con la SEO:** il tuo sito e il tuo posizionamento restano",
       "**Nuovo inizio opzionale:** dopo la rimozione si può creare un profilo nuovo e pulito",
     ] },
-    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Se vuoi solo eliminare una recensione e mantenere il profilo, ti serve la segnalazione o la via dell'avvocato." },
+    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Se vuoi solo eliminare una recensione e mantenere il profilo, ti serve la segnalazione o la via dell'avvocato. Da poco RapidRemove offre anche esattamente questo: [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – si paga per recensione davvero rimossa, solo in caso di successo." },
 
     { t: "h2", id: "kosten", text: "Quanto costa far eliminare una recensione Google?", toc: "Quanto costa" },
     { t: "p", text: "I prezzi variano molto a seconda del tipo di fornitore:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "RapidRemove elimina singole recensioni?", a: "No. RapidRemove rimuove l'intero profilo dell'attività su Google; tutte le recensioni spariscono con esso. Eliminare una singola recensione mantenendo il profilo è possibile tramite la segnalazione a Google o un avvocato, non tramite la rimozione del profilo." },
+    { q: "RapidRemove elimina singole recensioni?", a: "Sì, ora sì: [rimuovere una recensione Google](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – 179 € per recensione rimossa, si paga solo in caso di successo; la recensione non deve avere più di 4 settimane e deve contenere testo. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
     { q: "Posso eliminare da solo una recensione Google?", a: "Come azienda puoi solo segnalare una recensione altrui, non eliminarla tu stesso. Che Google la rimuova lo decide l'azienda, spesso in senso negativo. Le tue recensioni puoi cancellarle in qualsiasi momento." },
     { q: "Quanto tempo serve per eliminare una recensione Google?", a: "Con la funzione di segnalazione, da giorni a settimane con esito incerto; con un avvocato, spesso diversi mesi; con la rimozione tecnica, di solito 24–48 ore." },
     { q: "Quanto costa eliminare una recensione Google negativa?", a: "A seconda del metodo, tra circa 20 € (servizi economici, incerti) e 159 € a recensione (avvocato). Con la rimozione tecnica di RapidRemove paghi un prezzo fisso e solo dopo la rimozione riuscita." },

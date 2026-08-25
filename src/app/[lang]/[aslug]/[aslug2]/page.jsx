@@ -8,6 +8,7 @@ import {
   buildArticleJsonLd, relatedHubLinks, articleUrl, dateFor,
 } from "@/lib/articles/catalog";
 import { authorFor, roleFor, authorPathFor } from "@/lib/authors";
+import { withReviewsPromo } from "@/lib/articles/reviews-promo";
 import { HUB_SLUG, hubHreflang, hubLangUrls } from "@/lib/articles/hubs";
 import { HUBS } from "@/lib/articles/hub-data";
 
@@ -68,7 +69,8 @@ export default function Page({ params }) {
   const data = {
     meta: { ...r.t.meta, date: dateFor(r.deSlug), author: author.name, authorRole: roleFor(author, lang), authorHref: authorPathFor(author, lang) },
     dek: r.t.dek,
-    blocks: r.t.blocks,
+    // Bewertungs-Ratgeber (nicht de): Service-Hinweis aufs neue Produkt einfügen.
+    blocks: withReviewsPromo(r.deSlug, lang, r.t.blocks),
     faq: r.t.faq,
     category: r.t.category || r.de.category,
     iconKey: r.de.iconKey,

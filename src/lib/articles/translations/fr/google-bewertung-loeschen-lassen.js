@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "Les inconvénients : la procédure est **longue** (souvent des semaines à des mois), facturée **par avis** et comporte le risque de **l'effet Streisand** – les démarches juridiques peuvent provoquer de nouveaux « avis de vengeance ». Avec de nombreux avis ou une fiche fondamentalement endommagée, la voie de l'avocat devient vite coûteuse et lente." },
 
     { t: "h2", id: "m3", text: "Méthode 3 : faire supprimer toute la fiche (tous les avis disparaissent avec)", toc: "Méthode 3 : la fiche" },
-    { t: "p", text: "C'est là la différence décisive – et l'approche de RapidRemove : **nous ne supprimons pas des avis isolés, mais toute la fiche d'établissement Google.** Au cours de cette suppression, **tous** les avis disparaissent automatiquement avec elle. Au lieu de plaider étoile par étoile – et d'attendre le prochain mauvais avis –, vous obtenez une **page blanche** : un vrai nouveau départ." },
+    { t: "p", text: "C'est là la différence décisive – et l'approche de RapidRemove : **avec cette méthode, nous ne procédons pas avis par avis : nous supprimons toute la fiche d'établissement Google.** Au cours de cette suppression, **tous** les avis disparaissent automatiquement avec elle. Au lieu de plaider étoile par étoile – et d'attendre le prochain mauvais avis –, vous obtenez une **page blanche** : un vrai nouveau départ." },
     { t: "p", text: "C'est la bonne solution lorsqu'une fiche est durablement endommagée par de nombreux avis ou des avis injustifiés. Techniquement, la méthode travaille dans la logique de Google et s'attaque à la racine : la fiche elle-même." },
     { t: "p", text: "Les avantages en un coup d'œil :" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**Compatible SEO :** votre site et votre classement sont préservés",
       "**Nouveau départ en option :** après la suppression, une fiche neuve et propre peut être créée",
     ] },
-    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Si vous voulez seulement supprimer un avis et conserver votre fiche, il vous faut le signalement ou la voie de l'avocat." },
+    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Si vous voulez seulement supprimer un avis et conserver votre fiche, il vous faut le signalement ou la voie de l'avocat. Depuis peu, RapidRemove propose aussi exactement cela : [suppression d'avis isolés](https://www.rapid-remove.com/fr/supprimer-un-avis/) – payée par avis réellement supprimé, uniquement en cas de succès." },
 
     { t: "h2", id: "kosten", text: "Combien coûte la suppression d'un avis Google ?", toc: "Combien ça coûte" },
     { t: "p", text: "Les prix varient fortement selon le type de prestataire :" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Non. RapidRemove supprime toute la fiche d'établissement Google ; tous les avis disparaissent avec elle. Supprimer un avis isolé et conserver la fiche est possible via le signalement à Google ou un avocat, pas via la suppression de la fiche." },
+    { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Oui, désormais : [supprimer un avis Google](https://www.rapid-remove.com/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès ; l'avis doit dater de 4 semaines au maximum et contenir du texte. Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
     { q: "Puis-je supprimer moi-même un avis Google ?", a: "En tant qu'entreprise, vous pouvez seulement signaler un avis tiers, pas le supprimer vous-même. Que Google le retire dépend de l'entreprise – souvent par la négative. Vos propres avis, vous pouvez les supprimer à tout moment." },
     { q: "Combien de temps prend la suppression d'un avis Google ?", a: "Via la fonction de signalement, de quelques jours à quelques semaines avec une issue incertaine ; via un avocat, souvent plusieurs mois ; via une suppression technique, généralement 24 à 48 heures." },
     { q: "Combien coûte la suppression d'un avis Google négatif ?", a: "Selon la méthode, entre environ 20 € (services bon marché, incertains) et 159 € par avis (avocat). Avec la suppression technique via RapidRemove, vous payez un prix fixe et seulement après une suppression réussie." },
