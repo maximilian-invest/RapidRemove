@@ -127,7 +127,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: AuftragsbestaetigungReviews,
     subject: auftragsbestaetigungReviewsSubject,
-    sample: { lang: "en", name: "Alex", urls: ["https://maps.app.goo.gl/example1", "https://maps.app.goo.gl/example2"], per: "$179", total: "$358", orderId: "RR-123456" },
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", total: "$358", orderId: "RR-123456" },
     texts: auftragsbestaetigungReviewsTexts,
   },
   "loeschbestaetigung-reviews": {
@@ -135,7 +135,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: LoeschbestaetigungReviews,
     subject: loeschbestaetigungReviewsSubject,
-    sample: { lang: "en", name: "Alex", removedUrls: ["https://maps.app.goo.gl/example1"], submittedCount: 2, per: "$179", total: "$179", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
+    sample: { lang: "en", name: "Alex", removedItems: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], submittedCount: 3, per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
     texts: loeschbestaetigungReviewsTexts,
   },
   "paypal-zahlung-bestaetigt": {

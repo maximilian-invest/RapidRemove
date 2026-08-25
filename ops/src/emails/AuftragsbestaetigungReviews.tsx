@@ -6,10 +6,16 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
 
+/** Eine eingereichte Bewertung: Teilen-Link ODER Name + Bewertungstext
+   (Wizard-Alternative, wenn der Kunde den Link nicht findet). */
+export interface ReviewRef { url?: string; name?: string; text?: string }
+
 export interface AuftragsbestaetigungReviewsProps {
   lang?: MailLang;
   name?: string;
-  /** Links der zu löschenden Bewertungen (wie im Wizard eingereicht). */
+  /** Die zu löschenden Bewertungen (wie im Wizard eingereicht). */
+  items?: ReviewRef[];
+  /** Veraltet: nur Links (ältere Bestellungen) — wird zu items normalisiert. */
   urls?: string[];
   /** Formatierter Stückpreis, z. B. "$179" / "179 €". */
   per?: string;
@@ -206,21 +212,23 @@ const fill = (s: string, per: string) => (s || "").replace(/\{per\}/g, per || ""
 
 export function subject(p: AuftragsbestaetigungReviewsProps): string {
   const t = T[p.lang || "en"] || T.en;
-  return t.subject((p.urls || []).length || 1);
+  return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", urls = [], per = "", total = "", orderId = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", orderId = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
-  const n = urls.length || 1;
+  const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
+  const n = list.length || 1;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
       <P>{t.p1(n)}{orderId ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
 
       <P><strong>{t.listH}</strong></P>
-      <Bullets items={urls.map((u, i) => (
-        <a key={i} href={u} style={{ color: brand.accent, wordBreak: "break-all" }}>{u}</a>
-      ))} />
+      <Bullets items={list.map((it, i) => it.url
+        ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
+        : <span key={i}><strong>{it.name}</strong> — “{it.text}”</span>
+      )} />
 
       <NoteBox>
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.termsH}</span><br />

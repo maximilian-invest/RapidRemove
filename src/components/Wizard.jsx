@@ -1366,7 +1366,8 @@ const REVIEW_COPY = {
     rule2: "Die Bewertung muss Text enthalten — reine Sternebewertungen ohne Text lassen sich so nicht entfernen.",
     urlLabel: "Link zur Bewertung", addUrl: "Weitere Bewertung hinzufügen",
     per: "je Bewertung", total: "Gesamt", btn: "Weiter zum Checkout",
-    need: "Bitte fügen Sie mindestens einen Bewertungs-Link ein.",
+    need: 'Bitte mindestens eine Bewertung angeben — per Link oder mit Name + Bewertungstext.',
+    altBtn: 'Link nicht gefunden? Name + Bewertungstext angeben', altName: 'Name des Bewerters', altText: 'Text der Bewertung',
     service: "Einzelne Bewertungen löschen",
     payH: 'Bezahlung — zu Ihren Gunsten', pay1: 'Sie zahlen nur für tatsächlich gelöschte Bewertungen — {per} je Löschung. Wird von 5 nur eine gelöscht, zahlen Sie nur diese eine.', pay2: 'Fällig am Tag der Löschung — Sie erhalten am selben Tag die Löschbestätigung mit der Rechnung.',
   },
@@ -1380,7 +1381,8 @@ const REVIEW_COPY = {
     rule2: "The review must contain text — star-only ratings cannot be removed this way.",
     urlLabel: "Link to the review", addUrl: "Add another review",
     per: "per review", total: "Total", btn: "Continue to checkout",
-    need: "Please paste at least one review link.",
+    need: 'Please add at least one review — via link, or reviewer name + review text.',
+    altBtn: "Can't find the link? Enter reviewer name + review text", altName: 'Reviewer name', altText: 'Review text',
     service: "Removal of individual reviews",
     payH: 'Billing — in your favour', pay1: 'You only pay for reviews we actually remove — {per} each. If we remove just one out of five, you pay for that one only.', pay2: "Due on the day of removal — you'll receive the confirmation with the invoice the same day.",
   },
@@ -1394,7 +1396,8 @@ const REVIEW_COPY = {
     rule2: "La reseña debe contener texto: las valoraciones solo con estrellas no se pueden eliminar así.",
     urlLabel: "Enlace a la reseña", addUrl: "Añadir otra reseña",
     per: "por reseña", total: "Total", btn: "Continuar al pago",
-    need: "Pega al menos un enlace de reseña.",
+    need: 'Añade al menos una reseña: por enlace o con nombre + texto.',
+    altBtn: '¿No encuentras el enlace? Indica nombre + texto de la reseña', altName: 'Nombre del autor', altText: 'Texto de la reseña',
     service: "Eliminación de reseñas concretas",
     payH: 'Facturación — a tu favor', pay1: 'Solo pagas por las reseñas realmente eliminadas: {per} por cada una. Si de cinco solo quitamos una, pagas solo esa.', pay2: 'Vence el día de la eliminación: ese mismo día recibes la confirmación con la factura.',
   },
@@ -1408,7 +1411,8 @@ const REVIEW_COPY = {
     rule2: "L'avis doit contenir du texte : les notes composées uniquement d'étoiles ne peuvent pas être retirées ainsi.",
     urlLabel: "Lien vers l'avis", addUrl: "Ajouter un autre avis",
     per: "par avis", total: "Total", btn: "Continuer vers le paiement",
-    need: "Colle au moins un lien d'avis.",
+    need: 'Ajoute au moins un avis — par lien, ou nom + texte.',
+    altBtn: "Lien introuvable ? Indique le nom + le texte de l'avis", altName: "Nom de l'auteur", altText: "Texte de l'avis",
     service: "Suppression d'avis isolés",
     payH: 'Facturation — en ta faveur', pay1: "Tu ne paies que les avis réellement supprimés — {per} par avis. Si nous n'en retirons qu'un sur cinq, tu ne paies que celui-là.", pay2: 'À régler le jour de la suppression — tu reçois la confirmation avec la facture le jour même.',
   },
@@ -1422,7 +1426,8 @@ const REVIEW_COPY = {
     rule2: "La recensione deve contenere testo: le valutazioni con sole stelle non si possono rimuovere così.",
     urlLabel: "Link alla recensione", addUrl: "Aggiungi un'altra recensione",
     per: "per recensione", total: "Totale", btn: "Prosegui al checkout",
-    need: "Incolla almeno un link a una recensione.",
+    need: 'Aggiungi almeno una recensione — con link oppure nome + testo.',
+    altBtn: 'Non trovi il link? Inserisci nome + testo della recensione', altName: 'Nome del recensore', altText: 'Testo della recensione',
     service: "Rimozione di singole recensioni",
     payH: 'Fatturazione — a tuo favore', pay1: 'Paghi solo le recensioni davvero rimosse — {per} ciascuna. Se su cinque ne togliamo una sola, paghi solo quella.', pay2: 'Da saldare il giorno della rimozione — lo stesso giorno ricevi la conferma con la fattura.',
   },
@@ -1436,7 +1441,8 @@ const REVIEW_COPY = {
     rule2: "De review moet tekst bevatten — beoordelingen met alleen sterren kunnen zo niet worden verwijderd.",
     urlLabel: "Link naar de review", addUrl: "Nog een review toevoegen",
     per: "per review", total: "Totaal", btn: "Verder naar afrekenen",
-    need: "Plak minstens één reviewlink.",
+    need: 'Voeg minstens één review toe — via link, of naam + tekst.',
+    altBtn: 'Link niet gevonden? Vul naam + reviewtekst in', altName: 'Naam van de reviewer', altText: 'Tekst van de review',
     service: "Verwijdering van losse reviews",
     payH: 'Facturering — in jouw voordeel', pay1: 'Je betaalt alleen voor daadwerkelijk verwijderde reviews — {per} per stuk. Halen we er van vijf maar één weg, dan betaal je alleen die ene.', pay2: 'Te voldoen op de dag van verwijdering — je ontvangt diezelfde dag de bevestiging met de factuur.',
   },
@@ -1450,7 +1456,8 @@ const REVIEW_COPY = {
     rule2: "A avaliação tem de conter texto — classificações só com estrelas não podem ser removidas assim.",
     urlLabel: "Link para a avaliação", addUrl: "Adicionar outra avaliação",
     per: "por avaliação", total: "Total", btn: "Continuar para o pagamento",
-    need: "Cola pelo menos um link de avaliação.",
+    need: 'Adiciona pelo menos uma avaliação — por link ou nome + texto.',
+    altBtn: 'Não encontras o link? Indica nome + texto da avaliação', altName: 'Nome do autor', altText: 'Texto da avaliação',
     service: "Remoção de avaliações individuais",
     payH: 'Faturação — a teu favor', pay1: 'Só pagas pelas avaliações realmente removidas — {per} cada. Se de cinco removermos só uma, pagas apenas essa.', pay2: 'Vence no dia da remoção — nesse mesmo dia recebes a confirmação com a fatura.',
   },
@@ -1464,7 +1471,8 @@ const REVIEW_COPY = {
     rule2: "口コミに本文があること。星のみの評価はこの方法では削除できません。",
     urlLabel: "口コミのリンク", addUrl: "口コミを追加",
     per: "1件あたり", total: "合計", btn: "お支払いへ進む",
-    need: "口コミのリンクを1件以上貼り付けてください。",
+    need: '少なくとも1件の口コミを追加してください（リンク、または投稿者名と本文）。',
+    altBtn: 'リンクが見つからない場合は投稿者名と本文を入力', altName: '投稿者名', altText: '口コミ本文',
     service: "個別の口コミの削除",
     payH: 'お支払い — お客様に有利な形です', pay1: '実際に削除できた口コミの分だけ、1件{per}をお支払いいただきます。5件中1件のみ削除の場合は、その1件分だけです。', pay2: 'お支払いは削除当日が期日です。同日に削除確認と請求書をお送りします。',
   },
@@ -1478,7 +1486,8 @@ const REVIEW_COPY = {
     rule2: "Omdömet måste innehålla text — betyg med enbart stjärnor kan inte tas bort på detta sätt.",
     urlLabel: "Länk till omdömet", addUrl: "Lägg till ett omdöme till",
     per: "per omdöme", total: "Totalt", btn: "Vidare till kassan",
-    need: "Klistra in minst en omdömeslänk.",
+    need: 'Lägg till minst ett omdöme — via länk eller namn + text.',
+    altBtn: 'Hittar du inte länken? Ange namn + omdömestext', altName: 'Recensentens namn', altText: 'Omdömets text',
     service: "Borttagning av enskilda omdömen",
     payH: 'Fakturering — till din fördel', pay1: 'Du betalar bara för omdömen som faktiskt tas bort — {per} per styck. Tar vi bara bort ett av fem betalar du bara för det.', pay2: 'Förfaller samma dag som borttagningen — samma dag får du bekräftelsen med fakturan.',
   },
@@ -1492,7 +1501,8 @@ const REVIEW_COPY = {
     rule2: "Anmeldelsen skal indeholde tekst — bedømmelser med kun stjerner kan ikke fjernes på denne måde.",
     urlLabel: "Link til anmeldelsen", addUrl: "Tilføj endnu en anmeldelse",
     per: "pr. anmeldelse", total: "I alt", btn: "Videre til kassen",
-    need: "Indsæt mindst ét anmeldelseslink.",
+    need: 'Tilføj mindst én anmeldelse — via link eller navn + tekst.',
+    altBtn: 'Kan du ikke finde linket? Angiv navn + anmeldelsestekst', altName: 'Anmelderens navn', altText: 'Anmeldelsens tekst',
     service: "Fjernelse af enkelte anmeldelser",
     payH: 'Fakturering — til din fordel', pay1: 'Du betaler kun for anmeldelser, der faktisk fjernes — {per} pr. stk. Fjerner vi kun én ud af fem, betaler du kun for den ene.', pay2: 'Forfalder på fjernelsesdagen — samme dag modtager du bekræftelsen med fakturaen.',
   },
@@ -1506,7 +1516,8 @@ const REVIEW_COPY = {
     rule2: "Omtalen må inneholde tekst — vurderinger med bare stjerner kan ikke fjernes på denne måten.",
     urlLabel: "Lenke til omtalen", addUrl: "Legg til en omtale til",
     per: "per omtale", total: "Totalt", btn: "Videre til kassen",
-    need: "Lim inn minst én omtalelenke.",
+    need: 'Legg til minst én omtale — via lenke eller navn + tekst.',
+    altBtn: 'Finner du ikke lenken? Oppgi navn + omtaletekst', altName: 'Anmelderens navn', altText: 'Omtalens tekst',
     service: "Fjerning av enkeltomtaler",
     payH: 'Fakturering — til din fordel', pay1: 'Du betaler kun for omtaler som faktisk fjernes — {per} per stykk. Fjerner vi bare én av fem, betaler du kun for den ene.', pay2: 'Forfaller samme dag som fjerningen — samme dag får du bekreftelsen med fakturaen.',
   },
@@ -1566,7 +1577,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Produkt „Einzelne Bewertungen löschen" (außerhalb DACH). Eigener Zweig:
   // Links sammeln → direkt in den Checkout, ohne Profilsuche/Schutz.
   const [reviewMode, setReviewMode] = React.useState(false);
-  const [reviewUrls, setReviewUrls] = React.useState([""]);
+  // Je Bewertung ENTWEDER der Teilen-Link ODER Name + Bewertungstext (Alternative,
+  // wenn der Kunde den Link nicht findet — beides zusammen identifiziert eindeutig).
+  const [reviewItems, setReviewItems] = React.useState([{ url: "", name: "", text: "", alt: false }]);
   const [reviewErr, setReviewErr] = React.useState("");
   const rv = reviewCopy(t.code);
   // Deep-Link (?start=reviews): Wizard direkt in der Bewertungs-Eingabe öffnen.
@@ -1730,7 +1743,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   /* pricing */
   // Bewertungs-Produkt: Preis = Anzahl gültiger Links × Stückpreis. Kein
   // Express, kein Schutz — beides gibt es nur beim Profil-Produkt.
-  const reviewList = (reviewUrls || []).map((u) => (u || "").trim()).filter(Boolean);
+  const reviewList = (reviewItems || [])
+    .map((it) => ({ url: (it.url || "").trim(), name: (it.name || "").trim(), text: (it.text || "").trim() }))
+    .filter((it) => it.url || (it.name && it.text));
   const reviewCount = reviewList.length;
   const servicePriceNum = reviewMode
     ? reviewCount * num(p.review)
@@ -1906,7 +1921,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       company: contact.company, service: reviewMode ? "reviews" : service, protection: reviewMode ? "" : (protection || ""),
       // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
       // die Bewertungen vor sich, die der Kunde bezahlt hat.
-      ...(reviewMode ? { note: `${rv.service} (${reviewCount} × ${money(lang, p.review)}):\n${reviewList.join("\n")}`, reviewUrls: reviewList, reviewCount } : {}),
+      ...(reviewMode ? {
+        note: `${rv.service} (${reviewCount} × ${money(lang, p.review)}):\n${reviewList.map((it) => it.url || `${it.name} — "${it.text}"`).join("\n")}`,
+        reviewItems: reviewList,
+        reviewUrls: reviewList.map((it) => it.url).filter(Boolean),
+        reviewCount,
+      } : {}),
       express: !!express, expressAmount: express ? num(p.express) : 0,
       profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
@@ -2335,10 +2355,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <div className="ty-order">{w.s6.order} <b>#{orderId}</b></div>
         </div>
 
+        {/* Bewertungs-Produkt: nur die Bestätigung. Fragebogen und Lösch-Pipeline
+           beschreiben das Profil-Produkt und wären hier irreführend. */}
+        {!reviewMode && (
         <div style={{ marginTop: 24 }}>
           <OrderForm orderId={orderId} lang={t.code} />
         </div>
+        )}
 
+        {!reviewMode && (
         <div style={{ marginTop: 30 }}>
           <h4 style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 18, margin: "0 0 6px" }}>{w.s6.pipeTitle}</h4>
           <div className="pipeline">
@@ -2355,13 +2380,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             ))}
           </div>
         </div>
+        )}
 
         <div className="ty-next">
           <h4>{w.s6.nextTitle}</h4>
           <p>{w.s6.nextBody}</p>
         </div>
 
-        {(onOrm || onDeindex) && (
+        {!reviewMode && (onOrm || onDeindex) && (
           <div className="done-cross">
             <div className="dc-head">
               <h4>{conv.doneCrossH}</h4>
@@ -2472,9 +2498,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   /* Bewertungs-Eingabe: Links über die Teilen-Funktion sammeln, „+" für weitere.
      Die beiden Bedingungen stehen als Pflicht-Kasten darüber, nicht im Fußnotentext. */
   function ReviewIntake() {
-    const setUrl = (i) => (e) => { const u = reviewUrls.slice(); u[i] = e.target.value; setReviewUrls(u); setReviewErr(""); };
-    const addUrl = () => setReviewUrls([...reviewUrls, ""]);
-    const rmUrl = (i) => () => setReviewUrls(reviewUrls.filter((_, j) => j !== i));
+    const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
+    const toggleAlt = (i) => () => { const u = reviewItems.slice(); u[i] = { ...u[i], alt: !u[i].alt }; setReviewItems(u); };
+    const addUrl = () => setReviewItems([...reviewItems, { url: "", name: "", text: "", alt: false }]);
+    const rmUrl = (i) => () => setReviewItems(reviewItems.filter((_, j) => j !== i));
     const cont = () => {
       if (!reviewCount) { setReviewErr(rv.need); return; }
       setContact((c) => ({ ...c, company: c.company || "" }));
@@ -2510,10 +2537,26 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <div className="fld full">
             <label>{rv.urlLabel} <span style={{ color: "var(--danger)" }}>*</span></label>
             <div className="url-list">
-              {reviewUrls.map((u, i) => (
-                <div className="url-row" key={i}>
-                  <input value={u} onChange={setUrl(i)} placeholder="https://…" />
-                  {reviewUrls.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
+              {reviewItems.map((it, i) => (
+                <div key={i} style={{ marginBottom: 10 }}>
+                  <div className="url-row">
+                    <input value={it.url} onChange={setIt(i, "url")} placeholder="https://…" disabled={it.alt} style={it.alt ? { opacity: 0.45 } : undefined} />
+                    {reviewItems.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
+                  </div>
+                  {/* Alternative, wenn der Teilen-Link nicht auffindbar ist:
+                      Name + Bewertungstext identifizieren die Bewertung ebenso. */}
+                  <button type="button" onClick={toggleAlt(i)}
+                    style={{ background: "none", border: "none", padding: "4px 2px 0", cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--primary)", fontFamily: "inherit" }}>
+                    {it.alt ? "↩ " : ""}{rv.altBtn}
+                  </button>
+                  {it.alt ? (
+                    <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
+                      <input value={it.name} onChange={setIt(i, "name")} placeholder={rv.altName}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600 }} />
+                      <textarea value={it.text} onChange={setIt(i, "text")} placeholder={rv.altText} rows={3}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600, resize: "vertical" }} />
+                    </div>
+                  ) : null}
                 </div>
               ))}
               <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rv.addUrl}</button>
