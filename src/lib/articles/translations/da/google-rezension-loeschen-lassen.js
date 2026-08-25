@@ -67,7 +67,7 @@ const article = {
     { q: "Kan jeg fjerne en Google-anmeldelse gratis?", a: "Egne anmeldelser ja. Andres anmeldelser kan du anmelde gratis – om Google fjerner dem, er dog ikke garanteret. For en sikker fjernelse findes betaltjenester med succeshonorar." },
     { q: "Hvordan ser jeg, om min anmeldte anmeldelse er blevet fjernet?", a: "Anmeldelsen forsvinder fra profilen, og bedømmelsesgennemsnittet samt antallet af anmeldelser ændrer sig. En udtrykkelig status vises ikke – et skærmbillede på forhånd hjælper ved sammenligningen." },
     { q: "Hvad koster det at fjerne en Google-anmeldelse?", a: "Fra gratis (egen anmeldelse) via 19-49 € (billige tjenester) til 100-159 € pr. anmeldelse hos advokat. Ved profilfjernelse gælder en fast pris, betales efter succes." },
-    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Nej. RapidRemove fjerner hele virksomhedsprofilen; alle anmeldelser forsvinder med. En enkelt anmeldelse med profilen bevaret fjerner man via anmeldelsen eller en advokat." },
+    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja, efterhånden: [fjern en enkelt Google-anmeldelse](https://www.rapid-remove.com/da/fjern-anmeldelse/) – 179 € pr. fjernet anmeldelse, betales først ved succes; anmeldelsen må højst være 4 uger gammel og skal indeholde tekst. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
   ],
   related: [
     { label: "Fjern Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

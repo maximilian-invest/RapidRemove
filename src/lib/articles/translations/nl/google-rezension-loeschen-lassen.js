@@ -58,7 +58,7 @@ const article = {
       "**geen inspanning** voor u, geen Streisand-risico",
       "**optionele nieuwe start** met een schoon profiel",
     ] },
-    { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **hele profiel**, niet één review. Wie alleen één review wil verwijderen en het profiel wil behouden, gebruikt rapporteren of de advocatenweg." },
+    { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **hele profiel**, niet één review. Wie alleen één review wil verwijderen en het profiel wil behouden, gebruikt rapporteren of de advocatenweg. Sinds kort biedt RapidRemove precies dat ook aan: [losse reviews verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – u betaalt per daadwerkelijk verwijderde review, alleen bij succes." },
     { t: "cta", title: "Profiel blijvend beschadigd? Controleer gratis de verwijderbaarheid.", text: "Binnen seconden ziet u of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
@@ -67,7 +67,7 @@ const article = {
     { q: "Kan ik een Google review gratis laten verwijderen?", a: "Eigen reviews ja. Andermans reviews kunt u gratis rapporteren – of Google ze verwijdert, is echter niet gegarandeerd. Voor een zekere verwijdering bestaan betaalde diensten met succesfee." },
     { q: "Hoe zie ik of mijn gerapporteerde review is verwijderd?", a: "De review verdwijnt uit het profiel en het beoordelingsgemiddelde en het aantal reviews veranderen. Een expliciete status wordt niet getoond – een screenshot vooraf helpt bij het vergelijken." },
     { q: "Wat kost het verwijderen van een Google review?", a: "Van gratis (zelf rapporteren) via 19–49 € (goedkope diensten) tot 100–159 € per review bij de advocaat. Bij profielverwijdering geldt een vaste prijs, betaalbaar na succes." },
-    { q: "Verwijdert RapidRemove losse reviews?", a: "Nee. RapidRemove verwijdert het hele bedrijfsprofiel; alle reviews verdwijnen daarbij mee. Een losse review met behoud van het profiel verwijdert u via rapporteren of een advocaat." },
+    { q: "Verwijdert RapidRemove losse reviews?", a: "Ja, inmiddels wel: [één Google-review verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – € 179 per verwijderde review, betalen alleen bij succes; de review mag maximaal 4 weken oud zijn en moet tekst bevatten. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
   ],
   related: [
     { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

@@ -58,7 +58,7 @@ const article = {
       "**nessun impegno** per te, nessun rischio Streisand",
       "**nuovo inizio opzionale** con un profilo pulito",
     ] },
-    { t: "warn", title: "Importante", text: "La rimozione del profilo elimina il **profilo completo**, non una singola recensione. Chi vuole solo eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato." },
+    { t: "warn", title: "Importante", text: "La rimozione del profilo elimina il **profilo completo**, non una singola recensione. Chi vuole solo eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato. Da poco RapidRemove offre anche esattamente questo: [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – si paga per recensione davvero rimossa, solo in caso di successo." },
     { t: "cta", title: "Profilo danneggiato in modo permanente? Verifica gratis la fattibilità.", text: "In pochi secondi vedrai se il tuo profilo e tutte le sue recensioni si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },
   ],
   faq: [
@@ -67,7 +67,7 @@ const article = {
     { q: "Posso eliminare una recensione Google gratis?", a: "Le tue sì. Le recensioni altrui puoi segnalarle gratis, ma che Google le rimuova non è garantito. Per una rimozione sicura esistono servizi a pagamento con onorario di successo." },
     { q: "Come vedo se la mia recensione segnalata è stata eliminata?", a: "La recensione sparisce dal profilo e la media e il numero di recensioni cambiano. Non viene mostrato uno stato esplicito; uno screenshot precedente aiuta a confrontare." },
     { q: "Quanto costa eliminare una recensione Google?", a: "Da gratis (auto-segnalazione) a 19–49 € (servizi economici) o 100–159 € a recensione con un avvocato. Per la rimozione del profilo vale un prezzo fisso, pagabile dopo il successo." },
-    { q: "RapidRemove elimina singole recensioni?", a: "No. RapidRemove rimuove l'intero profilo dell'attività; tutte le recensioni spariscono con esso. Una singola recensione mantenendo il profilo si rimuove tramite segnalazione o un avvocato." },
+    { q: "RapidRemove elimina singole recensioni?", a: "Sì, ora sì: [rimuovere una recensione Google](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – 179 € per recensione rimossa, si paga solo in caso di successo; la recensione non deve avere più di 4 settimane e deve contenere testo. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
   ],
   related: [
     { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

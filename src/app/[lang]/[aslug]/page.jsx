@@ -8,6 +8,7 @@ import { Impressum, Datenschutz } from "@/components/Legal";
 import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
 import { ReviewsRoute } from "@/components/ReviewsServicePage";
+import { RVW } from "@/lib/reviews-copy";
 import Kontakt from "@/components/Kontakt";
 import { SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, NON_DEFAULT_LOCALES, magazineSlug, magazineUrl, magazineHreflangMap } from "@/lib/locales-meta";
@@ -84,6 +85,33 @@ export default function Page({ params }) {
     );
   }
   const key = pageForSlug(params.lang, params.aslug);
+  if (key === "reviews") {
+    // Bewertungs-Landingpage: Service- + FAQ- + Breadcrumb-Schema (die FAQ steht
+    // sichtbar auf der Seite; Fragen/Antworten kommen aus denselben Texten).
+    const r = RVW[params.lang] || RVW.en;
+    const m = pageMeta(key, params.lang);
+    const url = pageUrl(key, params.lang);
+    const jsonLd = {
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "Service", name: m.name, description: m.description, url,
+          serviceType: "Removal of individual Google reviews",
+          provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
+          offers: { "@type": "Offer", price: "179", priceCurrency: params.lang === "en" ? "USD" : "EUR", url } },
+        { "@type": "FAQPage", mainEntity: (r.faq || []).map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+        { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },
+          { "@type": "ListItem", position: 2, name: m.name, item: url },
+        ] },
+      ],
+    };
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ReviewsRoute initialLang={params.lang} />
+      </>
+    );
+  }
   if (key) {
     const C = PAGE_COMPONENT[key];
     return <C initialLang={params.lang} />;

@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "De nadelen: de procedure is **langdurig** (vaak weken tot maanden), wordt **per review** gefactureerd en draagt het risico van het **Streisand-effect** – juridische stappen kunnen nieuwe „wraakreviews” uitlokken. Bij veel reviews of een fundamenteel beschadigd profiel wordt de advocatenweg al snel duur en traag." },
 
     { t: "h2", id: "m3", text: "Methode 3: het hele profiel laten verwijderen (alle reviews verdwijnen mee)", toc: "Methode 3: het profiel" },
-    { t: "p", text: "Hier ligt het beslissende verschil – en de aanpak van RapidRemove: **wij verwijderen geen losse reviews, maar het hele Google-bedrijfsprofiel.** Bij deze verwijdering verdwijnen **alle** reviews automatisch mee. In plaats van ster voor ster te procederen – en te wachten op de volgende slechte review – krijgt u een **schone lei**: een echte nieuwe start." },
+    { t: "p", text: "Hier ligt het beslissende verschil – en de aanpak van RapidRemove: **bij deze methode gaan we niet review voor review te werk, maar verwijderen we het hele Google-bedrijfsprofiel.** Bij deze verwijdering verdwijnen **alle** reviews automatisch mee. In plaats van ster voor ster te procederen – en te wachten op de volgende slechte review – krijgt u een **schone lei**: een echte nieuwe start." },
     { t: "p", text: "Dat is de juiste oplossing als een profiel blijvend is beschadigd door veel of onterechte reviews. Technisch werkt de methode binnen de logica van Google en pakt het probleem bij de wortel aan: het profiel zelf." },
     { t: "p", text: "De voordelen in één oogopslag:" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**SEO-vriendelijk:** uw website en ranking blijven behouden",
       "**Optionele nieuwe start:** na de verwijdering kan een schoon, nieuw profiel worden opgebouwd",
     ] },
-    { t: "warn", title: "Belangrijk", text: "Deze weg verwijdert het **volledige profiel**, niet één review. Wilt u alleen één review verwijderen en het profiel behouden, dan heeft u rapporteren of de advocatenweg nodig." },
+    { t: "warn", title: "Belangrijk", text: "Deze weg verwijdert het **volledige profiel**, niet één review. Wilt u alleen één review verwijderen en het profiel behouden, dan heeft u rapporteren of de advocatenweg nodig. Sinds kort biedt RapidRemove precies dat ook aan: [losse reviews verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – u betaalt per daadwerkelijk verwijderde review, alleen bij succes." },
 
     { t: "h2", id: "kosten", text: "Wat kost het om een Google review te laten verwijderen?", toc: "Wat het kost" },
     { t: "p", text: "De prijzen variëren sterk per type aanbieder:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Verwijdert RapidRemove losse reviews?", a: "Nee. RapidRemove verwijdert het hele Google-bedrijfsprofiel; alle reviews verdwijnen mee. Een losse review verwijderen en het profiel behouden kan via rapporteren bij Google of een advocaat, niet via profielverwijdering." },
+    { q: "Verwijdert RapidRemove losse reviews?", a: "Ja, inmiddels wel: [één Google-review verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – € 179 per verwijderde review, betalen alleen bij succes; de review mag maximaal 4 weken oud zijn en moet tekst bevatten. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
     { q: "Kan ik zelf een Google review verwijderen?", a: "Als bedrijf kunt u een review van een ander alleen rapporteren, niet zelf verwijderen. Of Google die weghaalt, beslist het bedrijf – vaak afwijzend. Uw eigen reviews kunt u op elk moment verwijderen." },
     { q: "Hoelang duurt het verwijderen van een Google review?", a: "Via de rapportagefunctie dagen tot weken met onzekere afloop, via een advocaat vaak meerdere maanden, via technische verwijdering meestal 24 tot 48 uur." },
     { q: "Wat kost het verwijderen van een negatieve Google review?", a: "Afhankelijk van de methode tussen circa 20 € (goedkope, onzekere diensten) en 159 € per review (advocaat). Bij technische verwijdering via RapidRemove betaalt u een vaste prijs en pas na geslaagde verwijdering." },

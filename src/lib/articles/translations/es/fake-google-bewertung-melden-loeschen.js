@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Deshacerte de las reseñas falsas: la solución definitiva", toc: "Solución definitiva" },
-    { t: "p", text: "Ante un **ataque coordinado de reseñas falsas** con muchas reseñas, denunciar una a una es un juego del gato y el ratón sin salida. Por eso RapidRemove sigue otro camino: **no eliminamos reseñas individuales, sino todo el perfil de empresa de Google.** Todas las reseñas falsas desaparecen con la eliminación: empiezas con un borrón y cuenta nueva." },
+    { t: "p", text: "Ante un **ataque coordinado de reseñas falsas** con muchas reseñas, denunciar una a una es un juego del gato y el ratón sin salida. Por eso RapidRemove sigue otro camino: **con este método no vamos reseña a reseña, sino que eliminamos todo el perfil de empresa de Google.** Todas las reseñas falsas desaparecen con la eliminación: empiezas con un borrón y cuenta nueva." },
     { t: "table", rrCol: 3, head: ["Criterio", "Denunciar tú mismo", "Abogado", "RapidRemove (eliminación de perfil)"], rows: [
       ["Qué se elimina", "reseña individual", "reseña individual", "todo el perfil + todas las reseñas"],
       ["Rapidez", "incierto", "3 – 9 meses", "24 – 48 h"],
@@ -71,7 +71,7 @@ const article = {
     { q: "¿Cómo denuncio una reseña falsa en Google?", a: "Con el menú de tres puntos junto a la reseña, pulsa «Denunciar reseña», selecciona la infracción y envíala. Puedes seguir el estado con la herramienta de Google para gestionar reseñas." },
     { q: "¿Son delito las reseñas falsas?", a: "Las reseñas deliberadamente falsas pueden tener consecuencias civiles, de competencia y en parte penales. En la práctica el autor suele ser anónimo, por lo que eliminar la reseña suele ser la palanca más rápida. Esto no es asesoramiento jurídico." },
     { q: "¿Qué hago si Google no elimina la reseña falsa?", a: "Si rechazan la denuncia, queda la vía del abogado para una reseña suelta. Si el perfil está dañado por muchas falsas, la eliminación del perfil con RapidRemove es lo más fiable: se elimina todo el perfil y todas las reseñas desaparecen con él." },
-    { q: "¿RapidRemove elimina reseñas falsas individuales?", a: "No. RapidRemove elimina todo el perfil de empresa; todas las reseñas desaparecen con él. Para eliminar una reseña suelta conservando el perfil, la denuncia o un abogado son los responsables." },
+    { q: "¿RapidRemove elimina reseñas falsas individuales?", a: "Sí, ahora sí: [eliminar una reseña de Google](https://www.rapid-remove.com/es/eliminar-una-resena/) – 179 € por reseña eliminada, se paga solo tras el éxito; la reseña debe tener como máximo 4 semanas y contener texto. Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas sigue siendo la vía más completa." },
     { q: "¿En cuánto tiempo desaparecen las reseñas falsas?", a: "Mediante la eliminación del perfil, a menudo en 24 a 48 horas, mucho más rápido que la vía legal de varios meses." },
   ],
   related: [

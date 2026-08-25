@@ -59,7 +59,7 @@ const article = {
     { q: "Är en 1-stjärnig recension utan text straffbar?", a: "Recensionen i sig oftast inte. Men om den getts utan verklig anledning kan den vara otillåten och grunda ett civilrättsligt anspråk på borttagning. Detta är inte juridisk rådgivning." },
     { q: "Hur anmäler jag ett stjärnbetyg utan kommentar?", a: "Via trepunktsmenyn bredvid recensionen, klicka på Rapportera recension och ange som skäl den saknade kopplingen till tjänsten. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Vad gör jag om Google inte tar bort recensionen?", a: "För en enskild recension hjälper en konkret motiverad invändning från en advokat. Är din profil skadad som helhet och du vill ha en nystart är profilborttagning via RapidRemove den mest tillförlitliga vägen – då försvinner alla recensioner med profilen." },
-    { q: "Tar RapidRemove bort den enskilda 1-stjärniga recensionen?", a: "Nej. RapidRemove tar bort hela företagsprofilen; alla recensioner försvinner med. Vill du bara bli av med den enda recensionen och behålla profilen ansvarar rapporteringen eller en advokat." },
+    { q: "Tar RapidRemove bort den enskilda 1-stjärniga recensionen?", a: "Ett betyg med enbart stjärnor, utan text, kan inte tas bort enskilt – borttagning per recension kräver text. RapidRemove tar bort sådana betyg via borttagningen av hela profilen; för negativa recensioner med text finns även [borttagning av enskilda recensioner](https://www.rapid-remove.com/sv/ta-bort-omdome/)." },
     { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar – betydligt snabbare än den flera månader långa rättsliga vägen för en enskild recension." },
   ],
   related: [

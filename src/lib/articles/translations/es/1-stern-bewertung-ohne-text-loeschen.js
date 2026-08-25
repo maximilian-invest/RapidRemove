@@ -59,7 +59,7 @@ const article = {
     { q: "¿Es delito una reseña de 1 estrella sin texto?", a: "La reseña en sí normalmente no. Pero si se dio sin un motivo real, puede ser inadmisible y dar lugar a un derecho civil de eliminación. Esto no es asesoramiento jurídico." },
     { q: "¿Cómo denuncio una valoración con estrellas sin comentario?", a: "Con el menú de tres puntos junto a la reseña, pulsa «Denunciar reseña» e indica como motivo la falta de relación con el servicio. Sigues el estado con la herramienta de Google para gestionar reseñas." },
     { q: "¿Qué hago si Google no elimina la reseña?", a: "Para una reseña suelta ayuda una objeción concretamente fundamentada por un abogado. Si tu perfil está dañado en conjunto y quieres empezar de nuevo, la eliminación del perfil con RapidRemove es lo más fiable: todas las reseñas desaparecen con el perfil." },
-    { q: "¿RapidRemove elimina la reseña de 1 estrella individual?", a: "No. RapidRemove elimina todo el perfil de empresa; todas las reseñas desaparecen con él. Si solo quieres quitar esa reseña y conservar el perfil, la denuncia o un abogado son los responsables." },
+    { q: "¿RapidRemove elimina la reseña de 1 estrella individual?", a: "Una valoración solo de estrellas, sin texto, no se puede eliminar de forma individual: la eliminación por reseña requiere texto. RapidRemove elimina esas valoraciones con la retirada del perfil completo; para reseñas negativas con texto existe además la [eliminación de reseñas individuales](https://www.rapid-remove.com/es/eliminar-una-resena/)." },
     { q: "¿En cuánto tiempo desaparecen las reseñas?", a: "Mediante la eliminación del perfil, a menudo en 24 a 48 horas, mucho más rápido que la vía legal de varios meses para una reseña suelta." },
   ],
   related: [

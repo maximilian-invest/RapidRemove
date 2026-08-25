@@ -59,7 +59,7 @@ const article = {
     { q: "Is een 1-sterreview zonder tekst strafbaar?", a: "De review zelf meestal niet. Maar als ze zonder echte aanleiding is gegeven, kan ze ontoelaatbaar zijn en een civielrechtelijk recht op verwijdering funderen. Dit is geen juridisch advies." },
     { q: "Hoe rapporteer ik een sterbeoordeling zonder commentaar?", a: "Klik via het menu met drie puntjes naast de review op Review rapporteren en geef als reden het ontbrekende verband met de dienst op. De status volgt u via de Google-tool voor het beheer van reviews." },
     { q: "Wat te doen als Google de review niet verwijdert?", a: "Voor een losse review helpt een concreet onderbouwde betwisting door een advocaat. Is uw profiel in zijn geheel beschadigd en wilt u een nieuwe start, dan is profielverwijdering via RapidRemove de betrouwbaarste weg – daarbij verdwijnen alle reviews met het profiel." },
-    { q: "Verwijdert RapidRemove die ene 1-sterreview?", a: "Nee. RapidRemove verwijdert het hele bedrijfsprofiel; alle reviews verdwijnen daarbij mee. Wilt u alleen die ene review kwijt en het profiel behouden, dan zijn rapporteren of een advocaat bevoegd." },
+    { q: "Verwijdert RapidRemove die ene 1-sterreview?", a: "Een beoordeling met alleen sterren, zonder tekst, kan niet los worden verwijderd – verwijdering per review vereist tekst. RapidRemove haalt zulke beoordelingen weg via de volledige profielverwijdering; voor negatieve reviews met tekst is er ook [losse reviews verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/)." },
     { q: "Hoe snel ben je de reviews kwijt?", a: "Via profielverwijdering vaak binnen 24 tot 48 uur – aanzienlijk sneller dan de juridische weg van meerdere maanden voor een losse review." },
   ],
   related: [

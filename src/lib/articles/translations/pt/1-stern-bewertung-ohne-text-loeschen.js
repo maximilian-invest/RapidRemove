@@ -59,7 +59,7 @@ const article = {
     { q: "Uma avaliação de 1 estrela sem texto é punível?", a: "A avaliação em si, normalmente não. Mas se foi dada sem motivo real, pode ser ilícita e fundamentar um direito cível à remoção. Isto não é aconselhamento jurídico." },
     { q: "Como denuncio uma classificação por estrelas sem comentário?", a: "Pelo menu de três pontos junto à avaliação, prima «Denunciar avaliação» e indique como motivo a falta de relação com o serviço. Acompanhe o estado com a ferramenta do Google para gestão de avaliações." },
     { q: "O que faço se o Google não remover a avaliação?", a: "Para uma avaliação isolada ajuda uma contestação concretamente fundamentada por um advogado. Se o seu perfil está globalmente danificado e quer recomeçar, a remoção do perfil com a RapidRemove é a mais fiável: todas as avaliações desaparecem com o perfil." },
-    { q: "A RapidRemove remove a avaliação de 1 estrela isolada?", a: "Não. A RapidRemove remove todo o perfil de empresa; todas as avaliações desaparecem com ele. Se quiser apenas tirar aquela avaliação e manter o perfil, competem a denúncia ou um advogado." },
+    { q: "A RapidRemove remove a avaliação de 1 estrela isolada?", a: "Uma classificação só com estrelas, sem texto, não pode ser removida individualmente – a remoção por avaliação exige texto. A RapidRemove elimina essas classificações com a remoção do perfil completo; para avaliações negativas com texto existe também a [remoção de avaliações individuais](https://www.rapid-remove.com/pt/remover-uma-avaliacao/)." },
     { q: "Com que rapidez nos livramos das avaliações?", a: "Pela remoção do perfil, muitas vezes em 24 a 48 horas – bastante mais rápido do que a via jurídica de vários meses para uma avaliação isolada." },
   ],
   related: [

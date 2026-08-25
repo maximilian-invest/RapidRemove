@@ -48,7 +48,7 @@ const article = {
       { t: "p", text: "The downsides: the process is **lengthy** (often weeks to months), is billed **per review**, and carries the risk of the **Streisand effect** – legal steps can provoke reviewers into new “revenge reviews”. With many reviews or a fundamentally damaged profile, the legal route quickly becomes expensive and slow." },
 
       { t: "h2", id: "m3", text: "Method 3: Have the entire profile removed (all reviews disappear with it)", toc: "Method 3: Profile" },
-      { t: "p", text: "This is the decisive difference – and RapidRemove's approach: **we don't delete individual reviews, we remove the entire Google Business Profile.** In the course of this removal, **all** reviews automatically disappear with it. Instead of laboriously litigating individual stars – and waiting for the next bad review – you get a **clean slate**: a genuine fresh start." },
+      { t: "p", text: "This is the decisive difference – and RapidRemove's approach: **with this method we don't go review by review – we remove the entire Google Business Profile.** In the course of this removal, **all** reviews automatically disappear with it. Instead of laboriously litigating individual stars – and waiting for the next bad review – you get a **clean slate**: a genuine fresh start." },
       { t: "p", text: "This is the right solution when a profile is permanently damaged by many or unjustified reviews. Technically, the method works within Google's logic and tackles the problem at the root – the profile itself." },
       { t: "p", text: "The advantages at a glance:" },
       { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
         "**SEO-friendly:** your website and ranking are preserved",
         "**Optional fresh start:** after removal, a clean new profile can be built",
       ] },
-      { t: "warn", title: "Important", text: "This route removes the **entire profile**, not a single review. If you only want to remove one review and keep your profile, you'll need reporting or the legal route." },
+      { t: "warn", title: "Important", text: "This route removes the **entire profile**, not a single review. If you only want to remove one review and keep your profile, you'll need reporting or the legal route. Since recently, RapidRemove offers exactly that as well: [removal of individual reviews](https://www.rapid-remove.com/en/remove-single-reviews/) – you pay per review actually removed, only on success." },
 
       { t: "h2", id: "kosten", text: "What does it cost to have a Google review removed?", toc: "What it costs" },
       { t: "p", text: "Prices vary widely by provider type:" },
@@ -83,7 +83,7 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "Does RapidRemove delete individual reviews?", a: "No. RapidRemove removes the entire Google Business Profile – all reviews automatically disappear with it. Removing a single review while keeping the profile is possible via reporting to Google or a lawyer, not via profile removal." },
+      { q: "Does RapidRemove delete individual reviews?", a: "Yes, meanwhile it does: [remove a single Google review](https://www.rapid-remove.com/en/remove-single-reviews/) – $179 per removed review, paid only on success; the review must be no older than 4 weeks and contain text. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
       { q: "Can I delete a Google review myself?", a: "As a business you can only report a third-party review, not delete it yourself. Whether Google removes it is up to the company – often declined. Your own, self-written reviews you can delete at any time." },
       { q: "How long does it take to remove a Google review?", a: "Via the report function it takes days to weeks with an uncertain outcome, via a lawyer often several months, via technical removal usually 24 to 48 hours." },
       { q: "What does it cost to remove a negative Google review?", a: "Depending on the method, between around $20 (cheap, uncertain services) and $175 per review (lawyer). With technical removal via RapidRemove you pay a fixed price and only after successful removal." },

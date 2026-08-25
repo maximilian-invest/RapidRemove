@@ -48,7 +48,7 @@ const article = {
       "**Compatibile con la SEO:** sito e posizionamento restano; un profilo nuovo e pulito è opzionale.",
       "**Discrezione:** nessuna corrispondenza, nessun rischio Streisand.",
     ] },
-    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Chi vuole eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato." },
+    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Chi vuole eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato. Da poco RapidRemove offre anche esattamente questo: [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – si paga per recensione davvero rimossa, solo in caso di successo." },
 
     { t: "h2", id: "vergleich", text: "Avvocato vs. tecnica: il confronto diretto", toc: "Confronto diretto" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (rimozione profilo)", "Avvocato (via legale)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Posso far eliminare una recensione Google negativa?", a: "Sì, se viola le linee guida di Google (es. falsa, nessun collegamento, insulto). Le opinioni puramente oggettive su esperienze reali sono difficili da eliminare." },
     { q: "Quanto costa un avvocato per eliminare una recensione Google?", a: "Gli studi specializzati sono spesso intorno a 100–159 € a recensione; con una causa possono aggiungersi spese legali. Di solito si paga l'impegno, non un risultato garantito." },
-    { q: "Cosa rimuove esattamente RapidRemove: singole recensioni o il profilo?", a: "RapidRemove rimuove l'intero profilo dell'attività su Google; tutte le recensioni spariscono con esso. Le singole recensioni mantenendo il profilo si rimuovono tramite segnalazione o un avvocato." },
+    { q: "Cosa rimuove esattamente RapidRemove: singole recensioni o il profilo?", a: "Entrambe le cose, a seconda del caso. Per una singola recensione ingiusta c'è la [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – 179 € per recensione rimossa, si paga solo in caso di successo (max 4 settimane, con testo). Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni è la via più completa." },
     { q: "La rimozione tecnica del profilo è legale?", a: "Sì. Lavora dentro le linee guida di Google e non richiede né avvocato né contatto diretto con Google. I fornitori seri lavorano con onorario di successo e garanzia." },
     { q: "Cos'è l'effetto Streisand?", a: "Quando le azioni legali provocano l'autore e portano ad altre recensioni negative. La rimozione tecnica evita questo rischio perché lavora senza confronto." },
     { q: "Le recensioni Google negative sono perseguibili?", a: "Un'opinione onesta no. Le affermazioni di fatti deliberatamente false, gli insulti o le denigrazioni possono avere conseguenze legali. Questa non è consulenza legale." },

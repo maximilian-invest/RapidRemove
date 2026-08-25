@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "Ulemperne: forløbet er **langtrukkent** (ofte uger til måneder), faktureres **pr. anmeldelse** og bærer risikoen for **Streisand-effekten** – juridiske skridt kan provokere nye »hævnanmeldelser«. Ved mange anmeldelser eller en grundlæggende beskadiget profil bliver advokatvejen hurtigt dyr og langsom." },
 
     { t: "h2", id: "m3", text: "Metode 3: få fjernet hele profilen (alle anmeldelser forsvinder med)", toc: "Metode 3: profilen" },
-    { t: "p", text: "Her ligger den afgørende forskel – og RapidRemoves tilgang: **vi fjerner ikke enkelte anmeldelser, men hele Google-virksomhedsprofilen.** Ved den fjernelse forsvinder **alle** anmeldelser automatisk med. I stedet for at strides stjerne for stjerne – og vente på den næste dårlige anmeldelse – får du en **ren tavle**: en virkelig ny start." },
+    { t: "p", text: "Her ligger den afgørende forskel – og RapidRemoves tilgang: **med denne metode går vi ikke anmeldelse for anmeldelse – vi fjerner hele Google-virksomhedsprofilen.** Ved den fjernelse forsvinder **alle** anmeldelser automatisk med. I stedet for at strides stjerne for stjerne – og vente på den næste dårlige anmeldelse – får du en **ren tavle**: en virkelig ny start." },
     { t: "p", text: "Det er den rigtige løsning, når en profil er varigt beskadiget af mange eller uretfærdige anmeldelser. Teknisk fungerer metoden inden for Googles logik og angriber problemet ved roden: selve profilen." },
     { t: "p", text: "Fordelene kort fortalt:" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**SEO-venligt:** dit websted og din placering bevares",
       "**Valgfri ny start:** efter fjernelsen kan en ren, ny profil opbygges",
     ] },
-    { t: "warn", title: "Vigtigt", text: "Denne vej fjerner **hele profilen**, ikke en enkelt anmeldelse. Vil du kun fjerne én anmeldelse og beholde profilen, har du brug for rapporteringen eller advokatvejen." },
+    { t: "warn", title: "Vigtigt", text: "Denne vej fjerner **hele profilen**, ikke en enkelt anmeldelse. Vil du kun fjerne én anmeldelse og beholde profilen, har du brug for rapporteringen eller advokatvejen. Siden for nylig tilbyder RapidRemove også præcis det: [fjernelse af enkelte anmeldelser](https://www.rapid-remove.com/da/fjern-anmeldelse/) – du betaler pr. faktisk fjernet anmeldelse, først ved succes." },
 
     { t: "h2", id: "kosten", text: "Hvad koster det at få fjernet en Google-anmeldelse?", toc: "Hvad det koster" },
     { t: "p", text: "Priserne varierer kraftigt afhængigt af typen af udbyder:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Nej. RapidRemove fjerner hele Google-virksomhedsprofilen; alle anmeldelser forsvinder med. At fjerne en enkelt anmeldelse og beholde profilen sker via rapportering til Google eller en advokat, ikke via profilfjernelse." },
+    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja, efterhånden: [fjern en enkelt Google-anmeldelse](https://www.rapid-remove.com/da/fjern-anmeldelse/) – 179 € pr. fjernet anmeldelse, betales først ved succes; anmeldelsen må højst være 4 uger gammel og skal indeholde tekst. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
     { q: "Kan jeg selv fjerne en Google-anmeldelse?", a: "Som virksomhed kan du kun rapportere en andens anmeldelse, ikke fjerne den. Om Google fjerner den, afgør virksomheden – ofte afvisende. Dine egne anmeldelser kan du fjerne når som helst." },
     { q: "Hvor lang tid tager det at fjerne en Google-anmeldelse?", a: "Via rapporteringsfunktionen dage til uger med usikkert udfald, via en advokat ofte flere måneder, via teknisk fjernelse oftest 24 til 48 timer." },
     { q: "Hvad koster det at fjerne en negativ Google-anmeldelse?", a: "Afhængigt af metoden mellem ca. 20 € (billige, usikre tjenester) og 159 € pr. anmeldelse (advokat). Ved teknisk fjernelse via RapidRemove betaler du en fast pris og først efter vellykket fjernelse." },

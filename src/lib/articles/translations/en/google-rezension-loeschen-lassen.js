@@ -58,7 +58,7 @@ const article = {
       "**no effort** for you, no Streisand risk",
       "**optional fresh start** with a clean profile",
     ] },
-    { t: "warn", title: "Important", text: "Profile removal removes the **entire profile**, not a single review. Anyone who only wants to remove one review and keep the profile should use reporting or the legal route." },
+    { t: "warn", title: "Important", text: "Profile removal removes the **entire profile**, not a single review. Anyone who only wants to remove one review and keep the profile should use reporting or the legal route. Since recently, RapidRemove offers exactly that as well: [removal of individual reviews](https://www.rapid-remove.com/en/remove-single-reviews/) – you pay per review actually removed, only on success." },
     { t: "cta", title: "Profile permanently damaged? Check removability – for free.", text: "In seconds you'll see whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Guarantee", "No risk"] },
   ],
   faq: [
@@ -67,7 +67,7 @@ const article = {
     { q: "Can I have a Google review removed for free?", a: "Your own reviews yes. Third-party reviews you can report for free – whether Google removes them isn't guaranteed. For reliable removal there are paid services with a success fee." },
     { q: "How do I see whether my reported review was deleted?", a: "The review disappears from the profile and the average and review count change. No explicit status is shown – a before screenshot helps with the comparison." },
     { q: "What does it cost to delete a Google review?", a: "From free (self-report) to $20–55 (cheap services) to $110–175 per review with a lawyer. For profile removal there's a fixed price, payable after success." },
-    { q: "Does RapidRemove delete individual reviews?", a: "No. RapidRemove removes the entire Business Profile; all reviews disappear with it. A single review with the profile kept is removed via reporting or a lawyer." },
+    { q: "Does RapidRemove delete individual reviews?", a: "Yes, meanwhile it does: [remove a single Google review](https://www.rapid-remove.com/en/remove-single-reviews/) – $179 per removed review, paid only on success; the review must be no older than 4 weeks and contain text. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
   ],
   related: [
     { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

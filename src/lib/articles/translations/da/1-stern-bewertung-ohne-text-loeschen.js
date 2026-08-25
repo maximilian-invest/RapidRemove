@@ -59,7 +59,7 @@ const article = {
     { q: "Er en 1-stjernet anmeldelse uden tekst strafbar?", a: "Anmeldelsen i sig selv oftest ikke. Men hvis den er givet uden virkelig anledning, kan den være utilladelig og begrunde et civilretligt krav om fjernelse. Dette er ikke juridisk rådgivning." },
     { q: "Hvordan anmelder jeg en stjernebedømmelse uden kommentar?", a: "Via tre-prikker-menuen ved siden af anmeldelsen, klik på Rapportér anmeldelse og angiv som begrundelse den manglende sammenhæng med ydelsen. Status følger du via Googles værktøj til håndtering af anmeldelser." },
     { q: "Hvad gør jeg, hvis Google ikke fjerner anmeldelsen?", a: "For en enkelt anmeldelse hjælper en konkret begrundet indsigelse fra en advokat. Er din profil beskadiget som helhed, og vil du have en ny start, er profilfjernelse via RapidRemove den mest pålidelige vej – så forsvinder alle anmeldelser med profilen." },
-    { q: "Fjerner RapidRemove den enkelte 1-stjernede anmeldelse?", a: "Nej. RapidRemove fjerner hele virksomhedsprofilen; alle anmeldelser forsvinder med. Vil du kun af med den ene anmeldelse og beholde profilen, står rapporteringen eller en advokat for det." },
+    { q: "Fjerner RapidRemove den enkelte 1-stjernede anmeldelse?", a: "En bedømmelse med kun stjerner, uden tekst, kan ikke fjernes enkeltvis – fjernelse pr. anmeldelse kræver tekst. RapidRemove fjerner sådanne bedømmelser via fjernelsen af hele profilen; for negative anmeldelser med tekst findes også [fjernelse af enkelte anmeldelser](https://www.rapid-remove.com/da/fjern-anmeldelse/)." },
     { q: "Hvor hurtigt slipper man af med anmeldelserne?", a: "Via profilfjernelse ofte inden for 24 til 48 timer – betydeligt hurtigere end den flere måneder lange retlige vej for en enkelt anmeldelse." },
   ],
   related: [

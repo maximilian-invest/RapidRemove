@@ -48,7 +48,7 @@ const article = {
       "**SEO-friendly:** website and ranking are preserved; a clean new profile is optional.",
       "**Discreet:** no correspondence, no Streisand risk.",
     ] },
-    { t: "warn", title: "Important", text: "This route removes the **entire profile**, not a single review. Anyone who wants to remove one review and keep the profile should use reporting or the legal route." },
+    { t: "warn", title: "Important", text: "This route removes the **entire profile**, not a single review. Anyone who wants to remove one review and keep the profile should use reporting or the legal route. Since recently, RapidRemove offers exactly that as well: [removal of individual reviews](https://www.rapid-remove.com/en/remove-single-reviews/) – you pay per review actually removed, only on success." },
 
     { t: "h2", id: "vergleich", text: "Lawyer vs. technical: the direct comparison", toc: "Direct comparison" },
     { t: "table", rrCol: 1, head: ["Criterion", "RapidRemove (profile removal)", "Lawyer (legal route)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Can I have a negative Google review removed?", a: "Yes, if it violates Google's guidelines (e.g. fake, no connection, insult). Purely factual opinions about real experiences are hard to remove." },
     { q: "What does a lawyer cost to remove a Google review?", a: "Specialist firms are often around $110 to $175 per review; with a lawsuit, court costs can be added. You usually pay for the effort, not a guaranteed result." },
-    { q: "What exactly does RapidRemove remove – individual reviews or the profile?", a: "RapidRemove removes the entire Google Business Profile; all reviews disappear with it. Individual reviews with the profile kept are removed via reporting or a lawyer." },
+    { q: "What exactly does RapidRemove remove – individual reviews or the profile?", a: "Both, depending on the case. For exactly one unfair review there is [single-review removal](https://www.rapid-remove.com/en/remove-single-reviews/) – $179 per removed review, paid only on success (max. 4 weeks old, must contain text). If the profile is damaged across the board, removing the entire profile with all its reviews is the more thorough route." },
     { q: "Is technical profile removal legal?", a: "Yes. It works within Google's guidelines and requires neither a lawyer nor direct contact with Google. Reputable providers work with a success fee and a guarantee." },
     { q: "What is the Streisand effect?", a: "When legal steps provoke the author and lead to further negative reviews. Technical removal avoids this risk because it works without confrontation." },
     { q: "Are negative Google reviews punishable?", a: "An honest opinion is not. Deliberately false factual claims, insults or abusive criticism can have legal consequences. This is not legal advice." },

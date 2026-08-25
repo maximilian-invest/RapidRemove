@@ -58,7 +58,7 @@ const article = {
       "**ingen innsats** for deg, ingen Streisand-risiko",
       "**valgfri ny start** med en ren profil",
     ] },
-    { t: "warn", title: "Viktig", text: "Profilfjerningen fjerner **hele profilen**, ikke en enkelt anmeldelse. Den som bare vil fjerne en enkelt anmeldelse og beholde profilen, bruker rapporteringen eller advokatveien." },
+    { t: "warn", title: "Viktig", text: "Profilfjerningen fjerner **hele profilen**, ikke en enkelt anmeldelse. Den som bare vil fjerne en enkelt anmeldelse og beholde profilen, bruker rapporteringen eller advokatveien. Siden nylig tilbyr RapidRemove også akkurat det: [fjerning av enkeltanmeldelser](https://www.rapid-remove.com/no/fjern-omtale/) – du betaler per faktisk fjernet anmeldelse, først ved suksess." },
     { t: "cta", title: "Profil varig skadet? Sjekk muligheten for fjerning – gratis.", text: "På sekunder ser du om og hvor raskt profilen din inkludert alle anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
   ],
   faq: [
@@ -67,7 +67,7 @@ const article = {
     { q: "Kan jeg fjerne en Google-anmeldelse gratis?", a: "Egne anmeldelser ja. Andres anmeldelser kan du rapportere gratis – om Google fjerner dem, er imidlertid ikke garantert. For en sikker fjerning finnes betaltjenester med suksesshonorar." },
     { q: "Hvordan ser jeg om den rapporterte anmeldelsen min er blitt fjernet?", a: "Anmeldelsen forsvinner fra profilen, og vurderingssnittet samt antallet anmeldelser endrer seg. En uttrykkelig status vises ikke – et skjermbilde på forhånd hjelper ved sammenligningen." },
     { q: "Hva koster det å fjerne en Google-anmeldelse?", a: "Fra gratis (egen rapport) via 19-49 € (billige tjenester) til 100-159 € per anmeldelse hos advokat. Ved profilfjerning gjelder en fast pris, betales etter suksess." },
-    { q: "Fjerner RapidRemove enkeltanmeldelser?", a: "Nei. RapidRemove fjerner hele bedriftsprofilen; alle anmeldelser forsvinner med. En enkelt anmeldelse med profilen beholdt fjerner man via rapporteringen eller en advokat." },
+    { q: "Fjerner RapidRemove enkeltanmeldelser?", a: "Ja, nå gjør vi det: [fjerning av enkeltanmeldelser](https://www.rapid-remove.com/no/fjern-omtale/) – 179 € per fjernet anmeldelse, betales først ved suksess; anmeldelsen kan maks være 4 uker gammel og må inneholde tekst. Er profilen skadet som helhet, er fjerning av hele profilen med alle anmeldelser fortsatt den grundigste veien." },
   ],
   related: [
     { label: "Fjerne Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

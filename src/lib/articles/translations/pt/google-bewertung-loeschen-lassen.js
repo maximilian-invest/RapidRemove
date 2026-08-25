@@ -48,7 +48,7 @@ const article = {
     { t: "p", text: "As desvantagens: o processo é **demorado** (muitas vezes semanas a meses), é faturado **por avaliação** e traz o risco do **efeito Streisand** – passos jurídicos podem provocar novas «avaliações de vingança». Com muitas avaliações ou um perfil fundamentalmente danificado, o caminho do advogado torna-se rapidamente caro e lento." },
 
     { t: "h2", id: "m3", text: "Método 3: mandar remover todo o perfil (todas as avaliações desaparecem com ele)", toc: "Método 3: o perfil" },
-    { t: "p", text: "Aqui está a diferença decisiva – e a abordagem da RapidRemove: **não removemos avaliações individuais, mas todo o perfil de empresa do Google.** Nessa remoção, **todas** as avaliações desaparecem automaticamente. Em vez de litigar estrela a estrela – e esperar pela próxima má avaliação – obtém um **registo limpo**: um verdadeiro recomeço." },
+    { t: "p", text: "Aqui está a diferença decisiva – e a abordagem da RapidRemove: **com este método não vamos avaliação a avaliação: removemos todo o perfil de empresa do Google.** Nessa remoção, **todas** as avaliações desaparecem automaticamente. Em vez de litigar estrela a estrela – e esperar pela próxima má avaliação – obtém um **registo limpo**: um verdadeiro recomeço." },
     { t: "p", text: "É a solução certa quando um perfil ficou permanentemente danificado por muitas avaliações ou por avaliações injustas. Tecnicamente, o método funciona dentro da lógica do Google e ataca o problema na raiz: o próprio perfil." },
     { t: "p", text: "As vantagens num relance:" },
     { t: "ul", items: [
@@ -59,7 +59,7 @@ const article = {
       "**Amigo do SEO:** o seu site e o seu ranking mantêm-se",
       "**Recomeço opcional:** após a remoção pode construir-se um perfil novo e limpo",
     ] },
-    { t: "warn", title: "Importante", text: "Este caminho remove o **perfil completo**, não uma avaliação isolada. Se quiser apenas remover uma avaliação e manter o perfil, precisa da denúncia ou do caminho do advogado." },
+    { t: "warn", title: "Importante", text: "Este caminho remove o **perfil completo**, não uma avaliação isolada. Se quiser apenas remover uma avaliação e manter o perfil, precisa da denúncia ou do caminho do advogado. Desde há pouco, a RapidRemove também oferece exatamente isso: [remoção de avaliações individuais](https://www.rapid-remove.com/pt/remover-uma-avaliacao/) – paga por avaliação realmente removida, só em caso de sucesso." },
 
     { t: "h2", id: "kosten", text: "Quanto custa mandar remover uma avaliação do Google?", toc: "Quanto custa" },
     { t: "p", text: "Os preços variam muito consoante o tipo de fornecedor:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "A RapidRemove remove avaliações isoladas?", a: "Não. A RapidRemove remove todo o perfil de empresa do Google; todas as avaliações desaparecem com ele. Remover uma avaliação isolada e manter o perfil é possível através da denúncia ao Google ou de um advogado, não pela remoção do perfil." },
+    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](https://www.rapid-remove.com/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; a avaliação não pode ter mais de 4 semanas e tem de conter texto. Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
     { q: "Posso eu próprio remover uma avaliação do Google?", a: "Como empresa, só pode denunciar a avaliação de outra pessoa, não removê-la. Se o Google a retira, decide a empresa – muitas vezes negando. As suas próprias avaliações pode removê-las a qualquer momento." },
     { q: "Quanto tempo demora a remover uma avaliação do Google?", a: "Pela função de denúncia, dias a semanas com desfecho incerto; por um advogado, muitas vezes vários meses; por remoção técnica, normalmente 24 a 48 horas." },
     { q: "Quanto custa remover uma avaliação negativa do Google?", a: "Consoante o método, entre cerca de 20 € (serviços baratos e incertos) e 159 € por avaliação (advogado). Na remoção técnica através da RapidRemove paga um preço fixo e só após a remoção bem-sucedida." },

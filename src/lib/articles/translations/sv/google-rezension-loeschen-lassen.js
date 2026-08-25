@@ -67,7 +67,7 @@ const article = {
     { q: "Kan jag ta bort en Google-recension gratis?", a: "Egna recensioner ja. Andras recensioner kan du anmäla gratis – om Google tar bort dem är dock inte garanterat. För en säker borttagning finns betaltjänster med framgångsarvode." },
     { q: "Hur ser jag om min anmälda recension tagits bort?", a: "Recensionen försvinner från profilen och betygssnittet samt antalet recensioner ändras. En uttrycklig status visas inte – en skärmbild i förväg hjälper vid jämförelsen." },
     { q: "Vad kostar det att ta bort en Google-recension?", a: "Från gratis (egen anmälan) via 19–49 € (billiga tjänster) till 100–159 € per recension hos advokat. Vid profilborttagning gäller ett fast pris, betalas efter framgång." },
-    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Nej. RapidRemove tar bort hela företagsprofilen; alla recensioner försvinner med. En enskild recension med profilen kvar tar man bort via anmälan eller en advokat." },
+    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja, numera: [ta bort en enskild Google-recension](https://www.rapid-remove.com/sv/ta-bort-omdome/) – 179 € per borttagen recension, betalas först vid framgång; recensionen får vara högst 4 veckor gammal och måste innehålla text. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
   ],
   related: [
     { label: "Ta bort Google-recensioner: kostnad och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

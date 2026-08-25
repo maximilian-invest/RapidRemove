@@ -53,7 +53,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Livrar-se das avaliações falsas – a solução definitiva", toc: "Solução definitiva" },
-    { t: "p", text: "Num **ataque coordenado de avaliações falsas** com muitas avaliações, denunciar avaliações isoladas é um jogo do gato e do rato sem saída. Por isso, a RapidRemove segue outro caminho: **não removemos avaliações isoladas, mas todo o perfil de empresa do Google.** Todas as avaliações falsas desaparecem com a remoção – começa com um registo limpo." },
+    { t: "p", text: "Num **ataque coordenado de avaliações falsas** com muitas avaliações, denunciar avaliações isoladas é um jogo do gato e do rato sem saída. Por isso, a RapidRemove segue outro caminho: **com este método não vamos avaliação a avaliação: removemos todo o perfil de empresa do Google.** Todas as avaliações falsas desaparecem com a remoção – começa com um registo limpo." },
     { t: "table", rrCol: 3, head: ["Critério", "Denunciar por si mesmo", "Advogado", "RapidRemove (remoção do perfil)"], rows: [
       ["O que é removido", "avaliação isolada", "avaliação isolada", "perfil inteiro + todas as avaliações"],
       ["Rapidez", "incerto", "3 – 9 meses", "24 – 48 h"],
@@ -71,7 +71,7 @@ const article = {
     { q: "Como denuncio uma avaliação falsa ao Google?", a: "No menu de três pontos junto à avaliação, clique em «Denunciar avaliação», escolha a violação e envie a denúncia. Pode acompanhar o estado pela ferramenta do Google para gestão de avaliações." },
     { q: "As avaliações falsas são puníveis?", a: "Avaliações deliberadamente falsas podem ter consequências cíveis, de concorrência e em parte penais. Na prática, porém, o autor é muitas vezes anónimo, pelo que a remoção da avaliação costuma ser a alavanca mais rápida do que uma queixa. Isto não é aconselhamento jurídico." },
     { q: "O que posso fazer se o Google não remover a avaliação falsa?", a: "Se a denúncia for rejeitada, resta para uma avaliação isolada a via do advogado. Se o perfil está danificado por muitas falsas, a remoção do perfil através da RapidRemove é a via mais fiável: todo o perfil é removido, todas as avaliações desaparecem com ele." },
-    { q: "A RapidRemove remove avaliações falsas isoladas?", a: "Não. A RapidRemove remove todo o perfil de empresa; todas as avaliações desaparecem com ele. Para remover uma avaliação isolada mantendo o perfil, competem a denúncia ou um advogado." },
+    { q: "A RapidRemove remove avaliações falsas isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](https://www.rapid-remove.com/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; a avaliação não pode ter mais de 4 semanas e tem de conter texto. Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
     { q: "Com que rapidez nos livramos das avaliações falsas?", a: "Pela remoção do perfil, há muitas vezes resultados em 24 a 48 horas – bastante mais rápido do que a via jurídica de vários meses." },
   ],
   related: [
