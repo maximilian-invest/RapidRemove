@@ -38,3 +38,18 @@ export function payLinkFor(service: string, protection: string, currency: string
   if (express) return EXPRESS_PAYMENT_LINKS[`${service}|express|${prot}|${cur}`];
   return PAYMENT_LINKS[`${service}|${prot}|${cur}`];
 }
+
+/* Bewertungs-Produkt „Einzelne Bewertungen löschen" — 179 je Bewertung,
+ * abgerechnet NUR je tatsächlich gelöschter Bewertung. Ein Link je Stückzahl:
+ * Schlüssel `reviews|<anzahl>|<currency>` (Anzahl 1–10). Die Links legt der
+ * Admin-Button „Bewertungs-Links anlegen" (POST /admin/setup-reviews) an —
+ * gleiche Mechanik wie bei Express (setupExpressLinks). Ausgabe hier einsetzen. */
+export const REVIEWS_PAYMENT_LINKS: Record<string, string> = {
+  // ↓ per /admin/setup-reviews erzeugen und hier eintragen (reviews|1|eur … reviews|10|usd)
+};
+
+/** Zahlungslink für N gelöschte Bewertungen – oder undefined (dann Betrag-Match). */
+export function reviewsLinkFor(count: number, currency: string): string | undefined {
+  const cur = (currency || "eur").toLowerCase();
+  return REVIEWS_PAYMENT_LINKS[`reviews|${Math.max(1, Math.floor(count))}|${cur}`];
+}

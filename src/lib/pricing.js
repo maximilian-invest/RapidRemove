@@ -7,11 +7,16 @@ export const PRICES = {
   de: {
     cur: "€", sym: "€", suffix: true, // "450 €"
     deletion: "450", reset: "850", express: "149",
+    // Einzelne Bewertungen löschen — Preis JE Bewertung. Produkt ist außerhalb
+    // DACH verfügbar (siehe REVIEW_COPY/Router-Kachel im Wizard).
+    review: "179",
     protMonthly: "24,90", protMonitor: "69,90", protLifetime: "990",
   },
   en: {
     cur: "$", sym: "$", suffix: false, // "$495"
     deletion: "495", reset: "950", express: "149",
+    // Wie bei „express" bewusst derselbe Zahlenwert in beiden Währungen.
+    review: "179",
     protMonthly: "24.90", protMonitor: "69.90", protLifetime: "990",
   },
 };

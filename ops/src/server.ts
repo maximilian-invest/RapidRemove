@@ -16,8 +16,9 @@ import { hasClickSend, sendSms } from "./integrations/clicksend";
 import { hasFirstPromoter, trackSale, trackSignup } from "./integrations/firstpromoter";
 import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
-import { payLinkFor } from "./paymentLinks";
+import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
+import { runReviewsSetup } from "./reviewsSetup";
 import { startUpsellWorker } from "./upsell";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -294,6 +295,13 @@ app.post("/order", async (req, reply) => {
   // bekommt dafür die Eingangsbestätigung „Wir prüfen Ihren Fall" statt der
   // Auftragsbestätigung fürs Profil-Löschen.
   const isPress = service === "deindex";
+  // Bewertungs-Produkt: Bestellung „Einzelne Bewertungen löschen" (nur außerhalb
+  // DACH). Bekommt eine EIGENE Auftragsbestätigung, weil die die Abrechnungs-
+  // regeln festhält (nur gelöschte Bewertungen zahlen, fällig am Löschtag).
+  const isReviews = service === "reviews";
+  const reviewUrls = Array.isArray(b.reviewUrls)
+    ? (b.reviewUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]
+    : [];
   // Affiliate (FirstPromoter): lesbarer Partner-Code aus dem _fprom_ref-Cookie,
   // vom Browser mitgeschickt. Wird in interner Mail, Push und Admin angezeigt,
   // damit sofort sichtbar ist, von welchem Partner die Bestellung kommt.
@@ -303,18 +311,27 @@ app.post("/order", async (req, reply) => {
   // Diagnose: zeigt bei jeder Bestellung im Log, was zur Affiliate-Zuordnung ankam.
   app.log.info({ orderId, isPress, hasFPR: hasFirstPromoter(), fprRefIn: clip(b.fprRef, 120), fprTidIn: b.fprTid ? "yes" : "no", affiliate }, "Order: Affiliate-Eingang");
 
-  const t = TEMPLATES[isPress ? "presse-eingang" : "auftragsbestaetigung"];
+  const t = TEMPLATES[isReviews ? "auftragsbestaetigung-reviews" : isPress ? "presse-eingang" : "auftragsbestaetigung"];
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
-  const props = { lang: tlang, anrede };
-  const html = await render(React.createElement(t.component, props));
+  // Bewertungs-Produkt: Stückpreis/Maximalbetrag in der Währung der Bestellung.
+  const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
+  const revPer = revCur === "usd" ? "$179" : "179 €";
+  const revTotalNum = reviewUrls.length * 179;
+  const revTotal = revCur === "usd" ? `$${revTotalNum.toLocaleString("en-US")}` : `${revTotalNum.toLocaleString("de-DE")} €`;
+  const props = isReviews
+    ? { lang: tlang, name, urls: reviewUrls, per: revPer, total: revTotal, orderId }
+    : { lang: tlang, anrede };
+  const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
   // 1) Kundenbestätigung — nur noch für Presse-Anfragen (Eingangsbestätigung der kostenlosen
   //    Prüfung). Die Auftragsbestätigung per E-Mail bei Bestellungen ist abgeschaltet (auf
   //    Wunsch); der Kunde erhält den nächsten Schritt (Zahlungslink) separat.
-  if (isPress) {
+  // … und für das Bewertungs-Produkt: dessen Bestätigung trägt die Abrechnungs-
+  // regeln (nur gelöschte zahlen, fällig am Löschtag) — die muss der Kunde haben.
+  if (isPress || isReviews) {
     try {
-      await sendMail({ to: email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+      await sendMail({ to: email, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
       result.customer = true;
     } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
   }
@@ -987,6 +1004,64 @@ app.post("/admin/setup-express", async (req, reply) => {
   } catch (e) {
     app.log.error({ err: e }, "Express-Setup fehlgeschlagen");
     return reply.code(400).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 300) });
+  }
+});
+
+// Admin-Dashboard: Zahlungslinks fürs Bewertungs-Produkt anlegen (1–10 Stück, EUR+USD).
+// apply=false → Trockenlauf. Gleiche Mechanik wie /admin/setup-express.
+app.post("/admin/setup-reviews", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!hasSecretKey()) return reply.code(400).send({ ok: false, error: "STRIPE_SECRET_KEY nicht gesetzt" });
+  const apply = b.apply === true || b.apply === "true";
+  try {
+    const report = await runReviewsSetup({ apply });
+    return { ok: true, ...report };
+  } catch (e) {
+    app.log.error({ err: e }, "Reviews-Setup fehlgeschlagen");
+    return reply.code(400).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 300) });
+  }
+});
+
+// Admin-Dashboard: Löschbestätigung + Rechnung fürs Bewertungs-Produkt senden.
+// Abgerechnet werden NUR die als gelöscht markierten Links (Anzahl × 179),
+// fällig am Löschtag (= heute). Zahlungslink: Tabelle → Betrag-Match.
+app.post("/admin/reviews-invoice", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.email || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const removedUrls = Array.isArray(b.removedUrls)
+    ? (b.removedUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]
+    : [];
+  if (!removedUrls.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
+  const submittedCount = Math.max(Number(b.submittedCount) || 0, removedUrls.length);
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const count = removedUrls.length;
+  const totalNum = count * 179;
+
+  // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) Betrag-Match.
+  let url = reviewsLinkFor(count, currency);
+  if (!url && hasSecretKey()) {
+    try { const m = await matchPaymentLink([{ amount: totalNum * 100, interval: "once" }]); url = m.url; }
+    catch (e) { app.log.error({ err: e }, "Reviews-Link-Suche fehlgeschlagen"); }
+  }
+  if (!url) return reply.code(400).send({ ok: false, error: `Kein Stripe-Zahlungslink für ${count} Bewertung(en) (${currency}). Erst /admin/setup-reviews ausführen.` });
+
+  const orderId = clip(b.orderId, 40);
+  const tlang = mailLang(b.lang);
+  const per = currency === "usd" ? "$179" : "179 €";
+  const total = currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`;
+  try {
+    const t = TEMPLATES["loeschbestaetigung-reviews"];
+    const props = { lang: tlang, name: clip(b.name, 120), removedUrls, submittedCount, per, total, payUrl: url, orderId };
+    const html = await render(React.createElement(t.component, props as any));
+    await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: "Löschbestätigung + Rechnung (Bewertungen) gesendet", detail: `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`, html, subject: t.subject(props as any) });
+    return { ok: true, url, count, total };
+  } catch (e) {
+    app.log.error({ err: e }, "Reviews-Rechnung fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
 });
 
