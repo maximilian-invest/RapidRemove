@@ -2,7 +2,7 @@ import { ARTICLE_META, SITE_URL } from "@/lib/article-google-profil";
 import { LOCALES, localeUrl, magazineUrl } from "@/lib/locales-meta";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
 import { nestedArticleParams, articleUrl } from "@/lib/articles/catalog";
-import { PAGE_KEYS, pageUrl } from "@/lib/page-routes";
+import { PAGE_KEYS, pageUrl, pageHasLocale } from "@/lib/page-routes";
 import { HUB_PATH } from "@/lib/articles/hubs";
 
 export default function sitemap() {
@@ -33,10 +33,12 @@ export default function sitemap() {
   }));
   // Sekundärseiten (about · impressum · datenschutz · orm · deindex · kontakt)
   // in allen Sprachen — DE an der Wurzel, sonst lokalisierter Slug unter /<lang>/.
-  const prio = { orm: 0.8, deindex: 0.8, about: 0.7 };
+  const prio = { orm: 0.8, deindex: 0.8, about: 0.7, reviews: 0.8 };
   const secondary = [];
   for (const key of PAGE_KEYS) {
     for (const l of LOCALES) {
+      // Sprachen ohne eigene Fassung überspringen (reviews existiert nicht auf de)
+      if (!pageHasLocale(key, l)) continue;
       secondary.push({ url: pageUrl(key, l), lastModified: new Date(), changeFrequency: "monthly", priority: prio[key] || 0.5 });
     }
   }

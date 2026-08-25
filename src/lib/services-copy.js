@@ -345,6 +345,31 @@ for (const k of Object.keys(SVC)) {
   }
 }
 
+/* Bewertungs-Produkt „Einzelne Bewertung löschen" — Karte im Homepage-Grid und
+   im Leistungen-Menü. NUR außerhalb DACH: Deutsch bekommt die Karte bewusst
+   nicht (kein Eintrag, Schleife überspringt de), damit die deutsche Oberfläche
+   keinerlei Weg zu diesem Produkt hat. */
+const REVIEWS_CARD = {
+  en: { id: "reviews", tag: "New", ic: "starOff", t: "Remove single reviews", d: "One unfair or fake review? We remove exactly that one — $179 per removed review, only on success.", dNav: "One unfair review — pay only on success", link: "Learn more" },
+  es: { id: "reviews", tag: "Nuevo", ic: "starOff", t: "Eliminar reseñas concretas", d: "¿Una reseña injusta o falsa? Eliminamos exactamente esa — 179 € por reseña eliminada, solo si lo logramos.", dNav: "Una reseña injusta — pagas solo tras el éxito", link: "Más información" },
+  fr: { id: "reviews", tag: "Nouveau", ic: "starOff", t: "Supprimer des avis isolés", d: "Un avis injuste ou faux ? Nous supprimons exactement celui-là — 179 € par avis supprimé, uniquement en cas de succès.", dNav: "Un avis injuste — payé seulement en cas de succès", link: "En savoir plus" },
+  it: { id: "reviews", tag: "Novità", ic: "starOff", t: "Rimuovere singole recensioni", d: "Una recensione ingiusta o falsa? Rimuoviamo esattamente quella — 179 € per recensione rimossa, solo in caso di successo.", dNav: "Una recensione ingiusta — paghi solo al successo", link: "Scopri di più" },
+  nl: { id: "reviews", tag: "Nieuw", ic: "starOff", t: "Losse reviews verwijderen", d: "Eén oneerlijke of valse review? Wij verwijderen precies die — € 179 per verwijderde review, alleen bij succes.", dNav: "Eén oneerlijke review — betalen alleen bij succes", link: "Meer informatie" },
+  pt: { id: "reviews", tag: "Novidade", ic: "starOff", t: "Remover avaliações individuais", d: "Uma avaliação injusta ou falsa? Removemos exatamente essa — 179 € por avaliação removida, só em caso de sucesso.", dNav: "Uma avaliação injusta — paga só após o sucesso", link: "Saber mais" },
+  ja: { id: "reviews", tag: "新登場", ic: "starOff", t: "個別の口コミ削除", d: "不当な口コミが1件だけ？その1件を削除します。削除1件$179、成功時のみのお支払い。", dNav: "不当な口コミ1件 — 成功時のみお支払い", link: "詳しく見る" },
+  sv: { id: "reviews", tag: "Nytt", ic: "starOff", t: "Ta bort enskilda omdömen", d: "Ett orättvist eller falskt omdöme? Vi tar bort exakt det — 179 € per borttaget omdöme, bara vid framgång.", dNav: "Ett orättvist omdöme — betala bara vid framgång", link: "Läs mer" },
+  da: { id: "reviews", tag: "Nyt", ic: "starOff", t: "Fjern enkelte anmeldelser", d: "Én urimelig eller falsk anmeldelse? Vi fjerner præcis den — 179 € pr. fjernet anmeldelse, kun ved succes.", dNav: "Én urimelig anmeldelse — betal kun ved succes", link: "Læs mere" },
+  no: { id: "reviews", tag: "Nytt", ic: "starOff", t: "Fjern enkeltomtaler", d: "Én urettferdig eller falsk omtale? Vi fjerner akkurat den — 179 € per fjernet omtale, kun ved suksess.", dNav: "Én urettferdig omtale — betal kun ved suksess", link: "Les mer" },
+};
+for (const k of Object.keys(SVC)) {
+  if (k === "de") continue;
+  if (SVC[k] && Array.isArray(SVC[k].cards) && !SVC[k].cards.some((c) => c.id === "reviews")) {
+    const cards = [...SVC[k].cards];
+    cards.splice(1, 0, REVIEWS_CARD[k] || REVIEWS_CARD.en); // direkt hinter der Kern-Karte
+    SVC[k] = { ...SVC[k], cards };
+  }
+}
+
 /* Localized "Services" nav label. */
 export const SVC_NAV_LABEL = {
   de: "Leistungen", en: "Services", es: "Servicios", fr: "Services", it: "Servizi",

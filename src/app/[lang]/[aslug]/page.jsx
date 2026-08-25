@@ -7,6 +7,7 @@ import About from "@/components/About";
 import { Impressum, Datenschutz } from "@/components/Legal";
 import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
+import { ReviewsRoute } from "@/components/ReviewsServicePage";
 import Kontakt from "@/components/Kontakt";
 import { SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, NON_DEFAULT_LOCALES, magazineSlug, magazineUrl, magazineHreflangMap } from "@/lib/locales-meta";
@@ -23,6 +24,7 @@ const PAGE_COMPONENT = {
   about: About, impressum: Impressum, datenschutz: Datenschutz,
   agb: Agb, widerruf: Widerruf,
   orm: OrmRoute, deindex: DeindexRoute, seo: SeoRoute, kontakt: Kontakt,
+  reviews: ReviewsRoute, // Bewertungs-Produkt: nur außerhalb DACH (kein de-Slug → keine de-Route)
 };
 
 export function generateStaticParams() {

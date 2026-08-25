@@ -9,6 +9,7 @@ import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
+import { pagePath } from "@/lib/page-routes";
 import { SVC, ORM, DEIDX, SEO } from "@/lib/services-copy";
 import { PressSerpDemo } from "@/components/SerpDemo";
 
@@ -19,7 +20,8 @@ const ic = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shiel
 export function ServicesTrio({ onStart, onOrm, onDeindex, onSeo }) {
   const { t } = useLang();
   const s = SVC[t.code] || SVC.en;
-  const acts = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex(), seo: () => onSeo && onSeo() };
+  // Bewertungs-Karte: navigiert auf die statische Landingpage (kein SPA-View).
+  const acts = { core: () => onStart(), orm: () => onOrm && onOrm(), deindex: () => onDeindex && onDeindex(), seo: () => onSeo && onSeo(), reviews: () => { window.location.href = asset(pagePath("reviews", t.code)); } };
   return (
     <section className="band">
       <div className="container">

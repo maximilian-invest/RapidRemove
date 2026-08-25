@@ -166,3 +166,62 @@
 .freecheck-band{max-width:680px;margin:0 auto;text-align:center;background:#fff;border:1.5px solid var(--orange-200);border-radius:var(--r-xl);padding:36px;box-shadow:var(--shadow-sm);}
 .freecheck-band .fc-price{font-family:var(--font-display);font-weight:700;font-size:30px;color:var(--fg);}
 .freecheck-band .fc-sub{font-size:15px;color:var(--fg-2);margin:6px 0 22px;}
+
+/* ---- Landingpage „Einzelne Bewertung löschen" (nur außerhalb DACH) ----
+   Design-Paket rapid_new_launch_2, 1:1 übernommen; die Regeln des dort
+   entfernten Formulars (.rvw-form/.rvw-done/.rvw-add) sind weggelassen.
+   .rvw-cond ist der beschlossene Pflicht-Hinweis (4 Wochen + Text) im Hero. */
+.lp-steps.three{grid-template-columns:repeat(3,1fr);max-width:980px;margin:0 auto;}
+@media(max-width:880px){.lp-steps.three{grid-template-columns:1fr;}}
+.rvw-price{display:flex;align-items:baseline;gap:10px;margin:18px 0 6px;}
+.rvw-price .amt{font-family:var(--font-display);font-weight:700;font-size:46px;color:var(--primary);letter-spacing:-.5px;}
+.rvw-price .per{font-size:15px;font-weight:700;color:var(--fg-2);}
+.rvw-price-note{font-size:14px;color:var(--fg-muted);max-width:440px;margin:0 0 12px;}
+.rvw-cond{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;line-height:1.5;font-weight:700;color:var(--fg-2);background:var(--orange-50);border-radius:12px;padding:11px 14px;max-width:440px;margin:0 0 18px;}
+.rvw-cond svg{flex:none;color:var(--primary);margin-top:2px;}
+.rvw-demo{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-xl);padding:24px;box-shadow:var(--shadow-md);max-width:470px;margin-left:auto;}
+.rvw-head{display:flex;align-items:center;gap:9px;padding-bottom:14px;border-bottom:1px solid var(--hairline);font-size:15px;}
+.rvw-pin{width:28px;height:28px;border-radius:9px;background:var(--orange-50);color:var(--primary);display:flex;align-items:center;justify-content:center;flex:none;}
+.rvw-row{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--hairline);position:relative;align-items:flex-start;}
+.rvw-row:last-child{border-bottom:0;padding-bottom:2px;}
+.rvw-av{width:32px;height:32px;border-radius:50%;background:var(--neutral-100);color:var(--fg-2);font-family:var(--font-display);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;}
+.rvw-meta{display:flex;align-items:center;gap:8px;font-size:13.5px;margin-bottom:3px;}
+.rvw-tx p{font-size:13.5px;line-height:1.5;color:var(--fg-2);margin:0;}
+.rvw-row.bad .rvw-tx p{text-decoration:line-through;}
+.rvw-row.bad .rvw-tx,.rvw-row.bad .rvw-av{opacity:.45;}
+.rvw-gone{position:absolute;top:12px;right:0;display:inline-flex;align-items:center;gap:4px;background:var(--success-soft);color:var(--success);font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:var(--r-pill);}
+@media(max-width:880px){.rvw-demo{margin:0 auto;}}
+
+/* Wo finde ich den Link? — Anleitung + Teilen-Demo (7-s-CSS-Schleife) */
+.shd-grid{display:grid;grid-template-columns:1fr 340px;gap:48px;align-items:center;max-width:880px;margin:0 auto;}
+@media(max-width:880px){.shd-grid{grid-template-columns:1fr;gap:32px;}}
+.shd-step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start;}
+.shd-step .n{font-family:var(--font-display);font-weight:700;font-size:14px;color:#fff;background:var(--primary);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;}
+.shd-step p{font-size:15px;line-height:1.55;color:var(--fg-2);margin:3px 0 0;}
+.shd-alt{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;line-height:1.5;color:var(--fg-2);background:var(--orange-50);border-radius:12px;padding:12px 14px;margin-top:4px;}
+.shd-alt svg{flex:none;color:var(--primary);margin-top:2px;}
+.shd{position:relative;width:320px;height:190px;margin:0 auto;max-width:100%;}
+.shd-rev{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);padding:16px;display:flex;gap:12px;box-shadow:var(--shadow-sm);align-items:flex-start;}
+.shd-lines{flex:1;min-width:0;}
+.shd-lines b{font-size:13.5px;display:block;}
+.shd-lines .stars{margin-top:3px;display:inline-flex;}
+.shd-lines i{display:block;height:8px;border-radius:4px;background:var(--neutral-100);margin-top:8px;}
+.shd-lines i.w2{width:68%;}
+.shd-actions{display:flex;justify-content:flex-end;margin-top:10px;}
+.shd-share{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--fg-2);animation:shd-share 7s infinite;}
+@keyframes shd-share{0%,14%{background:transparent;color:var(--fg-2);}18%,26%{background:var(--orange-50);color:var(--primary);}32%,100%{background:transparent;color:var(--fg-2);}}
+.shd-pop{position:absolute;left:8px;right:8px;top:44px;background:#fff;border:1px solid var(--hairline);border-radius:14px;box-shadow:var(--shadow-lg);padding:14px;opacity:0;transform:translateY(6px);animation:shd-pop 7s infinite;z-index:3;}
+@keyframes shd-pop{0%,26%{opacity:0;transform:translateY(6px);}31%,88%{opacity:1;transform:translateY(0);}94%,100%{opacity:0;transform:translateY(0);}}
+.shd-pop-t{font-family:var(--font-display);font-weight:600;font-size:13.5px;}
+.shd-hint{font-size:12px;color:var(--fg-muted);margin-top:10px;}
+.shd-url{position:relative;font-size:13.5px;font-weight:700;color:var(--fg);text-decoration:underline;margin-top:6px;white-space:nowrap;overflow:hidden;animation:shd-url 7s infinite;}
+@keyframes shd-url{0%,44%{color:var(--fg);}48%,54%{color:var(--primary);}58%,100%{color:var(--fg);}}
+.shd-url .c2{position:absolute;right:0;top:-3px;display:inline-flex;align-items:center;gap:4px;background:var(--success);color:#fff;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:var(--r-pill);opacity:0;transform:scale(.9);animation:shd-c2 7s infinite;}
+@keyframes shd-c2{0%,48%{opacity:0;transform:scale(.9);}52%,88%{opacity:1;transform:scale(1);}93%,100%{opacity:0;transform:scale(.9);}}
+.shd-cursor{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--primary);border:2.5px solid #fff;box-shadow:0 2px 8px rgba(28,25,22,.35);z-index:5;pointer-events:none;opacity:0;left:160px;top:185px;animation:shd-cur 7s infinite;}
+@keyframes shd-cur{0%{left:160px;top:185px;opacity:0;transform:scale(1);}7%{opacity:1;}16%{left:288px;top:128px;transform:scale(1);}20%{left:288px;top:128px;transform:scale(.72);}24%,34%{left:288px;top:128px;transform:scale(1);}44%{left:130px;top:122px;transform:scale(1);}48%{left:130px;top:122px;transform:scale(.72);}53%{left:130px;top:122px;transform:scale(1);}62%{opacity:1;}74%{opacity:0;left:130px;top:150px;}100%{opacity:0;left:160px;top:185px;}}
+@media (prefers-reduced-motion:reduce){
+.shd-share,.shd-pop,.shd-url,.shd-url .c2,.shd-cursor{animation:none;}
+.shd-pop{opacity:1;transform:none;}
+.shd-cursor{display:none;}
+}
