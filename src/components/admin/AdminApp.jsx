@@ -1336,11 +1336,12 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
 function ReviewsInvoicePanel({ o, toast }) {
-  const urls = o.reviewUrls && o.reviewUrls.length ? o.reviewUrls : [];
-  const [sel, setSel] = React.useState({});   // url -> true (gelöscht)
+  // Je Eintrag Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative ohne Link).
+  const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : [];
+  const [sel, setSel] = React.useState({});   // Index -> true (gelöscht)
   const [sending, setSending] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
-  const chosen = urls.filter((u) => sel[u]);
+  const chosen = items.filter((it, i) => sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
   const per = cur === "usd" ? "$179" : "179 €";
   const total = chosen.length * 179;
@@ -1351,23 +1352,25 @@ function ReviewsInvoicePanel({ o, toast }) {
     try {
       const r = await sendReviewsInvoice({
         orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur,
-        removedUrls: chosen, submittedCount: urls.length,
+        removedItems: chosen, submittedCount: items.length,
       });
       setSentAt(new Date());
       toast(`Löschbestätigung + Rechnung über ${r.total} an ${o.email} gesendet ✓`);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setSending(false);
   };
-  if (!urls.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungs-Links am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
+  if (!items.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungen am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
   return (
     <div>
       <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
-        {urls.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
+        {items.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
       </div>
-      {urls.map((u) => (
-        <label key={u} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
-          <input type="checkbox" checked={!!sel[u]} onChange={() => setSel((m) => ({ ...m, [u]: !m[u] }))} style={{ marginTop: 2 }} />
-          <a href={u} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 600, wordBreak: "break-all" }}>{u}</a>
+      {items.map((it, i) => (
+        <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
+          <input type="checkbox" checked={!!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
+          {it.url
+            ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 600, wordBreak: "break-all" }}>{it.url}</a>
+            : <span style={{ fontWeight: 600 }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
         </label>
       ))}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>

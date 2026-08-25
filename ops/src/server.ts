@@ -299,9 +299,25 @@ app.post("/order", async (req, reply) => {
   // DACH). Bekommt eine EIGENE Auftragsbestätigung, weil die die Abrechnungs-
   // regeln festhält (nur gelöschte Bewertungen zahlen, fällig am Löschtag).
   const isReviews = service === "reviews";
-  const reviewUrls = Array.isArray(b.reviewUrls)
-    ? (b.reviewUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]
-    : [];
+  // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
+  // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
+  type ReviewItem = { url?: string; name?: string; text?: string };
+  const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
+    ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
+        const o = (raw || {}) as Record<string, unknown>;
+        const url = httpUrl(o.url, 400);
+        const nm = clip(o.name, 80);
+        const tx = clip(o.text, 400);
+        if (url) return { url } as ReviewItem;
+        if (nm && tx) return { name: nm, text: tx } as ReviewItem;
+        return null;
+      }).filter(Boolean) as ReviewItem[]
+    : Array.isArray(b.reviewUrls)
+      ? ((b.reviewUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]).map((u) => ({ url: u }))
+      : [];
+  const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
+  // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
+  if (isReviews) (b as Record<string, unknown>).reviewItems = reviewItems;
   // Affiliate (FirstPromoter): lesbarer Partner-Code aus dem _fprom_ref-Cookie,
   // vom Browser mitgeschickt. Wird in interner Mail, Push und Admin angezeigt,
   // damit sofort sichtbar ist, von welchem Partner die Bestellung kommt.
@@ -316,10 +332,10 @@ app.post("/order", async (req, reply) => {
   // Bewertungs-Produkt: Stückpreis/Maximalbetrag in der Währung der Bestellung.
   const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
   const revPer = revCur === "usd" ? "$179" : "179 €";
-  const revTotalNum = reviewUrls.length * 179;
+  const revTotalNum = reviewItems.length * 179;
   const revTotal = revCur === "usd" ? `$${revTotalNum.toLocaleString("en-US")}` : `${revTotalNum.toLocaleString("de-DE")} €`;
   const props = isReviews
-    ? { lang: tlang, name, urls: reviewUrls, per: revPer, total: revTotal, orderId }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, orderId }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -1031,13 +1047,23 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  const removedUrls = Array.isArray(b.removedUrls)
-    ? (b.removedUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]
-    : [];
-  if (!removedUrls.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
-  const submittedCount = Math.max(Number(b.submittedCount) || 0, removedUrls.length);
+  type RemovedItem = { url?: string; name?: string; text?: string };
+  const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
+    : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
+  const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
+    if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
+    const o = (raw || {}) as Record<string, unknown>;
+    const url = httpUrl(o.url, 400);
+    const nm = clip(o.name, 80);
+    const tx = clip(o.text, 400);
+    if (url) return { url };
+    if (nm && tx) return { name: nm, text: tx };
+    return null;
+  }).filter(Boolean) as RemovedItem[];
+  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
+  const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
-  const count = removedUrls.length;
+  const count = removedItems.length;
   const totalNum = count * 179;
 
   // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) Betrag-Match.
@@ -1054,7 +1080,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedUrls, submittedCount, per, total, payUrl: url, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, orderId };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: "Löschbestätigung + Rechnung (Bewertungen) gesendet", detail: `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`, html, subject: t.subject(props as any) });

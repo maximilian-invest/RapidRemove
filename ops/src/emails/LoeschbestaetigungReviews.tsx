@@ -7,10 +7,16 @@
 import * as React from "react";
 import { EmailShell, P, NoteBox, CtaButton, Bullets, brand, type MailLang } from "./components";
 
+/** Eine gelöschte Bewertung: Teilen-Link ODER Name + Bewertungstext
+   (so, wie der Kunde sie im Wizard identifiziert hat). */
+export interface RemovedRef { url?: string; name?: string; text?: string }
+
 export interface LoeschbestaetigungReviewsProps {
   lang?: MailLang;
   name?: string;
-  /** Links der GELÖSCHTEN Bewertungen (nur diese werden berechnet). */
+  /** Die GELÖSCHTEN Bewertungen (nur diese werden berechnet). */
+  removedItems?: RemovedRef[];
+  /** Veraltet: nur Links — wird zu removedItems normalisiert. */
   removedUrls?: string[];
   /** Anzahl eingereichter Bewertungen (für „X von Y"). */
   submittedCount?: number;
@@ -210,24 +216,26 @@ export const T: Record<string, Entry> = {
 
 export function subject(p: LoeschbestaetigungReviewsProps): string {
   const t = T[p.lang || "en"] || T.en;
-  return t.subject((p.removedUrls || []).length || 1);
+  return t.subject((p.removedItems || []).length || (p.removedUrls || []).length || 1);
 }
 
-export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", orderId = "", _overrides }: LoeschbestaetigungReviewsProps = {}) {
+export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", orderId = "", _overrides }: LoeschbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
-  const n = removedUrls.length || 1;
+  const list: RemovedRef[] = removedItems.length ? removedItems : removedUrls.map((u) => ({ url: u }));
+  const n = list.length || 1;
   const of = Math.max(submittedCount, n);
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
       <P>{t.p1(n, of)}{orderId ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
 
-      {removedUrls.length ? (
+      {list.length ? (
         <React.Fragment>
           <P><strong>{t.listH}</strong></P>
-          <Bullets items={removedUrls.map((u, i) => (
-            <span key={i} style={{ wordBreak: "break-all" }}>✓ {u}</span>
-          ))} />
+          <Bullets items={list.map((it, i) => it.url
+            ? <span key={i} style={{ wordBreak: "break-all" }}>✓ {it.url}</span>
+            : <span key={i}>✓ <strong>{it.name}</strong> — “{it.text}”</span>
+          )} />
         </React.Fragment>
       ) : null}
 

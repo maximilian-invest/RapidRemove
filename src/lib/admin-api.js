@@ -99,8 +99,11 @@ function mapOrder(r) {
     id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, doneAt: r.done_at || null, name: r.name || "", email: r.email || "", phone: r.phone || "",
     company: r.company || "", profile: r.profile || "", reviews: Number(r.reviews) || 0, rating: r.rating || "—",
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
-    // Bewertungs-Produkt: eingereichte Links (aus dem raw-JSON der Bestellung).
-    reviewUrls: (r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean) : [],
+    // Bewertungs-Produkt: eingereichte Bewertungen (aus dem raw-JSON der Bestellung).
+    // Je Eintrag Teilen-Link ODER Name + Bewertungstext; ältere Bestellungen kennen nur reviewUrls.
+    reviewItems: (r.raw && Array.isArray(r.raw.reviewItems) && r.raw.reviewItems.length)
+      ? r.raw.reviewItems.filter((it) => it && (it.url || (it.name && it.text)))
+      : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
     paypal: (r.form && typeof r.form.paypal === "string") ? r.form.paypal : "", // PayPal-Wunsch (10 % Rabatt) aus dem Fragebogen – nur außerhalb DACH abgefragt
