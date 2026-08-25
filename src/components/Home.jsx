@@ -48,66 +48,17 @@ const HERO_FLOAT = {
 const HERO_PRICE_FROM = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", ja: "", sv: "från", da: "fra", no: "fra" };
 const HERO_PAY_AFTER = { de: "Zahlung erst nach Erfolg", en: "pay only after success", es: "pagas solo tras el éxito", fr: "paiement après succès", it: "paghi solo dopo il successo", nl: "betalen pas na succes", pt: "paga só após o sucesso", ja: "成功後にのみお支払い", sv: "betala först efter framgång", da: "betal først efter succes", no: "betal først etter suksess" };
 
+/* Nur Deutsch: außerhalb von DACH verkaufen wir das Löschen einzelner
+   Bewertungen inzwischen selbst (Landingpage + Wizard) — dort wäre diese
+   Argumentation ein Widerspruch. Auf Deutsch (Produkt dort nicht verfügbar)
+   bleibt sie das zentrale Verkaufsargument fürs Profil-Produkt. */
 const WP_COPY = {
   de: { eyebrow: "Unser Ansatz", title: "Wir löschen keine Einzelbewertungen — sondern das ganze Profil.",
     lead: "Einzelne Bewertungen zu entfernen ist mühsam und ungewiss: Google lehnt oft ab, und für jede gelöschte Bewertung tauchen neue auf. Wir gehen das Problem an der Wurzel an.",
     singleH: "Einzelne Bewertung löschen", single: ["Wochenlang — und oft abgelehnt", "Eine weg, neue kommen nach", "Ein Antrag pro Bewertung"],
     wholeH: "Das ganze Profil entfernen", badge: "Unser Weg", whole: ["In ~24 Stunden — Zahlung erst nach Erfolg", "Alle Bewertungen auf einmal weg", "Dauerhaft — kein Wiederauftauchen"],
     note: ["Deshalb entfernen wir bewusst das ", "komplette Profil samt aller Bewertungen", ". So sind alle schlechten Bewertungen auf einmal weg – und bleiben es."] },
-  en: { eyebrow: "Our approach", title: "We don't delete individual reviews — we remove the entire profile.",
-    lead: "Removing single reviews is tedious and uncertain: Google often refuses, and for every review deleted, new ones appear. We tackle the problem at the root.",
-    singleH: "Delete a single review", single: ["Weeks — and often refused", "One gone, new ones follow", "One request per review"],
-    wholeH: "Remove the whole profile", badge: "Our way", whole: ["In ~24 hours — pay only after success", "All reviews gone at once", "Permanent — no reappearing"],
-    note: ["That's why we deliberately remove the ", "complete profile with all its reviews", ". Final, not piecemeal."] },
-  es: { eyebrow: "Nuestro enfoque", title: "No eliminamos reseñas individuales: quitamos el perfil completo.",
-    lead: "Eliminar reseñas sueltas es tedioso e incierto: Google suele rechazarlo y, por cada reseña borrada, aparecen nuevas. Atacamos el problema de raíz.",
-    singleH: "Eliminar una reseña suelta", single: ["Semanas, y a menudo rechazado", "Una fuera, llegan nuevas", "Una solicitud por reseña"],
-    wholeH: "Quitar el perfil completo", badge: "Nuestra vía", whole: ["En ~24 horas — pagas solo tras el éxito", "Todas las reseñas fuera de una vez", "Permanente, sin reaparición"],
-    note: ["Por eso eliminamos a propósito el ", "perfil completo con todas sus reseñas", ". Definitivo, no a trozos."] },
-  fr: { eyebrow: "Notre approche", title: "Nous ne supprimons pas les avis un par un — nous retirons toute la fiche.",
-    lead: "Supprimer des avis isolés est laborieux et incertain : Google refuse souvent, et pour chaque avis supprimé, de nouveaux apparaissent. Nous traitons le problème à la racine.",
-    singleH: "Supprimer un avis isolé", single: ["Des semaines, et souvent refusé", "Un retiré, d'autres arrivent", "Une demande par avis"],
-    wholeH: "Retirer toute la fiche", badge: "Notre voie", whole: ["En ~24 heures — paiement après succès", "Tous les avis retirés d'un coup", "Permanent, sans réapparition"],
-    note: ["C'est pourquoi nous retirons délibérément la ", "fiche complète avec tous ses avis", ". Définitif, pas au compte-gouttes."] },
-  it: { eyebrow: "Il nostro approccio", title: "Non eliminiamo le singole recensioni: rimuoviamo l'intero profilo.",
-    lead: "Rimuovere singole recensioni è faticoso e incerto: Google spesso rifiuta e, per ogni recensione eliminata, ne arrivano di nuove. Affrontiamo il problema alla radice.",
-    singleH: "Eliminare una singola recensione", single: ["Settimane, e spesso rifiutato", "Una via, ne arrivano di nuove", "Una richiesta per recensione"],
-    wholeH: "Rimuovere l'intero profilo", badge: "La nostra via", whole: ["In ~24 ore — paghi solo dopo il successo", "Tutte le recensioni via in una volta", "Permanente, senza ricomparse"],
-    note: ["Per questo rimuoviamo di proposito il ", "profilo completo con tutte le recensioni", ". Definitivo, non a pezzi."] },
-  nl: { eyebrow: "Onze aanpak", title: "We verwijderen geen losse reviews — maar het hele profiel.",
-    lead: "Losse reviews verwijderen is moeizaam en onzeker: Google weigert vaak, en voor elke verwijderde review komen nieuwe terug. Wij pakken het probleem bij de wortel aan.",
-    singleH: "Eén review verwijderen", single: ["Wekenlang, en vaak geweigerd", "Eén weg, nieuwe komen erbij", "Eén verzoek per review"],
-    wholeH: "Het hele profiel verwijderen", badge: "Onze weg", whole: ["In ~24 uur — betalen pas na succes", "Alle reviews in één keer weg", "Permanent, geen terugkeer"],
-    note: ["Daarom verwijderen we bewust het ", "volledige profiel met alle reviews", ". Definitief, geen stukwerk."] },
-  pt: { eyebrow: "A nossa abordagem", title: "Não eliminamos avaliações individuais — removemos o perfil inteiro.",
-    lead: "Remover avaliações isoladas é trabalhoso e incerto: o Google recusa muitas vezes e, por cada avaliação eliminada, surgem novas. Atacamos o problema pela raiz.",
-    singleH: "Eliminar uma avaliação isolada", single: ["Semanas, e muitas vezes recusado", "Uma fora, surgem novas", "Um pedido por avaliação"],
-    wholeH: "Remover o perfil inteiro", badge: "O nosso caminho", whole: ["Em ~24 horas — paga só após o sucesso", "Todas as avaliações fora de uma vez", "Permanente, sem reaparecer"],
-    note: ["Por isso removemos de propósito o ", "perfil completo com todas as avaliações", ". Definitivo, não aos bocados."] }
 };
-
-Object.assign(WP_COPY, {
-  ja: { eyebrow: "私たちのアプローチ", title: "個別の口コミではなく、プロフィール全体を削除します。",
-    lead: "個別の口コミを消すのは手間がかかり不確実です。Googleはしばしば拒否し、削除しても新たな口コミが現れます。私たちは問題を根本から解決します。",
-    singleH: "個別の口コミを削除", single: ["何週間も ― そしてしばしば拒否される", "1件消えても新たに増える", "口コミごとに申請が必要"],
-    wholeH: "プロフィール全体を削除", badge: "私たちの方法", whole: ["約24時間 ― 支払いは成功後のみ", "すべての口コミが一度に消える", "永久 ― 再表示なし"],
-    note: ["だからこそ私たちはあえて", "すべての口コミを含むプロフィール全体", "を削除します。継ぎはぎではなく、完全に。"] },
-  sv: { eyebrow: "Vår metod", title: "Vi tar inte bort enskilda omdömen – utan hela profilen.",
-    lead: "Att ta bort enskilda omdömen är mödosamt och osäkert: Google nekar ofta, och för varje borttaget omdöme dyker nya upp. Vi angriper problemet vid roten.",
-    singleH: "Ta bort ett enskilt omdöme", single: ["Veckor – och ofta nekat", "Ett borta, nya tillkommer", "En begäran per omdöme"],
-    wholeH: "Ta bort hela profilen", badge: "Vår väg", whole: ["På ~24 timmar — betala först vid framgång", "Alla omdömen borta på en gång", "Permanent – ingen återkomst"],
-    note: ["Därför tar vi medvetet bort ", "hela profilen med alla omdömen", ". Slutgiltigt, inte styckevis."] },
-  da: { eyebrow: "Vores tilgang", title: "Vi fjerner ikke enkelte anmeldelser – men hele profilen.",
-    lead: "At fjerne enkelte anmeldelser er besværligt og usikkert: Google afviser ofte, og for hver fjernet anmeldelse dukker nye op. Vi angriber problemet ved roden.",
-    singleH: "Fjern en enkelt anmeldelse", single: ["Ugevis – og ofte afvist", "Én væk, nye kommer til", "Én anmodning pr. anmeldelse"],
-    wholeH: "Fjern hele profilen", badge: "Vores vej", whole: ["På ~24 timer — betal kun ved succes", "Alle anmeldelser væk på én gang", "Permanent – ingen genkomst"],
-    note: ["Derfor fjerner vi bevidst ", "hele profilen med alle anmeldelser", ". Endeligt, ikke stykkevis."] },
-  no: { eyebrow: "Vår tilnærming", title: "Vi fjerner ikke enkeltomtaler – men hele profilen.",
-    lead: "Å fjerne enkeltomtaler er møysommelig og usikkert: Google avslår ofte, og for hver fjernet omtale dukker nye opp. Vi angriper problemet ved roten.",
-    singleH: "Fjern en enkelt omtale", single: ["Ukevis – og ofte avslått", "Én borte, nye kommer til", "Én forespørsel per omtale"],
-    wholeH: "Fjern hele profilen", badge: "Vår vei", whole: ["På ~24 timer — betal kun ved suksess", "Alle omtaler borte på én gang", "Permanent – ingen gjenkomst"],
-    note: ["Derfor fjerner vi bevisst ", "hele profilen med alle omtaler", ". Endelig, ikke stykkevis."] },
-});
 
 /* kleine Home-Labels, die früher nur DE/EN waren — jetzt in allen Sprachen */
 /* Typografische Anführungszeichen je Sprache (sonst erscheinen deutsche „…" auf EN/FR/ES). */
@@ -648,7 +599,8 @@ function VideoSection({ onStart }) {
 /* ============ WHOLE PROFILE vs SINGLE REVIEW ============ */
 function WholeProfile() {
   const { t } = useLang();
-  const c = WP_COPY[t.code] || WP_COPY.en;
+  if (t.code !== "de") return null; // Nicht-DACH: Produkt existiert — Argumentation entfernt
+  const c = WP_COPY.de;
   return (
     <section className="band tint">
       <div className="container">
