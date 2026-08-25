@@ -18,7 +18,7 @@ import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
-import { runReviewsSetup } from "./reviewsSetup";
+import { runReviewsSetup, ensureReviewsLink } from "./reviewsSetup";
 import { startUpsellWorker } from "./upsell";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -1066,13 +1066,22 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const count = removedItems.length;
   const totalNum = count * 179;
 
-  // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) Betrag-Match.
+  // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) bei Bedarf direkt
+  // in Stripe anlegen (find-or-create über metadata-Marker — kein Setup-Lauf nötig),
+  // 3) Notnagel Betrag-Match über bestehende Links.
+  const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   let url = reviewsLinkFor(count, currency);
+  if (!url && hasSecretKey()) {
+    try { url = await ensureReviewsLink(count, curSafe); }
+    catch (e) { app.log.error({ err: e }, "Reviews-Link anlegen fehlgeschlagen"); }
+  }
   if (!url && hasSecretKey()) {
     try { const m = await matchPaymentLink([{ amount: totalNum * 100, interval: "once" }]); url = m.url; }
     catch (e) { app.log.error({ err: e }, "Reviews-Link-Suche fehlgeschlagen"); }
   }
-  if (!url) return reply.code(400).send({ ok: false, error: `Kein Stripe-Zahlungslink für ${count} Bewertung(en) (${currency}). Erst /admin/setup-reviews ausführen.` });
+  if (!url) return reply.code(400).send({ ok: false, error: hasSecretKey()
+    ? `Zahlungslink für ${count} Bewertung(en) (${curSafe}) konnte nicht angelegt werden — ops-Log prüfen.`
+    : "STRIPE_SECRET_KEY fehlt auf dem ops-Server — es kann kein Zahlungslink angelegt werden." });
 
   const orderId = clip(b.orderId, 40);
   const tlang = mailLang(b.lang);
