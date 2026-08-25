@@ -395,7 +395,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active 
   if (onDeindex) svcAct.deindex = () => onDeindex();
   if (onSeo) svcAct.seo = () => onSeo();
   // Crawlbare Ziele für die Service-Links (SPA-Navigation übernimmt der onClick).
-  const svcHref = { core: asset(pagePath("wizard", t.code)), orm: asset(pagePath("orm", t.code)), deindex: asset(pagePath("deindex", t.code)), seo: asset(pagePath("seo", t.code)) };
+  const svcHref = { core: asset(pagePath("wizard", t.code)), orm: asset(pagePath("orm", t.code)), deindex: asset(pagePath("deindex", t.code)), seo: asset(pagePath("seo", t.code)), reviews: asset(pagePath("reviews", t.code)) };
   const svcIcon = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shield);
   return (
     <React.Fragment>

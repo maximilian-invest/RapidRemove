@@ -20,11 +20,17 @@ export const PAGE_SLUGS = {
   wizard: { de: "profil-pruefen", en: "check-profile", es: "comprobar-perfil", fr: "verifier-profil", it: "verifica-profilo", nl: "profiel-checken", pt: "verificar-perfil", ja: "check", sv: "kontrollera-profil", da: "tjek-profil", no: "sjekk-profil" },
   agb: { de: "agb", en: "terms-and-conditions", es: "terminos-y-condiciones", fr: "cgv", it: "termini-e-condizioni", nl: "algemene-voorwaarden", pt: "termos-e-condicoes", ja: "terms", sv: "allmanna-villkor", da: "handelsbetingelser", no: "vilkar" },
   widerruf: { de: "widerruf", en: "right-of-withdrawal", es: "desistimiento", fr: "retractation", it: "recesso", nl: "herroepingsrecht", pt: "retratacao", ja: "withdrawal", sv: "angerratt", da: "fortrydelsesret", no: "angrerett" },
+  // Bewertungs-Produkt: NICHT in DACH — bewusst KEIN de-Slug. Die Seite wird für
+  // Deutsch weder erzeugt noch verlinkt (Guards unten überspringen fehlende Slugs).
+  reviews: { en: "remove-single-reviews", es: "eliminar-una-resena", fr: "supprimer-un-avis", it: "rimuovere-una-recensione", nl: "review-laten-verwijderen", pt: "remover-uma-avaliacao", ja: "remove-review", sv: "ta-bort-omdome", da: "fjern-anmeldelse", no: "fjern-omtale" },
 };
 
 export const PAGE_KEYS = Object.keys(PAGE_SLUGS);
 
 const slugFor = (key, lang) => (PAGE_SLUGS[key] && (PAGE_SLUGS[key][lang] || PAGE_SLUGS[key][DEFAULT_LOCALE])) || "";
+
+// Gibt es diese Seite in dieser Sprache? (reviews existiert z. B. nicht auf de)
+export const pageHasLocale = (key, lang) => !!(PAGE_SLUGS[key] && PAGE_SLUGS[key][lang]);
 
 // Navigation path (wrap with asset()): de at root, otherwise /<lang>/<slug>/.
 export const pagePath = (key, lang) => {
@@ -39,10 +45,12 @@ export const pageUrl = (key, lang) => {
 };
 
 // hreflang alternates for one page across all locales (+ x-default = de).
+// Sprachen ohne eigene Fassung (reviews: kein de) werden übersprungen;
+// fehlt de, wird en zum x-default.
 export const pageHreflang = (key) => {
   const m = {};
-  for (const l of LOCALES) m[l] = pageUrl(key, l);
-  m["x-default"] = pageUrl(key, DEFAULT_LOCALE);
+  for (const l of LOCALES) { if (!pageHasLocale(key, l)) continue; m[l] = pageUrl(key, l); }
+  m["x-default"] = pageUrl(key, pageHasLocale(key, DEFAULT_LOCALE) ? DEFAULT_LOCALE : "en");
   return m;
 };
 
@@ -52,7 +60,7 @@ export const pageParams = () => {
   for (const l of LOCALES) {
     if (l === DEFAULT_LOCALE) continue;
     // wizard hat eigene, explizite Routen (lädt App nur dort, nicht auf Artikelseiten)
-    for (const key of PAGE_KEYS) { if (key === "wizard") continue; out.push({ lang: l, aslug: slugFor(key, l) }); }
+    for (const key of PAGE_KEYS) { if (key === "wizard" || !pageHasLocale(key, l)) continue; out.push({ lang: l, aslug: slugFor(key, l) }); }
   }
   return out;
 };
