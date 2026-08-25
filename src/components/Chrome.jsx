@@ -12,6 +12,7 @@ import { pagePath } from "@/lib/page-routes";
 import { getResumeProfile } from "@/lib/resume";
 import { consentLabel } from "@/components/Consent";
 import { trackContact } from "@/lib/metaPixel";
+import { reviewsBlocked } from "@/lib/reviews-product";
 
 
 /* Externe Ziel-URLs (Footer/Navbar) */
@@ -308,6 +309,45 @@ function LangHint({ currentLang }) {
   );
 }
 
+/* ---- Announcement bar (nur außerhalb DACH) — Design-Handoff „rapid_new_launch" ----
+   Ganz oben, NICHT sticky (scrollt weg, die Nav darunter bleibt kleben). Klick
+   führt per Deep-Link direkt in die Bewertungs-Eingabe des Wizards
+   (?start=reviews) — der Kunde landet dort, wo er die Links einträgt.
+   Sichtbarkeit über reviewsBlocked: Deutsch nie, bekanntes Land DE/AT/CH nie. */
+const ANNOUNCE = {
+  en: { pill: "New", text: "Removing individual reviews is now possible" },
+  es: { pill: "Nuevo", text: "Ya es posible eliminar reseñas individuales" },
+  fr: { pill: "Nouveau", text: "La suppression d'avis individuels est désormais possible" },
+  it: { pill: "Novità", text: "Ora è possibile eliminare singole recensioni" },
+  nl: { pill: "Nieuw", text: "Losse reviews verwijderen is nu mogelijk" },
+  pt: { pill: "Novidade", text: "Já é possível remover avaliações individuais" },
+  // Nicht im Handoff (dort nur 6 Sprachen) — im selben Stil ergänzt:
+  ja: { pill: "新登場", text: "個別の口コミ削除が可能になりました" },
+  sv: { pill: "Nytt", text: "Nu går det att ta bort enskilda omdömen" },
+  da: { pill: "Nyt", text: "Det er nu muligt at fjerne enkelte anmeldelser" },
+  no: { pill: "Nytt", text: "Det er nå mulig å fjerne enkeltomtaler" },
+};
+function AnnounceBar() {
+  const { lang } = useLang();
+  const a = ANNOUNCE[lang];
+  // Geo-Sperre erst nach dem Mount prüfen — localStorage gibt es beim
+  // Server-Rendern nicht, und die Hydration soll deckungsgleich bleiben.
+  const [blocked, setBlocked] = React.useState(false);
+  React.useEffect(() => { setBlocked(reviewsBlocked(lang)); }, [lang]);
+  if (!a || lang === "de" || blocked) return null;
+  const go = () => { window.location.href = asset(pagePath("wizard", lang)) + "?start=reviews"; };
+  return (
+    <div className="announce" onClick={go} role="button" tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }}>
+      <div className="container announce-inner">
+        <span className="an-pill"><Icon.sparkle size={13} /> {a.pill}</span>
+        <span className="an-tx">{a.text}</span>
+        <span className="an-arrow"><Icon.arrowRight size={16} /></span>
+      </div>
+    </div>
+  );
+}
+
 function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active }) {
   const { t } = useLang();
   const [scrolled, setScrolled] = React.useState(false);
@@ -359,6 +399,7 @@ function Nav({ onNav, onStart, onBlog, onAbout, onOrm, onDeindex, onSeo, active 
   const svcIcon = (name) => Icon[name] || (name === "fileText" ? Icon.edit : Icon.shield);
   return (
     <React.Fragment>
+      <AnnounceBar />
       <nav className={"nav" + (scrolled ? " scrolled" : "")}>
         <div className="container nav-inner">
           <img className="nav-logo" src={asset("/assets/rapidremove-icon.png")} alt="RapidRemove" onClick={goHome} />

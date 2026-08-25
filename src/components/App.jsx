@@ -26,6 +26,10 @@ export default function App({ initialLang = "de", initialView = null, magCards =
   // wird startWizard nie aufgerufen, geprüft wird trotzdem. Beim „Weitermachen"
   // auf null gesetzt: ein wiederaufgenommener Stand ist kein neuer Check.
   const [leadSource, setLeadSource] = React.useState("wizard");
+  // Deep-Link ins Bewertungs-Produkt (?start=reviews) — öffnet den Wizard direkt
+  // in der Bewertungs-Eingabe. Nötig für Anzeigen/Mails: ohne verlinkbare URL
+  // müsste jeder Interessent die Auswahlseite finden und die Kachel klicken.
+  const [reviewsDeep, setReviewsDeep] = React.useState(false);
 
   // Eigene, lokalisierte Wizard-URL (z. B. /profil-pruefen, /it/verifica-profilo);
   // die placeId des gewählten Profils hängt als ?p= dran (teil-/wiederherstellbar).
@@ -53,8 +57,9 @@ export default function App({ initialLang = "de", initialView = null, magCards =
           fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
         }
       }
-      else if (initialView === "wizard" || params.get("start") === "1" || pid) {
+      else if (initialView === "wizard" || params.get("start") === "1" || params.get("start") === "reviews" || params.get("service") === "reviews" || pid) {
         setRoute("wizard");
+        if (params.get("start") === "reviews" || params.get("service") === "reviews") setReviewsDeep(true);
         if (pid) fetchProfileById(pid, lang).then((prof) => { if (prof) { setSeed(prof.name || ""); setSeedProfile(prof); } }).catch(() => {});
       }
       else if (view === "magazin") { window.location.replace(asset(magazinePath(lang))); return; }
@@ -118,7 +123,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
           // Erst nach dem Deep-Link-Effekt rendern → beim „Weitermachen" kein Aufblitzen
           // der „kurz vorab"-Startseite; der Wizard startet direkt im gespeicherten Schritt.
           ? <div style={{ minHeight: "82vh" }} aria-hidden />
-          : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} leadSource={leadSource} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
+          : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} leadSource={leadSource} initialReviews={reviewsDeep} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
       {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
           im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
       <WhatsAppFloat hideBubble={route === "wizard"} />

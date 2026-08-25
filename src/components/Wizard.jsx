@@ -13,6 +13,7 @@ import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
+import { reviewsBlocked } from "@/lib/reviews-product";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1512,21 +1513,9 @@ const REVIEW_COPY = {
 };
 const reviewCopy = (code) => REVIEW_COPY[code] || REVIEW_COPY.en;
 
-/* Produkt ist in DACH NICHT verfügbar. Verlässliches Signal ist die Sprache
-   (Deutsch = DACH, wie bei den nur-außerhalb-DACH-Mailvorlagen). Ist zusätzlich
-   ein Land bekannt (rr_geo, nur mit Geo-Einwilligung gesetzt), sperrt auch das. */
-function reviewsBlocked(langCode) {
-  if (langCode === "de") return true;
-  try {
-    const g = JSON.parse(localStorage.getItem("rr_geo") || "null");
-    if (g && ["DE", "AT", "CH"].includes(String(g.cc || "").toUpperCase())) return true;
-  } catch (e) { /* kein localStorage → nur Sprachregel */ }
-  return false;
-}
-
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
-function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit, onOrm, onDeindex, onSelectProfile }) {
+function Wizard({ initialName, initialProfile, initialResume, leadSource, initialReviews, onExit, onOrm, onDeindex, onSelectProfile }) {
   const { t, lang } = useLang();
   const w = t.wizard;
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
@@ -1580,6 +1569,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
   const [reviewUrls, setReviewUrls] = React.useState([""]);
   const [reviewErr, setReviewErr] = React.useState("");
   const rv = reviewCopy(t.code);
+  // Deep-Link (?start=reviews): Wizard direkt in der Bewertungs-Eingabe öffnen.
+  // Effekt statt useState-Initialwert: reviewsBlocked liest localStorage (rr_geo),
+  // das gibt es beim Server-Rendern nicht — so bleibt die Hydration deckungsgleich.
+  React.useEffect(() => {
+    if (initialReviews && !reviewsBlocked(t.code)) setReviewMode(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [unsureStep, setUnsureStep] = React.useState(0);
   const [pressData, setPressData] = React.useState({ urls: [""], email: "", desc: "", orm: "" });
   const [pressDone, setPressDone] = React.useState(false);
@@ -2104,6 +2100,22 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, onExit
             </div>
             <div className="opt-price">{money(lang, p.reset)}<small>{wm.afterSuccess}</small></div>
           </div>
+
+          {/* Bewertungs-Produkt als dritte Option (nur außerhalb DACH): Wer über
+              einen Firmennamen einsteigt, überspringt die Auswahlseite und käme
+              sonst nie daran vorbei — dieser Schritt ist der einzige, den ALLE
+              im Profil-Fluss sehen. */}
+          {!reviewsBlocked(t.code) && (
+            <div className="opt" onClick={() => setReviewMode(true)}>
+              <div className="opt-radio"></div>
+              <div className="opt-ic"><Icon.starOff size={22} /></div>
+              <div className="opt-main">
+                <div className="ot">{rv.tileT}</div>
+                <div className="od">{rv.tileD}</div>
+              </div>
+              <div className="opt-price">{money(lang, p.review)}<small>{rv.per}</small></div>
+            </div>
+          )}
         </div>
 
         <div className="wz-actions" style={{ marginTop: 22 }}>
