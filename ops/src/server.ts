@@ -9,7 +9,6 @@ import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
-import { mailLangForCountry } from "./mailLangByCountry";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
@@ -1044,8 +1043,8 @@ app.post("/admin/setup-reviews", async (req, reply) => {
 // Abgerechnet werden NUR die als gelöscht markierten Links (Anzahl × 179),
 // fällig am Löschtag (= heute). Zahlungslink: Tabelle → Betrag-Match.
 // Admin-Dashboard: „Bearbeitung gestartet"-Bestätigung für Bewertungs-Aufträge.
-// Sprache folgt dem LAND des Kunden (mailLangForCountry) — der Admin kann sie
-// je Versand überschreiben (b.lang gewinnt), sonst Land, sonst Bestell-Sprache.
+// Sprache = die, über die der Kunde gekommen ist (Sprache der Bestellung).
+// Das Produkt gibt es nicht auf Deutsch → "de" fällt auf Englisch zurück.
 app.post("/admin/reviews-start", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
@@ -1064,8 +1063,9 @@ app.post("/admin/reviews-start", async (req, reply) => {
   }).filter(Boolean) as StartItem[];
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const per = currency === "usd" ? "$179" : "179 €";
-  // Sprachwahl: ausdrücklicher Wunsch → Land → Bestell-Sprache → Englisch.
-  const tlang = b.lang ? mailLang(b.lang) : mailLang(mailLangForCountry(b.country) || b.orderLang);
+  // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
+  const raw = mailLang(b.lang);
+  const tlang = raw === "de" ? "en" : raw;
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
@@ -1075,7 +1075,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()}${b.country ? ` (Land ${String(b.country).toUpperCase()})` : ""} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     return { ok: true, lang: tlang, count: items.length };
