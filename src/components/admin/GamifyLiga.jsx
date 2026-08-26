@@ -35,6 +35,7 @@ const SERVICE_LABEL = {
   remove:  { name: "Löschung", emoji: "🗑️" },
   reset:   { name: "Neustart", emoji: "♻️" },
   express: { name: "Express",  emoji: "⚡" },
+  reviews: { name: "Review",   emoji: "⭐" },
 };
 
 /* ---- Helfer ---- */
@@ -162,6 +163,147 @@ function HeadToHead({ h2h, people }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ---- Reviews-Reiter: Head-to-Head (Erledigt / Netto-Erlös) ---- */
+function ReviewsH2H({ h2h, people }) {
+  const [scope, setScope] = React.useState("allTime");
+  const [metric, setMetric] = React.useState("done"); // done | net
+  const scopes = [["allTime", "Allzeit"], ["month", "Monat"], ["week", "Woche"]];
+  const isNet = metric === "net";
+  const data = (isNet && h2h.net ? h2h.net[scope] : h2h[scope]) || { max: 0, matthias: 0 };
+  const max = Math.max(data.max, data.matthias, 1);
+  const leader = data.max === data.matthias ? "tie" : (data.max > data.matthias ? "max" : "matthias");
+  const lead = leader === "tie" ? null : people[leader];
+  const diff = Math.abs(data.max - data.matthias);
+  const fmt = (v) => (isNet ? money(v) : v);
+  return (
+    <div className={"h2h gm-rise" + (isNet ? " vol" : "")} style={{ animationDelay: ".12s" }}>
+      <div className="h2h-head">
+        <h2><GIcon.swords size={20} style={{ color: "var(--primary)" }} /> Head-to-Head · Reviews</h2>
+        <div className="h2h-ctrls">
+          <div className="h2h-seg">
+            <button className={metric === "done" ? "on" : ""} onClick={() => setMetric("done")}>Erledigt</button>
+            <button className={metric === "net" ? "on" : ""} onClick={() => setMetric("net")}>Netto-Erlös</button>
+          </div>
+          <div className="h2h-seg">
+            {scopes.map(([id, lbl]) => (
+              <button key={id} className={scope === id ? "on" : ""} onClick={() => setScope(id)}>{lbl}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="h2h-body">
+        <div className={"h2h-winner" + (leader === "tie" ? " tie" : "")}>
+          {leader === "tie"
+            ? <span className="pill"><GIcon.swords size={15} /> Gleichstand — {fmt(data.max)} : {fmt(data.matthias)}</span>
+            : <span className="pill"><span style={{ fontSize: 15 }}>👑</span> {lead.name} führt mit +{fmt(diff)}{isNet ? "" : (diff === 1 ? " Auftrag" : " Aufträge")}</span>}
+        </div>
+        <div className="h2h-bars">
+          {["max", "matthias"].map((id) => (
+            <div key={id} className={"h2h-row " + id}>
+              <div className="who"><img src={asset(people[id].img)} alt={people[id].name} />{people[id].name}</div>
+              <div className="h2h-track"><div className={"h2h-fill " + id} style={{ width: Math.max(8, Math.round((data[id] / max) * 100)) + "%" }}></div></div>
+              <div className="val">{fmt(data[id])}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Reviews-Reiter: letzte Bewertungs-Aufträge ---- */
+function RvRecent({ recent }) {
+  return (
+    <div className="recent">
+      {recent.map((r) => (
+        <div key={r.id} className="rrow">
+          <div className="ric">⭐</div>
+          <div className="rmain">
+            <div className="rco">{r.company || r.id}</div>
+            <div className="rmeta">
+              <span className="rsvc remove">{r.reviewCount} {r.reviewCount === 1 ? "Bewertung" : "Bewertungen"}</span>
+              <span className={"rpay " + (r.paid ? "yes" : "no")}>{r.paid ? "✅ bezahlt" : (r.done ? "🗑️ erledigt" : "⏳ offen")}</span>
+              <span>Netto {money(r.net)}</span>
+              <span>· {r.id}</span>
+            </div>
+          </div>
+          <div className="rtime">{relTime(r.at)}</div>
+        </div>
+      ))}
+      {!recent.length && <div style={{ padding: "14px 4px", color: "var(--fg-muted)", fontWeight: 700, fontSize: 13.5 }}>Noch keine Bewertungs-Aufträge.</div>}
+    </div>
+  );
+}
+
+/* ---- Reviews-Reiter: Spieler-Karte ---- */
+function ReviewsCard({ person: p, fee, isLeader, delay }) {
+  const cls = p.id === "matthias" ? "mat" : "max";
+  return (
+    <div className={"pcard gm-rise " + cls} style={{ animationDelay: delay, cursor: "default" }}>
+      <div className="pc-banner">
+        {isLeader && <span className="pc-leader"><span className="crown">👑</span> Review-Führung</span>}
+      </div>
+      <div className="pc-ava-wrap">
+        <img className="pc-ava" src={asset(p.img)} alt={p.name} />
+        <span className="pc-count">{p.done}<span className="lbl">ERLEDIGT</span></span>
+      </div>
+      <div className="pc-body">
+        <div className="pc-name">{p.name}</div>
+        <div className="pc-full">{p.full}</div>
+
+        {/* Netto: Bestellwert − Vergabe-Abzug, NUR echt bezahlte Aufträge */}
+        <div className={"pc-vol " + cls}>
+          <span className="pv-ic">💰</span>
+          <span className="pv-val">{money(p.net)}</span>
+          <span className="pv-lbl">Netto (−{fee} $/€ je Auftrag)</span>
+        </div>
+
+        <div className="pc-split">
+          <div className="psp geloescht"><div className="psp-v">{p.orders}</div><div className="psp-l">⭐ Bestellungen</div></div>
+          <div className="psp bezahlt"><div className="psp-v">{p.paidCount}</div><div className="psp-l">✅ Bezahlt</div></div>
+        </div>
+
+        <div className="pc-full" style={{ marginTop: 10, fontWeight: 700 }}>📝 {p.reviews} {p.reviews === 1 ? "Bewertung" : "Bewertungen"} eingereicht</div>
+
+        <div className="pc-mini">
+          <div className="mini"><div className="mv">{p.today}</div><div className="ml">Heute</div></div>
+          <div className="mini"><div className="mv">{p.week}</div><div className="ml">Woche</div></div>
+          <div className="mini"><div className="mv">{p.month}</div><div className="ml">Monat</div></div>
+        </div>
+
+        <div className="pc-vitrine">
+          <div className="vit-head">
+            <span className="vt">Letzte Aufträge</span>
+            <span className="vc">{p.recent.length} zuletzt</span>
+          </div>
+          <RvRecent recent={p.recent} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---- Reviews-Reiter (eigener Tab): vergebene Bewertungs-Aufträge ---- */
+function ReviewsLiga({ rv }) {
+  if (!rv) {
+    return <div className="gm-wrap"><div style={{ padding: 40, color: "var(--fg-muted)", fontWeight: 700 }}>Reviews-Daten kommen mit dem nächsten ops-Deploy.</div></div>;
+  }
+  const people = rv.people;
+  return (
+    <div className="gm-wrap">
+      <div className="rvl-note">
+        ⭐ <b>Bewertungs-Aufträge</b> — wir vergeben die Aufträge: je Bestellung gehen <b>{rv.fee} $/€</b> an die Vergabe.
+        Die Liga zählt deshalb den <b>Netto-Erlös</b> (Bestellwert − {rv.fee}); der Kundenpreis bleibt 179 je Bewertung.
+      </div>
+      <div className="lb-grid">
+        <ReviewsCard person={people.max} fee={rv.fee} isLeader={rv.h2h.leader === "max"} delay="0s" />
+        <ReviewsCard person={people.matthias} fee={rv.fee} isLeader={rv.h2h.leader === "matthias"} delay=".08s" />
+      </div>
+      <ReviewsH2H h2h={rv.h2h} people={people} />
     </div>
   );
 }
@@ -555,6 +697,34 @@ const DEMO = {
     volume: { allTime: { max: 24180, matthias: 16740 }, week: { max: 4150, matthias: 2640 }, month: { max: 9870, matthias: 6480 } },
     leader: "max",
   },
+  /* Reviews-Reiter: vergebene Bewertungs-Aufträge, Netto = Bestellwert − 50. */
+  reviews: {
+    fee: 50,
+    people: {
+      max: {
+        id: "max", name: "Max", full: "Maximilian Hölzl", img: "/assets/maximilian-hoelzl.jpg",
+        orders: 6, done: 4, paidCount: 3, reviews: 11, net: 1287, today: 1, week: 3, month: 4,
+        recent: [
+          { id: "RR-2044", company: "Town & Country Landscaping", at: "2026-08-25T15:20:00Z", done: true, paid: true, reviewCount: 3, net: 487 },
+          { id: "RR-2042", company: "Miller's Diner", at: "2026-08-24T10:05:00Z", done: true, paid: true, reviewCount: 1, net: 129 },
+          { id: "RR-2039", company: "Sunrise Dental", at: "2026-08-22T09:15:00Z", done: false, paid: false, reviewCount: 2, net: 308 },
+        ],
+      },
+      matthias: {
+        id: "matthias", name: "Matthias", full: "Matthias Lang", img: "/assets/matthias-lang.webp",
+        orders: 3, done: 2, paidCount: 2, reviews: 5, net: 616, today: 0, week: 1, month: 2,
+        recent: [
+          { id: "RR-2043", company: "Bella Vita Ristorante", at: "2026-08-25T11:40:00Z", done: true, paid: true, reviewCount: 2, net: 308 },
+          { id: "RR-2036", company: "Nordic Bikes AB", at: "2026-08-21T14:00:00Z", done: true, paid: true, reviewCount: 2, net: 308 },
+        ],
+      },
+    },
+    h2h: {
+      allTime: { max: 4, matthias: 2 }, week: { max: 3, matthias: 1 }, month: { max: 4, matthias: 2 },
+      net: { allTime: { max: 1287, matthias: 616 }, week: { max: 616, matthias: 308 }, month: { max: 1287, matthias: 616 } },
+      leader: "max",
+    },
+  },
 };
 
 /* ============================================================
@@ -571,13 +741,21 @@ export function GamifyLiga() {
 
   React.useEffect(() => {
     let alive = true;
+    // Live-ReviewsBoard (people als Array) auf die Ansichts-Form {fee, people:{max,matthias}, h2h} bringen.
+    const normReviews = (b) => {
+      if (!b) return null;
+      if (!Array.isArray(b.people)) return b; // schon in Demo-/Ansichts-Form
+      const byId = {};
+      b.people.forEach((p) => { byId[p.id] = p; });
+      return byId.max && byId.matthias ? { fee: b.fee, people: byId, h2h: b.headToHead } : null;
+    };
     fetchGamification()
       .then((board) => {
         if (!alive) return;
         const byId = {};
         (board && board.people ? board.people : []).forEach((p) => { byId[p.id] = p; });
         if (byId.max && byId.matthias) {
-          setData({ people: { max: byId.max, matthias: byId.matthias }, h2h: board.headToHead });
+          setData({ people: { max: byId.max, matthias: byId.matthias }, h2h: board.headToHead, reviews: normReviews(board.reviews) });
           setLive(true);
         } else {
           setData(DEMO);
@@ -612,6 +790,10 @@ export function GamifyLiga() {
             <button className={"gm-tab" + (view === "leaderboard" ? " on" : "")} onClick={backToLeague}>
               <GIcon.trophy size={17} /> Team-Liga
             </button>
+            <button className={"gm-tab" + (view === "reviews" ? " on" : "")}
+              onClick={() => { setView("reviews"); setActiveId(null); if (typeof window !== "undefined") window.scrollTo({ top: 0 }); }}>
+              <span style={{ fontSize: 15, lineHeight: 1 }}>⭐</span> Reviews
+            </button>
             {["max", "matthias"].map((id) => (
               <button key={id} className={"gm-tab" + (view === "profile" && activeId === id ? " on" : "")}
                 onClick={() => openProfile(people[id])}>
@@ -629,7 +811,9 @@ export function GamifyLiga() {
 
       {view === "leaderboard"
         ? <Leaderboard people={people} h2h={data.h2h} onOpen={openProfile} />
-        : <PersonProfile person={people[activeId]} onBack={backToLeague} />}
+        : view === "reviews"
+          ? <ReviewsLiga rv={data.reviews} />
+          : <PersonProfile person={people[activeId]} onBack={backToLeague} />}
 
       <CelebrationOverlay data={cel} onClose={() => setCel(null)} />
     </React.Fragment>

@@ -190,7 +190,9 @@ export async function fetchGamification() {
   });
   if (!res.ok) throw new Error("HTTP " + res.status);
   const j = await res.json();
-  return j && j.db ? j.board : null;
+  if (!j || !j.db || !j.board) return null;
+  // Reviews-Reiter (vergebene Bewertungs-Aufträge) hängt am selben Endpoint.
+  return { ...j.board, reviews: j.reviews || null };
 }
 
 /** Echte E-Mail-Vorlagen aus dem ops-Backend (key, label, group, subject). */

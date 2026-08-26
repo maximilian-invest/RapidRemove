@@ -188,6 +188,106 @@ export interface Board {
   updatedAt: string;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   Bewertungs-Produkt („Einzelne Bewertungen löschen") — eigener
+   Liga-Reiter. Diese Aufträge werden VERGEBEN (extern ausgeführt):
+   je Bestellung gehen 50 (USD bzw. EUR der Bestellung) an die Vergabe.
+   Die Liga zählt deshalb je Auftrag amount − 50 als Netto-Erlös —
+   der Kundenpreis (179 je Bewertung) bleibt davon unberührt.
+   ══════════════════════════════════════════════════════════════════ */
+export const REVIEWS_FEE = 50;
+
+export interface ReviewsRow {
+  id: string;
+  assignee: Assignee | string | null;
+  amount: number | null;   // Bestellwert (eingereichte Bewertungen × 179)
+  company: string | null;
+  country: string | null;
+  createdAt: string;       // Bestell-Eingang
+  doneAt: string | null;   // gesetzt, sobald der Auftrag erledigt (status=done) ist
+  paid: boolean;           // echt bezahlt (pay='paid') – treibt den Netto-Erlös
+  reviewCount: number;     // Anzahl eingereichter Bewertungen
+}
+
+/** Netto je Bestellung: Bestellwert minus Vergabe-Abzug, nie negativ. */
+export const reviewsNet = (amount: number | null | undefined) =>
+  Math.max(0, (amount || 0) - REVIEWS_FEE);
+
+export interface ReviewsPerson {
+  id: Assignee; name: string; full: string; img: string;
+  orders: number;      // eingegangene Bewertungs-Bestellungen
+  done: number;        // davon erledigt (status=done)
+  paidCount: number;   // davon echt bezahlt
+  reviews: number;     // eingereichte Bewertungen gesamt
+  /** Netto-Erlös (amount − 50 je Bestellung), NUR echt bezahlte Aufträge. */
+  net: number; netToday: number; netWeek: number; netMonth: number;
+  today: number; week: number; month: number; // erledigte im Zeitraum
+  recent: { id: string; company: string | null; at: string; done: boolean; paid: boolean; reviewCount: number; net: number }[];
+}
+
+export function reviewsPersonStats(person: Assignee, rows: ReviewsRow[]): ReviewsPerson {
+  const at = (r: ReviewsRow) => r.doneAt || r.createdAt;
+  const mine = rows.filter((r) => r.assignee === person).sort((a, b) => (at(a) < at(b) ? -1 : 1));
+  const doneRows = mine.filter((r) => !!r.doneAt);
+  const todayKey = vDay(new Date().toISOString());
+  const monthKey = todayKey.slice(0, 7);
+  const weekAgo = Date.now() - 7 * 86400000;
+  const dToday = doneRows.filter((r) => vDay(r.doneAt as string) === todayKey);
+  const dWeek = doneRows.filter((r) => Date.parse(r.doneAt as string) >= weekAgo);
+  const dMonth = doneRows.filter((r) => vDay(r.doneAt as string).slice(0, 7) === monthKey);
+  // Netto NUR aus echt bezahlten Aufträgen — analog zum Umsatz der Lösch-Liga.
+  const netSum = (arr: ReviewsRow[]) => Math.round(arr.filter((r) => r.paid).reduce((s, r) => s + reviewsNet(r.amount), 0));
+  return {
+    ...PEOPLE[person],
+    orders: mine.length,
+    done: doneRows.length,
+    paidCount: mine.filter((r) => r.paid).length,
+    reviews: mine.reduce((s, r) => s + (r.reviewCount || 0), 0),
+    net: netSum(mine), netToday: netSum(dToday), netWeek: netSum(dWeek), netMonth: netSum(dMonth),
+    today: dToday.length, week: dWeek.length, month: dMonth.length,
+    recent: [...mine].reverse().slice(0, 6).map((r) => ({
+      id: r.id, company: r.company, at: at(r), done: !!r.doneAt, paid: r.paid,
+      reviewCount: r.reviewCount || 0, net: reviewsNet(r.amount),
+    })),
+  };
+}
+
+export interface ReviewsBoard {
+  fee: number;
+  people: ReviewsPerson[];
+  headToHead: {
+    allTime: Record<Assignee, number>;   // erledigte Aufträge
+    week: Record<Assignee, number>;
+    month: Record<Assignee, number>;
+    net: { allTime: Record<Assignee, number>; week: Record<Assignee, number>; month: Record<Assignee, number> };
+    leader: Assignee | "tie";
+  };
+  updatedAt: string;
+}
+
+/** Reviews-Leaderboard (Max + Matthias) für den eigenen Liga-Reiter. */
+export function buildReviewsBoard(rows: ReviewsRow[]): ReviewsBoard {
+  const max = reviewsPersonStats("max", rows);
+  const matthias = reviewsPersonStats("matthias", rows);
+  const leader: Assignee | "tie" = max.done === matthias.done ? "tie" : max.done > matthias.done ? "max" : "matthias";
+  return {
+    fee: REVIEWS_FEE,
+    people: [max, matthias],
+    headToHead: {
+      allTime: { max: max.done, matthias: matthias.done },
+      week: { max: max.week, matthias: matthias.week },
+      month: { max: max.month, matthias: matthias.month },
+      net: {
+        allTime: { max: max.net, matthias: matthias.net },
+        week: { max: max.netWeek, matthias: matthias.netWeek },
+        month: { max: max.netMonth, matthias: matthias.netMonth },
+      },
+      leader,
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
+
 /** Komplettes Leaderboard (Max + Matthias) für das Admin-Panel. */
 export function buildBoard(rows: DeletionRow[]): Board {
   const max = personStats("max", rows);

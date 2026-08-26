@@ -6,7 +6,7 @@
  * das Dashboard zeigt dann weiter die Demo-Daten (db:false).
  */
 import { Pool } from "pg";
-import type { DeletionRow } from "./gamification";
+import type { DeletionRow, ReviewsRow } from "./gamification";
 
 const url = process.env.DATABASE_URL || "";
 // Railway-intern (.railway.internal) und localhost brauchen kein SSL; öffentliche Proxy-URLs schon.
@@ -680,6 +680,38 @@ export async function deletionsForGamification(): Promise<DeletionRow[]> {
     doneAt: x.done_at instanceof Date ? x.done_at.toISOString() : String(x.done_at),
     express: x.express === true,
     paid: x.pay === "paid", // echte Zahlung (Reconciler/Stripe) – treibt den Umsatz, NICHT den Rang
+  }));
+}
+
+/** Alle Bewertungs-Bestellungen (service='reviews') mit Betreuer – Rohdaten für
+ *  den Reviews-Reiter der Liga. ALLE Status (auch offene zählen als Bestellung);
+ *  erledigt ist, was auf status='done' steht. Die Anzahl eingereichter
+ *  Bewertungen kommt aus dem raw-JSON (reviewCount, ersatzweise Item-Listen). */
+export async function reviewsForGamification(): Promise<ReviewsRow[]> {
+  if (!pool) return [];
+  const r = await pool.query(
+    `SELECT id, assignee, amount, company, country, pay, created_at,
+            CASE WHEN status = 'done' THEN COALESCE(done_at, created_at) END AS done_at,
+            COALESCE(
+              CASE WHEN raw->>'reviewCount' ~ '^[0-9]+$' THEN (raw->>'reviewCount')::int END,
+              CASE WHEN jsonb_typeof(raw->'reviewItems') = 'array' THEN jsonb_array_length(raw->'reviewItems') END,
+              CASE WHEN jsonb_typeof(raw->'reviewUrls') = 'array' THEN jsonb_array_length(raw->'reviewUrls') END,
+              1) AS review_count
+       FROM orders
+      WHERE service = 'reviews'
+        AND assignee IN ('max','matthias')
+      ORDER BY created_at ASC`,
+  );
+  return r.rows.map((x: any) => ({
+    id: String(x.id),
+    assignee: x.assignee ?? null,
+    amount: x.amount == null ? null : Number(x.amount),
+    company: x.company ?? null,
+    country: x.country ?? null,
+    createdAt: x.created_at instanceof Date ? x.created_at.toISOString() : String(x.created_at),
+    doneAt: x.done_at == null ? null : (x.done_at instanceof Date ? x.done_at.toISOString() : String(x.done_at)),
+    paid: x.pay === "paid",
+    reviewCount: Number(x.review_count) || 0,
   }));
 }
 
