@@ -508,6 +508,19 @@ export async function sendReviewsStart(payload) {
   return j;
 }
 
+/** Bewertungs-Produkt: Storno senden (Grund "age" = älter als 4 Wochen, "text" = kein Text). */
+export async function sendReviewsStorno(payload) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/reviews-storno", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(payload || {}) }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
 /** Bewertungs-Produkt: Löschbestätigung + Rechnung senden (nur markierte Links werden berechnet). */
 export async function sendReviewsInvoice(payload) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");

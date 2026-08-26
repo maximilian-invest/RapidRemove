@@ -31,6 +31,7 @@ import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T a
 import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubject, T as auftragsbestaetigungReviewsTexts } from "./AuftragsbestaetigungReviews";
 import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
 import BearbeitungGestartetReviews, { subject as bearbeitungGestartetReviewsSubject, T as bearbeitungGestartetReviewsTexts } from "./BearbeitungGestartetReviews";
+import StornoReviews, { subject as stornoReviewsSubject, T as stornoReviewsTexts } from "./StornoReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
@@ -138,6 +139,14 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: bearbeitungGestartetReviewsSubject,
     sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", orderId: "RR-123456" },
     texts: bearbeitungGestartetReviewsTexts,
+  },
+  "storno-reviews": {
+    label: "Storno Bewertungen (zu alt / kein Text, außerhalb DACH)",
+    group: "Storno",
+    component: StornoReviews,
+    subject: stornoReviewsSubject,
+    sample: { lang: "en", name: "Alex", reason: "age", items: [{ url: "https://maps.app.goo.gl/example1" }], orderId: "RR-123456" },
+    texts: stornoReviewsTexts,
   },
   "loeschbestaetigung-reviews": {
     label: "Löschbestätigung + Rechnung Bewertungen (außerhalb DACH)",

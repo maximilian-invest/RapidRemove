@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno } from "@/lib/admin-api";
 import { langLabel } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -1294,7 +1294,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             ) : o.service === "reviews" ? (
               <React.Fragment>
                 <h3><Icon.starOff /> Zu löschende Bewertungen</h3>
-                <ReviewsInvoicePanel o={o} toast={toast} />
+                <ReviewsInvoicePanel o={o} toast={toast} onStatus={onStatus} />
               </React.Fragment>
             ) : (
               <React.Fragment>
@@ -1369,10 +1369,65 @@ function ReviewsStartPanel({ o, items, cur, toast }) {
   );
 }
 
+/* ---------- Bewertungs-Produkt: Storno (zu alt / kein Text) ----------
+   Erfüllt eine eingereichte Bewertung die Voraussetzungen nicht, geht ein
+   Storno raus — mit genau einem der beiden Gründe. Der Auftrag wird dabei auf
+   „storniert" gesetzt. Kosten entstehen keine (Zahlung ohnehin erst nach
+   Erfolg). Sprache automatisch aus der Bestellung.
+   Versand über POST /admin/reviews-storno. */
+const RV_STORNO = [
+  { reason: "age", label: "älter als 4 Wochen", btn: "Storno: älter als 4 Wochen" },
+  { reason: "text", label: "kein Text", btn: "Storno: kein Text" },
+];
+function ReviewsStornoPanel({ o, items, toast, onStatus }) {
+  const lang = o.lang && o.lang !== "de" ? o.lang : "en";
+  const [sending, setSending] = React.useState("");
+  const [sent, setSent] = React.useState(null);
+  // Eigener Bestätigungsdialog, damit der Block in beiden Detailansichten
+  // (Drawer + Kundenakte) gleich funktioniert.
+  const [ask, setAsk] = React.useState(null);
+  const send = (reason, label) => {
+    setAsk({
+      danger: true,
+      title: "Auftrag stornieren?",
+      message: `An ${o.name} (${o.email}) geht das Storno auf ${langLabel(lang)} — Grund: ${label}. Der Auftrag wird auf „storniert" gesetzt, Kosten entstehen dem Kunden keine.`,
+      confirmLabel: "Storno senden",
+      onConfirm: async () => {
+        setSending(reason);
+        try {
+          await sendReviewsStorno({ orderId: o.id, email: o.email, name: o.name, lang, reason, items });
+          setSent(label);
+          onStatus && onStatus(o, "storniert", true);
+          toast(`Storno (${label}, ${langLabel(lang)}) an ${o.email} gesendet ✓ · Auftrag storniert`);
+        } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+        setSending("");
+      },
+    });
+  };
+  return (
+    <div className="rvs-storno">
+      <div className="rvs-h">🚫 Voraussetzungen nicht erfüllt — Storno an den Kunden</div>
+      <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.5, marginBottom: 10 }}>
+        Erklärt dem Kunden den Grund und dass ihm <b>keine Kosten</b> entstehen. Geht automatisch
+        auf <b>{langLabel(lang)}</b> raus; der Auftrag wird auf „storniert" gesetzt.
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {RV_STORNO.map((s) => (
+          <button key={s.reason} className="btn btn-sec btn-sm" disabled={!!sending} onClick={() => send(s.reason, s.label)}>
+            <Icon.ban size={15} /> {sending === s.reason ? "Sendet…" : s.btn}
+          </button>
+        ))}
+      </div>
+      {sent ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 8 }}>✓ Storno gesendet ({sent}, {langLabel(lang)}) — Auftrag storniert.</div> : null}
+      <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
+    </div>
+  );
+}
+
 /* ---------- Bewertungs-Produkt: Links + Löschbestätigung/Rechnung ---------- */
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
-function ReviewsInvoicePanel({ o, toast }) {
+function ReviewsInvoicePanel({ o, toast, onStatus }) {
   // Je Eintrag Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative ohne Link).
   const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : [];
   const [sel, setSel] = React.useState({});   // Index -> true (gelöscht)
@@ -1401,6 +1456,8 @@ function ReviewsInvoicePanel({ o, toast }) {
     <div>
       {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
       <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
+      {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}
+      {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={items} toast={toast} onStatus={onStatus} /> : null}
       <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
         {items.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
       </div>
@@ -2248,7 +2305,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div className="panel-head"><h2>{isPress ? "Auszulistende Inhalte" : o.service === "reviews" ? "Zu löschende Bewertungen" : "Profil & Leistung"}</h2></div>
             <div style={{ padding: "18px 22px" }}>
               {isPress ? <PressInfo o={o} /> : o.service === "reviews" ? (
-                <ReviewsInvoicePanel o={o} toast={toast} />
+                <ReviewsInvoicePanel o={o} toast={toast} onStatus={onStatus} />
               ) : (
                 <React.Fragment>
                   <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>

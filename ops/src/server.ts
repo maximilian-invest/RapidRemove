@@ -1085,6 +1085,48 @@ app.post("/admin/reviews-start", async (req, reply) => {
   }
 });
 
+// Admin-Dashboard: Storno eines Bewertungs-Auftrags — genau zwei Gründe:
+// "age" (älter als 4 Wochen) oder "text" (reine Sternebewertung ohne Text).
+// Sprache = die, über die der Kunde gekommen ist ("de" → Englisch).
+app.post("/admin/reviews-storno", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.email || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  const reason = b.reason === "text" ? "text" : b.reason === "age" ? "age" : null;
+  if (!reason) return reply.code(400).send({ ok: false, error: "Grund fehlt (age | text)" });
+  type StornoItem = { url?: string; name?: string; text?: string };
+  const items: StornoItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
+    if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
+    const o = (raw || {}) as Record<string, unknown>;
+    const url = httpUrl(o.url, 400);
+    const nm = clip(o.name, 80);
+    const tx = clip(o.text, 400);
+    if (url) return { url };
+    if (nm && tx) return { name: nm, text: tx };
+    return null;
+  }).filter(Boolean) as StornoItem[];
+  const raw = mailLang(b.lang);
+  const tlang = raw === "de" ? "en" : raw;
+  const orderId = clip(b.orderId, 40);
+  try {
+    const t = TEMPLATES["storno-reviews"];
+    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId };
+    const { html, subject } = await renderTemplate("storno-reviews", props as any);
+    await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    await insertEvent({
+      orderId: orderId || undefined, email: to, type: "mail",
+      title: t.label + " gesendet",
+      detail: `Grund: ${reason === "age" ? "älter als 4 Wochen" : "kein Text"} · ${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      html, subject,
+    });
+    return { ok: true, lang: tlang, reason, count: items.length };
+  } catch (e) {
+    app.log.error({ err: e }, "Reviews-Storno fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
 app.post("/admin/reviews-invoice", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
