@@ -342,3 +342,7 @@
 .h2h.vol .h2h-row{grid-template-columns:140px 1fr 120px;}
 .h2h.vol .h2h-row .val{font-size:19px;}
 @media(max-width:560px){ .h2h.vol .h2h-row{grid-template-columns:84px 1fr 96px;} .h2h.vol .h2h-row .val{font-size:15px;} }
+
+/* ---- Reviews-Reiter: Vergabe-Hinweis ---- */
+.rvl-note{display:block;background:var(--orange-50);border:1px solid var(--orange-200);border-radius:var(--r-lg);padding:14px 18px;font-size:13.5px;line-height:1.55;color:var(--fg-2);font-weight:600;margin-bottom:18px;}
+.rvl-note b{color:var(--fg);}
