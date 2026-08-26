@@ -30,6 +30,7 @@ import PaypalMahnung, { subject as paypalMahnungSubject } from "./PaypalMahnung"
 import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
 import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubject, T as auftragsbestaetigungReviewsTexts } from "./AuftragsbestaetigungReviews";
 import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
+import BearbeitungGestartetReviews, { subject as bearbeitungGestartetReviewsSubject, T as bearbeitungGestartetReviewsTexts } from "./BearbeitungGestartetReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
@@ -129,6 +130,14 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: auftragsbestaetigungReviewsSubject,
     sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", total: "$358", orderId: "RR-123456" },
     texts: auftragsbestaetigungReviewsTexts,
+  },
+  "bearbeitung-gestartet-reviews": {
+    label: "Bearbeitung gestartet (Bewertungen, außerhalb DACH)",
+    group: "Bestellung",
+    component: BearbeitungGestartetReviews,
+    subject: bearbeitungGestartetReviewsSubject,
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", orderId: "RR-123456" },
+    texts: bearbeitungGestartetReviewsTexts,
   },
   "loeschbestaetigung-reviews": {
     label: "Löschbestätigung + Rechnung Bewertungen (außerhalb DACH)",
