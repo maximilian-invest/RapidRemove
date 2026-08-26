@@ -8,7 +8,8 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart } from "@/lib/admin-api";
+import { MAIL_LANGS, langLabel, mailLangForCountry } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
 import { FORM_QUESTIONS } from "@/lib/order-form";
@@ -1332,6 +1333,62 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
   );
 }
 
+/* ---------- Bewertungs-Produkt: „Bearbeitung gestartet"-Bestätigung ----------
+   Sagt dem Kunden, dass wir den Auftrag angestoßen haben (Dauer, keine
+   Mitwirkung nötig, Abrechnung nur je gelöschter Bewertung). Die Sprache folgt
+   dem LAND des Kunden und lässt sich vor dem Versand umstellen.
+   Versand über POST /admin/reviews-start. */
+function ReviewsStartPanel({ o, items, cur, toast }) {
+  const byCountry = mailLangForCountry(o.country);
+  const fallback = o.lang && o.lang !== "de" ? o.lang : "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
+  const [lang, setLang] = React.useState(byCountry || fallback);
+  const [sending, setSending] = React.useState(false);
+  const [sentAt, setSentAt] = React.useState(null);
+  const auto = byCountry && lang === byCountry;
+  const send = async () => {
+    if (sending) return;
+    setSending(true);
+    try {
+      await sendReviewsStart({
+        orderId: o.id, email: o.email, name: o.name, country: o.country,
+        orderLang: o.lang, lang, currency: cur, items,
+      });
+      setSentAt(new Date());
+      toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓`);
+    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setSending(false);
+  };
+  return (
+    <div className="rvs-start">
+      <div className="rvs-h">🚀 Bearbeitung gestartet — Bestätigung an den Kunden</div>
+      <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.5, marginBottom: 10 }}>
+        Teilt mit, dass wir losgelegt haben: Dauer (wenige Tage bis 3 Wochen), keine Mitwirkung nötig,
+        Zahlung nur je tatsächlich gelöschter Bewertung.
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <label style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, fontWeight: 700 }}>
+          Sprache
+          <select value={lang} onChange={(e) => setLang(e.target.value)}
+            style={{ fontFamily: "inherit", fontWeight: 700, fontSize: 12.5, padding: "7px 10px", borderRadius: 9, border: "1px solid var(--hairline)", background: "#fff", color: "var(--fg)" }}>
+            {MAIL_LANGS.filter((l) => l.code !== "de").map((l) => (
+              <option key={l.code} value={l.code}>{l.label}{byCountry === l.code ? " · aus Land " + o.country : ""}</option>
+            ))}
+          </select>
+        </label>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 700 }}>
+          {auto
+            ? `automatisch aus Land ${o.country || "—"}`
+            : (byCountry ? `abweichend von Land ${o.country} (${langLabel(byCountry)})` : `Land ${o.country || "unbekannt"} — Vorauswahl ${langLabel(lang)}`)}
+        </span>
+        <button className="btn btn-pri btn-sm" disabled={sending} onClick={send}>
+          <AI.send /> {sending ? "Sendet…" : "Startbestätigung senden"}
+        </button>
+      </div>
+      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 8 }}>✓ Gesendet ({langLabel(lang)}) — erscheint im Verlauf unten.</div> : null}
+    </div>
+  );
+}
+
 /* ---------- Bewertungs-Produkt: Links + Löschbestätigung/Rechnung ---------- */
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
@@ -1362,6 +1419,8 @@ function ReviewsInvoicePanel({ o, toast }) {
   if (!items.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungen am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
   return (
     <div>
+      {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
+      <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
       <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
         {items.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
       </div>

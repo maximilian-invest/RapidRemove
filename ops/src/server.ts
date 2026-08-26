@@ -9,6 +9,7 @@ import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
 import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
+import { mailLangForCountry } from "./mailLangByCountry";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
 import { hasSecretKey, getStripeMetrics, matchPaymentLink, listPaymentLinks } from "./integrations/stripe";
@@ -1042,6 +1043,48 @@ app.post("/admin/setup-reviews", async (req, reply) => {
 // Admin-Dashboard: Löschbestätigung + Rechnung fürs Bewertungs-Produkt senden.
 // Abgerechnet werden NUR die als gelöscht markierten Links (Anzahl × 179),
 // fällig am Löschtag (= heute). Zahlungslink: Tabelle → Betrag-Match.
+// Admin-Dashboard: „Bearbeitung gestartet"-Bestätigung für Bewertungs-Aufträge.
+// Sprache folgt dem LAND des Kunden (mailLangForCountry) — der Admin kann sie
+// je Versand überschreiben (b.lang gewinnt), sonst Land, sonst Bestell-Sprache.
+app.post("/admin/reviews-start", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.email || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  type StartItem = { url?: string; name?: string; text?: string };
+  const items: StartItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
+    if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
+    const o = (raw || {}) as Record<string, unknown>;
+    const url = httpUrl(o.url, 400);
+    const nm = clip(o.name, 80);
+    const tx = clip(o.text, 400);
+    if (url) return { url };
+    if (nm && tx) return { name: nm, text: tx };
+    return null;
+  }).filter(Boolean) as StartItem[];
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const per = currency === "usd" ? "$179" : "179 €";
+  // Sprachwahl: ausdrücklicher Wunsch → Land → Bestell-Sprache → Englisch.
+  const tlang = b.lang ? mailLang(b.lang) : mailLang(mailLangForCountry(b.country) || b.orderLang);
+  const orderId = clip(b.orderId, 40);
+  try {
+    const t = TEMPLATES["bearbeitung-gestartet-reviews"];
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, orderId };
+    const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
+    await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    await insertEvent({
+      orderId: orderId || undefined, email: to, type: "mail",
+      title: t.label + " gesendet",
+      detail: `${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()}${b.country ? ` (Land ${String(b.country).toUpperCase()})` : ""} · an ${to}`,
+      html, subject,
+    });
+    return { ok: true, lang: tlang, count: items.length };
+  } catch (e) {
+    app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
 app.post("/admin/reviews-invoice", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });

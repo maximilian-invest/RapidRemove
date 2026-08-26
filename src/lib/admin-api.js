@@ -495,6 +495,19 @@ export async function markOrderPaid({ orderId, method }) {
   return j;
 }
 
+/** Bewertungs-Produkt: „Bearbeitung gestartet"-Bestätigung senden (Sprache nach Land). */
+export async function sendReviewsStart(payload) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/reviews-start", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(payload || {}) }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+
 /** Bewertungs-Produkt: Löschbestätigung + Rechnung senden (nur markierte Links werden berechnet). */
 export async function sendReviewsInvoice(payload) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
