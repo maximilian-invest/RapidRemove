@@ -8,7 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung } from "@/lib/admin-api";
 import { langLabel } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -1425,6 +1425,68 @@ function ReviewsStornoPanel({ o, items, toast, onStatus }) {
 }
 
 /* ---------- Bewertungs-Produkt: Links + Löschbestätigung/Rechnung ---------- */
+/* Mahnung für offene Bewertungs-Rechnungen: 3-stufig, Zahlung je 48 h. Stufe 3 =
+   letzte Mahnung (Kunde wird angedroht, dass die Bewertung wieder online geht).
+   Versand über POST /admin/reviews-mahnung. Erscheint (im Reviews-Abschnitt) sowohl
+   in der Desktop-Detailansicht als auch mobil → mobil absendbar. */
+function ReviewsMahnungPanel({ o, toast, onStatus }) {
+  const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : [];
+  const [sel, setSel] = React.useState(() => items.reduce((m, _it, i) => { m[i] = true; return m; }, {})); // alle vorausgewählt
+  const [sending, setSending] = React.useState(false);
+  const [armed, setArmed] = React.useState(false);      // Stufe-3-Bestätigung (2. Tipp)
+  const [sentLocal, setSentLocal] = React.useState(0);  // sofortiges Hochzählen der Stufe nach Versand
+  const chosen = items.filter((_it, i) => sel[i]);
+  const cur = o.country === "US" ? "usd" : "eur";
+  const per = cur === "usd" ? "$179" : "179 €";
+  const already = (Number(o.mahnungCount) || 0) + sentLocal;
+  const stage = Math.min(already + 1, 3);
+  const total = chosen.length * 179;
+  const fmtTotal = cur === "usd" ? "$" + total.toLocaleString("en-US") : total.toLocaleString("de-DE") + " €";
+  const label = { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
+  const send = async () => {
+    if (!chosen.length || sending) return;
+    if (stage === 3 && !armed) { setArmed(true); return; }  // erst bestätigen, dann senden
+    setSending(true);
+    try {
+      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: chosen, stage });
+      // Mahnung raus → Zahlungsstatus „Mahnung", Auftrag bleibt „Gelöscht".
+      if (onStatus) onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
+      setSentLocal((n) => n + 1); setArmed(false);
+      toast(label.replace(" senden", "") + " (" + (r.total || fmtTotal) + ") an " + o.email + " gesendet ✓");
+    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setSending(false);
+  };
+  if (!items.length) return null;
+  return (
+    <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--hairline)" }}>
+      <div className="muted" style={{ fontSize: 12, fontWeight: 800, marginBottom: 8 }}>
+        Mahnung — Zahlung offen · Stufe {stage}/3{already > 0 ? " · bereits " + already + " gesendet" : ""}
+      </div>
+      {items.map((it, i) => (
+        <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
+          <input type="checkbox" checked={!!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
+          {it.url
+            ? <span style={{ wordBreak: "break-all" }}>{it.url}</span>
+            : <span style={{ fontWeight: 600 }}>{it.name}<span className="muted"> — „{(it.text || "").length > 100 ? (it.text || "").slice(0, 100) + "…" : it.text}“</span></span>}
+        </label>
+      ))}
+      {stage === 3 ? (
+        <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--danger)", margin: "8px 0 2px" }}>
+          ⚠ Letzte Mahnung: Dem Kunden wird angedroht, dass die {chosen.length === 1 ? "Bewertung wieder veröffentlicht wird" : chosen.length + " Bewertungen wieder veröffentlicht werden"} (+ Inkasso).
+        </div>
+      ) : null}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
+        <span style={{ fontWeight: 800 }}>{chosen.length} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span></span>
+        <button className="btn btn-sec btn-sm" disabled={!chosen.length || sending} onClick={send}
+          style={armed && stage === 3 ? { background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" } : undefined}>
+          <AI.send /> {sending ? "Sendet…" : (armed && stage === 3 ? "Wirklich senden — Bewertung geht online" : label)}
+        </button>
+      </div>
+      <div className="muted" style={{ fontSize: 11, fontWeight: 600, marginTop: 6 }}>Zahlungsfrist 48 Std. · Sprache automatisch nach Kunde ({(o.lang && o.lang !== "de" ? o.lang : "en").toUpperCase()}).</div>
+    </div>
+  );
+}
+
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
 function ReviewsInvoicePanel({ o, toast, onStatus }) {
@@ -1480,6 +1542,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         </button>
       </div>
       {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. Zahlungseingang läuft über den Stripe-Abgleich.</div> : null}
+      {/* Mahnwesen: erscheint, sobald die Rechnung raus ist (gelöscht) und noch offen. */}
+      {o.status === "done" && !["paid", "refunded"].includes(o.pay) ? <ReviewsMahnungPanel o={o} toast={toast} onStatus={onStatus} /> : null}
     </div>
   );
 }

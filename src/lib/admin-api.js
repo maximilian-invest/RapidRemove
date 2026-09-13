@@ -533,3 +533,16 @@ export async function sendReviewsInvoice(payload) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/** Bewertungs-Produkt: Mahnung senden (Stufe 1–3, Zahlung binnen 48 h; Stufe 3 = letzte Mahnung). */
+export async function sendReviewsMahnung(payload) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/reviews-mahnung", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(payload || {}) }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}

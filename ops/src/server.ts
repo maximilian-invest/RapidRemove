@@ -1188,6 +1188,69 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   }
 });
 
+// Admin-Dashboard: Mahnung für einen Bewertungs-Auftrag (offene Löschbestätigungs-Rechnung).
+// 3-stufig, Zahlung jeweils binnen 48 h; bei Stufe 3 drohen wir die Wiederveröffentlichung
+// der gelöschten Bewertungen an (+ Inkasso). Event-Titel startet mit "Mahnung" → fließt in
+// die mahnung_count-Zählung (LIKE 'Mahnung%'), genau wie bei Profil-Mahnungen.
+app.post("/admin/reviews-mahnung", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const to = String(b.email || "").trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
+  type RemovedItem = { url?: string; name?: string; text?: string };
+  const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
+    : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
+  const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
+    if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
+    const o = (raw || {}) as Record<string, unknown>;
+    const url = httpUrl(o.url, 400);
+    const nm = clip(o.name, 80);
+    const tx = clip(o.text, 400);
+    if (url) return { url };
+    if (nm && tx) return { name: nm, text: tx };
+    return null;
+  }).filter(Boolean) as RemovedItem[];
+  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine offenen Bewertungen ausgewählt" });
+  const stage = [1, 2, 3].includes(Number(b.stage)) ? Number(b.stage) : 1;
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
+  const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
+  const count = removedItems.length;
+  const totalNum = count * 179;
+
+  // Zahlungslink wie bei der Rechnung auflösen (Stückzahl-Tabelle → Stripe anlegen → Betrag-Match).
+  let url = reviewsLinkFor(count, currency);
+  if (!url && hasSecretKey()) {
+    try { url = await ensureReviewsLink(count, curSafe); }
+    catch (e) { app.log.error({ err: e }, "Reviews-Mahnung-Link anlegen fehlgeschlagen"); }
+  }
+  if (!url && hasSecretKey()) {
+    try { const m = await matchPaymentLink([{ amount: totalNum * 100, interval: "once" }]); url = m.url; }
+    catch (e) { app.log.error({ err: e }, "Reviews-Mahnung-Link-Suche fehlgeschlagen"); }
+  }
+  if (!url) return reply.code(400).send({ ok: false, error: hasSecretKey()
+    ? `Zahlungslink für ${count} Bewertung(en) (${curSafe}) konnte nicht angelegt werden — ops-Log prüfen.`
+    : "STRIPE_SECRET_KEY fehlt auf dem ops-Server — es kann kein Zahlungslink angelegt werden." });
+
+  const orderId = clip(b.orderId, 40);
+  // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
+  const rawLang = mailLang(b.lang);
+  const tlang = rawLang === "de" ? "en" : rawLang;
+  const per = currency === "usd" ? "$179" : "179 €";
+  const total = currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`;
+  const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" };
+  try {
+    const t = TEMPLATES["mahnung-reviews"];
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, per, total, payUrl: url, orderId, stage };
+    const html = await render(React.createElement(t.component, props as any));
+    await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: `Mahnung (Bewertungen) gesendet · Stufe ${stage} (${STAGE_LABEL[stage]})`, detail: `${count} Bewertung(en) · ${total} · Zahlung binnen 48 h · Sprache ${tlang.toUpperCase()} · an ${to}`, html, subject: t.subject(props as any) });
+    return { ok: true, url, count, total, stage, lang: tlang };
+  } catch (e) {
+    app.log.error({ err: e }, "Reviews-Mahnung fehlgeschlagen");
+    return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
+  }
+});
+
 // Admin-Dashboard: bezahlte Einmalzahlungen (Löschung/Reset, ohne Abos) aus Stripe
 // den Bestellungen zuordnen → pay = "bezahlt". Per E-Mail ODER Name/Firma.
 app.post("/admin/reconcile-payments", async (req, reply) => {

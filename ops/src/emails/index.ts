@@ -32,6 +32,7 @@ import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubj
 import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
 import BearbeitungGestartetReviews, { subject as bearbeitungGestartetReviewsSubject, T as bearbeitungGestartetReviewsTexts } from "./BearbeitungGestartetReviews";
 import StornoReviews, { subject as stornoReviewsSubject, T as stornoReviewsTexts } from "./StornoReviews";
+import MahnungReviews, { subject as mahnungReviewsSubject, T as mahnungReviewsTexts } from "./MahnungReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
 export interface TemplateEntry {
@@ -155,6 +156,14 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: loeschbestaetigungReviewsSubject,
     sample: { lang: "en", name: "Alex", removedItems: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], submittedCount: 3, per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456" },
     texts: loeschbestaetigungReviewsTexts,
+  },
+  "mahnung-reviews": {
+    label: "Mahnung Bewertungen · 3-stufig, 48 h (außerhalb DACH)",
+    group: "Bestellung",
+    component: MahnungReviews,
+    subject: mahnungReviewsSubject,
+    sample: { lang: "en", name: "Alex", removedItems: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", total: "$358", payUrl: "https://buy.stripe.com/example", orderId: "RR-123456", stage: 3 },
+    texts: mahnungReviewsTexts,
   },
   "paypal-zahlung-bestaetigt": {
     label: "PayPal-Zahlung bestätigt (+ Schutz aktiv, außerhalb DACH)",
