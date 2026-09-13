@@ -1447,6 +1447,10 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         removedItems: chosen, submittedCount: items.length,
       });
       setSentAt(new Date());
+      // Löschbestätigung raus → Auftrag gilt als erledigt: als „Gelöscht" markieren
+      // (Zahlung „gesandt", sofern noch nicht bezahlt). Damit erscheint er in der
+      // Übersicht als gelöscht UND zählt in der Lösch-Liga (Reviews-Reiter).
+      if (onStatus) onStatus(o, "done", true, true, { pay: o.pay === "paid" ? "paid" : "sent", noEvent: o.status === "done" });
       toast(`Löschbestätigung + Rechnung über ${r.total} an ${o.email} gesendet ✓`);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setSending(false);
@@ -1475,7 +1479,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           <AI.send /> {sending ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
         </button>
       </div>
-      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — fällig heute. Zahlungseingang wie gewohnt über den Stripe-Abgleich; danach Status auf „Gelöscht" stellen.</div> : null}
+      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. Zahlungseingang läuft über den Stripe-Abgleich.</div> : null}
     </div>
   );
 }

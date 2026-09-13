@@ -1178,6 +1178,9 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: "Löschbestätigung + Rechnung (Bewertungen) gesendet", detail: `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`, html, subject: t.subject(props as any) });
+    // Die Löschbestätigung ist der Erledigt-Moment → GLÖSCHT-Hype-Push ans Team
+    // (analog zum Profil-Zahlungslink). Den „gelöscht"-Status setzt der Admin direkt danach.
+    if (orderId) await fireDeletionHypePush(orderId, clip(b.name, 120), to);
     return { ok: true, url, count, total };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Rechnung fehlgeschlagen");
