@@ -1434,15 +1434,18 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
   const [sel, setSel] = React.useState(() => items.reduce((m, _it, i) => { m[i] = true; return m; }, {})); // alle vorausgewählt
   const [sending, setSending] = React.useState(false);
   const [armed, setArmed] = React.useState(false);      // Stufe-3-Bestätigung (2. Tipp)
-  const [sentLocal, setSentLocal] = React.useState(0);  // sofortiges Hochzählen der Stufe nach Versand
+  const already = Number(o.mahnungCount) || 0;
+  // Mahnstufe wird EXPLIZIT gewählt (nicht mehr aus dem Zähler geraten). Vorschlag =
+  // nächste Stufe nach den bereits gesendeten; frei änderbar über die Stufen-Buttons.
+  const [stage, setStage] = React.useState(() => Math.min(already + 1, 3));
   const chosen = items.filter((_it, i) => sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
   const per = cur === "usd" ? "$179" : "179 €";
-  const already = (Number(o.mahnungCount) || 0) + sentLocal;
-  const stage = Math.min(already + 1, 3);
   const total = chosen.length * 179;
   const fmtTotal = cur === "usd" ? "$" + total.toLocaleString("en-US") : total.toLocaleString("de-DE") + " €";
+  const STAGES = [[1, "Erinnerung"], [2, "2. Mahnung"], [3, "Letzte Mahnung"]];
   const label = { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
+  const pickStage = (s) => { setStage(s); setArmed(false); };  // Stufenwechsel setzt die Stufe-3-Bestätigung zurück
   const send = async () => {
     if (!chosen.length || sending) return;
     if (stage === 3 && !armed) { setArmed(true); return; }  // erst bestätigen, dann senden
@@ -1451,7 +1454,8 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
       const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: chosen, stage });
       // Mahnung raus → Zahlungsstatus „Mahnung", Auftrag bleibt „Gelöscht".
       if (onStatus) onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
-      setSentLocal((n) => n + 1); setArmed(false);
+      setArmed(false);
+      setStage((s) => Math.min(s + 1, 3));  // Komfort: Vorschlag rückt auf die nächste Stufe (bleibt frei änderbar)
       toast(label.replace(" senden", "") + " (" + (r.total || fmtTotal) + ") an " + o.email + " gesendet ✓");
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setSending(false);
@@ -1460,8 +1464,20 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
   return (
     <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--hairline)" }}>
       <div className="muted" style={{ fontSize: 12, fontWeight: 800, marginBottom: 8 }}>
-        Mahnung — Zahlung offen · Stufe {stage}/3{already > 0 ? " · bereits " + already + " gesendet" : ""}
+        Mahnung — Zahlung offen{already > 0 ? " · bereits " + already + " gesendet" : ""}
       </div>
+      {/* Mahnstufe explizit wählen */}
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+        {STAGES.map(([s, lbl]) => (
+          <button key={s} type="button" onClick={() => pickStage(s)} className="btn btn-sm"
+            style={stage === s
+              ? { background: s === 3 ? "var(--danger)" : "var(--primary)", borderColor: s === 3 ? "var(--danger)" : "var(--primary)", color: "#fff", fontWeight: 800 }
+              : { background: "transparent", border: "1px solid var(--hairline)", color: "var(--fg)", fontWeight: 700 }}>
+            {s} · {lbl}
+          </button>
+        ))}
+      </div>
+      <div className="muted" style={{ fontSize: 11, fontWeight: 600, margin: "0 0 10px" }}>Stufe {stage}/3 wird gesendet.</div>
       {items.map((it, i) => (
         <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
           <input type="checkbox" checked={!!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
