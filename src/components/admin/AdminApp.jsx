@@ -1054,7 +1054,7 @@ const OFFEN_PAY = ["pending", "sent", "mahnung", "failed"];
 const isZahlungOffen = (o) => o.status === "done" && OFFEN_PAY.includes(o.pay);
 const ASSIGNEE_OPTS = [["all", "Alle Betreuer"], ["max", "Max"], ["matthias", "Matthias"], ["none", "Nicht zugewiesen"]];
 
-function Orders({ orders, openOrder, query }) {
+function Orders({ orders, openOrder, query, setQuery }) {
   const isMobile = useIsMobile();
   const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
   const [filter, setFilter] = React.useState("all");
@@ -1084,6 +1084,15 @@ function Orders({ orders, openOrder, query }) {
     : "Keine Bestellungen in diesem Filter.";
   if (isMobile) return (
     <div className="content">
+      {/* Mobile-Suche (Topbar-Suche ist auf ≤760px ausgeblendet) */}
+      <div style={{ position: "relative", marginBottom: 10 }}>
+        <span style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--fg-muted)", display: "inline-flex", pointerEvents: "none" }}><Icon.search size={17} /></span>
+        <input value={query} onChange={(e) => setQuery && setQuery(e.target.value)} inputMode="search"
+          placeholder="Bestellung, Kunde oder E-Mail suchen…"
+          style={{ width: "100%", padding: "11px 34px 11px 38px", borderRadius: 10, border: "1px solid var(--hairline-strong)", fontSize: 14, fontWeight: 600, background: "#fff", color: "var(--fg)" }} />
+        {query ? <button type="button" onClick={() => setQuery && setQuery("")} aria-label="Suche löschen"
+          style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", width: 26, height: 26, border: "none", background: "none", cursor: "pointer", color: "var(--fg-muted)", fontSize: 20, lineHeight: 1 }}>×</button> : null}
+      </div>
       <select value={assignee} onChange={(e) => setAssignee(e.target.value)} title="Nach Betreuer filtern"
         style={{ width: "100%", marginBottom: 10, padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontWeight: 700, background: "#fff", color: "var(--fg)" }}>
         {ASSIGNEE_OPTS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -2877,7 +2886,7 @@ function AdminApp() {
 
   let body;
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onCorrectPay={doCorrectPay} onMarkPaid={doMarkPaid} onAssign={setAssignee} toast={toast} />;
-  else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} />;
+  else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} setQuery={setQuery} />;
   else if (view === "checks") body = <ChecksView checks={checks} orders={orders} openOrder={openDetail} toast={toast} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;
