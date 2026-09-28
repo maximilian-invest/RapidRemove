@@ -2269,25 +2269,6 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
 
         <div className="m-dsec">
-          <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} /></span></h3>
-          <div className="m-vpipe">
-            {STATUS_FLOW.map((s, i) => {
-              const cls = i < curIdx ? "done" : i === curIdx ? "active" : "";
-              return (
-                <div className={"m-vstep " + cls} key={s.id} onClick={() => onStatus(o, s.id)}>
-                  {i < STATUS_FLOW.length - 1 && <div className="rail"></div>}
-                  <div className="m-vdot">{i < curIdx ? <Icon.check /> : i === curIdx ? <Icon.clock /> : i + 1}</div>
-                  <div><div className="pt">{s.label}{i === curIdx && <span className="now">JETZT</span>}</div><div className="pd">{s.desc}</div></div>
-                </div>
-              );
-            })}
-          </div>
-          {curIdx < STATUS_FLOW.length - 1 && (
-            <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => onStatus(o, STATUS_FLOW[curIdx + 1].id)}><Icon.arrowRight /> Weiter: {STATUS_FLOW[curIdx + 1].label}</button>
-          )}
-        </div>
-
-        <div className="m-dsec">
           {isPress ? (
             <React.Fragment>
               <h3><Icon.fileText /> Auszulistende Inhalte</h3>
@@ -2345,6 +2326,25 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         <div className="m-dsec">
           <h3><Icon.fileText /> Fragebogen</h3>
           <FragebogenBlock form={o.form} dach={o.lang === "de"} onRequest={() => sendReal("fragebogen", "Fragebogen anfordern")} />
+        </div>
+
+        <div className="m-dsec">
+          <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} /></span></h3>
+          <div className="m-vpipe">
+            {STATUS_FLOW.map((s, i) => {
+              const cls = i < curIdx ? "done" : i === curIdx ? "active" : "";
+              return (
+                <div className={"m-vstep " + cls} key={s.id} onClick={() => onStatus(o, s.id)}>
+                  {i < STATUS_FLOW.length - 1 && <div className="rail"></div>}
+                  <div className="m-vdot">{i < curIdx ? <Icon.check /> : i === curIdx ? <Icon.clock /> : i + 1}</div>
+                  <div><div className="pt">{s.label}{i === curIdx && <span className="now">JETZT</span>}</div><div className="pd">{s.desc}</div></div>
+                </div>
+              );
+            })}
+          </div>
+          {curIdx < STATUS_FLOW.length - 1 && (
+            <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => onStatus(o, STATUS_FLOW[curIdx + 1].id)}><Icon.arrowRight /> Weiter: {STATUS_FLOW[curIdx + 1].label}</button>
+          )}
         </div>
 
         <div className="m-dsec">
