@@ -3,6 +3,7 @@
    OrmPage ("Reputation verdrängen") + DeindexPage ("Presse auslisten").
    Rendered as in-page views by App.jsx, reachable from the Leistungen nav. */
 import React from "react";
+import { ExplainerVideo } from "@/components/ExplainerVideo";
 import { Icon } from "@/components/Icons";
 import { Nav, Footer, WhatsAppFloat, useReveal, useRouteShell } from "@/components/Chrome";
 import { LangContext, useLang } from "@/lib/lang-context";
@@ -101,6 +102,8 @@ export function OrmPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, 
           </div>
         </div>
       </section>
+
+      <ExplainerVideo tone="" compact />
 
       <section className="band tight soft">
         <div className="container">

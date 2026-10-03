@@ -10,6 +10,7 @@ import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath, magazinePath } from "@/lib/locales-meta";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
+import { ExplainerVideo } from "@/components/ExplainerVideo";
 
 const ABOUT_COPY = {
   de: {
@@ -244,6 +245,8 @@ function AboutInner() {
           <p className="ab-lead reveal d2">{a.lead}</p>
         </div>
       </section>
+
+      <ExplainerVideo tone="" compact />
 
       <section className="ab-mission">
         <div className="glow"></div>

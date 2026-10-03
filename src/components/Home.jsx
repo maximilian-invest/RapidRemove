@@ -10,6 +10,7 @@ import { searchProfiles } from "@/lib/places";
 import { getResumeProfile } from "@/lib/resume";
 import { ProfileDissolveDemo } from "@/components/ProfileDemo";
 import { ServicesTrio } from "@/components/ServicePages";
+import { ExplainerVideo } from "@/components/ExplainerVideo";
 import { AblaufVideo } from "@/components/AblaufVideo";
 import { TrustpilotLive, PRESS_LABEL, PRESS_LINKS } from "@/components/Proof";
 import { trackContact } from "@/lib/metaPixel";
@@ -669,6 +670,8 @@ function Home({ onStart, onBlog, onOrm, onDeindex, onSeo, scrollTarget, onScroll
       <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
+      {/* Erklärvideo direkt vor den weiteren Leistungen: „Du kommst mit deinem Problem – wir lösen es" */}
+      <ExplainerVideo tone="soft" />
       <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} onSeo={onSeo} />
       <TrustSecurity id="trust" />
       <Pricing id="pricing" onStart={onStart} />
