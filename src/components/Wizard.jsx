@@ -2329,18 +2329,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           </React.Fragment>
         ) : null}
 
-        <div className="summary" style={{ marginTop: 18 }}>
-          {reviewSumRows()}
-          <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
-          {discountNudge(reviewCount, pk) ? <div className="rv-nudge" style={{ marginTop: 8 }}>{discountNudge(reviewCount, pk)}</div> : null}
-        </div>
+        {/* Nur die schwebende Preisleiste unten — die Aufschlüsselung kommt im Checkout (Schritt 6). */}
         {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
 
         <div className="svc-cta">
           {/* Preis immer sichtbar (sticky) + Hinweis auf die nächste Rabattstufe */}
           <div className="rv-sticky">
             <span className="rv-sticky-l">
-              <span className="rv-sticky-n">{reviewCount} × · {rv.total}{rq.pct ? ` (−${rq.pct} %)` : ""}</span>
+              <span className="rv-sticky-n">{reviewCount} {pk.selected}{rq.pct ? ` · −${rq.pct} %` : ""}</span>
               {discountNudge(reviewCount, pk) ? <span className="rv-nudge">{discountNudge(reviewCount, pk)}</span> : null}
             </span>
             <span className="rv-sticky-t">{fmtMoney(lang, servicePriceNum)}</span>
