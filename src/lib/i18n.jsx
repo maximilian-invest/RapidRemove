@@ -302,7 +302,7 @@ const I18N = {
       trust: ["4.9", "260+ reviews", "As seen on heise.de", "No upfront payment", "1,000+ profiles removed"],
       assure: ["No success, no cost", "No access to your account", "Reply usually in minutes"],
       cardEyebrow: "Check for free",
-      cardTitle: "Can your profile be deleted?",
+      cardTitle: "Can your profile or reviews be deleted?",
       cardSub: "Enter your business name – we'll find your real Google profile and check in seconds whether and how fast it can be removed.",
       placeholder: "Your business name + city",
       button: "Check for free",

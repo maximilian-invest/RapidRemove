@@ -118,6 +118,12 @@ function HeroPressBadge({ lang }) {
 /* ============ HERO ============ */
 function Hero({ onStart }) {
   const { t, lang } = useLang();
+  // Schweizer Besucher auf der deutschen Seite: Bewertungen sind dort löschbar
+  // (DE/AT nicht) – Kartentitel nennt dann auch die Bewertungen.
+  const [isCH, setIsCH] = React.useState(false);
+  React.useEffect(() => {
+    try { const g = JSON.parse(localStorage.getItem("rr_geo") || "null"); setIsCH(!!g && String(g.cc || "").toUpperCase() === "CH"); } catch (e) {}
+  }, []);
   const [name, setName] = React.useState("");
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
@@ -181,7 +187,7 @@ function Hero({ onStart }) {
           <div className="cc-head">
             <span className="eyebrow" style={{ margin: 0 }}>{t.hero.cardEyebrow}</span>
           </div>
-          <div className="ttl">{t.hero.cardTitle}</div>
+          <div className="ttl">{t.code === "de" && isCH ? "Sind Ihr Profil oder Bewertungen löschbar?" : t.hero.cardTitle}</div>
           <div className="sub">{t.hero.cardSub}</div>
           <div className="cc-tp-line"><TrustpilotLive /></div>
           <div className="hero-ac" ref={acRef}>
