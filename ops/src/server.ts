@@ -20,6 +20,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink } from "./reviewsSetup";
 import { startUpsellWorker } from "./upsell";
+import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend } from "./db";
@@ -144,7 +145,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
@@ -608,6 +609,25 @@ app.post("/check", async (req, reply) => {
     }
   } catch (e) { app.log.error({ err: e }, "Prüfung speichern fehlgeschlagen"); }
   return { ok: true, id };
+});
+
+// Bewertungs-Wizard: Google-Bewertungen eines Profils (SerpApi) zum Anhaken.
+// Ohne SERPAPI_KEY → { enabled: false }, der Wizard bleibt bei der Link-Eingabe.
+const reviewHits = new Map<string, number[]>();
+app.get("/reviews", async (req, reply) => {
+  const q = (req.query || {}) as Record<string, string>;
+  if (!serpKey()) return { ok: false, enabled: false };
+  if (q.probe) return { ok: true, enabled: true };
+  const placeId = clip(q.placeId, 200);
+  if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, enabled: true, error: "bad placeId" });
+  if (!throttle(reviewHits, req.ip, 6)) return reply.code(429).send({ ok: false, enabled: true, error: "rate limited" });
+  try {
+    const reviews = await fetchPlaceReviews(placeId, mailLang(q.lang));
+    return { ok: true, enabled: true, reviews };
+  } catch (e) {
+    app.log.error({ err: e, placeId }, "SerpApi-Bewertungen fehlgeschlagen");
+    return reply.code(502).send({ ok: false, enabled: true, error: "fetch failed" });
+  }
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)

@@ -818,3 +818,27 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .press-bar .pb-logo{text-decoration:none;cursor:pointer;}
 .press-bar a.pb-logo:hover{color:var(--fg);}
 .router .router-proof{justify-content:center;}
+
+/* Bewertungs-Auswahl (SerpApi) im Bewertungs-Wizard */
+.rv-pick{margin-top:18px;border:1.5px solid var(--orange-300);border-radius:var(--r-md);background:var(--orange-50);padding:16px 18px;display:flex;flex-direction:column;gap:10px;}
+.rv-pick-h{font-family:var(--font-display);font-weight:600;font-size:15px;color:var(--fg);display:flex;align-items:center;gap:7px;}
+.rv-pick-sub{font-size:13px;line-height:1.55;color:var(--fg-2);font-weight:600;margin:0;}
+.rv-pick-note{font-size:13px;color:var(--fg-2);font-weight:600;margin:0;}
+.rv-pick-place{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13.5px;flex-wrap:wrap;}
+.rv-pick-link{background:none;border:none;color:var(--primary);font-weight:800;font-size:13px;cursor:pointer;font-family:inherit;padding:0;}
+.rv-pick-cands{display:flex;flex-direction:column;gap:7px;}
+.rv-pick-cand{text-align:left;background:#fff;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;cursor:pointer;display:flex;flex-direction:column;gap:2px;font-family:inherit;font-size:13.5px;}
+.rv-pick-cand span{font-size:12.5px;color:var(--fg-2);}
+.rv-pick-cand:hover{border-color:var(--primary);}
+.rv-pick-list{display:flex;flex-direction:column;gap:7px;max-height:420px;overflow-y:auto;padding-right:2px;}
+.rv-pick-item{display:flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--hairline);border-radius:12px;padding:10px 12px;cursor:pointer;}
+.rv-pick-item.on{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary) inset;}
+.rv-pick-item.off{opacity:.5;cursor:default;}
+.rv-pick-item input{margin-top:3px;accent-color:var(--primary);flex:none;}
+.rv-pick-body{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.rv-pick-top{font-size:13.5px;display:flex;flex-wrap:wrap;gap:6px;align-items:baseline;}
+.rv-pick-stars{color:#f5a400;letter-spacing:1px;font-size:12px;}
+.rv-pick-date,.rv-pick-why{font-size:12px;color:var(--fg-2);font-weight:600;}
+.rv-pick-why{color:var(--danger);}
+.rv-pick-text{font-size:13px;line-height:1.5;color:var(--fg-2);overflow-wrap:anywhere;}
+.rv-pick-or{margin-top:18px;font-size:12.5px;font-weight:800;color:var(--fg-2);text-transform:uppercase;letter-spacing:.04em;}

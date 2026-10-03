@@ -75,3 +75,22 @@ export async function fetchOrderFormInfo(orderId) {
     return await res.json();
   } catch (e) { return null; }
 }
+
+/** Bewertungs-Wizard: ist der SerpApi-Abruf am ops-Backend eingerichtet? */
+export async function reviewsPickerEnabled() {
+  if (!OPS) return false;
+  try {
+    const r = await fetch(OPS + "/reviews?probe=1");
+    const d = await r.json();
+    return !!(d && d.enabled);
+  } catch (e) { return false; }
+}
+
+/** Lädt die neuesten Google-Bewertungen eines Profils (über ops → SerpApi). */
+export async function fetchProfileReviews(placeId, lang) {
+  if (!OPS) throw new Error("no ops");
+  const res = await fetch(OPS + "/reviews?placeId=" + encodeURIComponent(placeId) + "&lang=" + encodeURIComponent(lang || "en"));
+  const d = await res.json().catch(() => null);
+  if (!res.ok || !d || !d.ok) throw new Error("reviews " + res.status);
+  return Array.isArray(d.reviews) ? d.reviews : [];
+}
