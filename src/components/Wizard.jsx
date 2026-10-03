@@ -13,7 +13,7 @@ import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
-import { reviewsBlocked } from "@/lib/reviews-product";
+import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -714,9 +714,9 @@ function makeCandidates(rawName, lang) {
 }
 
 /* ---- Step indicator ---- */
-function Stepper({ step, onNav }) {
+function Stepper({ step, onNav, labels: labelsOverride }) {
   const { t } = useLang();
-  const labels = t.wizard.steps;
+  const labels = labelsOverride || t.wizard.steps;
   return (
     <div className="stepper">
       <div className="stepper-track">
@@ -1525,17 +1525,17 @@ const REVIEW_COPY = {
 const reviewCopy = (code) => REVIEW_COPY[code] || REVIEW_COPY.en;
 /* Bewertungs-Auswahl über SerpApi: Profil suchen → Bewertungen anhaken. */
 const PICK_COPY = {
-  de: { h: "Bewertungen automatisch finden", sub: "Suchen Sie Ihr Unternehmen – wir laden Ihre neuesten Google-Bewertungen. Haken Sie an, welche weg sollen.", ph: "Name Ihres Unternehmens", btn: "Suchen", loading: "Bewertungen werden geladen …", none: "Keine passenden Bewertungen gefunden. Fügen Sie die Links unten manuell ein.", err: "Die Bewertungen konnten nicht geladen werden – bitte fügen Sie die Links unten ein.", old: "älter als 4 Wochen", noText: "ohne Text", or: "Oder Links manuell einfügen", change: "Anderes Profil", pickProfile: "Welches Profil ist Ihres?", selected: "ausgewählt" },
-  en: { h: "Find your reviews automatically", sub: "Search your business – we load your latest Google reviews. Tick the ones that should go.", ph: "Your business name", btn: "Search", loading: "Loading reviews …", none: "No matching reviews found. Paste the links manually below.", err: "Reviews could not be loaded – please paste the links below.", old: "older than 4 weeks", noText: "no text", or: "Or paste links manually", change: "Different profile", pickProfile: "Which profile is yours?", selected: "selected" },
-  es: { h: "Encuentre sus reseñas automáticamente", sub: "Busque su empresa: cargamos sus reseñas de Google más recientes. Marque las que deben desaparecer.", ph: "Nombre de su empresa", btn: "Buscar", loading: "Cargando reseñas …", none: "No se encontraron reseñas adecuadas. Pegue los enlaces manualmente abajo.", err: "No se pudieron cargar las reseñas: pegue los enlaces abajo.", old: "más de 4 semanas", noText: "sin texto", or: "O pegue los enlaces manualmente", change: "Otro perfil", pickProfile: "¿Cuál es su perfil?", selected: "seleccionadas" },
-  fr: { h: "Trouvez vos avis automatiquement", sub: "Recherchez votre entreprise : nous chargeons vos derniers avis Google. Cochez ceux à supprimer.", ph: "Nom de votre entreprise", btn: "Rechercher", loading: "Chargement des avis …", none: "Aucun avis correspondant. Collez les liens manuellement ci-dessous.", err: "Impossible de charger les avis – collez les liens ci-dessous.", old: "plus de 4 semaines", noText: "sans texte", or: "Ou collez les liens manuellement", change: "Autre profil", pickProfile: "Quel profil est le vôtre ?", selected: "sélectionnés" },
-  it: { h: "Trova le recensioni automaticamente", sub: "Cerca la tua attività: carichiamo le tue recensioni Google più recenti. Spunta quelle da eliminare.", ph: "Nome della tua attività", btn: "Cerca", loading: "Caricamento recensioni …", none: "Nessuna recensione adatta trovata. Incolla i link manualmente qui sotto.", err: "Impossibile caricare le recensioni: incolla i link qui sotto.", old: "più di 4 settimane", noText: "senza testo", or: "Oppure incolla i link manualmente", change: "Altro profilo", pickProfile: "Qual è il tuo profilo?", selected: "selezionate" },
-  nl: { h: "Vind uw reviews automatisch", sub: "Zoek uw bedrijf – wij laden uw nieuwste Google-reviews. Vink aan welke weg moeten.", ph: "Naam van uw bedrijf", btn: "Zoeken", loading: "Reviews laden …", none: "Geen passende reviews gevonden. Plak de links hieronder handmatig.", err: "Reviews konden niet worden geladen – plak de links hieronder.", old: "ouder dan 4 weken", noText: "zonder tekst", or: "Of plak de links handmatig", change: "Ander profiel", pickProfile: "Welk profiel is van u?", selected: "geselecteerd" },
-  pt: { h: "Encontre as suas avaliações automaticamente", sub: "Pesquise a sua empresa – carregamos as suas avaliações Google mais recentes. Marque as que devem sair.", ph: "Nome da sua empresa", btn: "Pesquisar", loading: "A carregar avaliações …", none: "Nenhuma avaliação adequada encontrada. Cole os links manualmente abaixo.", err: "Não foi possível carregar as avaliações – cole os links abaixo.", old: "mais de 4 semanas", noText: "sem texto", or: "Ou cole os links manualmente", change: "Outro perfil", pickProfile: "Qual é o seu perfil?", selected: "selecionadas" },
-  ja: { h: "口コミを自動で探す", sub: "店舗名で検索すると、最新のGoogle口コミを読み込みます。削除したい口コミにチェックを入れてください。", ph: "店舗・会社名", btn: "検索", loading: "口コミを読み込み中…", none: "該当する口コミが見つかりません。下にリンクを貼り付けてください。", err: "口コミを読み込めませんでした。下にリンクを貼り付けてください。", old: "4週間以上前", noText: "本文なし", or: "またはリンクを手動で貼り付け", change: "別のプロフィール", pickProfile: "どのプロフィールですか？", selected: "件選択" },
-  sv: { h: "Hitta dina omdömen automatiskt", sub: "Sök ditt företag – vi laddar dina senaste Google-omdömen. Bocka i de som ska bort.", ph: "Företagets namn", btn: "Sök", loading: "Laddar omdömen …", none: "Inga passande omdömen hittades. Klistra in länkarna manuellt nedan.", err: "Omdömena kunde inte laddas – klistra in länkarna nedan.", old: "äldre än 4 veckor", noText: "utan text", or: "Eller klistra in länkar manuellt", change: "Annan profil", pickProfile: "Vilken profil är din?", selected: "valda" },
-  da: { h: "Find dine anmeldelser automatisk", sub: "Søg efter din virksomhed – vi henter dine nyeste Google-anmeldelser. Sæt flueben ved dem, der skal væk.", ph: "Virksomhedens navn", btn: "Søg", loading: "Henter anmeldelser …", none: "Ingen passende anmeldelser fundet. Indsæt linkene manuelt nedenfor.", err: "Anmeldelserne kunne ikke hentes – indsæt linkene nedenfor.", old: "ældre end 4 uger", noText: "uden tekst", or: "Eller indsæt links manuelt", change: "Anden profil", pickProfile: "Hvilken profil er din?", selected: "valgt" },
-  no: { h: "Finn anmeldelsene dine automatisk", sub: "Søk etter bedriften din – vi henter de nyeste Google-anmeldelsene. Kryss av for dem som skal bort.", ph: "Bedriftens navn", btn: "Søk", loading: "Henter anmeldelser …", none: "Fant ingen passende anmeldelser. Lim inn lenkene manuelt nedenfor.", err: "Anmeldelsene kunne ikke hentes – lim inn lenkene nedenfor.", old: "eldre enn 4 uker", noText: "uten tekst", or: "Eller lim inn lenker manuelt", change: "Annen profil", pickProfile: "Hvilken profil er din?", selected: "valgt" },
+  de: { f13: "1–3 Sterne", fAll: "Alle", stepLbl: "Bewertungen", stepH: "Welche Bewertungen sollen weg?", stepSub: "Wählen Sie die Bewertungen aus, die gelöscht werden sollen. Sie zahlen nur für tatsächlich gelöschte.", empty: "Keine Bewertungen in diesem Filter.", h: "Bewertungen automatisch finden", sub: "Suchen Sie Ihr Unternehmen – wir laden Ihre neuesten Google-Bewertungen. Haken Sie an, welche weg sollen.", ph: "Name Ihres Unternehmens", btn: "Suchen", loading: "Bewertungen werden geladen …", none: "Keine passenden Bewertungen gefunden. Fügen Sie die Links unten manuell ein.", err: "Die Bewertungen konnten nicht geladen werden – bitte fügen Sie die Links unten ein.", old: "älter als 4 Wochen", noText: "ohne Text", or: "Oder Links manuell einfügen", change: "Anderes Profil", pickProfile: "Welches Profil ist Ihres?", selected: "ausgewählt" },
+  en: { f13: "1–3 stars", fAll: "All", stepLbl: "Reviews", stepH: "Which reviews should go?", stepSub: "Select the reviews you want removed. You only pay for the ones that are actually deleted.", empty: "No reviews in this filter.", h: "Find your reviews automatically", sub: "Search your business – we load your latest Google reviews. Tick the ones that should go.", ph: "Your business name", btn: "Search", loading: "Loading reviews …", none: "No matching reviews found. Paste the links manually below.", err: "Reviews could not be loaded – please paste the links below.", old: "older than 4 weeks", noText: "no text", or: "Or paste links manually", change: "Different profile", pickProfile: "Which profile is yours?", selected: "selected" },
+  es: { f13: "1–3 estrellas", fAll: "Todas", stepLbl: "Reseñas", stepH: "¿Qué reseñas deben desaparecer?", stepSub: "Seleccione las reseñas que quiere eliminar. Solo paga por las que realmente se eliminan.", empty: "No hay reseñas en este filtro.", h: "Encuentre sus reseñas automáticamente", sub: "Busque su empresa: cargamos sus reseñas de Google más recientes. Marque las que deben desaparecer.", ph: "Nombre de su empresa", btn: "Buscar", loading: "Cargando reseñas …", none: "No se encontraron reseñas adecuadas. Pegue los enlaces manualmente abajo.", err: "No se pudieron cargar las reseñas: pegue los enlaces abajo.", old: "más de 4 semanas", noText: "sin texto", or: "O pegue los enlaces manualmente", change: "Otro perfil", pickProfile: "¿Cuál es su perfil?", selected: "seleccionadas" },
+  fr: { f13: "1–3 étoiles", fAll: "Tous", stepLbl: "Avis", stepH: "Quels avis doivent disparaître ?", stepSub: "Sélectionnez les avis à supprimer. Vous ne payez que ceux réellement supprimés.", empty: "Aucun avis dans ce filtre.", h: "Trouvez vos avis automatiquement", sub: "Recherchez votre entreprise : nous chargeons vos derniers avis Google. Cochez ceux à supprimer.", ph: "Nom de votre entreprise", btn: "Rechercher", loading: "Chargement des avis …", none: "Aucun avis correspondant. Collez les liens manuellement ci-dessous.", err: "Impossible de charger les avis – collez les liens ci-dessous.", old: "plus de 4 semaines", noText: "sans texte", or: "Ou collez les liens manuellement", change: "Autre profil", pickProfile: "Quel profil est le vôtre ?", selected: "sélectionnés" },
+  it: { f13: "1–3 stelle", fAll: "Tutte", stepLbl: "Recensioni", stepH: "Quali recensioni vanno eliminate?", stepSub: "Seleziona le recensioni da eliminare. Paghi solo quelle effettivamente eliminate.", empty: "Nessuna recensione in questo filtro.", h: "Trova le recensioni automaticamente", sub: "Cerca la tua attività: carichiamo le tue recensioni Google più recenti. Spunta quelle da eliminare.", ph: "Nome della tua attività", btn: "Cerca", loading: "Caricamento recensioni …", none: "Nessuna recensione adatta trovata. Incolla i link manualmente qui sotto.", err: "Impossibile caricare le recensioni: incolla i link qui sotto.", old: "più di 4 settimane", noText: "senza testo", or: "Oppure incolla i link manualmente", change: "Altro profilo", pickProfile: "Qual è il tuo profilo?", selected: "selezionate" },
+  nl: { f13: "1–3 sterren", fAll: "Alle", stepLbl: "Reviews", stepH: "Welke reviews moeten weg?", stepSub: "Selecteer de reviews die verwijderd moeten worden. U betaalt alleen voor wat echt verwijderd is.", empty: "Geen reviews in dit filter.", h: "Vind uw reviews automatisch", sub: "Zoek uw bedrijf – wij laden uw nieuwste Google-reviews. Vink aan welke weg moeten.", ph: "Naam van uw bedrijf", btn: "Zoeken", loading: "Reviews laden …", none: "Geen passende reviews gevonden. Plak de links hieronder handmatig.", err: "Reviews konden niet worden geladen – plak de links hieronder.", old: "ouder dan 4 weken", noText: "zonder tekst", or: "Of plak de links handmatig", change: "Ander profiel", pickProfile: "Welk profiel is van u?", selected: "geselecteerd" },
+  pt: { f13: "1–3 estrelas", fAll: "Todas", stepLbl: "Avaliações", stepH: "Que avaliações devem sair?", stepSub: "Selecione as avaliações a remover. Só paga as que forem realmente removidas.", empty: "Nenhuma avaliação neste filtro.", h: "Encontre as suas avaliações automaticamente", sub: "Pesquise a sua empresa – carregamos as suas avaliações Google mais recentes. Marque as que devem sair.", ph: "Nome da sua empresa", btn: "Pesquisar", loading: "A carregar avaliações …", none: "Nenhuma avaliação adequada encontrada. Cole os links manualmente abaixo.", err: "Não foi possível carregar as avaliações – cole os links abaixo.", old: "mais de 4 semanas", noText: "sem texto", or: "Ou cole os links manualmente", change: "Outro perfil", pickProfile: "Qual é o seu perfil?", selected: "selecionadas" },
+  ja: { f13: "星1〜3", fAll: "すべて", stepLbl: "口コミ", stepH: "どの口コミを削除しますか？", stepSub: "削除したい口コミを選択してください。実際に削除された分だけお支払いいただきます。", empty: "このフィルターに該当する口コミはありません。", h: "口コミを自動で探す", sub: "店舗名で検索すると、最新のGoogle口コミを読み込みます。削除したい口コミにチェックを入れてください。", ph: "店舗・会社名", btn: "検索", loading: "口コミを読み込み中…", none: "該当する口コミが見つかりません。下にリンクを貼り付けてください。", err: "口コミを読み込めませんでした。下にリンクを貼り付けてください。", old: "4週間以上前", noText: "本文なし", or: "またはリンクを手動で貼り付け", change: "別のプロフィール", pickProfile: "どのプロフィールですか？", selected: "件選択" },
+  sv: { f13: "1–3 stjärnor", fAll: "Alla", stepLbl: "Omdömen", stepH: "Vilka omdömen ska bort?", stepSub: "Välj de omdömen som ska tas bort. Du betalar bara för de som faktiskt raderas.", empty: "Inga omdömen i det här filtret.", h: "Hitta dina omdömen automatiskt", sub: "Sök ditt företag – vi laddar dina senaste Google-omdömen. Bocka i de som ska bort.", ph: "Företagets namn", btn: "Sök", loading: "Laddar omdömen …", none: "Inga passande omdömen hittades. Klistra in länkarna manuellt nedan.", err: "Omdömena kunde inte laddas – klistra in länkarna nedan.", old: "äldre än 4 veckor", noText: "utan text", or: "Eller klistra in länkar manuellt", change: "Annan profil", pickProfile: "Vilken profil är din?", selected: "valda" },
+  da: { f13: "1–3 stjerner", fAll: "Alle", stepLbl: "Anmeldelser", stepH: "Hvilke anmeldelser skal væk?", stepSub: "Vælg de anmeldelser, der skal fjernes. Du betaler kun for dem, der faktisk slettes.", empty: "Ingen anmeldelser i dette filter.", h: "Find dine anmeldelser automatisk", sub: "Søg efter din virksomhed – vi henter dine nyeste Google-anmeldelser. Sæt flueben ved dem, der skal væk.", ph: "Virksomhedens navn", btn: "Søg", loading: "Henter anmeldelser …", none: "Ingen passende anmeldelser fundet. Indsæt linkene manuelt nedenfor.", err: "Anmeldelserne kunne ikke hentes – indsæt linkene nedenfor.", old: "ældre end 4 uger", noText: "uden tekst", or: "Eller indsæt links manuelt", change: "Anden profil", pickProfile: "Hvilken profil er din?", selected: "valgt" },
+  no: { f13: "1–3 stjerner", fAll: "Alle", stepLbl: "Anmeldelser", stepH: "Hvilke anmeldelser skal bort?", stepSub: "Velg anmeldelsene som skal fjernes. Du betaler bare for dem som faktisk slettes.", empty: "Ingen anmeldelser i dette filteret.", h: "Finn anmeldelsene dine automatisk", sub: "Søk etter bedriften din – vi henter de nyeste Google-anmeldelsene. Kryss av for dem som skal bort.", ph: "Bedriftens navn", btn: "Søk", loading: "Henter anmeldelser …", none: "Fant ingen passende anmeldelser. Lim inn lenkene manuelt nedenfor.", err: "Anmeldelsene kunne ikke hentes – lim inn lenkene nedenfor.", old: "eldre enn 4 uker", noText: "uten tekst", or: "Eller lim inn lenker manuelt", change: "Annen profil", pickProfile: "Hvilken profil er din?", selected: "valgt" },
 };
 const pickCopy = (code) => PICK_COPY[code] || PICK_COPY.en;
 /** Bewertung kommt für das Produkt in Frage: höchstens 4 Wochen alt und mit Text. */
@@ -1609,6 +1609,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [pickPlace, setPickPlace] = React.useState(null);
   const [pickReviews, setPickReviews] = React.useState([]);
   const [pickSel, setPickSel] = React.useState([]); // ausgewählte Bewertungen (Objekte)
+  const [pickFilter, setPickFilter] = React.useState("low"); // low = 1–3 Sterne | all
   React.useEffect(() => {
     if (!reviewMode || pickOn || !placesEnabled()) return;
     let alive = true;
@@ -1639,6 +1640,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     setReviewErr("");
     setPickSel((sel) => sel.some((x) => x.id === r.id) ? sel.filter((x) => x.id !== r.id) : [...sel, r]);
   };
+  // Profil-Fluss: in Schritt 5 die Bewertungen des gewählten Profils laden (einmal je Profil).
+  const revLoadedFor = React.useRef("");
   // Deep-Link (?start=reviews): Wizard direkt in der Bewertungs-Eingabe öffnen.
   // Effekt statt useState-Initialwert: reviewsBlocked liest localStorage (rr_geo),
   // das gibt es beim Server-Rendern nicht — so bleibt die Hydration deckungsgleich.
@@ -1717,6 +1720,16 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }, []);
 
   const selected = candidates.find((c) => c.id === selectedId) || candidates[0];
+  React.useEffect(() => {
+    if (step !== 4 || service !== "reviews") return;
+    const pid = selected && selected.placeId;
+    if (!pid) { setPickPhase("error"); return; }
+    if (revLoadedFor.current === pid) return;
+    revLoadedFor.current = pid;
+    setPickSel([]); setPickFilter("low");
+    pickLoad(selected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, service, selected && selected.placeId]);
 
   // Gewähltes Profil an die App melden → placeId landet als ?p= in der URL (teilbar).
   const selPlaceId = (selected && selected.placeId) || "";
@@ -1800,21 +1813,24 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   /* pricing */
   // Bewertungs-Produkt: Preis = Anzahl gültiger Links × Stückpreis. Kein
   // Express, kein Schutz — beides gibt es nur beim Profil-Produkt.
+  // Bewertungs-Abrechnung: eigener Zweig (reviewMode) ODER im Profil-Fluss in
+  // Schritt 4 „Einzelne Bewertungen löschen" gewählt (service === "reviews").
+  const revFlow = reviewMode || service === "reviews";
   const reviewList = [
     ...(pickSel || []).map((r) => ({ url: (r.link || "").trim(), name: (r.name || "").trim(), text: (r.text || "").trim() })),
     ...(reviewItems || []).map((it) => ({ url: (it.url || "").trim(), name: (it.name || "").trim(), text: (it.text || "").trim() })),
   ].filter((it) => it.url || (it.name && it.text));
   const reviewCount = reviewList.length;
-  const servicePriceNum = reviewMode
+  const servicePriceNum = revFlow
     ? reviewCount * num(p.review)
     : num(service === "remove" ? p.deletion : p.reset);
-  const serviceName = reviewMode ? rv.service : (service === "remove" ? w.s4.opt1.t : w.s4.opt2.t);
+  const serviceName = revFlow ? rv.service : (service === "remove" ? w.s4.opt1.t : w.s4.opt2.t);
   const protLabel = protection === "monthly" ? conv.tierMonthlyLabel : protection === "monitor" ? conv.tierMonitorLabel : protection === "lifetime" ? conv.tierLifetimeLabel : null;
   const protPriceVal = protection === "monthly" ? p.protMonthly : protection === "monitor" ? p.protMonitor : protection === "lifetime" ? p.protLifetime : null;
   const recurringNum = (protection === "monthly" || protection === "monitor") ? num(protPriceVal) : 0;
-  const oneTimeTotal = reviewMode ? servicePriceNum
+  const oneTimeTotal = revFlow ? servicePriceNum
     : servicePriceNum + (express ? num(p.express) : 0) + (protection === "lifetime" ? num(p.protLifetime) : 0);
-  const leistungTotal = reviewMode ? servicePriceNum : servicePriceNum + (express ? num(p.express) : 0);
+  const leistungTotal = revFlow ? servicePriceNum : servicePriceNum + (express ? num(p.express) : 0);
 
   const country = lang === "en" ? "US" : "DE";
   // Funnel-Insights: Headline-Preis (z. B. 450/850 €) + Herkunft der Prüfung.
@@ -1976,16 +1992,16 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // Bestellung im Hintergrund ans ops-Backend. Profil-Nachweis (Place-ID etc.) inklusive.
     submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
-      company: contact.company, service: reviewMode ? "reviews" : service, protection: reviewMode ? "" : (protection || ""),
+      company: contact.company, service: revFlow ? "reviews" : service, protection: revFlow ? "" : (protection || ""),
       // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
       // die Bewertungen vor sich, die der Kunde bezahlt hat.
-      ...(reviewMode ? {
+      ...(revFlow ? {
         note: `${rv.service} (${reviewCount} × ${money(lang, p.review)}):\n${reviewList.map((it) => it.url || `${it.name} — "${it.text}"`).join("\n")}`,
         reviewItems: reviewList,
         reviewUrls: reviewList.map((it) => it.url).filter(Boolean),
         reviewCount,
       } : {}),
-      express: !!express, expressAmount: express ? num(p.express) : 0,
+      express: !revFlow && !!express, expressAmount: !revFlow && express ? num(p.express) : 0,
       profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
       placeId: selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",
@@ -2148,6 +2164,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const pick = (s) => {
       setService(s);
       if (s === "reset") { setExpress(false); setProtection(null); go(5); }
+      else if (s === "reviews") { setExpress(false); setProtection(null); go(4); } // Schritt 5 = Bewertungsauswahl statt Schutz
       else go(4);
     };
     return (
@@ -2183,8 +2200,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               einen Firmennamen einsteigt, überspringt die Auswahlseite und käme
               sonst nie daran vorbei — dieser Schritt ist der einzige, den ALLE
               im Profil-Fluss sehen. */}
-          {!reviewsBlocked(t.code) && (
-            <div className="opt" onClick={() => setReviewMode(true)}>
+          {reviewsAllowedFor(selected, t.code) && (
+            <div className={"opt" + (service === "reviews" ? " sel" : "")} onClick={() => pick("reviews")}>
               <div className="opt-radio"></div>
               <div className="opt-ic"><Icon.starOff size={22} /></div>
               <div className="opt-main">
@@ -2198,6 +2215,74 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
         <div className="wz-actions" style={{ marginTop: 22 }}>
           <button className="btn btn-secondary" onClick={() => go(selected && selected.unverified ? 2 : 1)}><Icon.arrowLeft size={17} /> {w.back}</button>
+        </div>
+      </div>
+    );
+  }
+
+  /* Schritt 5 im Profil-Fluss bei „Einzelne Bewertungen löschen": Bewertungen
+     des geprüften Profils (SerpApi) anhaken — ersetzt die Schutz-Auswahl. */
+  function StepReviews() {
+    const shown = (pickReviews || []).filter((r) => pickFilter === "all" || (r.rating >= 1 && r.rating <= 3));
+    const cont = () => { if (!reviewCount) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
+    return (
+      <div className="wz-card">
+        <div className="wz-eyebrow"><Icon.starOff size={14} /> {pk.stepLbl}</div>
+        <h1 className="wz-h" style={{ fontSize: 28 }}>{pk.stepH}</h1>
+        <p className="wz-sub" style={{ marginBottom: 14 }}>{pk.stepSub}</p>
+
+        <div className="press-alt" style={{ borderColor: "var(--danger)", marginTop: 0 }}>
+          <b><Icon.alert size={15} /> {rv.rulesH}</b>
+          <p style={{ margin: "6px 0 0" }}><b>1.</b> {rv.rule1}<br /><b>2.</b> {rv.rule2}</p>
+        </div>
+
+        {pickPhase === "loading" ? <p className="rv-pick-note" style={{ marginTop: 16 }}>{pk.loading}</p> : null}
+
+        {pickPhase === "list" ? (
+          <React.Fragment>
+            <div className="rv-filter">
+              <button type="button" className={"rv-chip" + (pickFilter === "low" ? " on" : "")} onClick={() => setPickFilter("low")}>{pk.f13}</button>
+              <button type="button" className={"rv-chip" + (pickFilter === "all" ? " on" : "")} onClick={() => setPickFilter("all")}>{pk.fAll}</button>
+            </div>
+            {shown.length ? (
+              <div className="rv-pick-list">
+                {shown.map((r) => {
+                  const ok = reviewEligible(r);
+                  const on = pickSel.some((x) => x.id === r.id);
+                  const why = !(r.text || "").trim() ? pk.noText : (r.days > 28 ? pk.old : "");
+                  return (
+                    <label key={r.id} className={"rv-pick-item" + (on ? " on" : "") + (ok ? "" : " off")}>
+                      <input type="checkbox" checked={on} disabled={!ok} onChange={() => pickToggle(r)} />
+                      <span className="rv-pick-body">
+                        <span className="rv-pick-top"><b>{r.name}</b> <span className="rv-pick-stars">{"★".repeat(Math.max(0, Math.min(5, r.rating)))}{"☆".repeat(Math.max(0, 5 - Math.min(5, r.rating)))}</span>{r.date ? <span className="rv-pick-date">{new Date(r.date).toLocaleDateString(lang)}</span> : null}{why ? <span className="rv-pick-why">{why}</span> : null}</span>
+                        {r.text ? <span className="rv-pick-text">{r.text.length > 240 ? r.text.slice(0, 240) + " …" : r.text}</span> : null}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            ) : <p className="rv-pick-note" style={{ marginTop: 10 }}>{(pickReviews || []).length ? pk.empty : pk.none}</p>}
+          </React.Fragment>
+        ) : null}
+
+        {pickPhase === "error" || (pickPhase === "list" && !(pickReviews || []).length) ? (
+          <React.Fragment>
+            {pickPhase === "error" ? <p className="rv-pick-note" style={{ marginTop: 16 }}>{pk.err}</p> : null}
+            {manualLinks()}
+          </React.Fragment>
+        ) : null}
+
+        <div className="summary" style={{ marginTop: 18 }}>
+          <div className="sum-row"><span className="sl">{money(lang, p.review)} {rv.per}</span><span className="sv">{reviewCount} ×</span></div>
+          <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
+        </div>
+        {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
+
+        <div className="svc-cta">
+          <div className="wz-actions">
+            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
+            <button className="btn btn-primary grow" onClick={cont}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
+          </div>
         </div>
       </div>
     );
@@ -2275,8 +2360,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     return (
       <div className="summary">
         <h3><Icon.cart size={20} /> {w.s5.sumTitle}</h3>
-        {reviewMode ? (
+        {revFlow ? (
           <React.Fragment>
+            {!reviewMode && selected ? <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div> : null}
             <div className="sum-row"><span className="sl">{rv.service}</span><span className="sv">{reviewCount} × {money(lang, p.review)}</span></div>
             <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(lang, w.s5.dueNow)}</span></div>
             <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
@@ -2415,13 +2501,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
         {/* Bewertungs-Produkt: nur die Bestätigung. Fragebogen und Lösch-Pipeline
            beschreiben das Profil-Produkt und wären hier irreführend. */}
-        {!reviewMode && (
+        {!revFlow && (
         <div style={{ marginTop: 24 }}>
           <OrderForm orderId={orderId} lang={t.code} />
         </div>
         )}
 
-        {!reviewMode && (
+        {!revFlow && (
         <div style={{ marginTop: 30 }}>
           <h4 style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 18, margin: "0 0 6px" }}>{w.s6.pipeTitle}</h4>
           <div className="pipeline">
@@ -2555,11 +2641,48 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   /* ---- Wizard fürs Löschen einzelner Treffer in der Google-Suche (Presse/Auslistung) ---- */
   /* Bewertungs-Eingabe: Links über die Teilen-Funktion sammeln, „+" für weitere.
      Die beiden Bedingungen stehen als Pflicht-Kasten darüber, nicht im Fußnotentext. */
-  function ReviewIntake() {
+  /* Manuelle Bewertungs-Links (Teilen-Link oder Name + Text) — im eigenen
+     Bewertungs-Zweig und als Rückfall in der Bewertungsauswahl (Schritt 5). */
+  function manualLinks() {
     const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
     const toggleAlt = (i) => () => { const u = reviewItems.slice(); u[i] = { ...u[i], alt: !u[i].alt }; setReviewItems(u); };
     const addUrl = () => setReviewItems([...reviewItems, { url: "", name: "", text: "", alt: false }]);
     const rmUrl = (i) => () => setReviewItems(reviewItems.filter((_, j) => j !== i));
+    return (
+        <div className="form-grid" style={{ marginTop: 18 }}>
+          <div className="fld full">
+            <label>{rv.urlLabel} <span style={{ color: "var(--danger)" }}>*</span></label>
+            <div className="url-list">
+              {reviewItems.map((it, i) => (
+                <div key={i} style={{ marginBottom: 10 }}>
+                  <div className="url-row">
+                    <input value={it.url} onChange={setIt(i, "url")} placeholder="https://…" disabled={it.alt} style={it.alt ? { opacity: 0.45 } : undefined} />
+                    {reviewItems.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
+                  </div>
+                  {/* Alternative, wenn der Teilen-Link nicht auffindbar ist:
+                      Name + Bewertungstext identifizieren die Bewertung ebenso. */}
+                  <button type="button" onClick={toggleAlt(i)}
+                    style={{ background: "none", border: "none", padding: "4px 2px 0", cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--primary)", fontFamily: "inherit" }}>
+                    {it.alt ? "↩ " : ""}{rv.altBtn}
+                  </button>
+                  {it.alt ? (
+                    <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
+                      <input value={it.name} onChange={setIt(i, "name")} placeholder={rv.altName}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600 }} />
+                      <textarea value={it.text} onChange={setIt(i, "text")} placeholder={rv.altText} rows={3}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600, resize: "vertical" }} />
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rv.addUrl}</button>
+            </div>
+          </div>
+        </div>
+    );
+  }
+
+  function ReviewIntake() {
     const cont = () => {
       if (!reviewCount) { setReviewErr(rv.need); return; }
       setContact((c) => ({ ...c, company: c.company || "" }));
@@ -2644,36 +2767,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         ) : null}
 
         {pickOn ? <div className="rv-pick-or">{pk.or}</div> : null}
-        <div className="form-grid" style={{ marginTop: 18 }}>
-          <div className="fld full">
-            <label>{rv.urlLabel} <span style={{ color: "var(--danger)" }}>*</span></label>
-            <div className="url-list">
-              {reviewItems.map((it, i) => (
-                <div key={i} style={{ marginBottom: 10 }}>
-                  <div className="url-row">
-                    <input value={it.url} onChange={setIt(i, "url")} placeholder="https://…" disabled={it.alt} style={it.alt ? { opacity: 0.45 } : undefined} />
-                    {reviewItems.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
-                  </div>
-                  {/* Alternative, wenn der Teilen-Link nicht auffindbar ist:
-                      Name + Bewertungstext identifizieren die Bewertung ebenso. */}
-                  <button type="button" onClick={toggleAlt(i)}
-                    style={{ background: "none", border: "none", padding: "4px 2px 0", cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--primary)", fontFamily: "inherit" }}>
-                    {it.alt ? "↩ " : ""}{rv.altBtn}
-                  </button>
-                  {it.alt ? (
-                    <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
-                      <input value={it.name} onChange={setIt(i, "name")} placeholder={rv.altName}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600 }} />
-                      <textarea value={it.text} onChange={setIt(i, "text")} placeholder={rv.altText} rows={3}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600, resize: "vertical" }} />
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rv.addUrl}</button>
-            </div>
-          </div>
-        </div>
+        {manualLinks()}
 
         <div className="summary" style={{ marginTop: 18 }}>
           <div className="sum-row"><span className="sl">{money(lang, p.review)} {rv.per}</span><span className="sv">{reviewCount} ×</span></div>
@@ -2790,14 +2884,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     );
   }
 
-  const bodies = [StepName, StepSearch, StepConfirm, StepService, StepProtect, StepCheckout, StepDone];
+  const bodies = [StepName, StepSearch, StepConfirm, StepService, service === "reviews" ? StepReviews : StepProtect, StepCheckout, StepDone];
   const Body = bodies[step];
   const wideStep = [0, 5].includes(step) && !processing;
 
   return (
     <div className="wz">
       {Top}
-      {reviewMode ? null : <Stepper step={step} onNav={canStepBack ? go : null} />}
+      {reviewMode ? null : <Stepper step={step} onNav={canStepBack ? go : null} labels={service === "reviews" ? t.wizard.steps.map((l, i) => (i === 4 ? pk.stepLbl : l)) : null} />}
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}

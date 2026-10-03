@@ -28,6 +28,7 @@ const FIELD_MASK = [
   "places.primaryTypeDisplayName",
   "places.businessStatus",
   "places.googleMapsUri",
+  "places.addressComponents",
 ].join(",");
 
 /* Pro Website-Sprache im passenden Land suchen (CLDR-Regioncode), damit die
@@ -41,6 +42,12 @@ const REGION_BY_LANG = {
 /** true, wenn ein Maps-Key vorhanden ist (sonst läuft der Wizard im Demo-Modus). */
 export function placesEnabled() {
   return !!KEY;
+}
+
+/** ISO-Ländercode des Profils (z. B. "CH") aus den Adressbestandteilen. */
+function countryOf(p) {
+  const c = (p && Array.isArray(p.addressComponents) ? p.addressComponents : []).find((x) => (x.types || []).includes("country"));
+  return c ? String(c.shortText || "").toUpperCase() : "";
 }
 
 function fmtRating(r, lang) {
@@ -85,6 +92,7 @@ export async function searchProfiles(query, lang = "de") {
     addr: p.formattedAddress || "",
     mapsUri: p.googleMapsUri || "",
     businessStatus: p.businessStatus || "",
+    cc: countryOf(p),
     primary: i === 0,
   }));
 }
@@ -111,7 +119,7 @@ export function manualCandidate(query, lang = "de") {
    per ?p=<placeId> geteilter Wizard-Link wieder zum vollen Profil auflösen. */
 const DETAIL_FIELD_MASK = [
   "id", "displayName", "formattedAddress", "rating", "userRatingCount",
-  "primaryTypeDisplayName", "businessStatus", "googleMapsUri", "websiteUri",
+  "primaryTypeDisplayName", "businessStatus", "googleMapsUri", "websiteUri", "addressComponents",
 ].join(",");
 
 /** Lädt ein Profil per placeId; liefert es im Wizard-Kandidatenformat oder null. */
@@ -128,7 +136,7 @@ export async function fetchProfileById(placeId, lang = "de") {
       id: "p1", placeId: p.id, name: p.displayName?.text || "",
       cat: p.primaryTypeDisplayName?.text || "", rating: fmtRating(p.rating, lang),
       reviews: p.userRatingCount || 0, addr: p.formattedAddress || "",
-      mapsUri: p.googleMapsUri || "", businessStatus: p.businessStatus || "", primary: true,
+      mapsUri: p.googleMapsUri || "", businessStatus: p.businessStatus || "", primary: true, cc: countryOf(p),
       website: p.websiteUri || "", // Unternehmens-Website (für die Lead-Recherche im Admin)
     };
   } catch (e) { return null; }

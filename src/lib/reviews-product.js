@@ -15,3 +15,13 @@ export function reviewsBlocked(langCode) {
   } catch (e) { /* kein localStorage (SSR/Privatmodus) → nur Sprachregel */ }
   return false;
 }
+
+/** Einzelbewertungs-Produkt für ein konkretes Google-Profil (Schritt 4 im Wizard):
+ *  maßgeblich ist das LAND DES PROFILS — gesperrt nur für Deutschland und
+ *  Österreich, die Schweiz ist ausdrücklich freigegeben. Ist das Land unbekannt
+ *  (manuell eingegebenes Profil), gilt die Sprach-/Geo-Regel oben. */
+export function reviewsAllowedFor(profile, langCode) {
+  const cc = String((profile && profile.cc) || "").toUpperCase();
+  if (cc) return cc !== "DE" && cc !== "AT";
+  return !reviewsBlocked(langCode);
+}
