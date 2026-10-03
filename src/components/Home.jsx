@@ -663,6 +663,8 @@ function Home({ onStart, onBlog, onOrm, onDeindex, onSeo, scrollTarget, onScroll
       <Nav onNav={onNav} onStart={() => onStart()} onBlog={onBlog} onOrm={onOrm} onDeindex={onDeindex} onSeo={onSeo} onAbout={() => (window.location.href = asset(pagePath("about", lang)))} />
       <Hero onStart={onStart} />
       <TrustBar />
+      {/* Erklärvideo prominent direkt nach Hero + Trust-Leiste */}
+      <ExplainerVideo tone="" compact />
       <Problem id="problem" />
       <ProfileDissolveDemo />
       <Social id="reviews" />
@@ -670,8 +672,6 @@ function Home({ onStart, onBlog, onOrm, onDeindex, onSeo, scrollTarget, onScroll
       <VideoSection onStart={onStart} />
       <Why id="why" />
       <WholeProfile />
-      {/* Erklärvideo direkt vor den weiteren Leistungen: „Du kommst mit deinem Problem – wir lösen es" */}
-      <ExplainerVideo tone="soft" />
       <ServicesTrio onStart={onStart} onOrm={onOrm} onDeindex={onDeindex} onSeo={onSeo} />
       <TrustSecurity id="trust" />
       <Pricing id="pricing" onStart={onStart} />
