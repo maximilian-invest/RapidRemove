@@ -8,6 +8,7 @@ import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
+import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
 import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung } from "@/lib/admin-api";
 import { langLabel } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
@@ -1449,9 +1450,13 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
   const [stage, setStage] = React.useState(() => Math.min(already + 1, 3));
   const chosen = items.filter((_it, i) => sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
-  const per = cur === "usd" ? "$179" : "179 €";
-  const total = chosen.length * 179;
-  const fmtTotal = cur === "usd" ? "$" + total.toLocaleString("en-US") : total.toLocaleString("de-DE") + " €";
+  // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
+  const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
+  const nOld = chosen.filter((it) => it && it.old).length;
+  const pct = reviewDiscountPct(chosen.length);
+  const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
+  const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
+  const fmtTotal = fmtM(total);
   const STAGES = [[1, "Erinnerung"], [2, "2. Mahnung"], [3, "Letzte Mahnung"]];
   const label = { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
   const pickStage = (s) => { setStage(s); setArmed(false); };  // Stufenwechsel setzt die Stufe-3-Bestätigung zurück
@@ -1522,9 +1527,13 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [sentAt, setSentAt] = React.useState(null);
   const chosen = items.filter((it, i) => sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
-  const per = cur === "usd" ? "$179" : "179 €";
-  const total = chosen.length * 179;
-  const fmtTotal = cur === "usd" ? "$" + total.toLocaleString("en-US") : total.toLocaleString("de-DE") + " €";
+  // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
+  const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
+  const nOld = chosen.filter((it) => it && it.old).length;
+  const pct = reviewDiscountPct(chosen.length);
+  const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
+  const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
+  const fmtTotal = fmtM(total);
   const send = async () => {
     if (!chosen.length || sending) return;
     setSending(true);
@@ -1558,6 +1567,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           {it.url
             ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 600, wordBreak: "break-all" }}>{it.url}</a>
             : <span style={{ fontWeight: 600 }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
+          {it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
         </label>
       ))}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>

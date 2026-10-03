@@ -185,3 +185,28 @@ export async function runReviewsSetup(opts: { apply: boolean; log?: (line: strin
   }
   return report;
 }
+
+/* Zahlungslink über einen frei berechneten Betrag (Aufpreis ältere Bewertungen
+   und/oder Mengenrabatt) — find-or-create über denselben Marker wie oben. */
+export async function ensureReviewsAmountLink(totalMajor: number, cur: ReviewsCur): Promise<string> {
+  const amount = cents(totalMajor);
+  const combo = `reviews-amt|${amount}|${cur}`;
+  const hit = linkCache.get(combo);
+  if (hit) return hit;
+  const links = await listAll<any>("payment_links?active=true&limit=100", 3);
+  const found = links.find((pl) => pl.metadata && pl.metadata[MARK] === combo);
+  if (found) { linkCache.set(combo, found.url); return found.url; }
+  const productId = await findOrCreateProduct();
+  const price = await sapi<{ id: string }>("POST", "prices", {
+    currency: cur, unit_amount: amount,
+    nickname: `${PRODUCT_NAME} – ${totalMajor} ${cur.toUpperCase()}`,
+    product: productId,
+    metadata: { [MARK]: `amt|${amount}|${cur}` },
+  });
+  const pl = await sapi<{ url: string }>("POST", "payment_links", {
+    line_items: [{ price: price.id, quantity: 1 }],
+    metadata: { [MARK]: combo },
+  });
+  linkCache.set(combo, pl.url);
+  return pl.url;
+}

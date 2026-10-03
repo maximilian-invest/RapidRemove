@@ -846,3 +846,6 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .rv-filter{display:flex;gap:8px;margin:16px 0 10px;}
 .rv-chip{font-family:inherit;font-size:13px;font-weight:800;padding:7px 14px;border-radius:var(--r-pill);border:1.5px solid var(--hairline);background:#fff;color:var(--fg-2);cursor:pointer;}
 .rv-chip.on{border-color:var(--primary);background:var(--orange-50);color:var(--primary);}
+
+.rv-chance{font-size:12px;font-weight:800;color:var(--success);}
+.rv-chance.low{color:#b26a00;}

@@ -45,3 +45,23 @@ export const LANGS = [
   { code: "da", native: "Dansk",       region: "Danmark" },
   { code: "no", native: "Norsk",       region: "Norge" },
 ];
+
+/* Einzelbewertungs-Produkt: Aufpreis für Bewertungen älter als 4 Wochen
+   (gleicher Zahlenwert in € und $) und Mengenrabatt nach Anzahl. Dieselbe
+   Rechnung steht im ops-Backend (ops/src/reviewsPricing.ts) – beide synchron halten. */
+export const REVIEW_OLD_DAYS = 28;
+export const REVIEW_OLD_SURCHARGE = 50;
+export function reviewDiscountPct(n) {
+  return n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0;
+}
+/** items: [{ old?: boolean }] → { n, nOld, nNew, base, oldPrice, subtotal, pct, discount, total } */
+export function reviewQuote(items, lang) {
+  const base = Number(String(profileFor(lang).review).replace(",", ".")) || 179;
+  const list = Array.isArray(items) ? items : [];
+  const n = list.length;
+  const nOld = list.filter((it) => it && it.old).length;
+  const subtotal = n * base + nOld * REVIEW_OLD_SURCHARGE;
+  const pct = reviewDiscountPct(n);
+  const total = Math.round(subtotal * (100 - pct) / 100);
+  return { n, nOld, nNew: n - nOld, base, oldPrice: base + REVIEW_OLD_SURCHARGE, subtotal, pct, discount: subtotal - total, total };
+}

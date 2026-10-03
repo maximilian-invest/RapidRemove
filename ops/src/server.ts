@@ -18,7 +18,8 @@ import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
-import { runReviewsSetup, ensureReviewsLink } from "./reviewsSetup";
+import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
+import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
@@ -302,15 +303,16 @@ app.post("/order", async (req, reply) => {
   const isReviews = service === "reviews";
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
         const url = httpUrl(o.url, 400);
         const nm = clip(o.name, 80);
         const tx = clip(o.text, 400);
-        if (url) return { url } as ReviewItem;
-        if (nm && tx) return { name: nm, text: tx } as ReviewItem;
+        const old = o.old === true ? { old: true } : {}; // älter als 4 Wochen → Aufpreis
+        if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...old } as ReviewItem;
+        if (nm && tx) return { name: nm, text: tx, ...old } as ReviewItem;
         return null;
       }).filter(Boolean) as ReviewItem[]
     : Array.isArray(b.reviewUrls)
@@ -332,9 +334,9 @@ app.post("/order", async (req, reply) => {
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
   // Bewertungs-Produkt: Stückpreis/Maximalbetrag in der Währung der Bestellung.
   const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
-  const revPer = revCur === "usd" ? "$179" : "179 €";
-  const revTotalNum = reviewItems.length * 179;
-  const revTotal = revCur === "usd" ? `$${revTotalNum.toLocaleString("en-US")}` : `${revTotalNum.toLocaleString("de-DE")} €`;
+  const revQ = quoteReviews(reviewItems, revCur);
+  const revPer = revQ.per;
+  const revTotal = revQ.totalStr;
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, orderId }
     : { lang: tlang, anrede };
@@ -1152,7 +1154,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1161,23 +1163,25 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    if (url) return { url };
-    if (nm && tx) return { name: nm, text: tx };
+    const old = o.old === true ? { old: true } : {};
+    if (url) return { url, ...old };
+    if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
-  const totalNum = count * 179;
+  const quote = quoteReviews(removedItems, currency);
+  const totalNum = quote.total;
 
   // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) bei Bedarf direkt
   // in Stripe anlegen (find-or-create über metadata-Marker — kein Setup-Lauf nötig),
   // 3) Notnagel Betrag-Match über bestehende Links.
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
-  let url = reviewsLinkFor(count, currency);
+  let url = quote.simple ? reviewsLinkFor(count, currency) : "";
   if (!url && hasSecretKey()) {
-    try { url = await ensureReviewsLink(count, curSafe); }
+    try { url = quote.simple ? await ensureReviewsLink(count, curSafe) : await ensureReviewsAmountLink(totalNum, curSafe); }
     catch (e) { app.log.error({ err: e }, "Reviews-Link anlegen fehlgeschlagen"); }
   }
   if (!url && hasSecretKey()) {
@@ -1190,8 +1194,8 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
 
   const orderId = clip(b.orderId, 40);
   const tlang = mailLang(b.lang);
-  const per = currency === "usd" ? "$179" : "179 €";
-  const total = currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`;
+  const per = quote.per;
+  const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
     const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, orderId };
@@ -1217,7 +1221,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1226,8 +1230,9 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    if (url) return { url };
-    if (nm && tx) return { name: nm, text: tx };
+    const old = o.old === true ? { old: true } : {};
+    if (url) return { url, ...old };
+    if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine offenen Bewertungen ausgewählt" });
@@ -1235,12 +1240,13 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const totalNum = count * 179;
+  const quote = quoteReviews(removedItems, currency);
+  const totalNum = quote.total;
 
   // Zahlungslink wie bei der Rechnung auflösen (Stückzahl-Tabelle → Stripe anlegen → Betrag-Match).
-  let url = reviewsLinkFor(count, currency);
+  let url = quote.simple ? reviewsLinkFor(count, currency) : "";
   if (!url && hasSecretKey()) {
-    try { url = await ensureReviewsLink(count, curSafe); }
+    try { url = quote.simple ? await ensureReviewsLink(count, curSafe) : await ensureReviewsAmountLink(totalNum, curSafe); }
     catch (e) { app.log.error({ err: e }, "Reviews-Mahnung-Link anlegen fehlgeschlagen"); }
   }
   if (!url && hasSecretKey()) {
@@ -1255,8 +1261,8 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
   const rawLang = mailLang(b.lang);
   const tlang = rawLang === "de" ? "en" : rawLang;
-  const per = currency === "usd" ? "$179" : "179 €";
-  const total = currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`;
+  const per = quote.per;
+  const total = quote.totalStr;
   const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" };
   try {
     const t = TEMPLATES["mahnung-reviews"];
