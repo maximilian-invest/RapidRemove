@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Vissa träffar kan raderas helt från visningen:" },
     { t: "ul", items: [
       "**Den egna Google-företagsprofilen** med tillhörande recensioner – via de officiella rutinerna (se [radera profil](/sv/magasin/radera-google-foretagsprofil/)).",
+      "**Enskilda Google-recensioner** som är falska, kränkande eller saknar verklig kundkontakt – via [borttagning av enskilda recensioner](/sv/ta-bort-omdome/), utan att profilen försvinner.",
       "**Rättsstridigt innehåll** – förolämpningar, falska faktapåståenden, kränkningar av personlighetsskyddet.",
       "**Personuppgifter** – i vissa fall via ”rätten att bli bortglömd” (GDPR Art. 17).",
     ] },

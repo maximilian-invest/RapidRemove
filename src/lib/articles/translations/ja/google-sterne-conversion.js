@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "実践に活かすには", toc: "実践" },
     { t: "ul", items: [
       "**4.0以上を維持する：** 低評価に対応するだけでなく、積極的に良い口コミを集める。",
-      "**不当な外れ値を削除する：** やらせや違法な星1は平均を不釣り合いに引き下げます。方法は[やらせ口コミの通報・削除方法](/ja/magazine/google-nise-kuchikomi-sakujo/)と[テキストなし星1口コミの削除方法](/ja/magazine/hoshi1-kuchikomi-sakujo/)をご参照ください。",
+      "**不当な外れ値を削除する：** やらせや違法な星1は平均を不釣り合いに引き下げます。方法は[やらせ口コミの通報・削除方法](/ja/magazine/google-nise-kuchikomi-sakujo/)と[テキストなし星1口コミの削除方法](/ja/magazine/hoshi1-kuchikomi-sakujo/)をご参照ください。特定の口コミだけを[1件単位で削除](/ja/remove-review/)することもできます。",
       "**プロフィール全体が問題になっている場合は、**[プロフィール削除](/ja/magazine/google-business-profile-sakujo/)による清潔なリスタートが、1件ずつ対応するより効果的な場合があります。",
     ] },
 

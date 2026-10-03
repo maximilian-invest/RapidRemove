@@ -46,8 +46,9 @@ const article = {
 
     { t: "h2", id: "google-reagiert", text: "Quand Google ne réagit pas : que faire ?", toc: "Google ne réagit pas" },
     { t: "p", text: "C'est là que commence la frustration de nombreux dirigeants. Google examine les signalements **en grande partie de façon automatisée** et les rejette souvent avec des textes types – même pour des faux manifestes. Vous n'avez alors aucune vraie possibilité d'escalade et revenez au point de départ." },
-    { t: "p", text: "Deux voies vont plus loin :" },
+    { t: "p", text: "Trois voies vont plus loin :" },
     { t: "ul", items: [
+      "**Suppression d'avis isolés par RapidRemove :** vous [sélectionnez les faux avis à supprimer](/fr/supprimer-un-avis/), nous nous occupons du reste. 179 € par avis réellement supprimé, rien d'avance ; un faux avis récent (4 semaines max.) a env. 90 % de chances de disparaître.",
       "**Voie de l'avocat :** une demande de suppression motivée peut réussir pour des avis clairement illicites – mais prend souvent des semaines à des mois, est facturée par avis et peut provoquer des « avis de vengeance » (effet Streisand).",
       "**Suppression de la fiche :** au lieu d'attaquer chaque faux avis isolément, toute la fiche est supprimée ; tous les avis disparaissent avec.",
     ] },
@@ -63,15 +64,15 @@ const article = {
       ["Effort", "moyen", "élevé", "nul"],
     ] },
     { t: "p", text: "L'avantage décisif : vous ne payez qu'**après une suppression réussie**, et si la fiche réapparaît via des tiers, elle est de nouveau supprimée gratuitement dans le cadre de la garantie." },
-    { t: "warn", title: "Important", text: "La suppression de la fiche retire la **fiche d'établissement complète**, pas un faux avis isolé. Si vous voulez seulement supprimer un avis et conserver votre fiche, le signalement à Google ou la voie de l'avocat sont les bonnes options." },
+    { t: "warn", title: "Important", text: "La suppression de la fiche retire la **fiche d'établissement complète**, pas un faux avis isolé. Si vous voulez seulement supprimer un ou quelques faux avis et conserver votre fiche, optez pour la [suppression d'avis isolés](/fr/supprimer-un-avis/) – ou pour le signalement à Google ou la voie de l'avocat. Prix, chances de réussite et remises sur quantité : voir notre article sur le [service de suppression d'avis Google](/fr/magazine/service-suppression-avis-google/)." },
     { t: "cta", title: "Attaque de faux avis ? Vérifiez gratuitement la faisabilité.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses faux avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
   ],
   faq: [
     { q: "Comment reconnaître un faux avis Google ?", a: "Les signes typiques sont l'absence de lien avec la prestation, 1 étoile sans texte, un profil sans historique d'avis, un timing suspect de plusieurs avis négatifs ainsi que des contenus hors sujet ou insultants." },
     { q: "Comment signaler un faux avis à Google ?", a: "Via le menu à trois points à côté de l'avis, cliquez sur « Signaler l'avis », sélectionnez l'infraction et envoyez. Vous pouvez suivre le statut via l'outil Google de gestion des avis." },
     { q: "Les faux avis sont-ils punissables ?", a: "Les avis délibérément faux peuvent avoir des conséquences civiles, de concurrence et en partie pénales. En pratique, l'auteur est souvent anonyme, c'est pourquoi supprimer l'avis est généralement le levier le plus rapide qu'une plainte. Ceci n'est pas un conseil juridique." },
-    { q: "Que faire si Google ne supprime pas le faux avis ?", a: "Si le signalement est rejeté, la voie de l'avocat reste pour un avis isolé. Si la fiche est endommagée par de nombreux faux, la suppression de la fiche via RapidRemove est la plus fiable : toute la fiche est supprimée, tous les avis disparaissent avec." },
-    { q: "RapidRemove supprime-t-il des faux avis isolés ?", a: "Oui, désormais : [supprimer un avis Google](https://www.rapid-remove.com/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès ; l'avis doit dater de 4 semaines au maximum et contenir du texte. Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
+    { q: "Que faire si Google ne supprime pas le faux avis ?", a: "Si le signalement est rejeté, il reste pour un avis isolé la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/) (paiement uniquement en cas de succès) ou la voie de l'avocat. Si la fiche est endommagée par de nombreux faux, la suppression de la fiche via RapidRemove est la plus fiable : toute la fiche est supprimée, tous les avis disparaissent avec." },
+    { q: "RapidRemove supprime-t-il des faux avis isolés ?", a: "Oui : [supprimer un avis Google](/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès. Avis de 4 semaines maximum : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis. Les avis sans texte peuvent aussi être sélectionnés, et l'auteur n'apprend pas qui a demandé la suppression. Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
     { q: "En combien de temps les faux avis disparaissent-ils ?", a: "Via la suppression de la fiche, souvent en 24 à 48 heures – bien plus vite que la voie juridique de plusieurs mois." },
   ],
   related: [

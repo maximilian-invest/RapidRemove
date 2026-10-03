@@ -69,6 +69,7 @@ const KEYS = ["maximilian-hoelzl", "matthias-lang"];
 const AUTHOR_OVERRIDES = {
   "negative-bewertung-ignorieren-antworten-loeschen": "maximilian-hoelzl",
   "online-reputationsmanagement": "maximilian-hoelzl",
+  "einzelbewertung-loeschen-service": "maximilian-hoelzl",
 };
 
 /** Deterministische, sprachübergreifend stabile Zuordnung Artikel → Autor (via deutschem Slug). */

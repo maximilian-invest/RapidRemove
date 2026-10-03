@@ -1,7 +1,7 @@
 /* Route: /<lang>/<magazineSlug>/<article-slug> — ALLE übersetzten Artikel unter dem
    lokalisierten Magazin-Slug: Cluster (datengetrieben) + lokalisierte Hubs. */
 import MagArticle from "@/components/MagArticle";
-import { uiFor, SITE_URL, CLUSTER_SLUGS } from "@/lib/articles/registry";
+import { uiFor, SITE_URL, CLUSTER_SLUGS, TRANSLATION_ONLY } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, magazineSlug } from "@/lib/locales-meta";
 import {
   nestedArticleParams, resolveLocalized, hreflangForArticle, langUrlsForArticle, resolveRelated,
@@ -55,7 +55,7 @@ export default function Page({ params }) {
     // Hub-Byline ebenfalls auf die Autorenseite verlinken (statt /ueber-uns).
     const data = { ...hub, meta: { ...hub.meta, author: hubAuthor.name, authorRole: roleFor(hubAuthor, lang), authorHref: authorPathFor(hubAuthor, lang) } };
     const url = articleUrl(lang, aslug2);
-    const related = relatedHubLinks(lang, CLUSTER_SLUGS);
+    const related = relatedHubLinks(lang, [...Object.keys(TRANSLATION_ONLY), ...CLUSTER_SLUGS]);
     const jsonLd = buildArticleJsonLd(hub.meta, hub.faq, lang, ui, url, "google-unternehmensprofil-loeschen");
     return (
       <>

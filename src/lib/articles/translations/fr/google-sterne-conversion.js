@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Ce que vous pouvez en faire", toc: "Que faire" },
     { t: "ul", items: [
       "**Maintenir une moyenne au-dessus de 4,0** – solliciter activement de bons avis plutôt que de seulement réagir aux mauvais.",
-      "**Supprimer les aberrations injustes :** les faux avis et les 1 étoile illicites tirent la moyenne vers le bas de façon disproportionnée. Comment procéder : [Faux avis Google : signaler et supprimer](/fr/magazine/supprimer-faux-avis-google/) et [Supprimer un avis 1 étoile sans texte](/fr/magazine/supprimer-avis-1-etoile-sans-texte/).",
+      "**Supprimer les aberrations injustes :** les faux avis et les 1 étoile illicites tirent la moyenne vers le bas de façon disproportionnée. Comment procéder : [Faux avis Google : signaler et supprimer](/fr/magazine/supprimer-faux-avis-google/) et [Supprimer un avis 1 étoile sans texte](/fr/magazine/supprimer-avis-1-etoile-sans-texte/). Pour retirer précisément ces quelques avis tout en gardant le profil : la [suppression d'avis isolés](/fr/supprimer-un-avis/), payée uniquement par avis réellement supprimé.",
       "**Si le profil est fondamentalement compromis**, un redémarrage propre via la [suppression du profil](/fr/magazine/supprimer-profil-etablissement-google/) peut être plus sensé que de se battre pour chaque étoile.",
     ] },
 

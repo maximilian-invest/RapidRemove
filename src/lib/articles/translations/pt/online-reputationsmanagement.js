@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "As três alavancas da GRO", toc: "As três alavancas" },
     { t: "h3", text: "Alavanca 1: Remover" },
-    { t: "p", text: "O que é ilegal, falso ou injustificado deve desaparecer. Isso inclui avaliações falsas, 1 estrela ilegais, afirmações factualmente incorretas — e, em casos extremos, um [perfil de empresa](/pt/revista/eliminar-perfil-empresa-google/) completamente comprometido. Remover é a alavanca mais direta, porque o problema desaparece pela raiz." },
+    { t: "p", text: "O que é ilegal, falso ou injustificado deve desaparecer. Isso inclui avaliações falsas, 1 estrela ilegais, afirmações factualmente incorretas — que pode [mandar remover individualmente](/pt/remover-uma-avaliacao/), pagando só por cada avaliação realmente removida — e, em casos extremos, um [perfil de empresa](/pt/revista/eliminar-perfil-empresa-google/) completamente comprometido. Remover é a alavanca mais direta, porque o problema desaparece pela raiz." },
     { t: "h3", text: "Alavanca 2: Suprimir" },
     { t: "p", text: "Nem tudo pode ser eliminado — por exemplo, um artigo de imprensa legítimo mas antigo. É aqui que entra a **supressão**: construir e otimizar deliberadamente conteúdos positivos de qualidade, de modo que os resultados indesejados caiam da página 1 para páginas seguintes. Como quase ninguém clica além da página 1, “suprimido da página 1” é na prática quase equivalente a “desaparecido”. Mais sobre este tema em [remover resultados negativos do Google](/pt/revista/remover-resultados-google-negativos/)." },
     { t: "h3", text: "Alavanca 3: Construir" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "O que pode fazer sozinho — e onde estão os limites", toc: "Sozinho ou profissional" },
     { t: "p", text: "**Fazível de forma autónoma:** pedir sistematicamente avaliações, responder profissionalmente às críticas, manter os próprios conteúdos e perfis atualizados, denunciar avaliações falsas óbvias ao Google." },
-    { t: "p", text: "**Limites das ferramentas padrão:** o Google recusa frequentemente as denúncias de forma automática; resultados negativos persistentes e artigos de imprensa não podem ser influenciados através da interface habitual; a remoção completa de um perfil não está prevista para os proprietários. Nestes pontos são necessários procedimentos especializados e juridicamente sólidos — é aqui que a RapidRemove intervém: [eliminar perfil](/pt/revista/eliminar-perfil-empresa-google/), [gerir reputação](/pt/gestao-de-reputacao/) e [desindexar imprensa](/pt/desindexar-imprensa/)." },
+    { t: "p", text: "**Limites das ferramentas padrão:** o Google recusa frequentemente as denúncias de forma automática; resultados negativos persistentes e artigos de imprensa não podem ser influenciados através da interface habitual; a remoção completa de um perfil não está prevista para os proprietários. Nestes pontos são necessários procedimentos especializados e juridicamente sólidos — é aqui que a RapidRemove intervém: [remover avaliações individuais](/pt/remover-uma-avaliacao/), [eliminar perfil](/pt/revista/eliminar-perfil-empresa-google/), [gerir reputação](/pt/gestao-de-reputacao/) e [desindexar imprensa](/pt/desindexar-imprensa/)." },
 
     { t: "h2", id: "vorgehen", text: "Como proceder de forma estruturada", toc: "Como proceder" },
     { t: "ol", items: [

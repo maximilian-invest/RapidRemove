@@ -37,7 +37,7 @@ const article = {
       "**Efecto conservador** del 5 % → 1.500 € al mes.",
       "**Multiplicar por el tiempo de visibilidad:** una reseña suele mantenerse visible 12 meses o más → 18.000 € en un año.",
     ] },
-    { t: "p", text: "Incluso con hipótesis conservadoras, la pérdida acumulada supera con creces el coste de una solución profesional. Muchos pasan por alto este cálculo porque el daño se produce de forma gradual e invisible: como ventas no realizadas, no como una factura." },
+    { t: "p", text: "Incluso con hipótesis conservadoras, la pérdida acumulada supera con creces el coste de una solución profesional: [eliminar una reseña de Google](/es/eliminar-una-resena/) con RapidRemove cuesta 179 € por reseña eliminada (229 € si tiene más de 4 semanas), y solo se paga si desaparece. Muchos pasan por alto este cálculo porque el daño se produce de forma gradual e invisible: como ventas no realizadas, no como una factura." },
 
     { t: "h2", id: "indirekt", text: "Los costes indirectos — a menudo mayores que la pérdida directa", toc: "Costes indirectos" },
     { t: "ul", items: [
@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "¿Cuántas ventas cuesta una reseña negativa en Google?", a: "Un estudio de Harvard (Michael Luca) cuantifica el efecto de una estrella completa en un 5–9 % de facturación en negocios independientes. Una reseña individual impacta de forma distinta según el número total de reseñas — cuantas menos tengas, más arrastra la media una reseña negativa." },
     { q: "¿A partir de cuándo una media baja es perjudicial para el negocio?", a: "La situación se vuelve crítica por debajo de aproximadamente 4,0 estrellas; por debajo de 3, según BrightLocal, se excluye prácticamente a la mayoría de los clientes, ya que solo el 3 % consideraría un negocio con dos estrellas o menos." },
-    { q: "¿Vale la pena actuar contra una sola reseña?", a: "En el caso de reseñas injustificadas, falsas o ilegales, casi siempre — la pérdida continua de ventas supera con creces el coste de la eliminación. La crítica fundada y real es mejor responderla que combatirla." },
+    { q: "¿Vale la pena actuar contra una sola reseña?", a: "En el caso de reseñas injustificadas, falsas o ilegales, casi siempre — la pérdida continua de ventas supera con creces el coste de la eliminación (en el [servicio para eliminar reseñas de Google](/es/revista/servicio-eliminar-resenas-google/), desde 179 € por reseña eliminada, solo si hay éxito). La crítica fundada y real es mejor responderla que combatirla." },
     { q: "¿Cómo calculo mi daño concreto?", a: "Facturación mensual × 5 % conservador × meses de visibilidad. Incluso con hipótesis prudentes, el valor anual supera con creces el coste de la solución." },
   ],
   related: [

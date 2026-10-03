@@ -4,8 +4,9 @@
  * löschenden Bewertungen einfach anhaken kann, statt Links zu suchen.
  *
  * Die Places API liefert höchstens 5 Bewertungen – SerpApi die ganze Liste.
- * Neueste zuerst, weil nur Bewertungen bis 4 Wochen Alter in Frage kommen:
- * es wird nur so weit geblättert, bis die Bewertungen älter als ~5 Wochen sind.
+ * Neueste zuerst. Auch ältere Bewertungen sind bestellbar (ca. 50 %, +50), und
+ * der Kunde sucht im Wizard nach Bewertername — daher wird bis SERPAPI_PAGES
+ * geblättert, unabhängig vom Alter.
  *
  * Schlüssel: Railway-Variable SERPAPI_KEY (NIE ins Repo – es ist öffentlich).
  * Optional: SERPAPI_PAGES (Standard 3 Seiten ≈ bis zu 48 Bewertungen).
@@ -27,7 +28,6 @@ export type FetchedReview = {
 export const serpKey = (): string => (process.env.SERPAPI_KEY || "").trim();
 
 const CACHE_MS = 6 * 3600_000;
-const STOP_AFTER_DAYS = 35;
 const cache = new Map<string, { ts: number; data: FetchedReview[] }>();
 
 let usage = { month: "", calls: 0 };
@@ -80,9 +80,8 @@ export async function fetchPlaceReviews(placeId: string, lang: string): Promise<
         link: String(r.link || ""),
       });
     }
-    const last = out[out.length - 1];
     token = data.serpapi_pagination?.next_page_token || null;
-    if (!token || !list.length || (last && last.days > STOP_AFTER_DAYS)) break;
+    if (!token || !list.length) break;
   }
   cache.set(ck, { ts: Date.now(), data: out });
   if (cache.size > 500) cache.delete(cache.keys().next().value as string);

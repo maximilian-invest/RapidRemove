@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "De tre løftestænger i ORM", toc: "De tre løftestænger" },
     { t: "h3", text: "Løftestang 1: Fjerne" },
-    { t: "p", text: "Det, der er retsstridigt, falskt eller uberettiget, skal væk. Det gælder falske anmeldelser, retsstridige 1-stjernere, usande kendsgerningspåstande – og i yderste tilfælde en komplet, beskadiget [virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/). Fjernelse er den mest direkte løftestang, fordi problemet forsvinder ved roden." },
+    { t: "p", text: "Det, der er retsstridigt, falskt eller uberettiget, skal væk. Det gælder falske anmeldelser og retsstridige 1-stjernere (som [enkelte anmeldelser](/da/fjern-anmeldelse/)), usande kendsgerningspåstande – og i yderste tilfælde en komplet, beskadiget [virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/). Fjernelse er den mest direkte løftestang, fordi problemet forsvinder ved roden." },
     { t: "h3", text: "Løftestang 2: Fortrænge" },
     { t: "p", text: "Ikke alt lader sig slette – f.eks. en lovlig, men gammel negativ artikel. Her kommer **fortrængning** ind: man bygger og styrker målrettet stærkt, positivt indhold (egne sider, profiler, bidrag, omtaler), som Google vurderer som mere relevant. Med tiden rykker disse frem – og det uønskede resultat glider til side 2 eller længere ned, hvor næsten ingen ser det. Mere om det under [fjern negative Google-resultater](/da/magasin/fjern-negative-google-resultater/)." },
     { t: "h3", text: "Løftestang 3: Opbygge" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Hvad I selv kan gøre – og hvor grænsen går", toc: "Selv eller proff" },
     { t: "p", text: "**I kan selv:** systematisk bede om anmeldelser, svare professionelt på kritik, holde egne sider og profiler opdaterede, indberette åbenlyse falske anmeldelser til Google." },
-    { t: "p", text: "**Grænser for egne midler:** Google afviser ofte indberetninger automatisk; vedholdende negative resultater og pressartikler kan slet ikke påvirkes via den normale brugergrænseflade; en komplet profil-fjernelse er ikke designet til ejere. Her er specialiserede, juridisk funderede metoder nødvendige – det er præcis, hvad RapidRemove gør: [slet profil](/da/magasin/slet-google-virksomhedsprofil/), [omdømmestyring](/da/omdoemmestyring/) og [afindeksere presse](/da/afindeksere-presse/)." },
+    { t: "p", text: "**Grænser for egne midler:** Google afviser ofte indberetninger automatisk; vedholdende negative resultater og pressartikler kan slet ikke påvirkes via den normale brugergrænseflade; en komplet profil-fjernelse er ikke designet til ejere. Her er specialiserede, juridisk funderede metoder nødvendige – det er præcis, hvad RapidRemove gør: [fjern enkelte anmeldelser](/da/fjern-anmeldelse/), [slet profil](/da/magasin/slet-google-virksomhedsprofil/), [omdømmestyring](/da/omdoemmestyring/) og [afindeksere presse](/da/afindeksere-presse/)." },
 
     { t: "h2", id: "vorgehen", text: "Sådan arbejder I struktureret", toc: "Fremgangsmåde" },
     { t: "ol", items: [

@@ -49,6 +49,13 @@ export const CLUSTER_SLUGS = [
   "trustpilot-bewertung-loeschen",
 ];
 
+// Artikel OHNE deutsches Original (nur Übersetzungen) — z. B. das Einzelbewertungs-
+// Produkt, das es in DACH nicht gibt. Schlüssel = interner Slug (wie der deutsche
+// Quell-Slug bei den Cluster-Artikeln); Kartenoptik für das Magazin-Grid.
+export const TRANSLATION_ONLY = {
+  "einzelbewertung-loeschen-service": { cat: "Reputation", thm: "thm-orange", icon: "trash", read: 7 },
+};
+
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.
 export const CLUSTER_CARDS = [
   { slug: "google-bewertung-loeschen-lassen", cat: "Reputation", thm: "thm-orange", icon: "trash", title: "Google Bewertung löschen lassen: Kosten & Methoden", excerpt: "Alle Methoden, Kosten und Erfolgsaussichten im Vergleich – was 2026 wirklich funktioniert.", author: "Maximilian Hölzl", read: 9, date: "September 2025" },

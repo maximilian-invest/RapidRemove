@@ -46,14 +46,15 @@ const article = {
 
     { t: "h2", id: "google-reagiert", text: "När Google inte agerar: vad då?", toc: "Google agerar inte" },
     { t: "p", text: "Här börjar frustrationen för många företagare. Google granskar anmälningar **mestadels automatiserat** och avvisar dem ofta med standardiserade textblock – även vid uppenbara förfalskningar. Du har då ingen verklig möjlighet att eskalera och står åter vid början." },
-    { t: "p", text: "Två vägar leder vidare:" },
+    { t: "p", text: "Tre vägar leder vidare:" },
     { t: "ul", items: [
       "**Advokatvägen:** en juridiskt grundad begäran om borttagning kan lyckas vid klart olagliga recensioner – men tar ofta veckor till månader, faktureras per recension och kan provocera upphovspersonen till »hämndrecensioner» (Streisandeffekten).",
+      "**Borttagning av enskilda recensioner:** du väljer ut just de falska recensionerna och RapidRemove [tar bort dem åt dig](/sv/ta-bort-omdome/) – 179 € per borttagen recension (äldre än 4 veckor: +50 €), betalt endast vid framgång, oftast på några dagar.",
       "**Profilborttagning:** i stället för att angripa varje falsk recension för sig tas hela profilen bort – alla recensioner försvinner med.",
     ] },
 
     { t: "h2", id: "loeschen", text: "Bli av med falska recensioner – den slutgiltiga lösningen", toc: "Slutgiltig lösning" },
-    { t: "p", text: "Vid en **samordnad falsk attack** med många recensioner är att anmäla enskilda recensioner ett hopplöst kattochråtta-spel. Därför går RapidRemove en annan väg: **med den här metoden går vi inte recension för recension – vi tar bort hela Google-företagsprofilen.** Alla falska recensioner försvinner i samband med borttagningen – du börjar med ett rent blad." },
+    { t: "p", text: "Vid en **samordnad falsk attack** med många recensioner är att anmäla enskilda recensioner ett hopplöst kattochråtta-spel. Därför går RapidRemove en annan väg: **med den här metoden går vi inte recension för recension – vi tar bort hela Google-företagsprofilen.** Alla falska recensioner försvinner i samband med borttagningen – du börjar med ett rent blad. Är det däremot bara en handfull falska recensioner på en annars sund profil är borttagningen av enskilda recensioner oftast det bättre valet – dina bra recensioner blir kvar." },
     { t: "table", rrCol: 3, head: ["Kriterium", "Rapportera själv", "Advokat", "RapidRemove (profilborttagning)"], rows: [
       ["Vad tas bort", "enskild recension", "enskild recension", "hela profilen + alla recensioner"],
       ["Snabbhet", "osäkert", "3–9 månader", "24–48 tim"],
@@ -63,16 +64,16 @@ const article = {
       ["Insats", "medel", "hög", "ingen"],
     ] },
     { t: "p", text: "Den avgörande fördelen: du betalar först **efter lyckad borttagning**, och dyker profilen upp igen via tredje part tas den bort utan kostnad inom ramen för garantin." },
-    { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela företagsprofilen**, inte en enskild falsk recension. Vill du bara ta bort en recension och behålla din profil är anmälan till Google eller advokatvägen de passande alternativen." },
+    { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela företagsprofilen**, inte en enskild falsk recension. Vill du bara ta bort en eller några recensioner och behålla din profil finns anmälan till Google, advokatvägen – eller RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/). Vad det kostar och hur stora chanserna är läser du i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/)." },
     { t: "cta", title: "Falsk attack? Kontrollera borttagbarheten – gratis.", text: "Ange företagsnamnet – vi kontrollerar på sekunder om och hur snabbt din profil inklusive alla falska recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
     { q: "Hur känner jag igen en falsk Google-recension?", a: "Typiska tecken är saknad koppling till tjänsten, 1 stjärna utan text, en profil utan recensionshistorik, påfallande tajming för flera negativa recensioner samt ovidkommande eller kränkande innehåll." },
     { q: "Hur anmäler jag en falsk recension till Google?", a: "Klicka via trepunktsmenyn bredvid recensionen på »Rapportera recension», välj brottet och skicka anmälan. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Är falska recensioner straffbara?", a: "Medvetet falska recensioner kan få civil-, konkurrens- och delvis straffrättsliga följder. I praktiken är upphovspersonen dock ofta anonym, varför borttagning av recensionen oftast är den snabbare hävstången än en anmälan. Detta är inte juridisk rådgivning." },
-    { q: "Vad kan jag göra om Google inte tar bort den falska recensionen?", a: "Avvisas anmälan återstår för en enskild recension advokatvägen. Är profilen skadad av många falska är profilborttagning via RapidRemove den mest tillförlitliga vägen: hela profilen tas bort, alla recensioner försvinner med." },
-    { q: "Tar RapidRemove bort enskilda falska recensioner?", a: "Ja, numera: [ta bort en enskild Google-recension](https://www.rapid-remove.com/sv/ta-bort-omdome/) – 179 € per borttagen recension, betalas först vid framgång; recensionen får vara högst 4 veckor gammal och måste innehålla text. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
-    { q: "Hur snabbt blir man av med de falska recensionerna?", a: "Via profilborttagning finns resultat ofta inom 24 till 48 timmar – betydligt snabbare än den flera månader långa rättsliga vägen." },
+    { q: "Vad kan jag göra om Google inte tar bort den falska recensionen?", a: "Avvisas anmälan kan du för en enskild recension gå advokatvägen eller låta RapidRemove ta bort just den recensionen – betalt endast vid framgång. Är profilen skadad av många falska är profilborttagning via RapidRemove den mest tillförlitliga vägen: hela profilen tas bort, alla recensioner försvinner med." },
+    { q: "Tar RapidRemove bort enskilda falska recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) markerar du de falska recensionerna och betalar bara för dem som faktiskt tas bort. Recensioner upp till 4 veckor gamla har ca. 90 % chans att lyckas (179 € per recension), äldre ca. 50 % (+50 € per recension); även betyg utan text kan väljas. Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
+    { q: "Hur snabbt blir man av med de falska recensionerna?", a: "Via profilborttagning finns resultat ofta inom 24 till 48 timmar, enskilda recensioner tas oftast bort på några dagar, ibland upp till tre veckor – båda betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [
     { label: "Ta bort Google-recensioner: kostnad och metoder jämförda", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

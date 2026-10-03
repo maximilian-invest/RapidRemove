@@ -31,12 +31,12 @@ const article = {
       "**Risikofrit:** Garanti – dukker opslaget op igen via tredjeparter, fjernes det gratis",
       "**SEO-venligt:** Din hjemmeside og dit ranking påvirkes ikke",
     ] },
-    { t: "warn", title: "Vigtigt", text: "Denne metode fjerner **hele opslaget**, ikke én enkelt anmeldelse. Den der blot ønsker at slippe af med én anmeldelse og beholde profilen, bruger indberetningsvejen eller kontakter en advokat." },
+    { t: "warn", title: "Vigtigt", text: "Denne metode fjerner **hele opslaget**, ikke én enkelt anmeldelse. Den der blot ønsker at slippe af med én anmeldelse og beholde profilen, bruger indberetningsvejen, kontakter en advokat – eller bruger RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) med betaling kun ved succes." },
 
     { t: "cta", title: "Få dit virksomhedsopslag vurderet – gratis.", text: "Indtast dit virksomhedsnavn – vi undersøger på sekunder, om og hvor hurtigt dit opslag samt alle anmeldelser kan fjernes.", btn: "Tjek sletbarhed", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inkl. garanti", "Uden risiko"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Enkelt anmeldelse eller hele opslaget?", toc: "Én eller hele" },
-    { t: "p", text: "Drejer det sig kun om én urimelig anmeldelse, er **indberetning** eller advokatvejen den rette løsning – læs mere under [Fjern Google-anmeldelser](/da/magasin/fjern-google-anmeldelser/). Er opslaget samlet set beskadiget og du ønsker en reel ny start, er fuldstændig fjernelse den direkte vej." },
+    { t: "p", text: "Drejer det sig kun om én urimelig anmeldelse, er **indberetning**, advokatvejen eller RapidRemoves **fjernelse af enkelte anmeldelser** den rette løsning – priser og succesrater under [Få fjernet en Google-anmeldelse](/da/magasin/fjern-google-anmeldelse-service/), alle metoder under [Fjern Google-anmeldelser](/da/magasin/fjern-google-anmeldelser/). Er opslaget samlet set beskadiget og du ønsker en reel ny start, er fuldstændig fjernelse den direkte vej." },
 
     { t: "h2", id: "kosten", text: "Hvad koster det at slette virksomhedsopslaget?", toc: "Hvad det koster" },
     { t: "p", text: "Priserne varierer kraftigt afhængigt af udbyder:" },
@@ -62,7 +62,7 @@ const article = {
     { q: "Hvor lang tid tager fjernelsen?", a: "Via professionel sletning typisk 24-48 timer – markant hurtigere end den månedlange juridiske proces for enkeltanmeldelser." },
     { q: "Bevarer jeg min hjemmeside og mit ranking?", a: "Ja. Fjernelse af virksomhedsopslaget påvirker hverken din hjemmeside, din Google-konto eller dit ranking. En ny, ren profil er efterfølgende valgfri." },
     { q: "Forsvinder falske anmeldelser også?", a: "Ja. Eftersom hele opslaget fjernes, forsvinder alle anmeldelser med – herunder falske og uberettigede." },
-    { q: "Hvad koster det at slette virksomhedsopslaget?", a: "RapidRemove arbejder med en fast pris, der betales først efter succes. Udbydere for enkeltanmeldelser og advokater afregner typisk pr. anmeldelse, ofte uden garanti for resultatet." },
+    { q: "Hvad koster det at slette virksomhedsopslaget?", a: "RapidRemove arbejder med en fast pris, der betales først efter succes. Advokater og mange udbydere for enkeltanmeldelser afregner typisk pr. anmeldelse, ofte uden garanti for resultatet. Skal kun enkelte anmeldelser væk, koster det hos RapidRemove 179 € pr. fjernet anmeldelse – kun ved succes." },
   ],
   related: [
     { label: "Slet Google-virksomhedsprofil – den komplette vejledning", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

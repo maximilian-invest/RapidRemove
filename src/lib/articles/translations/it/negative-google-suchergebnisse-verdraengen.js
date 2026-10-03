@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Alcuni risultati si possono rimuovere completamente dalla visualizzazione:" },
     { t: "ul", items: [
       "**Il proprio profilo aziendale Google** con tutte le recensioni – tramite le procedure ufficiali (vedi [cancellazione profilo](/it/rivista/eliminare-profilo-attivita-google/)).",
+      "**Singole recensioni Google ingiuste** – false, offensive o senza contatto reale, tramite la [rimozione di singole recensioni](/it/rimuovere-una-recensione/), mantenendo il profilo.",
       "**Contenuti illegali** – insulti, affermazioni di fatto errate, violazioni dei diritti della personalità.",
       "**Dati personali** – eventualmente tramite il «diritto all'oblio» (GDPR, art. 17).",
     ] },

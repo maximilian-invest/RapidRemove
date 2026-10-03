@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Solução definitiva: eliminar o perfil completo", toc: "Eliminar definitivamente" },
-    { t: "p", text: "Se pretende remover uma ficha **completa e definitivamente** — incluindo todas as avaliações — do Google Maps e da pesquisa, os recursos nativos chegam ao limite. É precisamente aqui que a RapidRemove entra: não combatemos avaliações individuais nem rótulos de estado, removemos o **perfil de empresa completo** através dos procedimentos oficiais do Google. Desta forma, a ficha desaparece juntamente com todas as avaliações de uma só vez — avaliações falsas incluídas." },
+    { t: "p", text: "Se pretende remover uma ficha **completa e definitivamente** — incluindo todas as avaliações — do Google Maps e da pesquisa, os recursos nativos chegam ao limite. É precisamente aqui que a RapidRemove entra: com a remoção do perfil não combatemos avaliações individuais nem rótulos de estado, removemos o **perfil de empresa completo** através dos procedimentos oficiais do Google. Desta forma, a ficha desaparece juntamente com todas as avaliações de uma só vez — avaliações falsas incluídas. Se, pelo contrário, quiser manter a ficha e o problema forem apenas uma ou poucas avaliações, a RapidRemove também oferece a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) — 179 € por avaliação removida, só paga em caso de sucesso." },
     { t: "p", text: "O que isso significa para si:" },
     { t: "ul", items: [
       "**Rapidez:** Remoção normalmente em 24 a 48 horas, em vez de meses de vai e vem.",

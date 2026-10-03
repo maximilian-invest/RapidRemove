@@ -40,16 +40,17 @@ const article = {
     ] },
 
     { t: "h2", id: "google-reagiert", text: "När Google inte agerar", toc: "Google agerar inte" },
-    { t: "p", text: "I praktiken avvisar Google många anmälningar **automatiserat** – även vid ordlösa 1-stjärniga recensioner. En allmän anmälan räcker ofta inte. Mer framgångsrika är en **konkret motiverad invändning** (via advokat) eller den **tekniska borttagningen**, som angriper direkt inom Googles logik och slipper en utdragen skriftväxling." },
+    { t: "p", text: "I praktiken avvisar Google många anmälningar **automatiserat** – även vid ordlösa 1-stjärniga recensioner. En allmän anmälan räcker ofta inte. Mer framgångsrika är en **konkret motiverad invändning** (via advokat) eller den **tekniska borttagningen**, som angriper direkt inom Googles logik och slipper en utdragen skriftväxling – antingen för just den enskilda recensionen eller för hela profilen." },
 
     { t: "h2", id: "weg", text: "Vilken väg passar dig?", toc: "Vilken väg?" },
     { t: "p", text: "Viktigt först: det finns två helt olika mål – och därmed två vägar." },
-    { t: "p", text: "**Vill du bara ha bort den enda 1-stjärniga recensionen och behålla din profil?** Då är **anmälan** till Google och – om den misslyckas – **advokatvägen** de rätta alternativen. Just vid en ordlös 1-stjärnig recension är de rättsliga chanserna goda." },
+    { t: "p", text: "**Vill du bara ha bort den enda 1-stjärniga recensionen och behålla din profil?** Då har du tre alternativ: **anmälan** till Google, **advokatvägen** – eller RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/). Där markerar du den ordlösa 1-stjärniga recensionen direkt i listan över dina Google-recensioner; recensioner utan text kan väljas precis som alla andra. Upp till 4 veckor gammal: ca. 90 % chans att lyckas, 179 €; äldre: ca. 50 %, +50 €. Du betalar bara om recensionen faktiskt försvinner." },
     { t: "p", text: "**Är din profil varaktigt skadad av flera eller orättvisa recensioner och vill du ha en verklig nystart?** Då är **profilborttagningen** via RapidRemove den mest direkta vägen: vi tar bort **hela företagsprofilen**, alla recensioner försvinner med – en verklig nystart; du betalar bara vid framgång." },
     { t: "table", head: ["Väg", "Vad tas bort", "Tid", "Framgång", "Kostnad"], rows: [
       ["Rapportera själv", "enskild recension", "osäkert", "låg", "gratis"],
       ["Advokat", "enskild recension", "3–9 månader", "ca 90 %", "per recension, förskott"],
-      ["RapidRemove", "**hela profilen + alla recensioner**", "24–48 tim", "betalning vid framgång", "fast pris efter framgång"],
+      ["RapidRemove (enskilda recensioner)", "utvalda recensioner", "några dagar till 3 veckor", "ca. 90 % (upp till 4 veckor), ca. 50 % (äldre)", "från 179 € per borttagen recension, endast vid framgång"],
+      ["RapidRemove (profilborttagning)", "**hela profilen + alla recensioner**", "24–48 tim", "betalning vid framgång", "fast pris efter framgång"],
     ] },
     { t: "p", text: "Vid profilborttagningen betalar du först **efter framgång**, och tack vare garantin tas en profil som dyker upp igen bort utan kostnad." },
     { t: "cta", title: "Kontrollera gratis om din 1-stjärniga recension går att ta bort.", text: "Ange företagsnamnet – vi hittar din profil och kontrollerar på sekunder om och hur snabbt den kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
@@ -58,9 +59,9 @@ const article = {
     { q: "Kan jag ta bort en 1-stjärnig recension utan text?", a: "I många fall ja. Eftersom ingen koppling till en verklig upplevelse är igenkännbar saknar recensionen ofta den rättsliga grunden; tyska domstolar som Landgericht Lübeck och Tysklands högsta domstol (BGH) har bekräftat sådana anspråk på borttagning." },
     { q: "Är en 1-stjärnig recension utan text straffbar?", a: "Recensionen i sig oftast inte. Men om den getts utan verklig anledning kan den vara otillåten och grunda ett civilrättsligt anspråk på borttagning. Detta är inte juridisk rådgivning." },
     { q: "Hur anmäler jag ett stjärnbetyg utan kommentar?", a: "Via trepunktsmenyn bredvid recensionen, klicka på Rapportera recension och ange som skäl den saknade kopplingen till tjänsten. Statusen följer du via Googles verktyg för hantering av recensioner." },
-    { q: "Vad gör jag om Google inte tar bort recensionen?", a: "För en enskild recension hjälper en konkret motiverad invändning från en advokat. Är din profil skadad som helhet och du vill ha en nystart är profilborttagning via RapidRemove den mest tillförlitliga vägen – då försvinner alla recensioner med profilen." },
-    { q: "Tar RapidRemove bort den enskilda 1-stjärniga recensionen?", a: "Ett betyg med enbart stjärnor, utan text, kan inte tas bort enskilt – borttagning per recension kräver text. RapidRemove tar bort sådana betyg via borttagningen av hela profilen; för negativa recensioner med text finns även [borttagning av enskilda recensioner](https://www.rapid-remove.com/sv/ta-bort-omdome/)." },
-    { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar – betydligt snabbare än den flera månader långa rättsliga vägen för en enskild recension." },
+    { q: "Vad gör jag om Google inte tar bort recensionen?", a: "För en enskild recension hjälper en konkret motiverad invändning från en advokat – eller RapidRemoves borttagning av enskilda recensioner, där du bara betalar om recensionen faktiskt tas bort. Är din profil skadad som helhet och du vill ha en nystart är profilborttagning via RapidRemove den mest tillförlitliga vägen – då försvinner alla recensioner med profilen." },
+    { q: "Tar RapidRemove bort den enskilda 1-stjärniga recensionen?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) kan du välja även recensioner utan text – ordlösa betyg utan igenkännbar kundkontakt har ofta goda chanser. Upp till 4 veckor gammal: ca. 90 % chans att lyckas, 179 € per borttagen recension; äldre: ca. 50 %, +50 €. Inget i förskott, du betalar bara vid framgång. Priser och mängdrabatter i detalj hittar du i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/)." },
+    { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar, en enskild recension via RapidRemove oftast på några dagar, ibland upp till tre veckor – betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [
     { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

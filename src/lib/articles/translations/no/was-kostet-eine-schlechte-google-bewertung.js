@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Hva som lønner seg – og hva som ikke gjør det", toc: "Hva som lønner seg" },
     { t: "p", text: "Ikke enhver anmeldelse trenger å bekjempes. Ærlig, saklig kritikk besvarer man best på en rolig og profesjonell måte – det viser andre lesere at du er seriøs. Annerledes er det med **uberettigede, falske eller ulovlige** anmeldelser: Her lønner det seg nesten alltid å handle, fordi det løpende omsetningstapet overstiger kostnadene ved å fjerne dem." },
-    { t: "p", text: "Hvilken vei som er riktig, avhenger av den konkrete saken – vi sammenligner alternativene i detalj under [Negativ anmeldelse: ignorere, svare eller fjerne?](/no/magasin/negativ-anmeldelse-ignorere-svare-fjerne/) og [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Er profilen totalt sett skadet, kan en fullstendig [profilsletting](/no/magasin/slett-google-bedriftsprofil/) være det reneste kuttet." },
+    { t: "p", text: "Hvilken vei som er riktig, avhenger av den konkrete saken – vi sammenligner alternativene i detalj under [Negativ anmeldelse: ignorere, svare eller fjerne?](/no/magasin/negativ-anmeldelse-ignorere-svare-fjerne/) og [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Gjelder det én eller noen få konkrete anmeldelser, kan du [få dem fjernet enkeltvis](/no/magasin/fjern-google-anmeldelse-tjeneste/) – fra 179 € per anmeldelse, betalt først når den faktisk er borte. Er profilen totalt sett skadet, kan en fullstendig [profilsletting](/no/magasin/slett-google-bedriftsprofil/) være det reneste kuttet." },
 
     { t: "cta", title: "Sjekk hva som kan gjøres med profilen din – gratis.", text: "Skriv inn bedriftsnavnet – vi sjekker på sekunder om og hvor raskt problematiske anmeldelser eller profilen kan fjernes.", btn: "Start gratis sjekk", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inkl. garanti", "Uten risiko"] },
 
@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "Hvor mye omsetning koster en dårlig Google-anmeldelse?", a: "En Harvard-studie (Michael Luca) anslår effekten av én hel stjerne til 5–9 % av omsetningen hos uavhengige bedrifter. Én enkelt anmeldelse virker ulikt avhengig av det totale antallet – jo færre anmeldelser du har, desto mer trekker én dårlig ned snittet." },
     { q: "Når blir et dårlig snitt forretningsmessig skadelig?", a: "Det blir kritisk under ca. 4,0 stjerner; under 3 stjerner stenger du ifølge BrightLocal ute praktisk talt de fleste kunder, ettersom bare 3 % vil vurdere en bedrift med to eller færre stjerner." },
-    { q: "Lønner det seg å bekjempe én enkelt anmeldelse?", a: "Ved uberettigede, falske eller ulovlige anmeldelser – som regel ja. Det løpende omsetningstapet overstiger nesten alltid kostnadene ved fjerning. Saklig, ekte kritikk er det bedre å besvare enn å bekjempe." },
+    { q: "Lønner det seg å bekjempe én enkelt anmeldelse?", a: "Ved uberettigede, falske eller ulovlige anmeldelser – som regel ja. Det løpende omsetningstapet overstiger nesten alltid kostnadene ved fjerning – hos RapidRemove 179 € per fjernet anmeldelse, betalt kun ved suksess. Saklig, ekte kritikk er det bedre å besvare enn å bekjempe." },
     { q: "Hvordan beregner jeg mitt konkrete tap?", a: "Månedlig omsetning × konservativt 5 % × antall måneder anmeldelsen er synlig. Selv med forsiktige forutsetninger er årsverdien som regel langt over løsningskostnadene." },
   ],
   related: [

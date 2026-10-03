@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Certains résultats peuvent être complètement retirés de l'affichage :" },
     { t: "ul", items: [
       "**Son propre profil Google My Business** avec tous ses avis – via les procédures officielles (voir [supprimer un profil](/fr/magazine/supprimer-profil-etablissement-google/)).",
+      "**Avis Google isolés** – faux avis, insultes ou notes sans lien réel, retirés de façon ciblée via la [suppression d'avis isolés](/fr/supprimer-un-avis/) sans toucher au reste du profil.",
       "**Contenus illicites** – insultes, affirmations mensongères, atteintes aux droits de la personnalité.",
       "**Données personnelles** – le cas échéant via le « droit à l'oubli » (RGPD Art. 17).",
     ] },

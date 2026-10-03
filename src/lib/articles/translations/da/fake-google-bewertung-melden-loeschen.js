@@ -46,14 +46,15 @@ const article = {
 
     { t: "h2", id: "google-reagiert", text: "Når Google ikke reagerer: hvad så?", toc: "Google reagerer ikke" },
     { t: "p", text: "Her begynder frustrationen for mange erhvervsdrivende. Google gennemgår anmeldelser **overvejende automatiseret** og afviser dem ofte med standardiserede tekstblokke – selv ved åbenlyse forfalskninger. Du har så ingen reel mulighed for at eskalere og står igen ved begyndelsen." },
-    { t: "p", text: "To veje fører videre:" },
+    { t: "p", text: "Tre veje fører videre:" },
     { t: "ul", items: [
       "**Advokatvejen:** en juridisk begrundet anmodning om fjernelse kan lykkes ved klart ulovlige anmeldelser – men tager ofte uger til måneder, faktureres pr. anmeldelse og kan provokere ophavspersonen til »hævnanmeldelser« (Streisand-effekten).",
+      "**Fjernelse af enkelte anmeldelser:** RapidRemove fjerner [de udvalgte falske anmeldelser](/da/fjern-anmeldelse/) – profilen og dine gode anmeldelser bliver stående; 179 € pr. fjernet anmeldelse, kun ved succes.",
       "**Profilfjernelse:** i stedet for at angribe hver falsk anmeldelse for sig fjernes hele profilen – alle anmeldelser forsvinder med.",
     ] },
 
     { t: "h2", id: "loeschen", text: "Slip af med falske anmeldelser – den endelige løsning", toc: "Endelig løsning" },
-    { t: "p", text: "Ved et **koordineret falsk angreb** med mange anmeldelser er det at anmelde enkelte anmeldelser en håbløs kat-og-mus-leg. Derfor går RapidRemove en anden vej: **med denne metode går vi ikke anmeldelse for anmeldelse – vi fjerner hele Google-virksomhedsprofilen.** Alle falske anmeldelser forsvinder i forbindelse med fjernelsen – du starter med en ren tavle." },
+    { t: "p", text: "Ved et **koordineret falsk angreb** med mange anmeldelser er det at anmelde enkelte anmeldelser en håbløs kat-og-mus-leg. Derfor tilbyder RapidRemove her en anden vej: **med denne metode går vi ikke anmeldelse for anmeldelse – vi fjerner hele Google-virksomhedsprofilen.** Alle falske anmeldelser forsvinder i forbindelse med fjernelsen – du starter med en ren tavle." },
     { t: "table", rrCol: 3, head: ["Kriterium", "Rapportér selv", "Advokat", "RapidRemove (profilfjernelse)"], rows: [
       ["Hvad fjernes", "enkelt anmeldelse", "enkelt anmeldelse", "hele profilen + alle anmeldelser"],
       ["Hastighed", "usikkert", "3-9 måneder", "24-48 t"],
@@ -63,16 +64,16 @@ const article = {
       ["Indsats", "middel", "høj", "ingen"],
     ] },
     { t: "p", text: "Den afgørende fordel: du betaler først **efter vellykket fjernelse**, og dukker profilen op igen via tredjepart, fjernes den uden beregning inden for rammerne af garantien." },
-    { t: "warn", title: "Vigtigt", text: "Profilfjernelsen fjerner **hele virksomhedsprofilen**, ikke en enkelt falsk anmeldelse. Vil du kun fjerne én anmeldelse og beholde din profil, er anmeldelsen til Google eller advokatvejen de passende muligheder." },
+    { t: "warn", title: "Vigtigt", text: "Profilfjernelsen fjerner **hele virksomhedsprofilen**, ikke en enkelt falsk anmeldelse. Vil du kun fjerne én eller nogle få falske anmeldelser og beholde din profil, er RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) den passende vej – ellers anmeldelsen til Google eller advokatvejen. Priser og chancer: [Få fjernet en Google-anmeldelse](/da/magasin/fjern-google-anmeldelse-service/)." },
     { t: "cta", title: "Falsk angreb? Tjek muligheden for fjernelse – gratis.", text: "Indtast virksomhedsnavnet – vi tjekker på sekunder, om og hvor hurtigt din profil inklusive alle falske anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
   ],
   faq: [
     { q: "Hvordan genkender jeg en falsk Google-anmeldelse?", a: "Typiske tegn er manglende sammenhæng med ydelsen, 1 stjerne uden tekst, en profil uden anmeldelseshistorik, påfaldende timing for flere negative anmeldelser samt uvedkommende eller krænkende indhold." },
     { q: "Hvordan anmelder jeg en falsk anmeldelse til Google?", a: "Klik via tre-prikker-menuen ved siden af anmeldelsen på »Rapportér anmeldelse«, vælg overtrædelsen og send anmeldelsen. Status følger du via Googles værktøj til håndtering af anmeldelser." },
     { q: "Er falske anmeldelser strafbare?", a: "Bevidst falske anmeldelser kan få civil-, konkurrence- og delvist strafferetlige følger. I praksis er ophavspersonen dog ofte anonym, hvorfor fjernelse af anmeldelsen oftest er den hurtigere løftestang end en politianmeldelse. Dette er ikke juridisk rådgivning." },
-    { q: "Hvad kan jeg gøre, hvis Google ikke fjerner den falske anmeldelse?", a: "Afvises anmeldelsen, er der for en enkelt anmeldelse advokatvejen tilbage. Er profilen beskadiget af mange falske, er profilfjernelse via RapidRemove den mest pålidelige vej: hele profilen fjernes, alle anmeldelser forsvinder med." },
-    { q: "Fjerner RapidRemove enkelte falske anmeldelser?", a: "Ja, efterhånden: [fjern en enkelt Google-anmeldelse](https://www.rapid-remove.com/da/fjern-anmeldelse/) – 179 € pr. fjernet anmeldelse, betales først ved succes; anmeldelsen må højst være 4 uger gammel og skal indeholde tekst. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
-    { q: "Hvor hurtigt slipper man af med de falske anmeldelser?", a: "Via profilfjernelse er der ofte resultater inden for 24 til 48 timer – betydeligt hurtigere end den flere måneder lange retlige vej." },
+    { q: "Hvad kan jeg gøre, hvis Google ikke fjerner den falske anmeldelse?", a: "Afvises anmeldelsen, er der for en enkelt anmeldelse to veje tilbage: advokaten eller RapidRemoves fjernelse af enkelte anmeldelser (179 € pr. fjernet anmeldelse, kun ved succes). Er profilen beskadiget af mange falske, er profilfjernelse via RapidRemove den mest pålidelige vej: hele profilen fjernes, alle anmeldelser forsvinder med." },
+    { q: "Fjerner RapidRemove enkelte falske anmeldelser?", a: "Ja. Med [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) vælger du præcis de Google-anmeldelser, der skal væk – også anmeldelser uden tekst. Op til 4 uger gamle: ca. 90 % succesrate, 179 € pr. fjernet anmeldelse; ældre: ca. 50 %, +50 € pr. anmeldelse. Mængderabat: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. Du betaler kun for anmeldelser, der faktisk fjernes. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
+    { q: "Hvor hurtigt slipper man af med de falske anmeldelser?", a: "Ved fjernelse af enkelte anmeldelser som regel på få dage (højst ca. tre uger), via profilfjernelse ofte inden for 24 til 48 timer – betydeligt hurtigere end den flere måneder lange retlige vej." },
   ],
   related: [
     { label: "Fjern Google-anmeldelser: pris og metoder sammenlignet", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

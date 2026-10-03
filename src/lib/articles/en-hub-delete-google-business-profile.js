@@ -64,10 +64,10 @@ const article = {
       "**SEO-friendly:** your website and rankings stay intact; a clean new profile is optional",
       "**Discreet:** no correspondence with reviewers, no Streisand risk",
     ] },
-    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one review gone while keeping the profile, use reporting or the legal route instead. Since recently, RapidRemove offers exactly that as well: [removal of individual reviews](https://www.rapid-remove.com/en/remove-single-reviews/) – you pay per review actually removed, only on success." },
+    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one or a few reviews gone while keeping the profile, RapidRemove offers that too: [removal of individual reviews](/en/remove-single-reviews/) – $179 per removed review up to 4 weeks old (approx. 90 % success chance), +$50 for older ones (approx. 50 %), and you only pay for reviews that are actually removed." },
 
     { t: "h2", id: "single-vs-profile", text: "Single reviews vs. the whole profile", toc: "Reviews vs. profile" },
-    { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear a single unfair review while keeping the profile, see our guide on how to [have a Google review removed](https://www.rapid-remove.com/en/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },
+    { t: "p", text: "Many owners start by trying to **report** individual reviews. That is slow and uncertain: Google rejects many reports automatically, each review has to be justified separately, and new ones keep appearing. If your goal is to clear one or a few unfair reviews while keeping the profile, you don't have to go it alone: with our [single-review removal](/en/remove-single-reviews/) you tick the reviews that should go and pay only for those actually removed (details: [Google review removal service](/en/magazine/google-review-removal-service/)). All options compared: [have a Google review removed](/en/magazine/remove-google-reviews/). If the profile is damaged overall and you want a genuine fresh start, full profile removal is the more direct route." },
 
     { t: "h2", id: "cost", text: "What it costs", toc: "What it costs" },
     { t: "p", text: "Prices vary widely by provider type:" },
@@ -75,6 +75,7 @@ const article = {
       ["Cheap services", "$20 – 55 per review", "Highly variable"],
       ["Overseas services", "$55 – 110 per review", "Unclear"],
       ["Specialist lawyers (single review)", "$110 – 175 per review", "~90%, but slow"],
+      ["Single-review removal (RapidRemove)", "$179 per removed review (+$50 if older than 4 weeks)", "~90% (≤ 4 weeks) / ~50% (older) – pay only if removed"],
       ["Profile removal (RapidRemove)", "Fixed price, payable after success", "All reviews gone – pay only on success"],
     ] },
 
@@ -97,7 +98,7 @@ const article = {
     { q: "How long does a full profile removal take?", a: "Typically 24–48 hours via professional removal, compared with the months a single-review legal route can take." },
     { q: "Will my website or rankings be affected?", a: "No. Removing the Business Profile does not touch your website, your Google account or your search rankings. A clean new profile can be set up afterwards if you wish." },
     { q: "Does removal include fake reviews?", a: "Yes. Because the entire profile is removed, every review disappears with it – including fake or unjustified ones." },
-    { q: "What does it cost?", a: "RapidRemove works on a fixed price, payable only after success. Single-review providers and lawyers usually charge per review, often without a guaranteed result." },
+    { q: "What does it cost?", a: "RapidRemove works on a fixed price, payable only after success. Lawyers and most single-review providers charge per review, often upfront and without a guaranteed result. If you only need individual reviews removed, RapidRemove's [single-review removal](/en/remove-single-reviews/) costs $179 per removed review (+$50 if older than 4 weeks), with a volume discount from 3 reviews – charged only on success." },
   ],
 };
 export default article;

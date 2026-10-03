@@ -37,7 +37,7 @@ const article = {
       "**Effet conservateur** de 5 % → 1 500 € par mois.",
       "**Durée de visibilité** en multiplicateur : un avis reste souvent visible 12 mois ou plus → 18 000 € sur un an.",
     ] },
-    { t: "p", text: "Même avec des hypothèses prudentes, la perte cumulée dépasse largement le coût d'une solution professionnelle. C'est précisément ce calcul que beaucoup ratent, parce que le préjudice s'installe lentement et de façon invisible – sous forme de chiffre d'affaires perdu, pas de facture reçue." },
+    { t: "p", text: "Même avec des hypothèses prudentes, la perte cumulée dépasse largement le coût d'une solution professionnelle – la [suppression d'un avis isolé](/fr/supprimer-un-avis/) chez RapidRemove coûte par exemple 179 €, payés uniquement si l'avis disparaît. C'est précisément ce calcul que beaucoup ratent, parce que le préjudice s'installe lentement et de façon invisible – sous forme de chiffre d'affaires perdu, pas de facture reçue." },
 
     { t: "h2", id: "indirekt", text: "Les coûts indirects – souvent plus élevés que la perte directe", toc: "Coûts indirects" },
     { t: "ul", items: [
@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "Ce qui vaut la peine – et ce qui n'en vaut pas", toc: "Ce qui vaut la peine" },
     { t: "p", text: "Toutes les critiques ne méritent pas d'être combattues. Une critique honnête et factuelle se répond de façon posée – cela montre aux autres lecteurs votre état d'esprit. La situation est différente pour les avis **non fondés, frauduleux ou illicites** : agir vaut presque toujours la peine, car la perte continue de chiffre d'affaires dépasse le coût de la suppression." },
-    { t: "p", text: "Le bon chemin dépend du cas – nous comparons les options en détail dans [Avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/) et [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/). Si le profil est globalement compromis, la [suppression complète du profil](/fr/magazine/supprimer-profil-etablissement-google/) peut être la solution la plus nette." },
+    { t: "p", text: "Le bon chemin dépend du cas – nous comparons les options en détail dans [Avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/) et [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/) ; ce que coûte concrètement la suppression d'un avis précis est détaillé dans notre article sur le [service de suppression d'avis Google](/fr/magazine/service-suppression-avis-google/). Si le profil est globalement compromis, la [suppression complète du profil](/fr/magazine/supprimer-profil-etablissement-google/) peut être la solution la plus nette." },
 
     { t: "cta", title: "Vérifiez gratuitement ce qui peut être fait sur votre profil.", text: "Entrez le nom de votre entreprise – nous vérifions en quelques secondes si des avis problématiques (ou le profil entier) peuvent être supprimés, et dans quel délai.", btn: "Démarrer l'analyse gratuite", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
 

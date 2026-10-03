@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "ORM:s tre verktyg", toc: "De tre verktygen" },
     { t: "h3", text: "Verktyg 1: Ta bort" },
-    { t: "p", text: "Det som är rättsstridigt, fabricerat eller obefogat ska bort. Det gäller fejkrecensioner, rättsstridiga 1-stjärnor, falska faktapåståenden – och i extremfall en fullständigt skadad [företagsprofil](/sv/magasin/radera-google-foretagsprofil/). Borttagning är det mest direkta verktyget, eftersom problemet försvinner vid källan." },
+    { t: "p", text: "Det som är rättsstridigt, fabricerat eller obefogat ska bort. Det gäller fejkrecensioner, rättsstridiga 1-stjärnor, falska faktapåståenden – enskilda Google-recensioner kan du låta [ta bort en och en](/sv/ta-bort-omdome/) och betala bara för dem som faktiskt försvinner – och i extremfall en fullständigt skadad [företagsprofil](/sv/magasin/radera-google-foretagsprofil/). Borttagning är det mest direkta verktyget, eftersom problemet försvinner vid källan." },
     { t: "h3", text: "Verktyg 2: Tränga undan" },
     { t: "p", text: "Inte allt går att ta bort – till exempel en legitim men gammal negativartikel. Här sätter **undanträngning** in: man bygger upp och optimerar målmedvetet starka, positiva innehåll så att oönskade träffar glider från sida 1 till senare sidor. Eftersom nästan ingen klickar förbi sida 1 är ”undanträngt från sida 1” i praktiken nästan lika bra som ”borttaget”. Mer om det hittar du under [tränga undan negativa sökresultat](/sv/magasin/ta-bort-negativa-google-resultat/)." },
     { t: "h3", text: "Verktyg 3: Bygga upp" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Vad du kan göra själv – och var gränserna går", toc: "Själv eller proffs" },
     { t: "p", text: "**Kan göras själv:** systematiskt be om recensioner, svara professionellt på kritik, hålla egna innehåll och profiler aktuella, anmäla uppenbara fejk till Google." },
-    { t: "p", text: "**Standardmetodernas gränser:** Google avslår anmälningar ofta automatiskt; envisa negativa träffar och pressartiklar går inte att påverka via det vanliga gränssnittet; en fullständig profilradering är inte avsedd för ägare. I dessa lägen krävs specialiserade, rättssäkra metoder – det är exakt vad RapidRemove erbjuder: [radera profil](/sv/magasin/radera-google-foretagsprofil/), [rykteshantering](/sv/rykteshantering/) och [avindexera press](/sv/avindexera-press/)." },
+    { t: "p", text: "**Standardmetodernas gränser:** Google avslår anmälningar ofta automatiskt; envisa negativa träffar och pressartiklar går inte att påverka via det vanliga gränssnittet; en fullständig profilradering är inte avsedd för ägare. I dessa lägen krävs specialiserade, rättssäkra metoder – det är exakt vad RapidRemove erbjuder: borttagning av enskilda Google-recensioner, [radera profil](/sv/magasin/radera-google-foretagsprofil/), [rykteshantering](/sv/rykteshantering/) och [avindexera press](/sv/avindexera-press/)." },
 
     { t: "h2", id: "vorgehen", text: "Så arbetar du strukturerat", toc: "Tillvägagångssätt" },
     { t: "ol", items: [

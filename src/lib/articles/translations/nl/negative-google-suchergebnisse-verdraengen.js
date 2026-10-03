@@ -28,7 +28,7 @@ const article = {
     { t: "h2", id: "entfernen", text: "Weg 1: verwijderen – wanneer de treffer te schrappen is", toc: "Weg 1: verwijderen" },
     { t: "p", text: "Sommige treffers kunnen volledig uit de weergave worden verwijderd:" },
     { t: "ul", items: [
-      "**Het eigen Google-bedrijfsprofiel** inclusief reviews – via de officiële procedures (zie [profiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/)).",
+      "**Het eigen Google-bedrijfsprofiel** inclusief reviews – via de officiële procedures (zie [profiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/)) – of alleen afzonderlijke reviews via [losse reviews verwijderen](/nl/review-laten-verwijderen/).",
       "**Onrechtmatige content** – beledigingen, onjuiste feitelijke beweringen, schendingen van persoonlijkheidsrechten.",
       "**Persoonsgebonden gegevens** – in bepaalde gevallen via het „recht om vergeten te worden“ (AVG/GDPR Art. 17).",
     ] },

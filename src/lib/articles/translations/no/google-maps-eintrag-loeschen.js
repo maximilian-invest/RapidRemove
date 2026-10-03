@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Varig løsning: La hele profilen bli fjernet", toc: "Fjern varig" },
-    { t: "p", text: "Vil du at en oppføring skal forsvinne **fullstendig og permanent** – inkludert alle anmeldelser – fra Google Maps og søk, er Googles egne verktøy utilstrekkelige. Det er nettopp her RapidRemove kommer inn: Vi bekjemper ikke enkeltanmeldelser eller statusmerker, men fjerner **hele bedriftsprofilen** gjennom Googles offisielle prosesser. Dermed forsvinner oppføringen med alle anmeldelser på én gang – inkludert falske anmeldelser." },
+    { t: "p", text: "Vil du at en oppføring skal forsvinne **fullstendig og permanent** – inkludert alle anmeldelser – fra Google Maps og søk, er Googles egne verktøy utilstrekkelige. Det er nettopp her RapidRemove kommer inn: Ved profilsletting bekjemper vi ikke enkeltanmeldelser eller statusmerker, men fjerner **hele bedriftsprofilen** gjennom Googles offisielle prosesser. Dermed forsvinner oppføringen med alle anmeldelser på én gang – inkludert falske anmeldelser. Vil du beholde oppføringen og bare bli kvitt enkelte anmeldelser, tilbyr vi i stedet [fjerning av enkeltanmeldelser](/no/fjern-omtale/)." },
     { t: "p", text: "Hva det betyr for deg:" },
     { t: "ul", items: [
       "**Hastighet:** Fjerning vanligvis på 24–48 timer, ikke måneder med fram og tilbake.",

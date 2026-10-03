@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Solution définitive : faire supprimer l'intégralité du profil", toc: "Suppression durable" },
-    { t: "p", text: "Si vous souhaitez qu'une fiche disparaisse **totalement et définitivement** — avis compris — de Google Maps et des résultats de recherche, les outils natifs atteignent leurs limites. C'est précisément là qu'intervient RapidRemove : nous ne citons pas en justice des avis individuels ni ne contestons des statuts, nous supprimons le **profil d'établissement complet** via les procédures officielles de Google. La fiche disparaît ainsi en une seule fois avec l'ensemble de ses avis — faux avis inclus." },
+    { t: "p", text: "Si vous souhaitez qu'une fiche disparaisse **totalement et définitivement** — avis compris — de Google Maps et des résultats de recherche, les outils natifs atteignent leurs limites. C'est précisément là qu'intervient RapidRemove : avec cette méthode, nous ne citons pas en justice des avis individuels ni ne contestons des statuts, nous supprimons le **profil d'établissement complet** via les procédures officielles de Google. La fiche disparaît ainsi en une seule fois avec l'ensemble de ses avis — faux avis inclus. Si vous voulez au contraire garder votre fiche et que seuls quelques avis posent problème, RapidRemove propose aussi la [suppression d'avis isolés](/fr/supprimer-un-avis/) — 179 € par avis réellement supprimé, rien d'avance." },
     { t: "p", text: "Ce que cela signifie concrètement pour vous :" },
     { t: "ul", items: [
       "**Rapidité :** suppression en 24 à 48 heures en règle générale, contre des mois d'allers-retours.",

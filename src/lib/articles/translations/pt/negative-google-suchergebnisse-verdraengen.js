@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Alguns resultados podem ser completamente removidos da exibição:" },
     { t: "ul", items: [
       "**O próprio perfil de empresa do Google** com as avaliações — através dos procedimentos oficiais (ver [eliminar perfil](/pt/revista/eliminar-perfil-empresa-google/)).",
+      "**Avaliações do Google individuais** falsas ou injustas — sem eliminar o perfil, através da [remoção de avaliações individuais](/pt/remover-uma-avaliacao/).",
       "**Conteúdos ilegais** — insultos, afirmações factualmente incorretas, violações de direitos de personalidade.",
       "**Dados pessoais** — eventualmente através do “direito a ser esquecido” (RGPD Art. 17).",
     ] },

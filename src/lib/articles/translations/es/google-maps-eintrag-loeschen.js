@@ -80,7 +80,8 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "La solución definitiva: eliminar el perfil completo", toc: "Eliminación permanente" },
-    { t: "p", text: "Si quieres eliminar una ficha **de forma completa y permanente** — incluyendo todas las reseñas — las herramientas nativas de Google no son suficientes. Ahí es exactamente donde actúa RapidRemove: no atacamos reseñas individuales ni etiquetas de estado, sino que eliminamos el **perfil de empresa completo** a través de los procedimientos oficiales de Google. El resultado: la ficha desaparece junto con todas sus reseñas de una sola vez — reseñas falsas incluidas." },
+    { t: "p", text: "Si quieres eliminar una ficha **de forma completa y permanente** — incluyendo todas las reseñas — las herramientas nativas de Google no son suficientes. Ahí es exactamente donde actúa la eliminación de perfil de RapidRemove: no se queda en reseñas sueltas ni en etiquetas de estado, sino que elimina el **perfil de empresa completo** a través de los procedimientos oficiales de Google. El resultado: la ficha desaparece junto con todas sus reseñas de una sola vez — reseñas falsas incluidas." },
+    { t: "note", title: "¿Solo te molestan algunas reseñas?", text: "Si la ficha en sí está bien y quieres conservarla, no hace falta eliminarla: con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) quitamos solo las reseñas que elijas — 179 € por reseña eliminada, pago solo si desaparece." },
     { t: "p", text: "Lo que esto significa para ti:" },
     { t: "ul", items: [
       "**Rapidez:** Eliminación habitualmente en 24–48 horas, en lugar de meses de ida y vuelta.",

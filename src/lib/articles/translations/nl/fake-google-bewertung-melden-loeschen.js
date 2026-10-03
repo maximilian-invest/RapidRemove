@@ -46,8 +46,9 @@ const article = {
 
     { t: "h2", id: "google-reagiert", text: "Wanneer Google niet reageert: wat dan?", toc: "Google reageert niet" },
     { t: "p", text: "Hier begint de frustratie van veel ondernemers. Google beoordeelt meldingen **grotendeels geautomatiseerd** en wijst ze vaak af met standaardteksten – zelfs bij duidelijke vervalsingen. U heeft dan geen echte mogelijkheid om te escaleren en staat weer bij af." },
-    { t: "p", text: "Twee wegen leiden verder:" },
+    { t: "p", text: "Drie wegen leiden verder:" },
     { t: "ul", items: [
+      "**Losse reviews laten verwijderen:** RapidRemove pakt ook afzonderlijke valse reviews aan – u kiest zelf welke weg moeten en betaalt alleen voor wat echt verwijderd is ([losse Google-reviews verwijderen](/nl/review-laten-verwijderen/)). Reviews tot 4 weken oud: ca. 90 % slagingskans, € 179 per review; oudere: ca. 50 %, +€ 50.",
       "**Advocatenweg:** een juridisch onderbouwd verwijderverzoek kan bij duidelijk onrechtmatige reviews slagen – maar duurt vaak weken tot maanden, wordt per review gefactureerd en kan de auteur tot „wraakreviews” aanzetten (Streisand-effect).",
       "**Profielverwijdering:** in plaats van elke valse review apart aan te vechten, wordt het hele profiel verwijderd – alle reviews verdwijnen mee.",
     ] },
@@ -63,16 +64,16 @@ const article = {
       ["Inspanning", "gemiddeld", "hoog", "geen"],
     ] },
     { t: "p", text: "Het beslissende voordeel: u betaalt pas **na geslaagde verwijdering**, en mocht het profiel via derden weer opduiken, dan wordt het in het kader van de garantie gratis verwijderd." },
-    { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **volledige bedrijfsprofiel**, niet één valse review. Wilt u alleen één review verwijderen en uw profiel behouden, dan zijn rapporteren bij Google of de advocatenweg de passende opties." },
+    { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **volledige bedrijfsprofiel**, niet één valse review. Gaat het maar om één of enkele valse reviews en wilt u uw profiel behouden, dan is de [verwijdering van losse reviews](/nl/review-laten-verwijderen/) de betere keuze: u selecteert de reviews, ziet direct de prijs en betaalt alleen voor reviews die echt weg zijn. Hoe dat werkt en wat het kost, leest u in ons artikel over de [Google-review-verwijderservice](/nl/magazine/google-review-verwijderen-service/)." },
     { t: "cta", title: "Valse aanval? Controleer gratis de verwijderbaarheid.", text: "Voer uw bedrijfsnaam in – we controleren binnen seconden of en hoe snel uw profiel inclusief alle valse reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
     { q: "Hoe herken ik een valse Google review?", a: "Typische signalen zijn een ontbrekend verband met de dienst, 1 ster zonder tekst, een profiel zonder reviewhistorie, opvallende timing van meerdere negatieve reviews en off-topic of beledigende inhoud." },
     { q: "Hoe rapporteer ik een valse review bij Google?", a: "Klik via het menu met drie puntjes naast de review op „Review rapporteren”, kies de overtreding en verstuur de melding. De status volgt u via de Google-tool voor het beheer van reviews." },
     { q: "Zijn valse reviews strafbaar?", a: "Bewust valse reviews kunnen civiel-, mededingings- en deels strafrechtelijke gevolgen hebben. In de praktijk is de auteur echter vaak anoniem, waardoor verwijdering van de review meestal de snellere hefboom is dan een aangifte. Dit is geen juridisch advies." },
-    { q: "Wat kan ik doen als Google de valse review niet verwijdert?", a: "Als de melding wordt afgewezen, blijft voor een losse review de advocatenweg. Is het profiel door veel valse reviews beschadigd, dan is profielverwijdering via RapidRemove de betrouwbaarste weg: het hele profiel wordt verwijderd, alle reviews verdwijnen mee." },
-    { q: "Verwijdert RapidRemove losse valse reviews?", a: "Ja, inmiddels wel: [één Google-review verwijderen](https://www.rapid-remove.com/nl/review-laten-verwijderen/) – € 179 per verwijderde review, betalen alleen bij succes; de review mag maximaal 4 weken oud zijn en moet tekst bevatten. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
-    { q: "Hoe snel ben je de valse reviews kwijt?", a: "Via profielverwijdering zijn resultaten vaak binnen 24 tot 48 uur mogelijk – aanzienlijk sneller dan de juridische weg van meerdere maanden." },
+    { q: "Wat kan ik doen als Google de valse review niet verwijdert?", a: "Als de melding wordt afgewezen, kunt u een losse review via RapidRemove laten verwijderen ([losse reviews verwijderen](/nl/review-laten-verwijderen/), betalen alleen bij succes) of de advocatenweg kiezen. Is het profiel door veel valse reviews beschadigd, dan is profielverwijdering via RapidRemove de betrouwbaarste weg: het hele profiel wordt verwijderd, alle reviews verdwijnen mee." },
+    { q: "Verwijdert RapidRemove losse valse reviews?", a: "Ja. Naast de profielverwijdering kunt u bij RapidRemove ook [losse Google-reviews laten verwijderen](/nl/review-laten-verwijderen/): reviews tot 4 weken oud hebben ca. 90 % slagingskans en kosten € 179 per verwijderde review, oudere reviews ca. 50 % slagingskans en +€ 50. Ook reviews zonder tekst kunt u selecteren, en vanaf 3 reviews geldt staffelkorting. U betaalt alleen voor reviews die echt verwijderd zijn. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
+    { q: "Hoe snel ben je de valse reviews kwijt?", a: "Via profielverwijdering zijn resultaten vaak binnen 24 tot 48 uur mogelijk – aanzienlijk sneller dan de juridische weg van meerdere maanden. Losse valse reviews zijn via RapidRemove meestal binnen een paar dagen weg, soms binnen drie weken." },
   ],
   related: [
     { label: "Google reviews verwijderen: kosten en methoden vergeleken", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

@@ -48,7 +48,7 @@ const article = {
     ] },
 
     { t: "h2", id: "lohnt", text: "What's Worth Acting On — and What Isn't", toc: "What's Worth It" },
-    { t: "p", text: "Not every bad review needs to be fought. An honest, factual complaint is best handled with a composed public response — it shows other readers how you operate. It's a different story for **unjustified, fake, or unlawful** reviews: acting almost always pays off there, because the ongoing revenue loss exceeds the cost of removal." },
+    { t: "p", text: "Not every bad review needs to be fought. An honest, factual complaint is best handled with a composed public response — it shows other readers how you operate. It's a different story for **unjustified, fake, or unlawful** reviews: acting almost always pays off there, because the ongoing revenue loss exceeds the cost of removal. Having a single Google review removed costs [$179 per removed review](/en/magazine/google-review-removal-service/) (+$50 if it's older than 4 weeks), paid only if it's actually gone — a fraction of the monthly loss in the example above." },
     { t: "p", text: "The right approach depends on the specifics — we compare the options in detail in [Negative Review: Ignore, Respond, or Remove?](/en/magazine/negative-review-ignore-respond-remove/) and [How to Remove a Google Review](/en/magazine/remove-google-reviews/). If your profile is damaged overall, a full [profile deletion](/en/magazine/delete-google-business-profile/) may be the cleanest solution." },
 
     { t: "cta", title: "Find Out What's Possible for Your Profile — Free.", text: "Enter your business name — we'll check in seconds whether problematic reviews or the profile can be removed, and how quickly.", btn: "Start Free Check", href: "https://www.rapid-remove.com/", trust: ["Free Analysis", "Includes Guarantee", "No Risk"] },
@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "How much revenue does a bad Google review cost?", a: "A Harvard study (Michael Luca) puts the effect of a full star at 5–9% of revenue for independent businesses. A single review's impact depends on how many reviews you have in total — the fewer reviews you have, the harder a bad one pulls your average down." },
     { q: "When does a low rating start hurting your business?", a: "Things get critical below roughly 4.0 stars; below 3 stars, BrightLocal data shows you're effectively excluding most potential customers — only 3% would consider a business with two stars or fewer." },
-    { q: "Is it worth fighting a single bad review?", a: "For unjustified, fake, or unlawful reviews, usually yes — the ongoing revenue loss typically far outweighs the cost of removal. Honest, genuine criticism is better handled with a good response than a battle." },
+    { q: "Is it worth fighting a single bad review?", a: "For unjustified, fake, or unlawful reviews, usually yes — the ongoing revenue loss typically far outweighs the cost of removal (with RapidRemove's [single-review removal](/en/remove-single-reviews/) from $179, paid only on success). Honest, genuine criticism is better handled with a good response than a battle." },
     { q: "How do I calculate my actual damage?", a: "Monthly revenue × a conservative 5% × visibility duration in months. Even with cautious assumptions, the annual figure usually comfortably exceeds the cost of a solution." },
   ],
   related: [

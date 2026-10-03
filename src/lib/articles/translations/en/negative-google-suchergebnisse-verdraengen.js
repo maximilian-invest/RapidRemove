@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Some results can be taken down entirely:" },
     { t: "ul", items: [
       "**Your own Google Business Profile** along with all reviews — through the official process (see [Delete a Google Business Profile](/en/magazine/delete-google-business-profile/)).",
+      "**Individual unfair or fake Google reviews** — while your profile stays (see [single-review removal](/en/remove-single-reviews/)).",
       "**Unlawful content** — defamation, false statements of fact, privacy violations.",
       "**Personal data** — in certain circumstances, through requests to Google under applicable law.",
     ] },

@@ -31,12 +31,12 @@ const article = {
       "**Sans risque :** garantie incluse — si la fiche réapparaît à cause d'un tiers, elle est retirée à nouveau sans frais",
       "**Neutre pour le référencement :** votre site et votre positionnement restent inchangés",
     ] },
-    { t: "warn", title: "Important", text: "Cette procédure supprime la **fiche dans son ensemble**, pas un seul avis. Pour conserver la fiche tout en contestant un avis précis, le signalement ou le recours juridique sont les voies adaptées." },
+    { t: "warn", title: "Important", text: "Cette procédure supprime la **fiche dans son ensemble**, pas un seul avis. Pour conserver la fiche tout en contestant un avis précis, le signalement, le recours juridique ou la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/) sont les voies adaptées." },
 
     { t: "cta", title: "Vérifiez la supprimabilité de votre fiche — gratuitement.", text: "Renseignez le nom de votre établissement : nous vérifions en quelques secondes si votre fiche et tous vos avis peuvent être retirés, et dans quel délai.", btn: "Vérifier la supprimabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie incluse", "Sans engagement"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Un avis isolé ou la fiche entière ?", toc: "Avis ou fiche" },
-    { t: "p", text: "Si vous souhaitez uniquement contester un avis injustifié, le signalement ou la voie juridique sont appropriés — retrouvez tous les détails dans notre article [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/). En revanche, si la fiche est globalement compromise et que vous souhaitez repartir sur une base saine, la suppression complète est la solution la plus directe." },
+    { t: "p", text: "Si vous souhaitez uniquement contester un avis injustifié, le signalement, la voie juridique ou la suppression d'avis isolés de RapidRemove sont appropriés : vous sélectionnez les avis concernés et payez 179 € par avis réellement supprimé, rien d'avance ([prix et chances de réussite](/fr/magazine/service-suppression-avis-google/)). Toutes les méthodes sont comparées dans notre article [Supprimer un avis Google](/fr/magazine/supprimer-avis-google/). En revanche, si la fiche est globalement compromise et que vous souhaitez repartir sur une base saine, la suppression complète est la solution la plus directe." },
 
     { t: "h2", id: "kosten", text: "Quel est le coût de la suppression de la fiche ?", toc: "Le coût" },
     { t: "p", text: "Les prix varient fortement selon le prestataire :" },
@@ -62,7 +62,7 @@ const article = {
     { q: "Quel délai faut-il prévoir pour la suppression ?", a: "Via la suppression professionnelle, comptez généralement 24 à 48 heures — bien plus rapide que la procédure judiciaire, qui peut s'étirer sur plusieurs mois pour chaque avis individuel." },
     { q: "Mon site et mon référencement seront-ils affectés ?", a: "Non. La suppression de la fiche d'établissement n'a aucun impact sur votre site, votre compte Google ni votre positionnement dans les résultats de recherche. Créer un nouveau profil propre reste possible par la suite, si vous le souhaitez." },
     { q: "Les faux avis disparaissent-ils également ?", a: "Oui. Puisque l'intégralité de la fiche est supprimée, tous les avis disparaissent avec elle — y compris les avis frauduleux ou infondés." },
-    { q: "Quel est le tarif de RapidRemove pour la suppression d'une fiche ?", a: "RapidRemove applique un prix fixe, réglable uniquement après succès. Les prestataires traitant les avis à l'unité et les avocats facturent généralement par avis, le plus souvent sans garantie de résultat." },
+    { q: "Quel est le tarif de RapidRemove pour la suppression d'une fiche ?", a: "RapidRemove applique un prix fixe, réglable uniquement après succès. Les avocats facturent généralement par avis et à l'avance, le plus souvent sans garantie de résultat. Si vous ne voulez retirer que quelques avis, la suppression d'avis isolés de RapidRemove coûte 179 € par avis réellement supprimé." },
   ],
   related: [
     { label: "Supprimer un profil d'établissement Google : le guide complet", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

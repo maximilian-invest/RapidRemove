@@ -39,7 +39,7 @@ const article = {
     { t: "p", text: "Um risco muitas vezes subestimado: passos jurídicos podem provocar ainda mais o autor da avaliação. O resultado é, não raras vezes, uma onda de novas **«avaliações de vingança»** – o problema cresce em vez de diminuir. Este fenómeno chama-se **efeito Streisand**. Uma solução silenciosa e técnica evita-o, porque atua sem confronto direto com o autor." },
 
     { t: "h2", id: "technik", text: "Caminho 2: remoção técnica do perfil", toc: "Caminho 2: técnica" },
-    { t: "p", text: "Aqui está a diferença central face ao caminho do advogado: a RapidRemove **não** luta contra avaliações isoladas, mas remove **todo o perfil de empresa do Google**. Nessa remoção, **todas** as avaliações desaparecem – obtém um registo limpo em vez de uma disputa avulsa por cada estrela. Tecnicamente, o método funciona dentro da lógica do Google e ataca a raiz: o perfil. Vantagens:" },
+    { t: "p", text: "Aqui está a diferença central face ao caminho do advogado: com este método, a RapidRemove **não** luta contra avaliações isoladas, mas remove **todo o perfil de empresa do Google**. Nessa remoção, **todas** as avaliações desaparecem – obtém um registo limpo em vez de uma disputa avulsa por cada estrela. Tecnicamente, o método funciona dentro da lógica do Google e ataca a raiz: o perfil. Vantagens:" },
     { t: "ul", items: [
       "**Ritmo:** remoção do perfil muitas vezes em 24 a 48 horas em vez de meses.",
       "**Completo:** o perfil inteiro incluindo todas as avaliações de uma só vez.",
@@ -48,7 +48,7 @@ const article = {
       "**Amigo do SEO:** site e ranking mantêm-se; um perfil novo e limpo é opcionalmente possível.",
       "**Discrição:** sem troca de cartas, sem risco Streisand.",
     ] },
-    { t: "warn", title: "Importante", text: "Este caminho remove o **perfil completo**, não uma avaliação isolada. Quem quiser livrar-se de uma avaliação isolada e manter o perfil usa a denúncia ou o caminho do advogado." },
+    { t: "warn", title: "Importante", text: "Este caminho remove o **perfil completo**, não uma avaliação isolada. Quem quiser livrar-se de uma avaliação isolada e manter o perfil tem, além da denúncia e do caminho do advogado, uma terceira opção: a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) da RapidRemove – sem pagamento adiantado, 179 € por avaliação realmente removida (avaliações com mais de 4 semanas: +50 €). Custos, probabilidades e encomenda: [serviço para remover avaliações do Google](/pt/revista/servico-remover-avaliacoes-google/)." },
 
     { t: "h2", id: "vergleich", text: "Advogado vs. técnica: a comparação direta", toc: "Comparação direta" },
     { t: "table", rrCol: 1, head: ["Critério", "RapidRemove (remoção do perfil)", "Advogado (via jurídica)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Posso mandar remover uma avaliação negativa do Google?", a: "Sim, se violar as diretrizes do Google (p. ex. falsa, sem relação, insulto). Opiniões puramente objetivas sobre experiências reais são, pelo contrário, difíceis de remover." },
     { q: "Quanto custa um advogado para remover uma avaliação do Google?", a: "Os escritórios especializados situam-se frequentemente à volta de 100 a 159 € por avaliação; numa ação podem acrescer custas judiciais. Paga-se, em regra, o esforço, não garantidamente o resultado." },
-    { q: "O que remove exatamente a RapidRemove – avaliações isoladas ou o perfil?", a: "Ambas as coisas, conforme o caso. Para uma avaliação injusta concreta existe a [remoção de avaliações individuais](https://www.rapid-remove.com/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso (máx. 4 semanas, com texto). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações é o caminho mais completo." },
+    { q: "O que remove exatamente a RapidRemove – avaliações isoladas ou o perfil?", a: "Ambas as coisas, conforme o caso. Para uma avaliação injusta concreta existe a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso (até 4 semanas aprox. 90 % de sucesso; mais antigas aprox. 50 %, +50 € cada; também avaliações sem texto; desconto por quantidade a partir de 3 avaliações). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações é o caminho mais completo." },
     { q: "A remoção técnica do perfil é legal?", a: "Sim. Funciona dentro das diretrizes do Google e não exige advogado nem contacto direto com o Google. Fornecedores sérios trabalham com comissão de sucesso e garantia." },
     { q: "O que é o efeito Streisand?", a: "Quando passos jurídicos provocam o autor e levam a mais avaliações negativas. A remoção técnica evita esse risco, pois atua sem confronto." },
     { q: "As avaliações negativas do Google são puníveis?", a: "Uma opinião honesta não. Mas afirmações de facto deliberadamente falsas, insultos ou crítica difamatória podem ter consequências jurídicas. Isto não é aconselhamento jurídico." },

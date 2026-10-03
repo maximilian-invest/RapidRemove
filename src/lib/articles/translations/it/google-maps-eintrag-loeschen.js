@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Soluzione definitiva: far eliminare l'intero profilo", toc: "Rimozione permanente" },
-    { t: "p", text: "Se vuoi rimuovere una scheda **in modo completo e definitivo** — recensioni incluse — da Google Maps e dalla ricerca, gli strumenti nativi non bastano. È esattamente qui che interviene RapidRemove: non agiamo sulle singole recensioni o sulle etichette di stato, ma eliminiamo l'**intero profilo dell'attività** attraverso le procedure ufficiali di Google. La scheda scompare insieme a tutte le recensioni in un colpo solo — comprese quelle false." },
+    { t: "p", text: "Se vuoi rimuovere una scheda **in modo completo e definitivo** — recensioni incluse — da Google Maps e dalla ricerca, gli strumenti nativi non bastano. È esattamente qui che interviene RapidRemove: con la rimozione del profilo non agiamo sulle singole recensioni o sulle etichette di stato, ma eliminiamo l'**intero profilo dell'attività** attraverso le procedure ufficiali di Google. La scheda scompare insieme a tutte le recensioni in un colpo solo — comprese quelle false. Se invece vuoi tenere la scheda e il problema sono solo alcune recensioni, RapidRemove offre anche la [rimozione di singole recensioni](/it/rimuovere-una-recensione/), con pagamento solo per quelle effettivamente eliminate." },
     { t: "p", text: "Cosa significa per te:" },
     { t: "ul", items: [
       "**Rapidità:** Rimozione in genere in 24–48 ore, non mesi di burocrazia.",

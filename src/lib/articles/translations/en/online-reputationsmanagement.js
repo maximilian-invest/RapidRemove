@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "The Three Levers of ORM", toc: "The Three Levers" },
     { t: "h3", text: "Lever 1: Remove" },
-    { t: "p", text: "What's unlawful, fake, or unjustified should go. That includes fake reviews, unlawful 1-stars, false statements of fact — and at the extreme end, a thoroughly damaged [business profile](/en/magazine/delete-google-business-profile/). Removal is the most direct lever because it eliminates the problem at the root." },
+    { t: "p", text: "What's unlawful, fake, or unjustified should go. That includes fake reviews, unlawful 1-stars, false statements of fact (individual Google reviews can be removed via [single-review removal](/en/remove-single-reviews/)) — and at the extreme end, a thoroughly damaged [business profile](/en/magazine/delete-google-business-profile/). Removal is the most direct lever because it eliminates the problem at the root." },
     { t: "h3", text: "Lever 2: Push Down" },
     { t: "p", text: "Not everything can be deleted — a legitimate but old negative article, for instance. That's where **pushing down** comes in: deliberately building and strengthening high-quality positive content (your own pages, profiles, contributions, mentions) so that Google ranks them higher. Over time, these rise to the top — and the unwanted result slides to page 2 or beyond, where almost nobody looks. More on this in [Remove or Suppress Negative Google Results](/en/magazine/remove-suppress-negative-google-results/)." },
     { t: "h3", text: "Lever 3: Build Up" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "What You Can Do Yourself — and Where the Limits Are", toc: "DIY vs. Pro" },
     { t: "p", text: "**DIY is feasible for:** systematically asking for reviews, responding professionally to criticism, keeping your own content and profiles current, and flagging obvious fakes to Google." },
-    { t: "p", text: "**Where standard tools fall short:** Google frequently rejects flagging requests automatically; persistent negative results and press articles can't be influenced through normal interfaces at all; a complete profile removal isn't available to owners through standard channels. At these points, specialized, legally sound approaches are needed — which is exactly where RapidRemove comes in: [delete a profile](/en/magazine/delete-google-business-profile/), [push down your reputation](/en/reputation-management/), and [deindex press coverage](/en/press-deindexing/)." },
+    { t: "p", text: "**Where standard tools fall short:** Google frequently rejects flagging requests automatically; persistent negative results and press articles can't be influenced through normal interfaces at all; a complete profile removal isn't available to owners through standard channels. At these points, specialized, legally sound approaches are needed — which is exactly where RapidRemove comes in: [remove individual Google reviews](/en/remove-single-reviews/), [delete a profile](/en/magazine/delete-google-business-profile/), [push down your reputation](/en/reputation-management/), and [deindex press coverage](/en/press-deindexing/)." },
 
     { t: "h2", id: "vorgehen", text: "A Structured Approach", toc: "A Structured Approach" },
     { t: "ol", items: [

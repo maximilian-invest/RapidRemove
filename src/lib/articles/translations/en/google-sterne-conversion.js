@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "What to Do With This", toc: "What to Do" },
     { t: "ul", items: [
       "**Keep your average above 4.0** — actively collect genuine positive reviews instead of only reacting to negative ones.",
-      "**Remove unfair outliers:** Fakes and unlawful 1-stars drag your average down disproportionately. See [How to Report and Remove Fake Reviews](/en/magazine/remove-fake-google-reviews/) and [How to Remove a 1-Star Review Without Text](/en/magazine/remove-1-star-review-without-text/).",
+      "**Remove unfair outliers:** Fakes and unlawful 1-stars drag your average down disproportionately. See [How to Report and Remove Fake Reviews](/en/magazine/remove-fake-google-reviews/) and [How to Remove a 1-Star Review Without Text](/en/magazine/remove-1-star-review-without-text/) — or have individual reviews removed directly via our [single-review removal](/en/remove-single-reviews/) (from $179, paid only if the review is actually gone).",
       "**If your profile is fundamentally damaged**, a clean restart through [profile deletion](/en/magazine/delete-google-business-profile/) may make more sense than fighting for every individual star.",
     ] },
 

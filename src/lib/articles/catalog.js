@@ -3,7 +3,7 @@
 import { SITE_URL } from "@/lib/article-google-profil";
 import { magazineUrl, magazineSlug } from "@/lib/locales-meta";
 import { TRANSLATIONS } from "@/lib/articles/translations";
-import { CLUSTER_CARDS } from "@/lib/articles/registry";
+import { CLUSTER_CARDS, TRANSLATION_ONLY } from "@/lib/articles/registry";
 import { authorFor, authorPersonLd } from "@/lib/authors";
 import { HUB_PATH, HUB_CARD } from "@/lib/articles/hubs";
 
@@ -59,6 +59,7 @@ const PUBLISH_DATES = {
   "jameda-bewertung-loeschen": "2026-07-07",
   "kununu-bewertung-loeschen": "2026-07-14",
   "trustpilot-bewertung-loeschen": "2026-07-21",
+  "einzelbewertung-loeschen-service": "2026-10-03",
 };
 export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
 
@@ -111,9 +112,22 @@ export function magCardsFor(lang) {
       date: monthYear(dateFor(c.slug), lang) || c.date,
     };
   }).filter(Boolean);
+  // Artikel ohne deutsches Original (z. B. Einzelbewertungen) vorne einreihen.
+  const only = Object.keys(TRANSLATION_ONLY).map((k) => {
+    const t = tFor(lang, k);
+    const c = TRANSLATION_ONLY[k];
+    if (!t) return null;
+    return {
+      slug: t.meta.slug, href: articlePath(lang, t.meta.slug),
+      cat: t.category || c.cat, thm: c.thm, icon: c.icon,
+      title: t.meta.title, excerpt: t.meta.description,
+      author: authorFor(k).name, read: c.read,
+      date: monthYear(dateFor(k), lang) || "",
+    };
+  }).filter(Boolean);
   // Lokalisierter Hub als erste (Titel-)Story einreihen, wo vorhanden.
   const hub = hubCardFor(lang);
-  return hub ? [hub, ...cards] : cards;
+  return hub ? [hub, ...only, ...cards] : [...only, ...cards];
 }
 
 // [lang]/[aslug]/[aslug2] params for every translated article (aslug = magazine slug).
@@ -128,29 +142,37 @@ export function nestedArticleParams() {
   return out;
 }
 
+// Ersatz für das fehlende deutsche Original bei Artikeln ohne DE-Fassung.
+const tOnlyDe = (deSlug) => {
+  const c = TRANSLATION_ONLY[deSlug];
+  return c ? { category: c.cat, iconKey: c.icon, readingMin: c.read } : {};
+};
+export const hasDe = (deSlug) => !!DE_ARTICLES[deSlug];
+
 // Resolve a (lang, localized-slug) pair back to its data.
 export function resolveLocalized(lang, aslug) {
   const map = TRANSLATIONS[lang] || {};
   for (const deSlug of Object.keys(map)) {
-    if (map[deSlug].meta.slug === aslug) return { deSlug, t: map[deSlug], de: DE_ARTICLES[deSlug] };
+    if (map[deSlug].meta.slug === aslug) return { deSlug, t: map[deSlug], de: DE_ARTICLES[deSlug] || tOnlyDe(deSlug) };
   }
   return null;
 }
 
 // hreflang alternates (absolute URLs) for all language versions of an article.
 export function hreflangForArticle(deSlug) {
-  const m = { de: articleUrl("de", deSlug) };
+  const m = hasDe(deSlug) ? { de: articleUrl("de", deSlug) } : {};
   for (const lang of Object.keys(TRANSLATIONS)) {
     const t = TRANSLATIONS[lang][deSlug];
     if (t) m[lang] = articleUrl(lang, t.meta.slug);
   }
-  m["x-default"] = articleUrl("de", deSlug);
+  // Ohne deutsches Original wird Englisch zum x-default.
+  m["x-default"] = hasDe(deSlug) ? articleUrl("de", deSlug) : m.en;
   return m;
 }
 
 // Root-relative URLs per language for the in-page language switcher.
 export function langUrlsForArticle(deSlug) {
-  const m = { de: articlePath("de", deSlug) };
+  const m = hasDe(deSlug) ? { de: articlePath("de", deSlug) } : {};
   for (const lang of Object.keys(TRANSLATIONS)) {
     const t = TRANSLATIONS[lang][deSlug];
     if (t) m[lang] = articlePath(lang, t.meta.slug);
@@ -167,7 +189,7 @@ export function resolveRelated(lang, relatedList) {
     // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte
     // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
     if (slug === FLAGSHIP_SLUG) href = HUB_PATH[lang] || null;
-    else if (DE_ARTICLES[slug]) href = localizedPath(lang, slug);
+    else if (DE_ARTICLES[slug] || TRANSLATION_ONLY[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;
   }).filter(Boolean);
 }
@@ -190,6 +212,13 @@ export function articlesForAuthor(lang, authorSlug) {
   if (authorFor("google-unternehmensprofil-loeschen").slug === authorSlug && HUB_PATH[lang]) {
     const title = lang === "de" ? HUB_DE_TITLE : ((HUB_CARD[lang] && HUB_CARD[lang].title) || HUB_DE_TITLE);
     out.push({ slug: "google-unternehmensprofil-loeschen", title, href: HUB_PATH[lang], thm: "thm-orange", icon: "trash" });
+  }
+  if (lang !== "de") {
+    for (const k of Object.keys(TRANSLATION_ONLY)) {
+      if (authorFor(k).slug !== authorSlug) continue;
+      const t = tFor(lang, k);
+      if (t) out.push({ slug: k, title: t.meta.title, href: articlePath(lang, t.meta.slug), thm: TRANSLATION_ONLY[k].thm, icon: TRANSLATION_ONLY[k].icon });
+    }
   }
   for (const c of CLUSTER_CARDS) {
     if (authorFor(c.slug).slug !== authorSlug) continue;

@@ -40,17 +40,18 @@ const article = {
       ["Rapportera själv (formulär)", "gratis", "ofta låg"],
       ["Billiga leverantörer", "ca 19–49 € / recension", "varierar starkt"],
       ["Specialiserade advokater (enskild recension)", "ca 100–159 € / recension", "ca 90 %, långsamt"],
+      ["Enskilda recensioner (RapidRemove)", "179 € / borttagen recension (äldre än 4 veckor: 229 €)", "ca. 90 % (upp till 4 veckor), ca. 50 % (äldre) – betalas bara vid framgång"],
       ["Profilborttagning (RapidRemove)", "fast pris, betalas efter framgång", "garanterat (alla recensioner borta)"],
     ] },
 
     { t: "h2", id: "kostenlos-vs", text: "Gratis vs betalt: vad ger vad?", toc: "Gratis vs betalt" },
-    { t: "p", text: "Den kostnadsfria vägen via formuläret är alltid värd ett **första försök** – särskilt vid uppenbart skräp. Verkligheten är dock nedslående: Google granskar mestadels automatiserat och avvisar många anmälningar med standardtextblock. Uteblir framgången är en **professionell borttagning** nästa steg. Se efter en **framgångsarvode** – då bär du ingen kostnadsrisk om borttagningen inte lyckas." },
+    { t: "p", text: "Den kostnadsfria vägen via formuläret är alltid värd ett **första försök** – särskilt vid uppenbart skräp. Verkligheten är dock nedslående: Google granskar mestadels automatiserat och avvisar många anmälningar med standardtextblock. Uteblir framgången är en **professionell borttagning** nästa steg. Se efter ett **framgångsarvode** – då bär du ingen kostnadsrisk om borttagningen inte lyckas. Hos RapidRemove betalar du till exempel bara för de recensioner som faktiskt tas bort – priser, chanser och mängdrabatter hittar du i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/)." },
 
     { t: "h2", id: "geloescht-sehen", text: "Hur ser jag att en recension tagits bort?", toc: "Är den borttagen?" },
     { t: "p", text: "En borttagen recension försvinner från din profil, och ditt **betygssnitt** samt **antalet recensioner** anpassas. En direkt »borttagen»-status visas inte; den mest tillförlitliga indikatorn är att recensionen med dess stjärnbetyg inte längre syns och att snittet ändras därefter. Dokumentera utgångsläget i förväg med en skärmbild för att ha en före-efter-jämförelse." },
 
     { t: "h2", id: "profil-loeschen", text: "Varaktig lösning: ta bort hela profilen", toc: "Ta bort hela profilen" },
-    { t: "p", text: "Om formuläret inte biter och flera recensioner varaktigt skadar din profil är **profilborttagningen** den mest direkta vägen. Den viktiga skillnaden: RapidRemove tar **inte bort enskilda recensioner, utan hela Google-företagsprofilen** – alla recensioner försvinner med. Resultatet är ett rent blad i stället för en strid om varje stjärna." },
+    { t: "p", text: "Om formuläret inte biter och flera recensioner varaktigt skadar din profil är **profilborttagningen** den mest direkta vägen. Den viktiga skillnaden: med den här metoden tar RapidRemove **inte bort recension för recension, utan hela Google-företagsprofilen** – alla recensioner försvinner med. Resultatet är ett rent blad i stället för en strid om varje stjärna." },
     { t: "ul", items: [
       "**24–48 timmar** i stället för veckor eller månader",
       "**hela profilen inkl. alla recensioner** på en gång",
@@ -58,7 +59,7 @@ const article = {
       "**ingen insats** för dig, ingen Streisandrisk",
       "**valfri nystart** med en ren profil",
     ] },
-    { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela profilen**, inte en enskild recension. Den som bara vill ta bort en enskild recension och behålla profilen använder anmälan eller advokatvägen." },
+    { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela profilen**, inte en enskild recension. Den som bara vill ta bort en eller några enskilda recensioner och behålla profilen kan anmäla dem, gå advokatvägen – eller använda RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/): 179 € per borttagen recension (äldre än 4 veckor: +50 €), bara vid framgång." },
     { t: "cta", title: "Profilen varaktigt skadad? Kontrollera borttagbarheten – gratis.", text: "På sekunder ser du om och hur snabbt din profil inklusive alla recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
@@ -66,8 +67,8 @@ const article = {
     { q: "Finns det ett formulär för att ta bort en Google-recension?", a: "Ja. Via trepunktsmenyn bredvid recensionen når du »Rapportera recension» och därmed anmälningsformuläret. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Kan jag ta bort en Google-recension gratis?", a: "Egna recensioner ja. Andras recensioner kan du anmäla gratis – om Google tar bort dem är dock inte garanterat. För en säker borttagning finns betaltjänster med framgångsarvode." },
     { q: "Hur ser jag om min anmälda recension tagits bort?", a: "Recensionen försvinner från profilen och betygssnittet samt antalet recensioner ändras. En uttrycklig status visas inte – en skärmbild i förväg hjälper vid jämförelsen." },
-    { q: "Vad kostar det att ta bort en Google-recension?", a: "Från gratis (egen anmälan) via 19–49 € (billiga tjänster) till 100–159 € per recension hos advokat. Vid profilborttagning gäller ett fast pris, betalas efter framgång." },
-    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja, numera: [ta bort en enskild Google-recension](https://www.rapid-remove.com/sv/ta-bort-omdome/) – 179 € per borttagen recension, betalas först vid framgång; recensionen får vara högst 4 veckor gammal och måste innehålla text. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
+    { q: "Vad kostar det att ta bort en Google-recension?", a: "Från gratis (egen anmälan) via 19–49 € (billiga tjänster) till 100–159 € per recension hos advokat. Hos RapidRemove kostar en enskild recension 179 € (äldre än 4 veckor: 229 €), med mängdrabatt från 3 recensioner och betalning bara vid framgång. Vid profilborttagning gäller ett fast pris, betalas efter framgång." },
+    { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) väljer du själv vilka recensioner som ska bort – även betyg utan text. Recensioner upp till 4 veckor gamla har ca. 90 % chans att lyckas (179 € per borttagen recension), äldre ca. 50 % (+50 € per recension). Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Du betalar bara för recensioner som faktiskt tas bort. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
   ],
   related: [
     { label: "Ta bort Google-recensioner: kostnad och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

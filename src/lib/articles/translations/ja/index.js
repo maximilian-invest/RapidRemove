@@ -14,6 +14,7 @@ import a12 from "@/lib/articles/translations/ja/online-reputationsmanagement";
 import a13 from "@/lib/articles/translations/ja/negative-google-suchergebnisse-verdraengen";
 import a14 from "@/lib/articles/translations/ja/presseartikel-aus-google-entfernen";
 import a17 from "@/lib/articles/translations/ja/trustpilot-bewertung-loeschen";
+import a18 from "@/lib/articles/translations/ja/einzelbewertung-loeschen-service";
 export default {
   "google-bewertung-loeschen-lassen": a1, "fake-google-bewertung-melden-loeschen": a2,
   "negative-google-bewertung-anwalt-oder-technische-loeschung": a3, "schlechte-google-bewertungen-was-tun": a4,
@@ -26,4 +27,5 @@ export default {
   "negative-google-suchergebnisse-verdraengen": a13,
   "presseartikel-aus-google-entfernen": a14,
   "trustpilot-bewertung-loeschen": a17,
+  "einzelbewertung-loeschen-service": a18,
 };

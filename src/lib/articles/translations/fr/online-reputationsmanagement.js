@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "Les trois leviers de l'ORM", toc: "Les trois leviers" },
     { t: "h3", text: "Levier 1 : supprimer" },
-    { t: "p", text: "Ce qui est illicite, frauduleux ou non fondé doit disparaître. Cela inclut les faux avis, les 1 étoile illicites, les affirmations mensongères – et dans les cas extrêmes, un [profil d'établissement](/fr/magazine/supprimer-profil-etablissement-google/) complètement compromis. Supprimer est le levier le plus direct, car le problème disparaît à la racine." },
+    { t: "p", text: "Ce qui est illicite, frauduleux ou non fondé doit disparaître. Cela inclut les faux avis, les 1 étoile illicites, les affirmations mensongères – que vous pouvez faire retirer de façon ciblée via la [suppression d'avis Google isolés](/fr/supprimer-un-avis/) – et dans les cas extrêmes, un [profil d'établissement](/fr/magazine/supprimer-profil-etablissement-google/) complètement compromis. Supprimer est le levier le plus direct, car le problème disparaît à la racine." },
     { t: "h3", text: "Levier 2 : repousser" },
     { t: "p", text: "Tout ne peut pas être supprimé – par exemple un vieil article de presse légal mais négatif. C'est là qu'intervient le **repoussement** : construire et optimiser délibérément des contenus positifs et forts, de sorte que les résultats indésirables glissent de la page 1 vers les pages suivantes. Puisque presque personne ne clique au-delà de la page 1, « repoussé de la page 1 » équivaut en pratique presque à « disparu ». Pour en savoir plus : [repousser les résultats Google négatifs](/fr/magazine/supprimer-resultats-google-negatifs/)." },
     { t: "h3", text: "Levier 3 : construire" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Ce que vous pouvez faire vous-même – et où sont les limites", toc: "Soi-même ou pro" },
     { t: "p", text: "**Faisable soi-même :** solliciter systématiquement des avis, répondre de façon professionnelle aux critiques, maintenir ses propres contenus et profils à jour, signaler les faux avis évidents à Google." },
-    { t: "p", text: "**Les limites des outils intégrés :** Google rejette souvent les signalements de façon automatique ; les résultats négatifs tenaces et les articles de presse ne peuvent pas être influencés via l'interface habituelle ; la suppression complète d'un profil n'est pas prévue pour les propriétaires. À ces points, il faut des procédures spécialisées et juridiquement solides – c'est précisément là qu'intervient RapidRemove : [supprimer un profil](/fr/magazine/supprimer-profil-etablissement-google/), [repousser la réputation](/fr/gestion-de-reputation/) et [désindexer la presse](/fr/desindexation-presse/)." },
+    { t: "p", text: "**Les limites des outils intégrés :** Google rejette souvent les signalements de façon automatique ; les résultats négatifs tenaces et les articles de presse ne peuvent pas être influencés via l'interface habituelle ; la suppression complète d'un profil n'est pas prévue pour les propriétaires. À ces points, il faut des procédures spécialisées et juridiquement solides – c'est précisément là qu'intervient RapidRemove : [supprimer des avis isolés](/fr/supprimer-un-avis/), [supprimer un profil](/fr/magazine/supprimer-profil-etablissement-google/), [repousser la réputation](/fr/gestion-de-reputation/) et [désindexer la presse](/fr/desindexation-presse/)." },
 
     { t: "h2", id: "vorgehen", text: "Comment procéder de façon structurée", toc: "Méthode" },
     { t: "ol", items: [

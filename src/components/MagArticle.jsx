@@ -21,7 +21,7 @@ function inline(text, k = "i") {
   let last = 0, m, idx = 0;
   while ((m = re.exec(s)) !== null) {
     if (m.index > last) out.push(<React.Fragment key={k + idx++}>{s.slice(last, m.index)}</React.Fragment>);
-    if (m[1] !== undefined) out.push(<strong key={k + idx++}>{m[1]}</strong>);
+    if (m[1] !== undefined) { const kk = k + idx++; out.push(<strong key={kk}>{inline(m[1], kk + "b")}</strong>); }
     else if (m[2] !== undefined) out.push(<em key={k + idx++}>{m[2]}</em>);
     else if (/^https?:\/\//.test(m[4])) out.push(<a key={k + idx++} href={m[4]} target="_blank" rel="noopener noreferrer">{m[3]}</a>);
     else out.push(<a key={k + idx++} href={asset(m[4])}>{m[3]}</a>);
@@ -72,12 +72,15 @@ function Body({ data, lang, ui, related }) {
   const goTo = (id) => (e) => { e.preventDefault(); const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth" }); };
   const startCheck = (e) => { if (e) e.preventDefault(); window.location.href = asset(hb + "?start=1"); };
 
+  // CTA-Ziel: eigenes href (z. B. Einzelbewertungs-Produkt), sonst Profil-Check.
+  // Absolute rapid-remove.com-Links werden zu Pfaden (gleicher Tab, basePath-fest).
+  const ctaHref = (b) => b.href ? String(b.href).replace(/^https?:\/\/(www\.)?rapid-remove\.com/, "") || "/" : null;
   const CTA = ({ b }) => (
     <div className="art-cta">
       <div className="seal" />
       {b.title && <h3>{b.title}</h3>}
       {b.text && <p>{inline(b.text)}</p>}
-      <a className="btn btn-white lg" href={asset(hb + "?start=1")} onClick={startCheck}>
+      <a className="btn btn-white lg" href={asset(ctaHref(b) || hb + "?start=1")} onClick={ctaHref(b) ? undefined : startCheck}>
         <Icon.search size={18} /> {b.btn || ui.ctaBtn} <Icon.arrowRight size={17} />
       </a>
       {b.trust && <div className="cta-trust"><Icon.shieldCheck /> {b.trust.join(" · ")}</div>}

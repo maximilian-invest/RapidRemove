@@ -33,13 +33,13 @@ const article = {
       "**Kostnad:** fakturering oftast per recension; specialiserade byråer ligger ofta kring 100 till 159 € per fall, ibland plus rättegångskostnader vid stämning.",
       "**Risk:** utgången är inte garanterad, och du betalar för ansträngningen, inte nödvändigtvis för resultatet.",
     ] },
-    { t: "p", text: "Vid en **enskild, klart olaglig** recension med dokumenterbara fakta kan advokatvägen vara meningsfull. Vid flera recensioner eller en i grunden skadad profil blir den snabbt dyr och långsam." },
+    { t: "p", text: "Vid en **enskild, klart olaglig** recension med dokumenterbara fakta kan advokatvägen vara meningsfull. Vid flera recensioner eller en i grunden skadad profil blir den snabbt dyr och långsam. Och även för en enskild recension finns i dag ett alternativ utan förskott: RapidRemoves borttagning av enskilda recensioner, där du bara betalar om recensionen faktiskt försvinner – priser och chanser jämförs i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/)." },
 
     { t: "h2", id: "streisand", text: "Streisandeffekten: när att ha rätt slår bakut", toc: "Streisandeffekten" },
     { t: "p", text: "En ofta underskattad risk: juridiska steg kan provocera recensenten ännu mer. Resultatet är inte sällan en våg av nya **»hämndrecensioner»** – problemet blir större i stället för mindre. Detta fenomen heter **Streisandeffekten**. En tyst, teknisk lösning undviker den, eftersom den arbetar utan direkt konfrontation med upphovspersonen." },
 
     { t: "h2", id: "technik", text: "Väg 2: teknisk profilborttagning", toc: "Väg 2: teknik" },
-    { t: "p", text: "Här ligger den centrala skillnaden mot advokatvägen: RapidRemove kämpar **inte** mot enskilda recensioner, utan tar bort **hela Google-företagsprofilen**. Vid den borttagningen försvinner **alla** recensioner med – du får ett rent blad i stället för en enskild strid om varje stjärna. Tekniskt arbetar metoden inom Googles logik och angriper roten: profilen. Fördelar:" },
+    { t: "p", text: "Här ligger den centrala skillnaden mot advokatvägen: med profilborttagningen kämpar RapidRemove **inte** mot enskilda recensioner, utan tar bort **hela Google-företagsprofilen**. Vid den borttagningen försvinner **alla** recensioner med – du får ett rent blad i stället för en enskild strid om varje stjärna. Tekniskt arbetar metoden inom Googles logik och angriper roten: profilen. Fördelar:" },
     { t: "ul", items: [
       "**Tempo:** profilborttagning ofta på 24 till 48 timmar i stället för månader.",
       "**Fullständigt:** hela profilen inkl. alla recensioner på en gång.",
@@ -48,7 +48,7 @@ const article = {
       "**SEO-vänligt:** webbplats och ranking behålls; en ny, ren profil är valfritt möjlig.",
       "**Diskretion:** ingen brevväxling, ingen Streisandrisk.",
     ] },
-    { t: "warn", title: "Viktigt", text: "Den här vägen tar bort **hela profilen**, inte en enskild recension. Den som vill bli av med en enskild recension och behålla profilen använder anmälan eller advokatvägen." },
+    { t: "warn", title: "Viktigt", text: "Den här vägen tar bort **hela profilen**, inte en enskild recension. Den som vill bli av med en enskild recension och behålla profilen kan anmäla den, gå advokatvägen – eller välja RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/): 179 € per borttagen recension (äldre än 4 veckor: +50 €), inget i förskott, oftast klart på några dagar." },
 
     { t: "h2", id: "vergleich", text: "Advokat vs teknik: den direkta jämförelsen", toc: "Direkt jämförelse" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (profilborttagning)", "Advokat (juridisk väg)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Kan jag ta bort en negativ Google-recension?", a: "Ja, om den bryter mot Googles riktlinjer (t.ex. falsk, saknad koppling, förolämpning). Rent sakliga åsikter om verkliga upplevelser är däremot svåra att ta bort." },
     { q: "Vad kostar en advokat för att ta bort en Google-recension?", a: "Specialiserade byråer ligger ofta kring 100 till 159 € per recension; vid en stämning kan rättegångskostnader tillkomma. Man betalar i regel för ansträngningen, inte garanterat för resultatet." },
-    { q: "Vad tar RapidRemove bort exakt – enskilda recensioner eller profilen?", a: "Båda delarna, beroende på fallet. För en enskild orättvis recension finns [borttagning av enskilda recensioner](https://www.rapid-remove.com/sv/ta-bort-omdome/) – 179 € per borttagen recension, betalas först vid framgång (max 4 veckor gammal, med text). Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner den grundligaste vägen." },
+    { q: "Vad tar RapidRemove bort exakt – enskilda recensioner eller profilen?", a: "Båda delarna, beroende på fallet. För en eller flera orättvisa recensioner finns [borttagning av enskilda recensioner](/sv/ta-bort-omdome/): upp till 4 veckor gammal ca. 90 % chans att lyckas, 179 € per borttagen recension; äldre ca. 50 %, +50 €. Även betyg utan text kan väljas, och från 3 recensioner gäller mängdrabatt (−10 %, från 5 −15 %, från 10 −30 %). Du betalar bara vid framgång. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner den grundligaste vägen." },
     { q: "Är den tekniska profilborttagningen laglig?", a: "Ja. Den arbetar inom Googles riktlinjer och kräver varken advokat eller direktkontakt med Google. Seriösa leverantörer arbetar med framgångsarvode och garanti." },
     { q: "Vad är Streisandeffekten?", a: "När juridiska steg provocerar upphovspersonen och leder till fler negativa recensioner. Den tekniska borttagningen undviker den risken eftersom den arbetar utan konfrontation." },
     { q: "Är negativa Google-recensioner straffbara?", a: "En ärlig åsikt inte. Medvetet falska sakpåståenden, förolämpningar eller smädeskritik kan dock få rättsliga följder. Detta är inte juridisk rådgivning." },

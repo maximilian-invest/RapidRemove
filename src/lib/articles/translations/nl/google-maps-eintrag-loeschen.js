@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Definitieve oplossing: het volledige profiel laten verwijderen", toc: "Definitief verwijderen" },
-    { t: "p", text: "Als u een vermelding **volledig en definitief** — inclusief alle reviews — uit Google Maps en de zoekresultaten wilt laten verdwijnen, stuit u op de grenzen van de standaard tools. Precies daar komt RapidRemove in beeld: wij bestrijden geen afzonderlijke reviews of statuslabels, maar verwijderen het **volledige Google-bedrijfsprofiel** via de officiële Google-procedures. Daarmee verdwijnt de vermelding inclusief alle reviews in één beweging — nep-reviews inbegrepen." },
+    { t: "p", text: "Als u een vermelding **volledig en definitief** — inclusief alle reviews — uit Google Maps en de zoekresultaten wilt laten verdwijnen, stuit u op de grenzen van de standaard tools. Precies daar komt RapidRemove in beeld: bij de profielverwijdering bestrijden wij geen afzonderlijke reviews of statuslabels, maar verwijderen wij het **volledige Google-bedrijfsprofiel** via de officiële Google-procedures. Daarmee verdwijnt de vermelding inclusief alle reviews in één beweging — nep-reviews inbegrepen. Wilt u de vermelding juist behouden en stoort u zich alleen aan een paar reviews, dan kunt u bij RapidRemove ook [losse reviews laten verwijderen](/nl/review-laten-verwijderen/) — betaling alleen per review die echt weg is." },
     { t: "p", text: "Wat dit voor u betekent:" },
     { t: "ul", items: [
       "**Snelheid:** verwijdering doorgaans binnen 24–48 uur in plaats van maandenlang heen-en-weer.",

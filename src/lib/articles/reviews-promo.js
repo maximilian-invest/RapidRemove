@@ -5,13 +5,14 @@
    Die Texte kommen 1:1 aus den freigegebenen Landingpage-Texten (RVW), der
    Link führt auf die Landingpage der jeweiligen Sprache. */
 import { RVW } from "@/lib/reviews-copy";
-import { pageUrl, pageHasLocale } from "@/lib/page-routes";
+import { pagePath, pageHasLocale } from "@/lib/page-routes";
 
 /* Deutsche Quell-Slugs der Artikel, in denen der Hinweis erscheint. Bewusst
-   NICHT dabei: 1-stern-bewertung-ohne-text-loeschen (das Produkt setzt Text
-   voraus) sowie Jameda/Kununu/Trustpilot (keine Google-Bewertungen). */
+   NICHT dabei: Jameda/Kununu/Trustpilot (keine Google-Bewertungen). Bewertungen
+   ohne Text sind seit der Bewertungsauswahl im Wizard ebenfalls bestellbar. */
 export const REVIEWS_PROMO_SLUGS = new Set([
   "google-bewertung-loeschen-lassen",
+  "1-stern-bewertung-ohne-text-loeschen",
   "google-rezension-loeschen-lassen",
   "fake-google-bewertung-melden-loeschen",
   "schlechte-google-bewertungen-was-tun",
@@ -28,7 +29,7 @@ export function withReviewsPromo(deSlug, lang, blocks) {
     title: `${r.eyebrow}: ${r.h1}`,
     text: `${r.price} ${r.per}. ${r.priceNote} ${r.condNote}`,
     btn: r.cta,
-    href: pageUrl("reviews", lang),
+    href: pagePath("reviews", lang),
     trust: r.assure,
   };
   // Vor dem ersten Abschnitt (h2) — nach Einleitung/Hinweis, prominent im Lesefluss.

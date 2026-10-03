@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "De tre grepene i ORM", toc: "De tre grepene" },
     { t: "h3", text: "Grep 1: Fjerne" },
-    { t: "p", text: "Det som er ulovlig, falskt eller uberettiget, skal bort. Det inkluderer falske anmeldelser, ulovlige 1-stjernere, uriktige faktapåstander – og i ytterste konsekvens en komplett, skadet [bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/). Fjerning er det direkteste grepet, fordi problemet forsvinner ved roten." },
+    { t: "p", text: "Det som er ulovlig, falskt eller uberettiget, skal bort. Det inkluderer falske anmeldelser, ulovlige 1-stjernere og uriktige faktapåstander – enkelte Google-anmeldelser kan [fjernes én for én](/no/magasin/fjern-google-anmeldelse-tjeneste/) – og i ytterste konsekvens en komplett, skadet [bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/). Fjerning er det direkteste grepet, fordi problemet forsvinner ved roten." },
     { t: "h3", text: "Grep 2: Fortrenge" },
     { t: "p", text: "Ikke alt lar seg slette – for eksempel en lovlig, men gammel negativ artikkel. Her kommer **fortrenging** inn: man bygger og styrker målrettet sterkt, positivt innhold (egne sider, profiler, bidrag, omtaler), som Google vurderer som mer relevant. Over tid klatrer disse oppover – og det uønskede treffet glir ned til side 2 eller lavere, der knapt noen lenger ser det. Siden nesten ingen klikker forbi side 1, er «fortrengt fra side 1» i praksis nesten like bra som «borte». Mer om dette under [fjern negative søkeresultater](/no/magasin/fjern-negative-google-resultater/)." },
     { t: "h3", text: "Grep 3: Bygge" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Hva du kan gjøre selv – og hvor grensene går", toc: "Selv eller proff" },
     { t: "p", text: "**Kan gjøres selv:** systematisk be om anmeldelser, svare profesjonelt på kritikk, holde egne profiler og innhold oppdatert, melde åpenbare falske anmeldelser til Google." },
-    { t: "p", text: "**Grensene for eget arbeid:** Google avviser meldinger ofte automatisk; hardnakkede negative treff og presseartikler lar seg ikke påvirke gjennom det vanlige grensesnittet; fullstendig profilfjerning er ikke tiltenkt eiere selv. På disse punktene trengs spesialiserte, rettslig trygge metoder – det er nettopp her RapidRemove kommer inn: [slett profil](/no/magasin/slett-google-bedriftsprofil/), [fortreng omdømme](/no/omdoemmehaandtering/) og [avindekser presse](/no/avindeksere-presse/)." },
+    { t: "p", text: "**Grensene for eget arbeid:** Google avviser meldinger ofte automatisk; hardnakkede negative treff og presseartikler lar seg ikke påvirke gjennom det vanlige grensesnittet; fullstendig profilfjerning er ikke tiltenkt eiere selv. På disse punktene trengs spesialiserte, rettslig trygge metoder – det er nettopp her RapidRemove kommer inn: [fjern enkeltanmeldelser](/no/fjern-omtale/), [slett profil](/no/magasin/slett-google-bedriftsprofil/), [fortreng omdømme](/no/omdoemmehaandtering/) og [avindekser presse](/no/avindeksere-presse/)." },
 
     { t: "h2", id: "vorgehen", text: "Slik går du strukturert frem", toc: "Fremgangsmåte" },
     { t: "ol", items: [

@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "De drie hefbomen van ORM", toc: "De drie hefbomen" },
     { t: "h3", text: "Hefboom 1: verwijderen" },
-    { t: "p", text: "Wat onrechtmatig, nep of onterecht is, hoort weg. Dat omvat nep-reviews, onrechtmatige 1-sterren, onjuiste feitelijke beweringen – en in het uiterste geval een volledig beschadigd [bedrijfsprofiel](/nl/magazine/google-bedrijfsprofiel-verwijderen/). Verwijderen is de meest directe hefboom, omdat het probleem aan de wortel verdwijnt." },
+    { t: "p", text: "Wat onrechtmatig, nep of onterecht is, hoort weg. Dat omvat nep-reviews, onrechtmatige 1-sterren, onjuiste feitelijke beweringen – losse Google-reviews kunt u daarvoor [gericht laten verwijderen](/nl/review-laten-verwijderen/) – en in het uiterste geval een volledig beschadigd [bedrijfsprofiel](/nl/magazine/google-bedrijfsprofiel-verwijderen/). Verwijderen is de meest directe hefboom, omdat het probleem aan de wortel verdwijnt." },
     { t: "h3", text: "Hefboom 2: verdringen" },
     { t: "p", text: "Niet alles laat zich verwijderen – bijvoorbeeld een rechtmatig maar oud negatief artikel. Hier zet het **verdringen** in: gericht sterke, positieve content opbouwen en optimaliseren, zodat de ongewenste treffers van pagina 1 naar latere pagina's zakken. Omdat vrijwel niemand verder klikt dan pagina 1, is „van pagina 1 verdrongen“ in de praktijk bijna net zo goed als „weg“. Meer hierover onder [negatieve zoekresultaten verdringen](/nl/magazine/negatieve-google-resultaten-verwijderen/)." },
     { t: "h3", text: "Hefboom 3: opbouwen" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Wat u zelf kunt doen – en waar de grenzen liggen", toc: "Zelf of profi" },
     { t: "p", text: "**Zelf te doen:** systematisch om reviews vragen, professioneel op kritiek reageren, eigen content en profielen actueel houden, duidelijke nep-reviews bij Google melden." },
-    { t: "p", text: "**Grenzen van de standaardmiddelen:** Google wijst meldingen vaak geautomatiseerd af; hardnekkige negatieve treffers en persartikelen zijn via de normale interface niet te beïnvloeden; een volledige profielverwijdering is voor eigenaren niet voorzien. Op deze punten zijn gespecialiseerde, rechtszekere methoden nodig – precies hier zet RapidRemove in: [profiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/), [reputatie verdringen](/nl/reputatiebeheer/) en [pers deïndexeren](/nl/pers-deindexeren/)." },
+    { t: "p", text: "**Grenzen van de standaardmiddelen:** Google wijst meldingen vaak geautomatiseerd af; hardnekkige negatieve treffers en persartikelen zijn via de normale interface niet te beïnvloeden; een volledige profielverwijdering is voor eigenaren niet voorzien. Op deze punten zijn gespecialiseerde, rechtszekere methoden nodig – precies hier zet RapidRemove in: [losse reviews verwijderen](/nl/review-laten-verwijderen/), [profiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/), [reputatie verdringen](/nl/reputatiebeheer/) en [pers deïndexeren](/nl/pers-deindexeren/)." },
 
     { t: "h2", id: "vorgehen", text: "Zo pakt u het gestructureerd aan", toc: "Aanpak" },
     { t: "ol", items: [

@@ -28,7 +28,7 @@ const article = {
     { t: "h2", id: "entfernen", text: "Vej 1: Fjerne – når resultatet kan slettes", toc: "Vej 1: Fjerne" },
     { t: "p", text: "Nogle resultater kan fjernes fuldstændigt fra visningen:" },
     { t: "ul", items: [
-      "**Egne Google-virksomhedsprofiler** med tilhørende anmeldelser – via de officielle procedurer (se [slet profil](/da/magasin/slet-google-virksomhedsprofil/)).",
+      "**Egne Google-virksomhedsprofiler** med tilhørende anmeldelser – via de officielle procedurer (se [slet profil](/da/magasin/slet-google-virksomhedsprofil/)) – eller kun [enkelte Google-anmeldelser](/da/fjern-anmeldelse/).",
       "**Retsstridige indholdselementer** – fornærmelser, usande kendsgerningspåstande, krænkelse af personlighedsrettigheder.",
       "**Personoplysninger** – eventuelt via „retten til at blive glemt“ (GDPR art. 17).",
     ] },

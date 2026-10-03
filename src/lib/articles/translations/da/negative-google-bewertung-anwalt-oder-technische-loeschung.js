@@ -39,7 +39,7 @@ const article = {
     { t: "p", text: "En ofte undervurderet risiko: juridiske skridt kan provokere anmelderen endnu mere. Resultatet er ikke sjældent en bølge af nye **»hævnanmeldelser«** – problemet bliver større i stedet for mindre. Dette fænomen hedder **Streisand-effekten**. En stille, teknisk løsning undgår den, fordi den arbejder uden direkte konfrontation med ophavspersonen." },
 
     { t: "h2", id: "technik", text: "Vej 2: teknisk profilfjernelse", toc: "Vej 2: teknik" },
-    { t: "p", text: "Her ligger den centrale forskel i forhold til advokatvejen: RapidRemove kæmper **ikke** mod enkelte anmeldelser, men fjerner **hele Google-virksomhedsprofilen**. Ved den fjernelse forsvinder **alle** anmeldelser med – du får en ren tavle i stedet for en enkeltstrid om hver stjerne. Teknisk arbejder metoden inden for Googles logik og angriber roden: profilen. Fordele:" },
+    { t: "p", text: "Her ligger den centrale forskel i forhold til advokatvejen: Ved profilfjernelsen kæmper RapidRemove **ikke** mod enkelte anmeldelser, men fjerner **hele Google-virksomhedsprofilen**. Ved den fjernelse forsvinder **alle** anmeldelser med – du får en ren tavle i stedet for en enkeltstrid om hver stjerne. Teknisk arbejder metoden inden for Googles logik og angriber roden: profilen. Fordele:" },
     { t: "ul", items: [
       "**Tempo:** profilfjernelse ofte på 24 til 48 timer i stedet for måneder.",
       "**Fuldstændigt:** hele profilen inkl. alle anmeldelser på én gang.",
@@ -48,7 +48,7 @@ const article = {
       "**SEO-venligt:** websted og placering bevares; en ny, ren profil er valgfrit mulig.",
       "**Diskretion:** ingen brevveksling, ingen Streisand-risiko.",
     ] },
-    { t: "warn", title: "Vigtigt", text: "Denne vej fjerner **hele profilen**, ikke en enkelt anmeldelse. Den, der vil af med en enkelt anmeldelse og beholde profilen, bruger anmeldelsen eller advokatvejen." },
+    { t: "warn", title: "Vigtigt", text: "Denne vej fjerner **hele profilen**, ikke en enkelt anmeldelse. Den, der vil af med en enkelt anmeldelse og beholde profilen, har et tredje alternativ til anmeldelsen og advokatvejen: RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) – ingen forudbetaling, 179 € pr. fjernet anmeldelse (ældre end 4 uger: +50 €), typisk på få dage. Detaljer: [Få fjernet en Google-anmeldelse: pris og bestilling](/da/magasin/fjern-google-anmeldelse-service/)." },
 
     { t: "h2", id: "vergleich", text: "Advokat vs teknik: den direkte sammenligning", toc: "Direkte sammenligning" },
     { t: "table", rrCol: 1, head: ["Kriterium", "RapidRemove (profilfjernelse)", "Advokat (juridisk vej)"], rows: [
@@ -64,8 +64,8 @@ const article = {
   ],
   faq: [
     { q: "Kan jeg få fjernet en negativ Google-anmeldelse?", a: "Ja, hvis den overtræder Googles retningslinjer (f.eks. falsk, manglende sammenhæng, fornærmelse). Rent saglige meninger om virkelige oplevelser er derimod svære at fjerne." },
-    { q: "Hvad koster en advokat for at fjerne en Google-anmeldelse?", a: "Specialiserede kontorer ligger ofte omkring 100 til 159 € pr. anmeldelse; ved en retssag kan der komme retsafgifter til. Man betaler som regel for indsatsen, ikke garanteret for resultatet." },
-    { q: "Hvad fjerner RapidRemove præcist – enkelte anmeldelser eller profilen?", a: "Begge dele, alt efter sagen. For en enkelt urimelig anmeldelse findes [fjernelse af enkelte anmeldelser](https://www.rapid-remove.com/da/fjern-anmeldelse/) – 179 € pr. fjernet anmeldelse, betales først ved succes (højst 4 uger gammel, med tekst). Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser den grundigste vej." },
+    { q: "Hvad koster en advokat for at fjerne en Google-anmeldelse?", a: "Specialiserede kontorer ligger ofte omkring 100 til 159 € pr. anmeldelse; ved en retssag kan der komme retsafgifter til. Man betaler som regel for indsatsen, ikke garanteret for resultatet. Til sammenligning: RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) koster 179 € pr. fjernet anmeldelse – kun ved succes." },
+    { q: "Hvad fjerner RapidRemove præcist – enkelte anmeldelser eller profilen?", a: "Begge dele, alt efter sagen. For en enkelt urimelig anmeldelse findes [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) – også uden tekst: op til 4 uger gammel ca. 90 % succesrate og 179 € pr. fjernet anmeldelse, ældre ca. 50 % og +50 €; mængderabat fra 3 anmeldelser. Betaling først ved succes. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser den grundigste vej." },
     { q: "Er den tekniske profilfjernelse lovlig?", a: "Ja. Den arbejder inden for Googles retningslinjer og kræver hverken advokat eller direkte kontakt med Google. Seriøse udbydere arbejder med succeshonorar og garanti." },
     { q: "Hvad er Streisand-effekten?", a: "Når juridiske skridt provokerer ophavspersonen og fører til flere negative anmeldelser. Den tekniske fjernelse undgår den risiko, fordi den arbejder uden konfrontation." },
     { q: "Er negative Google-anmeldelser strafbare?", a: "En ærlig mening ikke. Bevidst falske faktuelle påstande, fornærmelser eller smædekritik kan dog få retlige følger. Dette er ikke juridisk rådgivning." },

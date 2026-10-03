@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Den permanenta lösningen: låt hela profilen tas bort", toc: "Ta bort permanent" },
-    { t: "p", text: "Om du vill ta bort en post **fullständigt och permanent** – inklusive alla recensioner – ur Google Maps och sökningen räcker inte Googles egna verktyg. Det är precis där RapidRemove gör skillnad: vi bekämpar inte enskilda recensioner eller statusetiketter, utan tar bort den **kompletta Google-företagsprofilen** via Googles officiella processer. Posten försvinner därmed med alla recensioner på en gång – falska omdömen inräknade." },
+    { t: "p", text: "Om du vill ta bort en post **fullständigt och permanent** – inklusive alla recensioner – ur Google Maps och sökningen räcker inte Googles egna verktyg. Det är precis där RapidRemove gör skillnad: med profilborttagningen bekämpar vi inte enskilda recensioner eller statusetiketter, utan tar bort den **kompletta Google-företagsprofilen** via Googles officiella processer. (Vill du bara bli av med några enskilda recensioner och behålla posten finns i stället vår [borttagning av enskilda recensioner](/sv/ta-bort-omdome/).) Posten försvinner därmed med alla recensioner på en gång – falska omdömen inräknade." },
     { t: "p", text: "Det innebär för dig:" },
     { t: "ul", items: [
       "**Tempo:** Borttagning normalt på 24–48 timmar i stället för månaders fram och tillbaka.",

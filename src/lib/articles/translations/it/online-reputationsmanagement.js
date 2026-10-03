@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "Le tre leve dell'ORM", toc: "Le tre leve" },
     { t: "h3", text: "Leva 1: rimuovere" },
-    { t: "p", text: "Ciò che è illegale, falso o infondato va eliminato. Questo comprende recensioni false, stelle 1 illegali, affermazioni di fatto errate – e nel caso estremo un [profilo aziendale](/it/rivista/eliminare-profilo-attivita-google/) completamente compromesso. Rimuovere è la leva più diretta, perché il problema scompare alla radice." },
+    { t: "p", text: "Ciò che è illegale, falso o infondato va eliminato. Questo comprende recensioni false, stelle 1 illegali, affermazioni di fatto errate – che si possono togliere in modo mirato con la [rimozione di singole recensioni](/it/rimuovere-una-recensione/) – e nel caso estremo un [profilo aziendale](/it/rivista/eliminare-profilo-attivita-google/) completamente compromesso. Rimuovere è la leva più diretta, perché il problema scompare alla radice." },
     { t: "h3", text: "Leva 2: spostare" },
     { t: "p", text: "Non tutto si può cancellare – per esempio un vecchio articolo negativo ma legittimo. Qui entra in gioco lo **spostamento**: costruire e ottimizzare in modo mirato contenuti positivi e forti, in modo che i risultati indesiderati scivolino dalla prima pagina a pagine successive. Dato che quasi nessuno clicca oltre la prima pagina, «spostato dalla prima pagina» nella pratica equivale quasi a «eliminato». Maggiori informazioni in [rimuovere i risultati Google negativi](/it/rivista/rimuovere-risultati-google-negativi/)." },
     { t: "h3", text: "Leva 3: costruire" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Cosa potete fare da soli – e dove sono i limiti", toc: "Soli o professionisti" },
     { t: "p", text: "**Gestibile autonomamente:** chiedere sistematicamente recensioni, rispondere alle critiche in modo professionale, tenere aggiornati i propri contenuti e profili, segnalare a Google le recensioni false evidenti." },
-    { t: "p", text: "**Limiti degli strumenti standard:** Google respinge spesso le segnalazioni in modo automatizzato; i risultati negativi persistenti e gli articoli di stampa non si possono influenzare attraverso l'interfaccia normale; la rimozione completa del profilo non è prevista per i proprietari. In questi punti servono procedure specializzate e giuridicamente solide – è esattamente qui che interviene RapidRemove: [cancellazione del profilo](/it/rivista/eliminare-profilo-attivita-google/), [spostare i risultati negativi](/it/gestione-reputazione/) e [deindicizzazione stampa](/it/deindicizzazione-stampa/)." },
+    { t: "p", text: "**Limiti degli strumenti standard:** Google respinge spesso le segnalazioni in modo automatizzato; i risultati negativi persistenti e gli articoli di stampa non si possono influenzare attraverso l'interfaccia normale; la rimozione completa del profilo non è prevista per i proprietari. In questi punti servono procedure specializzate e giuridicamente solide – è esattamente qui che interviene RapidRemove: [rimozione di singole recensioni Google](/it/rivista/servizio-rimozione-recensioni-google/), [cancellazione del profilo](/it/rivista/eliminare-profilo-attivita-google/), [spostare i risultati negativi](/it/gestione-reputazione/) e [deindicizzazione stampa](/it/deindicizzazione-stampa/)." },
 
     { t: "h2", id: "vorgehen", text: "Come procedere in modo strutturato", toc: "Come procedere" },
     { t: "ol", items: [

@@ -37,7 +37,7 @@ const article = {
       "**Effetto conservativo** del 5% → 1.500 € al mese.",
       "**Moltiplica per la durata di visibilità:** una recensione rimane spesso visibile 12+ mesi → 18.000 € nell'arco di un anno.",
     ] },
-    { t: "p", text: "Anche con ipotesi prudenti, la perdita cumulata supera quasi sempre i costi di una soluzione professionale. Proprio questo calcolo sfugge a molti, perché il danno emerge gradualmente e in modo invisibile – come mancato fatturato, non come una fattura." },
+    { t: "p", text: "Anche con ipotesi prudenti, la perdita cumulata supera quasi sempre i costi di una soluzione professionale – per confronto, la [rimozione di una singola recensione](/it/rimuovere-una-recensione/) con RapidRemove costa 179 € (229 € se più vecchia di 4 settimane), pagabili solo se la recensione viene davvero eliminata. Proprio questo calcolo sfugge a molti, perché il danno emerge gradualmente e in modo invisibile – come mancato fatturato, non come una fattura." },
 
     { t: "h2", id: "indirekt", text: "I costi indiretti – spesso più gravi della perdita diretta", toc: "Costi indiretti" },
     { t: "ul", items: [
@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "Quanto fatturato costa una recensione negativa su Google?", a: "Uno studio della Harvard Business School (Michael Luca) quantifica l'effetto di un'intera stella in 5–9% di fatturato per le attività indipendenti. Una singola recensione incide in modo diverso a seconda del numero totale di recensioni – meno ne hai, più una negativa abbassa la media." },
     { q: "Da quando una media bassa diventa dannosa per l'attività?", a: "Inizia a diventare critica sotto circa 4,0 stelle; sotto 3 stelle si esclude praticamente la grande maggioranza dei clienti, dato che secondo BrightLocal solo il 3% prenderebbe in considerazione un'attività con due stelle o meno." },
-    { q: "Vale la pena agire su una singola recensione?", a: "Per le recensioni infondate, false o illegali quasi sempre sì – la perdita di fatturato continuata supera di solito nettamente i costi della rimozione. Le critiche reali e circostanziate è meglio risponderle piuttosto che combatterle." },
+    { q: "Vale la pena agire su una singola recensione?", a: "Per le recensioni infondate, false o illegali quasi sempre sì – la perdita di fatturato continuata supera di solito nettamente i costi della rimozione, che con il [servizio di rimozione recensioni Google](/it/rivista/servizio-rimozione-recensioni-google/) di RapidRemove parte da 179 € per recensione rimossa, solo in caso di successo. Le critiche reali e circostanziate è meglio risponderle piuttosto che combatterle." },
     { q: "Come calcolo il mio danno specifico?", a: "Fatturato mensile × 5% (stima conservativa) × mesi di visibilità. Anche con ipotesi prudenti, il valore annuo supera di solito nettamente i costi della soluzione." },
   ],
   related: [

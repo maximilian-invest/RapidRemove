@@ -69,7 +69,7 @@ const article = {
       "**Relocated:** Update the address on the existing listing rather than creating a new one — otherwise you create a duplicate and split your reviews across two entries.",
       "**Renamed:** Change the name within the same profile. Creating a new listing means giving up your entire review history.",
     ] },
-    { t: "p", text: "If the listing itself is fundamentally compromised — by fake reviews, a reputation attack, or data that can't be corrected — tweaking the details won't fix it. In that case, full removal is the cleaner solution." },
+    { t: "p", text: "If the listing itself is fundamentally compromised — by fake reviews, a reputation attack, or data that can't be corrected — tweaking the details won't fix it. In that case, full removal is the cleaner solution. If the listing itself is fine and only a few unfair or fake reviews are the problem, you can keep it and have just those reviews removed instead: [single-review removal](/en/remove-single-reviews/), from $179 per removed review, paid only on success." },
 
     { t: "h2", id: "vergleich", text: "Method Comparison", toc: "Method comparison" },
     { t: "table", head: ["Approach", "What It Achieves", "Timeline", "Outcome"], rows: [
@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "The Permanent Solution: Have the Entire Profile Removed", toc: "Permanent removal" },
-    { t: "p", text: "If you want a listing **completely and permanently** removed — including all reviews — from Google Maps and Search, Google's built-in tools simply aren't up to the job. That's exactly where RapidRemove comes in. We don't chase individual reviews or tinker with status labels. We remove the **entire Business Profile** through official Google processes. The result: the listing and every review on it disappear in one move — fake reviews included." },
+    { t: "p", text: "If you want a listing **completely and permanently** removed — including all reviews — from Google Maps and Search, Google's built-in tools simply aren't up to the job. That's exactly where RapidRemove comes in. With profile removal, we don't go review by review or tinker with status labels — we remove the **entire Business Profile** through official Google processes. The result: the listing and every review on it disappear in one move — fake reviews included." },
     { t: "p", text: "Here's what that means in practice:" },
     { t: "ul", items: [
       "**Speed:** Removal typically takes 24–48 hours instead of months of back-and-forth.",

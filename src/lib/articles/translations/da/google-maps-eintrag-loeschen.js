@@ -80,7 +80,7 @@ const article = {
     ] },
 
     { t: "h2", id: "dauerhaft", text: "Den permanente løsning: lad hele profilen fjerne", toc: "Fjern permanent" },
-    { t: "p", text: "Vil du have en profil **fuldstændigt og permanent** – inkl. alle anmeldelser – fjernet fra Google Maps og søgeresultaterne, når Googles egne værktøjer til kort. Det er præcis her, RapidRemove kommer ind: Vi bekæmper ikke enkeltanmeldelser eller statuslabels, men fjerner den **komplette Google-virksomhedsprofil** via Googles officielle procedurer. Dermed forsvinder profilen med samtlige anmeldelser på én gang – herunder falske anmeldelser." },
+    { t: "p", text: "Vil du have en profil **fuldstændigt og permanent** – inkl. alle anmeldelser – fjernet fra Google Maps og søgeresultaterne, når Googles egne værktøjer til kort. Det er præcis her, RapidRemove kommer ind: Med profilsletningen bekæmper vi ikke enkeltanmeldelser eller statuslabels, men fjerner den **komplette Google-virksomhedsprofil** via Googles officielle procedurer. Dermed forsvinder profilen med samtlige anmeldelser på én gang – herunder falske anmeldelser. (Vil du kun af med enkelte anmeldelser og beholde profilen, findes [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/).)" },
     { t: "p", text: "Hvad det betyder for dig:" },
     { t: "ul", items: [
       "**Tempo:** Fjernelse typisk på 24–48 timer frem for måneders frem og tilbage.",

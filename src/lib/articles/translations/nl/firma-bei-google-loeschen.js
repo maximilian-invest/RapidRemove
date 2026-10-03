@@ -31,12 +31,12 @@ const article = {
       "**Zonder risico:** garantie – verschijnt de vermelding door derden opnieuw, wordt deze kosteloos verwijderd",
       "**SEO-vriendelijk:** uw website en uw ranking blijven onaangetast",
     ] },
-    { t: "warn", title: "Belangrijk", text: "Deze aanpak verwijdert de **volledige vermelding**, niet één afzonderlijke review. Wie slechts één review wil laten verwijderen en de vermelding wil behouden, kan die review melden of een juridische route bewandelen." },
+    { t: "warn", title: "Belangrijk", text: "Deze aanpak verwijdert de **volledige vermelding**, niet één afzonderlijke review. Wie slechts één of enkele reviews wil laten verwijderen en de vermelding wil behouden, kan die review melden, een juridische route bewandelen – of bij RapidRemove [losse reviews laten verwijderen](/nl/review-laten-verwijderen/), met betaling alleen per review die echt weg is." },
 
     { t: "cta", title: "Laat uw bedrijfsvermelding gratis controleren.", text: "Voer uw bedrijfsnaam in – wij controleren in seconden of en hoe snel uw vermelding inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid controleren", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inclusief garantie", "Zonder risico"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Afzonderlijke reviews of de volledige vermelding?", toc: "Eén of alles" },
-    { t: "p", text: "Gaat het u om slechts één onterechte review, dan is **melden** of de juridische route de juiste keuze – meer daarover leest u bij [Google-review laten verwijderen](/nl/magazine/google-reviews-verwijderen/). Is de vermelding als geheel beschadigd en wilt u echt opnieuw beginnen, dan is de volledige verwijdering de meest directe weg." },
+    { t: "p", text: "Gaat het u om slechts één of enkele onterechte reviews, dan zijn **melden**, de juridische route of de [verwijdering van losse reviews](/nl/review-laten-verwijderen/) via RapidRemove de juiste keuze – reviews tot 4 weken oud: ca. 90 % slagingskans, € 179 per verwijderde review; oudere: ca. 50 %, +€ 50. Meer daarover leest u bij [Google-review laten verwijderen](/nl/magazine/google-reviews-verwijderen/). Is de vermelding als geheel beschadigd en wilt u echt opnieuw beginnen, dan is de volledige verwijdering de meest directe weg." },
 
     { t: "h2", id: "kosten", text: "Wat kost het verwijderen van de bedrijfsvermelding?", toc: "Wat het kost" },
     { t: "p", text: "De prijzen verschillen sterk per aanbieder:" },

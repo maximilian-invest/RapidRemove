@@ -31,12 +31,12 @@ const article = {
       "**Nessun rischio:** garanzia inclusa — se il profilo dovesse riapparire per opera di terzi, viene rimosso nuovamente senza costi aggiuntivi",
       "**SEO invariato:** sito web e posizionamento organico rimangono intatti",
     ] },
-    { t: "warn", title: "Importante", text: "Questa procedura rimuove l'**intero profilo**, non una singola recensione. Chi desidera eliminare solo una recensione mantenendo la scheda attiva deve ricorrere alla segnalazione o, se necessario, alle vie legali." },
+    { t: "warn", title: "Importante", text: "Questa procedura rimuove l'**intero profilo**, non una singola recensione. Chi desidera eliminare solo una recensione mantenendo la scheda attiva può ricorrere alla segnalazione, alle vie legali oppure alla [rimozione di singole recensioni](/it/rimuovere-una-recensione/) di RapidRemove, con pagamento solo per le recensioni effettivamente rimosse." },
 
     { t: "cta", title: "Verifica gratuita della rimovibilità del profilo", text: "Inserisci il nome della tua attività: in pochi secondi controlliamo se e con quale tempistica è possibile rimuovere la scheda insieme a tutte le recensioni.", btn: "Verifica la rimovibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratuita", "Garanzia inclusa", "Zero rischi"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Rimuovere una singola recensione o l'intero profilo?", toc: "Recensione o profilo" },
-    { t: "p", text: "Se l'obiettivo è eliminare una sola recensione ingiustificata, la strada giusta è la **segnalazione** o il ricorso legale — approfondisci nel nostro articolo [Come eliminare le recensioni Google](/it/rivista/eliminare-recensioni-google/). Se invece il profilo è globalmente compromesso e si desidera ripartire da zero, la rimozione completa è il percorso più diretto ed efficace." },
+    { t: "p", text: "Se l'obiettivo è eliminare una sola recensione ingiustificata, le strade sono la **segnalazione**, il ricorso legale oppure il nostro [servizio di rimozione di singole recensioni](/it/rivista/servizio-rimozione-recensioni-google/): 179 € per recensione rimossa fino a 4 settimane (ca. 90 % di successo), per quelle più vecchie ca. 50 % e +50 € — e paghi solo se la recensione sparisce davvero. Tutti i metodi a confronto nell'articolo [Come eliminare le recensioni Google](/it/rivista/eliminare-recensioni-google/). Se invece il profilo è globalmente compromesso e si desidera ripartire da zero, la rimozione completa è il percorso più diretto ed efficace." },
 
     { t: "h2", id: "kosten", text: "Quanto costa eliminare il profilo dell'attività su Google?", toc: "Quanto costa" },
     { t: "p", text: "I prezzi variano molto a seconda del fornitore:" },
@@ -62,7 +62,7 @@ const article = {
     { q: "Quanto tempo richiede la rimozione?", a: "Con la rimozione professionale, di norma 24-48 ore — un risultato nettamente più rapido rispetto ai mesi che richiedono le procedure legali per le singole recensioni." },
     { q: "Il mio sito web e il mio posizionamento nei motori di ricerca restano invariati?", a: "Sì. La rimozione del profilo dell'attività su Google non incide né sul sito web né sull'account Google né sul posizionamento organico. Dopo la rimozione è facoltativamente possibile creare un nuovo profilo pulito." },
     { q: "Scompaiono anche le recensioni false?", a: "Sì. Poiché viene rimosso l'intero profilo, tutte le recensioni scompaiono con esso — incluse quelle false o infondate." },
-    { q: "Qual è il costo per eliminare il profilo dell'attività?", a: "RapidRemove applica un prezzo fisso, pagabile solo a successo avvenuto. I fornitori che operano sulle singole recensioni e gli avvocati fatturano generalmente per ogni recensione, spesso senza garantire l'esito." },
+    { q: "Qual è il costo per eliminare il profilo dell'attività?", a: "RapidRemove applica un prezzo fisso, pagabile solo a successo avvenuto. Gli avvocati fatturano generalmente per ogni recensione, spesso in anticipo e senza garantire l'esito. Se ti servono solo alcune recensioni in meno, anche la [rimozione di singole recensioni](/it/rimuovere-una-recensione/) di RapidRemove si paga solo per le recensioni effettivamente rimosse." },
   ],
   related: [
     { label: "Eliminare il profilo dell'attività su Google: la guida completa", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

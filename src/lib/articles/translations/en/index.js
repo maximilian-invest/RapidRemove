@@ -14,6 +14,7 @@ import a12 from "@/lib/articles/translations/en/online-reputationsmanagement";
 import a13 from "@/lib/articles/translations/en/negative-google-suchergebnisse-verdraengen";
 import a14 from "@/lib/articles/translations/en/presseartikel-aus-google-entfernen";
 import a17 from "@/lib/articles/translations/en/trustpilot-bewertung-loeschen";
+import a18 from "@/lib/articles/translations/en/einzelbewertung-loeschen-service";
 
 export default {
   "google-bewertung-loeschen-lassen": a1,
@@ -31,4 +32,5 @@ export default {
   "negative-google-suchergebnisse-verdraengen": a13,
   "presseartikel-aus-google-entfernen": a14,
   "trustpilot-bewertung-loeschen": a17,
+  "einzelbewertung-loeschen-service": a18,
 };

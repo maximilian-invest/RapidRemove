@@ -31,18 +31,19 @@ const article = {
       "**Risikofritt:** Garanti – dukker oppføringen opp igjen via tredjeparter, fjernes den kostnadsfritt",
       "**SEO-vennlig:** Nettstedet ditt og rangeringen din forblir uberørt",
     ] },
-    { t: "warn", title: "Viktig", text: "Denne metoden fjerner **hele oppføringen**, ikke én enkelt anmeldelse. Den som kun vil fjerne én anmeldelse og beholde profilen, bør bruke innmeldingsrutinen eller gå via advokat." },
+    { t: "warn", title: "Viktig", text: "Denne metoden fjerner **hele oppføringen**, ikke én enkelt anmeldelse. Den som kun vil fjerne én anmeldelse og beholde profilen, kan bruke innmeldingsrutinen, gå via advokat – eller bestille RapidRemoves [fjerning av enkeltanmeldelser](/no/fjern-omtale/), der du bare betaler for anmeldelser som faktisk fjernes." },
 
     { t: "cta", title: "Få sjekket oppføringen din – gratis.", text: "Skriv inn bedriftsnavnet ditt – vi sjekker på sekunder om og hvor raskt oppføringen din kan fjernes, anmeldelser og alt.", btn: "Sjekk om profilen kan slettes", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inkl. garanti", "Uten risiko"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Enkeltanmeldelse eller hele oppføringen?", toc: "Én eller hele" },
-    { t: "p", text: "Gjelder det bare én uberettiget anmeldelse, er **innmelding** eller advokatveien riktig tilnærming – mer om det i artikkelen [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Er profilen generelt skadet og du vil ha en reell ny start, er fullstendig fjerning den mest direkte veien." },
+    { t: "p", text: "Gjelder det bare én uberettiget anmeldelse, er **innmelding**, advokatveien eller en profesjonell [fjerning av akkurat denne Google-anmeldelsen](/no/magasin/fjern-google-anmeldelse-tjeneste/) riktig tilnærming – da blir profilen og de gode anmeldelsene stående. Mer om metodene i artikkelen [Fjern Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/). Er profilen generelt skadet og du vil ha en reell ny start, er fullstendig fjerning den mest direkte veien." },
 
     { t: "h2", id: "kosten", text: "Hva koster det å slette bedriftsoppføringen?", toc: "Hva det koster" },
     { t: "p", text: "Prisene varierer sterkt avhengig av leverandør:" },
     { t: "table", head: ["Leverandørtype", "Prisramme", "Resultat"], rows: [
       ["Rimelige tjenesteleverandører", "19 – 49 € per anmeldelse", "Svært variabelt"],
       ["Spesialiserte advokater", "100 – 159 € per anmeldelse", "Ca. 90 %, men tregt"],
+      ["Enkeltanmeldelser (RapidRemove)", "179 € per fjernet anmeldelse (eldre enn 4 uker: 229 €)", "Betaling kun ved resultat – profilen blir stående"],
       ["Profilsletting (RapidRemove)", "Fast pris, betales etter suksess", "Alle anmeldelser borte – betaling kun ved resultat"],
     ] },
 

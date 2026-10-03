@@ -861,3 +861,10 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .rv-sticky-n{font-size:12.5px;font-weight:700;color:var(--fg-2);}
 .rv-sticky-t{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--primary);white-space:nowrap;}
 .rv-nudge{font-size:13px;font-weight:800;color:var(--primary);}
+/* Bewertungsauswahl: Suche nach Bewertername + „nicht in der Liste?" */
+.rv-search{display:flex;align-items:center;gap:8px;margin:16px 0 0;padding:0 12px;border:1px solid var(--hairline);border-radius:12px;background:#fff;color:var(--fg-muted);}
+.rv-search:focus-within{border-color:var(--orange-300,#fdba74);box-shadow:0 0 0 3px rgba(249,115,22,.12);}
+.rv-search input{flex:1;min-width:0;border:none;outline:none;background:transparent;padding:12px 0;font:inherit;font-size:16px;font-weight:600;color:var(--fg);}
+.rv-search input::-webkit-search-cancel-button{display:none;}
+.rv-search-x{border:none;background:none;padding:4px;cursor:pointer;color:var(--fg-muted);display:flex;}
+.rv-more-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:none;border:none;padding:4px 2px;cursor:pointer;font:inherit;font-size:14px;font-weight:700;color:var(--primary);}

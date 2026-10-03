@@ -44,12 +44,13 @@ const article = {
 
     { t: "h2", id: "weg", text: "Hvilken vei passer for deg?", toc: "Hvilken vei?" },
     { t: "p", text: "Viktig først: det er to helt forskjellige mål – og dermed to veier." },
-    { t: "p", text: "**Vil du bare ha den ene 1-stjerners anmeldelsen vekk og beholde profilen din?** Da er **rapporteringen** til Google og – hvis den mislykkes – **advokatveien** de riktige mulighetene. Nettopp ved en ordløs 1-stjerners anmeldelse er de juridiske sjansene gode." },
+    { t: "p", text: "**Vil du bare ha den ene 1-stjerners anmeldelsen vekk og beholde profilen din?** Da kan du **rapportere** den til Google, gå via **advokat** – eller la RapidRemove [fjerne akkurat denne anmeldelsen](/no/fjern-omtale/): også anmeldelser uten tekst kan velges, opptil 4 uker gamle med ca. 90 % sjanse for å lykkes (eldre: ca. 50 %, +50 €), og du betaler bare hvis den faktisk forsvinner. Nettopp ved en ordløs 1-stjerners anmeldelse er sjansene gode." },
     { t: "p", text: "**Er profilen din varig skadet av flere eller urettferdige anmeldelser, og vil du ha en virkelig ny start?** Da er **profilfjerningen** via RapidRemove den mest direkte veien: vi fjerner **hele bedriftsprofilen**, alle anmeldelser forsvinner med – en virkelig ny start; du betaler kun ved suksess." },
     { t: "table", head: ["Vei", "Hva fjernes", "Varighet", "Suksess", "Pris"], rows: [
       ["Rapporter selv", "enkeltanmeldelse", "usikkert", "lav", "gratis"],
       ["Advokat", "enkeltanmeldelse", "3-9 måneder", "ca. 90 %", "per anmeldelse, forskudd"],
-      ["RapidRemove", "**hele profilen + alle anmeldelser**", "24-48 t", "betaling ved suksess", "fast pris etter suksess"],
+      ["RapidRemove (enkeltanmeldelse)", "valgt anmeldelse – profilen blir stående", "noen dager – 3 uker", "ca. 90 % (opptil 4 uker) / ca. 50 % (eldre)", "179 € etter suksess (eldre: 229 €)"],
+      ["RapidRemove (profilfjerning)", "**hele profilen + alle anmeldelser**", "24-48 t", "betaling ved suksess", "fast pris etter suksess"],
     ] },
     { t: "p", text: "Ved profilfjerningen betaler du først **etter suksess**, og takket være garantien fjernes en profil som dukker opp igjen, uten kostnad." },
     { t: "cta", title: "Sjekk gratis om din 1-stjerners anmeldelse kan fjernes.", text: "Skriv inn bedriftsnavnet – vi finner profilen din og sjekker på sekunder om og hvor raskt den kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
@@ -58,9 +59,9 @@ const article = {
     { q: "Kan jeg få fjernet en 1-stjerners anmeldelse uten tekst?", a: "I mange tilfeller ja. Siden ingen sammenheng med en virkelig opplevelse kan gjenkjennes, mangler anmeldelsen ofte det juridiske grunnlaget; tyske domstoler som Landgericht Lübeck og Tysklands høyesterett (BGH) har bekreftet slike krav om fjerning." },
     { q: "Er en 1-stjerners anmeldelse uten tekst straffbar?", a: "Anmeldelsen i seg selv oftest ikke. Men hvis den er gitt uten virkelig foranledning, kan den være utillatelig og begrunne et sivilrettslig krav om fjerning. Dette er ikke juridisk rådgivning." },
     { q: "Hvordan rapporterer jeg en stjernevurdering uten kommentar?", a: "Via tre-prikker-menyen ved siden av anmeldelsen, klikk på Rapporter anmeldelse og angi som begrunnelse den manglende sammenhengen med tjenesten. Statusen følger du via Googles verktøy for håndtering av anmeldelser." },
-    { q: "Hva gjør jeg hvis Google ikke fjerner anmeldelsen?", a: "For en enkelt anmeldelse hjelper en konkret begrunnet innsigelse fra en advokat. Er profilen din skadet som helhet, og vil du ha en ny start, er profilfjerning via RapidRemove den mest pålitelige veien – da forsvinner alle anmeldelser med profilen." },
-    { q: "Fjerner RapidRemove den enkelte 1-stjerners anmeldelsen?", a: "En vurdering med bare stjerner, uten tekst, kan ikke fjernes enkeltvis – fjerning per anmeldelse krever tekst. RapidRemove fjerner slike vurderinger via fjerningen av hele profilen; for negative anmeldelser med tekst finnes også [fjerning av enkeltanmeldelser](https://www.rapid-remove.com/no/fjern-omtale/)." },
-    { q: "Hvor raskt blir man kvitt anmeldelsene?", a: "Via profilfjerning ofte innen 24 til 48 timer – betydelig raskere enn den flere måneder lange rettslige veien for en enkelt anmeldelse." },
+    { q: "Hva gjør jeg hvis Google ikke fjerner anmeldelsen?", a: "For en enkelt anmeldelse hjelper en konkret begrunnet innsigelse fra en advokat – eller RapidRemoves fjerning av enkeltanmeldelser, der du bare betaler ved suksess. Er profilen din skadet som helhet, og vil du ha en ny start, er profilfjerning via RapidRemove den mest pålitelige veien – da forsvinner alle anmeldelser med profilen." },
+    { q: "Fjerner RapidRemove den enkelte 1-stjerners anmeldelsen?", a: "Ja. Med [fjerning av enkeltanmeldelser](/no/fjern-omtale/) kan du også velge vurderinger med bare stjerner, uten tekst – ordløse anmeldelser uten gjenkjennelig kundekontakt har ofte gode sjanser. Opptil 4 uker gamle: ca. 90 % sjanse, 179 € per fjernet anmeldelse; eldre: ca. 50 %, +50 €. Du betaler bare hvis anmeldelsen faktisk fjernes. Er profilen skadet som helhet, er fjerning av hele profilen med alle anmeldelser alternativet." },
+    { q: "Hvor raskt blir man kvitt anmeldelsene?", a: "Via profilfjerning ofte innen 24 til 48 timer, ved fjerning av en enkeltanmeldelse vanligvis noen dager, av og til opptil tre uker – betydelig raskere enn den flere måneder lange rettslige veien for en enkelt anmeldelse." },
   ],
   related: [
     { label: "Negativ anmeldelse: advokat eller teknisk fjerning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

@@ -37,7 +37,7 @@ const article = {
       "**Efeito conservador** de 5 % → 1.500 € por mês.",
       "**Multiplicar pela duração de visibilidade:** uma avaliação permanece visível com frequência durante 12 ou mais meses → 18.000 € ao longo de um ano.",
     ] },
-    { t: "p", text: "Mesmo com pressupostos cautelosos, a perda acumulada situa-se normalmente muito acima do custo de uma solução profissional. É exatamente este cálculo que muitos ignoram, porque o prejuízo surge de forma gradual e invisível — como receita que nunca chega, não como uma fatura." },
+    { t: "p", text: "Mesmo com pressupostos cautelosos, a perda acumulada situa-se normalmente muito acima do custo de uma solução profissional — a [remoção de uma avaliação individual](/pt/revista/servico-remover-avaliacoes-google/) custa na RapidRemove, por exemplo, 179 € e só é paga se a avaliação desaparecer de facto. É exatamente este cálculo que muitos ignoram, porque o prejuízo surge de forma gradual e invisível — como receita que nunca chega, não como uma fatura." },
 
     { t: "h2", id: "indirekt", text: "Os custos indiretos — muitas vezes maiores do que a perda direta", toc: "Custos indiretos" },
     { t: "ul", items: [
@@ -49,7 +49,7 @@ const article = {
 
     { t: "h2", id: "lohnt", text: "O que vale a pena — e o que não vale", toc: "O que vale a pena" },
     { t: "p", text: "Nem toda a avaliação precisa de ser combatida. Uma crítica honesta e factual responde-se com serenidade — isso mostra carácter aos outros leitores. A situação é diferente com avaliações **injustificadas, falsas ou ilegais**: aqui, agir quase sempre compensa, porque a perda de receita contínua supera o custo da solução." },
-    { t: "p", text: "O caminho certo depende do caso — comparamos as opções em detalhe em [Avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/) e [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/). Se o perfil estiver globalmente comprometido, a [eliminação completa do perfil](/pt/revista/eliminar-perfil-empresa-google/) pode ser o corte mais limpo." },
+    { t: "p", text: "O caminho certo depende do caso — comparamos as opções em detalhe em [Avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/) e [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/). Se forem apenas uma ou poucas avaliações injustas, pode [remover avaliações individuais](/pt/remover-uma-avaliacao/) de forma direcionada — o perfil e as avaliações boas mantêm-se. Se o perfil estiver globalmente comprometido, a [eliminação completa do perfil](/pt/revista/eliminar-perfil-empresa-google/) pode ser o corte mais limpo." },
 
     { t: "cta", title: "Verifique gratuitamente o que é possível fazer com o seu perfil.", text: "Introduza o nome da empresa — analisamos em segundos se é possível remover avaliações problemáticas ou o perfil, e com que rapidez.", btn: "Iniciar análise gratuita", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
 

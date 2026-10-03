@@ -33,13 +33,13 @@ const article = {
       "**Coût :** facturé par avis ; les cabinets spécialisés sont souvent autour de 100 à 159 € par cas, en partie plus les frais de justice en cas de procès.",
       "**Risque :** l'issue n'est pas garantie, et vous payez l'effort, pas forcément le résultat.",
     ] },
-    { t: "p", text: "Pour un avis **isolé et clairement illicite** avec des faits documentables, la voie de l'avocat peut avoir du sens. Avec plusieurs avis ou une fiche fondamentalement endommagée, elle devient vite coûteuse et lente." },
+    { t: "p", text: "Pour un avis **isolé et clairement illicite** avec des faits documentables, la voie de l'avocat peut avoir du sens. Avec plusieurs avis ou une fiche fondamentalement endommagée, elle devient vite coûteuse et lente. Pour un avis isolé, il existe aussi une alternative sans avance de frais : la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/), payée uniquement si l'avis disparaît – en général en quelques jours, parfois jusqu'à trois semaines." },
 
     { t: "h2", id: "streisand", text: "L'effet Streisand : quand avoir raison se retourne contre vous", toc: "Effet Streisand" },
     { t: "p", text: "Un risque souvent sous-estimé : les démarches juridiques peuvent provoquer encore plus l'auteur de l'avis. Le résultat est souvent une vague de nouveaux **« avis de vengeance »** – le problème grandit au lieu de diminuer. Ce phénomène s'appelle l'**effet Streisand**. Une solution silencieuse et technique l'évite, car elle travaille sans confrontation directe avec l'auteur." },
 
     { t: "h2", id: "technik", text: "Voie 2 : suppression technique de la fiche", toc: "Voie 2 : technique" },
-    { t: "p", text: "Voici la différence centrale avec la voie de l'avocat : RapidRemove ne combat **pas** des avis isolés, mais supprime la **fiche d'établissement Google complète**. Au cours de cette suppression, **tous** les avis disparaissent avec elle – vous obtenez une page blanche au lieu d'un combat pour chaque étoile. Techniquement, la méthode travaille dans la logique de Google et s'attaque à la racine : la fiche. Avantages :" },
+    { t: "p", text: "Voici la différence centrale avec la voie de l'avocat : avec cette méthode, RapidRemove ne combat **pas** les avis un par un, mais supprime la **fiche d'établissement Google complète**. Au cours de cette suppression, **tous** les avis disparaissent avec elle – vous obtenez une page blanche au lieu d'un combat pour chaque étoile. Techniquement, la méthode travaille dans la logique de Google et s'attaque à la racine : la fiche. Avantages :" },
     { t: "ul", items: [
       "**Vitesse :** suppression de la fiche souvent en 24 à 48 heures au lieu de mois.",
       "**Complet :** toute la fiche, y compris tous les avis, d'un coup.",
@@ -48,7 +48,7 @@ const article = {
       "**Compatible SEO :** site et classement préservés ; une fiche neuve et propre est en option.",
       "**Discrétion :** aucune correspondance, aucun risque Streisand.",
     ] },
-    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Qui veut supprimer un avis et conserver la fiche utilise le signalement ou la voie de l'avocat. Depuis peu, RapidRemove propose aussi exactement cela : [suppression d'avis isolés](https://www.rapid-remove.com/fr/supprimer-un-avis/) – payée par avis réellement supprimé, uniquement en cas de succès." },
+    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Qui veut supprimer un avis et conserver la fiche a trois options : le signalement, la voie de l'avocat – ou la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/), payée par avis réellement supprimé, uniquement en cas de succès. Prix et chances de réussite en détail : [service de suppression d'avis Google](/fr/magazine/service-suppression-avis-google/)." },
 
     { t: "h2", id: "vergleich", text: "Avocat vs. technique : la comparaison directe", toc: "Comparaison directe" },
     { t: "table", rrCol: 1, head: ["Critère", "RapidRemove (suppression de fiche)", "Avocat (voie juridique)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Puis-je faire supprimer un avis Google négatif ?", a: "Oui, s'il enfreint les règles de Google (p. ex. faux, absence de lien, insulte). Les opinions purement factuelles sur des expériences réelles sont difficiles à supprimer." },
     { q: "Combien coûte un avocat pour supprimer un avis Google ?", a: "Les cabinets spécialisés sont souvent autour de 100 à 159 € par avis ; en cas de procès, des frais de justice peuvent s'ajouter. On paie en général l'effort, pas un résultat garanti." },
-    { q: "Que supprime exactement RapidRemove : des avis isolés ou la fiche ?", a: "Les deux, selon le cas. Pour un avis injuste précis, il existe la [suppression d'avis isolés](https://www.rapid-remove.com/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès (4 semaines max., avec texte). Si la fiche est endommagée dans son ensemble, supprimer la fiche complète avec tous ses avis est la voie la plus complète." },
+    { q: "Que supprime exactement RapidRemove : des avis isolés ou la fiche ?", a: "Les deux, selon le cas. Pour un avis injuste précis, il existe la [suppression d'avis isolés](/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès (avis de 4 semaines max. : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis ; avis sans texte possibles aussi). Si la fiche est endommagée dans son ensemble, supprimer la fiche complète avec tous ses avis est la voie la plus complète." },
     { q: "La suppression technique de la fiche est-elle légale ?", a: "Oui. Elle travaille dans les règles de Google et ne nécessite ni avocat ni contact direct avec Google. Les prestataires sérieux travaillent avec des honoraires de résultat et une garantie." },
     { q: "Qu'est-ce que l'effet Streisand ?", a: "Lorsque les démarches juridiques provoquent l'auteur et entraînent d'autres avis négatifs. La suppression technique évite ce risque car elle travaille sans confrontation." },
     { q: "Les avis Google négatifs sont-ils punissables ?", a: "Une opinion honnête, non. Les allégations de faits délibérément fausses, les insultes ou les propos diffamatoires peuvent avoir des conséquences juridiques. Ceci n'est pas un conseil juridique." },

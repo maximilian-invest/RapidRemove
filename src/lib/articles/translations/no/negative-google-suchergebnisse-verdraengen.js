@@ -29,6 +29,7 @@ const article = {
     { t: "p", text: "Noen treff kan fjernes fullstendig fra visningen:" },
     { t: "ul", items: [
       "**Egen Google-bedriftsprofil** inkludert anmeldelser – via de offisielle prosedyrene (se [slett profil](/no/magasin/slett-google-bedriftsprofil/)).",
+      "**Enkelte Google-anmeldelser** – falske eller urettferdige anmeldelser kan [fjernes enkeltvis](/no/fjern-omtale/), uten at profilen må slettes.",
       "**Ulovlig innhold** – fornærmelser, uriktige faktapåstander, krenking av personlighetsrettigheter.",
       "**Personopplysninger** – under visse vilkår via «retten til å bli glemt» (GDPR Art. 17).",
     ] },

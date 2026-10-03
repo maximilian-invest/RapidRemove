@@ -33,13 +33,13 @@ const article = {
       "**Costo:** fatturato per recensione; gli studi specializzati sono spesso intorno a 100–159 € a caso, in parte più le spese legali in caso di causa.",
       "**Rischio:** l'esito non è garantito e paghi l'impegno, non necessariamente il risultato.",
     ] },
-    { t: "p", text: "Per una recensione **singola e chiaramente illecita** con fatti documentabili, la via dell'avvocato può avere senso. Con più recensioni o un profilo gravemente danneggiato diventa presto costosa e lenta." },
+    { t: "p", text: "Per una recensione **singola e chiaramente illecita** con fatti documentabili, la via dell'avvocato può avere senso. Con più recensioni o un profilo gravemente danneggiato diventa presto costosa e lenta. Un'alternativa per le singole recensioni senza costi anticipati è il [servizio di rimozione recensioni Google](/it/rivista/servizio-rimozione-recensioni-google/) di RapidRemove: 179 € per recensione rimossa, pagamento solo in caso di successo." },
 
     { t: "h2", id: "streisand", text: "L'effetto Streisand: quando avere ragione si ritorce contro", toc: "Effetto Streisand" },
     { t: "p", text: "Un rischio spesso sottovalutato: le azioni legali possono provocare ancora di più il recensore. Il risultato è spesso un'ondata di nuove **«recensioni di vendetta»**: il problema cresce invece di ridursi. Questo fenomeno si chiama **effetto Streisand**. Una soluzione silenziosa e tecnica lo evita, perché lavora senza confronto diretto con l'autore." },
 
     { t: "h2", id: "technik", text: "Via 2: rimozione tecnica del profilo", toc: "Via 2: tecnica" },
-    { t: "p", text: "Qui sta la differenza centrale con la via dell'avvocato: RapidRemove **non** combatte singole recensioni, ma rimuove l'**intero profilo dell'attività su Google**. In questa rimozione, **tutte** le recensioni spariscono con esso: ottieni una nuova partenza invece di una lotta per ogni stella. Tecnicamente il metodo lavora dentro la logica di Google e affronta la radice: il profilo. Vantaggi:" },
+    { t: "p", text: "Qui sta la differenza centrale con la via dell'avvocato: con questo metodo RapidRemove **non** combatte singole recensioni, ma rimuove l'**intero profilo dell'attività su Google**. In questa rimozione, **tutte** le recensioni spariscono con esso: ottieni una nuova partenza invece di una lotta per ogni stella. Tecnicamente il metodo lavora dentro la logica di Google e affronta la radice: il profilo. Vantaggi:" },
     { t: "ul", items: [
       "**Velocità:** rimozione del profilo spesso in 24–48 ore anziché mesi.",
       "**Completo:** l'intero profilo, incluse tutte le recensioni, in una volta.",
@@ -48,7 +48,7 @@ const article = {
       "**Compatibile con la SEO:** sito e posizionamento restano; un profilo nuovo e pulito è opzionale.",
       "**Discrezione:** nessuna corrispondenza, nessun rischio Streisand.",
     ] },
-    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Chi vuole eliminare una recensione e mantenere il profilo usa la segnalazione o la via dell'avvocato. Da poco RapidRemove offre anche esattamente questo: [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – si paga per recensione davvero rimossa, solo in caso di successo." },
+    { t: "warn", title: "Importante", text: "Questa via rimuove il **profilo completo**, non una singola recensione. Chi vuole eliminare una recensione e mantenere il profilo può usare la segnalazione o la via dell'avvocato – oppure la [rimozione di singole recensioni](/it/rimuovere-una-recensione/) di RapidRemove: si paga per recensione davvero rimossa, solo in caso di successo, di solito in pochi giorni (a volte fino a tre settimane)." },
 
     { t: "h2", id: "vergleich", text: "Avvocato vs. tecnica: il confronto diretto", toc: "Confronto diretto" },
     { t: "table", rrCol: 1, head: ["Criterio", "RapidRemove (rimozione profilo)", "Avvocato (via legale)"], rows: [
@@ -65,7 +65,7 @@ const article = {
   faq: [
     { q: "Posso far eliminare una recensione Google negativa?", a: "Sì, se viola le linee guida di Google (es. falsa, nessun collegamento, insulto). Le opinioni puramente oggettive su esperienze reali sono difficili da eliminare." },
     { q: "Quanto costa un avvocato per eliminare una recensione Google?", a: "Gli studi specializzati sono spesso intorno a 100–159 € a recensione; con una causa possono aggiungersi spese legali. Di solito si paga l'impegno, non un risultato garantito." },
-    { q: "Cosa rimuove esattamente RapidRemove: singole recensioni o il profilo?", a: "Entrambe le cose, a seconda del caso. Per una singola recensione ingiusta c'è la [rimozione di singole recensioni](https://www.rapid-remove.com/it/rimuovere-una-recensione/) – 179 € per recensione rimossa, si paga solo in caso di successo (max 4 settimane, con testo). Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni è la via più completa." },
+    { q: "Cosa rimuove esattamente RapidRemove: singole recensioni o il profilo?", a: "Entrambe le cose, a seconda del caso. Per una singola recensione ingiusta c'è la [rimozione di singole recensioni](/it/rimuovere-una-recensione/) – 179 € per recensione rimossa se ha al massimo 4 settimane (ca. 90 % di successo); per quelle più vecchie ca. 50 % e +50 €. Vale anche per le recensioni senza testo, e si paga solo in caso di successo. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni è la via più completa." },
     { q: "La rimozione tecnica del profilo è legale?", a: "Sì. Lavora dentro le linee guida di Google e non richiede né avvocato né contatto diretto con Google. I fornitori seri lavorano con onorario di successo e garanzia." },
     { q: "Cos'è l'effetto Streisand?", a: "Quando le azioni legali provocano l'autore e portano ad altre recensioni negative. La rimozione tecnica evita questo rischio perché lavora senza confronto." },
     { q: "Le recensioni Google negative sono perseguibili?", a: "Un'opinione onesta no. Le affermazioni di fatti deliberatamente false, gli insulti o le denigrazioni possono avere conseguenze legali. Questa non è consulenza legale." },

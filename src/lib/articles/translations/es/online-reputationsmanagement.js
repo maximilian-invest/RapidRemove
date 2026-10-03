@@ -36,7 +36,7 @@ const article = {
 
     { t: "h2", id: "hebel", text: "Las tres palancas de la ORM", toc: "Las tres palancas" },
     { t: "h3", text: "Palanca 1: Eliminar" },
-    { t: "p", text: "Lo que es ilegal, falso o injustificado debe desaparecer. Eso incluye reseñas falsas, valoraciones de 1 estrella ilegales, afirmaciones de hechos falsos — y, en casos extremos, un [perfil de empresa](/es/revista/eliminar-perfil-de-empresa-google/) completamente dañado. Eliminar es la palanca más directa, porque el problema desaparece de raíz." },
+    { t: "p", text: "Lo que es ilegal, falso o injustificado debe desaparecer. Eso incluye reseñas falsas, valoraciones de 1 estrella ilegales (que puedes quitar una a una con la [eliminación de reseñas individuales](/es/eliminar-una-resena/)), afirmaciones de hechos falsos — y, en casos extremos, un [perfil de empresa](/es/revista/eliminar-perfil-de-empresa-google/) completamente dañado. Eliminar es la palanca más directa, porque el problema desaparece de raíz." },
     { t: "h3", text: "Palanca 2: Desplazar" },
     { t: "p", text: "No todo puede eliminarse — por ejemplo, un artículo de prensa legítimo pero antiguo y negativo. Aquí entra en juego el **desplazamiento**: construir y potenciar de forma selectiva contenidos positivos y sólidos para que Google los considere más relevantes. Con el tiempo estos suben de posición — y el resultado no deseado cae a la segunda página o más abajo, donde casi nadie hace clic. Más información en [eliminar y desplazar resultados negativos de Google](/es/revista/eliminar-resultados-google-negativos/)." },
     { t: "h3", text: "Palanca 3: Construir" },
@@ -44,7 +44,7 @@ const article = {
 
     { t: "h2", id: "selbst", text: "Lo que puedes hacer tú — y dónde están los límites", toc: "Tú vs. profesional" },
     { t: "p", text: "**Puedes hacer tú mismo:** solicitar reseñas de forma sistemática, responder a las críticas con profesionalidad, mantener actualizados tus propios contenidos y perfiles, denunciar ante Google las reseñas falsas evidentes." },
-    { t: "p", text: "**Límites de los medios propios:** Google rechaza las denuncias frecuentemente de forma automatizada; los resultados negativos persistentes y los artículos de prensa no pueden influirse a través de la interfaz habitual; la eliminación completa de un perfil no está prevista para los propietarios. En estos puntos hacen falta procedimientos especializados y jurídicamente seguros — exactamente ahí interviene RapidRemove: [eliminar perfil](/es/revista/eliminar-perfil-de-empresa-google/), [gestión de reputación](/es/gestion-de-reputacion/) y [desindexar prensa](/es/desindexar-prensa/)." },
+    { t: "p", text: "**Límites de los medios propios:** Google rechaza las denuncias frecuentemente de forma automatizada; los resultados negativos persistentes y los artículos de prensa no pueden influirse a través de la interfaz habitual; la eliminación completa de un perfil no está prevista para los propietarios. En estos puntos hacen falta procedimientos especializados y jurídicamente seguros — exactamente ahí interviene RapidRemove: [eliminar reseñas concretas](/es/revista/servicio-eliminar-resenas-google/), [eliminar perfil](/es/revista/eliminar-perfil-de-empresa-google/), [gestión de reputación](/es/gestion-de-reputacion/) y [desindexar prensa](/es/desindexar-prensa/)." },
 
     { t: "h2", id: "vorgehen", text: "Cómo actuar de forma estructurada", toc: "Cómo actuar" },
     { t: "ol", items: [
