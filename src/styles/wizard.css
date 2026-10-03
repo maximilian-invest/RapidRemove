@@ -849,3 +849,15 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 
 .rv-chance{font-size:12px;font-weight:800;color:var(--success);}
 .rv-chance.low{color:#b26a00;}
+
+/* Preisleiste in der Bewertungsauswahl: immer sichtbar (fix unten) */
+.rv-sticky{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;width:min(640px,calc(100% - 32px));z-index:61;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 16px;border-radius:14px;background:#fff8f1;border:1.5px solid var(--orange-300);box-shadow:0 8px 28px rgba(28,25,22,.16);}
+.wz-body:has(.rv-sticky){padding-bottom:120px;}
+@media(max-width:620px){
+  .rv-sticky{left:10px;right:10px;width:auto;transform:none;bottom:calc(78px + env(safe-area-inset-bottom));}
+  .wz-body:has(.rv-sticky){padding-bottom:170px;}
+}
+.rv-sticky-l{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.rv-sticky-n{font-size:12.5px;font-weight:700;color:var(--fg-2);}
+.rv-sticky-t{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--primary);white-space:nowrap;}
+.rv-nudge{font-size:13px;font-weight:800;color:var(--primary);}
