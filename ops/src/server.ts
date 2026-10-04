@@ -345,15 +345,17 @@ app.post("/order", async (req, reply) => {
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
-  // 1) Kundenbestätigung — nur noch für Presse-Anfragen (Eingangsbestätigung der kostenlosen
-  //    Prüfung). Die Auftragsbestätigung per E-Mail bei Bestellungen ist abgeschaltet (auf
-  //    Wunsch); der Kunde erhält den nächsten Schritt (Zahlungslink) separat.
-  // … und für das Bewertungs-Produkt: dessen Bestätigung trägt die Abrechnungs-
-  // regeln (nur gelöschte zahlen, fällig am Löschtag) — die muss der Kunde haben.
-  if (isPress || isReviews) {
+  // 1) Kundenbestätigung — für JEDE Bestellung automatisch (seit 4.10.2026 wieder an):
+  //    Profil-Bestellung → Auftragsbestätigung (inkl. AGB + Widerrufsbelehrung, FAGG),
+  //    Bewertungs-Produkt → eigene Bestätigung mit den Abrechnungsregeln,
+  //    Presse → Eingangsbestätigung der kostenlosen Prüfung.
+  {
+    const subj = t.subject(props as any);
     try {
-      await sendMail({ to: email, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
+      await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
       result.customer = true;
+      // Im Admin-Verlauf der Bestellung sichtbar machen.
+      if (dbReady() && orderId) await insertEvent({ orderId, email, type: "mail", title: (isReviews ? "Auftragsbestätigung (Bewertungen)" : isPress ? "Eingangsbestätigung (Presse)" : "Auftragsbestätigung") + " gesendet (automatisch)", detail: "an " + email, html, subject: subj, auto: true }).catch(() => {});
     } catch (e) { app.log.error({ err: e }, "Kundenbestätigung fehlgeschlagen"); }
   }
 
