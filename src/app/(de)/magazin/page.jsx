@@ -3,7 +3,7 @@
 import MagazinStandalone from "@/components/MagazinStandalone";
 import { SITE_URL } from "@/lib/article-google-profil";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
-import { OG_IMAGE } from "@/lib/locales-meta";
+import { OG_IMAGE, magazineHreflangMap } from "@/lib/locales-meta";
 
 const URL = `${SITE_URL}/magazin`;
 
@@ -11,7 +11,9 @@ export const metadata = {
   title: "Magazin — Google-Bewertungen & Online-Reputation | RapidRemove",
   description:
     "Der RapidRemove-Ratgeber: Google-Unternehmensprofil löschen, schlechte oder gefälschte Bewertungen entfernen, Rechtslage und Online-Reputation — verständlich erklärt.",
-  alternates: { canonical: URL },
+  // hreflang auf alle Sprach-Magazine (die verweisen auch zurück auf /magazin) — sonst
+  // Ahrefs „Missing reciprocal hreflang" für die ganze Magazin-Gruppe.
+  alternates: { canonical: URL, languages: magazineHreflangMap() },
   openGraph: {
     type: "website",
     title: "Magazin — RapidRemove",
