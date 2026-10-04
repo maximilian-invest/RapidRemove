@@ -1648,6 +1648,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   return (
     <div>
       {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
+      <ProfileShotPanel o={o} toast={toast} />
       <ReviewShotsPanel o={o} items={items} toast={toast} />
       <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
       {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}

@@ -22,7 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
-import { shotKey, queueReviewShots, queueProfileShot, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
+import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend } from "./db";
@@ -472,11 +472,10 @@ app.post("/order", async (req, reply) => {
         clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
       });
       if (checkId) await linkCheck(checkId, id);
-      // Bewertungs-Produkt: von jeder bestellten Bewertung automatisch einen Screenshot
-      // (Hintergrund, blockiert die Antwort nicht) → Admin zeigt sie bei der Bestellung.
-      if (isReviews && reviewItems.length) queueReviewShots(id, reviewItems, (o, m) => app.log.info(o, m));
-      // Profil-Bestellungen: Screenshot des Google-Unternehmensprofils (Zustand vor der Löschung).
-      else if (!isPress && !isReviews) queueProfileShot(id, b, (o, m) => app.log.info(o, m));
+      // Automatische Screenshots (Hintergrund, blockiert die Antwort nicht) → Admin:
+      // Bewertungs-Bestellung = jede Bewertung + Google-Profil; Profil-Bestellung =
+      // Google-Profil (Zustand vor der Löschung); Presse = nichts.
+      queueOrderShots(id, service, b, (o, m) => app.log.info(o, m));
       // Serverseitiges InitiateCheckout: Auftrag erteilt, Profil freigegeben.
       if (capiEnabled() && b.consentMarketing === true && await claimCapiSend("orders", "capi_checkout_at", id)) {
         const r = await capiSend({

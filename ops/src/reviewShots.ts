@@ -121,9 +121,11 @@ export function profileTarget(raw: Record<string, unknown> | null | undefined): 
 /** Was für eine Bestellung aufzunehmen ist: Bewertungen bzw. das Profil (Presse: nichts). */
 function entriesFor(service: string, raw: Record<string, unknown> | null): Entry[] {
   if (service === "deindex") return [];
-  if (service === "reviews") return reviewEntries(Array.isArray(raw && raw.reviewItems) ? (raw!.reviewItems as Item[]) : []);
   const t = profileTarget(raw);
-  return t ? [{ idx: PROFILE_IDX, url: t }] : [];
+  const prof: Entry[] = t ? [{ idx: PROFILE_IDX, url: t }] : [];
+  // Bewertungs-Bestellungen: jede Bewertung + zusätzlich das Google-Profil.
+  if (service === "reviews") return [...reviewEntries(Array.isArray(raw && raw.reviewItems) ? (raw!.reviewItems as Item[]) : []), ...prof];
+  return prof;
 }
 
 function enqueue(orderId: string, entries: Entry[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
@@ -139,6 +141,11 @@ function enqueue(orderId: string, entries: Entry[], log?: (o: object, m: string)
  */
 export function queueReviewShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
   return enqueue(orderId, reviewEntries(items), log, onlyMissing);
+}
+
+/** Alle Screenshots einer neuen Bestellung (Bewertungen und/oder Profil) im Hintergrund. */
+export function queueOrderShots(orderId: string, service: string, raw: Record<string, unknown>, log?: (o: object, m: string) => void): boolean {
+  return enqueue(orderId, entriesFor(service, raw), log);
 }
 
 /** Screenshot des Google-Unternehmensprofils einer Profil-Bestellung (Hintergrund). */
