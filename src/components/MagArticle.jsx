@@ -12,6 +12,28 @@ import { pagePath } from "@/lib/page-routes";
 import { uiFor } from "@/lib/articles/registry";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 
+/* YouTube-Video im Artikel, datenschutzfreundlich: bis zum Klick nur das Vorschaubild
+   (kein YouTube-Player, keine Cookies), danach youtube-nocookie.com mit Autoplay. */
+function ArtVideo({ b }) {
+  const [on, setOn] = React.useState(false);
+  const thumb = `https://i.ytimg.com/vi/${b.id}/hqdefault.jpg`;
+  return (
+    <figure className="art-video">
+      <div className="art-video-frame">
+        {on ? (
+          <iframe src={`https://www.youtube-nocookie.com/embed/${b.id}?autoplay=1&rel=0`} title={b.title} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen loading="lazy" />
+        ) : (
+          <button type="button" className="art-video-poster" onClick={() => setOn(true)} aria-label={b.play || "Play video"}>
+            <img src={thumb} alt={b.title} loading="lazy" decoding="async" width="480" height="360" />
+            <span className="art-video-play" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      {b.caption ? <figcaption>{inline(b.caption)}</figcaption> : null}
+    </figure>
+  );
+}
+
 /* inline **bold**, *italic*, and [label](url) links. Absolute (https://) → external
    (new tab); root-relative (/…) → on-site link via asset() (same tab, base-path aware). */
 function inline(text, k = "i") {
@@ -69,6 +91,15 @@ function Body({ data, lang, ui, related }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // „Aktualisiert: Juni 2026" → Monat/Jahr aus meta.updated, falls der Artikel überarbeitet wurde.
+  const updLabel = (label) => {
+    const u = data.meta && data.meta.updated;
+    if (!u || !label) return label;
+    const base = String(ui.updated || "").split(/[:：]\s*/).pop();
+    let fmt = base;
+    try { fmt = new Intl.DateTimeFormat(lang === "no" ? "nb" : lang, { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(u + "T12:00:00Z")); } catch (e) { /* Fallback: Standardtext */ }
+    return base ? label.replace(base, fmt) : label;
+  };
   const goTo = (id) => (e) => { e.preventDefault(); const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth" }); };
   const startCheck = (e) => { if (e) e.preventDefault(); window.location.href = asset(hb + "?start=1"); };
 
@@ -109,6 +140,7 @@ function Body({ data, lang, ui, related }) {
         </div>
       );
       case "cta": return <CTA b={b} key={i} />;
+      case "video": return <ArtVideo b={b} key={i} />;
       default: return null;
     }
   };
@@ -135,7 +167,7 @@ function Body({ data, lang, ui, related }) {
             <span className="am-dot" />
             <span><Icon.clock />{data.readingMin || 7} {ui.reading}</span>
             <span className="am-dot" />
-            <span>{ui.updated}</span>
+            <span>{updLabel(ui.updated)}</span>
           </div>
         </div>
       </header>
@@ -169,7 +201,7 @@ function Body({ data, lang, ui, related }) {
             </React.Fragment>
           )}
 
-          <div className="art-updated"><Icon.checkCircle /> {ui.lastUpdated}</div>
+          <div className="art-updated"><Icon.checkCircle /> {updLabel(ui.lastUpdated)}</div>
           <div className="art-author">
             <div className="aa-ava">{data.meta.author[0]}</div>
             <div>

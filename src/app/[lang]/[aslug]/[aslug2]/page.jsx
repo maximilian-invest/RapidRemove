@@ -33,7 +33,7 @@ export function generateMetadata({ params }) {
       title: data.meta.title,
       description: data.meta.description,
       alternates: { canonical: url, languages: hubHreflang() },
-      openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE], publishedTime: data.meta.date, modifiedTime: data.meta.date, authors: [data.meta.author] },
+      openGraph: { type: "article", title: data.meta.title, description: data.meta.description, url, siteName: "RapidRemove", locale: OG_LOCALE[lang] || "en_US", images: [OG_IMAGE], publishedTime: data.meta.date, modifiedTime: data.meta.updated || data.meta.date, authors: [data.meta.author] },
     };
   }
   const r = resolveLocalized(lang, aslug2);

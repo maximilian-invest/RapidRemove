@@ -63,7 +63,7 @@ const article = {
     { q: "Should I respond to every negative review?", a: "No. A composed response is worthwhile for genuine, factual criticism — for the benefit of other readers. Harmless isolated reviews in a good overall average can be left alone; unjustified or unlawful ones are better removed." },
     { q: "When can a Google review be removed?", a: "When it violates Google's policies or is unlawful — for example, fakes, insults, false statements of fact, or a missing customer relationship. Purely factual opinions about real experiences are very difficult to remove." },
     { q: "What is the Streisand Effect?", a: "When an aggressive response or a legal threat provokes the reviewer — and triggers more negative reviews. That's why you should never respond in anger, and why removal is best handled through quiet, technical channels rather than public confrontation. The term comes from a 2003 incident in which Barbra Streisand's attempt to suppress a photo of her home backfired and massively amplified its exposure online." },
-    { q: "What if there are already a lot of bad reviews?", a: "Then fighting each one individually is often a losing battle. A full profile deletion followed by a clean restart is usually the more practical path." },
+    { q: "What if there are already a lot of bad reviews?", a: "Then fighting each one individually is often a losing battle. A full profile deletion followed by a clean restart is usually the more practical path – see [how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/)." },
   ],
   related: [
     { label: "What Does a Bad Google Review Actually Cost You?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },

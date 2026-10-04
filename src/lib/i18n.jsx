@@ -411,6 +411,7 @@ const I18N = {
       items: [
         { q: "Is this really legal?", a: "Yes. Our method works exclusively through official channels and was reviewed by lawyers. We bypass nothing and gain no unauthorized access." },
         { q: "Will I get in trouble with Google?", a: "No. The removal is a regular, intended process. Your Google account, Gmail and any Ads accounts stay fully untouched." },
+        { q: "Can't I just delete my Google Business Profile myself?", a: "Not completely. Google only lets you mark it \u201cpermanently closed\u201d or remove it from your account – the listing and every review stay visible on Search and Maps.", link: "/en/magazine/delete-google-business-profile", linkLabel: "How to delete a Google Business Profile →" },
         { q: "Does it affect my SEO, website or Ads?", a: "No. Only the business profile (Google Maps / Business Profile) is removed. Your website, ranking and campaigns remain unchanged." },
         { q: "Is the removal permanent?", a: "Yes, the profile and all reviews are removed permanently. With our optional protection we remove it again for free if a third party re-lists it." },
         { q: "Why does it cost money?", a: "Removal takes real work, experience and responsibility. For that you pay a clear fixed price – and only if we succeed." },

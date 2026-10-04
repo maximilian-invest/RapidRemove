@@ -54,7 +54,7 @@ const article = {
     ] },
 
     { t: "h2", id: "loeschen", text: "Getting rid of fake reviews – the definitive solution", toc: "The definitive fix" },
-    { t: "p", text: "With a **coordinated fake attack** involving many reviews, reporting individual ones is a hopeless game of cat and mouse. That's why RapidRemove's profile removal takes a different approach: **with this method we don't go review by review – we remove the entire Google Business Profile.** All fake reviews disappear in the course of the removal – you start with a clean slate. (If only a handful of fakes are affected, [single-review removal](/en/remove-single-reviews/) is usually the better fit.)" },
+    { t: "p", text: "With a **coordinated fake attack** involving many reviews, reporting individual ones is a hopeless game of cat and mouse. That's why RapidRemove's [Google Business Profile removal](/en/magazine/delete-google-business-profile/) takes a different approach: **with this method we don't go review by review – we remove the entire Google Business Profile.** All fake reviews disappear in the course of the removal – you start with a clean slate. (If only a handful of fakes are affected, [single-review removal](/en/remove-single-reviews/) is usually the better fit.)" },
     { t: "table", rrCol: 3, head: ["Criterion", "Report yourself", "Lawyer", "RapidRemove (profile removal)"], rows: [
       ["What is removed", "single review", "single review", "whole profile + all reviews"],
       ["Speed", "uncertain", "3 – 9 months", "24 – 48 h"],

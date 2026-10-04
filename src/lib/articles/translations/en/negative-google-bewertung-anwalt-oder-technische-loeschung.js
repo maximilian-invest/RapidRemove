@@ -42,7 +42,7 @@ const article = {
     { t: "p", text: "Here lies the central difference to the legal route: with this method RapidRemove does **not** go review by review, but removes the **entire Google Business Profile**. In the course of this removal, **all** reviews disappear with it – you get a clean slate instead of a fight over every single star. Technically, the method works within Google's logic and tackles the root: the profile. Advantages:" },
     { t: "ul", items: [
       "**Speed:** profile removal often in 24 to 48 hours instead of months.",
-      "**Complete:** the entire profile incl. all reviews at once.",
+      "**Complete:** the entire profile incl. all reviews at once – [how deleting a Google Business Profile works](/en/magazine/delete-google-business-profile/).",
       "**Predictable:** fixed price, payable after success – no open hourly rates.",
       "**Guarantee:** if the profile reappears via third parties, it is removed again for free.",
       "**SEO-friendly:** website and ranking are preserved; a clean new profile is optional.",

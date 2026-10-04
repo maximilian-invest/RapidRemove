@@ -51,7 +51,7 @@ const article = {
     { t: "p", text: "A deleted review disappears from your profile, and your **average rating** and the **number of reviews** adjust. You're not shown a direct “deleted” status; the most reliable indicator is that the review and its star rating are no longer visible and the average changes accordingly. Document the starting state with a screenshot beforehand to have a before-and-after comparison." },
 
     { t: "h2", id: "profil-loeschen", text: "Permanent solution: have the whole profile removed", toc: "Remove whole profile" },
-    { t: "p", text: "If the form doesn't work and several reviews are permanently damaging your profile, **profile removal** is the most direct route. The key difference: with this method RapidRemove doesn't go review by review but removes the **entire Google Business Profile** – all reviews disappear with it. The result is a clean slate instead of fighting over every star." },
+    { t: "p", text: "If the form doesn't work and several reviews are permanently damaging your profile, **profile removal** is the most direct route (see: [how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/)). The key difference: with this method RapidRemove doesn't go review by review but removes the **entire Google Business Profile** – all reviews disappear with it. The result is a clean slate instead of fighting over every star." },
     { t: "ul", items: [
       "**24 – 48 hours** instead of weeks or months",
       "**the entire profile incl. all reviews** at once",

@@ -53,7 +53,7 @@ const article = {
       { t: "p", text: "The advantages at a glance:" },
       { t: "ul", items: [
         "**Speed:** profile removal often in 24 to 48 hours instead of months",
-        "**Complete:** the entire profile incl. **all** reviews at once",
+        "**Complete:** the entire profile incl. **all** reviews at once (step by step: [delete a Google Business Profile permanently](/en/magazine/delete-google-business-profile/))",
         "**Predictable:** fixed price instead of open hourly rates – payment after success",
         "**No risk:** guarantee – if the profile reappears via third parties, it is removed again for free",
         "**SEO-friendly:** your website and ranking are preserved",

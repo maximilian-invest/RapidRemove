@@ -244,13 +244,24 @@ export function buildArticleJsonLd(meta, faq, lang, ui, url, deSlug) {
         description: meta.description,
         image: "https://assets.simplesolution.at/rapid-remove-product-image.jpg",
         datePublished: date,
-        dateModified: date,
+        dateModified: meta.updated || date, // inhaltlich überarbeitete Artikel tragen meta.updated
         inLanguage: lang,
         author: authorPersonLd(authorFor(deSlug || meta.slug)),
         publisher: { "@type": "Organization", name: "RapidRemove", logo: { "@type": "ImageObject", url: `${SITE_URL}/assets/rapidremove-logo-full.png` } },
         mainEntityOfPage: { "@type": "WebPage", "@id": url },
         keywords: (meta.keywords || []).join(", "),
       },
+      // Eingebettetes YouTube-Video (meta.video) → VideoObject.
+      ...(meta.video ? [{
+        "@type": "VideoObject",
+        name: meta.video.name,
+        description: meta.video.description,
+        thumbnailUrl: [`https://i.ytimg.com/vi/${meta.video.id}/hqdefault.jpg`, `https://i.ytimg.com/vi/${meta.video.id}/maxresdefault.jpg`],
+        uploadDate: meta.video.uploadDate,
+        duration: meta.video.duration,
+        embedUrl: `https://www.youtube.com/embed/${meta.video.id}`,
+        url: `https://www.youtube.com/watch?v=${meta.video.id}`,
+      }] : []),
       {
         "@type": "BreadcrumbList",
         itemListElement: [
