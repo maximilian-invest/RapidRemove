@@ -3,6 +3,9 @@
    Bestätigt WELCHE Bewertungen weg sind, weist den Preis JE Löschung aus
    (abgerechnet wird nur, was wirklich gelöscht wurde) und trägt den
    Stripe-Zahlungslink. Fällig am Tag der Löschung — also heute.
+   Variante PayPal/Wise (Kunde hat beim Absenden 10 % Rabatt gewählt): KEIN
+   Stripe-Link, sondern der rabattierte Betrag + bei PayPal der Hinweis, dass der
+   PayPal-Link separat kommt (unbedingt „Freunde & Familie"), bei Wise die Kontodaten.
    Produkt nur außerhalb DACH → keine deutsche Fassung, „du"-Ton. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, CtaButton, Bullets, brand, type MailLang } from "./components";
@@ -24,8 +27,14 @@ export interface LoeschbestaetigungReviewsProps {
   per?: string;
   /** Formatierter Rechnungsbetrag (Anzahl gelöscht × Stückpreis). */
   total?: string;
-  /** Stripe-Zahlungslink. */
+  /** Stripe-Zahlungslink (nicht bei PayPal/Wise). */
   payUrl?: string;
+  /** Zahlweg mit 10 % Rabatt — dann ohne Stripe-Link. */
+  method?: "paypal" | "wise";
+  /** Rabattierter Betrag (−10 %) bei PayPal/Wise. */
+  payTotal?: string;
+  /** Wise-Kontodaten, je Zeile „Bezeichnung: Wert". */
+  bankLines?: string[];
   orderId?: string;
   _overrides?: Record<string, string>;
 }
@@ -214,13 +223,30 @@ export const T: Record<string, Entry> = {
   },
 };
 
+/** Texte für die PayPal-/Wise-Variante ({m} = Zahlweg, {t} = rabattierter Betrag). */
+interface ViaEntry { disc: string; pp1: string; pp2: string; wise1: string; ref: string }
+export const VIA: Record<string, ViaEntry> = {
+  en: { disc: "With your 10 % {m} discount you pay: {t}", pp1: "Your PayPal payment link will follow in a separate email shortly.", pp2: "Important: when paying, please be sure to select “Friends and Family” (not “Goods and Services”).", wise1: "Please transfer {t} via Wise to the following account:", ref: "Payment reference" },
+  es: { disc: "Con tu 10 % de descuento por {m} pagas: {t}", pp1: "En breve te enviaremos el enlace de pago de PayPal en un correo aparte.", pp2: "Importante: al pagar, selecciona sin falta «Amigos y familiares» (no «Bienes y servicios»).", wise1: "Transfiere {t} por Wise a la siguiente cuenta:", ref: "Concepto" },
+  fr: { disc: "Avec ta remise de 10 % {m}, tu paies : {t}", pp1: "Le lien de paiement PayPal t'arrive très bientôt dans un e-mail séparé.", pp2: "Important : lors du paiement, choisis impérativement « Amis et famille » (et non « Biens et services »).", wise1: "Merci de virer {t} via Wise sur le compte suivant :", ref: "Référence" },
+  it: { disc: "Con il tuo sconto del 10 % {m} paghi: {t}", pp1: "Il link di pagamento PayPal ti arriverà a breve in un'e-mail separata.", pp2: "Importante: al momento del pagamento seleziona assolutamente «Amici e familiari» (non «Beni e servizi»).", wise1: "Trasferisci {t} tramite Wise sul seguente conto:", ref: "Causale" },
+  nl: { disc: "Met je 10 % {m}-korting betaal je: {t}", pp1: "De PayPal-betaallink volgt binnenkort in een aparte e-mail.", pp2: "Belangrijk: kies bij het betalen beslist ‘Vrienden en familie’ (niet ‘Goederen en diensten’).", wise1: "Maak {t} via Wise over naar de volgende rekening:", ref: "Betalingskenmerk" },
+  pt: { disc: "Com o teu desconto de 10 % {m} pagas: {t}", pp1: "O link de pagamento PayPal segue em breve num e-mail separado.", pp2: "Importante: ao pagar, escolhe obrigatoriamente “Amigos e familiares” (e não “Bens e serviços”).", wise1: "Transfere {t} via Wise para a seguinte conta:", ref: "Referência" },
+  ja: { disc: "{m}の10%割引適用後のお支払額：{t}", pp1: "PayPalのお支払いリンクは、まもなく別のメールでお送りします。", pp2: "重要：お支払いの際は必ず「友達や家族」を選択してください（「商品やサービス」ではありません）。", wise1: "{t}をWiseで以下の口座へお振込みください：", ref: "振込参照番号" },
+  sv: { disc: "Med din rabatt på 10 % via {m} betalar du: {t}", pp1: "PayPal-betalningslänken kommer inom kort i ett separat mejl.", pp2: "Viktigt: välj absolut ”Vänner och familj” när du betalar (inte ”Varor och tjänster”).", wise1: "För över {t} via Wise till följande konto:", ref: "Betalningsreferens" },
+  da: { disc: "Med din rabat på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslinket kommer om lidt i en separat mail.", pp2: "Vigtigt: Vælg endelig “Venner og familie”, når du betaler (ikke “Varer og tjenester”).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreference" },
+  no: { disc: "Med rabatten din på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslenken kommer snart i en egen e-post.", pp2: "Viktig: Velg for all del «Venner og familie» når du betaler (ikke «Varer og tjenester»).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreferanse" },
+};
+
 export function subject(p: LoeschbestaetigungReviewsProps): string {
   const t = T[p.lang || "en"] || T.en;
   return t.subject((p.removedItems || []).length || (p.removedUrls || []).length || 1);
 }
 
-export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", orderId = "", _overrides }: LoeschbestaetigungReviewsProps = {}) {
+export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", method, payTotal = "", bankLines = [], orderId = "", _overrides }: LoeschbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
+  const v = VIA[lang] || VIA.en;
+  const via = (s: string) => s.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total);
   const list: RemovedRef[] = removedItems.length ? removedItems : removedUrls.map((u) => ({ url: u }));
   const n = list.length || 1;
   const of = Math.max(submittedCount, n);
@@ -242,11 +268,20 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
       <NoteBox>
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.billH}</span><br />
         <strong>{t.billLine(n, per, total)}</strong><br />
+        {method ? <React.Fragment><strong style={{ color: brand.tintText }}>{via(v.disc)}</strong><br /></React.Fragment> : null}
         {t.billOnly}<br />
-        <strong>{t.due}</strong>
+        {method === "paypal" ? null : <strong>{t.due}</strong>}
       </NoteBox>
 
-      {payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
+      {method === "paypal" ? (
+        <P>{v.pp1}<br /><strong>{v.pp2}</strong></P>
+      ) : method === "wise" ? (
+        <NoteBox>
+          <strong>{via(v.wise1)}</strong><br />
+          {bankLines.map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
+          {orderId ? <React.Fragment>{v.ref}: <strong>{orderId}</strong></React.Fragment> : null}
+        </NoteBox>
+      ) : payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
 
       <P>{t.close}</P>
       <P>{t.signoff}</P>

@@ -1660,22 +1660,43 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
-  const send = async () => {
+  // Kunde wollte mit PayPal/Wise zahlen (10 % Rabatt) → eigener Button „Löschbestätigung senden"
+  // (ohne Stripe-Link, PayPal-Hinweis bzw. Wise-Kontodaten); Stripe-Rechnung nur mit Schloss + Abfrage.
+  const viaName = payPrefName(o);
+  const viaMethod = viaName === "Wise" ? "wise" : viaName ? "paypal" : null;
+  const viaTotal = fmtM(Math.round(total * 0.9));
+  const [ask, setAsk] = React.useState(null);
+  const [sentVia, setSentVia] = React.useState(null);
+  const send = async (method) => {
     if (!chosen.length || sending) return;
     setSending(true);
     try {
       const r = await sendReviewsInvoice({
         orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur,
         removedItems: chosen, submittedCount: items.length,
+        ...(method ? { method } : {}),
       });
       setSentAt(new Date());
+      setSentVia(method || null);
       // Löschbestätigung raus → Auftrag gilt als erledigt: als „Gelöscht" markieren
       // (Zahlung „gesandt", sofern noch nicht bezahlt). Damit erscheint er in der
       // Übersicht als gelöscht UND zählt in der Lösch-Liga (Reviews-Reiter).
       if (onStatus) onStatus(o, "done", true, true, { pay: o.pay === "paid" ? "paid" : "sent", noEvent: o.status === "done" });
-      toast(`Löschbestätigung + Rechnung über ${r.total} an ${o.email} gesendet ✓`);
+      toast(method
+        ? `Löschbestätigung (${method === "wise" ? "Wise" : "PayPal"}, ${r.payTotal}) an ${o.email} gesendet ✓`
+        : `Löschbestätigung + Rechnung über ${r.total} an ${o.email} gesendet ✓`);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setSending(false);
+  };
+  const sendStripe = () => {
+    if (!viaName) return send();
+    setAsk({
+      danger: true,
+      title: "Rechnung mit Zahlungslink sicher senden?",
+      message: `Kunde wollte mit ${viaName} zahlen (10 % Rabatt → ${viaTotal}). Trotzdem Löschbestätigung mit Stripe-Rechnung über ${fmtTotal} senden?`,
+      confirmLabel: "Trotzdem mit Stripe senden",
+      onConfirm: () => send(),
+    });
   };
   if (!items.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungen am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
   return (
@@ -1699,12 +1720,20 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         </label>
       ))}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-        <span style={{ fontWeight: 800 }}>{chosen.length} gelöscht × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span></span>
-        <button className="btn btn-pri btn-sm" disabled={!chosen.length || sending} onClick={send}>
-          <AI.send /> {sending ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
+        <span style={{ fontWeight: 800 }}>{chosen.length} gelöscht × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
+          {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
+        {viaMethod ? (
+          <button className="btn btn-pri btn-sm" disabled={!chosen.length || sending} onClick={() => send(viaMethod)} title={viaName === "Wise" ? "Mit Wise-Kontodaten, ohne Stripe-Link" : "Ohne Stripe-Link — Hinweis: PayPal-Link folgt, Freunde & Familie"}>
+            <AI.send /> {sending ? "Sendet…" : `Löschbestätigung senden (${viaName})`}
+          </button>
+        ) : null}
+        <button className={"btn btn-sm " + (viaMethod ? "btn-sec" : "btn-pri")} disabled={!chosen.length || sending} onClick={sendStripe} title={viaName ? "Kunde wollte mit " + viaName + " zahlen" : undefined}>
+          {viaName ? <Icon.lock size={15} /> : <AI.send />} {sending && !viaMethod ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
         </button>
       </div>
-      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. Zahlungseingang läuft über den Stripe-Abgleich.</div> : null}
+      {viaMethod === "paypal" ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>PayPal: Kunde bekommt den Hinweis, dass der PayPal-Link separat kommt (Freunde &amp; Familie) — den Link danach selbst schicken.</div> : null}
+      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. {sentVia ? `Zahlung via ${sentVia === "wise" ? "Wise" : "PayPal"} — Eingang manuell als bezahlt markieren.` : "Zahlungseingang läuft über den Stripe-Abgleich."}</div> : null}
+      <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       {/* Mahnwesen: erscheint, sobald die Rechnung raus ist (gelöscht) und noch offen. */}
       {o.status === "done" && !["paid", "refunded"].includes(o.pay) ? <ReviewsMahnungPanel o={o} toast={toast} onStatus={onStatus} /> : null}
     </div>

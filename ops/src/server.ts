@@ -19,7 +19,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
-import { quoteReviews } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
@@ -1231,21 +1231,29 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const count = removedItems.length;
   const quote = quoteReviews(removedItems, currency);
   const totalNum = quote.total;
+  // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
+  // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
+  // bzw. Wise-Kontodaten (Railway-Variable WISE_BANK_DETAILS, Zeilen mit „|" oder
+  // Zeilenumbruch getrennt — nie im Repo).
+  const method = b.method === "paypal" || b.method === "wise" ? (b.method as "paypal" | "wise") : undefined;
+  const bankLines = String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).map((l) => l.trim()).filter(Boolean);
+  if (method === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
+  const payTotal = method ? fmtReviewMoney(Math.round(totalNum * 0.9), currency === "usd" ? "usd" : "eur") : "";
 
   // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) bei Bedarf direkt
   // in Stripe anlegen (find-or-create über metadata-Marker — kein Setup-Lauf nötig),
   // 3) Notnagel Betrag-Match über bestehende Links.
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
-  let url = quote.simple ? reviewsLinkFor(count, currency) : "";
-  if (!url && hasSecretKey()) {
+  let url = method ? "" : (quote.simple ? reviewsLinkFor(count, currency) : "");
+  if (!method && !url && hasSecretKey()) {
     try { url = quote.simple ? await ensureReviewsLink(count, curSafe) : await ensureReviewsAmountLink(totalNum, curSafe); }
     catch (e) { app.log.error({ err: e }, "Reviews-Link anlegen fehlgeschlagen"); }
   }
-  if (!url && hasSecretKey()) {
+  if (!method && !url && hasSecretKey()) {
     try { const m = await matchPaymentLink([{ amount: totalNum * 100, interval: "once" }]); url = m.url; }
     catch (e) { app.log.error({ err: e }, "Reviews-Link-Suche fehlgeschlagen"); }
   }
-  if (!url) return reply.code(400).send({ ok: false, error: hasSecretKey()
+  if (!method && !url) return reply.code(400).send({ ok: false, error: hasSecretKey()
     ? `Zahlungslink für ${count} Bewertung(en) (${curSafe}) konnte nicht angelegt werden — ops-Log prüfen.`
     : "STRIPE_SECRET_KEY fehlt auf dem ops-Server — es kann kein Zahlungslink angelegt werden." });
 
@@ -1255,14 +1263,20 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, method, payTotal, bankLines, orderId };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
-    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: "Löschbestätigung + Rechnung (Bewertungen) gesendet", detail: `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`, html, subject: t.subject(props as any) });
+    const viaName = method === "wise" ? "Wise" : "PayPal";
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay",
+      title: method ? `Löschbestätigung (Bewertungen, ${viaName}) gesendet` : "Löschbestätigung + Rechnung (Bewertungen) gesendet",
+      detail: method
+        ? `${count} von ${submittedCount} gelöscht · ${total} − 10 % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Link folgt separat" : " · Kontodaten in der Mail"} · an ${to}`
+        : `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`,
+      html, subject: t.subject(props as any) });
     // Die Löschbestätigung ist der Erledigt-Moment → GLÖSCHT-Hype-Push ans Team
     // (analog zum Profil-Zahlungslink). Den „gelöscht"-Status setzt der Admin direkt danach.
     if (orderId) await fireDeletionHypePush(orderId, clip(b.name, 120), to);
-    return { ok: true, url, count, total };
+    return { ok: true, url, count, total, payTotal, method: method || null };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Rechnung fehlgeschlagen");
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
