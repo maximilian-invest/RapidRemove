@@ -22,7 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
-import { shotKey, queueReviewShots, listShots, getShot, shotsRunning, orderReviewItems } from "./reviewShots";
+import { shotKey, queueReviewShots, listShots, getShot, shotsRunning, orderReviewItems, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend } from "./db";
@@ -1173,6 +1173,16 @@ app.post("/admin/review-shots", async (req, reply) => {
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
   }
 });
+// Admin: Screenshots für die Bewertungs-Bestellungen der letzten N Tage nachholen.
+// Body: { token, days? = 14 }. Läuft im Hintergrund; Antwort sofort.
+app.post("/admin/review-shots-backfill", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!shotKey()) return { ok: false, error: "SCREENSHOTONE_KEY fehlt" };
+  if (backfillActive()) return { ok: true, started: false, running: true };
+  void backfillReviewShots(Number(b.days) || 14, (o, m) => app.log.info(o, m));
+  return { ok: true, started: true };
+});
 // Admin: einzelnes Screenshot-Bild (Token als Query, damit <img src> funktioniert).
 app.get("/admin/review-shot/:id", async (req, reply) => {
   const q = (req.query || {}) as Record<string, unknown>;
@@ -1572,6 +1582,9 @@ async function start() {
     startUpsellWorker(app);
     startPaymentReconciler(app);
     startLeadEnrichWorker(app);   // Auto-E-Mail-Recherche (aktiv nur mit GOOGLE_MAPS_API_KEY)
+    // Bewertungs-Screenshots der letzten 14 Tage nachholen (nur mit SCREENSHOTONE_KEY;
+    // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.
+    if (shotKey()) setTimeout(() => { void backfillReviewShots(14, (o, m) => app.log.info(o, m)); }, 20_000);
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();

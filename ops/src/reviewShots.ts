@@ -69,7 +69,7 @@ function apiUrl(target: string): string {
   p.append("cookies", "SOCS=CAESEwgDEgk0ODE3Nzk3MjQaAmRlIAEaBgiA_LyaBg; Domain=.google.com; Path=/");
   const qs = p.toString();
   const sig = shotSecret() ? "&signature=" + createHmac("sha256", shotSecret()).update(qs).digest("hex") : "";
-  return "https://api.screenshotone.com/take?" + qs + sig;
+  return (process.env.SCREENSHOT_API_BASE || "https://api.screenshotone.com") + "/take?" + qs + sig;
 }
 
 async function takeOne(orderId: string, idx: number, url: string): Promise<void> {
@@ -108,32 +108,76 @@ const running = new Set<string>();
 export function queueReviewShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
   if (!shotKey() || !dbReady() || !pool || !orderId) return false;
   if (running.has(orderId)) return true;
-  running.add(orderId);
-  (async () => {
-    try {
-      await ensureTable();
-      let have = new Set<number>();
-      if (onlyMissing) {
-        const r = await pool!.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [orderId]);
-        have = new Set(r.rows.map((x: { idx: number }) => x.idx));
-      }
-      for (let i = 0; i < items.length; i++) {
-        const u = items[i] && items[i].url;
-        if (!u || have.has(i)) continue;
-        let done = false;
-        for (let attempt = 0; attempt < 2 && !done; attempt++) {
-          await takeOne(orderId, i, u);
-          const r = await pool!.query(`SELECT status FROM review_shots WHERE order_id = $1 AND idx = $2`, [orderId, i]);
-          done = r.rows[0] && r.rows[0].status === "ok";
-        }
-      }
-      if (log) log({ orderId, n: items.length }, "Bewertungs-Screenshots fertig");
-    } catch (e) {
-      if (log) log({ orderId, err: String((e as Error)?.message || e) }, "Bewertungs-Screenshots fehlgeschlagen");
-    } finally { running.delete(orderId); }
-  })();
+  void runShots(orderId, items, log, onlyMissing);
   return true;
 }
+
+/** Nimmt die Screenshots einer Bestellung auf (sequenziell, 1 Wiederholung je Bewertung). */
+async function runShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): Promise<number> {
+  if (running.has(orderId)) return 0;
+  running.add(orderId);
+  let taken = 0;
+  try {
+    await ensureTable();
+    let have = new Set<number>();
+    if (onlyMissing) {
+      const r = await pool!.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [orderId]);
+      have = new Set(r.rows.map((x: { idx: number }) => x.idx));
+    }
+    for (let i = 0; i < items.length; i++) {
+      const u = items[i] && items[i].url;
+      if (!u || have.has(i)) continue;
+      let done = false;
+      for (let attempt = 0; attempt < 2 && !done; attempt++) {
+        await takeOne(orderId, i, u);
+        const r = await pool!.query(`SELECT status FROM review_shots WHERE order_id = $1 AND idx = $2`, [orderId, i]);
+        done = r.rows[0] && r.rows[0].status === "ok";
+      }
+      if (done) taken++;
+    }
+    if (log) log({ orderId, n: items.length, taken }, "Bewertungs-Screenshots fertig");
+  } catch (e) {
+    if (log) log({ orderId, err: String((e as Error)?.message || e) }, "Bewertungs-Screenshots fehlgeschlagen");
+  } finally { running.delete(orderId); }
+  return taken;
+}
+
+let backfillRunning = false;
+/**
+ * Nachholen: alle Bewertungs-Bestellungen der letzten `days` Tage, denen noch
+ * Screenshots fehlen — Bestellung für Bestellung (keine Lastspitze bei der API).
+ * Läuft beim Serverstart automatisch (sobald SCREENSHOTONE_KEY gesetzt ist) und
+ * per Admin-Endpunkt.
+ */
+export async function backfillReviewShots(days = 14, log?: (o: object, m: string) => void): Promise<{ orders: number; taken: number } | null> {
+  if (!shotKey() || !dbReady() || !pool || backfillRunning) return null;
+  backfillRunning = true;
+  let orders = 0, taken = 0;
+  try {
+    await ensureTable();
+    const r = await pool.query(
+      `SELECT o.id, o.raw->'reviewItems' AS items
+         FROM orders o
+        WHERE o.service = 'reviews' AND o.created_at > now() - make_interval(days => $1::int)
+          AND jsonb_typeof(o.raw->'reviewItems') = 'array'
+        ORDER BY o.created_at`,
+      [Math.max(1, Math.min(90, Math.round(days)))],
+    );
+    for (const row of r.rows as { id: string; items: Item[] }[]) {
+      const items = Array.isArray(row.items) ? row.items : [];
+      if (!items.some((it) => it && it.url)) continue;
+      const okRows = await pool.query(`SELECT count(*)::int AS n FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [row.id]);
+      if (okRows.rows[0].n >= items.filter((it) => it && it.url).length) continue;
+      orders++;
+      taken += await runShots(row.id, items, log, true);
+    }
+    if (log) log({ days, orders, taken }, "Bewertungs-Screenshots nachgeholt");
+  } catch (e) {
+    if (log) log({ err: String((e as Error)?.message || e) }, "Screenshot-Nachholen fehlgeschlagen");
+  } finally { backfillRunning = false; }
+  return { orders, taken };
+}
+export const backfillActive = () => backfillRunning;
 
 export async function listShots(orderId: string) {
   if (!dbReady() || !pool) return [];
