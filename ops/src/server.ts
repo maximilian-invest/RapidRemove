@@ -340,7 +340,7 @@ app.post("/order", async (req, reply) => {
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, orderId }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -1083,26 +1083,28 @@ app.post("/admin/reviews-start", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type StartItem = { url?: string; name?: string; text?: string };
+  type StartItem = { url?: string; name?: string; text?: string; old?: boolean };
   const items: StartItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
     const o = (raw || {}) as Record<string, unknown>;
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    if (url) return { url };
-    if (nm && tx) return { name: nm, text: tx };
+    const old = o.old === true ? { old: true } : {}; // älter als 4 Wochen → Aufpreis
+    if (url) return { url, ...old };
+    if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as StartItem[];
-  const currency = (clip(b.currency, 8) || "eur").toLowerCase();
-  const per = currency === "usd" ? "$179" : "179 €";
+  const currency = (clip(b.currency, 8) || "eur").toLowerCase() === "usd" ? "usd" : "eur";
+  // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
+  const per = quoteReviews(items, currency).per;
   // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
   const raw = mailLang(b.lang);
   const tlang = raw === "de" ? "en" : raw;
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), items, per, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId };
     const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({

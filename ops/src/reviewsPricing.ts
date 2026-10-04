@@ -7,9 +7,14 @@ export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n 
 
 export type PricedItem = { old?: boolean };
 
+/** Betrag in der Währung der Bestellung ("$179" / "179 €", Cent nur wenn nötig). */
+export const fmtReviewMoney = (v: number, cur: string) => {
+  const o = { minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 };
+  return cur === "usd" ? `$${v.toLocaleString("en-US", o)}` : `${v.toLocaleString("de-DE", o)} €`;
+};
+
 export function quoteReviews(items: PricedItem[], cur: string) {
-  const usd = cur === "usd";
-  const fmt = (v: number) => (usd ? `$${v.toLocaleString("en-US")}` : `${v.toLocaleString("de-DE")} €`);
+  const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
   const nOld = items.filter((it) => it && it.old).length;
   const subtotal = n * REVIEW_BASE + nOld * REVIEW_OLD_SURCHARGE;
@@ -17,5 +22,5 @@ export function quoteReviews(items: PricedItem[], cur: string) {
   const total = Math.round((subtotal * (100 - pct)) / 100);
   let per = nOld === 0 ? fmt(REVIEW_BASE) : nOld === n ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : `${fmt(REVIEW_BASE)} / ${fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE)}`;
   if (pct) per += ` (−${pct} %)`;
-  return { n, nOld, subtotal, pct, total, per, totalStr: fmt(total), simple: nOld === 0 && pct === 0 };
+  return { n, nOld, nNew: n - nOld, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, subtotal, pct, total, discount: subtotal - total, per, totalStr: fmt(total), simple: nOld === 0 && pct === 0 };
 }

@@ -7,9 +7,10 @@
    Die Sprache wählt der Admin nach dem Land des Kunden. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
+import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
 
 /** Eine Bewertung: Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative). */
-export interface ReviewRef { url?: string; name?: string; text?: string }
+export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean }
 
 export interface BearbeitungGestartetReviewsProps {
   lang?: MailLang;
@@ -18,8 +19,10 @@ export interface BearbeitungGestartetReviewsProps {
   items?: ReviewRef[];
   /** Veraltet: nur Links — wird zu items normalisiert. */
   urls?: string[];
-  /** Formatierter Stückpreis, z. B. "$179" / "179 €". */
+  /** Formatierter Stückpreis, z. B. "$179" / "179 €" (Fallback ohne Bewertungsliste). */
   per?: string;
+  /** Währung der Bestellung ("usd" | "eur") — für die exakte Preisaufstellung. */
+  currency?: string;
   orderId?: string;
   _overrides?: Record<string, string>;
 }
@@ -45,7 +48,7 @@ export const T: Record<string, Entry> = {
     nextH: "What happens next",
     next1: "Removals usually take a few days, sometimes up to three weeks.",
     next2: "You don't have to do anything — we'll get in touch as soon as there's news.",
-    next3: "You only pay for reviews we actually remove: {per} each, due on the day of removal.",
+    next3: "You only pay for reviews we actually remove, due on the day of removal.",
     calm: "No news for a few days is normal — these things take time on Google's side. We're on it.",
     close: "Questions in the meantime? Just reply to this email.",
     signoff: "Warm regards,",
@@ -60,7 +63,7 @@ export const T: Record<string, Entry> = {
     nextH: "Qué pasa ahora",
     next1: "Las eliminaciones suelen tardar unos días, a veces hasta tres semanas.",
     next2: "No tienes que hacer nada: te avisamos en cuanto haya novedades.",
-    next3: "Solo pagas por las reseñas que realmente eliminemos: {per} cada una, con vencimiento el día de la eliminación.",
+    next3: "Solo pagas por las reseñas que realmente eliminemos, con vencimiento el día de la eliminación.",
     calm: "Que pasen unos días sin noticias es normal: en el lado de Google estas cosas llevan su tiempo. Estamos en ello.",
     close: "¿Alguna duda mientras tanto? Responde a este correo.",
     signoff: "Un saludo,",
@@ -75,7 +78,7 @@ export const T: Record<string, Entry> = {
     nextH: "La suite",
     next1: "Une suppression prend en général quelques jours, parfois jusqu'à trois semaines.",
     next2: "Tu n'as rien à faire — nous te recontactons dès qu'il y a du nouveau.",
-    next3: "Tu ne paies que les avis réellement supprimés : {per} par avis, dus le jour de la suppression.",
+    next3: "Tu ne paies que les avis réellement supprimés, dus le jour de la suppression.",
     calm: "Quelques jours sans nouvelles, c'est normal : côté Google, cela prend du temps. Nous restons dessus.",
     close: "Une question entre-temps ? Réponds simplement à cet e-mail.",
     signoff: "Bien à toi,",
@@ -90,7 +93,7 @@ export const T: Record<string, Entry> = {
     nextH: "Cosa succede ora",
     next1: "Di solito una rimozione richiede qualche giorno, a volte fino a tre settimane.",
     next2: "Non devi fare nulla: ti scriviamo appena ci sono novità.",
-    next3: "Paghi solo le recensioni che rimuoviamo davvero: {per} ciascuna, dovute il giorno della rimozione.",
+    next3: "Paghi solo le recensioni che rimuoviamo davvero, dovute il giorno della rimozione.",
     calm: "Qualche giorno senza notizie è normale: lato Google questi tempi ci sono. Ci stiamo lavorando.",
     close: "Domande nel frattempo? Rispondi a questa e-mail.",
     signoff: "Un caro saluto,",
@@ -105,7 +108,7 @@ export const T: Record<string, Entry> = {
     nextH: "Wat er nu gebeurt",
     next1: "Een verwijdering duurt meestal een paar dagen, soms tot drie weken.",
     next2: "U hoeft niets te doen — we nemen contact op zodra er nieuws is.",
-    next3: "U betaalt alleen voor reviews die we daadwerkelijk verwijderen: {per} per stuk, verschuldigd op de dag van verwijdering.",
+    next3: "U betaalt alleen voor reviews die we daadwerkelijk verwijderen, verschuldigd op de dag van verwijdering.",
     calm: "Een paar dagen zonder nieuws is normaal: aan de kant van Google kost dit tijd. We blijven erbovenop zitten.",
     close: "Vragen in de tussentijd? Beantwoord gewoon deze e-mail.",
     signoff: "Hartelijke groet,",
@@ -120,7 +123,7 @@ export const T: Record<string, Entry> = {
     nextH: "O que acontece agora",
     next1: "Uma remoção demora normalmente alguns dias, às vezes até três semanas.",
     next2: "Não precisas de fazer nada — entramos em contacto assim que houver novidades.",
-    next3: "Só pagas pelas avaliações que removermos de facto: {per} cada, com vencimento no dia da remoção.",
+    next3: "Só pagas pelas avaliações que removermos de facto, com vencimento no dia da remoção.",
     calm: "Alguns dias sem notícias é normal: do lado do Google isto leva tempo. Estamos em cima do assunto.",
     close: "Dúvidas entretanto? Responde a este e-mail.",
     signoff: "Um abraço,",
@@ -135,7 +138,7 @@ export const T: Record<string, Entry> = {
     nextH: "今後の流れ",
     next1: "削除には通常数日、長い場合で3週間ほどかかります。",
     next2: "お客様に必要な手続きはありません。進展があり次第ご連絡します。",
-    next3: "お支払いは実際に削除できた口コミの分のみです（1件{per}、削除当日が期日）。",
+    next3: "お支払いは実際に削除できた口コミの分のみで、削除当日が期日です。",
     calm: "数日ご連絡がないこともありますが、Google側の処理には時間がかかるためで、問題ありません。引き続き対応しています。",
     close: "その間にご不明な点があれば、このメールにご返信ください。",
     signoff: "どうぞよろしくお願いいたします。",
@@ -150,7 +153,7 @@ export const T: Record<string, Entry> = {
     nextH: "Så går det vidare",
     next1: "En borttagning tar oftast några dagar, ibland upp till tre veckor.",
     next2: "Du behöver inte göra något — vi hör av oss så snart det finns nyheter.",
-    next3: "Du betalar bara för omdömen som vi faktiskt tar bort: {per} per styck, förfaller samma dag som borttagningen.",
+    next3: "Du betalar bara för omdömen som vi faktiskt tar bort, förfaller samma dag som borttagningen.",
     calm: "Några dagar utan besked är normalt — hos Google tar det här tid. Vi håller i det.",
     close: "Frågor under tiden? Svara bara på det här mejlet.",
     signoff: "Vänliga hälsningar,",
@@ -165,7 +168,7 @@ export const T: Record<string, Entry> = {
     nextH: "Sådan går det videre",
     next1: "En fjernelse tager som regel få dage, nogle gange op til tre uger.",
     next2: "Du skal ikke gøre noget — vi vender tilbage, så snart der er nyt.",
-    next3: "Du betaler kun for anmeldelser, vi faktisk fjerner: {per} pr. stk., forfalder på fjernelsesdagen.",
+    next3: "Du betaler kun for anmeldelser, vi faktisk fjerner, forfalder på fjernelsesdagen.",
     calm: "Nogle dage uden nyt er normalt — hos Google tager det tid. Vi holder fast i det.",
     close: "Spørgsmål i mellemtiden? Svar blot på denne mail.",
     signoff: "Venlig hilsen,",
@@ -180,7 +183,7 @@ export const T: Record<string, Entry> = {
     nextH: "Slik går det videre",
     next1: "En fjerning tar vanligvis noen dager, av og til opptil tre uker.",
     next2: "Du trenger ikke gjøre noe — vi tar kontakt så snart det er nytt.",
-    next3: "Du betaler kun for omtaler vi faktisk fjerner: {per} per stykk, forfaller samme dag som fjerningen.",
+    next3: "Du betaler kun for omtaler vi faktisk fjerner, forfaller samme dag som fjerningen.",
     calm: "Noen dager uten nyheter er normalt — hos Google tar dette tid. Vi står på.",
     close: "Spørsmål i mellomtiden? Bare svar på denne e-posten.",
     signoff: "Vennlig hilsen,",
@@ -194,7 +197,7 @@ export function subject(p: BearbeitungGestartetReviewsProps): string {
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function BearbeitungGestartetReviews({ lang = "en", name = "", items = [], urls = [], per = "", orderId = "", _overrides }: BearbeitungGestartetReviewsProps = {}) {
+export default function BearbeitungGestartetReviews({ lang = "en", name = "", items = [], urls = [], per = "", currency = "", orderId = "", _overrides }: BearbeitungGestartetReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -217,7 +220,8 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.nextH}</span><br />
         1. {t.next1}<br />
         2. {t.next2}<br />
-        3. {fill(t.next3, per)}
+        3. {fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
+        <ReviewPriceLines lang={lang} items={list} currency={reviewCurrency(currency, per)} />
       </NoteBox>
 
       <P muted>{t.calm}</P>

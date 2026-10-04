@@ -138,7 +138,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: AuftragsbestaetigungReviews,
     subject: auftragsbestaetigungReviewsSubject,
-    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", total: "$358", orderId: "RR-123456" },
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { url: "https://maps.app.goo.gl/example2" }, { name: "John D.", text: "Terrible service, would not recommend.", old: true }], per: "$179 / $229 (−10 %)", total: "$528", currency: "usd", orderId: "RR-123456" },
     texts: auftragsbestaetigungReviewsTexts,
   },
   "bearbeitung-gestartet-reviews": {
@@ -146,7 +146,7 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Bestellung",
     component: BearbeitungGestartetReviews,
     subject: bearbeitungGestartetReviewsSubject,
-    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { name: "John D.", text: "Terrible service, would not recommend." }], per: "$179", orderId: "RR-123456" },
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { url: "https://maps.app.goo.gl/example2" }, { name: "John D.", text: "Terrible service, would not recommend.", old: true }], per: "$179 / $229 (−10 %)", currency: "usd", orderId: "RR-123456" },
     texts: bearbeitungGestartetReviewsTexts,
   },
   "storno-reviews": {

@@ -1,14 +1,15 @@
 /* Template: Auftragsbestätigung „Einzelne Bewertungen löschen".
-   Geht SOFORT nach der Bestellung an den Kunden — anders als beim Profil-Produkt
-   (dort bewusst abgeschaltet), weil diese Mail die Abrechnungsregeln festhält:
+   Geht SOFORT nach der Bestellung an den Kunden (wie bei allen Produkten).
+   Hält die Abrechnungsregeln fest:
    bezahlt wird NUR je tatsächlich gelöschter Bewertung, fällig am Tag der
    Löschung. Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
+import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
 
 /** Eine eingereichte Bewertung: Teilen-Link ODER Name + Bewertungstext
    (Wizard-Alternative, wenn der Kunde den Link nicht findet). */
-export interface ReviewRef { url?: string; name?: string; text?: string }
+export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean }
 
 export interface AuftragsbestaetigungReviewsProps {
   lang?: MailLang;
@@ -21,6 +22,8 @@ export interface AuftragsbestaetigungReviewsProps {
   per?: string;
   /** Formatierter Maximalbetrag (alle eingereichten Bewertungen). */
   total?: string;
+  /** Währung der Bestellung ("usd" | "eur") — für die exakte Preisaufstellung. */
+  currency?: string;
   orderId?: string;
   _overrides?: Record<string, string>;
 }
@@ -47,10 +50,10 @@ export const T: Record<string, Entry> = {
     term1: "You only pay for reviews we actually remove.",
     term2: "{per} per removed review — if we remove just one out of five, you pay for that one only.",
     term3: "Payment is due on the day of removal. You'll receive a confirmation with the invoice the same day.",
-    condH: "Please double-check",
-    cond1: "Each review must be no older than 4 weeks.",
-    cond2: "Each review must contain text — star-only ratings can't be removed this way.",
-    close: "We'll get back to you as soon as the first review is gone. Questions? Just reply to this email.",
+    condH: "Good to know",
+    cond1: "Reviews up to 4 weeks old have a success rate of around 90 %, older reviews around 50 % (older ones carry a surcharge, already included in the price above).",
+    cond2: "Reviews without text (star ratings only) can be removed too.",
+    close: "We'll now check your reviews and let you know as soon as we've started. Questions? Just reply to this email.",
     signoff: "Warm regards,",
   },
   es: {
@@ -64,10 +67,10 @@ export const T: Record<string, Entry> = {
     term1: "Solo pagas por las reseñas que realmente eliminamos.",
     term2: "{per} por reseña eliminada: si de cinco solo quitamos una, pagas solo esa.",
     term3: "El pago vence el día de la eliminación. Ese mismo día recibirás la confirmación con la factura.",
-    condH: "Comprueba, por favor",
-    cond1: "Cada reseña debe tener como máximo 4 semanas.",
-    cond2: "Cada reseña debe contener texto: las valoraciones solo con estrellas no se pueden eliminar así.",
-    close: "Te avisaremos en cuanto caiga la primera reseña. ¿Dudas? Responde a este correo.",
+    condH: "A tener en cuenta",
+    cond1: "Las reseñas de hasta 4 semanas tienen una tasa de éxito de aprox. el 90 %; las más antiguas, de aprox. el 50 % (llevan un recargo, ya incluido en el precio de arriba).",
+    cond2: "También se pueden eliminar reseñas sin texto (solo estrellas).",
+    close: "Ahora revisamos tus reseñas y te avisamos en cuanto empecemos. ¿Dudas? Responde a este correo.",
     signoff: "Un saludo,",
   },
   fr: {
@@ -81,10 +84,10 @@ export const T: Record<string, Entry> = {
     term1: "Tu ne paies que les avis que nous supprimons réellement.",
     term2: "{per} par avis supprimé — si nous n'en retirons qu'un sur cinq, tu ne paies que celui-là.",
     term3: "Le paiement est dû le jour de la suppression. Tu recevras la confirmation avec la facture le jour même.",
-    condH: "À vérifier",
-    cond1: "Chaque avis doit dater de 4 semaines au maximum.",
-    cond2: "Chaque avis doit contenir du texte — les notes composées uniquement d'étoiles ne peuvent pas être retirées ainsi.",
-    close: "Nous te tiendrons informé dès que le premier avis aura disparu. Des questions ? Réponds à cet e-mail.",
+    condH: "Bon à savoir",
+    cond1: "Les avis de moins de 4 semaines ont un taux de réussite d'environ 90 %, les plus anciens d'environ 50 % (avec un supplément, déjà inclus dans le prix ci-dessus).",
+    cond2: "Les avis sans texte (étoiles uniquement) peuvent aussi être supprimés.",
+    close: "Nous vérifions maintenant tes avis et te prévenons dès que nous commençons. Des questions ? Réponds à cet e-mail.",
     signoff: "Bien à toi,",
   },
   it: {
@@ -98,10 +101,10 @@ export const T: Record<string, Entry> = {
     term1: "Paghi solo le recensioni che rimuoviamo davvero.",
     term2: "{per} per recensione rimossa — se su cinque ne togliamo una sola, paghi solo quella.",
     term3: "Il pagamento è dovuto il giorno della rimozione. Lo stesso giorno riceverai la conferma con la fattura.",
-    condH: "Da verificare",
-    cond1: "Ogni recensione non deve avere più di 4 settimane.",
-    cond2: "Ogni recensione deve contenere testo — le valutazioni con sole stelle non si possono rimuovere così.",
-    close: "Ti avvisiamo appena sparisce la prima recensione. Domande? Rispondi a questa e-mail.",
+    condH: "Buono a sapersi",
+    cond1: "Le recensioni fino a 4 settimane hanno una probabilità di successo di circa il 90 %, quelle più vecchie di circa il 50 % (con un supplemento, già incluso nel prezzo sopra).",
+    cond2: "Si possono rimuovere anche recensioni senza testo (solo stelle).",
+    close: "Ora controlliamo le tue recensioni e ti avvisiamo appena iniziamo. Domande? Rispondi a questa e-mail.",
     signoff: "Un caro saluto,",
   },
   nl: {
@@ -115,10 +118,10 @@ export const T: Record<string, Entry> = {
     term1: "Je betaalt alleen voor reviews die we daadwerkelijk verwijderen.",
     term2: "{per} per verwijderde review — halen we er van vijf maar één weg, dan betaal je alleen die ene.",
     term3: "Betaling is verschuldigd op de dag van verwijdering. Je ontvangt diezelfde dag de bevestiging met de factuur.",
-    condH: "Controleer even",
-    cond1: "Elke review mag maximaal 4 weken oud zijn.",
-    cond2: "Elke review moet tekst bevatten — beoordelingen met alleen sterren kunnen zo niet worden verwijderd.",
-    close: "We laten van ons horen zodra de eerste review weg is. Vragen? Beantwoord gewoon deze e-mail.",
+    condH: "Goed om te weten",
+    cond1: "Reviews tot 4 weken oud hebben een slagingskans van ongeveer 90 %, oudere reviews van ongeveer 50 % (met een toeslag, al inbegrepen in de prijs hierboven).",
+    cond2: "Ook reviews zonder tekst (alleen sterren) kunnen worden verwijderd.",
+    close: "We controleren nu je reviews en laten je weten zodra we beginnen. Vragen? Beantwoord gewoon deze e-mail.",
     signoff: "Hartelijke groet,",
   },
   pt: {
@@ -132,10 +135,10 @@ export const T: Record<string, Entry> = {
     term1: "Só pagas pelas avaliações que removemos de facto.",
     term2: "{per} por avaliação removida — se de cinco removermos só uma, pagas apenas essa.",
     term3: "O pagamento vence no dia da remoção. Nesse mesmo dia recebes a confirmação com a fatura.",
-    condH: "Verifica, por favor",
-    cond1: "Cada avaliação não pode ter mais de 4 semanas.",
-    cond2: "Cada avaliação tem de conter texto — classificações só com estrelas não podem ser removidas assim.",
-    close: "Avisamos-te assim que a primeira avaliação desaparecer. Dúvidas? Responde a este e-mail.",
+    condH: "Bom saber",
+    cond1: "As avaliações com até 4 semanas têm uma taxa de sucesso de cerca de 90 %; as mais antigas, de cerca de 50 % (com um suplemento, já incluído no preço acima).",
+    cond2: "Também é possível remover avaliações sem texto (só estrelas).",
+    close: "Vamos agora verificar as tuas avaliações e avisamos-te assim que começarmos. Dúvidas? Responde a este e-mail.",
     signoff: "Um abraço,",
   },
   ja: {
@@ -149,10 +152,10 @@ export const T: Record<string, Entry> = {
     term1: "実際に削除できた口コミの分だけお支払いいただきます。",
     term2: "削除1件につき{per}。5件中1件のみ削除できた場合は、その1件分だけのお支払いです。",
     term3: "お支払いは削除当日が期日です。同日に削除確認と請求書をお送りします。",
-    condH: "ご確認ください",
-    cond1: "各口コミは投稿から4週間以内である必要があります。",
-    cond2: "各口コミには本文が必要です。星のみの評価はこの方法では削除できません。",
-    close: "最初の口コミが消え次第ご連絡します。ご不明な点はこのメールにご返信ください。",
+    condH: "ご参考までに",
+    cond1: "投稿から4週間以内の口コミの成功率は約90%、それより古い口コミは約50%です（古い口コミには追加料金がかかり、上記の料金に含まれています）。",
+    cond2: "本文のない口コミ（星のみの評価）も削除可能です。",
+    close: "これから口コミを確認し、作業を開始し次第ご連絡します。ご不明な点はこのメールにご返信ください。",
     signoff: "どうぞよろしくお願いいたします。",
   },
   sv: {
@@ -166,10 +169,10 @@ export const T: Record<string, Entry> = {
     term1: "Du betalar bara för omdömen som vi faktiskt tar bort.",
     term2: "{per} per borttaget omdöme — tar vi bara bort ett av fem betalar du bara för det.",
     term3: "Betalningen förfaller samma dag som borttagningen. Samma dag får du bekräftelsen med fakturan.",
-    condH: "Kontrollera gärna",
-    cond1: "Varje omdöme får vara högst 4 veckor gammalt.",
-    cond2: "Varje omdöme måste innehålla text — betyg med enbart stjärnor kan inte tas bort på detta sätt.",
-    close: "Vi hör av oss så fort det första omdömet är borta. Frågor? Svara bara på det här mejlet.",
+    condH: "Bra att veta",
+    cond1: "Omdömen upp till 4 veckor gamla har en framgångsgrad på cirka 90 %, äldre omdömen cirka 50 % (med ett tillägg som redan ingår i priset ovan).",
+    cond2: "Även omdömen utan text (bara stjärnor) kan tas bort.",
+    close: "Vi går nu igenom dina omdömen och hör av oss så fort vi har börjat. Frågor? Svara bara på det här mejlet.",
     signoff: "Vänliga hälsningar,",
   },
   da: {
@@ -183,10 +186,10 @@ export const T: Record<string, Entry> = {
     term1: "Du betaler kun for anmeldelser, vi faktisk fjerner.",
     term2: "{per} pr. fjernet anmeldelse — fjerner vi kun én ud af fem, betaler du kun for den ene.",
     term3: "Betalingen forfalder på fjernelsesdagen. Samme dag modtager du bekræftelsen med fakturaen.",
-    condH: "Tjek venligst",
-    cond1: "Hver anmeldelse må højst være 4 uger gammel.",
-    cond2: "Hver anmeldelse skal indeholde tekst — bedømmelser med kun stjerner kan ikke fjernes på denne måde.",
-    close: "Du hører fra os, så snart den første anmeldelse er væk. Spørgsmål? Svar blot på denne mail.",
+    condH: "Godt at vide",
+    cond1: "Anmeldelser op til 4 uger gamle har en succesrate på ca. 90 %, ældre anmeldelser ca. 50 % (med et tillæg, der allerede er med i prisen ovenfor).",
+    cond2: "Anmeldelser uden tekst (kun stjerner) kan også fjernes.",
+    close: "Vi gennemgår nu dine anmeldelser og giver besked, så snart vi er gået i gang. Spørgsmål? Svar blot på denne mail.",
     signoff: "Venlig hilsen,",
   },
   no: {
@@ -200,10 +203,10 @@ export const T: Record<string, Entry> = {
     term1: "Du betaler kun for omtaler vi faktisk fjerner.",
     term2: "{per} per fjernet omtale — fjerner vi bare én av fem, betaler du kun for den ene.",
     term3: "Betalingen forfaller samme dag som fjerningen. Samme dag får du bekreftelsen med fakturaen.",
-    condH: "Vennligst sjekk",
-    cond1: "Hver omtale kan maks være 4 uker gammel.",
-    cond2: "Hver omtale må inneholde tekst — vurderinger med bare stjerner kan ikke fjernes på denne måten.",
-    close: "Du hører fra oss så snart den første omtalen er borte. Spørsmål? Bare svar på denne e-posten.",
+    condH: "Greit å vite",
+    cond1: "Omtaler som er opptil 4 uker gamle har en suksessrate på rundt 90 %, eldre omtaler rundt 50 % (med et tillegg som allerede er inkludert i prisen over).",
+    cond2: "Også omtaler uten tekst (bare stjerner) kan fjernes.",
+    close: "Vi går nå gjennom omtalene dine og gir beskjed så snart vi har startet. Spørsmål? Bare svar på denne e-posten.",
     signoff: "Vennlig hilsen,",
   },
 };
@@ -215,7 +218,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", orderId = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -233,8 +236,9 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       <NoteBox>
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.termsH}</span><br />
         1. {t.term1}<br />
-        2. {fill(t.term2, per)}{total ? <span style={{ color: brand.muted }}> ({n} × {per} = {total} max.)</span> : null}<br />
+        2. {fill(t.term2, per)}{total && !list.length ? <span style={{ color: brand.muted }}> ({total} max.)</span> : null}<br />
         3. {t.term3}
+        <ReviewPriceLines lang={lang} items={list} currency={reviewCurrency(currency, per)} />
       </NoteBox>
 
       <P><strong>{t.condH}:</strong> {t.cond1} {t.cond2}</P>
