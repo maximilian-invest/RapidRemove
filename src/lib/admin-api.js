@@ -106,7 +106,10 @@ function mapOrder(r) {
       : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
-    paypal: (r.form && typeof r.form.paypal === "string") ? r.form.paypal : "", // PayPal-Wunsch (10 % Rabatt) aus dem Fragebogen – nur außerhalb DACH abgefragt
+    // Rabatt-Wunsch (10 %): neu aus der Abfrage beim Absenden (raw.payPref = wise | paypal | none),
+    // früher als PayPal-E-Mail im Fragebogen (form.paypal).
+    payPref: (r.raw && typeof r.raw.payPref === "string") ? r.raw.payPref : "",
+    paypal: (r.form && typeof r.form.paypal === "string" && r.form.paypal) ? r.form.paypal : ((r.raw && r.raw.payPref === "paypal") ? "ja" : ""),
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",

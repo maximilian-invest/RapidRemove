@@ -71,21 +71,8 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
   const remaining = FORM_QUESTIONS.filter((q) => !hidden[q.key]);
   const allDone = remaining.length === 0;
 
-  // Optionales PayPal-Feld (10 % Rabatt) – nur außerhalb DACH anbieten (lang !== "de").
-  // Bleibt sichtbar, egal ob noch Fragen offen sind oder schon alles beantwortet wurde,
-  // damit der Kunde es jederzeit ausfüllen kann.
-  const paypalBlock = lang !== "de" ? (
-    <div style={{ ...S.ppWrap, marginTop: allDone ? 16 : 18 }}>
-      <div style={S.ppHead}><span aria-hidden="true" style={{ fontSize: 16 }}>💳</span><span>{tx.ppTitle}</span></div>
-      <p style={S.ppSub}>{tx.ppSub}</p>
-      <input type="email" inputMode="email" autoComplete="email" enterKeyHint="done" name="paypal"
-        value={paypal}
-        onChange={(e) => setPaypal(e.target.value)}
-        onBlur={savePaypal}
-        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
-        placeholder={tx.ppPlaceholder} aria-label={tx.ppPlaceholder} style={S.ppInput} />
-    </div>
-  ) : null;
+  // Der PayPal-Hinweis (10 %) ist entfernt: der Rabatt wird jetzt direkt beim
+  // Absenden der Bestellung abgefragt (Wizard → Wise/PayPal-Pop-up, payPref).
 
   return (
     <div style={S.card}>
@@ -125,7 +112,6 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
           </div>
         </React.Fragment>
       )}
-      {paypalBlock}
       {err ? <div style={{ color: "#e23b3b", fontSize: 13, fontWeight: 700, marginTop: 10 }}>{err}</div> : null}
     </div>
   );

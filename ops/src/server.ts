@@ -386,7 +386,8 @@ app.post("/order", async (req, reply) => {
   {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
     const ptitle = `${heading} – ${company || name || email}`;
-    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), affiliate ? "Affiliate: " + affiliate : "", [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
+    const payPrefTxt = b.payPref === "wise" ? "10 % Rabatt: zahlt per Wise" : b.payPref === "paypal" ? "10 % Rabatt: zahlt per PayPal" : "";
+    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), payPrefTxt, affiliate ? "Affiliate: " + affiliate : "", [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
     const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
     // Web-Push an die installierte Admin-App (öffnet die App selbst beim Tap)
     try {
@@ -451,6 +452,8 @@ app.post("/order", async (req, reply) => {
       // und später im Admin als <a href> gerendert wird (XSS-Schutz gegen javascript:/data:).
       b.mapsUri = httpUrl(b.mapsUri, 400);
       b.affiliate = affiliate; // aufgelösten Partner im raw-JSON mitspeichern → Admin zeigt ihn an
+      // Rabatt-Abfrage beim Absenden: nur bekannte Werte speichern.
+      b.payPref = ["wise", "paypal", "none"].includes(String(b.payPref)) ? String(b.payPref) : undefined;
       await insertOrder({
         id, name, email, phone, company, lang, profile, service, protection,
         country: clip(b.country, 6) || "DE",

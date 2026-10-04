@@ -1524,6 +1524,121 @@ const REVIEW_COPY = {
 };
 const reviewCopy = (code) => REVIEW_COPY[code] || REVIEW_COPY.en;
 /* Bewertungs-Auswahl über SerpApi: Profil suchen → Bewertungen anhaken. */
+/* Rabatt-Abfrage nach „Bestellung abschicken" (außerhalb DACH): 10 % bei Zahlung
+   per Wise oder PayPal; Hinweis „Zahlung erst nach Löschung". */
+const PAY_ASK = {
+  "de": {
+  "t": "10 % bei Ihrer Bestellung sparen?",
+  "d": "Zahlen Sie mit Wise oder PayPal und erhalten Sie 10 % Rabatt. Sollte keine der beiden Zahlungsmöglichkeiten funktionieren, ist der Rabatt nicht möglich.",
+  "wise": "Mit Wise zahlen",
+  "pp": "Mit PayPal zahlen",
+  "no": "Nein, ich möchte den Rabatt nicht",
+  "after": "Bezahlt wird erst nach der Löschung.",
+  "tag": "−10 %",
+  "afterRev": "Sie zahlen nur für tatsächlich gelöschte Bewertungen – erst nach der Löschung."
+  },
+  "en": {
+  "t": "Save 10% on your order?",
+  "d": "Pay with Wise or PayPal and get 10% off. If neither of these payment methods works for you, the discount isn't possible.",
+  "wise": "Pay with Wise",
+  "pp": "Pay with PayPal",
+  "no": "No, I don't want the discount",
+  "after": "You only pay after the removal.",
+  "tag": "−10%",
+  "afterRev": "You only pay for reviews that are actually removed – after the removal."
+  },
+  "es": {
+  "t": "¿Ahorrar un 10 % en su pedido?",
+  "d": "Pague con Wise o PayPal y obtenga un 10 % de descuento. Si ninguno de estos dos métodos de pago le funciona, el descuento no es posible.",
+  "wise": "Pagar con Wise",
+  "pp": "Pagar con PayPal",
+  "no": "No, no quiero el descuento",
+  "after": "Solo paga después de la eliminación.",
+  "tag": "−10 %",
+  "afterRev": "Solo paga por las reseñas realmente eliminadas, después de la eliminación."
+  },
+  "fr": {
+  "t": "Économiser 10 % sur votre commande ?",
+  "d": "Payez avec Wise ou PayPal et bénéficiez de 10 % de réduction. Si aucun de ces deux moyens de paiement ne vous convient, la réduction n'est pas possible.",
+  "wise": "Payer avec Wise",
+  "pp": "Payer avec PayPal",
+  "no": "Non, je ne veux pas la réduction",
+  "after": "Vous ne payez qu'après la suppression.",
+  "tag": "−10 %",
+  "afterRev": "Vous ne payez que les avis réellement supprimés, après la suppression."
+  },
+  "it": {
+  "t": "Risparmiare il 10% sul tuo ordine?",
+  "d": "Paga con Wise o PayPal e ottieni il 10% di sconto. Se nessuno dei due metodi di pagamento funziona per te, lo sconto non è possibile.",
+  "wise": "Paga con Wise",
+  "pp": "Paga con PayPal",
+  "no": "No, non voglio lo sconto",
+  "after": "Paghi solo dopo la rimozione.",
+  "tag": "−10%",
+  "afterRev": "Paghi solo le recensioni effettivamente rimosse, dopo la rimozione."
+  },
+  "nl": {
+  "t": "10% besparen op uw bestelling?",
+  "d": "Betaal met Wise of PayPal en krijg 10% korting. Werkt geen van beide betaalmethoden voor u, dan is de korting niet mogelijk.",
+  "wise": "Betalen met Wise",
+  "pp": "Betalen met PayPal",
+  "no": "Nee, ik wil de korting niet",
+  "after": "U betaalt pas na de verwijdering.",
+  "tag": "−10%",
+  "afterRev": "U betaalt alleen voor reviews die echt verwijderd zijn – pas na de verwijdering."
+  },
+  "pt": {
+  "t": "Poupar 10% na sua encomenda?",
+  "d": "Pague com Wise ou PayPal e receba 10% de desconto. Se nenhum destes métodos de pagamento funcionar para si, o desconto não é possível.",
+  "wise": "Pagar com Wise",
+  "pp": "Pagar com PayPal",
+  "no": "Não, não quero o desconto",
+  "after": "Só paga depois da remoção.",
+  "tag": "−10%",
+  "afterRev": "Só paga pelas avaliações realmente removidas – depois da remoção."
+  },
+  "ja": {
+  "t": "ご注文を10％お得にしませんか？",
+  "d": "WiseまたはPayPalでお支払いいただくと10％割引になります。どちらのお支払い方法もご利用いただけない場合、割引は適用できません。",
+  "wise": "Wiseで支払う",
+  "pp": "PayPalで支払う",
+  "no": "いいえ、割引は不要です",
+  "after": "お支払いは削除完了後です。",
+  "tag": "10%オフ",
+  "afterRev": "お支払いは実際に削除された口コミ分のみ、削除完了後です。"
+  },
+  "sv": {
+  "t": "Spara 10 % på din beställning?",
+  "d": "Betala med Wise eller PayPal och få 10 % rabatt. Om ingen av de två betalningsmetoderna fungerar för dig är rabatten inte möjlig.",
+  "wise": "Betala med Wise",
+  "pp": "Betala med PayPal",
+  "no": "Nej, jag vill inte ha rabatten",
+  "after": "Du betalar först efter borttagningen.",
+  "tag": "−10 %",
+  "afterRev": "Du betalar bara för omdömen som faktiskt tas bort – först efter borttagningen."
+  },
+  "da": {
+  "t": "Spar 10 % på din bestilling?",
+  "d": "Betal med Wise eller PayPal og få 10 % rabat. Hvis ingen af de to betalingsmetoder fungerer for dig, er rabatten ikke mulig.",
+  "wise": "Betal med Wise",
+  "pp": "Betal med PayPal",
+  "no": "Nej, jeg vil ikke have rabatten",
+  "after": "Du betaler først efter sletningen.",
+  "tag": "−10 %",
+  "afterRev": "Du betaler kun for anmeldelser, der faktisk fjernes – først efter sletningen."
+  },
+  "no": {
+  "t": "Spare 10 % på bestillingen din?",
+  "d": "Betal med Wise eller PayPal og få 10 % rabatt. Hvis ingen av de to betalingsmåtene fungerer for deg, er rabatten ikke mulig.",
+  "wise": "Betal med Wise",
+  "pp": "Betal med PayPal",
+  "no": "Nei, jeg vil ikke ha rabatten",
+  "after": "Du betaler først etter slettingen.",
+  "tag": "−10 %",
+  "afterRev": "Du betaler bare for anmeldelser som faktisk fjernes – først etter slettingen."
+  }
+  };
+
 const PICK_COPY = {
   de: { qPh: "Nach Name des Bewerters suchen …", noMatch: "Keine geladene Bewertung passt zu „{q}“.", notListed: "Bewertung nicht in der Liste? Link einfügen", manualH: "Profil nicht gefunden? Kein Problem.", manualNote: "Fügen Sie die Links der Bewertungen ein, die gelöscht werden sollen. Wir prüfen sie und melden uns per E-Mail bei Ihnen.", linksTile: "Profil nicht gefunden? Links zu den Bewertungen eingeben", nudge1: "Noch eine für {pct} % Rabatt!", nudgeN: "Noch {n} für {pct} % Rabatt!", ch90: "ca. 90 % Erfolgschance", ch50: "ca. 50 % Erfolgschance", rowNew: "bis 4 Wochen alt", infoH: "Erfolgschance & Preis", info1: "Bewertungen bis 4 Wochen alt: ca. 90 % Erfolgschance — {base} je Bewertung.", info2: "Ältere Bewertungen: ca. 50 % Erfolgschance — {old} je Bewertung.", info3: "Mengenrabatt: ab 3 Bewertungen −10 %, ab 5 −15 %, ab 10 −30 %.", discLbl: "Mengenrabatt", fromPre: "ab ", fromSuf: "", f13: "1–3 Sterne", fAll: "Alle", stepLbl: "Bewertungen", stepH: "Welche Bewertungen sollen weg?", stepSub: "Wählen Sie die Bewertungen aus, die gelöscht werden sollen. Sie zahlen nur für tatsächlich gelöschte.", empty: "Keine Bewertungen in diesem Filter.", h: "Bewertungen automatisch finden", sub: "Suchen Sie Ihr Unternehmen – wir laden Ihre neuesten Google-Bewertungen. Haken Sie an, welche weg sollen.", ph: "Name Ihres Unternehmens", btn: "Suchen", loading: "Bewertungen werden geladen …", none: "Keine passenden Bewertungen gefunden. Fügen Sie die Links unten manuell ein.", err: "Die Bewertungen konnten nicht geladen werden – bitte fügen Sie die Links unten ein.", old: "älter als 4 Wochen", noText: "ohne Text", or: "Oder Links manuell einfügen", change: "Anderes Profil", pickProfile: "Welches Profil ist Ihres?", selected: "ausgewählt" },
   en: { qPh: "Search by reviewer name …", noMatch: "No loaded review matches “{q}”.", notListed: "Review not in the list? Add its link", manualH: "Profile not found? No problem.", manualNote: "Paste the links to the reviews you want removed. We'll check them and get back to you by email.", linksTile: "Can't find your profile? Enter links to the reviews", nudge1: "One more for a {pct} % discount!", nudgeN: "{n} more for a {pct} % discount!", ch90: "approx. 90 % success chance", ch50: "approx. 50 % success chance", rowNew: "up to 4 weeks old", infoH: "Success chance & price", info1: "Reviews up to 4 weeks old: approx. 90 % success chance — {base} per review.", info2: "Older reviews: approx. 50 % success chance — {old} per review.", info3: "Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %.", discLbl: "Volume discount", fromPre: "from ", fromSuf: "", f13: "1–3 stars", fAll: "All", stepLbl: "Reviews", stepH: "Which reviews should go?", stepSub: "Select the reviews you want removed. You only pay for the ones that are actually deleted.", empty: "No reviews in this filter.", h: "Find your reviews automatically", sub: "Search your business – we load your latest Google reviews. Tick the ones that should go.", ph: "Your business name", btn: "Search", loading: "Loading reviews …", none: "No matching reviews found. Paste the links manually below.", err: "Reviews could not be loaded – please paste the links below.", old: "older than 4 weeks", noText: "no text", or: "Or paste links manually", change: "Different profile", pickProfile: "Which profile is yours?", selected: "selected" },
@@ -1598,6 +1713,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [contact, setContact] = React.useState(R && R.contact ? R.contact : { name: "", email: "", phone: "", company: initialName || "", url: "" });
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
+  const [payAsk, setPayAsk] = React.useState(false); // Rabatt-Pop-up (Wise/PayPal) vor dem Absenden
   const [agbOk, setAgbOk] = React.useState(false);
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
@@ -2012,7 +2128,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     }, 2400);
   };
 
+  // „Bestellung abschicken": erst prüfen, dann (außerhalb DACH) die Rabatt-Abfrage
+  // Wise/PayPal −10 % zeigen; die Auswahl geht als payPref mit der Bestellung mit.
   const submit = () => {
+    if (!validateCheckout()) return;
+    if (lang !== "de") { setPayAsk(true); return; }
+    doSubmit("");
+  };
+  const validateCheckout = () => {
     const er = {};
     if (!contact.name.trim()) er.name = w.s5.errName;
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email)) er.email = w.s5.errEmail;
@@ -2020,7 +2143,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
     if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
     setErrors(er);
-    if (Object.keys(er).length) return;
+    return !Object.keys(er).length;
+  };
+  const doSubmit = (payPref) => {
+    setPayAsk(false);
     setProcessing(true);
     persistCheck();
     // Meta-Pixel: Auftrag erteilt (Profil bestätigt und freigegeben). Bewusst OHNE
@@ -2068,6 +2194,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      // Rabatt-Abfrage: "wise" | "paypal" = 10 % Rabatt gewünscht, "none" = abgelehnt.
+      ...(payPref ? { payPref } : {}),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung abgeschlossen.
     // „order" mit E-Mail + Telefon in der Datenschicht.
@@ -2991,6 +3119,25 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       </div>
       <ActivityToast />
       {confetti && <Confetti />}
+      {payAsk ? (() => {
+        const pa = PAY_ASK[t.code] || PAY_ASK.en;
+        return (
+          <div className="pay-ask-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPayAsk(false); }}>
+            <div className="pay-ask" role="dialog" aria-modal="true" aria-labelledby="pay-ask-t">
+              <button type="button" className="pay-ask-x" onClick={() => setPayAsk(false)} aria-label="×"><Icon.x size={18} /></button>
+              <span className="pay-ask-tag">{pa.tag}</span>
+              <h2 id="pay-ask-t">{pa.t}</h2>
+              <p>{pa.d}</p>
+              <div className="pay-ask-opts">
+                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("wise")}><span className="pay-ask-logo wise">Wise</span>{pa.wise}<Icon.arrowRight size={17} /></button>
+                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("paypal")}><span className="pay-ask-logo pp">PayPal</span>{pa.pp}<Icon.arrowRight size={17} /></button>
+                <button type="button" className="pay-ask-no" onClick={() => doSubmit("none")}>{pa.no}</button>
+              </div>
+              <div className="pay-ask-after"><Icon.shieldCheck size={16} /> {revFlow ? pa.afterRev : pa.after}</div>
+            </div>
+          </div>
+        );
+      })() : null}
     </div>
   );
 }
