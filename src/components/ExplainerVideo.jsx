@@ -11,7 +11,7 @@ import { useLang } from "@/lib/lang-context";
 
 const SRC = {
   de: { mp4: "/video/rapidremove-erklaervideo-de.mp4", poster: "/video/explainer-poster-de.webp", dur: "1:10" },
-  en: { mp4: "/video/rapidremove-explainer-en.mp4", poster: "/video/explainer-poster-en.webp", dur: "1:04" },
+  en: { mp4: "/video/rapidremove-explainer-en-v2.mp4", poster: "/video/explainer-poster-en.webp", dur: "1:02" },
 };
 
 const COPY = {
