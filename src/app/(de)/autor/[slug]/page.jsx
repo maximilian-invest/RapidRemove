@@ -3,8 +3,10 @@ import AuthorPage from "@/components/AuthorPage";
 import { AUTHORS, authorUrl, authorPersonLd, roleFor, bioFor, authorHreflang } from "@/lib/authors";
 import { SITE_URL } from "@/lib/article-google-profil";
 import { articlesForAuthor } from "@/lib/articles/catalog";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return Object.keys(AUTHORS).map((slug) => ({ slug }));
@@ -23,6 +25,7 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   const a = AUTHORS[params.slug];
   const articles = articlesForAuthor("de", a.slug);
   const ld = { "@context": "https://schema.org", ...authorPersonLd(a), description: bioFor(a, "de"), worksFor: { "@type": "Organization", name: "RapidRemove", url: SITE_URL } };

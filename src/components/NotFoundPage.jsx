@@ -1,11 +1,11 @@
-/* RapidRemove — globale 404-Seite (App Router not-found).
+/* RapidRemove — 404-Seite (eingebunden als not-found in app/(de) und app/[lang]).
    Server-renderbar (im Export-Build wird daraus 404.html); bewusst ohne
    Client-Komponenten/Sprach-Kontext, aber als vollwertige, gebrandete Seite
    mit Kopf (Logo → Start), hilfreichen Links und Fuß — kein leerer Body. */
 import Link from "next/link";
 import { asset } from "@/lib/base";
 
-export const metadata = { title: "Seite nicht gefunden — RapidRemove", robots: { index: false } };
+export const notFoundMetadata = { title: "Seite nicht gefunden — RapidRemove", robots: { index: false } };
 
 const QUICK_LINKS = [
   { href: "/", label: "Startseite" },

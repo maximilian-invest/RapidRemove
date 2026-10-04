@@ -4,8 +4,10 @@ import App from "@/components/App";
 import { I18N } from "@/lib/i18n";
 import { NON_DEFAULT_LOCALES, localeUrl, hreflangMap, OG_LOCALE, OG_IMAGE } from "@/lib/locales-meta";
 import { magCardsFor } from "@/lib/articles/catalog";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return NON_DEFAULT_LOCALES.map((lang) => ({ lang }));
@@ -25,5 +27,6 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   return <App initialLang={params.lang} magCards={magCardsFor(params.lang)} />;
 }

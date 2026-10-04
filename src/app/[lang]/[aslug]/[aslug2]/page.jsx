@@ -11,8 +11,10 @@ import { authorFor, roleFor, authorPathFor } from "@/lib/authors";
 import { withReviewsPromo } from "@/lib/articles/reviews-promo";
 import { HUB_SLUG, hubHreflang, hubLangUrls } from "@/lib/articles/hubs";
 import { HUBS } from "@/lib/articles/hub-data";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   const hubs = Object.keys(HUBS).map((lang) => ({ lang, aslug: magazineSlug(lang), aslug2: HUB_SLUG[lang] }));
@@ -47,6 +49,7 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   const { lang, aslug2 } = params;
   const ui = uiFor(lang);
   if (isHub(lang, aslug2)) {

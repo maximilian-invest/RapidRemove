@@ -5,8 +5,10 @@ import { AUTHORS, authorUrlFor, authorPersonLd, roleFor, bioFor, authorHreflang 
 import { SITE_URL } from "@/lib/article-google-profil";
 import { articlesForAuthor } from "@/lib/articles/catalog";
 import { LOCALES, OG_LOCALE } from "@/lib/locales-meta";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   const out = [];
@@ -31,6 +33,7 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   const { lang, slug } = params;
   const a = AUTHORS[slug];
   const articles = articlesForAuthor(lang, a.slug);

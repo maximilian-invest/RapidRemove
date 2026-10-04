@@ -16,8 +16,10 @@ import { I18N } from "@/lib/i18n";
 import { magCardsFor } from "@/lib/articles/catalog";
 import { pageParams, pageForSlug, pageUrl, pageHreflang } from "@/lib/page-routes";
 import { pageMeta } from "@/lib/page-meta";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 
 // Localized secondary pages + the magazine index share this single dynamic segment.
 // (Artikel liegen jetzt eine Ebene tiefer unter [lang]/[aslug]/[aslug2].)
@@ -62,6 +64,7 @@ export function generateMetadata({ params }) {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   if (params.aslug === magazineSlug(params.lang)) {
     const cards = magCardsFor(params.lang);
     const url = magazineUrl(params.lang);

@@ -9,8 +9,10 @@ import { DE_ARTICLES, resolveRelated, buildArticleJsonLd, hreflangForArticle, la
 import { hubHreflang } from "@/lib/articles/hubs";
 import { OG_IMAGE } from "@/lib/locales-meta";
 import { authorFor, authorPersonLd, roleFor, authorPath } from "@/lib/authors";
+import { requireKnownParams } from "@/lib/route-guard";
 
-export const dynamicParams = false;
+// Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
+export const dynamicParams = true;
 const HUB = "google-unternehmensprofil-loeschen";
 
 export function generateStaticParams() {
@@ -70,6 +72,7 @@ function hubJsonLd() {
 }
 
 export default function Page({ params }) {
+  requireKnownParams(generateStaticParams(), params);
   if (params.aslug === HUB) {
     return (
       <>

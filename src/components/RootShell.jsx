@@ -1,4 +1,8 @@
-/* RapidRemove — root layout: design tokens + global styles, metadata */
+/* RapidRemove — gemeinsamer Root-Rahmen (<html>/<body>, globale Styles, Metadaten,
+   JSON-LD, Consent). Wird von den Root-Layouts je Sprache verwendet:
+   app/(de)/layout.jsx (lang="de"), app/[lang]/layout.jsx und app/<lang>/layout.jsx.
+   So trägt jede Seite das richtige <html lang> (vorher überall „de" → Ahrefs:
+   „Hreflang and HTML lang mismatch" auf allen Fremdsprachen-Seiten). */
 import { Suspense } from "react";
 import Consent from "@/components/Consent";
 import Attribution from "@/components/Attribution";
@@ -18,7 +22,7 @@ import "@/styles/seo.css";
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap";
 
-export const metadata = {
+export const rootMetadata = {
   metadataBase: new URL("https://www.rapid-remove.com"),
   title: "RapidRemove — Google-Unternehmensprofil löschen lassen",
   description:
@@ -44,16 +48,16 @@ export const metadata = {
   },
 };
 
-export const viewport = {
+export const rootViewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
   // Pinch-zoom is intentionally left enabled (accessibility) — no maximumScale.
 };
 
-export default function RootLayout({ children }) {
+export default function RootShell({ lang = "de", children }) {
   return (
-    <html lang="de">
+    <html lang={lang}>
       <body>
         {/* Pre-Paint: „Weitermachen"-Zustand (gespeicherter Wizard-Stand in localStorage)
            noch vor dem ersten Rendern erkennen und html.rr-resume setzen. So blendet das
@@ -80,7 +84,7 @@ export default function RootLayout({ children }) {
            (Drittquelle, deshalb als Review mit author=Trustpilot ausgewiesen).
            Hinweis: Google zeigt self-serving Rating-Markup ggf. nicht an. */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org","@type":"Organization","url":"https://www.rapid-remove.com","logo":"https://assets.simplesolution.at/logo-rapid-remove.png","name":"RapidRemove","description":"RapidRemove is an Austrian company specializing in the removal of Google Business Profiles and online reputation management. Based in Hallein, Salzburg.","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","address":{"@type":"PostalAddress","streetAddress":"Salzgasse 2","addressLocality":"Hallein","addressRegion":"Salzburg","postalCode":"5400","addressCountry":"AT"},"vatID":"ATU72401536","image":"https://assets.simplesolution.at/rapid-remove-product-image.jpg","sameAs":["https://www.trustpilot.com/review/rapid-remove.com"]}` }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Service","name":"Google Business Profile Removal Service","description":"Complete and permanent removal of a Google Business Profile, including all reviews. Specialized online reputation management via Google's official channels.","provider":{"@type":"Organization","name":"RapidRemove","logo":"https://assets.simplesolution.at/rapid-remove-logo.jpg","url":"https://www.rapid-remove.com","contactPoint":{"@type":"ContactPoint","contactType":"Customer Service","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","hoursAvailable":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"17:00","address":{"@type":"PostalAddress","addressLocality":"Hallein","addressCountry":"AT","streetAddress":"Salzgasse 2","postalCode":"5400"}}]}},"areaServed":{"@type":"Place","name":"Worldwide"},"serviceType":"Online Reputation Management","offers":{"@type":"Offer","url":"https://www.rapid-remove.com/profil-pruefen","priceCurrency":"EUR","price":"450","itemCondition":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"}}` }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"Service","name":"Google Business Profile Removal Service","description":"Complete and permanent removal of a Google Business Profile, including all reviews. Specialized online reputation management via Google's official channels.","provider":{"@type":"Organization","name":"RapidRemove","logo":"https://assets.simplesolution.at/rapid-remove-logo.jpg","url":"https://www.rapid-remove.com","contactPoint":{"@type":"ContactPoint","contactType":"Customer Service","email":"helpdesk@rapid-remove.com","telephone":"+4362459305300","hoursAvailable":[{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"08:00","closes":"17:00"}]}},"areaServed":{"@type":"Place","name":"Worldwide"},"serviceType":"Online Reputation Management","offers":{"@type":"Offer","url":"https://www.rapid-remove.com/profil-pruefen","priceCurrency":"EUR","price":"450","itemCondition":"https://schema.org/NewCondition","availability":"https://schema.org/InStock"}}` }} />
 
         {/* Rich snippet: Organisation-Rating (Quelle: Trustpilot) */}
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: `{"@context":"https://schema.org/","@type":"AggregateRating","ratingValue":"4.9","reviewCount":"266","itemReviewed":{"@type":"Organization","name":"RapidRemove","url":"https://www.rapid-remove.com"}}` }} />
