@@ -226,6 +226,27 @@ function fillVars(text, o) {
 
 /* Sendet dem Kunden mit EINEM Klick genau den Zahlungslink, der zu seiner
    Bestellung passt (Betrag/Leistung/Schutz) — ohne Auswahl-Liste. */
+/* Kunde wollte mit Wise/PayPal zahlen (Rabatt-Abfrage bzw. Fragebogen) → Name, sonst null.
+   Dann ist „Zahlungslink senden" (Stripe) gesperrt: Schloss + Sicherheitsabfrage. */
+function payPrefName(o) {
+  if (!o) return null;
+  if (o.payPref === "wise") return "Wise";
+  if (o.payPref === "paypal" || o.paypal) return "PayPal";
+  return null;
+}
+/* „Zahlungslink senden" mit Sicherheitsabfrage, falls der Kunde Wise/PayPal gewählt hat. */
+function payLinkClick(o, setAsk, send) {
+  const m = payPrefName(o);
+  if (!m) return send();
+  setAsk({
+    danger: true,
+    title: "Zahlungslink sicher senden?",
+    message: `Kunde wollte mit ${m} zahlen (10 % Rabatt). Trotzdem einen Stripe-Zahlungslink senden?`,
+    confirmLabel: "Zahlungslink trotzdem senden",
+    onConfirm: send,
+  });
+}
+
 async function sendOrderedPayLink(o, toast, onStatus, onFail) {
   try {
     const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
@@ -1176,6 +1197,7 @@ const PAYLINK_PLACEHOLDER = "[Zahlungslink hier einfügen]";
 
 /* ---------- Order drawer ---------- */
 function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign, onPayLink, toast }) {
+  const [payAsk, setPayAsk] = React.useState(null); // Sicherheitsabfrage Zahlungslink (Wise/PayPal-Kunde)
   const now = useNow(1000);
   const [smsOpen, setSmsOpen] = React.useState(false);
   const [smsMsg, setSmsMsg] = React.useState("");
@@ -1189,6 +1211,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
   return (
     <React.Fragment>
       <div className="drawer-scrim open" onClick={onClose}></div>
+      <ConfirmDialog ask={payAsk} onClose={() => setPayAsk(null)} />
       <div className="drawer open">
         <div className="drawer-top">
           <div>
@@ -1337,7 +1360,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div className="drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
             <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" title={payPrefName(o) ? "Kunde wollte mit " + payPrefName(o) + " zahlen" : undefined} onClick={() => payLinkClick(o, setPayAsk, () => sendOrderedPayLink(o, toast, onStatus, onPayLink))}>{payPrefName(o) ? <Icon.lock size={15} /> : <AI.send />} Zahlungslink senden</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung über Stripe eingeleitet")}><AI.refund /> Erstatten</button> : null}
             </div>
           </div>
@@ -2432,7 +2455,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{o.amount ? money(o.amount, o.country) : "kostenlose Prüfung"}</span></div>
           {o.protection && o.protAmount ? <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
-          {o.amount && o.service !== "reviews" ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+          {o.amount && o.service !== "reviews" ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => payLinkClick(o, setAsk, () => sendOrderedPayLink(o, toast, onStatus, onPayLink))}>{payPrefName(o) ? <Icon.lock /> : <AI.send />} Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
           {/* Zahlungserinnerung / Mahnungen (Profil-Bestellungen; Bewertungen haben ihr eigenes Mahnwesen oben) */}
           {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"m-btn " + (mahnStage >= 3 ? "m-btn-danger" : "m-btn-sec")} style={{ marginTop: 9 }} onClick={sendMahnung}><Icon.mail /> {usePaypalMahnung ? payMahnName + " · " + mahnLabel : mahnBtnLabel}</button> : null}
@@ -2678,7 +2701,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div className="drow"><span className="dl">Rechnungsbetrag</span><span className="dv">{o.amount ? money(o.amount, o.country) : "—"}</span></div>
             {o.protection && o.protAmount ? <div className="drow"><span className="dl">Schutz</span><span className="dv">{money(o.protAmount, o.country)}{o.protection !== "lifetime" ? " /Mon." : ""}</span></div> : null}
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
-              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
+              {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" title={payPrefName(o) ? "Kunde wollte mit " + payPrefName(o) + " zahlen" : undefined} onClick={() => payLinkClick(o, setAsk, () => sendOrderedPayLink(o, toast, onStatus, onPayLink))}>{payPrefName(o) ? <Icon.lock size={15} /> : <AI.send />} Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
               {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung} title={usePaypalMahnung ? "Text-Mahnung – verweist auf die gesendeten " + (payMethod === "wise" ? "Wise" : "PayPal") + "-Zahlungsdaten" : "Mahnung mit Stripe-Zahlungslink"}><Icon.mail /> {usePaypalMahnung ? payMahnName + " · " + mahnLabel : mahnBtnLabel}</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
@@ -2775,6 +2798,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
   const [err, setErr] = React.useState("");
   const [sel, setSel] = React.useState(null);
   const [curFilter, setCurFilter] = React.useState("eur");
+  const [ppArmed, setPpArmed] = React.useState(false); // Wise/PayPal-Kunde: 2. Klick bestätigt den Stripe-Link
   React.useEffect(() => {
     if (!order) return;
     setCurFilter(order.country === "US" ? "usd" : "eur");
@@ -2824,6 +2848,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
           <button className="drawer-close" style={{ marginLeft: "auto" }} onClick={onClose}><Icon.x /></button>
         </div>
         <div className="modal-body">
+          {!storno && payPrefName(order) ? <div style={{ margin: "0 0 12px", background: "#fdecec", border: "1px solid #f1c4c0", borderRadius: 10, padding: "9px 12px", fontSize: 12.5, fontWeight: 800, color: "#b42318", display: "flex", gap: 8, alignItems: "center" }}><Icon.lock size={15} /> Kunde wollte mit {payPrefName(order)} zahlen (10 % Rabatt).</div> : null}
           <div className="chips" style={{ marginBottom: 12 }}>
             {[["eur", "€ EUR"], ["usd", "$ USD"], ["all", "Alle"]].map(([k, lab]) => (
               <button key={k} className={"chipf" + (curFilter === k ? " on" : "")} onClick={() => setCurFilter(k)}>{lab}</button>
@@ -2844,7 +2869,9 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
         <div className="modal-foot">
           <span style={{ fontSize: 12.5, color: "var(--fg-muted)", fontWeight: 700, marginRight: "auto", display: "flex", alignItems: "center", gap: 6 }}><Icon.lock size={14} /> Bestehender aktiver Link aus Stripe</span>
           <button className="btn btn-sec" onClick={onClose}>Abbrechen</button>
-          <button className="btn btn-pri" disabled={!sel} onClick={send}><AI.send /> {storno ? "Storno-Link senden" : "Zahlungslink senden"}</button>
+          {!storno && payPrefName(order)
+            ? <button className={"btn " + (ppArmed ? "btn-danger" : "btn-pri")} disabled={!sel} onClick={() => { if (!ppArmed) { setPpArmed(true); return; } setPpArmed(false); send(); }}><Icon.lock size={15} /> {ppArmed ? "Zahlungslink sicher senden? Kunde wollte mit " + payPrefName(order) + " zahlen" : "Zahlungslink senden"}</button>
+            : <button className="btn btn-pri" disabled={!sel} onClick={send}><AI.send /> {storno ? "Storno-Link senden" : "Zahlungslink senden"}</button>}
         </div>
       </div>
     </div>
