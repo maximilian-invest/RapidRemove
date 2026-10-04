@@ -890,3 +890,5 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .pay-ask-after svg{flex:none}
 @media(max-width:560px){.pay-ask-w{align-items:flex-end;padding:0}.pay-ask{border-radius:24px 24px 0 0;padding:26px 18px calc(18px + env(safe-area-inset-bottom,0px));animation:payUp .26s cubic-bezier(.22,1,.36,1)}}
 @media (prefers-reduced-motion:reduce){.pay-ask,.pay-ask-w{animation:none}}
+.wz-top a.back{text-decoration:none;}
+.wz-top a{display:inline-flex;align-items:center;}

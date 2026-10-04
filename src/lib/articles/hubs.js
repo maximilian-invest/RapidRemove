@@ -6,6 +6,7 @@
    all share one source of truth — without importing the heavy article bodies. */
 import { SITE_URL } from "@/lib/article-google-profil";
 import { magazineSlug } from "@/lib/locales-meta";
+import { cleanHref } from "@/lib/base";
 
 // Hub-Slug je Sprache. Der Hub liegt – wie jeder Artikel – unter dem Magazin-Slug.
 export const HUB_SLUG = {
@@ -25,7 +26,7 @@ export const HUB_SLUG = {
 // Root-relative paths WITH trailing slash (on-site links / langUrls / card href):
 //   DE /magazin/<slug>/, andere /<lang>/<magazineSlug>/<slug>/.
 const artPath = (lang, slug) =>
-  lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`;
+  cleanHref(lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`);
 export const HUB_PATH = Object.fromEntries(Object.keys(HUB_SLUG).map((l) => [l, artPath(l, HUB_SLUG[l])]));
 
 export const hubPath = (lang) => HUB_PATH[lang] || null;

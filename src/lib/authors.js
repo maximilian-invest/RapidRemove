@@ -3,6 +3,7 @@
    derselbe Artikel in ALLEN Sprachen denselben Autor zeigt. Rolle + Bio liegen in
    allen 11 Sprachen vor (mit EN-Fallback). */
 import { SITE_URL } from "@/lib/article-google-profil";
+import { cleanHref } from "@/lib/base";
 
 export const AUTHORS = {
   "maximilian-hoelzl": {
@@ -83,8 +84,8 @@ export function authorFor(deSlug) {
 
 // DE liegt unter /autor/<slug>/; die Fremdsprachen unter /<lang>/author/<slug>/
 // ("autor" ist deutsch – in den nicht-deutschen URLs der internationale Begriff).
-export const authorPath = (a) => `/autor/${a.slug}/`;
-export const authorPathFor = (a, lang) => (lang === "de" ? `/autor/${a.slug}/` : `/${lang}/author/${a.slug}/`);
+export const authorPath = (a) => cleanHref(`/autor/${a.slug}/`);
+export const authorPathFor = (a, lang) => cleanHref(lang === "de" ? `/autor/${a.slug}/` : `/${lang}/author/${a.slug}/`);
 export const authorUrl = (a) => `${SITE_URL}/autor/${a.slug}`;
 export const authorUrlFor = (a, lang) => `${SITE_URL}${lang === "de" ? `/autor/${a.slug}` : `/${lang}/author/${a.slug}`}`;
 

@@ -24,6 +24,7 @@ import a14 from "@/lib/articles/presseartikel-aus-google-entfernen";
 import a15 from "@/lib/articles/jameda-bewertung-loeschen";
 import a16 from "@/lib/articles/kununu-bewertung-loeschen";
 import a17 from "@/lib/articles/trustpilot-bewertung-loeschen";
+import { cleanHref } from "@/lib/base";
 
 const DE_LIST = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16, a17];
 export const DE_ARTICLES = Object.fromEntries(DE_LIST.map((a) => [a.meta.slug, a]));
@@ -35,7 +36,7 @@ const FLAGSHIP_SLUG = "google-unternehmensprofil-loeschen-wie-geht-das";
 //   DE:     /magazin/<slug>/
 //   andere: /<lang>/<magazineSlug>/<slug>/   (magazine | revista | rivista | magasin)
 export const articlePath = (lang, slug) =>
-  lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`;
+  cleanHref(lang === "de" ? `/${magazineSlug("de")}/${slug}/` : `/${lang}/${magazineSlug(lang)}/${slug}/`);
 export const articleUrl = (lang, slug) => SITE_URL + articlePath(lang, slug).replace(/\/$/, "");
 
 // Gestaffelte, plausible Veröffentlichungsdaten je Spoke (deutscher Slug) — damit
@@ -82,7 +83,7 @@ function hubCardFor(lang) {
   };
 }
 
-export const homeBase = (lang) => (lang === "de" ? "/" : `/${lang}/`);
+export const homeBase = (lang) => cleanHref(lang === "de" ? "/" : `/${lang}/`);
 export const tFor = (lang, deSlug) => (TRANSLATIONS[lang] || {})[deSlug];
 
 // On-site path for an article in a given language (null if not translated).

@@ -12,6 +12,7 @@ import { TrustpilotLive, PressBand } from "@/components/Proof";
 import OrderForm from "@/components/OrderForm";
 import { mountIngestionAnim } from "@/lib/ingestion-anim";
 import { pagePath } from "@/lib/page-routes";
+import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 
@@ -1678,6 +1679,22 @@ function discountNudge(n, pk) {
 
 const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
 
+/* Kopfleiste des Wizards: Logo + „Zur Startseite" als echte Links (crawlbar —
+   die Check-Seiten haben sonst im Server-HTML keinen einzigen Link). Im Wizard
+   fängt onExit den Klick ab (SPA-Wechsel zur Startseite). Auch App rendert sie
+   als Platzhalter, bevor der Wizard gebootet ist. */
+export function WizardTop({ homeHref, label, onExit }) {
+  const click = onExit ? (e) => { e.preventDefault(); onExit(); } : undefined;
+  return (
+    <div className="wz-top">
+      <div className="wz-top-inner">
+        <a href={homeHref} onClick={click} aria-label="RapidRemove"><img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" /></a>
+        <a className="back" href={homeHref} onClick={click}><Icon.x size={16} /> {label}</a>
+      </div>
+    </div>
+  );
+}
+
 function Wizard({ initialName, initialProfile, initialResume, leadSource, initialReviews, onExit, onOrm, onDeindex, onSelectProfile }) {
   const { t, lang } = useLang();
   const w = t.wizard;
@@ -2801,14 +2818,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     );
   }
 
-  const Top = (
-    <div className="wz-top">
-      <div className="wz-top-inner">
-        <img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" onClick={onExit} />
-        <button className="back" onClick={onExit}><Icon.x size={16} /> {w.backHome}</button>
-      </div>
-    </div>
-  );
+  const Top = <WizardTop homeHref={asset(localePath(t.code))} label={w.backHome} onExit={onExit} />;
 
   /* ---- erste Seite: Service-Router (mit den anderen Dienstleistungen) ---- */
   function RouterScreen() {

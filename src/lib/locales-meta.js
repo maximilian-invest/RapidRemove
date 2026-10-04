@@ -1,5 +1,6 @@
 /* RapidRemove — locale registry for per-language routing + hreflang SEO. */
 import { SITE_URL } from "@/lib/article-google-profil";
+import { cleanHref } from "@/lib/base";
 
 export { SITE_URL };
 export const DEFAULT_LOCALE = "de";
@@ -9,7 +10,7 @@ export const DEFAULT_LOCALE = "de";
 export const LOCALES = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
 export const NON_DEFAULT_LOCALES = LOCALES.filter((l) => l !== DEFAULT_LOCALE);
 
-export const localePath = (l) => (l === DEFAULT_LOCALE ? "/" : `/${l}/`);
+export const localePath = (l) => cleanHref(l === DEFAULT_LOCALE ? "/" : `/${l}/`);
 export const localeUrl = (l) => `${SITE_URL}${l === DEFAULT_LOCALE ? "/" : `/${l}`}`;
 
 // Magazin-Übersicht pro Sprache mit LOKALISIERTEM Slug (DE: /magazin, FR: /fr/magazine,
@@ -19,7 +20,7 @@ export const MAGAZINE_SLUG = {
   nl: "magazine", pt: "revista", ja: "magazine", sv: "magasin", da: "magasin", no: "magasin",
 };
 export const magazineSlug = (l) => MAGAZINE_SLUG[l] || "magazin";
-export const magazinePath = (l) => (l === DEFAULT_LOCALE ? `/${magazineSlug(l)}/` : `/${l}/${magazineSlug(l)}/`);
+export const magazinePath = (l) => cleanHref(l === DEFAULT_LOCALE ? `/${magazineSlug(l)}/` : `/${l}/${magazineSlug(l)}/`);
 export const magazineUrl = (l) => `${SITE_URL}${l === DEFAULT_LOCALE ? `/${magazineSlug(l)}` : `/${l}/${magazineSlug(l)}`}`;
 
 // og:locale je Sprache (für vollständige Social-/SEO-Auszeichnung).

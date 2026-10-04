@@ -7,6 +7,7 @@
    served by the dynamic /[lang]/[aslug] route. Mirrors the article setup. */
 import { SITE_URL } from "@/lib/article-google-profil";
 import { LOCALES, DEFAULT_LOCALE } from "@/lib/locales-meta";
+import { cleanHref } from "@/lib/base";
 
 // page key -> { lang: slug }. Slugs are ASCII, lowercase, hyphenated (URL-safe).
 export const PAGE_SLUGS = {
@@ -35,7 +36,7 @@ export const pageHasLocale = (key, lang) => !!(PAGE_SLUGS[key] && PAGE_SLUGS[key
 // Navigation path (wrap with asset()): de at root, otherwise /<lang>/<slug>/.
 export const pagePath = (key, lang) => {
   const s = slugFor(key, lang);
-  return lang === DEFAULT_LOCALE ? `/${s}/` : `/${lang}/${s}/`;
+  return cleanHref(lang === DEFAULT_LOCALE ? `/${s}/` : `/${lang}/${s}/`);
 };
 
 // Absolute URL for canonical / hreflang — no trailing slash, like the articles.

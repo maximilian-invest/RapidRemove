@@ -9,7 +9,7 @@ import { pagePath } from "@/lib/page-routes";
 import { fetchProfileById } from "@/lib/places";
 import { loadWizardSnapshot } from "@/lib/resume";
 import { Home } from "@/components/Home";
-import { Wizard } from "@/components/Wizard";
+import { Wizard, WizardTop } from "@/components/Wizard";
 import { WhatsAppFloat } from "@/components/Chrome";
 
 export default function App({ initialLang = "de", initialView = null, magCards = [] }) {
@@ -122,7 +122,7 @@ export default function App({ initialLang = "de", initialView = null, magCards =
         : !bootDone
           // Erst nach dem Deep-Link-Effekt rendern → beim „Weitermachen" kein Aufblitzen
           // der „kurz vorab"-Startseite; der Wizard startet direkt im gespeicherten Schritt.
-          ? <div style={{ minHeight: "82vh" }} aria-hidden />
+          ? <><WizardTop homeHref={homeUrl} label={t.wizard.backHome} /><div style={{ minHeight: "82vh" }} aria-hidden /></>
           : <Wizard key={resumeSnap ? "resume:" + resumeSnap.placeId : (seedProfile ? "p:" + (seedProfile.placeId || seedProfile.name) : seed) + lang} initialResume={resumeSnap} initialName={seed} initialProfile={seedProfile} leadSource={leadSource} initialReviews={reviewsDeep} onExit={exitWizard} onOrm={openOrm} onDeindex={openDeindex} onSelectProfile={onWizardSelect} />}
       {/* Tidio-Live-Chat IMMER laden (auch wenn man direkt auf der Wizard-URL landet);
           im Wizard wird die geschlossene Bubble mobil ausgeblendet. */}
