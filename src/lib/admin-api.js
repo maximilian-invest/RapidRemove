@@ -546,3 +546,21 @@ export async function sendReviewsMahnung(payload) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/** Screenshots der bestellten Bewertungen (Bewertungs-Produkt). retake=true nimmt
+ *  fehlende/fehlgeschlagene neu auf. Antwort: { enabled, running, shots[] }. */
+export async function fetchReviewShots(orderId, retake = false) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/review-shots", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, orderId, retake: !!retake }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+/** Bild-URL eines Screenshots (Token als Query, damit <img>/<a> funktionieren). */
+export function reviewShotUrl(id, download = false) {
+  return OPS + "/admin/review-shot/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(TOKEN) + (download ? "&dl=1" : "");
+}

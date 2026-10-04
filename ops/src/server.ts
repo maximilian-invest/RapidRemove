@@ -22,6 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
+import { shotKey, queueReviewShots, listShots, getShot, shotsRunning, orderReviewItems } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend } from "./db";
@@ -146,7 +147,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
@@ -471,6 +472,9 @@ app.post("/order", async (req, reply) => {
         clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
       });
       if (checkId) await linkCheck(checkId, id);
+      // Bewertungs-Produkt: von jeder bestellten Bewertung automatisch einen Screenshot
+      // (Hintergrund, blockiert die Antwort nicht) → Admin zeigt sie bei der Bestellung.
+      if (isReviews && reviewItems.length) queueReviewShots(id, reviewItems, (o, m) => app.log.info(o, m));
       // Serverseitiges InitiateCheckout: Auftrag erteilt, Profil freigegeben.
       if (capiEnabled() && b.consentMarketing === true && await claimCapiSend("orders", "capi_checkout_at", id)) {
         const r = await capiSend({
@@ -1147,6 +1151,40 @@ app.post("/admin/reviews-storno", async (req, reply) => {
     app.log.error({ err: e }, "Reviews-Storno fehlgeschlagen");
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
+});
+
+// Admin: Screenshots der bestellten Bewertungen (Liste + Neu aufnehmen).
+// Body: { token, orderId, retake?: true }. retake nimmt fehlende/fehlgeschlagene
+// neu auf (auch für Bestellungen von vor der Einführung).
+app.post("/admin/review-shots", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const orderId = clip(b.orderId, 40);
+  if (!orderId) return reply.code(400).send({ ok: false, error: "orderId fehlt" });
+  if (!shotKey()) return { ok: true, enabled: false, shots: [] };
+  try {
+    if (b.retake === true) {
+      const items = await orderReviewItems(orderId);
+      queueReviewShots(orderId, items, (x, m) => app.log.info(x, m), true);
+    }
+    const shots = await listShots(orderId);
+    return { ok: true, enabled: true, running: shotsRunning(orderId), shots };
+  } catch (e) {
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
+  }
+});
+// Admin: einzelnes Screenshot-Bild (Token als Query, damit <img src> funktioniert).
+app.get("/admin/review-shot/:id", async (req, reply) => {
+  const q = (req.query || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(q.token || "") !== ADMIN_TOKEN) return reply.code(401).send("unauthorized");
+  const id = Number((req.params as { id?: string }).id);
+  if (!Number.isInteger(id) || id <= 0) return reply.code(400).send("bad id");
+  const shot = await getShot(id).catch(() => null);
+  if (!shot) return reply.code(404).send("not found");
+  reply.header("Content-Type", shot.mime);
+  reply.header("Cache-Control", "private, max-age=86400");
+  if (String(q.dl || "") === "1") reply.header("Content-Disposition", `attachment; filename="bewertung-${id}.jpg"`);
+  return reply.send(shot.img);
 });
 
 app.post("/admin/reviews-invoice", async (req, reply) => {

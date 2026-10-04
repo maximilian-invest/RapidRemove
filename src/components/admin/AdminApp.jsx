@@ -9,7 +9,7 @@ import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl } from "@/lib/admin-api";
 import { langLabel } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -1517,6 +1517,61 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
   );
 }
 
+/* Screenshots jeder bestellten Bewertung — automatisch beim Bestelleingang
+   aufgenommen (ops/reviewShots.ts, ScreenshotOne). Beweis, wie die Bewertung
+   vor der Löschung aussah. Solange Aufnahmen laufen, wird alle 5 s nachgeladen. */
+function ReviewShotsPanel({ o, items, toast }) {
+  const [data, setData] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
+  const load = React.useCallback((retake) => fetchReviewShots(o.id, retake).then(setData).catch((e) => setData({ error: e.message })), [o.id]);
+  React.useEffect(() => { load(false); }, [load]);
+  const pending = !!(data && (data.running || (data.shots || []).some((s) => s.status === "pending")));
+  React.useEffect(() => {
+    if (!pending) return;
+    const t = setTimeout(() => load(false), 5000);
+    return () => clearTimeout(t);
+  }, [pending, data, load]);
+  const retake = async () => { setBusy(true); await load(true); setBusy(false); toast("Screenshots werden aufgenommen …"); };
+  if (!items.length) return null;
+  if (data && data.enabled === false) {
+    return <div className="muted" style={{ fontSize: 12, fontWeight: 600, margin: "0 0 12px" }}>📷 Bewertungs-Screenshots aus — in Railway die Variable SCREENSHOTONE_KEY setzen.</div>;
+  }
+  const byIdx = {};
+  ((data && data.shots) || []).forEach((s) => { byIdx[s.idx] = s; });
+  const missing = items.some((it, i) => it.url && (!byIdx[i] || byIdx[i].status === "error"));
+  return (
+    <div style={{ margin: "0 0 14px", paddingBottom: 12, borderBottom: "1px solid var(--hairline)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 800 }}>📷 Screenshots der Bewertungen{pending ? " · werden aufgenommen …" : ""}</span>
+        {missing && !pending ? <button type="button" className="btn btn-sec btn-sm" disabled={busy} onClick={retake}>{busy ? "…" : "Fehlende aufnehmen"}</button> : null}
+      </div>
+      {data && data.error ? <div style={{ fontSize: 12, color: "var(--danger)", fontWeight: 700 }}>Laden fehlgeschlagen: {data.error}</div> : null}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+        {items.map((it, i) => {
+          const s = byIdx[i];
+          const box = { border: "1px solid var(--hairline)", borderRadius: 10, overflow: "hidden", background: "var(--bg-soft, #faf6f0)", fontSize: 11.5 };
+          const cap = <div style={{ padding: "5px 8px", fontWeight: 700, display: "flex", justifyContent: "space-between", gap: 6 }}><span>#{i + 1}{it.name ? " · " + it.name : ""}</span>{s && s.status === "ok" ? <a href={reviewShotUrl(s.id, true)} style={{ color: "var(--primary)" }}>⬇</a> : null}</div>;
+          if (!it.url) return <div key={i} style={box}><div style={{ aspectRatio: "16/11", display: "flex", alignItems: "center", justifyContent: "center", padding: 8, textAlign: "center" }} className="muted">Kein Link — kein Screenshot</div>{cap}</div>;
+          if (s && s.status === "ok") return (
+            <div key={i} style={box}>
+              <a href={reviewShotUrl(s.id)} target="_blank" rel="noopener noreferrer"><img src={reviewShotUrl(s.id)} alt={"Bewertung " + (i + 1)} loading="lazy" style={{ width: "100%", aspectRatio: "16/11", objectFit: "cover", objectPosition: "left top", display: "block" }} /></a>
+              {cap}
+            </div>
+          );
+          return (
+            <div key={i} style={box}>
+              <div style={{ aspectRatio: "16/11", display: "flex", alignItems: "center", justifyContent: "center", padding: 8, textAlign: "center", color: s && s.status === "error" ? "var(--danger)" : undefined }} className={s && s.status === "error" ? "" : "muted"}>
+                {s && s.status === "error" ? "Fehlgeschlagen" : (pending || !data ? "Wird aufgenommen …" : "Noch kein Screenshot")}
+              </div>
+              {cap}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
 function ReviewsInvoicePanel({ o, toast, onStatus }) {
@@ -1555,6 +1610,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   return (
     <div>
       {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
+      <ReviewShotsPanel o={o} items={items} toast={toast} />
       <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
       {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}
       {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={items} toast={toast} onStatus={onStatus} /> : null}
