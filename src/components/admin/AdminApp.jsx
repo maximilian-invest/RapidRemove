@@ -1392,13 +1392,7 @@ function ReviewsStartPanel({ o, items, cur, toast }) {
     setSending(false);
   };
   return (
-    <div className="rvs-start">
-      <div className="rvs-h">🚀 Bearbeitung gestartet — Bestätigung an den Kunden</div>
-      <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.5, marginBottom: 10 }}>
-        Teilt mit, dass wir losgelegt haben: Dauer (wenige Tage bis 3 Wochen), keine Mitwirkung nötig,
-        Zahlung nur je tatsächlich gelöschter Bewertung. Geht automatisch auf <b>{langLabel(lang)}</b> raus —
-        der Sprache, über die der Kunde gekommen ist.
-      </div>
+    <div className="rvs-start" style={{ padding: 0, background: "none", border: 0, margin: "0 0 10px" }}>
       <button className="btn btn-pri btn-sm" disabled={sending} onClick={send}>
         <AI.send /> {sending ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)})`}
       </button>
@@ -1443,12 +1437,7 @@ function ReviewsStornoPanel({ o, items, toast, onStatus }) {
     });
   };
   return (
-    <div className="rvs-storno">
-      <div className="rvs-h">🚫 Voraussetzungen nicht erfüllt — Storno an den Kunden</div>
-      <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, lineHeight: 1.5, marginBottom: 10 }}>
-        Erklärt dem Kunden den Grund und dass ihm <b>keine Kosten</b> entstehen. Geht automatisch
-        auf <b>{langLabel(lang)}</b> raus; der Auftrag wird auf „storniert" gesetzt.
-      </div>
+    <div className="rvs-storno" style={{ padding: 0, background: "none", border: 0, margin: "0 0 12px" }}>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {RV_STORNO.map((s) => (
           <button key={s.reason} className="btn btn-sec btn-sm" disabled={!!sending} onClick={() => send(s.reason, s.label)}>
@@ -1702,8 +1691,11 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   return (
     <div>
       {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
-      <ProfileShotPanel o={o} toast={toast} />
-      <ReviewShotsPanel o={o} items={items} toast={toast} />
+      <details className="rv-shots" style={{ margin: "0 0 12px", borderBottom: "1px solid var(--hairline)", paddingBottom: 8 }}>
+        <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 800, padding: "4px 0" }}>📷 Screenshots (Profil + {items.length} Bewertung{items.length === 1 ? "" : "en"})</summary>
+        <ProfileShotPanel o={o} toast={toast} />
+        <ReviewShotsPanel o={o} items={items} toast={toast} />
+      </details>
       <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
       {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}
       {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={items} toast={toast} onStatus={onStatus} /> : null}
@@ -1722,6 +1714,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
         <span style={{ fontWeight: 800 }}>{chosen.length} gelöscht × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
           {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
+      </div>
+      <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch" }}>
         {viaMethod ? (
           <button className="btn btn-pri btn-sm" disabled={!chosen.length || sending} onClick={() => send(viaMethod)} title={viaName === "Wise" ? "Mit Wise-Kontodaten, ohne Stripe-Link" : "Ohne Stripe-Link — Hinweis: PayPal-Link folgt, Freunde & Familie"}>
             <AI.send /> {sending ? "Sendet…" : `Löschbestätigung senden (${viaName})`}
@@ -1731,7 +1725,6 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           {viaName ? <Icon.lock size={15} /> : <AI.send />} {sending && !viaMethod ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
         </button>
       </div>
-      {viaMethod === "paypal" ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>PayPal: Kunde bekommt den Hinweis, dass der PayPal-Link separat kommt (Freunde &amp; Familie) — den Link danach selbst schicken.</div> : null}
       {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. {sentVia ? `Zahlung via ${sentVia === "wise" ? "Wise" : "PayPal"} — Eingang manuell als bezahlt markieren.` : "Zahlungseingang läuft über den Stripe-Abgleich."}</div> : null}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       {/* Mahnwesen: erscheint, sobald die Rechnung raus ist (gelöscht) und noch offen. */}

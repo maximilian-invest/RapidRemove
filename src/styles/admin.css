@@ -603,3 +603,7 @@ button{font-family:inherit;}
 .rvs-start .rvs-h{font-weight:800;font-size:13.5px;color:var(--fg);margin-bottom:4px;}
 .rvs-storno{background:var(--neutral-50);border:1px solid var(--hairline);border-radius:var(--r-md);padding:14px 16px;margin:0 0 16px;}
 .rvs-storno .rvs-h{font-weight:800;font-size:13.5px;color:var(--fg);margin-bottom:4px;}
+
+/* Bewertungen: Löschbestätigung-Buttons nebeneinander (auch mobil) */
+.rv-send-row .btn{white-space:normal;line-height:1.25;text-align:left;min-width:0;}
+.rv-shots > summary{list-style-position:inside;}
