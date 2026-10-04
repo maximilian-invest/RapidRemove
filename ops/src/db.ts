@@ -648,6 +648,13 @@ export async function setOrderForm(id: string, form: unknown): Promise<boolean> 
   return (r.rowCount ?? 0) > 0;
 }
 
+/** Ein Feld im raw-JSON einer Bestellung setzen (z. B. die tatsächlich gelöschten Bewertungen). */
+export async function setOrderRawField(id: string, key: string, value: unknown): Promise<boolean> {
+  if (!pool || !id) return false;
+  const r = await pool.query(`UPDATE orders SET raw = COALESCE(raw, '{}'::jsonb) || jsonb_build_object($2::text, $3::jsonb) WHERE id=$1`, [id, key, JSON.stringify(value)]);
+  return (r.rowCount ?? 0) > 0;
+}
+
 /** Minimal-Infos zu einer Bestellung (für die öffentliche Fragebogen-Seite + Push-Texte). */
 export async function getOrderBasic(id: string): Promise<{ id: string; name: string | null; company: string | null; assignee: string | null; status: string | null; service: string | null; lang: string | null; form: unknown } | null> {
   if (!pool || !id) return null;

@@ -1456,86 +1456,57 @@ function ReviewsStornoPanel({ o, items, toast, onStatus }) {
    letzte Mahnung (Kunde wird angedroht, dass die Bewertung wieder online geht).
    Versand über POST /admin/reviews-mahnung. Erscheint (im Reviews-Abschnitt) sowohl
    in der Desktop-Detailansicht als auch mobil → mobil absendbar. */
-function ReviewsMahnungPanel({ o, toast, onStatus }) {
-  const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : [];
-  const [sel, setSel] = React.useState(() => items.reduce((m, _it, i) => { m[i] = true; return m; }, {})); // alle vorausgewählt
-  const [sending, setSending] = React.useState(false);
-  const [armed, setArmed] = React.useState(false);      // Stufe-3-Bestätigung (2. Tipp)
-  const already = Number(o.mahnungCount) || 0;
-  // Mahnstufe wird EXPLIZIT gewählt (nicht mehr aus dem Zähler geraten). Vorschlag =
-  // nächste Stufe nach den bereits gesendeten; frei änderbar über die Stufen-Buttons.
-  const [stage, setStage] = React.useState(() => Math.min(already + 1, 3));
-  const chosen = items.filter((_it, i) => sel[i]);
+function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
+  // Gemahnt werden die mit der Löschbestätigung abgerechneten Bewertungen
+  // (gerade gesendet → removed, sonst am Auftrag gespeichert; Altfälle: alle).
+  const items = (removed && removed.length) ? removed
+    : (o.reviewsRemoved && o.reviewsRemoved.length) ? o.reviewsRemoved
+    : (o.reviewItems && o.reviewItems.length ? o.reviewItems : []);
+  const [sending, setSending] = React.useState(0);
+  const [ask, setAsk] = React.useState(null);
+  const [sentMax, setSentMax] = React.useState(Number(o.mahnungCount) || 0);
   const cur = o.country === "US" ? "usd" : "eur";
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
-  const nOld = chosen.filter((it) => it && it.old).length;
-  const pct = reviewDiscountPct(chosen.length);
-  const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
-  const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
-  const fmtTotal = fmtM(total);
-  const STAGES = [[1, "Erinnerung"], [2, "2. Mahnung"], [3, "Letzte Mahnung"]];
-  // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link, Button heißt danach.
+  const nOld = items.filter((it) => it && it.old).length;
+  const pct = reviewDiscountPct(items.length);
+  const total = Math.round((items.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
+  // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link.
   const revPayMethod = o.payPref === "wise" ? "wise" : (o.paypal ? "paypal" : null);
-  const revPayName = revPayMethod === "wise" ? "Wise-Mahnung" : "PayPal-Mahnung";
-  const label = revPayMethod
-    ? revPayName + " · " + { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" }[stage]
-    : { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
-  const pickStage = (s) => { setStage(s); setArmed(false); };  // Stufenwechsel setzt die Stufe-3-Bestätigung zurück
-  const send = async () => {
-    if (!chosen.length || sending) return;
-    if (stage === 3 && !armed) { setArmed(true); return; }  // erst bestätigen, dann senden
-    setSending(true);
+  const viaName = revPayMethod === "wise" ? "Wise" : revPayMethod ? "PayPal" : "";
+  const amount = revPayMethod ? fmtM(Math.round(total * 0.9)) : fmtM(total);
+  const STAGES = [[1, "1. Erinnerung"], [2, "2. Mahnung"], [3, "3. Letzte Mahnung"]];
+  const doSend = async (stage, lbl) => {
+    setSending(stage);
     try {
-      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: chosen, stage, method: revPayMethod || undefined });
+      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: items, stage, method: revPayMethod || undefined });
       // Mahnung raus → Zahlungsstatus „Mahnung", Auftrag bleibt „Gelöscht".
       if (onStatus) onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
-      setArmed(false);
-      setStage((s) => Math.min(s + 1, 3));  // Komfort: Vorschlag rückt auf die nächste Stufe (bleibt frei änderbar)
-      toast(label.replace(" senden", "") + " (" + (r.total || fmtTotal) + ") an " + o.email + " gesendet ✓");
+      setSentMax((m) => Math.max(m, stage));
+      toast(lbl + (viaName ? " (" + viaName + ")" : "") + " · " + (r.payTotal || r.total || amount) + " an " + o.email + " gesendet ✓");
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
-    setSending(false);
+    setSending(0);
   };
+  const click = (stage, lbl) => setAsk({
+    danger: stage === 3,
+    title: lbl + (viaName ? " (" + viaName + ")" : "") + " senden?",
+    message: `${items.length} Bewertung${items.length === 1 ? "" : "en"} · ${amount}${viaName ? " via " + viaName + " (−10 %)" : ""} · Frist 48 Std. · an ${o.email}.`
+      + (stage === 3 ? ` Dem Kunden wird angedroht, dass die ${items.length === 1 ? "Bewertung wieder veröffentlicht wird" : "Bewertungen wieder veröffentlicht werden"} (+ Inkasso).` : ""),
+    confirmLabel: "Senden",
+    onConfirm: () => doSend(stage, lbl),
+  });
   if (!items.length) return null;
+  const next = Math.min(sentMax + 1, 3);
   return (
-    <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--hairline)" }}>
-      <div className="muted" style={{ fontSize: 12, fontWeight: 800, marginBottom: 8 }}>
-        Mahnung — Zahlung offen{already > 0 ? " · bereits " + already + " gesendet" : ""}
-      </div>
-      {/* Mahnstufe explizit wählen */}
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
-        {STAGES.map(([s, lbl]) => (
-          <button key={s} type="button" onClick={() => pickStage(s)} className="btn btn-sm"
-            style={stage === s
-              ? { background: s === 3 ? "var(--danger)" : "var(--primary)", borderColor: s === 3 ? "var(--danger)" : "var(--primary)", color: "#fff", fontWeight: 800 }
-              : { background: "transparent", border: "1px solid var(--hairline)", color: "var(--fg)", fontWeight: 700 }}>
-            {s} · {lbl}
-          </button>
-        ))}
-      </div>
-      <div className="muted" style={{ fontSize: 11, fontWeight: 600, margin: "0 0 10px" }}>Stufe {stage}/3 wird gesendet.</div>
-      {items.map((it, i) => (
-        <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
-          <input type="checkbox" checked={!!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
-          {it.url
-            ? <span style={{ wordBreak: "break-all" }}>{it.url}</span>
-            : <span style={{ fontWeight: 600 }}>{it.name}<span className="muted"> — „{(it.text || "").length > 100 ? (it.text || "").slice(0, 100) + "…" : it.text}“</span></span>}
-        </label>
-      ))}
-      {stage === 3 ? (
-        <div style={{ fontSize: 11.5, fontWeight: 700, color: "var(--danger)", margin: "8px 0 2px" }}>
-          ⚠ Letzte Mahnung: Dem Kunden wird angedroht, dass die {chosen.length === 1 ? "Bewertung wieder veröffentlicht wird" : chosen.length + " Bewertungen wieder veröffentlicht werden"} (+ Inkasso).
-        </div>
-      ) : null}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
-        <span style={{ fontWeight: 800 }}>{chosen.length} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span></span>
-        {revPayMethod ? <span className="muted" style={{ fontSize: 12, fontWeight: 700 }}>mit {revPayMethod === "wise" ? "Wise" : "PayPal"} −10 %: {fmtM(Math.round(total * 0.9))}</span> : null}
-        <button className="btn btn-sec btn-sm" disabled={!chosen.length || sending} onClick={send}
-          style={armed && stage === 3 ? { background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" } : undefined}>
-          <AI.send /> {sending ? "Sendet…" : (armed && stage === 3 ? "Wirklich senden — Bewertung geht online" : label)}
+    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 14, paddingTop: 12, borderTop: "1px solid var(--hairline)" }}>
+      {STAGES.map(([s, lbl]) => (
+        <button key={s} type="button" disabled={!!sending} onClick={() => click(s, lbl)}
+          className={"btn btn-sm " + (s === next && s <= 3 && sentMax < 3 ? "btn-pri" : "btn-sec")}
+          style={s === 3 && s === next && sentMax < 3 ? { background: "var(--danger)", borderColor: "var(--danger)" } : undefined}>
+          {sending === s ? "Sendet…" : (s <= sentMax ? "✓ " : "") + lbl}
         </button>
-      </div>
-      <div className="muted" style={{ fontSize: 11, fontWeight: 600, marginTop: 6 }}>Zahlungsfrist 48 Std. · Sprache automatisch nach Kunde ({(o.lang && o.lang !== "de" ? o.lang : "en").toUpperCase()}).</div>
+      ))}
+      <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
     </div>
   );
 }
@@ -1656,6 +1627,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const viaTotal = fmtM(Math.round(total * 0.9));
   const [ask, setAsk] = React.useState(null);
   const [sentVia, setSentVia] = React.useState(null);
+  const [sentItems, setSentItems] = React.useState(null);
   const send = async (method) => {
     if (!chosen.length || sending) return;
     setSending(true);
@@ -1666,6 +1638,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         ...(method ? { method } : {}),
       });
       setSentAt(new Date());
+      setSentItems(chosen);
       setSentVia(method || null);
       // Löschbestätigung raus → Auftrag gilt als erledigt: als „Gelöscht" markieren
       // (Zahlung „gesandt", sofern noch nicht bezahlt). Damit erscheint er in der
@@ -1728,7 +1701,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
       {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 6 }}>✓ Gesendet — Auftrag automatisch als „Gelöscht" markiert und in der Lösch-Liga gezählt. {sentVia ? `Zahlung via ${sentVia === "wise" ? "Wise" : "PayPal"} — Eingang manuell als bezahlt markieren.` : "Zahlungseingang läuft über den Stripe-Abgleich."}</div> : null}
       <ConfirmDialog ask={ask} onClose={() => setAsk(null)} />
       {/* Mahnwesen: erscheint, sobald die Rechnung raus ist (gelöscht) und noch offen. */}
-      {o.status === "done" && !["paid", "refunded"].includes(o.pay) ? <ReviewsMahnungPanel o={o} toast={toast} onStatus={onStatus} /> : null}
+      {o.status === "done" && !["paid", "refunded"].includes(o.pay) ? <ReviewsMahnungPanel o={o} toast={toast} onStatus={onStatus} removed={sentAt ? sentItems : null} /> : null}
     </div>
   );
 }

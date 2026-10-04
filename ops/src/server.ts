@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
@@ -1273,6 +1273,8 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
         ? `${count} von ${submittedCount} gelöscht · ${total} − 10 % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Link folgt separat" : " · Kontodaten in der Mail"} · an ${to}`
         : `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`,
       html, subject: t.subject(props as any) });
+    // Welche Bewertungen abgerechnet wurden → Grundlage für die Mahnungen im Admin.
+    if (orderId) await setOrderRawField(orderId, "reviewsRemoved", removedItems).catch(() => {});
     // Die Löschbestätigung ist der Erledigt-Moment → GLÖSCHT-Hype-Push ans Team
     // (analog zum Profil-Zahlungslink). Den „gelöscht"-Status setzt der Admin direkt danach.
     if (orderId) await fireDeletionHypePush(orderId, clip(b.name, 120), to);
