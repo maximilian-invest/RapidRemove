@@ -2388,10 +2388,18 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               <h3><Icon.fileText /> Auszulistende Inhalte</h3>
               <PressInfo o={o} rc="m-drow" />
             </React.Fragment>
+          ) : o.service === "reviews" ? (
+            <React.Fragment>
+              {/* Bewertungs-Produkt mobil: Screenshots, Startbestätigung, Storno,
+                  Löschbestätigung + Rechnung, Zahlungserinnerung/Mahnungen. */}
+              <h3><Icon.starOff /> Zu löschende Bewertungen</h3>
+              <ReviewsInvoicePanel o={o} toast={toast} onStatus={onStatus} />
+            </React.Fragment>
           ) : (
             <React.Fragment>
               <h3><Icon.building /> Profil &amp; Leistung</h3>
               <div className="m-drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+              <ProfileShotPanel o={o} toast={toast} />
               <div className="m-drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews}</span></div>
               <div className="m-drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
               {o.protection && <div className="m-drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
@@ -2411,6 +2419,8 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           <div className="m-drow"><span className="dl" style={{ fontWeight: 800, color: "var(--fg)" }}>Gesamt</span><span className="dv" style={{ fontFamily: "var(--font-display)", fontSize: 16, color: "var(--primary)" }}>{o.amount ? money(total, o.country) : "—"}</span></div>
           {o.amount && o.service !== "reviews" ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
+          {/* Zahlungserinnerung / Mahnungen (Profil-Bestellungen; Bewertungen haben ihr eigenes Mahnwesen oben) */}
+          {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"m-btn " + (mahnStage >= 3 ? "m-btn-danger" : "m-btn-sec")} style={{ marginTop: 9 }} onClick={sendMahnung}><Icon.mail /> {mahnBtnLabel}{usePaypalMahnung ? " (PayPal)" : ""}</button> : null}
           {o.pay !== "paid" && o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
           {o.pay === "paid" ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
         </div>
