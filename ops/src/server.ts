@@ -22,6 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
+import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -147,7 +148,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), monitor: monitorKeys(), orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
@@ -1573,6 +1574,9 @@ app.post("/admin/order-mark-paid", async (req, reply) => {
   return { ok: true };
 });
 
+// Monitor: Überwachung gelöschter Profile (Admin → Monitor), eigene Routen in monitor.ts.
+registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
+
 const port = Number(process.env.PORT) || 3000;
 async function start() {
   try { await initDb(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
@@ -1586,6 +1590,7 @@ async function start() {
     // Bewertungs-Screenshots der letzten 14 Tage nachholen (nur mit SCREENSHOTONE_KEY;
     // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.
     if (shotKey()) setTimeout(() => { void backfillReviewShots(14, (o, m) => app.log.info(o, m)); }, 20_000);
+    startMonitorScheduler(app);   // Monitor: täglicher Scan 05:00 (Wien)
   } catch (err) { app.log.error(err); process.exit(1); }
 }
 start();

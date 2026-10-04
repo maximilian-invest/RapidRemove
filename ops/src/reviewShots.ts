@@ -47,7 +47,7 @@ function targetUrl(u: string): string {
   } catch { return u; }
 }
 
-function apiUrl(target: string): string {
+function apiUrl(target: string, withTitle = false): string {
   const p = new URLSearchParams({
     access_key: shotKey(),
     url: targetUrl(target),
@@ -64,12 +64,30 @@ function apiUrl(target: string): string {
     cache: "false",
   });
   // Google-Einwilligung vorab setzen, sonst landet die Aufnahme auf „Bevor Sie fortfahren".
+  if (withTitle) p.set("metadata_page_title", "true"); // Seitentitel → Header x-screenshotone-page-title
   p.append("headers", "Accept-Language:de-DE,de;q=0.9");
   p.append("cookies", "CONSENT=YES+; Domain=.google.com; Path=/");
   p.append("cookies", "SOCS=CAESEwgDEgk0ODE3Nzk3MjQaAmRlIAEaBgiA_LyaBg; Domain=.google.com; Path=/");
   const qs = p.toString();
   const sig = shotSecret() ? "&signature=" + createHmac("sha256", shotSecret()).update(qs).digest("hex") : "";
   return (process.env.SCREENSHOT_API_BASE || "https://api.screenshotone.com") + "/take?" + qs + sig;
+}
+
+/**
+ * Ein Screenshot + Seitentitel (für die Monitor-Verifizierung: Google Maps trägt den
+ * Firmennamen im Titel, ein leerer/fehlender Eintrag nur „Google Maps"). Wirft bei Fehlern.
+ */
+export async function captureShot(url: string): Promise<{ buf: Buffer; mime: string; title: string }> {
+  if (!shotKey()) throw new Error("SCREENSHOTONE_KEY fehlt");
+  const res = await fetch(apiUrl(url, true), { signal: AbortSignal.timeout(100_000) });
+  const type = res.headers.get("content-type") || "";
+  if (!res.ok || !type.startsWith("image/")) {
+    const t = await res.text().catch(() => "");
+    throw new Error("HTTP " + res.status + " " + t.slice(0, 200));
+  }
+  let title = res.headers.get("x-screenshotone-page-title") || "";
+  try { title = decodeURIComponent(title); } catch { /* roh lassen */ }
+  return { buf: Buffer.from(await res.arrayBuffer()), mime: type.split(";")[0], title };
 }
 
 async function takeOne(orderId: string, idx: number, url: string): Promise<void> {

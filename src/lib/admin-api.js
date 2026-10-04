@@ -564,3 +564,28 @@ export async function fetchReviewShots(orderId, retake = false) {
 export function reviewShotUrl(id, download = false) {
   return OPS + "/admin/review-shot/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(TOKEN) + (download ? "&dl=1" : "");
 }
+
+/* ---- Monitor: Überwachung gelöschter Profile (ops/monitor.ts) ---- */
+async function monitorPost(path, body) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/monitor/" + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(body || {}) }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+export const monitorList = () => monitorPost("list");
+export const monitorDetail = (id) => monitorPost("detail", { id });
+export const monitorScan = (id) => monitorPost("scan", id ? { id } : {});
+export const monitorCancel = () => monitorPost("cancel");
+export const monitorAction = (id, action, extra) => monitorPost("action", { id, action, ...(extra || {}) });
+export const monitorInform = (id) => monitorPost("inform", { id });
+export const monitorLookup = (q) => monitorPost("lookup", q);
+export const monitorAdd = (data) => monitorPost("add", data);
+/** Bild-URL eines Monitor-Screenshots (Token als Query für <img>). */
+export function monitorShotUrl(id, download = false) {
+  return OPS + "/admin/monitor-shot/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(TOKEN) + (download ? "&dl=1" : "");
+}

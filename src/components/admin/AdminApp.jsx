@@ -9,7 +9,9 @@ import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList } from "@/lib/admin-api";
+import { Monitor } from "@/components/admin/Monitor";
+import "@/styles/monitor.css";
 import { langLabel } from "@/lib/mail-lang";
 import { fetchProfileById } from "@/lib/places";
 import { SERVICES, STATUS_FLOW, TEMPLATES, AUTOMATIONS, COMPANY, money, crmExtras } from "@/lib/admin-data";
@@ -256,6 +258,7 @@ function Sidebar({ view, setView, counts, open, live }) {
   const items = [
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
+    ["monitor", Icon.eye, "Monitor", counts.monitor, true],
     ["checks", Icon.search, "Geprüfte Profile"],
     ["subs", AI.euro, "Abos & Umsatz"],
     ["liga", AI.trophy, "Löschungs-Liga"],
@@ -270,9 +273,9 @@ function Sidebar({ view, setView, counts, open, live }) {
         <span className="env">{live ? "Live" : "Demo"}</span>
       </div>
       <div className="side-sec">Betrieb</div>
-      {items.map(([id, I, label, badge]) => (
+      {items.map(([id, I, label, badge, alarm]) => (
         <button key={id} className={"side-link" + (view === id ? " on" : "")} onClick={() => setView(id)}>
-          <I /> {label} {badge ? <span className="badge">{badge}</span> : null}
+          <I /> {label} {badge ? <span className="badge" style={alarm ? { background: "var(--danger)", color: "#fff" } : undefined}>{badge}</span> : null}
         </button>
       ))}
       <div className="side-foot">
@@ -362,6 +365,7 @@ function MobileTabBar({ view, setView, counts }) {
   const tabs = [
     ["dashboard", AI.grid, "Übersicht"],
     ["orders", AI.inbox, "Bestellungen", counts.new],
+    ["monitor", Icon.eye, "Monitor", counts.monitor],
     ["checks", Icon.search, "Profile"],
     ["subs", AI.euro, "Umsatz"],
     ["liga", AI.trophy, "Liga"],
@@ -2837,7 +2841,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -2857,6 +2861,8 @@ function AdminApp() {
   const [query, setQuery] = React.useState("");
   const [sideOpen, setSideOpen] = React.useState(false);
   const [toastMsg, setToastMsg] = React.useState(null);
+  const [monFound, setMonFound] = React.useState(0);      // Monitor: offene Funde (Badge)
+  const [monOpen, setMonOpen] = React.useState(null);     // Monitor: per Deep-Link (?monitor=ID) zu öffnendes Profil
   const toast = (m) => { setToastMsg(m); setTimeout(() => setToastMsg(null), 2600); };
 
   // Daten (neu) laden — von der Aktualisieren-Schaltfläche und beim Start.
@@ -2890,6 +2896,13 @@ function AdminApp() {
             if (rec) setDetail(rec);
           }
           if (targetId) { try { const u = new URL(window.location.href); u.searchParams.delete("order"); window.history.replaceState(null, "", u); } catch (e) {} }
+          // Push „Profil wieder erschienen" → /admin?monitor=<id> öffnet den Monitor mit dem Profil.
+          let monId = null;
+          try { monId = new URLSearchParams(window.location.search).get("monitor"); } catch (e) {}
+          if (monId) {
+            setMonOpen(monId); setView("monitor"); setDetail(null);
+            try { const u = new URL(window.location.href); u.searchParams.delete("monitor"); window.history.replaceState(null, "", u); } catch (e) {}
+          }
         } catch (e) {}
       }
     })();
@@ -2903,7 +2916,15 @@ function AdminApp() {
     try { if (detail && detail.id) localStorage.setItem("rr_admin_detail", detail.id); else localStorage.removeItem("rr_admin_detail"); } catch (e) {}
   }, [detail]);
 
-  const counts = { new: orders.filter((o) => o.status === "new").length };
+  // Monitor-Badge: offene Funde (alle 2 Min. aktualisiert, solange das Admin offen ist).
+  React.useEffect(() => {
+    let alive = true;
+    const tick = () => monitorList().then((d) => { if (alive) setMonFound((d.profiles || []).filter((p) => p.status === "found").length); }).catch(() => {});
+    const t0 = setTimeout(tick, 1500);
+    const iv = setInterval(tick, 120000);
+    return () => { alive = false; clearTimeout(t0); clearInterval(iv); };
+  }, []);
+  const counts = { new: orders.filter((o) => o.status === "new").length, monitor: monFound };
   const openOrder = (o) => setActive(o);
   const openDetail = (o) => { setDetail(o); setActive(null); window.scrollTo({ top: 0 }); };
   const setStatus = (o, id, silent, keepPay, patch) => {
@@ -3003,6 +3024,8 @@ function AdminApp() {
   let body;
   if (detail) body = <CustomerDetail order={detail} onBack={() => setDetail(null)} onStatus={setStatus} onCompose={(o, t) => setCompose({ order: o, template: t })} onInvoice={(o) => setInvoiceModal(o)} onSms={(o) => setSmsOrder(o)} onPayLink={(o) => setPayLinkOrder(o)} onStorno={(o) => setStornoOrder(o)} onReactivate={doReactivate} onCorrectPay={doCorrectPay} onMarkPaid={doMarkPaid} onAssign={setAssignee} toast={toast} />;
   else if (view === "orders") body = <Orders orders={orders} openOrder={openDetail} query={query} setQuery={setQuery} />;
+  else if (view === "monitor") body = <Monitor key={monOpen || "mon"} orders={orders} toast={toast} initialOpen={monOpen} onFoundCount={setMonFound}
+    onOpenOrder={(id) => { const o = orders.find((x) => x.id === id); if (o) openDetail(o); else toast("Bestellung " + id + " nicht gefunden"); }} />;
   else if (view === "checks") body = <ChecksView checks={checks} orders={orders} openOrder={openDetail} toast={toast} />;
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;

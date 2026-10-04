@@ -40,6 +40,8 @@ export interface MailAttachment {
   /** Roh-Bytes (Buffer) oder String – wird für Graph base64-kodiert. */
   content: Buffer | string;
   contentType?: string;
+  /** Inline-Bild: im HTML per <img src="cid:…"> eingebunden. */
+  cid?: string;
 }
 
 export interface SendArgs {
@@ -86,6 +88,7 @@ export async function sendMail(args: SendArgs): Promise<SendResult> {
       name: a.filename,
       contentType: a.contentType || "application/octet-stream",
       contentBytes: (Buffer.isBuffer(a.content) ? a.content : Buffer.from(a.content)).toString("base64"),
+      ...(a.cid ? { isInline: true, contentId: a.cid } : {}),
     }));
   }
 

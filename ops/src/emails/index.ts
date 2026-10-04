@@ -19,6 +19,7 @@ import NeuesAbo, { subject as neuesAboSubject } from "./NeuesAbo";
 import Schutzhinweis, { subject as schutzhinweisSubject } from "./Schutzhinweis";
 import AboDeaktiviert, { subject as aboDeaktiviertSubject } from "./AboDeaktiviert";
 import Garantiefall, { subject as garantiefallSubject } from "./Garantiefall";
+import ProfilWiedererschienen, { subject as profilWiedererschienenSubject } from "./ProfilWiedererschienen";
 import Mahnung, { subject as mahnungSubject } from "./Mahnung";
 import Reaktivierung, { subject as reaktivierungSubject } from "./Reaktivierung";
 import Fragebogen, { subject as fragebogenSubject } from "./Fragebogen";
@@ -283,6 +284,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     group: "Schutz",
     component: AboDeaktiviert,
     subject: aboDeaktiviertSubject,
+    sample: de,
+  },
+  "profil-wiedererschienen": {
+    label: "Profil wieder erschienen (Monitor)",
+    group: "Schutz",
+    component: ProfilWiedererschienen,
+    subject: profilWiedererschienenSubject,
     sample: de,
   },
   garantiefall: {
