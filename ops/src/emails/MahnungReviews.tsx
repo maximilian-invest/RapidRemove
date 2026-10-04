@@ -22,6 +22,10 @@ export interface MahnungReviewsProps {
   orderId?: string;
   /** Mahnstufe 1–3 (3 = letzte Mahnung, Bewertung geht wieder online). */
   stage?: number;
+  /** Kunde zahlt per PayPal/Wise (10 % Rabatt) → kein Stripe-Button, Hinweis auf die gesendeten Zahlungsdaten. */
+  method?: "paypal" | "wise";
+  /** Rabattierter Betrag bei PayPal/Wise (−10 %). */
+  payTotal?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -241,7 +245,9 @@ export function subject(p: MahnungReviewsProps): string {
   return t.subject[clampStage(p.stage) - 1];
 }
 
-export default function MahnungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], per = "", total = "", payUrl = "", orderId = "", stage = 1, _overrides }: MahnungReviewsProps = {}) {
+const PAY_VIA: Record<string, string> = {"de": "Bitte zahle über die {m}-Zahlungsdaten, die wir dir geschickt haben – mit 10 % Rabatt: {t}.", "en": "Please pay via the {m} payment details we sent you – with your 10% discount: {t}.", "es": "Paga a través de los datos de pago de {m} que te enviamos, con tu 10 % de descuento: {t}.", "fr": "Merci de payer via les coordonnées de paiement {m} que nous t’avons envoyées – avec ta remise de 10 % : {t}.", "it": "Paga tramite i dati di pagamento {m} che ti abbiamo inviato, con il tuo sconto del 10%: {t}.", "nl": "Betaal via de {m}-betaalgegevens die we je hebben gestuurd – met je 10% korting: {t}.", "pt": "Paga através dos dados de pagamento {m} que te enviámos – com o teu desconto de 10%: {t}.", "ja": "お送りした{m}のお支払い情報からお支払いください（10%割引後：{t}）。", "sv": "Betala via {m}-betalningsuppgifterna vi skickade till dig – med din rabatt på 10 %: {t}.", "da": "Betal via de {m}-betalingsoplysninger, vi sendte dig – med din rabat på 10 %: {t}.", "no": "Betal via {m}-betalingsopplysningene vi sendte deg – med rabatten din på 10 %: {t}."};
+
+export default function MahnungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], per = "", total = "", payUrl = "", orderId = "", stage = 1, method, payTotal = "", _overrides }: MahnungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: MahnungReviewRef[] = removedItems.length ? removedItems : removedUrls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -265,7 +271,8 @@ export default function MahnungReviews({ lang = "en", name = "", removedItems = 
         </DangerBox>
       ) : null}
 
-      {payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
+      {method ? <P><strong style={{ color: brand.tintText }}>{(PAY_VIA[lang] || PAY_VIA.en).replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total)}</strong></P>
+        : payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
 
       <P>{t.close}</P>
       <P>{t.signoff}</P>

@@ -1463,14 +1463,19 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
   const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
   const STAGES = [[1, "Erinnerung"], [2, "2. Mahnung"], [3, "Letzte Mahnung"]];
-  const label = { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
+  // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link, Button heißt danach.
+  const revPayMethod = o.payPref === "wise" ? "wise" : (o.paypal ? "paypal" : null);
+  const revPayName = revPayMethod === "wise" ? "Wise-Mahnung" : "PayPal-Mahnung";
+  const label = revPayMethod
+    ? revPayName + " · " + { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" }[stage]
+    : { 1: "Zahlungserinnerung senden", 2: "2. Mahnung senden", 3: "Letzte Mahnung senden" }[stage];
   const pickStage = (s) => { setStage(s); setArmed(false); };  // Stufenwechsel setzt die Stufe-3-Bestätigung zurück
   const send = async () => {
     if (!chosen.length || sending) return;
     if (stage === 3 && !armed) { setArmed(true); return; }  // erst bestätigen, dann senden
     setSending(true);
     try {
-      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: chosen, stage });
+      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: chosen, stage, method: revPayMethod || undefined });
       // Mahnung raus → Zahlungsstatus „Mahnung", Auftrag bleibt „Gelöscht".
       if (onStatus) onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
       setArmed(false);
@@ -1512,6 +1517,7 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
       ) : null}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 10, flexWrap: "wrap" }}>
         <span style={{ fontWeight: 800 }}>{chosen.length} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span></span>
+        {revPayMethod ? <span className="muted" style={{ fontSize: 12, fontWeight: 700 }}>mit {revPayMethod === "wise" ? "Wise" : "PayPal"} −10 %: {fmtM(Math.round(total * 0.9))}</span> : null}
         <button className="btn btn-sec btn-sm" disabled={!chosen.length || sending} onClick={send}
           style={armed && stage === 3 ? { background: "var(--danger)", borderColor: "var(--danger)", color: "#fff" } : undefined}>
           <AI.send /> {sending ? "Sendet…" : (armed && stage === 3 ? "Wirklich senden — Bewertung geht online" : label)}
@@ -2207,12 +2213,13 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   };
   // Datenabhängige Vorlagen (brauchen Betrag/Link/Stufe) laufen über eigene Flows,
   // nicht über die generische Vorlagen-Liste (Zahlungslink-Dialog bzw. Mahnung-Button).
-  const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung", "paypal-mahnung"]);
+  const TPL_VIA_PAYLINK = new Set(["zahlungslink", "mahnung", "paypal-mahnung", "wise-mahnung"]);
   // Vorlagen, die NUR außerhalb DACH angeboten werden (PayPal-Vorteil + -Erinnerung + -Mahnung).
-  const NON_DACH_ONLY = new Set(["paypal-angebot", "paypal-erinnerung", "paypal-zahlung-bestaetigt", "paypal-mahnung"]);
+  const NON_DACH_ONLY = new Set(["paypal-angebot", "paypal-erinnerung", "paypal-zahlung-bestaetigt", "paypal-mahnung", "wise-mahnung"]);
   const isDach = (o.lang || "de") === "de";
   const TPL_GROUP_ORDER = ["Mitwirkung", "Storno", "Schutz", "Bestellung"];
-  const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key) && !(isDach && NON_DACH_ONLY.has(t.key)));
+  // Wise-Kunde: PayPal-Vorlagen ausblenden (Zahlung läuft über Wise).
+  const sendableTpls = (tpls || []).filter((t) => !TPL_VIA_PAYLINK.has(t.key) && !(isDach && NON_DACH_ONLY.has(t.key)) && !(o.payPref === "wise" && /^paypal-/.test(t.key)));
   const topUsed = [...sendableTpls].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 6);
   const renderTplBtn = (t) => {
     const auto = automationForKey(t.key);
@@ -2247,17 +2254,21 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
   const mahnBtnLabel = { 1: "Zahlungserinnerung senden", 2: "2. Erinnerung senden", 3: "Mahnung senden", 4: "Letzte Mahnung (Reaktivierung)" }[mahnStage];
   // PayPal-Kunden (Zahlung außerhalb Stripe): Mahnung als Text-Mahnlauf per Vorlage, die auf
   // den separat gesendeten PayPal-Link verweist – KEIN Stripe-Zahlungslink. Nur außerhalb DACH.
-  const usePaypalMahnung = !!o.paypal && (o.lang || "de") !== "de";
+  // Zahlungsweg laut Kunde (Rabatt-Abfrage/Fragebogen): Wise oder PayPal → eigene Text-Mahnung
+  // (verweist auf die gesendeten Zahlungsdaten, kein Stripe-Link). Nur außerhalb DACH.
+  const payMethod = (o.lang || "de") === "de" ? null : o.payPref === "wise" ? "wise" : o.paypal ? "paypal" : null;
+  const usePaypalMahnung = !!payMethod;
+  const payMahnName = payMethod === "wise" ? "Wise-Mahnung" : "PayPal-Mahnung";
   const doSendMahnung = async () => {
     try {
       if (usePaypalMahnung) {
         // Text-Mahnlauf (Stufe 1–4) für PayPal – verweist auf den bereits gesendeten PayPal-Link.
-        await sendTemplate({ key: "paypal-mahnung", to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, offer: computeOffer(o), stage: mahnStage });
+        await sendTemplate({ key: payMethod === "wise" ? "wise-mahnung" : "paypal-mahnung", to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, offer: computeOffer(o), stage: mahnStage });
       } else {
         const tot = o.amount + (o.protection && o.protAmount ? o.protAmount : 0);
         await sendPayLink({ to: o.email, name: o.name, orderId: o.id, currency: o.country === "US" ? "usd" : "eur", service: o.service, protection: o.protection || "none", serviceAmount: o.amount || 0, protAmount: (o.protection && o.protAmount) ? o.protAmount : 0, protType: o.protection || "", total: tot, protectionLabel: o.protection ? ((o.protection === "lifetime" ? "Lebenslanger Schutz" : o.protection === "monitor" ? "Schutz + Tägliche Überwachung" : "Monatlicher Schutz") + (o.protAmount ? " – " + money(o.protAmount, o.country) + (o.protection !== "lifetime" ? "/Mon." : "") : "")) : "", express: !!o.express, expressLabel: o.express ? ("Express-Bearbeitung (≤6 h)" + (o.expressAmount ? " · +" + money(o.expressAmount, o.country) : "")) : undefined, lang: o.lang || "de", template: "mahnung", stage: mahnStage });
       }
-      toast(mahnLabel + (usePaypalMahnung ? " (PayPal)" : "") + " an " + o.name + " gesendet ✓");
+      toast((usePaypalMahnung ? payMahnName + " · " : "") + mahnLabel + " an " + o.name + " gesendet ✓");
       // Status „Profil gelöscht" nur 1× (beim ersten Mal) – danach nur Zahlungsstatus.
       onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
       reloadEvents(); setTimeout(reloadEvents, 900);
@@ -2272,7 +2283,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         message: mahnStage === 4
           ? `An ${o.name} geht die LETZTE Mahnung: Zahlung noch HEUTE – sonst ${o.service === "reset" ? "Wiederherstellung der bisherigen Bewertungen" : "Reaktivierung des Profils"} und Übergabe an ein Inkassobüro. Wirklich senden?`
           : `An ${o.name} geht eine Mahnung mit Androhung von Inkasso und ${o.service === "reset" ? "Wiederherstellung der bisherigen Bewertungen" : "Wiederherstellung des Profils"}. Wirklich senden?`,
-        confirmLabel: mahnBtnLabel,
+        confirmLabel: usePaypalMahnung ? payMahnName + " senden" : mahnBtnLabel,
         onConfirm: doSendMahnung,
       });
       return;
@@ -2424,7 +2435,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
           {o.amount && o.service !== "reviews" ? <button className="m-btn m-btn-pri" style={{ marginTop: 14 }} onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
           {o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
           {/* Zahlungserinnerung / Mahnungen (Profil-Bestellungen; Bewertungen haben ihr eigenes Mahnwesen oben) */}
-          {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"m-btn " + (mahnStage >= 3 ? "m-btn-danger" : "m-btn-sec")} style={{ marginTop: 9 }} onClick={sendMahnung}><Icon.mail /> {mahnBtnLabel}{usePaypalMahnung ? " (PayPal)" : ""}</button> : null}
+          {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"m-btn " + (mahnStage >= 3 ? "m-btn-danger" : "m-btn-sec")} style={{ marginTop: 9 }} onClick={sendMahnung}><Icon.mail /> {usePaypalMahnung ? payMahnName + " · " + mahnLabel : mahnBtnLabel}</button> : null}
           {o.pay !== "paid" && o.amount ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
           {o.pay === "paid" ? <button className="m-btn m-btn-sec" style={{ marginTop: 9 }} onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
         </div>
@@ -2669,7 +2680,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
             <div style={{ display: "flex", gap: 8, marginTop: 13, flexWrap: "wrap" }}>
               {o.pay !== "paid" && o.amount && o.service !== "reviews" ? <button className="btn btn-pri btn-sm" onClick={() => sendOrderedPayLink(o, toast, onStatus, onPayLink)}><AI.send /> Zahlungslink senden</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onPayLink(o)}><AI.creditCard /> Anderen Link wählen…</button> : null}
-              {o.amount && o.pay !== "paid" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung} title={usePaypalMahnung ? "Text-Mahnung – verweist auf den gesendeten PayPal-Link" : "Mahnung mit Stripe-Zahlungslink"}><Icon.mail /> {mahnBtnLabel}{usePaypalMahnung ? " (PayPal)" : ""}</button> : null}
+              {o.amount && o.pay !== "paid" && o.service !== "reviews" ? <button className={"btn btn-sm " + (mahnStage >= 3 ? "btn-danger" : "btn-sec")} onClick={sendMahnung} title={usePaypalMahnung ? "Text-Mahnung – verweist auf die gesendeten " + (payMethod === "wise" ? "Wise" : "PayPal") + "-Zahlungsdaten" : "Mahnung mit Stripe-Zahlungslink"}><Icon.mail /> {usePaypalMahnung ? payMahnName + " · " + mahnLabel : mahnBtnLabel}</button> : null}
               {o.pay !== "paid" && o.amount ? <button className="btn btn-sec btn-sm" onClick={() => onMarkPaid && onMarkPaid(o)}><Icon.checkCircle /> Als bezahlt markieren (z. B. PayPal)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-sec btn-sm" onClick={() => onCorrectPay && onCorrectPay(o)}><Icon.refresh /> Zahlung korrigieren (nicht erhalten)</button> : null}
               {o.pay === "paid" ? <button className="btn btn-ghost btn-sm" onClick={() => toast("Rückerstattung eingeleitet")}><AI.refund /> Erstatten</button> : null}

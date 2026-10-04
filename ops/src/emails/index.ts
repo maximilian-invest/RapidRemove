@@ -27,7 +27,7 @@ import PresseEingang, { subject as presseEingangSubject } from "./PresseEingang"
 import Verzoegerung, { subject as verzoegerungSubject } from "./Verzoegerung";
 import PaypalAngebot, { subject as paypalAngebotSubject, T as paypalAngebotTexts } from "./PaypalAngebot";
 import PaypalErinnerung, { subject as paypalErinnerungSubject, T as paypalErinnerungTexts } from "./PaypalErinnerung";
-import PaypalMahnung, { subject as paypalMahnungSubject } from "./PaypalMahnung";
+import PaypalMahnung, { subject as paypalMahnungSubject, WiseMahnung } from "./PaypalMahnung";
 import PaypalZahlungBestaetigt, { subject as paypalZahlungBestaetigtSubject, T as paypalZahlungBestaetigtTexts } from "./PaypalZahlungBestaetigt";
 import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubject, T as auftragsbestaetigungReviewsTexts } from "./AuftragsbestaetigungReviews";
 import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
@@ -123,6 +123,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     label: "PayPal-Mahnung · 4-stufig (außerhalb DACH)",
     group: "Bestellung",
     component: PaypalMahnung,
+    subject: paypalMahnungSubject,
+    sample: { lang: "en", name: "Alex", stage: 1, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
+  },
+  "wise-mahnung": {
+    label: "Wise-Mahnung · 4-stufig (außerhalb DACH)",
+    group: "Bestellung",
+    component: WiseMahnung,
     subject: paypalMahnungSubject,
     sample: { lang: "en", name: "Alex", stage: 1, offer: { regular: "$748.80", paypal: "$654", savings: "$94.80", sub: null } },
   },

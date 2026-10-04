@@ -33,6 +33,8 @@ export interface PaypalMahnungProps {
   service?: string;
   /** Mahnstufe 1–4 (Standard 1). */
   stage?: 1 | 2 | 3 | 4;
+  /** Zahlungsweg: "paypal" (Standard) oder "wise" (Wise-Mahnung, gleicher Ablauf). */
+  method?: "paypal" | "wise";
   /** Im Admin bearbeitete Text-Overrides (überschreiben Default-Texte pro Feld). */
   _overrides?: Record<string, string>;
 }
@@ -178,7 +180,10 @@ export function subject(p: PaypalMahnungProps = {} as PaypalMahnungProps): strin
   return STAGES[clampStage(p.stage)][pickLang(p.lang)].subject;
 }
 
-export default function PaypalMahnung({ lang = "en", name = "", offer, service, stage, _overrides }: PaypalMahnungProps = {}) {
+/** „PayPal" im Text durch den gewählten Zahlungsweg ersetzen (Wise-Mahnung). */
+const viaMethod = (txt: string, method?: string) => (method === "wise" ? (txt || "").replace(/PayPal/g, "Wise") : txt);
+
+export default function PaypalMahnung({ lang = "en", name = "", offer, service, stage, method, _overrides }: PaypalMahnungProps = {}) {
   const L = pickLang(lang);
   const st = clampStage(stage);
   const c = COMMON[L];
@@ -190,8 +195,8 @@ export default function PaypalMahnung({ lang = "en", name = "", offer, service, 
     <EmailShell preview={s.preview} title={s.title} lang={L}>
       <P><strong>{c.greeting(who)}</strong></P>
       <P>{s.intro}</P>
-      <P>{c.payLine}</P>
-      {offer ? <P><strong style={{ color: brand.tintText }}>{fillOffer(SAVINGS_LINE[L], offer)}</strong></P> : null}
+      <P>{viaMethod(c.payLine, method)}</P>
+      {offer ? <P><strong style={{ color: brand.tintText }}>{viaMethod(fillOffer(SAVINGS_LINE[L], offer), method)}</strong></P> : null}
 
       <Warn>
         <strong style={{ fontSize: 15 }}>{warn}</strong>
@@ -202,4 +207,9 @@ export default function PaypalMahnung({ lang = "en", name = "", offer, service, 
       <P>{c.signoff}</P>
     </EmailShell>
   );
+}
+
+/** Wise-Mahnung: gleicher 4-stufiger Ablauf, verweist auf die gesendeten Wise-Zahlungsdaten. */
+export function WiseMahnung(props: PaypalMahnungProps = {}) {
+  return PaypalMahnung({ ...props, method: "wise" });
 }

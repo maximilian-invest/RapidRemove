@@ -1296,8 +1296,11 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const quote = quoteReviews(removedItems, currency);
   const totalNum = quote.total;
 
+  // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
+  const method = b.method === "wise" ? "wise" : b.method === "paypal" ? "paypal" : undefined;
+  const payTotal = method ? (currency === "usd" ? `$${Math.round(totalNum * 0.9).toLocaleString("en-US")}` : `${Math.round(totalNum * 0.9).toLocaleString("de-DE")} €`) : "";
   // Zahlungslink wie bei der Rechnung auflösen (Stückzahl-Tabelle → Stripe anlegen → Betrag-Match).
-  let url = quote.simple ? reviewsLinkFor(count, currency) : "";
+  let url = method ? "-" : quote.simple ? reviewsLinkFor(count, currency) : "";
   if (!url && hasSecretKey()) {
     try { url = quote.simple ? await ensureReviewsLink(count, curSafe) : await ensureReviewsAmountLink(totalNum, curSafe); }
     catch (e) { app.log.error({ err: e }, "Reviews-Mahnung-Link anlegen fehlgeschlagen"); }
@@ -1319,10 +1322,10 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" };
   try {
     const t = TEMPLATES["mahnung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, per, total, payUrl: url, orderId, stage };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, per, total, payUrl: method ? "" : url, orderId, stage, method, payTotal };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
-    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: `Mahnung (Bewertungen) gesendet · Stufe ${stage} (${STAGE_LABEL[stage]})`, detail: `${count} Bewertung(en) · ${total} · Zahlung binnen 48 h · Sprache ${tlang.toUpperCase()} · an ${to}`, html, subject: t.subject(props as any) });
+    await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: `Mahnung (Bewertungen) gesendet · Stufe ${stage} (${STAGE_LABEL[stage]}${method ? ", " + (method === "wise" ? "Wise" : "PayPal") : ""})`, detail: `${count} Bewertung(en) · ${total} · Zahlung binnen 48 h · Sprache ${tlang.toUpperCase()} · an ${to}`, html, subject: t.subject(props as any) });
     return { ok: true, url, count, total, stage, lang: tlang };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Mahnung fehlgeschlagen");
@@ -1464,10 +1467,11 @@ app.post("/admin/send-template", async (req, reply) => {
     const tlang = mailLang(b.lang);
     // „PayPal-Vorteil" ist NUR außerhalb DACH vorgesehen – serverseitige Sperre (der
     // Admin blendet die Vorlage für DE-Bestellungen ohnehin aus).
-    if ((key === "paypal-angebot" || key === "paypal-erinnerung" || key === "paypal-zahlung-bestaetigt" || key === "paypal-mahnung") && tlang === "de")
+    if ((key === "paypal-angebot" || key === "paypal-erinnerung" || key === "paypal-zahlung-bestaetigt" || key === "paypal-mahnung" || key === "wise-mahnung") && tlang === "de")
       return reply.code(400).send({ ok: false, error: "Diese Vorlage ist nur außerhalb DACH vorgesehen." });
     // Mahnstufe 1–4 (nur PayPal-Mahnung). Default 1 (freundliche Zahlungserinnerung).
-    const stage = key === "paypal-mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
+    const isPayMahnung = key === "paypal-mahnung" || key === "wise-mahnung";
+    const stage = isPayMahnung ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
     const props = {
       ...(t.sample as object), lang: tlang,
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
@@ -1483,8 +1487,8 @@ app.post("/admin/send-template", async (req, reply) => {
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel der PayPal-Mahnung startet mit „Mahnung" (für die Mahnstufen-Zählung via /mahnung/i).
     const PP_STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
-    const evtTitle = key === "paypal-mahnung"
-      ? `Mahnung gesendet · Stufe ${stage} (PayPal, ${PP_STAGE_LABEL[stage as number] || ""})`
+    const evtTitle = isPayMahnung
+      ? `Mahnung gesendet · Stufe ${stage} (${key === "wise-mahnung" ? "Wise" : "PayPal"}, ${PP_STAGE_LABEL[stage as number] || ""})`
       : t.label + " gesendet";
     // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
     // der Eintrag bleibt über die E-Mail auffindbar (Kunden-Verlauf lädt per E-Mail).
