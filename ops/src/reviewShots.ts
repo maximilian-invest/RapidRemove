@@ -99,21 +99,56 @@ async function takeOne(orderId: string, idx: number, url: string): Promise<void>
 }
 
 type Item = { url?: string };
+type Entry = { idx: number; url: string };
 const running = new Set<string>();
 
-/**
- * Screenshots für eine Bestellung im Hintergrund aufnehmen (blockiert nie die
- * Antwort). onlyMissing: nur Bewertungen ohne erfolgreichen Screenshot.
- */
-export function queueReviewShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
-  if (!shotKey() || !dbReady() || !pool || !orderId) return false;
+/** idx des Unternehmensprofil-Screenshots (Bewertungen haben 0, 1, 2 …). */
+export const PROFILE_IDX = -1;
+
+const reviewEntries = (items: Item[]): Entry[] =>
+  (items || []).map((it, i) => ({ idx: i, url: (it && it.url) || "" })).filter((e) => e.url);
+
+/** Google-Link des Unternehmensprofils aus den Bestelldaten (mapsUri, sonst placeId). */
+export function profileTarget(raw: Record<string, unknown> | null | undefined): string {
+  if (!raw) return "";
+  const m = String(raw.mapsUri || "").trim();
+  if (/^https?:\/\//i.test(m)) return m;
+  const pid = String(raw.placeId || "").trim();
+  if (/^[A-Za-z0-9_-]{10,200}$/.test(pid)) return "https://www.google.com/maps/place/?q=place_id:" + pid;
+  return "";
+}
+
+/** Was für eine Bestellung aufzunehmen ist: Bewertungen bzw. das Profil (Presse: nichts). */
+function entriesFor(service: string, raw: Record<string, unknown> | null): Entry[] {
+  if (service === "deindex") return [];
+  if (service === "reviews") return reviewEntries(Array.isArray(raw && raw.reviewItems) ? (raw!.reviewItems as Item[]) : []);
+  const t = profileTarget(raw);
+  return t ? [{ idx: PROFILE_IDX, url: t }] : [];
+}
+
+function enqueue(orderId: string, entries: Entry[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
+  if (!shotKey() || !dbReady() || !pool || !orderId || !entries.length) return false;
   if (running.has(orderId)) return true;
-  void runShots(orderId, items, log, onlyMissing);
+  void runShots(orderId, entries, log, onlyMissing);
   return true;
 }
 
-/** Nimmt die Screenshots einer Bestellung auf (sequenziell, 1 Wiederholung je Bewertung). */
-async function runShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): Promise<number> {
+/**
+ * Screenshots der Bewertungen einer Bestellung im Hintergrund aufnehmen
+ * (blockiert nie die Antwort). onlyMissing: nur ohne erfolgreichen Screenshot.
+ */
+export function queueReviewShots(orderId: string, items: Item[], log?: (o: object, m: string) => void, onlyMissing = false): boolean {
+  return enqueue(orderId, reviewEntries(items), log, onlyMissing);
+}
+
+/** Screenshot des Google-Unternehmensprofils einer Profil-Bestellung (Hintergrund). */
+export function queueProfileShot(orderId: string, raw: Record<string, unknown>, log?: (o: object, m: string) => void): boolean {
+  const t = profileTarget(raw);
+  return t ? enqueue(orderId, [{ idx: PROFILE_IDX, url: t }], log) : false;
+}
+
+/** Nimmt die Screenshots einer Bestellung auf (sequenziell, 1 Wiederholung je Bild). */
+async function runShots(orderId: string, entries: Entry[], log?: (o: object, m: string) => void, onlyMissing = false): Promise<number> {
   if (running.has(orderId)) return 0;
   running.add(orderId);
   let taken = 0;
@@ -124,30 +159,29 @@ async function runShots(orderId: string, items: Item[], log?: (o: object, m: str
       const r = await pool!.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [orderId]);
       have = new Set(r.rows.map((x: { idx: number }) => x.idx));
     }
-    for (let i = 0; i < items.length; i++) {
-      const u = items[i] && items[i].url;
-      if (!u || have.has(i)) continue;
+    for (const e of entries) {
+      if (have.has(e.idx)) continue;
       let done = false;
       for (let attempt = 0; attempt < 2 && !done; attempt++) {
-        await takeOne(orderId, i, u);
-        const r = await pool!.query(`SELECT status FROM review_shots WHERE order_id = $1 AND idx = $2`, [orderId, i]);
+        await takeOne(orderId, e.idx, e.url);
+        const r = await pool!.query(`SELECT status FROM review_shots WHERE order_id = $1 AND idx = $2`, [orderId, e.idx]);
         done = r.rows[0] && r.rows[0].status === "ok";
       }
       if (done) taken++;
     }
-    if (log) log({ orderId, n: items.length, taken }, "Bewertungs-Screenshots fertig");
+    if (log) log({ orderId, n: entries.length, taken }, "Screenshots fertig");
   } catch (e) {
-    if (log) log({ orderId, err: String((e as Error)?.message || e) }, "Bewertungs-Screenshots fehlgeschlagen");
+    if (log) log({ orderId, err: String((e as Error)?.message || e) }, "Screenshots fehlgeschlagen");
   } finally { running.delete(orderId); }
   return taken;
 }
 
 let backfillRunning = false;
 /**
- * Nachholen: alle Bewertungs-Bestellungen der letzten `days` Tage, denen noch
- * Screenshots fehlen — Bestellung für Bestellung (keine Lastspitze bei der API).
- * Läuft beim Serverstart automatisch (sobald SCREENSHOTONE_KEY gesetzt ist) und
- * per Admin-Endpunkt.
+ * Nachholen: alle Bestellungen der letzten `days` Tage (Bewertungen UND
+ * Unternehmensprofile), denen noch Screenshots fehlen — Bestellung für
+ * Bestellung (keine Lastspitze bei der API). Läuft beim Serverstart automatisch
+ * (sobald SCREENSHOTONE_KEY gesetzt ist) und per Admin-Endpunkt.
  */
 export async function backfillReviewShots(days = 14, log?: (o: object, m: string) => void): Promise<{ orders: number; taken: number } | null> {
   if (!shotKey() || !dbReady() || !pool || backfillRunning) return null;
@@ -156,22 +190,22 @@ export async function backfillReviewShots(days = 14, log?: (o: object, m: string
   try {
     await ensureTable();
     const r = await pool.query(
-      `SELECT o.id, o.raw->'reviewItems' AS items
-         FROM orders o
-        WHERE o.service = 'reviews' AND o.created_at > now() - make_interval(days => $1::int)
-          AND jsonb_typeof(o.raw->'reviewItems') = 'array'
+      `SELECT o.id, o.service, o.raw FROM orders o
+        WHERE o.created_at > now() - make_interval(days => $1::int)
+          AND COALESCE(o.service, '') <> 'deindex'
         ORDER BY o.created_at`,
       [Math.max(1, Math.min(90, Math.round(days)))],
     );
-    for (const row of r.rows as { id: string; items: Item[] }[]) {
-      const items = Array.isArray(row.items) ? row.items : [];
-      if (!items.some((it) => it && it.url)) continue;
-      const okRows = await pool.query(`SELECT count(*)::int AS n FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [row.id]);
-      if (okRows.rows[0].n >= items.filter((it) => it && it.url).length) continue;
+    for (const row of r.rows as { id: string; service: string | null; raw: Record<string, unknown> | null }[]) {
+      const entries = entriesFor(String(row.service || ""), row.raw);
+      if (!entries.length) continue;
+      const ok = await pool.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [row.id]);
+      const have = new Set(ok.rows.map((x: { idx: number }) => x.idx));
+      if (entries.every((e) => have.has(e.idx))) continue;
       orders++;
-      taken += await runShots(row.id, items, log, true);
+      taken += await runShots(row.id, entries, log, true);
     }
-    if (log) log({ days, orders, taken }, "Bewertungs-Screenshots nachgeholt");
+    if (log) log({ days, orders, taken }, "Screenshots nachgeholt");
   } catch (e) {
     if (log) log({ err: String((e as Error)?.message || e) }, "Screenshot-Nachholen fehlgeschlagen");
   } finally { backfillRunning = false; }
@@ -196,12 +230,12 @@ export async function getShot(id: number): Promise<{ mime: string; img: Buffer }
   return r.rows[0] && r.rows[0].img ? { mime: r.rows[0].mime || "image/jpeg", img: r.rows[0].img } : null;
 }
 
-/** Bewertungs-Items einer Bestellung aus dem raw-JSON (für „Neu aufnehmen"). */
-export async function orderReviewItems(orderId: string): Promise<Item[]> {
-  if (!dbReady() || !pool) return [];
-  const r = await pool.query(`SELECT raw->'reviewItems' AS items FROM orders WHERE id = $1`, [orderId]);
-  const items = r.rows[0] && r.rows[0].items;
-  return Array.isArray(items) ? items : [];
+/** „Neu aufnehmen" im Admin: fehlende/fehlgeschlagene Screenshots einer Bestellung. */
+export async function retakeShots(orderId: string, log?: (o: object, m: string) => void): Promise<boolean> {
+  if (!dbReady() || !pool) return false;
+  const r = await pool.query(`SELECT service, raw FROM orders WHERE id = $1`, [orderId]);
+  if (!r.rows[0]) return false;
+  return enqueue(orderId, entriesFor(String(r.rows[0].service || ""), r.rows[0].raw), log, true);
 }
 
 export const shotsRunning = (orderId: string) => running.has(orderId);

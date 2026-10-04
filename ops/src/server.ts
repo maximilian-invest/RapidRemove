@@ -22,7 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews } from "./reviewsPricing";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
-import { shotKey, queueReviewShots, listShots, getShot, shotsRunning, orderReviewItems, backfillReviewShots, backfillActive } from "./reviewShots";
+import { shotKey, queueReviewShots, queueProfileShot, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend } from "./db";
@@ -475,6 +475,8 @@ app.post("/order", async (req, reply) => {
       // Bewertungs-Produkt: von jeder bestellten Bewertung automatisch einen Screenshot
       // (Hintergrund, blockiert die Antwort nicht) → Admin zeigt sie bei der Bestellung.
       if (isReviews && reviewItems.length) queueReviewShots(id, reviewItems, (o, m) => app.log.info(o, m));
+      // Profil-Bestellungen: Screenshot des Google-Unternehmensprofils (Zustand vor der Löschung).
+      else if (!isPress && !isReviews) queueProfileShot(id, b, (o, m) => app.log.info(o, m));
       // Serverseitiges InitiateCheckout: Auftrag erteilt, Profil freigegeben.
       if (capiEnabled() && b.consentMarketing === true && await claimCapiSend("orders", "capi_checkout_at", id)) {
         const r = await capiSend({
@@ -1153,7 +1155,8 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   }
 });
 
-// Admin: Screenshots der bestellten Bewertungen (Liste + Neu aufnehmen).
+// Admin: Screenshots einer Bestellung — Bewertungen (idx 0…) bzw. Unternehmensprofil
+// (idx -1) — Liste + Neu aufnehmen.
 // Body: { token, orderId, retake?: true }. retake nimmt fehlende/fehlgeschlagene
 // neu auf (auch für Bestellungen von vor der Einführung).
 app.post("/admin/review-shots", async (req, reply) => {
@@ -1164,8 +1167,7 @@ app.post("/admin/review-shots", async (req, reply) => {
   if (!shotKey()) return { ok: true, enabled: false, shots: [] };
   try {
     if (b.retake === true) {
-      const items = await orderReviewItems(orderId);
-      queueReviewShots(orderId, items, (x, m) => app.log.info(x, m), true);
+      await retakeShots(orderId, (x, m) => app.log.info(x, m));
     }
     const shots = await listShots(orderId);
     return { ok: true, enabled: true, running: shotsRunning(orderId), shots };

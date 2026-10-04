@@ -1310,6 +1310,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
               <React.Fragment>
                 <h3><Icon.building /> Profil & Leistung</h3>
                 <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+                <ProfileShotPanel o={o} toast={toast} />
                 <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                 <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
                 {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
@@ -1513,6 +1514,43 @@ function ReviewsMahnungPanel({ o, toast, onStatus }) {
         </button>
       </div>
       <div className="muted" style={{ fontSize: 11, fontWeight: 600, marginTop: 6 }}>Zahlungsfrist 48 Std. · Sprache automatisch nach Kunde ({(o.lang && o.lang !== "de" ? o.lang : "en").toUpperCase()}).</div>
+    </div>
+  );
+}
+
+/* Screenshot des Google-Unternehmensprofils (Zustand bei Bestelleingang, vor der
+   Löschung) — automatisch aufgenommen (ops/reviewShots.ts, idx -1). */
+function ProfileShotPanel({ o, toast }) {
+  const [data, setData] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
+  const load = React.useCallback((retake) => fetchReviewShots(o.id, retake).then(setData).catch((e) => setData({ error: e.message })), [o.id]);
+  React.useEffect(() => { load(false); }, [load]);
+  const shot = ((data && data.shots) || []).find((x) => x.idx === -1);
+  const pending = !!(data && (data.running || (shot && shot.status === "pending")));
+  React.useEffect(() => {
+    if (!pending) return;
+    const t = setTimeout(() => load(false), 5000);
+    return () => clearTimeout(t);
+  }, [pending, data, load]);
+  const retake = async () => { setBusy(true); await load(true); setBusy(false); toast("Screenshot wird aufgenommen …"); };
+  if (data && data.enabled === false) return null;
+  const ok = shot && shot.status === "ok";
+  return (
+    <div style={{ margin: "10px 0 6px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+        <span className="muted" style={{ fontSize: 12, fontWeight: 800 }}>📷 Screenshot des Profils{ok && shot.created_at ? " · " + new Date(shot.created_at).toLocaleString("de-AT", { dateStyle: "short", timeStyle: "short" }) : ""}{pending ? " · wird aufgenommen …" : ""}</span>
+        {ok ? <a href={reviewShotUrl(shot.id, true)} style={{ fontSize: 12, fontWeight: 700, color: "var(--primary)" }}>⬇ Herunterladen</a> : null}
+        {!ok && !pending && data && !data.error ? <button type="button" className="btn btn-sec btn-sm" disabled={busy} onClick={retake}>{busy ? "…" : (shot ? "Neu aufnehmen" : "Jetzt aufnehmen")}</button> : null}
+      </div>
+      {ok ? (
+        <a href={reviewShotUrl(shot.id)} target="_blank" rel="noopener noreferrer">
+          <img src={reviewShotUrl(shot.id)} alt="Google-Profil" loading="lazy" style={{ width: "100%", maxWidth: 520, aspectRatio: "16/11", objectFit: "cover", objectPosition: "left top", display: "block", borderRadius: 10, border: "1px solid var(--hairline)" }} />
+        </a>
+      ) : (
+        <div className="muted" style={{ fontSize: 12, fontWeight: 600, color: shot && shot.status === "error" ? "var(--danger)" : undefined }}>
+          {data && data.error ? "Laden fehlgeschlagen: " + data.error : shot && shot.status === "error" ? "Aufnahme fehlgeschlagen" : pending || !data ? "Wird geladen …" : "Noch kein Screenshot (kein Google-Link in der Bestellung?)"}
+        </div>
+      )}
     </div>
   );
 }
@@ -2468,6 +2506,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
               ) : (
                 <React.Fragment>
                   <div className="drow"><span className="dl">Google-Profil</span><span className="dv"><ProfileLinks o={o} /></span></div>
+                  <ProfileShotPanel o={o} toast={toast} />
                   <div className="drow"><span className="dl">Bewertungen</span><span className="dv">{o.rating}★ · {o.reviews} Stück</span></div>
                   <div className="drow"><span className="dl">Leistung</span><span className="dv">{SERVICES[o.service].name}</span></div>
                   {o.protection && <div className="drow"><span className="dl">Schutz</span><span className="dv">{o.protection === "lifetime" ? "Lebenslang" : o.protection === "monitor" ? "+ Tägliche Überwachung" : "Monatlich"}</span></div>}
