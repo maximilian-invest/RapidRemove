@@ -48,6 +48,8 @@ export async function initPartnerTables(): Promise<void> {
   `);
   // Kunde = Name des Unternehmensprofils (Gliederung im Board).
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
+  // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS partner_payouts (
@@ -96,6 +98,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
+  touched_at: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -104,7 +107,7 @@ function partnerView(r: Row) {
   return {
     id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
-    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at,
+    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at,
   };
 }
 function adminView(r: Row) {
@@ -245,43 +248,82 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { ok: true, tasks: rows.map(partnerView), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
-  app.post("/partner/update", async (req, reply) => {
-    const b = (req.body || {}) as Record<string, unknown>;
-    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
-    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
-    const id = Number(b.id);
-    const status = String(b.status || "");
-    const allowed = ["working", "removed", "not_possible", "software"];
-    if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id missing" });
-    if (status && !allowed.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
+  const PARTNER_SETTABLE = ["new", "working", "removed", "not_possible", "software"];
+  const LABEL: Record<string, string> = { new: "zurückgesetzt", working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
+
+  /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+    if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
-    if (!old || old.status === "cancelled") return reply.code(404).send({ ok: false, error: "not found" });
-    if (old.paid_at && status && status !== "removed") return reply.code(400).send({ ok: false, error: "already paid" });
-    const note = b.note != null ? clip(b.note, 500) : old.partner_note;
+    if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
+    if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
+    const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
     const st = status || old.status;
     const r = await pool.query(
-      `UPDATE partner_tasks SET status=$1, partner_note=$2, updated_at=now(),
+      `UPDATE partner_tasks SET status=$1, partner_note=$2, updated_at=now(), touched_at=COALESCE(touched_at, now()),
          removed_at = CASE WHEN $1='removed' THEN COALESCE(removed_at, now()) ELSE NULL END
        WHERE id=$3 RETURNING *`,
       [st, note || null, id],
     );
     const row = r.rows[0] as Row;
+    const changed = !!status && status !== old.status;
     // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden 5 Min. nach der letzten Änderung.
-    if (status && status !== old.status && row.order_id) {
+    if (changed && row.order_id) {
       void partnerStatusChanged(row.order_id, row.item_key, status, {
         makeLink: async (amount, cur) => (hasSecretKey() ? ensureReviewsAmountLink(amount, cur) : ""),
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }
-    if (status && status !== old.status) {
-      const label: Record<string, string> = { working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
-      if (row.order_id) {
-        await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${label[status] || status}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
-      }
-      if (status === "removed" || status === "not_possible" || status === "software") {
-        void notifyTeam(`Partner: ${row.code} ${label[status]}`, [row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · ") || "Status geändert", `${SITE_URL}/admin`);
-      }
+    if (changed && row.order_id) {
+      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
     }
-    return { ok: true, task: partnerView(row) };
+    if (changed && !opts.quiet && (status === "removed" || status === "not_possible" || status === "software")) {
+      void notifyTeam(`Partner: ${row.code} ${LABEL[status]}`, [row.customer || "", row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · ") || "Status geändert", `${SITE_URL}/admin`);
+    }
+    return { row, changed };
+  }
+
+  app.post("/partner/update", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    const id = Number(b.id);
+    const status = String(b.status || "");
+    if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id missing" });
+    if (status && !PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
+    const r = await partnerApply(id, status, b.note);
+    if (r.error) return reply.code(r.code || 400).send({ ok: false, error: r.error });
+    return { ok: true, task: partnerView(r.row as Row) };
+  });
+
+  // Sammel-Update (Mehrfachauswahl): ein Status für viele Aufgaben, EINE Team-Benachrichtigung.
+  app.post("/partner/bulk", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const status = String(b.status || "");
+    if (!PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
+    if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
+    const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = [];
+    for (const id of ids) {
+      const r = await partnerApply(id, status, undefined, { quiet: true });
+      if (r.error || !r.row) { skipped.push(id); continue; }
+      tasks.push(partnerView(r.row));
+      if (r.changed) changedCodes.push(r.row.code);
+    }
+    if (changedCodes.length && (status === "removed" || status === "not_possible" || status === "software")) {
+      void notifyTeam(`Partner: ${changedCodes.length}× ${LABEL[status]}`, changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`);
+    }
+    return { ok: true, tasks, skipped };
+  });
+
+  // Erste Aktion ohne Statuswechsel (Bewertung geöffnet, Link kopiert) → Kunde nicht mehr „NEW".
+  app.post("/partner/touch", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
+    if (ids.length) await pool.query(`UPDATE partner_tasks SET touched_at=COALESCE(touched_at, now()) WHERE id = ANY($1::bigint[])`, [ids]);
+    return { ok: true };
   });
 }
