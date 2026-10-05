@@ -5,6 +5,7 @@
 import React from "react";
 import { partnerTasks, partnerUpdate, partnerPay, partnerLink } from "@/lib/admin-api";
 import AdminPartnerBackfill from "@/components/admin/AdminPartnerBackfill";
+import AdminPartnerAccess from "@/components/admin/AdminPartnerAccess";
 import { groupByCustomer } from "@/lib/partner-group";
 
 export const PARTNER_STATUS = {
@@ -117,6 +118,7 @@ export function AdminPartner({ toast }) {
         <p className="muted pb-hint">Neue Bewertungs-Bestellungen landen automatisch auf dem Board (Kunde = Profilname). Storno nimmt offene Aufgaben wieder herunter. Der Partner sieht keine Kontaktdaten der Besteller.</p>
       </div>
 
+      <AdminPartnerAccess toast={toast} />
       <AdminPartnerBackfill onDone={load} toast={toast} />
 
       <div className="pb-tabs">

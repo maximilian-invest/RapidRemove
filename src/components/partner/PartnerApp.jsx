@@ -8,6 +8,7 @@ import {
   Link as LinkIcon, Info, Hourglass, CheckCircle2, Wallet, Banknote, MessageCircle, LogOut, Home, List, User,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
+import PartnerPush from "./PartnerPush";
 
 const IMG = { wallet: `${BASE}/assets/partner/wallet.webp`, rocket: `${BASE}/assets/partner/rocket.webp` };
 const isTodo = (t) => t.status === "new" || t.status === "working";
@@ -357,6 +358,8 @@ export default function PartnerApp({ api }) {
         <div className="acc"><span className="circ" style={{ background: "#fff" }}>RR</span><span><b>RapidRemove Partner</b><span>Private partner link</span></span></div>
         <div className="sec"><h2>How it works</h2></div>
         <div className="how">{how.map(([I, c, b, s]) => <div key={b} className="er"><span className={"ico " + c}><I /></span><span className="t"><b>{b}</b><span>{s}</span></span></div>)}</div>
+        <div className="sec"><h2>Notifications</h2></div>
+        <PartnerPush token={api.token} showToast={api.showToast} />
         <div style={{ marginTop: 14 }}><button type="button" className="cta gh" onClick={() => { flush(true); try { localStorage.removeItem("rr_partner_t"); } catch (e) {} window.location.replace(window.location.pathname); }}><LogOut />Log out</button></div>
       </>
     );

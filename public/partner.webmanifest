@@ -1,0 +1,14 @@
+{
+  "name": "RapidRemove Partner",
+  "short_name": "RR Partner",
+  "description": "RapidRemove – removal tasks & earnings",
+  "start_url": "/partner",
+  "scope": "/partner",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "/assets/rapidremove-icon.png", "sizes": "408x404", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/rapidremove-icon.png", "sizes": "408x404", "type": "image/png", "purpose": "maskable" }
+  ]
+}

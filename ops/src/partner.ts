@@ -16,6 +16,7 @@ import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession } from "./partnerAuth";
+import { partnerNewOrder } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
@@ -145,6 +146,7 @@ const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S
 async function insertPartnerTasks(orderId: string | null, customer: string | null, items: Record<string, unknown>[]): Promise<Row[]> {
   if (!pool) return [];
   const out: Row[] = [];
+  const fresh: { code: string; kind: string }[] = [];
   for (const it of items.slice(0, 60)) {
     const url = httpUrl(it.url);
     const name = clip(it.name, 120);
@@ -169,9 +171,11 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     if (!row.code) {
       const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
       row = u.rows[0] as Row;
+      fresh.push({ code: row.code, kind: row.kind }); // neu angelegt → Partner benachrichtigen
     }
     out.push(row);
   }
+  if (fresh.length) void partnerNewOrder(customer || "", fresh);
   return out;
 }
 
@@ -281,7 +285,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
 
   const PARTNER_SETTABLE = ["new", "working", "removed", "not_possible", "software"];
   const LABEL: Record<string, string> = { new: "zurückgesetzt", working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
-  const EMO: Record<string, string> = { new: "↩️", working: "🔧", removed: "✅", not_possible: "⛔", software: "💻" };
+  // Push-Titel (Uber-Stil: kurz, was passiert ist).
+  const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
   async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
@@ -314,7 +319,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
     if (changed && !opts.quiet) {
-      void notifyTeam(`${EMO[status] || "🔔"} Partner: ${row.code} ${LABEL[status] || status}`, [row.customer || "", row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · ") || "Status geändert", `${SITE_URL}/admin`);
+      void notifyTeam(`${PT[status] || status} · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · "), `${SITE_URL}/admin${row.order_id ? "?order=" + encodeURIComponent(row.order_id) : ""}`, { kind: "partner" });
     }
     return { row, changed };
   }
@@ -348,7 +353,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       if (r.changed) changedCodes.push(r.row.code);
     }
     if (changedCodes.length) {
-      void notifyTeam(`${EMO[status] || "🔔"} Partner: ${changedCodes.length}× ${LABEL[status] || status}`, changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`);
+      void notifyTeam(`${PT[status] || status} · ${changedCodes.length} Bewertungen`, "Partner · " + changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
     }
     return { ok: true, tasks, skipped };
   });
@@ -366,7 +371,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
     const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, "vom Partner als bezahlt bestätigt"]);
     await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
-    void notifyTeam(`Partner: ${r.rows.length}× als bezahlt bestätigt`, `$${amount}`, `${SITE_URL}/admin`);
+    void notifyTeam(`Auszahlung bestätigt · $${amount}`, `Partner · ${r.rows.length} Löschungen`, `${SITE_URL}/admin`, { kind: "payout" });
     return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
   });
 

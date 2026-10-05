@@ -6,7 +6,31 @@
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
-import { hashPassword, verifyPassword } from "./customers";
+import { hashPassword, verifyPassword, newPassword } from "./customers";
+import { savePartnerSub } from "./partnerNotify";
+
+/* Passwort zusätzlich verschlüsselt ablegen, damit der Admin es jederzeit sehen kann
+   (AES-256-GCM, Schlüssel aus ADMIN_TOKEN abgeleitet – liegt nur auf dem Server). */
+const encKey = () => crypto.createHash("sha256").update("partner-pw|" + (process.env.ADMIN_TOKEN || "")).digest();
+function encPw(pw: string): string | null {
+  if (!process.env.ADMIN_TOKEN) return null;
+  const iv = crypto.randomBytes(12);
+  const c = crypto.createCipheriv("aes-256-gcm", encKey(), iv);
+  const data = Buffer.concat([c.update(pw, "utf8"), c.final()]);
+  return [iv.toString("base64url"), c.getAuthTag().toString("base64url"), data.toString("base64url")].join(".");
+}
+function decPw(v: string | null): string | null {
+  try {
+    if (!v) return null;
+    const [iv, tag, data] = v.split(".").map((x) => Buffer.from(x, "base64url"));
+    const d = crypto.createDecipheriv("aes-256-gcm", encKey(), iv);
+    d.setAuthTag(tag);
+    return Buffer.concat([d.update(data), d.final()]).toString("utf8");
+  } catch { return null; }
+}
+
+/** Login-Adresse des Partners (vom Inhaber freigegeben) – wird beim Start einmal mit Passwort angelegt. */
+const SEED_PARTNER_EMAIL = "reputationvaultagency@gmail.com";
 
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
@@ -14,6 +38,7 @@ const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
 export async function initPartnerAuth(): Promise<void> {
   if (!pool) return;
   await pool.query(`CREATE TABLE IF NOT EXISTS partner_accounts (email text PRIMARY KEY, pass_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), last_login timestamptz)`);
+  await pool.query(`ALTER TABLE partner_accounts ADD COLUMN IF NOT EXISTS pw_enc text`);
   await pool.query(`CREATE TABLE IF NOT EXISTS partner_sessions (token_hash text PRIMARY KEY, email text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL)`);
 }
 
@@ -36,7 +61,57 @@ async function newSession(email: string): Promise<string> {
   return token;
 }
 
-export function registerPartnerAuth(app: FastifyInstance): void {
+/** Einmal beim Start: Partner-Login anlegen (falls noch nicht vorhanden), Passwort für den Admin sichtbar. */
+export async function seedPartnerAccount(log: (m: string) => void): Promise<void> {
+  if (!pool) return;
+  const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [SEED_PARTNER_EMAIL]);
+  if (ex.rowCount) return;
+  const pw = newPassword();
+  await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3)`, [SEED_PARTNER_EMAIL, hashPassword(pw), encPw(pw)]);
+  log("Partner-Login angelegt (Passwort im Admin → Partner sichtbar)");
+}
+
+export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void {
+  const isAdmin = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;
+
+  // Admin: Partner-Logins inkl. Passwort (volle Kontrolle für den Inhaber).
+  app.post("/admin/partner/accounts", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const r = await pool.query(`SELECT email, pw_enc, created_at, last_login FROM partner_accounts ORDER BY created_at`);
+    const subs = await pool.query(`SELECT count(*)::int AS n FROM partner_push_subs`).catch(() => ({ rows: [{ n: 0 }] }));
+    return { ok: true, pushDevices: subs.rows[0].n, accounts: r.rows.map((x) => ({ email: x.email, password: decPw(x.pw_enc), created: x.created_at, lastLogin: x.last_login })) };
+  });
+
+  // Admin: Login anlegen/ändern (E-Mail umbenennen, Passwort setzen oder neu erzeugen).
+  app.post("/admin/partner/account-set", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const email = norm(b.email); const old = norm(b.oldEmail);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
+    const pw = String(b.password || "").trim() || newPassword();
+    if (pw.length < 8) return reply.code(400).send({ ok: false, error: "Passwort mind. 8 Zeichen" });
+    if (old && old !== email) {
+      await pool.query(`UPDATE partner_accounts SET email=$2 WHERE email=$1`, [old, email]);
+      await pool.query(`UPDATE partner_sessions SET email=$2 WHERE email=$1`, [old, email]);
+    }
+    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3`, [email, hashPassword(pw), encPw(pw)]);
+    return { ok: true, email, password: pw };
+  });
+
+  // Partner-App: Push-Abo des Geräts speichern (Home-Bildschirm-App).
+  app.post("/partner/push-subscribe", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const t = String(b.t || "");
+    if (!(await isPartnerSession(t)) && !(await isLinkToken(t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    const sub = (b.sub || {}) as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
+    if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) return reply.code(400).send({ ok: false, error: "subscription" });
+    await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } });
+    return { ok: true };
+  });
+
   const hits = new Map<string, number[]>();
   const limited = (k: string, n: number) => {
     const now = Date.now(); const a = (hits.get(k) || []).filter((x) => now - x < 10 * 60_000);
@@ -80,7 +155,7 @@ export function registerPartnerAuth(app: FastifyInstance): void {
     const pw = String(b.password || "");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "email" });
     if (pw.length < 8) return reply.code(400).send({ ok: false, error: "password" });
-    await pool.query(`INSERT INTO partner_accounts (email, pass_hash) VALUES ($1,$2) ON CONFLICT (email) DO UPDATE SET pass_hash=$2`, [email, hashPassword(pw)]);
+    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3`, [email, hashPassword(pw), encPw(pw)]);
     await pool.query(`DELETE FROM partner_sessions WHERE email=$1`, [email]);
     return { ok: true, token: await newSession(email) };
   });

@@ -27,7 +27,8 @@ export function vapidPublicKey(): string { return process.env.VAPID_PUBLIC_KEY |
 export type PushSub = { endpoint: string; keys: { p256dh: string; auth: string } };
 
 /** Sendet an alle Subscriptions. Gibt abgelaufene Endpunkte (404/410) zur Löschung zurück. */
-export async function sendWebPushAll(subs: PushSub[], payload: { title: string; body: string; url?: string }): Promise<string[]> {
+export type PushPayload = { title: string; body: string; url?: string; tag?: string; kind?: string; image?: string };
+export async function sendWebPushAll(subs: PushSub[], payload: PushPayload): Promise<string[]> {
   if (!init() || !subs.length) return [];
   const data = JSON.stringify(payload);
   const expired: string[] = [];

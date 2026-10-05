@@ -11,12 +11,15 @@ import { dbReady, listPushSubscriptions, deletePushSubscription } from "./db";
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
 /** Schickt eine Team-Benachrichtigung an ALLE Kanäle. Best effort. */
-export async function notifyTeam(title: string, body: string, url?: string): Promise<void> {
+/** Push ans Team (Admin-App + ntfy). Stil: kurzer Titel = was passiert ist, Body = „Kunde · Details" (Uber-Stil).
+ *  Jede Meldung bekommt einen eigenen Tag → sie überschreiben sich nicht gegenseitig. */
+export async function notifyTeam(title: string, body: string, url?: string, opts: { tag?: string; kind?: string } = {}): Promise<void> {
+  const tag = opts.tag || `rr-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
   try {
     if (hasWebPush() && dbReady()) {
       const subs = await listPushSubscriptions();
       if (subs.length) {
-        const expired = await sendWebPushAll(subs, { title, body, url });
+        const expired = await sendWebPushAll(subs, { title, body, url, tag, kind: opts.kind });
         for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
       }
     }
@@ -39,5 +42,5 @@ export async function notifyPaymentReceived(opts: { who?: string | null; amount?
   const who = (opts.who || "").trim();
   const body = [who, money].filter(Boolean).join(" · ") || "Eine Zahlung ist eingegangen";
   const url = SITE_URL + "/admin" + (opts.orderId ? "?order=" + encodeURIComponent(String(opts.orderId)) : "");
-  await notifyTeam("💰 Zahlung eingegangen 🎉", body, url);
+  await notifyTeam("Zahlung eingegangen" + (money ? " · " + money : ""), who || "Eine Zahlung ist eingegangen", url, { kind: "pay" });
 }

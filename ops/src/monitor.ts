@@ -312,7 +312,7 @@ async function alertFound(p: Profile, cand: Place, shot: { buf: Buffer; mime: st
     if (hasWebPush() && dbReady()) {
       const subs = await listPushSubscriptions();
       if (subs.length) {
-        const expired = await sendWebPushAll(subs, { title, body, url: adminUrl });
+        const expired = await sendWebPushAll(subs, { title, body, url: adminUrl, tag: "rr-mon-" + p.id, kind: "monitor" });
         for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
       }
     }

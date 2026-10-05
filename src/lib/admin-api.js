@@ -631,6 +631,9 @@ export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
 export const partnerLink = (rotate = false) => partnerPost("link", { rotate });
 /** Einmal-Nachtrag: bereits bezahlte 60 USD (WhatsApp, vor dem Board) — Vorschau bzw. eintragen. */
 export const partnerBackfill = (apply = false, refs = []) => partnerPost("backfill-rv60", { apply, refs });
+/** Partner-Zugang: Logins inkl. Passwort / anlegen, ändern, neues Passwort. */
+export const partnerAccounts = () => partnerPost("accounts", {});
+export const partnerAccountSet = (o) => partnerPost("account-set", o || {});
 
 /** Kunden-Dashboard: Zugänge für alle offenen Einzelbewertungs-Aufträge anlegen (ohne Mail). */
 export async function createOpenCustAccounts() {

@@ -22,7 +22,8 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./r
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
-import { initPartnerAuth, registerPartnerAuth } from "./partnerAuth";
+import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
+import { initPartnerPush } from "./partnerNotify";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
@@ -116,13 +117,14 @@ async function fireDeletionHypePush(orderId: string, name: string, to: string): 
       rankLine = ` · #${n} · ${ri.rank.emoji} ${ri.rank.name}`;
       if (n > 0 && ri.rank.key !== rankInfo(n - 1).rank.key) levelUpLine = `\n🏆 Neuer Rang: ${ri.rank.name}!`;
     }
-    const ptitle = `GLÖSCHT von ${who} 🤑💰`;
-    const pbody = `GULDEN SCHIESSEN!!${rankLine}${kunde ? `\n${kunde}` : ""}${levelUpLine}`;
+    // Uber-Stil: Titel = was passiert ist, Body = wer · Rang.
+    const ptitle = `Gelöscht ✓ ${kunde ? "· " + kunde : ""}`.trim();
+    const pbody = `Von ${who}${rankLine}${levelUpLine}`;
     const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
     if (hasWebPush() && dbReady()) {
       const subs = await listPushSubscriptions();
       if (subs.length) {
-        const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
+        const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl, tag: "rr-del-" + (orderId || Date.now()), kind: "removed" });
         for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
       }
     }
@@ -152,7 +154,7 @@ app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
-registerPartnerAuth(app); // Partner-Login (E-Mail + Passwort)
+registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
 registerCustomerAdminRoutes(app, ADMIN_TOKEN);
 registerCustomerRoutes(app, {
@@ -414,16 +416,17 @@ app.post("/order", async (req, reply) => {
   // Tap öffnet das Admin-Panel direkt bei dieser Bestellung.
   {
     const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
-    const ptitle = `${heading} – ${company || name || email}`;
-    const payPrefTxt = b.payPref === "wise" ? "10 % Rabatt: zahlt per Wise" : b.payPref === "paypal" ? "10 % Rabatt: zahlt per PayPal" : "";
-    const pbody = [company || name || email, [service, protection && protection !== "none" ? protection : ""].filter(Boolean).join(" + "), payPrefTxt, affiliate ? "Affiliate: " + affiliate : "", [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
+    // Uber-Stil: Titel = was + wer, Body = Leistung · Details, darunter Kontakt.
+    const ptitle = `${heading} · ${company || name || email}`;
+    const payPrefTxt = b.payPref === "wise" ? "zahlt per Wise (−10 %)" : b.payPref === "paypal" ? "zahlt per PayPal (−10 %)" : "";
+    const pbody = [[service, protection && protection !== "none" ? protection : "", payPrefTxt, affiliate ? "Affiliate " + affiliate : ""].filter(Boolean).join(" · "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
     const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
     // Web-Push an die installierte Admin-App (öffnet die App selbst beim Tap)
     try {
       if (hasWebPush() && dbReady()) {
         const subs = await listPushSubscriptions();
         if (subs.length) {
-          const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl });
+          const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl, tag: "rr-order-" + (orderId || Date.now()), kind: "order" });
           for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
         }
       }
@@ -1719,7 +1722,8 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth();
+  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush();
+    if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     if (dbReady()) void runRv60BackfillOnce((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Nachtrag 60 USD fehlgeschlagen")); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {
