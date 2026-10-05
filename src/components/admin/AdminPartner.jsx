@@ -4,6 +4,7 @@
    „als bezahlt markieren", Partner-Link + WhatsApp-Text kopieren. */
 import React from "react";
 import { partnerTasks, partnerUpdate, partnerPay, partnerLink } from "@/lib/admin-api";
+import AdminPartnerBackfill from "@/components/admin/AdminPartnerBackfill";
 import { groupByCustomer } from "@/lib/partner-group";
 
 export const PARTNER_STATUS = {
@@ -115,6 +116,8 @@ export function AdminPartner({ toast }) {
         </div>
         <p className="muted pb-hint">Neue Bewertungs-Bestellungen landen automatisch auf dem Board (Kunde = Profilname). Storno nimmt offene Aufgaben wieder herunter. Der Partner sieht keine Kontaktdaten der Besteller.</p>
       </div>
+
+      <AdminPartnerBackfill onDone={load} toast={toast} />
 
       <div className="pb-tabs">
         {[["open", "Offen"], ["owed", "Zu bezahlen"], ["done", "Gelöscht"], ["no", "Nicht möglich"], ["all", "Alle"]].map(([k, l]) => (
