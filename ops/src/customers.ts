@@ -171,7 +171,7 @@ export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id"
 }
 
 export const SW_NOTE_PAID = "Kunde hat die Software-Vorauszahlung bezahlt (Dashboard) → bitte starten";
-const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
+export const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
 
 async function rawOf(orderId: string): Promise<Record<string, unknown> | null> {
@@ -482,7 +482,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
       for (const [o, ks] of groups) {
         await setDecisions(o, ks, "declined");
         await pool.query(
-          `UPDATE partner_tasks SET status='cancelled', updated_at=now(), ${appendNote("admin_note", 3)}
+          // Bleibt beim Partner unter „Software" sichtbar, mit dem Zusatz „Customer declined deletion".
+          `UPDATE partner_tasks SET status='software', updated_at=now(), ${appendNote("admin_note", 3)}
             WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','working','software','not_possible') AND paid_at IS NULL`,
           [o, ks, SW_NOTE_DECLINED],
         ).catch(() => {});

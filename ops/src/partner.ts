@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
-import { partnerStatusChanged, SW_NOTE_PAID, partnerToDash } from "./customers";
+import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, partnerToDash } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
@@ -55,6 +55,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
+  // Früher abgelehnte Software-Aufgaben (storniert) wieder unter „Software" zeigen – mit „Customer declined deletion".
+  await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%'`).catch(() => {});
   // Testbestellungen (E-Mail mit „+test"): nur im Test-Board des Admins, nie beim Partner.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
@@ -129,7 +131,7 @@ function partnerView(r: Row) {
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
-    sw: r.status === "software" ? "pending" : (r.status === "working" && (r.admin_note || "").includes(SW_NOTE_PAID) ? "paid" : null),
+    sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && (r.admin_note || "").includes(SW_NOTE_PAID) ? "paid" : null),
   };
 }
 function adminView(r: Row) {

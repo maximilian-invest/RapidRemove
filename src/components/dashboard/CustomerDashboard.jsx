@@ -307,7 +307,7 @@ export default function CustomerDashboard() {
     const t = token; store.set(""); setToken(""); setData(null); prev.current = null; setTab("home");
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
   };
-  const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); } catch (e) { /* */ } };
+  const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); if (mainRef.current) mainRef.current.scrollTop = 0; } catch (e) { /* */ } };
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {

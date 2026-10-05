@@ -5,7 +5,7 @@
 import React from "react";
 import {
   Search, ArrowLeft, Check, ChevronRight, Sparkles, Loader, Copy, CheckCheck, X, StickyNote, ArrowUpRight,
-  Link as LinkIcon, Info, Hourglass, CheckCircle2, Wallet, Banknote, MessageCircle, LogOut, Home, List, User,
+  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
 import PartnerPush from "./PartnerPush";
@@ -266,7 +266,9 @@ export default function PartnerApp({ api }) {
         <div className="ps" style={{ margin: "8px 0 0" }}>{t.cust}</div>
         <div className="rvh"><b>{t.code}</b><span>{usd(t.price)}</span></div>
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
-        {t.status === "software" ? (
+        {t.status === "software" && t.sw === "declined" ? (
+          <div className="swb"><XCircle /><span><b>Customer declined deletion</b>The customer decided to keep this review online. Nothing to do.</span></div>
+        ) : t.status === "software" ? (
           <div className="swb"><Hourglass /><span><b>Waiting for customer</b>The customer decides in their dashboard. You’ll see it here once they’ve paid.</span></div>
         ) : t.sw === "paid" ? (
           <div className="swb ok"><CheckCircle2 /><span><b>Customer paid</b>Prepayment received – start the software removal now.</span></div>

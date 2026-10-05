@@ -46,6 +46,7 @@ export const since = (ms) => {
 };
 export const pillLabel = (t) => {
   if (t.status === "removed" && t.paid) return "Paid";
+  if (t.status === "software" && t.sw === "declined") return "Software · Customer declined deletion";
   if (t.status === "software") return "Software · waiting for customer";
   if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
