@@ -79,6 +79,7 @@ const linkOk = (pl: any) => !!(pl?.invoice_creation?.enabled && pl?.name_collect
   && pl?.billing_address_collection === "required" && pl?.tax_id_collection?.enabled);
 
 /** Bestehende Bewertungs-Zahlungslinks (schon verschickte Links bleiben gültig) auf Rechnung + Firmendaten umstellen. Idempotent. */
+export let linkUpgrade: { updated: number; ok: number; failed: number; error?: string } | null = null;
 export async function upgradeReviewLinks(log: (s: string) => void = () => {}): Promise<{ updated: number; ok: number; failed: number }> {
   const res = { updated: 0, ok: 0, failed: 0 };
   if (!process.env.STRIPE_SECRET_KEY) return res;
@@ -93,8 +94,9 @@ export async function upgradeReviewLinks(log: (s: string) => void = () => {}): P
     if (!pl.metadata || !pl.metadata[MARK]) continue;
     if (linkOk(pl)) { res.ok++; continue; }
     try { await sapi("POST", `payment_links/${pl.id}`, LINK_EXTRAS, PL_VERSION); res.updated++; }
-    catch (e) { res.failed++; log(`Zahlungslink ${pl.id}: ${(e as Error).message}`); }
+    catch (e) { res.failed++; const m = (e as Error).message; log(`Zahlungslink ${pl.id}: ${m}`); linkUpgrade = { ...res, error: m.slice(0, 200) }; }
   }
+  linkUpgrade = { ...res, ...(linkUpgrade?.error ? { error: linkUpgrade.error } : {}) };
   return res;
 }
 

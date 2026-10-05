@@ -18,7 +18,7 @@ import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
-import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks } from "./reviewsSetup";
+import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -175,7 +175,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).filter((l) => l.trim()).length, monitor: monitorKeys(), orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).filter((l) => l.trim()).length, monitor: monitorKeys(), payLinks: linkUpgrade, orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
