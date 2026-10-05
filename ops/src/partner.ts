@@ -12,11 +12,13 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
-import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
+import { partnerStatusChanged, SW_NOTE_PAID, partnerToDash } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
 import { isTestEmail } from "./testAccounts";
+import { notifyCustomer } from "./custPush";
+import { kundenUpdatePush } from "./emails/KundenUpdateReviews";
 import { partnerNewOrder } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -212,6 +214,17 @@ export async function partnerOrderStatus(orderId: string, status: string): Promi
   }
 }
 
+/** Sofort-Push an den Kunden (Sprache + Bewertungsname aus der Bestellung). */
+async function pushCustomerNow(row: Row, from: string, to: string): Promise<void> {
+  if (!pool || !row.order_id) return;
+  const o = await pool.query(`SELECT email, lang FROM orders WHERE id=$1 AND service='reviews'`, [row.order_id]);
+  const email = o.rows[0]?.email;
+  if (!email) return;
+  const lang = o.rows[0].lang === "de" ? "en" : o.rows[0].lang || "en";
+  const p = kundenUpdatePush(lang, [{ url: row.url, name: row.name || row.customer || null, status: partnerToDash(to) as any, from: partnerToDash(from) as any }]);
+  await notifyCustomer(email, p.title, p.body, `rrc-${row.order_id}-${row.id}`);
+}
+
 /* ---- Routen ---- */
 export function registerPartnerRoutes(app: FastifyInstance, adminToken: string): void {
   const isAdmin = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;
@@ -356,7 +369,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     );
     const row = r.rows[0] as Row;
     const changed = !!status && status !== old.status;
-    // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden 5 Min. nach der letzten Änderung.
+    // Kunde: Push SOFORT bei jeder Änderung (Mail kommt gebündelt später, nur bei Wichtigem).
+    if (changed && row.order_id) void pushCustomerNow(row, old.status, status).catch(() => {});
+    // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden nach der letzten Änderung.
     if (changed && row.order_id) {
       void partnerStatusChanged(row.order_id, row.item_key, status, {
         prev: old.status, // vorheriger Status → Kunde sieht „In Bearbeitung → Entfernt"

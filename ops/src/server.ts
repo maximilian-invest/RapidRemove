@@ -26,8 +26,8 @@ import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./part
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
-import KundenUpdateReviews, { kundenUpdateSubject, kundenUpdatePush } from "./emails/KundenUpdateReviews";
-import { initCustPush, notifyCustomer, registerCustPushRoutes } from "./custPush";
+import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
+import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
@@ -1759,8 +1759,7 @@ async function start() {
           const n = group[0];
           const changed = group.flatMap((g) => g.changed);
           const lang = n.lang === "de" ? "en" : n.lang;
-          const push = kundenUpdatePush(lang, changed);
-          await notifyCustomer(n.email, push.title, push.body, `rrc-${n.orderId}`).catch(() => false);
+          // Push ging schon sofort bei der Änderung raus (partner.ts → pushCustomerNow).
           const important = changed.filter((c) => MAIL_WORTHY.has(c.status));
           if (!important.length) {
             for (const g of group) await insertEvent({ orderId: g.orderId, email: g.email, type: "note", title: "Statusänderung nur im Dashboard/Push (keine Mail)", detail: g.changed.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), auto: true }).catch(() => {});
