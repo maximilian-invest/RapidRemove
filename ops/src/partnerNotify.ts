@@ -6,6 +6,7 @@ import { render } from "@react-email/render";
 import { pool } from "./db";
 import { hasWebPush, sendWebPushAll, type PushSub } from "./integrations/webpush";
 import { sendMail } from "./mailer";
+import { isTestEmail } from "./testAccounts";
 import { EmailShell, P, Bullets, CtaButton } from "./emails/components";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -47,7 +48,7 @@ export async function partnerNewOrder(customer: string, tasks: { code: string; k
   try {
     if (!pool) return;
     const acc = await pool.query(`SELECT email FROM partner_accounts`);
-    const to = acc.rows.map((x) => x.email).filter(Boolean);
+    const to = acc.rows.map((x) => x.email).filter((e) => e && !isTestEmail(e)); // Test-Login bekommt keine echten Aufträge
     if (!to.length) return;
     const url = `${SITE_URL}/partner`;
     const el = React.createElement(EmailShell as any, { preview: `New order: ${name} – ${n} review${n > 1 ? "s" : ""}`, title: "New order on your board", lang: "en" },

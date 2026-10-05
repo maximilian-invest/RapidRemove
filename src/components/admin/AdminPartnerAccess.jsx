@@ -57,7 +57,7 @@ export default function AdminPartnerAccess({ toast }) {
         <div className="pb-row"><span className="muted">Noch kein Login angelegt.</span><button className="btn btn-pri btn-sm" disabled={busy} onClick={() => setMail(null)}>Login anlegen</button></div>
       ) : accs.map((a) => (
         <div key={a.email} className="pb-row" style={{ flexWrap: "wrap", gap: 8 }}>
-          <span>E-Mail <b>{a.email}</b></span>
+          <span>E-Mail <b>{a.email}</b>{a.test ? <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 800, color: "#fff", background: "#ff8000", borderRadius: 999, padding: "1px 7px" }}>TEST-ZUGANG · nur Testaufträge</span> : null}</span>
           <button className="btn btn-sec btn-sm" onClick={() => copy(a.email, "E-Mail kopiert ✓")}>kopieren</button>
           <span style={{ marginLeft: 8 }}>Passwort <b style={{ fontFamily: "ui-monospace,monospace" }}>{a.password ? (show ? a.password : "••••••••••••") : "—"}</b></span>
           {a.password ? <button className="btn btn-sec btn-sm" onClick={() => setShow(!show)}>{show ? "verbergen" : "anzeigen"}</button> : null}

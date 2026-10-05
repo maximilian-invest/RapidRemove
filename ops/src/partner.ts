@@ -16,6 +16,7 @@ import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
+import { isTestEmail } from "./testAccounts";
 import { partnerNewOrder } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -95,9 +96,11 @@ export async function partnerToken(rotate = false): Promise<string | null> {
 export const PREVIEW_EMAIL = "admin-preview";
 async function isPreview(t: unknown): Promise<boolean> {
   const s = String(t || "");
-  return s.startsWith("ps_") && (await partnerSessionEmail(s)) === PREVIEW_EMAIL;
+  if (!s.startsWith("ps_")) return false;
+  const e = await partnerSessionEmail(s);
+  return e === PREVIEW_EMAIL || isTestEmail(e); // Admin-Test-Board oder Test-Login (Inhaber)
 }
-export const isTestEmail = (e: unknown) => /\+test@/i.test(String(e || ""));
+
 
 async function checkPartnerToken(t: unknown): Promise<boolean> {
   const s = String(t || "");

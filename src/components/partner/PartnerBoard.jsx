@@ -80,6 +80,7 @@ export default function PartnerBoard() {
     try {
       const j = await call("tasks", { t: token });
       setTasks((j.tasks || []).map(norm)); setErr("");
+      if (j.preview) setPreview(true); // Test-Login / Test-Board: nur Testaufträge
     } catch (e) {
       if (e.message === "invalid link" && String(token).startsWith("ps_")) { try { localStorage.removeItem(KEY); } catch (x) {} setToken(""); return; } // Sitzung abgelaufen → Login
       setErr(e.message === "invalid link" ? "This link is not valid (anymore). Please ask RapidRemove for the current link." : "Could not load: " + e.message);
@@ -229,11 +230,11 @@ export default function PartnerBoard() {
 
   // Push aufdrängen: nach jedem Öffnen, solange nicht eingeschaltet („Not now" gilt nur für diese Sitzung).
   React.useEffect(() => {
-    if (!token || setup || offerPk || preview || isPreviewUrl()) return;
+    if (!token || setup || offerPk || preview || isPreviewUrl() || tasks === null) return; // erst nach dem Laden (Test-Zugang bekommt keinen Push)
     let off = false;
     pushState("partner").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
     return () => { off = true; };
-  }, [token, setup, offerPk, preview]);
+  }, [token, setup, offerPk, preview, tasks === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
@@ -258,7 +259,7 @@ export default function PartnerBoard() {
   return (
     <>
       <div style={{ position: "sticky", top: 0, zIndex: 50, background: "#ff8000", color: "#fff", font: "700 13px/1.3 Geist, system-ui, sans-serif", textAlign: "center", padding: "8px 12px" }}>
-        TEST MODE · only test orders (+test e-mail) · the partner doesn’t see this
+        TEST MODE · only test orders · the partner doesn’t see this
       </div>
       {app}
     </>
