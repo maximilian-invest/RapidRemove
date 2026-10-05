@@ -1,5 +1,5 @@
 "use client";
-/* Partner board (rapid-remove.com/partner/#<secret>) — for our review-removal partner.
+/* Partner board (rapid-remove.com/partner#<secret>) — for our review-removal partner.
    Shows ONLY task code, review link, type, price and status; no customer data.
    The partner updates the status with one tap; we see it instantly in our admin. */
 import React from "react";

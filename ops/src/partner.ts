@@ -220,7 +220,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     const t = await partnerToken(b.rotate === true);
     if (!t) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
-    return { ok: true, url: `${SITE_URL}/partner/#${t}` };
+    return { ok: true, url: `${SITE_URL}/partner#${t}` };
   });
 
   /* ---- Partner (geheimer Link) ---- */
