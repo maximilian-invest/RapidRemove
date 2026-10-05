@@ -32,7 +32,7 @@ interface Entry {
   greeting: (n: string) => string;
   p1: (n: number) => string;
   listH: string;
-  nextH: string; next1: string; next2: string; next3: string;
+  nextH: string; next1: string; next2: string; next3: string; next4: string;
   calm: string;
   close: string; signoff: string;
 }
@@ -49,6 +49,7 @@ export const T: Record<string, Entry> = {
     next1: "Removals usually take a few days, sometimes up to three weeks.",
     next2: "You don't have to do anything — we'll get in touch as soon as there's news.",
     next3: "You only pay for reviews we actually remove, due on the day of removal.",
+    next4: "Every review is handled individually, so removal times can differ from review to review. To keep things simple for you, we may bill each removed review separately – so don't be surprised if you receive a separate payment link for each one.",
     calm: "No news for a few days is normal — these things take time on Google's side. We're on it.",
     close: "Questions in the meantime? Just reply to this email.",
     signoff: "Warm regards,",
@@ -64,6 +65,7 @@ export const T: Record<string, Entry> = {
     next1: "Las eliminaciones suelen tardar unos días, a veces hasta tres semanas.",
     next2: "No tienes que hacer nada: te avisamos en cuanto haya novedades.",
     next3: "Solo pagas por las reseñas que realmente eliminemos, con vencimiento el día de la eliminación.",
+    next4: "Cada reseña se tramita por separado, así que el tiempo de eliminación puede variar de una a otra. Para ponértelo fácil, es posible que facturemos cada reseña eliminada por separado: no te sorprendas si recibes un enlace de pago para cada una.",
     calm: "Que pasen unos días sin noticias es normal: en el lado de Google estas cosas llevan su tiempo. Estamos en ello.",
     close: "¿Alguna duda mientras tanto? Responde a este correo.",
     signoff: "Un saludo,",
@@ -79,6 +81,7 @@ export const T: Record<string, Entry> = {
     next1: "Une suppression prend en général quelques jours, parfois jusqu'à trois semaines.",
     next2: "Tu n'as rien à faire — nous te recontactons dès qu'il y a du nouveau.",
     next3: "Tu ne paies que les avis réellement supprimés, dus le jour de la suppression.",
+    next4: "Chaque avis est traité individuellement, le délai de suppression peut donc varier d'un avis à l'autre. Pour te simplifier les choses, il se peut que nous facturions chaque avis supprimé séparément – ne sois donc pas surpris de recevoir un lien de paiement pour chacun.",
     calm: "Quelques jours sans nouvelles, c'est normal : côté Google, cela prend du temps. Nous restons dessus.",
     close: "Une question entre-temps ? Réponds simplement à cet e-mail.",
     signoff: "Bien à toi,",
@@ -94,6 +97,7 @@ export const T: Record<string, Entry> = {
     next1: "Di solito una rimozione richiede qualche giorno, a volte fino a tre settimane.",
     next2: "Non devi fare nulla: ti scriviamo appena ci sono novità.",
     next3: "Paghi solo le recensioni che rimuoviamo davvero, dovute il giorno della rimozione.",
+    next4: "Ogni recensione viene gestita singolarmente, quindi i tempi di rimozione possono variare dall'una all'altra. Per semplificarti le cose, potremmo fatturare ogni recensione rimossa separatamente: non stupirti se ricevi un link di pagamento per ciascuna.",
     calm: "Qualche giorno senza notizie è normale: lato Google questi tempi ci sono. Ci stiamo lavorando.",
     close: "Domande nel frattempo? Rispondi a questa e-mail.",
     signoff: "Un caro saluto,",
@@ -109,6 +113,7 @@ export const T: Record<string, Entry> = {
     next1: "Een verwijdering duurt meestal een paar dagen, soms tot drie weken.",
     next2: "U hoeft niets te doen — we nemen contact op zodra er nieuws is.",
     next3: "U betaalt alleen voor reviews die we daadwerkelijk verwijderen, verschuldigd op de dag van verwijdering.",
+    next4: "Elke review wordt afzonderlijk behandeld, dus de verwijdertijd kan per review verschillen. Om het u zo makkelijk mogelijk te maken, kunnen we elke verwijderde review apart factureren – het kan dus zijn dat u per review een aparte betaallink ontvangt.",
     calm: "Een paar dagen zonder nieuws is normaal: aan de kant van Google kost dit tijd. We blijven erbovenop zitten.",
     close: "Vragen in de tussentijd? Beantwoord gewoon deze e-mail.",
     signoff: "Hartelijke groet,",
@@ -124,6 +129,7 @@ export const T: Record<string, Entry> = {
     next1: "Uma remoção demora normalmente alguns dias, às vezes até três semanas.",
     next2: "Não precisas de fazer nada — entramos em contacto assim que houver novidades.",
     next3: "Só pagas pelas avaliações que removermos de facto, com vencimento no dia da remoção.",
+    next4: "Cada avaliação é tratada individualmente, por isso o tempo de remoção pode variar de uma para outra. Para te facilitar, podemos faturar cada avaliação removida em separado – não estranhes se receberes um link de pagamento para cada uma.",
     calm: "Alguns dias sem notícias é normal: do lado do Google isto leva tempo. Estamos em cima do assunto.",
     close: "Dúvidas entretanto? Responde a este e-mail.",
     signoff: "Um abraço,",
@@ -139,6 +145,7 @@ export const T: Record<string, Entry> = {
     next1: "削除には通常数日、長い場合で3週間ほどかかります。",
     next2: "お客様に必要な手続きはありません。進展があり次第ご連絡します。",
     next3: "お支払いは実際に削除できた口コミの分のみで、削除当日が期日です。",
+    next4: "口コミは1件ずつ個別に対応するため、削除までの期間は口コミごとに異なる場合があります。そのため、削除できた口コミごとに個別にご請求し、1件ずつお支払いリンクをお送りすることがあります。あらかじめご了承ください。",
     calm: "数日ご連絡がないこともありますが、Google側の処理には時間がかかるためで、問題ありません。引き続き対応しています。",
     close: "その間にご不明な点があれば、このメールにご返信ください。",
     signoff: "どうぞよろしくお願いいたします。",
@@ -154,6 +161,7 @@ export const T: Record<string, Entry> = {
     next1: "En borttagning tar oftast några dagar, ibland upp till tre veckor.",
     next2: "Du behöver inte göra något — vi hör av oss så snart det finns nyheter.",
     next3: "Du betalar bara för omdömen som vi faktiskt tar bort, förfaller samma dag som borttagningen.",
+    next4: "Varje omdöme hanteras för sig, så tiden till borttagning kan variera mellan omdömena. För att göra det enkelt för dig kan vi fakturera varje borttaget omdöme separat – bli inte förvånad om du får en betalningslänk per omdöme.",
     calm: "Några dagar utan besked är normalt — hos Google tar det här tid. Vi håller i det.",
     close: "Frågor under tiden? Svara bara på det här mejlet.",
     signoff: "Vänliga hälsningar,",
@@ -169,6 +177,7 @@ export const T: Record<string, Entry> = {
     next1: "En fjernelse tager som regel få dage, nogle gange op til tre uger.",
     next2: "Du skal ikke gøre noget — vi vender tilbage, så snart der er nyt.",
     next3: "Du betaler kun for anmeldelser, vi faktisk fjerner, forfalder på fjernelsesdagen.",
+    next4: "Hver anmeldelse behandles for sig, så tiden til fjernelse kan variere fra anmeldelse til anmeldelse. For at gøre det nemt for dig kan vi fakturere hver fjernet anmeldelse separat – bliv derfor ikke overrasket, hvis du modtager et betalingslink for hver enkelt.",
     calm: "Nogle dage uden nyt er normalt — hos Google tager det tid. Vi holder fast i det.",
     close: "Spørgsmål i mellemtiden? Svar blot på denne mail.",
     signoff: "Venlig hilsen,",
@@ -184,6 +193,7 @@ export const T: Record<string, Entry> = {
     next1: "En fjerning tar vanligvis noen dager, av og til opptil tre uker.",
     next2: "Du trenger ikke gjøre noe — vi tar kontakt så snart det er nytt.",
     next3: "Du betaler kun for omtaler vi faktisk fjerner, forfaller samme dag som fjerningen.",
+    next4: "Hver omtale behandles for seg, så tiden til fjerning kan variere fra omtale til omtale. For å gjøre det enkelt for deg kan vi fakturere hver fjernede omtale separat – ikke bli overrasket om du får en betalingslenke per omtale.",
     calm: "Noen dager uten nyheter er normalt — hos Google tar dette tid. Vi står på.",
     close: "Spørsmål i mellomtiden? Bare svar på denne e-posten.",
     signoff: "Vennlig hilsen,",
@@ -221,6 +231,7 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
         1. {t.next1}<br />
         2. {t.next2}<br />
         3. {fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
+        {n > 1 && t.next4 ? <React.Fragment><br />4. {t.next4}</React.Fragment> : null}
         <ReviewPriceLines lang={lang} items={list} currency={reviewCurrency(currency, per)} />
       </NoteBox>
 
