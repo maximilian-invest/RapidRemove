@@ -16,7 +16,7 @@ export const PAGE_TITLE = {
   widerruf: { de: "Widerrufsbelehrung", en: "Right of withdrawal", es: "Derecho de desistimiento", fr: "Droit de rétractation", it: "Diritto di recesso", nl: "Herroepingsrecht", pt: "Direito de retratação", ja: "撤回権について", sv: "Ångerrätt", da: "Fortrydelsesret", no: "Angrerett" },
   report: { de: "Google-Profil-Löschungen: Report 2026", en: "Google Business Profile Removal Report 2026" },
   // Bewertungs-Produkt: nicht in DACH — bewusst kein de-Eintrag (Seite existiert dort nicht).
-  reviews: { en: "Remove a single Google review", es: "Eliminar una reseña de Google", fr: "Supprimer un avis Google", it: "Rimuovere una recensione Google", nl: "Eén Google-review verwijderen", pt: "Remover uma avaliação do Google", ja: "Googleの口コミを1件削除", sv: "Ta bort ett enskilt Google-omdöme", da: "Fjern en enkelt Google-anmeldelse", no: "Fjern én Google-omtale" },
+  reviews: { en: "Google Review Removal – $179, Pay Only on Success", es: "Eliminar una reseña de Google", fr: "Supprimer un avis Google", it: "Rimuovere una recensione Google", nl: "Eén Google-review verwijderen", pt: "Remover uma avaliação do Google", ja: "Googleの口コミを1件削除", sv: "Ta bort ett enskilt Google-omdöme", da: "Fjern en enkelt Google-anmeldelse", no: "Fjern én Google-omtale" },
 };
 
 const BRAND_BLURB = {
@@ -47,7 +47,7 @@ const PAGE_DESC = {
   },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
   reviews: {
-    en: "Have a single unfair or fake Google review removed — $179 per removed review, charged only on success. Honest assessment first, nothing upfront.",
+    en: "Get fake, abusive or policy-violating Google reviews removed through Google's official processes – $179 per removed review, charged only on success. Free assessment first.",
     es: "Elimina una reseña de Google injusta o falsa — 179 € por reseña eliminada, se cobra solo tras el éxito. Primero una valoración honesta, nada por adelantado.",
     fr: "Faites supprimer un avis Google injuste ou faux — 179 € par avis supprimé, débité uniquement en cas de succès. D'abord une évaluation honnête, rien d'avance.",
     it: "Fai rimuovere una recensione Google ingiusta o falsa — 179 € per recensione rimossa, addebito solo in caso di successo. Prima una valutazione onesta, niente in anticipo.",

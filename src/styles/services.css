@@ -225,3 +225,41 @@
 .shd-pop{opacity:1;transform:none;}
 .shd-cursor{display:none;}
 }
+
+/* ---- Bewertungs-Landingpage: SEO-Ausbau (Richtlinien, Ablauf, Vergleich, Erpressung, Ratgeber) ---- */
+.rvx-trust{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:16px;font-size:13.5px;font-weight:700;color:var(--fg-2);}
+.rvx-trust span{display:inline-flex;align-items:center;gap:6px;}
+.rvx-trust svg{color:var(--primary);}
+.rvx-policy{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;max-width:1080px;margin:0 auto;}
+@media(max-width:980px){.rvx-policy{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.rvx-policy{grid-template-columns:1fr;}}
+.rvx-pol{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);padding:18px 18px 16px;}
+.rvx-pol h3{font-family:var(--font-display);font-size:16px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:7px;color:var(--fg);}
+.rvx-pol h3 svg{color:var(--success);flex:none;}
+.rvx-pol p{margin:0;font-size:14.5px;line-height:1.55;color:var(--fg-2);}
+.rvx-process{list-style:none;padding:0;margin:0 auto;max-width:760px;display:flex;flex-direction:column;gap:12px;}
+.rvx-process li{display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);padding:18px 20px;}
+.rvx-process .n{flex:none;width:34px;height:34px;border-radius:50%;background:var(--orange-50);color:var(--orange-700);font-weight:800;display:flex;align-items:center;justify-content:center;}
+.rvx-process h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin:2px 0 4px;color:var(--fg);}
+.rvx-process h3 em{font-style:normal;font-size:12.5px;font-weight:800;color:var(--orange-700);background:var(--orange-50);border-radius:999px;padding:3px 9px;margin-left:8px;vertical-align:2px;}
+.rvx-process p{margin:0;font-size:15px;line-height:1.6;color:var(--fg-2);}
+.rvx-note{max-width:760px;margin:16px auto 0;display:flex;gap:8px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--fg-2);}
+.rvx-note svg{flex:none;margin-top:2px;color:var(--success);}
+.rvx-table-wrap{max-width:920px;margin:0 auto;overflow-x:auto;border:1px solid var(--hairline);border-radius:var(--r-lg);background:#fff;}
+.rvx-table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:560px;}
+.rvx-table th,.rvx-table td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--hairline);vertical-align:top;line-height:1.45;}
+.rvx-table thead th{font-size:13px;font-weight:800;color:var(--fg-2);background:var(--neutral-50);}
+.rvx-table tbody th{font-weight:800;color:var(--fg);white-space:nowrap;}
+.rvx-table td{color:var(--fg-2);}
+.rvx-table .us{background:var(--orange-50);color:var(--fg);font-weight:700;}
+.rvx-table thead th.us{color:var(--orange-800);}
+.rvx-table tr:last-child th,.rvx-table tr:last-child td{border-bottom:none;}
+.rvx-ext{max-width:760px;margin:0 auto;text-align:center;}
+.rvx-ext h2{margin:10px 0 14px;}
+.rvx-ext p{font-size:16.5px;line-height:1.65;color:var(--fg-2);margin:0 0 12px;}
+.rvx-ext .btn{margin-top:8px;}
+.rvx-guides{list-style:none;padding:0;margin:0 auto;max-width:880px;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:680px){.rvx-guides{grid-template-columns:1fr;}}
+.rvx-guides a{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#fff;border:1px solid var(--hairline);border-radius:var(--r-md);font-weight:700;font-size:15px;color:var(--fg);text-decoration:none;line-height:1.4;}
+.rvx-guides a:hover{border-color:var(--primary);color:var(--orange-700);}
+.rvx-guides svg{flex:none;color:var(--primary);}

@@ -1388,55 +1388,6 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
   );
 }
 
-/* ---------- Bewertungs-Produkt: „Bearbeitung gestartet"-Bestätigung ----------
-   Sagt dem Kunden, dass wir den Auftrag angestoßen haben (Dauer, keine
-   Mitwirkung nötig, Abrechnung nur je gelöschter Bewertung). Die Sprache ist
-   die, über die der Kunde gekommen ist (Sprache der Bestellung) — keine
-   Auswahl nötig. Versand über POST /admin/reviews-start. */
-function ReviewsStartPanel({ o, items, cur, toast }) {
-  // Bewertungs-Produkt gibt es nicht auf Deutsch → fehlende/deutsche Sprache = Englisch.
-  const lang = o.lang && o.lang !== "de" ? o.lang : "en";
-  const [sending, setSending] = React.useState(false);
-  const [sentAt, setSentAt] = React.useState(null);
-  // Welche Bewertungen nehmen wir an? Standard: alle (bzw. die zuletzt angenommenen).
-  // Nur angenommene zählen für Mengenrabatt, Rechnung und Mahnung.
-  const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
-  const [acc, setAcc] = React.useState(() => {
-    const prev = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
-    const m = {}; items.forEach((it, i) => { m[i] = prev ? prev.has(keyOf(it)) : true; }); return m;
-  });
-  const accepted = items.filter((it, i) => acc[i]);
-  const declinedCount = items.length - accepted.length;
-  const send = async () => {
-    if (sending) return;
-    setSending(true);
-    try {
-      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items: accepted, declinedCount });
-      setSentAt(new Date());
-      toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓`);
-    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
-    setSending(false);
-  };
-  return (
-    <div className="rvs-start" style={{ padding: 0, background: "none", border: 0, margin: "0 0 10px" }}>
-      {items.length > 1 ? (
-        <div style={{ margin: "0 0 10px" }}>
-          <div style={{ fontSize: 12.5, fontWeight: 800, margin: "0 0 6px" }}>Welche Bewertungen nehmen wir an? <span className="muted" style={{ fontWeight: 600 }}>({accepted.length} von {items.length} · nur diese zählen für Rabatt + Rechnung)</span></div>
-          {items.map((it, i) => (
-            <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, padding: "4px 0", cursor: "pointer", opacity: acc[i] ? 1 : 0.55 }}>
-              <input type="checkbox" checked={!!acc[i]} onChange={(e) => setAcc((m) => ({ ...m, [i]: e.target.checked }))} style={{ marginTop: 3 }} />
-              <span style={{ wordBreak: "break-all" }}>{it.url ? it.url : <React.Fragment><b>{it.name}</b> — „{(it.text || "").slice(0, 90)}{(it.text || "").length > 90 ? "…" : ""}“</React.Fragment>}{it.old ? <span style={{ color: "#b26a00", fontWeight: 800 }}> · älter als 4 Wo.</span> : null}</span>
-            </label>
-          ))}
-        </div>
-      ) : null}
-      <button className="btn btn-pri btn-sm" disabled={sending || !accepted.length} onClick={send}>
-        <AI.send /> {sending ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)})${declinedCount ? ` · ${accepted.length} angenommen, ${declinedCount} abgelehnt` : ""}`}
-      </button>
-      {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 8 }}>✓ Gesendet ({langLabel(lang)}) — erscheint im Verlauf unten.</div> : null}
-    </div>
-  );
-}
 
 /* ---------- Bewertungs-Produkt: Storno (zu alt / kein Text) ----------
    Erfüllt eine eingereichte Bewertung die Voraussetzungen nicht, geht ein
@@ -1644,20 +1595,29 @@ function ReviewShotsPanel({ o, items, toast }) {
 /* Abgerechnet wird NUR, was als gelöscht markiert ist (179 je Bewertung),
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
 function ReviewsInvoicePanel({ o, toast, onStatus }) {
+  // EINE Liste für beide Schritte:
+  //  1) vor der Startbestätigung: anhaken = welche Bewertungen wir annehmen → „Startbestätigung senden"
+  //  2) danach: nicht angenommene sind ausgegraut; anhaken = gelöscht → Löschbestätigung + Rechnung
   // Je Eintrag Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative ohne Link).
-  // Nach der Startbestätigung: nur die angenommenen Bewertungen (abgelehnte werden nie verrechnet).
-  const items = o.reviewsAccepted && o.reviewsAccepted.length ? o.reviewsAccepted : (o.reviewItems && o.reviewItems.length ? o.reviewItems : []);
-  const allItems = o.reviewItems && o.reviewItems.length ? o.reviewItems : items; // alle eingereichten (Start, Screenshots, Storno)
-  const [sel, setSel] = React.useState({});   // Index -> true (gelöscht)
+  const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : (o.reviewsAccepted || []);
+  const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
+  const [acceptedLocal, setAcceptedLocal] = React.useState(null); // nach Start in dieser Sitzung
+  const acceptedList = acceptedLocal || o.reviewsAccepted || null;
+  const accKeys = acceptedList ? new Set(acceptedList.map(keyOf)) : null;
+  const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)));
+  const started = !!accKeys;
+  const basisN = started ? accKeys.size : items.length; // Mengenrabatt nach angenommenen Bewertungen
+  const [sel, setSel] = React.useState({});   // Index -> true
   const [sending, setSending] = React.useState(false);
+  const [starting, setStarting] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
-  const chosen = items.filter((it, i) => sel[i]);
+  const chosen = items.filter((it, i) => sel[i] && !isDeclined(it));
   const cur = o.country === "US" ? "usd" : "eur";
+  const lang = o.lang && o.lang !== "de" ? o.lang : "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nOld = chosen.filter((it) => it && it.old).length;
-  // Mengenrabatt nach Anzahl der BEAUFTRAGTEN Bewertungen → bei Einzelabrechnung anteilig je Bewertung.
-  const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, items.length)) : 0;
+  const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, basisN)) : 0;
   const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
@@ -1669,13 +1629,24 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [ask, setAsk] = React.useState(null);
   const [sentVia, setSentVia] = React.useState(null);
   const [sentItems, setSentItems] = React.useState(null);
+  const sendStart = async () => {
+    if (!chosen.length || starting) return;
+    setStarting(true);
+    try {
+      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items: chosen, declinedCount: items.length - chosen.length });
+      setAcceptedLocal(chosen);
+      setSel({});
+      toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓ — ${chosen.length} angenommen${items.length - chosen.length ? `, ${items.length - chosen.length} abgelehnt` : ""}`);
+    } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setStarting(false);
+  };
   const send = async (method) => {
     if (!chosen.length || sending) return;
     setSending(true);
     try {
       const r = await sendReviewsInvoice({
         orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur,
-        removedItems: chosen, submittedCount: items.length,
+        removedItems: chosen, submittedCount: basisN,
         ...(method ? { method } : {}),
       });
       setSentAt(new Date());
@@ -1702,40 +1673,52 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
     });
   };
   if (!items.length) return <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>Keine Bewertungen am Auftrag gespeichert (ältere Bestellung — siehe Notiz).</div>;
+  const declinedN = started ? items.filter(isDeclined).length : 0;
   return (
     <div>
-      {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
       <details className="rv-shots" style={{ margin: "0 0 12px", borderBottom: "1px solid var(--hairline)", paddingBottom: 8 }}>
-        <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 800, padding: "4px 0" }}>📷 Screenshots (Profil + {allItems.length} Bewertung{allItems.length === 1 ? "" : "en"})</summary>
+        <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 800, padding: "4px 0" }}>📷 Screenshots (Profil + {items.length} Bewertung{items.length === 1 ? "" : "en"})</summary>
         <ProfileShotPanel o={o} toast={toast} />
-        <ReviewShotsPanel o={o} items={allItems} toast={toast} />
+        <ReviewShotsPanel o={o} items={items} toast={toast} />
       </details>
-      <ReviewsStartPanel o={o} items={allItems} cur={cur} toast={toast} />
       {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}
-      {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={allItems} toast={toast} onStatus={onStatus} /> : null}
+      {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={items} toast={toast} onStatus={onStatus} /> : null}
       <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
-        {items.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
+        {started
+          ? <React.Fragment>{items.length} eingereicht · {accKeys.size} angenommen{declinedN ? ` · ${declinedN} abgelehnt (ausgegraut)` : ""} · Gelöschte markieren, dann Rechnung senden</React.Fragment>
+          : <React.Fragment>{items.length} eingereicht · Schritt 1: angenommene Bewertungen anhaken → Startbestätigung · Schritt 2: gelöschte anhaken → Rechnung</React.Fragment>}
       </div>
-      {items.map((it, i) => (
-        <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: "pointer", fontSize: 12.5 }}>
-          <input type="checkbox" checked={!!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
-          {it.url
-            ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: "var(--primary)", fontWeight: 600, wordBreak: "break-all" }}>{it.url}</a>
-            : <span style={{ fontWeight: 600 }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
-          {it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
-        </label>
-      ))}
+      {items.map((it, i) => {
+        const off = isDeclined(it);
+        return (
+          <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: off ? "not-allowed" : "pointer", fontSize: 12.5, opacity: off ? 0.4 : 1 }}>
+            <input type="checkbox" disabled={off} checked={!off && !!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
+            {it.url
+              ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: off ? "line-through" : undefined }}>{it.url}</a>
+              : <span style={{ fontWeight: 600, textDecoration: off ? "line-through" : undefined }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
+            {off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
+              : it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
+          </label>
+        );
+      })}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
-        <span style={{ fontWeight: 800 }}>{chosen.length} gelöscht × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
-          {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
+        {started || chosen.length === 0
+          ? <span style={{ fontWeight: 800 }}>{chosen.length} {started ? "gelöscht" : "ausgewählt"} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
+              {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
+          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt</span>}
       </div>
-      <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch" }}>
+      <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
+        {!started ? (
+          <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
+            <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${items.length - chosen.length && chosen.length ? `, ${items.length - chosen.length} ablehnen` : ""}`}
+          </button>
+        ) : null}
         {viaMethod ? (
-          <button className="btn btn-pri btn-sm" disabled={!chosen.length || sending} onClick={() => send(viaMethod)} title={viaName === "Wise" ? "Mit Wise-Kontodaten, ohne Stripe-Link" : "Ohne Stripe-Link — Hinweis: PayPal-Link folgt, Freunde & Familie"}>
+          <button className={"btn btn-sm " + (started ? "btn-pri" : "btn-sec")} disabled={!chosen.length || sending} onClick={() => send(viaMethod)} title={viaName === "Wise" ? "Mit Wise-Kontodaten, ohne Stripe-Link" : "Ohne Stripe-Link — Hinweis: PayPal-Link folgt, Freunde & Familie"}>
             <AI.send /> {sending ? "Sendet…" : `Löschbestätigung senden (${viaName})`}
           </button>
         ) : null}
-        <button className={"btn btn-sm " + (viaMethod ? "btn-sec" : "btn-pri")} disabled={!chosen.length || sending} onClick={sendStripe} title={viaName ? "Kunde wollte mit " + viaName + " zahlen" : undefined}>
+        <button className={"btn btn-sm " + (viaMethod || !started ? "btn-sec" : "btn-pri")} disabled={!chosen.length || sending} onClick={sendStripe} title={viaName ? "Kunde wollte mit " + viaName + " zahlen" : undefined}>
           {viaName ? <Icon.lock size={15} /> : <AI.send />} {sending && !viaMethod ? "Sendet…" : "Löschbestätigung + Rechnung senden"}
         </button>
       </div>

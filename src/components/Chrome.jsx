@@ -41,6 +41,8 @@ function useReveal() {
    right language, and builds language-aware navigation: every link points to the
    localized URL of the current locale (e.g. /it/chi-siamo). pageKey lets the
    language switcher jump to the SAME page in the target language. */
+// Footer: Link zur Bewertungs-Landingpage (Produkt existiert nicht auf Deutsch).
+const REVIEWS_LINK = { en: "Remove a Google review", es: "Eliminar una reseña de Google", fr: "Supprimer un avis Google", it: "Rimuovere una recensione Google", nl: "Google-review verwijderen", pt: "Remover uma avaliação do Google", ja: "Google口コミ削除", sv: "Ta bort Google-omdöme", da: "Fjern Google-anmeldelse", no: "Fjern Google-omtale" };
 // Footer: Menüpunkt zum Datenreport (Seite gibt es auf EN + DE; andere Sprachen → EN).
 const REPORT_LINK = { de: "Datenreport 2026", en: "Data report 2026", es: "Informe de datos 2026", fr: "Rapport de données 2026", it: "Report dati 2026", nl: "Datarapport 2026", pt: "Relatório de dados 2026", ja: "データレポート 2026", sv: "Datarapport 2026", da: "Datarapport 2026", no: "Datarapport 2026" };
 
@@ -507,6 +509,8 @@ function Footer({ onStart, onBlog, onAbout }) {
                       target={cell.ext ? "_blank" : undefined} rel={cell.ext ? "noopener noreferrer" : undefined}>{l}</a>
                     {/* Datenreport direkt nach „Magazin" (Unternehmen-Spalte) */}
                     {i === 1 && j === 1 ? <a href={asset(pagePath("report", pageHasLocale("report", lang) ? lang : "en"))}>{REPORT_LINK[lang] || REPORT_LINK.en}</a> : null}
+                    {/* Einzelbewertungen (nur wo das Produkt existiert, nicht DACH) — nach dem letzten Produkt-Link */}
+                    {i === 0 && j === c.links.length - 1 && pageHasLocale("reviews", lang) ? <a href={asset(pagePath("reviews", lang))}>{REVIEWS_LINK[lang] || REVIEWS_LINK.en}</a> : null}
                   </React.Fragment>
                 );
               })}

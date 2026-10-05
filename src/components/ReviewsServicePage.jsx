@@ -72,7 +72,7 @@ function RvwDemo({ r }) {
   );
 }
 
-export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo }) {
+export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo, guides = [] }) {
   const { t } = useLang();
   const r = RVW[t.code] || RVW.en;
   const [open, setOpen] = React.useState(0);
@@ -99,6 +99,7 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
             <div className="lp-assure reveal d3">
               {r.assure.map((a, i) => <div key={i}><Icon.check /> {a}</div>)}
             </div>
+            {r.trust ? <div className="rvx-trust reveal d3">{r.trust.map((a, i) => <span key={i}>{i === 1 ? <Icon.star size={14} /> : <Icon.shieldCheck size={14} />} {a}</span>)}</div> : null}
           </div>
           <div className="reveal d2"><RvwDemo r={r} /></div>
         </div>
@@ -122,6 +123,23 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
         </div>
       </section>
 
+      {r.policy ? (
+        <section className="band tight" id="google-policies">
+          <div className="container">
+            <div className="sec-head center reveal">
+              <span className="eyebrow"><Icon.shieldCheck size={15} /> {r.policyEyebrow}</span>
+              <h2>{r.policyH}</h2>
+              <p>{r.policyLead}</p>
+            </div>
+            <div className="rvx-policy">
+              {r.policy.map((p, i) => (
+                <div className="rvx-pol reveal" key={i}><h3><Icon.check size={16} /> {p.t}</h3><p>{p.d}</p></div>
+              ))}
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       <section className="band tight soft">
         <div className="container">
           <div className="sec-head center reveal">
@@ -140,7 +158,24 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
         </div>
       </section>
 
-      <section className="band tight">
+      {r.process ? (
+        <section className="band tight" id="process">
+          <div className="container">
+            <div className="sec-head center reveal">
+              <span className="eyebrow"><Icon.zap size={15} /> {r.processEyebrow}</span>
+              <h2>{r.processH}</h2>
+            </div>
+            <ol className="rvx-process">
+              {r.process.map((st, i) => (
+                <li className="reveal" key={i}><span className="n">{i + 1}</span><div><h3>{st.t} <em>{st.time}</em></h3><p>{st.d}</p></div></li>
+              ))}
+            </ol>
+            {r.processNote ? <p className="rvx-note reveal"><Icon.lock size={15} /> {r.processNote}</p> : null}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="band tight soft">
         <div className="container">
           <div className="sec-head center reveal">
             <span className="eyebrow"><Icon.shieldCheck size={15} /> {r.honestyEyebrow}</span>
@@ -158,6 +193,36 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
           </div>
         </div>
       </section>
+
+      {r.compareRows ? (
+        <section className="band tight" id="compare">
+          <div className="container">
+            <div className="sec-head center reveal">
+              <span className="eyebrow"><Icon.info size={15} /> {r.compareEyebrow}</span>
+              <h2>{r.compareH}</h2>
+            </div>
+            <div className="rvx-table-wrap reveal">
+              <table className="rvx-table">
+                <thead><tr>{r.compareHead.map((h, i) => <th key={i} className={i === r.compareHead.length - 1 ? "us" : undefined}>{h}</th>)}</tr></thead>
+                <tbody>{r.compareRows.map((row, i) => <tr key={i}>{row.map((c, j) => j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j} className={j === row.length - 1 ? "us" : undefined}>{c}</td>)}</tr>)}</tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
+      {r.extortionP ? (
+        <section className="band tight soft" id="extortion">
+          <div className="container">
+            <div className="rvx-ext reveal">
+              <span className="eyebrow"><Icon.alert size={15} /> {r.extortionEyebrow}</span>
+              <h2>{r.extortionH}</h2>
+              {r.extortionP.map((p, i) => <p key={i}>{p}</p>)}
+              <button className="btn btn-primary" onClick={() => onStart()}>{r.cta} <Icon.arrowRight size={16} /></button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="band tight" id="rvw-form">
         <div className="container" style={{ textAlign: "center" }}>
@@ -180,7 +245,7 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
             <h2>{r.faqH}</h2>
           </div>
           <div className="faq reveal">
-            {r.faq.map((it, i) => (
+            {[...r.faq, ...(r.faqMore || [])].map((it, i) => (
               <div className={"faq-row" + (open === i ? " open" : "")} key={i}>
                 <button className="faq-q" onClick={() => setOpen(open === i ? -1 : i)}>{it.q} <Icon.chevronDown /></button>
                 <div className="faq-a"><div className="faq-a-inner"><p>{it.a}</p></div></div>
@@ -189,6 +254,20 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
           </div>
         </div>
       </section>
+
+      {guides.length && r.guidesH ? (
+        <section className="band tight" id="guides">
+          <div className="container">
+            <div className="sec-head center reveal">
+              <span className="eyebrow"><Icon.edit size={15} /> {r.guidesEyebrow}</span>
+              <h2>{r.guidesH}</h2>
+            </div>
+            <ul className="rvx-guides reveal">
+              {guides.map((g) => <li key={g.href}><a href={asset(g.href)}>{g.title} <Icon.arrowRight size={15} /></a></li>)}
+            </ul>
+          </div>
+        </section>
+      ) : null}
 
       <section className="band tight">
         <div className="container" style={{ textAlign: "center" }}>
@@ -207,7 +286,7 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
    Bewertungs-Eingabe (?start=reviews) — gleiche Zieladresse wie der
    Announcement-Banner. Der Sprachumschalter springt für Sprachen ohne diese
    Seite (Deutsch) auf die jeweilige Startseite statt auf einen toten Slug. */
-export function ReviewsRoute({ initialLang = "en" }) {
+export function ReviewsRoute({ initialLang = "en", guides = [] }) {
   const { lang, t, setLang, nav, base } = useRouteShell(initialLang, "reviews");
   const start = () => nav(pagePath("wizard", lang) + "?start=reviews");
   const switchLang = (l) => {
@@ -217,7 +296,7 @@ export function ReviewsRoute({ initialLang = "en" }) {
   };
   return (
     <LangContext.Provider value={{ lang, t, setLang: switchLang }}>
-      <ReviewsServicePage {...base} onStart={start} />
+      <ReviewsServicePage {...base} onStart={start} guides={guides} />
     </LangContext.Provider>
   );
 }

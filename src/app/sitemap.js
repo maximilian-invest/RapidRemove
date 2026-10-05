@@ -1,7 +1,7 @@
 import { ARTICLE_META, SITE_URL } from "@/lib/article-google-profil";
 import { LOCALES, localeUrl, magazineUrl } from "@/lib/locales-meta";
 import { CLUSTER_SLUGS } from "@/lib/articles/registry";
-import { nestedArticleParams, articleUrl } from "@/lib/articles/catalog";
+import { nestedArticleParams, articleUrl, resolveLocalized, dateFor } from "@/lib/articles/catalog";
 import { PAGE_KEYS, pageUrl, pageHasLocale } from "@/lib/page-routes";
 import { HUB_PATH } from "@/lib/articles/hubs";
 
@@ -18,9 +18,15 @@ export default function sitemap() {
     changeFrequency: "monthly",
     priority: 0.8,
   }));
+  // lastModified je Artikel: meta.updated > Veröffentlichungsdatum (statt fixem Datum).
+  const lastMod = (lang, aslug2) => {
+    const r = resolveLocalized(lang, aslug2);
+    const d = (r && r.t && r.t.meta && (r.t.meta.updated || r.t.meta.date)) || (r ? dateFor(r.deSlug) : "2026-06-04");
+    return new Date(d);
+  };
   const translated = nestedArticleParams().map(({ lang, aslug2 }) => ({
     url: articleUrl(lang, aslug2),
-    lastModified: new Date("2026-06-04"),
+    lastModified: lastMod(lang, aslug2),
     changeFrequency: "monthly",
     priority: 0.7,
   }));

@@ -10,7 +10,7 @@ import { LangContext, useLang } from "@/lib/lang-context";
 import { I18N } from "@/lib/i18n";
 import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
-import { pagePath } from "@/lib/page-routes";
+import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { SVC, ORM, DEIDX, SEO } from "@/lib/services-copy";
 import { PressSerpDemo } from "@/components/SerpDemo";
 
@@ -34,15 +34,21 @@ export function ServicesTrio({ onStart, onOrm, onDeindex, onSeo }) {
         <div className={"svc-trio" + (s.cards.length === 4 ? " quad" : "")}>
           {s.cards.map((c, i) => {
             const I = ic(c.ic);
-            return (
-              <div className={"svc-card reveal d" + (i + 1) + (c.id === "core" ? " is-core" : "")} key={c.id} onClick={acts[c.id]}>
+            // Echte <a href> für die Unterseiten (crawlbare interne Links); Kernkarte startet den Wizard.
+            const href = c.id !== "core" && pageHasLocale(c.id, t.code) ? asset(pagePath(c.id, t.code)) : null;
+            const inner = (
+              <React.Fragment>
                 <div className="si"><I size={25} /></div>
                 <div className="s-tag">{c.tag}</div>
                 <h3>{c.t}</h3>
                 <p>{c.d}</p>
                 <span className="s-link">{c.link} <Icon.arrowRight /></span>
-              </div>
+              </React.Fragment>
             );
+            const cls = "svc-card reveal d" + (i + 1) + (c.id === "core" ? " is-core" : "");
+            return href
+              ? <a className={cls} key={c.id} href={href} style={{ textDecoration: "none", color: "inherit" }}>{inner}</a>
+              : <div className={cls} key={c.id} onClick={acts[c.id]}>{inner}</div>;
           })}
         </div>
       </div>

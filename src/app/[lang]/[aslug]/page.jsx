@@ -15,10 +15,13 @@ import { REPORT, reportJsonLd } from "@/lib/report-data";
 import { SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, NON_DEFAULT_LOCALES, magazineSlug, magazineUrl, magazineHreflangMap } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
-import { magCardsFor } from "@/lib/articles/catalog";
+import { magCardsFor, localizedPath, tFor } from "@/lib/articles/catalog";
 import { pageParams, pageForSlug, pageUrl, pageHreflang } from "@/lib/page-routes";
 import { pageMeta } from "@/lib/page-meta";
 import { requireKnownParams } from "@/lib/route-guard";
+
+// Ratgeber, die die Bewertungs-Landingpage verlinkt (interne Verlinkung + KI-Fan-out).
+const REVIEW_GUIDES = ["einzelbewertung-loeschen-service", "google-bewertung-loeschen-lassen", "google-rezension-loeschen-lassen", "fake-google-bewertung-melden-loeschen", "negative-google-bewertung-anwalt-oder-technische-loeschung", "1-stern-bewertung-ohne-text-loeschen", "schlechte-google-bewertungen-was-tun", "negative-bewertung-ignorieren-antworten-loeschen"];
 
 // Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
 export const dynamicParams = true;
@@ -102,8 +105,10 @@ export default function Page({ params }) {
         { "@type": "Service", name: m.name, description: m.description, url,
           serviceType: "Removal of individual Google reviews",
           provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
-          offers: { "@type": "Offer", price: "179", priceCurrency: params.lang === "en" ? "USD" : "EUR", url } },
-        { "@type": "FAQPage", mainEntity: (r.faq || []).map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+          areaServed: "Worldwide (outside Germany and Austria)",
+          offers: { "@type": "Offer", price: "179", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
+            description: "Per removed review; charged only after successful removal" } },
+        { "@type": "FAQPage", mainEntity: [...(r.faq || []), ...(r.faqMore || [])].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
         { "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },
           { "@type": "ListItem", position: 2, name: m.name, item: url },
@@ -113,7 +118,10 @@ export default function Page({ params }) {
     return (
       <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-        <ReviewsRoute initialLang={params.lang} />
+        <ReviewsRoute initialLang={params.lang} guides={REVIEW_GUIDES.map((k) => {
+          const t = tFor(params.lang, k); const href = localizedPath(params.lang, k);
+          return t && href ? { href, title: t.meta.title } : null;
+        }).filter(Boolean)} />
       </>
     );
   }
