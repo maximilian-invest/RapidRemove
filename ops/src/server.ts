@@ -21,7 +21,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes } from "./partner";
-import { initCustomerTables, registerCustomerRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify } from "./customers";
+import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
 import { startUpsellWorker } from "./upsell";
@@ -150,6 +150,7 @@ app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
+registerCustomerAdminRoutes(app, ADMIN_TOKEN);
 registerCustomerRoutes(app, {
   sendReset: async (email, password, lang) => {
     const m = resetMail(lang, email, password, DASH_URL);

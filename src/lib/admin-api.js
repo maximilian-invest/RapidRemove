@@ -629,3 +629,12 @@ export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderI
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
 export const partnerLink = (rotate = false) => partnerPost("link", { rotate });
+
+/** Kunden-Dashboard: Zugänge für alle offenen Einzelbewertungs-Aufträge anlegen (ohne Mail). */
+export async function createOpenCustAccounts() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/cust/accounts-open", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN }) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}

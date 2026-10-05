@@ -6,6 +6,7 @@ import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
 import { ReportStatsDashboard } from "./AdminReportStats";
 import { AdminPartner, PartnerBadge, partnerWhatsAppText } from "./AdminPartner";
+import { AdminCustAccess } from "./AdminCustAccess";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
@@ -3165,7 +3166,7 @@ function AdminApp() {
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;
   else if (view === "templates") body = <Templates toast={toast} />;
-  else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
+  else if (view === "customers") body = <React.Fragment><div className="content" style={{ paddingBottom: 0 }}><AdminCustAccess toast={toast} /></div><Customers customers={stripeCustomers} query={query} /></React.Fragment>;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else if (view === "report") body = <ReportStatsDashboard toast={toast} />;
   else if (view === "partner") body = <AdminPartner toast={toast} />;

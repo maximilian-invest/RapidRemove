@@ -284,3 +284,48 @@ export async function requeueNotify(orderId: string, keys: string[], minutes = 1
     [orderId, String(minutes), JSON.stringify(keys)],
   );
 }
+
+/* ---- Admin: Dashboard-Zugänge für alle offenen Einzelbewertungs-Aufträge anlegen (OHNE Mail) ---- */
+export function registerCustomerAdminRoutes(app: FastifyInstance, adminToken: string): void {
+  app.post("/admin/cust/accounts-open", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    // Offen = Einzelbewertungs-Auftrag nicht erledigt/storniert ODER mit offenen Partner-Aufgaben.
+    const open = await pool.query(
+      `SELECT id, email, name, company, profile FROM orders
+        WHERE service='reviews' AND COALESCE(status,'') NOT IN ('done','storniert') AND email IS NOT NULL`,
+    );
+    const fromTasks = await pool.query(
+      `SELECT DISTINCT o.id, o.email, o.name, o.company, o.profile FROM partner_tasks t JOIN orders o ON o.id = t.order_id
+        WHERE t.status NOT IN ('removed','cancelled') AND o.email IS NOT NULL`,
+    ).catch(() => ({ rows: [] as Record<string, string>[] }));
+    // Partner-Aufgaben ohne Auftrag (manuell übergeben): über den Profilnamen zuordnen.
+    const loose = await pool.query(
+      `SELECT DISTINCT customer FROM partner_tasks WHERE order_id IS NULL AND customer IS NOT NULL AND status NOT IN ('removed','cancelled')`,
+    ).catch(() => ({ rows: [] as { customer: string }[] }));
+    const matched: Record<string, string>[] = [] as Record<string, string>[];
+    const unmatched: string[] = [];
+    for (const l of loose.rows) {
+      const m = await pool.query(
+        `SELECT id, email, name, company, profile FROM orders WHERE email IS NOT NULL AND (lower(company)=lower($1) OR lower(profile)=lower($1) OR lower(raw->>'profileName')=lower($1)) ORDER BY created_at DESC LIMIT 1`,
+        [l.customer],
+      );
+      if (m.rows[0]) matched.push(m.rows[0]); else unmatched.push(l.customer);
+    }
+    const byEmail = new Map<string, { email: string; name: string; business: string; orders: string[] }>();
+    for (const o of [...(open.rows as Record<string, string>[]), ...(fromTasks.rows as Record<string, string>[]), ...matched]) {
+      const e = norm(o.email);
+      if (!e) continue;
+      const cur = byEmail.get(e) || { email: e, name: o.name || "", business: o.company || o.profile || "", orders: [] as string[] };
+      if (!cur.orders.includes(o.id)) cur.orders.push(o.id);
+      byEmail.set(e, cur);
+    }
+    const accounts = [];
+    for (const a of byEmail.values()) {
+      const acc = await ensureCustomerAccount(a.email);
+      accounts.push({ ...a, password: acc && acc.created ? acc.password : null, existed: !!(acc && !acc.created) });
+    }
+    return { ok: true, url: DASH_URL, accounts, unmatched };
+  });
+}
