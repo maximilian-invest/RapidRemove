@@ -27,7 +27,7 @@ import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
-import { resetMail } from "./emails/DashBox";
+import { resetLinkMail } from "./emails/ResetLinkMail";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
@@ -160,8 +160,8 @@ registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Adm
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
 registerCustomerAdminRoutes(app, ADMIN_TOKEN);
 registerCustomerRoutes(app, {
-  sendReset: async (email, password, lang) => {
-    const m = resetMail(lang, email, password, await dashLink(email, lang));
+  sendResetLink: async (email, url, lang) => {
+    const m = resetLinkMail(lang, url);
     await sendMail({ to: email, subject: m.subject, html: await render(m.el), replyTo: process.env.MAIL_REPLY_TO });
   },
 });

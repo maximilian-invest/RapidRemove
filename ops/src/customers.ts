@@ -30,6 +30,8 @@ export async function initCustomerTables(): Promise<void> {
       last_login timestamptz
     )
   `);
+  // Vorheriger Partner-Status je Bewertung (Kunde sieht „In Bearbeitung → …" in Mail + Dashboard).
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS prev_status text`).catch(() => {});
   // Sammel-Benachrichtigung: 5 Minuten nach der LETZTEN Partner-Änderung eines Auftrags eine Mail.
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cust_notify (
@@ -38,7 +40,18 @@ export async function initCustomerTables(): Promise<void> {
       keys       jsonb NOT NULL DEFAULT '[]'::jsonb
     )
   `);
+  await pool.query(`ALTER TABLE cust_notify ADD COLUMN IF NOT EXISTS changes jsonb NOT NULL DEFAULT '{}'::jsonb`);
   // Persönliche Login-Links in den Mails („Dashboard öffnen" → direkt eingeloggt, 30 Tage, mehrfach nutzbar).
+  // „Passwort vergessen": einmaliger Link (60 Min.), nur der SHA-256-Hash liegt in der DB.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS cust_reset (
+      token_hash text PRIMARY KEY,
+      email      text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL,
+      used_at    timestamptz
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cust_magic (
       token_hash text PRIMARY KEY,
@@ -260,7 +273,9 @@ type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: bo
 export const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
 /** Kunden-Status (Design-Handoff „Customer Dashboard"). */
 export type ItemStatus = "new" | "working" | "removed" | "notpossible" | "software" | "sw_accepted" | "sw_declined" | "cancelled";
-type PT = { status: string; since: string | null; removedAt?: string | null; changedAt?: string | null };
+type PT = { status: string; since: string | null; removedAt?: string | null; changedAt?: string | null; prev?: string | null };
+/** Partner-Status → Kunden-Status (für „vorher → jetzt"). */
+export const partnerToDash = (s: string): ItemStatus => (({ new: "new", working: "working", removed: "removed", not_possible: "notpossible", software: "software", cancelled: "cancelled" } as Record<string, ItemStatus>)[s] || "new");
 type OrderRow = { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null };
 
 function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
@@ -314,6 +329,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
+      prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
     };
   });
@@ -345,21 +361,27 @@ async function loadCustomerOrders(email: string): Promise<{ name: string; lang: 
     [email],
   );
   const ids = r.rows.map((x) => x.id);
-  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null };
+  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null; prev_status: string | null };
   const pt = ids.length
-    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
+    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at, prev_status FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
     : { rows: [] as PRow[] };
   const byOrder = new Map<string, Map<string, PT>>();
   for (const t of pt.rows as PRow[]) {
     if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map());
-    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at });
+    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at, prev: t.prev_status });
   }
   return { name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
 }
 
 /* ---- Routen ---- */
-export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset: (email: string, password: string, lang: string) => Promise<void> }): void {
+export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetLink: (email: string, url: string, lang: string) => Promise<void> }): void {
   const hits = new Map<string, number[]>();
+  const hourHits = new Map<string, number[]>();
+  const limitedHour = (k: string, n: number) => {
+    const now = Date.now(); const a = (hourHits.get(k) || []).filter((t) => now - t < 60 * 60_000);
+    if (a.length >= n) { hourHits.set(k, a); return true; }
+    a.push(now); hourHits.set(k, a); return false;
+  };
   const limited = (ip: string, n: number) => {
     const now = Date.now(); const a = (hits.get(ip) || []).filter((t) => now - t < 10 * 60_000);
     if (a.length >= n) { hits.set(ip, a); return true; }
@@ -494,20 +516,70 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
   });
 
   // Passwort vergessen: neues Passwort per Mail (Antwort immer gleich → keine Konto-Erkennung).
+  // „Passwort vergessen": Mail mit einmaligem Link (60 Min.). Das alte Passwort bleibt gültig, bis ein neues
+  // gesetzt wird (niemand kann einen Kunden durch Anfordern aussperren). Antwort immer gleich und sofort →
+  // keine Konto-Erkennung. Limits: 5/10 Min. je IP, 3/Std. je E-Mail.
   app.post("/cust/reset", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (limited("reset:" + req.ip, 5)) return reply.code(429).send({ ok: false, error: "too_many" });
     const email = norm(b.email);
-    if (pool && email) {
-      // Bestandskunde ohne Konto (Link bekommen, aber nie Zugangsdaten) → Konto jetzt anlegen.
-      const has = await pool.query(`SELECT 1 FROM orders WHERE lower(email)=$1 AND service='reviews' LIMIT 1`, [email]);
-      if (has.rowCount) await ensureCustomerAccount(email);
-      const pw = await resetCustomerPassword(email);
-      if (pw) {
-        const l = await pool.query(`SELECT lang FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]);
-        await hooks.sendReset(email, pw, String(l.rows[0]?.lang || "en")).catch((e) => app.log.error({ err: e }, "Passwort-Mail fehlgeschlagen"));
-      }
+    const lang = String(b.lang || "").slice(0, 2);
+    if (pool && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) && !limitedHour("reset-mail:" + email, 3)) {
+      void (async () => {
+        // Bestandskunde ohne Konto (Link bekommen, aber nie Zugangsdaten) → Konto jetzt anlegen.
+        const has = await pool!.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 1`, [email]);
+        if (has.rowCount) await ensureCustomerAccount(email);
+        const acc = await pool!.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [email]);
+        if (!acc.rowCount) return;
+        const k = crypto.randomBytes(32).toString("base64url");
+        await pool!.query(`INSERT INTO cust_reset (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 minutes')`, [sha(k), email]);
+        const l = String(has.rows[0]?.lang || lang || "en");
+        await hooks.sendResetLink(email, `${DASH_URL}?reset=${k}&lang=${encodeURIComponent(l)}`, l);
+      })().catch((e) => app.log.error({ err: e }, "Passwort-Link-Mail fehlgeschlagen"));
     }
+    return { ok: true };
+  });
+
+  // Link prüfen (vor dem Formular): gültig? (keine weiteren Daten)
+  app.post("/cust/reset-check", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    if (limited("rcheck:" + req.ip, 30)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const r = await pool.query(`SELECT 1 FROM cust_reset WHERE token_hash=$1 AND used_at IS NULL AND expires_at > now()`, [sha(String(b.k || ""))]);
+    return r.rowCount ? { ok: true } : reply.code(400).send({ ok: false, error: "invalid" });
+  });
+
+  // Neues Passwort setzen: Link einmalig, alle anderen Sitzungen + offenen Links ungültig, danach eingeloggt.
+  app.post("/cust/reset-confirm", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    if (limited("rconf:" + req.ip, 10)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const pw = String(b.password || "");
+    if (pw.length < 8 || pw.length > 200) return reply.code(400).send({ ok: false, error: "password" });
+    const r = await pool.query(
+      `UPDATE cust_reset SET used_at=now() WHERE token_hash=$1 AND used_at IS NULL AND expires_at > now() RETURNING email`,
+      [sha(String(b.k || ""))],
+    );
+    const email = r.rows[0]?.email;
+    if (!email) return reply.code(400).send({ ok: false, error: "invalid" });
+    await pool.query(`UPDATE cust_accounts SET pass_hash=$2 WHERE email=$1`, [email, hashPassword(pw)]);
+    await pool.query(`DELETE FROM cust_sessions WHERE email=$1`, [email]);
+    await pool.query(`UPDATE cust_reset SET used_at=now() WHERE email=$1 AND used_at IS NULL`, [email]);
+    await pool.query(`DELETE FROM cust_magic WHERE email=$1`, [email]); // alte Login-Links aus Mails ebenfalls ungültig
+    const token = await createCustomerSession(email);
+    return { ok: true, token };
+  });
+
+  // Eingeloggt: „Passwort ändern" → sicherer Link an die eigene Adresse (gleicher Ablauf).
+  app.post("/cust/password-link", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const email = await sessionEmail(b.token);
+    if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (limitedHour("reset-mail:" + email, 3)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const k = crypto.randomBytes(32).toString("base64url");
+    await pool.query(`INSERT INTO cust_reset (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 minutes')`, [sha(k), email]);
+    const l = String(b.lang || "en").slice(0, 2);
+    await hooks.sendResetLink(email, `${DASH_URL}?reset=${k}&lang=${encodeURIComponent(l)}`, l).catch((e) => app.log.error({ err: e }, "Passwort-Link-Mail fehlgeschlagen"));
     return { ok: true };
   });
 }
@@ -522,7 +594,7 @@ export const NOTIFY_DELAY_MIN = 5;
  *  Zieht der Partner „software" zurück (bevor der Kunde entschieden/bezahlt hat), verschwindet das Angebot wieder. */
 export async function partnerStatusChanged(
   orderId: string, itemKey: string | null, status: string,
-  _deps?: { makeLink?: (amount: number, cur: "usd" | "eur") => Promise<string> },
+  _deps?: { makeLink?: (amount: number, cur: "usd" | "eur") => Promise<string>; prev?: string | null },
 ): Promise<void> {
   if (!pool || !orderId) return;
   const r = await pool.query(`SELECT raw FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
@@ -539,19 +611,25 @@ export async function partnerStatusChanged(
     const paid = pays.some((p) => p.kind === "software" && p.paid && (!p.keys?.length || p.keys.includes(itemKey)));
     if (!dec && !paid) await setOrderRawField(orderId, "reviewsSoftware", sw.filter((x) => keyOf(x) !== itemKey));
   }
+  const prev = _deps?.prev || null;
+  if (itemKey && prev) await pool.query(`UPDATE partner_tasks SET prev_status=$3 WHERE order_id=$1 AND item_key=$2`, [orderId, itemKey, prev]).catch(() => {});
+  // Änderungen dieser Sammel-Mail: erstes „von", letztes „nach" je Bewertung.
+  const ex = await pool.query(`SELECT changes FROM cust_notify WHERE order_id=$1`, [orderId]);
+  const changes = { ...((ex.rows[0]?.changes as Record<string, { from: string | null; to: string }>) || {}) };
+  if (itemKey) changes[itemKey] = { from: changes[itemKey]?.from ?? prev, to: status };
   // Sammel-Mail planen bzw. verschieben (Debounce).
   await pool.query(
-    `INSERT INTO cust_notify (order_id, due_at, keys) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb)
-     ON CONFLICT (order_id) DO UPDATE SET due_at = EXCLUDED.due_at,
+    `INSERT INTO cust_notify (order_id, due_at, keys, changes) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb, $4::jsonb)
+     ON CONFLICT (order_id) DO UPDATE SET due_at = EXCLUDED.due_at, changes = EXCLUDED.changes,
        keys = (SELECT jsonb_agg(DISTINCT k) FROM jsonb_array_elements(cust_notify.keys || EXCLUDED.keys) k)`,
-    [orderId, String(NOTIFY_DELAY_MIN), JSON.stringify(itemKey ? [itemKey] : [])],
+    [orderId, String(NOTIFY_DELAY_MIN), JSON.stringify(itemKey ? [itemKey] : []), JSON.stringify(changes)],
   );
 }
 
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus }[] }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null }[] }[]> {
   if (!pool) return [];
-  const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys`);
+  const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys, changes`);
   const out = [];
   for (const d of due.rows) {
     const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1`, [d.order_id]);
@@ -560,7 +638,11 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const pt = await pool.query(`SELECT item_key, status, working_since FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
     const view = orderView(row, new Map(pt.rows.map((x) => [x.item_key, { status: x.status, since: x.working_since }])));
     const keys: string[] = Array.isArray(d.keys) ? d.keys : [];
-    const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => ({ url: v.url, name: v.name, status: v.status }));
+    const ch = (d.changes || {}) as Record<string, { from: string | null; to: string }>;
+    const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => {
+      const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
+      return { url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null };
+    });
     out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys });
   }
   return out;

@@ -1,7 +1,8 @@
 /* Übersetzungen der Kunden-App (Quelle: EN in dash-i18n.js). */
 const LANGS = {
   de: {
-    firstTime: "Zum ersten Mal hier? Tippen Sie auf „Passwort vergessen?“ – wir schicken Ihnen Ihr Passwort per E-Mail.", magicExpired: "Dieser Login-Link ist abgelaufen – bitte melden Sie sich an oder tippen Sie auf „Passwort vergessen?“.",
+    resetSent: "Falls es ein Konto mit dieser E-Mail gibt, haben wir Ihnen gerade einen Link zum Festlegen eines neuen Passworts geschickt.", firstTime: "Zum ersten Mal hier? Tippen Sie auf „Passwort vergessen?“ – wir schicken Ihnen einen Link, um Ihr Passwort festzulegen.", setPwTitle: "Neues Passwort festlegen", setPwSub: "Wählen Sie ein neues Passwort mit mindestens 8 Zeichen.", newPassword: "Neues Passwort", savePw: "Passwort speichern", pwTooShort: "Bitte mindestens 8 Zeichen verwenden.", resetInvalid: "Dieser Link ist ungültig oder abgelaufen. Bitte fordern Sie einen neuen an.", pwSaved: "Passwort gespeichert – Sie sind angemeldet", changePw: "Passwort ändern", changePwSub: "Wir schicken Ihnen einen sicheren Link per E-Mail", linkSent: "Link gesendet – bitte prüfen Sie Ihr Postfach", statusChanged: "Status geändert", statusChangedSub: { one: "{n} Bewertung hat einen neuen Status", other: "{n} Bewertungen haben einen neuen Status" }, gotIt: "Verstanden", showPw: "Passwort anzeigen", hidePw: "Passwort verbergen",
+    magicExpired: "Dieser Login-Link ist abgelaufen – bitte melden Sie sich an oder tippen Sie auf „Passwort vergessen?“.",
     now: "Jetzt", minAgo: "vor {n} Min.", hAgo: "vor {n} Std.", yesterday: "Gestern", today: "Heute",
     durM: "{n} Min.", durH: "{n} Std.", durD: "{n} Tg.",
     st_new: "Wird geprüft", st_working: "In Bearbeitung", st_removed: "Entfernt", st_notpossible: "Nicht entfernbar",
@@ -18,7 +19,6 @@ const LANGS = {
     loginTitle: "Ihre Bewertungen", loginSub: "Melden Sie sich mit der E-Mail-Adresse und dem Passwort aus Ihrer Auftragsbestätigung an.",
     newPwTitle: "Neues Passwort", newPwSub: "Geben Sie Ihre E-Mail-Adresse ein – wir senden Ihnen ein neues Passwort.",
     email: "E-Mail", password: "Passwort", login: "Anmelden", sendNewPw: "Neues Passwort senden", backToLogin: "Zurück zur Anmeldung", forgot: "Passwort vergessen?",
-    resetSent: "Falls es ein Konto mit dieser E-Mail-Adresse gibt, haben wir Ihnen gerade ein neues Passwort gesendet.",
     tooMany: "Zu viele Versuche – bitte warten Sie ein paar Minuten.", genericErr: "Etwas ist schiefgelaufen – bitte versuchen Sie es erneut.", wrongLogin: "E-Mail oder Passwort ist falsch.",
     tPaymentSw: "Zahlung erhalten – unser Spezialist ist beauftragt", tPaid: "Bezahlt – danke",
     loadErr: "Ihre Bewertungen konnten nicht geladen werden. Bitte versuchen Sie es gleich noch einmal.", tryAgain: "Erneut versuchen",
@@ -83,7 +83,8 @@ const LANGS = {
   },
 
   es: {
-    firstTime: "¿Es tu primera vez? Toca «¿Has olvidado tu contraseña?» y te enviamos tu contraseña por email.", magicExpired: "Este enlace de acceso ha caducado: inicia sesión o toca «¿Has olvidado tu contraseña?».",
+    resetSent: "Si existe una cuenta con este email, te acabamos de enviar un enlace para crear una nueva contraseña.", firstTime: "¿Es tu primera vez? Toca «¿Has olvidado tu contraseña?» y te enviamos un enlace para crear tu contraseña.", setPwTitle: "Crea una nueva contraseña", setPwSub: "Elige una nueva contraseña de al menos 8 caracteres.", newPassword: "Nueva contraseña", savePw: "Guardar contraseña", pwTooShort: "Usa al menos 8 caracteres.", resetInvalid: "Este enlace no es válido o ha caducado. Solicita uno nuevo.", pwSaved: "Contraseña guardada – ya has iniciado sesión", changePw: "Cambiar contraseña", changePwSub: "Te enviamos un enlace seguro por email", linkSent: "Enlace enviado – revisa tu bandeja de entrada", statusChanged: "Cambio de estado", statusChangedSub: { one: "{n} reseña tiene un nuevo estado", other: "{n} reseñas tienen un nuevo estado" }, gotIt: "Entendido", showPw: "Mostrar contraseña", hidePw: "Ocultar contraseña",
+    magicExpired: "Este enlace de acceso ha caducado: inicia sesión o toca «¿Has olvidado tu contraseña?».",
     now: "Ahora", minAgo: "hace {n} min", hAgo: "hace {n} h", yesterday: "Ayer", today: "Hoy",
     durM: "{n} min", durH: "{n} h", durD: "{n} d",
     st_new: "En revisión", st_working: "En proceso", st_removed: "Eliminada", st_notpossible: "No se puede eliminar",
@@ -100,7 +101,6 @@ const LANGS = {
     loginTitle: "Tus reseñas", loginSub: "Inicia sesión con el email y la contraseña de tu confirmación de pedido.",
     newPwTitle: "Nueva contraseña", newPwSub: "Introduce tu email y te enviaremos una nueva contraseña.",
     email: "Email", password: "Contraseña", login: "Iniciar sesión", sendNewPw: "Enviar nueva contraseña", backToLogin: "Volver al inicio de sesión", forgot: "¿Has olvidado tu contraseña?",
-    resetSent: "Si existe una cuenta con este email, acabamos de enviarte una nueva contraseña.",
     tooMany: "Demasiados intentos. Espera unos minutos.", genericErr: "Algo ha fallado. Inténtalo de nuevo.", wrongLogin: "El email o la contraseña no son correctos.",
     tPaymentSw: "Pago recibido: nuestro especialista ya está en ello", tPaid: "Pagado. ¡Gracias!",
     loadErr: "No hemos podido cargar tus reseñas. Inténtalo de nuevo en un momento.", tryAgain: "Reintentar",
@@ -165,7 +165,8 @@ const LANGS = {
   },
 
   fr: {
-    firstTime: "Première visite ? Touche « Mot de passe oublié ? » – nous t’envoyons ton mot de passe par e-mail.", magicExpired: "Ce lien de connexion a expiré – connecte-toi ou touche « Mot de passe oublié ? ».",
+    resetSent: "Si un compte existe avec cet e-mail, nous venons de t’envoyer un lien pour choisir un nouveau mot de passe.", firstTime: "Première visite ? Touche « Mot de passe oublié ? » – nous t’envoyons un lien pour choisir ton mot de passe.", setPwTitle: "Choisis un nouveau mot de passe", setPwSub: "Choisis un nouveau mot de passe d’au moins 8 caractères.", newPassword: "Nouveau mot de passe", savePw: "Enregistrer le mot de passe", pwTooShort: "Utilise au moins 8 caractères.", resetInvalid: "Ce lien n’est pas valide ou a expiré. Demande-en un nouveau.", pwSaved: "Mot de passe enregistré – tu es connecté", changePw: "Changer le mot de passe", changePwSub: "Nous t’envoyons un lien sécurisé par e-mail", linkSent: "Lien envoyé – vérifie ta boîte de réception", statusChanged: "Changement de statut", statusChangedSub: { one: "{n} avis a un nouveau statut", other: "{n} avis ont un nouveau statut" }, gotIt: "Compris", showPw: "Afficher le mot de passe", hidePw: "Masquer le mot de passe",
+    magicExpired: "Ce lien de connexion a expiré – connecte-toi ou touche « Mot de passe oublié ? ».",
     now: "À l’instant", minAgo: "il y a {n} min", hAgo: "il y a {n} h", yesterday: "Hier", today: "Aujourd’hui",
     durM: "{n} min", durH: "{n} h", durD: "{n} j",
     st_new: "En vérification", st_working: "En cours", st_removed: "Supprimé", st_notpossible: "Non supprimable",
@@ -182,7 +183,6 @@ const LANGS = {
     loginTitle: "Tes avis", loginSub: "Connecte-toi avec l’e-mail et le mot de passe de ta confirmation de commande.",
     newPwTitle: "Nouveau mot de passe", newPwSub: "Saisis ton e-mail et nous t’enverrons un nouveau mot de passe.",
     email: "E-mail", password: "Mot de passe", login: "Se connecter", sendNewPw: "Envoyer un nouveau mot de passe", backToLogin: "Retour à la connexion", forgot: "Mot de passe oublié ?",
-    resetSent: "Si un compte existe pour cet e-mail, nous venons de t’envoyer un nouveau mot de passe.",
     tooMany: "Trop de tentatives – attends quelques minutes.", genericErr: "Une erreur s’est produite – réessaie.", wrongLogin: "E-mail ou mot de passe incorrect.",
     tPaymentSw: "Paiement reçu – notre spécialiste s’en occupe", tPaid: "Payé – merci",
     loadErr: "Impossible de charger tes avis. Réessaie dans un instant.", tryAgain: "Réessayer",
@@ -247,7 +247,8 @@ const LANGS = {
   },
 
   it: {
-    firstTime: "Prima volta qui? Tocca «Password dimenticata?» – ti inviamo la password via email.", magicExpired: "Questo link di accesso è scaduto: accedi oppure tocca «Password dimenticata?».",
+    resetSent: "Se esiste un account con questa email, ti abbiamo appena inviato un link per impostare una nuova password.", firstTime: "Prima volta qui? Tocca «Password dimenticata?» – ti inviamo un link per impostare la password.", setPwTitle: "Imposta una nuova password", setPwSub: "Scegli una nuova password di almeno 8 caratteri.", newPassword: "Nuova password", savePw: "Salva password", pwTooShort: "Usa almeno 8 caratteri.", resetInvalid: "Questo link non è valido o è scaduto. Richiedine uno nuovo.", pwSaved: "Password salvata – hai effettuato l’accesso", changePw: "Cambia password", changePwSub: "Ti inviamo un link sicuro via email", linkSent: "Link inviato – controlla la tua casella di posta", statusChanged: "Stato aggiornato", statusChangedSub: { one: "{n} recensione ha un nuovo stato", other: "{n} recensioni hanno un nuovo stato" }, gotIt: "Ho capito", showPw: "Mostra password", hidePw: "Nascondi password",
+    magicExpired: "Questo link di accesso è scaduto: accedi oppure tocca «Password dimenticata?».",
     now: "Adesso", minAgo: "{n} min fa", hAgo: "{n} h fa", yesterday: "Ieri", today: "Oggi",
     durM: "{n} min", durH: "{n} h", durD: "{n} g",
     st_new: "In verifica", st_working: "In corso", st_removed: "Rimossa", st_notpossible: "Non rimovibile",
@@ -264,7 +265,6 @@ const LANGS = {
     loginTitle: "Le tue recensioni", loginSub: "Accedi con l’email e la password della conferma d’ordine.",
     newPwTitle: "Nuova password", newPwSub: "Inserisci la tua email e ti invieremo una nuova password.",
     email: "Email", password: "Password", login: "Accedi", sendNewPw: "Invia nuova password", backToLogin: "Torna all’accesso", forgot: "Password dimenticata?",
-    resetSent: "Se esiste un account con questa email, ti abbiamo appena inviato una nuova password.",
     tooMany: "Troppi tentativi – attendi qualche minuto.", genericErr: "Qualcosa è andato storto – riprova.", wrongLogin: "Email o password errata.",
     tPaymentSw: "Pagamento ricevuto – il nostro specialista è al lavoro", tPaid: "Pagato – grazie",
     loadErr: "Impossibile caricare le tue recensioni. Riprova tra poco.", tryAgain: "Riprova",
@@ -329,7 +329,8 @@ const LANGS = {
   },
 
   nl: {
-    firstTime: "Voor het eerst hier? Tik op „Wachtwoord vergeten?” – we sturen u uw wachtwoord per e-mail.", magicExpired: "Deze inloglink is verlopen – log in of tik op „Wachtwoord vergeten?”.",
+    resetSent: "Als er een account met dit e-mailadres bestaat, hebben we u zojuist een link gestuurd om een nieuw wachtwoord in te stellen.", firstTime: "Voor het eerst hier? Tik op „Wachtwoord vergeten?” – we sturen u een link om uw wachtwoord in te stellen.", setPwTitle: "Nieuw wachtwoord instellen", setPwSub: "Kies een nieuw wachtwoord van minstens 8 tekens.", newPassword: "Nieuw wachtwoord", savePw: "Wachtwoord opslaan", pwTooShort: "Gebruik minstens 8 tekens.", resetInvalid: "Deze link is ongeldig of verlopen. Vraag een nieuwe aan.", pwSaved: "Wachtwoord opgeslagen – u bent ingelogd", changePw: "Wachtwoord wijzigen", changePwSub: "We sturen u een veilige link per e-mail", linkSent: "Link verstuurd – controleer uw inbox", statusChanged: "Status gewijzigd", statusChangedSub: { one: "{n} review heeft een nieuwe status", other: "{n} reviews hebben een nieuwe status" }, gotIt: "Begrepen", showPw: "Wachtwoord tonen", hidePw: "Wachtwoord verbergen",
+    magicExpired: "Deze inloglink is verlopen – log in of tik op „Wachtwoord vergeten?”.",
     now: "Nu", minAgo: "{n} min geleden", hAgo: "{n} u geleden", yesterday: "Gisteren", today: "Vandaag",
     durM: "{n} min", durH: "{n} u", durD: "{n} d",
     st_new: "Wordt gecontroleerd", st_working: "In behandeling", st_removed: "Verwijderd", st_notpossible: "Niet verwijderbaar",
@@ -346,7 +347,6 @@ const LANGS = {
     loginTitle: "Uw reviews", loginSub: "Log in met het e-mailadres en wachtwoord uit uw orderbevestiging.",
     newPwTitle: "Nieuw wachtwoord", newPwSub: "Vul uw e-mailadres in, dan sturen we u een nieuw wachtwoord.",
     email: "E-mail", password: "Wachtwoord", login: "Inloggen", sendNewPw: "Nieuw wachtwoord sturen", backToLogin: "Terug naar inloggen", forgot: "Wachtwoord vergeten?",
-    resetSent: "Als er een account bij dit e-mailadres hoort, hebben we u zojuist een nieuw wachtwoord gestuurd.",
     tooMany: "Te veel pogingen – wacht een paar minuten.", genericErr: "Er ging iets mis – probeer het opnieuw.", wrongLogin: "E-mailadres of wachtwoord is onjuist.",
     tPaymentSw: "Betaling ontvangen – onze specialist gaat aan de slag", tPaid: "Betaald – bedankt",
     loadErr: "Uw reviews konden niet worden geladen. Probeer het zo opnieuw.", tryAgain: "Opnieuw proberen",
@@ -411,7 +411,8 @@ const LANGS = {
   },
 
   pt: {
-    firstTime: "Primeira vez aqui? Toca em «Esqueceste-te da palavra-passe?» – enviamos-te a palavra-passe por email.", magicExpired: "Este link de acesso expirou – inicia sessão ou toca em «Esqueceste-te da palavra-passe?».",
+    resetSent: "Se existir uma conta com este email, acabámos de te enviar um link para definires uma nova palavra-passe.", firstTime: "Primeira vez aqui? Toca em «Esqueceste-te da palavra-passe?» – enviamos-te um link para definires a tua palavra-passe.", setPwTitle: "Define uma nova palavra-passe", setPwSub: "Escolhe uma nova palavra-passe com pelo menos 8 caracteres.", newPassword: "Nova palavra-passe", savePw: "Guardar palavra-passe", pwTooShort: "Usa pelo menos 8 caracteres.", resetInvalid: "Este link é inválido ou expirou. Pede um novo.", pwSaved: "Palavra-passe guardada – já tens sessão iniciada", changePw: "Alterar palavra-passe", changePwSub: "Enviamos-te um link seguro por email", linkSent: "Link enviado – verifica a tua caixa de entrada", statusChanged: "Estado alterado", statusChangedSub: { one: "{n} avaliação tem um novo estado", other: "{n} avaliações têm um novo estado" }, gotIt: "Entendi", showPw: "Mostrar palavra-passe", hidePw: "Ocultar palavra-passe",
+    magicExpired: "Este link de acesso expirou – inicia sessão ou toca em «Esqueceste-te da palavra-passe?».",
     now: "Agora", minAgo: "há {n} min", hAgo: "há {n} h", yesterday: "Ontem", today: "Hoje",
     durM: "{n} min", durH: "{n} h", durD: "{n} d",
     st_new: "Em análise", st_working: "Em curso", st_removed: "Removida", st_notpossible: "Não removível",
@@ -428,7 +429,6 @@ const LANGS = {
     loginTitle: "As tuas avaliações", loginSub: "Inicia sessão com o email e a palavra-passe da confirmação da tua encomenda.",
     newPwTitle: "Nova palavra-passe", newPwSub: "Introduz o teu email e enviamos-te uma nova palavra-passe.",
     email: "Email", password: "Palavra-passe", login: "Iniciar sessão", sendNewPw: "Enviar nova palavra-passe", backToLogin: "Voltar ao início de sessão", forgot: "Esqueceste-te da palavra-passe?",
-    resetSent: "Se existir uma conta com este email, acabámos de te enviar uma nova palavra-passe.",
     tooMany: "Demasiadas tentativas – aguarda alguns minutos.", genericErr: "Algo correu mal – tenta novamente.", wrongLogin: "Email ou palavra-passe incorretos.",
     tPaymentSw: "Pagamento recebido – o nosso especialista está a tratar disso", tPaid: "Pago – obrigado",
     loadErr: "Não foi possível carregar as tuas avaliações. Tenta novamente daqui a pouco.", tryAgain: "Tentar novamente",
@@ -493,7 +493,8 @@ const LANGS = {
   },
 
   ja: {
-    firstTime: "初めての方は「パスワードをお忘れですか？」をタップしてください。パスワードをメールでお送りします。", magicExpired: "このログインリンクは有効期限が切れています。ログインするか、「パスワードをお忘れですか？」をタップしてください。",
+    resetSent: "このメールアドレスのアカウントがある場合、新しいパスワードを設定するためのリンクをお送りしました。", firstTime: "初めての方は「パスワードをお忘れですか？」をタップしてください。パスワード設定用のリンクをメールでお送りします。", setPwTitle: "新しいパスワードの設定", setPwSub: "8文字以上の新しいパスワードを入力してください。", newPassword: "新しいパスワード", savePw: "パスワードを保存", pwTooShort: "8文字以上で入力してください。", resetInvalid: "このリンクは無効か、有効期限が切れています。新しいリンクをリクエストしてください。", pwSaved: "パスワードを保存しました – ログインしました", changePw: "パスワードを変更", changePwSub: "安全なリンクをメールでお送りします", linkSent: "リンクを送信しました – 受信トレイをご確認ください", statusChanged: "ステータスが変更されました", statusChangedSub: { one: "{n}件の口コミのステータスが変わりました", other: "{n}件の口コミのステータスが変わりました" }, gotIt: "了解", showPw: "パスワードを表示", hidePw: "パスワードを隠す",
+    magicExpired: "このログインリンクは有効期限が切れています。ログインするか、「パスワードをお忘れですか？」をタップしてください。",
     now: "たった今", minAgo: "{n}分前", hAgo: "{n}時間前", yesterday: "昨日", today: "今日",
     durM: "{n}分", durH: "{n}時間", durD: "{n}日",
     st_new: "確認中", st_working: "対応中", st_removed: "削除済み", st_notpossible: "削除不可",
@@ -510,7 +511,6 @@ const LANGS = {
     loginTitle: "ご依頼のレビュー", loginSub: "ご注文確認メールに記載のメールアドレスとパスワードでログインしてください。",
     newPwTitle: "新しいパスワード", newPwSub: "メールアドレスを入力すると、新しいパスワードをお送りします。",
     email: "メールアドレス", password: "パスワード", login: "ログイン", sendNewPw: "新しいパスワードを送信", backToLogin: "ログインに戻る", forgot: "パスワードをお忘れですか？",
-    resetSent: "このメールアドレスのアカウントがある場合、新しいパスワードをお送りしました。",
     tooMany: "試行回数が多すぎます。数分後にもう一度お試しください。", genericErr: "問題が発生しました。もう一度お試しください。", wrongLogin: "メールアドレスまたはパスワードが正しくありません。",
     tPaymentSw: "お支払いを受け付けました。スペシャリストが対応します", tPaid: "お支払いありがとうございます",
     loadErr: "レビューを読み込めませんでした。しばらくしてからもう一度お試しください。", tryAgain: "再試行",
@@ -575,7 +575,8 @@ const LANGS = {
   },
 
   sv: {
-    firstTime: "Första gången här? Tryck på ”Glömt lösenordet?” – så mejlar vi ditt lösenord.", magicExpired: "Den här inloggningslänken har gått ut – logga in eller tryck på ”Glömt lösenordet?”.",
+    resetSent: "Om det finns ett konto med den här e-postadressen har vi just skickat en länk för att välja ett nytt lösenord.", firstTime: "Första gången här? Tryck på ”Glömt lösenordet?” – så mejlar vi en länk för att välja ditt lösenord.", setPwTitle: "Välj ett nytt lösenord", setPwSub: "Välj ett nytt lösenord med minst 8 tecken.", newPassword: "Nytt lösenord", savePw: "Spara lösenord", pwTooShort: "Använd minst 8 tecken.", resetInvalid: "Länken är ogiltig eller har gått ut. Begär en ny.", pwSaved: "Lösenordet har sparats – du är inloggad", changePw: "Byt lösenord", changePwSub: "Vi mejlar dig en säker länk", linkSent: "Länken har skickats – kolla din inkorg", statusChanged: "Status ändrad", statusChangedSub: { one: "{n} omdöme har en ny status", other: "{n} omdömen har en ny status" }, gotIt: "Uppfattat", showPw: "Visa lösenord", hidePw: "Dölj lösenord",
+    magicExpired: "Den här inloggningslänken har gått ut – logga in eller tryck på ”Glömt lösenordet?”.",
     now: "Nu", minAgo: "för {n} min sedan", hAgo: "för {n} tim sedan", yesterday: "Igår", today: "Idag",
     durM: "{n} min", durH: "{n} tim", durD: "{n} d",
     st_new: "Granskas", st_working: "Pågår", st_removed: "Borttagen", st_notpossible: "Kan inte tas bort",
@@ -592,7 +593,6 @@ const LANGS = {
     loginTitle: "Dina recensioner", loginSub: "Logga in med e-postadressen och lösenordet från din orderbekräftelse.",
     newPwTitle: "Nytt lösenord", newPwSub: "Ange din e-postadress så skickar vi ett nytt lösenord.",
     email: "E-post", password: "Lösenord", login: "Logga in", sendNewPw: "Skicka nytt lösenord", backToLogin: "Tillbaka till inloggning", forgot: "Glömt lösenordet?",
-    resetSent: "Om det finns ett konto för den här e-postadressen har vi just skickat ett nytt lösenord.",
     tooMany: "För många försök – vänta några minuter.", genericErr: "Något gick fel – försök igen.", wrongLogin: "Fel e-postadress eller lösenord.",
     tPaymentSw: "Betalning mottagen – vår specialist är igång", tPaid: "Betalt – tack",
     loadErr: "Det gick inte att ladda dina recensioner. Försök igen om en stund.", tryAgain: "Försök igen",
@@ -657,7 +657,8 @@ const LANGS = {
   },
 
   da: {
-    firstTime: "Første gang her? Tryk på »Glemt adgangskode?« – så sender vi din adgangskode på e-mail.", magicExpired: "Dette login-link er udløbet – log ind, eller tryk på »Glemt adgangskode?«.",
+    resetSent: "Hvis der findes en konto med denne e-mail, har vi lige sendt dig et link til at vælge en ny adgangskode.", firstTime: "Første gang her? Tryk på »Glemt adgangskode?« – så sender vi dig et link til at vælge din adgangskode.", setPwTitle: "Vælg en ny adgangskode", setPwSub: "Vælg en ny adgangskode på mindst 8 tegn.", newPassword: "Ny adgangskode", savePw: "Gem adgangskode", pwTooShort: "Brug mindst 8 tegn.", resetInvalid: "Dette link er ugyldigt eller udløbet. Bed om et nyt.", pwSaved: "Adgangskoden er gemt – du er logget ind", changePw: "Skift adgangskode", changePwSub: "Vi sender dig et sikkert link på e-mail", linkSent: "Link sendt – tjek din indbakke", statusChanged: "Status ændret", statusChangedSub: { one: "{n} anmeldelse har en ny status", other: "{n} anmeldelser har en ny status" }, gotIt: "Forstået", showPw: "Vis adgangskode", hidePw: "Skjul adgangskode",
+    magicExpired: "Dette login-link er udløbet – log ind, eller tryk på »Glemt adgangskode?«.",
     now: "Nu", minAgo: "for {n} min. siden", hAgo: "for {n} t. siden", yesterday: "I går", today: "I dag",
     durM: "{n} min.", durH: "{n} t.", durD: "{n} d.",
     st_new: "Bliver tjekket", st_working: "I gang", st_removed: "Fjernet", st_notpossible: "Kan ikke fjernes",
@@ -674,7 +675,6 @@ const LANGS = {
     loginTitle: "Dine anmeldelser", loginSub: "Log ind med e-mailen og adgangskoden fra din ordrebekræftelse.",
     newPwTitle: "Ny adgangskode", newPwSub: "Indtast din e-mail, så sender vi dig en ny adgangskode.",
     email: "E-mail", password: "Adgangskode", login: "Log ind", sendNewPw: "Send ny adgangskode", backToLogin: "Tilbage til log ind", forgot: "Glemt adgangskode?",
-    resetSent: "Hvis der findes en konto med denne e-mail, har vi lige sendt dig en ny adgangskode.",
     tooMany: "For mange forsøg – vent et par minutter.", genericErr: "Noget gik galt – prøv igen.", wrongLogin: "Forkert e-mail eller adgangskode.",
     tPaymentSw: "Betaling modtaget – vores specialist er i gang", tPaid: "Betalt – tak",
     loadErr: "Dine anmeldelser kunne ikke indlæses. Prøv igen om lidt.", tryAgain: "Prøv igen",
@@ -739,7 +739,8 @@ const LANGS = {
   },
 
   no: {
-    firstTime: "Første gang her? Trykk på «Glemt passordet?» – så sender vi deg passordet på e-post.", magicExpired: "Denne innloggingslenken har utløpt – logg inn eller trykk på «Glemt passordet?».",
+    resetSent: "Hvis det finnes en konto med denne e-posten, har vi akkurat sendt deg en lenke for å velge et nytt passord.", firstTime: "Første gang her? Trykk på «Glemt passordet?» – så sender vi deg en lenke for å velge passordet ditt.", setPwTitle: "Velg et nytt passord", setPwSub: "Velg et nytt passord med minst 8 tegn.", newPassword: "Nytt passord", savePw: "Lagre passord", pwTooShort: "Bruk minst 8 tegn.", resetInvalid: "Denne lenken er ugyldig eller utløpt. Be om en ny.", pwSaved: "Passordet er lagret – du er logget inn", changePw: "Endre passord", changePwSub: "Vi sender deg en sikker lenke på e-post", linkSent: "Lenke sendt – sjekk innboksen din", statusChanged: "Status endret", statusChangedSub: { one: "{n} omtale har ny status", other: "{n} omtaler har ny status" }, gotIt: "Skjønner", showPw: "Vis passord", hidePw: "Skjul passord",
+    magicExpired: "Denne innloggingslenken har utløpt – logg inn eller trykk på «Glemt passordet?».",
     now: "Nå", minAgo: "for {n} min siden", hAgo: "for {n} t siden", yesterday: "I går", today: "I dag",
     durM: "{n} min", durH: "{n} t", durD: "{n} d",
     st_new: "Under vurdering", st_working: "Pågår", st_removed: "Fjernet", st_notpossible: "Kan ikke fjernes",
@@ -756,7 +757,6 @@ const LANGS = {
     loginTitle: "Dine anmeldelser", loginSub: "Logg inn med e-postadressen og passordet fra ordrebekreftelsen din.",
     newPwTitle: "Nytt passord", newPwSub: "Skriv inn e-postadressen din, så sender vi deg et nytt passord.",
     email: "E-post", password: "Passord", login: "Logg inn", sendNewPw: "Send nytt passord", backToLogin: "Tilbake til innlogging", forgot: "Glemt passordet?",
-    resetSent: "Hvis det finnes en konto for denne e-postadressen, har vi nettopp sendt deg et nytt passord.",
     tooMany: "For mange forsøk – vent noen minutter.", genericErr: "Noe gikk galt – prøv igjen.", wrongLogin: "Feil e-postadresse eller passord.",
     tPaymentSw: "Betaling mottatt – spesialisten vår er i gang", tPaid: "Betalt – takk",
     loadErr: "Kunne ikke laste inn anmeldelsene dine. Prøv igjen om litt.", tryAgain: "Prøv igjen",

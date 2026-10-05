@@ -23,8 +23,8 @@ export const EN = {
   loginTitle: "Your reviews", loginSub: "Log in with the email and password from your order confirmation.",
   newPwTitle: "New password", newPwSub: "Enter your email and we’ll send you a new password.",
   email: "Email", password: "Password", login: "Log in", sendNewPw: "Send new password", backToLogin: "Back to log in", forgot: "Forgot password?",
-  resetSent: "If there’s an account for this email, we’ve just sent you a new password.",
-  firstTime: "First time here? Tap “Forgot password?” – we’ll email you your password.", magicExpired: "This login link has expired – please log in, or tap “Forgot password?”.",
+  magicExpired: "This login link has expired – please log in, or tap “Forgot password?”.",
+  resetSent: "If there’s an account for this email, we’ve just sent you a link to set a new password.", firstTime: "First time here? Tap “Forgot password?” – we’ll email you a link to set your password.", setPwTitle: "Set a new password", setPwSub: "Choose a new password with at least 8 characters.", newPassword: "New password", savePw: "Save password", pwTooShort: "Please use at least 8 characters.", resetInvalid: "This link is invalid or has expired. Please request a new one.", pwSaved: "Password saved – you’re logged in", changePw: "Change password", changePwSub: "We’ll email you a secure link", linkSent: "Link sent – please check your inbox", statusChanged: "Status changed", statusChangedSub: { one: "{n} review has a new status", other: "{n} reviews have a new status" }, gotIt: "Got it", showPw: "Show password", hidePw: "Hide password",
   tooMany: "Too many attempts – please wait a few minutes.", genericErr: "Something went wrong – please try again.", wrongLogin: "Email or password is wrong.",
   // Meldungen
   tPaymentSw: "Payment received – our specialist is on it", tPaid: "Paid – thank you",

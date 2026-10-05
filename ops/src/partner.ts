@@ -311,6 +311,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden 5 Min. nach der letzten Änderung.
     if (changed && row.order_id) {
       void partnerStatusChanged(row.order_id, row.item_key, status, {
+        prev: old.status, // vorheriger Status → Kunde sieht „In Bearbeitung → Entfernt"
         makeLink: async (amount, cur) => (hasSecretKey() ? ensureReviewsAmountLink(amount, cur) : ""),
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }

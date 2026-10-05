@@ -9,7 +9,7 @@
 import React from "react";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
-  XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace,
+  XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
   BadgeCheck, Timer, Lock, CreditCard, Smartphone,
 } from "lucide-react";
 import "@/styles/dashboard.css";
@@ -19,8 +19,11 @@ import { makeT, pickLang, localeOf } from "./dash-i18n";
 
 const LANG_KEY = "rr_cust_lang";
 /* Aktive Sprache (Modul-weit, wird pro Render gesetzt) → Format-Helfer ohne Prop-Drilling. */
-let T = makeT("en"), LOC = "en-US";
-const setLang = (l) => { T = makeT(l); LOC = localeOf(l); };
+let T = makeT("en"), LOC = "en-US", LANG = "en";
+const setLang = (l) => { T = makeT(l); LOC = localeOf(l); LANG = l; };
+const SEEN_KEY = "rr_cust_seen";
+const seenGet = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"); } catch (e) { return []; } };
+const seenAdd = (ids) => { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...seenGet(), ...ids])].slice(-300))); } catch (e) { /* */ } };
 const pkName = () => { const n = passkeyName(); return n === "fingerprint" ? T("nameFingerprint") : n === "passkey" ? T("namePasskey") : n; };
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
@@ -102,7 +105,7 @@ function Login({ onToken, notice }) {
   const submit = async (e) => {
     e.preventDefault(); setErr(""); setInfo(""); setBusy(true);
     try {
-      if (forgot) { await call("reset", { email }); setInfo(T("resetSent")); setForgot(false); }
+      if (forgot) { await call("reset", { email, lang: LANG }); setInfo(T("resetSent")); setForgot(false); }
       else { const r = await call("login", { email, password: pw }); onToken(r.token); }
     } catch (x) { setErr(x.code === "too_many" ? T("tooMany") : forgot ? T("genericErr") : T("wrongLogin")); }
     setBusy(false);
@@ -135,6 +138,50 @@ function Login({ onToken, notice }) {
   );
 }
 
+/* ---- Neues Passwort festlegen (Link aus der Mail, einmalig, 60 Min.) ---- */
+function SetPassword({ k, onToken, onCancel }) {
+  const [ok, setOk] = React.useState(null); // null = prüfe, true = gültig, false = ungültig
+  const [pw, setPw] = React.useState("");
+  const [show, setShow] = React.useState(false);
+  const [err, setErr] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { call("reset-check", { k }).then(() => setOk(true)).catch(() => setOk(false)); }, [k]);
+  const submit = async (e) => {
+    e.preventDefault(); setErr("");
+    if (pw.length < 8) { setErr(T("pwTooShort")); return; }
+    setBusy(true);
+    try { const r = await call("reset-confirm", { k, password: pw }); onToken(r.token); }
+    catch (x) { if (x.code === "invalid") setOk(false); else setErr(x.code === "too_many" ? T("tooMany") : T("genericErr")); }
+    setBusy(false);
+  };
+  return (
+    <div className="lg-wrap">
+      <form className="lg" onSubmit={submit}>
+        <div className="lg-art"><img src={IMG.rocket} alt="" /></div>
+        <div><h1>{T("setPwTitle")}</h1>{ok !== false ? <p>{T("setPwSub")}</p> : null}</div>
+        {ok === null ? <Loader className="spin" /> : ok === false ? (
+          <>
+            <div className="note bad">{T("resetInvalid")}</div>
+            <button type="button" className="cta" onClick={onCancel}>{T("backToLogin")}</button>
+          </>
+        ) : (
+          <>
+            <label className="fld"><span>{T("newPassword")}</span>
+              <span style={{ position: "relative", display: "block" }}>
+                <input type={show ? "text" : "password"} autoComplete="new-password" required minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} style={{ width: "100%", paddingRight: 52 }} />
+                <button type="button" onClick={() => setShow(!show)} aria-label={show ? T("hidePw") : T("showPw")} style={{ position: "absolute", right: 6, top: 6, width: 44, height: 44, display: "grid", placeItems: "center", color: "var(--g3)" }}>{show ? <EyeOff /> : <Eye />}</button>
+              </span>
+            </label>
+            {err ? <div className="note bad">{err}</div> : null}
+            <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{T("savePw")}</button>
+            <button type="button" className="lnk" onClick={onCancel}>{T("backToLogin")}</button>
+          </>
+        )}
+      </form>
+    </div>
+  );
+}
+
 /* ---- App ---- */
 export default function CustomerDashboard() {
   const [token, setToken] = React.useState(null); // null = noch nicht gelesen
@@ -148,6 +195,7 @@ export default function CustomerDashboard() {
   const [toast, setToast] = React.useState(null); // { m, bad }
   const [busy, setBusy] = React.useState("");
   const [magicErr, setMagicErr] = React.useState(false);
+  const [resetK, setResetK] = React.useState("");
   const [, tick] = React.useState(0);
   const prev = React.useRef(null);
   const toastT = React.useRef(0);
@@ -162,8 +210,12 @@ export default function CustomerDashboard() {
       const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_HREF; document.head.appendChild(l);
     }
     // Persönlicher Link aus der Mail (?k=…) → direkt einloggen, Code aus der Adresse entfernen.
-    let k = "";
-    try { k = new URLSearchParams(window.location.search).get("k") || ""; } catch (e) { /* */ }
+    let k = "", rk = "";
+    try { const sp = new URLSearchParams(window.location.search); k = sp.get("k") || ""; rk = sp.get("reset") || ""; } catch (e) { /* */ }
+    if (rk) { // Passwort-Link: Code aus der Adresse entfernen, Formular zeigen
+      try { const u = new URL(window.location.href); u.searchParams.delete("reset"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
+      setResetK(rk);
+    }
     if (k) {
       try { const u = new URL(window.location.href); u.searchParams.delete("k"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
       call("magic", { k }).then((r) => { store.set(r.token); setToken(r.token); })
@@ -251,6 +303,7 @@ export default function CustomerDashboard() {
   const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); } catch (e) { /* */ } };
 
   if (token === null) return <div className="rra" />;
+  if (resetK) return <div className="rra"><SetPassword k={resetK} onCancel={() => { setResetK(""); store.set(""); setToken(""); }} onToken={(t) => { setResetK(""); onToken(t); showToast(T("pwSaved")); }} /></div>;
   if (!token) return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : ""} /></div>;
   if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(T("pkIsOn", { name: pkName() })); }} T={T} />;
   if (!data) {
@@ -283,8 +336,28 @@ export default function CustomerDashboard() {
     ...sw.map((r) => ({ k: "d" + r.id, I: AlertCircle, c: "pr", t: T("act_decision"), s: r, tm: r.changedAt ? ago(r.changedAt) : T("today"), at: Date.now() + 1 })),
     ...all.filter((r) => r.status === "working").map((r) => ({ k: "w" + r.id, I: Loader, c: "wk", t: T("act_working") + (r.since ? " · " + dur(r.since) : ""), s: r, tm: T("now"), at: Date.now() })),
     ...all.filter((r) => r.status === "sw_accepted").map((r) => ({ k: "a" + r.id, I: Cpu, c: "wk", t: T("act_specialist"), s: r, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
+    ...all.filter((r) => r.prevStatus && !["removed", "working"].includes(r.status)).map((r) => ({ k: "c" + r.id, I: Info, c: "in", t: T("statusChanged"), s: r, sub: `${stOf(r.prevStatus).l} → ${stOf(r.status).l}`, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
     ...all.filter((r) => r.status === "removed").map((r) => ({ k: "r" + r.id, I: Check, c: "ok", t: T("act_removed"), s: r, tm: ago(r.removedAt), at: r.removedAt ? new Date(r.removedAt).getTime() : 0 })),
   ].sort((a, b) => b.at - a.at).slice(0, 6);
+
+  // „Status geändert": letzte 14 Tage, noch nicht weggeklickt (je Gerät).
+  const seen = new Set(seenGet());
+  const changedNew = all.filter((r) => r.prevStatus && r.changedAt && Date.now() - new Date(r.changedAt).getTime() < 14 * 864e5 && !seen.has(r.id + "|" + r.changedAt));
+  const ChangedCard = () => (changedNew.length ? (
+    <div className="paycard" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <span className="ico in"><Info /></span>
+        <span style={{ minWidth: 0 }}><b>{T("statusChanged")}</b><span style={{ fontSize: 13, color: "var(--g3)", display: "block" }}>{T("statusChangedSub", { n: changedNew.length })}</span></span>
+      </div>
+      {changedNew.slice(0, 4).map((r) => (
+        <button key={r.id} className="ai-row" style={{ padding: "6px 0", borderTop: "1px solid var(--g2)" }} onClick={() => setSheet({ orderId: r.o.id, key: r.key })}>
+          <span className="t"><b style={{ fontSize: 14 }}>{r.name || T("googleReview")} · {r.o.business}</b><span>{stOf(r.prevStatus).l} → <b style={{ display: "inline", color: "var(--ink)" }}>{stOf(r.status).l}</b></span></span>
+          <ChevronRight />
+        </button>
+      ))}
+      <button className="cta gh" style={{ height: 44, fontSize: 15 }} onClick={() => { seenAdd(changedNew.map((r) => r.id + "|" + r.changedAt)); tick((x) => x + 1); }}>{T("gotIt")}</button>
+    </div>
+  ) : null);
 
   /* ---- Zahlungen ---- */
   const checkout = async (path, body, label) => {
@@ -394,6 +467,7 @@ export default function CustomerDashboard() {
       <div className="hg">
         <div className="hl">
           {sw.length ? <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} /> : null}
+          <ChangedCard />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
           <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>
@@ -419,7 +493,7 @@ export default function CustomerDashboard() {
             {acts.length ? acts.map((a) => (
               <button key={a.k} className="ai-row" onClick={() => setSheet({ orderId: a.s.o.id, key: a.s.key })}>
                 <span className={"ico " + a.c}><a.I /></span>
-                <span className="t"><b>{a.t}</b><span>{(a.s.name || T("googleReview")) + " · " + a.s.o.business}</span></span>
+                <span className="t"><b>{a.t}</b><span>{(a.sub ? a.sub + " · " : "") + (a.s.name || T("googleReview")) + " · " + a.s.o.business}</span></span>
                 <span className="tm">{a.tm}</span>
               </button>
             )) : <div className="empty" style={{ padding: "16px 0" }}>{T("activityEmpty")}</div>}
@@ -488,6 +562,9 @@ export default function CustomerDashboard() {
             try { await passkeyRegister("customer", token); showToast(T("pkIsOn", { name: pkName() })); } catch (e) { const m = passkeyError(e, T); if (m) showToast(m, true); }
           }}><span className="ico"><ScanFace /></span><span className="t"><b>{T("pkLogin", { name: pkName() })}</b><span>{passkeyOnDevice("customer") ? T("pkOn") : T("pkOff")}</span></span><ChevronRight /></button>
         ) : null}
+        <button className="ai-row" onClick={async () => {
+          try { await call("password-link", { token, lang: LANG }); showToast(T("linkSent")); } catch (e) { showToast(e.code === "too_many" ? T("tooMany") : T("genericErr"), true); }
+        }}><span className="ico"><KeyRound /></span><span className="t"><b>{T("changePw")}</b><span>{T("changePwSub")}</span></span><ChevronRight /></button>
         <a className="ai-row" href={`mailto:${HELP_MAIL}`}><span className="ico"><MessageCircle /></span><span className="t"><b>{T("help")}</b><span>{T("helpSub")}</span></span><ChevronRight /></a>
         <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>{T("invoices")}</b><span>{T("invoicesSub")}</span></span><ChevronRight /></button>
         <a className="ai-row" href="/en/privacy-policy" target="_blank" rel="noopener noreferrer"><span className="ico"><ShieldCheck /></span><span className="t"><b>{T("privacy")}</b></span><ChevronRight /></a>
