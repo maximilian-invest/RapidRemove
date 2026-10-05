@@ -263,7 +263,7 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
           <P><strong>{t.listH}</strong></P>
           <Bullets items={list.map((it, i) => it.url
             ? <span key={i} style={{ wordBreak: "break-all" }}>✓ {it.url}</span>
-            : <span key={i}>✓ <strong>{it.name}</strong> — “{it.text}”</span>
+            : <span key={i}>✓ <strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
           )} />
         </React.Fragment>
       ) : null}
@@ -284,11 +284,11 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
           {bankLines.map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
           {orderId ? <React.Fragment>{v.ref}: <strong>{orderId}</strong></React.Fragment> : null}
         </NoteBox>
-      ) : payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
+      ) : payUrl ? <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton> : null}
 
       <DashButton lang={lang} url={dashUrl} />
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

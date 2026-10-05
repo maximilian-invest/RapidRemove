@@ -234,7 +234,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       <P><strong>{t.listH}</strong></P>
       <Bullets items={list.map((it, i) => it.url
         ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
-        : <span key={i}><strong>{it.name}</strong> — “{it.text}”</span>
+        : <span key={i}><strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
       )} />
 
       <NoteBox>
@@ -249,7 +249,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
 
       <DashBox lang={lang} dash={dash} />
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

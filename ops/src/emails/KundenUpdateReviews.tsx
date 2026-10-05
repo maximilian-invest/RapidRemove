@@ -58,7 +58,7 @@ export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, o
       ) : null}
       <div style={{ textAlign: "center", margin: "10px 0 20px" }}><CtaButton href={dashUrl}>{t.btn}</CtaButton></div>
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

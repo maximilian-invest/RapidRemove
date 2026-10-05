@@ -317,7 +317,7 @@ export default function PaymentLink({ lang = "de", total, protectionLabel, expre
       </Row>
 
       <Section style={{ textAlign: "center", margin: "22px 0 14px" }}>
-        <CtaButton href={payUrl} full>{t.cta}</CtaButton>
+        <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton>
       </Section>
 
       <P><strong>{t.importantBold}</strong>{t.important}</P>

@@ -190,7 +190,7 @@ export default function Mahnung({ lang = "de", total, payUrl, service, stage }: 
       </Section>
 
       <Section style={{ textAlign: "center", margin: "18px 0 12px" }}>
-        <CtaButton href={payUrl} full variant={st >= 3 ? "danger" : "primary"}>{s.cta}</CtaButton>
+        <CtaButton href={payUrl} full variant={st >= 3 ? "danger" : "pay"}>{s.cta}</CtaButton>
       </Section>
 
       <P muted>{st === 4 ? COST_NOTE[L] + " " : ""}{c.notePaid}</P>

@@ -191,7 +191,7 @@ export default function PaypalErinnerung({ lang = "en", name = "", offer, _overr
       </NoteBox>
 
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

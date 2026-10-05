@@ -272,10 +272,10 @@ export default function MahnungReviews({ lang = "en", name = "", removedItems = 
       ) : null}
 
       {method ? <P><strong style={{ color: brand.tintText }}>{(PAY_VIA[lang] || PAY_VIA.en).replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total)}</strong></P>
-        : payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
+        : payUrl ? <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton> : null}
 
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

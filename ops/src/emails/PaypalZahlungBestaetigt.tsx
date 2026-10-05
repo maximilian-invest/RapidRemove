@@ -184,7 +184,7 @@ export default function PaypalZahlungBestaetigt({ lang = "en", name = "", hasPro
       ) : null}
 
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

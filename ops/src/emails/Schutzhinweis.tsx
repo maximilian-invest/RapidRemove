@@ -636,7 +636,7 @@ export default function Schutzhinweis({ lang = "de", variant = 1, protectionUrl 
       </NoteBox>
       <P>{t.offer}</P>
       <Section style={{ margin: "18px 0 8px" }}>
-        <CtaButton href={payUrl} full>{t.cta}</CtaButton>
+        <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton>
       </Section>
       <P muted>{t.price}</P>
       <P>

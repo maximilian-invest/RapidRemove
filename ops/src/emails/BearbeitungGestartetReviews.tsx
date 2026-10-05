@@ -324,7 +324,7 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
           <P><strong>{t.listH}</strong></P>
           <Bullets items={list.map((it, i) => it.url
             ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
-            : <span key={i}><strong>{it.name}</strong> — “{it.text}”</span>
+            : <span key={i}><strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
           )} />
         </React.Fragment>
       ) : null}
@@ -337,14 +337,14 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
             ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
             : <span key={i}><strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
           )} />
-          {software.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton href={software.url}>{t.swBtn} · {software.amount}</CtaButton></div> : null}
+          {software.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={software.url}>{t.swBtn} · {software.amount}</CtaButton></div> : null}
         </React.Fragment>
       ) : null}
 
       {prepay && prepay.n > 0 && t.prepay ? (
         <React.Fragment>
           <P><strong>{t.prepayH}</strong><br />{t.prepay(prepay.n, prepay.amount)}</P>
-          {prepay.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton href={prepay.url}>{t.prepayBtn} · {prepay.amount}</CtaButton></div> : null}
+          {prepay.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={prepay.url}>{t.prepayBtn} · {prepay.amount}</CtaButton></div> : null}
         </React.Fragment>
       ) : null}
 
@@ -361,7 +361,7 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
 
       <DashButton lang={lang} url={dashUrl} />
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

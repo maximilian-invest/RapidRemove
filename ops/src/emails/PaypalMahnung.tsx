@@ -204,7 +204,7 @@ export default function PaypalMahnung({ lang = "en", name = "", offer, service, 
       </Warn>
 
       <P muted>{c.notePaid}</P>
-      <P>{c.signoff}</P>
+      <P>{c.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

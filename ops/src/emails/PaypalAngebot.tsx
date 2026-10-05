@@ -243,7 +243,7 @@ export default function PaypalAngebot({ lang = "en", name = "", hasSub = false, 
 
       <P muted>{t.caveat}</P>
       <P>{t.close}</P>
-      <P>{t.signoff}</P>
+      <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );
 }

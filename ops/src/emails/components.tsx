@@ -1,30 +1,31 @@
 /* Gemeinsame Bausteine + Markentokens für alle RapidRemove-E-Mails.
-   Design an die neue Website angelehnt: warmes Off-White, Orange-Akzent,
-   runde Ecken, Wortmarke im Header, Pill-Buttons. Alle Templates nutzen
-   <EmailShell> + diese Tokens → Re-Skin passiert an EINER Stelle. */
+   Design = Kunden-App (Uber/Revolut-Stil): heller grauer Rahmen, weiße Karte mit großen Radien,
+   App-Icon + Wortmarke, große fette Headline (Geist), schwarze Buttons; Orange nur für Bezahlen
+   und Hinweise auf Probleme. Alle Templates nutzen <EmailShell> + diese Tokens → Re-Skin an EINER Stelle. */
 import * as React from "react";
 import {
-  Body, Container, Head, Heading, Hr, Html, Preview, Section, Text, Button as REButton,
+  Body, Container, Head, Heading, Hr, Html, Img, Preview, Section, Text, Button as REButton,
 } from "@react-email/components";
 
 export const brand = {
-  page: "#f6f3f0",        // warmes Canvas
+  page: "#f4f4f4",        // grauer Rahmen (App: --g1)
   card: "#ffffff",
-  ink: "#1c1916",         // warm near-black (Headlines)
-  text: "#2a2622",
-  muted: "#6b6259",
-  accent: "#ff8000",      // RapidRemove-Orange (Buttons, Links, Zahlen)
+  ink: "#111111",         // App-Ink (Headlines, Buttons)
+  text: "#2b2b2b",
+  muted: "#6b6b6b",       // App: --g3
+  accent: "#ff8000",      // Orange: Bezahlen, Links, Probleme
   accentDark: "#e67300",
-  tint: "#fff4e8",        // orange-50 (Callouts/Boxen)
-  tintBorder: "#ffd9b0",
-  tintText: "#8a4b00",
-  danger: "#dc3545",      // Storno/Warnung
+  tint: "#f4f4f4",        // graue Karte (Callouts/Boxen)
+  tintBorder: "#f4f4f4",
+  tintText: "#111111",
+  danger: "#e23b3b",      // Storno/Warnung
   dangerTint: "#fdecec",
-  dangerBorder: "#f5c2c7",
-  dangerText: "#842029",
-  hr: "#ece7e1",          // Hairline
-  font: "'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
+  dangerBorder: "#fdecec",
+  dangerText: "#a12626",
+  hr: "#ececec",          // Hairline
+  font: "'Geist',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif",
 };
+const SITE = "https://www.rapid-remove.com";
 
 const PHONE = "+4362459305300";
 const HELPDESK = "helpdesk@rapid-remove.com";
@@ -36,27 +37,33 @@ export function EmailShell({
 }: { preview: string; title: string; lang?: MailLang; children: React.ReactNode }) {
   return (
     <Html lang={lang}>
-      <Head />
+      <Head>
+        <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&display=swap" rel="stylesheet" />
+      </Head>
       <Preview>{preview}</Preview>
-      <Body style={{ margin: 0, background: brand.page, fontFamily: brand.font, color: brand.text, padding: "24px 12px" }}>
-        <Container style={{ maxWidth: 600, margin: "0 auto", background: brand.card, borderRadius: 18, overflow: "hidden", border: `1px solid ${brand.hr}`, borderTop: `4px solid ${brand.accent}` }}>
-          {/* Header: Wortmarke */}
-          <Section style={{ padding: "22px 32px 16px" }}>
-            <Text style={{ margin: 0, fontSize: 21, fontWeight: 800, letterSpacing: "-0.02em", color: brand.accent }}>
-              RapidRemove
-            </Text>
+      <Body style={{ margin: 0, background: brand.page, fontFamily: brand.font, color: brand.text, padding: "28px 12px" }}>
+        <Container style={{ maxWidth: 560, margin: "0 auto", background: brand.card, borderRadius: 24, overflow: "hidden" }}>
+          {/* Header: App-Icon + Wortmarke */}
+          <Section style={{ padding: "26px 32px 0" }}>
+            <table role="presentation" cellPadding={0} cellSpacing={0} style={{ borderCollapse: "collapse" }}><tbody><tr>
+              <td style={{ verticalAlign: "middle", paddingRight: 10 }}>
+                <Img src={`${SITE}/assets/rapidremove-icon.png`} width="32" height="32" alt="" style={{ borderRadius: 9, display: "block" }} />
+              </td>
+              <td style={{ verticalAlign: "middle", fontFamily: brand.font, fontSize: 17, fontWeight: 800, letterSpacing: "-0.4px", color: brand.ink }}>RapidRemove</td>
+            </tr></tbody></table>
           </Section>
-          <Hr style={{ borderColor: brand.hr, margin: 0 }} />
           {/* Inhalt */}
-          <Section style={{ padding: "28px 32px" }}>
-            <Heading as="h1" style={{ margin: "0 0 16px", fontSize: 23, lineHeight: "1.25", fontWeight: 800, letterSpacing: "-0.02em", color: brand.ink }}>
+          <Section style={{ padding: "22px 32px 30px" }}>
+            <Heading as="h1" style={{ margin: "0 0 14px", fontSize: 30, lineHeight: "1.12", fontWeight: 800, letterSpacing: "-0.8px", color: brand.ink }}>
               {title}
             </Heading>
             {children}
           </Section>
-          {/* Footer */}
-          <Section style={{ padding: "18px 32px 24px", background: brand.page, borderTop: `1px solid ${brand.hr}` }}>
-            <Text style={{ margin: 0, fontSize: 12, lineHeight: "1.6", color: brand.muted }}>
+        </Container>
+        {/* Footer unter der Karte */}
+        <Container style={{ maxWidth: 560, margin: "0 auto" }}>
+          <Section style={{ padding: "18px 32px 6px" }}>
+            <Text style={{ margin: 0, fontSize: 12, lineHeight: "1.6", color: brand.muted, textAlign: "center" as const }}>
               <strong style={{ color: brand.text }}>RapidRemove</strong> · Simple Solution. OG<br />
               Salzgasse 2, 5400 Hallein, Österreich · helpdesk@rapid-remove.com · rapid-remove.com
             </Text>
@@ -69,7 +76,7 @@ export function EmailShell({
 
 export function P({ children, muted = false }: { children: React.ReactNode; muted?: boolean }) {
   return (
-    <Text style={{ fontSize: 15, lineHeight: "1.6", margin: "0 0 12px", color: muted ? brand.muted : brand.text }}>
+    <Text style={{ fontSize: 16, lineHeight: "1.55", margin: "0 0 12px", color: muted ? brand.muted : brand.text }}>
       {children}
     </Text>
   );
@@ -77,14 +84,14 @@ export function P({ children, muted = false }: { children: React.ReactNode; mute
 
 /** Inline-Link in Markenfarbe. */
 export function A({ href, children }: { href: string; children: React.ReactNode }) {
-  return <a href={href} style={{ color: brand.accent, textDecoration: "underline" }}>{children}</a>;
+  return <a href={href} style={{ color: brand.ink, textDecoration: "underline" }}>{children}</a>;
 }
 
 /** Orange getönte Hinweis-/Callout-Box (Wichtig, Einspruch …). */
 export function NoteBox({ children }: { children: React.ReactNode }) {
   return (
-    <Section style={{ background: brand.tint, border: `1px solid ${brand.tintBorder}`, borderRadius: 14, padding: "14px 18px", margin: "6px 0 16px" }}>
-      <Text style={{ margin: 0, fontSize: 14, lineHeight: "1.55", color: brand.text }}>{children}</Text>
+    <Section style={{ background: brand.tint, borderRadius: 20, padding: "16px 18px", margin: "6px 0 16px" }}>
+      <Text style={{ margin: 0, fontSize: 15, lineHeight: "1.55", color: brand.text }}>{children}</Text>
     </Section>
   );
 }
@@ -92,25 +99,26 @@ export function NoteBox({ children }: { children: React.ReactNode }) {
 /** Rot getönte Warnbox (Schutz deaktiviert, Profil kann wieder auftauchen …). */
 export function DangerBox({ children }: { children: React.ReactNode }) {
   return (
-    <Section style={{ background: brand.dangerTint, border: `1px solid ${brand.dangerBorder}`, borderRadius: 14, padding: "14px 18px", margin: "6px 0 16px" }}>
-      <Text style={{ margin: 0, fontSize: 14, lineHeight: "1.55", color: brand.dangerText }}>{children}</Text>
+    <Section style={{ background: brand.dangerTint, borderRadius: 20, padding: "16px 18px", margin: "6px 0 16px" }}>
+      <Text style={{ margin: 0, fontSize: 15, lineHeight: "1.55", color: brand.dangerText }}>{children}</Text>
     </Section>
   );
 }
 
-/** Pill-Button. variant: primary (orange) · secondary (Outline) · danger (rot). */
+/** App-Button (56 px, Radius 16). variant: primary (schwarz) · pay (orange, Bezahlen) · secondary (grau) · danger (rot). */
 export function CtaButton({
   href, children, full = false, variant = "primary",
-}: { href: string; children: React.ReactNode; full?: boolean; variant?: "primary" | "secondary" | "danger" }) {
+}: { href: string; children: React.ReactNode; full?: boolean; variant?: "primary" | "pay" | "secondary" | "danger" }) {
   const v = {
-    primary: { background: brand.accent, color: "#ffffff", border: `1px solid ${brand.accent}` },
-    secondary: { background: "#ffffff", color: brand.text, border: `1px solid ${brand.hr}` },
-    danger: { background: brand.danger, color: "#ffffff", border: `1px solid ${brand.danger}` },
+    primary: { background: brand.ink, color: "#ffffff" },
+    pay: { background: brand.accent, color: "#ffffff" },
+    secondary: { background: brand.page, color: brand.ink },
+    danger: { background: brand.danger, color: "#ffffff" },
   }[variant];
   return (
     <REButton
       href={href}
-      style={{ ...v, fontWeight: 800, fontSize: 15, padding: "14px 28px", borderRadius: 999, textDecoration: "none", display: "inline-block", textAlign: "center", ...(full ? { width: "100%", boxSizing: "border-box" } : {}) }}
+      style={{ ...v, fontWeight: 700, fontSize: 16, padding: "17px 30px", borderRadius: 16, textDecoration: "none", display: "inline-block", textAlign: "center", ...(full ? { width: "100%", boxSizing: "border-box" } : {}) }}
     >
       {children}
     </REButton>
@@ -123,7 +131,7 @@ export function Bullets({ items }: { items: React.ReactNode[] }) {
     <Section style={{ margin: "0 0 14px" }}>
       {items.map((it, i) => (
         <Text key={i} style={{ margin: "0 0 7px", fontSize: 15, lineHeight: "1.5", color: brand.text }}>
-          <span style={{ color: brand.accent, fontWeight: 800 }}>•</span>&nbsp;&nbsp;{it}
+          <span style={{ color: brand.ink, fontWeight: 800 }}>•</span>&nbsp;&nbsp;{it}
         </Text>
       ))}
     </Section>
@@ -136,7 +144,7 @@ export function Steps({ items }: { items: React.ReactNode[] }) {
     <Section style={{ margin: "0 0 14px" }}>
       {items.map((it, i) => (
         <Text key={i} style={{ margin: "0 0 7px", fontSize: 15, lineHeight: "1.5", color: brand.text }}>
-          <strong style={{ color: brand.accent }}>{i + 1}.</strong>&nbsp;&nbsp;{it}
+          <strong style={{ color: brand.ink }}>{i + 1}.</strong>&nbsp;&nbsp;{it}
         </Text>
       ))}
     </Section>
@@ -179,7 +187,7 @@ export function Support({
   return (
     <>
       <Hr style={{ borderColor: brand.hr, margin: "22px 0 14px" }} />
-      <Heading as="h2" style={{ margin: "0 0 8px", fontSize: 17, fontWeight: 800, letterSpacing: "-0.01em", color: brand.ink }}>
+      <Heading as="h2" style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 800, letterSpacing: "-0.3px", color: brand.ink }}>
         {t.h}
       </Heading>
       <P muted>{phone ? t.phone : t.mail}</P>
