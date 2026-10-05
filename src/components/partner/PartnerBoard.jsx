@@ -10,6 +10,8 @@ import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared"
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
+import PasskeyOffer from "@/components/PasskeyOffer";
+import { passkeySupported, passkeyOnDevice, passkeyDismissed } from "@/lib/passkey";
 
 const SKIP_KEY = "rr_partner_setup_skip";
 
@@ -19,7 +21,8 @@ const MOBILE_Q = "(max-width: 860px)";
 
 export default function PartnerBoard() {
   const [token, setToken] = React.useState(null);
-  const [setup, setSetup] = React.useState(null); // { account } → Login über den persönlichen Link einrichten
+  const [setup, setSetup] = React.useState(null);
+  const [offerPk, setOfferPk] = React.useState(false); // nach dem Login: Face ID anbieten // { account } → Login über den persönlichen Link einrichten
   const [isMobile, setIsMobile] = React.useState(null);
   const [tasks, setTasks] = React.useState(null);
   const [err, setErr] = React.useState("");
@@ -219,11 +222,14 @@ export default function PartnerBoard() {
 
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
-  const onLogin = (t) => {
+  const onLogin = (t, viaPasskey) => {
     try { localStorage.setItem(KEY, t); } catch (e) {}
     try { if (window.location.hash || window.location.search) window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
     setSetup(null); setToken(t);
+    // Nach dem Passwort-Login einmal Face ID anbieten.
+    if (!viaPasskey && String(t).startsWith("ps_") && passkeySupported() && !passkeyOnDevice("partner") && !passkeyDismissed("partner")) setOfferPk(true);
   };
+  if (offerPk && token) return <PasskeyOffer role="partner" token={token} onDone={() => setOfferPk(false)} />;
   if (!token) return <PartnerLogin mode="login" onToken={onLogin} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 

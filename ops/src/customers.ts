@@ -96,6 +96,18 @@ async function sessionEmail(token: unknown): Promise<string | null> {
   return r.rows[0]?.email ?? null;
 }
 
+/** Für Passkeys: E-Mail zur Sitzung bzw. neue Sitzung (wie beim Passwort-Login). */
+export const customerSessionEmail = (t: unknown) => sessionEmail(t);
+export async function createCustomerSession(email: string): Promise<string | null> {
+  if (!pool) return null;
+  const ex = await pool.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [norm(email)]);
+  if (!ex.rowCount) return null;
+  const token = crypto.randomBytes(24).toString("base64url");
+  await pool.query(`INSERT INTO cust_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 days')`, [sha(token), norm(email)]);
+  await pool.query(`UPDATE cust_accounts SET last_login=now() WHERE email=$1`, [norm(email)]);
+  return token;
+}
+
 /* ---- Zahlungen (raw.reviewsPayments) ---- */
 export type PayRef = { o: string; k: string };
 export type CustPayment = {

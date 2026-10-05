@@ -9,10 +9,12 @@
 import React from "react";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
-  XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink,
+  XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace,
   BadgeCheck, Timer, Lock, CreditCard, Smartphone,
 } from "lucide-react";
 import "@/styles/dashboard.css";
+import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
+import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_cust_session";
@@ -123,6 +125,7 @@ function Login({ onToken }) {
         {err ? <div className="note bad">{err}</div> : null}
         {info ? <div className="note good">{info}</div> : null}
         <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{forgot ? "Send new password" : "Log in"}</button>
+        {!forgot ? <PasskeyLoginButton role="customer" onToken={onToken} onError={setErr} /> : null}
         <button type="button" className="lnk" onClick={() => { setForgot(!forgot); setErr(""); setInfo(""); }}>{forgot ? "Back to log in" : "Forgot password?"}</button>
       </form>
     </div>
@@ -210,7 +213,12 @@ export default function CustomerDashboard() {
     if (keys.length && keys.every((k) => st.get(k) === "sw_accepted")) setFlow((f) => (f ? { ...f, mode: "paid" } : f));
   }, [data, flow]);
 
-  const onToken = (t) => { store.set(t); prev.current = null; setToken(t); };
+  const [offerPk, setOfferPk] = React.useState(false);
+  const onToken = (t, viaPasskey) => {
+    store.set(t); prev.current = null; setToken(t);
+    // Nach dem Passwort-Login einmal Face ID anbieten.
+    if (!viaPasskey && passkeySupported() && !passkeyOnDevice("customer") && !passkeyDismissed("customer")) setOfferPk(true);
+  };
   const logout = async () => {
     const t = token; store.set(""); setToken(""); setData(null); prev.current = null; setTab("home");
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
@@ -219,6 +227,7 @@ export default function CustomerDashboard() {
 
   if (token === null) return <div className="rra" />;
   if (!token) return <div className="rra"><Login onToken={onToken} /></div>;
+  if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is on`); }} />;
   if (!data) {
     return (
       <div className="rra"><div className="lg-wrap">
@@ -448,6 +457,12 @@ export default function CustomerDashboard() {
       <div className="ttl">Account</div>
       <div className="paycard"><span className="av">{ini}</span><span><b>{data.name || data.email}</b><span>{data.email}</span></span></div>
       <div className="acc-rows">
+        {passkeySupported() ? (
+          <button className="ai-row" onClick={async () => {
+            if (passkeyOnDevice("customer")) { showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is already on`); return; }
+            try { await passkeyRegister("customer", token); showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is on`); } catch (e) { const m = passkeyError(e); if (m) showToast(m, true); }
+          }}><span className="ico"><ScanFace /></span><span className="t"><b>{passkeyName() === "passkey" ? "Passkey" : passkeyName() === "fingerprint" ? "Fingerprint" : passkeyName()} login</b><span>{passkeyOnDevice("customer") ? "On for this device" : "Log in without a password"}</span></span><ChevronRight /></button>
+        ) : null}
         <a className="ai-row" href={`mailto:${HELP_MAIL}`}><span className="ico"><MessageCircle /></span><span className="t"><b>Help &amp; contact</b><span>We usually reply within a few hours</span></span><ChevronRight /></a>
         <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>Invoices</b><span>Sent by email after each payment</span></span><ChevronRight /></button>
         <a className="ai-row" href="/en/privacy-policy" target="_blank" rel="noopener noreferrer"><span className="ico"><ShieldCheck /></span><span className="t"><b>Privacy</b></span><ChevronRight /></a>

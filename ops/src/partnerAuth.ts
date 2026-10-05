@@ -55,6 +55,18 @@ async function isLinkToken(t: string): Promise<boolean> {
   const real = String(r.rows[0]?.value || "");
   return !!real && real.length === t.length && crypto.timingSafeEqual(Buffer.from(real), Buffer.from(t));
 }
+/** Für Passkeys: E-Mail zur Partner-Sitzung bzw. neue Sitzung. */
+export async function partnerSessionEmail(t: unknown): Promise<string | null> {
+  const s = String(t || "");
+  if (!pool || !s.startsWith("ps_")) return null;
+  const r = await pool.query(`SELECT email FROM partner_sessions WHERE token_hash=$1 AND expires_at > now()`, [sha(s)]);
+  return r.rows[0]?.email ?? null;
+}
+export async function createPartnerSession(email: string): Promise<string | null> {
+  if (!pool) return null;
+  const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [email]);
+  return ex.rowCount ? newSession(email) : null;
+}
 async function newSession(email: string): Promise<string> {
   const token = "ps_" + crypto.randomBytes(24).toString("base64url");
   await pool!.query(`INSERT INTO partner_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 days')`, [sha(token), email]);

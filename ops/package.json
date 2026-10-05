@@ -16,6 +16,7 @@
   "dependencies": {
     "@react-email/components": "0.x",
     "@react-email/render": "1.x",
+    "@simplewebauthn/server": "^14.0.3",
     "dotenv": "16.x",
     "fastify": "5.x",
     "pg": "8.x",
@@ -28,7 +29,7 @@
     "@types/node": "22.x",
     "@types/pg": "8.x",
     "@types/react": "18.x",
-    "typescript": "5.x",
-    "@types/web-push": "^3.6.4"
+    "@types/web-push": "^3.6.4",
+    "typescript": "5.x"
   }
 }

@@ -6,6 +6,7 @@ import React from "react";
 import { Loader, Eye, EyeOff } from "lucide-react";
 import "@/styles/dashboard.css";
 import { call, BASE } from "./shared";
+import { PasskeyLoginButton } from "@/components/PasskeyOffer";
 
 export default function PartnerLogin({ mode = "login", linkToken = "", account = "", onToken, onSkip }) {
   const setup = mode === "setup";
@@ -56,6 +57,7 @@ export default function PartnerLogin({ mode = "login", linkToken = "", account =
           </label>
           {err ? <div className="note bad">{err}</div> : null}
           <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{setup ? "Save & continue" : "Log in"}</button>
+          {!setup ? <PasskeyLoginButton role="partner" onToken={onToken} onError={setErr} /> : null}
           {setup
             ? <button type="button" className="lnk" onClick={onSkip}>Skip for now</button>
             : <p className="lnk" style={{ height: "auto", fontSize: 14, fontWeight: 500, lineHeight: 1.45 }}>Forgot your password? Just open your personal link from RapidRemove – it always works.</p>}
