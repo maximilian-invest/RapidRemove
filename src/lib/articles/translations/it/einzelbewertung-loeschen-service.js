@@ -29,9 +29,9 @@ const article = {
         "**Recensioni false** e attacchi da parte di concorrenti ([come riconoscere le recensioni false](/it/rivista/eliminare-recensioni-false-google/))",
         "Recensioni di persone che **non sono mai state clienti**",
         "**Insulti**, attacchi personali e **affermazioni di fatto false**",
-        "**Valutazioni a 1 stella senza testo** e senza alcun contatto riconoscibile con un cliente ([approfondimento](/it/rivista/eliminare-recensione-1-stella-senza-testo/))",
         "Contenuti fuori tema, spam o recensioni destinate a **un'altra attività**",
       ] },
+      { t: "p", text: "**Importante: solo recensioni con testo.** La rimozione di singole recensioni vale solo per le recensioni che contengono un testo. Le **valutazioni a stelle senza testo** non si possono eliminare con questo servizio – non c'è alcun contenuto a cui applicare le norme di Google – e non si possono selezionare nel modulo d'ordine ([cosa puoi fare contro una recensione a 1 stella senza testo](/it/rivista/eliminare-recensione-1-stella-senza-testo/))." },
       { t: "warn", title: "Cosa non promettiamo", text: "Le critiche oneste e circostanziate di clienti reali sono di norma tutelate – e nessuno può garantire seriamente la rimozione di ogni recensione. Proprio per questo **paghi solo quando una recensione è davvero sparita**." },
 
       { t: "h2", id: "preis", text: "Quanto costa rimuovere una recensione Google", toc: "Prezzo" },
@@ -55,7 +55,7 @@ const article = {
       { t: "ol", items: [
         "**Cerca la tua attività** – inserisci il nome dell'attività e seleziona il tuo profilo Google.",
         "Scegli **«Eliminare singole recensioni»** – carichiamo automaticamente le tue recensioni Google più recenti.",
-        "**Filtra** per 1–3 stelle (oppure mostra tutte) e **spunta** le recensioni da eliminare. Per ogni recensione vedi età e probabilità di successo.",
+        "**Filtra** per 1–3 stelle (oppure mostra tutte) e **spunta** le recensioni da eliminare. Per ogni recensione vedi età e probabilità di successo. Le valutazioni senza testo appaiono in grigio («Senza testo – non rimovibile») e non si possono selezionare.",
         "La **barra del prezzo** mostra sempre il totale – compreso il prossimo livello di sconto («Ancora una per lo sconto del 10 %!»).",
         "Controlla il riepilogo e **invia l'ordine**. Non viene addebitato nulla in anticipo.",
         "Ci occupiamo della rimozione e ti teniamo aggiornato. **Paghi solo le recensioni effettivamente rimosse.**",
@@ -89,7 +89,7 @@ const article = {
       { q: "Quanto costa rimuovere una recensione Google?", a: "179 € per recensione rimossa se la recensione ha al massimo 4 settimane, 229 € se è più vecchia. Da 3 recensioni accettate hai il 10 % di sconto, da 5 il 15 % e da 10 il 30 %, applicato a ogni recensione rimossa. Paghi solo le recensioni effettivamente rimosse." },
       { q: "Cosa succede se una recensione non può essere rimossa?", a: "In quel caso per quella recensione non paghi nulla. Non c'è alcun pagamento anticipato né alcun costo per i tentativi." },
       { q: "Si possono rimuovere recensioni più vecchie di 4 settimane?", a: "Sì. La probabilità di successo è più bassa (ca. 50 % invece di ca. 90 %) e il prezzo è di 50 € più alto per recensione. Per questo conviene agire subito contro le recensioni false appena pubblicate." },
-      { q: "Si possono rimuovere le recensioni a 1 stella senza testo?", a: "Sì, puoi selezionarle come qualsiasi altra recensione. Le valutazioni senza parole e senza un contatto riconoscibile con un cliente hanno spesso buone possibilità." },
+      { q: "Si possono rimuovere le recensioni a 1 stella senza testo?", a: "Non con la nostra rimozione di singole recensioni: vale solo per le recensioni con testo, e le valutazioni senza testo non si possono selezionare nel modulo d'ordine. Puoi segnalarle tu stesso a Google, ma raramente funziona. Se il tuo profilo è danneggiato da molte valutazioni senza testo, rimuovere l'[intero profilo](/it/rivista/eliminare-profilo-attivita-google/) resta un'opzione." },
       { q: "L'autore della recensione scoprirà che sono stato io?", a: "No. L'autore della recensione non viene informato di chi ha richiesto la rimozione." },
       { q: "Devo eliminare tutto il mio profilo?", a: "No. Con la rimozione di singole recensioni il tuo profilo e tutte le recensioni positive restano. Rimuovere l'[intero profilo](/it/rivista/eliminare-profilo-attivita-google/) ha senso solo se è compromesso su tutta la linea." },
       { q: "Quante recensioni posso ordinare in una volta?", a: "Quante vuoi. Lo sconto quantità aumenta a 3, 5 e 10 recensioni accettate dopo la valutazione gratuita e viene applicato automaticamente." },

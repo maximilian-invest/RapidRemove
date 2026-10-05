@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "definition", text: "Qu'est-ce que le chantage aux avis Google ?", toc: "Définition" },
     { t: "p", text: "Le chantage aux avis, c'est quand quelqu'un inonde votre fiche d'établissement Google d'avis négatifs, puis exige de l'argent, des cartes cadeaux ou des prestations gratuites pour les retirer. Les avis sont la menace ; le message qui suit, c'est la demande de rançon." },
     { t: "p", text: "Les auteurs ne sont presque jamais de vrais clients. Ce sont en général des comptes récents ou achetés, gérés par des groupes organisés qui ciblent de nombreuses entreprises en même temps : restaurants, cabinets dentaires, hôtels, artisans, agences. Google considère cela comme une violation nette de ses règles et a mis en place un [formulaire dédié au chantage aux avis](https://support.google.com/business/answer/16404809)." },
-    { t: "p", text: "Si vous voulez simplement que ces avis disparaissent sans gérer vous-même la procédure, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) s'en charge via les procédures officielles de Google, et vous ne payez que les avis réellement supprimés." },
+    { t: "p", text: "Si vous voulez simplement que ces avis disparaissent sans gérer vous-même la procédure, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) s'en charge pour les avis **comportant du texte**, via les procédures officielles de Google, et vous ne payez que les avis réellement supprimés." },
 
     { t: "h2", id: "deroulement", text: "Comment se déroule l'arnaque", toc: "Déroulement" },
     { t: "p", text: "La plupart des cas suivent le même scénario. Le connaître aide à garder son calme : rien de ce que fait le maître chanteur n'est personnel ni dû au hasard." },
@@ -73,8 +73,9 @@ const article = {
     { t: "p", text: "Deux éléments jouent en votre faveur : les avis sont **récents** et le schéma est **évident**. Les avis de moins de quatre semaines ont de bien meilleures chances d'être supprimés que les anciens, alors agissez dès les premiers jours. Si Google rejette un signalement, utilisez l'unique recours par avis dans l'outil de gestion. Délais et recours en détail : [délai de suppression d'un avis Google](/fr/magazine/delai-suppression-avis-google/)." },
 
     { t: "h2", id: "rapidremove", text: "Comment RapidRemove vous aide face à une vague de chantage", toc: "Notre aide" },
-    { t: "p", text: "Envoyez-nous les avis et nous prenons en charge leur suppression via les procédures officielles de Google, en votre nom. Pas besoin de batailler avec le support Google, de relancer les signalements ni de suivre chaque dossier." },
+    { t: "p", text: "Envoyez-nous les avis **comportant du texte** et nous prenons en charge leur suppression via les procédures officielles de Google, en votre nom. Pas besoin de batailler avec le support Google, de relancer les signalements ni de suivre chaque dossier." },
     { t: "ul", items: [
+      "**Uniquement les avis avec texte :** les notes 1 étoile sans texte d'une vague de chantage ne peuvent pas être supprimées par notre service ni sélectionnées dans le formulaire de commande. Pour celles-ci, le chantage se signale via le [formulaire Google dédié](https://support.google.com/business/answer/16404809), que vous déposez vous-même en tant que propriétaire de la fiche. Les avis **avec texte**, nous nous en chargeons.",
       "**D'abord une évaluation gratuite :** nous vous disons honnêtement quels avis ont de bonnes chances.",
       "**Paiement au résultat :** 179 € par avis supprimé (jusqu'à 4 semaines), 229 € s'il est plus ancien. Rien d'avance, aucun frais pour les tentatives.",
       "**Remise sur volume :** une vague de chantage, c'est souvent beaucoup d'avis. Sur les avis que nous acceptons : 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemple : 10 avis de chantage récents coûtent 1 790 €, moins 30 % = **1 253 €**, et uniquement pour ceux réellement supprimés.",
@@ -82,7 +83,7 @@ const article = {
       "**En général quelques jours**, parfois jusqu'à trois semaines. Les avis peuvent tomber à des moments différents : vous pouvez payer avis par avis.",
       "**Uniquement des méthodes propres :** pas de faux comptes, pas de bots, pas de fausses mises en demeure. Les auteurs ne savent pas qui a demandé la suppression.",
     ] },
-    { t: "cta", title: "Victime de chantage ? Envoyez-nous les avis", text: "Recherchez votre entreprise, cochez les avis de chantage ou collez leurs liens – et voyez le prix immédiatement. **179 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
+    { t: "cta", title: "Victime de chantage ? Envoyez-nous les avis", text: "Recherchez votre entreprise, cochez les avis de chantage comportant du texte ou collez leurs liens – et voyez le prix immédiatement. **179 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
     { t: "p", text: "Tarifs, remises et déroulement complet sont expliqués sur notre page [supprimer un avis Google](/fr/supprimer-un-avis/)." },
 
     { t: "h2", id: "proteger", text: "Comment protéger votre fiche ensuite", toc: "Protéger sa fiche" },
@@ -102,7 +103,7 @@ const article = {
     { q: "Peut-on porter plainte pour chantage aux avis ?", a: "Oui. Exiger de l'argent sous la menace est une infraction pénale dans la plupart des pays. Apportez les captures des messages, les liens des avis et une chronologie ; le numéro de plainte appuie aussi votre signalement à Google." },
     { q: "Et s'ils reviennent avec de nouveaux avis ?", a: "Ne répondez pas, ajoutez les nouveaux messages et avis à votre dossier et signalez-les de la même manière. Les avis récents sont les plus faciles à supprimer : agissez sous quelques jours." },
     { q: "Puis-je supprimer les avis moi-même ?", a: "Non. Un professionnel ne peut pas supprimer un avis Google ; seul son auteur peut le supprimer. Vous pouvez le signaler, y répondre publiquement ou le faire retirer via les procédures de Google." },
-    { q: "Combien coûte la suppression d'avis de chantage ?", a: "Avec RapidRemove, **179 € par avis supprimé** de moins de 4 semaines, 229 € s'il est plus ancien, avec une remise sur volume allant jusqu'à 30 % dès 10 avis. Vous ne payez rien pour les avis qui restent." },
+    { q: "Combien coûte la suppression d'avis de chantage ?", a: "Avec RapidRemove, pour les avis comportant du texte, **179 € par avis supprimé** de moins de 4 semaines, 229 € s'il est plus ancien, avec une remise sur volume allant jusqu'à 30 % dès 10 avis. Vous ne payez rien pour les avis qui restent. Les notes sans texte ne peuvent pas être supprimées par notre service : signalez-les via le formulaire Google pour le chantage aux avis." },
     { q: "Le maître chanteur saura-t-il que j'ai fait supprimer les avis ?", a: "Pas par nous. L'auteur de l'avis n'est pas informé de l'identité de celui qui a demandé la suppression." },
   ],
   related: [

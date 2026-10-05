@@ -24,14 +24,13 @@ const article = {
     { t: "p", text: "Niet elke slechte review is aanvechtbaar. Een zakelijk, hoewel negatief, verslag van een echte klantervaring valt onder de vrijheid van meningsuiting en blijft meestal staan. Er zijn daarentegen **goede kansen op verwijdering** bij reviews die de richtlijnen van Google schenden:" },
     { t: "ul", items: [
       "**Valse reviews** van mensen die nooit klant waren of niet bestaan",
-      "**1-sterreviews zonder tekst** waarbij geen herkenbaar verband zichtbaar is",
       "**Beledigingen, smaad en persoonlijke aanvallen**",
       "**Onjuiste feitelijke beweringen** (aantoonbaar onware uitspraken)",
       "**Off-topic inhoud** of reclame",
       "**Verwisselingen** met een ander bedrijf",
       "**Reviews van concurrenten** (belangenconflict)",
     ] },
-    { t: "p", text: "Pure meningen als „het beviel me niet” zijn daarentegen moeilijk te verwijderen, zolang ze op een echt contact berusten." },
+    { t: "p", text: "Pure meningen als „het beviel me niet” zijn daarentegen moeilijk te verwijderen, zolang ze op een echt contact berusten. En **beoordelingen met alleen sterren, zonder tekst,** kunnen niet via onze verwijdering van losse reviews worden verwijderd: zonder tekst is er geen inhoud waarop de richtlijnen kunnen worden toegepast. Zelf rapporteren bij Google kan, maar lukt zelden." },
 
     { t: "h2", id: "m1", text: "Methode 1: de review zelf bij Google rapporteren", toc: "Methode 1: rapporteren" },
     { t: "p", text: "De gratis weg loopt via de rapportagefunctie. Zo gaat het:" },
@@ -84,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Verwijdert RapidRemove losse reviews?", a: "Ja. Naast de profielverwijdering kunt u bij RapidRemove ook [losse Google-reviews laten verwijderen](/nl/review-laten-verwijderen/): reviews tot 4 weken oud hebben ca. 90 % slagingskans en kosten € 179 per verwijderde review, oudere reviews ca. 50 % slagingskans en +€ 50. Ook reviews zonder tekst kunt u selecteren. Staffelkorting: vanaf 3 reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. U betaalt alleen voor reviews die echt verwijderd zijn. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
+    { q: "Verwijdert RapidRemove losse reviews?", a: "Ja. Naast de profielverwijdering kunt u bij RapidRemove ook [losse Google-reviews laten verwijderen](/nl/review-laten-verwijderen/): reviews tot 4 weken oud hebben ca. 90 % slagingskans en kosten € 179 per verwijderde review, oudere reviews ca. 50 % slagingskans en +€ 50. Let op: dit geldt alleen voor reviews met tekst – beoordelingen met alleen sterren en geen tekst kunt u niet selecteren. Staffelkorting: vanaf 3 reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. U betaalt alleen voor reviews die echt verwijderd zijn. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
     { q: "Kan ik zelf een Google review verwijderen?", a: "Als bedrijf kunt u een review van een ander alleen rapporteren, niet zelf verwijderen. Of Google die weghaalt, beslist het bedrijf – vaak afwijzend. Uw eigen reviews kunt u op elk moment verwijderen." },
     { q: "Hoelang duurt het verwijderen van een Google review?", a: "Via de rapportagefunctie dagen tot weken met onzekere afloop, via een advocaat vaak meerdere maanden, via profielverwijdering meestal 24 tot 48 uur. Losse reviews verwijdert RapidRemove meestal binnen een paar dagen, soms binnen drie weken." },
     { q: "Wat kost het verwijderen van een negatieve Google review?", a: "Afhankelijk van de methode tussen circa 20 € (goedkope, onzekere diensten) en 159 € per review (advocaat). Bij profielverwijdering via RapidRemove betaalt u een vaste prijs en pas na geslaagde verwijdering; losse reviews kosten bij RapidRemove € 179 per verwijderde review (ouder dan 4 weken +€ 50), ook alleen bij succes." },

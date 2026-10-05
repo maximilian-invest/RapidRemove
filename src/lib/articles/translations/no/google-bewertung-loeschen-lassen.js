@@ -24,7 +24,7 @@ const article = {
     { t: "p", text: "Ikke enhver dårlig anmeldelse kan bestrides. En saklig, om enn negativ, skildring av en virkelig kundeopplevelse er beskyttet av ytringsfriheten og blir som regel stående. Til gjengjeld er det **gode sjanser for fjerning** ved anmeldelser som bryter Googles retningslinjer:" },
     { t: "ul", items: [
       "**Falske anmeldelser** fra personer som aldri har vært kunder eller ikke finnes",
-      "**1-stjerners anmeldelser uten tekst** der ingen gjenkjennelig sammenheng vises",
+      "**1-stjerners anmeldelser uten tekst** der ingen gjenkjennelig sammenheng vises (men ikke via vår fjerning av enkeltanmeldelser, som bare gjelder anmeldelser med tekst)",
       "**Fornærmelser, ærekrenkelse og personangrep**",
       "**Uriktige faktapåstander** (beviselig usanne utsagn)",
       "**Innhold utenfor temaet** eller reklame",
@@ -84,7 +84,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Fjerner RapidRemove enkeltanmeldelser?", a: "Ja, nå gjør vi det: [fjerning av enkeltanmeldelser](/no/fjern-omtale/) – 179 € per fjernet anmeldelse opptil 4 uker gammel (ca. 90 % sjanse for å lykkes). Eldre anmeldelser er også mulige (ca. 50 %, +50 € per anmeldelse), og også anmeldelser uten tekst kan velges. Mengderabatt fra 3 anmeldelser, ingenting på forskudd – du betaler bare for anmeldelser som faktisk fjernes. Er profilen skadet som helhet, er fjerning av hele profilen med alle anmeldelser fortsatt den grundigste veien." },
+    { q: "Fjerner RapidRemove enkeltanmeldelser?", a: "Ja, nå gjør vi det: [fjerning av enkeltanmeldelser](/no/fjern-omtale/) – 179 € per fjernet anmeldelse opptil 4 uker gammel (ca. 90 % sjanse for å lykkes). Eldre anmeldelser er også mulige (ca. 50 %, +50 € per anmeldelse). Tjenesten gjelder bare anmeldelser med tekst – rene stjernevurderinger uten tekst kan ikke fjernes via den og kan ikke velges i bestillingsskjemaet. Mengderabatt fra 3 anmeldelser, ingenting på forskudd – du betaler bare for anmeldelser som faktisk fjernes. Er profilen skadet som helhet, er fjerning av hele profilen med alle anmeldelser fortsatt den grundigste veien." },
     { q: "Kan jeg selv fjerne en Google-anmeldelse?", a: "Som bedrift kan du bare rapportere en annens anmeldelse, ikke fjerne den. Om Google fjerner den, avgjør selskapet – ofte avvisende. Dine egne anmeldelser kan du fjerne når som helst." },
     { q: "Hvor lang tid tar det å fjerne en Google-anmeldelse?", a: "Via rapporteringsfunksjonen dager til uker med usikkert utfall, via en advokat ofte flere måneder, via profilfjerning oftest 24 til 48 timer. Fjerning av enkeltanmeldelser via RapidRemove tar vanligvis noen dager, av og til opptil tre uker." },
     { q: "Hva koster det å fjerne en negativ Google-anmeldelse?", a: "Avhengig av metoden mellom ca. 20 € (billige, usikre tjenester) og 159 € per anmeldelse (advokat). Hos RapidRemove koster fjerning av en enkeltanmeldelse 179 € (eldre enn 4 uker: 229 €), profilfjerning har en fast pris – i begge tilfeller betaler du først etter vellykket fjerning." },

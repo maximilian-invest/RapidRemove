@@ -83,7 +83,7 @@ export const RVW = {
       { q: "Which reviews can't be removed?", a: "Honest, factual criticism from real customers – even when it's harsh. Google protects genuine experiences, and so do we. If a review doesn't break any rule, we tell you upfront instead of taking your money." },
       { q: "Can a removed review come back?", a: "Rarely. If the same person posts it again, send it to us – a repost of a removed review is usually removed again quickly." },
       { q: "Will reporting reviews hurt my Google profile?", a: "No. Reporting reviews that break Google's policies is a normal, intended process and has no negative effect on your profile or ranking." },
-      { q: "Can you remove 1-star ratings without text?", a: "Sometimes – especially if the person was never a customer. Star-only ratings give Google less to work with, so we assess each one honestly before you order." },
+      { q: "Can you remove 1-star ratings without text?", a: "No. Ratings without text can't be removed through our service – there's no content Google's policies can be applied to. They're shown greyed out in the order form and can't be selected. We only take on reviews that contain text." },
       { q: "How do I pay?", a: "Once a review is removed you get a confirmation with a secure payment link. On request you can also pay via PayPal or bank transfer." },
     ],
   },

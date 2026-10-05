@@ -39,7 +39,7 @@ const article = {
     { t: "ul", items: [
       "**Nep-reviews** zonder reëel zakelijk contact (bijv. van concurrenten),",
       "**Beledigingen, smaad, onjuiste feitelijke beweringen,**",
-      "**1-ster reviews zonder tekst** zonder herkenbare aanleiding,",
+      "**1-ster reviews zonder tekst** zonder herkenbare aanleiding (hier alleen via eigen melding of advocaat – onze verwijdering van losse reviews dekt alleen reviews met tekst),",
       "**Irrelevante of verward geplaatste** beoordelingen.",
     ] },
     { t: "p", text: "Dat het aankomt op een **daadwerkelijk zakelijk contact** is vaste rechtspraak – het Landgericht Lübeck (Az. [9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17)) en het BGH (Az. [VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)) hebben dat bevestigd als Duits/EU-rechtspraak die ook de standaard vormt in het bredere Europese kader. Daarnaast biedt de **AVG (GDPR) Art. 17** – het „recht om vergeten te worden“ – in bepaalde gevallen een extra grondslag voor verwijdering van persoonsgebonden content." },

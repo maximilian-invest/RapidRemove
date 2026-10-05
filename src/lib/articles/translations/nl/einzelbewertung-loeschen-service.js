@@ -29,10 +29,9 @@ const article = {
         "**Nepreviews** en aanvallen van concurrenten ([zo herkent u valse reviews](/nl/magazine/valse-google-reviews-verwijderen/))",
         "Reviews van mensen die **nooit klant** waren",
         "**Beledigingen**, persoonlijke aanvallen en **onware feitelijke beweringen**",
-        "**1-sterreviews zonder tekst** en zonder herkenbaar klantcontact ([achtergrond](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/))",
         "Inhoud die nergens over gaat, spam of reviews die voor **een ander bedrijf** bedoeld waren",
       ] },
-      { t: "warn", title: "Wat we niet beloven", text: "Eerlijke, zakelijke kritiek van echte klanten is meestal beschermd – en niemand kan serieus garanderen dat elke review verdwijnt. Juist daarom **betaalt u alleen als een review echt weg is**." },
+      { t: "warn", title: "Wat we niet beloven", text: "Eerlijke, zakelijke kritiek van echte klanten is meestal beschermd – en niemand kan serieus garanderen dat elke review verdwijnt. Juist daarom **betaalt u alleen als een review echt weg is**. Ook **beoordelingen met alleen sterren en geen tekst verwijderen we niet**: zonder tekst is er geen inhoud waarop het beleid van Google kan worden toegepast, en in het bestelformulier staan ze grijs („Geen tekst – niet verwijderbaar”) ([achtergrond](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/))." },
 
       { t: "h2", id: "preis", text: "Wat kost het om een Google review te laten verwijderen?", toc: "Prijs" },
       { t: "p", text: "De prijs hangt vooral af van één ding: **hoe oud de review is**. Verse reviews zijn veel makkelijker te verwijderen dan reviews die al maanden online staan. Hoe deze prijzen zich verhouden tot een advocaat en andere aanbieders, leest u in [de kosten van een Google review verwijderen](/nl/magazine/kosten-google-review-verwijderen/)." },
@@ -55,7 +54,7 @@ const article = {
       { t: "ol", items: [
         "**Zoek uw bedrijf** – voer uw bedrijfsnaam in en kies uw Google-profiel.",
         "Kies **„Losse reviews verwijderen”** – wij laden automatisch uw nieuwste Google-reviews.",
-        "**Filter** op 1–3 sterren (of toon alle) en **vink aan** welke reviews weg moeten. Bij elke review ziet u de leeftijd en de slagingskans.",
+        "**Filter** op 1–3 sterren (of toon alle) en **vink aan** welke reviews weg moeten. Bij elke review ziet u de leeftijd en de slagingskans; beoordelingen met alleen sterren en geen tekst staan grijs en zijn niet te selecteren.",
         "De **prijsbalk** toont steeds uw totaalbedrag – inclusief de volgende kortingstrap („Nog één voor 10 % korting!”).",
         "Controleer het overzicht en **plaats uw bestelling**. Er wordt niets vooraf afgeschreven.",
         "Wij gaan aan de slag en houden u op de hoogte. **U betaalt alleen voor reviews die echt verwijderd zijn.**",
@@ -68,7 +67,7 @@ const article = {
 
       { t: "h2", id: "vergleich", text: "Losse reviews, heel profiel, advocaat of zelf melden – vergeleken", toc: "Vergelijking" },
       { t: "table", rrCol: 1, head: ["Criterium", "Losse reviews verwijderen", "Profielverwijdering", "Advocaat", "Zelf melden"], rows: [
-        ["Wat wordt verwijderd", "Geselecteerde reviews", "Heel profiel + alle reviews", "Losse review", "Losse review"],
+        ["Wat wordt verwijderd", "Geselecteerde reviews (alleen met tekst)", "Heel profiel + alle reviews", "Losse review", "Losse review"],
         ["Goede reviews blijven", "Ja", "Nee", "Ja", "Ja"],
         ["Duur", "Dagen tot 3 weken", "Meestal 24 – 48 uur", "3 – 9 maanden", "Onzeker"],
         ["Kosten", "Vanaf € 179, alleen bij succes", "Vaste prijs, na succes", "Per review, vooraf", "Gratis"],
@@ -89,7 +88,7 @@ const article = {
       { q: "Wat kost het om een Google review te laten verwijderen?", a: "€ 179 per verwijderde review als de review tot 4 weken oud is, € 229 als hij ouder is. Vanaf 3 geaccepteerde reviews krijgt u 10 % korting, vanaf 5 15 % en vanaf 10 30 %, toegepast op elke review die verwijderd wordt. U betaalt alleen voor reviews die echt verwijderd zijn." },
       { q: "Wat gebeurt er als een review niet verwijderd kan worden?", a: "Dan betaalt u voor die review niets. Er is geen vooruitbetaling en geen vergoeding voor pogingen." },
       { q: "Kunnen reviews ouder dan 4 weken verwijderd worden?", a: "Ja. De slagingskans is lager (ca. 50 % in plaats van ca. 90 %) en de prijs ligt € 50 hoger per review. Daarom loont het om snel te handelen bij verse nepreviews." },
-      { q: "Kunnen 1-sterreviews zonder tekst verwijderd worden?", a: "Ja, die kunt u net als elke andere review selecteren. Woordeloze beoordelingen zonder herkenbaar klantcontact hebben vaak goede kansen." },
+      { q: "Kunnen 1-sterreviews zonder tekst verwijderd worden?", a: "Niet via onze dienst. De verwijdering van losse reviews dekt alleen reviews met tekst – zonder tekst is er geen inhoud waarop het beleid van Google kan worden toegepast –, daarom staan beoordelingen met alleen sterren in het bestelformulier grijs en kunt u ze niet selecteren. Hebben veel van zulke beoordelingen uw profiel beschadigd, dan blijft profielverwijdering een optie; zelf rapporteren bij Google kan, maar lukt zelden." },
       { q: "Komt de schrijver te weten dat ik het was?", a: "Nee. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
       { q: "Moet ik mijn hele profiel verwijderen?", a: "Nee. Bij het verwijderen van losse reviews blijven uw profiel en al uw goede reviews staan. Het [hele profiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/) is alleen zinvol als het over de hele linie beschadigd is." },
       { q: "Hoeveel reviews kan ik tegelijk bestellen?", a: "Zoveel u wilt. De staffelkorting stijgt bij 3, 5 en 10 reviews die we na de gratis beoordeling accepteren, en wordt automatisch toegepast." },

@@ -59,7 +59,7 @@ const article = {
       "**Compatible SEO :** votre site et votre classement sont préservés",
       "**Nouveau départ en option :** après la suppression, une fiche neuve et propre peut être créée",
     ] },
-    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Si vous voulez seulement supprimer un avis et conserver votre fiche, vous avez trois options : le signalement, la voie de l'avocat – ou la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/) : 179 € par avis réellement supprimé, rien d'avance. Avis de 4 semaines maximum : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis." },
+    { t: "warn", title: "Important", text: "Cette voie supprime la **fiche complète**, pas un avis isolé. Si vous voulez seulement supprimer un avis et conserver votre fiche, vous avez trois options : le signalement, la voie de l'avocat – ou la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/) pour les avis comportant du texte : 179 € par avis réellement supprimé, rien d'avance. Avis de 4 semaines maximum : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis." },
 
     { t: "h2", id: "kosten", text: "Combien coûte la suppression d'un avis Google ?", toc: "Combien ça coûte" },
     { t: "p", text: "Les prix varient fortement selon le type de prestataire :" },
@@ -84,7 +84,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Oui : [supprimer un avis Google](/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès. Avis de 4 semaines maximum : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis. Les avis sans texte peuvent aussi être sélectionnés, et dès 3 avis une remise sur quantité s'applique (−10 %, dès 5 −15 %, dès 10 −30 %). Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
+    { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Oui : [supprimer un avis Google](/fr/supprimer-un-avis/) – 179 € par avis supprimé, payé uniquement en cas de succès. Avis de 4 semaines maximum : env. 90 % de réussite ; plus anciens : env. 50 %, +50 € par avis. Seuls les avis comportant du texte peuvent être sélectionnés – les notes sans texte ne peuvent pas être supprimées par ce service. Dès 3 avis, une remise sur quantité s'applique (−10 %, dès 5 −15 %, dès 10 −30 %). Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
     { q: "Puis-je supprimer moi-même un avis Google ?", a: "En tant qu'entreprise, vous pouvez seulement signaler un avis tiers, pas le supprimer vous-même. Que Google le retire dépend de l'entreprise – souvent par la négative. Vos propres avis, vous pouvez les supprimer à tout moment." },
     { q: "Combien de temps prend la suppression d'un avis Google ?", a: "Via la fonction de signalement, de quelques jours à quelques semaines avec une issue incertaine ; via un avocat, souvent plusieurs mois ; via une suppression technique, généralement 24 à 48 heures." },
     { q: "Combien coûte la suppression d'un avis Google négatif ?", a: "Selon la méthode, entre environ 20 € (services bon marché, incertains) et 159 € par avis (avocat). Avec RapidRemove, un avis isolé coûte 179 € (229 € s'il a plus de 4 semaines), la suppression de toute la fiche un prix fixe – dans les deux cas, vous ne payez qu'après une suppression réussie." },

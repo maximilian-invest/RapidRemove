@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "o-que-e", text: "O que é a extorsão com avaliações Google?", toc: "O que é" },
     { t: "p", text: "Há extorsão com avaliações quando alguém enche o seu Perfil da Empresa no Google de avaliações negativas e depois exige dinheiro, cartões-oferta ou serviços gratuitos para as retirar. As avaliações são a ameaça; a mensagem que se segue é o pedido de resgate." },
     { t: "p", text: "Quem as publica quase nunca é cliente real. Normalmente são contas novas ou compradas, geridas por grupos organizados que atacam muitas empresas ao mesmo tempo: restaurantes, clínicas dentárias, hotéis, obras e reparações, agências. A Google considera isto uma violação clara das suas regras e, por isso, criou um [formulário específico para denunciar extorsão com avaliações](https://support.google.com/business/answer/16404809)." },
-    { t: "p", text: "Se quer apenas que as avaliações desapareçam sem tratar do processo, o nosso [serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/) trata disso através dos procedimentos oficiais da Google, e só paga as avaliações efetivamente removidas." },
+    { t: "p", text: "Se quer que as avaliações **com texto** desapareçam sem tratar do processo, o nosso [serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/) trata disso através dos procedimentos oficiais da Google, e só paga as avaliações efetivamente removidas. As classificações só com estrelas, sem texto, não podem ser removidas através do nosso serviço; para essas, o caminho é o formulário de extorsão da Google, que o proprietário do perfil apresenta." },
 
     { t: "h2", id: "como-funciona", text: "Como funciona o esquema", toc: "Como funciona" },
     { t: "p", text: "Quase todos os casos seguem o mesmo guião. Conhecê-lo ajuda a manter a calma: nada do que o extorsionário faz é pessoal ou aleatório." },
@@ -31,7 +31,7 @@ const article = {
     { t: "h2", id: "sinais", text: "Sinais de que está a ser alvo", toc: "Sinais de alerta" },
     { t: "p", text: "O sinal mais claro é o momento: várias classificações baixas em pouco tempo, seguidas de uma mensagem que as menciona. Outros indícios típicos:" },
     { t: "ul", items: [
-      "Várias **avaliações de 1 estrela sem texto** ([porque é que muitas vezes podem ser removidas](/pt/revista/remover-avaliacao-1-estrela-sem-texto/)).",
+      "Várias **avaliações de 1 estrela sem texto** ([o que pode fazer contra elas](/pt/revista/remover-avaliacao-1-estrela-sem-texto/)).",
       "Nomes que não correspondem a **nenhuma reserva, encomenda ou visita**.",
       "Perfis **sem outras avaliações**, ou com avaliações espalhadas por cidades e países sem relação.",
       "Várias avaliações publicadas **quase ao mesmo tempo**, por vezes com frases parecidas.",
@@ -73,16 +73,17 @@ const article = {
     { t: "p", text: "Há dois fatores a seu favor: as avaliações são **recentes** e o padrão é **evidente**. Avaliações com até quatro semanas têm muito mais hipóteses de remoção do que as antigas, por isso aja nos primeiros dias. Se a Google rejeitar uma denúncia, use o único recurso por avaliação na ferramenta de gestão. Prazos e recursos em detalhe: [quanto tempo a Google demora a remover uma avaliação](/pt/revista/quanto-tempo-google-remover-avaliacao/)." },
 
     { t: "h2", id: "rapidremove", text: "Como a RapidRemove ajuda perante uma vaga de extorsão", toc: "Como ajudamos" },
-    { t: "p", text: "Envie-nos as avaliações e tratamos da remoção através dos procedimentos oficiais da Google, em seu nome. Não precisa de discutir com o suporte da Google, insistir em denúncias nem acompanhar cada caso." },
+    { t: "p", text: "Envie-nos as avaliações **com texto** e tratamos da remoção através dos procedimentos oficiais da Google, em seu nome. Não precisa de discutir com o suporte da Google, insistir em denúncias nem acompanhar cada caso." },
     { t: "ul", items: [
       "**Primeiro, uma análise gratuita:** dizemos-lhe com honestidade que avaliações têm boas hipóteses.",
+      "**Só avaliações com texto:** as classificações só com estrelas, sem texto, típicas de uma vaga, não podem ser removidas através do nosso serviço nem selecionadas no formulário. Essas denuncia através do [formulário da Google para extorsão com avaliações](https://support.google.com/business/answer/16404809), que o proprietário do perfil apresenta, e denuncia também cada uma individualmente.",
       "**Só paga se resultar:** 179 € por avaliação removida (até 4 semanas), 229 € se for mais antiga. Nada adiantado, nada pelas tentativas.",
-      "**Desconto por volume:** uma vaga de extorsão costuma ter muitas avaliações. Sobre as que aceitamos: 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemplo: 10 avaliações de extorsão recentes custam 1.790 €, menos 30 % = **1.253 €**, e só pelas que são efetivamente removidas.",
+      "**Desconto por volume:** uma vaga de extorsão costuma ter muitas avaliações. Sobre as que aceitamos: 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemplo: 10 avaliações de extorsão recentes com texto custam 1.790 €, menos 30 % = **1.253 €**, e só pelas que são efetivamente removidas.",
       "**Boas hipóteses:** avaliações recentes têm cerca de **90 % de probabilidade de sucesso**, e as de extorsão estão entre as que a Google remove com mais fiabilidade.",
       "**Normalmente poucos dias**, por vezes até três semanas. As avaliações podem sair em alturas diferentes, por isso pode pagar avaliação a avaliação.",
       "**Só métodos limpos:** sem contas falsas, sem bots, sem falsas notificações legais. Os autores não sabem quem pediu a remoção.",
     ] },
-    { t: "cta", title: "Está a ser extorquido? Envie-nos as avaliações", text: "Pesquise a sua empresa, marque as avaliações de extorsão ou cole os links – e veja de imediato o preço. **179 € por avaliação removida**, nada adiantado.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Pagamento por avaliação removida", "Primeiro uma opinião honesta"] },
+    { t: "cta", title: "Está a ser extorquido? Envie-nos as avaliações", text: "Pesquise a sua empresa, marque as avaliações de extorsão com texto ou cole os links – e veja de imediato o preço. **179 € por avaliação removida**, nada adiantado.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Pagamento por avaliação removida", "Primeiro uma opinião honesta"] },
     { t: "p", text: "Preços, descontos e todo o processo estão explicados na nossa página para [remover uma avaliação do Google](/pt/remover-uma-avaliacao/)." },
 
     { t: "h2", id: "proteger", text: "Como proteger o perfil depois", toc: "Proteger o perfil" },
@@ -102,7 +103,7 @@ const article = {
     { q: "Posso apresentar queixa à polícia?", a: "Sim. Exigir dinheiro sob ameaça é crime na maioria dos países. Leve capturas das mensagens, os links das avaliações e uma cronologia; o número de processo também reforça a denúncia à Google." },
     { q: "E se voltarem com mais avaliações?", a: "Não responda, junte as novas mensagens e avaliações às provas e denuncie-as da mesma forma. As avaliações recentes são as mais fáceis de remover, por isso aja em poucos dias." },
     { q: "Posso apagar eu mesmo as avaliações?", a: "Não. Os proprietários não podem apagar avaliações do Google; só quem a escreveu pode apagar a sua. Pode denunciá-las, responder publicamente ou pedir a remoção através dos procedimentos da Google." },
-    { q: "Quanto custa remover avaliações de extorsão?", a: "Com a RapidRemove, **179 € por avaliação removida** com até 4 semanas e 229 € se for mais antiga, com desconto por volume até 30 % a partir de 10 avaliações. Não paga nada pelas que ficam." },
+    { q: "Quanto custa remover avaliações de extorsão?", a: "Com a RapidRemove, **179 € por avaliação removida** com até 4 semanas e 229 € se for mais antiga, com desconto por volume até 30 % a partir de 10 avaliações. Não paga nada pelas que ficam. Isto aplica-se a avaliações com texto; as classificações só com estrelas, sem texto, não removemos – essas denuncia através do formulário de extorsão da Google." },
     { q: "O extorsionário vai saber que pedi a remoção?", a: "Por nós, não. O autor da avaliação não é informado de quem pediu a remoção." },
   ],
   related: [

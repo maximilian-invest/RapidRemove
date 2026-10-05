@@ -22,7 +22,7 @@ const article = {
       "Svarer du ikke eller sier nei, kommer det noen ganger en **trussel**: «Ellers kommer det flere.»",
       "Betaler du, blir du sjelden kvitt problemet – du har jo vist at du er en som betaler.",
     ] },
-    { t: "p", text: "Google kjenner mønsteret godt og har laget et [eget skjema for utpressing med anmeldelser](https://support.google.com/business/answer/16404809). Googles råd er det samme som vårt: **ikke betal, ikke svar, dokumenter alt og meld det.** Vil du slippe å gjøre det selv, kan du la oss [fjerne Google-anmeldelsene for deg](/no/fjern-omtale/) – du betaler kun for anmeldelser som faktisk forsvinner." },
+    { t: "p", text: "Google kjenner mønsteret godt og har laget et [eget skjema for utpressing med anmeldelser](https://support.google.com/business/answer/16404809). Googles råd er det samme som vårt: **ikke betal, ikke svar, dokumenter alt og meld det.** Utpressingen melder du som eier via Googles skjema. Anmeldelser i bølgen som **inneholder tekst**, kan du la oss [fjerne for deg](/no/fjern-omtale/) – du betaler kun for anmeldelser som faktisk forsvinner. Rene stjernevurderinger uten tekst kan vi ikke fjerne." },
 
     { t: "h2", id: "varselsignaler", text: "Varselsignaler: slik kjenner du igjen en utpressingsbølge", toc: "Varselsignaler" },
     { t: "p", text: "En utpressingsbølge kjenner du igjen på mønsteret, ikke på én enkelt anmeldelse. En ekte misfornøyd kunde skriver som regel hva som gikk galt – det har en utpresser ingen interesse av." },
@@ -34,7 +34,7 @@ const article = {
       "**Tidspress**: «Betal innen 24 timer, ellers kommer det 20 til.»",
       "Noen tilbyr seg som **«omdømmebyrå»** som kan få anmeldelsene til å forsvinne – selv om du aldri har bedt om hjelp.",
     ] },
-    { t: "tip", title: "Én enkelt 1-stjerners anmeldelse uten melding?", text: "Ikke alle ordløse 1-stjerners anmeldelser er utpressing. Men de kan ofte fjernes likevel – les [hvordan du fjerner en 1-stjerners anmeldelse uten tekst](/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/)." },
+    { t: "tip", title: "Én enkelt 1-stjerners anmeldelse uten melding?", text: "Ikke alle ordløse 1-stjerners anmeldelser er utpressing. Uten tekst kan de ikke fjernes via vår tjeneste for enkeltanmeldelser; du kan rapportere dem til Google selv, men det lykkes sjelden. Les mer om [1-stjerners anmeldelser uten tekst](/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/)." },
 
     { t: "h2", id: "med-en-gang", text: "Dette gjør du med en gang – og dette lar du være", toc: "Gjør med en gang" },
     { t: "p", text: "De første timene avgjør hvor sterk rapporten din blir. **Ikke betal, ikke forhandle og dokumenter alt** – i den rekkefølgen." },
@@ -69,25 +69,25 @@ const article = {
 
     { t: "h2", id: "hvor-raskt", text: "Hvor raskt forsvinner utpressingsanmeldelser?", toc: "Hvor raskt?" },
     { t: "p", text: "Det varierer: noen ganger i løpet av få dager, andre ganger tar det uker. Google lover **ingen fast tidsramme** – rapporterte anmeldelser blir vurdert av automatiske systemer og av mennesker, og behandlingstiden varierer." },
-    { t: "p", text: "Det som taler for deg: utpressingsanmeldelser er nesten alltid **ferske**, og et tydelig mønster (bølge + krav om penger) er et sterkt argument. For anmeldelser opptil fire uker gamle ligger suksessraten vår på **ca. 90 %**. Gjennom oss tar det som regel **noen få dager, noen ganger opptil tre uker** – og anmeldelsene i en bølge kan forsvinne til ulike tider. Mer om behandlingstid og klage kan du lese i [hvor lang tid Google bruker på å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
+    { t: "p", text: "Det som taler for deg: utpressingsanmeldelser er nesten alltid **ferske**, og et tydelig mønster (bølge + krav om penger) er et sterkt argument. For anmeldelser med tekst opptil fire uker gamle ligger suksessraten vår på **ca. 90 %**. Gjennom oss tar det som regel **noen få dager, noen ganger opptil tre uker** – og anmeldelsene i en bølge kan forsvinne til ulike tider. Mer om behandlingstid og klage kan du lese i [hvor lang tid Google bruker på å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
     { t: "tip", title: "Det lønner seg å være rask", text: "Etter fire uker synker sjansen til ca. 50 %. Ikke vent på at utpresserne skal «gi seg av seg selv» – meld fra og få anmeldelsene fjernet mens de er ferske." },
 
     { t: "h2", id: "rapidremove", text: "Slik hjelper RapidRemove ved utpressing med anmeldelser", toc: "Slik hjelper vi" },
-    { t: "p", text: "Vi tar oss av fjerningen for deg – utelukkende via **Googles egne prosedyrer**, på vegne av deg som eier. Utpressingsanmeldelser hører til dem Google **fjerner mest pålitelig**, fordi de så tydelig bryter reglene. Med vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) betaler du **kun for anmeldelser som faktisk er borte**." },
+    { t: "p", text: "Vi tar oss av fjerningen for deg – utelukkende via **Googles egne prosedyrer**, på vegne av deg som eier. Utpressingsanmeldelser hører til dem Google **fjerner mest pålitelig**, fordi de så tydelig bryter reglene. Med vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) betaler du **kun for anmeldelser som faktisk er borte**. Viktig: tjenesten gjelder bare anmeldelser **med tekst**. Rene stjernevurderinger uten tekst – som ofte utgjør en stor del av en utpressingsbølge – kan ikke velges i bestillingsskjemaet. Dem dekker utpressingsrapporten via Googles skjema, som du som eier sender inn selv." },
     { t: "table", rrCol: 1, head: ["", "RapidRemove", "Betale utpresseren"], rows: [
       ["Pris", "**179 € per fjernet anmeldelse** (eldre enn 4 uker: 229 €)", "Det utpresseren krever – uten garanti"],
       ["Hvis ingenting skjer", "Du betaler ingenting", "Pengene er tapt"],
       ["Risiko for ny bølge", "Ingen signal om at du betaler", "Høy: du er en som betaler"],
       ["Metode", "Kun Googles egne prosedyrer", "Ukjent"],
     ] },
-    { t: "p", text: "Ved en bølge gjelder **mengderabatt** på alle anmeldelser vi aksepterer etter den gratis vurderingen: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Eksempel:** 10 ferske utpressingsanmeldelser koster 1 790 €, minus 30 % = **1 253 €** – og kun for de anmeldelsene som faktisk blir fjernet." },
+    { t: "p", text: "Ved en bølge gjelder **mengderabatt** på alle anmeldelser vi aksepterer etter den gratis vurderingen: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Eksempel:** 10 ferske utpressingsanmeldelser med tekst koster 1 790 €, minus 30 % = **1 253 €** – og kun for de anmeldelsene som faktisk blir fjernet." },
     { t: "ul", items: [
-      "**Send oss anmeldelsene:** søk opp bedriften din i veiviseren vår, kryss av for anmeldelsene fra bølgen eller lim inn lenkene. Det tar omtrent to minutter.",
+      "**Send oss anmeldelsene:** søk opp bedriften din i veiviseren vår, kryss av for anmeldelsene med tekst fra bølgen eller lim inn lenkene. Det tar omtrent to minutter.",
       "**Gratis vurdering først:** vi sier ærlig hvilke anmeldelser som har en sjanse. Ser vi ingen sjanse, koster det ingenting.",
       "**Diskret:** anmelderen får ikke vite hvem som ba om fjerningen. Ingen falske kontoer, ingen roboter, ingen falske juridiske brev.",
       "**Betal per anmeldelse:** anmeldelsene kan forsvinne til ulike tider; du kan betale per fjernet anmeldelse via betalingslenke, eller etter avtale med PayPal eller bankoverføring.",
     ] },
-    { t: "cta", title: "Få fjernet utpressingsanmeldelser", text: "Kryss av for anmeldelsene fra bølgen og se prisen med en gang. **179 € per fjernet anmeldelse**, ingenting på forskudd – og ingenting hvis en anmeldelse blir stående.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Gratis vurdering først"] },
+    { t: "cta", title: "Få fjernet utpressingsanmeldelser", text: "Kryss av for anmeldelsene med tekst fra bølgen og se prisen med en gang. **179 € per fjernet anmeldelse**, ingenting på forskudd – og ingenting hvis en anmeldelse blir stående.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Gratis vurdering først"] },
 
     { t: "h2", id: "beskytt", text: "Slik beskytter du profilen etterpå", toc: "Beskytt profilen" },
     { t: "p", text: "Utpressere kommer noen ganger tilbake – særlig hvis de ser at du reagerer. Med noen faste rutiner oppdager du en ny bølge med en gang og har rapporten klar raskere." },
@@ -103,12 +103,12 @@ const article = {
   ],
   faq: [
     { q: "Bør jeg betale for å få anmeldelsene fjernet?", a: "Nei. Betaling stopper sjelden utpressingen – ofte kommer det et nytt krav, eller anmeldelsene blir stående. **Ikke betal, ikke forhandle**, dokumenter alt og meld fra til Google." },
-    { q: "Fjerner Google alle utpressingsanmeldelser?", a: "Det finnes ingen garanti, men utpressingsanmeldelser hører til dem Google fjerner mest pålitelig. For anmeldelser opptil 4 uker gamle ligger suksessraten vår på **ca. 90 %**, og du betaler kun for anmeldelser som faktisk blir fjernet." },
+    { q: "Fjerner Google alle utpressingsanmeldelser?", a: "Det finnes ingen garanti, men utpressingsanmeldelser hører til dem Google fjerner mest pålitelig. For anmeldelser med tekst opptil 4 uker gamle ligger suksessraten vår på **ca. 90 %**, og du betaler kun for anmeldelser som faktisk blir fjernet. Rene stjernevurderinger uten tekst kan vi ikke fjerne – dem melder du via Googles utpressingsskjema." },
     { q: "Bør jeg anmelde det til politiet?", a: "Ja, det anbefales: utpressing er et lovbrudd, også via anmeldelser. Ta med skjermbilder, lenker og en tidslinje. Googles skjema krever ikke politianmeldelse." },
     { q: "Hva gjør jeg hvis utpresserne kommer tilbake med nye anmeldelser?", a: "Gjenta de samme stegene: ikke svar, dokumenter, meld fra via utpressingsskjemaet og rapporter hver anmeldelse for seg. Vis til den forrige bølgen og bevismappen din." },
     { q: "Hvor lang tid tar det før anmeldelsene er borte?", a: "Google lover ingen fast tid; det kan ta fra dager til uker. Gjennom RapidRemove tar det som regel **noen få dager, noen ganger opptil tre uker**, og de enkelte anmeldelsene kan forsvinne til ulike tider." },
     { q: "Bør jeg svare på anmeldelsene?", a: "Det er ikke et krav. Hvis du svarer, hold det kort og nøytralt – for eksempel at du ikke kan knytte anmeldelsen til noe kundebesøk og har rapportert den til Google. Svar aldri på selve utpressingsmeldingen." },
-    { q: "Hva koster det å fjerne utpressingsanmeldelser?", a: "**179 € per fjernet anmeldelse** (eldre enn 4 uker 229 €), med mengderabatt fra 3 anmeldelser −10 %, fra 5 −15 % og fra 10 −30 %. Ingenting på forskudd." },
+    { q: "Hva koster det å fjerne utpressingsanmeldelser?", a: "**179 € per fjernet anmeldelse** (eldre enn 4 uker 229 €; bare anmeldelser med tekst), med mengderabatt fra 3 anmeldelser −10 %, fra 5 −15 % og fra 10 −30 %. Ingenting på forskudd." },
   ],
   related: [
     { label: "Fjern en Google-anmeldelse: pris, sjanse og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },

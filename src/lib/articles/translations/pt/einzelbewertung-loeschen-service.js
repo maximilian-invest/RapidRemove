@@ -29,10 +29,9 @@ const article = {
         "**Avaliações falsas** e ataques de concorrentes ([como reconhecer avaliações falsas](/pt/revista/remover-avaliacoes-falsas-google/))",
         "Avaliações de pessoas que **nunca foram clientes**",
         "**Insultos**, ataques pessoais e **afirmações de facto falsas**",
-        "**Avaliações de 1 estrela sem texto** e sem qualquer contacto de cliente reconhecível ([contexto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/))",
         "Conteúdo fora do tema, spam ou avaliações destinadas a **outra empresa**",
       ] },
-      { t: "warn", title: "O que não prometemos", text: "Críticas honestas e objetivas de clientes reais estão normalmente protegidas – e ninguém pode garantir a sério a remoção de qualquer avaliação. É precisamente por isso que **só paga quando uma avaliação desaparece de facto**." },
+      { t: "warn", title: "O que não prometemos", text: "Críticas honestas e objetivas de clientes reais estão normalmente protegidas – e ninguém pode garantir a sério a remoção de qualquer avaliação. É precisamente por isso que **só paga quando uma avaliação desaparece de facto**. Também **não removemos classificações só com estrelas, sem texto**: sem texto não há conteúdo a que se possam aplicar as políticas do Google, e no formulário de encomenda aparecem a cinzento («Sem texto – não removível») ([contexto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/))." },
 
       { t: "h2", id: "preis", text: "Quanto custa remover uma avaliação do Google", toc: "Preço" },
       { t: "p", text: "O preço depende sobretudo de uma coisa: **a idade da avaliação**. Avaliações recentes são muito mais fáceis de remover do que avaliações que estão online há meses. A comparação com advogados e outros prestadores está em [quanto custa remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/)." },
@@ -55,7 +54,7 @@ const article = {
       { t: "ol", items: [
         "**Pesquise a sua empresa** – introduza o nome da empresa e selecione o seu perfil do Google.",
         "Escolha **«Eliminar avaliações individuais»** – carregamos automaticamente as suas avaliações Google mais recentes.",
-        "**Filtre** por 1–3 estrelas (ou mostre todas) e **marque** as avaliações que devem sair. Cada avaliação mostra a sua idade e a probabilidade de sucesso.",
+        "**Filtre** por 1–3 estrelas (ou mostre todas) e **marque** as avaliações que devem sair. Cada avaliação mostra a sua idade e a probabilidade de sucesso; as classificações só com estrelas, sem texto, aparecem a cinzento e não podem ser selecionadas.",
         "A **barra de preço** mostra sempre o total – incluindo o próximo nível de desconto («Mais uma para 10 % de desconto!»).",
         "Confira o resumo e **faça a encomenda**. Nada é cobrado adiantado.",
         "Tratamos da remoção e mantemo-lo informado. **Só paga pelas avaliações realmente removidas.**",
@@ -68,7 +67,7 @@ const article = {
 
       { t: "h2", id: "vergleich", text: "Avaliações individuais, perfil completo, advogado ou por conta própria – comparação", toc: "Comparação" },
       { t: "table", rrCol: 1, head: ["Critério", "Remoção de avaliações individuais", "Remoção do perfil", "Advogado", "Denunciar por si mesmo"], rows: [
-        ["O que é removido", "Avaliações selecionadas", "Perfil inteiro + todas as avaliações", "Avaliação isolada", "Avaliação isolada"],
+        ["O que é removido", "Avaliações selecionadas (só com texto)", "Perfil inteiro + todas as avaliações", "Avaliação isolada", "Avaliação isolada"],
         ["As avaliações boas mantêm-se", "Sim", "Não", "Sim", "Sim"],
         ["Duração", "Dias a 3 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incerta"],
         ["Custo", "Desde 179 €, só se for removida", "Preço fixo, após sucesso", "Por avaliação, adiantado", "Gratuito"],
@@ -89,7 +88,7 @@ const article = {
       { q: "Quanto custa remover uma avaliação do Google?", a: "179 € por avaliação removida se a avaliação tiver até 4 semanas, 229 € se for mais antiga. A partir de 3 avaliações aceites tem 10 % de desconto, a partir de 5 15 % e a partir de 10 30 %, aplicado a cada avaliação removida. Só paga pelas avaliações realmente removidas." },
       { q: "O que acontece se uma avaliação não puder ser removida?", a: "Nesse caso não paga nada por essa avaliação. Não há pagamento adiantado nem taxa por tentativas." },
       { q: "É possível remover avaliações com mais de 4 semanas?", a: "Sim. A probabilidade de sucesso é menor (aprox. 50 % em vez de aprox. 90 %) e o preço é 50 € mais alto por avaliação. Por isso compensa agir depressa perante avaliações falsas recentes." },
-      { q: "É possível remover avaliações de 1 estrela sem texto?", a: "Sim, pode selecioná-las como qualquer outra avaliação. Classificações sem palavras e sem contacto de cliente reconhecível têm muitas vezes boas probabilidades." },
+      { q: "É possível remover avaliações de 1 estrela sem texto?", a: "Não através do nosso serviço. A remoção de avaliações individuais só cobre avaliações com texto – sem texto não há conteúdo a que se possam aplicar as políticas do Google –, por isso no formulário de encomenda as classificações só com estrelas aparecem a cinzento e não podem ser selecionadas. Se muitas delas danificaram o perfil, a [remoção do perfil completo](/pt/revista/eliminar-perfil-empresa-google/) continua a ser uma opção; denunciá-las por si mesmo ao Google é possível, mas raramente resulta." },
       { q: "O autor da avaliação vai saber que fui eu?", a: "Não. O autor da avaliação não fica a saber quem pediu a remoção." },
       { q: "Tenho de eliminar o meu perfil inteiro?", a: "Não. Com a remoção de avaliações individuais, o seu perfil e todas as avaliações boas mantêm-se. Remover o [perfil completo](/pt/revista/eliminar-perfil-empresa-google/) só faz sentido se estiver danificado em toda a linha." },
       { q: "Quantas avaliações posso encomendar de uma vez?", a: "Tantas quantas quiser. O desconto por quantidade aumenta a partir de 3, 5 e 10 avaliações aceites após a análise gratuita e é aplicado automaticamente." },

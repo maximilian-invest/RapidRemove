@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Qué hacer con esto", toc: "Qué hacer" },
     { t: "ul", items: [
       "**Mantener la media por encima de 4,0** — solicitar activamente buenas reseñas, en lugar de solo reaccionar a las malas.",
-      "**Eliminar los casos atípicos injustos:** Las reseñas falsas y las de 1 estrella ilegales arrastran la media de forma desproporcionada. Consulta cómo en [Eliminar reseña falsa de Google](/es/revista/eliminar-resenas-falsas-de-google/) y [Eliminar reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/). Si son solo unas pocas, puedes [eliminar esas reseñas concretas](/es/eliminar-una-resena/) y conservar el resto del perfil.",
+      "**Eliminar los casos atípicos injustos:** Las reseñas falsas y las de 1 estrella ilegales arrastran la media de forma desproporcionada. Consulta cómo en [Eliminar reseña falsa de Google](/es/revista/eliminar-resenas-falsas-de-google/) y [Eliminar reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/). Si son solo unas pocas reseñas con texto, puedes [eliminar esas reseñas concretas](/es/eliminar-una-resena/) y conservar el resto del perfil.",
       "**Si el perfil está fundamentalmente dañado**, un nuevo comienzo limpio mediante la [eliminación del perfil](/es/revista/eliminar-perfil-de-empresa-google/) puede tener más sentido que luchar estrella a estrella.",
     ] },
 

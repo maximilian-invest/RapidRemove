@@ -29,9 +29,9 @@ const article = {
         "**Faux avis** et attaques de concurrents ([comment repérer un faux avis](/fr/magazine/supprimer-faux-avis-google/))",
         "Avis de personnes qui n'ont **jamais été clientes**",
         "**Insultes**, attaques personnelles et **affirmations factuellement fausses**",
-        "**Notes 1 étoile sans texte** et sans contact client identifiable ([explications](/fr/magazine/supprimer-avis-1-etoile-sans-texte/))",
         "Contenus hors sujet, spam ou avis destinés à **une autre entreprise**",
       ] },
+      { t: "p", text: "**Important : uniquement les avis comportant du texte.** Notre suppression d'avis isolés ne couvre que les avis qui contiennent un texte. Les **notes en étoiles sans texte** ne peuvent pas être supprimées par ce service – il n'y a aucun contenu auquel appliquer les règles de Google – et elles ne peuvent pas être sélectionnées dans le formulaire de commande ([ce que vous pouvez faire contre un avis 1 étoile sans texte](/fr/magazine/supprimer-avis-1-etoile-sans-texte/))." },
       { t: "warn", title: "Ce que nous ne promettons pas", text: "Une critique honnête et factuelle de vrais clients est généralement protégée – et personne ne peut sérieusement garantir la suppression de chaque avis. C'est précisément pour cela que vous **ne payez que lorsqu'un avis a réellement disparu**." },
 
       { t: "h2", id: "preis", text: "Combien coûte la suppression d'un avis Google ?", toc: "Prix" },
@@ -55,7 +55,7 @@ const article = {
       { t: "ol", items: [
         "**Recherchez votre entreprise** – saisissez son nom et sélectionnez votre fiche Google.",
         "Choisissez **« Supprimer des avis isolés »** – nous chargeons automatiquement vos derniers avis Google.",
-        "**Filtrez** sur 1–3 étoiles (ou affichez tout) et **cochez** les avis à supprimer. Chaque avis indique son âge et ses chances de réussite.",
+        "**Filtrez** sur 1–3 étoiles (ou affichez tout) et **cochez** les avis à supprimer. Chaque avis indique son âge et ses chances de réussite. Les notes sans texte apparaissent grisées (« Pas de texte – suppression impossible ») et ne peuvent pas être sélectionnées.",
         "La **barre de prix** affiche votre total à tout moment – y compris le prochain palier de remise (« Encore un pour 10 % de remise ! »).",
         "Vérifiez le récapitulatif et **passez commande**. Rien n'est débité d'avance.",
         "Nous nous occupons de la suppression et vous tenons informé. **Vous ne payez que les avis réellement supprimés.**",
@@ -89,7 +89,7 @@ const article = {
       { q: "Combien coûte la suppression d'un avis Google ?", a: "179 € par avis supprimé si l'avis date de 4 semaines maximum, 229 € s'il est plus ancien. Dès 3 avis acceptés, vous bénéficiez de 10 % de remise, dès 5 de 15 % et dès 10 de 30 %, appliqués à chaque avis supprimé. Vous ne payez que les avis réellement supprimés." },
       { q: "Que se passe-t-il si un avis ne peut pas être supprimé ?", a: "Vous ne payez rien pour cet avis. Il n'y a ni paiement d'avance ni frais pour les tentatives." },
       { q: "Peut-on supprimer des avis de plus de 4 semaines ?", a: "Oui. Les chances de réussite sont plus faibles (env. 50 % au lieu d'env. 90 %) et le prix est de 50 € plus élevé par avis. C'est pourquoi il vaut la peine d'agir vite face à un faux avis récent." },
-      { q: "Peut-on supprimer des avis 1 étoile sans texte ?", a: "Oui, vous pouvez les sélectionner comme n'importe quel autre avis. Les notes sans texte et sans contact client identifiable ont souvent de bonnes chances." },
+      { q: "Peut-on supprimer des avis 1 étoile sans texte ?", a: "Pas via notre suppression d'avis isolés : elle ne couvre que les avis comportant du texte, et les notes sans texte ne peuvent pas être sélectionnées dans le formulaire de commande. Vous pouvez signaler vous-même une telle note à Google, mais cela aboutit rarement. Si votre fiche est abîmée par de nombreuses notes sans texte, la [suppression de la fiche complète](/fr/magazine/supprimer-profil-etablissement-google/) reste une option." },
       { q: "L'auteur de l'avis saura-t-il que c'est moi ?", a: "Non. L'auteur n'apprend pas qui a demandé la suppression." },
       { q: "Dois-je supprimer toute ma fiche ?", a: "Non. Avec la suppression d'avis isolés, votre fiche et tous vos bons avis restent en ligne. Supprimer la [fiche complète](/fr/magazine/supprimer-profil-etablissement-google/) n'a de sens que si elle est abîmée de toutes parts." },
       { q: "Combien d'avis puis-je commander en une fois ?", a: "Autant que vous le souhaitez. La remise sur quantité augmente à 3, 5 et 10 avis acceptés après l'évaluation gratuite et s'applique automatiquement." },
