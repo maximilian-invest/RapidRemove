@@ -21,12 +21,12 @@ export async function verifyAdmin(token) {
 }
 
 /** Versendet eine vom Admin verfasste E-Mail (Betreff + Text) über das ops-Backend. */
-export async function sendAdminEmail({ to, subject, text, orderId, label }) {
+export async function sendAdminEmail({ to, subject, text, orderId, label, plain }) {
   if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
   const res = await fetch(OPS + "/admin/send", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token: TOKEN, to, subject, text, orderId: orderId || "", label: label || "" }),
+    body: JSON.stringify({ token: TOKEN, to, subject, text, orderId: orderId || "", label: label || "", plain: plain === true }),
   });
   if (!res.ok) {
     const t = await res.text().catch(() => "");

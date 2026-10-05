@@ -722,10 +722,13 @@ app.post("/admin/send", async (req, reply) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
   const subject = String(b.subject || "").trim() || "RapidRemove";
   const safe = escapeHtml(String(b.text || "")).replace(/\n/g, "<br>");
-  const html =
-    `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px">` +
-    `<div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div>` +
-    `<div>${safe}</div></div>`;
+  // plain: persönliche Mail ohne Marken-Kopf (z. B. Presse-/Partner-Anfragen aus dem Admin).
+  const linked = safe.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" style="color:#cc6300">$1</a>');
+  const html = b.plain === true
+    ? `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:620px">${linked}</div>`
+    : `<div style="font-family:'Segoe UI',system-ui,sans-serif;font-size:15px;line-height:1.6;color:#1c1916;max-width:560px">` +
+      `<div style="font-weight:800;color:#ff8000;font-size:18px;margin-bottom:14px">RapidRemove</div>` +
+      `<div>${safe}</div></div>`;
   try {
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     const oid = clip(b.orderId, 40);

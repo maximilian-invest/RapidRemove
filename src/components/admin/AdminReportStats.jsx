@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { fetchReportStats } from "@/lib/admin-api";
+import { fetchReportStats, sendAdminEmail } from "@/lib/admin-api";
 
 /* Datenreport-Statistik: NUR Aggregate aus dem neuen System (Sterne, Bewertungs-
    anzahl, Branchen, Gründe). Grundlage für den öffentlichen Report auf
@@ -51,6 +51,52 @@ function Kpi({ label, value, sub }) {
       <div className="kt">{label}</div>
       <div className="kv">{value}</div>
       {sub ? <div className="kd" style={{ color: "var(--fg-muted)" }}>{sub}</div> : null}
+    </div>
+  );
+}
+
+/* Persönliche Mail von helpdesk@ (ohne Marken-Kopf) — für Presse- und
+   Partner-Anfragen zum Datenreport. Zwei Schritte: Senden → Bestätigen. */
+function OutreachMail({ toast }) {
+  const [f, setF] = React.useState({ to: "", subject: "", text: "" });
+  const [confirm, setConfirm] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const [sent, setSent] = React.useState([]);
+  const ok = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.to.trim()) && f.subject.trim() && f.text.trim();
+  const send = async () => {
+    setBusy(true);
+    try {
+      await sendAdminEmail({ to: f.to.trim(), subject: f.subject.trim(), text: f.text, plain: true });
+      setSent((x) => [{ to: f.to.trim(), subject: f.subject.trim(), at: new Date().toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" }) }, ...x]);
+      toast && toast("Gesendet an " + f.to.trim() + " ✓");
+      setF({ to: "", subject: "", text: "" });
+    } catch (e) { toast && toast("Fehler: " + (e.message || e)); }
+    finally { setBusy(false); setConfirm(false); }
+  };
+  return (
+    <div className="panel rs-out">
+      <div className="panel-head"><div><h2>Mail an Presse & Partner</h2><div className="ph-sub">Wird von helpdesk@rapid-remove.com gesendet (ohne Marken-Kopf); Antworten landen im helpdesk-Postfach.</div></div></div>
+      <div className="rs-body">
+        <div className="rs-out-grid">
+          <label>An<input id="rs-out-to" value={f.to} onChange={(e) => { setF({ ...f, to: e.target.value }); setConfirm(false); }} placeholder="redaktion@…" /></label>
+          <label>Betreff<input id="rs-out-subject" value={f.subject} onChange={(e) => { setF({ ...f, subject: e.target.value }); setConfirm(false); }} /></label>
+        </div>
+        <label className="rs-out-text">Text<textarea id="rs-out-text" rows={14} value={f.text} onChange={(e) => { setF({ ...f, text: e.target.value }); setConfirm(false); }} /></label>
+        <div className="rs-out-actions">
+          {confirm ? (
+            <React.Fragment>
+              <span>Wirklich an <b>{f.to.trim()}</b> senden?</span>
+              <button className="btn btn-secondary" onClick={() => setConfirm(false)} disabled={busy}>Abbrechen</button>
+              <button id="rs-out-confirm" className="btn btn-primary" onClick={send} disabled={busy}>{busy ? "Sendet …" : "Ja, senden"}</button>
+            </React.Fragment>
+          ) : (
+            <button id="rs-out-send" className="btn btn-primary" onClick={() => setConfirm(true)} disabled={!ok}>Senden</button>
+          )}
+        </div>
+        {sent.length ? (
+          <ul className="rs-out-log">{sent.map((x, i) => <li key={i}>✓ {x.at} · {x.to} · {x.subject}</li>)}</ul>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -163,6 +209,8 @@ export function ReportStatsDashboard({ toast }) {
           </div>
         </React.Fragment>
       ) : null}
+
+      <OutreachMail toast={toast} />
     </div>
   );
 }
