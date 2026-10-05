@@ -13,12 +13,15 @@ export const fmtReviewMoney = (v: number, cur: string) => {
   return cur === "usd" ? `$${v.toLocaleString("en-US", o)}` : `${v.toLocaleString("de-DE", o)} €`;
 };
 
-export function quoteReviews(items: PricedItem[], cur: string) {
+/** rateBasis: Anzahl, nach der sich der Mengenrabatt richtet (Standard: items.length).
+ *  Bei Einzelabrechnung pro Bewertung = Anzahl der beauftragten Bewertungen → der
+ *  Rabatt wird anteilig auf jede einzeln abgerechnete Bewertung verteilt. */
+export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
   const nOld = items.filter((it) => it && it.old).length;
   const subtotal = n * REVIEW_BASE + nOld * REVIEW_OLD_SURCHARGE;
-  const pct = reviewDiscountPct(n);
+  const pct = reviewDiscountPct(Math.max(n, rateBasis || 0));
   const total = Math.round((subtotal * (100 - pct)) / 100);
   let per = nOld === 0 ? fmt(REVIEW_BASE) : nOld === n ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : `${fmt(REVIEW_BASE)} / ${fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE)}`;
   if (pct) per += ` (−${pct} %)`;

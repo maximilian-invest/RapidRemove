@@ -1486,7 +1486,8 @@ function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nOld = items.filter((it) => it && it.old).length;
-  const pct = reviewDiscountPct(items.length);
+  const orderedN = (o.reviewItems && o.reviewItems.length) || items.length;
+  const pct = reviewDiscountPct(Math.max(items.length, orderedN));
   const total = Math.round((items.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link.
   const revPayMethod = o.payPref === "wise" ? "wise" : (o.paypal ? "paypal" : null);
@@ -1496,7 +1497,7 @@ function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
   const doSend = async (stage, lbl) => {
     setSending(stage);
     try {
-      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: items, stage, method: revPayMethod || undefined });
+      const r = await sendReviewsMahnung({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: cur, removedItems: items, submittedCount: orderedN, stage, method: revPayMethod || undefined });
       // Mahnung raus → Zahlungsstatus „Mahnung", Auftrag bleibt „Gelöscht".
       if (onStatus) onStatus(o, "done", true, true, { pay: "mahnung", noEvent: o.status === "done" });
       setSentMax((m) => Math.max(m, stage));
@@ -1633,7 +1634,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nOld = chosen.filter((it) => it && it.old).length;
-  const pct = reviewDiscountPct(chosen.length);
+  // Mengenrabatt nach Anzahl der BEAUFTRAGTEN Bewertungen → bei Einzelabrechnung anteilig je Bewertung.
+  const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, items.length)) : 0;
   const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);

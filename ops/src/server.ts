@@ -1236,7 +1236,8 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency);
+  // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
+  const quote = quoteReviews(removedItems, currency, submittedCount);
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -1320,7 +1321,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency);
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count));
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.

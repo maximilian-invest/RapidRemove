@@ -9,16 +9,16 @@ import { quoteReviews, fmtReviewMoney, type PricedItem } from "../reviewsPricing
 interface Labels { h: string; newL: string; oldL: string; disc: string; total: string; note: string }
 
 const L: Record<string, Labels> = {
-  en: { h: "Your prices", newL: "up to 4 weeks old", oldL: "older than 4 weeks", disc: "Volume discount", total: "Total if all are removed", note: "The volume discount depends on how many reviews are actually removed." },
-  es: { h: "Tus precios", newL: "hasta 4 semanas", oldL: "más de 4 semanas", disc: "Descuento por volumen", total: "Total si se eliminan todas", note: "El descuento por volumen depende de cuántas reseñas se eliminen realmente." },
-  fr: { h: "Tes prix", newL: "jusqu'à 4 semaines", oldL: "plus de 4 semaines", disc: "Remise sur quantité", total: "Total si tous sont supprimés", note: "La remise sur quantité dépend du nombre d'avis réellement supprimés." },
-  it: { h: "I tuoi prezzi", newL: "fino a 4 settimane", oldL: "più di 4 settimane", disc: "Sconto quantità", total: "Totale se vengono rimosse tutte", note: "Lo sconto quantità dipende da quante recensioni vengono effettivamente rimosse." },
-  nl: { h: "Prijsoverzicht", newL: "tot 4 weken oud", oldL: "ouder dan 4 weken", disc: "Volumekorting", total: "Totaal als alle reviews verwijderd worden", note: "De volumekorting hangt af van het aantal reviews dat daadwerkelijk wordt verwijderd." },
-  pt: { h: "Os teus preços", newL: "até 4 semanas", oldL: "mais de 4 semanas", disc: "Desconto de volume", total: "Total se todas forem removidas", note: "O desconto de volume depende do número de avaliações efetivamente removidas." },
-  ja: { h: "料金の内訳", newL: "投稿4週間以内", oldL: "投稿4週間超", disc: "まとめ割引", total: "すべて削除された場合の合計", note: "まとめ割引は実際に削除された件数に応じて適用されます。" },
-  sv: { h: "Dina priser", newL: "upp till 4 veckor", oldL: "äldre än 4 veckor", disc: "Mängdrabatt", total: "Totalt om alla tas bort", note: "Mängdrabatten beror på hur många omdömen som faktiskt tas bort." },
-  da: { h: "Dine priser", newL: "op til 4 uger", oldL: "ældre end 4 uger", disc: "Mængderabat", total: "I alt, hvis alle fjernes", note: "Mængderabatten afhænger af, hvor mange anmeldelser der faktisk fjernes." },
-  no: { h: "Dine priser", newL: "opptil 4 uker", oldL: "eldre enn 4 uker", disc: "Mengderabatt", total: "Totalt hvis alle fjernes", note: "Mengderabatten avhenger av hvor mange omtaler som faktisk fjernes." },
+  en: { h: "Your prices", newL: "up to 4 weeks old", oldL: "older than 4 weeks", disc: "Volume discount", total: "Total if all are removed", note: "The volume discount applies to every single review – if we bill reviews one by one, each is charged at its discounted price." },
+  es: { h: "Tus precios", newL: "hasta 4 semanas", oldL: "más de 4 semanas", disc: "Descuento por volumen", total: "Total si se eliminan todas", note: "El descuento por volumen se aplica a cada reseña: si facturamos las reseñas una por una, cada una se cobra con su precio rebajado." },
+  fr: { h: "Tes prix", newL: "jusqu'à 4 semaines", oldL: "plus de 4 semaines", disc: "Remise sur quantité", total: "Total si tous sont supprimés", note: "La remise sur quantité s'applique à chaque avis : si nous facturons les avis un par un, chacun est facturé à son prix remisé." },
+  it: { h: "I tuoi prezzi", newL: "fino a 4 settimane", oldL: "più di 4 settimane", disc: "Sconto quantità", total: "Totale se vengono rimosse tutte", note: "Lo sconto quantità vale per ogni singola recensione: se fatturiamo le recensioni una alla volta, ciascuna viene addebitata al prezzo scontato." },
+  nl: { h: "Prijsoverzicht", newL: "tot 4 weken oud", oldL: "ouder dan 4 weken", disc: "Volumekorting", total: "Totaal als alle reviews verwijderd worden", note: "De volumekorting geldt voor elke review afzonderlijk – factureren we reviews één voor één, dan wordt elke review tegen de afgeprijsde prijs berekend." },
+  pt: { h: "Os teus preços", newL: "até 4 semanas", oldL: "mais de 4 semanas", disc: "Desconto de volume", total: "Total se todas forem removidas", note: "O desconto de volume aplica-se a cada avaliação: se faturarmos as avaliações uma a uma, cada uma é cobrada ao preço com desconto." },
+  ja: { h: "料金の内訳", newL: "投稿4週間以内", oldL: "投稿4週間超", disc: "まとめ割引", total: "すべて削除された場合の合計", note: "まとめ割引は口コミ1件ごとに適用されます。1件ずつご請求する場合も、それぞれ割引後の価格でのご請求となります。" },
+  sv: { h: "Dina priser", newL: "upp till 4 veckor", oldL: "äldre än 4 veckor", disc: "Mängdrabatt", total: "Totalt om alla tas bort", note: "Mängdrabatten gäller för varje enskilt omdöme – fakturerar vi omdömena ett i taget debiteras vart och ett till rabatterat pris." },
+  da: { h: "Dine priser", newL: "op til 4 uger", oldL: "ældre end 4 uger", disc: "Mængderabat", total: "I alt, hvis alle fjernes", note: "Mængderabatten gælder for hver enkelt anmeldelse – fakturerer vi anmeldelserne én ad gangen, opkræves hver til den nedsatte pris." },
+  no: { h: "Dine priser", newL: "opptil 4 uker", oldL: "eldre enn 4 uker", disc: "Mengderabatt", total: "Totalt hvis alle fjernes", note: "Mengderabatten gjelder for hver enkelt omtale – fakturerer vi omtalene én om gangen, belastes hver til rabattert pris." },
 };
 
 /** Währung: explizit ("usd"/"eur") oder aus dem formatierten Stückpreis abgeleitet. */
