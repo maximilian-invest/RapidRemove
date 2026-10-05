@@ -44,9 +44,9 @@ export async function passkeyLogin(role) {
   return r.token;
 }
 /** Fehlermeldung (Abbruch durch den Nutzer → keine Meldung). */
-export function passkeyError(e) {
+export function passkeyError(e, T) {
   const n = e && (e.name || "");
   if (n === "NotAllowedError" || n === "AbortError") return "";
-  if (e && e.code === "unknown_passkey") return "This passkey isn't linked to an account anymore – please log in with your password.";
-  return "That didn't work – please log in with your password.";
+  if (e && e.code === "unknown_passkey") return T ? T("pkErrUnknown") : "This passkey isn't linked to an account anymore – please log in with your password.";
+  return T ? T("pkErr") : "That didn't work – please log in with your password.";
 }

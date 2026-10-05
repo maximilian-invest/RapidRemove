@@ -38,6 +38,15 @@ export async function initCustomerTables(): Promise<void> {
       keys       jsonb NOT NULL DEFAULT '[]'::jsonb
     )
   `);
+  // Persönliche Login-Links in den Mails („Dashboard öffnen" → direkt eingeloggt, 30 Tage, mehrfach nutzbar).
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS cust_magic (
+      token_hash text PRIMARY KEY,
+      email      text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cust_sessions (
       token_hash text PRIMARY KEY,
@@ -94,6 +103,20 @@ async function sessionEmail(token: unknown): Promise<string | null> {
   if (t.length < 20) return null;
   const r = await pool.query(`SELECT email FROM cust_sessions WHERE token_hash=$1 AND expires_at > now()`, [sha(t)]);
   return r.rows[0]?.email ?? null;
+}
+
+/** Persönlicher Dashboard-Link für Mails: legt bei Bedarf das Konto an und hängt einen Login-Code an
+ *  (30 Tage gültig) → Kunde ist mit einem Klick eingeloggt, auch ohne Passwort. */
+export async function dashLink(email: string, lang?: string | null): Promise<string> {
+  const e = norm(email);
+  const l = lang && lang !== "de" ? `&lang=${encodeURIComponent(String(lang).slice(0, 2))}` : lang === "de" ? "&lang=de" : "";
+  if (!pool || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return DASH_URL;
+  try {
+    await ensureCustomerAccount(e);
+    const k = crypto.randomBytes(24).toString("base64url");
+    await pool.query(`INSERT INTO cust_magic (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '30 days')`, [sha(k), e]);
+    return `${DASH_URL}?k=${k}${l}`;
+  } catch { return DASH_URL; }
 }
 
 /** Für Passkeys: E-Mail zur Sitzung bzw. neue Sitzung (wie beim Passwort-Login). */
@@ -356,6 +379,20 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     return { ok: true, token };
   });
 
+  // Login über den persönlichen Link aus der Mail.
+  app.post("/cust/magic", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    if (limited("magic:" + req.ip, 30)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const k = String(b.k || "");
+    if (k.length < 20) return reply.code(401).send({ ok: false, error: "invalid" });
+    const r = await pool.query(`SELECT email FROM cust_magic WHERE token_hash=$1 AND expires_at > now()`, [sha(k)]);
+    if (!r.rows[0]) return reply.code(401).send({ ok: false, error: "invalid" });
+    const token = await createCustomerSession(r.rows[0].email);
+    if (!token) return reply.code(401).send({ ok: false, error: "invalid" });
+    return { ok: true, token };
+  });
+
   app.post("/cust/logout", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (pool && b.token) await pool.query(`DELETE FROM cust_sessions WHERE token_hash=$1`, [sha(String(b.token))]);
@@ -462,6 +499,9 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     if (limited("reset:" + req.ip, 5)) return reply.code(429).send({ ok: false, error: "too_many" });
     const email = norm(b.email);
     if (pool && email) {
+      // Bestandskunde ohne Konto (Link bekommen, aber nie Zugangsdaten) → Konto jetzt anlegen.
+      const has = await pool.query(`SELECT 1 FROM orders WHERE lower(email)=$1 AND service='reviews' LIMIT 1`, [email]);
+      if (has.rowCount) await ensureCustomerAccount(email);
       const pw = await resetCustomerPassword(email);
       if (pw) {
         const l = await pool.query(`SELECT lang FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]);

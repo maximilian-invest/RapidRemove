@@ -15,6 +15,13 @@ import {
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
+import { makeT, pickLang, localeOf } from "./dash-i18n";
+
+const LANG_KEY = "rr_cust_lang";
+/* Aktive Sprache (Modul-weit, wird pro Render gesetzt) → Format-Helfer ohne Prop-Drilling. */
+let T = makeT("en"), LOC = "en-US";
+const setLang = (l) => { T = makeT(l); LOC = localeOf(l); };
+const pkName = () => { const n = passkeyName(); return n === "fingerprint" ? T("nameFingerprint") : n === "passkey" ? T("namePasskey") : n; };
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_cust_session";
@@ -34,27 +41,26 @@ const store = {
 };
 
 /* ---- Format ---- */
-const money = (v, cur) => (cur === "usd" ? "$" : "€") + Number(v || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
-const shortDate = (iso) => { try { return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" }); } catch (e) { return ""; } };
+const money = (v, cur) => { try { return new Intl.NumberFormat(LOC, { style: "currency", currency: cur === "usd" ? "USD" : "EUR", maximumFractionDigits: Number(v) % 1 ? 2 : 0 }).format(Number(v || 0)); } catch (e) { return (cur === "usd" ? "$" : "€") + Number(v || 0); } };
+const shortDate = (iso) => { try { return new Date(iso).toLocaleDateString(LOC, { month: "short", day: "numeric" }); } catch (e) { return ""; } };
 function dur(iso) {
   if (!iso) return "";
   const m = Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (m < 60) return m + " min";
+  if (m < 60) return T("durM", { n: m });
   const h = Math.floor(m / 60);
-  if (h < 24) return h + " h" + (m % 60 ? " " + (m % 60) + " min" : "");
+  if (h < 24) return T("durH", { n: h }) + (m % 60 ? " " + T("durM", { n: m % 60 }) : "");
   const d = Math.floor(h / 24);
-  return d + " d" + (h % 24 ? " " + (h % 24) + " h" : "");
+  return T("durD", { n: d }) + (h % 24 ? " " + T("durH", { n: h % 24 }) : "");
 }
 function ago(iso) {
   if (!iso) return "";
   const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
-  if (m < 2) return "Now";
-  if (m < 60) return m + " min ago";
-  if (m < 24 * 60) return Math.round(m / 60) + " h ago";
-  if (m < 48 * 60) return "Yesterday";
+  if (m < 2) return T("now");
+  if (m < 60) return T("minAgo", { n: m });
+  if (m < 24 * 60) return T("hAgo", { n: Math.round(m / 60) });
+  if (m < 48 * 60) return T("yesterday");
   return shortDate(iso);
 }
-const plural = (n, one, many) => (n === 1 ? one : many || one + "s");
 const initials = (name, email) => {
   const p = String(name || "").trim().split(/\s+/).filter(Boolean);
   if (p.length) return ((p[0][0] || "") + (p.length > 1 ? p[p.length - 1][0] : "")).toUpperCase();
@@ -62,20 +68,15 @@ const initials = (name, email) => {
 };
 
 /* ---- Status (intern → Kunde) ---- */
-const ST = {
-  new: { l: "Being checked", I: Search, ico: "in", why: "We’re checking whether this review can be removed." },
-  working: { l: "In progress", I: Loader, ico: "wk", why: "We’re working on the removal right now." },
-  removed: { l: "Removed", I: CheckCircle2, ico: "ok", why: "This review is gone from Google." },
-  notpossible: { l: "Not removable", I: Ban, ico: "no", why: "This review can’t be removed. You won’t be charged." },
-  software: { l: "Needs your decision", I: AlertCircle, ico: "pr", why: "This one needs our specialist partner." },
-  sw_accepted: { l: "Specialist removal running", I: Cpu, ico: "wk", why: "Commissioned – our specialist partner is on it." },
-  sw_declined: { l: "Declined", I: XCircle, ico: "", why: "You declined. Nothing to pay." },
-  cancelled: { l: "Cancelled", I: XCircle, ico: "", why: "This review was cancelled." },
+const ST_ = {
+  new: { I: Search, ico: "in" }, working: { I: Loader, ico: "wk" }, removed: { I: CheckCircle2, ico: "ok" }, notpossible: { I: Ban, ico: "no" },
+  software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
 };
+const stOf = (status) => { const k = ST_[status] ? status : "new"; return { ...ST_[k], l: T("st_" + k), why: T("why_" + k) }; };
 const OPEN = ["new", "working", "software", "sw_accepted"];
-const statusLine = (r, cur) => (ST[r.status] || ST.new).l
+const statusLine = (r, cur) => stOf(r.status).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
-  + (r.status === "removed" ? (r.paid ? " · Paid" : " · " + money(r.price, cur) + " to pay") : "");
+  + (r.status === "removed" ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
 
 function Ring({ r, n }) {
   const R = 24, C = 2 * Math.PI * R, p = n ? r / n : 0;
@@ -91,7 +92,7 @@ function Ring({ r, n }) {
 }
 
 /* ---- Login / Passwort vergessen ---- */
-function Login({ onToken }) {
+function Login({ onToken, notice }) {
   const [email, setEmail] = React.useState("");
   const [pw, setPw] = React.useState("");
   const [err, setErr] = React.useState("");
@@ -101,9 +102,9 @@ function Login({ onToken }) {
   const submit = async (e) => {
     e.preventDefault(); setErr(""); setInfo(""); setBusy(true);
     try {
-      if (forgot) { await call("reset", { email }); setInfo("If there’s an account for this email, we’ve just sent you a new password."); setForgot(false); }
+      if (forgot) { await call("reset", { email }); setInfo(T("resetSent")); setForgot(false); }
       else { const r = await call("login", { email, password: pw }); onToken(r.token); }
-    } catch (x) { setErr(x.code === "too_many" ? "Too many attempts – please wait a few minutes." : forgot ? "Something went wrong – please try again." : "Email or password is wrong."); }
+    } catch (x) { setErr(x.code === "too_many" ? T("tooMany") : forgot ? T("genericErr") : T("wrongLogin")); }
     setBusy(false);
   };
   return (
@@ -111,22 +112,24 @@ function Login({ onToken }) {
       <form className="lg" onSubmit={submit}>
         <div className="lg-art"><img src={IMG.rocket} alt="" /></div>
         <div>
-          <h1>{forgot ? "New password" : "Your reviews"}</h1>
-          <p>{forgot ? "Enter your email and we’ll send you a new password." : "Log in with the email and password from your order confirmation."}</p>
+          <h1>{forgot ? T("newPwTitle") : T("loginTitle")}</h1>
+          <p>{forgot ? T("newPwSub") : T("loginSub")}</p>
         </div>
-        <label className="fld"><span>Email</span>
+        <label className="fld"><span>{T("email")}</span>
           <input type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
         </label>
         {!forgot ? (
-          <label className="fld"><span>Password</span>
+          <label className="fld"><span>{T("password")}</span>
             <input type="password" autoComplete="current-password" required value={pw} onChange={(e) => setPw(e.target.value)} />
           </label>
         ) : null}
+        {notice && !err && !info ? <div className="note bad">{notice}</div> : null}
         {err ? <div className="note bad">{err}</div> : null}
         {info ? <div className="note good">{info}</div> : null}
-        <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{forgot ? "Send new password" : "Log in"}</button>
-        {!forgot ? <PasskeyLoginButton role="customer" onToken={onToken} onError={setErr} /> : null}
-        <button type="button" className="lnk" onClick={() => { setForgot(!forgot); setErr(""); setInfo(""); }}>{forgot ? "Back to log in" : "Forgot password?"}</button>
+        <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{forgot ? T("sendNewPw") : T("login")}</button>
+        {!forgot ? <PasskeyLoginButton role="customer" onToken={onToken} onError={setErr} T={T} /> : null}
+        <button type="button" className="lnk" onClick={() => { setForgot(!forgot); setErr(""); setInfo(""); }}>{forgot ? T("backToLogin") : T("forgot")}</button>
+        {!forgot ? <p className="lnk" style={{ height: "auto", fontSize: 14, fontWeight: 500, lineHeight: 1.45, marginTop: -6 }}>{T("firstTime")}</p> : null}
       </form>
     </div>
   );
@@ -144,6 +147,7 @@ export default function CustomerDashboard() {
   const [flow, setFlow] = React.useState(null); // { step, items, pick:Set, mode, total, n, url }
   const [toast, setToast] = React.useState(null); // { m, bad }
   const [busy, setBusy] = React.useState("");
+  const [magicErr, setMagicErr] = React.useState(false);
   const [, tick] = React.useState(0);
   const prev = React.useRef(null);
   const toastT = React.useRef(0);
@@ -157,7 +161,14 @@ export default function CustomerDashboard() {
     if (!document.querySelector(`link[href="${FONT_HREF}"]`)) {
       const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_HREF; document.head.appendChild(l);
     }
-    setToken(store.get());
+    // Persönlicher Link aus der Mail (?k=…) → direkt einloggen, Code aus der Adresse entfernen.
+    let k = "";
+    try { k = new URLSearchParams(window.location.search).get("k") || ""; } catch (e) { /* */ }
+    if (k) {
+      try { const u = new URL(window.location.href); u.searchParams.delete("k"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
+      call("magic", { k }).then((r) => { store.set(r.token); setToken(r.token); })
+        .catch(() => { setMagicErr(true); setToken(store.get()); });
+    } else setToken(store.get());
   }, []);
 
   const load = React.useCallback(async (t) => {
@@ -174,14 +185,14 @@ export default function CustomerDashboard() {
           if (w.status === "software" && i.status === "sw_accepted") swOk++;
           if (w.status === "removed" && !w.paid && i.paid) paid++;
         }
-        if (swOk) showToast(`Payment received – our specialist is on it`);
-        else if (paid) showToast("Paid – thank you");
+        if (swOk) showToast(T("tPaymentSw"));
+        else if (paid) showToast(T("tPaid"));
       }
       prev.current = d;
       setData(d); setLoadErr("");
     } catch (e) {
       if (e.code === "session") { store.set(""); setToken(""); setData(null); prev.current = null; }
-      else setLoadErr("Couldn’t load your reviews. Please try again in a moment.");
+      else setLoadErr(T("loadErr"));
     }
   }, [showToast]);
 
@@ -214,6 +225,20 @@ export default function CustomerDashboard() {
   }, [data, flow]);
 
   const [offerPk, setOfferPk] = React.useState(false);
+  // Sprache: Bestellung (nach dem Login) → zuletzt genutzte → Browser → Englisch.
+  const [lang, setLangState] = React.useState("en");
+  React.useEffect(() => {
+    let saved = ""; try { saved = localStorage.getItem(LANG_KEY) || ""; } catch (e) { /* */ }
+    let q = ""; try { q = new URLSearchParams(window.location.search).get("lang") || ""; } catch (e) { /* */ }
+    setLangState(pickLang(q, saved, navigator.language));
+  }, []);
+  React.useEffect(() => {
+    if (!data || !data.lang) return;
+    const l = pickLang(data.lang === "de" ? "de" : data.lang);
+    setLangState(l); try { localStorage.setItem(LANG_KEY, l); } catch (e) { /* */ }
+  }, [data]);
+  setLang(lang);
+  React.useEffect(() => { try { document.documentElement.lang = lang; } catch (e) { /* */ } }, [lang]);
   const onToken = (t, viaPasskey) => {
     store.set(t); prev.current = null; setToken(t);
     // Nach dem Passwort-Login einmal Face ID anbieten.
@@ -226,12 +251,12 @@ export default function CustomerDashboard() {
   const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); } catch (e) { /* */ } };
 
   if (token === null) return <div className="rra" />;
-  if (!token) return <div className="rra"><Login onToken={onToken} /></div>;
-  if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is on`); }} />;
+  if (!token) return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : ""} /></div>;
+  if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(T("pkIsOn", { name: pkName() })); }} T={T} />;
   if (!data) {
     return (
       <div className="rra"><div className="lg-wrap">
-        {loadErr ? <div className="lg"><div className="note bad">{loadErr}</div><button className="cta" onClick={() => load(token)}>Try again</button></div> : <Loader className="spin" />}
+        {loadErr ? <div className="lg"><div className="note bad">{loadErr}</div><button className="cta" onClick={() => load(token)}>{T("tryAgain")}</button></div> : <Loader className="spin" />}
       </div></div>
     );
   }
@@ -255,10 +280,10 @@ export default function CustomerDashboard() {
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
 
   const acts = [
-    ...sw.map((r) => ({ k: "d" + r.id, I: AlertCircle, c: "pr", t: "Decision needed", s: r, tm: r.changedAt ? ago(r.changedAt) : "Today", at: Date.now() + 1 })),
-    ...all.filter((r) => r.status === "working").map((r) => ({ k: "w" + r.id, I: Loader, c: "wk", t: "Working on it" + (r.since ? " · " + dur(r.since) : ""), s: r, tm: "Now", at: Date.now() })),
-    ...all.filter((r) => r.status === "sw_accepted").map((r) => ({ k: "a" + r.id, I: Cpu, c: "wk", t: "Specialist on it", s: r, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
-    ...all.filter((r) => r.status === "removed").map((r) => ({ k: "r" + r.id, I: Check, c: "ok", t: "Review removed", s: r, tm: ago(r.removedAt), at: r.removedAt ? new Date(r.removedAt).getTime() : 0 })),
+    ...sw.map((r) => ({ k: "d" + r.id, I: AlertCircle, c: "pr", t: T("act_decision"), s: r, tm: r.changedAt ? ago(r.changedAt) : T("today"), at: Date.now() + 1 })),
+    ...all.filter((r) => r.status === "working").map((r) => ({ k: "w" + r.id, I: Loader, c: "wk", t: T("act_working") + (r.since ? " · " + dur(r.since) : ""), s: r, tm: T("now"), at: Date.now() })),
+    ...all.filter((r) => r.status === "sw_accepted").map((r) => ({ k: "a" + r.id, I: Cpu, c: "wk", t: T("act_specialist"), s: r, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
+    ...all.filter((r) => r.status === "removed").map((r) => ({ k: "r" + r.id, I: Check, c: "ok", t: T("act_removed"), s: r, tm: ago(r.removedAt), at: r.removedAt ? new Date(r.removedAt).getTime() : 0 })),
   ].sort((a, b) => b.at - a.at).slice(0, 6);
 
   /* ---- Zahlungen ---- */
@@ -274,18 +299,18 @@ export default function CustomerDashboard() {
       return r.url;
     } catch (e) {
       if (w && !w.closed) w.close();
-      showToast(e.code === "payment_unavailable" ? "Payment isn’t available right now – please contact us." : e.code === "nothing" ? "Nothing to pay here anymore." : "Something went wrong – please try again.", true);
+      showToast(e.code === "payment_unavailable" ? T("payUnavailable") : e.code === "nothing" ? T("nothingToPay") : T("genericErr"), true);
       load(token);
       setBusy("");
       return null;
     }
   };
-  const payAll = async () => { if (await checkout("pay", {}, "pay")) showToast("Checkout opened in a new tab"); };
+  const payAll = async () => { if (await checkout("pay", {}, "pay")) showToast(T("checkoutOpened")); };
 
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
     setSheet(null);
-    const items = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || "Google review", text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit }));
+    const items = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit }));
     if (!items.length) return;
     setFlow({ step: 0, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" });
   };
@@ -298,7 +323,7 @@ export default function CustomerDashboard() {
     if (f.step === 2 && !sel.length) { // alles ablehnen → kostenlos
       setBusy("flow");
       try { await call("software", { token, decision: "decline", items: flowRefs(des) }); setFlow({ ...f, step: 4, mode: "declined" }); load(token); }
-      catch (e) { showToast("Something went wrong – please try again.", true); }
+      catch (e) { showToast(T("genericErr"), true); }
       setBusy("");
       return;
     }
@@ -315,7 +340,7 @@ export default function CustomerDashboard() {
         load(token);
       } catch (e) {
         if (w && !w.closed) w.close();
-        showToast(e.code === "payment_unavailable" ? "Payment isn’t available right now – please contact us." : "Something went wrong – please try again.", true);
+        showToast(e.code === "payment_unavailable" ? T("payUnavailable") : T("genericErr"), true);
         load(token);
       }
       setBusy("");
@@ -335,27 +360,27 @@ export default function CustomerDashboard() {
   const Hero = ({ payments }) => (due.length ? (
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
-      <div className="k">To pay</div>
+      <div className="k">{T("toPay")}</div>
       <div className="v">{money(toPay, payCur)}</div>
-      <div className="s">{payments ? `${due.length} removed ${plural(due.length, "review")}` : `${due.length} ${plural(due.length, "review")} removed${prices.length === 1 ? " · " + money(prices[0], payCur) + " each" : ""}`}</div>
+      <div className="s">{payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
       <div className="row">
-        {payments ? <span /> : <span className="rem"><i />Remaining {remaining} {plural(remaining, "review")}</span>}
-        <button className="pill-btn" disabled={!!busy} onClick={payAll}>{busy === "pay" ? <Loader className="spin" /> : null}{payments ? "Pay now" : "Pay"}</button>
+        {payments ? <span /> : <span className="rem"><i />{T("remaining", { n: remaining })}</span>}
+        <button className="pill-btn" disabled={!!busy} onClick={payAll}>{busy === "pay" ? <Loader className="spin" /> : null}{payments ? T("payNow") : T("pay")}</button>
       </div>
     </div>
   ) : payments ? null : (
     <div className="hero ok">
       <span className="hero-img"><img src={IMG.rocket} alt="" /></span>
-      <div className="k">All paid</div>
-      <div className="v" style={{ fontSize: 30, letterSpacing: -1 }}>{money(0, payCur)} due</div>
-      <div className="s">{remaining ? `Remaining ${remaining} ${plural(remaining, "review")} in progress` : "Nothing open right now"}</div>
+      <div className="k">{T("allPaid")}</div>
+      <div className="v" style={{ fontSize: 30, letterSpacing: -1 }}>{T("due", { amount: money(0, payCur) })}</div>
+      <div className="s">{remaining ? T("remainingInProgress", { n: remaining }) : T("nothingOpen")}</div>
     </div>
   ));
   const DepositCards = () => deposits.map((d) => (
     <div key={d.id} className="paycard due">
       <span className="ico pr"><Lock /></span>
-      <span><b>Prepayment · {d.n || ""} {plural(d.n || 2, "review")} without text</b><span>{d.o.business} · 99 % success · full refund if not removed within 14 days</span></span>
-      <a className="mini" href={d.url} target="_blank" rel="noopener noreferrer"><Lock />Pay {money(d.amount, d.cur)}</a>
+      <span><b>{T("prepayTitle", { n: d.n || 1 })}</b><span>{d.o.business} · {T("prepaySub")}</span></span>
+      <a className="mini" href={d.url} target="_blank" rel="noopener noreferrer"><Lock />{T("payAmount", { amount: money(d.amount, d.cur) })}</a>
     </div>
   ));
 
@@ -363,15 +388,15 @@ export default function CustomerDashboard() {
   const HomeV = () => (
     <>
       <div className="hhead">
-        <div><h1>Hi{firstName ? " " + firstName : ""}</h1><p className="hsub">{removedN} of {all.length} {plural(all.length, "review")} removed so far</p></div>
+        <div><h1>{firstName ? T("hi", { name: firstName }) : T("hiNoName")}</h1><p className="hsub">{T("removedSoFar", { r: removedN, n: all.length })}</p></div>
         <span className="av">{ini}</span>
       </div>
       <div className="hg">
         <div className="hl">
-          {sw.length ? <AlertBtn title={`Problem with ${swOrders} ${plural(swOrders, "order")}`} sub={`${sw.length} ${plural(sw.length, "review")} ${sw.length > 1 ? "need" : "needs"} your decision`} /> : null}
+          {sw.length ? <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} /> : null}
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
-          <div className="sec" style={{ marginTop: 4 }}><h2>Your orders</h2>{orders.length ? <button onClick={() => goTab("orders")}>See all</button> : null}</div>
+          <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>
           {orders.length ? (
             <div className="carousel">
               {orders.map((o) => {
@@ -380,24 +405,24 @@ export default function CustomerDashboard() {
                 return (
                   <button key={o.id} className="oc" onClick={() => setDetailId(o.id)}>
                     <Ring r={r} n={n} />
-                    <span className="n">{o.business || "Order " + o.id}</span>
-                    <span className="m">{act ? <b>Action needed</b> : o.items.filter((x) => OPEN.includes(x.status)).length + " in progress"}</span>
+                    <span className="n">{o.business || T("orderN", { id: o.id })}</span>
+                    <span className="m">{act ? <b>{T("actionNeeded")}</b> : T("inProgressN", { n: o.items.filter((x) => OPEN.includes(x.status)).length })}</span>
                   </button>
                 );
               })}
             </div>
-          ) : <div className="empty"><img src={IMG.rocket} alt="" />No orders yet.</div>}
+          ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
         </div>
         <aside className="hr">
-          <div className="sec"><h2>Activity</h2></div>
+          <div className="sec"><h2>{T("activity")}</h2></div>
           <div className="act">
             {acts.length ? acts.map((a) => (
               <button key={a.k} className="ai-row" onClick={() => setSheet({ orderId: a.s.o.id, key: a.s.key })}>
                 <span className={"ico " + a.c}><a.I /></span>
-                <span className="t"><b>{a.t}</b><span>{(a.s.name || "Google review") + " · " + a.s.o.business}</span></span>
+                <span className="t"><b>{a.t}</b><span>{(a.s.name || T("googleReview")) + " · " + a.s.o.business}</span></span>
                 <span className="tm">{a.tm}</span>
               </button>
-            )) : <div className="empty" style={{ padding: "16px 0" }}>Updates show up here.</div>}
+            )) : <div className="empty" style={{ padding: "16px 0" }}>{T("activityEmpty")}</div>}
           </div>
         </aside>
       </div>
@@ -409,9 +434,9 @@ export default function CustomerDashboard() {
     const l = orders.filter(F[ofilter]);
     return (
       <>
-        <div className="ttl">Orders</div>
+        <div className="ttl">{T("orders")}</div>
         <div className="chips">
-          {[["all", "All"], ["open", "Active"], ["done", "Completed"]].map(([k, t]) => (
+          {[["all", T("f_all")], ["open", T("f_open")], ["done", T("f_done")]].map(([k, t]) => (
             <button key={k} className={"chip" + (ofilter === k ? " on" : "")} onClick={() => setOfilter(k)}>{t}</button>
           ))}
         </div>
@@ -421,52 +446,52 @@ export default function CustomerDashboard() {
             <button key={o.id} className="orow" onClick={() => setDetailId(o.id)}>
               <Ring r={r} n={n} />
               <span className="t">
-                <b>{o.business || "Order " + o.id}</b>
+                <b>{o.business || T("orderN", { id: o.id })}</b>
                 <span>#{o.id} · {shortDate(o.created)}</span>
-                {act ? <><br /><span className="tag pr"><AlertCircle />Action needed</span></> : null}
+                {act ? <><br /><span className="tag pr"><AlertCircle />{T("actionNeeded")}</span></> : null}
               </span>
               <ChevronRight />
             </button>
           );
-        }) : <div className="empty">No orders here.</div>}
+        }) : <div className="empty">{T("noOrdersHere")}</div>}
       </>
     );
   };
 
   const PayV = () => (
     <>
-      <div className="ttl">Payments</div>
+      <div className="ttl">{T("payments")}</div>
       <Hero payments />
       <DepositCards />
-      <div className="sec" style={{ marginTop: due.length || deposits.length ? 8 : 0 }}><h2>History</h2></div>
+      <div className="sec" style={{ marginTop: due.length || deposits.length ? 8 : 0 }}><h2>{T("history")}</h2></div>
       {history.length ? history.map((h) => (
         <div key={h.id} className="paycard">
           <span className="ico"><Receipt /></span>
           <span>
-            <b>{h.kind === "software" ? "Specialist removal" : h.kind === "deposit" ? "Prepayment" : "Removal"}{h.n > 1 ? ` · ${h.n} reviews` : ""}</b>
+            <b>{h.kind === "software" ? T("h_software") : h.kind === "deposit" ? T("h_deposit") : T("h_invoice")}{h.n > 1 ? " · " + T("hReviews", { n: h.n }) : ""}</b>
             <span>{(h.names.length ? h.names.join(", ") : h.o.business) + " · " + shortDate(h.paid)}</span>
           </span>
           <span className="amt">{money(h.amount, h.cur)}</span>
         </div>
-      )) : <div className="empty"><img src={IMG.wallet} alt="" />No payments yet.</div>}
+      )) : <div className="empty"><img src={IMG.wallet} alt="" />{T("noPayments")}</div>}
     </>
   );
 
   const AccV = () => (
     <>
-      <div className="ttl">Account</div>
+      <div className="ttl">{T("account")}</div>
       <div className="paycard"><span className="av">{ini}</span><span><b>{data.name || data.email}</b><span>{data.email}</span></span></div>
       <div className="acc-rows">
         {passkeySupported() ? (
           <button className="ai-row" onClick={async () => {
-            if (passkeyOnDevice("customer")) { showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is already on`); return; }
-            try { await passkeyRegister("customer", token); showToast(`${passkeyName() === "passkey" ? "Passkey" : passkeyName()} login is on`); } catch (e) { const m = passkeyError(e); if (m) showToast(m, true); }
-          }}><span className="ico"><ScanFace /></span><span className="t"><b>{passkeyName() === "passkey" ? "Passkey" : passkeyName() === "fingerprint" ? "Fingerprint" : passkeyName()} login</b><span>{passkeyOnDevice("customer") ? "On for this device" : "Log in without a password"}</span></span><ChevronRight /></button>
+            if (passkeyOnDevice("customer")) { showToast(T("pkAlready", { name: pkName() })); return; }
+            try { await passkeyRegister("customer", token); showToast(T("pkIsOn", { name: pkName() })); } catch (e) { const m = passkeyError(e, T); if (m) showToast(m, true); }
+          }}><span className="ico"><ScanFace /></span><span className="t"><b>{T("pkLogin", { name: pkName() })}</b><span>{passkeyOnDevice("customer") ? T("pkOn") : T("pkOff")}</span></span><ChevronRight /></button>
         ) : null}
-        <a className="ai-row" href={`mailto:${HELP_MAIL}`}><span className="ico"><MessageCircle /></span><span className="t"><b>Help &amp; contact</b><span>We usually reply within a few hours</span></span><ChevronRight /></a>
-        <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>Invoices</b><span>Sent by email after each payment</span></span><ChevronRight /></button>
-        <a className="ai-row" href="/en/privacy-policy" target="_blank" rel="noopener noreferrer"><span className="ico"><ShieldCheck /></span><span className="t"><b>Privacy</b></span><ChevronRight /></a>
-        <button className="ai-row" onClick={logout}><span className="ico"><LogOut /></span><span className="t"><b>Log out</b></span><ChevronRight /></button>
+        <a className="ai-row" href={`mailto:${HELP_MAIL}`}><span className="ico"><MessageCircle /></span><span className="t"><b>{T("help")}</b><span>{T("helpSub")}</span></span><ChevronRight /></a>
+        <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>{T("invoices")}</b><span>{T("invoicesSub")}</span></span><ChevronRight /></button>
+        <a className="ai-row" href="/en/privacy-policy" target="_blank" rel="noopener noreferrer"><span className="ico"><ShieldCheck /></span><span className="t"><b>{T("privacy")}</b></span><ChevronRight /></a>
+        <button className="ai-row" onClick={logout}><span className="ico"><LogOut /></span><span className="t"><b>{T("logout")}</b></span><ChevronRight /></button>
       </div>
     </>
   );
@@ -479,18 +504,18 @@ export default function CustomerDashboard() {
     return (
       <>
         <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
-        <div className="dh"><h1>{o.business || "Order " + o.id}</h1><p>#{o.id} · Ordered {shortDate(o.created)}</p></div>
-        <div className="bigprog"><Ring r={r} n={n} /><span><b>{r} of {n} removed</b><span>{op ? op + " still in progress" : o.cancelled ? "Cancelled" : "Completed"}</span></span></div>
-        {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={`${s} ${plural(s, "review")} ${s > 1 ? "need" : "needs"} you`} sub="Tap to see what’s going on" /></div> : null}
-        <div className="sec"><h2>Reviews</h2></div>
+        <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>#{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
+        <div className="bigprog"><Ring r={r} n={n} /><span><b>{T("removedOf", { r, n })}</b><span>{op ? T("stillInProgress", { n: op }) : o.cancelled ? T("cancelled") : T("completed")}</span></span></div>
+        {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
+        <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {
-          const st = ST[x.status] || ST.new;
+          const st = stOf(x.status);
           return (
             <button key={x.key} className="rrow" onClick={() => setSheet({ orderId: o.id, key: x.key })}>
               <span className={"ico " + st.ico}><st.I /></span>
               <span className="t">
-                <span className="a">{x.name || "Google review"}</span>
-                <span className={"x" + (x.text ? "" : " none")}>{x.text || "No review text"}</span>
+                <span className="a">{x.name || T("googleReview")}</span>
+                <span className={"x" + (x.text ? "" : " none")}>{x.text || T("noText")}</span>
                 <span className={"st c-" + x.status}>{statusLine(x, o.cur)}</span>
               </span>
             </button>
@@ -514,39 +539,39 @@ export default function CustomerDashboard() {
     const full = sel.reduce((s, i) => s + i.price, 0), dep = sel.reduce((s, i) => s + i.dep, 0);
     const unit = Math.max(...it.map((i) => i.price)), unitDep = Math.max(...it.map((i) => i.dep));
     const steps = n ? 4 : 3;
-    let body = null, btn = "Continue", cls = "";
+    let body = null, btn = T("cont"), cls = "";
     if (S === 0) body = (
       <>
         <div className="fl-art"><img src={IMG.shield} alt="" /></div>
-        <div className="fl-k">What happened</div>
-        <h2>Google is protecting {it.length} of your {plural(it.length, "review")}</h2>
-        <p>We tried our standard removal, but Google declined it. This happens when a review is worded carefully enough that it doesn’t break Google’s rules on its own.</p>
-        <p className="strong">There’s still a way – and you decide if you want it.</p>
+        <div className="fl-k">{T("f0k")}</div>
+        <h2>{T("f0h", { n: it.length })}</h2>
+        <p>{T("f0p1")}</p>
+        <p className="strong">{T("f0p2")}</p>
       </>
     );
     if (S === 1) body = (
       <>
-        <div className="fl-k">Your options</div>
-        <h2>A specialist can still remove {it.length > 1 ? "them" : "it"}</h2>
-        <p>For cases like this we work with a vetted external partner who specialises in hard-to-remove reviews and uses dedicated tools we don’t run ourselves.</p>
+        <div className="fl-k">{T("f1k")}</div>
+        <h2>{T("f1h", { n: it.length })}</h2>
+        <p>{T("f1p")}</p>
         <div className="fl-feat">
-          <div className="ff"><span className="ico"><BadgeCheck /></span><span><b>Vetted specialist</b><span>A partner we’ve worked with on many cases – we stay your contact throughout.</span></span></div>
-          <div className="ff"><span className="ico"><Receipt /></span><span><b>Transparent price</b><span>The price mainly covers the specialist’s work. It’s paid upfront because we commission them right away.</span></span></div>
-          <div className="ff"><span className="ico"><ShieldCheck /></span><span><b>99 % success rate</b><span>If a review isn’t removed within 14 days at the latest, you get a full refund.</span></span></div>
-          <div className="ff"><span className="ico"><Timer /></span><span><b>Usually within a few days</b><span>Takes a bit longer than our standard removal.</span></span></div>
+          <div className="ff"><span className="ico"><BadgeCheck /></span><span><b>{T("feat1t")}</b><span>{T("feat1s")}</span></span></div>
+          <div className="ff"><span className="ico"><Receipt /></span><span><b>{T("feat2t")}</b><span>{T("feat2s")}</span></span></div>
+          <div className="ff"><span className="ico"><ShieldCheck /></span><span><b>{T("feat3t")}</b><span>{T("feat3s")}</span></span></div>
+          <div className="ff"><span className="ico"><Timer /></span><span><b>{T("feat4t")}</b><span>{T("feat4s")}</span></span></div>
         </div>
         <div className="optc">
-          <div className="oc2 hl"><div className="h"><b>Specialist removal</b><span className="p">{money(unit, cur)}</span></div><span>per review · paid upfront · invoice included</span></div>
-          <div className="oc2"><div className="h"><b>No thanks</b><span className="p">{money(0, cur)}</span></div><span>The review stays online – no cost, no obligation</span></div>
+          <div className="oc2 hl"><div className="h"><b>{T("optSw")}</b><span className="p">{money(unit, cur)}</span></div><span>{T("optSwSub")}</span></div>
+          <div className="oc2"><div className="h"><b>{T("optNo")}</b><span className="p">{money(0, cur)}</span></div><span>{T("optNoSub")}</span></div>
         </div>
       </>
     );
     if (S === 2) {
       body = (
         <>
-          <div className="fl-k">Choose</div>
-          <h2>Which ones should we remove?</h2>
-          <p>You decide per review. Tap to deselect any you’d rather leave.</p>
+          <div className="fl-k">{T("f2k")}</div>
+          <h2>{T("f2h")}</h2>
+          <p>{T("f2p")}</p>
           <div className="pick">
             {it.map((i) => (
               <button key={i.id} className={"pk" + (f.pick.has(i.id) ? " on" : "")} onClick={() => { const p = new Set(f.pick); p.has(i.id) ? p.delete(i.id) : p.add(i.id); setFlow({ ...f, pick: p }); }}>
@@ -556,41 +581,39 @@ export default function CustomerDashboard() {
               </button>
             ))}
           </div>
-          <div className="totl"><span>Total</span><b>{money(full, cur)}</b></div>
+          <div className="totl"><span>{T("total")}</span><b>{money(full, cur)}</b></div>
           
         </>
       );
-      btn = n ? "Continue to payment" : "Decline all · " + money(0, cur);
+      btn = n ? T("contPay") : T("declineAll", { amount: money(0, cur) });
     }
     if (S === 3) {
       body = (
         <>
-          <div className="fl-k">Payment</div>
-          <h2>Pay {money(dep, cur)} and we commission the specialist today</h2>
-          <p>{n} specialist {plural(n, "removal")}{it.length - n ? ` · ${it.length - n} declined` : ""} </p>
+          <div className="fl-k">{T("f3k")}</div>
+          <h2>{T("f3h", { amount: money(dep, cur) })}</h2>
+          <p>{T("f3p", { n })}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
           <div className="pms">
-            <div className="pm"><span className="ico"><CreditCard /></span>Card<CheckCircle2 className="ok" /></div>
+            <div className="pm"><span className="ico"><CreditCard /></span>{T("card")}<CheckCircle2 className="ok" /></div>
             <div className="pm"><span className="ico"><Smartphone /></span>Apple Pay · Google Pay<CheckCircle2 className="ok" /></div>
           </div>
-          <div className="totl"><span>Total today</span><b>{money(dep, cur)}</b></div>
-          <div className="secure"><Lock />Secure payment · Invoice by email · Full refund if not removed within 14 days</div>
+          <div className="totl"><span>{T("totalToday")}</span><b>{money(dep, cur)}</b></div>
+          <div className="secure"><Lock />{T("secure")}</div>
         </>
       );
-      btn = "Pay " + money(dep, cur); cls = "or";
+      btn = T("payBtn", { amount: money(dep, cur) }); cls = "or";
     }
     if (S === 4) {
       const paid = f.mode === "paid", waiting = f.mode === "waiting";
       body = (
         <>
           <div className="fl-art"><img src={IMG.rocket} alt="" /></div>
-          <h2>{f.mode === "declined" ? "Done – nothing to pay" : paid ? "You’re all set" : "Almost done"}</h2>
-          <p>{f.mode === "declined" ? "The reviews stay online and you won’t be charged."
-            : paid ? `We received ${money(dep, cur)} and have commissioned our specialist for ${n} ${plural(n, "review")}. You’ll see every update in Activity.`
-              : "Finish the payment in the new tab. This page updates by itself once we’ve received it."}</p>
-          {waiting && f.url ? <a className="fl-again" href={f.url} target="_blank" rel="noopener noreferrer">Open payment again</a> : null}
+          <h2>{f.mode === "declined" ? T("f4hDeclined") : paid ? T("f4hPaid") : T("f4hWait")}</h2>
+          <p>{f.mode === "declined" ? T("f4pDeclined") : paid ? T("f4pPaid", { amount: money(dep, cur), n }) : T("f4pWait")}</p>
+          {waiting && f.url ? <a className="fl-again" href={f.url} target="_blank" rel="noopener noreferrer">{T("openAgain")}</a> : null}
         </>
       );
-      btn = "Done";
+      btn = T("done");
     }
     return (
       <div className="fl-card">
@@ -607,7 +630,7 @@ export default function CustomerDashboard() {
     );
   };
 
-  const TABS = [["home", Home, "Home"], ["orders", List, "Orders"], ["pay", Wallet, "Payments"], ["acc", User, "Account"]];
+  const TABS = [["home", Home, T("tabHome")], ["orders", List, T("tabOrders")], ["pay", Wallet, T("tabPay")], ["acc", User, T("tabAcc")]];
   return (
     <div className="rra">
       <div className="app">
@@ -631,17 +654,17 @@ export default function CustomerDashboard() {
       <div className={"bg" + (sheetData ? " show" : "")} onClick={() => setSheet(null)} />
       <div className={"rv-sheet" + (sheetData ? " show" : "")} aria-hidden={!sheetData}>
         {sheetData ? (() => {
-          const { o, r } = sheetData; const st = ST[r.status] || ST.new; const isSw = r.status === "software";
+          const { o, r } = sheetData; const st = stOf(r.status); const isSw = r.status === "software";
           return (
             <>
               <div className="grab" />
-              <h3>{r.name || "Google review"}</h3>
+              <h3>{r.name || T("googleReview")}</h3>
               <div className="meta">{o.business} · #{o.id}</div>
-              <div className="q">{r.text ? "“" + r.text + "”" : <i>No review text</i>}</div>
+              <div className="q">{r.text ? "“" + r.text + "”" : <i>{T("noText")}</i>}</div>
               <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{st.why}</span></span></div>
-              {isSw ? <button className="cta or" onClick={openFlow}>Show problem<ArrowRight /></button> : null}
-              {r.url ? <a className={"cta" + (isSw ? " gh" : "")} href={r.url} target="_blank" rel="noopener noreferrer"><ExternalLink />Open on Google</a>
-                : <button className={"cta" + (isSw ? " gh" : "")} onClick={() => setSheet(null)}>Close</button>}
+              {isSw ? <button className="cta or" onClick={openFlow}>{T("showProblem")}<ArrowRight /></button> : null}
+              {r.url ? <a className={"cta" + (isSw ? " gh" : "")} href={r.url} target="_blank" rel="noopener noreferrer"><ExternalLink />{T("openGoogle")}</a>
+                : <button className={"cta" + (isSw ? " gh" : "")} onClick={() => setSheet(null)}>{T("close")}</button>}
             </>
           );
         })() : null}

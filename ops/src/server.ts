@@ -25,7 +25,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
+import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
 import { startUpsellWorker } from "./upsell";
@@ -161,7 +161,7 @@ registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Adm
 registerCustomerAdminRoutes(app, ADMIN_TOKEN);
 registerCustomerRoutes(app, {
   sendReset: async (email, password, lang) => {
-    const m = resetMail(lang, email, password, DASH_URL);
+    const m = resetMail(lang, email, password, await dashLink(email, lang));
     await sendMail({ to: email, subject: m.subject, html: await render(m.el), replyTo: process.env.MAIL_REPLY_TO });
   },
 });
@@ -367,7 +367,8 @@ app.post("/order", async (req, reply) => {
   if (isReviews && dbReady() && email) {
     try {
       const acc = await ensureCustomerAccount(email);
-      if (acc) dash = acc.created ? { url: DASH_URL, email: email.trim().toLowerCase(), password: acc.password } : { url: DASH_URL, existing: true };
+      const durl = await dashLink(email, lang);
+      if (acc) dash = acc.created ? { url: durl, email: email.trim().toLowerCase(), password: acc.password } : { url: durl, existing: true };
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
@@ -1188,7 +1189,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined, prepay, software, dashUrl: DASH_URL };
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined, prepay, software, dashUrl: await dashLink(to, tlang) };
     const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
@@ -1237,7 +1238,7 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["storno-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: DASH_URL };
+    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: await dashLink(to, tlang) };
     const { html, subject } = await renderTemplate("storno-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
@@ -1358,7 +1359,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, orderId, dashUrl: DASH_URL };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, orderId, dashUrl: await dashLink(to, tlang) };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const viaName = method === "wise" ? "Wise" : "PayPal";
@@ -1738,7 +1739,7 @@ async function start() {
         for (const n of await takeDueNotifications()) {
           if (!n.changed.length) continue;
           try {
-          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: DASH_URL, orderId: n.orderId, changed: n.changed, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
+          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: n.orderId, changed: n.changed, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
           const html = await render(React.createElement(KundenUpdateReviews, props as any));
           const subject = kundenUpdateSubject(props as any);
           await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
