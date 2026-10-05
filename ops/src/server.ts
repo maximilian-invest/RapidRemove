@@ -26,7 +26,8 @@ import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./part
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
-import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
+import KundenUpdateReviews, { kundenUpdateSubject, kundenUpdatePush } from "./emails/KundenUpdateReviews";
+import { initCustPush, notifyCustomer, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
@@ -159,6 +160,7 @@ registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor de
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
 registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
+registerCustPushRoutes(app);
 registerCustomerAdminRoutes(app, ADMIN_TOKEN, {
   sendInvite: async (email, name, url, lang) => {
     await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url })), replyTo: process.env.MAIL_REPLY_TO });
@@ -1730,7 +1732,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys();
+  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"));
@@ -1743,17 +1745,36 @@ async function start() {
     // Kunden-Dashboard: Sammel-Mails („Neuigkeiten im Dashboard") 5 Min. nach der letzten Partner-Änderung.
     setInterval(async () => {
       try {
+        // Gegen Mail-Flut: je Kunde EINE Sammel-Mail (alle Aufträge zusammen), und nur bei Wichtigem
+        // (gelöscht → zahlen, nicht löschbar, Entscheidung nötig). Alles andere (in Prüfung → in Arbeit …)
+        // sieht der Kunde im Dashboard + per Push, falls die App am Home-Bildschirm ist.
+        const MAIL_WORTHY = new Set(["removed", "notpossible", "software"]);
+        const byEmail = new Map<string, Awaited<ReturnType<typeof takeDueNotifications>>>();
         for (const n of await takeDueNotifications()) {
           if (!n.changed.length) continue;
+          const k = n.email.toLowerCase();
+          byEmail.set(k, [...(byEmail.get(k) || []), n]);
+        }
+        for (const group of byEmail.values()) {
+          const n = group[0];
+          const changed = group.flatMap((g) => g.changed);
+          const lang = n.lang === "de" ? "en" : n.lang;
+          const push = kundenUpdatePush(lang, changed);
+          await notifyCustomer(n.email, push.title, push.body, `rrc-${n.orderId}`).catch(() => false);
+          const important = changed.filter((c) => MAIL_WORTHY.has(c.status));
+          if (!important.length) {
+            for (const g of group) await insertEvent({ orderId: g.orderId, email: g.email, type: "note", title: "Statusänderung nur im Dashboard/Push (keine Mail)", detail: g.changed.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), auto: true }).catch(() => {});
+            continue;
+          }
           try {
-          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: n.orderId, changed: n.changed, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
-          const html = await render(React.createElement(KundenUpdateReviews, props as any));
-          const subject = kundenUpdateSubject(props as any);
-          await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-          await insertEvent({ orderId: n.orderId, email: n.email, type: "mail", title: "Dashboard-Update an Kunden gesendet (automatisch)", detail: n.changed.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), html, subject, auto: true });
+            const props = { lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: group.length === 1 ? n.orderId : undefined, changed: important, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
+            const html = await render(React.createElement(KundenUpdateReviews, props as any));
+            const subject = kundenUpdateSubject(props as any);
+            await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+            for (const g of group) await insertEvent({ orderId: g.orderId, email: g.email, type: "mail", title: "Dashboard-Update an Kunden gesendet (automatisch)", detail: important.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), html, subject, auto: true });
           } catch (e) {
             app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen – neuer Versuch in 15 Min.");
-            await requeueNotify(n.orderId, n.keys, 15).catch(() => {});
+            for (const g of group) await requeueNotify(g.orderId, g.keys, 15).catch(() => {});
           }
         }
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }

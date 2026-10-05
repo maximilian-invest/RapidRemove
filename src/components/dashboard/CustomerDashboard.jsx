@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
+import CustApp from "./CustApp";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
 
@@ -216,6 +217,10 @@ export default function CustomerDashboard() {
       try { const u = new URL(window.location.href); u.searchParams.delete("reset"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
       setResetK(rk);
     }
+    // Start aus der Home-Bildschirm-App: schon eingeloggt → Code nicht jedes Mal neu einlösen.
+    let fromApp = false;
+    try { fromApp = new URLSearchParams(window.location.search).get("app") === "1"; } catch (e) { /* */ }
+    if (k && fromApp && store.get()) k = "";
     if (k) {
       try { const u = new URL(window.location.href); u.searchParams.delete("k"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
       call("magic", { k }).then((r) => { store.set(r.token); setToken(r.token); })
@@ -468,6 +473,7 @@ export default function CustomerDashboard() {
         <div className="hl">
           {sw.length ? <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} /> : null}
           <ChangedCard />
+          <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
           <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>

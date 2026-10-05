@@ -2,6 +2,7 @@
    Platzhalter: {n}, {name}, {amount}, {price}, {date}, {r}, {id}. Mengenabhängige Texte als
    { one, other } (Auswahl über Intl.PluralRules der Sprache, fehlende Form → other). */
 import LANGS from "./dash-i18n-langs";
+import APP from "./dash-i18n-app";
 
 export const EN = {
   // Zeit
@@ -113,10 +114,10 @@ export function pickLang(...cands) {
 
 /** t(key, vars) für eine Sprache. */
 export function makeT(lang) {
-  const D = { ...EN, ...(LANGS[lang] || {}) };
+  const D = { ...EN, ...APP.en, ...(LANGS[lang] || {}), ...(APP[lang] || {}) };
   const pr = new Intl.PluralRules(localeOf(lang));
   return (key, vars = {}) => {
-    let v = D[key] ?? EN[key] ?? key;
+    let v = D[key] ?? EN[key] ?? APP.en[key] ?? key;
     if (v && typeof v === "object") v = v[pr.select(Number(vars.n ?? 0))] ?? v.other ?? v.one;
     return String(v).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
   };

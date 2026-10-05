@@ -588,7 +588,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
 
 
 /* ---- Partner-Änderungen → Kunden-Dashboard + Sammel-Mail (5 Min. nach der letzten Änderung) ---- */
-export const NOTIFY_DELAY_MIN = 5;
+export const NOTIFY_DELAY_MIN = 15; // bündelt, wenn der Partner mehrere Bewertungen hintereinander bearbeitet
 
 /** Vom Partner-Board aufgerufen, wenn der Partner einen Status ändert.
  *  „software" → Bewertung erscheint im Dashboard als „Needs software"; der Kunde entscheidet dort

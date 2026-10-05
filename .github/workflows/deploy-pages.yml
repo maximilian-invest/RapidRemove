@@ -28,7 +28,7 @@ jobs:
       # Laufzeit-Weiterleitungen gibt es nur im Node-Betrieb (Railway); für den
       # Pages-Export wird die Datei daher entfernt.
       - name: Remove middleware (not supported by static export)
-        run: rm -f src/middleware.ts
+        run: rm -f src/middleware.ts && rm -rf src/app/api/app-manifest
       - name: Build static export
         run: npm run build
         env:

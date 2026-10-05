@@ -1,7 +1,7 @@
 /* Sammel-Mail „Neuigkeiten im Dashboard" (Einzelbewertungen) — geht 5 Minuten nach der
    letzten Partner-Änderung eines Auftrags raus, damit Kunden nicht pro Klick eine Mail bekommen. */
 import * as React from "react";
-import { EmailShell, P, Bullets, CtaButton, brand, type MailLang } from "./components";
+import { EmailShell, P, Bullets, CtaButton, NoteBox, brand, type MailLang } from "./components";
 import { fmtReviewMoney } from "../reviewsPricing";
 
 type St = "checking" | "in_progress" | "removed" | "not_removable" | "software_offer" | "software_in_progress" | "cancelled";
@@ -33,6 +33,14 @@ export function kundenUpdateSubject(p: KundenUpdateProps): string {
   return p.changed.some((c) => c.from) ? t.subjChanged : t.subject;
 }
 
+/** Kurztext für Push (kleine Statuswechsel gehen nur per Push raus). */
+export function kundenUpdatePush(lang: string | undefined, changed: KundenUpdateProps["changed"]): { title: string; body: string } {
+  const t = T[lang && lang !== "de" && T[lang] ? lang : "en"];
+  const label = (s: DashSt) => { const m = MAP[s]; return m === "declined" ? t.declined : m ? t.st[m] : s; };
+  const parts = changed.slice(0, 3).map((c) => `${c.name || "Google"}: ${label(c.status)}`);
+  return { title: t.titleChanged, body: parts.join(" · ") + (changed.length > 3 ? ` · +${changed.length - 3}` : "") };
+}
+
 export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "eur", swPrice = 300, swDeposit = 150 }: KundenUpdateProps) {
   const l = lang && lang !== "de" && T[lang] ? lang : "en";
   const t = T[l];
@@ -46,15 +54,13 @@ export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, o
       {changed.length ? (
         <Bullets items={changed.map((c, i) => (
           <span key={i}>
-            {c.url ? <a href={c.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{c.name || c.url}</a> : <strong>{c.name}</strong>}
+            {c.url ? <a href={c.url} style={{ color: brand.ink, fontWeight: 700, wordBreak: "break-all" }}>{c.name || c.url}</a> : <strong>{c.name}</strong>}
             {" — "}{c.from ? <><span style={{ color: brand.muted }}>{label(c.from)}</span>{" → "}</> : null}<strong>{label(c.status)}</strong>
           </span>
         ))} />
       ) : null}
       {hasSw ? (
-        <div style={{ background: "#fff4e8", border: "1.5px solid #ff8000", borderRadius: 12, padding: "12px 14px", margin: "4px 0 16px", fontSize: 15, lineHeight: 1.5, color: "#1c1916" }}>
-          {t.swHint(fmtReviewMoney(swPrice, cur), fmtReviewMoney(swDeposit, cur))}
-        </div>
+        <NoteBox>{t.swHint(fmtReviewMoney(swPrice, cur), fmtReviewMoney(swDeposit, cur))}</NoteBox>
       ) : null}
       <div style={{ textAlign: "center", margin: "10px 0 20px" }}><CtaButton href={dashUrl}>{t.btn}</CtaButton></div>
       <P>{t.close}</P>

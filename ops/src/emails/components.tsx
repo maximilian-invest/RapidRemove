@@ -38,6 +38,10 @@ export function EmailShell({
   return (
     <Html lang={lang}>
       <Head>
+        {/* Immer im hellen Design anzeigen – iOS Mail färbt sonst um (schwarzer Button auf dunkler Karte). */}
+        <meta name="color-scheme" content="light only" />
+        <meta name="supported-color-schemes" content="light only" />
+        <style>{`:root{color-scheme:light only;supported-color-schemes:light only}`}</style>
         <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;600;700;800&display=swap" rel="stylesheet" />
       </Head>
       <Preview>{preview}</Preview>
