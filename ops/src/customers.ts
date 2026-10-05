@@ -9,6 +9,7 @@
  * KEINE Partner-Daten nach außen.
  */
 import crypto from "node:crypto";
+import { isTestEmail } from "./testAccounts";
 import type { FastifyInstance } from "fastify";
 import { pool, setOrderRawField, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
@@ -222,7 +223,10 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
     n += ks.length;
     await insertEvent({ orderId: o, type: "note", title: "Kunde: Software-Vorauszahlung bezahlt", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) → Working (${u.rowCount ?? 0})`, auto: true }).catch(() => {});
   }
-  if (n) void notifyPartner(`Paid – please start · ${n} review${n > 1 ? "s" : ""}`, "The customer paid the special-software removal. The task is now set to Working.");
+  if (n) {
+    const test = isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email);
+    void notifyPartner(`${test ? "TEST · " : ""}Paid – please start · ${n} review${n > 1 ? "s" : ""}`, "The customer paid the special-software removal. The task is now set to Working.", undefined, test);
+  }
   if (n) void notifyTeam(`Software bezahlt · ${p.amount} ${String(p.cur).toUpperCase()}`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner startet (In Arbeit)`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
 }
 
@@ -484,7 +488,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
         ).catch(() => {});
         await insertEvent({ orderId: o, email, type: "note", title: "Kunde: Spezial-Software abgelehnt (Dashboard)", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) storniert`, auto: true }).catch(() => {});
       }
-      void notifyPartner(`Cancelled by customer · ${picks.length} review${picks.length > 1 ? "s" : ""}`, "The customer declined the special-software removal – nothing to do.");
+      void notifyPartner(`${isTestEmail(email) ? "TEST · " : ""}Cancelled by customer · ${picks.length} review${picks.length > 1 ? "s" : ""}`, "The customer declined the special-software removal – nothing to do.", undefined, isTestEmail(email));
       void notifyTeam(`Software abgelehnt · ${picks.length} Bewertung(en)`, `Kunde · ${[...groups.keys()].join(", ")} · nichts zu zahlen`, `${SITE_URL}/admin`, { kind: "customer" });
       return { ok: true, declined: picks.length };
     }

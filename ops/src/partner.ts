@@ -190,7 +190,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     }
     out.push(row);
   }
-  if (fresh.length && !test) void partnerNewOrder(customer || "", fresh); // Testauftrag: Partner bekommt nichts
+  if (fresh.length) void partnerNewOrder(customer || "", fresh, test); // Testauftrag → nur an den Test-Login
   return out;
 }
 

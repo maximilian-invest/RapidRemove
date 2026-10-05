@@ -110,7 +110,7 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const r = await pool.query(`SELECT email, pw_enc, created_at, last_login FROM partner_accounts ORDER BY created_at`);
-    const subs = await pool.query(`SELECT count(*)::int AS n FROM partner_push_subs`).catch(() => ({ rows: [{ n: 0 }] }));
+    const subs = await pool.query(`SELECT count(*)::int AS n FROM partner_push_subs WHERE NOT test`).catch(() => ({ rows: [{ n: 0 }] }));
     return { ok: true, pushDevices: subs.rows[0].n, accounts: r.rows.map((x) => ({ email: x.email, password: decPw(x.pw_enc), created: x.created_at, lastLogin: x.last_login, test: isTestEmail(x.email) })) };
   });
 
@@ -136,10 +136,12 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const b = (req.body || {}) as Record<string, unknown>;
     const t = String(b.t || "");
     if (!(await isPartnerSession(t)) && !(await isLinkToken(t))) return reply.code(401).send({ ok: false, error: "invalid link" });
-    if (t.startsWith("ps_")) { const e = await partnerSessionEmail(t); if (e === "admin-preview" || isTestEmail(e)) return reply.code(400).send({ ok: false, error: "test mode" }); } // Test-Geräte nicht als Partner-Gerät
+    // Test-Login / Test-Board: Gerät bekommt nur Pushes zu Testaufträgen.
+    const se = t.startsWith("ps_") ? await partnerSessionEmail(t) : null;
+    const testDev = se === "admin-preview" || isTestEmail(se);
     const sub = (b.sub || {}) as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
     if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) return reply.code(400).send({ ok: false, error: "subscription" });
-    await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } });
+    await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } }, testDev);
     return { ok: true };
   });
 

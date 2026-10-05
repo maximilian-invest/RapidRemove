@@ -15,7 +15,7 @@ import {
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
-import PushGate, { pushState } from "@/components/PushGate";
+import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
 
@@ -314,7 +314,11 @@ export default function CustomerDashboard() {
     if (!token || !hasData || offerPk) return;
     injectAppManifest(token, lang);
     let off = false;
-    pushState("customer").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
+    pushState("customer").then((st) => {
+      if (off) return;
+      if (st === "on") enablePush("customer", token, true).catch(() => {}); // Gerät am Server (neu) eintragen
+      else if (["ask", "install", "blocked"].includes(st)) setGate(st);
+    }).catch(() => {});
     return () => { off = true; };
   }, [token, hasData, offerPk]); // eslint-disable-line react-hooks/exhaustive-deps
 

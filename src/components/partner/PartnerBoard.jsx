@@ -11,7 +11,7 @@ import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
 import PasskeyOffer from "@/components/PasskeyOffer";
-import PushGate, { pushState } from "@/components/PushGate";
+import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed } from "@/lib/passkey";
 
 const SKIP_KEY = "rr_partner_setup_skip";
@@ -230,9 +230,13 @@ export default function PartnerBoard() {
 
   // Push aufdrängen: nach jedem Öffnen, solange nicht eingeschaltet („Not now" gilt nur für diese Sitzung).
   React.useEffect(() => {
-    if (!token || setup || offerPk || preview || isPreviewUrl() || tasks === null) return; // erst nach dem Laden (Test-Zugang bekommt keinen Push)
+    if (!token || setup || offerPk || tasks === null) return; // erst nach dem Laden
     let off = false;
-    pushState("partner").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
+    pushState("partner").then((st) => {
+      if (off) return;
+      if (st === "on") enablePush("partner", token, true).catch(() => {}); // Gerät am Server (neu) eintragen
+      else if (["ask", "install", "blocked"].includes(st)) setGate(st);
+    }).catch(() => {});
     return () => { off = true; };
   }, [token, setup, offerPk, preview, tasks === null]); // eslint-disable-line react-hooks/exhaustive-deps
 

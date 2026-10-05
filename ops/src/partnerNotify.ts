@@ -14,20 +14,22 @@ const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replac
 export async function initPartnerPush(): Promise<void> {
   if (!pool) return;
   await pool.query(`CREATE TABLE IF NOT EXISTS partner_push_subs (endpoint text PRIMARY KEY, p256dh text NOT NULL, auth text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`);
+  // Geräte des Test-Logins bekommen nur Pushes zu Testaufträgen (und umgekehrt).
+  await pool.query(`ALTER TABLE partner_push_subs ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
 }
-export async function savePartnerSub(sub: PushSub): Promise<void> {
+export async function savePartnerSub(sub: PushSub, test = false): Promise<void> {
   if (!pool) return;
   await pool.query(
-    `INSERT INTO partner_push_subs (endpoint, p256dh, auth) VALUES ($1,$2,$3) ON CONFLICT (endpoint) DO UPDATE SET p256dh=$2, auth=$3`,
-    [sub.endpoint, sub.keys.p256dh, sub.keys.auth],
+    `INSERT INTO partner_push_subs (endpoint, p256dh, auth, test) VALUES ($1,$2,$3,$4) ON CONFLICT (endpoint) DO UPDATE SET p256dh=$2, auth=$3, test=$4`,
+    [sub.endpoint, sub.keys.p256dh, sub.keys.auth, test],
   );
 }
 
 /** Push an alle Partner-Geräte (Uber-Stil: kurzer Titel, Body „Kunde · Details"). */
-export async function notifyPartner(title: string, body: string, tag?: string): Promise<void> {
+export async function notifyPartner(title: string, body: string, tag?: string, test = false): Promise<void> {
   try {
     if (!pool || !hasWebPush()) return;
-    const r = await pool.query(`SELECT endpoint, p256dh, auth FROM partner_push_subs`);
+    const r = await pool.query(`SELECT endpoint, p256dh, auth FROM partner_push_subs WHERE test=$1`, [test]);
     if (!r.rows.length) return;
     const subs: PushSub[] = r.rows.map((x) => ({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } }));
     const expired = await sendWebPushAll(subs, { title, body, url: "/partner", tag: tag || `rrp-${Date.now().toString(36)}` });
@@ -38,17 +40,17 @@ export async function notifyPartner(title: string, body: string, tag?: string): 
 const KIND: Record<string, string> = { normal: "standard", old: "older than 4 weeks", nt: "no text" };
 
 /** Neue Bewertungen auf dem Board → Push + E-Mail an den Partner. */
-export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string }[]): Promise<void> {
+export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string }[], test = false): Promise<void> {
   if (!tasks.length) return;
   const n = tasks.length;
   const name = customer || "New customer";
   const kinds = Object.entries(tasks.reduce((m, t) => ({ ...m, [t.kind]: (m[t.kind] || 0) + 1 }), {} as Record<string, number>))
     .map(([k, c]) => `${c} ${KIND[k] || k}`).join(", ");
-  await notifyPartner(`New order · ${name}`, `${n} review${n > 1 ? "s" : ""} · ${kinds}`, `rrp-order-${tasks[0].code}`);
+  await notifyPartner(`${test ? "TEST · " : ""}New order · ${name}`, `${n} review${n > 1 ? "s" : ""} · ${kinds}`, `rrp-order-${tasks[0].code}`, test);
   try {
     if (!pool) return;
     const acc = await pool.query(`SELECT email FROM partner_accounts`);
-    const to = acc.rows.map((x) => x.email).filter((e) => e && !isTestEmail(e)); // Test-Login bekommt keine echten Aufträge
+    const to = acc.rows.map((x) => x.email).filter((e) => e && isTestEmail(e) === test); // Test ↔ echt strikt getrennt
     if (!to.length) return;
     const url = `${SITE_URL}/partner`;
     const el = React.createElement(EmailShell as any, { preview: `New order: ${name} – ${n} review${n > 1 ? "s" : ""}`, title: "New order on your board", lang: "en" },
