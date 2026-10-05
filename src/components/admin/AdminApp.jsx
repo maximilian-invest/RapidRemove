@@ -1398,11 +1398,20 @@ function ReviewsStartPanel({ o, items, cur, toast }) {
   const lang = o.lang && o.lang !== "de" ? o.lang : "en";
   const [sending, setSending] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
+  // Welche Bewertungen nehmen wir an? Standard: alle (bzw. die zuletzt angenommenen).
+  // Nur angenommene zählen für Mengenrabatt, Rechnung und Mahnung.
+  const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
+  const [acc, setAcc] = React.useState(() => {
+    const prev = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
+    const m = {}; items.forEach((it, i) => { m[i] = prev ? prev.has(keyOf(it)) : true; }); return m;
+  });
+  const accepted = items.filter((it, i) => acc[i]);
+  const declinedCount = items.length - accepted.length;
   const send = async () => {
     if (sending) return;
     setSending(true);
     try {
-      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items });
+      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items: accepted, declinedCount });
       setSentAt(new Date());
       toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓`);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
@@ -1410,8 +1419,19 @@ function ReviewsStartPanel({ o, items, cur, toast }) {
   };
   return (
     <div className="rvs-start" style={{ padding: 0, background: "none", border: 0, margin: "0 0 10px" }}>
-      <button className="btn btn-pri btn-sm" disabled={sending} onClick={send}>
-        <AI.send /> {sending ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)})`}
+      {items.length > 1 ? (
+        <div style={{ margin: "0 0 10px" }}>
+          <div style={{ fontSize: 12.5, fontWeight: 800, margin: "0 0 6px" }}>Welche Bewertungen nehmen wir an? <span className="muted" style={{ fontWeight: 600 }}>({accepted.length} von {items.length} · nur diese zählen für Rabatt + Rechnung)</span></div>
+          {items.map((it, i) => (
+            <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, padding: "4px 0", cursor: "pointer", opacity: acc[i] ? 1 : 0.55 }}>
+              <input type="checkbox" checked={!!acc[i]} onChange={(e) => setAcc((m) => ({ ...m, [i]: e.target.checked }))} style={{ marginTop: 3 }} />
+              <span style={{ wordBreak: "break-all" }}>{it.url ? it.url : <React.Fragment><b>{it.name}</b> — „{(it.text || "").slice(0, 90)}{(it.text || "").length > 90 ? "…" : ""}“</React.Fragment>}{it.old ? <span style={{ color: "#b26a00", fontWeight: 800 }}> · älter als 4 Wo.</span> : null}</span>
+            </label>
+          ))}
+        </div>
+      ) : null}
+      <button className="btn btn-pri btn-sm" disabled={sending || !accepted.length} onClick={send}>
+        <AI.send /> {sending ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)})${declinedCount ? ` · ${accepted.length} angenommen, ${declinedCount} abgelehnt` : ""}`}
       </button>
       {sentAt ? <div className="muted" style={{ fontSize: 12, fontWeight: 700, marginTop: 8 }}>✓ Gesendet ({langLabel(lang)}) — erscheint im Verlauf unten.</div> : null}
     </div>
@@ -1486,7 +1506,7 @@ function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nOld = items.filter((it) => it && it.old).length;
-  const orderedN = (o.reviewItems && o.reviewItems.length) || items.length;
+  const orderedN = (o.reviewsAccepted && o.reviewsAccepted.length) || (o.reviewItems && o.reviewItems.length) || items.length;
   const pct = reviewDiscountPct(Math.max(items.length, orderedN));
   const total = Math.round((items.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link.
@@ -1625,7 +1645,9 @@ function ReviewShotsPanel({ o, items, toast }) {
    fällig am Löschtag. Versand über POST /admin/reviews-invoice. */
 function ReviewsInvoicePanel({ o, toast, onStatus }) {
   // Je Eintrag Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative ohne Link).
-  const items = o.reviewItems && o.reviewItems.length ? o.reviewItems : [];
+  // Nach der Startbestätigung: nur die angenommenen Bewertungen (abgelehnte werden nie verrechnet).
+  const items = o.reviewsAccepted && o.reviewsAccepted.length ? o.reviewsAccepted : (o.reviewItems && o.reviewItems.length ? o.reviewItems : []);
+  const allItems = o.reviewItems && o.reviewItems.length ? o.reviewItems : items; // alle eingereichten (Start, Screenshots, Storno)
   const [sel, setSel] = React.useState({});   // Index -> true (gelöscht)
   const [sending, setSending] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
@@ -1684,13 +1706,13 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
     <div>
       {/* Schritt 1 im Ablauf: „wir haben begonnen" — vor der Löschbestätigung. */}
       <details className="rv-shots" style={{ margin: "0 0 12px", borderBottom: "1px solid var(--hairline)", paddingBottom: 8 }}>
-        <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 800, padding: "4px 0" }}>📷 Screenshots (Profil + {items.length} Bewertung{items.length === 1 ? "" : "en"})</summary>
+        <summary style={{ cursor: "pointer", fontSize: 12.5, fontWeight: 800, padding: "4px 0" }}>📷 Screenshots (Profil + {allItems.length} Bewertung{allItems.length === 1 ? "" : "en"})</summary>
         <ProfileShotPanel o={o} toast={toast} />
-        <ReviewShotsPanel o={o} items={items} toast={toast} />
+        <ReviewShotsPanel o={o} items={allItems} toast={toast} />
       </details>
-      <ReviewsStartPanel o={o} items={items} cur={cur} toast={toast} />
+      <ReviewsStartPanel o={o} items={allItems} cur={cur} toast={toast} />
       {/* Ausweg, wenn die Bewertung die Voraussetzungen nicht erfüllt. */}
-      {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={items} toast={toast} onStatus={onStatus} /> : null}
+      {o.status !== "storniert" ? <ReviewsStornoPanel o={o} items={allItems} toast={toast} onStatus={onStatus} /> : null}
       <div className="muted" style={{ fontSize: 12, fontWeight: 700, margin: "2px 0 8px" }}>
         {items.length} eingereicht · {per} je Löschung · Gelöschte markieren, dann Rechnung senden
       </div>

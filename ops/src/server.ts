@@ -1104,22 +1104,27 @@ app.post("/admin/reviews-start", async (req, reply) => {
   }).filter(Boolean) as StartItem[];
   const currency = (clip(b.currency, 8) || "eur").toLowerCase() === "usd" ? "usd" : "eur";
   // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
+  // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
   const per = quoteReviews(items, currency).per;
+  // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
+  const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
   // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
   const raw = mailLang(b.lang);
   const tlang = raw === "de" ? "en" : raw;
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined };
     const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
+    // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.
+    if (orderId && items.length) await setOrderRawField(orderId, "reviewsAccepted", items).catch(() => {});
     return { ok: true, lang: tlang, count: items.length };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");

@@ -105,6 +105,8 @@ function mapOrder(r) {
       ? r.raw.reviewItems.filter((it) => it && (it.url || (it.name && it.text)))
       : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
+    // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
+    reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,
     reviewsRemoved: (r.raw && Array.isArray(r.raw.reviewsRemoved)) ? r.raw.reviewsRemoved.filter((it) => it && (it.url || (it.name && it.text))) : null,
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
