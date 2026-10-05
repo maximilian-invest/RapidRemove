@@ -12,6 +12,9 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
+import { partnerStatusChanged } from "./customers";
+import { ensureReviewsAmountLink } from "./reviewsSetup";
+import { hasSecretKey } from "./integrations/stripe";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
@@ -264,6 +267,12 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       [st, note || null, id],
     );
     const row = r.rows[0] as Row;
+    // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden 5 Min. nach der letzten Änderung.
+    if (status && status !== old.status && row.order_id) {
+      void partnerStatusChanged(row.order_id, row.item_key, status, {
+        makeLink: async (amount, cur) => (hasSecretKey() ? ensureReviewsAmountLink(amount, cur) : ""),
+      }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
+    }
     if (status && status !== old.status) {
       const label: Record<string, string> = { working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
       if (row.order_id) {

@@ -25,6 +25,14 @@ export async function initCustomerTables(): Promise<void> {
       last_login timestamptz
     )
   `);
+  // Sammel-Benachrichtigung: 5 Minuten nach der LETZTEN Partner-Änderung eines Auftrags eine Mail.
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS cust_notify (
+      order_id   text PRIMARY KEY,
+      due_at     timestamptz NOT NULL,
+      keys       jsonb NOT NULL DEFAULT '[]'::jsonb
+    )
+  `);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS cust_sessions (
       token_hash text PRIMARY KEY,
@@ -84,7 +92,7 @@ async function sessionEmail(token: unknown): Promise<string | null> {
 }
 
 /* ---- Zahlungen (raw.reviewsPayments) ---- */
-export type CustPayment = { id: string; kind: "deposit" | "software" | "invoice"; amount: number; cur: string; url: string; n?: number; created: string; paid?: string | null };
+export type CustPayment = { id: string; kind: "deposit" | "software" | "invoice"; amount: number; cur: string; url: string; n?: number; keys?: string[]; created: string; paid?: string | null };
 export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id" | "created" | "paid">): Promise<void> {
   if (!pool || !orderId || !p.url) return;
   const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [orderId]);
@@ -116,7 +124,7 @@ type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: bo
 const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
 export type ItemStatus = "checking" | "in_progress" | "removed" | "not_removable" | "software_offer" | "software_in_progress" | "cancelled";
 
-function orderView(o: { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null }) {
+function orderView(o: { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null }, partner: Map<string, string> = new Map()) {
   const raw = (o.raw || {}) as Record<string, unknown>;
   const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
   const accepted: Item[] | null = Array.isArray(raw.reviewsAccepted) ? (raw.reviewsAccepted as Item[]) : null;
@@ -126,15 +134,19 @@ function orderView(o: { id: string; created_at: string; status: string | null; p
   const acc = new Set((accepted || []).map(keyOf));
   const sw = new Set(software.map(keyOf));
   const rem = new Set(removed.map(keyOf));
-  const swPaid = payments.some((p) => p.kind === "software" && p.paid);
+  // Software-Anzahlung bezahlt? Je Bewertung (keys) bzw. alt: irgendeine Software-Zahlung.
+  const swPaidFor = (k: string) => payments.some((p) => p.kind === "software" && p.paid && (!p.keys || !p.keys.length || p.keys.includes(k)));
   const cancelled = o.status === "storniert";
   const view = items.map((it) => {
     const k = keyOf(it);
     let status: ItemStatus = "checking";
+    const ps = partner.get(k); // Status vom Partner-Board (working | removed | not_possible | software)
     if (rem.has(k)) status = "removed";
     else if (cancelled) status = "cancelled";
-    else if (acc.has(k)) status = "in_progress";
-    else if (sw.has(k)) status = swPaid ? "software_in_progress" : "software_offer";
+    else if (ps === "removed") status = "removed";
+    else if (ps === "software" || sw.has(k)) status = swPaidFor(k) ? "software_in_progress" : "software_offer";
+    else if (ps === "not_possible") status = "not_removable";
+    else if (ps === "working" || acc.has(k)) status = "in_progress";
     else if (accepted) status = "not_removable";
     return { url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt, status };
   });
@@ -182,7 +194,11 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
         WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 20`,
       [email],
     );
-    return { ok: true, email, name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map(orderView) };
+    const ids = r.rows.map((x) => x.id);
+    const pt = ids.length ? await pool.query(`SELECT order_id, item_key, status FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as { order_id: string; item_key: string; status: string }[] })) : { rows: [] as { order_id: string; item_key: string; status: string }[] };
+    const byOrder = new Map<string, Map<string, string>>();
+    for (const t of pt.rows) { if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map()); byOrder.get(t.order_id)!.set(t.item_key, t.status); }
+    return { ok: true, email, name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
   });
 
   // Passwort vergessen: neues Passwort per Mail (Antwort immer gleich → keine Konto-Erkennung).
@@ -199,4 +215,72 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     }
     return { ok: true };
   });
+}
+
+
+/* ---- Partner-Änderungen → Kunden-Dashboard + Sammel-Mail (5 Min. nach der letzten Änderung) ---- */
+export const NOTIFY_DELAY_MIN = 5;
+
+/** Vom Partner-Board aufgerufen, wenn der Partner einen Status ändert.
+ *  „software" → Bewertung wird Spezial-Software-Angebot mit eigenem Anzahlungs-Link (50 % von 300). */
+export async function partnerStatusChanged(
+  orderId: string, itemKey: string | null, status: string,
+  deps: { makeLink: (amount: number, cur: "usd" | "eur") => Promise<string> },
+): Promise<void> {
+  if (!pool || !orderId) return;
+  const r = await pool.query(`SELECT raw, country FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
+  if (!r.rows[0]) return; // nur Einzelbewertungen
+  const raw = (r.rows[0].raw || {}) as Record<string, unknown>;
+  const cur: "usd" | "eur" = r.rows[0].country === "US" ? "usd" : "eur";
+  if (status === "software" && itemKey) {
+    const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
+    const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
+    const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
+    if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
+    const pays: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
+    if (!pays.some((p) => p.kind === "software" && (p.keys || []).includes(itemKey))) {
+      // Rabattstufe nach Anzahl der Bewertungen im Auftrag (wie überall: 3+ −10 %, 5+ −15 %, 10+ −30 %).
+      const n = items.length || 1;
+      const pct = n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0;
+      const amount = Math.round((150 * (100 - pct)) / 100);
+      const url = await deps.makeLink(amount, cur).catch(() => "");
+      if (url) await addOrderPayment(orderId, { kind: "software", amount, cur, url, n: 1, keys: [itemKey] });
+    }
+  }
+  // Sammel-Mail planen bzw. verschieben (Debounce).
+  await pool.query(
+    `INSERT INTO cust_notify (order_id, due_at, keys) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb)
+     ON CONFLICT (order_id) DO UPDATE SET due_at = EXCLUDED.due_at,
+       keys = (SELECT jsonb_agg(DISTINCT k) FROM jsonb_array_elements(cust_notify.keys || EXCLUDED.keys) k)`,
+    [orderId, String(NOTIFY_DELAY_MIN), JSON.stringify(itemKey ? [itemKey] : [])],
+  );
+}
+
+/** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus }[] }[]> {
+  if (!pool) return [];
+  const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys`);
+  const out = [];
+  for (const d of due.rows) {
+    const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1`, [d.order_id]);
+    const row = o.rows[0];
+    if (!row || !row.email) continue;
+    const pt = await pool.query(`SELECT item_key, status FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
+    const view = orderView(row, new Map(pt.rows.map((x) => [x.item_key, x.status])));
+    const items: Item[] = Array.isArray(row.raw?.reviewItems) ? row.raw.reviewItems : [];
+    const keys: string[] = Array.isArray(d.keys) ? d.keys : [];
+    const changed = items.map((it, i) => ({ k: keyOf(it), v: view.items[i] })).filter((x) => keys.includes(x.k)).map((x) => ({ url: x.v.url, name: x.v.name, status: x.v.status }));
+    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, changed, keys });
+  }
+  return out;
+}
+
+/** Fehlgeschlagene Sammel-Mail später nochmal versuchen. */
+export async function requeueNotify(orderId: string, keys: string[], minutes = 15): Promise<void> {
+  if (!pool) return;
+  await pool.query(
+    `INSERT INTO cust_notify (order_id, due_at, keys) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb)
+     ON CONFLICT (order_id) DO UPDATE SET keys = (SELECT jsonb_agg(DISTINCT k) FROM jsonb_array_elements(cust_notify.keys || EXCLUDED.keys) k)`,
+    [orderId, String(minutes), JSON.stringify(keys)],
+  );
 }

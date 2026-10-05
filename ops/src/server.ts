@@ -21,7 +21,8 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes } from "./partner";
-import { initCustomerTables, registerCustomerRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL } from "./customers";
+import { initCustomerTables, registerCustomerRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify } from "./customers";
+import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
@@ -1707,6 +1708,24 @@ async function start() {
     const addr = await app.listen({ host: "0.0.0.0", port });
     app.log.info(`ops läuft auf ${addr}`);
     startUpsellWorker(app);
+    // Kunden-Dashboard: Sammel-Mails („Neuigkeiten im Dashboard") 5 Min. nach der letzten Partner-Änderung.
+    setInterval(async () => {
+      try {
+        for (const n of await takeDueNotifications()) {
+          if (!n.changed.length) continue;
+          try {
+          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: DASH_URL, orderId: n.orderId, changed: n.changed };
+          const html = await render(React.createElement(KundenUpdateReviews, props as any));
+          const subject = kundenUpdateSubject(props as any);
+          await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+          await insertEvent({ orderId: n.orderId, email: n.email, type: "mail", title: "Dashboard-Update an Kunden gesendet (automatisch)", detail: n.changed.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), html, subject, auto: true });
+          } catch (e) {
+            app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen – neuer Versuch in 15 Min.");
+            await requeueNotify(n.orderId, n.keys, 15).catch(() => {});
+          }
+        }
+      } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
+    }, 60_000);
     startPaymentReconciler(app);
     startLeadEnrichWorker(app);   // Auto-E-Mail-Recherche (aktiv nur mit GOOGLE_MAPS_API_KEY)
     // Bewertungs-Screenshots der letzten 14 Tage nachholen (nur mit SCREENSHOTONE_KEY;
