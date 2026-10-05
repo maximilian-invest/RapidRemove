@@ -79,30 +79,31 @@ TERMS.de = {
         "2.2. **Profil-Löschung + Neuanlage („Remove + Restart“):** Leistung gemäß Punkt 2.1 zuzüglich Einrichtung eines neuen Google-Unternehmensprofils mit den vom Kunden bereitgestellten korrekten Unternehmensdaten.",
         "2.3. **Reputations-Verdrängung:** Laufende Maßnahmen mit dem Ziel, vom Kunden benannte negative Suchergebnisse in der Google-Suche durch andere Inhalte zu verdrängen. Es handelt sich um ein **Bemühen ohne Erfolgsgarantie**; ein bestimmtes Ranking-Ergebnis wird nicht geschuldet. Details (Laufzeit, Umfang, Reporting) ergeben sich aus dem jeweiligen Angebot.",
         "2.4. **Presse-Auslistung (Vermittlung):** RapidRemove **vermittelt** den Kontakt zu einer Partnerkanzlei und unterstützt bei der Antragstellung. Die rechtliche Prüfung und Vertretung erfolgt ausschließlich durch die Partnerkanzlei; ein gesonderter Vertrag kommt zwischen Kunde und Partnerkanzlei zustande. RapidRemove erbringt **keine Rechtsberatung** und schuldet keinen Auslistungserfolg.",
-        "2.5. **Keine Löschung einzelner Bewertungen:** Gegenstand der Leistung gemäß 2.1/2.2 ist stets die Entfernung des gesamten Profils samt aller Bewertungen, nicht die Entfernung einzelner Rezensionen.",
+        "2.5. **Entfernung einzelner Bewertungen:** Entfernung einzelner, vom Kunden ausgewählter Bewertungen von seinem Google-Unternehmensprofil; das Profil selbst bleibt bestehen. Wir prüfen jede Bewertung vorab und betreiben die Entfernung ausschließlich über die offiziellen Melde- und Beschwerdeverfahren von Google, soweit die Bewertung gegen die Richtlinien von Google oder geltendes Recht verstößt (z. B. gefälschte Bewertungen, Bewertungen von Mitbewerbern oder Nicht-Kunden, Beleidigungen, unwahre Tatsachenbehauptungen). Echte, sachliche Kritik ist nicht Gegenstand der Leistung. Über die Entfernung entscheidet Google; ein bestimmter Erfolg wird nicht garantiert. Die Leistung wird nicht in allen Regionen angeboten; maßgeblich ist das Angebot im Bestellprozess.",
         "2.6. **Keine Rechtsdienstleistung:** Sämtliche Leistungen von RapidRemove sind technisch-organisatorischer Natur. RapidRemove erbringt keine Rechtsberatung und keine Vertretung vor Behörden oder Gerichten.",
       ] },
       { h: "3. Vertragsabschluss", ps: [
         "3.1. Der kostenlose Lösch-Check auf unserer Website ist unverbindlich und stellt kein Angebot dar.",
         "3.2. Der Vertrag kommt zustande, wenn der Kunde unser Angebot (per Website-Bestellstrecke oder E-Mail) annimmt und wir die Beauftragung bestätigen, spätestens jedoch mit Beginn der Leistungserbringung.",
-        "3.3. **Berechtigung:** Der Kunde sichert zu, dass er zur Verfügung über das betreffende Unternehmensprofil berechtigt ist (als Inhaber des Unternehmens oder mit dessen ausdrücklicher Vollmacht). Die Beauftragung der Löschung fremder Profile ohne Berechtigung ist untersagt; der Kunde hält RapidRemove insoweit schad- und klaglos.",
+        "3.3. **Berechtigung:** Der Kunde sichert zu, dass er zur Verfügung über das betreffende Unternehmensprofil berechtigt ist (als Inhaber des Unternehmens oder mit dessen ausdrücklicher Vollmacht). Die Beauftragung der Löschung fremder Profile ohne Berechtigung ist untersagt; der Kunde hält RapidRemove insoweit schad- und klaglos. Aufträge gemäß 2.5 dürfen nur für Bewertungen auf dem eigenen bzw. vom Kunden verantworteten Unternehmensprofil erteilt werden.",
       ] },
       { h: "4. Mitwirkungspflichten des Kunden", ps: [
         "4.1. Der Kunde bestätigt das zu entfernende Profil und erteilt die erforderliche Bearbeitungsberechtigung für das Unternehmensprofil. Ein Zugriff auf das Google-Konto, Gmail, Google Ads oder persönliche Daten des Kunden ist dafür nicht erforderlich und wird nicht verlangt.",
         "4.2. Verzögert sich die Leistungserbringung, weil der Kunde erforderliche Mitwirkungen nicht erbringt, verlängern sich genannte Bearbeitungszeiten entsprechend.",
       ] },
       { h: "5. Bearbeitungszeit", ps: [
-        "5.1. Die Entfernung erfolgt in der Regel innerhalb von **24 bis 48 Stunden** ab Vorliegen aller Mitwirkungen gemäß Punkt 4. Hierbei handelt es sich um eine Zirka-Angabe, nicht um einen Fixtermin. Verzögerungen durch Google-interne Prozesse haben wir nicht zu vertreten.",
+        "5.1. Die Entfernung erfolgt in der Regel innerhalb von **24 bis 48 Stunden** ab Vorliegen aller Mitwirkungen gemäß Punkt 4. Hierbei handelt es sich um eine Zirka-Angabe, nicht um einen Fixtermin. Verzögerungen durch Google-interne Prozesse haben wir nicht zu vertreten. Bei Leistungen gemäß 2.5 richtet sich die Dauer nach der Prüfung durch Google; sie beträgt in der Regel einige Tage, in Einzelfällen bis zu etwa drei Wochen.",
       ] },
       { h: "6. Preise und Zahlung", ps: [
         "6.1. Es gelten die zum Zeitpunkt der Beauftragung auf der Website bzw. im Angebot ausgewiesenen Festpreise. Sämtliche ausgewiesenen Preise sind Endpreise und verstehen sich inklusive allfälliger gesetzlicher Umsatzsteuer. Je nach Region des Kunden erfolgt die Abrechnung in EUR oder USD.",
-        "6.2. **Zahlung nach Erfolg („No Cure, No Pay“):** Für Leistungen gemäß 2.1 und 2.2 wird das Entgelt erst mit Eintritt des Erfolges gemäß Punkt 7 fällig. Bleibt der Erfolg aus, schuldet der Kunde kein Entgelt. Bei der Zahlungsabwicklung kann eine Zahlungsautorisierung bereits bei Beauftragung erfolgen; die Belastung erfolgt erst nach Erfolgseintritt.",
+        "6.2. **Zahlung nach Erfolg („No Cure, No Pay“):** Für Leistungen gemäß 2.1, 2.2 und 2.5 wird das Entgelt erst mit Eintritt des Erfolges gemäß Punkt 7 fällig. Bleibt der Erfolg aus, schuldet der Kunde kein Entgelt. Bei der Zahlungsabwicklung kann eine Zahlungsautorisierung bereits bei Beauftragung erfolgen; die Belastung erfolgt erst nach Erfolgseintritt.",
         "6.3. Für die Reputations-Verdrängung gelten die im Angebot genannten Vergütungen (z. B. einmaliges Audit, monatlicher Retainer); diese sind **nicht** erfolgsabhängig, sofern nicht ausdrücklich anders vereinbart.",
         "6.4. Zahlungsarten: die im Bestellprozess angebotenen Methoden (z. B. Kreditkarte, PayPal, Klarna, iDEAL); die Abwicklung erfolgt über externe Zahlungsdienstleister.",
       ] },
       { h: "7. Erfolgsdefinition, Abnahme", ps: [
         "7.1. Der Erfolg der Profil-Löschung tritt ein, wenn das beauftragte Unternehmensprofil in der Google-Suche und auf Google Maps **öffentlich nicht mehr abrufbar** ist. Maßgeblich ist die Nichtabrufbarkeit des Profils selbst; aus technischen Gründen (Caches, Drittseiten, zeitversetzte Synchronisierung einzelner Google-Dienste) können einzelne Inhalte vorübergehend noch auffindbar sein, ohne dass dies den Erfolgseintritt hindert.",
         "7.2. Wir informieren den Kunden über den Erfolgseintritt. Der Kunde kann binnen 7 Tagen Einwände erheben; andernfalls gilt die Leistung als abgenommen.",
+        "7.3. Bei Leistungen gemäß 2.5 tritt der Erfolg je Bewertung ein, sobald die betreffende Bewertung auf dem Google-Unternehmensprofil **öffentlich nicht mehr angezeigt** wird. Das Entgelt wird je tatsächlich entfernter Bewertung fällig; für nicht entfernte Bewertungen schuldet der Kunde kein Entgelt. Preis, allfällige Aufschläge (z. B. für ältere Bewertungen) und Mengenrabatte ergeben sich aus der Website bzw. dem Angebot.",
       ] },
       { h: "8. Wiedereinstellungs-Schutz", ps: [
         "8.1. Wird das entfernte Profil während eines aufrechten Wiedereinstellungs-Schutzes durch Dritte oder durch automatisierte Google-Prozesse erneut öffentlich eingestellt, entfernen wir es auf Mitteilung des Kunden hin kostenlos erneut. Der Schutzzeitraum richtet sich nach dem gewählten Schutz-Paket: beim **Monatlichen Schutz** und bei der **Täglichen Überwachung** für die Laufzeit des aufrechten Abonnements (jeweils monatlich kündbar), beim **Lebenslangen Schutz** dauerhaft. Bei der Täglichen Überwachung sowie beim Lebenslangen Schutz prüfen wir zusätzlich laufend selbst auf Wiedereinstellungen, ohne dass es einer Mitteilung des Kunden bedarf.",
@@ -128,7 +129,7 @@ TERMS.de = {
         "12.4. Sollten einzelne Bestimmungen unwirksam sein, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt.",
       ] },
     ],
-    upd: "Stand: Juni 2026",
+    upd: "Stand: Oktober 2026",
   },
   wid: {
     title: "Widerrufsbelehrung",
@@ -176,30 +177,31 @@ TERMS.en = {
         "2.2. **Profile removal + new setup (\"Remove + Restart\"):** Service pursuant to clause 2.1 plus setup of a new Google business profile with the correct business data provided by the customer.",
         "2.3. **Reputation suppression:** Ongoing measures aimed at pushing negative search results named by the customer out of Google Search with other content. This is an **effort without a guarantee of success**; no specific ranking result is owed. Details (term, scope, reporting) follow from the respective offer.",
         "2.4. **Press de-indexing (referral):** RapidRemove **refers** the customer to a partner law firm and assists with the application. Legal review and representation are carried out exclusively by the partner law firm; a separate contract is concluded between the customer and the partner law firm. RapidRemove provides **no legal advice** and owes no de-indexing success.",
-        "2.5. **No removal of individual reviews:** The subject of the service pursuant to 2.1/2.2 is always the removal of the entire profile including all reviews, not the removal of individual reviews.",
+        "2.5. **Removal of individual reviews:** Removal of individual reviews selected by the customer from their Google Business Profile; the profile itself remains in place. We assess each review in advance and pursue removal exclusively through Google's official reporting and complaint procedures, insofar as the review violates Google's policies or applicable law (e.g. fake reviews, reviews by competitors or non-customers, insults, untrue statements of fact). Genuine, factual criticism is not covered by the service. Google decides on the removal; no particular result is guaranteed. The service is not offered in all regions; the offer shown in the ordering process is decisive.",
         "2.6. **No legal services:** All RapidRemove services are of a technical-organisational nature. RapidRemove provides no legal advice and no representation before authorities or courts.",
       ] },
       { h: "3. Conclusion of contract", ps: [
         "3.1. The free removal check on our website is non-binding and does not constitute an offer.",
         "3.2. The contract is concluded when the customer accepts our offer (via the website order flow or e-mail) and we confirm the engagement, at the latest, however, when performance of the service begins.",
-        "3.3. **Authorisation:** The customer warrants that they are entitled to dispose of the business profile in question (as the owner of the business or with its express authority). Commissioning the removal of third-party profiles without authorisation is prohibited; the customer shall indemnify and hold RapidRemove harmless in this respect.",
+        "3.3. **Authorisation:** The customer warrants that they are entitled to dispose of the business profile in question (as the owner of the business or with its express authority). Commissioning the removal of third-party profiles without authorisation is prohibited; the customer shall indemnify and hold RapidRemove harmless in this respect. Orders pursuant to 2.5 may only be placed for reviews on the customer's own business profile or a profile the customer is responsible for.",
       ] },
       { h: "4. Customer's duties to cooperate", ps: [
         "4.1. The customer confirms the profile to be removed and grants the required editing authorisation for the business profile. Access to the customer's Google account, Gmail, Google Ads or personal data is not required for this and will not be requested.",
         "4.2. If performance is delayed because the customer fails to provide required cooperation, the stated processing times are extended accordingly.",
       ] },
       { h: "5. Processing time", ps: [
-        "5.1. Removal is generally carried out within **24 to 48 hours** from receipt of all cooperation pursuant to clause 4. This is an approximate figure, not a fixed deadline. We are not responsible for delays caused by Google-internal processes.",
+        "5.1. Removal is generally carried out within **24 to 48 hours** from receipt of all cooperation pursuant to clause 4. This is an approximate figure, not a fixed deadline. We are not responsible for delays caused by Google-internal processes. For services pursuant to 2.5, the duration depends on Google's review; it is generally a few days, in individual cases up to about three weeks.",
       ] },
       { h: "6. Prices and payment", ps: [
         "6.1. The fixed prices shown on the website or in the offer at the time of the engagement apply. All prices shown are final prices and include any applicable statutory VAT. Depending on the customer's region, billing is in EUR or USD.",
-        "6.2. **Payment on success (\"No Cure, No Pay\"):** For services pursuant to 2.1 and 2.2, the fee becomes due only upon occurrence of success pursuant to clause 7. If success does not occur, the customer owes no fee. During payment processing, a payment authorisation may already take place at the time of the engagement; the charge is made only after success has occurred.",
+        "6.2. **Payment on success (\"No Cure, No Pay\"):** For services pursuant to 2.1, 2.2 and 2.5, the fee becomes due only upon occurrence of success pursuant to clause 7. If success does not occur, the customer owes no fee. During payment processing, a payment authorisation may already take place at the time of the engagement; the charge is made only after success has occurred.",
         "6.3. For reputation suppression, the fees stated in the offer apply (e.g. one-off audit, monthly retainer); these are **not** success-based unless expressly agreed otherwise.",
         "6.4. Payment methods: the methods offered in the order process (e.g. credit card, PayPal, Klarna, iDEAL); processing is handled by external payment service providers.",
       ] },
       { h: "7. Definition of success, acceptance", ps: [
         "7.1. The success of the profile removal occurs when the commissioned business profile is **no longer publicly retrievable** in Google Search and on Google Maps. Decisive is the non-retrievability of the profile itself; for technical reasons (caches, third-party sites, time-delayed synchronisation of individual Google services), individual contents may temporarily remain findable without this preventing the occurrence of success.",
         "7.2. We inform the customer of the occurrence of success. The customer may raise objections within 7 days; otherwise the service is deemed accepted.",
+        "7.3. For services pursuant to 2.5, success occurs per review as soon as the review concerned is **no longer publicly displayed** on the Google Business Profile. The fee becomes due per review actually removed; the customer owes no fee for reviews that are not removed. Price, any surcharges (e.g. for older reviews) and volume discounts are set out on the website or in the offer.",
       ] },
       { h: "8. Re-listing protection", ps: [
         "8.1. If the removed profile is publicly re-listed by third parties or by automated Google processes during active re-listing protection, we will remove it again free of charge upon notification by the customer. The protection period depends on the chosen protection package: for **Monthly protection** and **Daily monitoring**, for the term of the active subscription (each cancellable monthly); for **Lifetime protection**, permanently. With Daily monitoring and Lifetime protection we additionally check for re-listings ourselves on an ongoing basis, without any notification by the customer being required.",
@@ -225,7 +227,7 @@ TERMS.en = {
         "12.4. Should individual provisions be invalid, the validity of the remaining provisions remains unaffected.",
       ] },
     ],
-    upd: "Version: June 2026",
+    upd: "Version: October 2026",
   },
   wid: {
     title: "Right of withdrawal",
@@ -273,30 +275,31 @@ TERMS.es = {
         "2.2. **Eliminación + nueva creación («Remove + Restart»):** Servicio según el punto 2.1 más la creación de un nuevo perfil de empresa de Google con los datos correctos facilitados por el cliente.",
         "2.3. **Desplazamiento de reputación:** Medidas continuas con el objetivo de desplazar de la búsqueda de Google, mediante otros contenidos, los resultados negativos indicados por el cliente. Se trata de un **esfuerzo sin garantía de éxito**; no se debe un resultado de posicionamiento concreto. Los detalles (duración, alcance, informes) se derivan de la oferta correspondiente.",
         "2.4. **Desindexación de prensa (intermediación):** RapidRemove **intermedia** el contacto con un bufete asociado y asiste en la solicitud. La revisión jurídica y la representación corren exclusivamente a cargo del bufete asociado; entre el cliente y el bufete se celebra un contrato separado. RapidRemove **no presta asesoramiento jurídico** y no debe ningún éxito de desindexación.",
-        "2.5. **No se eliminan reseñas individuales:** El objeto del servicio según 2.1/2.2 es siempre la eliminación del perfil completo con todas sus reseñas, no la eliminación de reseñas individuales.",
+        "2.5. **Eliminación de reseñas individuales:** Eliminación de reseñas individuales seleccionadas por el cliente de su perfil de empresa de Google; el perfil se mantiene. Revisamos cada reseña previamente y tramitamos la eliminación exclusivamente a través de los procedimientos oficiales de denuncia y reclamación de Google, en la medida en que la reseña infrinja las políticas de Google o la legislación aplicable (p. ej., reseñas falsas, reseñas de competidores o de no clientes, insultos, afirmaciones de hecho falsas). La crítica auténtica y objetiva no es objeto del servicio. Google decide sobre la eliminación; no se garantiza un resultado determinado. El servicio no se ofrece en todas las regiones; es determinante la oferta mostrada en el proceso de pedido.",
         "2.6. **No es un servicio jurídico:** Todos los servicios de RapidRemove son de naturaleza técnico-organizativa. RapidRemove no presta asesoramiento jurídico ni representación ante autoridades o tribunales.",
       ] },
       { h: "3. Celebración del contrato", ps: [
         "3.1. La comprobación gratuita de eliminación en nuestra web no es vinculante y no constituye una oferta.",
         "3.2. El contrato se celebra cuando el cliente acepta nuestra oferta (a través del proceso de pedido de la web o por correo electrónico) y confirmamos el encargo, a más tardar, sin embargo, con el inicio de la prestación del servicio.",
-        "3.3. **Legitimación:** El cliente garantiza que está legitimado para disponer del perfil de empresa en cuestión (como titular de la empresa o con su poder expreso). Está prohibido encargar la eliminación de perfiles ajenos sin legitimación; el cliente mantendrá indemne a RapidRemove a este respecto.",
+        "3.3. **Legitimación:** El cliente garantiza que está legitimado para disponer del perfil de empresa en cuestión (como titular de la empresa o con su poder expreso). Está prohibido encargar la eliminación de perfiles ajenos sin legitimación; el cliente mantendrá indemne a RapidRemove a este respecto. Los encargos según 2.5 solo pueden realizarse para reseñas del propio perfil de empresa del cliente o de un perfil del que sea responsable.",
       ] },
       { h: "4. Deberes de colaboración del cliente", ps: [
         "4.1. El cliente confirma el perfil que debe eliminarse y concede la autorización de edición necesaria para el perfil de empresa. Para ello no se requiere ni se solicita acceso a la cuenta de Google, Gmail, Google Ads ni a datos personales del cliente.",
         "4.2. Si la prestación se retrasa porque el cliente no aporta la colaboración necesaria, los plazos de tramitación indicados se prolongarán en consecuencia.",
       ] },
       { h: "5. Plazo de tramitación", ps: [
-        "5.1. La eliminación se realiza por lo general en un plazo de **24 a 48 horas** desde que se dispone de toda la colaboración según el punto 4. Se trata de una indicación aproximada, no de una fecha fija. No respondemos de los retrasos debidos a procesos internos de Google.",
+        "5.1. La eliminación se realiza por lo general en un plazo de **24 a 48 horas** desde que se dispone de toda la colaboración según el punto 4. Se trata de una indicación aproximada, no de una fecha fija. No respondemos de los retrasos debidos a procesos internos de Google. Para los servicios según 2.5, la duración depende de la revisión de Google; por lo general son unos días, en casos concretos hasta unas tres semanas.",
       ] },
       { h: "6. Precios y pago", ps: [
         "6.1. Se aplican los precios fijos indicados en la web o en la oferta en el momento del encargo. Todos los precios indicados son precios finales e incluyen, en su caso, el IVA legal. Según la región del cliente, la facturación se realiza en EUR o USD.",
-        "6.2. **Pago tras el éxito («No Cure, No Pay»):** Para los servicios según 2.1 y 2.2, la remuneración solo vence con la consecución del éxito según el punto 7. Si el éxito no se produce, el cliente no debe remuneración alguna. En la tramitación del pago puede realizarse una autorización de pago ya en el momento del encargo; el cargo solo se efectúa tras la consecución del éxito.",
+        "6.2. **Pago tras el éxito («No Cure, No Pay»):** Para los servicios según 2.1, 2.2 y 2.5, la remuneración solo vence con la consecución del éxito según el punto 7. Si el éxito no se produce, el cliente no debe remuneración alguna. En la tramitación del pago puede realizarse una autorización de pago ya en el momento del encargo; el cargo solo se efectúa tras la consecución del éxito.",
         "6.3. Para el desplazamiento de reputación se aplican las remuneraciones indicadas en la oferta (p. ej. auditoría única, cuota mensual); estas **no** dependen del éxito, salvo acuerdo expreso en contrario.",
         "6.4. Formas de pago: los métodos ofrecidos en el proceso de pedido (p. ej. tarjeta de crédito, PayPal, Klarna, iDEAL); la tramitación corre a cargo de proveedores de pago externos.",
       ] },
       { h: "7. Definición de éxito, aceptación", ps: [
         "7.1. El éxito de la eliminación del perfil se produce cuando el perfil de empresa encargado **ya no es públicamente accesible** en la búsqueda de Google ni en Google Maps. Lo decisivo es la no accesibilidad del propio perfil; por razones técnicas (cachés, sitios de terceros, sincronización diferida de algunos servicios de Google) algunos contenidos pueden seguir siendo localizables temporalmente sin que ello impida la consecución del éxito.",
         "7.2. Informamos al cliente de la consecución del éxito. El cliente puede presentar objeciones en un plazo de 7 días; de lo contrario, el servicio se considera aceptado.",
+        "7.3. Para los servicios según 2.5, el éxito se produce por cada reseña en cuanto la reseña en cuestión **deja de mostrarse públicamente** en el perfil de empresa de Google. La remuneración vence por cada reseña efectivamente eliminada; por las reseñas no eliminadas el cliente no debe remuneración alguna. El precio, los posibles recargos (p. ej., por reseñas más antiguas) y los descuentos por volumen figuran en el sitio web o en la oferta.",
       ] },
       { h: "8. Protección contra la republicación", ps: [
         "8.1. Si el perfil eliminado vuelve a publicarse públicamente por terceros o por procesos automatizados de Google durante una protección contra republicación vigente, lo eliminaremos de nuevo gratuitamente previa comunicación del cliente. El periodo de protección depende del paquete elegido: con la **Protección mensual** y la **Monitorización diaria**, durante la vigencia de la suscripción activa (cancelable mensualmente); con la **Protección de por vida**, de forma permanente. Con la Monitorización diaria y la Protección de por vida comprobamos además nosotros mismos de forma continua si hay republicaciones, sin necesidad de comunicación del cliente.",
@@ -322,7 +325,7 @@ TERMS.es = {
         "12.4. Si alguna disposición fuera ineficaz, la eficacia de las restantes no se verá afectada.",
       ] },
     ],
-    upd: "Versión: junio de 2026",
+    upd: "Versión: octubre de 2026",
   },
   wid: {
     title: "Derecho de desistimiento",
@@ -370,30 +373,31 @@ TERMS.fr = {
         "2.2. **Suppression + nouvelle création (« Remove + Restart ») :** Prestation selon le point 2.1, plus la création d'une nouvelle fiche d'établissement Google avec les données correctes fournies par le client.",
         "2.3. **Refoulement de réputation :** Mesures continues visant à refouler de la recherche Google, au moyen d'autres contenus, les résultats négatifs désignés par le client. Il s'agit d'un **effort sans garantie de résultat** ; aucun résultat de classement déterminé n'est dû. Les détails (durée, étendue, reporting) résultent de l'offre concernée.",
         "2.4. **Désindexation de presse (mise en relation) :** RapidRemove **met en relation** avec un cabinet partenaire et assiste dans la demande. L'examen juridique et la représentation relèvent exclusivement du cabinet partenaire ; un contrat distinct est conclu entre le client et le cabinet partenaire. RapidRemove ne fournit **aucun conseil juridique** et ne doit aucun succès de désindexation.",
-        "2.5. **Pas de suppression d'avis individuels :** L'objet de la prestation selon 2.1/2.2 est toujours la suppression de la fiche entière avec tous ses avis, et non la suppression d'avis individuels.",
+        "2.5. **Suppression d'avis individuels :** Suppression d'avis individuels sélectionnés par le client sur sa fiche d'établissement Google ; la fiche elle-même est conservée. Nous examinons chaque avis au préalable et poursuivons la suppression exclusivement via les procédures officielles de signalement et de réclamation de Google, dans la mesure où l'avis enfreint les règles de Google ou le droit applicable (p. ex. faux avis, avis de concurrents ou de non-clients, insultes, allégations de faits inexactes). Les critiques authentiques et objectives ne relèvent pas de la prestation. Google décide de la suppression ; aucun résultat particulier n'est garanti. La prestation n'est pas proposée dans toutes les régions ; l'offre présentée lors de la commande fait foi.",
         "2.6. **Pas de service juridique :** Toutes les prestations de RapidRemove sont de nature technico-organisationnelle. RapidRemove ne fournit ni conseil juridique ni représentation devant les autorités ou les tribunaux.",
       ] },
       { h: "3. Conclusion du contrat", ps: [
         "3.1. La vérification gratuite de suppression sur notre site est sans engagement et ne constitue pas une offre.",
         "3.2. Le contrat est conclu lorsque le client accepte notre offre (via le parcours de commande du site ou par e-mail) et que nous confirmons la mission, au plus tard toutefois au début de l'exécution de la prestation.",
-        "3.3. **Habilitation :** Le client garantit qu'il est habilité à disposer de la fiche d'établissement concernée (en tant que titulaire de l'entreprise ou avec son mandat exprès). Il est interdit de commander la suppression de fiches de tiers sans habilitation ; le client garantit RapidRemove contre toute réclamation à cet égard.",
+        "3.3. **Habilitation :** Le client garantit qu'il est habilité à disposer de la fiche d'établissement concernée (en tant que titulaire de l'entreprise ou avec son mandat exprès). Il est interdit de commander la suppression de fiches de tiers sans habilitation ; le client garantit RapidRemove contre toute réclamation à cet égard. Les commandes selon 2.5 ne peuvent porter que sur des avis figurant sur la propre fiche d'établissement du client ou sur une fiche dont il est responsable.",
       ] },
       { h: "4. Obligations de coopération du client", ps: [
         "4.1. Le client confirme la fiche à supprimer et accorde l'autorisation de modification requise pour la fiche d'établissement. Un accès au compte Google, à Gmail, à Google Ads ou aux données personnelles du client n'est pas nécessaire à cet effet et ne sera pas demandé.",
         "4.2. Si l'exécution est retardée parce que le client ne fournit pas la coopération requise, les délais de traitement indiqués sont prolongés en conséquence.",
       ] },
       { h: "5. Délai de traitement", ps: [
-        "5.1. La suppression intervient en règle générale dans un délai de **24 à 48 heures** à compter de la réception de toutes les coopérations selon le point 4. Il s'agit d'une indication approximative et non d'une échéance ferme. Nous ne répondons pas des retards dus aux processus internes de Google.",
+        "5.1. La suppression intervient en règle générale dans un délai de **24 à 48 heures** à compter de la réception de toutes les coopérations selon le point 4. Il s'agit d'une indication approximative et non d'une échéance ferme. Nous ne répondons pas des retards dus aux processus internes de Google. Pour les prestations selon 2.5, la durée dépend de l'examen par Google ; elle est en général de quelques jours, dans certains cas jusqu'à environ trois semaines.",
       ] },
       { h: "6. Prix et paiement", ps: [
         "6.1. Les prix fixes indiqués sur le site ou dans l'offre au moment de la commande s'appliquent. Tous les prix indiqués sont des prix définitifs et s'entendent TVA légale éventuelle incluse. Selon la région du client, la facturation s'effectue en EUR ou en USD.",
-        "6.2. **Paiement après succès (« No Cure, No Pay ») :** Pour les prestations selon 2.1 et 2.2, la rémunération n'est exigible qu'à la survenance du succès selon le point 7. À défaut de succès, le client ne doit aucune rémunération. Lors du traitement du paiement, une autorisation de paiement peut déjà intervenir à la commande ; le débit n'a lieu qu'après la survenance du succès.",
+        "6.2. **Paiement après succès (« No Cure, No Pay ») :** Pour les prestations selon 2.1, 2.2 et 2.5, la rémunération n'est exigible qu'à la survenance du succès selon le point 7. À défaut de succès, le client ne doit aucune rémunération. Lors du traitement du paiement, une autorisation de paiement peut déjà intervenir à la commande ; le débit n'a lieu qu'après la survenance du succès.",
         "6.3. Pour le refoulement de réputation, les rémunérations indiquées dans l'offre s'appliquent (p. ex. audit unique, forfait mensuel) ; elles ne dépendent **pas** du succès, sauf accord exprès contraire.",
         "6.4. Moyens de paiement : les méthodes proposées dans le processus de commande (p. ex. carte bancaire, PayPal, Klarna, iDEAL) ; le traitement est assuré par des prestataires de paiement externes.",
       ] },
       { h: "7. Définition du succès, réception", ps: [
         "7.1. Le succès de la suppression de la fiche survient lorsque la fiche d'établissement commandée **n'est plus accessible publiquement** dans la recherche Google et sur Google Maps. Est déterminante la non-accessibilité de la fiche elle-même ; pour des raisons techniques (caches, sites tiers, synchronisation différée de certains services Google), certains contenus peuvent rester temporairement trouvables sans que cela empêche la survenance du succès.",
         "7.2. Nous informons le client de la survenance du succès. Le client peut soulever des objections dans un délai de 7 jours ; à défaut, la prestation est réputée réceptionnée.",
+        "7.3. Pour les prestations selon 2.5, le succès survient pour chaque avis dès que l'avis concerné **n'est plus affiché publiquement** sur la fiche d'établissement Google. La rémunération est exigible par avis effectivement supprimé ; pour les avis non supprimés, le client ne doit aucune rémunération. Le prix, les éventuels suppléments (p. ex. pour les avis plus anciens) et les remises sur quantité figurent sur le site web ou dans l'offre.",
       ] },
       { h: "8. Protection contre la republication", ps: [
         "8.1. Si la fiche supprimée est de nouveau publiée publiquement par des tiers ou par des processus automatisés de Google pendant une protection contre la republication en cours, nous la supprimons de nouveau gratuitement sur notification du client. La période de protection dépend du forfait choisi : pour la **Protection mensuelle** et la **Surveillance quotidienne**, pendant la durée de l'abonnement en cours (résiliable mensuellement) ; pour la **Protection à vie**, de façon permanente. Avec la Surveillance quotidienne et la Protection à vie, nous vérifions en outre nous-mêmes en continu l'absence de republication, sans qu'une notification du client soit nécessaire.",
@@ -419,7 +423,7 @@ TERMS.fr = {
         "12.4. Si certaines dispositions étaient invalides, la validité des autres dispositions n'en serait pas affectée.",
       ] },
     ],
-    upd: "Version : juin 2026",
+    upd: "Version : octobre 2026",
   },
   wid: {
     title: "Droit de rétractation",
@@ -467,30 +471,31 @@ TERMS.it = {
         "2.2. **Rimozione + nuova creazione («Remove + Restart»):** Servizio di cui al punto 2.1 più la creazione di un nuovo profilo aziendale Google con i dati corretti forniti dal cliente.",
         "2.3. **Spostamento della reputazione:** Misure continuative volte a spostare fuori dalla ricerca Google, tramite altri contenuti, i risultati negativi indicati dal cliente. Si tratta di un **impegno senza garanzia di risultato**; non è dovuto un determinato risultato di posizionamento. I dettagli (durata, ambito, reporting) risultano dalla relativa offerta.",
         "2.4. **Deindicizzazione stampa (intermediazione):** RapidRemove **media** il contatto con uno studio legale partner e assiste nella richiesta. L'esame legale e la rappresentanza spettano esclusivamente allo studio partner; tra cliente e studio partner si conclude un contratto separato. RapidRemove non fornisce **alcuna consulenza legale** e non deve alcun successo di deindicizzazione.",
-        "2.5. **Nessuna rimozione di singole recensioni:** Oggetto del servizio di cui a 2.1/2.2 è sempre la rimozione dell'intero profilo con tutte le recensioni, non la rimozione di singole recensioni.",
+        "2.5. **Rimozione di singole recensioni:** Rimozione di singole recensioni selezionate dal cliente dal proprio profilo dell'attività su Google; il profilo stesso rimane. Esaminiamo ogni recensione in anticipo e perseguiamo la rimozione esclusivamente tramite le procedure ufficiali di segnalazione e reclamo di Google, nella misura in cui la recensione violi le norme di Google o la legge applicabile (ad es. recensioni false, recensioni di concorrenti o di non clienti, insulti, affermazioni di fatto non veritiere). Le critiche autentiche e oggettive non sono oggetto del servizio. Sulla rimozione decide Google; non è garantito un determinato risultato. Il servizio non è offerto in tutte le regioni; fa fede l'offerta mostrata nel processo d'ordine.",
         "2.6. **Nessun servizio legale:** Tutti i servizi di RapidRemove sono di natura tecnico-organizzativa. RapidRemove non fornisce consulenza legale né rappresentanza davanti ad autorità o tribunali.",
       ] },
       { h: "3. Conclusione del contratto", ps: [
         "3.1. La verifica gratuita di rimozione sul nostro sito non è vincolante e non costituisce un'offerta.",
         "3.2. Il contratto si conclude quando il cliente accetta la nostra offerta (tramite il percorso d'ordine del sito o via e-mail) e noi confermiamo l'incarico, al più tardi tuttavia con l'inizio dell'esecuzione del servizio.",
-        "3.3. **Legittimazione:** Il cliente garantisce di essere legittimato a disporre del profilo aziendale in questione (quale titolare dell'azienda o con sua espressa procura). È vietato incaricare la rimozione di profili altrui senza legittimazione; il cliente manleva RapidRemove al riguardo.",
+        "3.3. **Legittimazione:** Il cliente garantisce di essere legittimato a disporre del profilo aziendale in questione (quale titolare dell'azienda o con sua espressa procura). È vietato incaricare la rimozione di profili altrui senza legittimazione; il cliente manleva RapidRemove al riguardo. Gli incarichi di cui a 2.5 possono essere conferiti solo per recensioni presenti sul profilo aziendale del cliente o su un profilo di cui è responsabile.",
       ] },
       { h: "4. Obblighi di collaborazione del cliente", ps: [
         "4.1. Il cliente conferma il profilo da rimuovere e concede l'autorizzazione di modifica necessaria per il profilo aziendale. A tal fine non è necessario né viene richiesto l'accesso all'account Google, a Gmail, a Google Ads o ai dati personali del cliente.",
         "4.2. Se l'esecuzione subisce ritardi perché il cliente non fornisce la collaborazione necessaria, i tempi di lavorazione indicati si prolungano di conseguenza.",
       ] },
       { h: "5. Tempi di lavorazione", ps: [
-        "5.1. La rimozione avviene di regola entro **24–48 ore** dalla disponibilità di tutte le collaborazioni di cui al punto 4. Si tratta di un'indicazione approssimativa, non di una scadenza fissa. Non rispondiamo dei ritardi dovuti a processi interni di Google.",
+        "5.1. La rimozione avviene di regola entro **24–48 ore** dalla disponibilità di tutte le collaborazioni di cui al punto 4. Si tratta di un'indicazione approssimativa, non di una scadenza fissa. Non rispondiamo dei ritardi dovuti a processi interni di Google. Per i servizi di cui a 2.5 la durata dipende dalla verifica di Google; di regola si tratta di alcuni giorni, in singoli casi fino a circa tre settimane.",
       ] },
       { h: "6. Prezzi e pagamento", ps: [
         "6.1. Si applicano i prezzi fissi indicati sul sito o nell'offerta al momento dell'incarico. Tutti i prezzi indicati sono prezzi finali e si intendono comprensivi dell'eventuale IVA di legge. A seconda della regione del cliente, la fatturazione avviene in EUR o USD.",
-        "6.2. **Pagamento dopo il successo («No Cure, No Pay»):** Per i servizi di cui a 2.1 e 2.2 il compenso diventa esigibile solo con il verificarsi del successo di cui al punto 7. Se il successo non si verifica, il cliente non deve alcun compenso. Nell'elaborazione del pagamento, un'autorizzazione di pagamento può avvenire già al momento dell'incarico; l'addebito avviene solo dopo il verificarsi del successo.",
+        "6.2. **Pagamento dopo il successo («No Cure, No Pay»):** Per i servizi di cui a 2.1, 2.2 e 2.5 il compenso diventa esigibile solo con il verificarsi del successo di cui al punto 7. Se il successo non si verifica, il cliente non deve alcun compenso. Nell'elaborazione del pagamento, un'autorizzazione di pagamento può avvenire già al momento dell'incarico; l'addebito avviene solo dopo il verificarsi del successo.",
         "6.3. Per lo spostamento della reputazione valgono i compensi indicati nell'offerta (ad es. audit una tantum, canone mensile); questi **non** dipendono dal successo, salvo espresso accordo contrario.",
         "6.4. Modalità di pagamento: i metodi offerti nel processo d'ordine (ad es. carta di credito, PayPal, Klarna, iDEAL); l'elaborazione avviene tramite fornitori di pagamento esterni.",
       ] },
       { h: "7. Definizione del successo, accettazione", ps: [
         "7.1. Il successo della rimozione del profilo si verifica quando il profilo aziendale incaricato **non è più pubblicamente raggiungibile** nella ricerca Google e su Google Maps. Decisiva è la non raggiungibilità del profilo stesso; per motivi tecnici (cache, siti di terzi, sincronizzazione differita di singoli servizi Google) singoli contenuti possono rimanere temporaneamente reperibili senza che ciò impedisca il verificarsi del successo.",
         "7.2. Informiamo il cliente del verificarsi del successo. Il cliente può sollevare obiezioni entro 7 giorni; in caso contrario il servizio si considera accettato.",
+        "7.3. Per i servizi di cui a 2.5 il successo si verifica per ciascuna recensione non appena la recensione in questione **non è più visualizzata pubblicamente** sul profilo dell'attività su Google. Il compenso è dovuto per ogni recensione effettivamente rimossa; per le recensioni non rimosse il cliente non deve alcun compenso. Prezzo, eventuali supplementi (ad es. per recensioni più vecchie) e sconti quantità risultano dal sito web o dall'offerta.",
       ] },
       { h: "8. Protezione contro la ripubblicazione", ps: [
         "8.1. Se il profilo rimosso viene nuovamente pubblicato da terzi o da processi automatizzati di Google durante una protezione contro la ripubblicazione in corso, lo rimuoviamo di nuovo gratuitamente su segnalazione del cliente. Il periodo di protezione dipende dal pacchetto scelto: con la **Protezione mensile** e il **Monitoraggio giornaliero** per la durata dell'abbonamento attivo (disdicibile mensilmente); con la **Protezione a vita** in modo permanente. Con il Monitoraggio giornaliero e la Protezione a vita verifichiamo inoltre noi stessi in modo continuativo eventuali ripubblicazioni, senza necessità di segnalazione da parte del cliente.",
@@ -516,7 +521,7 @@ TERMS.it = {
         "12.4. L'eventuale invalidità di singole disposizioni non pregiudica la validità delle restanti.",
       ] },
     ],
-    upd: "Versione: giugno 2026",
+    upd: "Versione: ottobre 2026",
   },
   wid: {
     title: "Diritto di recesso",
@@ -564,30 +569,31 @@ TERMS.nl = {
         "2.2. **Profielverwijdering + nieuwe aanmaak („Remove + Restart“):** Dienst volgens punt 2.1 plus het opzetten van een nieuw Google-bedrijfsprofiel met de door de klant aangeleverde correcte bedrijfsgegevens.",
         "2.3. **Reputatieverdringing:** Doorlopende maatregelen met het doel door de klant benoemde negatieve zoekresultaten in Google Zoeken door andere content te verdringen. Het betreft een **inspanning zonder succesgarantie**; een bepaald rankingresultaat is niet verschuldigd. Details (looptijd, omvang, rapportage) volgen uit de betreffende offerte.",
         "2.4. **Pers-deïndexering (bemiddeling):** RapidRemove **bemiddelt** het contact met een partnerkantoor en ondersteunt bij de aanvraag. De juridische beoordeling en vertegenwoordiging gebeuren uitsluitend door het partnerkantoor; tussen klant en partnerkantoor komt een afzonderlijke overeenkomst tot stand. RapidRemove verleent **geen juridisch advies** en is geen deïndexeringssucces verschuldigd.",
-        "2.5. **Geen verwijdering van afzonderlijke reviews:** Voorwerp van de dienst volgens 2.1/2.2 is steeds de verwijdering van het volledige profiel met alle reviews, niet de verwijdering van afzonderlijke recensies.",
+        "2.5. **Verwijdering van afzonderlijke reviews:** Verwijdering van afzonderlijke, door de klant geselecteerde reviews van zijn Google-bedrijfsprofiel; het profiel zelf blijft bestaan. Wij beoordelen elke review vooraf en streven de verwijdering uitsluitend na via de officiële meld- en klachtprocedures van Google, voor zover de review in strijd is met de richtlijnen van Google of het toepasselijke recht (bijv. nepreviews, reviews van concurrenten of niet-klanten, beledigingen, onware feitelijke beweringen). Echte, zakelijke kritiek valt niet onder de dienst. Google beslist over de verwijdering; een bepaald resultaat wordt niet gegarandeerd. De dienst wordt niet in alle regio's aangeboden; bepalend is het aanbod in het bestelproces.",
         "2.6. **Geen juridische dienstverlening:** Alle diensten van RapidRemove zijn technisch-organisatorisch van aard. RapidRemove verleent geen juridisch advies en geen vertegenwoordiging voor autoriteiten of rechtbanken.",
       ] },
       { h: "3. Totstandkoming van de overeenkomst", ps: [
         "3.1. De gratis verwijdercheck op onze website is vrijblijvend en vormt geen aanbod.",
         "3.2. De overeenkomst komt tot stand wanneer de klant ons aanbod aanvaardt (via het bestelproces op de website of per e-mail) en wij de opdracht bevestigen, uiterlijk echter bij aanvang van de dienstverlening.",
-        "3.3. **Bevoegdheid:** De klant staat ervoor in dat hij bevoegd is over het betreffende bedrijfsprofiel te beschikken (als eigenaar van de onderneming of met diens uitdrukkelijke volmacht). Het opdragen van de verwijdering van andermans profielen zonder bevoegdheid is verboden; de klant vrijwaart RapidRemove in zoverre.",
+        "3.3. **Bevoegdheid:** De klant staat ervoor in dat hij bevoegd is over het betreffende bedrijfsprofiel te beschikken (als eigenaar van de onderneming of met diens uitdrukkelijke volmacht). Het opdragen van de verwijdering van andermans profielen zonder bevoegdheid is verboden; de klant vrijwaart RapidRemove in zoverre. Opdrachten volgens 2.5 mogen alleen worden gegeven voor reviews op het eigen bedrijfsprofiel van de klant of een profiel waarvoor de klant verantwoordelijk is.",
       ] },
       { h: "4. Medewerkingsplichten van de klant", ps: [
         "4.1. De klant bevestigt het te verwijderen profiel en verleent de vereiste bewerkingsrechten voor het bedrijfsprofiel. Toegang tot het Google-account, Gmail, Google Ads of persoonlijke gegevens van de klant is daarvoor niet nodig en wordt niet gevraagd.",
         "4.2. Loopt de dienstverlening vertraging op doordat de klant vereiste medewerking niet verleent, dan worden genoemde verwerkingstijden dienovereenkomstig verlengd.",
       ] },
       { h: "5. Verwerkingstijd", ps: [
-        "5.1. De verwijdering vindt in de regel plaats binnen **24 tot 48 uur** nadat alle medewerking volgens punt 4 voorligt. Het betreft een circa-indicatie, geen fatale termijn. Vertragingen door Google-interne processen komen niet voor onze rekening.",
+        "5.1. De verwijdering vindt in de regel plaats binnen **24 tot 48 uur** nadat alle medewerking volgens punt 4 voorligt. Het betreft een circa-indicatie, geen fatale termijn. Vertragingen door Google-interne processen komen niet voor onze rekening. Bij diensten volgens 2.5 hangt de duur af van de beoordeling door Google; die bedraagt in de regel enkele dagen, in individuele gevallen tot ongeveer drie weken.",
       ] },
       { h: "6. Prijzen en betaling", ps: [
         "6.1. De op het moment van de opdracht op de website resp. in de offerte vermelde vaste prijzen gelden. Alle vermelde prijzen zijn eindprijzen en zijn inclusief eventuele wettelijke btw. Afhankelijk van de regio van de klant wordt gefactureerd in EUR of USD.",
-        "6.2. **Betaling na succes („No Cure, No Pay“):** Voor diensten volgens 2.1 en 2.2 wordt de vergoeding pas verschuldigd bij het intreden van het succes volgens punt 7. Blijft het succes uit, dan is de klant geen vergoeding verschuldigd. Bij de betalingsafwikkeling kan een betalingsautorisatie al bij de opdracht plaatsvinden; de afschrijving gebeurt pas na het intreden van het succes.",
+        "6.2. **Betaling na succes („No Cure, No Pay“):** Voor diensten volgens 2.1, 2.2 en 2.5 wordt de vergoeding pas verschuldigd bij het intreden van het succes volgens punt 7. Blijft het succes uit, dan is de klant geen vergoeding verschuldigd. Bij de betalingsafwikkeling kan een betalingsautorisatie al bij de opdracht plaatsvinden; de afschrijving gebeurt pas na het intreden van het succes.",
         "6.3. Voor reputatieverdringing gelden de in de offerte genoemde vergoedingen (bijv. eenmalige audit, maandelijkse retainer); deze zijn **niet** succesafhankelijk, tenzij uitdrukkelijk anders overeengekomen.",
         "6.4. Betaalmethoden: de in het bestelproces aangeboden methoden (bijv. creditcard, PayPal, Klarna, iDEAL); de afwikkeling verloopt via externe betaaldienstverleners.",
       ] },
       { h: "7. Succesdefinitie, acceptatie", ps: [
         "7.1. Het succes van de profielverwijdering treedt in wanneer het opgedragen bedrijfsprofiel in Google Zoeken en op Google Maps **publiek niet meer oproepbaar** is. Bepalend is de niet-oproepbaarheid van het profiel zelf; om technische redenen (caches, sites van derden, vertraagde synchronisatie van afzonderlijke Google-diensten) kunnen afzonderlijke inhouden tijdelijk nog vindbaar zijn zonder dat dit het intreden van het succes verhindert.",
         "7.2. Wij informeren de klant over het intreden van het succes. De klant kan binnen 7 dagen bezwaren indienen; anders geldt de dienst als geaccepteerd.",
+        "7.3. Bij diensten volgens 2.5 treedt het succes per review in zodra de betreffende review op het Google-bedrijfsprofiel **niet meer publiek wordt weergegeven**. De vergoeding is verschuldigd per daadwerkelijk verwijderde review; voor niet verwijderde reviews is de klant geen vergoeding verschuldigd. Prijs, eventuele toeslagen (bijv. voor oudere reviews) en volumekortingen blijken uit de website of het aanbod.",
       ] },
       { h: "8. Bescherming tegen herplaatsing", ps: [
         "8.1. Wordt het verwijderde profiel tijdens een lopende herplaatsingsbescherming door derden of door geautomatiseerde Google-processen opnieuw openbaar geplaatst, dan verwijderen wij het op melding van de klant kosteloos opnieuw. De beschermingsperiode hangt af van het gekozen pakket: bij de **Maandelijkse bescherming** en bij **Dagelijkse monitoring** voor de looptijd van het lopende abonnement (telkens maandelijks opzegbaar), bij de **Levenslange bescherming** permanent. Bij Dagelijkse monitoring en bij de Levenslange bescherming controleren wij bovendien zelf doorlopend op herplaatsingen, zonder dat een melding van de klant nodig is.",
@@ -613,7 +619,7 @@ TERMS.nl = {
         "12.4. Mochten afzonderlijke bepalingen ongeldig zijn, dan blijft de geldigheid van de overige bepalingen onverlet.",
       ] },
     ],
-    upd: "Versie: juni 2026",
+    upd: "Versie: oktober 2026",
   },
   wid: {
     title: "Herroepingsrecht",
@@ -661,30 +667,31 @@ TERMS.pt = {
         "2.2. **Remoção + nova criação («Remove + Restart»):** Serviço nos termos do ponto 2.1, acrescido da criação de um novo perfil de empresa Google com os dados corretos fornecidos pelo cliente.",
         "2.3. **Supressão de reputação:** Medidas contínuas com o objetivo de afastar da pesquisa Google, através de outros conteúdos, os resultados negativos indicados pelo cliente. Trata-se de um **esforço sem garantia de êxito**; não é devido um resultado de posicionamento específico. Os detalhes (duração, âmbito, relatórios) resultam da respetiva proposta.",
         "2.4. **Desindexação de imprensa (intermediação):** A RapidRemove **intermedeia** o contacto com um escritório de advogados parceiro e apoia no pedido. A análise jurídica e a representação cabem exclusivamente ao escritório parceiro; entre o cliente e o escritório parceiro é celebrado um contrato separado. A RapidRemove **não presta aconselhamento jurídico** e não deve qualquer êxito de desindexação.",
-        "2.5. **Sem remoção de avaliações individuais:** O objeto do serviço nos termos de 2.1/2.2 é sempre a remoção do perfil completo com todas as avaliações, não a remoção de avaliações individuais.",
+        "2.5. **Remoção de avaliações individuais:** Remoção de avaliações individuais selecionadas pelo cliente do seu perfil de empresa no Google; o perfil propriamente dito mantém-se. Analisamos cada avaliação previamente e promovemos a remoção exclusivamente através dos procedimentos oficiais de denúncia e reclamação da Google, na medida em que a avaliação viole as políticas da Google ou a lei aplicável (p. ex., avaliações falsas, avaliações de concorrentes ou de não clientes, insultos, afirmações de facto falsas). Críticas genuínas e objetivas não são objeto do serviço. A decisão sobre a remoção cabe à Google; não é garantido um resultado determinado. O serviço não é oferecido em todas as regiões; é determinante a oferta apresentada no processo de encomenda.",
         "2.6. **Sem serviços jurídicos:** Todos os serviços da RapidRemove são de natureza técnico-organizativa. A RapidRemove não presta aconselhamento jurídico nem representação perante autoridades ou tribunais.",
       ] },
       { h: "3. Celebração do contrato", ps: [
         "3.1. A verificação gratuita de remoção no nosso site não é vinculativa e não constitui uma proposta.",
         "3.2. O contrato é celebrado quando o cliente aceita a nossa proposta (através do processo de encomenda do site ou por e-mail) e nós confirmamos a adjudicação, o mais tardar, porém, com o início da prestação do serviço.",
-        "3.3. **Legitimidade:** O cliente garante que está legitimado a dispor do perfil de empresa em causa (como titular da empresa ou com a sua procuração expressa). É proibido encomendar a remoção de perfis alheios sem legitimidade; o cliente exonera a RapidRemove de qualquer responsabilidade a este respeito.",
+        "3.3. **Legitimidade:** O cliente garante que está legitimado a dispor do perfil de empresa em causa (como titular da empresa ou com a sua procuração expressa). É proibido encomendar a remoção de perfis alheios sem legitimidade; o cliente exonera a RapidRemove de qualquer responsabilidade a este respeito. Os pedidos nos termos de 2.5 só podem ser feitos para avaliações no próprio perfil de empresa do cliente ou num perfil pelo qual seja responsável.",
       ] },
       { h: "4. Deveres de colaboração do cliente", ps: [
         "4.1. O cliente confirma o perfil a remover e concede a autorização de edição necessária para o perfil de empresa. Para tal não é necessário nem solicitado acesso à conta Google, ao Gmail, ao Google Ads ou a dados pessoais do cliente.",
         "4.2. Se a prestação se atrasar porque o cliente não presta a colaboração necessária, os prazos de processamento indicados prolongam-se em conformidade.",
       ] },
       { h: "5. Prazo de processamento", ps: [
-        "5.1. A remoção é efetuada, em regra, no prazo de **24 a 48 horas** a contar da disponibilidade de toda a colaboração nos termos do ponto 4. Trata-se de uma indicação aproximada, não de um prazo fixo. Não respondemos por atrasos devidos a processos internos da Google.",
+        "5.1. A remoção é efetuada, em regra, no prazo de **24 a 48 horas** a contar da disponibilidade de toda a colaboração nos termos do ponto 4. Trata-se de uma indicação aproximada, não de um prazo fixo. Não respondemos por atrasos devidos a processos internos da Google. Nos serviços nos termos de 2.5, a duração depende da análise da Google; em regra são alguns dias, em casos pontuais até cerca de três semanas.",
       ] },
       { h: "6. Preços e pagamento", ps: [
         "6.1. Aplicam-se os preços fixos indicados no site ou na proposta no momento da adjudicação. Todos os preços indicados são preços finais e incluem o IVA legal eventualmente aplicável. Consoante a região do cliente, a faturação é feita em EUR ou USD.",
-        "6.2. **Pagamento após êxito («No Cure, No Pay»):** Para os serviços nos termos de 2.1 e 2.2, a remuneração só se vence com a ocorrência do êxito nos termos do ponto 7. Se o êxito não ocorrer, o cliente não deve qualquer remuneração. No processamento do pagamento, pode ocorrer uma autorização de pagamento logo na adjudicação; o débito só é efetuado após a ocorrência do êxito.",
+        "6.2. **Pagamento após êxito («No Cure, No Pay»):** Para os serviços nos termos de 2.1, 2.2 e 2.5, a remuneração só se vence com a ocorrência do êxito nos termos do ponto 7. Se o êxito não ocorrer, o cliente não deve qualquer remuneração. No processamento do pagamento, pode ocorrer uma autorização de pagamento logo na adjudicação; o débito só é efetuado após a ocorrência do êxito.",
         "6.3. Para a supressão de reputação aplicam-se as remunerações indicadas na proposta (p. ex. auditoria única, avença mensal); estas **não** dependem do êxito, salvo acordo expresso em contrário.",
         "6.4. Formas de pagamento: os métodos oferecidos no processo de encomenda (p. ex. cartão de crédito, PayPal, Klarna, iDEAL); o processamento é efetuado por prestadores de pagamento externos.",
       ] },
       { h: "7. Definição de êxito, aceitação", ps: [
         "7.1. O êxito da remoção do perfil ocorre quando o perfil de empresa adjudicado **deixa de estar publicamente acessível** na pesquisa Google e no Google Maps. Determinante é a inacessibilidade do próprio perfil; por razões técnicas (caches, sites de terceiros, sincronização diferida de determinados serviços Google), alguns conteúdos podem permanecer temporariamente localizáveis sem que tal impeça a ocorrência do êxito.",
         "7.2. Informamos o cliente da ocorrência do êxito. O cliente pode apresentar objeções no prazo de 7 dias; caso contrário, o serviço considera-se aceite.",
+        "7.3. Nos serviços nos termos de 2.5, o êxito ocorre por avaliação assim que a avaliação em causa **deixa de ser apresentada publicamente** no perfil de empresa no Google. A remuneração vence por cada avaliação efetivamente removida; pelas avaliações não removidas o cliente não deve qualquer remuneração. O preço, eventuais acréscimos (p. ex., para avaliações mais antigas) e descontos de volume constam do site ou da proposta.",
       ] },
       { h: "8. Proteção contra republicação", ps: [
         "8.1. Se o perfil removido voltar a ser publicado publicamente por terceiros ou por processos automatizados da Google durante uma proteção contra republicação em vigor, removemo-lo de novo gratuitamente mediante comunicação do cliente. O período de proteção depende do pacote escolhido: na **Proteção mensal** e na **Monitorização diária**, durante a vigência da subscrição ativa (cancelável mensalmente); na **Proteção vitalícia**, de forma permanente. Na Monitorização diária e na Proteção vitalícia verificamos, além disso, nós próprios continuamente a existência de republicações, sem necessidade de comunicação do cliente.",
@@ -710,7 +717,7 @@ TERMS.pt = {
         "12.4. Se determinadas disposições forem inválidas, a validade das restantes não é afetada.",
       ] },
     ],
-    upd: "Versão: junho de 2026",
+    upd: "Versão: outubro de 2026",
   },
   wid: {
     title: "Direito de retratação",
@@ -758,30 +765,31 @@ TERMS.ja = {
         "2.2. **プロフィール削除＋新規作成（「Remove + Restart」）：** 2.1のサービスに加え、顧客が提供する正しい企業データによる新しいGoogleビジネスプロフィールの設定。",
         "2.3. **レピュテーション対策（押し下げ）：** 顧客が指定したGoogle検索のネガティブな検索結果を、他のコンテンツによって押し下げることを目的とした継続的な施策。これは**成果保証のない努力義務**であり、特定の順位という結果を負うものではありません。詳細（期間・範囲・レポート）は各見積りによります。",
         "2.4. **プレス記事の削除（仲介）：** RapidRemoveは提携法律事務所との連絡を**仲介**し、申請を支援します。法的審査および代理は提携法律事務所のみが行い、顧客と提携法律事務所の間で別個の契約が成立します。RapidRemoveは**法的助言を行わず**、削除の成果を負いません。",
-        "2.5. **個別レビューの削除は行いません：** 2.1／2.2のサービスの対象は、常にすべてのレビューを含むプロフィール全体の削除であり、個別のレビューの削除ではありません。",
+        "2.5. **個別レビューの削除：** 顧客が選択した個別のレビューを、顧客のGoogleビジネスプロフィールから削除するサービスです。プロフィール自体は維持されます。当社は各レビューを事前に審査し、レビューがGoogleのポリシーまたは適用法に違反する場合に限り（例：偽のレビュー、競合他社や非顧客によるレビュー、侮辱、虚偽の事実の主張）、Googleの公式な報告・申立て手続きのみを通じて削除を求めます。実際の顧客による正当で客観的な批判はサービスの対象外です。削除の可否はGoogleが決定し、特定の結果は保証されません。本サービスはすべての地域で提供されているわけではなく、注文手続きで表示される内容が基準となります。",
         "2.6. **法務サービスではありません：** RapidRemoveのすべてのサービスは技術的・組織的な性質のものです。RapidRemoveは法的助言や、官庁・裁判所での代理を行いません。",
       ] },
       { h: "3. 契約の成立", ps: [
         "3.1. 当社ウェブサイト上の無料削除チェックは拘束力がなく、申込みを構成しません。",
         "3.2. 契約は、顧客が当社の申込み（ウェブサイトの注文フローまたはメール経由）を承諾し、当社が受注を確認した時点で成立します。ただし遅くともサービス提供の開始時に成立します。",
-        "3.3. **権限：** 顧客は、当該ビジネスプロフィールを処分する権限（企業の所有者として、またはその明示的な委任による）を有することを保証します。権限なく他者のプロフィールの削除を依頼することは禁止されます。顧客はこの点につきRapidRemoveを免責します。",
+        "3.3. **権限：** 顧客は、当該ビジネスプロフィールを処分する権限（企業の所有者として、またはその明示的な委任による）を有することを保証します。権限なく他者のプロフィールの削除を依頼することは禁止されます。顧客はこの点につきRapidRemoveを免責します。 2.5のサービスは、顧客自身のビジネスプロフィールまたは顧客が責任を負うプロフィール上のレビューについてのみ依頼できます。",
       ] },
       { h: "4. 顧客の協力義務", ps: [
         "4.1. 顧客は削除対象のプロフィールを確認し、ビジネスプロフィールに必要な編集権限を付与します。そのために顧客のGoogleアカウント、Gmail、Google広告または個人データへのアクセスは不要であり、要求されません。",
         "4.2. 顧客が必要な協力を行わないことによりサービス提供が遅延する場合、記載の処理期間はそれに応じて延長されます。",
       ] },
       { h: "5. 処理期間", ps: [
-        "5.1. 削除は通常、第4条によるすべての協力が揃ってから**24〜48時間以内**に行われます。これは目安であり、確定期日ではありません。Google内部のプロセスによる遅延について当社は責任を負いません。",
+        "5.1. 削除は通常、第4条によるすべての協力が揃ってから**24〜48時間以内**に行われます。これは目安であり、確定期日ではありません。Google内部のプロセスによる遅延について当社は責任を負いません。 2.5のサービスの所要期間はGoogleの審査によって異なり、通常は数日、場合によっては約3週間かかります。",
       ] },
       { h: "6. 価格と支払い", ps: [
         "6.1. 依頼時点でウェブサイトまたは見積りに表示された固定価格が適用されます。表示価格はすべて最終価格であり、適用される法定VATを含みます。顧客の地域に応じて、EURまたはUSDで請求されます。",
-        "6.2. **成功後の支払い（「No Cure, No Pay」）：** 2.1および2.2のサービスの報酬は、第7条による成功の発生をもって初めて支払期日が到来します。成功しなかった場合、顧客は報酬を負いません。決済処理では、依頼時点で支払いの与信（オーソリ）が行われることがありますが、請求は成功発生後にのみ行われます。",
+        "6.2. **成功後の支払い（「No Cure, No Pay」）：** 2.1、2.2および2.5のサービスの報酬は、第7条による成功の発生をもって初めて支払期日が到来します。成功しなかった場合、顧客は報酬を負いません。決済処理では、依頼時点で支払いの与信（オーソリ）が行われることがありますが、請求は成功発生後にのみ行われます。",
         "6.3. レピュテーション対策には見積りに記載の報酬（例：一回限りの監査、月額リテイナー）が適用されます。これらは、明示的に別段の合意がない限り、成功報酬では**ありません**。",
         "6.4. 支払方法：注文プロセスで提供される方法（例：クレジットカード、PayPal、Klarna、iDEAL）。処理は外部の決済サービス事業者を通じて行われます。",
       ] },
       { h: "7. 成功の定義・検収", ps: [
         "7.1. プロフィール削除の成功は、依頼されたビジネスプロフィールがGoogle検索およびGoogleマップで**公開状態として呼び出せなくなった**時点で発生します。決定的なのはプロフィール自体の非到達性です。技術的理由（キャッシュ、第三者サイト、個々のGoogleサービスの同期遅延）により、一部のコンテンツが一時的に検索可能な場合がありますが、これは成功の発生を妨げません。",
         "7.2. 当社は成功の発生を顧客に通知します。顧客は7日以内に異議を申し立てることができます。申し立てがない場合、サービスは検収されたものとみなされます。",
+        "7.3. 2.5のサービスにおける成功は、該当するレビューがGoogleビジネスプロフィール上で**公開表示されなくなった**時点で、レビューごとに発生します。報酬は実際に削除されたレビューごとに発生し、削除されなかったレビューについて顧客は報酬を負いません。価格、追加料金（例：古いレビュー）および数量割引はウェブサイトまたは見積もりに記載されます。",
       ] },
       { h: "8. 再掲載保護", ps: [
         "8.1. 有効な再掲載保護の期間中に、削除されたプロフィールが第三者またはGoogleの自動プロセスによって再び公開された場合、顧客からの通知により当社は無償で再度削除します。保護期間は選択した保護パッケージによります：**月額保護**および**毎日のモニタリング**では有効なサブスクリプションの期間中（いずれも月単位で解約可能）、**生涯保護**では恒久的。毎日のモニタリングおよび生涯保護では、顧客からの通知がなくても、当社自身が継続的に再掲載を確認します。",
@@ -807,7 +815,7 @@ TERMS.ja = {
         "12.4. 個々の条項が無効であっても、その他の条項の有効性は影響を受けません。",
       ] },
     ],
-    upd: "版：2026年6月",
+    upd: "版：2026年10月",
   },
   wid: {
     title: "撤回権について",
@@ -855,30 +863,31 @@ TERMS.sv = {
         "2.2. **Profilborttagning + ny profil (”Remove + Restart”):** Tjänst enligt punkt 2.1 plus uppsättning av en ny Google-företagsprofil med de korrekta företagsuppgifter som kunden tillhandahåller.",
         "2.3. **Ryktesundanträngning:** Löpande åtgärder med målet att med annat innehåll tränga undan negativa sökresultat som kunden angett i Google-sökningen. Det rör sig om en **ansträngning utan resultatgaranti**; något visst rankingresultat är inte utlovat. Detaljer (löptid, omfattning, rapportering) framgår av respektive offert.",
         "2.4. **Avindexering av press (förmedling):** RapidRemove **förmedlar** kontakten med en partnerbyrå och hjälper till med ansökan. Juridisk granskning och representation sker uteslutande genom partnerbyrån; ett separat avtal ingås mellan kunden och partnerbyrån. RapidRemove tillhandahåller **ingen juridisk rådgivning** och ansvarar inte för någon avindexeringsframgång.",
-        "2.5. **Ingen borttagning av enskilda omdömen:** Föremålet för tjänsten enligt 2.1/2.2 är alltid borttagning av hela profilen med alla omdömen, inte borttagning av enskilda recensioner.",
+        "2.5. **Borttagning av enskilda omdömen:** Borttagning av enskilda omdömen som kunden valt ut från sin Google-företagsprofil; själva profilen finns kvar. Vi granskar varje omdöme i förväg och driver borttagningen uteslutande via Googles officiella rapporterings- och klagomålsförfaranden, i den mån omdömet strider mot Googles riktlinjer eller tillämplig lag (t.ex. falska omdömen, omdömen från konkurrenter eller icke-kunder, förolämpningar, osanna faktapåståenden). Äkta, saklig kritik omfattas inte av tjänsten. Google beslutar om borttagningen; något visst resultat garanteras inte. Tjänsten erbjuds inte i alla regioner; avgörande är erbjudandet i beställningsprocessen.",
         "2.6. **Ingen juridisk tjänst:** Samtliga RapidRemoves tjänster är av teknisk-organisatorisk natur. RapidRemove tillhandahåller ingen juridisk rådgivning och ingen representation inför myndigheter eller domstolar.",
       ] },
       { h: "3. Avtalets ingående", ps: [
         "3.1. Den kostnadsfria borttagningskollen på vår webbplats är inte bindande och utgör inget anbud.",
         "3.2. Avtalet ingås när kunden accepterar vårt anbud (via webbplatsens beställningsflöde eller e-post) och vi bekräftar uppdraget, dock senast när tjänsten börjar utföras.",
-        "3.3. **Behörighet:** Kunden garanterar att denne har rätt att förfoga över den aktuella företagsprofilen (som ägare av företaget eller med dess uttryckliga fullmakt). Det är förbjudet att beställa borttagning av andras profiler utan behörighet; kunden håller RapidRemove skadeslös i detta avseende.",
+        "3.3. **Behörighet:** Kunden garanterar att denne har rätt att förfoga över den aktuella företagsprofilen (som ägare av företaget eller med dess uttryckliga fullmakt). Det är förbjudet att beställa borttagning av andras profiler utan behörighet; kunden håller RapidRemove skadeslös i detta avseende. Uppdrag enligt 2.5 får endast lämnas för omdömen på kundens egen företagsprofil eller en profil som kunden ansvarar för.",
       ] },
       { h: "4. Kundens medverkansskyldigheter", ps: [
         "4.1. Kunden bekräftar profilen som ska tas bort och beviljar den redigeringsbehörighet som krävs för företagsprofilen. Åtkomst till kundens Google-konto, Gmail, Google Ads eller personuppgifter krävs inte för detta och begärs inte.",
         "4.2. Om utförandet försenas på grund av att kunden inte tillhandahåller nödvändig medverkan förlängs angivna handläggningstider i motsvarande mån.",
       ] },
       { h: "5. Handläggningstid", ps: [
-        "5.1. Borttagningen sker i regel inom **24 till 48 timmar** från det att all medverkan enligt punkt 4 föreligger. Det rör sig om en cirkauppgift, inte en fast tidpunkt. Förseningar på grund av Googles interna processer ansvarar vi inte för.",
+        "5.1. Borttagningen sker i regel inom **24 till 48 timmar** från det att all medverkan enligt punkt 4 föreligger. Det rör sig om en cirkauppgift, inte en fast tidpunkt. Förseningar på grund av Googles interna processer ansvarar vi inte för. För tjänster enligt 2.5 beror tiden på Googles granskning; den är i regel några dagar, i enskilda fall upp till ungefär tre veckor.",
       ] },
       { h: "6. Priser och betalning", ps: [
         "6.1. De fasta priser som anges på webbplatsen respektive i offerten vid tidpunkten för uppdraget gäller. Samtliga angivna priser är slutpriser och inkluderar eventuell lagstadgad moms. Beroende på kundens region faktureras i EUR eller USD.",
-        "6.2. **Betalning efter framgång (”No Cure, No Pay”):** För tjänster enligt 2.1 och 2.2 förfaller ersättningen först när framgång enligt punkt 7 inträtt. Uteblir framgången är kunden inte skyldig någon ersättning. Vid betalningshanteringen kan en betalningsauktorisation ske redan vid uppdraget; debiteringen sker först efter att framgång inträtt.",
+        "6.2. **Betalning efter framgång (”No Cure, No Pay”):** För tjänster enligt 2.1, 2.2 och 2.5 förfaller ersättningen först när framgång enligt punkt 7 inträtt. Uteblir framgången är kunden inte skyldig någon ersättning. Vid betalningshanteringen kan en betalningsauktorisation ske redan vid uppdraget; debiteringen sker först efter att framgång inträtt.",
         "6.3. För ryktesundanträngning gäller de ersättningar som anges i offerten (t.ex. engångsaudit, månadsretainer); dessa är **inte** framgångsbaserade om inte annat uttryckligen avtalats.",
         "6.4. Betalningssätt: de metoder som erbjuds i beställningsprocessen (t.ex. kreditkort, PayPal, Klarna, iDEAL); hanteringen sker via externa betaltjänstleverantörer.",
       ] },
       { h: "7. Definition av framgång, godkännande", ps: [
         "7.1. Framgången med profilborttagningen inträder när den beställda företagsprofilen **inte längre är offentligt åtkomlig** i Google-sökningen och på Google Maps. Avgörande är att själva profilen inte går att nå; av tekniska skäl (cacher, tredjepartswebbplatser, tidsförskjuten synkronisering av enskilda Google-tjänster) kan enskilt innehåll tillfälligt fortfarande vara sökbart utan att detta hindrar att framgång inträder.",
         "7.2. Vi informerar kunden när framgång inträtt. Kunden kan invända inom 7 dagar; annars anses tjänsten godkänd.",
+        "7.3. För tjänster enligt 2.5 inträder framgång per omdöme så snart det aktuella omdömet **inte längre visas offentligt** på Google-företagsprofilen. Ersättningen förfaller per faktiskt borttaget omdöme; för omdömen som inte tas bort är kunden inte skyldig någon ersättning. Pris, eventuella tillägg (t.ex. för äldre omdömen) och mängdrabatter framgår av webbplatsen eller erbjudandet.",
       ] },
       { h: "8. Skydd mot återpublicering", ps: [
         "8.1. Om den borttagna profilen under ett aktivt återpubliceringsskydd på nytt publiceras offentligt av tredje part eller genom Googles automatiserade processer tar vi bort den igen kostnadsfritt efter meddelande från kunden. Skyddsperioden beror på valt skyddspaket: vid **Månadsskydd** och **Daglig övervakning** under det aktiva abonnemangets löptid (vardera uppsägbart månadsvis), vid **Livstidsskydd** permanent. Vid Daglig övervakning och Livstidsskydd kontrollerar vi dessutom själva löpande om återpublicering skett, utan att något meddelande från kunden krävs.",
@@ -904,7 +913,7 @@ TERMS.sv = {
         "12.4. Skulle enskilda bestämmelser vara ogiltiga påverkas inte giltigheten av övriga bestämmelser.",
       ] },
     ],
-    upd: "Version: juni 2026",
+    upd: "Version: oktober 2026",
   },
   wid: {
     title: "Ångerrätt",
@@ -952,30 +961,31 @@ TERMS.da = {
         "2.2. **Profilsletning + ny oprettelse („Remove + Restart“):** Ydelse i henhold til punkt 2.1 plus oprettelse af en ny Google-virksomhedsprofil med de korrekte virksomhedsdata, som kunden stiller til rådighed.",
         "2.3. **Omdømmefortrængning:** Løbende tiltag med det formål at fortrænge negative søgeresultater, som kunden har udpeget, fra Google-søgningen med andet indhold. Der er tale om en **indsats uden succesgaranti**; et bestemt placeringsresultat skyldes ikke. Detaljer (løbetid, omfang, rapportering) fremgår af det enkelte tilbud.",
         "2.4. **Afindeksering af presse (formidling):** RapidRemove **formidler** kontakten til et partneradvokatkontor og hjælper med ansøgningen. Juridisk vurdering og repræsentation varetages udelukkende af partnerkontoret; der indgås en separat aftale mellem kunden og partnerkontoret. RapidRemove yder **ingen juridisk rådgivning** og skylder ingen afindekseringssucces.",
-        "2.5. **Ingen sletning af enkelte anmeldelser:** Genstanden for ydelsen i henhold til 2.1/2.2 er altid fjernelse af hele profilen med alle anmeldelser, ikke fjernelse af enkelte anmeldelser.",
+        "2.5. **Fjernelse af enkelte anmeldelser:** Fjernelse af enkelte anmeldelser, som kunden har udvalgt, fra kundens Google-virksomhedsprofil; selve profilen bevares. Vi vurderer hver anmeldelse på forhånd og forfølger fjernelsen udelukkende via Googles officielle indberetnings- og klageprocedurer, i det omfang anmeldelsen strider mod Googles retningslinjer eller gældende ret (f.eks. falske anmeldelser, anmeldelser fra konkurrenter eller ikke-kunder, fornærmelser, usande faktuelle påstande). Ægte, saglig kritik er ikke omfattet af ydelsen. Google træffer afgørelse om fjernelsen; et bestemt resultat garanteres ikke. Ydelsen tilbydes ikke i alle regioner; afgørende er tilbuddet i bestillingsprocessen.",
         "2.6. **Ingen juridisk tjenesteydelse:** Samtlige RapidRemoves ydelser er af teknisk-organisatorisk karakter. RapidRemove yder ingen juridisk rådgivning og ingen repræsentation over for myndigheder eller domstole.",
       ] },
       { h: "3. Aftalens indgåelse", ps: [
         "3.1. Det gratis slettetjek på vores hjemmeside er uforpligtende og udgør ikke et tilbud.",
         "3.2. Aftalen indgås, når kunden accepterer vores tilbud (via hjemmesidens bestillingsflow eller e-mail), og vi bekræfter opgaven, dog senest når udførelsen af ydelsen påbegyndes.",
-        "3.3. **Beføjelse:** Kunden indestår for, at denne er berettiget til at disponere over den pågældende virksomhedsprofil (som indehaver af virksomheden eller med dennes udtrykkelige fuldmagt). Det er forbudt at bestille sletning af andres profiler uden beføjelse; kunden holder RapidRemove skadesløs i denne henseende.",
+        "3.3. **Beføjelse:** Kunden indestår for, at denne er berettiget til at disponere over den pågældende virksomhedsprofil (som indehaver af virksomheden eller med dennes udtrykkelige fuldmagt). Det er forbudt at bestille sletning af andres profiler uden beføjelse; kunden holder RapidRemove skadesløs i denne henseende. Ordrer i henhold til 2.5 må kun afgives for anmeldelser på kundens egen virksomhedsprofil eller en profil, som kunden er ansvarlig for.",
       ] },
       { h: "4. Kundens medvirkenspligter", ps: [
         "4.1. Kunden bekræfter den profil, der skal fjernes, og giver den nødvendige redigeringstilladelse til virksomhedsprofilen. Adgang til kundens Google-konto, Gmail, Google Ads eller personlige data er ikke nødvendig hertil og kræves ikke.",
         "4.2. Forsinkes udførelsen, fordi kunden ikke yder den nødvendige medvirken, forlænges de angivne behandlingstider tilsvarende.",
       ] },
       { h: "5. Behandlingstid", ps: [
-        "5.1. Fjernelsen sker som regel inden for **24 til 48 timer**, fra al medvirken i henhold til punkt 4 foreligger. Der er tale om en cirka-angivelse, ikke en fast frist. Forsinkelser som følge af Googles interne processer er vi ikke ansvarlige for.",
+        "5.1. Fjernelsen sker som regel inden for **24 til 48 timer**, fra al medvirken i henhold til punkt 4 foreligger. Der er tale om en cirka-angivelse, ikke en fast frist. Forsinkelser som følge af Googles interne processer er vi ikke ansvarlige for. For ydelser i henhold til 2.5 afhænger varigheden af Googles vurdering; den er som regel nogle dage, i enkelte tilfælde op til ca. tre uger.",
       ] },
       { h: "6. Priser og betaling", ps: [
         "6.1. De faste priser, der er angivet på hjemmesiden hhv. i tilbuddet på bestillingstidspunktet, gælder. Alle angivne priser er slutpriser og er inklusive eventuel lovpligtig moms. Afhængigt af kundens region faktureres i EUR eller USD.",
-        "6.2. **Betaling efter succes („No Cure, No Pay“):** For ydelser i henhold til 2.1 og 2.2 forfalder vederlaget først, når succesen i henhold til punkt 7 er indtrådt. Udebliver succesen, skylder kunden intet vederlag. Ved betalingsbehandlingen kan en betalingsautorisation allerede ske ved bestillingen; trækket sker først efter succesens indtræden.",
+        "6.2. **Betaling efter succes („No Cure, No Pay“):** For ydelser i henhold til 2.1, 2.2 og 2.5 forfalder vederlaget først, når succesen i henhold til punkt 7 er indtrådt. Udebliver succesen, skylder kunden intet vederlag. Ved betalingsbehandlingen kan en betalingsautorisation allerede ske ved bestillingen; trækket sker først efter succesens indtræden.",
         "6.3. For omdømmefortrængning gælder de vederlag, der er angivet i tilbuddet (f.eks. engangsaudit, månedlig retainer); disse er **ikke** succesafhængige, medmindre andet udtrykkeligt er aftalt.",
         "6.4. Betalingsmetoder: de metoder, der tilbydes i bestillingsprocessen (f.eks. kreditkort, PayPal, Klarna, iDEAL); behandlingen sker via eksterne betalingstjenesteudbydere.",
       ] },
       { h: "7. Definition af succes, godkendelse", ps: [
         "7.1. Succesen med profilsletningen indtræder, når den bestilte virksomhedsprofil **ikke længere er offentligt tilgængelig** i Google-søgningen og på Google Maps. Afgørende er, at selve profilen ikke kan hentes; af tekniske årsager (caches, tredjepartssider, tidsforskudt synkronisering af enkelte Google-tjenester) kan enkelte indholdselementer midlertidigt stadig kunne findes, uden at dette hindrer succesens indtræden.",
         "7.2. Vi informerer kunden om succesens indtræden. Kunden kan gøre indsigelse inden for 7 dage; ellers anses ydelsen for godkendt.",
+        "7.3. For ydelser i henhold til 2.5 indtræder succesen pr. anmeldelse, så snart den pågældende anmeldelse **ikke længere vises offentligt** på Google-virksomhedsprofilen. Vederlaget forfalder pr. faktisk fjernet anmeldelse; for anmeldelser, der ikke fjernes, skylder kunden intet vederlag. Pris, eventuelle tillæg (f.eks. for ældre anmeldelser) og mængderabatter fremgår af hjemmesiden eller tilbuddet.",
       ] },
       { h: "8. Beskyttelse mod genoprettelse", ps: [
         "8.1. Hvis den fjernede profil under en aktiv genoprettelsesbeskyttelse på ny offentliggøres af tredjepart eller af Googles automatiserede processer, fjerner vi den igen gratis efter meddelelse fra kunden. Beskyttelsesperioden afhænger af den valgte beskyttelsespakke: ved **Månedlig beskyttelse** og **Daglig overvågning** i det aktive abonnements løbetid (begge kan opsiges månedligt), ved **Livstidsbeskyttelse** permanent. Ved Daglig overvågning og Livstidsbeskyttelse kontrollerer vi desuden selv løbende for genoprettelser, uden at en meddelelse fra kunden er nødvendig.",
@@ -1001,7 +1011,7 @@ TERMS.da = {
         "12.4. Skulle enkelte bestemmelser være ugyldige, berøres gyldigheden af de øvrige bestemmelser ikke.",
       ] },
     ],
-    upd: "Version: juni 2026",
+    upd: "Version: oktober 2026",
   },
   wid: {
     title: "Fortrydelsesret",
@@ -1049,30 +1059,31 @@ TERMS.no = {
         "2.2. **Profilsletting + ny opprettelse («Remove + Restart»):** Tjeneste i henhold til punkt 2.1 pluss oppsett av en ny Google-bedriftsprofil med de korrekte bedriftsdataene kunden oppgir.",
         "2.3. **Omdømmefortrengning:** Løpende tiltak med mål om å fortrenge negative søkeresultater som kunden har utpekt, fra Google-søket med annet innhold. Det dreier seg om en **innsats uten resultatgaranti**; et bestemt rangeringsresultat skyldes ikke. Detaljer (varighet, omfang, rapportering) følger av det enkelte tilbudet.",
         "2.4. **Avindeksering av presse (formidling):** RapidRemove **formidler** kontakten med et partneradvokatkontor og bistår med søknaden. Juridisk vurdering og representasjon utføres utelukkende av partnerkontoret; det inngås en egen avtale mellom kunden og partnerkontoret. RapidRemove yter **ingen juridisk rådgivning** og skylder ingen avindekseringssuksess.",
-        "2.5. **Ingen sletting av enkeltomtaler:** Gjenstanden for tjenesten etter 2.1/2.2 er alltid fjerning av hele profilen med alle omtaler, ikke fjerning av enkeltanmeldelser.",
+        "2.5. **Fjerning av enkeltomtaler:** Fjerning av enkeltomtaler som kunden har valgt ut, fra kundens Google-bedriftsprofil; selve profilen beholdes. Vi vurderer hver omtale på forhånd og forfølger fjerningen utelukkende via Googles offisielle rapporterings- og klageprosedyrer, i den grad omtalen strider mot Googles retningslinjer eller gjeldende rett (f.eks. falske omtaler, omtaler fra konkurrenter eller ikke-kunder, fornærmelser, usanne faktapåstander). Ekte, saklig kritikk omfattes ikke av tjenesten. Google avgjør fjerningen; et bestemt resultat garanteres ikke. Tjenesten tilbys ikke i alle regioner; avgjørende er tilbudet i bestillingsprosessen.",
         "2.6. **Ingen juridisk tjeneste:** Samtlige av RapidRemoves tjenester er av teknisk-organisatorisk art. RapidRemove yter ingen juridisk rådgivning og ingen representasjon overfor myndigheter eller domstoler.",
       ] },
       { h: "3. Avtaleinngåelse", ps: [
         "3.1. Den gratis slettesjekken på nettstedet vårt er uforpliktende og utgjør ikke et tilbud.",
         "3.2. Avtalen inngås når kunden aksepterer tilbudet vårt (via nettstedets bestillingsflyt eller e-post) og vi bekrefter oppdraget, men senest når utførelsen av tjenesten begynner.",
-        "3.3. **Berettigelse:** Kunden garanterer at vedkommende er berettiget til å disponere over den aktuelle bedriftsprofilen (som eier av virksomheten eller med dennes uttrykkelige fullmakt). Det er forbudt å bestille sletting av andres profiler uten berettigelse; kunden holder RapidRemove skadesløs i denne forbindelse.",
+        "3.3. **Berettigelse:** Kunden garanterer at vedkommende er berettiget til å disponere over den aktuelle bedriftsprofilen (som eier av virksomheten eller med dennes uttrykkelige fullmakt). Det er forbudt å bestille sletting av andres profiler uten berettigelse; kunden holder RapidRemove skadesløs i denne forbindelse. Oppdrag etter 2.5 kan kun gis for omtaler på kundens egen bedriftsprofil eller en profil kunden er ansvarlig for.",
       ] },
       { h: "4. Kundens medvirkningsplikter", ps: [
         "4.1. Kunden bekrefter profilen som skal fjernes, og gir den nødvendige redigeringstillatelsen for bedriftsprofilen. Tilgang til kundens Google-konto, Gmail, Google Ads eller personlige data er ikke nødvendig for dette og kreves ikke.",
         "4.2. Forsinkes utførelsen fordi kunden ikke yter nødvendig medvirkning, forlenges de angitte behandlingstidene tilsvarende.",
       ] },
       { h: "5. Behandlingstid", ps: [
-        "5.1. Fjerningen skjer som regel innen **24 til 48 timer** fra all medvirkning etter punkt 4 foreligger. Dette er en cirka-angivelse, ikke en fast frist. Forsinkelser som følge av Googles interne prosesser er vi ikke ansvarlige for.",
+        "5.1. Fjerningen skjer som regel innen **24 til 48 timer** fra all medvirkning etter punkt 4 foreligger. Dette er en cirka-angivelse, ikke en fast frist. Forsinkelser som følge av Googles interne prosesser er vi ikke ansvarlige for. For tjenester etter 2.5 avhenger varigheten av Googles vurdering; den er som regel noen dager, i enkelte tilfeller opptil ca. tre uker.",
       ] },
       { h: "6. Priser og betaling", ps: [
         "6.1. De faste prisene som er angitt på nettstedet hhv. i tilbudet på bestillingstidspunktet, gjelder. Alle angitte priser er sluttpriser og inkluderer eventuell lovpålagt mva. Avhengig av kundens region faktureres det i EUR eller USD.",
-        "6.2. **Betaling etter suksess («No Cure, No Pay»):** For tjenester etter 2.1 og 2.2 forfaller vederlaget først når suksessen etter punkt 7 har inntrådt. Uteblir suksessen, skylder kunden ikke noe vederlag. Ved betalingsbehandlingen kan en betalingsautorisasjon allerede skje ved bestillingen; belastningen skjer først etter at suksessen har inntrådt.",
+        "6.2. **Betaling etter suksess («No Cure, No Pay»):** For tjenester etter 2.1, 2.2 og 2.5 forfaller vederlaget først når suksessen etter punkt 7 har inntrådt. Uteblir suksessen, skylder kunden ikke noe vederlag. Ved betalingsbehandlingen kan en betalingsautorisasjon allerede skje ved bestillingen; belastningen skjer først etter at suksessen har inntrådt.",
         "6.3. For omdømmefortrengning gjelder vederlagene angitt i tilbudet (f.eks. engangsaudit, månedlig retainer); disse er **ikke** suksessavhengige med mindre annet er uttrykkelig avtalt.",
         "6.4. Betalingsmåter: metodene som tilbys i bestillingsprosessen (f.eks. kredittkort, PayPal, Klarna, iDEAL); behandlingen skjer via eksterne betalingstjenesteleverandører.",
       ] },
       { h: "7. Definisjon av suksess, godkjenning", ps: [
         "7.1. Suksessen med profilslettingen inntrer når den bestilte bedriftsprofilen **ikke lenger er offentlig tilgjengelig** i Google-søket og på Google Maps. Avgjørende er at selve profilen ikke kan hentes opp; av tekniske grunner (cacher, tredjepartsnettsteder, tidsforskjøvet synkronisering av enkelte Google-tjenester) kan enkelte innholdselementer midlertidig fortsatt være søkbare uten at dette hindrer at suksessen inntrer.",
         "7.2. Vi informerer kunden om at suksessen har inntrådt. Kunden kan fremme innsigelser innen 7 dager; ellers anses tjenesten som godkjent.",
+        "7.3. For tjenester etter 2.5 inntrer suksessen per omtale så snart den aktuelle omtalen **ikke lenger vises offentlig** på Google-bedriftsprofilen. Vederlaget forfaller per faktisk fjernet omtale; for omtaler som ikke fjernes, skylder kunden ikke noe vederlag. Pris, eventuelle tillegg (f.eks. for eldre omtaler) og mengderabatter fremgår av nettstedet eller tilbudet.",
       ] },
       { h: "8. Beskyttelse mot gjenoppretting", ps: [
         "8.1. Blir den fjernede profilen under en aktiv gjenopprettingsbeskyttelse på nytt offentlig publisert av tredjeparter eller av Googles automatiserte prosesser, fjerner vi den igjen gratis etter melding fra kunden. Beskyttelsesperioden avhenger av valgt beskyttelsespakke: ved **Månedlig beskyttelse** og **Daglig overvåking** i det aktive abonnementets løpetid (begge kan sies opp månedlig), ved **Livsvarig beskyttelse** permanent. Ved Daglig overvåking og Livsvarig beskyttelse sjekker vi i tillegg selv løpende for gjenopprettinger, uten at det kreves melding fra kunden.",
@@ -1098,7 +1109,7 @@ TERMS.no = {
         "12.4. Skulle enkelte bestemmelser være ugyldige, berøres ikke gyldigheten av de øvrige bestemmelsene.",
       ] },
     ],
-    upd: "Versjon: juni 2026",
+    upd: "Versjon: oktober 2026",
   },
   wid: {
     title: "Angrerett",
