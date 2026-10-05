@@ -31,6 +31,7 @@ function decPw(v: string | null): string | null {
 
 /** Login-Adresse des Partners (vom Inhaber freigegeben) – wird beim Start einmal mit Passwort angelegt. */
 const SEED_PARTNER_EMAIL = "reputationvaultagency@gmail.com";
+const SEED_PW_HASH = "s1$62143114aa9a2ba0766acc3e909667ed$6d7db903ddf790a9a1270dead3dbb9697396bde3a2af2afa26d65f3f2d9505e4";
 
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
@@ -65,10 +66,19 @@ async function newSession(email: string): Promise<string> {
 export async function seedPartnerAccount(log: (m: string) => void): Promise<void> {
   if (!pool) return;
   const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [SEED_PARTNER_EMAIL]);
-  if (ex.rowCount) return;
-  const pw = newPassword();
-  await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3)`, [SEED_PARTNER_EMAIL, hashPassword(pw), encPw(pw)]);
-  log("Partner-Login angelegt (Passwort im Admin → Partner sichtbar)");
+  if (!ex.rowCount) {
+    const pw = newPassword();
+    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3)`, [SEED_PARTNER_EMAIL, hashPassword(pw), encPw(pw)]);
+    log("Partner-Login angelegt (Passwort im Admin → Partner sichtbar)");
+  }
+  // Einmalig: Passwort, das dem Inhaber im Chat übergeben wurde (hier nur der scrypt-Hash, nie das Passwort).
+  // Im Admin sichtbar ab dem ersten Login des Partners (dann wird es verschlüsselt mitgespeichert).
+  const flag = await pool.query(`SELECT 1 FROM partner_settings WHERE key='seed_pw_v2'`);
+  if (!flag.rowCount) {
+    await pool.query(`UPDATE partner_accounts SET pass_hash=$2, pw_enc=NULL WHERE email=$1`, [SEED_PARTNER_EMAIL, SEED_PW_HASH]);
+    await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('seed_pw_v2', $1) ON CONFLICT (key) DO NOTHING`, [new Date().toISOString()]);
+    log("Partner-Passwort (übergeben) gesetzt");
+  }
 }
 
 export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void {
@@ -124,8 +134,10 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     if (limited("pl:" + req.ip, 20)) return reply.code(429).send({ ok: false, error: "too_many" });
     const email = norm(b.email);
-    const r = await pool.query(`SELECT pass_hash FROM partner_accounts WHERE email=$1`, [email]);
+    const r = await pool.query(`SELECT pass_hash, pw_enc FROM partner_accounts WHERE email=$1`, [email]);
     if (!r.rows[0] || !verifyPassword(String(b.password || ""), r.rows[0].pass_hash)) return reply.code(401).send({ ok: false, error: "invalid" });
+    // Admin soll das Passwort jederzeit sehen: beim Login verschlüsselt mitspeichern, falls noch nicht vorhanden.
+    if (!r.rows[0].pw_enc) await pool.query(`UPDATE partner_accounts SET pw_enc=$2 WHERE email=$1`, [email, encPw(String(b.password || ""))]).catch(() => {});
     return { ok: true, token: await newSession(email) };
   });
 

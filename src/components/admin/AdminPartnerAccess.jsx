@@ -58,7 +58,7 @@ export default function AdminPartnerAccess({ toast }) {
           <button className="btn btn-sec btn-sm" disabled={busy} onClick={() => setPw(a, true)}>Neues Passwort erzeugen</button>
           <button className="btn btn-sec btn-sm" disabled={busy} onClick={() => setPw(a, false)}>Passwort festlegen</button>
           <button className="btn btn-sec btn-sm" disabled={busy} onClick={() => setMail(a)}>E-Mail ändern</button>
-          <span className="muted" style={{ width: "100%" }}>{a.lastLogin ? `Zuletzt eingeloggt: ${new Date(a.lastLogin).toLocaleString("de-AT")}` : "Noch nie eingeloggt"}{!a.password ? " · Passwort vom Partner selbst gesetzt (vor dieser Funktion) – „Neues Passwort erzeugen“, um es zu sehen" : ""}</span>
+          <span className="muted" style={{ width: "100%" }}>{a.lastLogin ? `Zuletzt eingeloggt: ${new Date(a.lastLogin).toLocaleString("de-AT")}` : "Noch nie eingeloggt"}{!a.password ? " · Passwort wird nach dem nächsten Login des Partners hier sichtbar (oder „Neues Passwort erzeugen“)" : ""}</span>
         </div>
       ))}
     </div>
