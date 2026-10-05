@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
-import CustApp from "./CustApp";
+import CustApp, { injectAppManifest } from "./CustApp";
+import PushGate, { pushState } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
 
@@ -197,6 +198,7 @@ export default function CustomerDashboard() {
   const [busy, setBusy] = React.useState("");
   const [magicErr, setMagicErr] = React.useState(false);
   const [resetK, setResetK] = React.useState("");
+  const [gate, setGate] = React.useState(null); // Push noch nicht an → Vollbild-Aufforderung
   const [, tick] = React.useState(0);
   const prev = React.useRef(null);
   const toastT = React.useRef(0);
@@ -306,11 +308,21 @@ export default function CustomerDashboard() {
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
   };
   const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); } catch (e) { /* */ } };
+  // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
+  const hasData = !!data;
+  React.useEffect(() => {
+    if (!token || !hasData || offerPk) return;
+    injectAppManifest(token, lang);
+    let off = false;
+    pushState("customer").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
+    return () => { off = true; };
+  }, [token, hasData, offerPk]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (token === null) return <div className="rra" />;
   if (resetK) return <div className="rra"><SetPassword k={resetK} onCancel={() => { setResetK(""); store.set(""); setToken(""); }} onToken={(t) => { setResetK(""); onToken(t); showToast(T("pwSaved")); }} /></div>;
   if (!token) return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : ""} /></div>;
   if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(T("pkIsOn", { name: pkName() })); }} T={T} />;
+  if (gate && data) return <PushGate role="customer" token={token} state={gate} T={T} onDone={(on) => { setGate(null); if (on) showToast(T("pushOn")); }} />;
   if (!data) {
     return (
       <div className="rra"><div className="lg-wrap">

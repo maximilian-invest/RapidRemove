@@ -26,6 +26,21 @@ async function post(path, body) {
   return j;
 }
 
+/** Handy im Browser: Manifest mit persönlichem Start-Link + iOS-Meta (einmal je Seitenaufruf). */
+export function injectAppManifest(token, lang) {
+  if (typeof document === "undefined" || !token || !isMobile() || isStandalone()) return;
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const add = (k) => { const l = document.createElement("link"); l.rel = "manifest"; l.href = "/api/app-manifest" + (k ? "?k=" + encodeURIComponent(k) : ""); document.head.appendChild(l); };
+    post("/cust/app-link", { token, lang }).then((r) => add(r.k)).catch(() => add(""));
+  }
+  if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+    for (const [n, c] of [["apple-mobile-web-app-capable", "yes"], ["apple-mobile-web-app-title", "RapidRemove"], ["mobile-web-app-capable", "yes"]]) {
+      const m = document.createElement("meta"); m.name = n; m.content = c; document.head.appendChild(m);
+    }
+    const ic = document.createElement("link"); ic.rel = "apple-touch-icon"; ic.href = "/assets/rapidremove-icon.png"; document.head.appendChild(ic);
+  }
+}
+
 let deferred = null; // Android: beforeinstallprompt
 if (typeof window !== "undefined") window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); deferred = e; });
 
@@ -46,18 +61,11 @@ export default function CustApp({ token, lang, T, showToast }) {
       return;
     }
     if (hiddenUntil() > Date.now()) return;
-    setMode("install");
-    // Manifest mit persönlichem Start-Link (einmal je Seitenaufruf).
-    if (!document.querySelector('link[rel="manifest"]')) {
-      const add = (k) => { const l = document.createElement("link"); l.rel = "manifest"; l.href = "/api/app-manifest" + (k ? "?k=" + encodeURIComponent(k) : ""); document.head.appendChild(l); };
-      post("/cust/app-link", { token, lang }).then((r) => add(r.k)).catch(() => add(""));
-    }
-    if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
-      for (const [n, c] of [["apple-mobile-web-app-capable", "yes"], ["apple-mobile-web-app-title", "RapidRemove"], ["mobile-web-app-capable", "yes"]]) {
-        const m = document.createElement("meta"); m.name = n; m.content = c; document.head.appendChild(m);
-      }
-      const ic = document.createElement("link"); ic.rel = "apple-touch-icon"; ic.href = "/assets/rapidremove-icon.png"; document.head.appendChild(ic);
-    }
+    // Push im Browser schon an (Android/Desktop) → keine Karte.
+    const show = () => setMode("install");
+    if (pushOk() && Notification.permission === "granted") {
+      navigator.serviceWorker.getRegistration("/my-reviews").then((r) => (r ? r.pushManager.getSubscription() : null)).then((sb) => { if (!sb) show(); }).catch(show);
+    } else show();
   }, [token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function subscribe(silent) {

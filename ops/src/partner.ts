@@ -281,7 +281,29 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     const rows = await listTasks("WHERE status <> 'cancelled'");
     const p = pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 20`) : { rows: [] as Record<string, unknown>[] };
-    return { ok: true, tasks: rows.map(partnerView), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    // Screenshot der Bewertung (automatisch bei der Bestellung aufgenommen) → Vorschau statt nur Link.
+    const shots = new Map<string, number>();
+    const oids = [...new Set(rows.map((r) => r.order_id).filter(Boolean))];
+    if (pool && oids.length) {
+      const sr = await pool.query(`SELECT DISTINCT ON (order_id, url) id, order_id, url FROM review_shots WHERE status='ok' AND order_id = ANY($1::text[]) ORDER BY order_id, url, id DESC`, [oids]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+      for (const x of sr.rows as { id: number; order_id: string; url: string }[]) shots.set(`${x.order_id}|${x.url}`, Number(x.id));
+    }
+    return { ok: true, tasks: rows.map((r) => ({ ...partnerView(r), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+  });
+
+  // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
+  app.post("/partner/shot", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    const id = Number(b.id);
+    if (!pool || !Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id" });
+    const r = await pool.query(
+      `SELECT s.mime, s.img FROM review_shots s JOIN partner_tasks t ON t.order_id = s.order_id AND t.url = s.url
+        WHERE s.id=$1 AND s.status='ok' AND t.status <> 'cancelled' LIMIT 1`, [id],
+    ).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+    const row = r.rows[0] as { mime?: string; img?: Buffer } | undefined;
+    if (!row || !row.img) return reply.code(404).send({ ok: false, error: "not found" });
+    return reply.header("content-type", row.mime || "image/jpeg").header("cache-control", "private, max-age=86400").send(row.img);
   });
 
   const PARTNER_SETTABLE = ["new", "working", "removed", "not_possible", "software"];

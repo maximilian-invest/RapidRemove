@@ -51,14 +51,13 @@ export const pillLabel = (t) => {
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   return (STATUS[t.status] || STATUS.new).l;
 };
-const hostOf = (u) => { try { return new URL(u).host.replace(/^www\./, ""); } catch (e) { return ""; } };
 
 export function norm(t) {
   const who = (t.reviewer || "").trim();
   const text = (t.text || "").trim();
   return {
     id: t.id, code: t.code, cust: (t.customer || "").trim() || "Other", url: t.url || "",
-    who: who || (text ? "Reviewer" : "Review link"), text: text || (t.url ? (hostOf(t.url) + " · no preview, open the link") : ""),
+    who: who || (text ? "Reviewer" : "Google review"), text, shot: t.shot || null,
     price: Number(t.price || 0), old: t.kind === "old", nt: t.kind === "nt", status: toUi(t.status), paid: !!t.paid,
     note: t.note || "", created: t.created ? new Date(t.created).getTime() : 0, touched: !!t.touched,
     workingSince: t.workingSince ? new Date(t.workingSince).getTime() : null,

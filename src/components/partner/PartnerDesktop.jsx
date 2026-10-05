@@ -6,6 +6,7 @@ import {
   Link as LinkIcon, ArrowUpRight, StickyNote, Store, Clock, Wallet, Banknote,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, TABS, canRemove, usd, ago, pillLabel } from "./shared";
+import ReviewShot from "./ReviewShot";
 
 const AUTO_KEY = "rr_partner_autonext";
 const SHORTCUTS = "↑↓ move · X select · Shift+click range · 1–4 mark · O open · C copy · / search · Esc clear";
@@ -281,7 +282,8 @@ export default function PartnerDesktop({ api }) {
                   </div>
                 </div>
                 <div className="dbody">
-                  <div className="card quote"><b>{curT.who}</b>{curT.text ? `“${curT.text}”` : null}</div>
+                  {curT.shot ? <ReviewShot id={curT.shot} token={api.token} url={curT.url} /> : null}
+                  {curT.text || !curT.shot ? <div className="card quote"><b>{curT.who}</b>{curT.text ? `“${curT.text}”` : null}</div> : null}
                   <div className="openrow">
                     <button type="button" className="btn btn-primary" disabled={!curT.url} onClick={() => openReview(curT)}><ArrowUpRight />Open review on Google<kbd>O</kbd></button>
                     <button type="button" className="btn btn-line" data-tip="Copy review link" data-k="C" onClick={() => copyLinks([curT.id])}><LinkIcon /></button>

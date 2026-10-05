@@ -11,6 +11,7 @@ import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
 import PasskeyOffer from "@/components/PasskeyOffer";
+import PushGate, { pushState } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed } from "@/lib/passkey";
 
 const SKIP_KEY = "rr_partner_setup_skip";
@@ -22,6 +23,7 @@ const MOBILE_Q = "(max-width: 860px)";
 export default function PartnerBoard() {
   const [token, setToken] = React.useState(null);
   const [setup, setSetup] = React.useState(null);
+  const [gate, setGate] = React.useState(null); // Push noch nicht an → Vollbild-Aufforderung
   const [offerPk, setOfferPk] = React.useState(false); // nach dem Login: Face ID anbieten // { account } → Login über den persönlichen Link einrichten
   const [isMobile, setIsMobile] = React.useState(null);
   const [tasks, setTasks] = React.useState(null);
@@ -220,6 +222,14 @@ export default function PartnerBoard() {
     return [...m];
   }, [visible]);
 
+  // Push aufdrängen: nach jedem Öffnen, solange nicht eingeschaltet („Not now" gilt nur für diese Sitzung).
+  React.useEffect(() => {
+    if (!token || setup || offerPk) return;
+    let off = false;
+    pushState("partner").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
+    return () => { off = true; };
+  }, [token, setup, offerPk]);
+
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
   const onLogin = (t, viaPasskey) => {
@@ -230,6 +240,7 @@ export default function PartnerBoard() {
     if (!viaPasskey && String(t).startsWith("ps_") && passkeySupported() && !passkeyOnDevice("partner") && !passkeyDismissed("partner")) setOfferPk(true);
   };
   if (offerPk && token) return <PasskeyOffer role="partner" token={token} onDone={() => setOfferPk(false)} />;
+  if (gate && token && !setup) return <PushGate role="partner" token={token} state={gate} onDone={(on) => { setGate(null); if (on) showToast("Notifications are on"); }} texts={{ pushSub: "Get a notification for every new order and when a customer has paid – instantly.", appIos2s: "Then open “RR Partner” from your home screen" }} />;
   if (!token) return <PartnerLogin mode="login" onToken={onLogin} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 

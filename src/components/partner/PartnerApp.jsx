@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
 import PartnerPush from "./PartnerPush";
+import ReviewShot from "./ReviewShot";
 
 const IMG = { wallet: `${BASE}/assets/partner/wallet.webp`, rocket: `${BASE}/assets/partner/rocket.webp` };
 const isTodo = (t) => t.status === "new" || t.status === "working";
@@ -270,7 +271,8 @@ export default function PartnerApp({ api }) {
         ) : t.sw === "paid" ? (
           <div className="swb ok"><CheckCircle2 /><span><b>Customer paid</b>Prepayment received – start the software removal now.</span></div>
         ) : null}
-        <div className="quote"><b>{t.who}</b>{t.text ? `“${t.text}”` : null}</div>
+        {t.shot ? <ReviewShot id={t.shot} token={api.token} url={t.url} /> : null}
+        {t.text || !t.shot ? <div className="quote"><b>{t.who}</b>{t.text ? `“${t.text}”` : t.url ? <span style={{ display: "block", fontSize: 14, color: "var(--g3)", fontWeight: 500 }}>Tap “Open review” to see it on Google</span> : null}</div> : null}
         {t.note ? <div className="noteb"><StickyNote />{t.note}</div> : null}
         <div className="acts2">
           <button type="button" className="cta" disabled={!t.url} onClick={() => openReview(t)}><ArrowUpRight />Open review</button>
