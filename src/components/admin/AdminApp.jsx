@@ -23,7 +23,12 @@ const Icon = { ...BaseIcon, ...AdminIcon };
 
 
 /* ---------- shared bits ---------- */
-function StatusBadge({ status }) {
+function StatusBadge({ status, pay }) {
+  // Profil gelöscht, aber Zahlung noch offen (Zahlungslink gesandt / Mahnung / etc.)
+  // → im Status „Zahlung offen" zeigen. Dass gelöscht wurde, steht in der Zahlungsspalte.
+  if (status === "done" && OFFEN_PAY.includes(pay)) {
+    return <span className="badge-st st-pending"><span className="d"></span>Zahlung offen</span>;
+  }
   const map = {
     new: ["st-new", "Neu"], progress: ["st-progress", "In Bearbeitung"], done: ["st-done", "Gelöscht"], storniert: ["st-refunded", "Storniert"],
   };
@@ -141,7 +146,7 @@ function OrderRow({ o, onClick, now }) {
         {/* Gelöscht + Zahlungslink raus (bzw. Mahnung) → mobil „Zahlung offen" statt „Gelöscht". */}
         {o.status === "done" && ["sent", "mahnung", "failed"].includes(o.pay)
           ? <span className="badge-st st-payopen"><span className="d"></span>Zahlung offen</span>
-          : <StatusBadge status={o.status} />}
+          : <StatusBadge status={o.status} pay={o.pay} />}
         <OrderTimer since={o.createdAt} status={o.status} now={now} />
       </div>
     </div>
@@ -588,7 +593,7 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck, onOpenChec
                     <td><span className="oid">{o.id}</span><div className="muted">{o.created.split("·")[1]}</div></td>
                     <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 9 }}>{o.assignee ? <AssigneeAvatar who={o.assignee} size={26} /> : null}<div>{o.name}<div className="sub">{o.company}</div></div></div></td>
                     <td>{SERVICES[o.service].name}</td>
-                    <td><StatusBadge status={o.status} /></td>
+                    <td><StatusBadge status={o.status} pay={o.pay} /></td>
                     <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span></td>
                   </tr>
                 ))}
@@ -1176,7 +1181,7 @@ function Orders({ orders, openOrder, query, setQuery }) {
                   <td><div className="cust" style={{ display: "flex", alignItems: "center", gap: 9 }}>{o.assignee ? <AssigneeAvatar who={o.assignee} size={26} /> : null}<div>{o.name}<div className="sub">{o.email}</div></div></div></td>
                   <td>{SERVICES[o.service].name}{o.protection ? <div className="muted">+ Schutz</div> : null}</td>
                   <td><PayBadge o={o} /></td>
-                  <td><StatusBadge status={o.status} /></td>
+                  <td><StatusBadge status={o.status} pay={o.pay} /></td>
                   <td><span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>{filter === "inkasso" ? <div className="muted" style={{ color: "var(--danger)", fontWeight: 700, fontSize: 11.5, whiteSpace: "nowrap" }}>seit {overdueDays(o, now)} T. überfällig</div> : null}</td>
                 </tr>
               ))}
@@ -1242,7 +1247,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
           </div>
           {/* status pipeline */}
           <div className="dsec">
-            <h3><Icon.zap /> Status aktualisieren <span className="right"><StatusBadge status={o.status} /></span></h3>
+            <h3><Icon.zap /> Status aktualisieren <span className="right"><StatusBadge status={o.status} pay={o.pay} /></span></h3>
             <div className="dpipe">
               {STATUS_FLOW.map((s, i) => {
                 const cls = i < curIdx ? "done" : i === curIdx ? "active" : "";
@@ -2421,7 +2426,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
         {o.source ? <div style={{ padding: "0 16px 10px" }}><SourceBadge source={o.source} big /></div> : null}
         <div style={{ padding: "0 16px 10px" }}><AssignControl order={o} onAssign={onAssign} compact /></div>
-        <div className="m-dbadges"><StatusBadge status={o.status} />{!isPress && <PayBadge o={o} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
+        <div className="m-dbadges"><StatusBadge status={o.status} pay={o.pay} />{!isPress && <PayBadge o={o} />}<OrderTimer since={o.createdAt} status={o.status} now={now} seconds />
           {o.status !== "storniert"
             ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
             : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
@@ -2498,7 +2503,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
         </div>
 
         <div className="m-dsec">
-          <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} /></span></h3>
+          <h3><Icon.zap /> Status <span className="right"><StatusBadge status={o.status} pay={o.pay} /></span></h3>
           <div className="m-vpipe">
             {STATUS_FLOW.map((s, i) => {
               const cls = i < curIdx ? "done" : i === curIdx ? "active" : "";
@@ -2533,7 +2538,7 @@ function CustomerDetail({ order, onBack, onStatus, onCompose, onInvoice, onSms, 
       <div className="cd-hero">
         <div className="cd-ava">{initials(o.name)}</div>
         <div>
-          <div className="cd-id">{o.name} <StatusBadge status={o.status} /> {!isPress && <PayBadge o={o} />}
+          <div className="cd-id">{o.name} <StatusBadge status={o.status} pay={o.pay} /> {!isPress && <PayBadge o={o} />}
             {o.status !== "storniert"
               ? <button className="stat-toggle danger" onClick={() => setStornoMail(true)}><Icon.ban /> Auftrag stornieren</button>
               : <button className="stat-toggle" onClick={() => setAsk({ title: "Auftrag aktivieren", message: "Auftrag " + o.id + " wieder aktivieren? Der Kunde erhält eine E-Mail, dass sein Auftrag wieder aktiv ist.", confirmLabel: "Aktivieren", onConfirm: () => onReactivate(o) })}><Icon.refresh /> Auftrag aktivieren</button>}
