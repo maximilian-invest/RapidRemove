@@ -4,67 +4,53 @@ import { fetchReportStats } from "@/lib/admin-api";
 
 /* Datenreport-Statistik: NUR Aggregate aus dem neuen System (Sterne, Bewertungs-
    anzahl, Branchen, Gründe). Grundlage für den öffentlichen Report auf
-   /en/google-business-profile-removal-report. Keine Namen, E-Mails, Place-IDs. */
+   /en/google-business-profile-removal-report. Keine Namen, E-Mails, Place-IDs.
+   Layout nutzt die Admin-Bausteine (.kpis/.kpi, .panel, .grid-2, .chipf). */
 
-const C = { ink: "#1c1916", muted: "#6b6259", border: "#ece7e1", soft: "#f6f3f0", bar: "#e67000" };
-const STAR_KEYS = ["1.0-1.9", "2.0-2.9", "3.0-3.9", "4.0-4.4", "4.5-5.0", "none"];
-const STAR_LBL = { none: "keine Bewertung" };
-const REV_KEYS = ["0", "1-9", "10-49", "50-199", "200+", "unknown"];
-const REV_LBL = { unknown: "unbekannt" };
-const REASON_LBL = { closed: "Firma geschlossen", bad_reviews: "Schlechte/unfaire Bewertungen", wrong: "Falsches/doppeltes/fremdes Profil", moved: "Umzug/Inhaberwechsel", other: "Anderes" };
-const fmt = (v, d = 1) => (v == null ? "—" : Number(v).toFixed(d).replace(".", ","));
+const SETS = [
+  ["removals", "Gelöschte Profile"],
+  ["checks", "Geprüfte Profile"],
+  ["profileOrders", "Alle Profil-Aufträge"],
+];
+const SET_HINT = {
+  removals: "Profil-Aufträge mit Status „Gelöscht“ – Sterne zum Zeitpunkt der Bestellung.",
+  checks: "Kostenlose Checks mit echtem Google-Profil (ohne Bewertungs-Produkt).",
+  profileOrders: "Alle Profil-Aufträge ohne Stornos – inkl. offener.",
+};
+const STAR_KEYS = ["1.0-1.9", "2.0-2.9", "3.0-3.9", "4.0-4.4", "4.5-5.0"];
+const REV_KEYS = ["0", "1-9", "10-49", "50-199", "200+"];
+const REASON_LBL = { closed: "Firma geschlossen", bad_reviews: "Unfaire Bewertungen", wrong: "Falsches/doppeltes Profil", moved: "Umzug/Inhaberwechsel", other: "Anderes" };
+
+const de = (v, d = 1) => (v == null ? "—" : Number(v).toFixed(d).replace(".", ","));
 const pct = (n, tot) => (tot ? Math.round((n / tot) * 100) : 0);
+const sum = (o, keys) => keys.reduce((a, k) => a + ((o && o[k]) || 0), 0);
+const dateDe = (iso) => (iso ? new Date(iso).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" }) : "—");
 
-function Dist({ title, data, keys, labels = {} }) {
-  const tot = keys.reduce((a, k) => a + (data[k] || 0), 0);
+function Bars({ data, keys, labels = {}, suffix = "" }) {
+  const tot = sum(data, keys);
+  const max = Math.max(1, ...keys.map((k) => (data && data[k]) || 0));
   return (
-    <div style={{ marginTop: 14 }}>
-      <div style={{ fontSize: 12.5, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 }}>{title}</div>
-      {keys.map((k) => (
-        <div key={k} style={{ display: "grid", gridTemplateColumns: "120px 1fr 64px", gap: 8, alignItems: "center", fontSize: 13, margin: "3px 0" }}>
-          <span style={{ color: C.ink, fontWeight: 600 }}>{labels[k] || k}</span>
-          <span style={{ height: 10, background: C.soft, borderRadius: 4 }}><span style={{ display: "block", height: "100%", width: pct(data[k] || 0, tot) + "%", background: C.bar, borderRadius: 4 }} /></span>
-          <span style={{ textAlign: "right", fontWeight: 700 }}>{data[k] || 0} · {pct(data[k] || 0, tot)} %</span>
-        </div>
-      ))}
+    <div className="rs-bars">
+      {keys.map((k) => {
+        const n = (data && data[k]) || 0;
+        return (
+          <div className="rs-row" key={k}>
+            <div className="rs-lbl">{labels[k] || k}{suffix}</div>
+            <div className="rs-track"><span style={{ width: `${(n / max) * 100}%` }} /></div>
+            <div className="rs-val"><b>{pct(n, tot)} %</b><span>{n}</span></div>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
-function Block({ title, a }) {
-  if (!a) return null;
+function Kpi({ label, value, sub }) {
   return (
-    <div style={{ background: "#fff", border: `1px solid ${C.border}`, borderRadius: 12, padding: 18 }}>
-      <div style={{ fontWeight: 800, fontSize: 16, color: C.ink }}>{title}</div>
-      <div style={{ fontSize: 12.5, color: C.muted, marginTop: 2 }}>
-        {a.from ? `${a.from.slice(0, 10)} – ${(a.to || "").slice(0, 10)}` : "keine Daten"}
-      </div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginTop: 12 }}>
-        {[["Profile", a.n], ["Ø Sterne", fmt(a.avg, 2)], ["Median Sterne", fmt(a.median)], ["Median Bewertungen", a.medianReviews == null ? "—" : Math.round(a.medianReviews)]].map(([l, v]) => (
-          <div key={l} style={{ background: C.soft, borderRadius: 9, padding: "10px 12px" }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: C.ink }}>{v}</div>
-            <div style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>{l}</div>
-          </div>
-        ))}
-      </div>
-      {a.closed ? <div style={{ fontSize: 13, marginTop: 10, color: C.muted }}>Bei Auftrag schon „dauerhaft geschlossen“: <b style={{ color: C.ink }}>{a.closed} ({pct(a.closed, a.n)} %)</b></div> : null}
-      <Dist title="Sterne" data={a.stars || {}} keys={STAR_KEYS} labels={STAR_LBL} />
-      <Dist title="Anzahl Bewertungen" data={a.reviews || {}} keys={REV_KEYS} labels={REV_LBL} />
-      {a.reasons && Object.keys(a.reasons).length ? <Dist title="Grund (optional angegeben)" data={a.reasons} keys={Object.keys(REASON_LBL)} labels={REASON_LBL} /> : null}
-      <div style={{ marginTop: 14 }}>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: C.muted, textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 6 }}>Top-Branchen (Google-Kategorie)</div>
-        <table style={{ width: "100%", fontSize: 13, borderCollapse: "collapse" }}>
-          <tbody>
-            {(a.categories || []).slice(0, 20).map((c) => (
-              <tr key={c.cat} style={{ borderBottom: `1px solid ${C.border}` }}>
-                <td style={{ padding: "4px 0", color: C.ink }}>{c.cat}</td>
-                <td style={{ textAlign: "right", fontWeight: 700 }}>{c.n}</td>
-                <td style={{ textAlign: "right", color: C.muted, width: 70 }}>Ø {fmt(c.avg)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="kpi">
+      <div className="kt">{label}</div>
+      <div className="kv">{value}</div>
+      {sub ? <div className="kd" style={{ color: "var(--fg-muted)" }}>{sub}</div> : null}
     </div>
   );
 }
@@ -73,6 +59,7 @@ export function ReportStatsDashboard({ toast }) {
   const [data, setData] = React.useState(null);
   const [err, setErr] = React.useState("");
   const [loading, setLoading] = React.useState(true);
+  const [set, setSet] = React.useState("removals");
   const load = React.useCallback(async () => {
     setLoading(true); setErr("");
     try { setData(await fetchReportStats()); } catch (e) { setErr(e.message || "Laden fehlgeschlagen."); }
@@ -82,26 +69,99 @@ export function ReportStatsDashboard({ toast }) {
   const copy = () => {
     try { navigator.clipboard.writeText(JSON.stringify(data, null, 2)); toast && toast("Statistik kopiert ✓"); } catch (e) { /* kein Clipboard */ }
   };
+
+  const a = data && data[set];
+  const rated = a ? sum(a.stars, STAR_KEYS) : 0;
+  const below4 = a ? sum(a.stars, ["1.0-1.9", "2.0-2.9", "3.0-3.9"]) : 0;
+  const revKnown = a ? sum(a.reviews, REV_KEYS) : 0;
+  const unknownRev = (a && a.reviews && a.reviews.unknown) || 0;
+  const reasons = (a && a.reasons) || {};
+  const reasonTotal = sum(reasons, Object.keys(REASON_LBL));
+  const cats = (a && a.categories) || [];
+  const catMax = Math.max(1, ...cats.map((c) => c.n));
+  const cmp = set === "removals" ? data && data.checks : data && data.removals;
+
   return (
-    <div style={{ padding: "4px 0 40px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+    <div className="rs">
+      <div className="rs-head">
         <div>
-          <h2 style={{ margin: 0, fontSize: 22, color: C.ink }}>Report-Statistik</h2>
-          <div style={{ fontSize: 13.5, color: C.muted, marginTop: 4 }}>Nur Summen und Durchschnitte – Grundlage für den öffentlichen Datenreport. Je Google-Profil einmal gezählt.</div>
+          <p className="rs-intro">Nur Summen und Durchschnitte – Grundlage für den öffentlichen Datenreport. Jedes Google-Profil wird einmal gezählt.</p>
+          <div className="chips" style={{ marginTop: 14 }}>
+            {SETS.map(([k, lab]) => (
+              <button key={k} className={"chipf" + (set === k ? " on" : "")} onClick={() => setSet(k)}>
+                {lab} {data && data[k] ? <span className="ct">{data[k].n}</span> : null}
+              </button>
+            ))}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={load} style={{ height: 38, padding: "0 14px", borderRadius: 9, border: `1.5px solid ${C.border}`, background: "#fff", fontWeight: 700, cursor: "pointer" }}>Neu laden</button>
-          {data ? <button onClick={copy} style={{ height: 38, padding: "0 14px", borderRadius: 9, border: "none", background: "#ff8000", color: "#fff", fontWeight: 800, cursor: "pointer" }}>Als JSON kopieren</button> : null}
+        <div className="rs-actions">
+          <button className="btn btn-secondary" onClick={load} disabled={loading}>{loading ? "Lädt …" : "Neu laden"}</button>
+          {data ? <button className="btn btn-primary" onClick={copy}>Als JSON kopieren</button> : null}
         </div>
       </div>
-      {loading ? <div style={{ color: C.muted }}>Lädt …</div> : null}
-      {err ? <div style={{ color: "#e23b3b", fontWeight: 700 }}>{err}</div> : null}
-      {data ? (
-        <div id="report-stats" data-json={JSON.stringify(data)} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 14 }}>
-          <Block title="Geprüfte Profile (Gratis-Check)" a={data.checks} />
-          <Block title="Gelöschte Profile (Status „Gelöscht“)" a={data.removals} />
-          <Block title="Alle Profil-Aufträge (ohne Storno)" a={data.profileOrders} />
-        </div>
+
+      {err ? <div className="panel" style={{ padding: 22, color: "var(--danger)", fontWeight: 700 }}>{err}</div> : null}
+      {!data && loading ? <div className="panel" style={{ padding: 22, color: "var(--fg-muted)" }}>Statistik wird geladen …</div> : null}
+
+      {a ? (
+        <React.Fragment>
+          <p className="rs-hint">{SET_HINT[set]} Zeitraum: {dateDe(a.from)} – {dateDe(a.to)}.</p>
+
+          <div className="kpis rs-kpis">
+            <Kpi label="Profile" value={a.n} sub={`${rated} davon mit Sternen`} />
+            <Kpi label="Ø Sterne" value={de(a.avg, 2)}
+              sub={`Median ${de(a.median)}${cmp && cmp.avg != null ? ` · ${set === "removals" ? "geprüft" : "gelöscht"} Ø ${de(cmp.avg, 2)}` : ""}`} />
+            <Kpi label="Unter 4 Sternen" value={`${pct(below4, rated)} %`} sub={`unter 3 Sternen: ${pct(sum(a.stars, ["1.0-1.9", "2.0-2.9"]), rated)} %`} />
+            <Kpi label="Median Rezensionen" value={a.medianReviews == null ? "—" : Math.round(a.medianReviews)}
+              sub={`unter 10: ${pct(sum(a.reviews, ["0", "1-9"]), revKnown)} %`} />
+          </div>
+
+          <div className="grid-2 rs-grid">
+            <div className="panel">
+              <div className="panel-head"><div><h2>Sterne-Verteilung</h2><div className="ph-sub">Anteil an {rated} Profilen mit Bewertung</div></div></div>
+              <div className="rs-body">
+                <Bars data={a.stars} keys={STAR_KEYS} suffix=" ★" />
+                {a.stars && a.stars.none ? <p className="rs-note">Ohne Bewertung: {a.stars.none} Profile ({pct(a.stars.none, a.n)} %)</p> : null}
+                {a.closed ? <p className="rs-note">Bei Google bereits „dauerhaft geschlossen“: {a.closed} ({pct(a.closed, a.n)} %)</p> : null}
+              </div>
+            </div>
+            <div className="panel">
+              <div className="panel-head"><div><h2>Anzahl Rezensionen</h2><div className="ph-sub">Anteil an {revKnown} Profilen mit bekannter Anzahl</div></div></div>
+              <div className="rs-body">
+                <Bars data={a.reviews} keys={REV_KEYS} />
+                {unknownRev ? <p className="rs-note">Unbekannt: {unknownRev} – bei Checks vor dem 05.10.2026 wurde die Anzahl nicht zuverlässig gespeichert.</p> : null}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid-2 rs-grid">
+            <div className="panel">
+              <div className="panel-head"><div><h2>Top-Kategorien</h2><div className="ph-sub">Google-Kategorie, wie angezeigt (Deutsch und Englisch gemischt)</div></div></div>
+              {cats.length ? (
+                <table className="tbl rs-cats">
+                  <thead><tr><th>Kategorie</th><th style={{ width: "38%" }}>Profile</th><th style={{ textAlign: "right" }}>Ø Sterne</th></tr></thead>
+                  <tbody>
+                    {cats.slice(0, 15).map((c) => (
+                      <tr key={c.cat}>
+                        <td className="rs-cat">{c.cat}</td>
+                        <td><div className="rs-inline"><span className="rs-track sm"><span style={{ width: `${(c.n / catMax) * 100}%` }} /></span><b>{c.n}</b></div></td>
+                        <td style={{ textAlign: "right", fontVariantNumeric: "tabular-nums" }}>{de(c.avg)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : <div className="rs-body rs-note">Keine Kategorien vorhanden.</div>}
+            </div>
+            <div className="panel">
+              <div className="panel-head"><div><h2>Gründe</h2><div className="ph-sub">Optionale Frage im Check – seit 05.10.2026</div></div></div>
+              <div className="rs-body">
+                {set !== "checks" ? <p className="rs-note">Gründe werden beim Check abgefragt – Ansicht „Geprüfte Profile“ wählen.</p>
+                  : reasonTotal ? <Bars data={reasons} keys={Object.keys(REASON_LBL)} labels={REASON_LBL} />
+                  : <p className="rs-note">Noch keine Angaben. Die Frage läuft seit heute – erste Werte in ein paar Tagen.</p>}
+              </div>
+            </div>
+          </div>
+        </React.Fragment>
       ) : null}
     </div>
   );
