@@ -21,13 +21,15 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes } from "./partner";
+import { initCustomerTables, registerCustomerRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL } from "./customers";
+import { resetMail } from "./emails/DashBox";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
-import { claimCapiSend, releaseCapiSend } from "./db";
+import { claimCapiSend, releaseCapiSend, pool } from "./db";
 
 
 
@@ -146,6 +148,13 @@ function normRedirectDest(input: string): string {
 app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
+// Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
+registerCustomerRoutes(app, {
+  sendReset: async (email, password, lang) => {
+    const m = resetMail(lang, email, password, DASH_URL);
+    await sendMail({ to: email, subject: m.subject, html: await render(m.el), replyTo: process.env.MAIL_REPLY_TO });
+  },
+});
 
 app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
@@ -343,8 +352,16 @@ app.post("/order", async (req, reply) => {
   const revQ = quoteReviews(reviewItems, revCur);
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
+  // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
+  let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
+  if (isReviews && dbReady() && email) {
+    try {
+      const acc = await ensureCustomerAccount(email);
+      if (acc) dash = acc.created ? { url: DASH_URL, email: email.trim().toLowerCase(), password: acc.password } : { url: DASH_URL, existing: true };
+    } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
+  }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -1108,6 +1125,14 @@ app.post("/admin/reviews-start", async (req, reply) => {
     return null;
   }).filter(Boolean) as StartItem[];
   const currency = (clip(b.currency, 8) || "eur").toLowerCase() === "usd" ? "usd" : "eur";
+  // Abgelehnte, aber per Spezial-Software löschbare Bewertungen (im Admin markiert).
+  const swItems: StartItem[] = (Array.isArray(b.softwareItems) ? (b.softwareItems as unknown[]) : []).slice(0, 40).map((raw) => {
+    const o = (raw || {}) as Record<string, unknown>;
+    const url = httpUrl(o.url, 400); const nm = clip(o.name, 80); const tx = clip(o.text, 400);
+    if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), nt: true };
+    if (nm) return { name: nm, ...(tx ? { text: tx } : {}), nt: true };
+    return null;
+  }).filter(Boolean) as StartItem[];
   // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
   const startQuote = quoteReviews(items, currency);
@@ -1125,6 +1150,19 @@ app.post("/admin/reviews-start", async (req, reply) => {
       : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
     prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: payUrl };
   }
+  // Spezial-Software-Angebot: 50 % Anzahlung (Rabattstufe nach angenommenen + Software-Bewertungen).
+  let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
+  if (swItems.length) {
+    const swQ = quoteReviews([...items, ...swItems], currency);
+    const amountNum = Math.round((swItems.length * 150 * (100 - swQ.pct)) / 100);
+    let swUrl = "";
+    if (hasSecretKey()) {
+      try { swUrl = await ensureReviewsAmountLink(amountNum, currency); }
+      catch (e) { app.log.error({ err: e }, "Software-Anzahlungslink fehlgeschlagen"); }
+    }
+    if (!swUrl) return reply.code(400).send({ ok: false, error: "Zahlungslink für die Spezial-Software-Anzahlung konnte nicht angelegt werden." });
+    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: swUrl, price: fmtReviewMoney(300, currency), amountNum };
+  }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
   // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
@@ -1133,18 +1171,22 @@ app.post("/admin/reviews-start", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined, prepay };
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined, prepay, software, dashUrl: DASH_URL };
     const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Anzahlung 50 % ${prepay.amount} (Link in der Mail)` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Anzahlung 50 % ${prepay.amount} (Link in der Mail)` : ""}${software ? ` · ${software.items.length} per Spezial-Software angeboten: Anzahlung ${software.amount}` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.
     if (orderId && items.length) await setOrderRawField(orderId, "reviewsAccepted", items).catch(() => {});
     if (orderId && prepay) await setOrderRawField(orderId, "reviewsPrepay", { ...prepay, at: new Date().toISOString() }).catch(() => {});
+    if (orderId && software) await setOrderRawField(orderId, "reviewsSoftware", software.items).catch(() => {});
+    // Offene Zahlungen fürs Kunden-Dashboard.
+    if (orderId && prepay) await addOrderPayment(orderId, { kind: "deposit", amount: startQuote.ntDeposit, cur: currency, url: prepay.url, n: prepay.n }).catch(() => {});
+    if (orderId && software) await addOrderPayment(orderId, { kind: "software", amount: software.amountNum, cur: currency, url: software.url, n: software.items.length }).catch(() => {});
     return { ok: true, lang: tlang, count: items.length };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");
@@ -1178,7 +1220,7 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["storno-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: DASH_URL };
     const { html, subject } = await renderTemplate("storno-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
@@ -1296,7 +1338,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, method, payTotal, bankLines, orderId };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, method, payTotal, bankLines, orderId, dashUrl: DASH_URL };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const viaName = method === "wise" ? "Wise" : "PayPal";
@@ -1308,6 +1350,17 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
       html, subject: t.subject(props as any) });
     // Welche Bewertungen abgerechnet wurden → Grundlage für die Mahnungen im Admin.
     if (orderId) await setOrderRawField(orderId, "reviewsRemoved", removedItems).catch(() => {});
+    // Alle bisher gelöschten Bewertungen (fürs Kunden-Dashboard, über mehrere Teilrechnungen).
+    if (orderId) {
+      try {
+        const prevR = await pool?.query(`SELECT raw->'reviewsRemovedAll' AS a FROM orders WHERE id=$1`, [orderId]);
+        const prev: RemovedItem[] = Array.isArray(prevR?.rows[0]?.a) ? prevR!.rows[0].a : [];
+        const k = (it: RemovedItem) => it.url || `${it.name || ""}|${it.text || ""}`;
+        const seen = new Set(prev.map(k));
+        await setOrderRawField(orderId, "reviewsRemovedAll", [...prev, ...removedItems.filter((it) => !seen.has(k(it)))]);
+      } catch { /* ignore */ }
+      if (url) await addOrderPayment(orderId, { kind: "invoice", amount: totalNum, cur: curSafe, url, n: count }).catch(() => {});
+    }
     // Die Löschbestätigung ist der Erledigt-Moment → GLÖSCHT-Hype-Push ans Team
     // (analog zum Profil-Zahlungslink). Den „gelöscht"-Status setzt der Admin direkt danach.
     if (orderId) await fireDeletionHypePush(orderId, clip(b.name, 120), to);
@@ -1648,7 +1701,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
+  try { await initDb(); await initPartnerTables(); await initCustomerTables(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {
     const addr = await app.listen({ host: "0.0.0.0", port });

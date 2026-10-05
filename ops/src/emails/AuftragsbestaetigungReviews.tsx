@@ -4,6 +4,7 @@
    bezahlt wird NUR je tatsächlich gelöschter Bewertung, fällig am Tag der
    Löschung. Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton. */
 import * as React from "react";
+import { DashBox, type DashInfo } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
 import { fmtReviewMoney, REVIEW_NOTEXT_PRICE } from "../reviewsPricing";
@@ -26,6 +27,8 @@ export interface AuftragsbestaetigungReviewsProps {
   /** Währung der Bestellung ("usd" | "eur") — für die exakte Preisaufstellung. */
   currency?: string;
   orderId?: string;
+  /** Kunden-Dashboard: Link + Zugangsdaten (nur beim Anlegen). */
+  dash?: DashInfo;
   _overrides?: Record<string, string>;
 }
 
@@ -219,7 +222,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -244,6 +247,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
 
       <P><strong>{t.condH}:</strong> {t.cond1} {(t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, reviewCurrency(currency, per)))}</P>
 
+      <DashBox lang={lang} dash={dash} />
       <P>{t.close}</P>
       <P>{t.signoff}</P>
     </EmailShell>

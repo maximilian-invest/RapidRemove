@@ -7,6 +7,7 @@
    Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton.
    Sprache = die, über die der Kunde gekommen ist. */
 import * as React from "react";
+import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
 
 export type StornoReviewsReason = "age" | "text";
@@ -22,6 +23,8 @@ export interface StornoReviewsProps {
   /** Die betroffenen Bewertungen (wie eingereicht). */
   items?: ReviewRef[];
   orderId?: string;
+  /** Link zum Kunden-Dashboard. */
+  dashUrl?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -225,7 +228,7 @@ export function subject(p: StornoReviewsProps): string {
   return t.subject;
 }
 
-export default function StornoReviews({ lang = "en", name = "", reason = "age", items = [], orderId = "", _overrides }: StornoReviewsProps = {}) {
+export default function StornoReviews({ lang = "en", name = "", reason = "age", items = [], orderId = "", dashUrl, _overrides }: StornoReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const isAge = reason !== "text";
   const head = isAge ? t.ageH : t.textH;
@@ -253,6 +256,7 @@ export default function StornoReviews({ lang = "en", name = "", reason = "age", 
       <P><strong>{t.freeH}:</strong> {t.free}</P>
       <P><strong>{t.againH}:</strong> {t.again}</P>
 
+      <DashButton lang={lang} url={dashUrl} />
       <P>{t.close}</P>
       <P>{t.signoff}</P>
     </EmailShell>

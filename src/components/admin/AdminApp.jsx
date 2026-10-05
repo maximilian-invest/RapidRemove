@@ -1630,7 +1630,11 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [acceptedLocal, setAcceptedLocal] = React.useState(null); // nach Start in dieser Sitzung
   const acceptedList = acceptedLocal || o.reviewsAccepted || null;
   const accKeys = acceptedList ? new Set(acceptedList.map(keyOf)) : null;
-  const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)));
+  // Spezial-Software-Angebot (abgelehnt, aber per Software löschbar): nach dem Start abrechenbar (2. Hälfte).
+  const [swLocal, setSwLocal] = React.useState(null);
+  const swKeys = new Set((swLocal || o.reviewsSoftware || []).map(keyOf));
+  const [swSel, setSwSel] = React.useState({}); // vor dem Start: Index -> als Software-Angebot markiert
+  const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)) && !swKeys.has(keyOf(it)));
   // Bewertungen ohne Text (nt): Spezialverfahren 300 — 50 % Anzahlung mit der Startbestätigung,
   // die zweite Hälfte (150) kommt nach der Löschung mit in die Rechnung.
   const isPrepaid = () => false;
@@ -1640,7 +1644,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [sending, setSending] = React.useState(false);
   const [starting, setStarting] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
-  const chosen = items.filter((it, i) => sel[i] && !isDeclined(it) && !isPrepaid(it));
+  const chosen = items.filter((it, i) => sel[i] && !isDeclined(it) && !isPrepaid(it)).map((it) => (swKeys.has(keyOf(it)) ? { ...it, nt: true, sw: true } : it));
+  const swChosen = started ? [] : items.filter((it, i) => swSel[i] && !sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
   const lang = o.lang && o.lang !== "de" ? o.lang : "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
@@ -1690,10 +1695,12 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
     if (!chosen.length || starting) return;
     setStarting(true);
     try {
-      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items: chosen, declinedCount: items.length - chosen.length });
+      const declinedN0 = items.length - chosen.length - swChosen.length;
+      await sendReviewsStart({ orderId: o.id, email: o.email, name: o.name, lang, currency: cur, items: chosen, declinedCount: declinedN0, softwareItems: swChosen });
       setAcceptedLocal(chosen);
-      setSel({});
-      toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓ — ${chosen.length} angenommen${items.length - chosen.length ? `, ${items.length - chosen.length} abgelehnt` : ""}`);
+      if (swChosen.length) setSwLocal(swChosen);
+      setSel({}); setSwSel({});
+      toast(`Startbestätigung (${langLabel(lang)}) an ${o.email} gesendet ✓ — ${chosen.length} angenommen${swChosen.length ? `, ${swChosen.length} per Software angeboten` : ""}${declinedN0 ? `, ${declinedN0} abgelehnt` : ""}`);
     } catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
     setStarting(false);
   };
@@ -1754,6 +1761,14 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
               ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: isDeclined(it) ? "line-through" : undefined }}>{it.url}</a>
               : <span style={{ fontWeight: 600, textDecoration: off ? "line-through" : undefined }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
             {ptasks[keyOf(it)] ? <PartnerBadge task={ptasks[keyOf(it)]} /> : null}
+            {!started && !sel[i] ? (
+              <button type="button" onClick={(e) => { e.preventDefault(); setSwSel((m) => ({ ...m, [i]: !m[i] })); }}
+                title="Nicht normal löschbar, aber per Spezial-Software (300, 50 % Anzahlung) → Angebot + Zahlungsbutton in der Startbestätigung"
+                style={{ fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", borderRadius: 999, padding: "2px 8px", cursor: "pointer", border: "1px solid #6b3fb5", background: swSel[i] ? "#6b3fb5" : "#fff", color: swSel[i] ? "#fff" : "#6b3fb5" }}>
+                {swSel[i] ? "✓ Software-Angebot" : "Software?"}
+              </button>
+            ) : null}
+            {started && swKeys.has(keyOf(it)) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>Software-Angebot · Rest {fmtM(150)} nach Löschung</span> : null}
             {isPrepaid(it) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · Vorauszahlung (nicht in der Rechnung)</span>
               : off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
               : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>{started ? `ohne Text · Rest ${fmtM(150)} (Anzahlung kam mit Start)` : `ohne Text · ${fmtM(300)} = 50 % Anzahlung + 50 % nach Löschung`}</span>
@@ -1772,8 +1787,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           <AI.send /> {psending ? "Übergibt…" : toPartner.length ? `Alle an Partner senden (${toPartner.length})` : "Alle beim Partner ✓"}
         </button>
         {!started ? (
-          <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
-            <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${items.length - chosen.length && chosen.length ? `, ${items.length - chosen.length} ablehnen` : ""}`}
+          <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} data-sw={swChosen.length} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
+            <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${swChosen.length ? `, ${swChosen.length} Software` : ""}${items.length - chosen.length - swChosen.length && chosen.length ? `, ${items.length - chosen.length - swChosen.length} ablehnen` : ""}`}
           </button>
         ) : null}
         {viaMethod ? (

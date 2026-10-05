@@ -8,6 +8,7 @@
    PayPal-Link separat kommt (unbedingt „Freunde & Familie"), bei Wise die Kontodaten.
    Produkt nur außerhalb DACH → keine deutsche Fassung, „du"-Ton. */
 import * as React from "react";
+import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, CtaButton, Bullets, brand, type MailLang } from "./components";
 
 /** Eine gelöschte Bewertung: Teilen-Link ODER Name + Bewertungstext
@@ -36,6 +37,8 @@ export interface LoeschbestaetigungReviewsProps {
   /** Wise-Kontodaten, je Zeile „Bezeichnung: Wert". */
   bankLines?: string[];
   orderId?: string;
+  /** Link zum Kunden-Dashboard. */
+  dashUrl?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -243,7 +246,7 @@ export function subject(p: LoeschbestaetigungReviewsProps): string {
   return t.subject((p.removedItems || []).length || (p.removedUrls || []).length || 1);
 }
 
-export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", method, payTotal = "", bankLines = [], orderId = "", _overrides }: LoeschbestaetigungReviewsProps = {}) {
+export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", method, payTotal = "", bankLines = [], orderId = "", dashUrl, _overrides }: LoeschbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const v = VIA[lang] || VIA.en;
   const via = (s: string) => s.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total);
@@ -283,6 +286,7 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
         </NoteBox>
       ) : payUrl ? <CtaButton href={payUrl} full>{t.cta}</CtaButton> : null}
 
+      <DashButton lang={lang} url={dashUrl} />
       <P>{t.close}</P>
       <P>{t.signoff}</P>
     </EmailShell>

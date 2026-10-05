@@ -18,6 +18,7 @@
  *
  * Signaturprüfung über STRIPE_WEBHOOK_SECRET gegen den RAW-Body.
  */
+import { markReviewPaymentPaid } from "../customers";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import * as React from "react";
 import { render } from "@react-email/render";
@@ -190,6 +191,16 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
     app.log.info(`Webhook: Auto-Zuordnung übersprungen (Abo-Verlängerung) für ${email}`);
     return;
   }
+  // Kunden-Dashboard (Einzelbewertungen): passende offene Zahlung (E-Mail + Betrag) als bezahlt markieren.
+  try {
+    const amt = Number(obj?.amount_paid ?? obj?.amount_total ?? obj?.total ?? 0) / 100;
+    // Nur beim Checkout zählen (invoice.paid derselben Zahlung würde sonst eine zweite gleich hohe Zahlung abhaken).
+    const hit = source === "checkout.session.completed" ? await markReviewPaymentPaid(email, amt) : null;
+    if (hit) {
+      const lbl: Record<string, string> = { deposit: "Anzahlung (ohne Text)", software: "Anzahlung Spezial-Software", invoice: "Rechnung" };
+      await insertEvent({ orderId: hit.orderId, type: "pay", title: `Bezahlt: ${lbl[hit.kind] || hit.kind}`, detail: `${amt} ${String(obj?.currency || "").toUpperCase()} via Stripe (${email})`, auto: true });
+    }
+  } catch (e) { app.log.error(`Webhook: Dashboard-Zahlung zuordnen fehlgeschlagen: ${(e as Error).message}`); }
   try {
     const oid = await markOrderPaidByEmail(email);
     if (oid) {

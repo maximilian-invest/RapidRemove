@@ -75,7 +75,7 @@ export default function Consent() {
   const lang = LANGS.some((l) => l.code === seg) ? seg : "de";
   const c = TXT[lang] || TXT.en;
   // Internes Admin-Panel: kein Consent-Banner, kein Tracking.
-  const isAdmin = /^\/(admin|partner)(\/|$)/.test(pathname); // intern: Admin + Partner-Board
+  const isAdmin = /^\/(admin|partner|my-reviews)(\/|$)/.test(pathname); // intern: Admin, Partner-Board, Kunden-Dashboard
   // Startet unsichtbar und erscheint NUR, wenn noch keine Entscheidung vorliegt.
   // So blitzt der Banner bei jeder Navigation für bereits entschiedene Nutzer nicht auf.
   const [open, setOpen] = React.useState(false);

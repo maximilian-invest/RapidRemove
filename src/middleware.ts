@@ -48,7 +48,7 @@ function kickRefresh(): Promise<void> {
 
 // Kritische Pfade NIE umleiten – schützt vor versehentlicher Selbst-Aussperrung,
 // falls eine Regel mit so einer Quelle angelegt würde.
-const PROTECTED = /^\/(admin|auftrag|api|partner)(\/|$)/i;
+const PROTECTED = /^\/(admin|auftrag|api|partner|my-reviews)(\/|$)/i;
 
 export async function middleware(req: NextRequest) {
   if (!OPS) return NextResponse.next();
