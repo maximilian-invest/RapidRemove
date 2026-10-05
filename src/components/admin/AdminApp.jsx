@@ -1483,10 +1483,10 @@ function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nOld = items.filter((it) => it && it.old && !it.nt).length;
-  const nNtM = items.filter((it) => it && it.nt).length; // ohne Text: Rest 150 (Anzahlung kam mit Start)
+  const nNtM = items.filter((it) => it && it.nt).length; // ohne Text: voll vorausbezahlt → nach der Löschung nichts mehr offen
   const orderedN = (o.reviewsAccepted && o.reviewsAccepted.length) || (o.reviewItems && o.reviewItems.length) || items.length;
   const pct = reviewDiscountPct(Math.max(items.length, orderedN));
-  const total = Math.round(((items.length - nNtM) * 179 + nOld * REVIEW_OLD_SURCHARGE + nNtM * 150) * (100 - pct) / 100);
+  const total = Math.round(((items.length - nNtM) * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
   // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link.
   const revPayMethod = o.payPref === "wise" ? "wise" : (o.paypal ? "paypal" : null);
   const viaName = revPayMethod === "wise" ? "Wise" : revPayMethod ? "PayPal" : "";
@@ -1631,13 +1631,13 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [acceptedLocal, setAcceptedLocal] = React.useState(null); // nach Start in dieser Sitzung
   const acceptedList = acceptedLocal || o.reviewsAccepted || null;
   const accKeys = acceptedList ? new Set(acceptedList.map(keyOf)) : null;
-  // Spezial-Software-Angebot (abgelehnt, aber per Software löschbar): nach dem Start abrechenbar (2. Hälfte).
+  // Spezial-Software-Angebot (abgelehnt, aber per Software löschbar): voll vorausbezahlt, nach der Löschung nichts mehr offen.
   const [swLocal, setSwLocal] = React.useState(null);
   const swKeys = new Set((swLocal || o.reviewsSoftware || []).map(keyOf));
   const [swSel, setSwSel] = React.useState({}); // vor dem Start: Index -> als Software-Angebot markiert
   const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)) && !swKeys.has(keyOf(it)));
-  // Bewertungen ohne Text (nt): Spezialverfahren 300 — 50 % Anzahlung mit der Startbestätigung,
-  // die zweite Hälfte (150) kommt nach der Löschung mit in die Rechnung.
+  // Bewertungen ohne Text (nt): Spezialverfahren 300 — voller Betrag im Voraus mit der Startbestätigung
+  // (99 %, sonst Erstattung nach spätestens 14 Tagen); in der Rechnung nach der Löschung 0.
   const isPrepaid = () => false;
   const started = !!accKeys;
   const basisN = started ? accKeys.size : items.length; // Mengenrabatt nach angenommenen Bewertungen
@@ -1655,10 +1655,10 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const nOld = chosen.filter((it) => it && it.old && !it.nt).length;
   const nNew = chosen.length - nOld - nNt;
   const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, basisN)) : 0;
-  const ntUnit = started ? 150 : 300; // nach dem Start: nur noch die zweite Hälfte
+  const ntUnit = started ? 0 : 300; // nach dem Start: schon voll vorausbezahlt
   const total = Math.round((nNew * 179 + nOld * (179 + REVIEW_OLD_SURCHARGE) + nNt * ntUnit) * (100 - pct) / 100);
-  const ntUpfront = Math.round(nNt * 150 * (100 - pct) / 100);
-  const per = [nNew ? fmtM(179) : "", nOld ? fmtM(179 + REVIEW_OLD_SURCHARGE) : "", nNt ? fmtM(ntUnit) : ""].filter(Boolean).join(" / ") + (pct ? ` (−${pct} %)` : "");
+  const ntUpfront = Math.round(nNt * 300 * (100 - pct) / 100);
+  const per = [nNew ? fmtM(179) : "", nOld ? fmtM(179 + REVIEW_OLD_SURCHARGE) : "", nNt && ntUnit ? fmtM(ntUnit) : ""].filter(Boolean).join(" / ") + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
   // Kunde wollte mit PayPal/Wise zahlen (10 % Rabatt) → eigener Button „Löschbestätigung senden"
   // (ohne Stripe-Link, PayPal-Hinweis bzw. Wise-Kontodaten); Stripe-Rechnung nur mit Schloss + Abfrage.
@@ -1746,15 +1746,15 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
             {ptasks[keyOf(it)] ? <PartnerBadge task={ptasks[keyOf(it)]} /> : null}
             {!started && !sel[i] ? (
               <button type="button" onClick={(e) => { e.preventDefault(); setSwSel((m) => ({ ...m, [i]: !m[i] })); }}
-                title="Nicht normal löschbar, aber per Spezial-Software (300, 50 % Anzahlung) → Angebot + Zahlungsbutton in der Startbestätigung"
+                title="Nicht normal löschbar, aber per Spezial-Software (300, voll im Voraus, 99 %, sonst Erstattung nach 14 Tagen) → Angebot + Zahlungsbutton in der Startbestätigung"
                 style={{ fontSize: 11, fontWeight: 800, whiteSpace: "nowrap", borderRadius: 999, padding: "2px 8px", cursor: "pointer", border: "1px solid #6b3fb5", background: swSel[i] ? "#6b3fb5" : "#fff", color: swSel[i] ? "#fff" : "#6b3fb5" }}>
                 {swSel[i] ? "✓ Software-Angebot" : "Software?"}
               </button>
             ) : null}
-            {started && swKeys.has(keyOf(it)) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>Software-Angebot · Rest {fmtM(150)} nach Löschung</span> : null}
+            {started && swKeys.has(keyOf(it)) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>Software-Angebot · voll vorausbezahlt</span> : null}
             {isPrepaid(it) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · Vorauszahlung (nicht in der Rechnung)</span>
               : off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
-              : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>{started ? `ohne Text · Rest ${fmtM(150)} (Anzahlung kam mit Start)` : `ohne Text · ${fmtM(300)} = 50 % Anzahlung + 50 % nach Löschung`}</span>
+              : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>{started ? `ohne Text · vorausbezahlt (nichts mehr offen)` : `ohne Text · ${fmtM(300)} voll im Voraus (99 %, sonst Erstattung)`}</span>
               : it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
           </label>
         );
@@ -1763,7 +1763,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         {started || chosen.length === 0
           ? <span style={{ fontWeight: 800 }}>{chosen.length} {started ? "gelöscht" : "ausgewählt"} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
               {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
-          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Anzahlung 50 % {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
+          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Vorauszahlung {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
         {!started ? (

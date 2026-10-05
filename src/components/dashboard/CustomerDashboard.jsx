@@ -345,7 +345,7 @@ export default function CustomerDashboard() {
   const DepositCards = () => deposits.map((d) => (
     <div key={d.id} className="paycard due">
       <span className="ico pr"><Lock /></span>
-      <span><b>Deposit · {d.n || ""} {plural(d.n || 2, "review")} without text</b><span>{d.o.business} · 50 % now, 50 % after removal</span></span>
+      <span><b>Prepayment · {d.n || ""} {plural(d.n || 2, "review")} without text</b><span>{d.o.business} · 99 % success · full refund if not removed within 14 days</span></span>
       <a className="mini" href={d.url} target="_blank" rel="noopener noreferrer"><Lock />Pay {money(d.amount, d.cur)}</a>
     </div>
   ));
@@ -434,7 +434,7 @@ export default function CustomerDashboard() {
         <div key={h.id} className="paycard">
           <span className="ico"><Receipt /></span>
           <span>
-            <b>{h.kind === "software" ? "Specialist removal" : h.kind === "deposit" ? "Deposit" : "Removal"}{h.n > 1 ? ` · ${h.n} reviews` : ""}</b>
+            <b>{h.kind === "software" ? "Specialist removal" : h.kind === "deposit" ? "Prepayment" : "Removal"}{h.n > 1 ? ` · ${h.n} reviews` : ""}</b>
             <span>{(h.names.length ? h.names.join(", ") : h.o.business) + " · " + shortDate(h.paid)}</span>
           </span>
           <span className="amt">{money(h.amount, h.cur)}</span>
@@ -516,11 +516,12 @@ export default function CustomerDashboard() {
         <p>For cases like this we work with a vetted external partner who specialises in hard-to-remove reviews and uses dedicated tools we don’t run ourselves.</p>
         <div className="fl-feat">
           <div className="ff"><span className="ico"><BadgeCheck /></span><span><b>Vetted specialist</b><span>A partner we’ve worked with on many cases – we stay your contact throughout.</span></span></div>
-          <div className="ff"><span className="ico"><Receipt /></span><span><b>Transparent price</b><span>The price mainly covers the specialist’s work. Half is paid upfront because we commission them right away – the rest only after removal.</span></span></div>
-          <div className="ff"><span className="ico"><Timer /></span><span><b>Usually 1–3 weeks</b><span>Takes longer than our standard removal.</span></span></div>
+          <div className="ff"><span className="ico"><Receipt /></span><span><b>Transparent price</b><span>The price mainly covers the specialist’s work. It’s paid upfront because we commission them right away.</span></span></div>
+          <div className="ff"><span className="ico"><ShieldCheck /></span><span><b>99 % success rate</b><span>If a review isn’t removed within 14 days at the latest, you get a full refund.</span></span></div>
+          <div className="ff"><span className="ico"><Timer /></span><span><b>Usually within a few days</b><span>Takes a bit longer than our standard removal.</span></span></div>
         </div>
         <div className="optc">
-          <div className="oc2 hl"><div className="h"><b>Specialist removal</b><span className="p">{money(unit, cur)}</span></div><span>per review · 50 % upfront ({money(unitDep, cur)}), 50 % after removal · invoice included</span></div>
+          <div className="oc2 hl"><div className="h"><b>Specialist removal</b><span className="p">{money(unit, cur)}</span></div><span>per review · paid upfront · invoice included</span></div>
           <div className="oc2"><div className="h"><b>No thanks</b><span className="p">{money(0, cur)}</span></div><span>The review stays online – no cost, no obligation</span></div>
         </div>
       </>
@@ -541,7 +542,7 @@ export default function CustomerDashboard() {
             ))}
           </div>
           <div className="totl"><span>Total</span><b>{money(full, cur)}</b></div>
-          {n ? <div className="totl-s"><span>Due today (50 %)</span><span>{money(dep, cur)}</span></div> : null}
+          
         </>
       );
       btn = n ? "Continue to payment" : "Decline all · " + money(0, cur);
@@ -551,13 +552,13 @@ export default function CustomerDashboard() {
         <>
           <div className="fl-k">Payment</div>
           <h2>Pay {money(dep, cur)} and we commission the specialist today</h2>
-          <p>{n} specialist {plural(n, "removal")}{it.length - n ? ` · ${it.length - n} declined` : ""} · {money(full, cur)} total, the other 50 % only after removal</p>
+          <p>{n} specialist {plural(n, "removal")}{it.length - n ? ` · ${it.length - n} declined` : ""} </p>
           <div className="pms">
             <div className="pm"><span className="ico"><CreditCard /></span>Card<CheckCircle2 className="ok" /></div>
             <div className="pm"><span className="ico"><Smartphone /></span>Apple Pay · Google Pay<CheckCircle2 className="ok" /></div>
           </div>
           <div className="totl"><span>Total today</span><b>{money(dep, cur)}</b></div>
-          <div className="secure"><Lock />Secure payment · Invoice by email · Questions? We’re here</div>
+          <div className="secure"><Lock />Secure payment · Invoice by email · Full refund if not removed within 14 days</div>
         </>
       );
       btn = "Pay " + money(dep, cur); cls = "or";

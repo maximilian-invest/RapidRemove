@@ -6,9 +6,10 @@ export const REVIEW_OLD_SURCHARGE = 50;
 export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 
 /** Reine Sternebewertungen ohne Text: Spezialverfahren (Software), Festpreis, kein Altersaufschlag.
- *  Zahlung 50/50: Anzahlung bei Annahme (Startbestätigung), Rest nach der Löschung. */
+ *  Zahlung: voller Betrag im Voraus bei Annahme (99 % Erfolg, sonst Erstattung nach spätestens 14 Tagen)
+ *  → in der Abrechnung nach der Löschung (mode "rest") kostet sie nichts mehr. */
 export const REVIEW_NOTEXT_PRICE = 300;
-export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2;
+export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur noch für Bestandsfälle
 
 export type PricedItem = { old?: boolean; nt?: boolean };
 
@@ -21,20 +22,20 @@ export const fmtReviewMoney = (v: number, cur: string) => {
 /** rateBasis: Anzahl, nach der sich der Mengenrabatt richtet (Standard: items.length).
  *  Bei Einzelabrechnung pro Bewertung = Anzahl der beauftragten Bewertungen → der
  *  Rabatt wird anteilig auf jede einzeln abgerechnete Bewertung verteilt. */
-/** mode "rest": Abrechnung nach der Löschung → Bewertungen ohne Text nur noch mit der zweiten Hälfte. */
+/** mode "rest": Abrechnung nach der Löschung → Bewertungen ohne Text sind schon voll bezahlt (0). */
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full") {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
   const nNt = items.filter((it) => it && it.nt).length;
   const nOld = items.filter((it) => it && it.old && !it.nt).length;
   const nNew = n - nOld - nNt;
-  const ntUnit = mode === "rest" ? REVIEW_NOTEXT_HALF : REVIEW_NOTEXT_PRICE;
+  const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
   const subtotal = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit;
   const pct = reviewDiscountPct(Math.max(n, rateBasis || 0));
   const total = Math.round((subtotal * (100 - pct)) / 100);
-  // Anzahlung (50 %) für Bewertungen ohne Text, bereits rabattiert.
-  const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_HALF * (100 - pct)) / 100);
-  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt ? fmt(ntUnit) : ""].filter(Boolean);
+  // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
+  const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100);
+  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && ntUnit ? fmt(ntUnit) : ""].filter(Boolean);
   let per = prices.length ? prices.join(" / ") : fmt(REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;
   return { n, nOld, nNew, nNt, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: subtotal - total, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: nOld === 0 && nNt === 0 && pct === 0 };

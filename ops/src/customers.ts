@@ -14,7 +14,7 @@ import { pool, setOrderRawField, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
-import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, REVIEW_NOTEXT_HALF } from "./reviewsPricing";
+import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "./reviewsPricing";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 export const DASH_URL = `${SITE_URL}/my-reviews`;
@@ -118,7 +118,7 @@ export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id"
   return id;
 }
 
-export const SW_NOTE_PAID = "Kunde hat die Software-Anzahlung bezahlt (Dashboard) → bitte starten";
+export const SW_NOTE_PAID = "Kunde hat die Software-Vorauszahlung bezahlt (Dashboard) → bitte starten";
 const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
 
@@ -154,7 +154,11 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
     const raw = await rawOf(orderId);
     for (const it of (Array.isArray(raw?.reviewsSoftware) ? (raw!.reviewsSoftware as Item[]) : [])) add(orderId, keyOf(it));
   }
-  if (p.kind === "invoice") { for (const [o, ks] of groups) await addPaidKeys(o, ks); return; }
+  if (p.kind === "invoice") {
+    for (const [o, ks] of groups) await addPaidKeys(o, ks);
+    if (p.via === "dashboard") void notifyTeam("💳 Kunde hat im Dashboard bezahlt", `${p.amount} ${String(p.cur).toUpperCase()} · ${[...groups.values()].flat().length} gelöschte Bewertung(en) · Auftrag ${orderId}`, `${SITE_URL}/admin`);
+    return;
+  }
   if (p.kind !== "software") return;
   let n = 0;
   for (const [o, ks] of groups) {
@@ -165,9 +169,9 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
       [o, ks, SW_NOTE_PAID],
     ).catch(() => ({ rowCount: 0 }));
     n += ks.length;
-    await insertEvent({ orderId: o, type: "note", title: "Kunde: Software-Anzahlung bezahlt", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) → Working (${u.rowCount ?? 0})`, auto: true }).catch(() => {});
+    await insertEvent({ orderId: o, type: "note", title: "Kunde: Software-Vorauszahlung bezahlt", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) → Working (${u.rowCount ?? 0})`, auto: true }).catch(() => {});
   }
-  if (n) void notifyTeam(`💳 Software-Anzahlung bezahlt`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner-Aufgabe steht auf Working`, `${SITE_URL}/admin`);
+  if (n) void notifyTeam(`💳 Kunde hat Software-Löschung bezahlt`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner-Aufgabe steht auf Working`, `${SITE_URL}/admin`);
 }
 
 /** Stripe-Zahlung der passenden offenen Zahlung zuordnen: zuerst über client_reference_id (rr_<id>), sonst E-Mail + Betrag. */
@@ -238,6 +242,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const pct = reviewDiscountPct(items.length);
   const disc = (v: number) => Math.round((v * (100 - pct)) / 100);
   const swPaidFor = (k: string) => decisions[k]?.d === "accepted" || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
+  // Spezialverfahren wird voll im Voraus bezahlt (Software-Zahlung oder Vorauszahlung „ohne Text" aus der Startbestätigung).
+  const prepaidFor = (k: string) => swPaidFor(k) || payments.some((p) => p.kind === "deposit" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : true));
   // Bezahlt? 1) Dashboard/Webhook (reviewsPaidKeys) bzw. Zahlung mit Schlüssel, 2) Alt-Rechnungen ohne Schlüssel, 3) Auftrag bezahlt.
   const keyedInv = payments.filter((p) => p.kind === "invoice" && p.keys && p.keys.length);
   const legacyInv = payments.filter((p) => p.kind === "invoice" && !(p.keys && p.keys.length));
@@ -266,19 +272,22 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else if (accepted) status = "notpossible";
     else status = "new";
     const special = !!it.nt || sw.has(k) || swPaidFor(k);
-    const price = special ? disc(REVIEW_NOTEXT_HALF) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
+    const price = special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
     return {
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
-      price, paid: status === "removed" ? isPaid(k) : false, special, old: !!it.old,
+      price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
     };
   });
   const unpaid = view.filter((v) => v.status === "removed" && !v.paid);
-  const toPay = unpaid.length ? quoteReviews(unpaid.map((v) => ({ nt: v.special, old: v.old })), cur, items.length, "rest").total : 0;
+  // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
+  const unpaidN = unpaid.filter((v) => !v.special);
+  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old })), cur, items.length, "rest").total : 0)
+    + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
     id: o.id, created: o.created_at, lang: o.lang, cur, business: o.company || o.profile || "", cancelled,
-    pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_HALF), toPay,
+    pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
     history: payments.filter((p) => p.paid).map((p) => ({
@@ -373,7 +382,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     return url;
   }
 
-  // Spezial-Software: Kunde entscheidet je Bewertung (oder alle): Anzahlung zahlen oder ablehnen (kostenlos).
+  // Spezial-Software: Kunde entscheidet je Bewertung (oder alle): voll im Voraus zahlen oder ablehnen (kostenlos).
   app.post("/cust/software", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     const email = await sessionEmail(b.token);
@@ -400,7 +409,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
         ).catch(() => {});
         await insertEvent({ orderId: o, email, type: "note", title: "Kunde: Spezial-Software abgelehnt (Dashboard)", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) storniert`, auto: true }).catch(() => {});
       }
-      void notifyTeam("Kunde lehnt Spezial-Software ab", `${picks.length} Bewertung(en) · ${[...groups.keys()].join(", ")}`, `${SITE_URL}/admin`);
+      void notifyTeam("🚫 Kunde lehnt Spezial-Software ab", `${picks.length} Bewertung(en) · ${[...groups.keys()].join(", ")}`, `${SITE_URL}/admin`);
       return { ok: true, declined: picks.length };
     }
     const cur = byId.get(picks[0].o)!.cur as "usd" | "eur";
@@ -408,7 +417,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     const amount = picks.reduce((s, p) => s + byId.get(p.o)!.swDeposit, 0);
     const url = await payLink("software", picks, amount, cur, orders);
     if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
-    await insertEvent({ orderId: picks[0].o, email, type: "note", title: "Kunde: Software-Anzahlung geöffnet (Dashboard)", detail: `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()}`, auto: true }).catch(() => {});
+    void notifyTeam("🛒 Kunde öffnet Software-Zahlung", `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()} · ${[...new Set(picks.map((p) => byId.get(p.o)!.business || p.o))].join(", ")}`, `${SITE_URL}/admin`);
+    await insertEvent({ orderId: picks[0].o, email, type: "note", title: "Kunde: Software-Vorauszahlung geöffnet (Dashboard)", detail: `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()}`, auto: true }).catch(() => {});
     return { ok: true, url, amount, cur, n: picks.length };
   });
 
@@ -427,6 +437,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     const amount = use.reduce((s, o) => s + o.toPay, 0);
     const url = await payLink("invoice", picks, amount, cur, orders);
     if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
+    void notifyTeam("🛒 Kunde öffnet Zahlung (gelöschte Bewertungen)", `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()} · ${email}`, `${SITE_URL}/admin`);
     return { ok: true, url, amount, cur, n: picks.length };
   });
 

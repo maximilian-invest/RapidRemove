@@ -1148,7 +1148,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
   const startQuote = quoteReviews(items, currency);
   const per = startQuote.per;
-  // Bewertungen ohne Text: 50 % Anzahlung (rabattiert) per Stripe-Link mit der Startbestätigung; Rest mit der Rechnung.
+  // Bewertungen ohne Text: voller Betrag im Voraus (rabattiert) per Stripe-Link mit der Startbestätigung.
   let prepay: { n: number; amount: string; url: string } | undefined;
   const prepayPid = newPayId(), swPid = newPayId(); // Zahlungs-IDs vorab → Link trägt client_reference_id (eindeutige Zuordnung)
   if (startQuote.nNt > 0) {
@@ -1162,17 +1162,17 @@ app.post("/admin/reviews-start", async (req, reply) => {
       : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
     prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: withRef(payUrl, prepayPid) };
   }
-  // Spezial-Software-Angebot: 50 % Anzahlung (Rabattstufe nach angenommenen + Software-Bewertungen).
+  // Spezial-Software-Angebot: voller Betrag im Voraus (Rabattstufe nach angenommenen + Software-Bewertungen).
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
     const swQ = quoteReviews([...items, ...swItems], currency);
-    const amountNum = Math.round((swItems.length * 150 * (100 - swQ.pct)) / 100);
+    const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // voller Betrag im Voraus
     let swUrl = "";
     if (hasSecretKey()) {
       try { swUrl = await ensureReviewsAmountLink(amountNum, currency); }
-      catch (e) { app.log.error({ err: e }, "Software-Anzahlungslink fehlgeschlagen"); }
+      catch (e) { app.log.error({ err: e }, "Software-Vorauszahlungslink fehlgeschlagen"); }
     }
-    if (!swUrl) return reply.code(400).send({ ok: false, error: "Zahlungslink für die Spezial-Software-Anzahlung konnte nicht angelegt werden." });
+    if (!swUrl) return reply.code(400).send({ ok: false, error: "Zahlungslink für die Spezial-Software-Vorauszahlung konnte nicht angelegt werden." });
     software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: withRef(swUrl, swPid), price: fmtReviewMoney(300, currency), amountNum };
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
@@ -1189,7 +1189,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Anzahlung 50 % ${prepay.amount} (Link in der Mail)` : ""}${software ? ` · ${software.items.length} per Spezial-Software angeboten: Anzahlung ${software.amount}` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Vorauszahlung ${prepay.amount} (Link in der Mail)` : ""}${software ? ` · ${software.items.length} per Spezial-Software angeboten: Vorauszahlung ${software.amount}` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.

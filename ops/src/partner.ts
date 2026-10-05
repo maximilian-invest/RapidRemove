@@ -281,6 +281,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
 
   const PARTNER_SETTABLE = ["new", "working", "removed", "not_possible", "software"];
   const LABEL: Record<string, string> = { new: "zurückgesetzt", working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
+  const EMO: Record<string, string> = { new: "↩️", working: "🔧", removed: "✅", not_possible: "⛔", software: "💻" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
   async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
@@ -311,8 +312,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (changed && row.order_id) {
       await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
     }
-    if (changed && !opts.quiet && (status === "removed" || status === "not_possible" || status === "software")) {
-      void notifyTeam(`Partner: ${row.code} ${LABEL[status]}`, [row.customer || "", row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · ") || "Status geändert", `${SITE_URL}/admin`);
+    // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
+    if (changed && !opts.quiet) {
+      void notifyTeam(`${EMO[status] || "🔔"} Partner: ${row.code} ${LABEL[status] || status}`, [row.customer || "", row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · ") || "Status geändert", `${SITE_URL}/admin`);
     }
     return { row, changed };
   }
@@ -345,8 +347,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       tasks.push(partnerView(r.row));
       if (r.changed) changedCodes.push(r.row.code);
     }
-    if (changedCodes.length && (status === "removed" || status === "not_possible" || status === "software")) {
-      void notifyTeam(`Partner: ${changedCodes.length}× ${LABEL[status]}`, changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`);
+    if (changedCodes.length) {
+      void notifyTeam(`${EMO[status] || "🔔"} Partner: ${changedCodes.length}× ${LABEL[status] || status}`, changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`);
     }
     return { ok: true, tasks, skipped };
   });
