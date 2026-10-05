@@ -14,6 +14,7 @@ export const PAGE_TITLE = {
   wizard: { de: "Profil prüfen", en: "Check your profile", es: "Comprobar perfil", fr: "Vérifier la fiche", it: "Verifica profilo", nl: "Profiel checken", pt: "Verificar perfil", ja: "プロフィールを確認", sv: "Kontrollera profil", da: "Tjek profil", no: "Sjekk profil" },
   agb: { de: "AGB", en: "Terms & Conditions", es: "Términos y condiciones", fr: "CGV", it: "Termini e condizioni", nl: "Algemene voorwaarden", pt: "Termos e condições", ja: "利用規約", sv: "Allmänna villkor", da: "Handelsbetingelser", no: "Vilkår" },
   widerruf: { de: "Widerrufsbelehrung", en: "Right of withdrawal", es: "Derecho de desistimiento", fr: "Droit de rétractation", it: "Diritto di recesso", nl: "Herroepingsrecht", pt: "Direito de retratação", ja: "撤回権について", sv: "Ångerrätt", da: "Fortrydelsesret", no: "Angrerett" },
+  report: { de: "Google-Profil-Löschungen: Report 2026", en: "Google Business Profile Removal Report 2026" },
   // Bewertungs-Produkt: nicht in DACH — bewusst kein de-Eintrag (Seite existiert dort nicht).
   reviews: { en: "Remove a single Google review", es: "Eliminar una reseña de Google", fr: "Supprimer un avis Google", it: "Rimuovere una recensione Google", nl: "Eén Google-review verwijderen", pt: "Remover uma avaliação do Google", ja: "Googleの口コミを1件削除", sv: "Ta bort ett enskilt Google-omdöme", da: "Fjern en enkelt Google-anmeldelse", no: "Fjern én Google-omtale" },
 };
@@ -40,6 +41,10 @@ const PAGE_DESC = {
   deindex: { en: "Have negative press and unwanted Google results de-indexed — free initial legal review via our partner law firm, engagement only if realistic." },
   seo: { en: "Get found on Google by the right customers: local, organic and measurable SEO with transparent monthly reporting — free SEO analysis, no lock-in contracts." },
   kontakt: { en: "Talk to the RapidRemove team about removals, ongoing cases or partnerships — personal reply, usually within 24 hours." },
+  report: {
+    en: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022: more than half of all requests now come in English, the US is the #2 country.",
+    de: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022: Jede zweite Anfrage kommt inzwischen auf Englisch, die USA sind Land Nr. 2.",
+  },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
   reviews: {
     en: "Have a single unfair or fake Google review removed — $179 per removed review, charged only on success. Honest assessment first, nothing upfront.",

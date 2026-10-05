@@ -10,6 +10,8 @@ import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
 import { ReviewsRoute } from "@/components/ReviewsServicePage";
 import { RVW } from "@/lib/reviews-copy";
 import Kontakt from "@/components/Kontakt";
+import ReportPage from "@/components/ReportPage";
+import { REPORT, reportJsonLd } from "@/lib/report-data";
 import { SITE_URL } from "@/lib/articles/registry";
 import { OG_LOCALE, OG_IMAGE, NON_DEFAULT_LOCALES, magazineSlug, magazineUrl, magazineHreflangMap } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
@@ -57,7 +59,7 @@ export function generateMetadata({ params }) {
       title: m.title,
       description: m.description,
       alternates: { canonical: url, languages: pageHreflang(key) },
-      openGraph: { type: "website", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE] },
+      openGraph: { type: key === "report" ? "article" : "website", title: m.title, description: m.description, url, siteName: "RapidRemove", locale: OG_LOCALE[params.lang] || "en_US", images: [OG_IMAGE] },
     };
   }
   return {};
@@ -112,6 +114,17 @@ export default function Page({ params }) {
       <>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <ReviewsRoute initialLang={params.lang} />
+      </>
+    );
+  }
+  if (key === "report") {
+    // Datenreport: Article + Dataset-Schema (Google Dataset Search).
+    const url = pageUrl(key, params.lang);
+    const jsonLd = reportJsonLd(params.lang, { url, siteUrl: SITE_URL, csvUrl: `${SITE_URL}${REPORT.csv}` });
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+        <ReportPage initialLang={params.lang} />
       </>
     );
   }

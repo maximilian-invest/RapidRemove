@@ -144,6 +144,7 @@ const article = {
 
     { t: "h2", id: "herkunft", text: "Who created this profile in the first place?", toc: "Where profiles come from" },
     { t: "p", text: "Most business owners who contact us never created their profile themselves — and are honestly surprised it exists at all. That isn't the exception; it's the rule. A Google Business Profile is rarely set up actively by the owner. Far more often, someone else adds it, or Google generates it completely automatically. To understand why such a listing is so hard to get rid of later, it helps to know how it got there in the first place. There are essentially three ways." },
+    { t: "p", text: "And it isn't a local quirk: in our [Google Business Profile Removal Report 2026](/en/google-business-profile-removal-report/) — based on 1,600+ removals since 2022 — more than half of all requests now come in English, from business owners in over 50 countries." },
     { t: "anim", caption: "Three ways a business profile comes into existence — usually without the owner lifting a finger." },
     { t: "h3", text: "Way 1: Someone adds the place by hand" },
     { t: "p", text: "Any Google user can tap an address or an empty spot in the Maps app and choose “Add a missing place.” That lets anyone list a business without having anything to do with it — customers, former employees, competitors, or particularly active Maps users (Local Guides)." },

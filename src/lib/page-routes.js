@@ -23,6 +23,8 @@ export const PAGE_SLUGS = {
   widerruf: { de: "widerruf", en: "right-of-withdrawal", es: "desistimiento", fr: "retractation", it: "recesso", nl: "herroepingsrecht", pt: "retratacao", ja: "withdrawal", sv: "angerratt", da: "fortrydelsesret", no: "angrerett" },
   // Bewertungs-Produkt: NICHT in DACH — bewusst KEIN de-Slug. Die Seite wird für
   // Deutsch weder erzeugt noch verlinkt (Guards unten überspringen fehlende Slugs).
+  // Datenreport (Backlink-Studie): nur EN + DE.
+  report: { de: "google-profil-loeschungen-report", en: "google-business-profile-removal-report" },
   reviews: { en: "remove-single-reviews", es: "eliminar-una-resena", fr: "supprimer-un-avis", it: "rimuovere-una-recensione", nl: "review-laten-verwijderen", pt: "remover-uma-avaliacao", ja: "remove-review", sv: "ta-bort-omdome", da: "fjern-anmeldelse", no: "fjern-omtale" },
 };
 
