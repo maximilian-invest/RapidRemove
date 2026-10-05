@@ -603,8 +603,9 @@ export async function partnerStatusChanged(
   _deps?: { makeLink?: (amount: number, cur: "usd" | "eur") => Promise<string>; prev?: string | null },
 ): Promise<void> {
   if (!pool || !orderId) return;
-  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
+  const r = await pool.query(`SELECT raw, email FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
   if (!r.rows[0]) return; // nur Einzelbewertungen
+  const delayMin = isTestEmail(r.rows[0].email) ? 1 : NOTIFY_DELAY_MIN; // Testbestellung: Kunden-Update nach 1 Min. statt 15
   const raw = (r.rows[0].raw || {}) as Record<string, unknown>;
   const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
   if (status === "software" && itemKey) {
@@ -628,7 +629,7 @@ export async function partnerStatusChanged(
     `INSERT INTO cust_notify (order_id, due_at, keys, changes) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb, $4::jsonb)
      ON CONFLICT (order_id) DO UPDATE SET due_at = EXCLUDED.due_at, changes = EXCLUDED.changes,
        keys = (SELECT jsonb_agg(DISTINCT k) FROM jsonb_array_elements(cust_notify.keys || EXCLUDED.keys) k)`,
-    [orderId, String(NOTIFY_DELAY_MIN), JSON.stringify(itemKey ? [itemKey] : []), JSON.stringify(changes)],
+    [orderId, String(delayMin), JSON.stringify(itemKey ? [itemKey] : []), JSON.stringify(changes)],
   );
 }
 
