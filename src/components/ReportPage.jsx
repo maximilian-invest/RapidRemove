@@ -97,11 +97,12 @@ const C = {
     csv: "Download data (CSV)",
     press: "Press & questions:",
     nextH: "Coming in the next edition",
-    nextP: "Why owners remove their profile (we now ask in the free check), plus a breakdown by industry.",
-    ctaH: "Want your own profile gone?",
-    ctaP: "Our guide explains every option step by step — or check for free whether your profile can be removed.",
-    ctaGuide: "Read the guide",
-    ctaCheck: "Check my profile",
+    nextP: "Why owners remove their profile (we now ask our clients after they place their order), plus a breakdown by industry.",
+    ctaH: "Your business no longer exists — or there's another legitimate reason to remove the profile?",
+    ctaP: "Talk to us. We review your case for free and tell you honestly whether a removal is possible — you only pay if it works.",
+    ctaContact: "Contact us now",
+    ctaGuide: "Or read our step-by-step guide",
+    ctaCheck: "Check my profile for free",
     sourceShort: "Source: RapidRemove",
   },
   de: {
@@ -185,11 +186,12 @@ const C = {
     csv: "Daten herunterladen (CSV)",
     press: "Presse & Fragen:",
     nextH: "In der nächsten Ausgabe",
-    nextP: "Warum Inhaber ihr Profil löschen lassen (das fragen wir jetzt im kostenlosen Check ab) – und eine Auswertung nach Branchen.",
-    ctaH: "Sie wollen Ihr eigenes Profil loswerden?",
-    ctaP: "Unser Ratgeber erklärt alle Wege Schritt für Schritt – oder prüfen Sie kostenlos, ob sich Ihr Profil löschen lässt.",
-    ctaGuide: "Zum Ratgeber",
-    ctaCheck: "Profil prüfen",
+    nextP: "Warum Inhaber ihr Profil löschen lassen (das fragen wir jetzt nach der Bestellung ab) – und eine Auswertung nach Branchen.",
+    ctaH: "Ihr Unternehmen gibt es nicht mehr – oder es gibt einen anderen berechtigten Grund für die Löschung?",
+    ctaP: "Sprechen Sie mit uns. Wir prüfen Ihren Fall kostenlos und sagen Ihnen ehrlich, ob eine Löschung möglich ist – bezahlt wird nur bei Erfolg.",
+    ctaContact: "Jetzt Kontakt aufnehmen",
+    ctaGuide: "Oder lesen Sie unseren Ratgeber",
+    ctaCheck: "Profil kostenlos prüfen",
     sourceShort: "Quelle: RapidRemove",
   },
 };
@@ -382,9 +384,10 @@ function ReportBody({ lang, base }) {
           <h2>{c.ctaH}</h2>
           <p>{c.ctaP}</p>
           <div className="rp-cta-btns">
-            <a className="btn btn-primary" href={asset(hub)}>{c.ctaGuide}</a>
+            <a className="btn btn-primary" href={asset(pagePath("kontakt", lang))}>{c.ctaContact}</a>
             <a className="btn rp-btn-outline" href={asset(pagePath("wizard", lang))}>{c.ctaCheck}</a>
           </div>
+          <p className="rp-cta-guide"><a href={asset(hub)}>{c.ctaGuide} →</a></p>
         </section>
 
         <Cite c={c} lang={lang} />

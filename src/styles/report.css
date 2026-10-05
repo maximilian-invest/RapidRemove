@@ -117,3 +117,7 @@
 .rp-how h2{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,2.6vw,28px);letter-spacing:-.3px;margin:0 0 12px;color:var(--fg);}
 .rp-how p{font-size:17px;line-height:1.7;color:var(--fg-2);margin:0 0 12px;}
 .rp-tiles-wrap{max-width:1000px;}
+.rp-cta h2{font-size:clamp(22px,2.6vw,28px);}
+.rp-cta .rp-cta-guide{margin:16px 0 0;font-size:15px;}
+.rp-cta-guide a{color:var(--orange-700);font-weight:700;text-decoration:none;}
+.rp-cta-guide a:hover{text-decoration:underline;}

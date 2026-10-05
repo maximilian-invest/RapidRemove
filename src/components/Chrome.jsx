@@ -8,7 +8,7 @@ import { LANGS } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
-import { pagePath } from "@/lib/page-routes";
+import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { getResumeProfile } from "@/lib/resume";
 import { consentLabel } from "@/components/Consent";
 import { trackContact } from "@/lib/metaPixel";
@@ -41,6 +41,9 @@ function useReveal() {
    right language, and builds language-aware navigation: every link points to the
    localized URL of the current locale (e.g. /it/chi-siamo). pageKey lets the
    language switcher jump to the SAME page in the target language. */
+// Footer: Menüpunkt zum Datenreport (Seite gibt es auf EN + DE; andere Sprachen → EN).
+const REPORT_LINK = { de: "Datenreport 2026", en: "Data report 2026", es: "Informe de datos 2026", fr: "Rapport de données 2026", it: "Report dati 2026", nl: "Datarapport 2026", pt: "Relatório de dados 2026", ja: "データレポート 2026", sv: "Datarapport 2026", da: "Datarapport 2026", no: "Datarapport 2026" };
+
 export function useRouteShell(initialLang, pageKey) {
   const lang = I18N[initialLang] ? initialLang : "de";
   const t = I18N[lang] || I18N.de;
@@ -499,8 +502,12 @@ function Footer({ onStart, onBlog, onAbout }) {
                 const cell = (cells[i] || [])[j] || {};
                 const onClick = cell.onClick ? (e) => { e.preventDefault(); cell.onClick(); } : undefined;
                 return (
-                  <a key={j} href={cell.href || hb} onClick={onClick}
-                    target={cell.ext ? "_blank" : undefined} rel={cell.ext ? "noopener noreferrer" : undefined}>{l}</a>
+                  <React.Fragment key={j}>
+                    <a href={cell.href || hb} onClick={onClick}
+                      target={cell.ext ? "_blank" : undefined} rel={cell.ext ? "noopener noreferrer" : undefined}>{l}</a>
+                    {/* Datenreport direkt nach „Magazin" (Unternehmen-Spalte) */}
+                    {i === 1 && j === 1 ? <a href={asset(pagePath("report", pageHasLocale("report", lang) ? lang : "en"))}>{REPORT_LINK[lang] || REPORT_LINK.en}</a> : null}
+                  </React.Fragment>
                 );
               })}
             </div>

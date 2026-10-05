@@ -153,11 +153,11 @@ export function ReportStatsDashboard({ toast }) {
               ) : <div className="rs-body rs-note">Keine Kategorien vorhanden.</div>}
             </div>
             <div className="panel">
-              <div className="panel-head"><div><h2>Gründe</h2><div className="ph-sub">Optionale Frage im Check – seit 05.10.2026</div></div></div>
+              <div className="panel-head"><div><h2>Gründe</h2><div className="ph-sub">Optionale Frage auf der Danke-Seite nach der Bestellung – seit 05.10.2026</div></div></div>
               <div className="rs-body">
-                {set !== "checks" ? <p className="rs-note">Gründe werden beim Check abgefragt – Ansicht „Geprüfte Profile“ wählen.</p>
+                {set !== "checks" ? <p className="rs-note">Gründe hängen am Check – Ansicht „Geprüfte Profile“ wählen.</p>
                   : reasonTotal ? <Bars data={reasons} keys={Object.keys(REASON_LBL)} labels={REASON_LBL} />
-                  : <p className="rs-note">Noch keine Angaben. Die Frage läuft seit heute – erste Werte in ein paar Tagen.</p>}
+                  : <p className="rs-note">Noch keine Angaben. Die Frage läuft seit heute – erste Werte nach den nächsten Bestellungen.</p>}
               </div>
             </div>
           </div>

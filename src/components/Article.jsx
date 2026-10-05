@@ -132,6 +132,11 @@ function ArticleBody() {
             Google generiert es vollautomatisch. Wer verstehen will, warum sich so ein Eintrag später so schwer wieder
             loswerden lässt, sollte zuerst wissen, wie er dorthin gekommen ist. Im Wesentlichen gibt es drei Wege.
           </p>
+          <p>
+            Und es ist kein regionales Phänomen: Laut unserem{" "}
+            <a href={asset("/google-profil-loeschungen-report")}>Datenreport 2026</a> – Basis sind über 1.600 Löschungen
+            seit 2022 – kommt inzwischen mehr als die Hälfte aller Anfragen auf Englisch, von Unternehmen aus über 50 Ländern.
+          </p>
 
           <ArticleIngestAnim />
 

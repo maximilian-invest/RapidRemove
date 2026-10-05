@@ -698,20 +698,20 @@ const CONV = {
 };
 function convFor(code) { return { ...CONV.en, ...(CONV[code] || {}) }; }
 
-/* Optionale Frage „Warum löschen?" (Bestätigungs-Schritt) — fließt nur aggregiert
+/* Optionale Frage „Warum löschen?" (Danke-Seite nach der Bestellung) — fließt nur aggregiert
    in den Datenreport ein. Schlüssel: closed · bad_reviews · wrong · moved · other. */
 const WZ_REASON = {
-  de: { q: "Warum soll das Profil weg?", opt: "optional", o: { closed: "Firma geschlossen", bad_reviews: "Unfaire Bewertungen", wrong: "Falsches/doppeltes Profil", moved: "Umzug/Inhaberwechsel", other: "Anderes" } },
-  en: { q: "Why should the profile go?", opt: "optional", o: { closed: "Business closed", bad_reviews: "Unfair reviews", wrong: "Wrong/duplicate profile", moved: "Moved/new owner", other: "Other" } },
-  es: { q: "¿Por qué quieres eliminar el perfil?", opt: "opcional", o: { closed: "Negocio cerrado", bad_reviews: "Reseñas injustas", wrong: "Perfil erróneo/duplicado", moved: "Mudanza/nuevo dueño", other: "Otro" } },
-  fr: { q: "Pourquoi supprimer la fiche ?", opt: "facultatif", o: { closed: "Entreprise fermée", bad_reviews: "Avis injustes", wrong: "Fiche erronée/en double", moved: "Déménagement/repreneur", other: "Autre" } },
-  it: { q: "Perché vuoi rimuovere il profilo?", opt: "facoltativo", o: { closed: "Attività chiusa", bad_reviews: "Recensioni ingiuste", wrong: "Profilo errato/doppio", moved: "Trasloco/nuovo titolare", other: "Altro" } },
-  nl: { q: "Waarom moet het profiel weg?", opt: "optioneel", o: { closed: "Bedrijf gesloten", bad_reviews: "Oneerlijke reviews", wrong: "Fout/dubbel profiel", moved: "Verhuisd/nieuwe eigenaar", other: "Anders" } },
-  pt: { q: "Porque quer remover o perfil?", opt: "opcional", o: { closed: "Empresa fechada", bad_reviews: "Avaliações injustas", wrong: "Perfil errado/duplicado", moved: "Mudança/novo dono", other: "Outro" } },
-  ja: { q: "削除したい理由は？", opt: "任意", o: { closed: "閉業した", bad_reviews: "不当な口コミ", wrong: "誤り・重複のプロフィール", moved: "移転・オーナー変更", other: "その他" } },
-  sv: { q: "Varför ska profilen bort?", opt: "valfritt", o: { closed: "Företaget stängt", bad_reviews: "Orättvisa omdömen", wrong: "Fel/dubbel profil", moved: "Flytt/ny ägare", other: "Annat" } },
-  da: { q: "Hvorfor skal profilen væk?", opt: "valgfrit", o: { closed: "Virksomhed lukket", bad_reviews: "Urimelige anmeldelser", wrong: "Forkert/dobbelt profil", moved: "Flytning/ny ejer", other: "Andet" } },
-  no: { q: "Hvorfor skal profilen bort?", opt: "valgfritt", o: { closed: "Bedriften er stengt", bad_reviews: "Urettferdige omtaler", wrong: "Feil/dobbel profil", moved: "Flytting/ny eier", other: "Annet" } },
+  de: { thx: "Danke!", q: "Warum soll das Profil weg?", opt: "optional", o: { closed: "Firma geschlossen", bad_reviews: "Unfaire Bewertungen", wrong: "Falsches/doppeltes Profil", moved: "Umzug/Inhaberwechsel", other: "Anderes" } },
+  en: { thx: "Thanks!", q: "Why should the profile go?", opt: "optional", o: { closed: "Business closed", bad_reviews: "Unfair reviews", wrong: "Wrong/duplicate profile", moved: "Moved/new owner", other: "Other" } },
+  es: { thx: "¡Gracias!", q: "¿Por qué quieres eliminar el perfil?", opt: "opcional", o: { closed: "Negocio cerrado", bad_reviews: "Reseñas injustas", wrong: "Perfil erróneo/duplicado", moved: "Mudanza/nuevo dueño", other: "Otro" } },
+  fr: { thx: "Merci !", q: "Pourquoi supprimer la fiche ?", opt: "facultatif", o: { closed: "Entreprise fermée", bad_reviews: "Avis injustes", wrong: "Fiche erronée/en double", moved: "Déménagement/repreneur", other: "Autre" } },
+  it: { thx: "Grazie!", q: "Perché vuoi rimuovere il profilo?", opt: "facoltativo", o: { closed: "Attività chiusa", bad_reviews: "Recensioni ingiuste", wrong: "Profilo errato/doppio", moved: "Trasloco/nuovo titolare", other: "Altro" } },
+  nl: { thx: "Bedankt!", q: "Waarom moet het profiel weg?", opt: "optioneel", o: { closed: "Bedrijf gesloten", bad_reviews: "Oneerlijke reviews", wrong: "Fout/dubbel profiel", moved: "Verhuisd/nieuwe eigenaar", other: "Anders" } },
+  pt: { thx: "Obrigado!", q: "Porque quer remover o perfil?", opt: "opcional", o: { closed: "Empresa fechada", bad_reviews: "Avaliações injustas", wrong: "Perfil errado/duplicado", moved: "Mudança/novo dono", other: "Outro" } },
+  ja: { thx: "ありがとうございます！", q: "削除したい理由は？", opt: "任意", o: { closed: "閉業した", bad_reviews: "不当な口コミ", wrong: "誤り・重複のプロフィール", moved: "移転・オーナー変更", other: "その他" } },
+  sv: { thx: "Tack!", q: "Varför ska profilen bort?", opt: "valfritt", o: { closed: "Företaget stängt", bad_reviews: "Orättvisa omdömen", wrong: "Fel/dubbel profil", moved: "Flytt/ny ägare", other: "Annat" } },
+  da: { thx: "Tak!", q: "Hvorfor skal profilen væk?", opt: "valgfrit", o: { closed: "Virksomhed lukket", bad_reviews: "Urimelige anmeldelser", wrong: "Forkert/dobbelt profil", moved: "Flytning/ny ejer", other: "Andet" } },
+  no: { thx: "Takk!", q: "Hvorfor skal profilen bort?", opt: "valgfritt", o: { closed: "Bedriften er stengt", bad_reviews: "Urettferdige omtaler", wrong: "Feil/dobbel profil", moved: "Flytting/ny eier", other: "Annet" } },
 };
 
 /* ---- plausible profile candidates from a typed business name (demo fallback only) ---- */
@@ -2340,17 +2340,6 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (phase === "checking") return <div className="wz-card"><CheckingAnim conv={conv} /></div>;
     const unsure = !!(selected && selected.unverified);
     const linkOk = isGMapsLink(profileLink);
-    const reasonBox = (
-      <div className="wz-reason" role="group" aria-label={wr.q}>
-        <div className="wz-reason-q">{wr.q} <span>({wr.opt})</span></div>
-        <div className="wz-reason-chips">
-          {Object.keys(wr.o).map((k) => (
-            <button type="button" key={k} className={"wz-reason-chip" + (reason === k ? " on" : "")} aria-pressed={reason === k}
-              onClick={() => { setReason(k); if (checkId) submitCheck({ checkId, reason: k }).catch(() => {}); }}>{wr.o[k]}</button>
-          ))}
-        </div>
-      </div>
-    );
     return (
       <div className="wz-card">
         <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
@@ -2363,7 +2352,6 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <label>{nil.linkLabel}</label>
               <input value={profileLink} onChange={(e) => setProfileLink(e.target.value)} placeholder="https://maps.google.com/…" inputMode="url" aria-label={nil.linkLabel} />
             </div>
-            {reasonBox}
             <div className="wz-actions" style={{ marginTop: 18 }}>
               <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
               {linkOk
@@ -2378,7 +2366,6 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
               <span className="nm-go"><Icon.arrowRight size={18} /></span>
             </div>
-            {reasonBox}
             <div className="wz-actions" style={{ marginTop: 18 }}>
               <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
               <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
@@ -2786,6 +2773,21 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {!revFlow && (
         <div style={{ marginTop: 24 }}>
           <OrderForm orderId={orderId} lang={t.code} />
+        </div>
+        )}
+
+        {/* Optionale Frage NACH der Bestellung (stört den Bestellweg nicht) —
+           fließt nur aggregiert in den Datenreport ein (checks.reason). */}
+        {!revFlow && (
+        <div className="wz-reason wz-reason-done" role="group" aria-label={wr.q}>
+          <div className="wz-reason-q">{wr.q} <span>({wr.opt})</span></div>
+          <div className="wz-reason-chips">
+            {Object.keys(wr.o).map((k) => (
+              <button type="button" key={k} className={"wz-reason-chip" + (reason === k ? " on" : "")} aria-pressed={reason === k}
+                onClick={() => { setReason(k); if (checkId) submitCheck({ checkId, reason: k }).catch(() => {}); }}>{wr.o[k]}</button>
+            ))}
+          </div>
+          {reason ? <div className="wz-reason-thx">✓ {wr.thx}</div> : null}
         </div>
         )}
 
