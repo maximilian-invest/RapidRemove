@@ -667,6 +667,7 @@ button{font-family:inherit;}
 .pb-table{background:#fff;border:1px solid var(--hairline);border-radius:14px;overflow:hidden;}
 .pb-tr{display:flex;gap:10px;align-items:flex-start;padding:10px 14px;border-bottom:1px solid var(--hairline);}
 .pb-tr:last-child{border-bottom:0;}
+.pb-ghead{padding:10px 14px 6px;background:var(--surface-2, rgba(0,0,0,.03));border-bottom:1px solid var(--hairline);font-size:13.5px;}
 .pb-tr input{margin-top:4px;}
 .pb-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;}
 .pb-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px;}

@@ -4,6 +4,7 @@
    „als bezahlt markieren", Partner-Link + WhatsApp-Text kopieren. */
 import React from "react";
 import { partnerTasks, partnerUpdate, partnerPay, partnerLink } from "@/lib/admin-api";
+import { groupByCustomer } from "@/lib/partner-group";
 
 export const PARTNER_STATUS = {
   new: { label: "Neu", color: "#6b7280" },
@@ -35,10 +36,11 @@ const ago = (iso) => {
   return `vor ${Math.round(h / 24)} T.`;
 };
 
-/** WhatsApp-Text für eine Liste von Aufgaben (nur Codes + Links, keine Kundendaten). */
+/** WhatsApp-Text für eine Liste von Aufgaben — nach Kunde (Profilname) gegliedert, keine Besteller-Daten. */
 export function partnerWhatsAppText(tasks, link) {
-  const lines = tasks.map((t) => `${t.code} (${t.kind === "nt" ? "no text" : t.kind === "old" ? "older" : "new"}) – ${t.url || `${t.reviewer || t.name || ""}: "${(t.text || "").slice(0, 80)}"`}`);
-  return `New reviews for you (${tasks.length}):\n${lines.join("\n")}\n\nPlease update the status here: ${link || "(partner board link)"}`;
+  const line = (t) => `${t.code} (${t.kind === "nt" ? "no text" : t.kind === "old" ? "older" : "new"}) – ${t.url || `${t.reviewer || t.name || ""}: "${(t.text || "").slice(0, 80)}"`}`;
+  const blocks = groupByCustomer(tasks, "Other").map(([cust, list]) => `*${cust}* (${list.length})\n${list.map(line).join("\n")}`);
+  return `New reviews for you (${tasks.length}):\n\n${blocks.join("\n\n")}\n\nPlease update the status here: ${link || "(partner board link)"}`;
 }
 
 export function AdminPartner({ toast }) {
@@ -124,7 +126,10 @@ export function AdminPartner({ toast }) {
       {err ? <div className="pb-err">{err}</div> : null}
       {!data ? <p className="muted">Lädt …</p> : !shown.length ? <p className="muted">Keine Aufgaben in diesem Filter.</p> : (
         <div className="pb-table">
-          {shown.map((t) => {
+          {groupByCustomer(shown, "Ohne Kunde").map(([cust, list]) => (
+          <React.Fragment key={cust}>
+          <div className="pb-ghead"><b>{cust}</b><span className="muted"> · {list.length} Bewertung{list.length === 1 ? "" : "en"} · {list.filter((t) => t.status === "removed").length} gelöscht · {usd(list.reduce((s, t) => s + Number(t.price || 0), 0))}</span></div>
+          {list.map((t) => {
             const s = PARTNER_STATUS[t.status] || PARTNER_STATUS.new;
             return (
               <div key={t.id} className="pb-tr">
@@ -148,6 +153,8 @@ export function AdminPartner({ toast }) {
               </div>
             );
           })}
+          </React.Fragment>
+          ))}
         </div>
       )}
 

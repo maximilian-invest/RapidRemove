@@ -2,8 +2,9 @@
  *
  * Statt WhatsApp-Listen bekommt jede Bewertung eine Kurznummer (RV-0001), einen
  * Typ (normal / alt / ohne Text) und einen Partnerpreis. Der Partner sieht über
- * einen geheimen Link (ohne Account) NUR Nummer, Link, Typ, Preis und Status —
- * keine Kundennamen, keine E-Mail-Adressen. Er setzt den Status selbst; „Gelöscht"
+ * einen geheimen Link (ohne Account) Nummer, Link, Typ, Preis, Status und den
+ * Namen des Unternehmensprofils (öffentlich, zum Gliedern nach Kunde) — keine
+ * Namen/E-Mails/Telefonnummern der Besteller. Er setzt den Status selbst; „Gelöscht"
  * landet als Event beim Auftrag + Team-Push. Abrechnung: offene Beträge je
  * gelöschter Aufgabe, im Admin als bezahlt markierbar (Auszahlungs-Sammelposten).
  */
@@ -12,7 +13,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
 
-export const PARTNER_PRICES = { normal: 50, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Chat)
+export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
 export const PARTNER_STATUSES = ["new", "working", "removed", "not_possible", "software", "cancelled"] as const;
 export type TaskStatus = (typeof PARTNER_STATUSES)[number];
@@ -42,6 +43,8 @@ export async function initPartnerTables(): Promise<void> {
       payout_id    bigint
     )
   `);
+  // Kunde = Name des Unternehmensprofils (Gliederung im Board).
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS partner_payouts (
@@ -87,16 +90,16 @@ async function checkPartnerToken(t: unknown): Promise<boolean> {
 
 /* ---- Datenzugriff ---- */
 type Row = {
-  id: string; code: string; order_id: string | null; item_key: string | null; url: string | null; name: string | null; text: string | null;
+  id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
-/** Für den Partner: KEINE Kundendaten (kein Auftrag, kein Name des Kunden). */
+/** Für den Partner: keine Besteller-Daten (kein Auftrag, keine Kontaktdaten) — nur der öffentliche Profilname. */
 function partnerView(r: Row) {
   return {
-    id: Number(r.id), code: r.code, url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
+    id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at,
   };
@@ -136,6 +139,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const orderId = clip(b.orderId, 40) || null;
+    const customer = clip(b.customer, 160) || null;
     const items = (Array.isArray(b.items) ? b.items : []).slice(0, 60) as Record<string, unknown>[];
     const created: ReturnType<typeof adminView>[] = [];
     for (const it of items) {
@@ -146,12 +150,17 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const kind: TaskKind = it.nt === true ? "nt" : it.old === true ? "old" : "normal";
       const key = url || `${name}|${text}`;
       const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];
+      // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
+      if (!orderId) {
+        const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
+        if (ex.rows[0]) { created.push(adminView(ex.rows[0] as Row)); continue; }
+      }
       const r = await pool.query(
-        `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)
-         ON CONFLICT (order_id, item_key) DO UPDATE SET updated_at = partner_tasks.updated_at
+        `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+         ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
          RETURNING *`,
-        [orderId, key, url || null, name || null, text || null, kind, price],
+        [orderId, key, url || null, name || null, text || null, kind, price, customer],
       );
       let row = r.rows[0] as Row;
       if (!row.code) {
@@ -188,6 +197,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const sets: string[] = []; const args: unknown[] = [];
     if (b.price != null && Number.isFinite(Number(b.price))) { args.push(Number(b.price)); sets.push(`price_usd=$${args.length}`); }
     if (b.adminNote != null) { args.push(clip(b.adminNote, 400)); sets.push(`admin_note=$${args.length}`); }
+    if (b.customer != null) { args.push(clip(b.customer, 160) || null); sets.push(`customer=$${args.length}`); }
     if (b.status && (PARTNER_STATUSES as readonly string[]).includes(String(b.status))) {
       args.push(String(b.status)); sets.push(`status=$${args.length}`);
       sets.push(String(b.status) === "removed" ? "removed_at=COALESCE(removed_at, now())" : "removed_at=NULL");

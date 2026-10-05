@@ -1,9 +1,11 @@
 "use client";
 /* Partner board (rapid-remove.com/partner#<secret>) — for our review-removal partner.
-   Shows ONLY task code, review link, type, price and status; no customer data.
+   Shows task code, review link, type, price and status, grouped by customer
+   (= public name of the business profile); no buyer contact data.
    The partner updates the status with one tap; we see it instantly in our admin. */
 import React from "react";
 import "@/styles/partner.css";
+import { groupByCustomer } from "@/lib/partner-group";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_partner_t";
@@ -110,7 +112,7 @@ export default function PartnerBoard() {
   const tot = (data && data.totals) || {};
   const qq = q.trim().toLowerCase();
   const shown = tasks.filter((t) => {
-    if (qq && !(`${t.code} ${t.url || ""} ${t.reviewer || ""}`.toLowerCase().includes(qq))) return false;
+    if (qq && !(`${t.code} ${t.customer || ""} ${t.url || ""} ${t.reviewer || ""}`.toLowerCase().includes(qq))) return false;
     if (tab === "todo") return ["new", "working", "software"].includes(t.status);
     if (tab === "removed") return t.status === "removed";
     if (tab === "no") return t.status === "not_possible";
@@ -138,7 +140,7 @@ export default function PartnerBoard() {
       </div>
 
       <div className="pt-howto">
-        <b>How it works:</b> every review has its own number (e.g. RV-0012). Tap <b>Working</b> when you start, <b>Removed ✓</b> when it is gone,
+        <b>How it works:</b> reviews are grouped by customer (business profile). Every review has its own number (e.g. RV-0012). Tap <b>Working</b> when you start, <b>Removed ✓</b> when it is gone,
         <b> Not possible</b> if it can't be removed, or <b>Software only</b> if it needs the software. Please always refer to the number in WhatsApp.
       </div>
 
@@ -147,14 +149,26 @@ export default function PartnerBoard() {
         <button type="button" className={tab === "removed" ? "on" : ""} onClick={() => setTab("removed")}>Removed ({cnt((t) => t.status === "removed")})</button>
         <button type="button" className={tab === "no" ? "on" : ""} onClick={() => setTab("no")}>Not possible ({cnt((t) => t.status === "not_possible")})</button>
         <button type="button" className={tab === "all" ? "on" : ""} onClick={() => setTab("all")}>All ({tasks.length})</button>
-        <input className="pt-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search RV-number …" />
+        <input className="pt-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search RV-number or customer …" />
       </div>
 
       {!data && !err ? <p className="pt-muted">Loading …</p> : null}
       {data && !shown.length ? <p className="pt-muted">Nothing here right now.</p> : null}
-      <div className="pt-list">
-        {shown.map((t) => <TaskCard key={t.id} t={t} token={token} onSaved={load} />)}
-      </div>
+      {groupByCustomer(shown, "Other").map(([cust, list]) => {
+        const sum = list.reduce((s, t) => s + Number(t.price || 0), 0);
+        const done = list.filter((t) => t.status === "removed").length;
+        return (
+          <section key={cust} className="pt-group">
+            <div className="pt-ghead">
+              <span className="pt-gname">{cust}</span>
+              <span className="pt-gmeta">{list.length} review{list.length === 1 ? "" : "s"} · {done} removed · {usd(sum)}</span>
+            </div>
+            <div className="pt-list">
+              {list.map((t) => <TaskCard key={t.id} t={t} token={token} onSaved={load} />)}
+            </div>
+          </section>
+        );
+      })}
 
       {data && data.payouts && data.payouts.length ? (
         <div className="pt-payouts">

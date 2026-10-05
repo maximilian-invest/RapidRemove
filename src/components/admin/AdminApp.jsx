@@ -1669,16 +1669,20 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
     partnerTasks(o.id).then((r) => setPtasks(Object.fromEntries((r.tasks || []).map((t) => [t.itemKey, t])))).catch(() => {});
   }, [o.id]);
   React.useEffect(() => { loadPartner(); }, [loadPartner]);
+  // „An Partner senden" schickt pauschal ALLE Bewertungen des Auftrags (ohne Anhaken) —
+  // außer abgelehnten und solchen, die schon auf dem Board sind. Kunde = Profilname.
+  const toPartner = items.filter((it) => !isDeclined(it) && !ptasks[keyOf(it)]);
+  const customerName = (o.profile || o.company || o.name || "").trim();
   const sendToPartner = async () => {
-    if (!chosen.length || psending) return;
+    if (!toPartner.length || psending) return;
     setPsending(true);
     try {
-      const r = await partnerSend(o.id, chosen.map((it) => ({ url: it.url, name: it.name, text: it.text, ...(it.nt ? { nt: true } : it.old ? { old: true } : {}) })));
+      const r = await partnerSend(o.id, toPartner.map((it) => ({ url: it.url, name: it.name, text: it.text, ...(it.nt ? { nt: true } : it.old ? { old: true } : {}) })), customerName);
       const link = await partnerLink().then((x) => x.url).catch(() => "");
       const txt = partnerWhatsAppText(r.tasks || [], link);
       try { await navigator.clipboard.writeText(txt); } catch (e) { /* Clipboard evtl. blockiert */ }
       toast(`${(r.tasks || []).map((t) => t.code).join(", ")} an Partner übergeben ✓ — WhatsApp-Text ist kopiert`);
-      setSel({}); loadPartner();
+      loadPartner();
     } catch (e) { toast("Übergabe fehlgeschlagen: " + e.message); }
     setPsending(false);
   };
@@ -1764,8 +1768,8 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Anzahlung 50 % {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
-        <button className="btn btn-sec btn-sm" disabled={!chosen.length || psending} onClick={sendToPartner} title="Angehakte Bewertungen ans Partner-Board übergeben (Kurznummer, ohne Kundendaten) und WhatsApp-Text kopieren">
-          <AI.send /> {psending ? "Übergibt…" : `An Partner senden${chosen.length ? ` (${chosen.length})` : ""}`}
+        <button className="btn btn-sec btn-sm" disabled={!toPartner.length || psending} onClick={sendToPartner} title={`Alle ${toPartner.length} noch nicht übergebenen Bewertungen ans Partner-Board (Kunde: ${customerName || "—"}) und WhatsApp-Text kopieren`}>
+          <AI.send /> {psending ? "Übergibt…" : toPartner.length ? `Alle an Partner senden (${toPartner.length})` : "Alle beim Partner ✓"}
         </button>
         {!started ? (
           <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">

@@ -622,7 +622,7 @@ async function partnerPost(path, body) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
-export const partnerSend = (orderId, items) => partnerPost("send", { orderId, items });
+export const partnerSend = (orderId, items, customer) => partnerPost("send", { orderId, items, customer: customer || "" });
 export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderId } : {});
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
