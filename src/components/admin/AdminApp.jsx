@@ -1678,16 +1678,25 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   React.useEffect(() => { loadPartner(); }, [loadPartner]);
   // Bewertungen, die noch nicht am Partner-Board sind → mit einem Klick rüberschieben.
   const clipK = (v, n) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
-  const boardKey = (it) => { const u = clipK(it.url, 600); return /^https?:\/\/\S+$/i.test(u) ? u : `${clipK(it.name, 120)}|${clipK(it.text, 600)}`; };
+  const boardKey = (it) => {
+    const u = clipK(it.url, 600);
+    if (/^https?:\/\/\S+$/i.test(u)) return u;
+    const n = clipK(it.name, 120);
+    return `${n}|${clipK(it.text, 600) || (!n ? u : "")}`;
+  };
   const onBoard = (it) => ptasks[boardKey(it)] || ptasks[keyOf(it)];
   const notOnBoard = items.filter((it) => !onBoard(it));
+  // Angehakte übergeben; ist nichts angehakt → alle, die noch nicht am Board sind.
+  const pickedOff = notOnBoard.filter((it) => sel[items.indexOf(it)]);
+  const toBoard = pickedOff.length ? pickedOff : notOnBoard;
   const [pushing, setPushing] = React.useState(false);
   const toPartner = async () => {
-    if (pushing || !notOnBoard.length) return;
+    if (pushing || !toBoard.length) return;
     setPushing(true);
     try {
-      const r = await partnerSend(o.id, notOnBoard, o.profile || o.company || o.name || "");
-      toast(`${(r.tasks || []).length} an den Partner übergeben ✓`);
+      const r = await partnerSend(o.id, toBoard, o.profile || o.company || o.name || "");
+      const n = (r.tasks || []).length;
+      toast(n ? `${n} an den Partner übergeben ✓` : "Nicht übergeben – Bewertung hat weder Link noch Text");
       loadPartner();
     } catch (e) { toast("Übergabe fehlgeschlagen: " + e.message); }
     setPushing(false);
@@ -1786,7 +1795,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
         {ploaded && notOnBoard.length && o.status !== "storniert" ? (
           <button className="btn btn-sec btn-sm" disabled={pushing} onClick={toPartner} title="Noch nicht am Partner-Board">
-            <AI.send /> {pushing ? "Übergibt…" : `An Partner übergeben (${notOnBoard.length})`}
+            <AI.send /> {pushing ? "Übergibt…" : `An Partner übergeben (${toBoard.length})`}
           </button>
         ) : null}
         {!started ? (

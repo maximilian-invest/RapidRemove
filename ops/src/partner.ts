@@ -150,8 +150,9 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   for (const it of items.slice(0, 60)) {
     const url = httpUrl(it.url);
     const name = clip(it.name, 120);
-    const text = clip(it.text, 600);
-    if (!url && !name) continue;
+    // Kunde hat statt eines Links den Bewertungstext ins Link-Feld kopiert → als Text übernehmen.
+    const text = clip(it.text, 600) || (!url && !name ? clip(it.url, 600) : "");
+    if (!url && !name && !text) continue;
     const kind: TaskKind = it.nt === true ? "nt" : it.old === true ? "old" : "normal";
     const key = url || `${name}|${text}`;
     const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];

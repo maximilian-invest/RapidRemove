@@ -184,8 +184,8 @@ export default function PartnerBoard() {
   const openReview = React.useCallback((t) => {
     if (!t) return;
     if (t.url) window.open(t.url, "_blank", "noopener,noreferrer");
-    if (t.status === "new") setMany([t.id], "working"); else touch([t.id]);
-  }, [setMany, touch]);
+    touch([t.id]); // nur ansehen – Status ändert sich ausschließlich per Status-Button
+  }, [touch]);
 
   /** Desktop: autosave while typing. */
   const setNoteLive = React.useCallback((t, val) => {
