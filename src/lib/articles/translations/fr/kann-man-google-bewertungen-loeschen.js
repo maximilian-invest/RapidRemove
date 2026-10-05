@@ -1,0 +1,108 @@
+/* FR — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Réputation",
+  meta: {
+    slug: "une-entreprise-peut-elle-supprimer-avis-google",
+    title: "Une entreprise peut-elle supprimer un avis Google ? (2026)",
+    h1: "Une entreprise peut-elle supprimer ses avis Google ? Ce qui est possible",
+    description: "Non, une entreprise ne peut pas supprimer un avis Google, mais Google retire ceux qui enfreignent ses règles. Options, idées reçues et 179 € au succès.",
+    keywords: ["une entreprise peut-elle supprimer un avis google", "supprimer un avis google sur ma fiche", "comment supprimer un avis google en tant que propriétaire", "google peut-il supprimer un avis", "supprimer avis négatif google", "supprimer avis fiche établissement google", "faire retirer un avis google"],
+    author: "Maximilian Hölzl",
+    authorRole: "Expert Google et fondateur",
+    date: "2026-10-05",
+  },
+  dek: "**Non, une entreprise ne peut pas supprimer elle-même un avis Google.** Seul l'auteur d'un avis peut le modifier ou le supprimer. Mais vous n'êtes pas sans recours : les avis qui **enfreignent les règles de Google ou la loi** peuvent être retirés par Google, après un signalement, un recours dans l'outil de gestion des avis ou une demande de suppression pour motif juridique. Voici qui peut supprimer quoi, quelles démarches sont légitimes et quelles « astuces » se retournent contre vous.",
+  blocks: [
+    { t: "h2", id: "reponse-courte", text: "La réponse courte : vous ne pouvez pas supprimer un avis, Google oui", toc: "Réponse courte" },
+    { t: "p", text: "**Il n'existe aucun bouton « Supprimer » pour les propriétaires.** Dans votre fiche d'établissement Google, vous pouvez lire les avis, y répondre et les signaler, mais pas les effacer, même s'ils sont injustes. C'est voulu : si les entreprises pouvaient supprimer les avis, les notes n'auraient plus aucune valeur pour les clients." },
+    { t: "p", text: "En revanche, vous **pouvez** obtenir de Google qu'il retire un avis contraire à ses règles. Faux avis, insultes, avis de personnes qui n'ont jamais été clientes, spam, conflits d'intérêts ou contenus illicites : tous ces cas justifient une suppression. Une critique honnête d'un vrai client, non, même si elle fait mal." },
+    { t: "p", text: "Si vous préférez ne pas gérer vous-même signalements et recours, un **[service de suppression d'avis Google](/fr/supprimer-un-avis/)** s'en charge pour vous, uniquement via les procédures de Google. Avec RapidRemove, vous payez **179 € par avis supprimé**, et seulement une fois l'avis réellement disparu." },
+
+    { t: "h2", id: "qui-peut-supprimer", text: "Qui peut supprimer quoi : auteur, entreprise, Google, tribunal", toc: "Qui peut supprimer quoi" },
+    { t: "p", text: "Quatre acteurs ont leur mot à dire sur un avis Google, mais deux seulement peuvent le faire disparaître. Le tableau résume qui peut faire quoi." },
+    { t: "table", head: ["Qui", "Peut supprimer l'avis ?", "Ce qu'il peut faire", "Quand"], rows: [
+      ["**Auteur de l'avis**", "Oui", "Modifier ou supprimer son propre avis à tout moment", "Pour n'importe quelle raison : c'est son avis"],
+      ["**Entreprise (propriétaire)**", "Non", "Répondre publiquement, signaler, faire un recours, déposer une demande juridique, demander à un vrai client de mettre à jour son avis", "Signaler uniquement en cas de vraie infraction aux règles ou à la loi"],
+      ["**Google**", "Oui", "Bloquer ou supprimer des avis, automatiquement ou après signalement", "Quand l'avis enfreint sa politique de contenu ou la loi locale"],
+      ["**Tribunal / voie juridique**", "Indirectement", "Un contenu illicite (p. ex. diffamation) peut être poursuivi en justice ; Google traite à part les demandes de suppression pour motif juridique", "Infractions juridiques nettes, en général avec un avocat"],
+    ] },
+    { t: "p", text: "À retenir : en tant qu'entreprise, votre rôle est de **donner à Google un motif valable** d'agir. Ne pas être d'accord avec un avis n'en est pas un : Google demande explicitement de ne pas signaler un avis simplement parce qu'il ne vous plaît pas." },
+
+    { t: "h2", id: "avis-supprimables", text: "Quels avis Google supprime réellement", toc: "Qu'est-ce qui est supprimable ?" },
+    { t: "p", text: "Google retire les avis qui enfreignent son [règlement sur les contenus interdits et réglementés](https://support.google.com/contributionpolicy/answer/7400114). Pour une entreprise, les catégories les plus utiles sont :" },
+    { t: "ul", items: [
+      "**Faux engagement** : avis qui ne reflètent pas une expérience réelle, y compris les attaques d'avis et les avis achetés",
+      "**Conflit d'intérêts** : avis de concurrents, d'employés actuels ou anciens, ou du propriétaire",
+      "**Harcèlement, incitation à la haine, obscénités** et contenus choquants",
+      "**Informations personnelles**, par exemple le numéro privé ou l'adresse d'un employé",
+      "Contenus **hors sujet**, **spam** et avis destinés à un autre établissement",
+      "**Usurpation d'identité, désinformation** et contenus illégaux",
+    ] },
+    { t: "p", text: "Une étoile avec « service lent, plats froids » laissée par un vrai client n'entre dans aucune de ces catégories. C'est pourquoi aucun prestataire sérieux ne vous promettra de supprimer n'importe quel avis. Pour aller plus loin : [règles des avis Google et infractions](/fr/magazine/regles-avis-google-infractions/)." },
+
+    { t: "h2", id: "options", text: "6 façons légitimes d'agir contre un avis que vous voulez voir disparaître", toc: "Vos options" },
+    { t: "p", text: "Toute démarche légitime consiste soit à **convaincre Google** que l'avis enfreint les règles, soit à **faire changer d'avis son auteur**. Les voici, avec leurs avantages et limites, en toute franchise." },
+    { t: "p", text: "**1. Signaler l'avis.** Dans Google Maps, la recherche Google ou votre fiche d'établissement, cliquez sur « Signaler l'avis » et choisissez le type d'infraction. *Avantage :* gratuit, une minute suffit. *Limite :* les signalements sont examinés par des systèmes automatiques et des personnes, cela prend de quelques jours à quelques semaines, et beaucoup reviennent avec « aucune infraction au règlement ». Pas à pas : [comment supprimer un avis Google](/fr/magazine/comment-supprimer-un-avis-google/)." },
+    { t: "p", text: "**2. Faire un recours dans l'outil de gestion des avis.** L'[outil de gestion des avis](https://support.google.com/business/workflow/9945796) affiche le statut de chaque avis signalé. Si Google estime qu'il n'y a pas d'infraction, vous pouvez **faire appel une seule fois par avis** ; un recours peut être transmis à un niveau supérieur et reçoit alors une décision définitive. *Avantage :* un second examen plus attentif. *Limite :* une seule chance, qu'un recours mal argumenté gaspille. Délais : [combien de temps Google met à supprimer un avis](/fr/magazine/delai-suppression-avis-google/)." },
+    { t: "p", text: "**3. Déposer une demande de suppression pour motif juridique.** Pour la diffamation ou d'autres contenus illicites, Google propose un [formulaire juridique](https://support.google.com/legal/answer/3110420) distinct. *Avantage :* couvre des contenus qui ne violent pas forcément le règlement de Google mais enfreignent la loi. *Limite :* il faut exposer précisément le problème juridique ; dans les cas sérieux, mieux vaut un avocat ([avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/))." },
+    { t: "p", text: "**4. Demander poliment à un vrai client de mettre à jour son avis.** Si l'auteur est un client réel et que vous avez réglé le problème depuis, vous pouvez lui demander, une fois et avec courtoisie, s'il souhaite actualiser son avis. *Avantage :* un avis revu inspire souvent plus confiance qu'un avis supprimé. *Limite :* cela ne marche qu'avec de vrais clients joignables, et vous ne devez **jamais proposer de remise, de remboursement ou de cadeau** en échange. Les contreparties sont interdites par le règlement de Google." },
+    { t: "p", text: "**5. Répondre publiquement.** Une réponse calme et factuelle est toujours possible et montre aux prospects comment vous gérez les problèmes. *Avantage :* gratuite, immédiate et utile même si l'avis reste. *Limite :* l'avis ne disparaît pas, et une réponse agacée peut faire plus de dégâts que l'avis lui-même. Conseils : [avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/)." },
+    { t: "p", text: "**6. Suppression professionnelle au succès.** Un spécialiste signale et fait appel en votre nom, uniquement via les procédures de Google. *Avantage :* l'expérience de ce que Google accepte, aucun temps passé de votre côté et, avec RapidRemove, **rien à payer si l'avis reste en ligne**. *Limite :* c'est payant, et cela ne fonctionne que pour des avis qui enfreignent réellement les règles." },
+    { t: "table", rrCol: 5, head: ["", "Signaler", "Recours", "Demande juridique", "Demander au client", "Suppression professionnelle"], rows: [
+      ["Coût", "Gratuit", "Gratuit", "Gratuit (avocat en plus)", "Gratuit", "**179 € par avis supprimé**"],
+      ["L'avis disparaît ?", "Si Google l'accepte", "Si Google l'accepte", "Si c'est juridiquement fondé", "Seulement si l'auteur agit", "Facturé seulement si oui"],
+      ["Effort pour vous", "Faible", "Moyen", "Élevé", "Faible", "Environ 2 minutes"],
+      ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "Quelques jours, jusqu'à 3 semaines"],
+    ] },
+    { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis et voyez immédiatement le prix exact. **179 € par avis supprimé**, rien d'avance, évaluation gratuite d'abord.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "D'abord un avis honnête"] },
+
+    { t: "h2", id: "idees-recues", text: "Idées reçues : ce qui ne marche pas (ou vous attire des ennuis)", toc: "Idées reçues" },
+    { t: "p", text: "La plupart des « astuces » pour se débarrasser d'avis Google ne fonctionnent pas ou enfreignent les règles de Google. Voici celles qu'on entend le plus souvent." },
+    { t: "ul", items: [
+      "**« Supprimez la fiche et recréez-en une. »** Les avis ne disparaissent pas proprement de cette façon. Créer une fiche en double pour le même établissement enfreint les consignes de Google et peut entraîner la suspension de la fiche ou sa fusion avec l'ancienne.",
+      "**« Signalez-le encore et encore, ou demandez à vos amis de le signaler. »** Google compare le contenu à son règlement ; ce n'est pas le nombre de signalements qui décide. Les signalements en masse n'aident pas, et signaler un avis simplement parce qu'on n'est pas d'accord est précisément ce que Google demande d'éviter.",
+      "**« Noyez-le sous les avis positifs. »** Acheter des avis, les rédiger vous-même ou offrir une contrepartie contre 5 étoiles relève du faux engagement selon le règlement de Google. Cela peut conduire à la suppression d'avis et à des restrictions sur la fiche.",
+      "**« Suppression d'avis garantie. »** Personne ne contrôle les décisions de Google. Méfiez-vous des garanties associées à un paiement d'avance, à de faux comptes, à des bots ou à de fausses mises en demeure : ces méthodes mettent votre fiche en danger.",
+    ] },
+    { t: "warn", title: "Une vague d'avis 1 étoile et une demande d'argent ?", text: "C'est du chantage aux avis. Ne payez pas, ne répondez pas, faites des captures d'écran et utilisez le formulaire dédié de Google. Tout savoir : [chantage aux avis Google : que faire](/fr/magazine/chantage-avis-google/)." },
+
+    { t: "h2", id: "fiche-entiere", text: "Cas particulier : supprimer toute la fiche d'établissement", toc: "Supprimer toute la fiche" },
+    { t: "p", text: "**Supprimer entièrement votre fiche d'établissement Google fait disparaître tous ses avis, les bons compris.** C'est la seule situation où des avis s'effacent sans être examinés un par un." },
+    { t: "p", text: "Cela a du sens quand la fiche est abîmée dans son ensemble : des dizaines d'avis négatifs, une note qui ne reflète plus votre activité, ou une entreprise qui a tellement changé qu'un vrai nouveau départ est la solution honnête. Mode d'emploi et points de vigilance : [supprimer un profil d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/)." },
+    { t: "p", text: "Si votre fiche est globalement saine et que seuls **un ou quelques avis** sont injustes, faux ou insultants, supprimer la fiche serait disproportionné. Dans ce cas, [supprimer des avis Google un par un](/fr/supprimer-un-avis/) préserve vos bons avis et l'historique de votre note." },
+    { t: "table", head: ["Situation", "Meilleur choix"], rows: [
+      ["Bonne note, 1 à 5 avis faux ou insultants", "Supprimer les avis concernés"],
+      ["Attaque d'avis récente (dernières semaines)", "Supprimer les avis concernés, vite"],
+      ["Note abîmée dans l'ensemble, envie de repartir de zéro", "Supprimer toute la fiche"],
+      ["Critiques honnêtes de vrais clients", "Répondre publiquement et corriger la cause"],
+    ] },
+
+    { t: "h2", id: "professionnel", text: "Comment fonctionne la suppression professionnelle chez RapidRemove", toc: "Suppression professionnelle" },
+    { t: "p", text: "Nous utilisons **uniquement les procédures de Google**, au nom du propriétaire de l'établissement : pas de faux comptes, pas de bots, pas de fausses mises en demeure. L'auteur de l'avis n'apprend pas qui a demandé la suppression." },
+    { t: "ul", items: [
+      "**D'abord une évaluation gratuite :** nous vous disons honnêtement si un avis est supprimable. Sinon, cela ne vous coûte rien.",
+      "**Prix :** 179 € par avis supprimé ; les avis de plus de 4 semaines coûtent 50 € de plus (229 €).",
+      "**Chances de succès :** env. 90 % pour les avis de moins de 4 semaines, env. 50 % pour les plus anciens.",
+      "**Remise sur volume** pour les avis que nous acceptons : dès 3, −10 % ; dès 5, −15 % ; dès 10, −30 %.",
+      "**Durée :** en général quelques jours, parfois jusqu'à 3 semaines. Vous payez chaque avis une fois supprimé, via un lien de paiement sécurisé.",
+    ] },
+    { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google, réalisé plus de 20 000 vérifications gratuites et accompagné des clients dans plus de 50 pays. Pour les faux avis, mieux vaut agir vite : [repérer et supprimer les faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
+    { t: "cta", title: "Découvrez quels avis peuvent disparaître", text: "Recherchez votre fiche, cochez les avis : le prix s'affiche aussitôt. **Vous ne payez que les avis réellement supprimés.**", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Évaluation gratuite", "Dès 179 € par avis", "Discret"] },
+  ],
+  faq: [
+    { q: "Puis-je supprimer un avis sur ma propre fiche d'établissement Google ?", a: "Non. Les propriétaires ne peuvent pas supprimer d'avis : seul l'auteur peut modifier ou supprimer le sien. Vous pouvez signaler un avis contraire au règlement de Google, qui peut alors le retirer." },
+    { q: "Google supprime-t-il un avis si je le lui demande ?", a: "Seulement si l'avis enfreint son règlement sur les contenus ou la loi. Google ne retire pas un avis parce que vous n'êtes pas d'accord. Si votre signalement est refusé, vous pouvez **faire appel une fois** dans l'outil de gestion des avis." },
+    { q: "Répondre à un avis négatif, est-ce que ça nuit ?", a: "Non : une réponse calme et factuelle ne nuit pas et montre aux prospects comment vous gérez les problèmes. Évitez les réponses à chaud et ne divulguez jamais de données personnelles du client." },
+    { q: "Peut-on savoir qui a écrit un avis anonyme ?", a: "En général, non. Google ne révèle pas qui se cache derrière un avis. En cas de contenu manifestement illicite, des démarches juridiques peuvent exister selon le pays ; c'est une question à poser à un avocat." },
+    { q: "Supprimer ma fiche d'établissement efface-t-il les avis ?", a: "Oui, supprimer toute la fiche efface tous les avis, y compris les bons. Si seuls quelques avis posent problème, il vaut généralement mieux les supprimer un par un." },
+    { q: "Peut-on payer pour faire supprimer un avis Google ?", a: "Oui, à condition que seules les procédures de Google soient utilisées. Chez RapidRemove, c'est **179 € par avis supprimé** (229 € s'il a plus de 4 semaines), et rien à payer si l'avis reste." },
+    { q: "Puis-je demander à un client de supprimer son avis ?", a: "Vous pouvez demander poliment à un vrai client de mettre à jour son avis si vous avez réglé le problème. Offrir une remise, un remboursement ou un cadeau en échange enfreint le règlement de Google." },
+  ],
+  related: [
+    { label: "Service de suppression d'avis Google : prix et taux de réussite", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Supprimer un profil d'établissement Google", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Règles des avis Google et infractions", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
+    { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
+  ],
+};
+export default article;

@@ -1,0 +1,115 @@
+/* PT — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Reputação",
+  meta: {
+    slug: "extorsao-avaliacoes-google",
+    title: "Extorsão com avaliações Google: o que fazer já (2026)",
+    h1: "Extorsão com avaliações Google: o que fazer quando lhe pedem dinheiro",
+    description: "Uma vaga de avaliações de 1 estrela e depois um pedido de dinheiro? Não pague. Como funciona a extorsão, como denunciá-la e como remover as avaliações.",
+    keywords: ["extorsão avaliações google", "chantagem avaliações google", "pedem dinheiro para retirar avaliações", "denunciar extorsão avaliações google", "avaliações falsas 1 estrela chantagem", "burla avaliações negativas whatsapp", "formulário extorsão avaliações google", "remover avaliações extorsão"],
+    author: "Maximilian Hölzl",
+    authorRole: "Fundador",
+    date: "2026-10-05",
+  },
+  dek: "De um dia para o outro, o seu perfil recebe uma série de avaliações de 1 estrela e, logo a seguir, um desconhecido escreve-lhe: pague, ou vêm mais. Isto é **extorsão com avaliações Google**, e a resposta é sempre a mesma: **não pague, não negoceie, guarde provas de tudo e denuncie**. A Google tem um formulário próprio para este caso, e as avaliações de extorsão estão entre as que a Google remove com mais fiabilidade. Veja o que fazer, passo a passo.",
+  blocks: [
+    { t: "h2", id: "o-que-e", text: "O que é a extorsão com avaliações Google?", toc: "O que é" },
+    { t: "p", text: "Há extorsão com avaliações quando alguém enche o seu Perfil da Empresa no Google de avaliações negativas e depois exige dinheiro, cartões-oferta ou serviços gratuitos para as retirar. As avaliações são a ameaça; a mensagem que se segue é o pedido de resgate." },
+    { t: "p", text: "Quem as publica quase nunca é cliente real. Normalmente são contas novas ou compradas, geridas por grupos organizados que atacam muitas empresas ao mesmo tempo: restaurantes, clínicas dentárias, hotéis, obras e reparações, agências. A Google considera isto uma violação clara das suas regras e, por isso, criou um [formulário específico para denunciar extorsão com avaliações](https://support.google.com/business/answer/16404809)." },
+    { t: "p", text: "Se quer apenas que as avaliações desapareçam sem tratar do processo, o nosso [serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/) trata disso através dos procedimentos oficiais da Google, e só paga as avaliações efetivamente removidas." },
+
+    { t: "h2", id: "como-funciona", text: "Como funciona o esquema", toc: "Como funciona" },
+    { t: "p", text: "Quase todos os casos seguem o mesmo guião. Conhecê-lo ajuda a manter a calma: nada do que o extorsionário faz é pessoal ou aleatório." },
+    { t: "ol", items: [
+      "**A vaga:** em poucas horas ou dias surgem várias avaliações de 1 ou 2 estrelas. Muitas vezes **sem texto nenhum**, ou com uma frase genérica que serve para qualquer negócio.",
+      "**O contacto:** chega uma mensagem por **WhatsApp, Telegram ou e-mail**, por vezes através do formulário do seu site ou das mensagens do Google. Faz referência às novas avaliações.",
+      "**A exigência:** pagar um valor (muitas vezes em criptomoedas ou cartões-oferta) ou prestar serviços gratuitos, e as avaliações «serão apagadas».",
+      "**A ameaça:** se recusar, prometem mais avaliações. Alguns enviam uma segunda vaga pequena para mostrar que falam a sério.",
+      "**A repetição:** se pagar, ninguém garante que algo seja removido. Pagar marca-o como uma empresa que paga, e as exigências costumam voltar.",
+    ] },
+
+    { t: "h2", id: "sinais", text: "Sinais de que está a ser alvo", toc: "Sinais de alerta" },
+    { t: "p", text: "O sinal mais claro é o momento: várias classificações baixas em pouco tempo, seguidas de uma mensagem que as menciona. Outros indícios típicos:" },
+    { t: "ul", items: [
+      "Várias **avaliações de 1 estrela sem texto** ([porque é que muitas vezes podem ser removidas](/pt/revista/remover-avaliacao-1-estrela-sem-texto/)).",
+      "Nomes que não correspondem a **nenhuma reserva, encomenda ou visita**.",
+      "Perfis **sem outras avaliações**, ou com avaliações espalhadas por cidades e países sem relação.",
+      "Várias avaliações publicadas **quase ao mesmo tempo**, por vezes com frases parecidas.",
+      "Uma mensagem de um **número ou conta desconhecidos** que liga as avaliações a um pagamento.",
+      "Pressão: prazos curtos, «último aviso» ou um «desconto» se pagar depressa.",
+    ] },
+    { t: "p", text: "Nem todas as vagas vêm com um pedido de dinheiro. Ataques da concorrência e simples avaliações falsas são muito parecidos; para esses casos, siga o nosso guia sobre [avaliações falsas no Google](/pt/revista/remover-avaliacoes-falsas-google/)." },
+
+    { t: "h2", id: "o-que-fazer", text: "O que fazer de imediato", toc: "Primeiros passos" },
+    { t: "p", text: "Não pague e não responda: o silêncio é a melhor resposta. Depois, guarde as provas antes que algo mude, porque as mensagens são apagadas e as contas desaparecem." },
+    { t: "ol", items: [
+      "**Não pague** e não negoceie, nem sequer para «ganhar tempo».",
+      "**Faça captura de ecrã de cada mensagem**, com o número ou utilizador do remetente, a data e a hora visíveis. Se puder, guarde os e-mails com cabeçalhos.",
+      "**Faça captura de ecrã de cada avaliação**: nome, estrelas, texto e data indicada. Copie o link de cada uma.",
+      "**Anote uma cronologia**: quando surgiram as avaliações, quando chegou a mensagem e eventuais insistências.",
+      "**Bloqueie o remetente** só depois de ter tudo guardado.",
+      "**Denuncie à Google** através do formulário de extorsão e denuncie cada avaliação individualmente (detalhes abaixo).",
+      "**Pondere apresentar queixa às autoridades**, sobretudo se lhe pediram um valor concreto.",
+    ] },
+    { t: "warn", title: "Porque é que pagar piora tudo", text: "Não há forma de obrigar um extorsionário a cumprir a palavra. Pagar não garante a remoção, financia o próximo ataque e diz ao grupo que vale a pena voltar. O conselho da Google é claro: não pague e não entre em contacto." },
+
+    { t: "h2", id: "denunciar", text: "Como denunciar a extorsão à Google", toc: "Denunciar à Google" },
+    { t: "p", text: "Use três canais em conjunto: o formulário de extorsão, uma denúncia em cada avaliação e a ferramenta de gestão de avaliações para acompanhar o resultado. O formulário dá contexto à Google; as denúncias individuais garantem que cada avaliação é analisada." },
+    { t: "table", head: ["Passo", "Onde", "O que fazer"], rows: [
+      ["1. Denúncia de extorsão", "[Formulário da Google para extorsão com avaliações](https://support.google.com/business/answer/16404809)", "Descreva a exigência, anexe capturas das mensagens e liste as avaliações afetadas."],
+      ["2. Denunciar cada avaliação", "Google Maps, Pesquisa ou o seu Perfil da Empresa → «Denunciar avaliação»", "Escolha o tipo de violação adequado, p. ex. interação falsa ou conflito de interesses."],
+      ["3. Acompanhar o estado", "[Ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796)", "Verifique «Decisão pendente» ou «Denúncia analisada» e recorra uma vez por avaliação se a Google não vir violação."],
+      ["4. Via legal (opcional)", "[Pedido de remoção por motivos legais](https://support.google.com/legal/answer/3110420)", "Para avaliações difamatórias ou com conteúdo ilícito."],
+    ] },
+    { t: "p", text: "Estas avaliações violam em vários pontos a [política de conteúdo proibido e restrito](https://support.google.com/contributionpolicy/answer/7400114) da Google: interação falsa, conteúdo publicado para prejudicar uma empresa e, muitas vezes, conteúdo enganador ou fora do tema. As categorias estão explicadas no nosso resumo das [violações das políticas de avaliações Google](/pt/revista/politicas-avaliacoes-google-violacoes/)." },
+    { t: "tip", title: "Denuncie todas as avaliações, não só a pior", text: "Cada avaliação é analisada em separado. Se denunciar duas em dez, as outras oito podem ficar. Anote a data de cada denúncia para acompanhar na ferramenta de gestão de avaliações." },
+
+    { t: "h2", id: "policia", text: "Vale a pena ir à polícia?", toc: "Queixa às autoridades" },
+    { t: "p", text: "Sim, vale a pena ponderar uma queixa. Exigir dinheiro sob ameaça é crime na maioria dos países, e um número de processo reforça a sua posição junto da Google e em eventuais passos legais." },
+    { t: "p", text: "Leve as capturas de ecrã, os links das avaliações e a sua cronologia. Seja realista: os autores operam muitas vezes a partir do estrangeiro e podem nunca ser identificados. Ainda assim, a queixa serve de registo oficial e só lhe custa uma hora." },
+
+    { t: "h2", id: "prazos", text: "Quanto tempo demoram a sair as avaliações de extorsão?", toc: "Prazos" },
+    { t: "p", text: "Não há um prazo fixo: a Google indica que as avaliações denunciadas são verificadas por sistemas automáticos e por pessoas, e que o processo pode levar de dias a semanas. Casos claros de extorsão, com mensagens documentadas, são muitas vezes tratados mais depressa do que uma denúncia comum, mas a Google não garante prazos." },
+    { t: "p", text: "Há dois fatores a seu favor: as avaliações são **recentes** e o padrão é **evidente**. Avaliações com até quatro semanas têm muito mais hipóteses de remoção do que as antigas, por isso aja nos primeiros dias. Se a Google rejeitar uma denúncia, use o único recurso por avaliação na ferramenta de gestão. Prazos e recursos em detalhe: [quanto tempo a Google demora a remover uma avaliação](/pt/revista/quanto-tempo-google-remover-avaliacao/)." },
+
+    { t: "h2", id: "rapidremove", text: "Como a RapidRemove ajuda perante uma vaga de extorsão", toc: "Como ajudamos" },
+    { t: "p", text: "Envie-nos as avaliações e tratamos da remoção através dos procedimentos oficiais da Google, em seu nome. Não precisa de discutir com o suporte da Google, insistir em denúncias nem acompanhar cada caso." },
+    { t: "ul", items: [
+      "**Primeiro, uma análise gratuita:** dizemos-lhe com honestidade que avaliações têm boas hipóteses.",
+      "**Só paga se resultar:** 179 € por avaliação removida (até 4 semanas), 229 € se for mais antiga. Nada adiantado, nada pelas tentativas.",
+      "**Desconto por volume:** uma vaga de extorsão costuma ter muitas avaliações. Sobre as que aceitamos: 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemplo: 10 avaliações de extorsão recentes custam 1.790 €, menos 30 % = **1.253 €**, e só pelas que são efetivamente removidas.",
+      "**Boas hipóteses:** avaliações recentes têm cerca de **90 % de probabilidade de sucesso**, e as de extorsão estão entre as que a Google remove com mais fiabilidade.",
+      "**Normalmente poucos dias**, por vezes até três semanas. As avaliações podem sair em alturas diferentes, por isso pode pagar avaliação a avaliação.",
+      "**Só métodos limpos:** sem contas falsas, sem bots, sem falsas notificações legais. Os autores não sabem quem pediu a remoção.",
+    ] },
+    { t: "cta", title: "Está a ser extorquido? Envie-nos as avaliações", text: "Pesquise a sua empresa, marque as avaliações de extorsão ou cole os links – e veja de imediato o preço. **179 € por avaliação removida**, nada adiantado.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Pagamento por avaliação removida", "Primeiro uma opinião honesta"] },
+    { t: "p", text: "Preços, descontos e todo o processo estão explicados na nossa página para [remover uma avaliação do Google](/pt/remover-uma-avaliacao/)." },
+
+    { t: "h2", id: "proteger", text: "Como proteger o perfil depois", toc: "Proteger o perfil" },
+    { t: "p", text: "Acompanhe de perto as novas avaliações durante algumas semanas, porque estes grupos por vezes tentam outra vez. Quanto mais cedo detetar uma nova vaga, mais recentes estarão as avaliações quando as denunciar." },
+    { t: "ul", items: [
+      "**Ative as notificações de avaliações** no seu Perfil da Empresa e veja as novas todos os dias durante as próximas semanas.",
+      "**Mantenha a pasta de provas** e junte-lhe cada nova mensagem ou avaliação.",
+      "**Responda com calma** quando fizer sentido: «Não temos registo de si como cliente. Denunciámos esta avaliação à Google.» É suficiente.",
+      "**Não acuse ninguém publicamente a quente** nem fale da extorsão em tom emocional. Os futuros clientes leem as suas respostas, e a calma protege a sua reputação.",
+      "**Peça avaliações a clientes satisfeitos** como hábito, para que um ataque pese menos na sua média.",
+    ] },
+    { t: "p", text: "Não sabe se deve responder a uma avaliação concreta? O nosso guia sobre [quando ignorar, responder ou remover uma avaliação negativa](/pt/revista/avaliacao-negativa-ignorar-responder-remover/) ajuda a decidir." },
+  ],
+  faq: [
+    { q: "Devo pagar ao extorsionário?", a: "Não. Pagar não garante a remoção das avaliações e marca-o como uma empresa que paga, por isso as exigências costumam voltar. **Não pague, não negoceie**, documente tudo e denuncie à Google." },
+    { q: "A Google vai remover todas as avaliações de extorsão?", a: "Muitas vezes a maioria ou todas, sobretudo se forem recentes e a extorsão estiver documentada, mas a Google não dá garantias. Denuncie cada avaliação individualmente e use o recurso da ferramenta de gestão de avaliações para as que ficarem." },
+    { q: "Posso apresentar queixa à polícia?", a: "Sim. Exigir dinheiro sob ameaça é crime na maioria dos países. Leve capturas das mensagens, os links das avaliações e uma cronologia; o número de processo também reforça a denúncia à Google." },
+    { q: "E se voltarem com mais avaliações?", a: "Não responda, junte as novas mensagens e avaliações às provas e denuncie-as da mesma forma. As avaliações recentes são as mais fáceis de remover, por isso aja em poucos dias." },
+    { q: "Posso apagar eu mesmo as avaliações?", a: "Não. Os proprietários não podem apagar avaliações do Google; só quem a escreveu pode apagar a sua. Pode denunciá-las, responder publicamente ou pedir a remoção através dos procedimentos da Google." },
+    { q: "Quanto custa remover avaliações de extorsão?", a: "Com a RapidRemove, **179 € por avaliação removida** com até 4 semanas e 229 € se for mais antiga, com desconto por volume até 30 % a partir de 10 avaliações. Não paga nada pelas que ficam." },
+    { q: "O extorsionário vai saber que pedi a remoção?", a: "Por nós, não. O autor da avaliação não é informado de quem pediu a remoção." },
+  ],
+  related: [
+    { label: "Serviço para remover avaliações do Google", url: "/pt/remover-uma-avaliacao/" },
+    { label: "Identificar, denunciar e remover avaliações falsas", url: "/pt/revista/remover-avaliacoes-falsas-google/" },
+    { label: "Remover uma avaliação de 1 estrela sem texto", url: "/pt/revista/remover-avaliacao-1-estrela-sem-texto/" },
+    { label: "Quanto tempo a Google demora a remover uma avaliação?", url: "/pt/revista/quanto-tempo-google-remover-avaliacao/" },
+  ],
+};
+export default article;

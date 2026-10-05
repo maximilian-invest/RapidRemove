@@ -1,0 +1,122 @@
+/* PT — google-bewertung-loeschen-dauer (article without German original; single-review product). */
+const article = {
+  category: "Reputação",
+  meta: {
+    slug: "quanto-tempo-google-remover-avaliacao",
+    title: "Quanto tempo demora o Google a remover uma avaliação? (2026)",
+    h1: "Quanto tempo demora o Google a remover uma avaliação? Prazos, estados e recurso",
+    description: "O Google não fixa prazos: de horas a várias semanas. Fases, estados na ferramenta de gestão, recurso – e remoção desde 179 €, paga apenas em caso de sucesso.",
+    keywords: [
+      "quanto tempo demora o google a remover uma avaliação",
+      "prazo remover avaliação google",
+      "avaliação google denunciada pendente",
+      "ferramenta de gestão de avaliações google",
+      "recorrer decisão avaliação google",
+      "avaliação google decisão pendente",
+      "quanto tempo leva para remover avaliação no google",
+      "avaliação google estado escalado",
+    ],
+    author: "Maximilian Hölzl",
+    authorRole: "Fundador",
+    date: "2026-10-05",
+  },
+  dek: "**O Google não dá nenhum prazo fixo.** Uma infração clara pode desaparecer em horas ou poucos dias; casos duvidosos, recursos e escalamentos podem demorar **várias semanas**. Com a RapidRemove, a remoção demora normalmente **poucos dias, por vezes até três semanas** – e só paga quando a avaliação desapareceu de facto. Abaixo: cada fase com a duração típica, como ler o estado na ferramenta de gestão de avaliações, como funciona o recurso e o que acelera realmente o processo.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "A resposta curta: não há prazo fixo, mas há intervalos típicos", toc: "Resposta curta" },
+    { t: "p", text: "**O Google não promete qualquer prazo de análise para avaliações denunciadas.** As denúncias são verificadas por sistemas automáticos e por pessoas e, consoante o caso, isso vai de algumas horas a várias semanas." },
+    { t: "ul", items: [
+      "**Infrações evidentes** (spam, insultos, interação falsa óbvia): muitas vezes entre algumas horas e poucos dias.",
+      "**Casos duvidosos** que precisam de análise humana: muitas vezes de uma a algumas semanas.",
+      "**Recursos e escalamentos**: acrescentam tempo, por vezes várias semanas.",
+      "**Connosco**: normalmente poucos dias, por vezes até três semanas por avaliação. Se preferir delegar, o nosso [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/) usa apenas os procedimentos oficiais do Google e custa **179 € por avaliação removida**, nada adiantado.",
+    ] },
+    { t: "warn", title: "Prazos típicos, não garantidos", text: "Todas as durações deste artigo são intervalos observados na prática, não compromissos do Google. O tempo de análise varia e ninguém pode prometer uma data – nem uma remoção." },
+
+    { t: "h2", id: "timeline", text: "As fases de uma denúncia e quanto costuma durar cada uma", toc: "Fases e prazos" },
+    { t: "p", text: "**Uma denúncia passa por até seis fases, e só a primeira depende de si.** A tabela mostra o que acontece em cada fase e quanto tempo costuma demorar." },
+    { t: "table", head: ["Fase", "O que acontece", "Duração típica (sem garantia)"], rows: [
+      ["1. Denúncia", "Denuncia a avaliação no Google Maps, na Pesquisa ou no seu Perfil da Empresa e escolhe o tipo de infração.", "Alguns minutos"],
+      ["2. Verificação automática / manual", "Os sistemas do Google analisam a denúncia; os casos pouco claros passam para revisores humanos.", "Horas a poucos dias; casos manuais muitas vezes 1–2 semanas ou mais"],
+      ["3. Estado na ferramenta de gestão de avaliações", "A denúncia aparece com um estado como **«Decisão pendente»** e, mais tarde, com o resultado.", "Normalmente visível pouco depois da denúncia; o resultado chega no fim da verificação"],
+      ["4. Recurso (um por avaliação)", "Se o Google **não encontrar infração às políticas**, pode recorrer dessa decisão uma vez.", "Enviar demora minutos; a resposta muitas vezes de dias a algumas semanas"],
+      ["5. «Escalado»", "O recurso passa para uma análise mais aprofundada.", "Muitas vezes de uma a várias semanas"],
+      ["6. Decisão final", "O Google remove a avaliação ou mantém-na. Não há segundo recurso na ferramenta.", "Encerra o processo na ferramenta"],
+      ["Via separada: pedido de remoção por motivos legais", "Para conteúdo **ilegal** (p. ex. difamação), através do formulário jurídico do Google.", "Muitas vezes várias semanas; depende do caso e do país"],
+    ] },
+    { t: "p", text: "A via jurídica é independente da denúncia por violação das políticas. Destina-se a conteúdo que viola a lei, não a avaliações com as quais simplesmente não concorda – detalhes em [advogado ou remoção técnica?](/pt/revista/avaliacao-negativa-google-advogado/) e na [página de pedidos legais do Google](https://support.google.com/legal/answer/3110420)." },
+
+    { t: "h2", id: "check-status", text: "Como consultar o estado e recorrer na ferramenta de gestão de avaliações", toc: "Estado e recurso" },
+    { t: "p", text: "**A [ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796) do Google mostra o estado de cada avaliação que denunciou e é o único sítio onde pode recorrer.** Tem de iniciar sessão com uma conta que gere o Perfil da Empresa." },
+    { t: "ol", items: [
+      "**Denuncie primeiro a avaliação** no Google Maps, na Pesquisa ou no seu Perfil da Empresa através de «Denunciar avaliação», escolhendo o tipo de infração que realmente se aplica.",
+      "**Abra a [ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796)** com a conta Google proprietária ou gestora do perfil.",
+      "**Selecione o seu Perfil da Empresa** se gerir mais do que um.",
+      "**Abra a lista de avaliações denunciadas** e encontre a avaliação em causa.",
+      "**Leia o estado.** «Decisão pendente» significa: aguardar. Não denuncie a mesma avaliação vezes sem conta – a verificação não fica mais rápida.",
+      "**Se o estado indicar que não foi encontrada infração, inicie o recurso.** Tem **apenas um recurso por avaliação**: indique a política concreta e cinja-se a factos verificáveis.",
+      "**Volte a consultar regularmente.** O recurso pode surgir como **«Escalado»** e recebe depois uma **decisão final** – a partir daí, a ferramenta não oferece mais passos para essa avaliação.",
+    ] },
+    { t: "tip", title: "Antes de recorrer", text: "Resuma em duas ou três frases porque é que a avaliação viola uma regra concreta – por exemplo: não existe nenhum cliente com esse nome nos seus registos, ou o texto contém um insulto. Guarde capturas de ecrã antes de recorrer. Um vago «isto é injusto» raramente muda o resultado." },
+
+    { t: "h2", id: "statuses", text: "O que significa cada estado", toc: "Estados" },
+    { t: "p", text: "**O estado diz-lhe se o Google ainda está a verificar, se já decidiu ou se está a analisar o seu recurso.** A formulação exata pode variar ligeiramente consoante o idioma e ao longo do tempo." },
+    { t: "table", head: ["Estado", "Significado", "O que pode fazer"], rows: [
+      ["**Decisão pendente**", "O Google ainda está a analisar a sua denúncia.", "Aguardar. Responder com calma em público, se ainda não o fez."],
+      ["**Denúncia analisada – sem violação das políticas**", "O Google não vê infração e mantém a avaliação.", "Recorrer uma vez – idealmente com um motivo mais preciso e provas."],
+      ["Avaliação removida", "O Google encontrou uma infração; a avaliação já não aparece no seu perfil.", "Nada – está resolvido."],
+      ["**Escalado**", "O seu recurso está a ser analisado com mais detalhe.", "Aguardar a decisão final."],
+      ["Decisão final", "O recurso está encerrado.", "Se o conteúdo for ilegal: pedido legal. Caso contrário: responder publicamente."],
+    ] },
+
+    { t: "h2", id: "rejected", text: "Porque é que algumas denúncias são recusadas", toc: "Porque são recusadas" },
+    { t: "p", text: "**A maioria das denúncias recusadas falha por um de três motivos: categoria errada, falta de provas, ou a avaliação é uma crítica genuína.** O próprio Google diz que não se deve denunciar uma avaliação só por discordar dela." },
+    { t: "ul", items: [
+      "**Categoria errada.** Uma avaliação falsa denunciada como «ofensiva», ou um insulto denunciado como «spam», dificulta a análise. Escolha na [política de conteúdo proibido e restrito](https://support.google.com/contributionpolicy/answer/7400114) a categoria que realmente se aplica – há um resumo em [violações das políticas de avaliações do Google](/pt/revista/politicas-avaliacoes-google-violacoes/).",
+      "**Sem provas.** «Esta pessoa nunca foi cliente» só convence se for plausível: sem reserva, sem fatura, sem marcação correspondente, um perfil com dezenas de avaliações em cidades diferentes.",
+      "**Crítica genuína.** Um cliente real que descreve de forma objetiva uma má experiência está protegido, mesmo que doa. Isso é feedback, não um caso de remoção – veja [ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/)",
+    ] },
+    { t: "p", text: "Os donos de empresas não podem apagar avaliações por si próprios: só o autor pode editar ou eliminar a sua avaliação. Por isso, é a qualidade da denúncia que decide." },
+
+    { t: "h2", id: "speed-up", text: "O que acelera a remoção", toc: "O que acelera" },
+    { t: "p", text: "**Há três fatores que fazem mais diferença: a categoria certa, provas sólidas e agir enquanto a avaliação é recente.** A idade é o que mais pesa: no nosso trabalho, as avaliações com até 4 semanas são removidas em cerca de **90 %** dos casos, as mais antigas em cerca de **50 %**." },
+    { t: "ul", items: [
+      "**A categoria certa desde o início** – uma primeira denúncia precisa poupa-lhe o recurso.",
+      "**Provas preparadas** – capturas de ecrã da avaliação e do perfil do autor, uma nota a explicar porque não houve contacto com o cliente, datas.",
+      "**Aja em menos de quatro semanas** – as avaliações recentes têm muito mais hipóteses e, connosco, custam 179 € em vez de 229 €.",
+      "**Uma denúncia bem feita, não dez** – denunciar várias vezes a mesma avaliação não o faz passar à frente na fila.",
+      "**Vagas de avaliações falsas e chantagem** – se chegarem avaliações de 1 estrela acompanhadas de um pedido de dinheiro, use o formulário próprio do Google e leia o nosso guia sobre [extorsão com avaliações do Google](/pt/revista/extorsao-avaliacoes-google/). Não pague, não responda, guarde capturas de ecrã.",
+    ] },
+    { t: "cta", title: "Não espere semanas por uma resposta-padrão", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o preço de imediato. **179 € por avaliação removida**, 229 € se tiver mais de 4 semanas – cobrado apenas quando a avaliação desaparecer.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só em caso de sucesso", "Avaliação honesta e gratuita"] },
+
+    { t: "h2", id: "while-waiting", text: "O que fazer enquanto espera", toc: "Enquanto espera" },
+    { t: "p", text: "**Responda publicamente, de forma breve e calma – é a única coisa que pode fazer sempre, e os futuros clientes leem-na.** Uma boa resposta não discute nem revela dados de clientes." },
+    { t: "ul", items: [
+      "**Se não encontrar a pessoa:** «Não encontramos nenhuma visita nem encomenda com este nome. Contacte-nos diretamente para esclarecermos a situação.»",
+      "**Se for um cliente real:** reconheça a experiência, ofereça um contacto direto e evite justificar-se.",
+      "**Não** ameace, não especule em público sobre quem a escreveu e não peça a amigos avaliações para compensar – isso também pode violar as regras do Google sobre interação falsa.",
+      "**Documente** tudo: capturas de ecrã da avaliação, do perfil do autor e do estado da sua denúncia.",
+    ] },
+    { t: "p", text: "Uma resposta serena não prejudica as hipóteses de remoção. Para casos especiais como classificações sem texto, veja [remover uma avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/), e se suspeitar de avaliações falsas, [como remover avaliações falsas do Google](/pt/revista/remover-avaliacoes-falsas-google/)." },
+
+    { t: "h2", id: "different-times", text: "Porque é que várias avaliações desaparecem em momentos diferentes", toc: "Momentos diferentes" },
+    { t: "p", text: "**Cada avaliação é analisada separadamente, por isso, se denunciar cinco, raramente desaparecem no mesmo dia.** Uma pode sair em dois dias, outra precisa de recurso e uma terceira continua pendente ao fim de duas semanas." },
+    { t: "p", text: "É por isso que **cobramos por avaliação**: paga cada uma quando é efetivamente removida – é possível receber um link de pagamento separado por avaliação. As que ainda estamos a tratar não lhe custam nada e, com 3, 5 ou 10 avaliações aceites, o desconto por volume (−10 %, −15 %, −30 %) aplica-se a cada uma que é removida. Todos os preços e comparações estão em [preço para remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/), e a encomenda faz-se na nossa página para [remover uma avaliação do Google específica](/pt/remover-uma-avaliacao/)." },
+    { t: "cta", title: "Veja que avaliações têm hipóteses reais", text: "Primeiro uma análise gratuita: dizemos-lhe com honestidade se uma avaliação pode ser removida. A encomenda demora cerca de dois minutos – normalmente resolvido em poucos dias, por vezes até três semanas.", btn: "Iniciar verificação gratuita", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só procedimentos oficiais do Google", "O autor não sabe quem pediu", "Mais de 1.600 perfis removidos desde 2023"] },
+  ],
+  faq: [
+    { q: "Quanto tempo demora o Google a remover uma avaliação denunciada?", a: "O Google não publica um prazo fixo. Infrações claras podem desaparecer em horas ou poucos dias; casos duvidosos e recursos demoram muitas vezes **de uma a várias semanas**." },
+    { q: "Porque é que a minha denúncia continua em «Decisão pendente»?", a: "A verificação ainda não terminou – muitas vezes porque o caso precisa de um revisor humano. Denunciar de novo a mesma avaliação não acelera nada; acompanhe antes o estado na **ferramenta de gestão de avaliações**." },
+    { q: "Posso recorrer mais do que uma vez?", a: "Não. Na ferramenta de gestão de avaliações tem **um único recurso por avaliação**. Depois da decisão final, a única outra via oficial é um pedido de remoção por motivos legais – e apenas se o conteúdo for ilegal." },
+    { q: "O Google avisa o autor da avaliação?", a: "Ao autor **não é dito quem denunciou a avaliação nem quem pediu a sua remoção** – nem quando denuncia por si, nem quando somos nós a tratar. No máximo, vai reparar que a avaliação deixou de estar visível." },
+    { q: "Uma avaliação removida pode voltar?", a: "Uma avaliação removida pelo Google por violar as políticas normalmente não volta. A mesma pessoa pode, no entanto, escrever uma nova avaliação, que é analisada à parte e também pode ser denunciada." },
+    { q: "Quanto tempo demora com a RapidRemove?", a: "Normalmente **poucos dias, por vezes até três semanas** por avaliação. Paga **179 € por avaliação removida** (229 € se tiver mais de 4 semanas) – apenas quando desaparecer." },
+    { q: "Responder à avaliação prejudica as minhas hipóteses?", a: "Não. Uma resposta pública curta e calma é sempre permitida e não influencia a análise. Evite apenas insultos e dados de clientes." },
+  ],
+  related: [
+    { label: "Serviço de remoção de avaliações do Google", url: "/pt/remover-uma-avaliacao/" },
+    { label: "Preço para remover uma avaliação do Google", url: "/pt/revista/preco-remover-avaliacao-google/" },
+    { label: "Violações das políticas de avaliações do Google", url: "/pt/revista/politicas-avaliacoes-google-violacoes/" },
+    { label: "Remover avaliações falsas do Google", url: "/pt/revista/remover-avaliacoes-falsas-google/" },
+  ],
+};
+export default article;

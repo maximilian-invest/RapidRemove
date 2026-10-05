@@ -1,0 +1,117 @@
+/* NO — google-bewertungsrichtlinien (article without German original; single-review product). */
+const article = {
+  category: "Omdømme",
+  meta: {
+    slug: "google-anmeldelsesregler-brudd",
+    title: "Googles regler for anmeldelser: hva blir fjernet? (2026)",
+    h1: "Googles regler for anmeldelser: hvilke brudd fører til fjerning?",
+    description: "Hvilke Google-anmeldelser bryter reglene og blir fjernet? Kategorier, eksempler, riktig rapportering og klage. Fra 179 €, du betaler bare hvis den fjernes.",
+    keywords: ["googles regler for anmeldelser", "google anmeldelse bryter retningslinjer", "rapportere google anmeldelse", "hvilke google anmeldelser blir fjernet", "fjerne google anmeldelse regler", "google anmeldelse retningslinjer", "google anmeldelse ikke brudd", "upassende google anmeldelse"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-ekspert",
+    date: "2026-10-05",
+  },
+  dek: "Google fjerner bare en anmeldelse hvis den **bryter retningslinjene for forbudt og begrenset innhold** eller **loven** – for eksempel falske anmeldelser, fornærmelser, hatefulle ytringer, personopplysninger eller anmeldelser fra konkurrenter. At du er uenig i en anmeldelse, er **ingen grunn** til fjerning. Her ser du per kategori hva som teller og ikke, hvordan du rapporterer med riktig begrunnelse, og hva du gjør når Google svarer «ikke brudd».",
+  blocks: [
+    { t: "h2", id: "kort", text: "Kort svar: hvilke Google-anmeldelser blir fjernet?", toc: "Kort svar" },
+    { t: "p", text: "Google fjerner anmeldelser som bryter [retningslinjene for forbudt og begrenset innhold](https://support.google.com/contributionpolicy/answer/7400114) eller loven. En lav vurdering eller hard kritikk fra en ekte kunde er i seg selv **ikke et brudd**." },
+    { t: "p", text: "Som bedrift kan du ikke slette en anmeldelse selv – bare den som skrev den, kan redigere eller slette den ([kan en bedrift slette Google-anmeldelser?](/no/magasin/kan-bedrift-slette-google-anmeldelser/)). Det du kan gjøre, er å **rapportere** anmeldelsen, klage eller sende en juridisk forespørsel. Vil du slippe å gjøre det selv, ordner vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) det via Googles egne prosedyrer – og du betaler bare når anmeldelsen faktisk er borte." },
+    { t: "ul", items: [
+      "**Kan fjernes:** falske anmeldelser, folk som aldri har vært kunder, interessekonflikter, fornærmelser, hat, personopplysninger, spam, irrelevant innhold, ulovlig innhold.",
+      "**Fjernes ikke:** ærlige negative opplevelser, meninger («for dyrt», «smakte ikke godt»), kritikk du er uenig i.",
+      "**Gråsone:** bare stjerner uten tekst, tidligere ansatte, mistenkte konkurrenter.",
+    ] },
+
+    { t: "h2", id: "kategorier", text: "Alle brudd i én tabell – med eksempler", toc: "Kategorier" },
+    { t: "p", text: "Dette er kategoriene i retningslinjene som oftest er relevante for anmeldelser. Den siste kolonnen er minst like viktig: Der ser du hva Google **ikke** regner som brudd." },
+    { t: "table", head: ["Kategori", "Hva det betyr", "Typisk eksempel som kan fjernes", "Ikke et brudd"], rows: [
+      ["**Falskt engasjement**", "Anmeldelser som ikke bygger på en reell opplevelse: kjøpt, byttet, fra falske kontoer eller i bølger", "Fem 1-stjernes anmeldelser på én natt fra kontoer uten annen aktivitet", "En ekte kunde som bare har skrevet én anmeldelse"],
+      ["**Interessekonflikt**", "Anmeldelser av egen bedrift, fra (tidligere) ansatte eller fra konkurrenter", "En konkurrent som rakker ned på bedriften din og anbefaler sin egen", "En kunde som også har handlet hos konkurrenten"],
+      ["**Irrelevant innhold**", "Innhold som ikke handler om en opplevelse på akkurat dette stedet", "Politiske utsagn, eller en anmeldelse ment for en annen bedrift", "Klager på parkering, ventetid eller hvor vanskelig stedet er å finne"],
+      ["**Trakassering**", "Personangrep, trusler eller mobbing av en person", "«Eieren er en svindler, jeg vet hvor han bor»", "«Personalet var uvennlige»"],
+      ["**Hatefulle ytringer**", "Angrep på grunn av opprinnelse, religion, kjønn, seksuell orientering, funksjonsnedsettelse o.l.", "Diskriminerende kommentarer om ansatte", "Skarp, men saklig kritikk av tjenesten"],
+      ["**Personopplysninger**", "Privat informasjon om personer: telefonnumre, adresser, helse", "En anmeldelse med en ansatts private nummer eller bosted", "Fornavnet til en ansatt i en vanlig anmeldelse"],
+      ["**Uanstendighet og banning**", "Banning, skjellsord, grovt eller vulgært språk", "En anmeldelse full av skjellsord", "«Verste opplevelse noensinne» uten grovt språk"],
+      ["**Etterligning**", "Å utgi seg for å være en annen, f.eks. en kjent person eller bedriften selv", "En konto med bedriftsnavnet ditt som legger ut negative anmeldelser", "En kunde med kallenavn som profilnavn"],
+      ["**Feilinformasjon**", "Påstander som beviselig er feil eller villedende", "«Her finnes ingen utdannede ansatte» når det beviselig er feil", "«Jeg syntes rådgivningen var dårlig» (mening)"],
+      ["**Spam og villedende innhold**", "Reklame, lenker, gjentatt eller meningsløst innhold, utpressing", "En anmeldelse med lenke til en annen bedrift, eller 1 stjerne pluss krav om betaling", "En kort, ærlig anmeldelse på én setning"],
+      ["**Ulovlig innhold**", "Innhold som bryter loven, f.eks. ærekrenkelse eller brudd på opphavsrett", "En falsk beskyldning om en straffbar handling", "En ærlig beskrivelse av en dårlig opplevelse"],
+      ["**Seksuelt eksplisitt innhold**", "Seksuelt innhold eller bilder", "Eksplisitt tekst eller bilder i en anmeldelse", "–"],
+      ["**Farlig innhold**", "Innhold som oppfordrer til skade, vold eller farlige aktiviteter", "Oppfordringer til vold mot bedriften eller personalet", "En advarsel om et reelt sikkerhetsproblem"],
+    ] },
+    { t: "tip", title: "Falske anmeldelser og utpressing", text: "Får du plutselig en bølge med 1-stjernes anmeldelser, kanskje med et krav om penger? Da er det falskt engasjement eller spam. Les hvordan du [kjenner igjen falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/), og hva du gjør ved [utpressing med Google-anmeldelser](/no/magasin/utpressing-google-anmeldelser/): Ikke betal, ikke svar, ta vare på skjermbilder." },
+
+    { t: "h2", id: "rapportere", text: "Slik rapporterer du en anmeldelse under riktig kategori", toc: "Rapporter riktig" },
+    { t: "p", text: "Rapporter anmeldelsen i Google Maps, Google Søk eller bedriftsprofilen din med **«Rapporter anmeldelse»**, og velg begrunnelsen som passer **best**. Feil kategori er en av de vanligste grunnene til at en rapport blir avvist." },
+    { t: "ol", items: [
+      "**Åpne anmeldelsen** i Google Maps, Søk eller bedriftsprofilen, og velg «Rapporter anmeldelse».",
+      "**Velg én tydelig begrunnelse.** En konkurrent? Interessekonflikt. Skjellsord? Banning. En bølge fra folk som aldri har vært kunder? Falskt engasjement eller spam.",
+      "**Noter datoen** for rapporten, og ta et **skjermbilde** av anmeldelsen.",
+      "**Følg statusen** i [Googles verktøy for administrasjon av anmeldelser](https://support.google.com/business/workflow/9945796): Der ser du f.eks. «Venter på avgjørelse» eller «Ikke brudd på retningslinjene».",
+      "**Vent.** Rapporter blir vurdert av både automatiske systemer og mennesker; det tar dager til uker, uten noen garantert tidsramme ([hvor lang tid tar det?](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)).",
+    ] },
+    { t: "p", text: "**Dokumentasjon som hjelper** – særlig ved klage eller juridisk forespørsel:" },
+    { t: "ul", items: [
+      "Kasse-, booking- eller kundesystemet ditt viser at det **ikke fantes noen kunde** med det navnet eller på den datoen.",
+      "**Skjermbilder** av anmeldelsen, anmelderens profil og tidspunktene (bølger på samme tid).",
+      "Tegn på en **konkurrent eller tidligere ansatt**: navn, profilbilde, andre anmeldelser fra samme konto.",
+      "**Meldinger** med krav om betaling eller trusler.",
+      "Ved usanne påstander: **dokumenter** som viser det motsatte.",
+    ] },
+    { t: "cta", title: "Få anmeldelsene dine vurdert gratis", text: "Søk etter bedriften din, kryss av for anmeldelsene du mener bryter reglene, og se prisen med en gang. **179 € per fjernet anmeldelse**, bare ved suksess – ingenting på forskudd.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Først en ærlig vurdering"] },
+
+    { t: "h2", id: "graasone", text: "Gråsoner: stjerner uten tekst, tidligere ansatte, konkurrenter, prisklager", toc: "Gråsoner" },
+    { t: "p", text: "Ikke alle plagsomme anmeldelser passer pent inn i én kategori. I disse fire tilfellene avgjør detaljene – og hva du kan dokumentere." },
+    { t: "ul", items: [
+      "**Bare stjerner, ingen tekst:** Det finnes ingen tekst som kan bryte retningslinjene, så Google ser først og fremst på anmelderen. Har personen aldri vært kunde, eller er vurderingen del av en bølge, er sjansene gode. Les mer: [fjern en 1-stjernes anmeldelse uten tekst](/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/).",
+      "**Tidligere ansatte:** Anmeldelser fra (tidligere) ansatte om arbeidsgiveren regnes som **interessekonflikt**. Utfordringen er at Google ikke vet hvem som har jobbet hos deg – navn, innhold om interne forhold og tidspunkt (rett etter en oppsigelse) hjelper.",
+      "**Konkurrenter:** også en interessekonflikt, men fjernes bare hvis det er sannsynliggjort. Typiske tegn: Samme konto skryter av en konkurrent i nærheten, eller anmeldelsen trekker fram tilbudet deres som alternativ.",
+      "**Prisklager:** «Altfor dyrt» fra en ekte kunde er en **mening** og blir ikke fjernet. Påstås det et usant faktum («tok 2 000 kr for ingenting»), og du kan bevise det motsatte, kan feilinformasjon eller en juridisk forespørsel være et alternativ.",
+    ] },
+
+    { t: "h2", id: "ikke", text: "Dette fjerner ikke Google", toc: "Fjernes ikke" },
+    { t: "p", text: "Google fjerner **ikke ærlig kritikk fra ekte kunder**, selv om den føles hard, overdreven eller urettferdig. Google skriver selv at du ikke bør rapportere en anmeldelse bare fordi du er uenig i den." },
+    { t: "ul", items: [
+      "En reell negativ opplevelse («lang ventetid, maten var kald»).",
+      "Meninger og smak («ikke koselig», «for dyrt», «kan ikke anbefales»).",
+      "Kritikk av service eller regler (avbestillingsgebyr, åpningstider).",
+      "En lav vurdering fra en ekte kunde, også uten begrunnelse.",
+      "Anmeldelser du bare synes er urettferdige, uten et konkret brudd.",
+    ] },
+    { t: "warn", title: "Ingen snarveier", text: "Falske kontoer, roboter eller falske juridiske henvendelser er ingen løsning og kan skade profilen din. Vi jobber **utelukkende via Googles egne prosedyrer**, på vegne av bedriftseieren. Ved ærlig kritikk er et rolig, offentlig svar det beste steget ([ignorere, svare eller fjerne?](/no/magasin/negativ-anmeldelse-ignorere-svare-fjerne/))." },
+
+    { t: "h2", id: "ikke-brudd", text: "Google sier «ikke brudd» – hva nå?", toc: "Etter avslag" },
+    { t: "p", text: "Du kan **klage én gang per anmeldelse** i verktøyet for administrasjon av anmeldelser. Deretter er Googles avgjørelse endelig; en klage kan få status «Eskalert» før den endelige avgjørelsen kommer." },
+    { t: "ol", items: [
+      "**Gå gjennom kategorien.** Var den opprinnelige begrunnelsen den beste? Hvis ikke, begrunn kategorien som faktisk passer, i klagen.",
+      "**Klag** via [verktøyet for administrasjon av anmeldelser](https://support.google.com/business/workflow/9945796), og legg ved den sterkeste dokumentasjonen din. Du har bare denne ene sjansen.",
+      "**Juridisk forespørsel:** Ved ærekrenkelse eller annet ulovlig innhold kan du sende en [forespørsel om fjerning av juridiske årsaker](https://support.google.com/legal/answer/3110420). Den er atskilt fra retningslinjene for anmeldelser.",
+      "**Svar offentlig og vennlig** så lenge anmeldelsen ligger ute. Da ser leserne din side av saken.",
+      "**Få den vurdert.** Vi sjekker gratis om det fortsatt finnes en sjanse – og sier ærlig fra hvis ikke. Vurderer du advokat? Les [advokat eller teknisk fjerning](/no/magasin/negativ-google-anmeldelse-advokat/).",
+    ] },
+
+    { t: "h2", id: "hjelp", text: "Når profesjonell hjelp lønner seg – og hva det koster", toc: "Pris" },
+    { t: "p", text: "Hjelp lønner seg mest for **ferske anmeldelser**: Opptil 4 uker gamle er sjansen ca. **90 %**, deretter ca. **50 %**. Med vår [tjeneste for fjerning av Google-anmeldelser](/no/fjern-omtale/) betaler du bare for anmeldelser som faktisk forsvinner." },
+    { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Sjanse for å lykkes", "Pris per fjernet anmeldelse"], rows: [
+      ["Opptil 4 uker", "ca. 90 %", "**179 €**"],
+      ["Eldre enn 4 uker", "ca. 50 %", "**229 €** (179 € + 50 €)"],
+    ] },
+    { t: "p", text: "For anmeldelsene vi aksepterer etter den gratis vurderingen, gjelder mengderabatt: fra 3 anmeldelser **−10 %**, fra 5 **−15 %**, fra 10 **−30 %** – på hver fjernet anmeldelse. Som regel tar det noen dager, noen ganger opptil 3 uker. Anmelderen får ikke vite hvem som ba om fjerningen. Mer om priser: [hva koster det å fjerne en Google-anmeldelse?](/no/magasin/pris-fjerne-google-anmeldelse/)." },
+    { t: "cta", title: "Hvilke av anmeldelsene dine bryter reglene?", text: "Søk opp profilen din, kryss av for anmeldelsene, så sier vi ærlig hvilke som kan fjernes. **Du betaler bare når anmeldelsen faktisk er borte.**", btn: "Få gratis vurdering", href: "/no/sjekk-profil/?start=reviews", trust: ["Gratis vurdering", "Bare ved suksess", "Bare Googles prosedyrer"] },
+  ],
+  faq: [
+    { q: "Hvilke Google-anmeldelser bryter reglene?", a: "Blant annet falske anmeldelser, anmeldelser fra konkurrenter eller ansatte (interessekonflikt), irrelevant innhold, trakassering, hatefulle ytringer, personopplysninger, banning, etterligning, feilinformasjon, spam og ulovlig innhold. Slike anmeldelser kan Google fjerne." },
+    { q: "Fjerner Google en anmeldelse hvis jeg er uenig i den?", a: "Nei. Uenighet alene er **ikke et brudd**. Ærlig kritikk fra ekte kunder blir stående; da er et vennlig offentlig svar det beste steget." },
+    { q: "Er en 1-stjernes anmeldelse uten tekst et brudd?", a: "Ikke automatisk. Har anmelderen aldri vært kunde, eller er vurderingen del av en falsk bølge eller en interessekonflikt, er sjansene for fjerning derimot gode." },
+    { q: "Hvor mange ganger kan jeg klage på «ikke brudd»?", a: "**Én gang per anmeldelse**, i Googles verktøy for administrasjon av anmeldelser. Deretter er avgjørelsen endelig; ved ulovlig innhold kan du fortsatt sende en juridisk forespørsel." },
+    { q: "Hvor lang tid tar det før Google vurderer en rapportert anmeldelse?", a: "Alt fra dager til uker; Google lover ingen tidsramme. Hos oss tar en fjerning som regel noen dager, noen ganger opptil 3 uker." },
+    { q: "Hva koster det å få fjernet en anmeldelse?", a: "**179 €** per fjernet anmeldelse opptil 4 uker gammel, **229 €** for eldre. Du betaler bare når anmeldelsen faktisk er borte – ingenting på forskudd." },
+  ],
+  related: [
+    { label: "Fjern en Google-anmeldelse – pris og bestilling", url: "/no/fjern-omtale/" },
+    { label: "Kjenn igjen, rapporter og fjern falske Google-anmeldelser", url: "/no/magasin/fjern-falske-google-anmeldelser/" },
+    { label: "Fjern en 1-stjernes anmeldelse uten tekst", url: "/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/" },
+    { label: "Hvor lang tid tar det for Google å fjerne en anmeldelse?", url: "/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/" },
+  ],
+};
+export default article;

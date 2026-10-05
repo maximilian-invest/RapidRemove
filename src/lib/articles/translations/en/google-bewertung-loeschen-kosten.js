@@ -1,0 +1,115 @@
+/* EN — google-bewertung-loeschen-kosten (article without German original; single-review product). */
+const article = {
+  category: "Reputation",
+  meta: {
+    slug: "google-review-removal-cost",
+    title: "Google Review Removal Cost: What You Really Pay (2026)",
+    h1: "How Much Does It Cost to Remove a Google Review?",
+    description: "What does it cost to remove a Google review? DIY, lawyer and removal services compared. RapidRemove: $179 per removed review, paid only on success.",
+    keywords: ["google review removal cost", "how much does it cost to remove a google review", "cost to remove google review", "pay to remove google review", "google review removal price", "is it free to remove a google review", "google review removal service price"],
+    author: "Maximilian Hölzl",
+    authorRole: "Founder",
+    date: "2026-10-05",
+  },
+  dek: "Reporting a Google review yourself is **free**, but Google often rejects the report. Lawyers usually bill **by the hour and upfront**, whether the review comes down or not. Removal services vary widely: some charge per attempt or in advance, some don't publish prices at all. At RapidRemove you pay **$179 per removed review** (+$50 if it's older than 4 weeks), and **only once it's actually gone**.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "The short answer: what removing a Google review costs", toc: "Short answer" },
+    { t: "p", text: "Removing a Google review costs anything from **$0 to several hundred dollars**, depending on who does it and how they charge. The bigger question isn't the price tag but **who carries the risk** if the review stays online." },
+    { t: "ul", items: [
+      "**Report it yourself:** free. You pay with your time, and Google often answers with a standard \"no policy violation\" decision.",
+      "**Lawyer:** usually billed by the hour, often with an upfront retainer. You pay **regardless of the outcome**.",
+      "**Removal services with upfront fees:** prices and models differ a lot. Some charge per attempt or before any work starts, others only quote after a sales call.",
+      "**RapidRemove:** **$179 per removed review**, **$229** if the review is older than 4 weeks. Nothing upfront, no fee for attempts. You pay only for reviews that are actually removed.",
+    ] },
+    { t: "p", text: "If you just want the price for your specific reviews: our [Google review removal service](/en/remove-single-reviews/) shows it instantly once you tick the reviews you want gone." },
+
+    { t: "h2", id: "comparison", text: "DIY, lawyer, upfront services or pay-on-success: compared", toc: "Comparison" },
+    { t: "p", text: "The four options differ less in what they can achieve and more in **how you pay and what happens if it fails**. Here's the overview:" },
+    { t: "table", rrCol: 4, head: ["Criterion", "Report yourself", "Lawyer", "Services with upfront fees", "RapidRemove"], rows: [
+      ["Cost model", "Free", "Hourly, usually upfront", "Per attempt or in advance; prices often hidden", "**$179 per removed review** (+$50 if older than 4 weeks)"],
+      ["If the review stays", "You've lost time", "You still pay", "Money is usually gone", "**You pay nothing**"],
+      ["Risk", "Low cost, low success rate", "High cost, uncertain outcome", "Paying for nothing", "**None on cost**"],
+      ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "A few days, up to 3 weeks"],
+      ["Effort for you", "Medium (reporting, tracking, appeal)", "High (briefing, documents, follow-up)", "Medium", "About 2 minutes"],
+    ] },
+    { t: "p", text: "**Reporting yourself** is the right first step if you have time and a clear policy violation. You report the review in Google Maps or your Business Profile, then track the status in Google's [Reviews Management Tool](https://support.google.com/business/workflow/9945796), where you can **appeal once** if Google decides there's no violation. Step by step: [how to delete a Google review yourself](/en/magazine/how-to-delete-a-google-review/)." },
+    { t: "p", text: "**A lawyer** makes sense for clearly unlawful content such as defamation, especially if you want to take action against the reviewer. Google has its own [legal removal request](https://support.google.com/legal/answer/3110420) for this. The catch: hourly billing and a retainer mean you pay before you know whether it works ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
+    { t: "p", text: "**Services with upfront fees** shift the whole risk to you. If the review stays, the money is usually spent. Read the terms carefully before you pay anyone in advance." },
+    { t: "p", text: "One cost is easy to overlook: **time**. While a fake 1-star review sits at the top of your profile, every prospect who checks you on Google sees it. A free report that drags on for weeks and ends in a rejection isn't really free if it costs you customers in the meantime." },
+
+    { t: "h2", id: "price", text: "RapidRemove pricing: $179 per removed review", toc: "Our price" },
+    { t: "p", text: "You pay **$179 for each review that is actually removed**. If a review is older than 4 weeks, it costs **$229** ($179 + $50). Nothing is charged upfront and there's no fee for attempts." },
+    { t: "table", rrCol: 2, head: ["Review age", "Success chance", "Price per removed review"], rows: [
+      ["Up to 4 weeks old", "approx. 90 %", "**$179**"],
+      ["Older than 4 weeks", "approx. 50 %", "**$229** ($179 + $50)"],
+    ] },
+    { t: "p", text: "Older reviews cost more because they're **harder to remove**: the success chance drops from around 90 % to around 50 %. Before you order, we give you a **free assessment** and tell you honestly if a review has poor chances. If it isn't removable, it costs you nothing." },
+    { t: "p", text: "If several reviews need to go, the **volume discount** applies automatically:" },
+    { t: "table", head: ["Reviews accepted after the assessment", "Discount on every removed review"], rows: [
+      ["1 – 2", "–"],
+      ["3 – 4", "**−10 %**"],
+      ["5 – 9", "**−15 %**"],
+      ["10 or more", "**−30 %**"],
+    ] },
+
+    { t: "h2", id: "examples", text: "Price examples: what you pay for 1, 3, 5 or 10 reviews", toc: "Price examples" },
+    { t: "p", text: "Here's what typical orders cost, rounded to whole dollars. \"Recent\" means up to 4 weeks old, \"older\" means more than 4 weeks." },
+    { t: "table", rrCol: 2, head: ["Scenario", "Calculation", "You pay"], rows: [
+      ["1 recent review", "1 × $179", "**$179**"],
+      ["1 older review", "1 × $229", "**$229**"],
+      ["3 recent reviews", "3 × $179 = $537, −10 %", "**$483**"],
+      ["5 reviews (2 recent, 3 older)", "$358 + $687 = $1,045, −15 %", "**$888**"],
+      ["10 reviews (6 recent, 4 older)", "$1,074 + $916 = $1,990, −30 %", "**$1,393**"],
+      ["5 recent accepted, 4 removed", "4 × $179 = $716, −15 %", "**$609**"],
+    ] },
+    { t: "p", text: "The last row shows the key point: **you only pay for reviews that are removed**. The discount level is set by the number of reviews we accept after the free assessment, and it applies to every review that comes down." },
+    { t: "cta", title: "See your exact price in 2 minutes", text: "Search your business, tick the reviews that should go and see the total instantly, discount included. **$179 per removed review**, nothing upfront.", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free assessment first"] },
+
+    { t: "h2", id: "payment", text: "How payment works: per removed review", toc: "How you pay" },
+    { t: "p", text: "You pay **after** a review has been removed, never before. Once it's gone, you receive a **secure payment link** for that review." },
+    { t: "ul", items: [
+      "**Different reviews come down at different times.** Removal usually takes a few days, sometimes up to three weeks ([how long Google takes](/en/magazine/how-long-does-google-take-to-remove-a-review/)).",
+      "That's why you may get a **separate payment link per review**: you pay for each one as soon as it's removed, not for the whole batch at once.",
+      "Your **volume discount is already included** in every link.",
+      "Prefer **PayPal or bank transfer**? Both are possible on request.",
+    ] },
+    { t: "tip", title: "No invoice for reviews that stay", text: "If a review can't be removed, you simply don't get a payment link for it. There's nothing to cancel and nothing to claim back." },
+
+    { t: "h2", id: "red-flags", text: "Red flags when choosing a removal provider", toc: "Red flags" },
+    { t: "p", text: "A low price means nothing if the provider uses methods that put your profile at risk. Be careful if you see any of these:" },
+    { t: "ul", items: [
+      "**\"Guaranteed removal\":** only Google decides whether a review comes down. Nobody can honestly guarantee it.",
+      "**Full payment upfront or fees per attempt:** you carry the whole risk, even if nothing happens.",
+      "**No published prices:** if you only get a figure after a sales call, compare carefully.",
+      "**Fake accounts, bots or mass flagging:** these violate Google's rules and can backfire on your own profile.",
+      "**Fake legal notices:** made-up legal complaints to scare Google or the reviewer are a serious problem, not a shortcut.",
+      "**Buying positive reviews to drown out negatives:** this is fake engagement under [Google's content policy](https://support.google.com/contributionpolicy/answer/7400114) and puts your profile at risk.",
+    ] },
+    { t: "p", text: "RapidRemove works **only through Google's own procedures**, on behalf of the business owner. The reviewer is not told who requested the removal. And if you're facing a wave of 1-star reviews plus a demand for money, that's a different case: [what to do about Google review extortion](/en/magazine/google-review-extortion/)." },
+
+    { t: "h2", id: "worth-it", text: "When is it worth paying to remove a review?", toc: "Is it worth it?" },
+    { t: "p", text: "Paying makes sense when a review is **unfair and costing you customers**: a fake, an insult, a 1-star from someone who was never a customer. The fewer reviews your profile has, the more a single one weighs on your rating." },
+    { t: "ul", items: [
+      "**Worth it:** fake or abusive reviews, reviews from non-customers, competitor attacks ([how to spot fake reviews](/en/magazine/remove-fake-google-reviews/)). Especially when they're **recent**: cheaper and more likely to succeed.",
+      "**Try the free route first:** if you have time and the violation is obvious, report it yourself and use the appeal.",
+      "**Not a removal case:** honest criticism from real customers. Reply publicly and politely instead ([ignore, reply or remove?](/en/magazine/negative-review-ignore-respond-remove/)).",
+    ] },
+    { t: "p", text: "To weigh $179 against what the review is doing to your business, see [what a bad Google review really costs](/en/magazine/what-does-a-bad-google-review-cost/). Since 2023 our team has removed over **1,600 Google Business Profiles** for clients in more than 50 countries, and we apply the same approach to single reviews through our [service for removing individual Google reviews](/en/remove-single-reviews/)." },
+  ],
+  faq: [
+    { q: "Is it free to remove a Google review?", a: "Reporting a review to Google yourself is free, and you can appeal once in the Reviews Management Tool. Google often rejects reports, though. With RapidRemove you pay **$179 per review, only if it's removed**." },
+    { q: "Do I pay if the review isn't removed?", a: "No. There's no upfront payment and no fee for attempts. You only pay for reviews that are actually gone." },
+    { q: "Why are older reviews more expensive?", a: "Reviews older than 4 weeks are harder to remove: the success chance drops from about 90 % to about 50 %. That's why they cost **$50 more** ($229 instead of $179)." },
+    { q: "Is there a discount for several reviews?", a: "Yes. From 3 accepted reviews you get 10 % off, from 5 reviews 15 % and from 10 reviews 30 %. The discount applies to every review that is removed." },
+    { q: "Can I pay by PayPal or bank transfer?", a: "Yes. By default you get a secure payment link after removal; PayPal or bank transfer is possible on request." },
+    { q: "Why did I get several payment links?", a: "Reviews are removed at different times, so you may get a **separate payment link per review**. You pay for each one as soon as it's gone." },
+    { q: "How much does a lawyer charge to remove a Google review?", a: "Lawyers usually bill by the hour, often with an upfront retainer, and you pay whether or not the review comes down. The exact amount depends on the firm and the case." },
+  ],
+  related: [
+    { label: "Google review removal service: price & how to order", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "What does a bad Google review cost?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
+    { label: "Lawyer or technical removal?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "How long does Google take to remove a review?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;

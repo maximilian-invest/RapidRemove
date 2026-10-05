@@ -1,0 +1,120 @@
+/* DA — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Omdømme",
+  meta: {
+    slug: "afpresning-google-anmeldelser",
+    title: "Afpresning med Google-anmeldelser: det skal du gøre (2026)",
+    h1: "Afpresning med Google-anmeldelser: sådan håndterer du en bølge af 1-stjernede anmeldelser og et krav om penge",
+    description: "Bølge af 1-stjernede anmeldelser og krav om penge? Betal ikke. Sådan anmelder du afpresningen til Google og får anmeldelserne fjernet – 179 €, kun ved succes.",
+    keywords: ["afpresning google anmeldelser", "google anmeldelser afpresning", "falske anmeldelser afpresning", "mange 1 stjernede anmeldelser", "betale for at fjerne anmeldelser", "anmelde afpresning google", "fjerne falske google anmeldelser", "trusler google anmeldelser"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-ekspert og grundlægger",
+    date: "2026-10-05",
+  },
+  dek: "Har din virksomhed pludselig fået en række 1-stjernede anmeldelser og bagefter en besked om, at de forsvinder, hvis du betaler? Så er der tale om **afpresning med anmeldelser** – og det vigtigste er: **betal ikke, og forhandl ikke**. Google har en særlig formular til netop dette, og den slags anmeldelser hører i praksis til dem, der fjernes mest pålideligt. Her gennemgår vi trin for trin, hvad du gør nu, hvordan du sikrer beviser, og hvordan du beskytter profilen bagefter.",
+  blocks: [
+    { t: "h2", id: "hvad-er-det", text: "Hvad er afpresning med Google-anmeldelser?", toc: "Hvad er det?" },
+    { t: "p", text: "Ved anmeldelsesafpresning lægger svindlere bevidst dårlige anmeldelser på din Google-virksomhedsprofil og kræver derefter penge eller gratis ydelser for at fjerne dem igen. Din stjernescore bliver brugt som gidsel: jo mere det gør ondt, jo større er chancen for, at du betaler." },
+    { t: "p", text: "Forløbet er næsten altid det samme:" },
+    { t: "ol", items: [
+      "**Inden for få timer eller dage** kommer en bølge af 1- eller 2-stjernede anmeldelser – ofte **uden tekst**, fra konti du ikke kender, og som aldrig har været kunder.",
+      "Kort efter kommer en besked via **WhatsApp, e-mail, Telegram** eller en kontaktformular: anmeldelserne forsvinder, hvis du betaler (nogle gange i kryptovaluta eller med gavekort) eller leverer en gratis ydelse.",
+      "Hvis du ikke svarer eller siger nej, kommer der nogle gange en **trussel**: „Ellers kommer der flere.”",
+      "Betaler du, slipper du sjældent for problemet – du har jo vist, at du er en, der betaler.",
+    ] },
+    { t: "p", text: "Google kender mønstret og har lavet en [særlig formular til afpresning med anmeldelser](https://support.google.com/business/answer/16404809). Googles råd er det samme som vores: **betal ikke, svar ikke, dokumentér alt, og anmeld det.** Vil du ikke selv bruge tid på det, kan du lade os [fjerne Google-anmeldelserne for dig](/da/fjern-anmeldelse/) – du betaler kun for anmeldelser, der faktisk forsvinder." },
+
+    { t: "h2", id: "advarselstegn", text: "Advarselstegn: sådan genkender du en afpresningsbølge", toc: "Advarselstegn" },
+    { t: "p", text: "En afpresningsbølge genkender du på mønstret, ikke på en enkelt anmeldelse. En ægte utilfreds kunde skriver som regel, hvad der gik galt – det har en afpresser ingen interesse i." },
+    { t: "ul", items: [
+      "**Mange dårlige anmeldelser på kort tid**, selvom der ikke er sket noget særligt.",
+      "**Ingen tekst** eller intetsigende tekst („Dårligt”, „Svindlere”) – uden dato, produkt eller navn på en medarbejder.",
+      "**Ukendte profiler**: nye konti, intet profilbillede, få andre anmeldelser eller anmeldelser af virksomheder over hele verden.",
+      "En **besked fra en ukendt afsender**, der henviser direkte til anmeldelserne, med et beløb eller et „tilbud” om at fjerne dem.",
+      "**Tidspres**: „Betal inden for 24 timer, ellers kommer der 20 mere.”",
+      "Nogen tilbyder sig som **„omdømmebureau”**, der kan få anmeldelserne til at forsvinde – selvom du aldrig har bedt om hjælp.",
+    ] },
+    { t: "tip", title: "En enkelt 1-stjernet anmeldelse uden besked?", text: "Ikke alle ordløse 1-stjernede anmeldelser er afpresning. Men de kan ofte fjernes alligevel – læs [hvordan du fjerner en 1-stjernet anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/)." },
+
+    { t: "h2", id: "med-det-samme", text: "Det skal du gøre med det samme – og det skal du lade være med", toc: "Gør med det samme" },
+    { t: "p", text: "De første timer afgør, hvor stærk din anmeldelse til Google bliver. **Betal ikke, forhandl ikke, og dokumentér alt** – i den rækkefølge." },
+    { t: "table", head: ["Trin", "Hvad du gør", "Hvorfor"], rows: [
+      ["1", "**Betal ikke, forhandl ikke**", "Betaling stopper ikke bølgen og gør dig til mål for næste runde."],
+      ["2", "**Svar ikke** på afpresningsbeskeden", "Hvert svar bekræfter, at nummeret eller adressen er aktiv."],
+      ["3", "**Skærmbilleder** af hver besked – med afsender, nummer/adresse, dato og klokkeslæt", "Bevis til Google og politiet; beskeder kan blive slettet senere."],
+      ["4", "**Skærmbilleder af hver anmeldelse** plus link, anmelderens navn og dato", "Mønstret er dokumenteret, selv hvis anmeldelserne forsvinder."],
+      ["5", "**Lav en tidslinje**: hvornår kom anmeldelserne, hvornår kom kravet", "Viser sammenhængen mellem bølgen og kravet."],
+      ["6", "**Anmeld til Google** – afpresningsformularen og hver anmeldelse for sig", "Se næste afsnit."],
+      ["7", "**Overvej en politianmeldelse**", "Afpresning er en forbrydelse, ikke et anmeldelsesspørgsmål."],
+    ] },
+    { t: "warn", title: "Betal ikke – heller ikke „for at få fred”", text: "Afpressere holder ikke, hvad de lover. Betaler du, kommer der ofte et nyt krav, eller anmeldelserne bliver bare stående. Svar heller ikke vredt under anmeldelserne. Vil du sige noget, så hold det kort og neutralt, fx: „Vi kan ikke koble denne anmeldelse til et kundebesøg og har indberettet den til Google.”" },
+
+    { t: "h2", id: "anmeld", text: "Anmeld afpresningen til Google: formular, enkelte anmeldelser og Reviews Management Tool", toc: "Anmeld til Google" },
+    { t: "p", text: "Anmeld afpresningen via Googles egen formular, og anmeld derudover hver anmeldelse for sig. Formularen giver Google sammenhængen (bølge + krav), og de enkelte indberetninger sikrer, at hver anmeldelse bliver vurderet særskilt." },
+    { t: "ol", items: [
+      "**Udfyld afpresningsformularen:** i [Googles formular til afpresning med anmeldelser](https://support.google.com/business/answer/16404809) beskriver du situationen og vedhæfter dine skærmbilleder. Angiv, hvor mange anmeldelser det drejer sig om, og hvornår beskeden kom.",
+      "**Anmeld hver anmeldelse:** åbn anmeldelsen i Google Maps, Google Søgning eller din virksomhedsprofil, klik på **„Rapportér anmeldelse”**, og vælg den passende type overtrædelse – fx falsk engagement eller chikane (se [Googles politik for forbudt indhold](https://support.google.com/contributionpolicy/answer/7400114)).",
+      "**Følg status i [Reviews Management Tool](https://support.google.com/business/workflow/9945796):** her ser du for hver indberettet anmeldelse, om afgørelsen afventer, eller om Google har vurderet, at der ikke er nogen overtrædelse.",
+      "**Klag én gang:** afviser Google en indberetning, kan du **klage én gang pr. anmeldelse**. Klagen kan blive „eskaleret” og får derefter en endelig afgørelse.",
+    ] },
+    { t: "p", text: "Hvilke regler der gælder, og hvilken kategori du skal vælge, gennemgår vi i vores oversigt over [Googles anmeldelsesregler og overtrædelser](/da/magasin/google-anmeldelsesregler-overtraedelser/)." },
+
+    { t: "h2", id: "politi", text: "Politianmeldelse – giver det mening?", toc: "Politianmeldelse" },
+    { t: "p", text: "Ja, en politianmeldelse giver mening: afpresning er en forbrydelse, også når den foregår via anmeldelser. Politiet kan sjældent finde gerningsmændene hurtigt – de sidder ofte i udlandet og bruger engangsnumre – men anmeldelsen dokumenterer sagen officielt." },
+    { t: "ul", items: [
+      "Tag **skærmbilleder, links og tidslinje** med – det samme materiale, som du sender til Google.",
+      "Gem **journalnummeret** som ekstra dokumentation til senere skridt.",
+      "Indeholder anmeldelserne **ærekrænkelser eller usande beskyldninger**, kan du også sende en [juridisk anmodning om fjernelse til Google](https://support.google.com/legal/answer/3110420). Hvornår en advokat er den rigtige vej, kan du læse i [advokat eller teknisk fjernelse?](/da/magasin/negativ-google-anmeldelse-advokat/)",
+    ] },
+
+    { t: "h2", id: "hvor-hurtigt", text: "Hvor hurtigt forsvinder afpresningsanmeldelser?", toc: "Hvor hurtigt?" },
+    { t: "p", text: "Det varierer: nogle gange inden for få dage, andre gange tager det uger. Google lover **ingen fast tidsramme** – indberettede anmeldelser bliver vurderet af automatiske systemer og af mennesker, og sagsbehandlingstiden varierer." },
+    { t: "p", text: "Det, der taler for dig: afpresningsanmeldelser er næsten altid **friske**, og et tydeligt mønster (bølge + krav om penge) er et stærkt argument. For anmeldelser op til fire uger gamle ligger vores succesrate på **ca. 90 %**. Gennem os tager det som regel **nogle få dage, nogle gange op til tre uger** – og anmeldelserne i en bølge kan forsvinde på forskellige tidspunkter. Mere om sagsbehandlingstid og klage kan du læse i [hvor lang tid det tager for Google at fjerne en anmeldelse](/da/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
+    { t: "tip", title: "Det betaler sig at være hurtig", text: "Efter fire uger falder chancen til ca. 50 %. Vent altså ikke på, at afpresserne „giver op af sig selv” – anmeld, og få anmeldelserne fjernet, mens de er friske." },
+
+    { t: "h2", id: "rapidremove", text: "Sådan hjælper RapidRemove ved afpresning med anmeldelser", toc: "Sådan hjælper vi" },
+    { t: "p", text: "Vi står for fjernelsen for dig – udelukkende via **Googles egne procedurer** og på dine vegne som ejer. Afpresningsanmeldelser hører til dem, Google **fjerner mest pålideligt**, fordi de så tydeligt bryder reglerne. Med vores [service til at fjerne Google-anmeldelser](/da/fjern-anmeldelse/) betaler du **kun for anmeldelser, der faktisk er væk**." },
+    { t: "table", rrCol: 1, head: ["", "RapidRemove", "Betale afpresseren"], rows: [
+      ["Pris", "**179 € pr. fjernet anmeldelse** (ældre end 4 uger: 229 €)", "Det, afpresseren kræver – uden garanti"],
+      ["Hvis intet sker", "Du betaler ingenting", "Pengene er tabt"],
+      ["Risiko for ny bølge", "Intet signal om, at du betaler", "Høj: du er en, der betaler"],
+      ["Metode", "Kun Googles egne procedurer", "Ukendt"],
+    ] },
+    { t: "p", text: "Ved en bølge gælder **mængderabat** på alle anmeldelser, vi accepterer efter den gratis vurdering: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Eksempel:** 10 friske afpresningsanmeldelser koster 1.790 €, minus 30 % = **1.253 €** – og kun for de anmeldelser, der faktisk bliver fjernet." },
+    { t: "ul", items: [
+      "**Send os anmeldelserne:** søg din virksomhed i vores guide, sæt flueben ved anmeldelserne fra bølgen, eller indsæt linkene. Det tager cirka to minutter.",
+      "**Gratis vurdering først:** vi siger ærligt, hvilke anmeldelser der har en chance. Ser vi ingen chance, koster det ingenting.",
+      "**Diskret:** anmelderen får ikke at vide, hvem der har bedt om fjernelsen. Ingen falske konti, ingen bots, ingen falske juridiske breve.",
+      "**Betal pr. anmeldelse:** anmeldelserne kan forsvinde på forskellige tidspunkter; du kan betale pr. fjernet anmeldelse via et betalingslink eller efter aftale via PayPal eller bankoverførsel.",
+    ] },
+    { t: "cta", title: "Få afpresningsanmeldelser fjernet", text: "Sæt flueben ved anmeldelserne fra bølgen, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, intet på forhånd – og ingenting, hvis en anmeldelse bliver stående.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Gratis vurdering først"] },
+
+    { t: "h2", id: "beskyt", text: "Sådan beskytter du profilen bagefter", toc: "Beskyt profilen" },
+    { t: "p", text: "Afpressere vender nogle gange tilbage – især hvis de kan se, at du reagerer. Med nogle faste rutiner opdager du en ny bølge med det samme og har din indberetning klar hurtigere." },
+    { t: "ul", items: [
+      "**Slå notifikationer til** for nye anmeldelser i din Google-virksomhedsprofil, så du ser en bølge inden for få timer i stedet for efter en uge.",
+      "**Gem en bevismappe** med skærmbilleder, links og tidslinjen fra sidste bølge – ved en gentagelse henviser du til den.",
+      "**Bloker afsenderne** på WhatsApp, Telegram og e-mail – men gem skærmbillederne først.",
+      "**Bliv ved med at samle ægte anmeldelser** fra tilfredse kunder. En profil med mange nye, ægte anmeldelser rammes mindre af et par falske 1-stjernede.",
+      "**Tjek adgangene:** se, hvem der har administratoradgang til din virksomhedsprofil, og fjern ukendte brugere.",
+      "**Ved en ny bølge** gentager du de samme trin: betal ikke, dokumentér, anmeld, få fjernet. Læs også, hvordan du genkender [falske Google-anmeldelser](/da/magasin/fjern-falske-google-anmeldelser/).",
+    ] },
+    { t: "p", text: "Har du ikke tid til at klare det selv? På vores side [fjern en Google-anmeldelse](/da/fjern-anmeldelse/) ser du på to minutter, hvad det koster for din bølge." },
+  ],
+  faq: [
+    { q: "Skal jeg betale for at få anmeldelserne fjernet?", a: "Nej. Betaling stopper sjældent afpresningen – ofte kommer der et nyt krav, eller anmeldelserne bliver stående. **Betal ikke, forhandl ikke**, dokumentér alt, og anmeld det til Google." },
+    { q: "Fjerner Google alle afpresningsanmeldelser?", a: "Der er ingen garanti, men afpresningsanmeldelser hører til dem, Google fjerner mest pålideligt. For anmeldelser op til 4 uger gamle ligger vores succesrate på **ca. 90 %**, og du betaler kun for anmeldelser, der faktisk bliver fjernet." },
+    { q: "Skal jeg anmelde det til politiet?", a: "Ja, det anbefales: afpresning er en forbrydelse, også via anmeldelser. Tag skærmbilleder, links og en tidslinje med. Googles formular kræver ikke en politianmeldelse." },
+    { q: "Hvad gør jeg, hvis afpresserne kommer igen med nye anmeldelser?", a: "Gentag de samme trin: svar ikke, dokumentér, anmeld via afpresningsformularen, og anmeld hver anmeldelse for sig. Henvis til den tidligere bølge og din bevismappe." },
+    { q: "Hvor lang tid går der, før anmeldelserne er væk?", a: "Google lover ingen fast tid; det kan tage dage til uger. Gennem RapidRemove tager det som regel **nogle få dage, nogle gange op til tre uger**, og de enkelte anmeldelser kan forsvinde på forskellige tidspunkter." },
+    { q: "Skal jeg svare på anmeldelserne?", a: "Det er ikke et krav. Hvis du svarer, så gør det kort og neutralt – fx at du ikke kan koble anmeldelsen til et kundebesøg og har indberettet den til Google. Svar aldrig på selve afpresningsbeskeden." },
+    { q: "Hvad koster det at få afpresningsanmeldelser fjernet?", a: "**179 € pr. fjernet anmeldelse** (ældre end 4 uger 229 €), med mængderabat fra 3 anmeldelser −10 %, fra 5 −15 % og fra 10 −30 %. Intet på forhånd." },
+  ],
+  related: [
+    { label: "Fjern en Google-anmeldelse: pris, chance og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Genkend, anmeld og fjern falske Google-anmeldelser", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Hvor lang tid tager det for Google at fjerne en anmeldelse?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;

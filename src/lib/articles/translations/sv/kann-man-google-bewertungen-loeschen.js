@@ -1,0 +1,118 @@
+/* SV — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Rykte",
+  meta: {
+    slug: "kan-foretag-ta-bort-google-recensioner",
+    title: "Kan ett företag ta bort Google-recensioner? (2026)",
+    h1: "Kan du som företagare ta bort Google-recensioner själv? Det ärliga svaret",
+    description: "Nej, du kan inte själv ta bort recensioner – men Google tar bort dem som bryter regler eller lag. Lagliga vägar, myter och pris (179 €, först vid resultat).",
+    keywords: ["ta bort google recension", "kan man ta bort google recensioner", "ta bort recension på google själv", "ta bort dålig recension google", "ta bort negativ google recension", "ta bort google omdöme", "anmäla google recension"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert",
+    date: "2026-10-05",
+  },
+  dek: "**Nej – som företagare kan du inte själv ta bort en Google-recension.** Bara den som skrivit recensionen kan redigera eller radera den. Men recensioner som **bryter mot Googles riktlinjer eller mot lagen** kan Google ta bort: efter en rapport, ett överklagande i Reviews Management Tool eller en juridisk begäran. Här ser du exakt vem som kan ta bort vad, vilka vägar som faktiskt fungerar – och vilka du ska hålla dig borta från.",
+  blocks: [
+    { t: "h2", id: "kort", text: "Det korta svaret", toc: "Kort svar" },
+    { t: "p", text: "**Ett företag har ingen knapp för att ta bort recensioner – inte ens i den egna företagsprofilen.** Det är medvetet: om ägare kunde radera kritik själva skulle inga betyg betyda något längre. Det du kan göra är att svara, rapportera och begära borttagning." },
+    { t: "p", text: "I praktiken försvinner en recension på tre sätt: **skribenten** raderar den själv, **Google** tar bort den för att den bryter mot riktlinjerna, eller så måste den bort för att den är **olaglig** (till exempel ärekränkning). Allt som inte faller under det – ärlig, saklig kritik från riktiga kunder – ligger kvar." },
+    { t: "ul", items: [
+      "**Rapportera** via Google Maps, Sök eller din företagsprofil (”Rapportera recension”).",
+      "**Överklaga** i [Reviews Management Tool](https://support.google.com/business/workflow/9945796) om Google inte ser någon överträdelse – en gång per recension.",
+      "**Juridisk begäran** vid ärekränkning eller olagligt innehåll via [formuläret för juridisk borttagning](https://support.google.com/legal/answer/3110420).",
+    ] },
+    { t: "p", text: "Vill du inte reda ut det här själv? En [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) som RapidRemove går igenom just dessa officiella procedurer åt dig – och tar betalt först när recensionen verkligen är borta." },
+
+    { t: "h2", id: "vem", text: "Vem kan ta bort vad?", toc: "Vem kan vad?" },
+    { t: "p", text: "**Det finns exakt fyra parter som kan få en recension att försvinna – och ägaren är inte direkt en av dem.** Tabellen visar vem som kan vad och när det är realistiskt." },
+    { t: "table", head: ["Vem", "Kan ta bort?", "Hur", "När det är realistiskt"], rows: [
+      ["**Den som skrev recensionen**", "Ja, alltid", "Redigerar eller raderar sin egen recension i Google Maps", "När problemet är löst eller det var ett missförstånd"],
+      ["**Företagsägaren**", "Nej", "Kan bara rapportera, överklaga och svara offentligt", "Aldrig direkt – bara via Google"],
+      ["**Google**", "Ja", "Efter rapport, överklagande eller automatisk granskning", "Vid brott mot riktlinjerna (falskt, hat, spam, intressekonflikt …)"],
+      ["**Domstol / rättslig väg**", "Indirekt", "Juridisk begäran hos Google eller domstolsbeslut", "Vid ärekränkning, osanna påståenden eller annat olagligt innehåll"],
+    ] },
+    { t: "p", text: "Viktigt: Google håller ibland också tillbaka recensioner **automatiskt** eller tar bort dem i efterhand. Rapporterade recensioner granskas både av automatiska system och av människor. Hur lång tid det tar varierar kraftigt – från några dagar till veckor ([mer om handläggningstiden](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/))." },
+
+    { t: "h2", id: "regler", text: "Vilka recensioner Google faktiskt tar bort", toc: "Vad Google tar bort" },
+    { t: "p", text: "**Google tar bara bort en recension om den bryter mot [policyn för förbjudet och begränsat innehåll](https://support.google.com/contributionpolicy/answer/7400114) eller är olaglig.** Att någon är missnöjd räcker aldrig – Google säger själv att du inte ska rapportera en recension bara för att du inte håller med." },
+    { t: "ul", items: [
+      "**Falskt engagemang:** recensioner utan verklig kundupplevelse, köpta eller massvis publicerade recensioner ([så känner du igen falska recensioner](/sv/magasin/ta-bort-falska-google-recensioner/)).",
+      "**Intressekonflikt:** recensioner från konkurrenter, nuvarande eller tidigare anställda eller ägaren själv.",
+      "**Irrelevant innehåll och spam:** text som inte handlar om en kundupplevelse, eller som gäller ett annat företag.",
+      "**Trakasserier, hatpropaganda, svordomar och stötande innehåll.**",
+      "**Personuppgifter**, till exempel namn, telefonnummer eller adresser till anställda.",
+      "**Identitetsstöld, vilseledande** och olagligt innehåll.",
+    ] },
+    { t: "p", text: "Alla kategorier med exempel hittar du i vår genomgång av [Googles recensionsregler och överträdelser](/sv/magasin/google-recensionsregler-overtradelser/)." },
+
+    { t: "h2", id: "alternativ", text: "De lagliga alternativen – med ärliga för- och nackdelar", toc: "Lagliga alternativ" },
+    { t: "p", text: "**Du har sex lagliga sätt att hantera en besvärlig recension – men bara några av dem leder faktiskt till borttagning.** Vilket som passar beror på om recensionen bryter mot reglerna eller bara är kritisk." },
+    { t: "ol", items: [
+      "**Rapportera recensionen till Google.** Välj ”Rapportera recension” och rätt typ av överträdelse. Gratis och snabbt, men Google avslår många rapporter när överträdelsen inte är tydlig.",
+      "**Överklaga i Reviews Management Tool.** Där ser du status för dina rapporter (”Beslut väntar”, ”Rapporten granskad – ingen överträdelse” osv.). Vid avslag kan du överklaga **en gång per recension**; överklagandet kan ”eskaleras” och avslutas med ett slutgiltigt beslut.",
+      "**Juridisk begäran om borttagning.** För ärekränkning, osanna faktapåståenden eller annat olagligt innehåll. Stark när texten verkligen är olaglig, men du måste tydligt motivera varför.",
+      "**Vänligt be kunden uppdatera recensionen.** Var det en riktig kund och har du löst problemet? Då får du fråga om hen vill justera sin recension. **Utan motprestation** – ingen rabatt, ingen present, ingen press.",
+      "**Svara offentligt.** Går alltid, även om recensionen ligger kvar. Ett lugnt, sakligt svar visar framtida kunder hur du hanterar kritik ([ignorera, svara eller ta bort?](/sv/magasin/negativ-recension-ignorera-svara-ta-bort/)).",
+      "**Professionell borttagning mot betalning vid lyckat resultat.** En specialist bedömer först gratis om recensionen går att ta bort och driver sedan de officiella procedurerna åt dig. Du betalar bara om recensionen verkligen försvinner.",
+    ] },
+    { t: "table", head: ["Alternativ", "Fördelar", "Nackdelar"], rows: [
+      ["Rapportera själv", "Gratis, går att göra direkt", "Avslås ofta; ingen kontroll över utfallet"],
+      ["Överklagande (Reviews Management Tool)", "En andra chans, med statusöversikt", "Bara ett överklagande per recension; osäker tid"],
+      ["Juridisk begäran", "Stark vid verkligt olagligt innehåll", "Fungerar bara vid tydligt lagbrott; arbetskrävande"],
+      ["Be kunden uppdatera", "Verklig förbättring av ditt betyg", "Bara riktiga kunder; ingen belöning tillåten"],
+      ["Svara offentligt", "Går alltid, bygger förtroende", "Recensionen syns kvar"],
+      ["Professionell borttagning", "Vana vid procedurerna; **179 € per borttagen recension, först efter lyckat resultat**", "Kostar pengar; ärlig kritik ligger ändå kvar"],
+    ] },
+    { t: "p", text: "Som jämförelse: en advokat tar oftast betalt i förskott och per timme – även om recensionen till slut ligger kvar ([advokat eller teknisk borttagning?](/sv/magasin/negativ-google-recension-advokat/)). En fullständig kostnadsjämförelse finns i [vad kostar det att ta bort en Google-recension](/sv/magasin/kostnad-ta-bort-google-recension/)." },
+    { t: "cta", title: "Få en gratis bedömning av om recensionen kan tas bort", text: "Sök ditt företag, bocka i recensionerna och se priset direkt: **179 € per borttagen recension** (äldre än 4 veckor 229 €). Inget i förskott – du betalar bara när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Bara Googles officiella procedurer", "Först en ärlig bedömning"] },
+
+    { t: "h2", id: "myter", text: "Myter och fällor: det här ska du låta bli", toc: "Myter" },
+    { t: "p", text: "**Det cirkulerar många ”knep” för att ta bort Google-recensioner som inte fungerar – eller till och med sätter din profil på spel.** Här är de fyra vanligaste." },
+    { t: "ul", items: [
+      "**”Jag skapar bara en ny profil.”** Att markera profilen som ”permanent stängd” tar inte bort några recensioner – de syns kvar. Och en andra profil för samma företag på samma adress är en dubblett, vilket Google inte tillåter.",
+      "**”Om alla rapporterar recensionen försvinner den.”** Massrapportering från kollegor, familj eller vänner ändrar inte bedömningen: Google tittar på innehållet, inte på antalet rapporter.",
+      "**”Jag köper några positiva recensioner eller ger rabatt för fem stjärnor.”** Köpta recensioner och belöningar för recensioner räknas som falskt engagemang och bryter mot Googles policy. Det kan leda till borttagna recensioner eller begränsningar för din profil.",
+      "**”Garanterad borttagning, betala i förskott.”** Ingen kan garantera att en recension försvinner – beslutet ligger alltid hos Google. Den som lovar garanti och samtidigt vill ha betalt i förskott är en varningsflagga. Seriösa aktörer arbetar med **betalning först efter lyckat resultat**.",
+    ] },
+    { t: "warn", title: "Utpressning med recensioner? Betala inte.", text: "Får du en våg av 1-stjärniga recensioner följd av ett krav på betalning är det utpressning. **Betala inte, gå inte i dialog, spara skärmdumpar** och använd Googles [särskilda formulär för recensionsutpressning](https://support.google.com/business/answer/16404809). Mer om det: [utpressning med Google-recensioner](/sv/magasin/utpressning-google-recensioner/)." },
+
+    { t: "h2", id: "profil", text: "Specialfall: radera hela företagsprofilen", toc: "Radera hela profilen" },
+    { t: "p", text: "**Raderas hela Google-företagsprofilen försvinner alla recensioner på en gång – även de bra.** Det är något annat än ”permanent stängd”, där både företagsuppgifter och recensioner fortsätter att synas. Hur en verklig radering går till läser du i vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/)." },
+    { t: "table", head: ["Situation", "Bästa vägen"], rows: [
+      ["Profilen är i grunden bra, en eller några recensioner är falska eller kränkande", "**Ta bort enskilda recensioner**"],
+      ["Ärlig, saklig kritik från en kund", "**Svara offentligt** och lös problemet"],
+      ["Profilen är full av gamla falska recensioner, hämndrecensioner och felaktiga uppgifter", "**Radera hela profilen**"],
+      ["Du vill försvinna från Google Maps för gott eller göra en verklig nystart", "**Radera hela profilen**"],
+    ] },
+    { t: "p", text: "Har du en sund profil med många bra betyg vore det att skjuta myggor med kanon att radera hela profilen: du förlorar alla dina positiva recensioner också. Då är det mer träffsäkert att [ta bort enskilda Google-recensioner](/sv/ta-bort-omdome/)." },
+
+    { t: "h2", id: "plan", text: "Så gör du konkret nu", toc: "Steg för steg" },
+    { t: "p", text: "**Börja alltid med en nykter fråga: bryter recensionen mot reglerna eller lagen – eller är det bara kritik?** Resten följer av svaret." },
+    { t: "ol", items: [
+      "**Säkra bevis:** ta en skärmdump av recensionen, datumet och skribentens profil.",
+      "**Kontrollera:** är skribenten en riktig kund? Faller innehållet under någon kategori i Googles policy?",
+      "**Svara lugnt** – sakligt, utan personuppgifter och utan anklagelser.",
+      "**Rapportera** med rätt typ av överträdelse och följ statusen i Reviews Management Tool.",
+      "**Överklaga** om rapporten avslås – du har bara ett överklagande per recension, så motivera det ordentligt.",
+      "**Agera snabbt:** recensioner upp till 4 veckor gamla har hos oss ca. 90 % chans att lyckas, äldre ca. 50 %.",
+    ] },
+    { t: "p", text: "Sedan 2023 har vi tagit bort över **1 600 Google-företagsprofiler** och gjort över **20 000 kostnadsfria profilkontroller**, för kunder i mer än 50 länder (Trustpilot 5,0). För enskilda recensioner använder vi uteslutande Googles egna procedurer – inga falska konton, inga bottar, inga falska juridiska anmälningar – och skribenten får inte veta vem som begärt borttagningen." },
+    { t: "cta", title: "Vilka recensioner kan tas bort? Se det på 2 minuter", text: "Sök din profil, bocka i recensionerna och få en ärlig bedömning. Från 3 accepterade recensioner −10 %, från 5 −15 %, från 10 −30 %. **Du betalar bara per borttagen recension.**", btn: "Starta gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Betalning först efter borttagning", "Oftast klart på några dagar", "Trustpilot 5,0"] },
+  ],
+  faq: [
+    { q: "Kan jag som ägare ta bort en Google-recension själv?", a: "Nej. I Google-företagsprofilen finns ingen knapp för att ta bort recensioner. Du kan bara rapportera, överklaga eller svara offentligt – ta bort kan bara skribenten själv eller Google." },
+    { q: "Vilka Google-recensioner tas bort?", a: "Recensioner som bryter mot Googles policy – till exempel falska recensioner, intressekonflikter, hat, trakasserier, spam eller personuppgifter – och olagligt innehåll som ärekränkning. **Ärlig kritik från riktiga kunder ligger kvar.**" },
+    { q: "Vad händer om Google avslår min rapport?", a: "Då kan du överklaga i Reviews Management Tool, **en gång per recension**. Överklagandet kan eskaleras och avslutas med ett slutgiltigt beslut från Google." },
+    { q: "Får jag be en kund ändra sin recension?", a: "Ja, om det är en riktig kund och du har löst problemet. Erbjud **ingen rabatt, present eller annan belöning** – det bryter mot Googles policy." },
+    { q: "Försvinner recensionerna om jag markerar profilen som permanent stängd?", a: "Nej. Vid ”permanent stängd” syns både uppgifterna och recensionerna kvar. Bara om hela företagsprofilen raderas försvinner alla recensioner – även de bra." },
+    { q: "Vad kostar det att få en Google-recension borttagen?", a: "Hos RapidRemove **179 € per borttagen recension**, 229 € om recensionen är äldre än 4 veckor. Du betalar bara om recensionen verkligen försvinner; går den inte att ta bort kostar det ingenting." },
+    { q: "Hur lång tid tar det innan en recension är borta?", a: "Oftast några dagar, ibland upp till 3 veckor. Google lovar själv ingen fast handläggningstid – granskningen kan ta allt från dagar till veckor." },
+  ],
+  related: [
+    { label: "Ta bort enskilda Google-recensioner", url: "/sv/ta-bort-omdome/" },
+    { label: "Googles recensionsregler och överträdelser", url: "/sv/magasin/google-recensionsregler-overtradelser/" },
+    { label: "Hur lång tid tar det för Google att ta bort en recension?", url: "/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/" },
+    { label: "Ta bort falska Google-recensioner", url: "/sv/magasin/ta-bort-falska-google-recensioner/" },
+  ],
+};
+export default article;

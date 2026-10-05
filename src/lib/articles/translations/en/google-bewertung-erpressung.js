@@ -1,0 +1,115 @@
+/* EN — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Reputation",
+  meta: {
+    slug: "google-review-extortion",
+    title: "Google Review Extortion: What to Do Right Now (2026)",
+    h1: "Google Review Extortion: What to Do When Scammers Demand Money",
+    description: "A wave of 1-star reviews and a demand for money? Don't pay. How Google review extortion works, how to report it and how to get the reviews removed.",
+    keywords: ["google review extortion", "review extortion scam", "1 star review extortion", "someone demanding money to remove google reviews", "report google review extortion", "fake 1 star reviews blackmail", "google review extortion form", "negative review extortion whatsapp"],
+    author: "Maximilian Hölzl",
+    authorRole: "Founder",
+    date: "2026-10-05",
+  },
+  dek: "Overnight your profile gets a string of 1-star reviews, then a stranger messages you: pay, or more will follow. That's **Google review extortion**, and the answer is always the same: **don't pay, don't negotiate, document everything and report it**. Google has a dedicated form for exactly this case, and extortion reviews are among the ones Google removes most reliably. Here's what to do, step by step.",
+  blocks: [
+    { t: "h2", id: "what", text: "What is Google review extortion?", toc: "What it is" },
+    { t: "p", text: "Review extortion is when someone floods your Google Business Profile with negative reviews and then demands money, gift cards or free services to remove them. The reviews are the threat; the message afterwards is the ransom note." },
+    { t: "p", text: "The reviewers are almost never real customers. They are usually fresh or bought accounts run by organised groups that target many businesses at once: restaurants, dentists, hotels, tradespeople, agencies. Google treats this as a clear violation of its rules, which is why it has set up a [dedicated reporting form for review extortion](https://support.google.com/business/answer/16404809)." },
+    { t: "p", text: "If you just want the reviews gone without dealing with the process yourself, our [Google review removal service](/en/remove-single-reviews/) handles it through Google's own procedures, and you only pay for reviews that are actually removed." },
+
+    { t: "h2", id: "how", text: "How the scam typically runs", toc: "How it runs" },
+    { t: "p", text: "Most cases follow the same script. Knowing it helps you stay calm, because nothing the extortionist does is personal or random." },
+    { t: "ol", items: [
+      "**The wave:** within hours or a few days, several 1- or 2-star reviews appear. They often have **no text at all**, or one generic line that fits any business.",
+      "**The contact:** a message arrives via **WhatsApp, Telegram, email** or sometimes through your website form or Google Business messages. It references the new reviews.",
+      "**The demand:** pay a sum (often in crypto or gift cards) or provide free services, and the reviews “will be deleted”.",
+      "**The threat:** if you refuse, they promise more reviews. Some send a second small wave to show they are serious.",
+      "**The repeat:** if you pay, there is no guarantee anything is removed. Paying marks you as a business that pays, and the demands often come back.",
+    ] },
+
+    { t: "h2", id: "signs", text: "Warning signs that you're being targeted", toc: "Warning signs" },
+    { t: "p", text: "The clearest sign is timing: several low ratings in a short window followed by a message that mentions them. Other typical signals:" },
+    { t: "ul", items: [
+      "Multiple **1-star reviews without text** ([why wordless ratings are often removable](/en/magazine/remove-1-star-review-without-text/)).",
+      "Reviewer names you can't match to **any booking, order or visit**.",
+      "Profiles with **no other reviews**, or reviews scattered across unrelated cities and countries.",
+      "Several reviews posted **at nearly the same time**, sometimes with similar wording.",
+      "A message from an **unknown number or account** that links the reviews to a payment.",
+      "Pressure tactics: tight deadlines, “last warning”, or a “discount” if you pay quickly.",
+    ] },
+    { t: "p", text: "Not every wave comes with a ransom note. Competitor attacks and plain fake reviews look similar; the steps in our guide to [fake Google reviews](/en/magazine/remove-fake-google-reviews/) apply there." },
+
+    { t: "h2", id: "immediately", text: "What to do immediately", toc: "First steps" },
+    { t: "p", text: "Don't pay and don't reply with anything other than silence. Then secure the evidence before anything changes, because messages get deleted and accounts disappear." },
+    { t: "ol", items: [
+      "**Do not pay** and do not negotiate, not even to “buy time”.",
+      "**Screenshot every message** with the sender's number or username, date and time visible. Save emails including headers if you can.",
+      "**Screenshot every review**: reviewer name, star rating, text and the date shown. Copy each review link.",
+      "**Write down a timeline**: when the reviews appeared, when the message came, any follow-ups.",
+      "**Block the sender** only after you have saved everything.",
+      "**Report to Google** via the extortion form and report each review individually (details below).",
+      "**Consider a police report**, especially if a specific amount was demanded.",
+    ] },
+    { t: "warn", title: "Why paying makes it worse", text: "There is no way to make an extortionist keep their word. Paying doesn't guarantee removal, it funds the next attack and it tells the group you're a target worth returning to. Google's own advice is clear: don't pay and don't engage." },
+
+    { t: "h2", id: "report", text: "How to report review extortion to Google", toc: "Report to Google" },
+    { t: "p", text: "Use three channels together: the extortion form, a report on each review and the Reviews Management Tool to track the outcome. The form gives Google the context; the individual reports make sure every review is reviewed." },
+    { t: "table", head: ["Step", "Where", "What to do"], rows: [
+      ["1. Extortion report", "[Google's review extortion form](https://support.google.com/business/answer/16404809)", "Describe the demand, attach screenshots of the messages and list the affected reviews."],
+      ["2. Report each review", "Google Maps, Search or your Business Profile → “Report review”", "Choose the matching violation type, e.g. fake engagement or conflict of interest."],
+      ["3. Track the status", "[Reviews Management Tool](https://support.google.com/business/workflow/9945796)", "Check “Decision pending” or “Report reviewed”, and appeal once per review if Google sees no violation."],
+      ["4. Legal route (optional)", "[Google legal removal request](https://support.google.com/legal/answer/3110420)", "For reviews with defamatory or unlawful content."],
+    ] },
+    { t: "p", text: "The reviews violate Google's [prohibited and restricted content policy](https://support.google.com/contributionpolicy/answer/7400114) on several counts: fake engagement, content posted to harm a business, and often off-topic or deceptive content. More on the categories in our overview of [Google review policy violations](/en/magazine/google-review-policy-violations/)." },
+    { t: "tip", title: "Report every review, not just the worst one", text: "Each review is checked individually. If you only report two out of ten, the other eight may stay. Note the date you reported each one so you can follow up in the Reviews Management Tool." },
+
+    { t: "h2", id: "police", text: "Should you go to the police?", toc: "Police report" },
+    { t: "p", text: "Yes, filing a report is worth considering. Demanding money under threat is a criminal offence in most countries, and a case number strengthens your position with Google and any later legal steps." },
+    { t: "p", text: "Bring your screenshots, the review links and your timeline. Be realistic: the perpetrators often operate from abroad and may never be identified. The report is still useful as an official record, and it costs you nothing but an hour." },
+
+    { t: "h2", id: "speed", text: "How quickly do extortion reviews come down?", toc: "How fast" },
+    { t: "p", text: "There is no fixed timeline: Google says reported reviews are checked by automated systems and people, and processing can take days to weeks. Clear extortion cases with documented messages are often handled faster than ordinary reports, but Google doesn't guarantee a time frame." },
+    { t: "p", text: "Two things work in your favour: the reviews are **fresh**, and the pattern is **obvious**. Reviews up to four weeks old have much better removal chances than old ones, so act in the first days. If Google rejects a report, use the one appeal per review in the Reviews Management Tool. For details on waiting times and appeals, see [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
+
+    { t: "h2", id: "rapidremove", text: "How RapidRemove helps with an extortion wave", toc: "How we help" },
+    { t: "p", text: "Send us the reviews and we take over the removal through Google's own procedures, on your behalf. You don't need to argue with Google support, chase reports or track every case yourself." },
+    { t: "ul", items: [
+      "**Free assessment first:** we tell you honestly which reviews have good chances.",
+      "**Pay only on success:** $179 per removed review (up to 4 weeks old), $229 for older ones. Nothing upfront, no fee for attempts.",
+      "**Volume discount:** extortion waves usually mean many reviews. On the reviews we accept: 3+ −10 %, 5+ −15 %, 10+ −30 %. Example: 10 fresh extortion reviews cost $1,790, minus 30 % = **$1,253**, and only for the ones actually removed.",
+      "**Strong chances:** fresh reviews have an approx. **90 % success chance**, and extortion reviews are among the ones Google removes most reliably.",
+      "**Usually a few days**, sometimes up to three weeks. Reviews can come down at different times, so you can pay per review.",
+      "**Clean methods only:** no fake accounts, no bots, no fake legal notices. The reviewers are not told who requested the removal.",
+    ] },
+    { t: "cta", title: "Being extorted? Send us the reviews", text: "Search your business, tick the extortion reviews or paste their links, and see the price instantly. **$179 per removed review**, nothing upfront.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
+    { t: "p", text: "Prices, discounts and the full process are explained in detail on our [Google review removal service](/en/remove-single-reviews/) page." },
+
+    { t: "h2", id: "protect", text: "How to protect your profile afterwards", toc: "Protect your profile" },
+    { t: "p", text: "Monitor new reviews closely for a few weeks, because groups sometimes try again. The faster you spot a new wave, the fresher the reviews are when you report them." },
+    { t: "ul", items: [
+      "**Turn on review notifications** in your Business Profile and check new reviews daily for the next weeks.",
+      "**Keep your evidence folder** and add any new messages or reviews to it.",
+      "**Respond calmly** where a reply makes sense: “We have no record of you as a customer. We have reported this review to Google.” That's enough.",
+      "**Don't accuse anyone publicly in anger** or mention the extortion in emotional terms. Future customers read your replies, and a calm tone protects your reputation.",
+      "**Ask happy customers for reviews** as part of your normal routine, so a single attack weighs less on your average.",
+    ] },
+    { t: "p", text: "Not sure whether to reply to a specific review at all? Our guide on [when to ignore, respond to or remove a negative review](/en/magazine/negative-review-ignore-respond-remove/) helps you decide." },
+  ],
+  faq: [
+    { q: "Should I pay the extortionist?", a: "No. Paying doesn't guarantee the reviews are removed, and it marks you as a business that pays, so demands often come back. **Don't pay, don't negotiate**, document everything and report it to Google." },
+    { q: "Will Google remove all the extortion reviews?", a: "Often most or all of them, especially when they are fresh and the extortion is documented, but Google gives no guarantee. Report every review individually and use the appeal in the Reviews Management Tool for any that stay." },
+    { q: "Can I report review extortion to the police?", a: "Yes. Demanding money under threat is a criminal offence in most countries. Bring screenshots of the messages, the review links and a timeline; the case number also supports your report to Google." },
+    { q: "What if they come back with more reviews?", a: "Don't respond, add the new messages and reviews to your evidence and report them the same way. Fresh reviews are the easiest to remove, so act within days." },
+    { q: "Can I delete the reviews myself?", a: "No. Business owners can't delete Google reviews; only the reviewer can delete their own review. You can report them, reply publicly or have them removed through Google's procedures." },
+    { q: "What does it cost to have extortion reviews removed?", a: "With RapidRemove **$179 per removed review** up to 4 weeks old, $229 for older ones, with a volume discount of up to 30 % from 10 reviews. You pay nothing for reviews that stay." },
+    { q: "Will the extortionist know I had the reviews removed?", a: "Not from us. The reviewer is not told who requested the removal." },
+  ],
+  related: [
+    { label: "Google review removal service", url: "/en/remove-single-reviews/" },
+    { label: "Spot, report and remove fake Google reviews", url: "/en/magazine/remove-fake-google-reviews/" },
+    { label: "Remove a 1-star review without text", url: "/en/magazine/remove-1-star-review-without-text/" },
+    { label: "How long does Google take to remove a review?", url: "/en/magazine/how-long-does-google-take-to-remove-a-review/" },
+  ],
+};
+export default article;

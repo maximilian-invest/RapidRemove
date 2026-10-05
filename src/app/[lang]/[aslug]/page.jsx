@@ -21,7 +21,7 @@ import { pageMeta } from "@/lib/page-meta";
 import { requireKnownParams } from "@/lib/route-guard";
 
 // Ratgeber, die die Bewertungs-Landingpage verlinkt (interne Verlinkung + KI-Fan-out).
-const REVIEW_GUIDES = ["einzelbewertung-loeschen-service", "google-bewertung-loeschen-lassen", "google-rezension-loeschen-lassen", "fake-google-bewertung-melden-loeschen", "negative-google-bewertung-anwalt-oder-technische-loeschung", "1-stern-bewertung-ohne-text-loeschen", "schlechte-google-bewertungen-was-tun", "negative-bewertung-ignorieren-antworten-loeschen"];
+const REVIEW_GUIDES = ["einzelbewertung-loeschen-service", "google-bewertungsrichtlinien", "google-bewertung-loeschen-kosten", "google-bewertung-loeschen-dauer", "kann-man-google-bewertungen-loeschen", "google-bewertung-erpressung", "fake-google-bewertung-melden-loeschen", "1-stern-bewertung-ohne-text-loeschen", "google-bewertung-loeschen-lassen", "google-rezension-loeschen-lassen", "negative-google-bewertung-anwalt-oder-technische-loeschung", "negative-bewertung-ignorieren-antworten-loeschen"];
 
 // Unbekannte Parameter → notFound() in der Seite (gebrandete 404 des Bereichs).
 export const dynamicParams = true;

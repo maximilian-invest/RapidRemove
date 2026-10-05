@@ -1,0 +1,115 @@
+/* IT — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Reputazione",
+  meta: {
+    slug: "estorsione-recensioni-google",
+    title: "Estorsione con recensioni Google: cosa fare subito (2026)",
+    h1: "Estorsione con recensioni Google: cosa fare se ti chiedono soldi",
+    description: "Un'ondata di recensioni a 1 stella e poi una richiesta di soldi? Non pagare. Come funziona l'estorsione, come segnalarla e come far rimuovere le recensioni.",
+    keywords: ["estorsione recensioni google", "ricatto recensioni google", "mi chiedono soldi per togliere recensioni", "segnalare estorsione recensioni google", "recensioni false 1 stella ricatto", "truffa recensioni negative whatsapp", "modulo estorsione recensioni google", "rimuovere recensioni estorsione"],
+    author: "Maximilian Hölzl",
+    authorRole: "Esperto Google e fondatore",
+    date: "2026-10-05",
+  },
+  dek: "Da un giorno all'altro la tua scheda riceve una raffica di recensioni a 1 stella, poi uno sconosciuto ti scrive: paga, o ne arriveranno altre. Questa è **estorsione con le recensioni Google**, e la risposta è sempre la stessa: **non pagare, non trattare, conserva le prove di tutto e segnala**. Google ha un modulo apposito proprio per questo caso, e le recensioni estorsive sono tra quelle che Google rimuove con più affidabilità. Ecco cosa fare, passo per passo.",
+  blocks: [
+    { t: "h2", id: "cosa-e", text: "Che cos'è l'estorsione con le recensioni Google?", toc: "Cos'è" },
+    { t: "p", text: "Si parla di estorsione con le recensioni quando qualcuno riempie il tuo Profilo dell'attività su Google di recensioni negative e poi pretende soldi, gift card o servizi gratuiti per toglierle. Le recensioni sono la minaccia; il messaggio che segue è la richiesta di riscatto." },
+    { t: "p", text: "Chi le scrive non è quasi mai un vero cliente. Di solito sono account nuovi o comprati, gestiti da gruppi organizzati che colpiscono molte attività contemporaneamente: ristoranti, studi dentistici, hotel, artigiani, agenzie. Google lo considera una chiara violazione delle sue norme e per questo ha creato un [modulo dedicato per segnalare l'estorsione tramite recensioni](https://support.google.com/business/answer/16404809)." },
+    { t: "p", text: "Se vuoi solo che le recensioni spariscano senza occuparti tu della procedura, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) se ne occupa con le procedure ufficiali di Google, e paghi solo le recensioni effettivamente rimosse." },
+
+    { t: "h2", id: "come-funziona", text: "Come funziona la truffa", toc: "Come funziona" },
+    { t: "p", text: "Quasi tutti i casi seguono lo stesso copione. Conoscerlo aiuta a restare lucidi: nulla di ciò che fa il ricattatore è personale o casuale." },
+    { t: "ol", items: [
+      "**L'ondata:** nel giro di qualche ora o di pochi giorni compaiono diverse recensioni da 1 o 2 stelle. Spesso **senza testo**, oppure con una frase generica adatta a qualsiasi attività.",
+      "**Il contatto:** arriva un messaggio su **WhatsApp, Telegram o via email**, a volte tramite il modulo del tuo sito o i messaggi di Google. Fa riferimento alle nuove recensioni.",
+      "**La richiesta:** pagare una somma (spesso in criptovalute o gift card) o offrire servizi gratis, e le recensioni «verranno cancellate».",
+      "**La minaccia:** se rifiuti, ne promettono altre. Alcuni mandano una seconda piccola ondata per dimostrare di fare sul serio.",
+      "**La ricaduta:** se paghi, nessuno garantisce che venga tolto qualcosa. Pagare ti segnala come un'attività che paga, e le richieste spesso tornano.",
+    ] },
+
+    { t: "h2", id: "segnali", text: "I segnali che sei nel mirino", toc: "Segnali" },
+    { t: "p", text: "Il segnale più chiaro è la tempistica: diversi voti bassi in pochissimo tempo, seguiti da un messaggio che li cita. Altri indizi tipici:" },
+    { t: "ul", items: [
+      "Diverse **recensioni a 1 stella senza testo** ([perché spesso si possono eliminare](/it/rivista/eliminare-recensione-1-stella-senza-testo/)).",
+      "Nomi che non corrispondono a **nessuna prenotazione, ordine o visita**.",
+      "Profili **senza altre recensioni**, o con recensioni sparse in città e Paesi che non c'entrano nulla.",
+      "Più recensioni pubblicate **quasi nello stesso momento**, a volte con frasi simili.",
+      "Un messaggio da un **numero o account sconosciuto** che collega le recensioni a un pagamento.",
+      "Pressione: scadenze strette, «ultimo avviso» o uno «sconto» se paghi in fretta.",
+    ] },
+    { t: "p", text: "Non tutte le ondate arrivano con una richiesta di soldi. Gli attacchi dei concorrenti e le semplici recensioni false sono molto simili; per quei casi valgono i passi della nostra guida sulle [recensioni false su Google](/it/rivista/eliminare-recensioni-false-google/)." },
+
+    { t: "h2", id: "cosa-fare", text: "Cosa fare subito", toc: "Primi passi" },
+    { t: "p", text: "Non pagare e non rispondere: il silenzio è la risposta migliore. Poi metti al sicuro le prove prima che cambi qualcosa, perché i messaggi si cancellano e gli account spariscono." },
+    { t: "ol", items: [
+      "**Non pagare** e non trattare, nemmeno per «prendere tempo».",
+      "**Fai uno screenshot di ogni messaggio**, con numero o nome utente del mittente, data e ora ben visibili. Se puoi, salva le email con le intestazioni.",
+      "**Fai uno screenshot di ogni recensione**: nome, stelle, testo e data indicata. Copia il link di ciascuna.",
+      "**Annota una cronologia**: quando sono comparse le recensioni, quando è arrivato il messaggio, eventuali solleciti.",
+      "**Blocca il mittente** solo dopo aver salvato tutto.",
+      "**Segnala a Google** con il modulo per l'estorsione e segnala ogni recensione singolarmente (dettagli sotto).",
+      "**Valuta una denuncia alle forze dell'ordine**, soprattutto se ti è stata chiesta una cifra precisa.",
+    ] },
+    { t: "warn", title: "Perché pagare peggiora le cose", text: "Non c'è modo di costringere un ricattatore a mantenere la parola. Pagare non garantisce la rimozione, finanzia il prossimo attacco e dice al gruppo che vale la pena tornare. Il consiglio di Google è chiaro: non pagare e non avere contatti." },
+
+    { t: "h2", id: "segnalare", text: "Come segnalare l'estorsione a Google", toc: "Segnalare a Google" },
+    { t: "p", text: "Usa tre canali insieme: il modulo per l'estorsione, una segnalazione su ogni recensione e lo strumento di gestione delle recensioni per seguirne l'esito. Il modulo dà a Google il contesto; le segnalazioni singole fanno sì che ogni recensione venga esaminata." },
+    { t: "table", head: ["Passo", "Dove", "Cosa fare"], rows: [
+      ["1. Segnalazione dell'estorsione", "[Modulo di Google per l'estorsione tramite recensioni](https://support.google.com/business/answer/16404809)", "Descrivi la richiesta, allega gli screenshot dei messaggi ed elenca le recensioni coinvolte."],
+      ["2. Segnalare ogni recensione", "Google Maps, Ricerca o il tuo Profilo dell'attività → «Segnala recensione»", "Scegli il tipo di violazione adatto, ad es. interazione falsa o conflitto di interessi."],
+      ["3. Seguire lo stato", "[Strumento di gestione delle recensioni](https://support.google.com/business/workflow/9945796)", "Controlla «Decisione in sospeso» o «Segnalazione esaminata» e presenta ricorso una volta per recensione se Google non vede violazioni."],
+      ["4. Via legale (facoltativa)", "[Richiesta di rimozione per motivi legali](https://support.google.com/legal/answer/3110420)", "Per recensioni diffamatorie o con contenuti illeciti."],
+    ] },
+    { t: "p", text: "Queste recensioni violano su più punti le [norme sui contenuti vietati e soggetti a limitazioni](https://support.google.com/contributionpolicy/answer/7400114) di Google: interazione falsa, contenuti pubblicati per danneggiare un'attività e spesso contenuti ingannevoli o fuori tema. Le categorie sono spiegate nella nostra panoramica sulle [violazioni delle norme sulle recensioni Google](/it/rivista/norme-recensioni-google-violazioni/)." },
+    { t: "tip", title: "Segnala tutte le recensioni, non solo la peggiore", text: "Ogni recensione viene esaminata a sé. Se ne segnali due su dieci, le altre otto possono restare. Annota la data di ogni segnalazione per seguirla nello strumento di gestione delle recensioni." },
+
+    { t: "h2", id: "denuncia", text: "Conviene sporgere denuncia?", toc: "Denuncia" },
+    { t: "p", text: "Sì, vale la pena valutarlo. Chiedere soldi con una minaccia è reato nella maggior parte dei Paesi, e il numero di denuncia rafforza la tua posizione con Google e per eventuali passi legali successivi." },
+    { t: "p", text: "Porta gli screenshot, i link delle recensioni e la cronologia. Sii realista: spesso gli autori operano dall'estero e potrebbero non essere mai identificati. La denuncia resta comunque utile come traccia ufficiale, e ti costa solo un'ora." },
+
+    { t: "h2", id: "tempi", text: "In quanto tempo spariscono le recensioni estorsive?", toc: "Tempi" },
+    { t: "p", text: "Non c'è una tempistica fissa: Google spiega che le recensioni segnalate vengono controllate da sistemi automatici e da persone, e l'esame può richiedere da qualche giorno a qualche settimana. I casi di estorsione evidenti, con messaggi documentati, vengono spesso gestiti prima di una segnalazione normale, ma Google non garantisce tempi." },
+    { t: "p", text: "Due cose giocano a tuo favore: le recensioni sono **recenti** e lo schema è **evidente**. Le recensioni fino a quattro settimane hanno molte più probabilità di essere rimosse di quelle vecchie, quindi muoviti nei primi giorni. Se Google respinge una segnalazione, usa l'unico ricorso per recensione nello strumento di gestione. Tempi e ricorsi nel dettaglio: [quanto tempo impiega Google a rimuovere una recensione](/it/rivista/quanto-tempo-google-rimuovere-recensione/)." },
+
+    { t: "h2", id: "rapidremove", text: "Come ti aiuta RapidRemove contro un'ondata estorsiva", toc: "Come aiutiamo" },
+    { t: "p", text: "Mandaci le recensioni e ci occupiamo noi della rimozione con le procedure ufficiali di Google, per conto tuo. Non devi discutere con l'assistenza di Google, rincorrere segnalazioni né seguire ogni singolo caso." },
+    { t: "ul", items: [
+      "**Prima una valutazione gratuita:** ti diciamo onestamente quali recensioni hanno buone possibilità.",
+      "**Paghi solo a risultato:** 179 € per recensione rimossa (fino a 4 settimane), 229 € se più vecchia. Nulla in anticipo, nessun costo per i tentativi.",
+      "**Sconto quantità:** un'ondata estorsiva di solito significa molte recensioni. Su quelle che accettiamo: 3+ −10 %, 5+ −15 %, 10+ −30 %. Esempio: 10 recensioni estorsive recenti costano 1.790 €, meno il 30 % = **1.253 €**, e solo per quelle effettivamente rimosse.",
+      "**Buone probabilità:** le recensioni recenti hanno circa il **90 % di probabilità di successo**, e quelle estorsive sono tra le recensioni che Google rimuove con più affidabilità.",
+      "**Di solito pochi giorni**, a volte fino a tre settimane. Le recensioni possono sparire in momenti diversi, quindi puoi pagare recensione per recensione.",
+      "**Solo metodi puliti:** niente account falsi, niente bot, niente finte diffide legali. Gli autori non sanno chi ha chiesto la rimozione.",
+    ] },
+    { t: "cta", title: "Sei vittima di estorsione? Mandaci le recensioni", text: "Cerca la tua attività, spunta le recensioni estorsive o incolla i loro link – e vedi subito il prezzo. **179 € per recensione rimossa**, nulla in anticipo.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi per recensione rimossa", "Prima una valutazione onesta"] },
+    { t: "p", text: "Prezzi, sconti e l'intera procedura sono spiegati nella nostra pagina per [rimuovere una recensione Google](/it/rimuovere-una-recensione/)." },
+
+    { t: "h2", id: "proteggere", text: "Come proteggere la scheda dopo", toc: "Proteggere la scheda" },
+    { t: "p", text: "Tieni d'occhio le nuove recensioni per qualche settimana, perché questi gruppi a volte ci riprovano. Prima individui una nuova ondata, più recenti saranno le recensioni quando le segnali." },
+    { t: "ul", items: [
+      "**Attiva le notifiche delle recensioni** nel tuo Profilo dell'attività e controlla quelle nuove ogni giorno nelle prossime settimane.",
+      "**Conserva la cartella delle prove** e aggiungi ogni nuovo messaggio o recensione.",
+      "**Rispondi con calma** quando ha senso: «Non risulta nessun contatto con lei come cliente. Abbiamo segnalato questa recensione a Google.» Basta così.",
+      "**Non accusare nessuno pubblicamente a caldo** e non parlare dell'estorsione con toni emotivi. I futuri clienti leggono le tue risposte, e la calma protegge la tua reputazione.",
+      "**Chiedi recensioni ai clienti soddisfatti** come abitudine, così un attacco pesa meno sulla tua media.",
+    ] },
+    { t: "p", text: "Non sai se rispondere a una recensione specifica? La nostra guida su [quando ignorare, rispondere o eliminare una recensione negativa](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/) ti aiuta a decidere." },
+  ],
+  faq: [
+    { q: "Devo pagare il ricattatore?", a: "No. Pagare non garantisce la rimozione delle recensioni e ti segnala come un'attività che paga, quindi le richieste spesso tornano. **Non pagare, non trattare**, documenta tutto e segnala a Google." },
+    { q: "Google rimuoverà tutte le recensioni estorsive?", a: "Spesso la maggior parte o tutte, soprattutto se sono recenti e l'estorsione è documentata, ma Google non dà garanzie. Segnala ogni recensione singolarmente e usa il ricorso nello strumento di gestione delle recensioni per quelle che restano." },
+    { q: "Posso denunciare l'estorsione alle forze dell'ordine?", a: "Sì. Chiedere soldi con una minaccia è reato nella maggior parte dei Paesi. Porta gli screenshot dei messaggi, i link delle recensioni e una cronologia; il numero di denuncia rafforza anche la segnalazione a Google." },
+    { q: "E se tornano con altre recensioni?", a: "Non rispondere, aggiungi i nuovi messaggi e le nuove recensioni alle prove e segnalali allo stesso modo. Le recensioni recenti sono le più facili da rimuovere, quindi agisci entro pochi giorni." },
+    { q: "Posso cancellare io le recensioni?", a: "No. I titolari non possono cancellare le recensioni Google; solo chi l'ha scritta può eliminare la propria. Puoi segnalarle, rispondere pubblicamente o farle rimuovere tramite le procedure di Google." },
+    { q: "Quanto costa far rimuovere recensioni estorsive?", a: "Con RapidRemove **179 € per recensione rimossa** fino a 4 settimane, 229 € se più vecchia, con uno sconto quantità fino al 30 % da 10 recensioni. Non paghi nulla per quelle che restano." },
+    { q: "Il ricattatore saprà che ho fatto rimuovere le recensioni?", a: "Non da noi. L'autore della recensione non viene informato su chi ha chiesto la rimozione." },
+  ],
+  related: [
+    { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },
+    { label: "Riconoscere, segnalare ed eliminare recensioni false", url: "/it/rivista/eliminare-recensioni-false-google/" },
+    { label: "Eliminare una recensione a 1 stella senza testo", url: "/it/rivista/eliminare-recensione-1-stella-senza-testo/" },
+    { label: "Quanto tempo impiega Google a rimuovere una recensione?", url: "/it/rivista/quanto-tempo-google-rimuovere-recensione/" },
+  ],
+};
+export default article;

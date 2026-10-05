@@ -15,6 +15,11 @@ import a13 from "@/lib/articles/translations/es/negative-google-suchergebnisse-v
 import a14 from "@/lib/articles/translations/es/presseartikel-aus-google-entfernen";
 import a17 from "@/lib/articles/translations/es/trustpilot-bewertung-loeschen";
 import a18 from "@/lib/articles/translations/es/einzelbewertung-loeschen-service";
+import n0 from "@/lib/articles/translations/es/google-bewertungsrichtlinien";
+import n1 from "@/lib/articles/translations/es/google-bewertung-loeschen-kosten";
+import n2 from "@/lib/articles/translations/es/google-bewertung-loeschen-dauer";
+import n3 from "@/lib/articles/translations/es/kann-man-google-bewertungen-loeschen";
+import n4 from "@/lib/articles/translations/es/google-bewertung-erpressung";
 export default {
   "google-bewertung-loeschen-lassen": a1,
   "fake-google-bewertung-melden-loeschen": a2,
@@ -32,4 +37,9 @@ export default {
   "presseartikel-aus-google-entfernen": a14,
   "trustpilot-bewertung-loeschen": a17,
   "einzelbewertung-loeschen-service": a18,
+  "google-bewertungsrichtlinien": n0,
+  "google-bewertung-loeschen-kosten": n1,
+  "google-bewertung-loeschen-dauer": n2,
+  "kann-man-google-bewertungen-loeschen": n3,
+  "google-bewertung-erpressung": n4,
 };

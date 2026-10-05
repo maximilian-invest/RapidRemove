@@ -1,0 +1,120 @@
+/* NL — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Reputatie",
+  meta: {
+    slug: "afpersing-google-reviews",
+    title: "Afpersing via Google reviews: wat nu te doen? (2026)",
+    h1: "Afpersing via Google reviews: zo reageert u op een golf van 1-sterreviews en een betaalverzoek",
+    description: "Golf van 1-sterreviews en een betaalverzoek? Niet betalen. Zo meldt u reviewafpersing bij Google en laat u de reviews verwijderen – € 179, alleen bij succes.",
+    keywords: ["afpersing google reviews", "google reviews afpersing", "nepreviews afpersing", "golf van 1 ster reviews", "google review chantage", "google review verwijderen afpersing", "valse reviews betalen om te verwijderen", "reviewafpersing melden"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert en oprichter",
+    date: "2026-10-05",
+  },
+  dek: "Krijgt u ineens een reeks 1-sterreviews en daarna een bericht dat ze verdwijnen als u betaalt? Dan is dit **reviewafpersing** – en het belangrijkste is: **betaal niet en ga niet in gesprek**. Google heeft er een eigen meldformulier voor, en juist zulke reviews worden in de praktijk relatief betrouwbaar verwijderd. Hieronder leest u stap voor stap wat u nu doet, hoe u bewijs veiligstelt en hoe u uw profiel daarna beschermt.",
+  blocks: [
+    { t: "h2", id: "wat-is-het", text: "Wat is afpersing via Google reviews?", toc: "Wat is het?" },
+    { t: "p", text: "Bij reviewafpersing plaatsen oplichters bewust slechte reviews op uw Google-bedrijfsprofiel en eisen daarna geld of gratis diensten om ze weer te verwijderen. Ze gebruiken uw sterrenscore als gijzelaar: hoe meer het pijn doet, hoe groter de kans dat u betaalt." },
+    { t: "p", text: "Het verloop is bijna altijd hetzelfde:" },
+    { t: "ol", items: [
+      "**Binnen enkele uren of dagen** verschijnt een golf van 1- of 2-sterreviews – vaak **zonder tekst**, van accounts die u niet kent en die nooit klant waren.",
+      "Kort daarna volgt een bericht via **WhatsApp, e-mail, Telegram** of soms een contactformulier: de reviews verdwijnen als u betaalt (soms in crypto of via een cadeaukaart) of een gratis dienst levert.",
+      "Wie niet reageert of weigert, krijgt soms een **dreiging**: „Anders komen er nog meer.”",
+      "Wie wél betaalt, is daarmee zelden van het probleem af – u staat dan bekend als iemand die betaalt.",
+    ] },
+    { t: "p", text: "Google erkent dit patroon uitdrukkelijk en heeft er een [apart meldformulier voor reviewafpersing](https://support.google.com/business/answer/16404809) voor ingericht. Het advies van Google is hetzelfde als het onze: **niet betalen, niet reageren, alles vastleggen en melden.** Wilt u er geen tijd in steken, dan kunt u de reviews ook met onze [service om Google reviews te laten verwijderen](/nl/review-laten-verwijderen/) aanpakken – u betaalt alleen voor reviews die echt weg zijn." },
+
+    { t: "h2", id: "signalen", text: "Waarschuwingssignalen: zo herkent u een afpersingsgolf", toc: "Waarschuwingssignalen" },
+    { t: "p", text: "Een afpersingsgolf herkent u aan het patroon, niet aan één review. Een echte ontevreden klant schrijft meestal wat er misging; afpersers hebben daar geen belang bij." },
+    { t: "ul", items: [
+      "**Veel slechte reviews in korte tijd**, terwijl er niets bijzonders is gebeurd.",
+      "**Geen tekst** of nietszeggende tekst („Slecht”, „Oplichters”), zonder datum, product of naam van een medewerker.",
+      "**Onbekende profielen**: nieuwe accounts, geen profielfoto, weinig andere reviews of reviews verspreid over de hele wereld.",
+      "Een **bericht van een onbekende** dat direct verwijst naar de reviews, met een bedrag of een „aanbod” om ze weg te halen.",
+      "**Tijdsdruk**: „Binnen 24 uur betalen, anders komen er 20 extra.”",
+      "Iemand biedt zich aan als **„reputatiedienst”** die de reviews kan laten verdwijnen – terwijl u nooit om hulp vroeg.",
+    ] },
+    { t: "tip", title: "Losse 1-sterreview zonder bericht?", text: "Niet elke woordloze 1-sterreview is afpersing. Ook dan is verwijderen vaak mogelijk – lees [hoe u een 1-sterreview zonder tekst laat verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/)." },
+
+    { t: "h2", id: "meteen", text: "Wat u nu meteen moet doen – en wat niet", toc: "Direct doen" },
+    { t: "p", text: "De eerste uren bepalen hoe sterk uw melding wordt. **Betaal niet, onderhandel niet en leg alles vast** – in die volgorde." },
+    { t: "table", head: ["Stap", "Wat u doet", "Waarom"], rows: [
+      ["1", "**Niet betalen, niet onderhandelen**", "Betalen stopt de golf niet en maakt u tot doelwit voor de volgende ronde."],
+      ["2", "**Niet reageren** op het afpersingsbericht", "Elk antwoord bevestigt dat het nummer of adres actief is."],
+      ["3", "**Screenshots** van elk bericht – met afzender, nummer/adres, datum en tijd", "Het bewijs voor Google en de politie; berichten kunnen later verdwijnen."],
+      ["4", "**Screenshots van elke review** plus de link ernaar, met naam van de reviewer en datum", "Ook als reviews later verdwijnen, houdt u het patroon vast."],
+      ["5", "**Noteer een tijdlijn**: wanneer kwamen de reviews, wanneer het bericht", "Maakt het verband tussen golf en eis zichtbaar."],
+      ["6", "**Melden bij Google** – afpersingsformulier én elke review afzonderlijk", "Zie de volgende sectie."],
+      ["7", "**Aangifte overwegen** bij de politie", "Afpersing is een strafbaar feit, geen reviewkwestie."],
+    ] },
+    { t: "warn", title: "Niet betalen – ook niet „voor de rust”", text: "Afpersers houden geen woord. Wie betaalt, krijgt vaak een tweede eis, of de reviews blijven gewoon staan. En: reageer niet publiekelijk boos onder de reviews. Wilt u iets zeggen, houd het dan kort en neutraal, bijvoorbeeld: „Wij kunnen deze beoordeling niet aan een klantbezoek koppelen en hebben haar bij Google gemeld.”" },
+
+    { t: "h2", id: "melden", text: "Afpersing melden bij Google: formulier, losse meldingen en Reviews Management Tool", toc: "Melden bij Google" },
+    { t: "p", text: "Meld de afpersing via Google's eigen formulier én meld elke review afzonderlijk. Het formulier geeft Google de context (golf + eis), de losse meldingen zorgen dat elke review apart wordt beoordeeld." },
+    { t: "ol", items: [
+      "**Afpersingsformulier invullen:** via [Google's formulier voor reviewafpersing](https://support.google.com/business/answer/16404809) beschrijft u de situatie en voegt u uw screenshots toe. Vermeld hoeveel reviews het betreft en wanneer het bericht binnenkwam.",
+      "**Elke review afzonderlijk melden:** open de review in Google Maps, Google Zoeken of uw Bedrijfsprofiel, klik op **„Review melden”** en kies het passende type schending – bijvoorbeeld nep-interactie of intimidatie (zie [Google's beleid voor verboden content](https://support.google.com/contributionpolicy/answer/7400114)).",
+      "**Status volgen in de [Reviews Management Tool](https://support.google.com/business/workflow/9945796):** daar ziet u per gemelde review of het besluit nog loopt of dat Google „geen schending” heeft vastgesteld.",
+      "**Eén keer bezwaar maken:** wijst Google een melding af, dan kunt u per review **één keer in beroep** gaan. Het beroep kan worden „geëscaleerd” en krijgt daarna een definitief besluit.",
+    ] },
+    { t: "p", text: "Welke regels precies gelden en welke categorie u kiest, leest u in ons overzicht van [Google's reviewrichtlijnen en schendingen](/nl/magazine/google-review-richtlijnen-schendingen/)." },
+
+    { t: "h2", id: "politie", text: "Aangifte doen bij de politie: zinvol?", toc: "Aangifte" },
+    { t: "p", text: "Ja, aangifte doen is zinvol: afpersing is een strafbaar feit, ook als het via reviews loopt. De politie kan de daders vaak niet snel opsporen – ze zitten meestal in het buitenland en werken met wegwerpnummers – maar een aangifte legt de zaak officieel vast." },
+    { t: "ul", items: [
+      "Neem uw **screenshots, links en tijdlijn** mee; dezelfde bundel die u ook naar Google stuurt.",
+      "Het **proces-verbaal of registratienummer** kunt u bewaren als extra onderbouwing bij latere stappen.",
+      "Bevatten reviews **smaad of onware beschuldigingen**, dan is ook een [juridisch verwijderverzoek bij Google](https://support.google.com/legal/answer/3110420) mogelijk. Wanneer een advocaat zinvol is, leest u in [advocaat of technische verwijdering?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/)",
+    ] },
+
+    { t: "h2", id: "duur", text: "Hoe snel verdwijnen afpersingsreviews?", toc: "Hoe snel?" },
+    { t: "p", text: "Dat verschilt: soms binnen enkele dagen, soms duurt het weken. Google geeft **geen vaste termijn** – gemelde reviews worden door automatische systemen en medewerkers beoordeeld, en de doorlooptijd varieert." },
+    { t: "p", text: "Wat in uw voordeel werkt: afpersingsreviews zijn bijna altijd **vers**, en een duidelijk patroon (golf + betaalverzoek) is een sterk argument. Bij reviews tot vier weken oud ligt onze slagingskans op **ongeveer 90 %**. Via ons duurt het meestal **een paar dagen, soms tot drie weken** – en de reviews van één golf kunnen op verschillende momenten verdwijnen. Meer over doorlooptijden en het bezwaar leest u in [hoe lang Google erover doet om een review te verwijderen](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
+    { t: "tip", title: "Snel handelen loont dubbel", text: "Na vier weken daalt de slagingskans naar ongeveer 50 %. Wacht dus niet af of de afpersers „vanzelf stoppen” – meld en laat verwijderen zolang de reviews vers zijn." },
+
+    { t: "h2", id: "rapidremove", text: "Hoe RapidRemove helpt bij reviewafpersing", toc: "Hoe wij helpen" },
+    { t: "p", text: "Wij nemen het verwijderen van u over – uitsluitend via **Google's eigen procedures**, namens u als eigenaar. Afpersingsreviews horen bij de reviews die Google het **meest betrouwbaar verwijdert**, omdat ze duidelijk tegen de regels ingaan. Met onze [service om Google reviews te laten verwijderen](/nl/review-laten-verwijderen/) betaalt u **alleen voor reviews die echt weg zijn**." },
+    { t: "table", rrCol: 1, head: ["", "RapidRemove", "Afperser betalen"], rows: [
+      ["Kosten", "**€ 179 per verwijderde review** (ouder dan 4 weken: € 229)", "Wat de afperser eist – zonder garantie"],
+      ["Bij geen resultaat", "U betaalt niets", "Geld kwijt"],
+      ["Risico op nieuwe golf", "Geen signaal dat u betaalt", "Groot: u bent een betaler"],
+      ["Methode", "Alleen Google's eigen procedures", "Onbekend"],
+    ] },
+    { t: "p", text: "Bij een golf telt de **staffelkorting** voor alle reviews die wij na de gratis inschatting aannemen: vanaf 3 reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. **Voorbeeld:** 10 verse afpersingsreviews kosten € 1.790, min 30 % = **€ 1.253** – en alleen voor de reviews die echt verwijderd zijn." },
+    { t: "ul", items: [
+      "**Stuur ons de reviews:** zoek uw bedrijf in onze wizard, vink de reviews van de golf aan of plak de links. Dat duurt ongeveer twee minuten.",
+      "**Gratis inschatting eerst:** wij zeggen eerlijk welke reviews kans maken. Zien we geen kans, dan kost het niets.",
+      "**Discreet:** de reviewer krijgt niet te horen wie de verwijdering heeft aangevraagd. Geen nepaccounts, geen bots, geen nep-juridische brieven.",
+      "**Betalen per review:** reviews kunnen op verschillende momenten verdwijnen; u kunt per verwijderde review afrekenen via een betaallink, of op verzoek via PayPal of bankoverschrijving.",
+    ] },
+    { t: "cta", title: "Afpersingsreviews laten verwijderen", text: "Vink de reviews van de golf aan en zie direct de prijs. **€ 179 per verwijderde review**, niets vooraf – en niets als een review blijft staan.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Gratis inschatting eerst"] },
+
+    { t: "h2", id: "beschermen", text: "Uw profiel daarna beschermen", toc: "Daarna beschermen" },
+    { t: "p", text: "Afpersers komen soms terug – vooral als ze merken dat u reageert. Met een paar vaste gewoontes merkt u een nieuwe golf direct op en staat uw melding sneller klaar." },
+    { t: "ul", items: [
+      "**Meldingen aanzetten** voor nieuwe reviews in uw Google-bedrijfsprofiel, zodat u een golf binnen uren ziet in plaats van na een week.",
+      "**Een bewijsmap bijhouden** met screenshots, links en de tijdlijn van de vorige golf – bij een herhaling verwijst u daarnaar.",
+      "**Afzenders blokkeren** op WhatsApp, Telegram en e-mail, maar bewaar eerst de screenshots.",
+      "**Echte reviews blijven verzamelen** bij tevreden klanten. Een profiel met veel recente, echte reviews wordt door een paar valse 1-sterren minder hard geraakt.",
+      "**Toegang controleren:** check wie beheerdersrechten heeft op uw Bedrijfsprofiel en verwijder onbekende gebruikers.",
+      "**Bij een nieuwe golf** dezelfde stappen herhalen: niet betalen, vastleggen, melden, laten verwijderen. Meer over het herkennen van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/).",
+    ] },
+    { t: "p", text: "Wilt u het niet zelf uitzoeken? Via onze pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/) ziet u in twee minuten wat het kost voor uw golf." },
+  ],
+  faq: [
+    { q: "Moet ik betalen om de reviews te laten verdwijnen?", a: "Nee. Betalen stopt de afpersing zelden – vaak volgt een tweede eis of blijven de reviews staan. **Niet betalen, niet onderhandelen**, alles vastleggen en melden bij Google." },
+    { q: "Verwijdert Google alle afpersingsreviews?", a: "Niet gegarandeerd, maar afpersingsreviews horen bij de reviews die Google het meest betrouwbaar verwijdert. Bij reviews tot 4 weken oud ligt onze slagingskans op **ongeveer 90 %**; u betaalt alleen voor reviews die echt verwijderd zijn." },
+    { q: "Moet ik aangifte doen bij de politie?", a: "Dat is aan te raden: afpersing is strafbaar, ook via reviews. Neem screenshots, links en een tijdlijn mee. Voor het Google-formulier is een aangifte niet vereist." },
+    { q: "Wat als de afpersers terugkomen met nieuwe reviews?", a: "Herhaal dezelfde stappen: niet reageren, vastleggen, melden via het afpersingsformulier en elke review afzonderlijk melden. Verwijs daarbij naar de eerdere golf en uw bewijsmap." },
+    { q: "Hoe lang duurt het voordat de reviews weg zijn?", a: "Google geeft geen vaste termijn; het kan dagen tot weken duren. Via RapidRemove duurt het meestal **een paar dagen, soms tot drie weken**, en losse reviews kunnen op verschillende momenten verdwijnen." },
+    { q: "Moet ik op de reviews reageren?", a: "Niet verplicht. Als u reageert, doe het kort en neutraal, bijvoorbeeld dat u de beoordeling niet aan een klantbezoek kunt koppelen en haar bij Google hebt gemeld. Reageer nooit op het afpersingsbericht zelf." },
+    { q: "Wat kost het om afpersingsreviews te laten verwijderen?", a: "**€ 179 per verwijderde review** (ouder dan 4 weken € 229), met staffelkorting vanaf 3 reviews −10 %, vanaf 5 −15 % en vanaf 10 −30 %. Niets vooraf." },
+  ],
+  related: [
+    { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Valse Google reviews herkennen, melden en verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
+    { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
+    { label: "Hoe lang duurt het voordat Google een review verwijdert?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;

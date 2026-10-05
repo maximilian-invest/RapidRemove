@@ -1,0 +1,115 @@
+/* IT — google-bewertung-loeschen-kosten (article without German original; single-review product). */
+const article = {
+  category: "Reputazione",
+  meta: {
+    slug: "costo-rimozione-recensione-google",
+    title: "Costo rimozione recensione Google: quanto si paga (2026)",
+    h1: "Quanto costa rimuovere una recensione Google?",
+    description: "Quanto costa rimuovere una recensione Google? Fai da te, avvocato e agenzie a confronto. RapidRemove: 179 € per recensione rimossa, solo a risultato.",
+    keywords: ["costo rimozione recensione google", "quanto costa rimuovere una recensione google", "prezzo eliminare recensione google", "pagare per rimuovere recensione google", "rimuovere recensione google gratis", "agenzia rimozione recensioni google prezzi", "costo eliminare recensione negativa google"],
+    author: "Maximilian Hölzl",
+    authorRole: "Esperto Google e fondatore",
+    date: "2026-10-05",
+  },
+  dek: "Segnalare da solo una recensione Google è **gratis**, ma Google respinge spesso la segnalazione. Gli avvocati di solito fatturano **a ore e in anticipo**, che la recensione sparisca o no. Le agenzie di rimozione sono molto diverse: alcune si fanno pagare per ogni tentativo o in anticipo, altre non pubblicano proprio i prezzi. Con RapidRemove paghi **179 € per recensione rimossa** (+50 € se ha più di 4 settimane), e **solo quando è davvero sparita**.",
+  blocks: [
+    { t: "h2", id: "risposta-breve", text: "La risposta breve: quanto costa rimuovere una recensione Google", toc: "Risposta breve" },
+    { t: "p", text: "Rimuovere una recensione Google costa da **0 € a diverse centinaia di euro**, a seconda di chi se ne occupa e di come si fa pagare. La domanda vera non è il prezzo, ma **chi si assume il rischio** se la recensione resta online." },
+    { t: "ul", items: [
+      "**Segnalarla da solo:** gratis. Paghi con il tuo tempo, e Google risponde spesso con una decisione standard di \"nessuna violazione delle norme\".",
+      "**Avvocato:** di solito a ore, spesso con un fondo spese versato in anticipo. Paghi **indipendentemente dal risultato**.",
+      "**Agenzie con pagamento anticipato:** prezzi e modelli molto diversi. Alcune chiedono soldi per ogni tentativo o prima di iniziare, altre danno un prezzo solo dopo una telefonata commerciale.",
+      "**RapidRemove:** **179 € per recensione rimossa**, **229 €** se la recensione ha più di 4 settimane. Nulla in anticipo, nessun costo per i tentativi. Paghi solo le recensioni effettivamente rimosse.",
+    ] },
+    { t: "p", text: "Vuoi solo sapere il prezzo per le tue recensioni? Il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) te lo mostra subito, appena spunti quelle da eliminare." },
+
+    { t: "h2", id: "confronto", text: "Fai da te, avvocato, agenzie con anticipo o pagamento a risultato", toc: "Confronto" },
+    { t: "p", text: "Le quattro opzioni si distinguono meno per ciò che possono ottenere e più per **come paghi e cosa succede se non funziona**. Ecco il quadro:" },
+    { t: "table", rrCol: 4, head: ["Criterio", "Segnalazione fai da te", "Avvocato", "Agenzie con anticipo", "RapidRemove"], rows: [
+      ["Modello di costo", "Gratis", "A ore, di solito in anticipo", "Per tentativo o in anticipo; prezzi spesso nascosti", "**179 € per recensione rimossa** (+50 € oltre le 4 settimane)"],
+      ["Se la recensione resta", "Hai perso tempo", "Paghi comunque", "I soldi di solito sono persi", "**Non paghi nulla**"],
+      ["Rischio", "Costo basso, poche probabilità", "Costo alto, esito incerto", "Pagare per niente", "**Nessuno sul costo**"],
+      ["Tempi tipici", "Da giorni a settimane, nessun termine garantito", "Spesso mesi", "Variabili", "Pochi giorni, fino a 3 settimane"],
+      ["Impegno per te", "Medio (segnalare, monitorare, ricorrere)", "Alto (spiegare il caso, documenti, solleciti)", "Medio", "Circa 2 minuti"],
+    ] },
+    { t: "p", text: "**Segnalarla da solo** è il primo passo giusto se hai tempo e la violazione è evidente. Segnali la recensione su Google Maps o dal tuo Profilo dell'attività e ne segui lo stato nello [strumento di gestione delle recensioni](https://support.google.com/business/workflow/9945796) di Google, dove puoi **fare ricorso una sola volta** se Google ritiene che non ci sia violazione. Passo per passo: [come eliminare una recensione Google da solo](/it/rivista/come-eliminare-una-recensione-google/)." },
+    { t: "p", text: "**Un avvocato** ha senso per contenuti chiaramente illeciti, come la diffamazione, soprattutto se vuoi agire contro l'autore. Google ha un suo [modulo di rimozione per motivi legali](https://support.google.com/legal/answer/3110420). Il problema: con tariffa oraria e fondo spese paghi prima di sapere se funzionerà ([avvocato o rimozione tecnica?](/it/rivista/eliminare-recensione-negativa-google-avvocato-o-tecnica/))." },
+    { t: "p", text: "**Le agenzie con pagamento anticipato** scaricano tutto il rischio su di te. Se la recensione resta, i soldi di solito sono spesi. Leggi bene le condizioni prima di pagare qualcuno in anticipo." },
+    { t: "p", text: "C'è un costo che si dimentica facilmente: **il tempo**. Finché una recensione falsa a 1 stella resta in cima al tuo profilo, ogni potenziale cliente che ti cerca su Google la vede. Una segnalazione gratuita che si trascina per settimane e finisce con un rifiuto non è davvero gratis, se nel frattempo ti fa perdere clienti." },
+
+    { t: "h2", id: "prezzo", text: "Prezzi RapidRemove: 179 € per recensione rimossa", toc: "Il nostro prezzo" },
+    { t: "p", text: "Paghi **179 € per ogni recensione effettivamente rimossa**. Se la recensione ha più di 4 settimane, costa **229 €** (179 € + 50 €). Nulla viene addebitato in anticipo e non ci sono costi per i tentativi." },
+    { t: "table", rrCol: 2, head: ["Età della recensione", "Probabilità di successo", "Prezzo per recensione rimossa"], rows: [
+      ["Fino a 4 settimane", "ca. 90 %", "**179 €**"],
+      ["Oltre 4 settimane", "ca. 50 %", "**229 €** (179 € + 50 €)"],
+    ] },
+    { t: "p", text: "Le recensioni più vecchie costano di più perché sono **più difficili da rimuovere**: la probabilità di successo scende da circa il 90 % a circa il 50 %. Prima dell'ordine ricevi una **valutazione gratuita** e ti diciamo onestamente se una recensione ha poche possibilità. Se non è rimovibile, non ti costa nulla." },
+    { t: "p", text: "Se le recensioni da eliminare sono più di una, lo **sconto quantità** si applica in automatico:" },
+    { t: "table", head: ["Recensioni accettate dopo la valutazione", "Sconto su ogni recensione rimossa"], rows: [
+      ["1 – 2", "–"],
+      ["3 – 4", "**−10 %**"],
+      ["5 – 9", "**−15 %**"],
+      ["10 o più", "**−30 %**"],
+    ] },
+
+    { t: "h2", id: "esempi", text: "Esempi di prezzo: quanto paghi per 1, 3, 5 o 10 recensioni", toc: "Esempi di prezzo" },
+    { t: "p", text: "Ecco quanto costano ordini tipici, arrotondati all'euro. \"Recente\" significa fino a 4 settimane, \"vecchia\" oltre le 4 settimane." },
+    { t: "table", rrCol: 2, head: ["Caso", "Calcolo", "Paghi"], rows: [
+      ["1 recensione recente", "1 × 179 €", "**179 €**"],
+      ["1 recensione vecchia", "1 × 229 €", "**229 €**"],
+      ["3 recensioni recenti", "3 × 179 € = 537 €, −10 %", "**483 €**"],
+      ["5 recensioni (2 recenti, 3 vecchie)", "358 € + 687 € = 1.045 €, −15 %", "**888 €**"],
+      ["10 recensioni (6 recenti, 4 vecchie)", "1.074 € + 916 € = 1.990 €, −30 %", "**1.393 €**"],
+      ["5 recenti accettate, 4 rimosse", "4 × 179 € = 716 €, −15 %", "**609 €**"],
+    ] },
+    { t: "p", text: "L'ultima riga mostra il punto chiave: **paghi solo le recensioni rimosse**. Il livello di sconto dipende dal numero di recensioni che accettiamo dopo la valutazione gratuita e vale per ogni recensione che sparisce." },
+    { t: "cta", title: "Scopri il tuo prezzo esatto in 2 minuti", text: "Cerca la tua attività, spunta le recensioni da eliminare e vedi subito il totale, sconto incluso. **179 € per recensione rimossa**, nulla in anticipo.", btn: "Controlla le mie recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi solo a risultato", "Prima la valutazione gratuita"] },
+
+    { t: "h2", id: "pagamento", text: "Come si paga: per ogni recensione rimossa", toc: "Come paghi" },
+    { t: "p", text: "Paghi **dopo** che la recensione è stata rimossa, mai prima. Appena sparisce, ricevi un **link di pagamento sicuro** per quella recensione." },
+    { t: "ul", items: [
+      "**Ogni recensione viene rimossa in un momento diverso.** Di solito servono pochi giorni, a volte fino a tre settimane ([quanto tempo impiega Google](/it/rivista/quanto-tempo-google-rimuovere-recensione/)).",
+      "Per questo puoi ricevere **un link di pagamento per ogni recensione**: paghi ciascuna appena viene rimossa, non tutto il pacchetto in una volta.",
+      "Lo **sconto quantità è già incluso** in ogni link.",
+      "Preferisci **PayPal o bonifico bancario**? Sono possibili su richiesta.",
+    ] },
+    { t: "tip", title: "Nessuna fattura per le recensioni che restano", text: "Se una recensione non può essere rimossa, semplicemente non ricevi alcun link di pagamento per quella. Niente da annullare, niente da farsi rimborsare." },
+
+    { t: "h2", id: "campanelli-allarme", text: "Campanelli d'allarme nella scelta di un'agenzia", toc: "Campanelli d'allarme" },
+    { t: "p", text: "Un prezzo basso non serve a nulla se l'agenzia usa metodi che mettono a rischio il tuo profilo. Fai attenzione se noti uno di questi segnali:" },
+    { t: "ul", items: [
+      "**\"Rimozione garantita\":** solo Google decide se una recensione viene rimossa. Nessuno può garantirlo onestamente.",
+      "**Pagamento totale in anticipo o costi per tentativo:** il rischio è tutto tuo, anche se non succede nulla.",
+      "**Prezzi non pubblicati:** se ti danno una cifra solo dopo una telefonata commerciale, confronta con attenzione.",
+      "**Account falsi, bot o segnalazioni di massa:** violano le regole di Google e possono ritorcersi contro il tuo profilo.",
+      "**Finte diffide legali:** inventare reclami legali per fare pressione su Google o sull'autore è un problema serio, non una scorciatoia.",
+      "**Comprare recensioni positive per coprire quelle negative:** è coinvolgimento falso secondo le [norme sui contenuti di Google](https://support.google.com/contributionpolicy/answer/7400114) e mette a rischio il tuo profilo.",
+    ] },
+    { t: "p", text: "RapidRemove lavora **solo tramite le procedure ufficiali di Google**, per conto del titolare dell'attività. L'autore della recensione non viene a sapere chi ha chiesto la rimozione. E se stai subendo un'ondata di recensioni a 1 stella insieme a una richiesta di denaro, è un caso diverso: [cosa fare in caso di estorsione con recensioni Google](/it/rivista/estorsione-recensioni-google/)." },
+
+    { t: "h2", id: "conviene", text: "Quando conviene pagare per rimuovere una recensione?", toc: "Conviene?" },
+    { t: "p", text: "Pagare ha senso quando una recensione è **ingiusta e ti fa perdere clienti**: una recensione falsa, un insulto, una stella da qualcuno che non è mai stato cliente. Meno recensioni ha il tuo profilo, più ognuna pesa sulla media." },
+    { t: "ul", items: [
+      "**Conviene:** recensioni false o offensive, di non clienti, attacchi della concorrenza ([come riconoscere le recensioni false](/it/rivista/eliminare-recensioni-false-google/)). Soprattutto se sono **recenti**: costano meno e hanno più probabilità di successo.",
+      "**Prova prima la via gratuita:** se hai tempo e la violazione è evidente, segnalala tu e usa il ricorso.",
+      "**Non è un caso di rimozione:** la critica onesta di clienti veri. Rispondi pubblicamente e con cortesia ([ignorare, rispondere o eliminare?](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/)).",
+    ] },
+    { t: "p", text: "Per confrontare 179 € con il danno che la recensione fa alla tua attività, leggi [quanto costa davvero una recensione negativa su Google](/it/rivista/quanto-costa-recensione-negativa-google/). Dal 2023 il nostro team ha rimosso oltre **1.600 profili dell'attività Google** per clienti in più di 50 paesi, e applichiamo lo stesso approccio alle singole recensioni con il nostro [servizio per rimuovere una recensione Google](/it/rimuovere-una-recensione/)." },
+  ],
+  faq: [
+    { q: "Rimuovere una recensione Google è gratis?", a: "Segnalare da solo una recensione a Google è gratis, e puoi fare ricorso una volta nello strumento di gestione delle recensioni. Però Google respinge molte segnalazioni. Con RapidRemove paghi **179 € per recensione, solo se viene rimossa**." },
+    { q: "Pago qualcosa se la recensione non viene rimossa?", a: "No. Non c'è pagamento anticipato né costo per i tentativi. Paghi solo le recensioni che spariscono davvero." },
+    { q: "Perché le recensioni più vecchie costano di più?", a: "Le recensioni con più di 4 settimane sono più difficili da rimuovere: la probabilità di successo scende da circa il 90 % a circa il 50 %. Per questo costano **50 € in più** (229 € invece di 179 €)." },
+    { q: "C'è uno sconto per più recensioni?", a: "Sì. Da 3 recensioni accettate hai il 10 % di sconto, da 5 il 15 % e da 10 il 30 %. Lo sconto vale per ogni recensione rimossa." },
+    { q: "Posso pagare con PayPal o bonifico?", a: "Sì. Di default ricevi un link di pagamento sicuro dopo la rimozione; PayPal o bonifico bancario sono possibili su richiesta." },
+    { q: "Perché ho ricevuto più link di pagamento?", a: "Le recensioni vengono rimosse in momenti diversi, quindi puoi ricevere **un link di pagamento per recensione**. Paghi ciascuna appena è sparita." },
+    { q: "Quanto chiede un avvocato per rimuovere una recensione Google?", a: "Gli avvocati di solito fatturano a ore, spesso con un fondo spese anticipato, e paghi sia che la recensione venga rimossa sia che no. L'importo esatto dipende dallo studio e dal caso." },
+  ],
+  related: [
+    { label: "Servizio di rimozione recensioni Google: prezzo e ordine", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Quanto costa una recensione negativa su Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
+    { label: "Avvocato o rimozione tecnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Quanto tempo impiega Google a rimuovere una recensione?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;

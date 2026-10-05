@@ -1,0 +1,122 @@
+/* ES — google-bewertung-loeschen-dauer (article without German original; single-review product). */
+const article = {
+  category: "Reputación",
+  meta: {
+    slug: "cuanto-tarda-google-eliminar-resena",
+    title: "¿Cuánto tarda Google en eliminar una reseña? (2026)",
+    h1: "¿Cuánto tarda Google en eliminar una reseña? Plazos, estados y apelación",
+    description: "Google no fija plazos: de horas a varias semanas. Fases, estados en la herramienta de gestión de reseñas, apelación y eliminación desde 179 €, solo con éxito.",
+    keywords: [
+      "cuánto tarda google en eliminar una reseña",
+      "cuánto tarda en eliminarse una reseña de google",
+      "reseña denunciada en google pendiente",
+      "herramienta de gestión de reseñas de google",
+      "apelar decisión reseña google",
+      "decisión pendiente reseña google",
+      "plazo eliminar reseña google",
+      "reseña google estado escalado",
+    ],
+    author: "Maximilian Hölzl",
+    authorRole: "Experto en Google y fundador",
+    date: "2026-10-05",
+  },
+  dek: "**Google no da ningún plazo fijo.** Una infracción clara puede desaparecer en horas o pocos días; los casos dudosos, las apelaciones y las escalaciones pueden tardar **varias semanas**. Con RapidRemove la eliminación suele llevar **unos pocos días, a veces hasta tres semanas**, y solo pagas cuando la reseña ya no está. Aquí tienes cada fase con su duración típica, cómo leer el estado en la herramienta de gestión de reseñas, cómo funciona la apelación y qué acelera realmente el proceso.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "Respuesta corta: no hay plazo fijo, pero sí rangos típicos", toc: "Respuesta corta" },
+    { t: "p", text: "**Google no promete ningún tiempo de tramitación para las reseñas denunciadas.** Las revisan sistemas automáticos y personas, y según el caso eso va de unas horas a varias semanas." },
+    { t: "ul", items: [
+      "**Infracciones evidentes** (spam, insultos, interacción falsa clara): a menudo entre unas horas y pocos días.",
+      "**Casos dudosos** que necesitan revisión humana: a menudo de una a varias semanas.",
+      "**Apelaciones y escalaciones**: suman tiempo, a veces varias semanas más.",
+      "**Con nosotros**: normalmente unos pocos días, a veces hasta tres semanas por reseña. Si prefieres delegarlo, nuestro [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/) trabaja solo con los procedimientos oficiales de Google y cobra **179 € por reseña eliminada**, nada por adelantado.",
+    ] },
+    { t: "warn", title: "Plazos típicos, no garantizados", text: "Todas las duraciones de este artículo son rangos habituales en la práctica, no compromisos de Google. El tiempo de tramitación varía y nadie puede prometer una fecha, ni una eliminación." },
+
+    { t: "h2", id: "timeline", text: "Las fases de una denuncia y cuánto suele durar cada una", toc: "Fases y plazos" },
+    { t: "p", text: "**Una denuncia pasa por hasta seis fases, y solo la primera depende de ti.** La tabla muestra qué ocurre en cada una y cuánto tarda normalmente." },
+    { t: "table", head: ["Fase", "Qué ocurre", "Duración típica (sin garantía)"], rows: [
+      ["1. Denuncia", "Denuncias la reseña en Google Maps, en la Búsqueda o en tu Perfil de Empresa y eliges el tipo de infracción.", "Unos minutos"],
+      ["2. Revisión automática / manual", "Los sistemas de Google analizan la denuncia; los casos poco claros pasan a revisores humanos.", "De horas a pocos días; los casos manuales, a menudo 1–2 semanas o más"],
+      ["3. Estado en la herramienta de gestión de reseñas", "La denuncia aparece con un estado como **«Decisión pendiente»** y después con el resultado.", "Suele verse poco después de denunciar; el resultado llega al terminar la revisión"],
+      ["4. Apelación (una por reseña)", "Si Google **no ve infracción de sus políticas**, puedes apelar esa decisión una vez.", "Enviarla lleva minutos; la respuesta, a menudo de días a pocas semanas"],
+      ["5. «Escalada»", "La apelación pasa a una revisión más detallada.", "A menudo de una a varias semanas"],
+      ["6. Decisión final", "Google elimina la reseña o la mantiene. No hay segunda apelación en la herramienta.", "Cierra el proceso en la herramienta"],
+      ["Vía aparte: solicitud legal de retirada", "Para contenido **ilícito** (p. ej. difamación), mediante el formulario legal de Google.", "A menudo varias semanas; depende del caso y del país"],
+    ] },
+    { t: "p", text: "La vía legal es independiente de la denuncia por políticas. Está pensada para contenido que infringe la ley, no para reseñas con las que simplemente no estás de acuerdo. Más detalles en [¿abogado o eliminación técnica?](/es/revista/eliminar-resena-negativa-de-google-abogado/) y en la [página de solicitudes legales de Google](https://support.google.com/legal/answer/3110420)." },
+
+    { t: "h2", id: "check-status", text: "Cómo consultar el estado y apelar en la herramienta de gestión de reseñas", toc: "Consultar y apelar" },
+    { t: "p", text: "**La [herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796) de Google muestra el estado de cada reseña que has denunciado y es el único sitio donde puedes apelar.** Debes iniciar sesión con una cuenta que gestione el Perfil de Empresa." },
+    { t: "ol", items: [
+      "**Denuncia primero la reseña** en Google Maps, en la Búsqueda o en tu Perfil de Empresa con «Denunciar reseña», eligiendo el tipo de infracción que de verdad encaja.",
+      "**Abre la [herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796)** con la cuenta de Google propietaria o administradora del perfil.",
+      "**Selecciona tu Perfil de Empresa** si gestionas más de uno.",
+      "**Abre el resumen de reseñas denunciadas** y localiza la reseña en cuestión.",
+      "**Lee el estado.** «Decisión pendiente» significa: esperar. No denuncies la misma reseña una y otra vez; la revisión no va más rápido por eso.",
+      "**Si el estado indica que no hay infracción, inicia la apelación.** Solo tienes **una apelación por reseña**: nombra la política concreta y cíñete a hechos comprobables.",
+      "**Vuelve a consultar con regularidad.** La apelación puede aparecer como **«Escalada»** y después recibe una **decisión final**; a partir de ahí la herramienta no ofrece más pasos para esa reseña.",
+    ] },
+    { t: "tip", title: "Antes de apelar", text: "Resume en dos o tres frases por qué la reseña incumple una norma concreta, por ejemplo: no existe ningún cliente con ese nombre o el texto contiene un insulto. Guarda capturas de pantalla antes de apelar. Un vago «esto es injusto» rara vez cambia el resultado." },
+
+    { t: "h2", id: "statuses", text: "Qué significa cada estado", toc: "Estados" },
+    { t: "p", text: "**El estado te dice si Google sigue revisando, si ya ha decidido o si está estudiando tu apelación.** La redacción exacta puede variar un poco según el idioma y con el tiempo." },
+    { t: "table", head: ["Estado", "Significado", "Qué puedes hacer"], rows: [
+      ["**Decisión pendiente**", "Google aún está revisando tu denuncia.", "Esperar. Responder con calma en público si aún no lo has hecho."],
+      ["**Denuncia revisada: no infringe las políticas**", "Google no ve infracción y mantiene la reseña.", "Apelar una vez, idealmente con un motivo más preciso y pruebas."],
+      ["Reseña eliminada", "Google ha visto una infracción; la reseña ya no aparece en tu perfil.", "Nada más: listo."],
+      ["**Escalada**", "Tu apelación se está revisando con más detalle.", "Esperar la decisión final."],
+      ["Decisión final", "La apelación está cerrada.", "Si el contenido es ilícito: solicitud legal. Si no: responder en público."],
+    ] },
+
+    { t: "h2", id: "rejected", text: "Por qué se rechazan algunas denuncias", toc: "Por qué se rechazan" },
+    { t: "p", text: "**La mayoría de denuncias rechazadas fallan por una de tres razones: categoría equivocada, falta de pruebas o porque la reseña es una crítica legítima.** La propia Google indica que no se debe denunciar una reseña solo por no estar de acuerdo con ella." },
+    { t: "ul", items: [
+      "**Categoría equivocada.** Una reseña falsa denunciada como «ofensiva» o un insulto denunciado como «spam» complican la revisión. Elige en la [política de contenido prohibido y restringido](https://support.google.com/contributionpolicy/answer/7400114) la categoría que realmente corresponde; tienes un resumen en [infracciones de las políticas de reseñas de Google](/es/revista/politicas-resenas-google-infracciones/).",
+      "**Sin pruebas.** «Esta persona nunca fue cliente» solo convence si es plausible: sin reserva, sin factura, sin cita que encaje, un perfil con decenas de reseñas en ciudades distintas.",
+      "**Crítica legítima.** Un cliente real que describe objetivamente una mala experiencia está protegido, aunque duela. Eso es feedback, no un caso de eliminación: mira [¿ignorar, responder o eliminar?](/es/revista/resena-negativa-ignorar-responder-eliminar/)",
+    ] },
+    { t: "p", text: "Los propietarios de un negocio no pueden borrar reseñas ellos mismos: solo quien la escribió puede editarla o borrarla. Por eso la calidad de la denuncia es lo que decide." },
+
+    { t: "h2", id: "speed-up", text: "Qué acelera la eliminación", toc: "Qué la acelera" },
+    { t: "p", text: "**Lo que más influye son tres cosas: la categoría correcta, pruebas sólidas y actuar mientras la reseña es reciente.** La antigüedad es decisiva: en nuestro trabajo eliminamos alrededor del **90 %** de las reseñas de hasta 4 semanas y alrededor del **50 %** de las más antiguas." },
+    { t: "ul", items: [
+      "**La categoría correcta desde el principio**: una primera denuncia precisa te ahorra la apelación.",
+      "**Pruebas preparadas**: capturas de la reseña y del perfil del autor, una nota de por qué no hubo contacto con el cliente, fechas.",
+      "**Actúa en menos de cuatro semanas**: las reseñas recientes tienen muchas más opciones y con nosotros cuestan 179 € en lugar de 229 €.",
+      "**Una denuncia limpia, no diez**: denunciar varias veces la misma reseña no te adelanta en la cola.",
+      "**Oleadas falsas y chantaje**: si llegan reseñas de 1 estrella junto con una exigencia de dinero, usa el formulario específico de Google y lee nuestra guía sobre [extorsión con reseñas de Google](/es/revista/extorsion-resenas-google/). No pagues, no entres al trapo y guarda capturas.",
+    ] },
+    { t: "cta", title: "No esperes semanas a una respuesta estándar", text: "Busca tu empresa, marca las reseñas que deben desaparecer y ve el precio al instante. **179 € por reseña eliminada**, 229 € si tiene más de 4 semanas, y solo se cobra cuando la reseña ya no está.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago solo si se elimina", "Valoración honesta y gratuita"] },
+
+    { t: "h2", id: "while-waiting", text: "Qué hacer mientras esperas", toc: "Mientras esperas" },
+    { t: "p", text: "**Responde en público, breve y con calma: es lo único que siempre puedes hacer y los futuros clientes lo leen.** Una buena respuesta no discute ni revela datos de clientes." },
+    { t: "ul", items: [
+      "**Si no encuentras a la persona:** «No encontramos ninguna visita ni pedido con este nombre. Escríbenos directamente y lo aclaramos».",
+      "**Si es un cliente real:** reconoce la experiencia, ofrece un contacto directo y evita justificarte.",
+      "**No** amenaces, no especules en público sobre quién la escribió y no pidas a amigos reseñas de contrapeso: eso también puede infringir las normas de Google sobre interacción falsa.",
+      "**Documenta** todo: capturas de la reseña, del perfil del autor y del estado de tu denuncia.",
+    ] },
+    { t: "p", text: "Una respuesta tranquila no perjudica tus opciones de eliminación. Para casos especiales como las valoraciones sin texto, mira [eliminar una reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/), y si sospechas de reseñas falsas, [cómo eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
+
+    { t: "h2", id: "different-times", text: "Por qué varias reseñas desaparecen en momentos distintos", toc: "Momentos distintos" },
+    { t: "p", text: "**Cada reseña se revisa por separado, así que si denuncias cinco, rara vez desaparecen el mismo día.** Una puede irse en dos días, otra necesita apelación y una tercera sigue pendiente a las dos semanas." },
+    { t: "p", text: "Por eso **cobramos por reseña**: pagas cada una cuando realmente se ha eliminado, y es posible recibir un enlace de pago distinto por reseña. Las que aún estamos tramitando no te cuestan nada, y con 3, 5 o 10 reseñas aceptadas el descuento por volumen (−10 %, −15 %, −30 %) se aplica a cada una que se elimina. Todos los precios y comparativas están en [precio para eliminar una reseña de Google](/es/revista/precio-eliminar-resena-google/), y el pedido se hace desde nuestra página para [eliminar una reseña de Google concreta](/es/eliminar-una-resena/)." },
+    { t: "cta", title: "Comprueba qué reseñas tienen opciones reales", text: "Primero una valoración gratuita: te decimos con honestidad si una reseña se puede eliminar. El pedido lleva unos dos minutos y suele resolverse en pocos días, a veces hasta tres semanas.", btn: "Empezar la comprobación gratis", href: "/es/comprobar-perfil/?start=reviews", trust: ["Solo procedimientos oficiales de Google", "El autor no sabe quién lo pidió", "Más de 1.600 perfiles eliminados desde 2023"] },
+  ],
+  faq: [
+    { q: "¿Cuánto tarda Google en eliminar una reseña denunciada?", a: "Google no publica un plazo fijo. Las infracciones claras pueden desaparecer en horas o pocos días; los casos dudosos y las apelaciones suelen tardar **de una a varias semanas**." },
+    { q: "¿Por qué mi denuncia sigue en «Decisión pendiente»?", a: "La revisión aún no ha terminado, a menudo porque el caso necesita a un revisor humano. Volver a denunciar la misma reseña no lo acelera; consulta mejor el estado en la **herramienta de gestión de reseñas**." },
+    { q: "¿Puedo apelar más de una vez?", a: "No. En la herramienta de gestión de reseñas tienes **una sola apelación por reseña**. Tras la decisión final, la única otra vía oficial es una solicitud legal de retirada, y solo si el contenido es ilícito." },
+    { q: "¿Google avisa al autor de la reseña?", a: "Al autor **no se le dice quién denunció la reseña ni quién pidió su eliminación**, ni cuando denuncias tú ni cuando lo gestionamos nosotros. Como mucho notará que su reseña ya no se ve." },
+    { q: "¿Puede volver a aparecer una reseña eliminada?", a: "Una reseña que Google elimina por infringir sus políticas normalmente no vuelve. Pero la misma persona puede escribir una reseña nueva, que se revisa por separado y también se puede denunciar." },
+    { q: "¿Cuánto se tarda con RapidRemove?", a: "Normalmente **unos pocos días, a veces hasta tres semanas** por reseña. Pagas **179 € por reseña eliminada** (229 € si tiene más de 4 semanas), solo cuando ya no está." },
+    { q: "¿Responder a la reseña empeora mis opciones?", a: "No. Una respuesta pública breve y tranquila siempre está permitida y no afecta a la revisión. Solo evita insultos y datos de clientes." },
+  ],
+  related: [
+    { label: "Servicio para eliminar reseñas de Google", url: "/es/eliminar-una-resena/" },
+    { label: "Precio para eliminar una reseña de Google", url: "/es/revista/precio-eliminar-resena-google/" },
+    { label: "Infracciones de las políticas de reseñas de Google", url: "/es/revista/politicas-resenas-google-infracciones/" },
+    { label: "Eliminar reseñas falsas de Google", url: "/es/revista/eliminar-resenas-falsas-de-google/" },
+  ],
+};
+export default article;

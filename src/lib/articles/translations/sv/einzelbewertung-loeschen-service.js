@@ -5,15 +5,15 @@ const article = {
     category: "Rykte",
     meta: {
       slug: "ta-bort-google-recension-tjanst",
-      title: "Ta bort Google-recension: pris, chans att lyckas och beställning (2026)",
-      h1: "Tjänst för att ta bort Google-recensioner: pris, chans att lyckas och så beställer du",
-      description: "Få en enskild orättvis Google-recension borttagen – från 179 € per recension, betalt först när den är borta. Priser, chans att lyckas, mängdrabatt och beställning på två minuter.",
-      keywords: ["ta bort google recension", "ta bort google recension tjänst", "ta bort dålig recension google", "ta bort google recension kostnad", "ta bort negativ google recension", "ta bort google omdöme", "betala för att ta bort google recension"],
+      title: "Ta bort Google-recensioner: priser, chans att lyckas och beställning (2026)",
+      h1: "Ta bort en enskild Google-recension: priser, chanser och så fungerar beställningen",
+      description: "Vad kostar det att ta bort en Google-recension? 179 € per borttagen recension (229 € efter 4 veckor), bara vid framgång. Chanser, rabatt och beställning.",
+      keywords: ["vad kostar det att ta bort en google recension", "ta bort google recension kostnad", "ta bort google recension pris", "betala för att ta bort google recension", "beställa borttagning av google recension", "ta bort google omdöme"],
       author: "Maximilian Hölzl",
       authorRole: "Google-expert",
       date: "2026-10-03",
     },
-    dek: "Din profil är i grunden bra – det är **en recension** som skaver: en falsk, en förolämpning, någon som aldrig ens varit kund. För det behöver du varken radera hela profilen eller vänta i månader på en advokat. Med RapidRemove väljer du själv vilka recensioner som ska bort, ser priset direkt och **betalar bara för recensioner som faktiskt tas bort**. Här går vi igenom vad det kostar, hur goda chanserna är och hur du beställer på två minuter.",
+    dek: "Din profil är i grunden bra – det är **en recension** som skaver: en falsk, en förolämpning, någon som aldrig ens varit kund. För det behöver du varken radera hela profilen eller vänta i månader på en advokat. Med RapidRemove väljer du själv vilka recensioner som ska bort, ser priset direkt och **betalar bara för recensioner som faktiskt tas bort**. Själva erbjudandet sammanfattar vi på sidan om vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) – den här guiden går in på detaljerna: vad det kostar, hur goda chanserna är och hur beställningen fungerar steg för steg.",
     blocks: [
       { t: "h2", id: "wann", text: "När det är rätt att ta bort en enskild recension", toc: "När det passar" },
       { t: "p", text: "De flesta företag har inget profilproblem – de har ett **recensionsproblem**. Ett stabilt snitt på 4,6 sjunker till 4,3 på grund av två 1-stjärniga angrepp, och plötsligt klickar intresserade på konkurrenten i stället. I det läget vore det att skjuta myggor med kanon att radera hela profilen: du skulle förlora alla dina bra recensioner också." },
@@ -24,7 +24,7 @@ const article = {
       ] },
 
       { t: "h2", id: "was", text: "Vilka recensioner kan tas bort – och vilka inte", toc: "Vad går att ta bort?" },
-      { t: "p", text: "Vi säger ärligt hur det ser ut innan du betalar något. **Goda chanser** finns för recensioner som bryter mot Googles riktlinjer eller mot lagen:" },
+      { t: "p", text: "Vi säger ärligt hur det ser ut innan du betalar något. **Goda chanser** finns för recensioner som bryter mot [Googles regler för recensioner](/sv/magasin/google-recensionsregler-overtradelser/) eller mot lagen:" },
       { t: "ul", items: [
         "**Falska recensioner** och angrepp från konkurrenter ([så känner du igen falska recensioner](/sv/magasin/ta-bort-falska-google-recensioner/))",
         "Recensioner från personer som **aldrig varit kunder**",
@@ -35,7 +35,7 @@ const article = {
       { t: "warn", title: "Det här lovar vi inte", text: "Ärlig, saklig kritik från riktiga kunder är i regel skyddad – och ingen kan på allvar garantera att varje recension försvinner. Just därför **betalar du bara när en recension faktiskt är borta**." },
 
       { t: "h2", id: "preis", text: "Vad kostar det att ta bort en Google-recension?", toc: "Pris" },
-      { t: "p", text: "Priset beror framför allt på en sak: **hur gammal recensionen är**. Färska recensioner är betydligt lättare att få bort än sådana som legat ute i månader." },
+      { t: "p", text: "Priset beror framför allt på en sak: **hur gammal recensionen är**. Färska recensioner är betydligt lättare att få bort än sådana som legat ute i månader. Hur priserna står sig mot en advokat och andra aktörer går vi igenom i [vad det kostar att ta bort en Google-recension](/sv/magasin/kostnad-ta-bort-google-recension/)." },
       { t: "table", rrCol: 2, head: ["Recensionens ålder", "Chans att lyckas", "Pris per borttagen recension"], rows: [
         ["Upp till 4 veckor", "ca. 90 %", "**179 €**"],
         ["Äldre än 4 veckor", "ca. 50 %", "**229 €** (179 € + 50 €)"],
@@ -47,7 +47,8 @@ const article = {
         ["5 – 9", "**−15 %**"],
         ["10 eller fler", "**−30 %**"],
       ] },
-      { t: "p", text: "**Exempel:** 3 färska recensioner kostar 537 €, minus 10 % = **483 €**. 2 färska och 3 äldre recensioner kostar 1 045 €, minus 15 % = **888 €**. Rabatten räknas på antalet recensioner som faktiskt tas bort – du betalar aldrig för en recension som blir kvar." },
+      { t: "p", text: "**Exempel:** 3 färska recensioner kostar 537 €, minus 10 % = **483 €**. 2 färska och 3 äldre recensioner kostar 1 045 €, minus 15 % = **888 €**. Rabattnivån avgörs av hur många recensioner **vi accepterar efter den kostnadsfria bedömningen**, och den gäller för varje sådan recension som tas bort. Du betalar fortfarande bara för recensioner som faktiskt försvinner: accepterar vi 3 och 2 tas bort, betalar du 2 × 179 € minus 10 % = **322,20 €**." },
+      { t: "p", text: "**Betalning per recension:** hur lång tid borttagningen tar kan variera från recension till recension – oftast några dagar, ibland upp till tre veckor. Därför kan betalningen ske per recension, ibland med en separat betallänk för varje borttagen recension. Recensioner som vi fortfarande arbetar med kostar dig ingenting än." },
       { t: "tip", title: "Beställ tidigt", text: "Chansen att lyckas sjunker från ca. 90 % till ca. 50 % när en recension är äldre än fyra veckor – och priset stiger med 50 €. En färsk falsk recension är alltså den billigaste och säkraste att ta bort. Som jämförelse: advokater tar oftast betalt per recension **i förskott**, och det tar ofta månader ([advokat eller teknisk borttagning?](/sv/magasin/negativ-google-recension-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Så beställer du – på ungefär två minuter", toc: "Så beställer du" },
@@ -63,7 +64,7 @@ const article = {
       { t: "cta", title: "Välj de recensioner som ska bort", text: "Sök ditt företag, bocka i recensionerna – och se det exakta priset direkt. **Från 179 € per borttagen recension**, inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
       { t: "h2", id: "dauer", text: "Hur lång tid tar det?", toc: "Tidsåtgång" },
-      { t: "p", text: "Oftast **några dagar**, ibland upp till **tre veckor**, beroende på recensionen och skälet till borttagningen. Du behöver inte göra något under tiden – vi håller dig uppdaterad." },
+      { t: "p", text: "Oftast **några dagar**, ibland upp till **tre veckor**, beroende på recensionen och skälet till borttagningen. Du behöver inte göra något under tiden – vi håller dig uppdaterad. Vad som händer hos Google under tiden – anmälans status, verktyget för hantering av recensioner och överklagande – förklarar vi i [hur lång tid det tar för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
 
       { t: "h2", id: "vergleich", text: "Enskilda recensioner, hela profilen, advokat eller själv – en jämförelse", toc: "Jämförelse" },
       { t: "table", rrCol: 1, head: ["Kriterium", "Borttagning av enskilda recensioner", "Profilborttagning", "Advokat", "Anmäla själv"], rows: [
@@ -85,15 +86,16 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "Vad kostar det att ta bort en Google-recension?", a: "179 € per borttagen recension om recensionen är upp till 4 veckor gammal, 229 € om den är äldre. Från 3 recensioner får du 10 % rabatt, från 5 recensioner 15 % och från 10 recensioner 30 %. Du betalar bara för recensioner som faktiskt tas bort." },
+      { q: "Vad kostar det att ta bort en Google-recension?", a: "179 € per borttagen recension om recensionen är upp till 4 veckor gammal, 229 € om den är äldre. Från 3 accepterade recensioner får du 10 % rabatt, från 5 15 % och från 10 30 %, och rabatten gäller varje recension som tas bort. Du betalar bara för recensioner som faktiskt tas bort." },
       { q: "Vad händer om en recension inte kan tas bort?", a: "Då betalar du ingenting för den recensionen. Det finns ingen förskottsbetalning och ingen avgift för försök." },
       { q: "Kan recensioner som är äldre än 4 veckor tas bort?", a: "Ja. Chansen att lyckas är lägre (ca. 50 % i stället för ca. 90 %), och priset är 50 € högre per recension. Därför lönar det sig att agera snabbt mot färska falska recensioner." },
       { q: "Kan 1-stjärniga recensioner utan text tas bort?", a: "Ja, du kan välja dem precis som alla andra recensioner. Ordlösa betyg utan igenkännbar kundkontakt har ofta goda chanser." },
       { q: "Får recensenten veta att det var jag?", a: "Nej. Recensenten får inte veta vem som begärde borttagningen." },
       { q: "Måste jag radera hela min profil?", a: "Nej. Vid borttagning av enskilda recensioner blir din profil och alla dina bra recensioner kvar. Att ta bort [hela profilen](/sv/magasin/radera-google-foretagsprofil/) är bara meningsfullt om den är skadad rakt igenom." },
-      { q: "Hur många recensioner kan jag beställa på en gång?", a: "Så många du vill. Mängdrabatten ökar vid 3, 5 och 10 recensioner och dras automatiskt." },
+      { q: "Hur många recensioner kan jag beställa på en gång?", a: "Så många du vill. Mängdrabatten ökar vid 3, 5 och 10 recensioner som vi accepterar efter den kostnadsfria bedömningen, och dras automatiskt." },
     ],
     related: [
+      { label: "Tjänst för att ta bort Google-recensioner", url: "/sv/ta-bort-omdome/" },
       { label: "Ta bort Google-recensioner: kostnad och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
       { label: "Känna igen, anmäla och ta bort falska Google-recensioner", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
       { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

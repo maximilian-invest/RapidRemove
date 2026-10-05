@@ -1,0 +1,118 @@
+/* NO — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Omdømme",
+  meta: {
+    slug: "kan-bedrift-slette-google-anmeldelser",
+    title: "Kan en bedrift slette Google-anmeldelser? (2026)",
+    h1: "Kan du som bedrift slette Google-anmeldelser selv? Det ærlige svaret",
+    description: "Nei, selv kan du ikke slette anmeldelser – men Google fjerner dem som bryter regler eller loven. Lovlige muligheter, myter og pris (179 €, først ved suksess).",
+    keywords: ["slette google anmeldelse", "kan man slette google anmeldelser", "fjerne google anmeldelse", "slette dårlig anmeldelse google", "fjerne negativ google anmeldelse", "rapportere google anmeldelse", "få fjernet google omtale"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-ekspert",
+    date: "2026-10-05",
+  },
+  dek: "**Nei – som bedriftseier kan du ikke slette en Google-anmeldelse selv.** Bare den som har skrevet anmeldelsen, kan redigere eller slette den. Men anmeldelser som **bryter Googles retningslinjer eller loven**, kan Google fjerne: etter en rapportering, en klage i Reviews Management Tool eller en juridisk forespørsel. Her ser du nøyaktig hvem som kan fjerne hva, hvilke muligheter som faktisk fungerer – og hvilke du bør holde deg unna.",
+  blocks: [
+    { t: "h2", id: "kort", text: "Det korte svaret", toc: "Kort svar" },
+    { t: "p", text: "**En bedrift har ingen knapp for å slette anmeldelser – heller ikke i sin egen bedriftsprofil.** Det er med vilje: Hvis eiere kunne slette kritikk selv, ville ingen vurderinger bety noe lenger. Det du kan gjøre, er å svare, rapportere og be om fjerning." },
+    { t: "p", text: "I praksis forsvinner en anmeldelse på tre måter: **Anmelderen** sletter den selv, **Google** fjerner den fordi den bryter retningslinjene, eller den må bort fordi den er **ulovlig** (for eksempel ærekrenkende). Alt som ikke faller inn under dette – ærlig, saklig kritikk fra ekte kunder – blir stående." },
+    { t: "ul", items: [
+      "**Rapporter** via Google Maps, Søk eller bedriftsprofilen din («Rapporter anmeldelse»).",
+      "**Klag** i [Reviews Management Tool](https://support.google.com/business/workflow/9945796) hvis Google ikke ser noe brudd – én gang per anmeldelse.",
+      "**Juridisk forespørsel** ved ærekrenkelser eller ulovlig innhold via [skjemaet for juridisk fjerning](https://support.google.com/legal/answer/3110420).",
+    ] },
+    { t: "p", text: "Vil du ikke finne ut av dette selv? En [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) som RapidRemove går gjennom nettopp disse offisielle prosedyrene på dine vegne – og tar først betalt når anmeldelsen faktisk er borte." },
+
+    { t: "h2", id: "hvem", text: "Hvem kan fjerne hva?", toc: "Hvem kan hva?" },
+    { t: "p", text: "**Det finnes nøyaktig fire parter som kan få en anmeldelse til å forsvinne – og eieren er ikke direkte en av dem.** Tabellen viser hvem som kan hva, og når det er realistisk." },
+    { t: "table", head: ["Hvem", "Kan fjerne?", "Hvordan", "Når det er realistisk"], rows: [
+      ["**Den som skrev anmeldelsen**", "Ja, alltid", "Redigerer eller sletter sin egen anmeldelse i Google Maps", "Når problemet er løst, eller det var en misforståelse"],
+      ["**Bedriftseieren**", "Nei", "Kan bare rapportere, klage og svare offentlig", "Aldri direkte – bare via Google"],
+      ["**Google**", "Ja", "Etter rapportering, klage eller automatisk kontroll", "Ved brudd på retningslinjene (falsk, hat, spam, interessekonflikt …)"],
+      ["**Domstol / rettslig vei**", "Indirekte", "Juridisk forespørsel til Google eller dom", "Ved ærekrenkelser, usanne påstander eller annet ulovlig innhold"],
+    ] },
+    { t: "p", text: "Viktig: Google holder også noen ganger tilbake anmeldelser **automatisk** eller fjerner dem i etterkant. Rapporterte anmeldelser blir kontrollert både av automatiske systemer og av mennesker. Hvor lang tid det tar, varierer mye – fra noen få dager til uker ([mer om behandlingstiden](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/))." },
+
+    { t: "h2", id: "regler", text: "Hvilke anmeldelser Google faktisk fjerner", toc: "Hva Google fjerner" },
+    { t: "p", text: "**Google fjerner bare en anmeldelse hvis den bryter [retningslinjene for forbudt og begrenset innhold](https://support.google.com/contributionpolicy/answer/7400114) eller er ulovlig.** At noen er misfornøyd, er aldri nok – Google sier selv at du ikke skal rapportere en anmeldelse bare fordi du er uenig i den." },
+    { t: "ul", items: [
+      "**Falskt engasjement:** anmeldelser uten en reell kundeopplevelse, kjøpte eller massepubliserte anmeldelser ([slik kjenner du igjen falske anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/)).",
+      "**Interessekonflikt:** anmeldelser fra konkurrenter, nåværende eller tidligere ansatte eller eieren selv.",
+      "**Irrelevant innhold og spam:** tekst som ikke handler om en kundeopplevelse, eller som gjelder en annen bedrift.",
+      "**Trakassering, hatefulle ytringer, banning og støtende innhold.**",
+      "**Personopplysninger**, for eksempel navn, telefonnumre eller adresser til ansatte.",
+      "**Identitetstyveri, villedende** og ulovlig innhold.",
+    ] },
+    { t: "p", text: "Alle kategorier med eksempler finner du i vår gjennomgang av [Googles regler for anmeldelser og brudd](/no/magasin/google-anmeldelsesregler-brudd/)." },
+
+    { t: "h2", id: "muligheter", text: "De lovlige mulighetene – med ærlige fordeler og ulemper", toc: "Lovlige muligheter" },
+    { t: "p", text: "**Du har seks lovlige måter å håndtere en plagsom anmeldelse på – men bare noen av dem fører faktisk til fjerning.** Hvilken som passer, avhenger av om anmeldelsen bryter reglene eller bare er kritisk." },
+    { t: "ol", items: [
+      "**Rapporter anmeldelsen til Google.** Velg «Rapporter anmeldelse» og riktig type brudd. Gratis og raskt, men Google avviser mange rapporteringer når bruddet ikke er tydelig.",
+      "**Klag i Reviews Management Tool.** Der ser du status for rapporteringene dine («Avgjørelse venter», «Rapport gjennomgått – ikke noe brudd» osv.). Ved avslag kan du klage **én gang per anmeldelse**; klagen kan bli «eskalert» og ender med en endelig avgjørelse.",
+      "**Juridisk forespørsel om fjerning.** For ærekrenkelser, usanne faktapåstander eller annet ulovlig innhold. Sterk når teksten virkelig er ulovlig, men du må begrunne presist hvorfor.",
+      "**Be kunden pent om å oppdatere anmeldelsen.** Var det en ekte kunde, og har du løst problemet? Da kan du spørre om vedkommende vil justere anmeldelsen sin. **Uten motytelse** – ingen rabatt, ingen gave, ikke noe press.",
+      "**Svar offentlig.** Går alltid, også om anmeldelsen blir stående. Et rolig, saklig svar viser fremtidige kunder hvordan du håndterer kritikk ([ignorere, svare eller fjerne?](/no/magasin/negativ-anmeldelse-ignorere-svare-fjerne/)).",
+      "**Profesjonell fjerning mot betaling ved suksess.** En spesialist vurderer først gratis om anmeldelsen kan fjernes, og gjennomfører deretter de offisielle prosedyrene på dine vegne. Du betaler bare hvis anmeldelsen faktisk forsvinner.",
+    ] },
+    { t: "table", head: ["Mulighet", "Fordeler", "Ulemper"], rows: [
+      ["Rapportere selv", "Gratis, kan gjøres med en gang", "Avvises ofte; ingen kontroll over utfallet"],
+      ["Klage (Reviews Management Tool)", "En ny sjanse, med statusoversikt", "Bare én klage per anmeldelse; usikker tidsbruk"],
+      ["Juridisk forespørsel", "Sterk ved reelt ulovlig innhold", "Fungerer bare ved tydelige lovbrudd; arbeidskrevende"],
+      ["Be kunden oppdatere", "Reell forbedring av vurderingen din", "Bare ekte kunder; ingen belønning tillatt"],
+      ["Svare offentlig", "Alltid mulig, bygger tillit", "Anmeldelsen er fortsatt synlig"],
+      ["Profesjonell fjerning", "Erfaring med prosedyrene; **179 € per fjernet anmeldelse, først ved suksess**", "Koster penger; ærlig kritikk blir uansett stående"],
+    ] },
+    { t: "p", text: "Til sammenligning tar en advokat som regel betalt på forskudd og per time – også om anmeldelsen ender med å bli stående ([advokat eller teknisk fjerning?](/no/magasin/negativ-google-anmeldelse-advokat/)). En fullstendig prissammenligning finner du i [hva koster det å få fjernet en Google-anmeldelse](/no/magasin/pris-fjerne-google-anmeldelse/)." },
+    { t: "cta", title: "Få en gratis vurdering av om anmeldelsen kan fjernes", text: "Søk etter bedriften din, kryss av for anmeldelsene og se prisen med en gang: **179 € per fjernet anmeldelse** (eldre enn 4 uker 229 €). Ingenting på forskudd – du betaler bare når anmeldelsen faktisk er borte.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Bare Googles offisielle prosedyrer", "Først en ærlig vurdering"] },
+
+    { t: "h2", id: "myter", text: "Myter og feller: dette bør du la være", toc: "Myter" },
+    { t: "p", text: "**Det sirkulerer mange «triks» for å slette Google-anmeldelser som ikke fungerer – eller som til og med setter profilen din i fare.** Her er de fire mest seiglivede." },
+    { t: "ul", items: [
+      "**«Jeg lager bare en ny profil.»** Å markere profilen som «permanent stengt» fjerner ingen anmeldelser – de er fortsatt synlige. Og en ekstra profil for samme bedrift på samme adresse er et duplikat, noe Google ikke tillater.",
+      "**«Hvis alle rapporterer anmeldelsen, forsvinner den.»** Masserapportering fra kolleger, familie eller venner endrer ikke vurderingen: Google ser på innholdet, ikke på antallet rapporteringer.",
+      "**«Jeg kjøper noen positive anmeldelser eller gir rabatt for fem stjerner.»** Kjøpte anmeldelser og belønninger for anmeldelser er falskt engasjement og bryter Googles retningslinjer. Det kan føre til fjernede anmeldelser eller begrensninger for profilen din.",
+      "**«Garantert fjerning, betal på forskudd.»** Ingen kan garantere at en anmeldelse forsvinner – avgjørelsen ligger alltid hos Google. Den som lover garanti og samtidig vil ha betalt på forskudd, er et rødt flagg. Seriøse aktører jobber med **betaling først ved suksess**.",
+    ] },
+    { t: "warn", title: "Utpressing med anmeldelser? Ikke betal.", text: "Får du en bølge av 1-stjernes anmeldelser fulgt av et krav om betaling, er det utpressing. **Ikke betal, ikke gå i dialog, ta skjermbilder** og bruk Googles [eget skjema for utpressing med anmeldelser](https://support.google.com/business/answer/16404809). Les mer: [utpressing med Google-anmeldelser](/no/magasin/utpressing-google-anmeldelser/)." },
+
+    { t: "h2", id: "profil", text: "Spesialtilfelle: slette hele bedriftsprofilen", toc: "Slette hele profilen" },
+    { t: "p", text: "**Blir hele Google-bedriftsprofilen slettet, forsvinner alle anmeldelser på én gang – også de gode.** Det er noe annet enn «permanent stengt», der både bedriftsopplysninger og anmeldelser fortsatt er synlige. Hvordan en reell sletting foregår, kan du lese i guiden vår [slett Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/)." },
+    { t: "table", head: ["Situasjon", "Beste løsning"], rows: [
+      ["Profilen er i bunn og grunn god, én eller noen få anmeldelser er falske eller krenkende", "**Fjern enkeltanmeldelser**"],
+      ["Ærlig, saklig kritikk fra en kunde", "**Svar offentlig** og løs problemet"],
+      ["Profilen er full av gamle falske anmeldelser, hevnanmeldelser og feil opplysninger", "**Slett hele profilen**"],
+      ["Du vil forsvinne fra Google Maps for godt eller ta en reell ny start", "**Slett hele profilen**"],
+    ] },
+    { t: "p", text: "Har du en sunn profil med mange gode vurderinger, er det å skyte spurv med kanon å slette hele profilen: Du mister også alle de positive anmeldelsene dine. Da er det mer treffsikkert å [få fjernet enkelte Google-anmeldelser](/no/fjern-omtale/)." },
+
+    { t: "h2", id: "plan", text: "Slik gjør du det konkret nå", toc: "Steg for steg" },
+    { t: "p", text: "**Start alltid med et nøkternt spørsmål: Bryter anmeldelsen reglene eller loven – eller er det bare kritikk?** Resten følger av svaret." },
+    { t: "ol", items: [
+      "**Sikre bevis:** ta skjermbilde av anmeldelsen, datoen og anmelderens profil.",
+      "**Sjekk:** er anmelderen en ekte kunde? Faller innholdet inn under en kategori i Googles retningslinjer?",
+      "**Svar rolig** – saklig, uten personopplysninger og uten beskyldninger.",
+      "**Rapporter** med riktig type brudd, og følg statusen i Reviews Management Tool.",
+      "**Klag** hvis rapporteringen avvises – du har bare én klage per anmeldelse, så begrunn den godt.",
+      "**Handle raskt:** anmeldelser opptil 4 uker gamle har hos oss ca. 90 % sjanse for suksess, eldre ca. 50 %.",
+    ] },
+    { t: "p", text: "Siden 2023 har vi fjernet over **1 600 Google-bedriftsprofiler** og gjort over **20 000 gratis profilsjekker** for kunder i mer enn 50 land (Trustpilot 5,0). For enkeltanmeldelser bruker vi utelukkende Googles egne prosedyrer – ingen falske kontoer, ingen roboter, ingen falske juridiske henvendelser – og anmelderen får ikke vite hvem som ba om fjerningen." },
+    { t: "cta", title: "Hvilke anmeldelser kan fjernes? Se det på 2 minutter", text: "Søk etter profilen din, kryss av for anmeldelsene og få en ærlig vurdering. Fra 3 aksepterte anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Du betaler bare per fjernet anmeldelse.**", btn: "Start gratis vurdering", href: "/no/sjekk-profil/?start=reviews", trust: ["Betaling først etter fjerning", "Som regel ferdig på noen dager", "Trustpilot 5,0"] },
+  ],
+  faq: [
+    { q: "Kan jeg som eier slette en Google-anmeldelse selv?", a: "Nei. I Google-bedriftsprofilen finnes det ingen knapp for å slette anmeldelser. Du kan bare rapportere, klage eller svare offentlig – slette kan bare anmelderen selv eller Google." },
+    { q: "Hvilke Google-anmeldelser blir fjernet?", a: "Anmeldelser som bryter Googles retningslinjer – for eksempel falske anmeldelser, interessekonflikter, hat, trakassering, spam eller personopplysninger – og ulovlig innhold som ærekrenkelser. **Ærlig kritikk fra ekte kunder blir stående.**" },
+    { q: "Hva skjer hvis Google avviser rapporteringen min?", a: "Da kan du klage i Reviews Management Tool, **én gang per anmeldelse**. Klagen kan bli eskalert og ender med en endelig avgjørelse fra Google." },
+    { q: "Kan jeg be en kunde om å endre anmeldelsen sin?", a: "Ja, hvis det er en ekte kunde og du har løst problemet. Tilby **ingen rabatt, gave eller annen belønning** – det bryter Googles retningslinjer." },
+    { q: "Forsvinner anmeldelsene hvis jeg markerer profilen som permanent stengt?", a: "Nei. Ved «permanent stengt» er både opplysningene og anmeldelsene fortsatt synlige. Bare hvis hele bedriftsprofilen slettes, forsvinner alle anmeldelser – også de gode." },
+    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse**, 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting." },
+    { q: "Hvor lang tid tar det før en anmeldelse er borte?", a: "Som regel noen få dager, noen ganger opptil 3 uker. Google lover ikke selv noen fast behandlingstid – vurderingen kan ta alt fra dager til uker." },
+  ],
+  related: [
+    { label: "Få fjernet enkelte Google-anmeldelser", url: "/no/fjern-omtale/" },
+    { label: "Googles regler for anmeldelser og brudd", url: "/no/magasin/google-anmeldelsesregler-brudd/" },
+    { label: "Hvor lang tid tar det for Google å fjerne en anmeldelse?", url: "/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/" },
+    { label: "Fjern falske Google-anmeldelser", url: "/no/magasin/fjern-falske-google-anmeldelser/" },
+  ],
+};
+export default article;

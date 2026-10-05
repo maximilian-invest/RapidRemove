@@ -1,0 +1,108 @@
+/* PT — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Reputação",
+  meta: {
+    slug: "empresa-pode-apagar-avaliacoes-google",
+    title: "Uma empresa pode apagar avaliações do Google? (2026)",
+    h1: "Uma empresa pode apagar avaliações do Google? O que é possível",
+    description: "Não: uma empresa não pode apagar avaliações do Google, mas o Google remove as que violam as regras. Opções legítimas, mitos e 179 € só com sucesso.",
+    keywords: ["empresa pode apagar avaliações do google", "apagar avaliação google da minha empresa", "como remover avaliações do google sendo proprietário", "o google pode remover uma avaliação", "apagar avaliação negativa google", "remover avaliações perfil da empresa google", "eliminar avaliações google"],
+    author: "Maximilian Hölzl",
+    authorRole: "Fundador",
+    date: "2026-10-05",
+  },
+  dek: "**Não: uma empresa não pode apagar sozinha avaliações do Google.** Só quem escreveu a avaliação a pode editar ou eliminar. Mas isso não quer dizer que não haja nada a fazer: as avaliações que **violam as políticas do Google ou a lei** podem ser removidas pelo Google, depois de uma denúncia, de um recurso na ferramenta de gestão de avaliações ou de um pedido de remoção por motivos legais. Explicamos quem pode remover o quê, que caminhos são legítimos e que «truques» saem caro.",
+  blocks: [
+    { t: "h2", id: "resposta-curta", text: "Resposta curta: a empresa não pode apagar avaliações, o Google pode", toc: "Resposta curta" },
+    { t: "p", text: "**Os proprietários não têm um botão de apagar.** No seu Perfil da Empresa no Google pode ler, responder e denunciar avaliações, mas não as pode eliminar, por mais injustas que sejam. O Google fez isto de propósito: se as empresas pudessem apagar avaliações, as classificações deixariam de ter valor para os clientes." },
+    { t: "p", text: "O que **pode** fazer é levar o Google a remover uma avaliação que viola as suas regras. Avaliações falsas, insultos, avaliações de pessoas que nunca foram clientes, spam, conflitos de interesse ou conteúdo ilegal são casos de remoção. Uma crítica honesta de um cliente real não é, mesmo que doa." },
+    { t: "p", text: "Se preferir não tratar de denúncias e recursos, um **[serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/)** faz isso por si, usando apenas os procedimentos do próprio Google. Com a RapidRemove paga **179 € por avaliação removida**, e só quando ela desaparece de facto." },
+
+    { t: "h2", id: "quem-pode-remover", text: "Quem pode remover o quê: autor, empresa, Google e tribunal", toc: "Quem pode remover o quê" },
+    { t: "p", text: "Há quatro partes com uma palavra a dizer sobre uma avaliação do Google, mas só duas a conseguem fazer desaparecer. A tabela resume quem pode fazer o quê." },
+    { t: "table", head: ["Quem", "Pode apagar a avaliação?", "O que pode fazer", "Quando"], rows: [
+      ["**Autor da avaliação**", "Sim", "Editar ou apagar a sua própria avaliação a qualquer momento", "Por qualquer motivo: a avaliação é dele"],
+      ["**Empresa (proprietário)**", "Não", "Responder publicamente, denunciar, recorrer, apresentar um pedido legal, pedir a um cliente real que atualize a avaliação", "Denunciar só quando há uma violação real das regras ou da lei"],
+      ["**Google**", "Sim", "Reter ou remover avaliações, automaticamente ou após uma denúncia", "Quando a avaliação viola a política de conteúdo ou a lei local"],
+      ["**Tribunal / via legal**", "Indiretamente", "Conteúdo ilícito (p. ex. difamação) pode ser contestado pela via legal; o Google trata à parte os pedidos de remoção por motivos legais", "Violações legais claras, normalmente com advogado"],
+    ] },
+    { t: "p", text: "O essencial: enquanto empresa, o seu papel é **dar ao Google um motivo válido** para agir. Discordar de uma avaliação não é um deles: o Google pede expressamente que não se denunciem avaliações só porque não gostamos delas." },
+
+    { t: "h2", id: "o-que-o-google-remove", text: "Que avaliações o Google remove de facto", toc: "O que pode ser removido?" },
+    { t: "p", text: "O Google remove as avaliações que violam a sua [política de conteúdo proibido e restrito](https://support.google.com/contributionpolicy/answer/7400114). Para uma empresa, as categorias mais relevantes são:" },
+    { t: "ul", items: [
+      "**Interação falsa**: avaliações que não refletem uma experiência real, incluindo ataques de avaliações e avaliações compradas",
+      "**Conflito de interesses**: avaliações de concorrentes, de funcionários atuais ou antigos, ou do próprio dono",
+      "**Assédio, discurso de ódio, obscenidade** e conteúdo ofensivo",
+      "**Informações pessoais**, por exemplo o telefone privado ou a morada de um funcionário",
+      "Conteúdo **fora do tema**, **spam** e avaliações destinadas a outra empresa",
+      "**Falsificação de identidade, desinformação** e conteúdo ilegal",
+    ] },
+    { t: "p", text: "Uma estrela com «serviço lento, comida fria» deixada por um cliente real não cabe em nenhuma destas categorias. Por isso nenhum fornecedor sério lhe vai prometer remover qualquer avaliação. Mais detalhes: [políticas de avaliações do Google e violações](/pt/revista/politicas-avaliacoes-google-violacoes/)." },
+
+    { t: "h2", id: "opcoes", text: "6 formas legítimas de agir perante uma avaliação que quer ver removida", toc: "As suas opções" },
+    { t: "p", text: "Todos os caminhos legítimos passam por **convencer o Google** de que a avaliação viola as regras ou por **levar o autor a mudar de ideias**. Aqui estão, com prós e contras honestos." },
+    { t: "p", text: "**1. Denunciar a avaliação.** No Google Maps, na Pesquisa ou no seu Perfil da Empresa, clique em «Denunciar avaliação» e escolha o tipo de violação. *Pró:* é gratuito e demora um minuto. *Contra:* as denúncias são analisadas por sistemas automáticos e por pessoas, demoram de dias a semanas e muitas voltam com «sem violação da política». Passo a passo: [como remover uma avaliação do Google](/pt/revista/como-remover-avaliacao-google/)." },
+    { t: "p", text: "**2. Recorrer na ferramenta de gestão de avaliações.** A [ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796) mostra o estado de cada avaliação denunciada. Se o Google decidir que não há violação, pode **recorrer uma única vez por avaliação**; o recurso pode ser escalado e recebe então uma decisão final. *Pró:* uma segunda análise mais cuidada. *Contra:* só há uma oportunidade, e um recurso fraco desperdiça-a. Prazos: [quanto tempo o Google demora a remover uma avaliação](/pt/revista/quanto-tempo-google-remover-avaliacao/)." },
+    { t: "p", text: "**3. Apresentar um pedido de remoção por motivos legais.** Para difamação ou outro conteúdo ilícito, o Google tem um [formulário legal](https://support.google.com/legal/answer/3110420) próprio. *Pró:* abrange conteúdo que talvez não viole a política do Google, mas viola a lei. *Contra:* é preciso explicar o problema legal com rigor; em casos graves convém ter um advogado ([advogado ou remoção técnica?](/pt/revista/avaliacao-negativa-google-advogado/))." },
+    { t: "p", text: "**4. Pedir com educação a um cliente real que atualize a avaliação.** Se o autor é um cliente verdadeiro e entretanto resolveu o problema, pode perguntar-lhe, uma vez e com cortesia, se quer atualizar a avaliação. *Pró:* uma avaliação revista costuma causar melhor impressão do que uma apagada. *Contra:* só resulta com clientes reais e contactáveis, e **nunca pode oferecer descontos, reembolsos ou ofertas** em troca. Os incentivos violam a política do Google." },
+    { t: "p", text: "**5. Responder publicamente.** Uma resposta calma e factual é sempre possível e mostra aos potenciais clientes como lida com os problemas. *Pró:* gratuita, imediata e útil mesmo que a avaliação fique. *Contra:* a avaliação não desaparece, e uma resposta irritada pode fazer mais estragos do que a própria avaliação. Orientações: [avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/)." },
+    { t: "p", text: "**6. Remoção profissional com pagamento só em caso de sucesso.** Um especialista apresenta denúncias e recursos em seu nome, usando apenas os procedimentos do Google. *Pró:* experiência no que o Google aceita, zero tempo da sua parte e, com a RapidRemove, **não paga nada se a avaliação não for removida**. *Contra:* tem um custo e só funciona com avaliações que violam mesmo as regras." },
+    { t: "table", rrCol: 5, head: ["", "Denunciar", "Recurso", "Pedido legal", "Pedir ao cliente", "Remoção profissional"], rows: [
+      ["Custo", "Gratuito", "Gratuito", "Gratuito (advogado à parte)", "Gratuito", "**179 € por avaliação removida**"],
+      ["A avaliação desaparece?", "Se o Google concordar", "Se o Google concordar", "Se houver fundamento legal", "Só se o autor agir", "Só paga se sim"],
+      ["Esforço para si", "Baixo", "Médio", "Alto", "Baixo", "Cerca de 2 minutos"],
+      ["Duração habitual", "Dias a semanas", "Dias a semanas", "Semanas ou mais", "Incerta", "Alguns dias, até 3 semanas"],
+    ] },
+    { t: "cta", title: "Selecione as avaliações que devem sair", text: "Pesquise a sua empresa, marque as avaliações e veja de imediato o preço exato. **179 € por avaliação removida**, nada adiantado e avaliação gratuita primeiro.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só com sucesso", "Primeiro uma opinião honesta"] },
+
+    { t: "h2", id: "mitos", text: "Mitos: o que não funciona (ou lhe traz problemas)", toc: "Mitos" },
+    { t: "p", text: "A maioria dos «truques» para se livrar de avaliações do Google não funciona ou viola as regras do Google. Estes são os que ouvimos mais vezes." },
+    { t: "ul", items: [
+      "**«Apague o perfil e crie um novo.»** As avaliações não desaparecem de forma limpa assim. Criar um perfil duplicado para a mesma empresa viola as diretrizes do Google e pode levar à suspensão do perfil ou à sua fusão com o antigo.",
+      "**«Denuncie vezes sem conta, ou peça aos amigos que denunciem.»** O Google compara o conteúdo com a sua política; não é o número de denúncias que decide. Denúncias em massa não ajudam, e denunciar avaliações só por discordar é precisamente o que o Google pede para não fazer.",
+      "**«Abafe-a com avaliações positivas.»** Comprar avaliações, escrevê-las você mesmo ou oferecer incentivos em troca de 5 estrelas é interação falsa segundo a política do Google. Pode levar à remoção de avaliações e a restrições no perfil.",
+      "**«Remoção de avaliações garantida.»** Ninguém controla as decisões do Google. Desconfie de garantias combinadas com pagamento adiantado, contas falsas, bots ou falsas notificações legais: estes métodos põem o seu perfil em risco.",
+    ] },
+    { t: "warn", title: "Uma vaga de avaliações de 1 estrela e um pedido de dinheiro?", text: "Isso é extorsão com avaliações. Não pague, não entre em diálogo, guarde capturas de ecrã e use o formulário específico do Google. Saiba mais: [extorsão com avaliações do Google: o que fazer](/pt/revista/extorsao-avaliacoes-google/)." },
+
+    { t: "h2", id: "perfil-inteiro", text: "Caso especial: eliminar todo o Perfil da Empresa", toc: "Eliminar o perfil inteiro" },
+    { t: "p", text: "**Se eliminar por completo o seu Perfil da Empresa no Google, desaparecem todas as avaliações, incluindo as boas.** É a única situação em que as avaliações desaparecem sem serem analisadas uma a uma." },
+    { t: "p", text: "Faz sentido quando o perfil está danificado no seu conjunto: dezenas de avaliações negativas, uma classificação que já não reflete o seu negócio, ou uma empresa que mudou tanto que recomeçar do zero é a opção mais honesta. Como funciona e a que deve estar atento: [eliminar o Perfil da Empresa no Google](/pt/revista/eliminar-perfil-empresa-google/)." },
+    { t: "p", text: "Se o seu perfil está saudável no geral e só **uma ou poucas avaliações** são injustas, falsas ou ofensivas, apagar o perfil seria um exagero. Nesse caso, [remover avaliações do Google uma a uma](/pt/remover-uma-avaliacao/) mantém as suas avaliações positivas e o histórico da sua classificação." },
+    { t: "table", head: ["Situação", "Melhor opção"], rows: [
+      ["Boa classificação, 1–5 avaliações falsas ou ofensivas", "Remover avaliações individuais"],
+      ["Ataque de avaliações nas últimas semanas", "Remover avaliações individuais, depressa"],
+      ["Classificação danificada no geral, quer recomeçar", "Eliminar o perfil inteiro"],
+      ["Críticas honestas de clientes reais", "Responder publicamente e corrigir a causa"],
+    ] },
+
+    { t: "h2", id: "profissional", text: "Como funciona a remoção profissional na RapidRemove", toc: "Remoção profissional" },
+    { t: "p", text: "Usamos **apenas os procedimentos do próprio Google**, em nome do proprietário da empresa: sem contas falsas, sem bots e sem falsas notificações legais. O autor da avaliação não fica a saber quem pediu a remoção." },
+    { t: "ul", items: [
+      "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação pode ser removida. Se não puder, não paga nada.",
+      "**Preço:** 179 € por avaliação removida; avaliações com mais de 4 semanas custam mais 50 € (229 €).",
+      "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas.",
+      "**Desconto de volume** nas avaliações que aceitamos: a partir de 3, −10 %; a partir de 5, −15 %; a partir de 10, −30 %.",
+      "**Duração:** normalmente alguns dias, por vezes até 3 semanas. Paga cada avaliação depois de removida, através de um link de pagamento seguro.",
+    ] },
+    { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis da Empresa no Google, fizemos mais de 20.000 verificações gratuitas e trabalhámos para clientes em mais de 50 países. Com avaliações falsas compensa agir depressa: [como detetar e remover avaliações falsas do Google](/pt/revista/remover-avaliacoes-falsas-google/)." },
+    { t: "cta", title: "Descubra que avaliações podem sair", text: "Pesquise o seu perfil, marque as avaliações e o preço aparece de imediato. **Só paga pelas avaliações efetivamente removidas.**", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Análise gratuita", "Desde 179 € por avaliação", "Discreto"] },
+  ],
+  faq: [
+    { q: "Posso apagar uma avaliação do meu próprio Perfil da Empresa no Google?", a: "Não. Os proprietários não podem apagar avaliações: só o autor pode editar ou eliminar a sua. Pode denunciar uma avaliação que viole as políticas do Google, e o Google pode então removê-la." },
+    { q: "O Google remove uma avaliação se eu pedir?", a: "Só se a avaliação violar a política de conteúdo ou a lei. O Google não remove avaliações por discordar delas. Se a denúncia for rejeitada, pode **recorrer uma vez** na ferramenta de gestão de avaliações." },
+    { q: "Responder a uma avaliação negativa prejudica?", a: "Não: uma resposta calma e factual não prejudica e mostra aos potenciais clientes como lida com os problemas. Evite respostas a quente e nunca revele dados pessoais do cliente." },
+    { q: "Posso descobrir quem escreveu uma avaliação anónima?", a: "Em geral, não. O Google não revela quem está por trás de uma avaliação. Perante conteúdo claramente ilícito, podem existir vias legais consoante o país; é uma questão para um advogado." },
+    { q: "Se eliminar o Perfil da Empresa, as avaliações desaparecem?", a: "Sim, eliminar o perfil inteiro remove todas as avaliações, incluindo as boas. Se o problema forem só algumas, normalmente é melhor removê-las uma a uma." },
+    { q: "Posso pagar para remover uma avaliação do Google?", a: "Sim, desde que se usem apenas os procedimentos do próprio Google. Com a RapidRemove são **179 € por avaliação removida** (229 € se tiver mais de 4 semanas), e não paga nada se a avaliação ficar." },
+    { q: "Posso pedir a um cliente que apague a avaliação?", a: "Pode pedir com educação a um cliente real que atualize a avaliação se tiver resolvido o problema. Oferecer descontos, reembolsos ou ofertas em troca viola a política do Google." },
+  ],
+  related: [
+    { label: "Serviço para remover avaliações do Google: preço e sucesso", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Eliminar o Perfil da Empresa no Google", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Políticas de avaliações do Google e violações", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
+    { label: "Avaliação negativa: ignorar, responder ou remover?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
+  ],
+};
+export default article;

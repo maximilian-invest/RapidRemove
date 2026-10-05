@@ -1,0 +1,115 @@
+/* PT — google-bewertung-loeschen-kosten (article without German original; single-review product). */
+const article = {
+  category: "Reputação",
+  meta: {
+    slug: "preco-remover-avaliacao-google",
+    title: "Preço para remover uma avaliação do Google: quanto custa (2026)",
+    h1: "Quanto custa remover uma avaliação do Google?",
+    description: "Quanto custa remover uma avaliação do Google? Fazer sozinho, advogado ou empresa especializada. RapidRemove: 179 € por avaliação removida, só paga se sair.",
+    keywords: ["preço remover avaliação google", "quanto custa remover uma avaliação do google", "remover avaliação google preço", "pagar para remover avaliação google", "remover avaliação google grátis", "empresa para remover avaliações google preço", "custo remover avaliação negativa google"],
+    author: "Maximilian Hölzl",
+    authorRole: "Fundador",
+    date: "2026-10-05",
+  },
+  dek: "Denunciar uma avaliação do Google por conta própria é **grátis**, mas o Google rejeita muitas vezes a denúncia. Os advogados costumam cobrar **à hora e adiantado**, quer a avaliação saia quer não. As empresas de remoção variam muito: umas cobram por tentativa ou antes de começar, outras nem sequer publicam preços. Na RapidRemove paga **179 € por avaliação removida** (+50 € se tiver mais de 4 semanas), e **só depois de ter mesmo desaparecido**.",
+  blocks: [
+    { t: "h2", id: "resposta-curta", text: "Resposta curta: quanto custa remover uma avaliação do Google", toc: "Resposta curta" },
+    { t: "p", text: "Remover uma avaliação do Google custa entre **0 € e várias centenas de euros**, consoante quem trata do assunto e como cobra. Mais importante do que o preço é **quem assume o risco** se a avaliação continuar online." },
+    { t: "ul", items: [
+      "**Denunciar por conta própria:** grátis. Paga com o seu tempo, e o Google responde muitas vezes com uma decisão-padrão de \"sem violação das políticas\".",
+      "**Advogado:** normalmente à hora, muitas vezes com uma provisão paga adiantado. Paga **independentemente do resultado**.",
+      "**Empresas com pagamento adiantado:** preços e modelos muito diferentes. Umas cobram por tentativa ou antes de qualquer trabalho, outras só dão preço depois de uma chamada comercial.",
+      "**RapidRemove:** **179 € por avaliação removida**, **229 €** se a avaliação tiver mais de 4 semanas. Nada adiantado, sem custos por tentativa. Só paga as avaliações que são efetivamente removidas.",
+    ] },
+    { t: "p", text: "Quer apenas saber o preço para as suas avaliações? O nosso [serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/) mostra-o de imediato, assim que marcar as que quer retirar." },
+
+    { t: "h2", id: "comparacao", text: "Sozinho, advogado, empresas com pagamento adiantado ou pagamento por sucesso", toc: "Comparação" },
+    { t: "p", text: "As quatro opções distinguem-se menos pelo que conseguem e mais pela **forma como paga e pelo que acontece se não resultar**. Eis o resumo:" },
+    { t: "table", rrCol: 4, head: ["Critério", "Denunciar sozinho", "Advogado", "Empresas com pagamento adiantado", "RapidRemove"], rows: [
+      ["Modelo de custo", "Grátis", "À hora, normalmente adiantado", "Por tentativa ou adiantado; preços muitas vezes ocultos", "**179 € por avaliação removida** (+50 € acima de 4 semanas)"],
+      ["Se a avaliação fica", "Perdeu tempo", "Paga na mesma", "O dinheiro normalmente perde-se", "**Não paga nada**"],
+      ["Risco", "Custo baixo, poucas hipóteses", "Custo alto, resultado incerto", "Pagar por nada", "**Nenhum no custo**"],
+      ["Prazo habitual", "De dias a semanas, sem prazo garantido", "Muitas vezes meses", "Variável", "Poucos dias, até 3 semanas"],
+      ["Esforço para si", "Médio (denunciar, acompanhar, recorrer)", "Alto (explicar o caso, documentos, seguimento)", "Médio", "Cerca de 2 minutos"],
+    ] },
+    { t: "p", text: "**Denunciar por conta própria** é o primeiro passo certo se tiver tempo e a violação for clara. Denuncia a avaliação no Google Maps ou no seu Perfil da Empresa e acompanha o estado na [ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796) do Google, onde pode **recorrer uma única vez** se o Google decidir que não há violação. Passo a passo: [como remover uma avaliação do Google sozinho](/pt/revista/como-remover-avaliacao-google/)." },
+    { t: "p", text: "**Um advogado** faz sentido perante conteúdo claramente ilegal, como a difamação, sobretudo se quiser agir contra o autor. O Google tem o seu próprio [formulário de remoção por motivos legais](https://support.google.com/legal/answer/3110420). O senão: com honorários à hora e provisão, paga antes de saber se vai resultar ([advogado ou remoção técnica?](/pt/revista/avaliacao-negativa-google-advogado/))." },
+    { t: "p", text: "**As empresas com pagamento adiantado** passam todo o risco para si. Se a avaliação ficar, o dinheiro normalmente já foi gasto. Leia bem as condições antes de pagar adiantado a quem quer que seja." },
+    { t: "p", text: "Há um custo que se esquece facilmente: **o tempo**. Enquanto uma avaliação falsa de 1 estrela está no topo do seu perfil, cada potencial cliente que o procura no Google vê-a. Uma denúncia gratuita que se arrasta durante semanas e acaba rejeitada não é realmente grátis se, entretanto, lhe custar clientes." },
+
+    { t: "h2", id: "preco", text: "Preços da RapidRemove: 179 € por avaliação removida", toc: "O nosso preço" },
+    { t: "p", text: "Paga **179 € por cada avaliação efetivamente removida**. Se a avaliação tiver mais de 4 semanas, custa **229 €** (179 € + 50 €). Nada é cobrado adiantado e não há custos por tentativa." },
+    { t: "table", rrCol: 2, head: ["Idade da avaliação", "Probabilidade de sucesso", "Preço por avaliação removida"], rows: [
+      ["Até 4 semanas", "aprox. 90 %", "**179 €**"],
+      ["Mais de 4 semanas", "aprox. 50 %", "**229 €** (179 € + 50 €)"],
+    ] },
+    { t: "p", text: "As avaliações mais antigas custam mais porque são **mais difíceis de remover**: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Antes de encomendar, recebe uma **análise gratuita** e dizemos-lhe com honestidade se uma avaliação tem poucas hipóteses. Se não for removível, não lhe custa nada." },
+    { t: "p", text: "Se houver várias avaliações a remover, o **desconto por quantidade** aplica-se automaticamente:" },
+    { t: "table", head: ["Avaliações aceites após a análise", "Desconto em cada avaliação removida"], rows: [
+      ["1 – 2", "–"],
+      ["3 – 4", "**−10 %**"],
+      ["5 – 9", "**−15 %**"],
+      ["10 ou mais", "**−30 %**"],
+    ] },
+
+    { t: "h2", id: "exemplos", text: "Exemplos de preço: quanto paga por 1, 3, 5 ou 10 avaliações", toc: "Exemplos de preço" },
+    { t: "p", text: "Eis quanto custam encomendas típicas, arredondado ao euro. \"Recente\" significa até 4 semanas; \"antiga\", mais de 4 semanas." },
+    { t: "table", rrCol: 2, head: ["Caso", "Cálculo", "Paga"], rows: [
+      ["1 avaliação recente", "1 × 179 €", "**179 €**"],
+      ["1 avaliação antiga", "1 × 229 €", "**229 €**"],
+      ["3 avaliações recentes", "3 × 179 € = 537 €, −10 %", "**483 €**"],
+      ["5 avaliações (2 recentes, 3 antigas)", "358 € + 687 € = 1.045 €, −15 %", "**888 €**"],
+      ["10 avaliações (6 recentes, 4 antigas)", "1.074 € + 916 € = 1.990 €, −30 %", "**1.393 €**"],
+      ["5 recentes aceites, 4 removidas", "4 × 179 € = 716 €, −15 %", "**609 €**"],
+    ] },
+    { t: "p", text: "A última linha mostra o essencial: **só paga as avaliações removidas**. O nível de desconto é definido pelo número de avaliações que aceitamos após a análise gratuita e aplica-se a cada avaliação que desaparece." },
+    { t: "cta", title: "Veja o seu preço exato em 2 minutos", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o total de imediato, com desconto incluído. **179 € por avaliação removida**, nada adiantado.", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Só paga se sair", "Primeiro uma análise gratuita"] },
+
+    { t: "h2", id: "pagamento", text: "Como se paga: por cada avaliação removida", toc: "Como paga" },
+    { t: "p", text: "Paga **depois** de a avaliação ter sido removida, nunca antes. Assim que desaparece, recebe um **link de pagamento seguro** para essa avaliação." },
+    { t: "ul", items: [
+      "**Cada avaliação sai num momento diferente.** A remoção demora normalmente poucos dias, por vezes até três semanas ([quanto tempo o Google demora](/pt/revista/quanto-tempo-google-remover-avaliacao/)).",
+      "Por isso pode receber **um link de pagamento por avaliação**: paga cada uma assim que é removida, não o lote inteiro de uma vez.",
+      "O seu **desconto por quantidade já está incluído** em cada link.",
+      "Prefere **PayPal ou transferência bancária**? Ambos são possíveis a pedido.",
+    ] },
+    { t: "tip", title: "Nenhuma fatura pelas avaliações que ficam", text: "Se uma avaliação não puder ser removida, simplesmente não recebe link de pagamento para ela. Nada para cancelar, nada para reclamar." },
+
+    { t: "h2", id: "sinais-alerta", text: "Sinais de alerta ao escolher uma empresa de remoção", toc: "Sinais de alerta" },
+    { t: "p", text: "Um preço baixo não vale nada se a empresa usar métodos que põem o seu perfil em risco. Tenha cuidado se vir algum destes sinais:" },
+    { t: "ul", items: [
+      "**\"Remoção garantida\":** só o Google decide se uma avaliação sai. Ninguém o pode garantir com honestidade.",
+      "**Pagamento total adiantado ou custos por tentativa:** o risco é todo seu, mesmo que nada aconteça.",
+      "**Preços não publicados:** se só lhe dão um valor depois de uma chamada comercial, compare com cuidado.",
+      "**Contas falsas, bots ou denúncias em massa:** violam as regras do Google e podem virar-se contra o seu próprio perfil.",
+      "**Falsas notificações jurídicas:** inventar queixas legais para pressionar o Google ou o autor é um problema sério, não um atalho.",
+      "**Comprar avaliações positivas para abafar as negativas:** é interação falsa segundo as [políticas de conteúdo do Google](https://support.google.com/contributionpolicy/answer/7400114) e põe o seu perfil em risco.",
+    ] },
+    { t: "p", text: "A RapidRemove trabalha **apenas através dos procedimentos oficiais do Google**, em nome do proprietário da empresa. O autor da avaliação não fica a saber quem pediu a remoção. E se estiver a sofrer uma vaga de avaliações de 1 estrela acompanhada de um pedido de dinheiro, é outro caso: [o que fazer perante extorsão com avaliações do Google](/pt/revista/extorsao-avaliacoes-google/)." },
+
+    { t: "h2", id: "compensa", text: "Quando compensa pagar para remover uma avaliação?", toc: "Compensa?" },
+    { t: "p", text: "Pagar faz sentido quando uma avaliação é **injusta e lhe está a custar clientes**: uma avaliação falsa, um insulto, uma estrela de alguém que nunca foi cliente. Quanto menos avaliações tiver o seu perfil, mais pesa cada uma na média." },
+    { t: "ul", items: [
+      "**Compensa:** avaliações falsas ou ofensivas, de quem nunca foi cliente, ataques da concorrência ([como reconhecer avaliações falsas](/pt/revista/remover-avaliacoes-falsas-google/)). Sobretudo se forem **recentes**: mais baratas e com mais hipóteses de sucesso.",
+      "**Experimente primeiro a via gratuita:** se tiver tempo e a violação for evidente, denuncie-a sozinho e use o recurso.",
+      "**Não é um caso de remoção:** a crítica honesta de clientes reais. Responda em público e com educação ([ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/)).",
+    ] },
+    { t: "p", text: "Para comparar 179 € com o que a avaliação está a fazer ao seu negócio, leia [quanto custa realmente uma avaliação negativa no Google](/pt/revista/quanto-custa-avaliacao-negativa-google/). Desde 2023 a nossa equipa removeu mais de **1.600 perfis de empresa do Google** para clientes em mais de 50 países, e aplicamos a mesma abordagem a avaliações individuais com o nosso [serviço para remover uma avaliação do Google](/pt/remover-uma-avaliacao/)." },
+  ],
+  faq: [
+    { q: "Remover uma avaliação do Google é grátis?", a: "Denunciar uma avaliação ao Google por conta própria é grátis, e pode recorrer uma vez na ferramenta de gestão de avaliações. Mas o Google rejeita muitas denúncias. Com a RapidRemove paga **179 € por avaliação, só se for removida**." },
+    { q: "Pago alguma coisa se a avaliação não for removida?", a: "Não. Não há pagamento adiantado nem custos por tentativa. Só paga as avaliações que desaparecem de facto." },
+    { q: "Porque é que as avaliações antigas são mais caras?", a: "As avaliações com mais de 4 semanas são mais difíceis de remover: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Por isso custam **mais 50 €** (229 € em vez de 179 €)." },
+    { q: "Há desconto para várias avaliações?", a: "Sim. A partir de 3 avaliações aceites tem 10 % de desconto, a partir de 5 tem 15 % e a partir de 10 tem 30 %. O desconto aplica-se a cada avaliação removida." },
+    { q: "Posso pagar por PayPal ou transferência bancária?", a: "Sim. Por defeito recebe um link de pagamento seguro após a remoção; PayPal ou transferência bancária são possíveis a pedido." },
+    { q: "Porque recebi vários links de pagamento?", a: "As avaliações são removidas em momentos diferentes, por isso pode receber **um link de pagamento por avaliação**. Paga cada uma assim que desaparece." },
+    { q: "Quanto cobra um advogado para remover uma avaliação do Google?", a: "Os advogados cobram normalmente à hora, muitas vezes com uma provisão adiantada, e paga quer a avaliação seja removida quer não. O valor exato depende do escritório e do caso." },
+  ],
+  related: [
+    { label: "Serviço para remover avaliações do Google: preço e encomenda", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Quanto custa uma avaliação negativa no Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
+    { label: "Advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Quanto tempo demora o Google a remover uma avaliação?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;

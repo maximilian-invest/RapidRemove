@@ -1,0 +1,122 @@
+/* FR — google-bewertung-loeschen-dauer (article without German original; single-review product). */
+const article = {
+  category: "Réputation",
+  meta: {
+    slug: "delai-suppression-avis-google",
+    title: "Délai de suppression d'un avis Google : statuts et recours",
+    h1: "Combien de temps Google met-il pour supprimer un avis ? Délais, statuts et recours",
+    description: "Google ne fixe aucun délai : de quelques heures à plusieurs semaines. Étapes, statuts, recours – et suppression dès 179 €, payée uniquement en cas de succès.",
+    keywords: [
+      "délai suppression avis google",
+      "combien de temps pour supprimer un avis google",
+      "avis google signalé toujours en attente",
+      "outil de gestion des avis google",
+      "faire appel décision avis google",
+      "avis google décision en attente",
+      "google met combien de temps à supprimer un avis",
+      "avis google remonté statut",
+    ],
+    author: "Maximilian Hölzl",
+    authorRole: "Expert Google et fondateur",
+    date: "2026-10-05",
+  },
+  dek: "**Google ne donne aucun délai fixe.** Une infraction évidente peut disparaître en quelques heures ou quelques jours ; les cas limites, les recours et les remontées peuvent prendre **plusieurs semaines**. Avec RapidRemove, la suppression prend en général **quelques jours, parfois jusqu'à trois semaines** – et vous ne payez qu'une fois l'avis réellement supprimé. Voici chaque étape avec sa durée typique, comment lire le statut dans l'outil de gestion des avis, comment fonctionne le recours et ce qui accélère vraiment les choses.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "La réponse courte : pas de délai fixe, mais des fourchettes typiques", toc: "Réponse courte" },
+    { t: "p", text: "**Google ne s'engage sur aucun délai de traitement pour les avis signalés.** Les signalements sont examinés par des systèmes automatiques et par des personnes, ce qui prend selon le cas de quelques heures à plusieurs semaines." },
+    { t: "ul", items: [
+      "**Infractions évidentes** (spam, insultes, faux engagement manifeste) : souvent de quelques heures à quelques jours.",
+      "**Cas limites** qui demandent un examen humain : souvent d'une à quelques semaines.",
+      "**Recours et remontées** : ajoutent du temps, parfois plusieurs semaines.",
+      "**Avec nous** : en général quelques jours, parfois jusqu'à trois semaines par avis. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **179 € par avis supprimé**, rien d'avance.",
+    ] },
+    { t: "warn", title: "Des délais typiques, pas garantis", text: "Toutes les durées de cet article sont des fourchettes observées en pratique, pas des engagements de Google. Le délai de traitement varie, et personne ne peut promettre une date – ni une suppression." },
+
+    { t: "h2", id: "timeline", text: "Les étapes d'un signalement et leur durée habituelle", toc: "Étapes et délais" },
+    { t: "p", text: "**Un signalement passe par jusqu'à six étapes, et seule la première dépend de vous.** Le tableau montre ce qui se passe à chaque étape et combien de temps cela prend généralement." },
+    { t: "table", head: ["Étape", "Ce qui se passe", "Durée typique (non garantie)"], rows: [
+      ["1. Signalement", "Vous signalez l'avis sur Google Maps, dans la recherche ou dans votre fiche d'établissement et choisissez le type d'infraction.", "Quelques minutes"],
+      ["2. Contrôle automatique / manuel", "Les systèmes de Google analysent le signalement ; les cas flous passent à des modérateurs humains.", "Quelques heures à quelques jours ; cas manuels souvent 1 à 2 semaines ou plus"],
+      ["3. Statut dans l'outil de gestion des avis", "Le signalement apparaît avec un statut comme **« Décision en attente »**, puis avec le résultat.", "Visible en général peu après le signalement ; le résultat suit à la fin du contrôle"],
+      ["4. Recours (un par avis)", "Si Google ne constate **aucune infraction au règlement**, vous pouvez contester cette décision une fois.", "L'envoi prend quelques minutes ; la réponse souvent de quelques jours à quelques semaines"],
+      ["5. « Remonté » (escaladé)", "Le recours est transmis pour un examen plus approfondi.", "Souvent d'une à plusieurs semaines"],
+      ["6. Décision finale", "Google supprime l'avis ou le maintient. Pas de second recours dans l'outil.", "Clôt la procédure dans l'outil"],
+      ["Voie séparée : demande de suppression pour raisons légales", "Pour un contenu **illicite** (p. ex. diffamation), via le formulaire juridique de Google.", "Souvent plusieurs semaines ; selon le cas et le pays"],
+    ] },
+    { t: "p", text: "La voie juridique est indépendante du signalement au titre du règlement. Elle vise les contenus qui enfreignent la loi, pas les avis avec lesquels vous n'êtes simplement pas d'accord – détails dans [avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/) et sur la [page de demandes légales de Google](https://support.google.com/legal/answer/3110420)." },
+
+    { t: "h2", id: "check-status", text: "Vérifier le statut et faire un recours dans l'outil de gestion des avis", toc: "Statut et recours" },
+    { t: "p", text: "**L'[outil de gestion des avis](https://support.google.com/business/workflow/9945796) de Google affiche le statut de chaque avis que vous avez signalé et c'est le seul endroit où contester une décision.** Vous devez être connecté avec un compte qui gère la fiche d'établissement." },
+    { t: "ol", items: [
+      "**Signalez d'abord l'avis** sur Google Maps, dans la recherche ou dans votre fiche d'établissement via « Signaler l'avis », en choisissant le type d'infraction qui correspond vraiment.",
+      "**Ouvrez l'[outil de gestion des avis](https://support.google.com/business/workflow/9945796)** avec le compte Google propriétaire ou gestionnaire de la fiche.",
+      "**Sélectionnez votre fiche d'établissement** si vous en gérez plusieurs.",
+      "**Ouvrez la vue d'ensemble des avis signalés** et retrouvez l'avis concerné.",
+      "**Lisez le statut.** « Décision en attente » signifie : patienter. Ne signalez pas le même avis encore et encore – le contrôle n'ira pas plus vite.",
+      "**Si le statut indique qu'aucune infraction n'a été constatée, lancez le recours.** Vous n'avez **qu'un recours par avis** : citez la règle précise et tenez-vous-en à des faits vérifiables.",
+      "**Revenez vérifier régulièrement.** Le recours peut passer au statut **« Remonté »** puis recevoir une **décision finale** – ensuite, l'outil ne propose plus d'étape pour cet avis.",
+    ] },
+    { t: "tip", title: "Avant de faire un recours", text: "Formulez en deux ou trois phrases pourquoi l'avis enfreint une règle précise – par exemple : aucun client à ce nom dans vos fichiers, ou le texte contient une insulte. Faites des captures d'écran avant le recours. Un vague « c'est injuste » change rarement l'issue." },
+
+    { t: "h2", id: "statuses", text: "Ce que signifient les statuts", toc: "Statuts" },
+    { t: "p", text: "**Le statut vous indique si Google est encore en train de vérifier, a tranché ou examine votre recours.** Le libellé exact peut légèrement varier selon la langue et dans le temps." },
+    { t: "table", head: ["Statut", "Signification", "Ce que vous pouvez faire"], rows: [
+      ["**Décision en attente**", "Google examine encore votre signalement.", "Patienter. Répondre calmement en public si ce n'est pas déjà fait."],
+      ["**Signalement examiné – aucune infraction au règlement**", "Google ne voit pas d'infraction et conserve l'avis.", "Faire un recours, une fois – idéalement avec un motif plus précis et des preuves."],
+      ["Avis supprimé", "Google a constaté une infraction ; l'avis n'apparaît plus sur votre fiche.", "Rien – c'est réglé."],
+      ["**Remonté**", "Votre recours fait l'objet d'un examen approfondi.", "Attendre la décision finale."],
+      ["Décision finale", "Le recours est clos.", "Si le contenu est illicite : demande légale. Sinon : répondre publiquement."],
+    ] },
+
+    { t: "h2", id: "rejected", text: "Pourquoi certains signalements sont refusés", toc: "Pourquoi un refus" },
+    { t: "p", text: "**La plupart des signalements refusés échouent pour l'une de ces trois raisons : mauvaise catégorie, absence de preuves, ou critique authentique.** Google précise lui-même qu'il ne faut pas signaler un avis simplement parce qu'on n'est pas d'accord." },
+    { t: "ul", items: [
+      "**Mauvaise catégorie.** Un faux avis signalé comme « offensant », ou une insulte signalée comme « spam », complique l'examen. Choisissez dans le [règlement sur les contenus interdits et réglementés](https://support.google.com/contributionpolicy/answer/7400114) la catégorie qui correspond vraiment – un récapitulatif se trouve dans [infractions aux règles des avis Google](/fr/magazine/regles-avis-google-infractions/).",
+      "**Pas de preuves.** « Cette personne n'a jamais été cliente » ne convainc que si c'est plausible : pas de réservation, pas de facture, aucun rendez-vous correspondant, un profil avec des dizaines d'avis dans des villes différentes.",
+      "**Critique authentique.** Un vrai client qui décrit factuellement une mauvaise expérience est protégé, même si ça fait mal. C'est un retour, pas un cas de suppression – voir [ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/)",
+    ] },
+    { t: "p", text: "Un professionnel ne peut pas supprimer lui-même un avis : seul son auteur peut le modifier ou le supprimer. C'est donc la qualité du signalement qui fait la différence." },
+
+    { t: "h2", id: "speed-up", text: "Ce qui accélère la suppression", toc: "Ce qui accélère" },
+    { t: "p", text: "**Trois éléments pèsent le plus : la bonne catégorie, des preuves solides et agir tant que l'avis est récent.** L'ancienneté compte avant tout : dans notre pratique, les avis de moins de 4 semaines sont supprimés dans environ **90 %** des cas, les plus anciens dans environ **50 %**." },
+    { t: "ul", items: [
+      "**La bonne catégorie dès le départ** – un premier signalement précis vous évite le recours.",
+      "**Des preuves prêtes** – captures de l'avis et du profil de l'auteur, une note expliquant l'absence de contact client, des dates.",
+      "**Agir sous quatre semaines** – les avis récents ont de bien meilleures chances, et chez nous ils coûtent 179 € au lieu de 229 €.",
+      "**Un signalement propre, pas dix** – signaler plusieurs fois le même avis ne fait pas gagner de place dans la file.",
+      "**Vagues de faux avis et chantage** – si des avis 1 étoile arrivent avec une demande d'argent, utilisez le formulaire dédié de Google et lisez notre guide sur le [chantage aux avis Google](/fr/magazine/chantage-avis-google/). Ne payez pas, n'entrez pas en discussion, gardez des captures.",
+    ] },
+    { t: "cta", title: "N'attendez pas des semaines une réponse type", text: "Recherchez votre entreprise, cochez les avis à faire supprimer et voyez le prix immédiatement. **179 € par avis supprimé**, 229 € au-delà de 4 semaines – facturé uniquement une fois l'avis disparu.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès uniquement", "Avis honnête et gratuit"] },
+
+    { t: "h2", id: "while-waiting", text: "Que faire en attendant ?", toc: "En attendant" },
+    { t: "p", text: "**Répondez publiquement, brièvement et calmement – c'est la seule chose toujours possible, et les futurs clients la lisent.** Une bonne réponse ne polémique pas et ne révèle aucune donnée client." },
+    { t: "ul", items: [
+      "**Si vous ne retrouvez pas la personne :** « Nous ne trouvons aucune visite ni commande à ce nom. Contactez-nous directement pour que nous puissions clarifier la situation. »",
+      "**S'il s'agit d'un vrai client :** reconnaissez son expérience, proposez un contact direct, évitez de vous justifier.",
+      "**Ne** menacez pas, ne spéculez pas en public sur l'auteur et ne demandez pas à vos proches des avis en contrepartie – cela peut aussi enfreindre les règles de Google sur le faux engagement.",
+      "**Documentez** tout : captures de l'avis, du profil de l'auteur et du statut de votre signalement.",
+    ] },
+    { t: "p", text: "Une réponse posée ne réduit pas vos chances de suppression. Pour les cas particuliers comme les notes sans commentaire, voir [supprimer un avis 1 étoile sans texte](/fr/magazine/supprimer-avis-1-etoile-sans-texte/), et en cas de soupçon de faux avis, [comment supprimer les faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
+
+    { t: "h2", id: "different-times", text: "Pourquoi plusieurs avis disparaissent à des moments différents", toc: "Moments différents" },
+    { t: "p", text: "**Chaque avis est examiné séparément : si vous en signalez cinq, ils disparaissent rarement le même jour.** L'un peut partir en deux jours, un autre nécessite un recours, un troisième est encore en attente après deux semaines." },
+    { t: "p", text: "C'est pourquoi nous **facturons par avis** : vous payez chaque avis une fois qu'il est réellement supprimé – un lien de paiement distinct par avis est possible. Les avis encore en cours ne vous coûtent rien, et à partir de 3, 5 ou 10 avis acceptés la remise sur volume (−10 %, −15 %, −30 %) s'applique à chaque avis supprimé. Tous les tarifs et comparaisons sont dans [prix de la suppression d'un avis Google](/fr/magazine/prix-suppression-avis-google/), et la commande se fait sur notre page pour [supprimer un avis Google précis](/fr/supprimer-un-avis/)." },
+    { t: "cta", title: "Vérifiez quels avis ont une vraie chance", text: "D'abord une évaluation gratuite : nous vous disons honnêtement si un avis peut être supprimé. La commande prend environ deux minutes – en général réglé en quelques jours, parfois jusqu'à trois semaines.", btn: "Lancer la vérification gratuite", href: "/fr/verifier-profil/?start=reviews", trust: ["Uniquement les procédures de Google", "L'auteur ne sait pas qui l'a demandé", "Plus de 1 600 fiches supprimées depuis 2023"] },
+  ],
+  faq: [
+    { q: "Combien de temps Google met-il pour supprimer un avis signalé ?", a: "Google ne publie aucun délai fixe. Les infractions claires peuvent disparaître en quelques heures ou quelques jours ; les cas limites et les recours prennent souvent **d'une à plusieurs semaines**." },
+    { q: "Pourquoi mon signalement est-il toujours « Décision en attente » ?", a: "Le contrôle n'est pas terminé – souvent parce que le cas nécessite un examen humain. Signaler à nouveau le même avis n'accélère rien ; suivez plutôt le statut dans l'**outil de gestion des avis**." },
+    { q: "Peut-on faire plusieurs recours ?", a: "Non. L'outil de gestion des avis permet **un seul recours par avis**. Après la décision finale, la seule autre voie officielle est une demande de suppression pour raisons légales – uniquement si le contenu est illicite." },
+    { q: "Google prévient-il l'auteur de l'avis ?", a: "L'auteur **n'apprend pas qui a signalé l'avis ni qui a demandé sa suppression** – ni quand vous signalez vous-même, ni quand nous nous en chargeons. Il peut simplement constater que son avis n'est plus visible." },
+    { q: "Un avis supprimé peut-il réapparaître ?", a: "Un avis supprimé par Google pour infraction au règlement reste normalement supprimé. La même personne peut toutefois publier un nouvel avis, qui est examiné séparément et peut à nouveau être signalé." },
+    { q: "Combien de temps avec RapidRemove ?", a: "En général **quelques jours, parfois jusqu'à trois semaines** par avis. Vous payez **179 € par avis supprimé** (229 € au-delà de 4 semaines) – uniquement une fois qu'il a disparu." },
+    { q: "Répondre à l'avis réduit-il mes chances ?", a: "Non. Une réponse publique courte et calme est toujours autorisée et n'influence pas l'examen. Évitez seulement les insultes et les données clients." },
+  ],
+  related: [
+    { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },
+    { label: "Prix de la suppression d'un avis Google", url: "/fr/magazine/prix-suppression-avis-google/" },
+    { label: "Infractions aux règles des avis Google", url: "/fr/magazine/regles-avis-google-infractions/" },
+    { label: "Supprimer les faux avis Google", url: "/fr/magazine/supprimer-faux-avis-google/" },
+  ],
+};
+export default article;

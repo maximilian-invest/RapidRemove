@@ -54,6 +54,11 @@ export const CLUSTER_SLUGS = [
 // Quell-Slug bei den Cluster-Artikeln); Kartenoptik für das Magazin-Grid.
 export const TRANSLATION_ONLY = {
   "einzelbewertung-loeschen-service": { cat: "Reputation", thm: "thm-orange", icon: "trash", read: 7 },
+  "google-bewertungsrichtlinien": { cat: "Google-Policy", thm: "thm-ink", icon: "shieldCheck", read: 9 },
+  "google-bewertung-loeschen-kosten": { cat: "Reputation", thm: "thm-amber", icon: "card", read: 8 },
+  "google-bewertung-loeschen-dauer": { cat: "Anleitung", thm: "thm-blue", icon: "search", read: 8 },
+  "kann-man-google-bewertungen-loeschen": { cat: "Anleitung", thm: "thm-teal", icon: "edit", read: 8 },
+  "google-bewertung-erpressung": { cat: "Recht", thm: "thm-plum", icon: "gavel", read: 8 },
 };
 
 // Magazine grid cards (DE) for the SEO cluster — link to the full article routes.

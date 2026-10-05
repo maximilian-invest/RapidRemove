@@ -5,15 +5,15 @@ const article = {
     category: "Omdømme",
     meta: {
       slug: "fjern-google-anmeldelse-tjeneste",
-      title: "Fjerne Google-anmeldelse: pris, sjanser og bestilling (2026)",
-      h1: "Få fjernet en Google-anmeldelse: pris, sjanse for å lykkes og slik bestiller du",
-      description: "Få fjernet én urettferdig Google-anmeldelse – fra 179 € per anmeldelse, betalt først når den er borte. Priser, sjanser, mengderabatt og bestilling på to minutter.",
-      keywords: ["fjerne google anmeldelse", "få fjernet google anmeldelse", "slette google anmeldelse", "fjerne dårlig anmeldelse google", "fjerne google anmeldelse pris", "fjerne google omtale tjeneste"],
+      title: "Fjerning av Google-anmeldelser: priser, sjanser og bestilling (2026)",
+      h1: "Få fjernet én enkelt Google-anmeldelse: priser, sjanser og slik fungerer bestillingen",
+      description: "Hva koster det å fjerne en Google-anmeldelse? 179 € per fjernet anmeldelse (229 € hvis eldre enn 4 uker), bare ved suksess. Sjanser, rabatt og bestilling.",
+      keywords: ["hva koster det å fjerne en google anmeldelse", "fjerne google anmeldelse pris", "pris for å fjerne google anmeldelse", "betale for å fjerne google anmeldelse", "bestille fjerning av google anmeldelse", "fjerne google omtale"],
       author: "Maximilian Hölzl",
       authorRole: "Google-ekspert",
       date: "2026-10-03",
     },
-    dek: "Profilen din er i orden – det er **én anmeldelse** som gjør vondt: en falsk, en fornærmelse, noen som aldri har vært kunde. Da trenger du verken slette hele profilen eller vente i månedsvis på en advokat. Hos RapidRemove velger du selv anmeldelsene som skal bort, ser prisen med en gang og **betaler bare for anmeldelser som faktisk fjernes**. Her får du vite hva det koster, hvor gode sjansene er, og hvordan du bestiller på to minutter.",
+    dek: "Profilen din er i orden – det er **én anmeldelse** som gjør vondt: en falsk, en fornærmelse, noen som aldri har vært kunde. Da trenger du verken slette hele profilen eller vente i månedsvis på en advokat. Hos RapidRemove velger du selv anmeldelsene som skal bort, ser prisen med en gang og **betaler bare for anmeldelser som faktisk fjernes**. Selve tilbudet har vi oppsummert på siden om vår [tjeneste for fjerning av Google-anmeldelser](/no/fjern-omtale/) – denne guiden går i dybden: hva det koster, hvor gode sjansene er, og hvordan bestillingen foregår steg for steg.",
     blocks: [
       { t: "h2", id: "wann", text: "Når det er riktig å fjerne én enkelt anmeldelse", toc: "Når det lønner seg" },
       { t: "p", text: "De fleste bedrifter har ikke et profilproblem – de har et **anmeldelsesproblem**. Et solid snitt på 4,6 faller til 4,3 på grunn av to 1-stjerners angrep, og plutselig klikker interessentene på konkurrenten. I den situasjonen ville det vært å skyte spurv med kanoner å slette hele profilen: da mister du også alle de gode anmeldelsene." },
@@ -24,7 +24,7 @@ const article = {
       ] },
 
       { t: "h2", id: "was", text: "Hvilke anmeldelser kan fjernes – og hvilke ikke", toc: "Hva kan fjernes?" },
-      { t: "p", text: "Det sier vi ærlig fra om før du betaler noe som helst. **Gode sjanser** er det for anmeldelser som bryter Googles regler eller loven:" },
+      { t: "p", text: "Det sier vi ærlig fra om før du betaler noe som helst. **Gode sjanser** er det for anmeldelser som bryter [Googles regler for anmeldelser](/no/magasin/google-anmeldelsesregler-brudd/) eller loven:" },
       { t: "ul", items: [
         "**Falske anmeldelser** og angrep fra konkurrenter ([slik gjenkjenner du falske anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/))",
         "Anmeldelser fra folk som **aldri har vært kunder**",
@@ -35,7 +35,7 @@ const article = {
       { t: "warn", title: "Det lover vi ikke", text: "Ærlig, saklig kritikk fra ekte kunder er som regel beskyttet – og ingen kan seriøst garantere at enhver anmeldelse blir fjernet. Nettopp derfor **betaler du bare når en anmeldelse faktisk er borte**." },
 
       { t: "h2", id: "preis", text: "Hva koster det å fjerne en Google-anmeldelse?", toc: "Pris" },
-      { t: "p", text: "Prisen avhenger først og fremst av én ting: **hvor gammel anmeldelsen er**. Ferske anmeldelser er langt enklere å fjerne enn anmeldelser som har ligget ute i månedsvis." },
+      { t: "p", text: "Prisen avhenger først og fremst av én ting: **hvor gammel anmeldelsen er**. Ferske anmeldelser er langt enklere å fjerne enn anmeldelser som har ligget ute i månedsvis. Hvordan prisene står seg mot en advokat og andre aktører, går vi gjennom i [hva det koster å fjerne en Google-anmeldelse](/no/magasin/pris-fjerne-google-anmeldelse/)." },
       { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Sjanse for å lykkes", "Pris per fjernet anmeldelse"], rows: [
         ["Opptil 4 uker gammel", "ca. 90 %", "**179 €**"],
         ["Eldre enn 4 uker", "ca. 50 %", "**229 €** (179 € + 50 €)"],
@@ -47,7 +47,8 @@ const article = {
         ["5–9", "**−15 %**"],
         ["10 eller flere", "**−30 %**"],
       ] },
-      { t: "p", text: "**Eksempler:** 3 ferske anmeldelser koster 537 €, minus 10 % = **483 €**. 2 ferske og 3 eldre anmeldelser koster 1 045 €, minus 15 % = **888 €**. Rabatten beregnes ut fra antallet anmeldelser som faktisk blir fjernet – du betaler aldri for en anmeldelse som blir stående." },
+      { t: "p", text: "**Eksempler:** 3 ferske anmeldelser koster 537 €, minus 10 % = **483 €**. 2 ferske og 3 eldre anmeldelser koster 1 045 €, minus 15 % = **888 €**. Rabattrinnet avhenger av hvor mange anmeldelser **vi godtar etter den gratis vurderingen**, og rabatten gjelder for hver av dem som blir fjernet. Du betaler fortsatt bare for anmeldelser som faktisk forsvinner: godtar vi 3 og 2 blir fjernet, betaler du 2 × 179 € minus 10 % = **322,20 €**." },
+      { t: "p", text: "**Betaling per anmeldelse:** hvor lang tid fjerningen tar, kan variere fra anmeldelse til anmeldelse – vanligvis noen dager, av og til opptil tre uker. Derfor kan betalingen skje per anmeldelse, noen ganger med en egen betalingslenke for hver fjernet anmeldelse. Anmeldelser vi fortsatt jobber med, koster deg ingenting ennå." },
       { t: "tip", title: "Bestill tidlig", text: "Sjansen for å lykkes faller fra rundt 90 % til rundt 50 % når en anmeldelse er eldre enn fire uker – og prisen øker med 50 €. En fersk falsk anmeldelse er den billigste og sikreste å fjerne. Til sammenligning: advokater tar som regel betalt per anmeldelse **på forskudd**, og det tar ofte måneder ([advokat eller teknisk fjerning?](/no/magasin/negativ-google-anmeldelse-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Slik bestiller du – på rundt to minutter", toc: "Slik bestiller du" },
@@ -63,7 +64,7 @@ const article = {
       { t: "cta", title: "Velg anmeldelsene som skal bort", text: "Søk etter bedriften din, kryss av for anmeldelsene – og se nøyaktig pris med en gang. **Fra 179 € per fjernet anmeldelse**, ingenting på forskudd.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Først en ærlig vurdering"] },
 
       { t: "h2", id: "dauer", text: "Hvor lang tid tar det?", toc: "Varighet" },
-      { t: "p", text: "Vanligvis **noen dager**, av og til opptil **tre uker**, avhengig av anmeldelsen og grunnlaget for fjerningen. Du trenger ikke gjøre noe i mellomtiden – vi holder deg oppdatert." },
+      { t: "p", text: "Vanligvis **noen dager**, av og til opptil **tre uker**, avhengig av anmeldelsen og grunnlaget for fjerningen. Du trenger ikke gjøre noe i mellomtiden – vi holder deg oppdatert. Hva som skjer hos Google i mellomtiden – status på rapporten, verktøyet for administrasjon av anmeldelser og muligheten til å klage – forklarer vi i [hvor lang tid Google bruker på å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
 
       { t: "h2", id: "vergleich", text: "Enkeltanmeldelser, hele profilen, advokat eller selv – sammenlignet", toc: "Sammenligning" },
       { t: "table", rrCol: 1, head: ["Kriterium", "Fjerning av enkeltanmeldelser", "Profilfjerning", "Advokat", "Rapportere selv"], rows: [
@@ -85,15 +86,16 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "Hva koster det å fjerne en Google-anmeldelse?", a: "179 € per fjernet anmeldelse hvis anmeldelsen er opptil 4 uker gammel, 229 € hvis den er eldre. Fra 3 anmeldelser får du 10 % rabatt, fra 5 anmeldelser 15 % og fra 10 anmeldelser 30 %. Du betaler bare for anmeldelser som faktisk fjernes." },
+      { q: "Hva koster det å fjerne en Google-anmeldelse?", a: "179 € per fjernet anmeldelse hvis anmeldelsen er opptil 4 uker gammel, 229 € hvis den er eldre. Fra 3 godtatte anmeldelser får du 10 % rabatt, fra 5 15 % og fra 10 30 %, og rabatten gjelder hver anmeldelse som blir fjernet. Du betaler bare for anmeldelser som faktisk fjernes." },
       { q: "Hva skjer hvis en anmeldelse ikke kan fjernes?", a: "Da betaler du ingenting for den anmeldelsen. Det er ingen forskuddsbetaling og ingen gebyr for forsøk." },
       { q: "Kan anmeldelser som er eldre enn 4 uker, fjernes?", a: "Ja. Sjansen for å lykkes er lavere (ca. 50 % i stedet for ca. 90 %), og prisen er 50 € høyere per anmeldelse. Derfor lønner det seg å handle raskt når en ny falsk anmeldelse dukker opp." },
       { q: "Kan 1-stjerners anmeldelser uten tekst fjernes?", a: "Ja, du kan velge dem som alle andre anmeldelser. Ordløse vurderinger uten gjenkjennelig kundekontakt har ofte gode sjanser." },
       { q: "Får anmelderen vite at det var meg?", a: "Nei. Anmelderen får ikke vite hvem som ba om fjerningen." },
       { q: "Må jeg slette hele profilen min?", a: "Nei. Ved fjerning av enkeltanmeldelser blir profilen og alle de gode anmeldelsene dine stående. Å fjerne [hele profilen](/no/magasin/slett-google-bedriftsprofil/) gir bare mening hvis den er skadet over hele linja." },
-      { q: "Hvor mange anmeldelser kan jeg bestille på én gang?", a: "Så mange du vil. Mengderabatten øker ved 3, 5 og 10 anmeldelser og trekkes fra automatisk." },
+      { q: "Hvor mange anmeldelser kan jeg bestille på én gang?", a: "Så mange du vil. Mengderabatten øker ved 3, 5 og 10 anmeldelser som vi godtar etter den gratis vurderingen, og trekkes fra automatisk." },
     ],
     related: [
+      { label: "Tjeneste for fjerning av Google-anmeldelser", url: "/no/fjern-omtale/" },
       { label: "Fjerne Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
       { label: "Gjenkjenne, rapportere og fjerne falske Google-anmeldelser", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
       { label: "Fjerne en 1-stjerners anmeldelse uten tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

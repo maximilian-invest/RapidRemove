@@ -16,7 +16,7 @@ export const PAGE_TITLE = {
   widerruf: { de: "Widerrufsbelehrung", en: "Right of withdrawal", es: "Derecho de desistimiento", fr: "Droit de rétractation", it: "Diritto di recesso", nl: "Herroepingsrecht", pt: "Direito de retratação", ja: "撤回権について", sv: "Ångerrätt", da: "Fortrydelsesret", no: "Angrerett" },
   report: { de: "Google-Profil-Löschungen: Report 2026", en: "Google Business Profile Removal Report 2026" },
   // Bewertungs-Produkt: nicht in DACH — bewusst kein de-Eintrag (Seite existiert dort nicht).
-  reviews: { en: "Google Review Removal – $179, Pay Only on Success", es: "Eliminar una reseña de Google", fr: "Supprimer un avis Google", it: "Rimuovere una recensione Google", nl: "Eén Google-review verwijderen", pt: "Remover uma avaliação do Google", ja: "Googleの口コミを1件削除", sv: "Ta bort ett enskilt Google-omdöme", da: "Fjern en enkelt Google-anmeldelse", no: "Fjern én Google-omtale" },
+  reviews: { en: "Google Review Removal – $179, Pay Only on Success", es: "Eliminar reseña de Google – 179 €, pagas solo si se borra", fr: "Supprimer un avis Google – 179 €, payé seulement au résultat", it: "Eliminare recensione Google – 179 €, paghi solo a risultato", pt: "Remover avaliação do Google – 179 €, só paga se sair", nl: "Google review verwijderen – € 179, alleen betalen bij succes", ja: "Google口コミ削除｜1件$179・削除できた分だけの成功報酬", sv: "Ta bort Google-recension – 179 €, betala bara vid framgång", da: "Fjern Google-anmeldelse – 179 €, betal kun ved succes", no: "Slette Google-anmeldelse – 179 €, betal kun ved suksess" },
 };
 
 const BRAND_BLURB = {
@@ -48,15 +48,15 @@ const PAGE_DESC = {
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
   reviews: {
     en: "Get fake, abusive or policy-violating Google reviews removed through Google's official processes – $179 per removed review, charged only on success. Free assessment first.",
-    es: "Elimina una reseña de Google injusta o falsa — 179 € por reseña eliminada, se cobra solo tras el éxito. Primero una valoración honesta, nada por adelantado.",
-    fr: "Faites supprimer un avis Google injuste ou faux — 179 € par avis supprimé, débité uniquement en cas de succès. D'abord une évaluation honnête, rien d'avance.",
-    it: "Fai rimuovere una recensione Google ingiusta o falsa — 179 € per recensione rimossa, addebito solo in caso di successo. Prima una valutazione onesta, niente in anticipo.",
-    nl: "Laat één oneerlijke of valse Google-review verwijderen — € 179 per verwijderde review, betaald alleen bij succes. Eerst een eerlijke inschatting, niets vooraf.",
-    pt: "Remova uma avaliação do Google injusta ou falsa — 179 € por avaliação removida, cobrado só em caso de sucesso. Primeiro uma análise honesta, nada adiantado.",
-    ja: "不当な、または虚偽のGoogle口コミを1件から削除 — 削除1件につき$179、お支払いは成功時のみ。まず正直な見立てから、前払いなし。",
-    sv: "Få ett orättvist eller falskt Google-omdöme borttaget — 179 € per borttaget omdöme, betalas först vid framgång. Först en ärlig bedömning, inget i förskott.",
-    da: "Få en urimelig eller falsk Google-anmeldelse fjernet — 179 € pr. fjernet anmeldelse, betales først ved succes. Først en ærlig vurdering, intet på forhånd.",
-    no: "Få en urettferdig eller falsk Google-omtale fjernet — 179 € per fjernet omtale, betales først ved suksess. Først en ærlig vurdering, ingenting på forskudd.",
+    es: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. 179 € por reseña eliminada, solo si hay éxito.",
+    fr: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. 179 € par avis supprimé, au résultat.",
+    it: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. 179 € per recensione rimossa, solo a risultato.",
+    pt: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. 179 € por avaliação removida, só paga com sucesso.",
+    nl: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. € 179 per verwijderde review, alleen bij succes.",
+    ja: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$179の完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
+    sv: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – 179 € per borttagen recension, bara vid framgång. Gratis bedömning först.",
+    da: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – 179 € pr. fjernet anmeldelse, kun ved succes. Gratis vurdering først.",
+    no: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – 179 € per fjernet anmeldelse, kun ved suksess. Gratis vurdering først.",
   },
 };
 

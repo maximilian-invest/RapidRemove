@@ -71,6 +71,11 @@ const AUTHOR_OVERRIDES = {
   "negative-bewertung-ignorieren-antworten-loeschen": "maximilian-hoelzl",
   "online-reputationsmanagement": "maximilian-hoelzl",
   "einzelbewertung-loeschen-service": "maximilian-hoelzl",
+  "google-bewertungsrichtlinien": "maximilian-hoelzl",
+  "google-bewertung-loeschen-kosten": "maximilian-hoelzl",
+  "google-bewertung-loeschen-dauer": "maximilian-hoelzl",
+  "kann-man-google-bewertungen-loeschen": "maximilian-hoelzl",
+  "google-bewertung-erpressung": "maximilian-hoelzl",
 };
 
 /** Deterministische, sprachübergreifend stabile Zuordnung Artikel → Autor (via deutschem Slug). */

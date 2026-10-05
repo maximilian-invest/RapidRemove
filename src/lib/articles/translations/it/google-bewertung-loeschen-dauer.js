@@ -1,0 +1,122 @@
+/* IT — google-bewertung-loeschen-dauer (article without German original; single-review product). */
+const article = {
+  category: "Reputazione",
+  meta: {
+    slug: "quanto-tempo-google-rimuovere-recensione",
+    title: "Quanto tempo ci mette Google a rimuovere una recensione?",
+    h1: "Quanto tempo ci mette Google a rimuovere una recensione? Tempi, stati e ricorso",
+    description: "Google non fissa tempi: da poche ore a diverse settimane. Fasi, stati nello strumento di gestione, ricorso – e rimozione da 179 €, pagata solo a risultato.",
+    keywords: [
+      "quanto tempo ci mette google a rimuovere una recensione",
+      "tempi rimozione recensione google",
+      "recensione google segnalata in attesa",
+      "strumento di gestione delle recensioni google",
+      "ricorso decisione recensione google",
+      "recensione google decisione in sospeso",
+      "quanto ci vuole per eliminare una recensione google",
+      "recensione google stato inoltrato",
+    ],
+    author: "Maximilian Hölzl",
+    authorRole: "Esperto Google e fondatore",
+    date: "2026-10-05",
+  },
+  dek: "**Google non indica alcun tempo fisso.** Una violazione evidente può sparire in poche ore o pochi giorni; i casi dubbi, i ricorsi e le escalation possono richiedere **diverse settimane**. Con RapidRemove la rimozione richiede di solito **pochi giorni, a volte fino a tre settimane** – e paghi solo quando la recensione è davvero sparita. Qui trovi ogni fase con i tempi tipici, come leggere lo stato nello strumento di gestione delle recensioni, come funziona il ricorso e cosa accelera davvero le cose.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "La risposta breve: nessun tempo fisso, ma intervalli tipici", toc: "Risposta breve" },
+    { t: "p", text: "**Google non promette alcun tempo di gestione per le recensioni segnalate.** Le segnalazioni vengono controllate da sistemi automatici e da persone e, a seconda del caso, servono da poche ore a diverse settimane." },
+    { t: "ul", items: [
+      "**Violazioni evidenti** (spam, insulti, falso coinvolgimento palese): spesso da poche ore a pochi giorni.",
+      "**Casi dubbi** che richiedono un controllo umano: spesso da una a qualche settimana.",
+      "**Ricorsi ed escalation**: aggiungono tempo, a volte diverse settimane.",
+      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo.",
+    ] },
+    { t: "warn", title: "Tempi tipici, non garantiti", text: "Tutte le durate in questo articolo sono intervalli osservati nella pratica, non impegni di Google. I tempi di gestione variano e nessuno può promettere una data – né una rimozione." },
+
+    { t: "h2", id: "timeline", text: "Le fasi di una segnalazione e quanto dura di solito ciascuna", toc: "Fasi e tempi" },
+    { t: "p", text: "**Una segnalazione attraversa fino a sei fasi, e solo la prima dipende da te.** La tabella mostra cosa succede in ogni fase e quanto dura in genere." },
+    { t: "table", head: ["Fase", "Cosa succede", "Durata tipica (non garantita)"], rows: [
+      ["1. Segnalazione", "Segnali la recensione su Google Maps, nella Ricerca o nel tuo Profilo dell'attività e scegli il tipo di violazione.", "Pochi minuti"],
+      ["2. Controllo automatico / manuale", "I sistemi di Google esaminano la segnalazione; i casi poco chiari passano a revisori umani.", "Da ore a pochi giorni; i casi manuali spesso 1–2 settimane o più"],
+      ["3. Stato nello strumento di gestione delle recensioni", "La segnalazione compare con uno stato come **«Decisione in sospeso»**, poi con l'esito.", "Di solito visibile poco dopo la segnalazione; l'esito arriva a controllo concluso"],
+      ["4. Ricorso (uno per recensione)", "Se Google **non rileva violazioni delle norme**, puoi presentare ricorso una volta.", "L'invio richiede minuti; la risposta spesso da giorni a qualche settimana"],
+      ["5. «Inoltrato» (escalation)", "Il ricorso passa a un esame più approfondito.", "Spesso da una a diverse settimane"],
+      ["6. Decisione finale", "Google rimuove la recensione o la mantiene. Nello strumento non c'è un secondo ricorso.", "Chiude la procedura nello strumento"],
+      ["Via separata: richiesta di rimozione per motivi legali", "Per contenuti **illeciti** (ad es. diffamazione), tramite il modulo legale di Google.", "Spesso diverse settimane; dipende dal caso e dal Paese"],
+    ] },
+    { t: "p", text: "La via legale è indipendente dalla segnalazione per violazione delle norme. Serve per contenuti che violano la legge, non per recensioni con cui semplicemente non sei d'accordo – dettagli in [avvocato o rimozione tecnica?](/it/rivista/eliminare-recensione-negativa-google-avvocato-o-tecnica/) e nella [pagina delle richieste legali di Google](https://support.google.com/legal/answer/3110420)." },
+
+    { t: "h2", id: "check-status", text: "Come controllare lo stato e fare ricorso nello strumento di gestione delle recensioni", toc: "Stato e ricorso" },
+    { t: "p", text: "**Lo [strumento di gestione delle recensioni](https://support.google.com/business/workflow/9945796) di Google mostra lo stato di ogni recensione che hai segnalato ed è l'unico posto in cui fare ricorso.** Devi accedere con un account che gestisce il Profilo dell'attività." },
+    { t: "ol", items: [
+      "**Segnala prima la recensione** su Google Maps, nella Ricerca o nel tuo Profilo dell'attività con «Segnala recensione», scegliendo il tipo di violazione che corrisponde davvero.",
+      "**Apri lo [strumento di gestione delle recensioni](https://support.google.com/business/workflow/9945796)** con l'account Google proprietario o gestore del profilo.",
+      "**Seleziona il tuo Profilo dell'attività** se ne gestisci più di uno.",
+      "**Apri la panoramica delle recensioni segnalate** e trova la recensione in questione.",
+      "**Leggi lo stato.** «Decisione in sospeso» significa: aspettare. Non segnalare la stessa recensione più e più volte – il controllo non diventa più veloce.",
+      "**Se lo stato indica che non è stata rilevata alcuna violazione, avvia il ricorso.** Hai **un solo ricorso per recensione**: indica la norma precisa e attieniti a fatti verificabili.",
+      "**Controlla regolarmente.** Il ricorso può risultare **«Inoltrato»** e riceve poi una **decisione finale** – dopo, lo strumento non offre altri passaggi per quella recensione.",
+    ] },
+    { t: "tip", title: "Prima del ricorso", text: "Scrivi in due o tre frasi perché la recensione viola una regola precisa – ad esempio: nessun cliente con quel nome nei tuoi registri, oppure il testo contiene un insulto. Salva gli screenshot prima di fare ricorso. Un generico «è ingiusto» raramente cambia l'esito." },
+
+    { t: "h2", id: "statuses", text: "Cosa significano gli stati", toc: "Stati" },
+    { t: "p", text: "**Lo stato ti dice se Google sta ancora controllando, se ha deciso o se sta esaminando il tuo ricorso.** La formulazione esatta può variare leggermente a seconda della lingua e nel tempo." },
+    { t: "table", head: ["Stato", "Significato", "Cosa puoi fare"], rows: [
+      ["**Decisione in sospeso**", "Google sta ancora esaminando la segnalazione.", "Aspettare. Rispondere con calma in pubblico, se non l'hai già fatto."],
+      ["**Segnalazione esaminata – nessuna violazione delle norme**", "Google non vede violazioni e mantiene la recensione.", "Fare ricorso una volta – meglio con un motivo più preciso e prove."],
+      ["Recensione rimossa", "Google ha rilevato una violazione; la recensione non compare più sul profilo.", "Niente – fatto."],
+      ["**Inoltrato**", "Il tuo ricorso è in fase di esame approfondito.", "Attendere la decisione finale."],
+      ["Decisione finale", "Il ricorso è chiuso.", "Se il contenuto è illecito: richiesta legale. Altrimenti: rispondere pubblicamente."],
+    ] },
+
+    { t: "h2", id: "rejected", text: "Perché alcune segnalazioni vengono respinte", toc: "Perché vengono respinte" },
+    { t: "p", text: "**La maggior parte delle segnalazioni respinte fallisce per uno di tre motivi: categoria sbagliata, nessuna prova, oppure la recensione è una critica autentica.** Google stessa dice che non si dovrebbe segnalare una recensione solo perché non si è d'accordo." },
+    { t: "ul", items: [
+      "**Categoria sbagliata.** Una recensione falsa segnalata come «offensiva», o un insulto segnalato come «spam», rende il controllo più difficile. Scegli nelle [norme sui contenuti vietati e soggetti a limitazioni](https://support.google.com/contributionpolicy/answer/7400114) la categoria che corrisponde davvero – una panoramica è in [violazioni delle norme sulle recensioni Google](/it/rivista/norme-recensioni-google-violazioni/).",
+      "**Nessuna prova.** «Questa persona non è mai stata cliente» convince solo se è plausibile: nessuna prenotazione, nessuna fattura, nessun appuntamento corrispondente, un profilo con decine di recensioni in città diverse.",
+      "**Critica autentica.** Un vero cliente che descrive in modo oggettivo una brutta esperienza è tutelato, anche se fa male. È un feedback, non un caso di rimozione – vedi [ignorare, rispondere o eliminare?](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/)",
+    ] },
+    { t: "p", text: "Chi gestisce un'attività non può cancellare da sé le recensioni: solo l'autore può modificarle o eliminarle. Per questo a decidere è la qualità della segnalazione." },
+
+    { t: "h2", id: "speed-up", text: "Cosa accelera la rimozione", toc: "Cosa la accelera" },
+    { t: "p", text: "**Contano soprattutto tre cose: la categoria giusta, prove solide e agire finché la recensione è recente.** L'età pesa più di tutto: nel nostro lavoro le recensioni fino a 4 settimane vengono rimosse in circa il **90 %** dei casi, quelle più vecchie in circa il **50 %**." },
+    { t: "ul", items: [
+      "**La categoria giusta fin dall'inizio** – una prima segnalazione precisa ti risparmia il ricorso.",
+      "**Prove pronte** – screenshot della recensione e del profilo dell'autore, una nota sul perché non c'è stato contatto con il cliente, date.",
+      "**Agisci entro quattro settimane** – le recensioni recenti hanno molte più probabilità e da noi costano 179 € invece di 229 €.",
+      "**Una segnalazione pulita, non dieci** – segnalare più volte la stessa recensione non ti fa passare avanti.",
+      "**Ondate di recensioni false e ricatti** – se arrivano recensioni da 1 stella insieme a una richiesta di denaro, usa il modulo dedicato di Google e leggi la nostra guida sull'[estorsione con recensioni Google](/it/rivista/estorsione-recensioni-google/). Non pagare, non rispondere, conserva gli screenshot.",
+    ] },
+    { t: "cta", title: "Non aspettare settimane una risposta standard", text: "Cerca la tua attività, spunta le recensioni da eliminare e vedi subito il prezzo. **179 € per recensione rimossa**, 229 € se ha più di 4 settimane – addebitati solo quando la recensione è sparita.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi solo a risultato", "Valutazione onesta e gratuita"] },
+
+    { t: "h2", id: "while-waiting", text: "Cosa fare mentre aspetti", toc: "Mentre aspetti" },
+    { t: "p", text: "**Rispondi in pubblico, in modo breve e calmo – è l'unica cosa che puoi sempre fare, e i futuri clienti la leggono.** Una buona risposta non polemizza e non rivela dati dei clienti." },
+    { t: "ul", items: [
+      "**Se non trovi la persona:** «Non troviamo alcuna visita o ordine con questo nome. Contattaci direttamente così possiamo chiarire.»",
+      "**Se è un cliente reale:** riconosci l'esperienza, offri un contatto diretto, evita di giustificarti.",
+      "**Non** minacciare, non fare ipotesi in pubblico su chi l'ha scritta e non chiedere ad amici recensioni di compensazione – anche questo può violare le norme di Google sul falso coinvolgimento.",
+      "**Documenta** tutto: screenshot della recensione, del profilo dell'autore e dello stato della segnalazione.",
+    ] },
+    { t: "p", text: "Una risposta pacata non riduce le probabilità di rimozione. Per casi particolari come i voti senza testo vedi [eliminare una recensione a 1 stella senza testo](/it/rivista/eliminare-recensione-1-stella-senza-testo/), e se sospetti recensioni false, [come eliminare le recensioni false su Google](/it/rivista/eliminare-recensioni-false-google/)." },
+
+    { t: "h2", id: "different-times", text: "Perché più recensioni spariscono in momenti diversi", toc: "Momenti diversi" },
+    { t: "p", text: "**Ogni recensione viene esaminata singolarmente, quindi se ne segnali cinque raramente spariscono lo stesso giorno.** Una può andarsene in due giorni, un'altra richiede un ricorso, una terza è ancora in sospeso dopo due settimane." },
+    { t: "p", text: "Per questo **fatturiamo per recensione**: paghi ciascuna quando è stata davvero rimossa – è possibile un link di pagamento separato per ogni recensione. Quelle su cui stiamo ancora lavorando non ti costano nulla, e con 3, 5 o 10 recensioni accettate lo sconto quantità (−10 %, −15 %, −30 %) vale per ognuna che viene rimossa. Tutti i prezzi e i confronti sono in [costo della rimozione di una recensione Google](/it/rivista/costo-rimozione-recensione-google/), e l'ordine si fa dalla nostra pagina per [rimuovere una singola recensione Google](/it/rimuovere-una-recensione/)." },
+    { t: "cta", title: "Scopri quali recensioni hanno davvero una possibilità", text: "Prima una valutazione gratuita: ti diciamo onestamente se una recensione è rimovibile. L'ordine richiede circa due minuti – di solito risolto in pochi giorni, a volte fino a tre settimane.", btn: "Avvia la verifica gratuita", href: "/it/verifica-profilo/?start=reviews", trust: ["Solo procedure ufficiali di Google", "L'autore non sa chi l'ha richiesto", "Oltre 1.600 profili rimossi dal 2023"] },
+  ],
+  faq: [
+    { q: "Quanto tempo ci mette Google a rimuovere una recensione segnalata?", a: "Google non pubblica tempi fissi. Le violazioni chiare possono sparire in poche ore o pochi giorni; i casi dubbi e i ricorsi richiedono spesso **da una a diverse settimane**." },
+    { q: "Perché la mia segnalazione è ancora «Decisione in sospeso»?", a: "Il controllo non è ancora concluso – spesso perché il caso richiede un revisore umano. Segnalare di nuovo la stessa recensione non accelera nulla; controlla piuttosto lo stato nello **strumento di gestione delle recensioni**." },
+    { q: "Posso fare ricorso più di una volta?", a: "No. Nello strumento di gestione delle recensioni hai **un solo ricorso per recensione**. Dopo la decisione finale l'unica altra via ufficiale è una richiesta di rimozione per motivi legali – e solo se il contenuto è illecito." },
+    { q: "Google avvisa l'autore della recensione?", a: "All'autore **non viene detto chi ha segnalato la recensione né chi ne ha chiesto la rimozione** – né quando segnali tu, né quando ce ne occupiamo noi. Al massimo si accorgerà che la sua recensione non è più visibile." },
+    { q: "Una recensione rimossa può ricomparire?", a: "Una recensione rimossa da Google per violazione delle norme di solito resta rimossa. La stessa persona però può scriverne una nuova, che viene esaminata separatamente e può essere segnalata di nuovo." },
+    { q: "Quanto ci vuole con RapidRemove?", a: "Di solito **pochi giorni, a volte fino a tre settimane** per recensione. Paghi **179 € per recensione rimossa** (229 € se ha più di 4 settimane) – solo quando è sparita." },
+    { q: "Rispondere alla recensione peggiora le mie probabilità?", a: "No. Una risposta pubblica breve e calma è sempre consentita e non influisce sul controllo. Evita solo insulti e dati dei clienti." },
+  ],
+  related: [
+    { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },
+    { label: "Costo della rimozione di una recensione Google", url: "/it/rivista/costo-rimozione-recensione-google/" },
+    { label: "Violazioni delle norme sulle recensioni Google", url: "/it/rivista/norme-recensioni-google-violazioni/" },
+    { label: "Eliminare le recensioni false su Google", url: "/it/rivista/eliminare-recensioni-false-google/" },
+  ],
+};
+export default article;

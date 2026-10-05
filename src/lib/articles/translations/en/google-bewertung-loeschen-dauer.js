@@ -1,0 +1,122 @@
+/* EN — google-bewertung-loeschen-dauer (article without German original; single-review product). */
+const article = {
+  category: "Reputation",
+  meta: {
+    slug: "how-long-does-google-take-to-remove-a-review",
+    title: "How Long Does Google Take to Remove a Review? (2026)",
+    h1: "How long does Google take to remove a review? Timeline, status and appeal",
+    description: "Google sets no fixed timeline: hours to several weeks. Stages, Reviews Management Tool status, appeals – and removal from $179, paid only on success.",
+    keywords: [
+      "how long does google take to remove a review",
+      "google review removal time",
+      "reported google review still pending",
+      "google reviews management tool",
+      "appeal google review decision",
+      "google review decision pending",
+      "how long does it take to remove a google review",
+      "google review escalated status",
+    ],
+    author: "Maximilian Hölzl",
+    authorRole: "Founder",
+    date: "2026-10-05",
+  },
+  dek: "**Google gives no fixed timeline.** A clear policy violation can disappear within hours or a few days; borderline cases, appeals and escalations can take **several weeks**. With RapidRemove, removal usually takes **a few days, sometimes up to three weeks** – and you only pay once the review is actually gone. Below: every stage with typical durations, how to read your status in the Reviews Management Tool, how the appeal works and what really speeds things up.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "The short answer: no fixed timeline, but typical ranges", toc: "Short answer" },
+    { t: "p", text: "**Google does not promise any processing time for reported reviews.** Reports are checked by automated systems and by people, and depending on the case that takes anywhere from hours to several weeks." },
+    { t: "ul", items: [
+      "**Obvious violations** (spam, insults, clearly fake engagement): often within hours to a few days.",
+      "**Borderline cases** that need a human look: often one to a few weeks.",
+      "**Appeals and escalations**: add more time on top – sometimes several weeks.",
+      "**With us**: usually a few days, sometimes up to three weeks per review. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **$179 per removed review**, nothing upfront.",
+    ] },
+    { t: "warn", title: "Typical, not guaranteed", text: "All durations in this article are typical ranges from practice, not Google commitments. Google's processing time varies, and nobody can promise a date – or a removal." },
+
+    { t: "h2", id: "timeline", text: "The stages of a review report – and how long each one typically takes", toc: "Timeline" },
+    { t: "p", text: "**A report runs through up to six stages, and only the first one is in your hands.** The table shows what happens at each stage and how long it typically takes." },
+    { t: "table", head: ["Stage", "What happens", "Typical duration (not guaranteed)"], rows: [
+      ["1. Report", "You report the review on Google Maps, Search or in your Business Profile and choose the violation type.", "A few minutes"],
+      ["2. Automated / manual check", "Google's systems check the report; unclear cases go to human reviewers.", "Hours to a few days; manual cases often 1–2 weeks or longer"],
+      ["3. Status in the Reviews Management Tool", "The report appears with a status such as **“Decision pending”**, later with a result.", "Usually visible soon after reporting; the result follows when the check is done"],
+      ["4. Appeal (once per review)", "If Google finds **no policy violation**, you can appeal that decision once.", "Submitting takes minutes; the answer often takes days to a few weeks"],
+      ["5. “Escalated”", "The appeal is passed on for a closer review.", "Often one to several weeks"],
+      ["6. Final decision", "Google removes the review or keeps it. There is no second appeal in the tool.", "Ends the in-tool process"],
+      ["Separate track: legal removal request", "For content that is **unlawful** (e.g. defamation), via Google's legal form.", "Often several weeks; depends on the case and jurisdiction"],
+    ] },
+    { t: "p", text: "The legal track is independent of the policy report. It's meant for content that breaks the law, not for reviews you simply disagree with – details in [lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/) and on Google's [legal removal request page](https://support.google.com/legal/answer/3110420)." },
+
+    { t: "h2", id: "check-status", text: "How to check the status and appeal in the Reviews Management Tool", toc: "Check status & appeal" },
+    { t: "p", text: "**Google's [Reviews Management Tool](https://support.google.com/business/workflow/9945796) shows the status of every review you have reported and is the only place to appeal a decision.** You need to be signed in with an account that manages the Business Profile." },
+    { t: "ol", items: [
+      "**Report the review first** – on Google Maps, Search or in your Business Profile via “Report review”, choosing the violation type that really fits.",
+      "**Open the [Reviews Management Tool](https://support.google.com/business/workflow/9945796)** while signed in with the Google account that owns or manages the profile.",
+      "**Select your Business Profile** if you manage more than one.",
+      "**Open the overview of reported reviews** and find the review in question.",
+      "**Read the status.** “Decision pending” means: wait. Don't report the same review again and again – it doesn't make the check faster.",
+      "**If the status says no policy violation was found, start the appeal.** You get **one appeal per review**, so make it count: name the exact policy and keep to verifiable facts.",
+      "**Check back regularly.** The appeal may be marked **“Escalated”** and then receives a **final decision** – after that, the tool offers no further step for this review.",
+    ] },
+    { t: "tip", title: "Before you appeal", text: "Write down, in two or three sentences, why the review breaks a specific rule – for example: no customer record exists for this name, or the text contains an insult. Collect screenshots before you appeal. A vague “this is unfair” rarely changes the outcome." },
+
+    { t: "h2", id: "statuses", text: "What the statuses mean", toc: "Statuses" },
+    { t: "p", text: "**The status tells you whether Google is still checking, has decided, or is reviewing your appeal.** Exact wording can differ slightly by language and over time." },
+    { t: "table", head: ["Status", "Meaning", "What you can do"], rows: [
+      ["**Decision pending**", "Google is still checking your report.", "Wait. Respond calmly to the review in public if you haven't yet."],
+      ["**Report reviewed – no policy violation**", "Google sees no violation and keeps the review.", "Appeal once – ideally with a more precise reason and evidence."],
+      ["Review removed", "Google found a violation; the review is no longer shown on your profile.", "Nothing – done."],
+      ["**Escalated**", "Your appeal is being reviewed more closely.", "Wait for the final decision."],
+      ["Final decision", "The appeal is closed.", "If the content is unlawful: legal removal request. Otherwise: reply publicly."],
+    ] },
+
+    { t: "h2", id: "rejected", text: "Why some reports get rejected", toc: "Why reports fail" },
+    { t: "p", text: "**Most rejected reports fail for one of three reasons: the wrong category, no evidence, or the review is genuine criticism.** Google itself says you shouldn't report a review just because you disagree with it." },
+    { t: "ul", items: [
+      "**Wrong policy category.** A fake review reported as “offensive”, or an insult reported as “spam”, makes the check harder. Pick the category from Google's [prohibited and restricted content policy](https://support.google.com/contributionpolicy/answer/7400114) that actually matches – an overview is in [Google review policy violations](/en/magazine/google-review-policy-violations/).",
+      "**No evidence.** “This person was never a customer” is only convincing if it's plausible – no booking, no invoice, no matching appointment, a profile with dozens of reviews in different cities.",
+      "**Genuine criticism.** A real customer describing a bad experience in factual terms is protected, even if it hurts. That's feedback, not a removal case – see [ignore, respond or remove?](/en/magazine/negative-review-ignore-respond-remove/)",
+    ] },
+    { t: "p", text: "Business owners can't delete reviews themselves – only the reviewer can edit or delete their own review. So the quality of the report is what decides the outcome." },
+
+    { t: "h2", id: "speed-up", text: "What speeds up removal", toc: "What speeds it up" },
+    { t: "p", text: "**Three things make the biggest difference: the right policy category, solid evidence, and acting while the review is still fresh.** Age matters most: in our work, reviews up to 4 weeks old are removed in about **90 %** of cases, older ones in about **50 %**." },
+    { t: "ul", items: [
+      "**The right category from the start** – a precise first report saves you the appeal.",
+      "**Evidence ready** – screenshots of the review and the reviewer profile, a note on why there's no customer contact, dates.",
+      "**Act within four weeks** – fresh reviews have far better odds, and with us they cost $179 instead of $229.",
+      "**One clean report, not ten** – repeated reports of the same review don't jump the queue.",
+      "**Fake waves and blackmail** – if 1-star reviews arrive together with a demand for money, use Google's dedicated form and read our guide on [Google review extortion](/en/magazine/google-review-extortion/). Don't pay, don't engage, keep screenshots.",
+    ] },
+    { t: "cta", title: "Don't wait weeks for a standard reply", text: "Search your business, tick the reviews that should go and see the price instantly. **$179 per removed review**, $229 if older than 4 weeks – charged only once the review is gone.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free honest assessment"] },
+
+    { t: "h2", id: "while-waiting", text: "What to do while you wait", toc: "While you wait" },
+    { t: "p", text: "**Reply publicly, briefly and calmly – that's the one thing you can always do, and future customers read it.** A good reply doesn't argue and doesn't reveal customer data." },
+    { t: "ul", items: [
+      "**If you can't find the person:** “We can't find any visit or order under this name. Please contact us directly so we can clarify this.”",
+      "**If it's a real customer:** acknowledge the experience, offer a direct contact, skip the justification.",
+      "**Don't** threaten, don't guess who wrote it in public, and don't ask friends for counter-reviews – that can itself break Google's rules on fake engagement.",
+      "**Document** everything: screenshots of the review, the reviewer profile and your report status.",
+    ] },
+    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/), and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
+
+    { t: "h2", id: "different-times", text: "Why several reviews come down at different times", toc: "Different times" },
+    { t: "p", text: "**Every review is checked on its own, so if you report five, they rarely disappear on the same day.** One may be gone after two days, another needs an appeal, a third is still pending after two weeks." },
+    { t: "p", text: "That's why we **bill per review**: you pay for each review once it's actually removed – a separate payment link per review is possible. Reviews we're still working on cost you nothing, and with 3, 5 or 10 accepted reviews the volume discount (−10 %, −15 %, −30 %) applies to every one that comes down. All prices and comparisons are in [Google review removal cost](/en/magazine/google-review-removal-cost/), and the order process is on our [service page for removing a single Google review](/en/remove-single-reviews/)." },
+    { t: "cta", title: "Check which reviews have a real chance", text: "Free assessment first: we tell you honestly whether a review is removable. Ordering takes about two minutes – usually done in a few days, sometimes up to three weeks.", btn: "Start free check", href: "/en/check-profile/?start=reviews", trust: ["Only Google's own procedures", "Reviewer isn't told who asked", "1,600+ profiles removed since 2023"] },
+  ],
+  faq: [
+    { q: "How long does Google take to remove a reported review?", a: "Google doesn't publish a fixed timeline. Clear violations can go within hours or a few days; borderline cases and appeals often take **one to several weeks**." },
+    { q: "Why is my report still “Decision pending”?", a: "The check isn't finished yet – often because the case needs a human reviewer. Reporting the same review again doesn't speed it up; check the status in the **Reviews Management Tool** instead." },
+    { q: "Can I appeal more than once?", a: "No. In the Reviews Management Tool you get **one appeal per review**. After the final decision, the only other official route is a legal removal request – and only if the content is unlawful." },
+    { q: "Does Google notify the reviewer?", a: "The reviewer is **not told who reported the review or requested its removal** – neither with your own report nor when we handle it. They may simply notice that their review is no longer visible." },
+    { q: "Can a removed review come back?", a: "A review Google removes for a policy violation normally stays removed. The same person can write a new review, though – that one is checked separately and can be reported again." },
+    { q: "How fast is it with RapidRemove?", a: "Usually **a few days, sometimes up to three weeks** per review. You pay **$179 per removed review** ($229 if older than 4 weeks) – only once it's gone." },
+    { q: "Does a reply to the review hurt my chances?", a: "No. A short, calm public reply is always allowed and doesn't affect the check. Just avoid insults and customer data." },
+  ],
+  related: [
+    { label: "Google review removal service", url: "/en/remove-single-reviews/" },
+    { label: "Google review removal cost", url: "/en/magazine/google-review-removal-cost/" },
+    { label: "Google review policy violations", url: "/en/magazine/google-review-policy-violations/" },
+    { label: "How to remove fake Google reviews", url: "/en/magazine/remove-fake-google-reviews/" },
+  ],
+};
+export default article;

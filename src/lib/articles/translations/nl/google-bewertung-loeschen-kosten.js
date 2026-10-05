@@ -1,0 +1,127 @@
+/* NL — google-bewertung-loeschen-kosten (article without German original; single-review product). */
+const article = {
+  category: "Reputatie",
+  meta: {
+    slug: "kosten-google-review-verwijderen",
+    title: "Kosten Google review verwijderen: prijzen vergeleken (2026)",
+    h1: "Wat kost het om een Google review te laten verwijderen?",
+    description: "Wat kost een Google review verwijderen? Zelf melden, advocaat of service vergeleken – RapidRemove: € 179 per verwijderde review, alleen betalen bij succes.",
+    keywords: ["google review verwijderen kosten", "kosten google review verwijderen", "google review laten verwijderen prijs", "wat kost google review verwijderen", "negatieve google review verwijderen kosten", "advocaat google review verwijderen kosten", "google recensie verwijderen prijs"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert en oprichter",
+    date: "2026-10-05",
+  },
+  dek: "Een Google review zelf melden is **gratis**, maar Google wijst veel meldingen af. Een advocaat rekent meestal **per uur en vooraf**, ongeacht de uitkomst. Diensten verschillen sterk: sommige laten u per poging of vooraf betalen, andere noemen geen prijs. Bij RapidRemove betaalt u **€ 179 per verwijderde review** (+ € 50 als de review ouder is dan 4 weken) – en **alleen als hij echt weg is**.",
+  blocks: [
+    { t: "h2", id: "kort-antwoord", text: "Het korte antwoord: wat kost een Google review verwijderen?", toc: "Kort antwoord" },
+    { t: "p", text: "Het hangt af van de route die u kiest: zelf melden kost niets behalve tijd, een advocaat en sommige diensten kosten geld, ook als de review blijft staan. De echte vraag is dus niet alleen **hoeveel**, maar ook **wanneer u betaalt en voor wat**." },
+    { t: "ul", items: [
+      "**Zelf melden bij Google:** gratis, maar vaak afgewezen met een standaardantwoord.",
+      "**Advocaat:** meestal uurtarief, vaak met voorschot – u betaalt ook als de review blijft staan.",
+      "**Diensten met vooruitbetaling:** sommige rekenen per poging of vooraf, andere tonen hun prijs pas na een gesprek.",
+      "**RapidRemove:** € 179 per verwijderde review, € 229 als hij ouder is dan 4 weken. Niets vooraf, geen kosten voor pogingen.",
+    ] },
+    { t: "p", text: "Wilt u direct de prijs voor uw eigen reviews zien? Met onze [Google review laten verwijderen-service](/nl/review-laten-verwijderen/) vinkt u de reviews aan en ziet u meteen het totaalbedrag." },
+
+    { t: "h2", id: "opties", text: "De vier manieren om een review te laten verwijderen – en wat ze kosten", toc: "Opties en kosten" },
+    { t: "p", text: "Een bedrijfseigenaar kan een Google review **niet zelf verwijderen** – alleen de schrijver kan zijn review wijzigen of verwijderen. U kunt Google wel vragen een review te verwijderen die de regels schendt. Daarvoor zijn er vier routes." },
+    { t: "p", text: "**1. Zelf melden (gratis).** U meldt de review via Google Maps, Google Zoeken of uw bedrijfsprofiel met „Review melden” en kiest de soort overtreding. In de [Reviews Management Tool](https://support.google.com/business/workflow/9945796) volgt u de status („Beslissing in behandeling”, „Melding beoordeeld – geen schending van het beleid”) en kunt u **één keer per review in beroep gaan**. Het kost geen geld, wel tijd – en u moet de juiste overtreding uit het [beleid voor verboden en beperkte content](https://support.google.com/contributionpolicy/answer/7400114) kiezen. Google zegt zelf dat u een review niet moet melden alleen omdat u het er niet mee eens bent. Hoe het stap voor stap werkt, leest u in [Google review zelf melden](/nl/magazine/google-review-verwijderen-hoe/)." },
+    { t: "p", text: "**2. Een advocaat.** Bij smaad of onrechtmatige inhoud kan een advocaat een [juridisch verwijderverzoek](https://support.google.com/legal/answer/3110420) indienen of de schrijver aanschrijven. Advocaten rekenen meestal **per uur**, vaak met een voorschot, en **los van de uitkomst**. Dat is zinvol bij echte juridische geschillen, maar duur voor één nepreview ([advocaat of technische verwijdering?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/))." },
+    { t: "p", text: "**3. Diensten met vooruitbetaling.** De markt is onoverzichtelijk. Sommige aanbieders rekenen per poging, andere vragen een vast bedrag vooraf, en weer andere noemen pas een prijs na een „gratis gesprek”. Het risico dat de review blijft staan, ligt dan bij u." },
+    { t: "p", text: "**4. Betalen alleen bij succes.** Zo werkt RapidRemove: eerst een gratis inschatting, dan werken wij uitsluitend via de eigen procedures van Google, namens u als eigenaar. U betaalt per review die **echt verwijderd** is." },
+
+    { t: "h2", id: "vergelijking", text: "Vergelijking: zelf melden, advocaat, vooruitbetaling of RapidRemove", toc: "Vergelijking" },
+    { t: "p", text: "Het grootste verschil zit niet in de prijs, maar in **wie het risico draagt** als de review blijft staan." },
+    { t: "table", rrCol: 4, head: ["Criterium", "Zelf melden", "Advocaat", "Dienst met vooruitbetaling", "RapidRemove"], rows: [
+      ["Kostenmodel", "Gratis", "Uurtarief, vaak voorschot", "Per poging of vast bedrag vooraf", "**€ 179 per verwijderde review** (+ € 50 bij ouder dan 4 weken)"],
+      ["Betalen als de review blijft?", "–", "Ja", "Vaak ja", "**Nee**"],
+      ["Risico voor u", "Tijd kwijt, vaak afgewezen", "Hoog: kosten ongeacht uitkomst", "Hoog: geld vooraf weg", "**Geen**: alleen bij succes"],
+      ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal een paar dagen, soms tot 3 weken"],
+      ["Inspanning voor u", "Gemiddeld (melden, volgen, beroep)", "Hoog (dossier, overleg)", "Wisselend", "Ongeveer 2 minuten"],
+    ] },
+    { t: "p", text: "Hoe lang Google er zelf over doet en hoe het beroep werkt, leest u in [hoe lang duurt het om een Google review te laten verwijderen](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
+
+    { t: "h2", id: "prijzen", text: "De prijzen van RapidRemove in één oogopslag", toc: "Onze prijzen" },
+    { t: "p", text: "U betaalt **€ 179 per verwijderde review**; is de review ouder dan 4 weken, dan komt daar **€ 50** bij. Verse reviews zijn goedkoper omdat ze veel makkelijker te verwijderen zijn." },
+    { t: "table", rrCol: 2, head: ["Leeftijd van de review", "Slagingskans", "Prijs per verwijderde review"], rows: [
+      ["Tot 4 weken oud", "ca. 90 %", "**€ 179**"],
+      ["Ouder dan 4 weken", "ca. 50 %", "**€ 229** (€ 179 + € 50)"],
+    ] },
+    { t: "p", text: "Na de gratis inschatting geldt een **staffelkorting** op het aantal reviews dat wij accepteren. De korting geldt voor elke review die verwijderd wordt:" },
+    { t: "table", head: ["Geaccepteerde reviews", "Korting"], rows: [
+      ["1 – 2", "–"],
+      ["3 – 4", "**−10 %**"],
+      ["5 – 9", "**−15 %**"],
+      ["10 of meer", "**−30 %**"],
+    ] },
+    { t: "cta", title: "Zie direct wat uw reviews kosten", text: "Zoek uw bedrijf, vink de reviews aan die weg moeten – de prijs staat meteen in beeld. **€ 179 per verwijderde review**, niets vooraf.", btn: "Prijs berekenen", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Alleen betalen bij succes", "Gratis inschatting"] },
+
+    { t: "h2", id: "rekenvoorbeelden", text: "Rekenvoorbeelden: zo komt uw prijs tot stand", toc: "Rekenvoorbeelden" },
+    { t: "p", text: "De berekening is eenvoudig: aantal verwijderde reviews × € 179 (of € 229), min de staffelkorting. Vijf voorbeelden:" },
+    { t: "ul", items: [
+      "**1 verse nepreview:** € 179. Blijft hij staan, dan betaalt u € 0.",
+      "**1 review van drie maanden oud:** € 179 + € 50 = **€ 229**.",
+      "**3 verse reviews:** € 537, min 10 % = **€ 483**.",
+      "**2 verse en 3 oudere reviews:** € 1.045, min 15 % = **€ 888**.",
+      "**5 verse reviews geaccepteerd, 4 verwijderd:** 4 × € 179 = € 716, min 15 % = **€ 609**. Voor de vijfde review die blijft staan, betaalt u niets.",
+      "**10 reviews (6 vers, 4 ouder):** € 1.990, min 30 % = **€ 1.393**.",
+    ] },
+    { t: "tip", title: "Snel zijn loont dubbel", text: "Na 4 weken daalt de slagingskans van ca. 90 % naar ca. 50 % en stijgt de prijs met € 50. Wie een verse nepreview meteen aanpakt, betaalt minder én heeft meer kans." },
+
+    { t: "h2", id: "betaling", text: "Zo werkt de betaling: per verwijderde review", toc: "Betaling" },
+    { t: "p", text: "U betaalt pas **nadat een review echt verdwenen is** – nooit vooraf en nooit voor een poging. Omdat verschillende reviews op verschillende momenten verdwijnen, kunt u ook **per review** betalen." },
+    { t: "ol", items: [
+      "**Gratis inschatting:** wij zeggen eerlijk welke reviews kans maken. Is een review niet verwijderbaar, dan kost hij u niets.",
+      "**Wij gaan aan de slag** via de eigen procedures van Google, namens u als eigenaar.",
+      "**Review verdwenen?** U krijgt een beveiligde betaallink. Desgewenst krijgt u **per review een aparte betaallink**, zodat u steeds alleen betaalt wat al weg is.",
+      "**Liever anders betalen?** PayPal of bankoverschrijving is op aanvraag mogelijk.",
+    ] },
+    { t: "p", text: "Meestal duurt het **een paar dagen**, soms tot **drie weken**. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
+
+    { t: "h2", id: "waarschuwingssignalen", text: "Waarschuwingssignalen bij aanbieders", toc: "Waarschuwingssignalen" },
+    { t: "p", text: "Een lage prijs is niets waard als de methode niet deugt. Let bij elke aanbieder op deze signalen:" },
+    { t: "ul", items: [
+      "**Garanties:** niemand kan beloven dat een review verdwijnt – de beslissing ligt bij Google. Een „100 % garantie” is een rood signaal.",
+      "**Betalen vooraf** of per poging: dan draagt u het volledige risico.",
+      "**Nepaccounts of bots:** massaal melden met valse accounts schendt de regels van Google en kan uw profiel schaden.",
+      "**Valse juridische meldingen:** verzonnen smaadclaims of nep-advocatenbrieven zijn misleidend en kunnen juridische gevolgen hebben.",
+      "**Reviews kopen** om slechte reviews „weg te drukken”: nep-engagement is verboden en kan reviews of uw profiel kosten.",
+    ] },
+    { t: "warn", title: "Eerlijke kritiek blijft staan", text: "Zakelijke kritiek van echte klanten is meestal niet verwijderbaar – door niemand. Daar helpt een rustige, openbare reactie meer ([negeren, reageren of verwijderen?](/nl/magazine/negatieve-review-negeren-reageren-verwijderen/))." },
+
+    { t: "h2", id: "wanneer-loont-het", text: "Wanneer loont het om te betalen voor verwijdering?", toc: "Wanneer loont het?" },
+    { t: "p", text: "Het loont zodra één nepreview of beledigende review u **meer klanten kost dan € 179**. Bij een restaurant, praktijk of installatiebedrijf is dat vaak al met één gemiste opdracht het geval." },
+    { t: "ul", items: [
+      "**Uw gemiddelde zakt onder een drempel** – bijvoorbeeld van 4,5 naar 4,3 door één of twee 1-sterreviews.",
+      "**De review staat bovenaan** bij „Meest relevant” en is het eerste wat nieuwe klanten lezen.",
+      "**De review is nep, beledigend of van iemand die nooit klant was** – dan is de kans op verwijdering het grootst.",
+      "**De review is nog vers:** goedkoper en meer kans dan na 4 weken.",
+    ] },
+    { t: "p", text: "Hoeveel omzet één slechte review echt kost, rekenen we door in [wat kost een slechte Google review?](/nl/magazine/wat-kost-slechte-google-review/). Twijfelt u of uw review überhaupt verwijderd kan worden, laat hem dan gratis beoordelen via onze [service om een Google review te laten verwijderen](/nl/review-laten-verwijderen/)." },
+
+    { t: "h2", id: "waarom", text: "Waarom bedrijven kiezen voor betalen bij succes", toc: "Waarom RapidRemove" },
+    { t: "ul", items: [
+      "**Transparante prijs:** € 179 per verwijderde review, vooraf zichtbaar in de wizard.",
+      "**Geen risico:** niets vooraf, geen kosten voor pogingen.",
+      "**Alleen officiële wegen:** uitsluitend de eigen procedures van Google – geen nepaccounts, geen bots, geen valse juridische meldingen.",
+      "**Ervaring:** sinds 2023 meer dan 1.600 Google-bedrijfsprofielen verwijderd, meer dan 20.000 gratis profielchecks, klanten in meer dan 50 landen en een Trustpilot-score van 5,0.",
+    ] },
+    { t: "cta", title: "Weet in 2 minuten wat het u kost", text: "Kies uw bedrijf, vink de reviews aan en zie uw exacte prijs inclusief korting. U betaalt **alleen voor reviews die echt verwijderd zijn**.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["€ 179 per verwijderde review", "Niets vooraf", "Betaallink per review mogelijk"] },
+  ],
+  faq: [
+    { q: "Wat kost het om een Google review te laten verwijderen?", a: "Bij RapidRemove € 179 per verwijderde review, of € 229 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is." },
+    { q: "Is een Google review verwijderen gratis?", a: "Zelf melden bij Google is gratis. Google wijst meldingen echter vaak af; u kunt dan één keer per review in beroep gaan via de Reviews Management Tool." },
+    { q: "Wat kost een advocaat om een Google review te laten verwijderen?", a: "Advocaten rekenen meestal per uur, vaak met een voorschot, en ongeacht de uitkomst. Dat loont vooral bij echte juridische geschillen zoals smaad." },
+    { q: "Moet ik vooraf betalen?", a: "Nee. Er wordt **niets vooraf** afgeschreven en pogingen kosten niets. U krijgt pas een betaallink nadat een review verwijderd is." },
+    { q: "Krijg ik korting bij meerdere reviews?", a: "Ja. Vanaf 3 geaccepteerde reviews 10 %, vanaf 5 reviews 15 % en vanaf 10 reviews 30 % – op elke review die verwijderd wordt." },
+    { q: "Kan ik per review apart betalen?", a: "Ja. Omdat reviews op verschillende momenten verdwijnen, kunt u per verwijderde review een aparte betaallink krijgen. PayPal of overschrijving kan op aanvraag." },
+    { q: "Kan iemand garanderen dat een review verwijderd wordt?", a: "Nee. Google beslist zelf. Wie een garantie belooft, is niet eerlijk – daarom werken wij met betalen alleen bij succes." },
+  ],
+  related: [
+    { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Wat kost een slechte Google review?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
+    { label: "Hoe lang duurt het om een Google review te laten verwijderen?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+    { label: "Advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+  ],
+};
+export default article;

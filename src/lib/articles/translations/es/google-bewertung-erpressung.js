@@ -1,0 +1,115 @@
+/* ES — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Reputación",
+  meta: {
+    slug: "extorsion-resenas-google",
+    title: "Extorsión con reseñas de Google: qué hacer ya (2026)",
+    h1: "Extorsión con reseñas de Google: qué hacer si te piden dinero",
+    description: "¿Una oleada de reseñas de 1 estrella y te piden dinero para quitarlas? No pagues. Cómo funciona la extorsión, cómo denunciarla y cómo eliminar las reseñas.",
+    keywords: ["extorsión reseñas google", "chantaje reseñas google", "me piden dinero para quitar reseñas", "denunciar extorsión reseñas google", "reseñas de 1 estrella falsas extorsión", "estafa reseñas negativas whatsapp", "formulario extorsión reseñas google", "eliminar reseñas extorsión"],
+    author: "Maximilian Hölzl",
+    authorRole: "Experto en Google y fundador",
+    date: "2026-10-05",
+  },
+  dek: "De la noche a la mañana tu ficha recibe varias reseñas de 1 estrella y, poco después, un desconocido te escribe: o pagas, o vendrán más. Eso es **extorsión con reseñas de Google**, y la respuesta siempre es la misma: **no pagues, no negocies, guarda pruebas de todo y denúncialo**. Google tiene un formulario específico para este caso, y las reseñas de extorsión están entre las que Google elimina con más fiabilidad. Te explicamos qué hacer, paso a paso.",
+  blocks: [
+    { t: "h2", id: "que-es", text: "¿Qué es la extorsión con reseñas de Google?", toc: "Qué es" },
+    { t: "p", text: "Es cuando alguien llena tu Perfil de Empresa de Google de reseñas negativas y después te exige dinero, tarjetas regalo o servicios gratis para retirarlas. Las reseñas son la amenaza; el mensaje posterior, la petición de rescate." },
+    { t: "p", text: "Quienes las publican casi nunca son clientes reales. Suelen ser cuentas nuevas o compradas, manejadas por grupos organizados que atacan a muchos negocios a la vez: restaurantes, clínicas dentales, hoteles, reformas, agencias. Google lo considera una infracción clara de sus normas y por eso ha creado un [formulario específico para denunciar la extorsión con reseñas](https://support.google.com/business/answer/16404809)." },
+    { t: "p", text: "Si prefieres que las reseñas desaparezcan sin pelearte tú con el proceso, nuestro [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/) lo gestiona con los procedimientos oficiales de Google, y solo pagas por las reseñas que realmente se eliminan." },
+
+    { t: "h2", id: "como-funciona", text: "Cómo funciona la estafa", toc: "Cómo funciona" },
+    { t: "p", text: "Casi todos los casos siguen el mismo guion. Conocerlo ayuda a mantener la calma: nada de lo que hace el extorsionador es personal ni casual." },
+    { t: "ol", items: [
+      "**La oleada:** en pocas horas o días aparecen varias reseñas de 1 o 2 estrellas. A menudo **sin texto**, o con una frase genérica que vale para cualquier negocio.",
+      "**El contacto:** llega un mensaje por **WhatsApp, Telegram o correo**, a veces por el formulario de tu web o los mensajes de Google. Hace referencia a las reseñas nuevas.",
+      "**La exigencia:** pagar una cantidad (a menudo en criptomonedas o tarjetas regalo) o dar servicios gratis, y las reseñas «se borrarán».",
+      "**La amenaza:** si te niegas, prometen más reseñas. Algunos envían una segunda oleada pequeña para demostrar que van en serio.",
+      "**La repetición:** si pagas, nadie garantiza que se borre nada. Pagar te señala como un negocio que paga, y las exigencias suelen volver.",
+    ] },
+
+    { t: "h2", id: "senales", text: "Señales de que te están extorsionando", toc: "Señales" },
+    { t: "p", text: "La señal más clara es el momento: varias valoraciones bajas en muy poco tiempo y, justo después, un mensaje que las menciona. Otras pistas típicas:" },
+    { t: "ul", items: [
+      "Varias **reseñas de 1 estrella sin texto** ([por qué suelen poder eliminarse](/es/revista/eliminar-resena-1-estrella-sin-texto/)).",
+      "Nombres que no encajan con **ninguna reserva, pedido o visita**.",
+      "Perfiles **sin otras reseñas**, o con reseñas repartidas por ciudades y países sin relación.",
+      "Varias reseñas publicadas **casi a la vez**, a veces con frases parecidas.",
+      "Un mensaje de un **número o cuenta desconocidos** que vincula las reseñas a un pago.",
+      "Presión: plazos cortos, «último aviso» o un «descuento» si pagas rápido.",
+    ] },
+    { t: "p", text: "No todas las oleadas llegan con exigencia de dinero. Los ataques de la competencia y las reseñas falsas sin más se parecen mucho; para esos casos sirven los pasos de nuestra guía sobre [reseñas falsas en Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
+
+    { t: "h2", id: "que-hacer", text: "Qué hacer de inmediato", toc: "Primeros pasos" },
+    { t: "p", text: "No pagues y no respondas: el silencio es tu mejor respuesta. Después, asegura las pruebas antes de que cambie nada, porque los mensajes se borran y las cuentas desaparecen." },
+    { t: "ol", items: [
+      "**No pagues** y no negocies, ni siquiera para «ganar tiempo».",
+      "**Haz captura de cada mensaje**, con el número o usuario del remitente, la fecha y la hora visibles. Guarda los correos con encabezados si puedes.",
+      "**Haz captura de cada reseña**: nombre, estrellas, texto y fecha. Copia el enlace de cada una.",
+      "**Apunta una cronología**: cuándo aparecieron las reseñas, cuándo llegó el mensaje y cualquier seguimiento.",
+      "**Bloquea al remitente** solo cuando lo tengas todo guardado.",
+      "**Denúncialo a Google** con el formulario de extorsión y denuncia cada reseña por separado (detalles abajo).",
+      "**Valora poner una denuncia en la policía**, sobre todo si te han pedido una cantidad concreta.",
+    ] },
+    { t: "warn", title: "Por qué pagar lo empeora", text: "No hay forma de obligar a un extorsionador a cumplir su palabra. Pagar no garantiza que se eliminen las reseñas, financia el siguiente ataque y le dice al grupo que vale la pena volver. El consejo de Google es claro: no pagues y no entres en contacto." },
+
+    { t: "h2", id: "denunciar", text: "Cómo denunciar la extorsión a Google", toc: "Denunciar a Google" },
+    { t: "p", text: "Usa tres vías a la vez: el formulario de extorsión, una denuncia en cada reseña y la herramienta de gestión de reseñas para seguir el resultado. El formulario da el contexto a Google; las denuncias individuales hacen que se revise cada reseña." },
+    { t: "table", head: ["Paso", "Dónde", "Qué hacer"], rows: [
+      ["1. Denuncia de extorsión", "[Formulario de Google para extorsión con reseñas](https://support.google.com/business/answer/16404809)", "Describe la exigencia, adjunta capturas de los mensajes y enumera las reseñas afectadas."],
+      ["2. Denunciar cada reseña", "Google Maps, Búsqueda o tu Perfil de Empresa → «Denunciar reseña»", "Elige el tipo de infracción adecuado, p. ej. interacción falsa o conflicto de intereses."],
+      ["3. Seguir el estado", "[Herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796)", "Comprueba si pone «Decisión pendiente» o «Denuncia revisada» y apela una vez por reseña si Google no ve infracción."],
+      ["4. Vía legal (opcional)", "[Solicitud de retirada por motivos legales](https://support.google.com/legal/answer/3110420)", "Para reseñas con contenido difamatorio o ilícito."],
+    ] },
+    { t: "p", text: "Estas reseñas infringen la [política de contenido prohibido y restringido](https://support.google.com/contributionpolicy/answer/7400114) de Google por varios lados: interacción falsa, contenido publicado para perjudicar a un negocio y, a menudo, contenido engañoso o fuera de tema. Más sobre las categorías en nuestro resumen de [infracciones de las políticas de reseñas de Google](/es/revista/politicas-resenas-google-infracciones/)." },
+    { t: "tip", title: "Denuncia todas las reseñas, no solo la peor", text: "Google revisa cada reseña por separado. Si denuncias dos de diez, las otras ocho pueden quedarse. Apunta la fecha de cada denuncia para hacer el seguimiento en la herramienta de gestión de reseñas." },
+
+    { t: "h2", id: "policia", text: "¿Hay que ir a la policía?", toc: "Denuncia policial" },
+    { t: "p", text: "Sí, merece la pena plantearse una denuncia. Exigir dinero bajo amenaza es delito en la mayoría de los países, y un número de denuncia refuerza tu posición ante Google y ante cualquier paso legal posterior." },
+    { t: "p", text: "Lleva las capturas, los enlaces de las reseñas y tu cronología. Sé realista: los autores suelen operar desde el extranjero y puede que nunca se les identifique. Aun así, la denuncia sirve como registro oficial y solo te cuesta una hora." },
+
+    { t: "h2", id: "plazos", text: "¿Cuánto tardan en desaparecer las reseñas de extorsión?", toc: "Plazos" },
+    { t: "p", text: "No hay un plazo fijo: Google indica que las reseñas denunciadas las revisan sistemas automáticos y personas, y que el proceso puede llevar de días a semanas. Los casos claros de extorsión con mensajes documentados suelen resolverse antes que una denuncia normal, pero Google no garantiza plazos." },
+    { t: "p", text: "Dos cosas juegan a tu favor: las reseñas son **recientes** y el patrón es **evidente**. Las reseñas de hasta cuatro semanas tienen muchas más opciones de eliminarse que las antiguas, así que actúa en los primeros días. Si Google rechaza una denuncia, usa la única apelación por reseña en la herramienta de gestión. Más sobre plazos y apelaciones: [cuánto tarda Google en eliminar una reseña](/es/revista/cuanto-tarda-google-eliminar-resena/)." },
+
+    { t: "h2", id: "rapidremove", text: "Cómo te ayuda RapidRemove ante una oleada de extorsión", toc: "Cómo ayudamos" },
+    { t: "p", text: "Envíanos las reseñas y nos encargamos de la eliminación con los procedimientos oficiales de Google, en tu nombre. No tienes que discutir con el soporte de Google, perseguir denuncias ni controlar cada caso." },
+    { t: "ul", items: [
+      "**Primero, valoración gratuita:** te decimos con honestidad qué reseñas tienen buenas opciones.",
+      "**Solo pagas si funciona:** 179 € por reseña eliminada (hasta 4 semanas), 229 € si es más antigua. Nada por adelantado, nada por intentarlo.",
+      "**Descuento por volumen:** una oleada de extorsión suele ser de muchas reseñas. Sobre las que aceptamos: 3+ −10 %, 5+ −15 %, 10+ −30 %. Ejemplo: 10 reseñas de extorsión recientes cuestan 1.790 €; menos un 30 %, **1.253 €**, y solo por las que realmente se eliminan.",
+      "**Buenas opciones:** las reseñas recientes tienen aprox. un **90 % de probabilidad de éxito**, y las de extorsión están entre las que Google elimina con más fiabilidad.",
+      "**Normalmente unos días**, a veces hasta tres semanas. Las reseñas pueden caer en momentos distintos, así que puedes pagar por reseña.",
+      "**Solo métodos limpios:** sin cuentas falsas, sin bots, sin falsos avisos legales. Los autores no saben quién pidió la eliminación.",
+    ] },
+    { t: "cta", title: "¿Te están extorsionando? Envíanos las reseñas", text: "Busca tu empresa, marca las reseñas de extorsión o pega sus enlaces y ve el precio al instante. **179 € por reseña eliminada**, nada por adelantado.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago por reseña eliminada", "Valoración honesta antes"] },
+    { t: "p", text: "Precios, descuentos y todo el proceso, explicados en nuestra página del [servicio para eliminar una reseña de Google](/es/eliminar-una-resena/)." },
+
+    { t: "h2", id: "proteger", text: "Cómo proteger tu ficha después", toc: "Proteger tu ficha" },
+    { t: "p", text: "Vigila de cerca las reseñas nuevas durante unas semanas, porque estos grupos a veces vuelven a intentarlo. Cuanto antes detectes una nueva oleada, más recientes serán las reseñas cuando las denuncies." },
+    { t: "ul", items: [
+      "**Activa las notificaciones de reseñas** en tu Perfil de Empresa y revisa las nuevas a diario durante las próximas semanas.",
+      "**Conserva tu carpeta de pruebas** y añade cualquier mensaje o reseña nueva.",
+      "**Responde con calma** cuando tenga sentido: «No tenemos constancia de usted como cliente. Hemos denunciado esta reseña a Google». Con eso basta.",
+      "**No acuses a nadie públicamente en caliente** ni hables de la extorsión con tono emocional. Tus futuros clientes leen tus respuestas, y la calma protege tu reputación.",
+      "**Pide reseñas a tus clientes satisfechos** como parte de tu rutina, para que un ataque pese menos en tu media.",
+    ] },
+    { t: "p", text: "¿No sabes si responder a una reseña concreta? Nuestra guía sobre [cuándo ignorar, responder o eliminar una reseña negativa](/es/revista/resena-negativa-ignorar-responder-eliminar/) te ayuda a decidir." },
+  ],
+  faq: [
+    { q: "¿Debo pagar al extorsionador?", a: "No. Pagar no garantiza que se borren las reseñas y te señala como un negocio que paga, así que las exigencias suelen volver. **No pagues, no negocies**, documéntalo todo y denúncialo a Google." },
+    { q: "¿Eliminará Google todas las reseñas de extorsión?", a: "A menudo la mayoría o todas, sobre todo si son recientes y la extorsión está documentada, pero Google no lo garantiza. Denuncia cada reseña por separado y usa la apelación de la herramienta de gestión de reseñas para las que sigan." },
+    { q: "¿Puedo denunciar la extorsión a la policía?", a: "Sí. Exigir dinero bajo amenaza es delito en la mayoría de los países. Lleva capturas de los mensajes, los enlaces de las reseñas y una cronología; el número de denuncia también respalda tu reporte a Google." },
+    { q: "¿Y si vuelven con más reseñas?", a: "No respondas, añade los mensajes y reseñas nuevos a tus pruebas y denúncialos igual. Las reseñas recientes son las más fáciles de eliminar, así que actúa en pocos días." },
+    { q: "¿Puedo borrar yo mismo las reseñas?", a: "No. Los propietarios no pueden borrar reseñas de Google; solo quien la escribió puede borrar la suya. Puedes denunciarlas, responder en público o hacer que se eliminen por los procedimientos de Google." },
+    { q: "¿Cuánto cuesta eliminar reseñas de extorsión?", a: "Con RapidRemove, **179 € por reseña eliminada** de hasta 4 semanas y 229 € si es más antigua, con descuento por volumen de hasta el 30 % a partir de 10 reseñas. No pagas nada por las que se quedan." },
+    { q: "¿Sabrá el extorsionador que pedí la eliminación?", a: "Por nosotros, no. El autor de la reseña no sabe quién solicitó la eliminación." },
+  ],
+  related: [
+    { label: "Servicio para eliminar reseñas de Google", url: "/es/eliminar-una-resena/" },
+    { label: "Detectar, denunciar y eliminar reseñas falsas", url: "/es/revista/eliminar-resenas-falsas-de-google/" },
+    { label: "Eliminar una reseña de 1 estrella sin texto", url: "/es/revista/eliminar-resena-1-estrella-sin-texto/" },
+    { label: "¿Cuánto tarda Google en eliminar una reseña?", url: "/es/revista/cuanto-tarda-google-eliminar-resena/" },
+  ],
+};
+export default article;

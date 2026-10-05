@@ -1,0 +1,117 @@
+/* SV — google-bewertungsrichtlinien (article without German original; single-review product). */
+const article = {
+  category: "Rykte",
+  meta: {
+    slug: "google-recensionsregler-overtradelser",
+    title: "Googles recensionsregler: vilka recensioner tas bort? (2026)",
+    h1: "Googles recensionsregler: vilka överträdelser leder till borttagning?",
+    description: "Vilka Google-recensioner bryter mot reglerna och tas bort? Kategorier, exempel, rätt anmälan och överklagande. Från 179 €, betala bara om den tas bort.",
+    keywords: ["googles regler för recensioner", "google recension bryter mot riktlinjer", "anmäla google recension", "vilka google recensioner tas bort", "ta bort google recension regler", "google recension policy", "google recension ingen överträdelse", "olämplig google recension"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert",
+    date: "2026-10-05",
+  },
+  dek: "Google tar bara bort en recension om den **bryter mot policyn för förbjudet och begränsat innehåll** eller **mot lagen** – till exempel falska recensioner, förolämpningar, hatpropaganda, personuppgifter eller recensioner från konkurrenter. Att du inte håller med om en recension är **inget skäl** för borttagning. Här ser du per kategori vad som räknas och inte, hur du anmäler med rätt skäl och vad du gör när Google svarar ”ingen överträdelse”.",
+  blocks: [
+    { t: "h2", id: "kort", text: "Kort svar: vilka Google-recensioner tas bort?", toc: "Kort svar" },
+    { t: "p", text: "Google tar bort recensioner som bryter mot [policyn för förbjudet och begränsat innehåll](https://support.google.com/contributionpolicy/answer/7400114) eller mot lagen. Ett lågt betyg eller hård kritik från en riktig kund är i sig **ingen överträdelse**." },
+    { t: "p", text: "Som företag kan du inte radera en recension själv – bara den som skrev den kan redigera eller ta bort den ([kan ett företag ta bort Google-recensioner?](/sv/magasin/kan-foretag-ta-bort-google-recensioner/)). Det du kan göra är att **anmäla** recensionen, överklaga eller skicka en juridisk begäran. Vill du slippa sköta det själv tar vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) hand om det via Googles egna procedurer – och du betalar bara när recensionen faktiskt är borta." },
+    { t: "ul", items: [
+      "**Kan tas bort:** falska recensioner, personer som aldrig varit kunder, intressekonflikter, förolämpningar, hat, personuppgifter, spam, irrelevant innehåll, olagligt innehåll.",
+      "**Tas inte bort:** ärliga negativa upplevelser, åsikter (”för dyrt”, ”smakade inte gott”), kritik du inte håller med om.",
+      "**Gråzon:** bara stjärnor utan text, tidigare anställda, misstänkta konkurrenter.",
+    ] },
+
+    { t: "h2", id: "kategorier", text: "Alla överträdelser i en tabell – med exempel", toc: "Kategorier" },
+    { t: "p", text: "Det här är de policykategorier som oftast spelar roll för recensioner. Den sista kolumnen är minst lika viktig: där ser du vad Google **inte** räknar som en överträdelse." },
+    { t: "table", head: ["Kategori", "Vad det betyder", "Typiskt exempel som kan tas bort", "Ingen överträdelse"], rows: [
+      ["**Falskt engagemang**", "Recensioner som inte bygger på en verklig upplevelse: köpta, bytta, från falska konton eller i vågor", "Fem 1-stjärniga recensioner på en natt från konton utan annan aktivitet", "En riktig kund som bara skrivit en enda recension"],
+      ["**Intressekonflikt**", "Recensioner om det egna företaget, från (före detta) anställda eller från konkurrenter", "En konkurrent som sågar ditt företag och rekommenderar sitt eget", "En kund som också har handlat hos konkurrenten"],
+      ["**Irrelevant innehåll**", "Innehåll som inte handlar om en upplevelse på just den här platsen", "Politiska uttalanden, eller en recension avsedd för ett annat företag", "Klagomål på parkering, väntetid eller hur svårt det är att hitta"],
+      ["**Trakasserier**", "Personangrepp, hot eller mobbning mot en person", "”Ägaren är en bedragare, jag vet var han bor”", "”Personalen var otrevlig”"],
+      ["**Hatpropaganda**", "Angrepp på grund av ursprung, religion, kön, sexuell läggning, funktionsnedsättning m.m.", "Diskriminerande kommentarer om anställda", "Skarp men saklig kritik av tjänsten"],
+      ["**Personuppgifter**", "Privat information om personer: telefonnummer, adresser, hälsa", "En recension med en anställds privata nummer eller bostadsort", "En anställds förnamn i en vanlig recension"],
+      ["**Obscenitet och svordomar**", "Svordomar, glåpord, grovt eller vulgärt språk", "En recension full av glåpord", "”Värsta upplevelsen någonsin” utan grovt språk"],
+      ["**Identitetsstöld**", "Att utge sig för att vara någon annan, t.ex. en känd person eller företaget självt", "Ett konto med ditt företagsnamn som lägger negativa recensioner", "En kund som har ett smeknamn som profilnamn"],
+      ["**Felaktig information**", "Påståenden som bevisligen är falska eller vilseledande", "”Här finns ingen legitimerad personal” när det bevisligen är fel", "”Jag tyckte rådgivningen var dålig” (åsikt)"],
+      ["**Spam och vilseledande innehåll**", "Reklam, länkar, upprepat eller meningslöst innehåll, utpressning", "En recension med länk till ett annat företag, eller 1 stjärna plus krav på betalning", "En kort, ärlig recension på en mening"],
+      ["**Olagligt innehåll**", "Innehåll som bryter mot lagen, t.ex. förtal eller upphovsrättsintrång", "En falsk anklagelse om ett brott", "En ärlig beskrivning av en dålig upplevelse"],
+      ["**Sexuellt explicit innehåll**", "Sexuellt innehåll eller bilder", "Explicit text eller foton i en recension", "–"],
+      ["**Farligt innehåll**", "Innehåll som uppmuntrar till skada, våld eller farliga aktiviteter", "Uppmaningar till våld mot företaget eller personalen", "En varning om ett verkligt säkerhetsproblem"],
+    ] },
+    { t: "tip", title: "Falska recensioner och utpressning", text: "Får du plötsligt en våg av 1-stjärniga recensioner, kanske med ett krav på pengar? Då handlar det om falskt engagemang eller spam. Läs hur du [känner igen falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) och vad du gör vid [utpressning med Google-recensioner](/sv/magasin/utpressning-google-recensioner/): betala inte, svara inte, spara skärmdumpar." },
+
+    { t: "h2", id: "anmala", text: "Så anmäler du en recension med rätt kategori", toc: "Anmäla rätt" },
+    { t: "p", text: "Anmäl recensionen i Google Maps, Google Sök eller din företagsprofil med **”Rapportera recension”** och välj det skäl som passar **bäst**. Fel kategori är en av de vanligaste anledningarna till att en anmälan avslås." },
+    { t: "ol", items: [
+      "**Öppna recensionen** i Google Maps, Sök eller företagsprofilen och välj ”Rapportera recension”.",
+      "**Välj ett tydligt skäl.** En konkurrent? Intressekonflikt. Glåpord? Svordomar. En våg från personer som aldrig varit kunder? Falskt engagemang eller spam.",
+      "**Anteckna datumet** för anmälan och ta en **skärmdump** av recensionen.",
+      "**Följ statusen** i [Googles verktyg för hantering av recensioner](https://support.google.com/business/workflow/9945796): där ser du t.ex. ”Beslut väntar” eller ”Ingen policyöverträdelse”.",
+      "**Vänta.** Anmälningar granskas av både automatiska system och människor; det tar dagar till veckor, utan någon garanterad tidsram ([hur lång tid tar det?](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)).",
+    ] },
+    { t: "p", text: "**Bevis som hjälper** – särskilt vid överklagande eller juridisk begäran:" },
+    { t: "ul", items: [
+      "Ditt kassa-, boknings- eller kundsystem visar att det **inte fanns någon kund** med det namnet eller på det datumet.",
+      "**Skärmdumpar** av recensionen, recensentens profil och tidpunkterna (vågor vid samma tid).",
+      "Tecken på en **konkurrent eller tidigare anställd**: namn, profilbild, andra recensioner från samma konto.",
+      "**Meddelanden** med krav på betalning eller hot.",
+      "Vid osanna påståenden: **dokument** som visar motsatsen.",
+    ] },
+    { t: "cta", title: "Få dina recensioner bedömda gratis", text: "Sök ditt företag, bocka i de recensioner som du tycker bryter mot reglerna och se priset direkt. **179 € per borttagen recension**, bara om den tas bort – inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
+
+    { t: "h2", id: "grazon", text: "Gråzoner: stjärnor utan text, tidigare anställda, konkurrenter, prisklagomål", toc: "Gråzoner" },
+    { t: "p", text: "Alla jobbiga recensioner passar inte snyggt in i en kategori. I de här fyra fallen avgör detaljerna – och vad du kan visa." },
+    { t: "ul", items: [
+      "**Bara stjärnor, ingen text:** det finns ingen text som kan bryta mot policyn, så Google tittar främst på recensenten. Har personen aldrig varit kund eller ingår betyget i en våg är chanserna goda. Mer om det: [ta bort en 1-stjärnig recension utan text](/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/).",
+      "**Tidigare anställda:** recensioner från (före detta) anställda om arbetsgivaren räknas som **intressekonflikt**. Svårigheten är att Google inte vet vem som har jobbat hos dig – namn, innehåll om interna förhållanden och tidpunkt (strax efter en uppsägning) hjälper.",
+      "**Konkurrenter:** också en intressekonflikt, men tas bara bort om det är troligt. Typiska tecken: samma konto berömmer en konkurrent i närheten, eller recensionen pekar ut deras erbjudande som alternativ.",
+      "**Prisklagomål:** ”alldeles för dyrt” från en riktig kund är en **åsikt** och tas inte bort. Påstås ett osant faktum (”tog 2 000 kr för ingenting”) och du kan bevisa motsatsen kan felaktig information eller en juridisk begäran vara ett alternativ.",
+    ] },
+
+    { t: "h2", id: "inte", text: "Det här tar Google inte bort", toc: "Tas inte bort" },
+    { t: "p", text: "Google tar **inte bort ärlig kritik från riktiga kunder**, även om den känns hård, överdriven eller orättvis. Google skriver själv att du inte ska anmäla en recension bara för att du inte håller med." },
+    { t: "ul", items: [
+      "En verklig negativ upplevelse (”lång väntan, maten var kall”).",
+      "Åsikter och smak (”ingen trevlig stämning”, ”för dyrt”, ”rekommenderas inte”).",
+      "Kritik mot ditt bemötande eller dina regler (avbokningsavgift, öppettider).",
+      "Ett lågt betyg från en riktig kund, även utan motivering.",
+      "Recensioner som du bara tycker är orättvisa, utan någon konkret överträdelse.",
+    ] },
+    { t: "warn", title: "Inga genvägar", text: "Falska konton, bottar eller falska juridiska anmälningar är ingen lösning och kan skada din profil. Vi arbetar **enbart via Googles egna procedurer**, för företagsägarens räkning. Vid ärlig kritik är ett lugnt, offentligt svar det bästa steget ([ignorera, svara eller ta bort?](/sv/magasin/negativ-recension-ignorera-svara-ta-bort/))." },
+
+    { t: "h2", id: "ingen-overtradelse", text: "Google säger ”ingen överträdelse” – vad gör du nu?", toc: "Efter avslag" },
+    { t: "p", text: "Du kan **överklaga en gång per recension** i verktyget för hantering av recensioner. Därefter är Googles beslut slutgiltigt; ett överklagande kan få statusen ”Eskalerat” innan det slutliga beslutet kommer." },
+    { t: "ol", items: [
+      "**Granska kategorin.** Var det ursprungliga skälet det bästa? Om inte, motivera den kategori som verkligen passar i överklagandet.",
+      "**Överklaga** via [verktyget för hantering av recensioner](https://support.google.com/business/workflow/9945796) och lägg till ditt starkaste bevis. Du har bara den här chansen.",
+      "**Juridisk begäran:** vid förtal eller annat olagligt innehåll kan du skicka en [begäran om borttagning av juridiska skäl](https://support.google.com/legal/answer/3110420). Det är skilt från recensionspolicyn.",
+      "**Svara offentligt och vänligt** så länge recensionen ligger uppe. Läsarna får då se din sida av saken.",
+      "**Låt någon bedöma den.** Vi kollar gratis om det fortfarande finns en chans – och säger ärligt om det inte gör det. Funderar du på advokat? Läs [advokat eller teknisk borttagning](/sv/magasin/negativ-google-recension-advokat/).",
+    ] },
+
+    { t: "h2", id: "hjalp", text: "När professionell hjälp lönar sig – och vad det kostar", toc: "Pris" },
+    { t: "p", text: "Hjälp lönar sig mest för **färska recensioner**: upp till 4 veckor gamla är chansen ca **90 %**, därefter ca **50 %**. Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) betalar du bara för recensioner som faktiskt försvinner." },
+    { t: "table", rrCol: 2, head: ["Recensionens ålder", "Chans att lyckas", "Pris per borttagen recension"], rows: [
+      ["Upp till 4 veckor", "ca. 90 %", "**179 €**"],
+      ["Äldre än 4 veckor", "ca. 50 %", "**229 €** (179 € + 50 €)"],
+    ] },
+    { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. Oftast tar det några dagar, ibland upp till 3 veckor. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
+    { t: "cta", title: "Vilka av dina recensioner bryter mot reglerna?", text: "Sök din profil, bocka i recensionerna så säger vi ärligt vilka som kan tas bort. **Du betalar bara när recensionen faktiskt är borta.**", btn: "Få gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Gratis bedömning", "Bara vid framgång", "Bara Googles procedurer"] },
+  ],
+  faq: [
+    { q: "Vilka Google-recensioner bryter mot reglerna?", a: "Bland annat falska recensioner, recensioner från konkurrenter eller anställda (intressekonflikt), irrelevant innehåll, trakasserier, hatpropaganda, personuppgifter, svordomar, identitetsstöld, felaktig information, spam och olagligt innehåll. Sådana recensioner kan Google ta bort." },
+    { q: "Tar Google bort en recension om jag inte håller med?", a: "Nej. Att du inte håller med är **ingen överträdelse**. Ärlig kritik från riktiga kunder ligger kvar; då är ett vänligt offentligt svar bästa steget." },
+    { q: "Är en 1-stjärnig recension utan text en överträdelse?", a: "Inte automatiskt. Har recensenten aldrig varit kund, eller ingår betyget i en falsk våg eller en intressekonflikt, är chanserna att få bort den däremot goda." },
+    { q: "Hur många gånger kan jag överklaga ”ingen överträdelse”?", a: "**En gång per recension**, i Googles verktyg för hantering av recensioner. Därefter är beslutet slutgiltigt; vid olagligt innehåll kan du fortfarande skicka en juridisk begäran." },
+    { q: "Hur lång tid tar det innan Google granskar en anmäld recension?", a: "Allt från dagar till veckor; Google lovar ingen tidsram. Hos oss tar en borttagning oftast några dagar, ibland upp till 3 veckor." },
+    { q: "Vad kostar det att få en recension borttagen?", a: "**179 €** per borttagen recension upp till 4 veckor gammal, **229 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott." },
+  ],
+  related: [
+    { label: "Ta bort en Google-recension – pris och beställning", url: "/sv/ta-bort-omdome/" },
+    { label: "Känna igen, anmäla och ta bort falska Google-recensioner", url: "/sv/magasin/ta-bort-falska-google-recensioner/" },
+    { label: "Ta bort en 1-stjärnig recension utan text", url: "/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/" },
+    { label: "Hur lång tid tar det för Google att ta bort en recension?", url: "/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/" },
+  ],
+};
+export default article;

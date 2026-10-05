@@ -1,0 +1,115 @@
+/* FR — google-bewertung-erpressung (article without German original; single-review product). */
+const article = {
+  category: "Réputation",
+  meta: {
+    slug: "chantage-avis-google",
+    title: "Chantage aux avis Google : que faire maintenant (2026)",
+    h1: "Chantage aux avis Google : que faire quand on vous réclame de l'argent",
+    description: "Une vague d'avis 1 étoile, puis une demande d'argent ? Ne payez pas. Comment fonctionne ce chantage, comment le signaler à Google et faire supprimer les avis.",
+    keywords: ["chantage avis google", "extorsion avis google", "arnaque avis négatifs google", "on me demande de l'argent pour supprimer des avis", "signaler chantage avis google", "faux avis 1 étoile chantage", "formulaire extorsion avis google", "supprimer avis chantage"],
+    author: "Maximilian Hölzl",
+    authorRole: "Expert Google et fondateur",
+    date: "2026-10-05",
+  },
+  dek: "Du jour au lendemain, votre fiche reçoit une série d'avis 1 étoile, puis un inconnu vous écrit : payez, ou il y en aura d'autres. C'est du **chantage aux avis Google**, et la réponse est toujours la même : **ne payez pas, ne négociez pas, gardez des preuves de tout et signalez-le**. Google propose un formulaire dédié à ce cas précis, et les avis liés à un chantage font partie de ceux que Google supprime le plus sûrement. Voici quoi faire, étape par étape.",
+  blocks: [
+    { t: "h2", id: "definition", text: "Qu'est-ce que le chantage aux avis Google ?", toc: "Définition" },
+    { t: "p", text: "Le chantage aux avis, c'est quand quelqu'un inonde votre fiche d'établissement Google d'avis négatifs, puis exige de l'argent, des cartes cadeaux ou des prestations gratuites pour les retirer. Les avis sont la menace ; le message qui suit, c'est la demande de rançon." },
+    { t: "p", text: "Les auteurs ne sont presque jamais de vrais clients. Ce sont en général des comptes récents ou achetés, gérés par des groupes organisés qui ciblent de nombreuses entreprises en même temps : restaurants, cabinets dentaires, hôtels, artisans, agences. Google considère cela comme une violation nette de ses règles et a mis en place un [formulaire dédié au chantage aux avis](https://support.google.com/business/answer/16404809)." },
+    { t: "p", text: "Si vous voulez simplement que ces avis disparaissent sans gérer vous-même la procédure, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) s'en charge via les procédures officielles de Google, et vous ne payez que les avis réellement supprimés." },
+
+    { t: "h2", id: "deroulement", text: "Comment se déroule l'arnaque", toc: "Déroulement" },
+    { t: "p", text: "La plupart des cas suivent le même scénario. Le connaître aide à garder son calme : rien de ce que fait le maître chanteur n'est personnel ni dû au hasard." },
+    { t: "ol", items: [
+      "**La vague :** en quelques heures ou quelques jours, plusieurs avis 1 ou 2 étoiles apparaissent. Souvent **sans aucun texte**, ou avec une phrase passe-partout.",
+      "**Le contact :** un message arrive par **WhatsApp, Telegram ou e-mail**, parfois via le formulaire de votre site ou la messagerie Google. Il fait référence aux nouveaux avis.",
+      "**L'exigence :** payer une somme (souvent en cryptomonnaie ou en cartes cadeaux) ou fournir des prestations gratuites, et les avis « seront supprimés ».",
+      "**La menace :** si vous refusez, d'autres avis sont promis. Certains envoient une petite deuxième vague pour montrer qu'ils sont sérieux.",
+      "**La récidive :** si vous payez, rien ne garantit que quoi que ce soit soit retiré. Payer vous désigne comme une entreprise qui cède, et les demandes reviennent souvent.",
+    ] },
+
+    { t: "h2", id: "signes", text: "Les signes qui doivent vous alerter", toc: "Signes d'alerte" },
+    { t: "p", text: "Le signe le plus net, c'est le timing : plusieurs mauvaises notes en peu de temps, suivies d'un message qui les mentionne. Autres indices typiques :" },
+    { t: "ul", items: [
+      "Plusieurs **avis 1 étoile sans texte** ([pourquoi ils sont souvent supprimables](/fr/magazine/supprimer-avis-1-etoile-sans-texte/)).",
+      "Des noms qui ne correspondent à **aucune réservation, commande ou visite**.",
+      "Des profils **sans autre avis**, ou avec des avis dispersés dans des villes et des pays sans rapport.",
+      "Plusieurs avis publiés **presque au même moment**, parfois avec des formulations proches.",
+      "Un message d'un **numéro ou compte inconnu** qui lie les avis à un paiement.",
+      "De la pression : délais courts, « dernier avertissement » ou « réduction » si vous payez vite.",
+    ] },
+    { t: "p", text: "Toutes les vagues ne s'accompagnent pas d'une demande d'argent. Les attaques de concurrents et les simples faux avis se ressemblent beaucoup ; pour ces cas, suivez notre guide sur les [faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
+
+    { t: "h2", id: "immediatement", text: "Que faire immédiatement", toc: "Premiers réflexes" },
+    { t: "p", text: "Ne payez pas et ne répondez pas : le silence est votre meilleure réponse. Sécurisez ensuite les preuves avant que quoi que ce soit ne change, car les messages s'effacent et les comptes disparaissent." },
+    { t: "ol", items: [
+      "**Ne payez pas** et ne négociez pas, même pas pour « gagner du temps ».",
+      "**Faites une capture de chaque message**, avec le numéro ou le pseudo de l'expéditeur, la date et l'heure visibles. Conservez les e-mails avec leurs en-têtes si possible.",
+      "**Faites une capture de chaque avis** : nom, nombre d'étoiles, texte et date affichée. Copiez le lien de chaque avis.",
+      "**Notez une chronologie** : quand les avis sont apparus, quand le message est arrivé, les relances éventuelles.",
+      "**Bloquez l'expéditeur** seulement une fois tout sauvegardé.",
+      "**Signalez-le à Google** via le formulaire dédié et signalez chaque avis individuellement (détails ci-dessous).",
+      "**Envisagez un dépôt de plainte**, surtout si un montant précis vous a été réclamé.",
+    ] },
+    { t: "warn", title: "Pourquoi payer aggrave la situation", text: "Impossible d'obliger un maître chanteur à tenir parole. Payer ne garantit pas la suppression, finance la prochaine attaque et signale au groupe qu'il vaut la peine de revenir. Le conseil de Google est clair : ne payez pas et n'entrez pas en contact." },
+
+    { t: "h2", id: "signaler", text: "Comment signaler le chantage aux avis à Google", toc: "Signaler à Google" },
+    { t: "p", text: "Utilisez trois canaux en parallèle : le formulaire dédié, un signalement sur chaque avis et l'outil de gestion des avis pour suivre le résultat. Le formulaire donne le contexte à Google ; les signalements individuels garantissent que chaque avis est examiné." },
+    { t: "table", head: ["Étape", "Où", "Quoi faire"], rows: [
+      ["1. Signalement du chantage", "[Formulaire Google pour le chantage aux avis](https://support.google.com/business/answer/16404809)", "Décrivez la demande, joignez les captures des messages et listez les avis concernés."],
+      ["2. Signaler chaque avis", "Google Maps, Recherche ou votre fiche → « Signaler l'avis »", "Choisissez le type d'infraction adapté, p. ex. faux engagement ou conflit d'intérêts."],
+      ["3. Suivre le statut", "[Outil de gestion des avis](https://support.google.com/business/workflow/9945796)", "Vérifiez « Décision en attente » ou « Signalement examiné » et faites appel une fois par avis si Google ne voit pas d'infraction."],
+      ["4. Voie juridique (facultatif)", "[Demande de suppression pour motif légal](https://support.google.com/legal/answer/3110420)", "Pour les avis diffamatoires ou au contenu illicite."],
+    ] },
+    { t: "p", text: "Ces avis enfreignent à plusieurs titres le [règlement sur les contenus interdits et réglementés](https://support.google.com/contributionpolicy/answer/7400114) de Google : faux engagement, contenu publié pour nuire à une entreprise et souvent contenu trompeur ou hors sujet. Les catégories sont détaillées dans notre article sur les [règles des avis Google et leurs infractions](/fr/magazine/regles-avis-google-infractions/)." },
+    { t: "tip", title: "Signalez tous les avis, pas seulement le pire", text: "Chaque avis est examiné séparément. Si vous n'en signalez que deux sur dix, les huit autres risquent de rester. Notez la date de chaque signalement pour le suivi dans l'outil de gestion des avis." },
+
+    { t: "h2", id: "plainte", text: "Faut-il porter plainte ?", toc: "Porter plainte" },
+    { t: "p", text: "Oui, cela vaut la peine d'y réfléchir. Exiger de l'argent sous la menace est une infraction pénale dans la plupart des pays, et un numéro de plainte renforce votre dossier auprès de Google comme pour d'éventuelles suites juridiques." },
+    { t: "p", text: "Apportez vos captures, les liens des avis et votre chronologie. Restez réaliste : les auteurs opèrent souvent depuis l'étranger et ne seront peut-être jamais identifiés. La plainte reste utile comme trace officielle, et elle ne vous coûte qu'une heure." },
+
+    { t: "h2", id: "delai", text: "En combien de temps ces avis disparaissent-ils ?", toc: "Délai" },
+    { t: "p", text: "Il n'y a pas de délai fixe : selon Google, les avis signalés sont vérifiés par des systèmes automatisés et par des personnes, et le traitement peut prendre de quelques jours à plusieurs semaines. Les cas de chantage clairs, avec messages à l'appui, sont souvent traités plus vite qu'un signalement ordinaire, mais Google ne garantit aucun délai." },
+    { t: "p", text: "Deux éléments jouent en votre faveur : les avis sont **récents** et le schéma est **évident**. Les avis de moins de quatre semaines ont de bien meilleures chances d'être supprimés que les anciens, alors agissez dès les premiers jours. Si Google rejette un signalement, utilisez l'unique recours par avis dans l'outil de gestion. Délais et recours en détail : [délai de suppression d'un avis Google](/fr/magazine/delai-suppression-avis-google/)." },
+
+    { t: "h2", id: "rapidremove", text: "Comment RapidRemove vous aide face à une vague de chantage", toc: "Notre aide" },
+    { t: "p", text: "Envoyez-nous les avis et nous prenons en charge leur suppression via les procédures officielles de Google, en votre nom. Pas besoin de batailler avec le support Google, de relancer les signalements ni de suivre chaque dossier." },
+    { t: "ul", items: [
+      "**D'abord une évaluation gratuite :** nous vous disons honnêtement quels avis ont de bonnes chances.",
+      "**Paiement au résultat :** 179 € par avis supprimé (jusqu'à 4 semaines), 229 € s'il est plus ancien. Rien d'avance, aucun frais pour les tentatives.",
+      "**Remise sur volume :** une vague de chantage, c'est souvent beaucoup d'avis. Sur les avis que nous acceptons : 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemple : 10 avis de chantage récents coûtent 1 790 €, moins 30 % = **1 253 €**, et uniquement pour ceux réellement supprimés.",
+      "**De bonnes chances :** les avis récents ont env. **90 % de chances de succès**, et les avis liés à un chantage font partie de ceux que Google supprime le plus sûrement.",
+      "**En général quelques jours**, parfois jusqu'à trois semaines. Les avis peuvent tomber à des moments différents : vous pouvez payer avis par avis.",
+      "**Uniquement des méthodes propres :** pas de faux comptes, pas de bots, pas de fausses mises en demeure. Les auteurs ne savent pas qui a demandé la suppression.",
+    ] },
+    { t: "cta", title: "Victime de chantage ? Envoyez-nous les avis", text: "Recherchez votre entreprise, cochez les avis de chantage ou collez leurs liens – et voyez le prix immédiatement. **179 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
+    { t: "p", text: "Tarifs, remises et déroulement complet sont expliqués sur notre page [supprimer un avis Google](/fr/supprimer-un-avis/)." },
+
+    { t: "h2", id: "proteger", text: "Comment protéger votre fiche ensuite", toc: "Protéger sa fiche" },
+    { t: "p", text: "Surveillez de près les nouveaux avis pendant quelques semaines, car ces groupes retentent parfois leur chance. Plus vous repérez tôt une nouvelle vague, plus les avis sont récents au moment du signalement." },
+    { t: "ul", items: [
+      "**Activez les notifications d'avis** dans votre fiche d'établissement et consultez les nouveaux avis chaque jour pendant les semaines suivantes.",
+      "**Gardez votre dossier de preuves** et ajoutez-y tout nouveau message ou avis.",
+      "**Répondez calmement** quand une réponse a du sens : « Nous ne vous trouvons pas dans nos clients. Nous avons signalé cet avis à Google. » Cela suffit.",
+      "**N'accusez personne publiquement sous le coup de la colère** et n'évoquez pas le chantage sur un ton émotionnel. Vos futurs clients lisent vos réponses, et le calme protège votre réputation.",
+      "**Demandez des avis à vos clients satisfaits** de façon régulière, pour qu'une attaque pèse moins sur votre note moyenne.",
+    ] },
+    { t: "p", text: "Vous hésitez à répondre à un avis précis ? Notre guide [ignorer, répondre ou supprimer un avis négatif](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/) vous aide à trancher." },
+  ],
+  faq: [
+    { q: "Faut-il payer le maître chanteur ?", a: "Non. Payer ne garantit pas la suppression des avis et vous désigne comme une entreprise qui cède : les demandes reviennent souvent. **Ne payez pas, ne négociez pas**, documentez tout et signalez-le à Google." },
+    { q: "Google va-t-il supprimer tous les avis de chantage ?", a: "Souvent la plupart, voire tous, surtout s'ils sont récents et que le chantage est documenté, mais Google ne garantit rien. Signalez chaque avis séparément et utilisez le recours de l'outil de gestion des avis pour ceux qui restent." },
+    { q: "Peut-on porter plainte pour chantage aux avis ?", a: "Oui. Exiger de l'argent sous la menace est une infraction pénale dans la plupart des pays. Apportez les captures des messages, les liens des avis et une chronologie ; le numéro de plainte appuie aussi votre signalement à Google." },
+    { q: "Et s'ils reviennent avec de nouveaux avis ?", a: "Ne répondez pas, ajoutez les nouveaux messages et avis à votre dossier et signalez-les de la même manière. Les avis récents sont les plus faciles à supprimer : agissez sous quelques jours." },
+    { q: "Puis-je supprimer les avis moi-même ?", a: "Non. Un professionnel ne peut pas supprimer un avis Google ; seul son auteur peut le supprimer. Vous pouvez le signaler, y répondre publiquement ou le faire retirer via les procédures de Google." },
+    { q: "Combien coûte la suppression d'avis de chantage ?", a: "Avec RapidRemove, **179 € par avis supprimé** de moins de 4 semaines, 229 € s'il est plus ancien, avec une remise sur volume allant jusqu'à 30 % dès 10 avis. Vous ne payez rien pour les avis qui restent." },
+    { q: "Le maître chanteur saura-t-il que j'ai fait supprimer les avis ?", a: "Pas par nous. L'auteur de l'avis n'est pas informé de l'identité de celui qui a demandé la suppression." },
+  ],
+  related: [
+    { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },
+    { label: "Repérer, signaler et supprimer les faux avis", url: "/fr/magazine/supprimer-faux-avis-google/" },
+    { label: "Supprimer un avis 1 étoile sans texte", url: "/fr/magazine/supprimer-avis-1-etoile-sans-texte/" },
+    { label: "Délai de suppression d'un avis Google", url: "/fr/magazine/delai-suppression-avis-google/" },
+  ],
+};
+export default article;

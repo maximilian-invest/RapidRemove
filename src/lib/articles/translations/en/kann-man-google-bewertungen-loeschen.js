@@ -1,0 +1,108 @@
+/* EN — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Reputation",
+  meta: {
+    slug: "can-businesses-delete-google-reviews",
+    title: "Can a Business Delete Google Reviews? Honest Answer (2026)",
+    h1: "Can a Business Delete Google Reviews? What Owners Can and Can't Do",
+    description: "No, owners can't delete Google reviews – but Google removes reviews that break its rules. Your legal options, common myths, and removal from $179 on success.",
+    keywords: ["can a business delete google reviews", "can i delete a google review on my business", "can business owners remove google reviews", "how to delete google reviews as a business owner", "can google remove a review", "delete bad google review", "remove google review from my business"],
+    author: "Maximilian Hölzl",
+    authorRole: "Founder",
+    date: "2026-10-05",
+  },
+  dek: "**No – a business cannot delete Google reviews itself.** Only the person who wrote a review can edit or delete it. But that's not the end of the story: reviews that **violate Google's policies or the law** can be removed by Google – after a report, an appeal in the Reviews Management Tool or a legal removal request. Here's who can remove what, which routes are legitimate, and which popular \"tricks\" backfire.",
+  blocks: [
+    { t: "h2", id: "short-answer", text: "The short answer: you can't delete reviews – but Google can", toc: "Short answer" },
+    { t: "p", text: "**There is no delete button for business owners.** In your Google Business Profile you can read, reply to and report reviews – but you cannot remove one, no matter how unfair it is. Google designed it this way on purpose: if businesses could delete reviews, ratings would be worthless to customers." },
+    { t: "p", text: "What you **can** do is get Google to remove a review that breaks its rules. Fake reviews, insults, reviews from people who were never customers, spam, conflicts of interest or unlawful content are all removal cases. Honest criticism from a real customer is not – even if it hurts." },
+    { t: "p", text: "If you'd rather not deal with reports and appeals yourself, a **[Google review removal service](/en/remove-single-reviews/)** can handle it for you using Google's own procedures – with RapidRemove you pay **$179 per removed review**, and only once it's actually gone." },
+
+    { t: "h2", id: "who-can-remove", text: "Who can remove what: reviewer, owner, Google, court", toc: "Who can remove what" },
+    { t: "p", text: "Four parties have a say over a Google review – but only two of them can actually make it disappear. The table shows who can do what." },
+    { t: "table", head: ["Who", "Can delete the review?", "What they can do", "When"], rows: [
+      ["**Reviewer**", "Yes", "Edit or delete their own review at any time", "Any reason – it's their review"],
+      ["**Business owner**", "No", "Reply publicly, report, appeal, file a legal request, ask a real customer to update", "Report only for real policy or legal violations"],
+      ["**Google**", "Yes", "Hold back or remove reviews, automatically or after a report", "When a review violates Google's content policy or local law"],
+      ["**Court / legal route**", "Indirectly", "Unlawful content (e.g. defamation) can be pursued legally; Google handles legal removal requests separately", "Clear legal violations – usually with a lawyer"],
+    ] },
+    { t: "p", text: "The key takeaway: as an owner, your job is to **give Google a valid reason** to act. A review you simply disagree with isn't one – Google explicitly says you should not report reviews just because you don't like them." },
+
+    { t: "h2", id: "removable", text: "Which reviews Google actually removes", toc: "What is removable?" },
+    { t: "p", text: "Google removes reviews that break its [prohibited and restricted content policy](https://support.google.com/contributionpolicy/answer/7400114). For businesses, the most relevant categories are:" },
+    { t: "ul", items: [
+      "**Fake engagement** – reviews that don't reflect a real experience, including review attacks and bought reviews",
+      "**Conflict of interest** – reviews by competitors, current or former employees, or the owner",
+      "**Harassment, hate speech, obscenity** and offensive content",
+      "**Personal information** – e.g. naming an employee's private phone number or address",
+      "**Off-topic** content, **spam** and reviews meant for another business",
+      "**Impersonation, misinformation** and illegal content",
+    ] },
+    { t: "p", text: "A 1-star rating saying \"slow service, cold food\" from a real guest falls into none of these categories. That's why no honest provider will promise to remove every review. More detail: [Google review policy violations explained](/en/magazine/google-review-policy-violations/)." },
+
+    { t: "h2", id: "options", text: "6 legitimate ways to deal with a review you want gone", toc: "Your options" },
+    { t: "p", text: "Every legitimate route either **convinces Google** that a review breaks the rules or **changes the reviewer's mind**. Here they are, with honest pros and cons." },
+    { t: "p", text: "**1. Report the review.** In Google Maps, Search or your Business Profile, click \"Report review\" and choose the violation type. *Pro:* free and takes a minute. *Con:* reports are checked by automated systems and people, processing takes days to weeks, and many reports come back with \"no policy violation\". Step by step: [how to report a Google review](/en/magazine/how-to-delete-a-google-review/)." },
+    { t: "p", text: "**2. Appeal in the Reviews Management Tool.** The [Reviews Management Tool](https://support.google.com/business/workflow/9945796) shows the status of each reported review. If Google decides there's no violation, you can **appeal once per review**; an appeal may be escalated and then gets a final decision. *Pro:* a second, closer look. *Con:* only one shot – a weak appeal wastes it. Timelines: [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
+    { t: "p", text: "**3. Submit a legal removal request.** For defamation or other unlawful content, Google has a separate [legal removal form](https://support.google.com/legal/answer/3110420). *Pro:* covers content that may not break the content policy but does break the law. *Con:* you need to explain the legal problem precisely; for serious cases you'll usually want a lawyer ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
+    { t: "p", text: "**4. Politely ask a real customer to update their review.** If the reviewer is a genuine customer and you've since fixed the problem, you can ask – once, politely – whether they'd like to update their review. *Pro:* a revised review often reads better than a deleted one. *Con:* it only works with real, reachable customers – and you must **never offer a discount, refund or gift** in exchange. Incentives violate Google's policy." },
+    { t: "p", text: "**5. Reply publicly.** A calm, factual reply is always possible and shows prospects how you handle problems. *Pro:* free, immediate, works even when the review stays. *Con:* the review doesn't go away – and an angry reply can do more damage than the review itself. Guidance: [ignore, respond or remove?](/en/magazine/negative-review-ignore-respond-remove/)." },
+    { t: "p", text: "**6. Professional removal on a success basis.** A specialist submits reports and appeals on your behalf, using only Google's own procedures. *Pro:* experience with what Google accepts, no time spent on your side, and with RapidRemove **no payment unless the review is removed**. *Con:* it costs money, and it only works for reviews that genuinely break the rules." },
+    { t: "table", rrCol: 5, head: ["", "Report", "Appeal", "Legal request", "Ask customer", "Professional removal"], rows: [
+      ["Cost", "Free", "Free", "Free (lawyer extra)", "Free", "**$179 per removed review**"],
+      ["Review disappears?", "If Google agrees", "If Google agrees", "If legally justified", "Only if reviewer acts", "Only charged if yes"],
+      ["Your effort", "Low", "Medium", "High", "Low", "About 2 minutes"],
+      ["Typical duration", "Days to weeks", "Days to weeks", "Weeks or longer", "Uncertain", "A few days, up to 3 weeks"],
+    ] },
+    { t: "cta", title: "Pick the reviews that should go", text: "Search your business, tick the reviews and see the exact price instantly. **$179 per removed review**, nothing upfront – free assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Honest assessment first"] },
+
+    { t: "h2", id: "myths", text: "Myths: what does not work (or gets you in trouble)", toc: "Myths" },
+    { t: "p", text: "Most \"hacks\" for getting rid of Google reviews either don't work or violate Google's rules. These are the ones we hear most often." },
+    { t: "ul", items: [
+      "**\"Delete the profile and create a new one.\"** Reviews don't vanish cleanly this way. Creating a duplicate profile for the same business violates Google's guidelines and can lead to the profile being suspended or merged with the old one.",
+      "**\"Report it again and again – or ask friends to flag it.\"** Google checks the content against its policy; the number of reports isn't what decides. Mass flagging doesn't help, and reporting reviews just because you disagree is exactly what Google asks owners not to do.",
+      "**\"Bury it with positive reviews.\"** Buying reviews, writing them yourself or offering incentives for 5 stars is fake engagement under Google's policy. It can lead to reviews being removed and the profile being restricted.",
+      "**\"Review removal guaranteed.\"** Nobody controls Google's decisions. Be wary of guarantees combined with upfront payment, fake accounts, bots or fake legal notices – these methods put your profile at risk.",
+    ] },
+    { t: "warn", title: "Targeted by a 1-star wave plus a payment demand?", text: "That's review extortion. Don't pay, don't engage, keep screenshots and use Google's dedicated form. Details: [Google review extortion: what to do](/en/magazine/google-review-extortion/)." },
+
+    { t: "h2", id: "whole-profile", text: "Special case: deleting the whole Business Profile", toc: "Delete whole profile" },
+    { t: "p", text: "**Removing your entire Google Business Profile does remove all of its reviews – the good ones included.** That's the only situation in which reviews disappear without being judged one by one." },
+    { t: "p", text: "It makes sense when the profile is damaged across the board: dozens of negative reviews, a rating that no longer reflects your business, or a business that has changed so much that a genuine fresh start is the honest option. How that works and what to watch out for: [delete a Google Business Profile](/en/magazine/delete-google-business-profile/)." },
+    { t: "p", text: "If your profile is healthy overall and only **one or a few reviews** are unfair, fake or abusive, deleting the profile would be overkill. In that case, [removing single Google reviews](/en/remove-single-reviews/) keeps your good reviews and your rating history intact." },
+    { t: "table", head: ["Situation", "Better choice"], rows: [
+      ["Solid rating, 1–5 fake or abusive reviews", "Remove single reviews"],
+      ["Fresh review attack in the last few weeks", "Remove single reviews – quickly"],
+      ["Rating damaged across the board, fresh start wanted", "Delete the whole profile"],
+      ["Honest criticism from real customers", "Reply publicly and fix the cause"],
+    ] },
+
+    { t: "h2", id: "professional", text: "How professional removal works at RapidRemove", toc: "Professional removal" },
+    { t: "p", text: "We use **only Google's own procedures**, on behalf of the business owner – no fake accounts, no bots, no fake legal notices. The reviewer is not told who requested the removal." },
+    { t: "ul", items: [
+      "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
+      "**Price:** $179 per removed review; reviews older than 4 weeks cost $50 more ($229).",
+      "**Success chance:** approx. 90 % for reviews up to 4 weeks old, approx. 50 % for older ones.",
+      "**Volume discount** on the reviews we accept: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
+      "**Duration:** usually a few days, sometimes up to 3 weeks. You pay per review once it's gone, via a secure payment link.",
+    ] },
+    { t: "p", text: "Since 2023 we've removed more than 1,600 Google Business Profiles, run over 20,000 free profile checks and worked for clients in 50+ countries. Fake reviews in particular are worth acting on fast: [how to spot and remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
+    { t: "cta", title: "Find out which reviews can go", text: "Search your profile, tick the reviews – the price appears instantly. **You pay only for reviews that are actually removed.**", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Free assessment", "From $179 per review", "Discreet"] },
+  ],
+  faq: [
+    { q: "Can I delete a review on my own Google Business Profile?", a: "No. Business owners can't delete reviews – only the reviewer can edit or delete their own review. You can report a review that violates Google's policies, and Google may then remove it." },
+    { q: "Can Google remove a review if I ask?", a: "Only if the review violates Google's content policy or the law. Google won't remove a review just because you disagree with it. If your report is rejected, you can **appeal once** in the Reviews Management Tool." },
+    { q: "Does responding to a negative review hurt?", a: "No – a calm, factual reply doesn't hurt and shows prospects how you deal with problems. Avoid emotional replies and never reveal a customer's personal details." },
+    { q: "Can I find out who wrote an anonymous review?", a: "Generally not. Google doesn't disclose who is behind a review. In cases of clearly unlawful content, legal steps may be possible depending on the country – that's a question for a lawyer." },
+    { q: "Does deleting my Business Profile remove the reviews?", a: "Yes, deleting the whole profile removes all reviews – including the good ones. If only a few reviews are the problem, removing them individually is usually the better choice." },
+    { q: "Can I pay someone to remove a Google review?", a: "Yes, as long as only Google's own procedures are used. With RapidRemove it's **$179 per removed review** ($229 if older than 4 weeks), and you pay nothing if the review stays." },
+    { q: "Can I ask a customer to delete their review?", a: "You may politely ask a real customer to update their review if you've fixed the issue. Offering discounts, refunds or gifts in exchange violates Google's policy." },
+  ],
+  related: [
+    { label: "Google review removal service: price & success rate", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Delete a Google Business Profile", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "Google review policy violations explained", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
+    { label: "Negative review: ignore, respond or remove?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
+  ],
+};
+export default article;

@@ -1,0 +1,117 @@
+/* NL — google-bewertungsrichtlinien (article without German original; single-review product). */
+const article = {
+  category: "Reputatie",
+  meta: {
+    slug: "google-review-richtlijnen-schendingen",
+    title: "Google review richtlijnen: wat wordt verwijderd? (2026)",
+    h1: "Google review richtlijnen: welke schendingen leiden tot verwijdering?",
+    description: "Welke Google reviews schenden de richtlijnen en worden verwijderd? Categorieën, voorbeelden, juist melden en bezwaar maken. Vanaf € 179, alleen bij succes.",
+    keywords: ["google review richtlijnen", "google review verwijderen regels", "google review melden reden", "welke google reviews worden verwijderd", "google review schendt richtlijnen", "google review beleid", "ongepaste google review melden", "google review melden geen schending"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert en oprichter",
+    date: "2026-10-05",
+  },
+  dek: "Google verwijdert een review alleen als die **het beleid voor verboden en beperkte content schendt** of **de wet overtreedt** – bijvoorbeeld nepreviews, beledigingen, haatzaaiende taal, persoonsgegevens of reviews van concurrenten. Dat u het niet eens bent met een review, is **geen reden** voor verwijdering. Hieronder ziet u per categorie wat wel en niet telt, hoe u onder de juiste reden meldt en wat u doet als Google „geen schending” antwoordt.",
+  blocks: [
+    { t: "h2", id: "kort", text: "Kort antwoord: welke Google reviews worden verwijderd?", toc: "Kort antwoord" },
+    { t: "p", text: "Google verwijdert reviews die in strijd zijn met het [beleid voor verboden en beperkte content](https://support.google.com/contributionpolicy/answer/7400114) of met de wet. Een slechte score of harde kritiek van een echte klant is op zich **geen schending**." },
+    { t: "p", text: "Als bedrijf kunt u een review niet zelf verwijderen; alleen de schrijver kan zijn review bewerken of wissen ([kan een bedrijf Google reviews verwijderen?](/nl/magazine/kan-bedrijf-google-reviews-verwijderen/)). U kunt wel een review **melden**, in beroep gaan of een juridisch verzoek indienen. Wilt u dat niet zelf uitzoeken, dan regelt onze [service om een Google review te laten verwijderen](/nl/review-laten-verwijderen/) het via de eigen procedures van Google – en u betaalt alleen als de review echt weg is." },
+    { t: "ul", items: [
+      "**Wel verwijderbaar:** nep, niet-klanten, belangenconflict, beledigingen, haat, persoonsgegevens, spam, irrelevante inhoud, onwettige inhoud.",
+      "**Niet verwijderbaar:** eerlijke negatieve ervaringen, meningen („te duur”, „smaakte niet”), kritiek waar u het niet mee eens bent.",
+      "**Grijs gebied:** alleen sterren zonder tekst, oud-medewerkers, vermoedelijke concurrenten.",
+    ] },
+
+    { t: "h2", id: "categorieen", text: "Alle schendingen in één tabel – met voorbeelden", toc: "Categorieën" },
+    { t: "p", text: "Dit zijn de beleidscategorieën die bij reviews het vaakst een rol spelen. De laatste kolom is minstens zo belangrijk: daar ziet u wat Google **niet** als schending beschouwt." },
+    { t: "table", head: ["Categorie", "Wat het betekent", "Typisch verwijderbaar voorbeeld", "Geen schending"], rows: [
+      ["**Nepbetrokkenheid**", "Reviews die niet op een echte ervaring berusten: gekocht, geruild, met nepaccounts of in golven geplaatst", "Vijf 1-sterreviews in één nacht van accounts zonder andere activiteit", "Een echte klant die maar één review heeft geschreven"],
+      ["**Belangenconflict**", "Reviews over het eigen bedrijf, door (oud-)medewerkers of door concurrenten", "Een concurrent die uw zaak afkraakt en zijn eigen zaak aanprijst", "Een klant die ook eens bij de concurrent is geweest"],
+      ["**Irrelevant (off-topic)**", "Inhoud die niet over een ervaring met deze locatie gaat", "Politieke uitspraken, of een review die bedoeld was voor een ander bedrijf", "Kritiek op parkeren, wachttijd of bereikbaarheid van uw zaak"],
+      ["**Intimidatie**", "Persoonlijke aanvallen, bedreigingen of pesterijen tegen een persoon", "„Die eigenaar is een oplichter, ik weet waar hij woont”", "„Het personeel was onvriendelijk”"],
+      ["**Haatzaaiende taal**", "Aanvallen op basis van afkomst, religie, geslacht, geaardheid, handicap e.d.", "Discriminerende opmerkingen over medewerkers", "Scherpe, maar neutrale kritiek op de dienst"],
+      ["**Persoonsgegevens**", "Privégegevens van personen: telefoonnummers, adressen, gezondheid, volledige namen in negatieve context", "Een review met het privénummer of de woonplaats van een medewerker", "De voornaam van een medewerker in een normale review"],
+      ["**Obsceniteit en grof taalgebruik**", "Vloeken, scheldwoorden, grove of vulgaire taal", "Een review vol scheldwoorden", "„Slechtste ervaring ooit” zonder grove taal"],
+      ["**Imitatie**", "Zich uitgeven voor iemand anders, bijvoorbeeld een bekend persoon of het bedrijf zelf", "Een account met de naam van uw bedrijf dat negatieve reviews plaatst", "Een klant met een bijnaam als profielnaam"],
+      ["**Misinformatie**", "Aantoonbaar onjuiste, misleidende beweringen", "„Hier werkt niemand met een diploma” als dat aantoonbaar onjuist is", "„Ik vond het advies slecht” (mening)"],
+      ["**Spam en misleidende content**", "Reclame, links, herhaalde of nietszeggende inhoud, afpersing", "Een review met een link naar een ander bedrijf, of 1 ster plus een betalingseis", "Een korte, eerlijke review van één zin"],
+      ["**Illegale content**", "Inhoud die de wet overtreedt, zoals smaad of auteursrechtschending", "Een valse beschuldiging van een strafbaar feit", "Een eerlijk verslag van een slechte ervaring"],
+      ["**Seksueel expliciete content**", "Seksuele inhoud of afbeeldingen", "Expliciete tekst of foto's bij een review", "–"],
+      ["**Gevaarlijke content**", "Inhoud die schade, geweld of gevaarlijke activiteiten bevordert", "Oproepen tot geweld tegen de zaak of het personeel", "Een waarschuwing voor een echt veiligheidsprobleem"],
+    ] },
+    { t: "tip", title: "Nepreviews en afpersing", text: "Krijgt u ineens een golf 1-sterreviews, eventueel met een betalingseis? Dat valt onder nepbetrokkenheid of spam. Lees hoe u [valse Google reviews herkent](/nl/magazine/valse-google-reviews-verwijderen/) en wat u bij [afpersing via Google reviews](/nl/magazine/afpersing-google-reviews/) moet doen: niet betalen, niet reageren, screenshots bewaren." },
+
+    { t: "h2", id: "melden", text: "Zo meldt u een review onder de juiste categorie", toc: "Juist melden" },
+    { t: "p", text: "Meld de review via Google Maps, Google Zoeken of uw bedrijfsprofiel met **„Review melden”** en kies de reden die het **best** past. Een verkeerde categorie is een van de meest voorkomende redenen waarom een melding wordt afgewezen." },
+    { t: "ol", items: [
+      "**Open de review** in Google Maps, Zoeken of uw bedrijfsprofiel en kies „Review melden”.",
+      "**Kies één duidelijke reden.** Een concurrent? Belangenconflict. Scheldwoorden? Grof taalgebruik. Een nooit-klant met nepgolf? Nepbetrokkenheid of spam.",
+      "**Noteer de datum** van uw melding en maak een **screenshot** van de review.",
+      "**Volg de status** in de [Reviewbeheertool van Google](https://support.google.com/business/workflow/9945796): daar ziet u bijvoorbeeld „Beslissing in behandeling” of „Geen schending van het beleid”.",
+      "**Wacht af.** Meldingen worden door systemen en mensen beoordeeld; dat duurt dagen tot weken, zonder vaste termijn ([hoe lang duurt het?](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)).",
+    ] },
+    { t: "p", text: "**Bewijs dat helpt** – vooral bij een beroep of een juridisch verzoek:" },
+    { t: "ul", items: [
+      "Uit uw kassa-, boekings- of klantensysteem blijkt dat er **geen klant** met die naam of op die datum was.",
+      "**Screenshots** van de review, het reviewersprofiel en de tijdstippen (golven op hetzelfde moment).",
+      "Aanwijzingen voor een **concurrent of oud-medewerker**: naam, profielfoto, andere reviews van hetzelfde account.",
+      "**Berichten** met een betalingseis of bedreiging.",
+      "Bij onware beweringen: **documenten** die het tegendeel aantonen.",
+    ] },
+    { t: "cta", title: "Laat uw reviews gratis beoordelen", text: "Zoek uw bedrijf, vink de reviews aan die volgens u de regels schenden en zie direct de prijs. **€ 179 per verwijderde review**, alleen bij succes – niets vooraf.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
+
+    { t: "h2", id: "grijs", text: "Grijze gebieden: sterren zonder tekst, oud-medewerkers, concurrenten, prijsklachten", toc: "Grijze gebieden" },
+    { t: "p", text: "Niet elke vervelende review valt netjes in één categorie. Bij deze vier gevallen hangt het af van de details – en van wat u kunt aantonen." },
+    { t: "ul", items: [
+      "**Alleen sterren, geen tekst:** er is geen tekst die tegen het beleid kan ingaan, dus Google beoordeelt vooral de reviewer zelf. Was diegene nooit klant of past de review in een golf, dan zijn de kansen goed. Meer hierover: [1-sterreview zonder tekst verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/).",
+      "**Oud-medewerkers:** reviews van (oud-)medewerkers over hun werkgever vallen onder **belangenconflict**. Lastig is dat Google niet weet wie bij u gewerkt heeft – naam, inhoud over interne zaken en timing (vlak na een ontslag) helpen.",
+      "**Concurrenten:** ook een belangenconflict, maar alleen verwijderbaar als het aannemelijk is. Typische signalen: hetzelfde account prijst een concurrent in de buurt aan, of de review noemt hun aanbod als alternatief.",
+      "**Prijsklachten:** „veel te duur” van een echte klant is een **mening** en wordt niet verwijderd. Wordt er een onwaar feit genoemd („rekende € 200 voor niets”) terwijl u het tegendeel kunt bewijzen, dan kan misinformatie of een juridisch verzoek een optie zijn.",
+    ] },
+
+    { t: "h2", id: "niet", text: "Wat Google niet verwijdert", toc: "Niet verwijderbaar" },
+    { t: "p", text: "Google verwijdert **geen eerlijke kritiek van echte klanten**, ook niet als die hard, overdreven of oneerlijk aanvoelt. Google zegt zelf dat u een review niet moet melden alleen omdat u het er niet mee eens bent." },
+    { t: "ul", items: [
+      "Een echte negatieve ervaring („lang gewacht, eten was koud”).",
+      "Meningen en smaak („ongezellig”, „te duur”, „niet aan te raden”).",
+      "Kritiek op uw reactie of uw beleid (annuleringskosten, openingstijden).",
+      "Een lage score van een echte klant, ook zonder toelichting.",
+      "Reviews die u alleen onterecht vindt, zonder concrete schending.",
+    ] },
+    { t: "warn", title: "Geen trucs", text: "Nepaccounts, bots of valse juridische meldingen zijn geen oplossing en kunnen uw profiel schaden. Wij werken **uitsluitend via de procedures van Google**, namens de eigenaar van het bedrijf. Bij eerlijke kritiek is een rustige, openbare reactie de beste stap ([negeren, reageren of verwijderen?](/nl/magazine/negatieve-review-negeren-reageren-verwijderen/))." },
+
+    { t: "h2", id: "geen-schending", text: "Google zegt „geen schending” – wat nu?", toc: "Na afwijzing" },
+    { t: "p", text: "U kunt **één keer per review in beroep gaan** in de Reviewbeheertool. Daarna is de beslissing van Google definitief; een beroep kan op „Geëscaleerd” komen te staan voordat het eindoordeel volgt." },
+    { t: "ol", items: [
+      "**Controleer de categorie.** Was de oorspronkelijke reden de beste? Zo niet, onderbouw in uw beroep de categorie die echt past.",
+      "**Ga in beroep** via de [Reviewbeheertool](https://support.google.com/business/workflow/9945796) en voeg uw beste bewijs toe. Gebruik dit ene beroep zorgvuldig.",
+      "**Juridisch verzoek:** bij smaad of andere onwettige inhoud kunt u een [verzoek tot verwijdering om juridische redenen](https://support.google.com/legal/answer/3110420) indienen. Dat staat los van het reviewbeleid.",
+      "**Reageer openbaar en beleefd** zolang de review online staat. Lezers zien dan uw kant van het verhaal.",
+      "**Laat het beoordelen.** Wij kijken gratis of er nog een kans is – en zeggen het eerlijk als die er niet is. Twijfelt u tussen een advocaat en verwijdering? Lees [advocaat of technische verwijdering](/nl/magazine/negatieve-google-review-verwijderen-advocaat/).",
+    ] },
+
+    { t: "h2", id: "hulp", text: "Wanneer professionele hulp loont – en wat het kost", toc: "Prijs" },
+    { t: "p", text: "Hulp loont vooral bij **verse reviews**: tot 4 weken oud is de slagingskans ca. **90 %**, daarna ca. **50 %**. Via onze [Google review verwijderservice](/nl/review-laten-verwijderen/) betaalt u alleen voor reviews die echt verdwijnen." },
+    { t: "table", rrCol: 2, head: ["Leeftijd van de review", "Slagingskans", "Prijs per verwijderde review"], rows: [
+      ["Tot 4 weken", "ca. 90 %", "**€ 179**"],
+      ["Ouder dan 4 weken", "ca. 50 %", "**€ 229** (€ 179 + € 50)"],
+    ] },
+    { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Meestal duurt het een paar dagen, soms tot 3 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
+    { t: "cta", title: "Welke van uw reviews schenden de regels?", text: "Zoek uw profiel, vink de reviews aan en wij zeggen eerlijk welke verwijderbaar zijn. **Alleen betalen als de review echt weg is.**", btn: "Gratis laten beoordelen", href: "/nl/profiel-checken/?start=reviews", trust: ["Gratis beoordeling", "Alleen bij succes", "Alleen procedures van Google"] },
+  ],
+  faq: [
+    { q: "Welke Google reviews schenden de richtlijnen?", a: "Onder meer nepreviews, reviews van concurrenten of medewerkers (belangenconflict), irrelevante inhoud, intimidatie, haatzaaiende taal, persoonsgegevens, grof taalgebruik, imitatie, misinformatie, spam en onwettige inhoud. Zulke reviews kan Google verwijderen." },
+    { q: "Verwijdert Google een review als ik het er niet mee eens ben?", a: "Nee. Onenigheid alleen is **geen schending**. Eerlijke kritiek van echte klanten blijft staan; dan is een beleefde openbare reactie de beste stap." },
+    { q: "Is een 1-sterreview zonder tekst een schending?", a: "Niet automatisch. Was de reviewer nooit klant, of is de review deel van een nepgolf of een belangenconflict, dan zijn de kansen op verwijdering wel goed." },
+    { q: "Hoe vaak kan ik in beroep gaan tegen „geen schending”?", a: "**Eén keer per review**, in de Reviewbeheertool van Google. Na dat beroep is de beslissing definitief; bij onwettige inhoud blijft een juridisch verzoek mogelijk." },
+    { q: "Hoe lang duurt het voordat Google een gemelde review beoordeelt?", a: "Dat varieert van dagen tot weken; Google geeft geen vaste termijn. Bij ons duurt een verwijdering meestal een paar dagen, soms tot 3 weken." },
+    { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 179** per verwijderde review tot 4 weken oud, **€ 229** daarboven. U betaalt alleen als de review echt weg is – niets vooraf." },
+  ],
+  related: [
+    { label: "Google review laten verwijderen – prijs en bestellen", url: "/nl/review-laten-verwijderen/" },
+    { label: "Valse Google reviews herkennen, melden en verwijderen", url: "/nl/magazine/valse-google-reviews-verwijderen/" },
+    { label: "Een 1-sterreview zonder tekst verwijderen", url: "/nl/magazine/1-ster-review-zonder-tekst-verwijderen/" },
+    { label: "Hoe lang duurt het voordat Google een review verwijdert?", url: "/nl/magazine/hoe-lang-duurt-google-review-verwijderen/" },
+  ],
+};
+export default article;

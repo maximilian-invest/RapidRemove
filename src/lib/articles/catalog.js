@@ -61,6 +61,11 @@ const PUBLISH_DATES = {
   "kununu-bewertung-loeschen": "2026-07-14",
   "trustpilot-bewertung-loeschen": "2026-07-21",
   "einzelbewertung-loeschen-service": "2026-10-03",
+  "google-bewertungsrichtlinien": "2026-10-05",
+  "google-bewertung-loeschen-kosten": "2026-10-05",
+  "google-bewertung-loeschen-dauer": "2026-10-05",
+  "kann-man-google-bewertungen-loeschen": "2026-10-05",
+  "google-bewertung-erpressung": "2026-10-05",
 };
 export const dateFor = (deSlug) => PUBLISH_DATES[deSlug] || "2026-06-04";
 
@@ -189,6 +194,8 @@ export function resolveRelated(lang, relatedList) {
     // Flagship-Hub gibt es bislang nur auf Deutsch → in Fremdsprachen NICHT auf den
     // deutschen Artikel verlinken (P0.4). localizedPath liefert für nicht übersetzte
     // Artikel null → kein Cross-Language-Link, der Eintrag entfällt.
+    // Relative On-Site-Pfade (z. B. Landingpages) direkt durchreichen.
+    if (/^\/[a-z]{2}\//.test(r.url)) return { label: r.label, href: cleanHref(r.url) };
     if (slug === FLAGSHIP_SLUG) href = HUB_PATH[lang] || null;
     else if (DE_ARTICLES[slug] || TRANSLATION_ONLY[slug]) href = localizedPath(lang, slug);
     return href ? { label: r.label, href } : null;

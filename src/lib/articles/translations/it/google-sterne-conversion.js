@@ -44,7 +44,7 @@ const article = {
       "**Se il profilo è compromesso nella sua interezza**, un nuovo inizio pulito tramite la [cancellazione del profilo](/it/rivista/eliminare-profilo-attivita-google/) può essere più sensato che combattere per ogni singola stella.",
     ] },
 
-    { t: "cta", title: "Una media bassa sta facendo calare i tuoi clic?", text: "Inserisci il nome dell'attività – verifichiamo gratuitamente se e con quale rapidità è possibile rimuovere le recensioni problematiche.", btn: "Inizia l'analisi gratuita", href: "https://www.rapid-remove.com/", trust: ["Analisi gratuita", "Con garanzia", "Senza rischi"] },
+    { t: "cta", title: "Una media bassa sta facendo calare i tuoi clic?", text: "Inserisci il nome dell'attività – verifichiamo gratuitamente se e con quale rapidità è possibile rimuovere le recensioni problematiche.", btn: "Inizia l'analisi gratuita", href: "/it/rimuovere-una-recensione/", trust: ["Analisi gratuita", "Con garanzia", "Senza rischi"] },
 
     { t: "p", text: "**Fonti:** BrightLocal, Local Consumer Review Survey 2025 · Michael Luca, «Reviews, Reputation, and Revenue: The Case of Yelp.com» (Harvard Business School)." },
   ],

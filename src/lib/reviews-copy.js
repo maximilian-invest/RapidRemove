@@ -4,6 +4,9 @@
    Service-Hinweis-Block in den Bewertungs-Ratgeberartikeln.
    en/es/fr/it/nl/pt: freigegebene Handoff-Texte; ja/sv/da/no im selben Ton.
    KEIN Deutsch — das Produkt gibt es nicht in DACH. */
+import { RVW_SEO_A } from "@/lib/reviews-copy-seo-a";
+import { RVW_SEO_B } from "@/lib/reviews-copy-seo-b";
+
 export const RVW = {
   en: {
     eyebrow: "New service",
@@ -391,3 +394,6 @@ export const RVW = {
     demoName: "Din bedrift",
   },
 };
+
+// SEO-Ausbau (Okt 2026) der übrigen Sprachen einmischen (h1, faq, Richtlinien, Ablauf, Vergleich …).
+for (const src of [RVW_SEO_A, RVW_SEO_B]) for (const l of Object.keys(src)) Object.assign(RVW[l], src[l]);

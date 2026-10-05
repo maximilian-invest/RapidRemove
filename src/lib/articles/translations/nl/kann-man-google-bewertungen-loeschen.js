@@ -1,0 +1,118 @@
+/* NL — kann-man-google-bewertungen-loeschen (article without German original; single-review product). */
+const article = {
+  category: "Reputatie",
+  meta: {
+    slug: "kan-bedrijf-google-reviews-verwijderen",
+    title: "Kan een bedrijf Google-reviews verwijderen? (2026)",
+    h1: "Kunt u als bedrijf Google-reviews zelf verwijderen? Het eerlijke antwoord",
+    description: "Nee, zelf verwijderen kan niet – maar Google haalt reviews die regels of wet schenden wél weg. Alle legitieme opties, mythes en kosten (€ 179, pas na succes).",
+    keywords: ["google review verwijderen", "kan ik een google review verwijderen", "google review zelf verwijderen", "slechte google review verwijderen", "google recensie verwijderen", "negatieve review verwijderen google", "google review laten verwijderen"],
+    author: "Maximilian Hölzl",
+    authorRole: "Google-expert en oprichter",
+    date: "2026-10-05",
+  },
+  dek: "**Nee – als bedrijfseigenaar kunt u een Google-review niet zelf verwijderen.** Alleen de schrijver kan zijn eigen review bewerken of wissen. Maar reviews die **Googles richtlijnen of de wet schenden**, kan Google wél verwijderen: via een melding, een beroep in de Reviews Management Tool of een juridisch verzoek. In dit artikel ziet u precies wie wat kan verwijderen, welke opties echt werken – en welke u beter links laat liggen.",
+  blocks: [
+    { t: "h2", id: "kort", text: "Het korte antwoord", toc: "Kort antwoord" },
+    { t: "p", text: "**Een bedrijf heeft geen knop om reviews te verwijderen – ook niet in het eigen bedrijfsprofiel.** Dat is bewust zo: als eigenaren kritiek zelf konden wissen, zou geen enkele beoordeling nog iets betekenen. Wat u wel kunt: reageren, melden en een verwijdering aanvragen." },
+    { t: "p", text: "Verwijderd wordt een review in de praktijk op drie manieren: **de schrijver** wist hem zelf, **Google** haalt hem weg omdat hij de richtlijnen schendt, of hij moet weg omdat hij **onrechtmatig** is (bijvoorbeeld smaad). Voor alles wat daar niet onder valt – eerlijke, zakelijke kritiek van echte klanten – geldt: die blijft staan." },
+    { t: "ul", items: [
+      "**Melden** via Google Maps, Zoeken of uw bedrijfsprofiel („Review melden”).",
+      "**Beroep aantekenen** in de [Reviews Management Tool](https://support.google.com/business/workflow/9945796) als Google geen schending ziet – één keer per review.",
+      "**Juridisch verzoek** bij smaad of onrechtmatige inhoud via het [formulier voor juridische verwijdering](https://support.google.com/legal/answer/3110420).",
+    ] },
+    { t: "p", text: "Wilt u dit niet zelf uitzoeken? Een [Google-review-verwijderservice](/nl/review-laten-verwijderen/) zoals RapidRemove doorloopt precies deze officiële procedures namens u – en rekent pas af als de review echt weg is." },
+
+    { t: "h2", id: "wie", text: "Wie kan wat verwijderen?", toc: "Wie kan wat?" },
+    { t: "p", text: "**Er zijn precies vier partijen die een review kunnen laten verdwijnen – en de eigenaar is daar niet direct één van.** De tabel laat zien wie wat kan en wanneer dat realistisch is." },
+    { t: "table", head: ["Wie", "Kan verwijderen?", "Hoe", "Wanneer realistisch"], rows: [
+      ["**Schrijver van de review**", "Ja, altijd", "Eigen review bewerken of wissen in Google Maps", "Als het probleem is opgelost of het een misverstand was"],
+      ["**Bedrijfseigenaar**", "Nee", "Alleen melden, beroep aantekenen en openbaar reageren", "Nooit direct – alleen via Google"],
+      ["**Google**", "Ja", "Na melding, beroep of automatische controle", "Bij schending van de richtlijnen (nep, haat, spam, belangenconflict …)"],
+      ["**Rechter / juridische weg**", "Indirect", "Juridisch verzoek bij Google of rechterlijke uitspraak", "Bij smaad, onware feiten of andere onrechtmatige inhoud"],
+    ] },
+    { t: "p", text: "Belangrijk: Google houdt reviews soms ook **automatisch** tegen of verwijdert ze achteraf. Gemelde reviews worden door geautomatiseerde systemen én door mensen gecontroleerd. Hoe lang dat duurt, verschilt sterk – van enkele dagen tot weken ([meer over de doorlooptijd](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/))." },
+
+    { t: "h2", id: "regels", text: "Welke reviews Google wél verwijdert", toc: "Wat Google verwijdert" },
+    { t: "p", text: "**Google verwijdert een review alleen als die het [beleid voor verboden en beperkte inhoud](https://support.google.com/contributionpolicy/answer/7400114) schendt of onrechtmatig is.** Dat iemand ontevreden is, is daarvoor nooit genoeg – Google zegt zelf dat u een review niet moet melden alleen omdat u het er niet mee eens bent." },
+    { t: "ul", items: [
+      "**Nepbetrokkenheid:** reviews zonder echte klantervaring, gekochte of massaal geplaatste reviews ([valse reviews herkennen](/nl/magazine/valse-google-reviews-verwijderen/)).",
+      "**Belangenconflict:** reviews van concurrenten, (ex-)medewerkers of de eigenaar zelf.",
+      "**Off-topic en spam:** inhoud die niets met een klantervaring te maken heeft, of die over een ander bedrijf gaat.",
+      "**Intimidatie, haatzaaiende taal, scheldwoorden en aanstootgevende inhoud.**",
+      "**Persoonlijke gegevens**, zoals namen, telefoonnummers of adressen van medewerkers.",
+      "**Imitatie, misleiding** en illegale inhoud.",
+    ] },
+    { t: "p", text: "Alle categorieën met voorbeelden vindt u in ons overzicht van [Google-review-richtlijnen en schendingen](/nl/magazine/google-review-richtlijnen-schendingen/)." },
+
+    { t: "h2", id: "opties", text: "De legitieme opties – met eerlijke voor- en nadelen", toc: "Legitieme opties" },
+    { t: "p", text: "**U heeft zes legale manieren om met een vervelende review om te gaan – maar slechts een deel daarvan leidt echt tot verwijdering.** Welke past, hangt af van de vraag of de review de regels schendt of gewoon kritisch is." },
+    { t: "ol", items: [
+      "**Review melden bij Google.** Kies bij de review „Review melden” en het juiste type schending. Gratis en snel gedaan, maar Google wijst veel meldingen af als de schending niet duidelijk is.",
+      "**Beroep in de Reviews Management Tool.** Daar ziet u de status van uw meldingen („Beslissing in behandeling”, „Melding beoordeeld – geen schending” enz.). Bij een afwijzing kunt u **één keer per review** beroep aantekenen; dat kan worden „geëscaleerd” en eindigt met een definitieve beslissing.",
+      "**Juridisch verzoek tot verwijdering.** Voor smaad, onware feitelijke beweringen of andere onrechtmatige inhoud. Sterk bij echt onrechtmatige teksten, maar u moet precies onderbouwen waarom de inhoud onrechtmatig is.",
+      "**De klant vriendelijk vragen de review bij te werken.** Was het een echte klant en heeft u het probleem inmiddels opgelost? Dan mag u vragen of hij zijn review wil aanpassen. **Zonder tegenprestatie** – geen korting, geen cadeau, geen druk.",
+      "**Openbaar reageren.** Kan altijd, ook als de review blijft staan. Een rustige, zakelijke reactie laat toekomstige klanten zien hoe u met kritiek omgaat ([negeren, reageren of verwijderen?](/nl/magazine/negatieve-review-negeren-reageren-verwijderen/)).",
+      "**Professionele verwijdering op succesbasis.** Een specialist beoordeelt eerst gratis of de review verwijderbaar is en doorloopt dan de officiële procedures namens u. U betaalt alleen als de review echt weg is.",
+    ] },
+    { t: "table", head: ["Optie", "Voordelen", "Nadelen"], rows: [
+      ["Zelf melden", "Gratis, direct mogelijk", "Vaak afgewezen; geen controle over de uitkomst"],
+      ["Beroep (Reviews Management Tool)", "Tweede kans, met status-overzicht", "Slechts één beroep per review; doorlooptijd onzeker"],
+      ["Juridisch verzoek", "Sterk bij echt onrechtmatige inhoud", "Werkt alleen bij duidelijke rechtsschending; bewerkelijk"],
+      ["Klant vragen bij te werken", "Echte verbetering van uw beoordeling", "Alleen bij echte klanten; geen enkele beloning toegestaan"],
+      ["Openbaar reageren", "Altijd mogelijk, bouwt vertrouwen op", "De review blijft zichtbaar"],
+      ["Professionele verwijdering", "Ervaring met de procedures; **€ 179 per verwijderde review, pas na succes**", "Kost geld; eerlijke kritiek blijft ook dan staan"],
+    ] },
+    { t: "p", text: "Ter vergelijking: een advocaat rekent meestal vooraf en per uur – ook als de review uiteindelijk blijft staan ([advocaat of technische verwijdering?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/)). Een volledig kostenoverzicht vindt u in [wat kost het om een Google-review te laten verwijderen](/nl/magazine/kosten-google-review-verwijderen/)." },
+    { t: "cta", title: "Laat gratis beoordelen of uw review verwijderbaar is", text: "Zoek uw bedrijf, vink de reviews aan en zie direct de prijs: **€ 179 per verwijderde review** (ouder dan 4 weken € 229). Niets vooraf – u betaalt alleen als de review echt weg is.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Alleen officiële Google-procedures", "Eerst een eerlijke inschatting"] },
+
+    { t: "h2", id: "mythes", text: "Mythes en valkuilen: wat u beter niet doet", toc: "Mythes" },
+    { t: "p", text: "**Rond het verwijderen van Google-reviews circuleren veel „trucs” die niet werken – of uw profiel zelfs in gevaar brengen.** Dit zijn de vier hardnekkigste." },
+    { t: "ul", items: [
+      "**„Ik maak gewoon een nieuw profiel aan.”** Een profiel als „permanent gesloten” markeren verwijdert geen reviews – ze blijven zichtbaar. En een tweede profiel voor hetzelfde bedrijf op hetzelfde adres is een duplicaat; dat staat Google niet toe.",
+      "**„Als we de review met z'n allen melden, gaat hij weg.”** Massaal melden door collega's, familie of vrienden verandert niets aan de beoordeling: Google kijkt naar de inhoud, niet naar het aantal meldingen.",
+      "**„Ik koop wat positieve reviews of geef korting voor vijf sterren.”** Gekochte reviews en beloningen voor reviews zijn nepbetrokkenheid en schenden Googles beleid. Dat kan leiden tot verwijderde reviews of beperkingen voor uw profiel.",
+      "**„Gegarandeerde verwijdering, betaal vooraf.”** Niemand kan garanderen dat een review verdwijnt – de beslissing ligt altijd bij Google. Wie garantie belooft én vooraf geld vraagt, is een rood signaal. Betrouwbare aanbieders werken met **betaling pas na succes**.",
+    ] },
+    { t: "warn", title: "Afpersing met reviews? Niet betalen.", text: "Krijgt u een golf 1-sterrenreviews met daarbij een betalingseis, dan is dat afpersing. **Betaal niet, ga niet in gesprek, maak screenshots** en gebruik Googles [speciale formulier voor review-afpersing](https://support.google.com/business/answer/16404809). Meer daarover: [afpersing met Google-reviews](/nl/magazine/afpersing-google-reviews/)." },
+
+    { t: "h2", id: "profiel", text: "Speciaal geval: het hele bedrijfsprofiel verwijderen", toc: "Hele profiel verwijderen" },
+    { t: "p", text: "**Wordt het complete Google-bedrijfsprofiel verwijderd, dan verdwijnen alle reviews in één keer – ook de goede.** Dat is iets anders dan „permanent gesloten”: daarbij blijven vermelding en reviews gewoon zichtbaar. Hoe een echte verwijdering werkt, leest u in onze gids [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/)." },
+    { t: "table", head: ["Situatie", "Beste aanpak"], rows: [
+      ["Profiel is in principe goed, één of enkele reviews zijn vals of beledigend", "**Losse reviews verwijderen**"],
+      ["Echte, zakelijke kritiek van een klant", "**Openbaar reageren** en het probleem oplossen"],
+      ["Profiel zit vol oude nep- of wraakreviews en onjuiste gegevens", "**Hele profiel verwijderen**"],
+      ["U wilt voorgoed uit Google Maps verdwijnen of een echte nieuwe start", "**Hele profiel verwijderen**"],
+    ] },
+    { t: "p", text: "Heeft u een gezond profiel met veel goede beoordelingen, dan is het hele profiel verwijderen schieten met een kanon op een mug: u verliest ook al uw positieve reviews. In dat geval is [losse Google-reviews laten verwijderen](/nl/review-laten-verwijderen/) de gerichte oplossing." },
+
+    { t: "h2", id: "plan", text: "Wat u nu concreet doet", toc: "Stappenplan" },
+    { t: "p", text: "**Begin altijd met een nuchtere vraag: schendt deze review de regels of de wet – of is het gewoon kritiek?** Daarna volgt de rest vanzelf." },
+    { t: "ol", items: [
+      "**Bewijs veiligstellen:** maak een screenshot van de review, de datum en het profiel van de schrijver.",
+      "**Controleren:** is de schrijver een echte klant? Valt de inhoud onder een categorie van Googles beleid?",
+      "**Rustig reageren** – zakelijk, zonder persoonlijke gegevens en zonder beschuldigingen.",
+      "**Melden** met het juiste type schending en de status volgen in de Reviews Management Tool.",
+      "**Beroep aantekenen** als de melding wordt afgewezen – u heeft er maar één per review, dus onderbouw het goed.",
+      "**Snel handelen:** reviews tot 4 weken oud hebben bij ons een slagingskans van ca. 90 %, oudere ca. 50 %.",
+    ] },
+    { t: "p", text: "Sinds 2023 hebben wij meer dan **1.600 Google-bedrijfsprofielen** verwijderd en meer dan **20.000 profielen** gratis gecontroleerd, voor klanten in meer dan 50 landen (Trustpilot 5,0). Bij losse reviews werken we uitsluitend via Googles eigen procedures – zonder nepaccounts, bots of valse juridische meldingen, en de schrijver hoort niet wie de verwijdering heeft aangevraagd." },
+    { t: "cta", title: "Welke reviews kunnen weg? Zie het in 2 minuten", text: "Zoek uw profiel, vink de reviews aan en ontvang een eerlijke inschatting. Vanaf 3 geaccepteerde reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. **Betalen alleen per verwijderde review.**", btn: "Gratis inschatting starten", href: "/nl/profiel-checken/?start=reviews", trust: ["Betaling pas na verwijdering", "Meestal binnen enkele dagen", "Trustpilot 5,0"] },
+  ],
+  faq: [
+    { q: "Kan ik als eigenaar een Google-review zelf verwijderen?", a: "Nee. In het Google-bedrijfsprofiel is er geen verwijderknop voor reviews. U kunt een review alleen melden, beroep aantekenen of openbaar reageren – verwijderen kan alleen de schrijver zelf of Google." },
+    { q: "Welke Google-reviews worden verwijderd?", a: "Reviews die Googles beleid schenden – zoals nepreviews, belangenconflicten, haat, intimidatie, spam of persoonlijke gegevens – en onrechtmatige inhoud zoals smaad. **Eerlijke kritiek van echte klanten blijft staan.**" },
+    { q: "Wat gebeurt er als Google mijn melding afwijst?", a: "Dan kunt u in de Reviews Management Tool **één keer per review** beroep aantekenen. Het beroep kan worden geëscaleerd en eindigt met een definitieve beslissing van Google." },
+    { q: "Mag ik een klant vragen zijn review aan te passen?", a: "Ja, als het een echte klant is en u het probleem heeft opgelost. Bied daarvoor **geen korting, cadeau of andere beloning** aan – dat schendt Googles beleid." },
+    { q: "Verdwijnen reviews als ik mijn profiel op „permanent gesloten” zet?", a: "Nee. Bij „permanent gesloten” blijven vermelding en reviews zichtbaar. Alleen als het volledige bedrijfsprofiel wordt verwijderd, verdwijnen alle reviews – ook de goede." },
+    { q: "Wat kost het om een Google-review te laten verwijderen?", a: "Bij RapidRemove **€ 179 per verwijderde review**, € 229 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is; is hij niet verwijderbaar, dan kost het niets." },
+    { q: "Hoe lang duurt het voordat een review weg is?", a: "Meestal enkele dagen, soms tot 3 weken. Google geeft zelf geen gegarandeerde termijn – de beoordeling kan dagen tot weken duren." },
+  ],
+  related: [
+    { label: "Losse Google-reviews laten verwijderen", url: "/nl/review-laten-verwijderen/" },
+    { label: "Google-review-richtlijnen en schendingen", url: "/nl/magazine/google-review-richtlijnen-schendingen/" },
+    { label: "Hoe lang duurt het voordat Google een review verwijdert?", url: "/nl/magazine/hoe-lang-duurt-google-review-verwijderen/" },
+    { label: "Valse Google-reviews verwijderen", url: "/nl/magazine/valse-google-reviews-verwijderen/" },
+  ],
+};
+export default article;

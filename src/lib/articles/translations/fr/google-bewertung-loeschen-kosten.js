@@ -1,0 +1,115 @@
+/* FR — google-bewertung-loeschen-kosten (article without German original; single-review product). */
+const article = {
+  category: "Réputation",
+  meta: {
+    slug: "prix-suppression-avis-google",
+    title: "Prix pour supprimer un avis Google : combien ça coûte (2026)",
+    h1: "Combien coûte la suppression d'un avis Google ?",
+    description: "Combien coûte la suppression d'un avis Google ? Vous-même, avocat ou prestataire : comparatif. RapidRemove : 179 € par avis supprimé, payé au succès.",
+    keywords: ["prix suppression avis google", "combien coûte la suppression d'un avis google", "supprimer avis google prix", "payer pour supprimer un avis google", "supprimer un avis google gratuitement", "tarif suppression avis négatif google", "société suppression avis google prix"],
+    author: "Maximilian Hölzl",
+    authorRole: "Expert Google et fondateur",
+    date: "2026-10-05",
+  },
+  dek: "Signaler vous-même un avis Google est **gratuit**, mais Google refuse souvent le signalement. Les avocats facturent en général **à l'heure et d'avance**, que l'avis disparaisse ou non. Les prestataires de suppression sont très différents : certains facturent chaque tentative ou se font payer d'avance, d'autres n'affichent aucun prix. Chez RapidRemove, vous payez **179 € par avis supprimé** (+50 € s'il a plus de 4 semaines), et **uniquement une fois qu'il a vraiment disparu**.",
+  blocks: [
+    { t: "h2", id: "reponse-courte", text: "La réponse courte : combien coûte la suppression d'un avis Google", toc: "Réponse courte" },
+    { t: "p", text: "Supprimer un avis Google coûte de **0 € à plusieurs centaines d'euros**, selon qui s'en charge et comment il facture. La vraie question n'est pas le prix affiché, mais **qui supporte le risque** si l'avis reste en ligne." },
+    { t: "ul", items: [
+      "**Le signaler vous-même :** gratuit. Vous payez avec votre temps, et Google répond souvent par une décision type « aucun non-respect du règlement ».",
+      "**Avocat :** généralement facturé à l'heure, souvent avec une provision versée d'avance. Vous payez **quel que soit le résultat**.",
+      "**Prestataires payés d'avance :** des prix et des modèles très variables. Certains facturent chaque tentative ou avant tout travail, d'autres ne donnent un prix qu'après un appel commercial.",
+      "**RapidRemove :** **179 € par avis supprimé**, **229 €** si l'avis a plus de 4 semaines. Rien d'avance, aucun frais de tentative. Vous ne payez que les avis réellement supprimés.",
+    ] },
+    { t: "p", text: "Vous voulez simplement le prix pour vos avis ? Notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) l'affiche immédiatement dès que vous cochez les avis à faire retirer." },
+
+    { t: "h2", id: "comparatif", text: "Vous-même, avocat, prestataire payé d'avance ou paiement au succès", toc: "Comparatif" },
+    { t: "p", text: "Les quatre options se distinguent moins par ce qu'elles peuvent obtenir que par **la façon dont vous payez et ce qui se passe en cas d'échec**. Le récapitulatif :" },
+    { t: "table", rrCol: 4, head: ["Critère", "Signaler vous-même", "Avocat", "Prestataires payés d'avance", "RapidRemove"], rows: [
+      ["Mode de facturation", "Gratuit", "À l'heure, le plus souvent d'avance", "Par tentative ou d'avance ; prix souvent cachés", "**179 € par avis supprimé** (+50 € au-delà de 4 semaines)"],
+      ["Si l'avis reste", "Du temps perdu", "Vous payez quand même", "L'argent est généralement perdu", "**Vous ne payez rien**"],
+      ["Risque", "Coût faible, peu de succès", "Coût élevé, issue incertaine", "Payer pour rien", "**Aucun sur le coût**"],
+      ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "Quelques jours, jusqu'à 3 semaines"],
+      ["Effort pour vous", "Moyen (signalement, suivi, recours)", "Élevé (briefing, pièces, relances)", "Moyen", "Environ 2 minutes"],
+    ] },
+    { t: "p", text: "**Signaler l'avis vous-même** est la bonne première étape si vous avez du temps et une infraction évidente. Vous signalez l'avis dans Google Maps ou depuis votre fiche d'établissement, puis suivez son statut dans l'[outil de gestion des avis](https://support.google.com/business/workflow/9945796) de Google, où vous pouvez **faire appel une seule fois** si Google estime qu'il n'y a pas d'infraction. Pas à pas : [comment supprimer un avis Google vous-même](/fr/magazine/comment-supprimer-un-avis-google/)." },
+    { t: "p", text: "**Un avocat** est pertinent face à un contenu clairement illicite, comme la diffamation, surtout si vous voulez agir contre l'auteur. Google propose son propre [formulaire de suppression pour motif juridique](https://support.google.com/legal/answer/3110420). Le revers : honoraires horaires et provision font que vous payez avant de savoir si cela marchera ([avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/))." },
+    { t: "p", text: "**Les prestataires payés d'avance** vous font porter tout le risque. Si l'avis reste, l'argent est généralement dépensé. Lisez attentivement les conditions avant de payer qui que ce soit d'avance." },
+    { t: "p", text: "Un coût passe facilement inaperçu : **le temps**. Tant qu'un faux avis 1 étoile reste en haut de votre fiche, chaque prospect qui vous cherche sur Google le voit. Un signalement gratuit qui traîne pendant des semaines et se termine par un refus n'est pas vraiment gratuit s'il vous fait perdre des clients entre-temps." },
+
+    { t: "h2", id: "prix", text: "Les prix RapidRemove : 179 € par avis supprimé", toc: "Notre prix" },
+    { t: "p", text: "Vous payez **179 € pour chaque avis réellement supprimé**. Si l'avis a plus de 4 semaines, il coûte **229 €** (179 € + 50 €). Rien n'est facturé d'avance et il n'y a aucun frais de tentative." },
+    { t: "table", rrCol: 2, head: ["Âge de l'avis", "Chances de succès", "Prix par avis supprimé"], rows: [
+      ["Jusqu'à 4 semaines", "env. 90 %", "**179 €**"],
+      ["Plus de 4 semaines", "env. 50 %", "**229 €** (179 € + 50 €)"],
+    ] },
+    { t: "p", text: "Les avis plus anciens coûtent plus cher parce qu'ils sont **plus difficiles à faire supprimer** : les chances de succès passent d'environ 90 % à environ 50 %. Avant toute commande, vous recevez une **évaluation gratuite** et nous vous disons honnêtement si un avis a peu de chances. S'il n'est pas supprimable, il ne vous coûte rien." },
+    { t: "p", text: "Si plusieurs avis doivent disparaître, la **remise sur volume** s'applique automatiquement :" },
+    { t: "table", head: ["Avis acceptés après l'évaluation", "Remise sur chaque avis supprimé"], rows: [
+      ["1 – 2", "–"],
+      ["3 – 4", "**−10 %**"],
+      ["5 – 9", "**−15 %**"],
+      ["10 ou plus", "**−30 %**"],
+    ] },
+
+    { t: "h2", id: "exemples", text: "Exemples de prix : ce que vous payez pour 1, 3, 5 ou 10 avis", toc: "Exemples de prix" },
+    { t: "p", text: "Voici ce que coûtent des commandes typiques, arrondi à l'euro. « Récent » signifie jusqu'à 4 semaines, « ancien » plus de 4 semaines." },
+    { t: "table", rrCol: 2, head: ["Cas", "Calcul", "Vous payez"], rows: [
+      ["1 avis récent", "1 × 179 €", "**179 €**"],
+      ["1 avis ancien", "1 × 229 €", "**229 €**"],
+      ["3 avis récents", "3 × 179 € = 537 €, −10 %", "**483 €**"],
+      ["5 avis (2 récents, 3 anciens)", "358 € + 687 € = 1 045 €, −15 %", "**888 €**"],
+      ["10 avis (6 récents, 4 anciens)", "1 074 € + 916 € = 1 990 €, −30 %", "**1 393 €**"],
+      ["5 récents acceptés, 4 supprimés", "4 × 179 € = 716 €, −15 %", "**609 €**"],
+    ] },
+    { t: "p", text: "La dernière ligne résume l'essentiel : **vous ne payez que les avis supprimés**. Le palier de remise dépend du nombre d'avis que nous acceptons après l'évaluation gratuite, et il s'applique à chaque avis qui disparaît." },
+    { t: "cta", title: "Votre prix exact en 2 minutes", text: "Recherchez votre entreprise, cochez les avis à supprimer et voyez le total immédiatement, remise comprise. **179 € par avis supprimé**, rien d'avance.", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "Évaluation gratuite d'abord"] },
+
+    { t: "h2", id: "paiement", text: "Comment se passe le paiement : avis par avis", toc: "Paiement" },
+    { t: "p", text: "Vous payez **après** la suppression d'un avis, jamais avant. Dès qu'il a disparu, vous recevez un **lien de paiement sécurisé** pour cet avis." },
+    { t: "ul", items: [
+      "**Chaque avis tombe à un moment différent.** La suppression prend généralement quelques jours, parfois jusqu'à trois semaines ([délai de suppression chez Google](/fr/magazine/delai-suppression-avis-google/)).",
+      "Vous pouvez donc recevoir **un lien de paiement par avis** : vous réglez chacun dès qu'il est supprimé, pas tout le lot d'un coup.",
+      "Votre **remise sur volume est déjà incluse** dans chaque lien.",
+      "Vous préférez **PayPal ou un virement bancaire** ? C'est possible sur demande.",
+    ] },
+    { t: "tip", title: "Aucune facture pour les avis qui restent", text: "Si un avis ne peut pas être supprimé, vous ne recevez tout simplement pas de lien de paiement pour lui. Rien à annuler, rien à réclamer." },
+
+    { t: "h2", id: "signaux-alerte", text: "Signaux d'alerte pour choisir un prestataire", toc: "Signaux d'alerte" },
+    { t: "p", text: "Un prix bas ne vaut rien si le prestataire utilise des méthodes qui mettent votre fiche en danger. Méfiez-vous si vous voyez l'un de ces signaux :" },
+    { t: "ul", items: [
+      "**« Suppression garantie » :** seul Google décide si un avis est retiré. Personne ne peut honnêtement le garantir.",
+      "**Paiement intégral d'avance ou frais par tentative :** vous portez tout le risque, même si rien ne se passe.",
+      "**Aucun prix affiché :** si l'on ne vous donne un chiffre qu'après un appel commercial, comparez attentivement.",
+      "**Faux comptes, bots ou signalements en masse :** ils enfreignent les règles de Google et peuvent se retourner contre votre propre fiche.",
+      "**Fausses mises en demeure :** inventer des plaintes juridiques pour faire pression sur Google ou l'auteur est un vrai problème, pas un raccourci.",
+      "**Acheter des avis positifs pour noyer les négatifs :** c'est de l'engagement factice selon le [règlement de contenu de Google](https://support.google.com/contributionpolicy/answer/7400114), et cela met votre fiche en danger.",
+    ] },
+    { t: "p", text: "RapidRemove passe **uniquement par les procédures officielles de Google**, pour le compte du propriétaire de l'établissement. L'auteur de l'avis n'apprend pas qui a demandé la suppression. Et si vous subissez une vague d'avis 1 étoile accompagnée d'une demande d'argent, c'est un autre cas : [que faire face au chantage aux avis Google](/fr/magazine/chantage-avis-google/)." },
+
+    { t: "h2", id: "rentable", text: "Quand vaut-il la peine de payer pour supprimer un avis ?", toc: "Est-ce rentable ?" },
+    { t: "p", text: "Payer a du sens quand un avis est **injuste et vous fait perdre des clients** : un faux avis, une insulte, une étoile laissée par quelqu'un qui n'a jamais été client. Moins votre fiche compte d'avis, plus chacun pèse sur votre note." },
+    { t: "ul", items: [
+      "**Rentable :** faux avis ou avis injurieux, avis de non-clients, attaques de concurrents ([repérer les faux avis](/fr/magazine/supprimer-faux-avis-google/)). Surtout s'ils sont **récents** : moins chers et avec de meilleures chances.",
+      "**Essayez d'abord la voie gratuite :** si vous avez le temps et que l'infraction est évidente, signalez l'avis vous-même et utilisez le recours.",
+      "**Pas un cas de suppression :** une critique honnête d'un vrai client. Répondez publiquement et poliment ([ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/)).",
+    ] },
+    { t: "p", text: "Pour mettre 179 € en regard de ce que l'avis coûte à votre activité, lisez [combien coûte réellement un mauvais avis Google](/fr/magazine/combien-coute-mauvais-avis-google/). Depuis 2023, notre équipe a supprimé plus de **1 600 fiches d'établissement Google** pour des clients dans plus de 50 pays, et nous appliquons la même méthode aux avis individuels avec notre [service pour supprimer un avis Google](/fr/supprimer-un-avis/)." },
+  ],
+  faq: [
+    { q: "Est-ce gratuit de supprimer un avis Google ?", a: "Signaler un avis à Google vous-même est gratuit, et vous pouvez faire appel une fois dans l'outil de gestion des avis. Mais Google refuse souvent les signalements. Avec RapidRemove, vous payez **179 € par avis, uniquement s'il est supprimé**." },
+    { q: "Est-ce que je paie si l'avis n'est pas supprimé ?", a: "Non. Il n'y a ni paiement d'avance ni frais de tentative. Vous ne payez que les avis qui ont réellement disparu." },
+    { q: "Pourquoi les avis anciens coûtent-ils plus cher ?", a: "Les avis de plus de 4 semaines sont plus difficiles à faire supprimer : les chances de succès passent d'environ 90 % à environ 50 %. C'est pourquoi ils coûtent **50 € de plus** (229 € au lieu de 179 €)." },
+    { q: "Y a-t-il une remise pour plusieurs avis ?", a: "Oui. Dès 3 avis acceptés, vous avez 10 % de remise, dès 5 avis 15 % et dès 10 avis 30 %. La remise s'applique à chaque avis supprimé." },
+    { q: "Puis-je payer par PayPal ou par virement ?", a: "Oui. Par défaut, vous recevez un lien de paiement sécurisé après la suppression ; PayPal ou virement bancaire sont possibles sur demande." },
+    { q: "Pourquoi ai-je reçu plusieurs liens de paiement ?", a: "Les avis sont supprimés à des moments différents, vous pouvez donc recevoir **un lien de paiement par avis**. Vous réglez chacun dès qu'il a disparu." },
+    { q: "Combien coûte un avocat pour supprimer un avis Google ?", a: "Les avocats facturent généralement à l'heure, souvent avec une provision d'avance, et vous payez que l'avis soit supprimé ou non. Le montant exact dépend du cabinet et du dossier." },
+  ],
+  related: [
+    { label: "Service de suppression d'avis Google : prix et commande", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
+    { label: "Combien coûte un mauvais avis Google ?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
+    { label: "Avocat ou suppression technique ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Combien de temps Google met-il pour supprimer un avis ?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },
+  ],
+};
+export default article;
