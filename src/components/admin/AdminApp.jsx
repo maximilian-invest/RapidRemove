@@ -1098,8 +1098,18 @@ function Orders({ orders, openOrder, query, setQuery }) {
   const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
   const [filter, setFilter] = React.useState("offen");
   const [assignee, setAssignee] = React.useState("all"); // Betreuer-Filter (Max/Matthias/nicht zugewiesen)
-  // Zuerst nach Betreuer eingrenzen – Zähler UND Liste beziehen sich danach auf diese Auswahl.
-  const scoped = orders.filter((o) => (assignee === "all" ? true : assignee === "none" ? !o.assignee : o.assignee === assignee));
+  const [svc, setSvc] = React.useState("all"); // Service-Typ: alle / Bewertungen / Profile
+  // 1) nach Betreuer eingrenzen.
+  const scopedA = orders.filter((o) => (assignee === "all" ? true : assignee === "none" ? !o.assignee : o.assignee === assignee));
+  // Service-Typ-Reiter (Zähler aus der Betreuer-Auswahl, unabhängig vom Status-Reiter):
+  // „Bewertungen" = Einzelbewertungs-Aufträge (service = reviews), „Profile" = alles andere.
+  const svcTabs = [
+    ["all", "Alle", scopedA.length],
+    ["reviews", "Bewertungen", scopedA.filter((o) => o.service === "reviews").length],
+    ["profile", "Profile", scopedA.filter((o) => o.service !== "reviews").length],
+  ];
+  // 2) zusätzlich nach Service-Typ eingrenzen → treibt Status-Zähler UND Liste.
+  const scoped = scopedA.filter((o) => (svc === "all" ? true : svc === "reviews" ? o.service === "reviews" : o.service !== "reviews"));
   const inkassoOrders = scoped.filter((o) => isInkasso(o, now));
   const filters = [
     ["offen", "Offen", scoped.filter(isOffenOrder).length],
@@ -1145,6 +1155,11 @@ function Orders({ orders, openOrder, query, setQuery }) {
           <button key={id} className={"m-chip" + (filter === id ? " on" : "")} onClick={() => setFilter(id)}>{label} <span className="ct">{n}</span></button>
         ))}
       </div>
+      <div className="m-chips" style={{ marginTop: 8 }}>
+        {svcTabs.map(([id, label, n]) => (
+          <button key={id} className={"m-chip" + (svc === id ? " on" : "")} onClick={() => setSvc(id)}>{label} <span className="ct">{n}</span></button>
+        ))}
+      </div>
       {list.length ? (
         <div className="m-list">{list.map((o) => <OrderRow key={o.id} o={o} now={now} onClick={() => openOrder(o)} />)}</div>
       ) : (
@@ -1170,6 +1185,14 @@ function Orders({ orders, openOrder, query, setQuery }) {
             </select>
             <button className="btn btn-sec btn-sm"><AI.download /> Export</button>
           </div>
+        </div>
+        {/* Zweite Reiter-Reihe: Service-Typ (Alle / Bewertungen / Profile) */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, padding: "11px 22px", borderBottom: "1px solid var(--hairline)", background: "#faf8f6" }}>
+          {svcTabs.map(([id, label, n]) => (
+            <button key={id} className={"chipf" + (svc === id ? " on" : "")} onClick={() => setSvc(id)}>
+              {label} <span className="ct">{n}</span>
+            </button>
+          ))}
         </div>
         {list.length ? (
           <table className="tbl">
