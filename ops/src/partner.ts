@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
-import { partnerStatusChanged } from "./customers";
+import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 
@@ -110,6 +110,8 @@ function partnerView(r: Row) {
     id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
+    // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
+    sw: r.status === "software" ? "pending" : (r.status === "working" && (r.admin_note || "").includes(SW_NOTE_PAID) ? "paid" : null),
   };
 }
 function adminView(r: Row) {
@@ -345,6 +347,23 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       void notifyTeam(`Partner: ${changedCodes.length}× ${LABEL[status]}`, changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`);
     }
     return { ok: true, tasks, skipped };
+  });
+
+  // Partner bestätigt den Zahlungseingang (einzeln oder „Mark all paid") → Sammelposten wie im Admin.
+  app.post("/partner/mark-paid", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 1000);
+    const r = b.all === true
+      ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE status='removed' AND paid_at IS NULL`)
+      : ids.length ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL`, [ids]) : { rows: [] as { id: string; price_usd: string }[] };
+    if (!r.rows.length) return reply.code(400).send({ ok: false, error: "nothing to mark" });
+    const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
+    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, "vom Partner als bezahlt bestätigt"]);
+    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
+    void notifyTeam(`Partner: ${r.rows.length}× als bezahlt bestätigt`, `$${amount}`, `${SITE_URL}/admin`);
+    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
   });
 
   // Erste Aktion ohne Statuswechsel (Bewertung geöffnet, Link kopiert) → Kunde nicht mehr „NEW".

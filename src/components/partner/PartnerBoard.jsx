@@ -8,10 +8,10 @@ import React from "react";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
 import PartnerDesktop from "./PartnerDesktop";
-import PartnerMobile from "./PartnerMobile";
+import PartnerApp from "./PartnerApp";
 
 const KEY = "rr_partner_t";
-const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap";
+const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
 const MOBILE_Q = "(max-width: 860px)";
 
 export default function PartnerBoard() {
@@ -136,6 +136,26 @@ export default function PartnerBoard() {
     return ids;
   }, [patch, flush, enqueue, token, showToast, load, undoMs, isMobile]);
 
+  /** Partner confirms a payout (per review or all). Committed after the undo window like status changes. */
+  const markPaid = React.useCallback((idsIn) => {
+    const ts = tasksRef.current || [];
+    const ids = idsIn.filter((id) => { const t = ts.find((x) => x.id === id); return t && t.status === "removed" && !t.paid; });
+    if (!ids.length) return [];
+    flush();
+    patch(ids, () => ({ paid: true }));
+    const run = (keepalive) => enqueue(() => call("mark-paid", { t: token, ids }, keepalive).catch((e) => { showToast("Could not save: " + e.message); load(true); }));
+    const mine = { run, timer: null };
+    mine.timer = setTimeout(() => { if (pending.current === mine) flush(); }, undoMs);
+    pending.current = mine;
+    const sumUsd = ids.reduce((s, id) => s + (ts.find((x) => x.id === id).price || 0), 0);
+    showToast(ids.length === 1 ? `${ts.find((x) => x.id === ids[0]).code} marked as paid` : `${ids.length} marked as paid · $${sumUsd.toLocaleString("en-US")}`, () => {
+      if (pending.current !== mine) return;
+      clearTimeout(mine.timer); pending.current = null;
+      patch(ids, () => ({ paid: false }));
+    }, undoMs);
+    return ids;
+  }, [flush, patch, enqueue, token, showToast, load, undoMs]);
+
   const copyText = (txt) => { try { navigator.clipboard.writeText(txt); } catch (e) {} };
   const copyLinks = React.useCallback((ids, header) => {
     const ts = tasksRef.current || [];
@@ -190,7 +210,7 @@ export default function PartnerBoard() {
 
   const api = {
     tasks, all, err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
-    toast, closeToast, showToast, setMany, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush,
+    toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,
   };
-  return isMobile ? <PartnerMobile api={api} /> : <PartnerDesktop api={api} />;
+  return isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />;
 }

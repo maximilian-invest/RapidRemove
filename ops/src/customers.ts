@@ -118,7 +118,7 @@ export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id"
   return id;
 }
 
-const SW_NOTE_PAID = "Kunde hat die Software-Anzahlung bezahlt (Dashboard) → bitte starten";
+export const SW_NOTE_PAID = "Kunde hat die Software-Anzahlung bezahlt (Dashboard) → bitte starten";
 const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
 

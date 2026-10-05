@@ -46,6 +46,8 @@ export const since = (ms) => {
 };
 export const pillLabel = (t) => {
   if (t.status === "removed" && t.paid) return "Paid";
+  if (t.status === "software") return "Software · waiting for customer";
+  if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   return (STATUS[t.status] || STATUS.new).l;
 };
@@ -60,6 +62,7 @@ export function norm(t) {
     price: Number(t.price || 0), old: t.kind === "old", nt: t.kind === "nt", status: toUi(t.status), paid: !!t.paid,
     note: t.note || "", created: t.created ? new Date(t.created).getTime() : 0, touched: !!t.touched,
     workingSince: t.workingSince ? new Date(t.workingSince).getTime() : null,
+    sw: t.sw || null, // 'pending' = waiting for the customer · 'paid' = customer prepaid, start now
   };
 }
 
