@@ -195,7 +195,7 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
   try {
     const amt = Number(obj?.amount_paid ?? obj?.amount_total ?? obj?.total ?? 0) / 100;
     // Nur beim Checkout zählen (invoice.paid derselben Zahlung würde sonst eine zweite gleich hohe Zahlung abhaken).
-    const hit = source === "checkout.session.completed" ? await markReviewPaymentPaid(email, amt) : null;
+    const hit = source === "checkout.session.completed" ? await markReviewPaymentPaid(email, amt, obj?.client_reference_id) : null;
     if (hit) {
       const lbl: Record<string, string> = { deposit: "Anzahlung (ohne Text)", software: "Anzahlung Spezial-Software", invoice: "Rechnung" };
       await insertEvent({ orderId: hit.orderId, type: "pay", title: `Bezahlt: ${lbl[hit.kind] || hit.kind}`, detail: `${amt} ${String(obj?.currency || "").toUpperCase()} via Stripe (${email})`, auto: true });

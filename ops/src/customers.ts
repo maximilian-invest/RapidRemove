@@ -10,7 +10,11 @@
  */
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { pool, setOrderRawField } from "./db";
+import { pool, setOrderRawField, insertEvent } from "./db";
+import { notifyTeam } from "./notify";
+import { ensureReviewsAmountLink } from "./reviewsSetup";
+import { hasSecretKey } from "./integrations/stripe";
+import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, REVIEW_NOTEXT_HALF } from "./reviewsPricing";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 export const DASH_URL = `${SITE_URL}/my-reviews`;
@@ -92,69 +96,213 @@ async function sessionEmail(token: unknown): Promise<string | null> {
 }
 
 /* ---- Zahlungen (raw.reviewsPayments) ---- */
-export type CustPayment = { id: string; kind: "deposit" | "software" | "invoice"; amount: number; cur: string; url: string; n?: number; keys?: string[]; created: string; paid?: string | null };
-export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id" | "created" | "paid">): Promise<void> {
-  if (!pool || !orderId || !p.url) return;
+export type PayRef = { o: string; k: string };
+export type CustPayment = {
+  id: string; kind: "deposit" | "software" | "invoice"; amount: number; cur: string; url: string; n?: number;
+  keys?: string[];      // Bewertungen DIESES Auftrags, die die Zahlung abdeckt
+  refs?: PayRef[];      // Bewertungen ANDERER Aufträge desselben Kunden (Dashboard: „alles zahlen")
+  via?: "dashboard" | "admin";
+  created: string; paid?: string | null;
+};
+export const newPayId = () => crypto.randomBytes(6).toString("hex");
+/** Stripe-Payment-Link mit eindeutiger Zuordnung (client_reference_id landet in checkout.session.completed). */
+export const withRef = (url: string, id: string) => (url ? `${url}${url.includes("?") ? "&" : "?"}client_reference_id=rr_${id}` : url);
+
+export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id" | "created" | "paid"> & { id?: string }): Promise<string | null> {
+  if (!pool || !orderId || !p.url) return null;
   const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [orderId]);
   const list: CustPayment[] = Array.isArray(r.rows[0]?.raw?.reviewsPayments) ? r.rows[0].raw.reviewsPayments : [];
-  list.push({ ...p, id: crypto.randomBytes(5).toString("hex"), created: new Date().toISOString(), paid: null });
-  await setOrderRawField(orderId, "reviewsPayments", list.slice(-30));
+  const id = p.id || newPayId();
+  list.push({ ...p, id, created: new Date().toISOString(), paid: null });
+  await setOrderRawField(orderId, "reviewsPayments", list.slice(-40));
+  return id;
 }
-/** Stripe-Zahlung (E-Mail + Betrag) der passenden offenen Zahlung eines Bewertungs-Auftrags zuordnen. */
-export async function markReviewPaymentPaid(email: string, amountMajor: number): Promise<{ orderId: string; kind: string } | null> {
-  if (!pool || !email || !amountMajor) return null;
-  const r = await pool.query(
-    `SELECT id, raw FROM orders WHERE lower(email)=lower($1) AND service='reviews' AND raw ? 'reviewsPayments' ORDER BY created_at DESC LIMIT 10`,
-    [email],
-  );
-  for (const row of r.rows) {
-    const list: CustPayment[] = Array.isArray(row.raw?.reviewsPayments) ? row.raw.reviewsPayments : [];
-    const hit = list.find((p) => !p.paid && Math.abs(Number(p.amount) - amountMajor) < 0.01);
+
+const SW_NOTE_PAID = "Kunde hat die Software-Anzahlung bezahlt (Dashboard) → bitte starten";
+const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
+const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
+
+async function rawOf(orderId: string): Promise<Record<string, unknown> | null> {
+  if (!pool) return null;
+  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [orderId]);
+  return r.rows[0] ? ((r.rows[0].raw || {}) as Record<string, unknown>) : null;
+}
+type Decision = { d: "accepted" | "declined"; at: string };
+async function setDecisions(orderId: string, keys: string[], d: Decision["d"]): Promise<void> {
+  const raw = await rawOf(orderId);
+  if (!raw) return;
+  const dec = { ...((raw.reviewsSwDecision as Record<string, Decision>) || {}) };
+  for (const k of keys) dec[k] = { d, at: new Date().toISOString() };
+  await setOrderRawField(orderId, "reviewsSwDecision", dec);
+}
+async function addPaidKeys(orderId: string, keys: string[]): Promise<void> {
+  const raw = await rawOf(orderId);
+  if (!raw || !keys.length) return;
+  const prev: string[] = Array.isArray(raw.reviewsPaidKeys) ? (raw.reviewsPaidKeys as string[]) : [];
+  await setOrderRawField(orderId, "reviewsPaidKeys", [...new Set([...prev, ...keys])]);
+}
+
+/** Bezahlte Dashboard-/Admin-Zahlung umsetzen: Rechnung → Bewertungen bezahlt; Software → angenommen + Partner-Aufgabe auf „Working". */
+async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
+  if (!pool) return;
+  const groups = new Map<string, string[]>();
+  const add = (o: string, k: string) => { if (!groups.has(o)) groups.set(o, []); groups.get(o)!.push(k); };
+  for (const k of p.keys || []) add(orderId, k);
+  for (const r of p.refs || []) add(r.o, r.k);
+  if (p.kind === "software" && !groups.size) {
+    // Alt-Zahlung (Startbestätigung) ohne Schlüssel → alle Software-Bewertungen des Auftrags.
+    const raw = await rawOf(orderId);
+    for (const it of (Array.isArray(raw?.reviewsSoftware) ? (raw!.reviewsSoftware as Item[]) : [])) add(orderId, keyOf(it));
+  }
+  if (p.kind === "invoice") { for (const [o, ks] of groups) await addPaidKeys(o, ks); return; }
+  if (p.kind !== "software") return;
+  let n = 0;
+  for (const [o, ks] of groups) {
+    await setDecisions(o, ks, "accepted");
+    const u = await pool.query(
+      `UPDATE partner_tasks SET status='working', working_since=now(), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL, ${appendNote("admin_note", 3)}
+        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible','cancelled')`,
+      [o, ks, SW_NOTE_PAID],
+    ).catch(() => ({ rowCount: 0 }));
+    n += ks.length;
+    await insertEvent({ orderId: o, type: "note", title: "Kunde: Software-Anzahlung bezahlt", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) → Working (${u.rowCount ?? 0})`, auto: true }).catch(() => {});
+  }
+  if (n) void notifyTeam(`💳 Software-Anzahlung bezahlt`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner-Aufgabe steht auf Working`, `${SITE_URL}/admin`);
+}
+
+/** Stripe-Zahlung der passenden offenen Zahlung zuordnen: zuerst über client_reference_id (rr_<id>), sonst E-Mail + Betrag. */
+export async function markReviewPaymentPaid(email: string, amountMajor: number, ref?: string | null): Promise<{ orderId: string; kind: string } | null> {
+  if (!pool) return null;
+  const m = /^rr_([a-f0-9]{8,16})$/.exec(String(ref || ""));
+  let rows: { id: string; raw: Record<string, unknown> }[] = [];
+  if (m) {
+    const r = await pool.query(`SELECT id, raw FROM orders WHERE raw->'reviewsPayments' @> $1::jsonb LIMIT 1`, [JSON.stringify([{ id: m[1] }])]);
+    rows = r.rows;
+  }
+  if (!rows.length && email && amountMajor) {
+    const r = await pool.query(
+      `SELECT id, raw FROM orders WHERE lower(email)=lower($1) AND service='reviews' AND raw ? 'reviewsPayments' ORDER BY created_at DESC LIMIT 10`,
+      [email],
+    );
+    rows = r.rows;
+  }
+  for (const row of rows) {
+    const list: CustPayment[] = Array.isArray(row.raw?.reviewsPayments) ? (row.raw.reviewsPayments as CustPayment[]) : [];
+    const hit = m && list.some((p) => p.id === m[1])
+      ? list.find((p) => p.id === m[1] && !p.paid)
+      : list.find((p) => !p.paid && Math.abs(Number(p.amount) - amountMajor) < 0.01);
     if (hit) {
       hit.paid = new Date().toISOString();
       await setOrderRawField(row.id, "reviewsPayments", list);
+      await applyPaid(row.id, hit).catch(() => {});
       return { orderId: row.id, kind: hit.kind };
     }
   }
   return null;
 }
 
+/** Admin hat den Auftrag manuell als bezahlt markiert (PayPal/Wise …) → abgerechnete Bewertungen gelten als bezahlt. */
+export async function markOrderReviewsPaidManual(orderId: string): Promise<void> {
+  const raw = await rawOf(orderId);
+  if (!raw || !Array.isArray(raw.reviewItems)) return;
+  const list: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
+  const keys = new Set<string>();
+  for (const p of list) if (p.kind === "invoice" && !p.paid) { p.paid = new Date().toISOString(); (p.keys || []).forEach((k) => keys.add(k)); }
+  const rem: Item[] = Array.isArray(raw.reviewsRemovedAll) ? (raw.reviewsRemovedAll as Item[]) : [];
+  rem.forEach((it) => keys.add(keyOf(it)));
+  await setOrderRawField(orderId, "reviewsPayments", list);
+  await addPaidKeys(orderId, [...keys]);
+}
+
 /* ---- Status je Bewertung (für das Dashboard) ---- */
 type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
-const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
-export type ItemStatus = "checking" | "in_progress" | "removed" | "not_removable" | "software_offer" | "software_in_progress" | "cancelled";
+export const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
+/** Kunden-Status (Design-Handoff „Customer Dashboard"). */
+export type ItemStatus = "new" | "working" | "removed" | "notpossible" | "software" | "sw_accepted" | "sw_declined" | "cancelled";
+type PT = { status: string; since: string | null };
+type OrderRow = { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null };
 
-function orderView(o: { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null }, partner: Map<string, string> = new Map()) {
+function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const raw = (o.raw || {}) as Record<string, unknown>;
   const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
   const accepted: Item[] | null = Array.isArray(raw.reviewsAccepted) ? (raw.reviewsAccepted as Item[]) : null;
   const software: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
   const removed: Item[] = Array.isArray(raw.reviewsRemovedAll) ? (raw.reviewsRemovedAll as Item[]) : Array.isArray(raw.reviewsRemoved) ? (raw.reviewsRemoved as Item[]) : [];
   const payments: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
+  const decisions = ((raw.reviewsSwDecision as Record<string, Decision>) || {});
+  const paidKeys = new Set<string>(Array.isArray(raw.reviewsPaidKeys) ? (raw.reviewsPaidKeys as string[]) : []);
   const acc = new Set((accepted || []).map(keyOf));
   const sw = new Set(software.map(keyOf));
   const rem = new Set(removed.map(keyOf));
-  // Software-Anzahlung bezahlt? Je Bewertung (keys) bzw. alt: irgendeine Software-Zahlung.
-  const swPaidFor = (k: string) => payments.some((p) => p.kind === "software" && p.paid && (!p.keys || !p.keys.length || p.keys.includes(k)));
+  const cur = o.country === "US" ? "usd" : "eur";
+  const pct = reviewDiscountPct(items.length);
+  const disc = (v: number) => Math.round((v * (100 - pct)) / 100);
+  const swPaidFor = (k: string) => decisions[k]?.d === "accepted" || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
+  // Bezahlt? 1) Dashboard/Webhook (reviewsPaidKeys) bzw. Zahlung mit Schlüssel, 2) Alt-Rechnungen ohne Schlüssel, 3) Auftrag bezahlt.
+  const keyedInv = payments.filter((p) => p.kind === "invoice" && p.keys && p.keys.length);
+  const legacyInv = payments.filter((p) => p.kind === "invoice" && !(p.keys && p.keys.length));
+  const isPaid = (k: string) => {
+    if (paidKeys.has(k) || keyedInv.some((p) => p.paid && p.keys!.includes(k))) return true;
+    if (keyedInv.some((p) => !p.paid && p.keys!.includes(k))) return false;
+    if (!rem.has(k)) return false; // vom Partner gelöscht, noch nicht abgerechnet
+    if (legacyInv.length) return legacyInv.every((p) => !!p.paid);
+    return o.pay === "paid";
+  };
   const cancelled = o.status === "storniert";
   const view = items.map((it) => {
     const k = keyOf(it);
-    let status: ItemStatus = "checking";
-    const ps = partner.get(k); // Status vom Partner-Board (working | removed | not_possible | software)
-    if (rem.has(k)) status = "removed";
+    const pt = partner.get(k);
+    const ps = pt?.status;
+    const dec = decisions[k]?.d;
+    let status: ItemStatus;
+    if (rem.has(k) || ps === "removed") status = "removed";
     else if (cancelled) status = "cancelled";
-    else if (ps === "removed") status = "removed";
-    else if (ps === "software" || sw.has(k)) status = swPaidFor(k) ? "software_in_progress" : "software_offer";
-    else if (ps === "not_possible") status = "not_removable";
-    else if (ps === "working" || acc.has(k)) status = "in_progress";
-    else if (accepted) status = "not_removable";
-    return { url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt, status };
+    else if (dec === "declined") status = "sw_declined";
+    else if (swPaidFor(k)) status = "sw_accepted";
+    else if (ps === "software" || sw.has(k)) status = "software";
+    else if (ps === "not_possible") status = "notpossible";
+    else if (ps === "working") status = "working";
+    else if (acc.has(k)) status = "working";
+    else if (accepted) status = "notpossible";
+    else status = "new";
+    const special = !!it.nt || sw.has(k) || swPaidFor(k);
+    const price = special ? disc(REVIEW_NOTEXT_HALF) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
+    return {
+      key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
+      status, since: ps === "working" ? pt?.since || null : null,
+      price, paid: status === "removed" ? isPaid(k) : false, special, old: !!it.old,
+    };
   });
+  const unpaid = view.filter((v) => v.status === "removed" && !v.paid);
+  const toPay = unpaid.length ? quoteReviews(unpaid.map((v) => ({ nt: v.special, old: v.old })), cur, items.length, "rest").total : 0;
   return {
-    id: o.id, created: o.created_at, lang: o.lang, cur: o.country === "US" ? "usd" : "eur",
-    business: o.company || o.profile || "", cancelled, items: view,
-    payments: payments.map((p) => ({ id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, url: p.paid ? null : p.url, n: p.n || null, created: p.created, paid: p.paid || null })),
+    id: o.id, created: o.created_at, lang: o.lang, cur, business: o.company || o.profile || "", cancelled,
+    pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_HALF), toPay,
+    items: view.map(({ special, old, ...v }) => v),
+    // Offene Anzahlungen für bestellte Bewertungen ohne Text (Startbestätigung).
+    deposits: payments.filter((p) => p.kind === "deposit" && !p.paid && p.url).map((p) => ({ id: p.id, amount: p.amount, cur: p.cur, url: p.url, n: p.n || null })),
   };
+}
+type OrderView = ReturnType<typeof orderView>;
+
+async function loadCustomerOrders(email: string): Promise<{ name: string; lang: string; orders: OrderView[] }> {
+  if (!pool) return { name: "", lang: "en", orders: [] };
+  const r = await pool.query(
+    `SELECT id, created_at, status, pay, lang, country, profile, company, name, raw FROM orders
+      WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 20`,
+    [email],
+  );
+  const ids = r.rows.map((x) => x.id);
+  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null };
+  const pt = ids.length
+    ? await pool.query(`SELECT order_id, item_key, status, working_since FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
+    : { rows: [] as PRow[] };
+  const byOrder = new Map<string, Map<string, PT>>();
+  for (const t of pt.rows as PRow[]) {
+    if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map());
+    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since });
+  }
+  return { name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
 }
 
 /* ---- Routen ---- */
@@ -189,16 +337,91 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
     const b = (req.body || {}) as Record<string, unknown>;
     const email = await sessionEmail(b.token);
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
-    const r = await pool.query(
-      `SELECT id, created_at, status, pay, lang, country, profile, company, name, raw FROM orders
-        WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 20`,
-      [email],
-    );
-    const ids = r.rows.map((x) => x.id);
-    const pt = ids.length ? await pool.query(`SELECT order_id, item_key, status FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as { order_id: string; item_key: string; status: string }[] })) : { rows: [] as { order_id: string; item_key: string; status: string }[] };
-    const byOrder = new Map<string, Map<string, string>>();
-    for (const t of pt.rows) { if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map()); byOrder.get(t.order_id)!.set(t.item_key, t.status); }
-    return { ok: true, email, name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
+    const d = await loadCustomerOrders(email);
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders };
+  });
+
+  /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
+  async function payLink(kind: "software" | "invoice", picks: PayRef[], amount: number, cur: "usd" | "eur", orders: OrderView[]): Promise<string> {
+    if (!pool || !picks.length || !(amount > 0)) return "";
+    const sig = (refs: PayRef[]) => refs.map((r) => r.o + "\u0001" + r.k).sort().join("\u0002");
+    const want = sig(picks);
+    for (const o of orders) {
+      const raw = await rawOf(o.id);
+      const list: CustPayment[] = Array.isArray(raw?.reviewsPayments) ? (raw!.reviewsPayments as CustPayment[]) : [];
+      const hit = list.find((p) => p.kind === kind && !p.paid && p.url && Math.abs(Number(p.amount) - amount) < 0.01
+        && sig([...(p.keys || []).map((k) => ({ o: o.id, k })), ...(p.refs || [])]) === want);
+      if (hit) return hit.url;
+    }
+    if (!hasSecretKey()) return "";
+    const link = await ensureReviewsAmountLink(amount, cur).catch((e) => { app.log.error({ err: e }, "Dashboard-Zahlungslink fehlgeschlagen"); return ""; });
+    if (!link) return "";
+    const primary = picks[0].o;
+    const id = newPayId();
+    const url = withRef(link, id);
+    await addOrderPayment(primary, {
+      id, kind, amount, cur, url, n: picks.length, via: "dashboard",
+      keys: picks.filter((r) => r.o === primary).map((r) => r.k),
+      refs: picks.filter((r) => r.o !== primary),
+    });
+    return url;
+  }
+
+  // Spezial-Software: Kunde entscheidet je Bewertung (oder alle): Anzahlung zahlen oder ablehnen (kostenlos).
+  app.post("/cust/software", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const email = await sessionEmail(b.token);
+    if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (limited("sw:" + email, 40)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const decision = b.decision === "decline" ? "decline" : b.decision === "accept" ? "accept" : "";
+    if (!decision) return reply.code(400).send({ ok: false, error: "decision" });
+    const want = (Array.isArray(b.items) ? b.items : []).slice(0, 100).map((x) => (x || {}) as Record<string, unknown>).map((x) => ({ o: String(x.orderId || ""), k: String(x.key || "") }));
+    const { orders } = await loadCustomerOrders(email);
+    const byId = new Map(orders.map((o) => [o.id, o]));
+    // Nur eigene Bewertungen, die gerade auf „Needs software" stehen.
+    let picks = want.filter((w) => byId.get(w.o)?.items.some((it) => it.key === w.k && it.status === "software"));
+    picks = picks.filter((p, i) => picks.findIndex((q) => q.o === p.o && q.k === p.k) === i);
+    if (!picks.length) return reply.code(400).send({ ok: false, error: "nothing" });
+    if (decision === "decline") {
+      const groups = new Map<string, string[]>();
+      for (const p of picks) { if (!groups.has(p.o)) groups.set(p.o, []); groups.get(p.o)!.push(p.k); }
+      for (const [o, ks] of groups) {
+        await setDecisions(o, ks, "declined");
+        await pool.query(
+          `UPDATE partner_tasks SET status='cancelled', updated_at=now(), ${appendNote("admin_note", 3)}
+            WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','working','software','not_possible') AND paid_at IS NULL`,
+          [o, ks, SW_NOTE_DECLINED],
+        ).catch(() => {});
+        await insertEvent({ orderId: o, email, type: "note", title: "Kunde: Spezial-Software abgelehnt (Dashboard)", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) storniert`, auto: true }).catch(() => {});
+      }
+      void notifyTeam("Kunde lehnt Spezial-Software ab", `${picks.length} Bewertung(en) · ${[...groups.keys()].join(", ")}`, `${SITE_URL}/admin`);
+      return { ok: true, declined: picks.length };
+    }
+    const cur = byId.get(picks[0].o)!.cur as "usd" | "eur";
+    picks = picks.filter((p) => byId.get(p.o)!.cur === cur);
+    const amount = picks.reduce((s, p) => s + byId.get(p.o)!.swDeposit, 0);
+    const url = await payLink("software", picks, amount, cur, orders);
+    if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
+    await insertEvent({ orderId: picks[0].o, email, type: "note", title: "Kunde: Software-Anzahlung geöffnet (Dashboard)", detail: `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()}`, auto: true }).catch(() => {});
+    return { ok: true, url, amount, cur, n: picks.length };
+  });
+
+  // „Pay": ein Checkout für alle gelöschten, noch unbezahlten Bewertungen.
+  app.post("/cust/pay", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const email = await sessionEmail(b.token);
+    if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (limited("pay:" + email, 40)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const { orders } = await loadCustomerOrders(email);
+    const due = orders.filter((o) => o.toPay > 0);
+    if (!due.length) return reply.code(400).send({ ok: false, error: "nothing" });
+    const cur = due[0].cur as "usd" | "eur";
+    const use = due.filter((o) => o.cur === cur);
+    const picks: PayRef[] = use.flatMap((o) => o.items.filter((it) => it.status === "removed" && !it.paid).map((it) => ({ o: o.id, k: it.key })));
+    const amount = use.reduce((s, o) => s + o.toPay, 0);
+    const url = await payLink("invoice", picks, amount, cur, orders);
+    if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
+    return { ok: true, url, amount, cur, n: picks.length };
   });
 
   // Passwort vergessen: neues Passwort per Mail (Antwort immer gleich → keine Konto-Erkennung).
@@ -222,30 +445,27 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendReset:
 export const NOTIFY_DELAY_MIN = 5;
 
 /** Vom Partner-Board aufgerufen, wenn der Partner einen Status ändert.
- *  „software" → Bewertung wird Spezial-Software-Angebot mit eigenem Anzahlungs-Link (50 % von 300). */
+ *  „software" → Bewertung erscheint im Dashboard als „Needs software"; der Kunde entscheidet dort
+ *  (Anzahlung zahlen → Aufgabe geht auf Working, oder ablehnen → Aufgabe storniert).
+ *  Zieht der Partner „software" zurück (bevor der Kunde entschieden/bezahlt hat), verschwindet das Angebot wieder. */
 export async function partnerStatusChanged(
   orderId: string, itemKey: string | null, status: string,
-  deps: { makeLink: (amount: number, cur: "usd" | "eur") => Promise<string> },
+  _deps?: { makeLink?: (amount: number, cur: "usd" | "eur") => Promise<string> },
 ): Promise<void> {
   if (!pool || !orderId) return;
-  const r = await pool.query(`SELECT raw, country FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
+  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
   if (!r.rows[0]) return; // nur Einzelbewertungen
   const raw = (r.rows[0].raw || {}) as Record<string, unknown>;
-  const cur: "usd" | "eur" = r.rows[0].country === "US" ? "usd" : "eur";
+  const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
   if (status === "software" && itemKey) {
     const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
     const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
-    const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
+  } else if (itemKey && ["new", "working", "not_possible"].includes(status) && sw.some((x) => keyOf(x) === itemKey)) {
+    const dec = ((raw.reviewsSwDecision as Record<string, Decision>) || {})[itemKey];
     const pays: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
-    if (!pays.some((p) => p.kind === "software" && (p.keys || []).includes(itemKey))) {
-      // Rabattstufe nach Anzahl der Bewertungen im Auftrag (wie überall: 3+ −10 %, 5+ −15 %, 10+ −30 %).
-      const n = items.length || 1;
-      const pct = n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0;
-      const amount = Math.round((150 * (100 - pct)) / 100);
-      const url = await deps.makeLink(amount, cur).catch(() => "");
-      if (url) await addOrderPayment(orderId, { kind: "software", amount, cur, url, n: 1, keys: [itemKey] });
-    }
+    const paid = pays.some((p) => p.kind === "software" && p.paid && (!p.keys?.length || p.keys.includes(itemKey)));
+    if (!dec && !paid) await setOrderRawField(orderId, "reviewsSoftware", sw.filter((x) => keyOf(x) !== itemKey));
   }
   // Sammel-Mail planen bzw. verschieben (Debounce).
   await pool.query(
@@ -257,7 +477,7 @@ export async function partnerStatusChanged(
 }
 
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus }[] }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus }[] }[]> {
   if (!pool) return [];
   const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys`);
   const out = [];
@@ -265,12 +485,11 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1`, [d.order_id]);
     const row = o.rows[0];
     if (!row || !row.email) continue;
-    const pt = await pool.query(`SELECT item_key, status FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
-    const view = orderView(row, new Map(pt.rows.map((x) => [x.item_key, x.status])));
-    const items: Item[] = Array.isArray(row.raw?.reviewItems) ? row.raw.reviewItems : [];
+    const pt = await pool.query(`SELECT item_key, status, working_since FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
+    const view = orderView(row, new Map(pt.rows.map((x) => [x.item_key, { status: x.status, since: x.working_since }])));
     const keys: string[] = Array.isArray(d.keys) ? d.keys : [];
-    const changed = items.map((it, i) => ({ k: keyOf(it), v: view.items[i] })).filter((x) => keys.includes(x.k)).map((x) => ({ url: x.v.url, name: x.v.name, status: x.v.status }));
-    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, changed, keys });
+    const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => ({ url: v.url, name: v.name, status: v.status }));
+    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys });
   }
   return out;
 }

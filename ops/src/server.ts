@@ -21,7 +21,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
-import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify } from "./customers";
+import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
 import { startUpsellWorker } from "./upsell";
@@ -1146,6 +1146,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   const per = startQuote.per;
   // Bewertungen ohne Text: 50 % Anzahlung (rabattiert) per Stripe-Link mit der Startbestätigung; Rest mit der Rechnung.
   let prepay: { n: number; amount: string; url: string } | undefined;
+  const prepayPid = newPayId(), swPid = newPayId(); // Zahlungs-IDs vorab → Link trägt client_reference_id (eindeutige Zuordnung)
   if (startQuote.nNt > 0) {
     let payUrl = "";
     if (hasSecretKey()) {
@@ -1155,7 +1156,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
     if (!payUrl) return reply.code(400).send({ ok: false, error: hasSecretKey()
       ? "Zahlungslink für die Vorauszahlung (Bewertungen ohne Text) konnte nicht angelegt werden — ops-Log prüfen."
       : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
-    prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: payUrl };
+    prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: withRef(payUrl, prepayPid) };
   }
   // Spezial-Software-Angebot: 50 % Anzahlung (Rabattstufe nach angenommenen + Software-Bewertungen).
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
@@ -1168,7 +1169,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
       catch (e) { app.log.error({ err: e }, "Software-Anzahlungslink fehlgeschlagen"); }
     }
     if (!swUrl) return reply.code(400).send({ ok: false, error: "Zahlungslink für die Spezial-Software-Anzahlung konnte nicht angelegt werden." });
-    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: swUrl, price: fmtReviewMoney(300, currency), amountNum };
+    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: withRef(swUrl, swPid), price: fmtReviewMoney(300, currency), amountNum };
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
@@ -1192,8 +1193,8 @@ app.post("/admin/reviews-start", async (req, reply) => {
     if (orderId && prepay) await setOrderRawField(orderId, "reviewsPrepay", { ...prepay, at: new Date().toISOString() }).catch(() => {});
     if (orderId && software) await setOrderRawField(orderId, "reviewsSoftware", software.items).catch(() => {});
     // Offene Zahlungen fürs Kunden-Dashboard.
-    if (orderId && prepay) await addOrderPayment(orderId, { kind: "deposit", amount: startQuote.ntDeposit, cur: currency, url: prepay.url, n: prepay.n }).catch(() => {});
-    if (orderId && software) await addOrderPayment(orderId, { kind: "software", amount: software.amountNum, cur: currency, url: software.url, n: software.items.length }).catch(() => {});
+    if (orderId && prepay) await addOrderPayment(orderId, { id: prepayPid, kind: "deposit", amount: startQuote.ntDeposit, cur: currency, url: prepay.url, n: prepay.n, keys: items.filter((it) => it.nt).map(keyOf), via: "admin" }).catch(() => {});
+    if (orderId && software) await addOrderPayment(orderId, { id: swPid, kind: "software", amount: software.amountNum, cur: currency, url: software.url, n: software.items.length, keys: software.items.map(keyOf), via: "admin" }).catch(() => {});
     return { ok: true, lang: tlang, count: items.length };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");
@@ -1342,10 +1343,13 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   const tlang = mailLang(b.lang);
   const per = quote.per;
+  // Link mit client_reference_id → Zahlung landet im Kunden-Dashboard exakt bei diesen Bewertungen.
+  const invPid = newPayId();
+  const invUrl: string = url && orderId ? withRef(url, invPid) : (url || "");
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: url, method, payTotal, bankLines, orderId, dashUrl: DASH_URL };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, orderId, dashUrl: DASH_URL };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const viaName = method === "wise" ? "Wise" : "PayPal";
@@ -1366,7 +1370,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
         const seen = new Set(prev.map(k));
         await setOrderRawField(orderId, "reviewsRemovedAll", [...prev, ...removedItems.filter((it) => !seen.has(k(it)))]);
       } catch { /* ignore */ }
-      if (url) await addOrderPayment(orderId, { kind: "invoice", amount: totalNum, cur: curSafe, url, n: count }).catch(() => {});
+      if (url) await addOrderPayment(orderId, { id: invPid, kind: "invoice", amount: totalNum, cur: curSafe, url: invUrl, n: count, keys: removedItems.map(keyOf), via: "admin" }).catch(() => {});
     }
     // Die Löschbestätigung ist der Erledigt-Moment → GLÖSCHT-Hype-Push ans Team
     // (analog zum Profil-Zahlungslink). Den „gelöscht"-Status setzt der Admin direkt danach.
@@ -1663,6 +1667,7 @@ app.post("/admin/order-status", async (req, reply) => {
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
+  if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes
@@ -1699,6 +1704,7 @@ app.post("/admin/order-mark-paid", async (req, reply) => {
   const method = clip(b.method, 40); // optionaler Hinweis, z. B. „PayPal"
   const ok = await markOrderPaidById(id);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
+  void markOrderReviewsPaidManual(id).catch(() => {}); // Kunden-Dashboard: abgerechnete Bewertungen → „Paid"
   void sendPurchaseForOrder(id, app.log);
   await insertEvent({ orderId: id, type: "pay", title: "Zahlung eingegangen (manuell erfasst)", detail: method ? `Manuell im Dashboard als bezahlt markiert · ${method}` : "Manuell im Dashboard als bezahlt markiert" });
   return { ok: true };
@@ -1721,7 +1727,7 @@ async function start() {
         for (const n of await takeDueNotifications()) {
           if (!n.changed.length) continue;
           try {
-          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: DASH_URL, orderId: n.orderId, changed: n.changed };
+          const props = { lang: n.lang === "de" ? "en" : n.lang, name: n.name, dashUrl: DASH_URL, orderId: n.orderId, changed: n.changed, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
           const html = await render(React.createElement(KundenUpdateReviews, props as any));
           const subject = kundenUpdateSubject(props as any);
           await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
