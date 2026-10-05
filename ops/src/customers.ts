@@ -219,7 +219,7 @@ type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: bo
 export const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
 /** Kunden-Status (Design-Handoff „Customer Dashboard"). */
 export type ItemStatus = "new" | "working" | "removed" | "notpossible" | "software" | "sw_accepted" | "sw_declined" | "cancelled";
-type PT = { status: string; since: string | null };
+type PT = { status: string; since: string | null; removedAt?: string | null; changedAt?: string | null };
 type OrderRow = { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null };
 
 function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
@@ -270,6 +270,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     return {
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
       status, since: ps === "working" ? pt?.since || null : null,
+      removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
       price, paid: status === "removed" ? isPaid(k) : false, special, old: !!it.old,
     };
   });
@@ -279,6 +280,11 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     id: o.id, created: o.created_at, lang: o.lang, cur, business: o.company || o.profile || "", cancelled,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_HALF), toPay,
     items: view.map(({ special, old, ...v }) => v),
+    // Bezahlte Zahlungen (Verlauf im Tab „Payments").
+    history: payments.filter((p) => p.paid).map((p) => ({
+      id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, paid: p.paid, n: p.n || (p.keys || []).length + (p.refs || []).length || null,
+      names: (p.keys || []).map((k) => items.find((it) => keyOf(it) === k)?.name || "").filter(Boolean).slice(0, 3),
+    })),
     // Offene Anzahlungen für bestellte Bewertungen ohne Text (Startbestätigung).
     deposits: payments.filter((p) => p.kind === "deposit" && !p.paid && p.url).map((p) => ({ id: p.id, amount: p.amount, cur: p.cur, url: p.url, n: p.n || null })),
   };
@@ -293,14 +299,14 @@ async function loadCustomerOrders(email: string): Promise<{ name: string; lang: 
     [email],
   );
   const ids = r.rows.map((x) => x.id);
-  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null };
+  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null };
   const pt = ids.length
-    ? await pool.query(`SELECT order_id, item_key, status, working_since FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
+    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
     : { rows: [] as PRow[] };
   const byOrder = new Map<string, Map<string, PT>>();
   for (const t of pt.rows as PRow[]) {
     if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map());
-    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since });
+    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at });
   }
   return { name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
 }
