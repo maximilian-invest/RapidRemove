@@ -49,12 +49,12 @@ export async function initCustomerTables(): Promise<void> {
 
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
-function hashPassword(pw: string): string {
+export function hashPassword(pw: string): string {
   const salt = crypto.randomBytes(16);
   const h = crypto.scryptSync(pw, salt, 32);
   return `s1$${salt.toString("hex")}$${h.toString("hex")}`;
 }
-function verifyPassword(pw: string, stored: string): boolean {
+export function verifyPassword(pw: string, stored: string): boolean {
   const [v, saltHex, hashHex] = String(stored || "").split("$");
   if (v !== "s1" || !saltHex || !hashHex) return false;
   const h = crypto.scryptSync(pw, Buffer.from(saltHex, "hex"), 32);

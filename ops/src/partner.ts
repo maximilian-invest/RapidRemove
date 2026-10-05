@@ -15,6 +15,7 @@ import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
+import { isPartnerSession } from "./partnerAuth";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
@@ -89,6 +90,7 @@ export async function partnerToken(rotate = false): Promise<string | null> {
 }
 async function checkPartnerToken(t: unknown): Promise<boolean> {
   const s = String(t || "");
+  if (s.startsWith("ps_")) return isPartnerSession(s); // Partner-Login (partnerAuth.ts)
   if (s.length < 16) return false;
   const real = await getSetting("token");
   if (!real || real.length !== s.length) return false;

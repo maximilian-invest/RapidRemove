@@ -9,6 +9,9 @@ import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
+import PartnerLogin from "./PartnerLogin";
+
+const SKIP_KEY = "rr_partner_setup_skip";
 
 const KEY = "rr_partner_t";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
@@ -16,6 +19,7 @@ const MOBILE_Q = "(max-width: 860px)";
 
 export default function PartnerBoard() {
   const [token, setToken] = React.useState(null);
+  const [setup, setSetup] = React.useState(null); // { account } → Login über den persönlichen Link einrichten
   const [isMobile, setIsMobile] = React.useState(null);
   const [tasks, setTasks] = React.useState(null);
   const [err, setErr] = React.useState("");
@@ -37,9 +41,17 @@ export default function PartnerBoard() {
   React.useEffect(() => {
     let t = "";
     try { t = (window.location.hash || "").replace(/^#/, ""); } catch (e) {}
+    const fromLink = !!t;
     if (t) { try { localStorage.setItem(KEY, t); } catch (e) {} }
     else { try { t = localStorage.getItem(KEY) || ""; } catch (e) {} }
     setToken(t);
+    // Mit dem persönlichen Link geöffnet und noch kein Login → einmal anbieten (oder per Link neues Passwort setzen).
+    if (t && !t.startsWith("ps_")) {
+      let skipped = false; try { skipped = localStorage.getItem(SKIP_KEY) === "1"; } catch (e) {}
+      call("auth-status", { t }).then((r) => {
+        if (r.via === "link" && (!r.account ? !skipped : fromLink && window.location.search.includes("newpw"))) setSetup({ account: r.account || "" });
+      }).catch(() => {});
+    }
     if (!document.querySelector(`link[href="${FONT_HREF}"]`)) {
       const l = document.createElement("link"); l.rel = "stylesheet"; l.href = FONT_HREF; document.head.appendChild(l);
     }
@@ -59,6 +71,7 @@ export default function PartnerBoard() {
       const j = await call("tasks", { t: token });
       setTasks((j.tasks || []).map(norm)); setErr("");
     } catch (e) {
+      if (e.message === "invalid link" && String(token).startsWith("ps_")) { try { localStorage.removeItem(KEY); } catch (x) {} setToken(""); return; } // Sitzung abgelaufen → Login
       setErr(e.message === "invalid link" ? "This link is not valid (anymore). Please ask RapidRemove for the current link." : "Could not load: " + e.message);
     }
   }, [token]);
@@ -206,7 +219,13 @@ export default function PartnerBoard() {
 
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
-  if (!token) return <div className="prt"><div className="pmsg"><img src={`${BASE}/assets/rapidremove-icon.png`} alt="" /><b>Partner Board</b>Please open the personal link you received from RapidRemove.</div></div>;
+  const onLogin = (t) => {
+    try { localStorage.setItem(KEY, t); } catch (e) {}
+    try { if (window.location.hash || window.location.search) window.history.replaceState(null, "", window.location.pathname); } catch (e) {}
+    setSetup(null); setToken(t);
+  };
+  if (!token) return <PartnerLogin mode="login" onToken={onLogin} />;
+  if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
   const api = {
     tasks, all, err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,

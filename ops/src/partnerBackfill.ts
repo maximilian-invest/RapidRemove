@@ -68,7 +68,69 @@ async function analyse() {
   return out;
 }
 
+/** Eintragen: fehlende Aufgaben als gelöscht anlegen/setzen, eine Auszahlung buchen, Sperre setzen. */
+async function applyBackfill(refs: string[], items: Awaited<ReturnType<typeof analyse>>) {
+  if (!pool) throw new Error("keine Datenbank");
+    const pick = items.filter((i) => refs.includes(i.ref));
+  if (!pick.length) throw new Error("nichts gewählt");
+  const ids: number[] = [];
+  for (const i of pick) {
+    if (i.task && i.task.paid) continue; // schon bezahlt → nicht doppelt
+    if (i.task) {
+      await pool.query(
+        `UPDATE partner_tasks SET status='removed', removed_at=COALESCE(removed_at, $2::timestamptz), price_usd=10, touched_at=COALESCE(touched_at, now()), updated_at=now() WHERE id=$1`,
+        [i.task.id, i.removedAt],
+      );
+      ids.push(i.task.id);
+    } else {
+      const key = i.url;
+      const r = await pool.query(
+        `INSERT INTO partner_tasks (order_id, item_key, url, kind, price_usd, status, customer, removed_at, touched_at, admin_note, created_at)
+         VALUES ($1,$2,$3,'normal',10,'removed',$4,$5::timestamptz,$5::timestamptz,'Nachtrag aus WhatsApp-Chat (vor dem Board)',$5::timestamptz) RETURNING id`,
+        [i.order?.id || null, key, i.url, i.order?.business || "WhatsApp (vor dem Board)", i.removedAt],
+      );
+      const id = r.rows[0].id;
+      await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 AND code IS NULL`, [id]);
+      ids.push(Number(id));
+    }
+  }
+  if (!ids.length) throw new Error("alle gewählten sind schon bezahlt");
+  const sum = await pool.query(`SELECT COALESCE(sum(price_usd),0) AS s FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids]);
+  const amount = Math.round(Number(sum.rows[0].s) * 100) / 100;
+  const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note, created_at) VALUES ($1,$2,$3,'2026-10-05T12:00:00+02:00') RETURNING id`,
+    [amount, ids.length, "Bereits bezahlt (WhatsApp, vor dem Board) – Nachtrag"]);
+  await pool.query(`UPDATE partner_tasks SET paid_at='2026-10-05T12:00:00+02:00', payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, ids]);
+  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value=$2`, [DONE_KEY, new Date().toISOString()]);
+  for (const i of pick) if (i.order) await insertEvent({ orderId: i.order.id, type: "note", title: "Partner: Löschung nachgetragen + bezahlt", detail: `Aus WhatsApp-Chat · ${i.removedAt.slice(0, 10)} · 10 USD (Auszahlung #${p.rows[0].id})` }).catch(() => {});
+  return { payoutId: Number(p.rows[0].id), amount, tasks: ids.length };
+}
+
+let lastRun: Record<string, unknown> | null = null;
+
+/** Einmalig beim Start: die 6 Löschungen aus dem Chat (c1–c6, 6 × 10 USD = 60 USD) eintragen. */
+export async function runRv60BackfillOnce(log: (m: string) => void): Promise<void> {
+  if (!pool) return;
+  const done = await pool.query(`SELECT value FROM partner_settings WHERE key=$1`, [DONE_KEY]);
+  if (done.rows[0]) return;
+  const items = await analyse();
+  // Board widerspricht (Aufgabe dort noch offen) → nicht nehmen; dann ggf. die Alternative (c7), solange sie nicht widerspricht.
+  const contra = (i: (typeof items)[number]) => !!i.task && i.task.status !== "removed";
+  let refs = items.filter((i) => i.preselected && !contra(i)).map((i) => i.ref);
+  const alt = items.find((i) => !i.preselected && !contra(i));
+  if (refs.length < 6 && alt) refs = [...refs, alt.ref];
+  const r = await applyBackfill(refs, items);
+  lastRun = { done: true, tasks: r.tasks, amount: r.amount, refs, skipped: items.filter((i) => !refs.includes(i.ref)).map((i) => i.ref), matched: items.filter((i) => i.task || i.order).map((i) => i.ref) };
+  log(`Partner-Nachtrag 60 USD: ${r.tasks} Löschungen eingetragen, Auszahlung #${r.payoutId} über $${r.amount} · ` + items.filter((i) => i.preselected).map((i) => `${i.ref}:${i.task ? i.task.code : "neu"}${i.order ? "/" + i.order.id : ""}`).join(" "));
+}
+
 export function registerPartnerBackfill(app: FastifyInstance, adminToken: string): void {
+  // Ergebnis des Einmal-Nachtrags (nur Zahlen/Kürzel, keine Kundendaten).
+  app.get("/partner/backfill-status", async () => {
+    if (lastRun) return { ok: true, ...lastRun };
+    const d = pool ? await pool.query(`SELECT value FROM partner_settings WHERE key=$1`, [DONE_KEY]).catch(() => ({ rows: [] as { value: string }[] })) : { rows: [] };
+    const p = pool ? await pool.query(`SELECT amount_usd, tasks FROM partner_payouts WHERE note LIKE 'Bereits bezahlt (WhatsApp%' ORDER BY id DESC LIMIT 1`).catch(() => ({ rows: [] as { amount_usd: string; tasks: number }[] })) : { rows: [] };
+    return { ok: true, done: !!d.rows[0], amount: p.rows[0] ? Number(p.rows[0].amount_usd) : null, tasks: p.rows[0]?.tasks ?? null };
+  });
   app.post("/admin/partner/backfill-rv60", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
@@ -78,38 +140,9 @@ export function registerPartnerBackfill(app: FastifyInstance, adminToken: string
     if (b.apply !== true) return { ok: true, done: done.rows[0]?.value || null, items };
     if (done.rows[0]) return reply.code(400).send({ ok: false, error: "Bereits eingetragen am " + done.rows[0].value });
 
-    const refs = (Array.isArray(b.refs) ? b.refs : []).map(String);
-    const pick = items.filter((i) => refs.includes(i.ref));
-    if (!pick.length) return reply.code(400).send({ ok: false, error: "nichts gewählt" });
-    const ids: number[] = [];
-    for (const i of pick) {
-      if (i.task && i.task.paid) continue; // schon bezahlt → nicht doppelt
-      if (i.task) {
-        await pool.query(
-          `UPDATE partner_tasks SET status='removed', removed_at=COALESCE(removed_at, $2::timestamptz), price_usd=CASE WHEN price_usd>0 THEN price_usd ELSE 10 END, touched_at=COALESCE(touched_at, now()), updated_at=now() WHERE id=$1`,
-          [i.task.id, i.removedAt],
-        );
-        ids.push(i.task.id);
-      } else {
-        const key = i.url;
-        const r = await pool.query(
-          `INSERT INTO partner_tasks (order_id, item_key, url, kind, price_usd, status, customer, removed_at, touched_at, admin_note, created_at)
-           VALUES ($1,$2,$3,'normal',10,'removed',$4,$5::timestamptz,$5::timestamptz,'Nachtrag aus WhatsApp-Chat (vor dem Board)',$5::timestamptz) RETURNING id`,
-          [i.order?.id || null, key, i.url, i.order?.business || "WhatsApp (vor dem Board)", i.removedAt],
-        );
-        const id = r.rows[0].id;
-        await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 AND code IS NULL`, [id]);
-        ids.push(Number(id));
-      }
-    }
-    if (!ids.length) return reply.code(400).send({ ok: false, error: "alle gewählten sind schon bezahlt" });
-    const sum = await pool.query(`SELECT COALESCE(sum(price_usd),0) AS s FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids]);
-    const amount = Math.round(Number(sum.rows[0].s) * 100) / 100;
-    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note, created_at) VALUES ($1,$2,$3,'2026-10-05T12:00:00+02:00') RETURNING id`,
-      [amount, ids.length, "Bereits bezahlt (WhatsApp, vor dem Board) – Nachtrag"]);
-    await pool.query(`UPDATE partner_tasks SET paid_at='2026-10-05T12:00:00+02:00', payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, ids]);
-    await pool.query(`INSERT INTO partner_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value=$2`, [DONE_KEY, new Date().toISOString()]);
-    for (const i of pick) if (i.order) await insertEvent({ orderId: i.order.id, type: "note", title: "Partner: Löschung nachgetragen + bezahlt", detail: `Aus WhatsApp-Chat · ${i.removedAt.slice(0, 10)} · 10 USD (Auszahlung #${p.rows[0].id})` }).catch(() => {});
-    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: ids.length };
+    try {
+      const refs = (Array.isArray(b.refs) ? b.refs : []).map(String);
+      return { ok: true, ...(await applyBackfill(refs, items)) };
+    } catch (e) { return reply.code(400).send({ ok: false, error: (e as Error).message }); }
   });
 }

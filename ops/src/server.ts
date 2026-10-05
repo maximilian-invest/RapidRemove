@@ -21,7 +21,8 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
-import { registerPartnerBackfill } from "./partnerBackfill";
+import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
+import { initPartnerAuth, registerPartnerAuth } from "./partnerAuth";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
@@ -151,6 +152,7 @@ app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
+registerPartnerAuth(app); // Partner-Login (E-Mail + Passwort)
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
 registerCustomerAdminRoutes(app, ADMIN_TOKEN);
 registerCustomerRoutes(app, {
@@ -1717,7 +1719,8 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initCustomerTables(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
+  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth();
+    if (dbReady()) void runRv60BackfillOnce((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Nachtrag 60 USD fehlgeschlagen")); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {
     const addr = await app.listen({ host: "0.0.0.0", port });
