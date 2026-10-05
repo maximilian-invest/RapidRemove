@@ -19,7 +19,7 @@ const article = {
       "**Rapportere selv til Google:** gratis, men avvises ofte med et standardsvar.",
       "**Advokat:** som regel timepris, ofte med forskudd – du betaler også om anmeldelsen blir stående.",
       "**Tjenester med forskuddsbetaling:** noen tar betalt per forsøk eller på forhånd, andre oppgir prisen først etter en samtale.",
-      "**RapidRemove:** 179 € per fjernet anmeldelse, 229 € hvis den er eldre enn 4 uker. Ingenting på forskudd, ingen gebyrer for forsøk.",
+      "**RapidRemove:** 179 € per fjernet anmeldelse, 229 € hvis den er eldre enn 4 uker. Ingenting på forskudd, ingen gebyrer for forsøk. Unntak: rene stjernevurderinger uten tekst – egen prosedyre, 300 €, betales på forhånd.",
     ] },
     { t: "p", text: "Vil du se prisen for akkurat dine anmeldelser med en gang? I vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) krysser du av for anmeldelsene og ser totalbeløpet med en gang." },
 
@@ -33,8 +33,8 @@ const article = {
     { t: "h2", id: "sammenligning", text: "Sammenligning: selv, advokat, forskuddstjeneste eller RapidRemove", toc: "Sammenligning" },
     { t: "p", text: "Den største forskjellen ligger ikke i prisen, men i **hvem som bærer risikoen** hvis anmeldelsen blir stående." },
     { t: "table", rrCol: 4, head: ["Kriterium", "Rapportere selv", "Advokat", "Tjeneste med forskudd", "RapidRemove"], rows: [
-      ["Prismodell", "Gratis", "Timepris, ofte forskudd", "Per forsøk eller fast beløp på forhånd", "**179 € per fjernet anmeldelse** (+ 50 € hvis eldre enn 4 uker)"],
-      ["Betaler du hvis anmeldelsen blir?", "–", "Ja", "Ofte ja", "**Nei**"],
+      ["Prismodell", "Gratis", "Timepris, ofte forskudd", "Per forsøk eller fast beløp på forhånd", "**179 € per fjernet anmeldelse** (+ 50 € hvis eldre enn 4 uker); uten tekst 300 €, på forhånd"],
+      ["Betaler du hvis anmeldelsen blir?", "–", "Ja", "Ofte ja", "**Nei** (unntatt vurderinger uten tekst)"],
       ["Risiko for deg", "Tapt tid, avvises ofte", "Høy: kostnad uansett utfall", "Høy: pengene er allerede betalt", "**Ingen**: bare ved suksess"],
       ["Varighet", "Dager til uker, ingen fast frist", "Ofte måneder", "Varierer", "Som regel noen dager, av og til opptil 3 uker"],
       ["Innsats for deg", "Middels (rapportere, følge opp, klage)", "Høy (dokumentasjon, møter)", "Varierer", "Ca. 2 minutter"],
@@ -46,8 +46,10 @@ const article = {
     { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Sjanse for å lykkes", "Pris per fjernet anmeldelse"], rows: [
       ["Opptil 4 uker gammel", "ca. 90 %", "**179 €**"],
       ["Eldre enn 4 uker", "ca. 50 %", "**229 €** (179 € + 50 €)"],
+      ["Stjernevurdering uten tekst (egen prosedyre)", "ca. 80 %", "**300 €**, betales på forhånd"],
     ] },
-    { t: "p", text: "Etter den gratis vurderingen får du **mengderabatt** ut fra hvor mange anmeldelser vi aksepterer. Rabatten gjelder hver anmeldelse som blir fjernet:" },
+    { t: "p", text: "**Rene stjernevurderinger uten tekst** fjerner vi med en egen, programvarestøttet prosedyre. De koster **300 € per anmeldelse** uansett alder, og beløpet **betales på forhånd** så snart vi har akseptert vurderingen (betalingslenke sammen med startbekreftelsen) – **uavhengig av resultatet**. Blir vurderingen stående, refunderes det ikke. Sjansen for å lykkes er ca. 80 %." },
+    { t: "p", text: "Etter den gratis vurderingen får du **mengderabatt** ut fra hvor mange anmeldelser vi aksepterer. Rabatten gjelder hver anmeldelse som blir fjernet – og også stjernevurderinger uten tekst, som teller med i antallet:" },
     { t: "table", head: ["Aksepterte anmeldelser", "Rabatt"], rows: [
       ["1 – 2", "–"],
       ["3 – 4", "**−10 %**"],
@@ -65,11 +67,13 @@ const article = {
       "**2 ferske og 3 eldre anmeldelser:** 1 045 €, minus 15 % = **888 €**.",
       "**5 ferske anmeldelser akseptert, 4 fjernet:** 4 × 179 € = 716 €, minus 15 % = **609 €**. Den femte, som blir stående, koster ingenting.",
       "**10 anmeldelser (6 ferske, 4 eldre):** 1 990 €, minus 30 % = **1 393 €**.",
+      "**1 stjernevurdering uten tekst:** **300 €**, betales på forhånd – også hvis den blir stående.",
+      "**2 ferske anmeldelser med tekst + 1 uten tekst:** 3 anmeldelser = −10 %: **270 €** på forhånd for stjernevurderingen, 2 × 161,10 € = **322,20 €** for anmeldelsene med tekst – bare hvis de blir fjernet.",
     ] },
     { t: "tip", title: "Det lønner seg dobbelt å være rask", text: "Etter 4 uker faller sjansen fra rundt 90 % til rundt 50 %, og prisen øker med 50 €. Den som reagerer med en gang på en fersk falsk anmeldelse, betaler mindre og har større sjanse." },
 
     { t: "h2", id: "betaling", text: "Slik fungerer betalingen: per fjernet anmeldelse", toc: "Betaling" },
-    { t: "p", text: "Du betaler først **når en anmeldelse faktisk er borte** – aldri på forskudd og aldri for et forsøk. Fordi ulike anmeldelser forsvinner til ulike tider, kan du også betale **per anmeldelse**." },
+    { t: "p", text: "For anmeldelser med tekst betaler du først **når en anmeldelse faktisk er borte** – aldri på forskudd og aldri for et forsøk. Fordi ulike anmeldelser forsvinner til ulike tider, kan du også betale **per anmeldelse**. Det eneste unntaket er rene stjernevurderinger uten tekst: de 300 € betales på forhånd via betalingslenken i startbekreftelsen, uavhengig av resultatet." },
     { t: "ol", items: [
       "**Gratis vurdering:** vi sier ærlig hvilke anmeldelser som har en sjanse. Kan en anmeldelse ikke fjernes, koster den deg ingenting.",
       "**Vi setter i gang** via Googles egne prosedyrer, på vegne av deg som eier.",
@@ -102,17 +106,17 @@ const article = {
     { t: "h2", id: "hvorfor", text: "Hvorfor bedrifter velger betaling ved suksess", toc: "Hvorfor RapidRemove" },
     { t: "ul", items: [
       "**Tydelig pris:** 179 € per fjernet anmeldelse, synlig på forhånd i veiviseren.",
-      "**Ingen risiko:** ingenting på forskudd, ingen gebyrer for forsøk.",
+      "**Ingen risiko ved anmeldelser med tekst:** ingenting på forskudd, ingen gebyrer for forsøk.",
       "**Bare offisielle veier:** utelukkende Googles egne prosedyrer – ingen falske kontoer, ingen roboter, ingen falske juridiske henvendelser.",
       "**Erfaring:** siden 2023 over 1 600 fjernede Google-bedriftsprofiler, over 20 000 gratis profilsjekker, kunder i over 50 land og 5,0 på Trustpilot.",
     ] },
     { t: "cta", title: "Få prisen på 2 minutter", text: "Velg bedriften din, kryss av for anmeldelsene og se nøyaktig pris inkludert rabatt. Du betaler **bare for anmeldelser som faktisk fjernes**.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["179 € per fjernet anmeldelse", "Ingenting på forskudd", "Betalingslenke per anmeldelse mulig"] },
   ],
   faq: [
-    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove 179 € per fjernet anmeldelse, eller 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner." },
+    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove 179 € per fjernet anmeldelse, eller 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner. Rene stjernevurderinger uten tekst koster 300 € (egen prosedyre, ca. 80 % sjanse) og betales på forhånd – uavhengig av resultatet." },
     { q: "Kan man fjerne en Google-anmeldelse gratis?", a: "Det er gratis å rapportere selv til Google. Google avviser likevel ofte rapporter; da kan du klage én gang per anmeldelse i Reviews Management Tool." },
     { q: "Hva koster en advokat for å fjerne en Google-anmeldelse?", a: "Advokater tar som regel betalt per time, ofte med forskudd og uansett resultat. Det lønner seg særlig ved reelle juridiske tvister som ærekrenkelse." },
-    { q: "Må jeg betale på forskudd?", a: "Nei. **Ingenting trekkes på forskudd**, og forsøk koster ingenting. Betalingslenken kommer først når en anmeldelse er fjernet." },
+    { q: "Må jeg betale på forskudd?", a: "For anmeldelser med tekst nei: **ingenting trekkes på forskudd**, og forsøk koster ingenting. Betalingslenken kommer først når en anmeldelse er fjernet. Unntaket er rene stjernevurderinger uten tekst: de 300 € betales på forhånd så snart vi har akseptert vurderingen – uavhengig av resultatet." },
     { q: "Får jeg rabatt for flere anmeldelser?", a: "Ja. Fra 3 aksepterte anmeldelser 10 %, fra 5 anmeldelser 15 % og fra 10 anmeldelser 30 % – på hver anmeldelse som blir fjernet." },
     { q: "Kan jeg betale for hver anmeldelse for seg?", a: "Ja. Fordi anmeldelser forsvinner til ulike tider, kan du få en egen betalingslenke per fjernet anmeldelse. PayPal eller bankoverføring er mulig etter avtale." },
     { q: "Kan noen garantere at en anmeldelse blir fjernet?", a: "Nei. Det er Google som avgjør. Den som lover en garanti, er ikke ærlig – derfor tar vi bare betalt ved suksess." },

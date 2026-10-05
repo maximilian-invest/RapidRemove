@@ -81,7 +81,7 @@ const article = {
     { t: "p", text: "Usamos **solo los procedimientos propios de Google**, en nombre del propietario del negocio: sin cuentas falsas, sin bots y sin falsos avisos legales. Al autor de la reseña no se le dice quién ha pedido la eliminación." },
     { t: "ul", items: [
       "**Primero, valoración gratuita:** te decimos con honestidad si una reseña se puede eliminar. Si no, no te cuesta nada.",
-      "**Precio:** 179 € por reseña eliminada; las reseñas con más de 4 semanas cuestan 50 € más (229 €).",
+      "**Precio:** 179 € por reseña eliminada; las reseñas con más de 4 semanas cuestan 50 € más (229 €). Valoraciones solo de estrellas, sin texto: 300 € cada una con un procedimiento especial, por adelantado (aprox. 80 % de éxito).",
       "**Probabilidad de éxito:** aprox. 90 % en reseñas de hasta 4 semanas, aprox. 50 % en las más antiguas.",
       "**Descuento por volumen** sobre las reseñas que aceptamos: desde 3, −10 %; desde 5, −15 %; desde 10, −30 %.",
       "**Duración:** normalmente unos días, a veces hasta 3 semanas. Pagas cada reseña cuando ya no está, mediante un enlace de pago seguro.",

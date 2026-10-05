@@ -5,7 +5,10 @@ export const REVIEW_BASE = 179;
 export const REVIEW_OLD_SURCHARGE = 50;
 export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 
-export type PricedItem = { old?: boolean };
+/** Reine Sternebewertungen ohne Text: Spezialverfahren (Software), Festpreis, Vorauszahlung, kein Altersaufschlag. */
+export const REVIEW_NOTEXT_PRICE = 300;
+
+export type PricedItem = { old?: boolean; nt?: boolean };
 
 /** Betrag in der Währung der Bestellung ("$179" / "179 €", Cent nur wenn nötig). */
 export const fmtReviewMoney = (v: number, cur: string) => {
@@ -19,11 +22,16 @@ export const fmtReviewMoney = (v: number, cur: string) => {
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
-  const nOld = items.filter((it) => it && it.old).length;
-  const subtotal = n * REVIEW_BASE + nOld * REVIEW_OLD_SURCHARGE;
+  const nNt = items.filter((it) => it && it.nt).length;
+  const nOld = items.filter((it) => it && it.old && !it.nt).length;
+  const nNew = n - nOld - nNt;
+  const subtotal = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
   const pct = reviewDiscountPct(Math.max(n, rateBasis || 0));
   const total = Math.round((subtotal * (100 - pct)) / 100);
-  let per = nOld === 0 ? fmt(REVIEW_BASE) : nOld === n ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : `${fmt(REVIEW_BASE)} / ${fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE)}`;
+  // Vorauszahlungsanteil (Bewertungen ohne Text), bereits rabattiert.
+  const ntTotal = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100);
+  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt ? fmt(REVIEW_NOTEXT_PRICE) : ""].filter(Boolean);
+  let per = prices.length ? prices.join(" / ") : fmt(REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;
-  return { n, nOld, nNew: n - nOld, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, subtotal, pct, total, discount: subtotal - total, per, totalStr: fmt(total), simple: nOld === 0 && pct === 0 };
+  return { n, nOld, nNew, nNt, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, total, discount: subtotal - total, ntTotal, ntTotalStr: fmt(ntTotal), per, totalStr: fmt(total), simple: nOld === 0 && nNt === 0 && pct === 0 };
 }

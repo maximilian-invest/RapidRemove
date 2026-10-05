@@ -6,12 +6,12 @@
    Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton.
    Die Sprache wählt der Admin nach dem Land des Kunden. */
 import * as React from "react";
-import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
+import { EmailShell, P, NoteBox, Bullets, CtaButton, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
-import { fmtReviewMoney } from "../reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE } from "../reviewsPricing";
 
 /** Spezial-Software (ausgelagert) für nicht annehmbare Bewertungen: Preis je Bewertung, Vorauszahlung. */
-export const SPECIAL_REVIEW_PRICE = 250;
+export const SPECIAL_REVIEW_PRICE = REVIEW_NOTEXT_PRICE;
 
 /** Eine Bewertung: Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative). */
 export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean }
@@ -30,6 +30,8 @@ export interface BearbeitungGestartetReviewsProps {
   /** Währung der Bestellung ("usd" | "eur") — für die exakte Preisaufstellung. */
   currency?: string;
   orderId?: string;
+  /** Vorauszahlung für angenommene Bewertungen ohne Text (Spezialverfahren). */
+  prepay?: { n: number; amount: string; url: string };
   _overrides?: Record<string, string>;
 }
 
@@ -42,6 +44,10 @@ interface Entry {
   declined: (n: number) => string;
   /** Angebot für abgelehnte Bewertungen: Spezial-Software (ausgelagert), Preis je Bewertung, Vorauszahlung, Kunde meldet sich aktiv. */
   special?: (n: number, price: string) => string;
+  prepayH?: string;
+  prepay?: (n: number, amount: string) => string;
+  prepayBtn?: string;
+  next3nt?: string;
   calm: string;
   close: string; signoff: string;
 }
@@ -61,6 +67,10 @@ export const T: Record<string, Entry> = {
     next4: "Every review is handled individually, so removal times can differ from review to review. To keep things simple for you, we may bill each removed review separately – so don't be surprised if you receive a separate payment link for each one.",
     declined: (n) => `We've also checked the other ${n === 1 ? "review" : `${n} reviews`} you sent us: ${n === 1 ? "it" : "they"} can't be removed through Google's processes, so we won't work on ${n === 1 ? "it" : "them"} – and of course you won't be charged for ${n === 1 ? "it" : "them"}.`,
     special: (n, price) => `One more option for ${n === 1 ? "this review" : "these reviews"}: ${n === 1 ? "it" : "they"} can only be removed with special software. We don't run it ourselves – it's an external service we outsource to, which unfortunately makes it expensive: ${price} per review, paid in advance. If you'd like us to go this route, please reply to this email and let us know – we'll only start once you've actively confirmed.`,
+    prepayH: "Payment in advance – reviews without text",
+    prepay: (n, amount) => `${n === 1 ? "One of the reviews has" : `${n} of the reviews have`} no text, so we remove ${n === 1 ? "it" : "them"} with our special software-supported procedure (approx. 80 % success chance). This is paid in advance: ${amount} (volume discount already included). We start on ${n === 1 ? "it" : "them"} as soon as the payment has arrived. Please note: the advance payment is not refunded if a review stays.`,
+    prepayBtn: "Pay in advance now",
+    next3nt: "For reviews with text, you only pay once they are actually removed – due on the day of removal.",
     calm: "No news for a few days is normal — these things take time on Google's side. We're on it.",
     close: "Questions in the meantime? Just reply to this email.",
     signoff: "Warm regards,",
@@ -79,6 +89,10 @@ export const T: Record<string, Entry> = {
     next4: "Cada reseña se tramita por separado, así que el tiempo de eliminación puede variar de una a otra. Para ponértelo fácil, es posible que facturemos cada reseña eliminada por separado: no te sorprendas si recibes un enlace de pago para cada una.",
     declined: (n) => `También hemos revisado ${n === 1 ? "la otra reseña" : `las otras ${n} reseñas`} que nos enviaste: no se ${n === 1 ? "puede" : "pueden"} eliminar mediante los procesos de Google, así que no trabajaremos en ${n === 1 ? "ella" : "ellas"} y, por supuesto, no se te cobrará nada por ${n === 1 ? "ella" : "ellas"}.`,
     special: (n, price) => `Una opción más para ${n === 1 ? "esa reseña" : "esas reseñas"}: solo ${n === 1 ? "se puede" : "se pueden"} eliminar con un software especial. No lo gestionamos nosotros, sino un servicio externo al que lo encargamos, y por eso por desgracia es caro: ${price} por reseña, con pago por adelantado. Si quieres que lo intentemos así, respóndenos a este correo: solo empezamos cuando nos lo confirmes expresamente.`,
+    prepayH: "Pago por adelantado – reseñas sin texto",
+    prepay: (n, amount) => `${n === 1 ? "Una de las reseñas no tiene" : `${n} de las reseñas no tienen`} texto, así que ${n === 1 ? "la eliminamos" : "las eliminamos"} con nuestro procedimiento especial apoyado por software (aprox. 80 % de éxito). Se paga por adelantado: ${amount} (descuento por volumen ya incluido). Empezamos en cuanto recibamos el pago. Ten en cuenta que el pago anticipado no se reembolsa si una reseña se queda.`,
+    prepayBtn: "Pagar por adelantado",
+    next3nt: "Las reseñas con texto solo las pagas cuando realmente se eliminan, el mismo día de la eliminación.",
     calm: "Que pasen unos días sin noticias es normal: en el lado de Google estas cosas llevan su tiempo. Estamos en ello.",
     close: "¿Alguna duda mientras tanto? Responde a este correo.",
     signoff: "Un saludo,",
@@ -96,7 +110,11 @@ export const T: Record<string, Entry> = {
     next3: "Tu ne paies que les avis réellement supprimés, dus le jour de la suppression.",
     next4: "Chaque avis est traité individuellement, le délai de suppression peut donc varier d'un avis à l'autre. Pour te simplifier les choses, il se peut que nous facturions chaque avis supprimé séparément – ne sois donc pas surpris de recevoir un lien de paiement pour chacun.",
     declined: (n) => `Nous avons aussi vérifié ${n === 1 ? "l'autre avis" : `les ${n} autres avis`} que tu nous as envoyé${n === 1 ? "" : "s"} : ${n === 1 ? "il ne peut" : "ils ne peuvent"} pas être supprimé${n === 1 ? "" : "s"} via les procédures de Google, nous ne ${n === 1 ? "le" : "les"} traiterons donc pas – et bien sûr, rien ne te sera facturé pour ${n === 1 ? "cet avis" : "ces avis"}.`,
-    special: (n, price) => `Une option de plus pour ${n === 1 ? "cet avis" : "ces avis"} : ${n === 1 ? "il ne peut" : "ils ne peuvent"} être supprimé${n === 1 ? "" : "s"} qu'avec un logiciel spécial. Nous ne le faisons pas nous-mêmes – c'est un service externe que nous sous-traitons, ce qui le rend malheureusement cher : ${price} par avis, à payer d'avance. Si vous souhaitez passer par là, répondez simplement à cet e-mail – nous ne commençons qu'après votre confirmation expresse.`,
+    special: (n, price) => `Une option de plus pour ${n === 1 ? "cet avis" : "ces avis"} : ${n === 1 ? "il ne peut" : "ils ne peuvent"} être supprimé${n === 1 ? "" : "s"} qu'avec un logiciel spécial. Nous ne le faisons pas nous-mêmes – c'est un service externe que nous sous-traitons, ce qui le rend malheureusement cher : ${price} par avis, à payer d'avance. Si tu souhaites passer par là, réponds simplement à cet e-mail – nous ne commençons qu'après ta confirmation expresse.`,
+    prepayH: "Paiement d'avance – avis sans texte",
+    prepay: (n, amount) => `${n === 1 ? "Un des avis n'a" : `${n} des avis n'ont`} pas de texte : nous ${n === 1 ? "le supprimons" : "les supprimons"} avec notre procédure spéciale assistée par logiciel (env. 80 % de réussite). Elle se paie d'avance : ${amount} (remise sur quantité déjà incluse). Nous commençons dès réception du paiement. À noter : le paiement anticipé n'est pas remboursé si un avis reste en ligne.`,
+    prepayBtn: "Payer d'avance",
+    next3nt: "Les avis avec texte, tu ne les paies que lorsqu'ils sont réellement supprimés, le jour de la suppression.",
     calm: "Quelques jours sans nouvelles, c'est normal : côté Google, cela prend du temps. Nous restons dessus.",
     close: "Une question entre-temps ? Réponds simplement à cet e-mail.",
     signoff: "Bien à toi,",
@@ -115,6 +133,10 @@ export const T: Record<string, Entry> = {
     next4: "Ogni recensione viene gestita singolarmente, quindi i tempi di rimozione possono variare dall'una all'altra. Per semplificarti le cose, potremmo fatturare ogni recensione rimossa separatamente: non stupirti se ricevi un link di pagamento per ciascuna.",
     declined: (n) => `Abbiamo controllato anche ${n === 1 ? "l'altra recensione" : `le altre ${n} recensioni`} che ci hai inviato: non ${n === 1 ? "può" : "possono"} essere ${n === 1 ? "rimossa" : "rimosse"} tramite le procedure di Google, quindi non ci lavoreremo – e naturalmente non ti verrà addebitato nulla.`,
     special: (n, price) => `Un'altra possibilità per ${n === 1 ? "questa recensione" : "queste recensioni"}: ${n === 1 ? "si può" : "si possono"} rimuovere solo con un software speciale. Non lo gestiamo noi, ma un servizio esterno a cui lo affidiamo, e per questo purtroppo è caro: ${price} a recensione, da pagare in anticipo. Se vuoi procedere così, rispondi a questa e-mail: iniziamo solo dopo la tua conferma esplicita.`,
+    prepayH: "Pagamento anticipato – recensioni senza testo",
+    prepay: (n, amount) => `${n === 1 ? "Una delle recensioni non ha" : `${n} delle recensioni non hanno`} testo: ${n === 1 ? "la rimuoviamo" : "le rimuoviamo"} con la nostra procedura speciale supportata da software (ca. 80 % di successo). Si paga in anticipo: ${amount} (sconto quantità già incluso). Iniziamo appena arriva il pagamento. Nota: il pagamento anticipato non viene rimborsato se una recensione resta online.`,
+    prepayBtn: "Paga in anticipo",
+    next3nt: "Le recensioni con testo le paghi solo quando vengono effettivamente rimosse, il giorno della rimozione.",
     calm: "Qualche giorno senza notizie è normale: lato Google questi tempi ci sono. Ci stiamo lavorando.",
     close: "Domande nel frattempo? Rispondi a questa e-mail.",
     signoff: "Un caro saluto,",
@@ -133,6 +155,10 @@ export const T: Record<string, Entry> = {
     next4: "Elke review wordt afzonderlijk behandeld, dus de verwijdertijd kan per review verschillen. Om het u zo makkelijk mogelijk te maken, kunnen we elke verwijderde review apart factureren – het kan dus zijn dat u per review een aparte betaallink ontvangt.",
     declined: (n) => `We hebben ook ${n === 1 ? "de andere review" : `de andere ${n} reviews`} bekeken die u ons stuurde: ${n === 1 ? "die kan" : "die kunnen"} niet via de procedures van Google worden verwijderd. Daar gaan we dus niet mee aan de slag – en u betaalt er uiteraard niets voor.`,
     special: (n, price) => `Nog één optie voor ${n === 1 ? "deze review" : "deze reviews"}: ${n === 1 ? "die kan" : "die kunnen"} alleen met speciale software worden verwijderd. Dat doen we niet zelf – het is een externe dienst die we inschakelen, en daardoor helaas duur: ${price} per review, vooraf te betalen. Wilt u deze weg proberen? Antwoord dan op deze e-mail – we beginnen pas nadat u het uitdrukkelijk hebt bevestigd.`,
+    prepayH: "Vooruitbetaling – reviews zonder tekst",
+    prepay: (n, amount) => `${n === 1 ? "Eén van de reviews heeft" : `${n} van de reviews hebben`} geen tekst. Die verwijderen we met onze speciale, softwarematige procedure (ca. 80 % slagingskans). Dit wordt vooraf betaald: ${amount} (volumekorting al verrekend). We starten zodra de betaling binnen is. Let op: de vooruitbetaling wordt niet terugbetaald als een review blijft staan.`,
+    prepayBtn: "Nu vooraf betalen",
+    next3nt: "Reviews met tekst betaalt u pas als ze echt verwijderd zijn, op de dag van verwijdering.",
     calm: "Een paar dagen zonder nieuws is normaal: aan de kant van Google kost dit tijd. We blijven erbovenop zitten.",
     close: "Vragen in de tussentijd? Beantwoord gewoon deze e-mail.",
     signoff: "Hartelijke groet,",
@@ -151,6 +177,10 @@ export const T: Record<string, Entry> = {
     next4: "Cada avaliação é tratada individualmente, por isso o tempo de remoção pode variar de uma para outra. Para te facilitar, podemos faturar cada avaliação removida em separado – não estranhes se receberes um link de pagamento para cada uma.",
     declined: (n) => `Também verificámos ${n === 1 ? "a outra avaliação" : `as outras ${n} avaliações`} que nos enviaste: não ${n === 1 ? "pode" : "podem"} ser ${n === 1 ? "removida" : "removidas"} através dos processos da Google, por isso não vamos trabalhar ${n === 1 ? "nela" : "nelas"} – e, claro, não pagas nada por ${n === 1 ? "ela" : "elas"}.`,
     special: (n, price) => `Mais uma opção para ${n === 1 ? "essa avaliação" : "essas avaliações"}: só ${n === 1 ? "pode" : "podem"} ser removida${n === 1 ? "" : "s"} com um software especial. Não somos nós a fazê-lo – é um serviço externo que subcontratamos, o que infelizmente o torna caro: ${price} por avaliação, com pagamento adiantado. Se quiser seguir por esse caminho, responda a este e-mail – só começamos depois da sua confirmação expressa.`,
+    prepayH: "Pagamento adiantado – avaliações sem texto",
+    prepay: (n, amount) => `${n === 1 ? "Uma das avaliações não tem" : `${n} das avaliações não têm`} texto, por isso ${n === 1 ? "removemo-la" : "removemo-las"} com o nosso procedimento especial apoiado por software (aprox. 80 % de sucesso). É pago adiantado: ${amount} (desconto de volume já incluído). Começamos assim que o pagamento chegar. Nota: o pagamento adiantado não é reembolsado se uma avaliação ficar.`,
+    prepayBtn: "Pagar adiantado",
+    next3nt: "As avaliações com texto só as pagas quando forem realmente removidas, no dia da remoção.",
     calm: "Alguns dias sem notícias é normal: do lado do Google isto leva tempo. Estamos em cima do assunto.",
     close: "Dúvidas entretanto? Responde a este e-mail.",
     signoff: "Um abraço,",
@@ -169,6 +199,10 @@ export const T: Record<string, Entry> = {
     next4: "口コミは1件ずつ個別に対応するため、削除までの期間は口コミごとに異なる場合があります。そのため、削除できた口コミごとに個別にご請求し、1件ずつお支払いリンクをお送りすることがあります。あらかじめご了承ください。",
     declined: (n) => `お送りいただいた残りの口コミ${n}件も確認しましたが、Googleの手続きでは削除できないため、対応の対象外とさせていただきます。もちろん、これらの口コミについて料金は発生しません。`,
     special: (n, price) => `${n === 1 ? "この口コミ" : "これらの口コミ"}には、もう一つ方法があります。特別なソフトウェアを使えば削除できる場合があります。ただし当社では行っておらず外部に委託するため、費用が高くなってしまいます：1件あたり${price}、前払いです。この方法をご希望の場合は、このメールにご返信ください。お客様から明確なご依頼をいただいてから着手します。`,
+    prepayH: "前払い – 本文のない口コミ",
+    prepay: (n, amount) => `口コミのうち${n}件は本文がないため、ソフトウェアを用いた特別な手続きで削除します（成功率 約80%）。こちらは前払いとなります：${amount}（まとめ割引適用済み）。お支払いを確認しだい着手します。なお、口コミが残った場合も前払い分は返金されません。`,
+    prepayBtn: "前払いする",
+    next3nt: "本文のある口コミは、実際に削除された場合のみ、削除当日にお支払いいただきます。",
     calm: "数日ご連絡がないこともありますが、Google側の処理には時間がかかるためで、問題ありません。引き続き対応しています。",
     close: "その間にご不明な点があれば、このメールにご返信ください。",
     signoff: "どうぞよろしくお願いいたします。",
@@ -187,6 +221,10 @@ export const T: Record<string, Entry> = {
     next4: "Varje omdöme hanteras för sig, så tiden till borttagning kan variera mellan omdömena. För att göra det enkelt för dig kan vi fakturera varje borttaget omdöme separat – bli inte förvånad om du får en betalningslänk per omdöme.",
     declined: (n) => `Vi har också gått igenom ${n === 1 ? "det andra omdömet" : `de övriga ${n} omdömena`} du skickade: ${n === 1 ? "det kan" : "de kan"} inte tas bort via Googles processer, så vi arbetar inte med ${n === 1 ? "det" : "dem"} – och du betalar förstås ingenting för ${n === 1 ? "det" : "dem"}.`,
     special: (n, price) => `Ett alternativ till för ${n === 1 ? "det omdömet" : "de omdömena"}: ${n === 1 ? "det kan" : "de kan"} bara tas bort med en särskild programvara. Det gör vi inte själva – det är en extern tjänst vi anlitar, och därför tyvärr dyrt: ${price} per omdöme, betalas i förskott. Vill du gå den vägen? Svara bara på det här mejlet – vi börjar först när du uttryckligen har bekräftat.`,
+    prepayH: "Förskottsbetalning – omdömen utan text",
+    prepay: (n, amount) => `${n === 1 ? "Ett av omdömena saknar" : `${n} av omdömena saknar`} text, så vi tar bort ${n === 1 ? "det" : "dem"} med vårt särskilda, programvarustödda förfarande (ca. 80 % chans att lyckas). Det betalas i förskott: ${amount} (mängdrabatt redan inräknad). Vi börjar så snart betalningen har kommit in. Observera: förskottet återbetalas inte om ett omdöme blir kvar.`,
+    prepayBtn: "Betala i förskott",
+    next3nt: "Omdömen med text betalar du först när de faktiskt har tagits bort, samma dag.",
     calm: "Några dagar utan besked är normalt — hos Google tar det här tid. Vi håller i det.",
     close: "Frågor under tiden? Svara bara på det här mejlet.",
     signoff: "Vänliga hälsningar,",
@@ -205,6 +243,10 @@ export const T: Record<string, Entry> = {
     next4: "Hver anmeldelse behandles for sig, så tiden til fjernelse kan variere fra anmeldelse til anmeldelse. For at gøre det nemt for dig kan vi fakturere hver fjernet anmeldelse separat – bliv derfor ikke overrasket, hvis du modtager et betalingslink for hver enkelt.",
     declined: (n) => `Vi har også gennemgået ${n === 1 ? "den anden anmeldelse" : `de øvrige ${n} anmeldelser`}, du sendte: ${n === 1 ? "den kan" : "de kan"} ikke fjernes via Googles processer, så dem arbejder vi ikke med – og du betaler naturligvis ikke noget for ${n === 1 ? "den" : "dem"}.`,
     special: (n, price) => `Én mulighed mere for ${n === 1 ? "den anmeldelse" : "de anmeldelser"}: ${n === 1 ? "den kan" : "de kan"} kun fjernes med en særlig software. Det gør vi ikke selv – det er en ekstern tjeneste, vi bruger, og derfor desværre dyrt: ${price} pr. anmeldelse, betales forud. Vil du gå den vej, så svar bare på denne mail – vi går først i gang, når du udtrykkeligt har bekræftet det.`,
+    prepayH: "Forudbetaling – anmeldelser uden tekst",
+    prepay: (n, amount) => `${n === 1 ? "En af anmeldelserne har" : `${n} af anmeldelserne har`} ingen tekst, så vi fjerner ${n === 1 ? "den" : "dem"} med vores særlige, softwareunderstøttede procedure (ca. 80 % succesrate). Det betales forud: ${amount} (mængderabat allerede fratrukket). Vi går i gang, så snart betalingen er modtaget. Bemærk: forudbetalingen refunderes ikke, hvis en anmeldelse bliver stående.`,
+    prepayBtn: "Betal forud nu",
+    next3nt: "Anmeldelser med tekst betaler du først, når de faktisk er fjernet, samme dag.",
     calm: "Nogle dage uden nyt er normalt — hos Google tager det tid. Vi holder fast i det.",
     close: "Spørgsmål i mellemtiden? Svar blot på denne mail.",
     signoff: "Venlig hilsen,",
@@ -223,6 +265,10 @@ export const T: Record<string, Entry> = {
     next4: "Hver omtale behandles for seg, så tiden til fjerning kan variere fra omtale til omtale. For å gjøre det enkelt for deg kan vi fakturere hver fjernede omtale separat – ikke bli overrasket om du får en betalingslenke per omtale.",
     declined: (n) => `Vi har også gått gjennom ${n === 1 ? "den andre omtalen" : `de øvrige ${n} omtalene`} du sendte: ${n === 1 ? "den kan" : "de kan"} ikke fjernes via Googles prosesser, så vi jobber ikke med ${n === 1 ? "den" : "dem"} – og du betaler selvsagt ingenting for ${n === 1 ? "den" : "dem"}.`,
     special: (n, price) => `Ett alternativ til for ${n === 1 ? "den omtalen" : "de omtalene"}: ${n === 1 ? "den kan" : "de kan"} bare fjernes med en spesiell programvare. Det gjør vi ikke selv – det er en ekstern tjeneste vi setter ut til, og derfor dessverre dyrt: ${price} per omtale, betales på forhånd. Vil du gå den veien, svarer du bare på denne e-posten – vi starter først når du uttrykkelig har bekreftet det.`,
+    prepayH: "Forhåndsbetaling – omtaler uten tekst",
+    prepay: (n, amount) => `${n === 1 ? "En av omtalene har" : `${n} av omtalene har`} ingen tekst, så vi fjerner ${n === 1 ? "den" : "dem"} med vår spesielle, programvarestøttede prosedyre (ca. 80 % sjanse for å lykkes). Dette betales på forhånd: ${amount} (mengderabatt allerede trukket fra). Vi starter så snart betalingen er mottatt. Merk: forhåndsbetalingen refunderes ikke hvis en omtale blir stående.`,
+    prepayBtn: "Betal på forhånd nå",
+    next3nt: "Omtaler med tekst betaler du først når de faktisk er fjernet, samme dag.",
     calm: "Noen dager uten nyheter er normalt — hos Google tar dette tid. Vi står på.",
     close: "Spørsmål i mellomtiden? Bare svar på denne e-posten.",
     signoff: "Vennlig hilsen,",
@@ -236,7 +282,7 @@ export function subject(p: BearbeitungGestartetReviewsProps): string {
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function BearbeitungGestartetReviews({ lang = "en", name = "", items = [], urls = [], per = "", currency = "", orderId = "", declined = 0, _overrides }: BearbeitungGestartetReviewsProps = {}) {
+export default function BearbeitungGestartetReviews({ lang = "en", name = "", items = [], urls = [], per = "", currency = "", orderId = "", declined = 0, prepay, _overrides }: BearbeitungGestartetReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -260,11 +306,18 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
         <P>{t.special(declined, fmtReviewMoney(SPECIAL_REVIEW_PRICE, reviewCurrency(currency, per) === "usd" ? "usd" : "eur"))}</P>
       ) : null}
 
+      {prepay && prepay.n > 0 && t.prepay ? (
+        <React.Fragment>
+          <P><strong>{t.prepayH}</strong><br />{t.prepay(prepay.n, prepay.amount)}</P>
+          {prepay.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton href={prepay.url}>{t.prepayBtn} · {prepay.amount}</CtaButton></div> : null}
+        </React.Fragment>
+      ) : null}
+
       <NoteBox>
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.nextH}</span><br />
         1. {t.next1}<br />
         2. {t.next2}<br />
-        3. {fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
+        3. {prepay && prepay.n > 0 && t.next3nt ? t.next3nt : fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
         {n > 1 && t.next4 ? <React.Fragment><br />4. {t.next4}</React.Fragment> : null}
         <ReviewPriceLines lang={lang} items={list} currency={reviewCurrency(currency, per)} />
       </NoteBox>

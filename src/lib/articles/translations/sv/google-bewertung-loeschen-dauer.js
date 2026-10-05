@@ -99,7 +99,7 @@ const article = {
     { q: "Varför har min rapport stått på ”Decision pending” i flera veckor?", a: "Vissa rapporter granskas manuellt och det kan ta längre tid; Google anger ingen tidsgräns. Kontrollera att du valt rätt kategori – en stark och korrekt rapport är det bästa sättet att snabba på." },
     { q: "Får skribenten veta vem som rapporterade recensionen?", a: "Nej. När vi begär en borttagning får skribenten inte veta vem som bad om den." },
     { q: "Kan en borttagen recension komma tillbaka?", a: "En recension som tagits bort på grund av en överträdelse kommer normalt inte tillbaka. Personen kan däremot skriva en ny recension; den granskas då på nytt för sig och kan rapporteras igen om den också bryter mot reglerna." },
-    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **179 € per borttagen recension** (229 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta." },
+    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **179 € per borttagen recension** (229 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Stjärnbetyg utan text kostar oavsett ålder 300 € med ett särskilt förfarande, i förskott." },
   ],
   related: [
     { label: "Ta bort en Google-recension: pris, chans och beställning", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },

@@ -81,7 +81,7 @@ const article = {
     { t: "p", text: "Usiamo **solo le procedure ufficiali di Google**, per conto del titolare dell'attività: niente account falsi, niente bot, niente finte diffide legali. L'autore della recensione non viene a sapere chi ha richiesto la rimozione." },
     { t: "ul", items: [
       "**Prima una valutazione gratuita:** ti diciamo onestamente se una recensione è rimovibile. Se non lo è, non ti costa nulla.",
-      "**Prezzo:** 179 € per recensione rimossa; le recensioni con più di 4 settimane costano 50 € in più (229 €).",
+      "**Prezzo:** 179 € per recensione rimossa; le recensioni con più di 4 settimane costano 50 € in più (229 €). Anche le valutazioni senza testo – procedura speciale, 300 € pagati in anticipo (ca. 80 % di successo).",
       "**Probabilità di successo:** circa 90 % per le recensioni fino a 4 settimane, circa 50 % per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni che accettiamo: da 3, −10 %; da 5, −15 %; da 10, −30 %.",
       "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane. Paghi ogni recensione quando è sparita, tramite un link di pagamento sicuro.",

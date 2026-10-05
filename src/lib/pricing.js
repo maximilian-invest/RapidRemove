@@ -54,14 +54,19 @@ export const REVIEW_OLD_SURCHARGE = 50;
 export function reviewDiscountPct(n) {
   return n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0;
 }
-/** items: [{ old?: boolean }] → { n, nOld, nNew, base, oldPrice, subtotal, pct, discount, total } */
+/** Reine Sternebewertungen ohne Text: Spezialverfahren, Festpreis (€ und $), Vorauszahlung, kein Altersaufschlag. */
+export const REVIEW_NOTEXT_PRICE = 300;
+/** items: [{ old?: boolean, nt?: boolean }] → { n, nOld, nNew, nNt, base, oldPrice, ntPrice, subtotal, pct, discount, total, ntTotal } */
 export function reviewQuote(items, lang) {
   const base = Number(String(profileFor(lang).review).replace(",", ".")) || 179;
   const list = Array.isArray(items) ? items : [];
   const n = list.length;
-  const nOld = list.filter((it) => it && it.old).length;
-  const subtotal = n * base + nOld * REVIEW_OLD_SURCHARGE;
+  const nNt = list.filter((it) => it && it.nt).length;
+  const nOld = list.filter((it) => it && it.old && !it.nt).length;
+  const nNew = n - nOld - nNt;
+  const subtotal = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
   const pct = reviewDiscountPct(n);
   const total = Math.round(subtotal * (100 - pct) / 100);
-  return { n, nOld, nNew: n - nOld, base, oldPrice: base + REVIEW_OLD_SURCHARGE, subtotal, pct, discount: subtotal - total, total };
+  const ntTotal = Math.round(nNt * REVIEW_NOTEXT_PRICE * (100 - pct) / 100);
+  return { n, nOld, nNew, nNt, base, oldPrice: base + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, discount: subtotal - total, total, ntTotal };
 }

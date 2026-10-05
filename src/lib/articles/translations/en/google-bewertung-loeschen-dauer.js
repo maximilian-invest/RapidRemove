@@ -96,7 +96,7 @@ const article = {
       "**Don't** threaten, don't guess who wrote it in public, and don't ask friends for counter-reviews – that can itself break Google's rules on fake engagement.",
       "**Document** everything: screenshots of the review, the reviewer profile and your report status.",
     ] },
-    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/), and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
+    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/) – we remove those too, with a special procedure ($300 paid upfront) – and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
 
     { t: "h2", id: "different-times", text: "Why several reviews come down at different times", toc: "Different times" },
     { t: "p", text: "**Every review is checked on its own, so if you report five, they rarely disappear on the same day.** One may be gone after two days, another needs an appeal, a third is still pending after two weeks." },

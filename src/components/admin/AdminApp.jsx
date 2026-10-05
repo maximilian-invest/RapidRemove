@@ -1605,21 +1605,27 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const acceptedList = acceptedLocal || o.reviewsAccepted || null;
   const accKeys = acceptedList ? new Set(acceptedList.map(keyOf)) : null;
   const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)));
+  // Bewertungen ohne Text (nt): Spezialverfahren, 300 Vorauszahlung mit der Startbestätigung →
+  // nach dem Start nicht mehr in der Rechnung (vorausbezahlt).
+  const isPrepaid = (it) => !!(it && it.nt && accKeys && accKeys.has(keyOf(it)));
   const started = !!accKeys;
   const basisN = started ? accKeys.size : items.length; // Mengenrabatt nach angenommenen Bewertungen
   const [sel, setSel] = React.useState({});   // Index -> true
   const [sending, setSending] = React.useState(false);
   const [starting, setStarting] = React.useState(false);
   const [sentAt, setSentAt] = React.useState(null);
-  const chosen = items.filter((it, i) => sel[i] && !isDeclined(it));
+  const chosen = items.filter((it, i) => sel[i] && !isDeclined(it) && !isPrepaid(it));
   const cur = o.country === "US" ? "usd" : "eur";
   const lang = o.lang && o.lang !== "de" ? o.lang : "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
-  const nOld = chosen.filter((it) => it && it.old).length;
+  const nNt = chosen.filter((it) => it && it.nt).length;
+  const nOld = chosen.filter((it) => it && it.old && !it.nt).length;
+  const nNew = chosen.length - nOld - nNt;
   const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, basisN)) : 0;
-  const total = Math.round((chosen.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
-  const per = (nOld === 0 ? fmtM(179) : nOld === chosen.length ? fmtM(179 + REVIEW_OLD_SURCHARGE) : fmtM(179) + " / " + fmtM(179 + REVIEW_OLD_SURCHARGE)) + (pct ? ` (−${pct} %)` : "");
+  const total = Math.round((nNew * 179 + nOld * (179 + REVIEW_OLD_SURCHARGE) + nNt * 300) * (100 - pct) / 100);
+  const ntUpfront = Math.round(nNt * 300 * (100 - pct) / 100);
+  const per = [nNew ? fmtM(179) : "", nOld ? fmtM(179 + REVIEW_OLD_SURCHARGE) : "", nNt ? fmtM(300) : ""].filter(Boolean).join(" / ") + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
   // Kunde wollte mit PayPal/Wise zahlen (10 % Rabatt) → eigener Button „Löschbestätigung senden"
   // (ohne Stripe-Link, PayPal-Hinweis bzw. Wise-Kontodaten); Stripe-Rechnung nur mit Schloss + Abfrage.
@@ -1689,14 +1695,16 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           : <React.Fragment>{items.length} eingereicht · Schritt 1: angenommene Bewertungen anhaken → Startbestätigung · Schritt 2: gelöschte anhaken → Rechnung</React.Fragment>}
       </div>
       {items.map((it, i) => {
-        const off = isDeclined(it);
+        const off = isDeclined(it) || isPrepaid(it);
         return (
           <label key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", padding: "6px 0", borderBottom: "1px solid var(--hairline)", cursor: off ? "not-allowed" : "pointer", fontSize: 12.5, opacity: off ? 0.4 : 1 }}>
             <input type="checkbox" disabled={off} checked={!off && !!sel[i]} onChange={() => setSel((m) => ({ ...m, [i]: !m[i] }))} style={{ marginTop: 2 }} />
             {it.url
-              ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: off ? "line-through" : undefined }}>{it.url}</a>
+              ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: isDeclined(it) ? "line-through" : undefined }}>{it.url}</a>
               : <span style={{ fontWeight: 600, textDecoration: off ? "line-through" : undefined }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
-            {off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
+            {isPrepaid(it) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · Vorauszahlung (nicht in der Rechnung)</span>
+              : off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
+              : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · {fmtM(300)} vorab</span>
               : it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
           </label>
         );
@@ -1705,7 +1713,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         {started || chosen.length === 0
           ? <span style={{ fontWeight: 800 }}>{chosen.length} {started ? "gelöscht" : "ausgewählt"} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
               {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
-          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt</span>}
+          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Vorauszahlung {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
         {!started ? (

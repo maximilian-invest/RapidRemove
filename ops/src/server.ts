@@ -305,16 +305,17 @@ app.post("/order", async (req, reply) => {
   const isReviews = service === "reviews";
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
         const url = httpUrl(o.url, 400);
         const nm = clip(o.name, 80);
         const tx = clip(o.text, 400);
-        const old = o.old === true ? { old: true } : {}; // älter als 4 Wochen → Aufpreis
-        if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...old } as ReviewItem;
-        if (nm && tx) return { name: nm, text: tx, ...old } as ReviewItem;
+        // nt = reine Sternebewertung ohne Text → Spezialverfahren (Festpreis, Vorauszahlung, kein Altersaufschlag)
+        const flags = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // old: älter als 4 Wochen → Aufpreis
+        if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as ReviewItem;
+        if (nm && tx) return { name: nm, text: tx, ...flags } as ReviewItem;
         return null;
       }).filter(Boolean) as ReviewItem[]
     : Array.isArray(b.reviewUrls)
@@ -1090,22 +1091,37 @@ app.post("/admin/reviews-start", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type StartItem = { url?: string; name?: string; text?: string; old?: boolean };
+  type StartItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
   const items: StartItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
     const o = (raw || {}) as Record<string, unknown>;
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const old = o.old === true ? { old: true } : {}; // älter als 4 Wochen → Aufpreis
-    if (url) return { url, ...old };
-    if (nm && tx) return { name: nm, text: tx, ...old };
+    const flags = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text (Vorauszahlung) · old: älter als 4 Wochen
+    if (url) return { url, ...flags };
+    if (nm && tx) return { name: nm, text: tx, ...flags };
+    if (nm && flags.nt) return { name: nm, ...flags };
     return null;
   }).filter(Boolean) as StartItem[];
   const currency = (clip(b.currency, 8) || "eur").toLowerCase() === "usd" ? "usd" : "eur";
   // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
-  const per = quoteReviews(items, currency).per;
+  const startQuote = quoteReviews(items, currency);
+  const per = startQuote.per;
+  // Bewertungen ohne Text: Vorauszahlung (rabattiert) per Stripe-Link mit der Startbestätigung.
+  let prepay: { n: number; amount: string; url: string } | undefined;
+  if (startQuote.nNt > 0) {
+    let payUrl = "";
+    if (hasSecretKey()) {
+      try { payUrl = await ensureReviewsAmountLink(startQuote.ntTotal, currency); }
+      catch (e) { app.log.error({ err: e }, "Vorauszahlungs-Link (ohne Text) fehlgeschlagen"); }
+    }
+    if (!payUrl) return reply.code(400).send({ ok: false, error: hasSecretKey()
+      ? "Zahlungslink für die Vorauszahlung (Bewertungen ohne Text) konnte nicht angelegt werden — ops-Log prüfen."
+      : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
+    prepay = { n: startQuote.nNt, amount: startQuote.ntTotalStr, url: payUrl };
+  }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
   // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
@@ -1114,17 +1130,18 @@ app.post("/admin/reviews-start", async (req, reply) => {
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined };
+    const props = { lang: tlang, name: clip(b.name, 120), items, per, currency, orderId, declined, prepay };
     const { html, subject } = await renderTemplate("bearbeitung-gestartet-reviews", props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Vorauszahlung ${prepay.amount} (Link in der Mail)` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.
     if (orderId && items.length) await setOrderRawField(orderId, "reviewsAccepted", items).catch(() => {});
+    if (orderId && prepay) await setOrderRawField(orderId, "reviewsPrepay", { ...prepay, at: new Date().toISOString() }).catch(() => {});
     return { ok: true, lang: tlang, count: items.length };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");
@@ -1223,7 +1240,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1233,11 +1250,12 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
     const old = o.old === true ? { old: true } : {};
+    if (o.nt === true) return null; // ohne Text = vorausbezahlt → nicht (nochmal) abrechnen
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
-  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
+  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine abzurechnenden gelöschten Bewertungen markiert (Bewertungen ohne Text sind vorausbezahlt)" });
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
@@ -1307,7 +1325,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1317,6 +1335,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
     const old = o.old === true ? { old: true } : {};
+    if (o.nt === true) return null; // ohne Text = vorausbezahlt → nicht (nochmal) abrechnen
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;

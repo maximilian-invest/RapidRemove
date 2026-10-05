@@ -24,7 +24,7 @@ const article = {
     { t: "p", text: "Ikke enhver dårlig anmeldelse kan anfægtes. En saglig, om end negativ, skildring af en virkelig kundeoplevelse er beskyttet af ytringsfriheden og bliver oftest stående. Til gengæld er der **gode chancer for fjernelse** ved anmeldelser, der overtræder Googles retningslinjer:" },
     { t: "ul", items: [
       "**Falske anmeldelser** fra personer, der aldrig har været kunder eller ikke findes",
-      "**1-stjernede anmeldelser uden tekst**, hvor ingen genkendelig sammenhæng ses (dog ikke via vores fjernelse af enkelte anmeldelser, som kun dækker anmeldelser med tekst)",
+      "**1-stjernede anmeldelser uden tekst**, hvor ingen genkendelig sammenhæng ses (hos os via en særlig procedure: 300 €, betales forud)",
       "**Fornærmelser, bagvaskelse og personangreb**",
       "**Urigtige faktuelle påstande** (beviseligt usande udsagn)",
       "**Indhold uden for emnet** eller reklame",
@@ -84,7 +84,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja. Med [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) vælger du præcis de Google-anmeldelser, der skal væk – dog kun anmeldelser med tekst; rene stjernebedømmelser uden tekst kan ikke fjernes via servicen og kan ikke vælges i bestillingsformularen. Op til 4 uger gamle: ca. 90 % succesrate, 179 € pr. fjernet anmeldelse; ældre: ca. 50 %, +50 € pr. anmeldelse. Mængderabat: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. Du betaler kun for anmeldelser, der faktisk fjernes. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
+    { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja. Med [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) vælger du præcis de Google-anmeldelser, der skal væk – også rene stjernebedømmelser uden tekst. Anmeldelser med tekst op til 4 uger gamle: ca. 90 % succesrate, 179 € pr. fjernet anmeldelse; ældre: ca. 50 %, +50 € pr. anmeldelse – du betaler kun, hvis de faktisk fjernes. Stjernebedømmelser uden tekst fjerner vi med en særlig procedure: 300 € pr. stk., betales forud, ca. 80 % succes. Mængderabat: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
     { q: "Kan jeg selv fjerne en Google-anmeldelse?", a: "Som virksomhed kan du kun rapportere en andens anmeldelse, ikke fjerne den. Om Google fjerner den, afgør virksomheden – ofte afvisende. Dine egne anmeldelser kan du fjerne når som helst." },
     { q: "Hvor lang tid tager det at fjerne en Google-anmeldelse?", a: "Via rapporteringsfunktionen dage til uger med usikkert udfald, via en advokat ofte flere måneder. Via RapidRemoves fjernelse af enkelte anmeldelser som regel få dage, højst ca. tre uger; via profilfjernelse oftest 24 til 48 timer." },
     { q: "Hvad koster det at fjerne en negativ Google-anmeldelse?", a: "Afhængigt af metoden mellem ca. 20 € (billige, usikre tjenester) og 159 € pr. anmeldelse (advokat). Hos RapidRemove koster [fjernelse af en enkelt anmeldelse](/da/fjern-anmeldelse/) 179 € (ældre end 4 uger: 229 €) – kun ved succes; profilfjernelse har en fast pris, der først betales efter vellykket fjernelse." },

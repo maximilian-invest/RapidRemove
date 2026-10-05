@@ -30,7 +30,7 @@ const article = {
       "**Confusões** com outra empresa",
       "**Avaliações de concorrentes** (conflito de interesses)",
     ] },
-    { t: "p", text: "Opiniões puras como «não gostei» são, pelo contrário, difíceis de remover enquanto assentarem num contacto real. E as **classificações só com estrelas, sem texto,** não podem ser removidas através da nossa remoção de avaliações individuais: sem texto não há conteúdo a que se possam aplicar as diretrizes. Denunciá-las por si mesmo ao Google é possível, mas raramente resulta." },
+    { t: "p", text: "Opiniões puras como «não gostei» são, pelo contrário, difíceis de remover enquanto assentarem num contacto real. As **classificações só com estrelas, sem texto,** removemos com um procedimento especial apoiado por software (300 € por avaliação, pagos adiantado, aprox. 80 % de sucesso)." },
 
     { t: "h2", id: "m1", text: "Método 1: denunciar a avaliação ao próprio Google", toc: "Método 1: denunciar" },
     { t: "p", text: "O caminho gratuito passa pela função de denúncia. Eis como:" },
@@ -83,7 +83,7 @@ const article = {
     ] },
   ],
   faq: [
-    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; em avaliações até 4 semanas a probabilidade de sucesso é de aprox. 90 %; as mais antigas também são possíveis (aprox. 50 %, +50 € cada); só podem ser selecionadas avaliações com texto – as classificações só com estrelas, sem texto, não. A partir de 3 avaliações aplica-se desconto por quantidade (−10 %, de 5 −15 %, de 10 −30 %). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
+    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; em avaliações até 4 semanas a probabilidade de sucesso é de aprox. 90 %; as mais antigas também são possíveis (aprox. 50 %, +50 € cada); também podem ser selecionadas classificações só com estrelas, sem texto (procedimento especial, 300 € cada, pagos adiantado). A partir de 3 avaliações aplica-se desconto por quantidade (−10 %, de 5 −15 %, de 10 −30 %). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
     { q: "Posso eu próprio remover uma avaliação do Google?", a: "Como empresa, só pode denunciar a avaliação de outra pessoa, não removê-la. Se o Google a retira, decide a empresa – muitas vezes negando. As suas próprias avaliações pode removê-las a qualquer momento." },
     { q: "Quanto tempo demora a remover uma avaliação do Google?", a: "Pela função de denúncia, dias a semanas com desfecho incerto; por um advogado, muitas vezes vários meses; pela remoção de avaliações individuais da RapidRemove, normalmente alguns dias, por vezes até três semanas; pela remoção do perfil completo, normalmente 24 a 48 horas." },
     { q: "Quanto custa remover uma avaliação negativa do Google?", a: "Consoante o método, entre cerca de 20 € (serviços baratos e incertos) e 159 € por avaliação (advogado). Na RapidRemove, uma avaliação individual custa 179 € (até 4 semanas) ou 229 € (mais antiga), com desconto por quantidade a partir de 3; a remoção do perfil completo tem preço fixo. Em ambos os casos só paga após a remoção bem-sucedida." },

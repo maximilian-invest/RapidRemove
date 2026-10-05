@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "zonas-cinzentas", text: "Zonas cinzentas: só estrelas, ex-funcionários, concorrentes, preços", toc: "Zonas cinzentas" },
     { t: "p", text: "Estes casos não são removíveis automaticamente nem intocáveis automaticamente. O resultado depende de conseguir demonstrar uma violação, não de quão injusta a avaliação lhe parece." },
     { t: "ul", items: [
-      "**Classificações só com estrelas, sem texto:** não há conteúdo que possa violar uma regra, por isso a questão é se a pessoa foi cliente real. As de 1 estrela sem texto vindas de perfis desconhecidos são muitas vezes falsas; explicamos em [avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/).",
+      "**Classificações só com estrelas, sem texto:** não há conteúdo que possa violar uma regra, por isso a questão é se a pessoa foi cliente real. As de 1 estrela sem texto vindas de perfis desconhecidos são muitas vezes falsas; explicamos em [avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/). A RapidRemove remove-as com um procedimento especial (300 €, pagos adiantado).",
       "**Ex-funcionários:** o Google indica o emprego atual ou anterior como **conflito de interesses**. Uma avaliação de um ex-funcionário sobre a empresa enquanto empregador é um caso sólido, sobretudo se nunca foi cliente.",
       "**Concorrentes:** avaliações publicadas por ou para um concorrente são conflito de interesses. Provas diretas são raras; contam o momento, a redação e as outras avaliações do autor.",
       "**Avaliações sobre preços:** «demasiado caro» é uma opinião e fica. Só passa a ser removível se contiver algo mais, como afirmações falsas, insultos ou um link para um concorrente.",
@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "Faz sentido quando há várias avaliações, quando uma denúncia já foi rejeitada ou quando simplesmente não tem tempo. A RapidRemove usa apenas os procedimentos do próprio Google, em nome do proprietário da empresa: sem contas falsas, sem bots, sem notificações legais falsas, e o autor não fica a saber quem pediu a remoção." },
     { t: "ul", items: [
       "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação é removível. Se não for, não custa nada.",
-      "**179 € por avaliação removida**, +50 € para avaliações com mais de 4 semanas. Só paga quando a avaliação desaparecer.",
+      "**179 € por avaliação removida**, +50 € para avaliações com mais de 4 semanas. Só paga quando a avaliação desaparecer. Classificações só com estrelas: 300 €, pagos adiantado.",
       "**Probabilidade de sucesso:** cerca de **90 %** em avaliações até 4 semanas, cerca de **50 %** nas mais antigas.",
       "**Desconto de volume** nas avaliações aceites: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Prazo:** normalmente alguns dias, por vezes até 3 semanas.",

@@ -903,3 +903,4 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .wz-reason-chip.on{background:var(--orange-50);border-color:var(--primary);color:var(--orange-800);}
 .wz-reason-done{margin-top:22px;padding:18px 20px;border:1px solid var(--hairline);border-radius:var(--r-lg);background:var(--neutral-50);}
 .wz-reason-thx{margin-top:10px;font-size:13px;font-weight:700;color:var(--success);}
+.rv-nt-note{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted, #6b6b6b);}

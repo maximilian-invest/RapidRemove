@@ -105,7 +105,7 @@ const article = {
     { q: "Hva skjer hvis Google avviser rapporteringen min?", a: "Da kan du klage i Reviews Management Tool, **én gang per anmeldelse**. Klagen kan bli eskalert og ender med en endelig avgjørelse fra Google." },
     { q: "Kan jeg be en kunde om å endre anmeldelsen sin?", a: "Ja, hvis det er en ekte kunde og du har løst problemet. Tilby **ingen rabatt, gave eller annen belønning** – det bryter Googles retningslinjer." },
     { q: "Forsvinner anmeldelsene hvis jeg markerer profilen som permanent stengt?", a: "Nei. Ved «permanent stengt» er både opplysningene og anmeldelsene fortsatt synlige. Bare hvis hele bedriftsprofilen slettes, forsvinner alle anmeldelser – også de gode." },
-    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse**, 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting." },
+    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse**, 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting. Også rene stjernevurderinger uten tekst kan fjernes – egen prosedyre, 300 € betalt på forhånd." },
     { q: "Hvor lang tid tar det før en anmeldelse er borte?", a: "Som regel noen få dager, noen ganger opptil 3 uker. Google lover ikke selv noen fast behandlingstid – vurderingen kan ta alt fra dager til uker." },
   ],
   related: [

@@ -81,7 +81,7 @@ const article = {
     { t: "p", text: "Nous utilisons **uniquement les procédures de Google**, au nom du propriétaire de l'établissement : pas de faux comptes, pas de bots, pas de fausses mises en demeure. L'auteur de l'avis n'apprend pas qui a demandé la suppression." },
     { t: "ul", items: [
       "**D'abord une évaluation gratuite :** nous vous disons honnêtement si un avis est supprimable. Sinon, cela ne vous coûte rien.",
-      "**Prix :** 179 € par avis supprimé ; les avis de plus de 4 semaines coûtent 50 € de plus (229 €).",
+      "**Prix :** 179 € par avis supprimé ; les avis de plus de 4 semaines coûtent 50 € de plus (229 €). Les notes sans texte aussi – procédure spéciale, 300 € payés d'avance (env. 80 % de réussite).",
       "**Chances de succès :** env. 90 % pour les avis de moins de 4 semaines, env. 50 % pour les plus anciens.",
       "**Remise sur volume** pour les avis que nous acceptons : dès 3, −10 % ; dès 5, −15 % ; dès 10, −30 %.",
       "**Durée :** en général quelques jours, parfois jusqu'à 3 semaines. Vous payez chaque avis une fois supprimé, via un lien de paiement sécurisé.",
