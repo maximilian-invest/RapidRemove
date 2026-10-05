@@ -42,8 +42,8 @@ const PAGE_DESC = {
   seo: { en: "Get found on Google by the right customers: local, organic and measurable SEO with transparent monthly reporting — free SEO analysis, no lock-in contracts." },
   kontakt: { en: "Talk to the RapidRemove team about removals, ongoing cases or partnerships — personal reply, usually within 24 hours." },
   report: {
-    en: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022: removed profiles averaged 3.5 stars, more than half of all requests now come in English, the US is the #2 country.",
-    de: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022: gelöschte Profile hatten im Schnitt 3,5 Sterne, jede zweite Anfrage kommt auf Englisch, die USA sind Land Nr. 2.",
+    en: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2023: removed profiles averaged 3.5 stars, more than half of all requests now come in English, the US is the #2 country.",
+    de: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2023: gelöschte Profile hatten im Schnitt 3,5 Sterne, jede zweite Anfrage kommt auf Englisch, die USA sind Land Nr. 2.",
   },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
   reviews: {

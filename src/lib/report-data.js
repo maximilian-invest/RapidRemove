@@ -7,7 +7,7 @@
 export const REPORT = {
   published: "2026-10-05",
   updated: "2026-10-05",
-  coverage: "2022-07/2026-09",
+  coverage: "2023-01/2026-09",
   csv: "/data/rapidremove-gbp-removal-report-2026.csv",
   totals: { removals: "1,600+", checks: "20,000+", countries: "50+", enShare2025: 55, protection: [23, 27] },
   // Sprache der Profil-Checks (Formular DE vs. EN), Anteil in %
@@ -47,11 +47,11 @@ export const COUNTRY_NAME = {
 export const REPORT_META = {
   en: {
     title: "Google Business Profile Removal Report 2026",
-    description: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022: removed profiles averaged 3.5 stars, more than half of all requests now come in English, the US is the #2 country.",
+    description: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2023: removed profiles averaged 3.5 stars, more than half of all requests now come in English, the US is the #2 country.",
   },
   de: {
     title: "Google-Profil-Löschungen: Report 2026",
-    description: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022: gelöschte Profile hatten im Schnitt 3,5 Sterne, jede zweite Anfrage kommt auf Englisch, die USA sind Land Nr. 2.",
+    description: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2023: gelöschte Profile hatten im Schnitt 3,5 Sterne, jede zweite Anfrage kommt auf Englisch, die USA sind Land Nr. 2.",
   },
 };
 

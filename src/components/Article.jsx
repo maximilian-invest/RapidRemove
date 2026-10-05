@@ -135,7 +135,7 @@ function ArticleBody() {
           <p>
             Und es ist kein regionales Phänomen: Laut unserem{" "}
             <a href={asset("/google-profil-loeschungen-report")}>Datenreport 2026</a> – Basis sind über 1.600 Löschungen
-            seit 2022 – kommt inzwischen mehr als die Hälfte aller Anfragen auf Englisch, von Unternehmen aus über 50 Ländern.
+            seit 2023 – kommt inzwischen mehr als die Hälfte aller Anfragen auf Englisch, von Unternehmen aus über 50 Ländern.
           </p>
 
           <ArticleIngestAnim />

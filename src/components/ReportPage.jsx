@@ -18,11 +18,11 @@ import { REPORT, COUNTRY_NAME, REPORT_META } from "@/lib/report-data";
 const C = {
   en: {
     eyebrow: "Data report · October 2026",
-    lead: "What 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022 show about who wants a profile gone — and where they are.",
+    lead: "What 1,600+ Google Business Profile removals and 20,000+ profile checks since 2023 show about who wants a profile gone — and where they are.",
     by: "By the RapidRemove team · Published 5 October 2026",
     keyH: "Key figures",
     tiles: [
-      { v: REPORT.totals.removals, l: "Google Business Profiles removed since 2022" },
+      { v: REPORT.totals.removals, l: "Google Business Profiles removed since 2023" },
       { v: REPORT.totals.checks, l: "free profile checks since March 2024" },
       { v: REPORT.totals.countries, l: "countries our removal clients came from" },
       { v: `${REPORT.totals.enShare2025} %`, l: "of profile checks in 2025 were in English" },
@@ -83,7 +83,7 @@ const C = {
     ],
     methH: "Methodology",
     meth: [
-      "Source: RapidRemove's own order and profile-check records from July 2022 to September 2026, including cases our team handled in 2022–2023 under a previous brand name. All figures are aggregated and rounded; no individual business can be identified.",
+      "Source: RapidRemove's own order and profile-check records from January 2023 to September 2026. All figures are aggregated and rounded; no individual business can be identified.",
       "Profile checks: free checks submitted through our website form (whether a Google Business Profile can be removed). Language = the language version of the form (English or German). The 2024 split covers March–December, the 2026 split January to mid-June.",
       "Removals: completed and paid removals of Google Business Profiles. Country = the country of the business profile as recorded on the order. A country was recorded for 826 removals between January 2024 and June 2026; for 2024 this is a subset of 211.",
       "Star ratings and review counts: as shown on Google at the time of the check or order, recorded since mid-June 2026 — 668 checked and 102 removed profiles, each counted once. Shares may not add up to 100 % due to rounding.",
@@ -107,11 +107,11 @@ const C = {
   },
   de: {
     eyebrow: "Datenreport · Oktober 2026",
-    lead: "Was über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022 darüber verraten, wer ein Profil loswerden will – und wo.",
+    lead: "Was über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2023 darüber verraten, wer ein Profil loswerden will – und wo.",
     by: "Vom RapidRemove-Team · Veröffentlicht am 5. Oktober 2026",
     keyH: "Die wichtigsten Zahlen",
     tiles: [
-      { v: "1.600+", l: "Google-Unternehmensprofile gelöscht seit 2022" },
+      { v: "1.600+", l: "Google-Unternehmensprofile gelöscht seit 2023" },
       { v: "20.000+", l: "kostenlose Profil-Checks seit März 2024" },
       { v: REPORT.totals.countries, l: "Länder, aus denen unsere Kunden kamen" },
       { v: `${REPORT.totals.enShare2025} %`, l: "der Profil-Checks 2025 kamen auf Englisch" },
@@ -172,7 +172,7 @@ const C = {
     ],
     methH: "Methodik",
     meth: [
-      "Quelle: eigene Auftrags- und Profil-Check-Daten von RapidRemove von Juli 2022 bis September 2026, inklusive der Fälle, die unser Team 2022–2023 unter einem früheren Markennamen bearbeitet hat. Alle Zahlen sind aggregiert und gerundet; einzelne Unternehmen sind nicht erkennbar.",
+      "Quelle: eigene Auftrags- und Profil-Check-Daten von RapidRemove von Jänner 2023 bis September 2026. Alle Zahlen sind aggregiert und gerundet; einzelne Unternehmen sind nicht erkennbar.",
       "Profil-Checks: kostenlose Prüfungen über das Formular auf unserer Website (ob sich ein Google-Unternehmensprofil löschen lässt). Sprache = Sprachversion des Formulars (Deutsch oder Englisch). 2024 umfasst März–Dezember, 2026 Jänner bis Mitte Juni.",
       "Löschungen: abgeschlossene und bezahlte Löschungen von Google-Unternehmensprofilen. Land = Land des Unternehmensprofils laut Auftrag. Erfasst für 826 Löschungen zwischen Jänner 2024 und Juni 2026; 2024 ist das eine Teilmenge von 211.",
       "Sterne und Anzahl der Rezensionen: wie bei Google zum Zeitpunkt des Checks bzw. Auftrags angezeigt, erfasst seit Mitte Juni 2026 – 668 geprüfte und 102 gelöschte Profile, jedes einmal gezählt. Anteile ergeben wegen Rundung nicht immer 100 %.",
