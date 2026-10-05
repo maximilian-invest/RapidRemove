@@ -50,6 +50,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
+  // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS partner_payouts (
@@ -98,7 +100,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
-  touched_at: string | null;
+  touched_at: string | null; working_since: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -107,7 +109,7 @@ function partnerView(r: Row) {
   return {
     id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
-    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at,
+    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
   };
 }
 function adminView(r: Row) {
@@ -135,6 +137,58 @@ function totals(rows: Row[]) {
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S+$/i.test(s) ? s : ""; };
 
+/** Bewertungen als Partner-Aufgaben anlegen (idempotent je Auftrag + Bewertung). */
+async function insertPartnerTasks(orderId: string | null, customer: string | null, items: Record<string, unknown>[]): Promise<Row[]> {
+  if (!pool) return [];
+  const out: Row[] = [];
+  for (const it of items.slice(0, 60)) {
+    const url = httpUrl(it.url);
+    const name = clip(it.name, 120);
+    const text = clip(it.text, 600);
+    if (!url && !name) continue;
+    const kind: TaskKind = it.nt === true ? "nt" : it.old === true ? "old" : "normal";
+    const key = url || `${name}|${text}`;
+    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];
+    // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
+    if (!orderId) {
+      const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
+      if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
+    }
+    const r = await pool.query(
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
+       RETURNING *`,
+      [orderId, key, url || null, name || null, text || null, kind, price, customer],
+    );
+    let row = r.rows[0] as Row;
+    if (!row.code) {
+      const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
+      row = u.rows[0] as Row;
+    }
+    out.push(row);
+  }
+  return out;
+}
+
+/** Neue Bewertungs-Bestellung → ALLE Bewertungen automatisch aufs Partner-Board (kein Button mehr). */
+export async function partnerAutoSend(orderId: string, customer: string, items: Record<string, unknown>[]): Promise<number> {
+  if (!pool || !orderId || !items.length) return 0;
+  const rows = await insertPartnerTasks(orderId, clip(customer, 160) || null, items);
+  if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board", detail: rows.map((t) => `${t.code} (${t.kind}, $${num(t.price_usd)})`).join(" · ") }).catch(() => {});
+  return rows.length;
+}
+
+/** Auftrag storniert → offene Aufgaben vom Board nehmen; reaktiviert → wieder einstellen. Gelöschte/bezahlte bleiben. */
+export async function partnerOrderStatus(orderId: string, status: string): Promise<void> {
+  if (!pool || !orderId) return;
+  if (status === "storniert") {
+    await pool.query(`UPDATE partner_tasks SET status='cancelled', updated_at=now() WHERE order_id=$1 AND status IN ('new','working','not_possible','software') AND paid_at IS NULL`, [orderId]);
+  } else if (status === "progress" || status === "new") { // Reaktivierung eines stornierten Auftrags
+    await pool.query(`UPDATE partner_tasks SET status='new', updated_at=now() WHERE order_id=$1 AND status='cancelled'`, [orderId]);
+  }
+}
+
 /* ---- Routen ---- */
 export function registerPartnerRoutes(app: FastifyInstance, adminToken: string): void {
   const isAdmin = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;
@@ -147,34 +201,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const orderId = clip(b.orderId, 40) || null;
     const customer = clip(b.customer, 160) || null;
     const items = (Array.isArray(b.items) ? b.items : []).slice(0, 60) as Record<string, unknown>[];
-    const created: ReturnType<typeof adminView>[] = [];
-    for (const it of items) {
-      const url = httpUrl(it.url);
-      const name = clip(it.name, 120);
-      const text = clip(it.text, 600);
-      if (!url && !name) continue;
-      const kind: TaskKind = it.nt === true ? "nt" : it.old === true ? "old" : "normal";
-      const key = url || `${name}|${text}`;
-      const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];
-      // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
-      if (!orderId) {
-        const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
-        if (ex.rows[0]) { created.push(adminView(ex.rows[0] as Row)); continue; }
-      }
-      const r = await pool.query(
-        `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-         ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
-         RETURNING *`,
-        [orderId, key, url || null, name || null, text || null, kind, price, customer],
-      );
-      let row = r.rows[0] as Row;
-      if (!row.code) {
-        const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
-        row = u.rows[0] as Row;
-      }
-      created.push(adminView(row));
-    }
+    const created = (await insertPartnerTasks(orderId, customer, items)).map(adminView);
     if (orderId && created.length) {
       await insertEvent({ orderId, type: "note", title: "An Partner übergeben", detail: created.map((t) => `${t.code} (${t.kind}, $${t.price})`).join(" · ") }).catch(() => {});
     }
@@ -258,10 +285,13 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const old = prev.rows[0] as Row | undefined;
     if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
+    // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
+    if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
     const st = status || old.status;
     const r = await pool.query(
       `UPDATE partner_tasks SET status=$1, partner_note=$2, updated_at=now(), touched_at=COALESCE(touched_at, now()),
+         working_since = CASE WHEN $1='working' AND status<>'working' THEN now() ELSE working_since END,
          removed_at = CASE WHEN $1='removed' THEN COALESCE(removed_at, now()) ELSE NULL END
        WHERE id=$3 RETURNING *`,
       [st, note || null, id],

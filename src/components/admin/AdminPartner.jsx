@@ -113,7 +113,7 @@ export function AdminPartner({ toast }) {
             WhatsApp-Text: {newOnes.length} neue kopieren
           </button>
         </div>
-        <p className="muted pb-hint">Der Partner sieht nur Nummer, Link, Typ, Preis und Status — keine Kundendaten. Übergeben wird im Auftrag (Bewertungen anhaken → „An Partner senden“).</p>
+        <p className="muted pb-hint">Neue Bewertungs-Bestellungen landen automatisch auf dem Board (Kunde = Profilname). Storno nimmt offene Aufgaben wieder herunter. Der Partner sieht keine Kontaktdaten der Besteller.</p>
       </div>
 
       <div className="pb-tabs">

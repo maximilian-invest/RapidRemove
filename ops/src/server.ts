@@ -20,7 +20,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
-import { initPartnerTables, registerPartnerRoutes } from "./partner";
+import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetMail } from "./emails/DashBox";
@@ -501,6 +501,11 @@ app.post("/order", async (req, reply) => {
         clientUa: String(req.headers["user-agent"] || "").slice(0, 400),
       });
       if (checkId) await linkCheck(checkId, id);
+      // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
+      if (isReviews && reviewItems.length) {
+        await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
+          .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));
+      }
       // Automatische Screenshots (Hintergrund, blockiert die Antwort nicht) → Admin:
       // Bewertungs-Bestellung = jede Bewertung + Google-Profil; Profil-Bestellung =
       // Google-Profil (Zustand vor der Löschung); Presse = nichts.
@@ -1657,6 +1662,7 @@ app.post("/admin/order-status", async (req, reply) => {
   const ok = await updateOrderStatus(id, status, pay);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
+  void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes

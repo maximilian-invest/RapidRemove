@@ -5,14 +5,14 @@ import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
 import { ReportStatsDashboard } from "./AdminReportStats";
-import { AdminPartner, PartnerBadge, partnerWhatsAppText } from "./AdminPartner";
+import { AdminPartner, PartnerBadge } from "./AdminPartner";
 import { AdminCustAccess } from "./AdminCustAccess";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList, partnerSend, partnerTasks, partnerLink } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList, partnerTasks } from "@/lib/admin-api";
 import { Monitor } from "@/components/admin/Monitor";
 import "@/styles/monitor.css";
 import { langLabel } from "@/lib/mail-lang";
@@ -1670,28 +1670,10 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [sentItems, setSentItems] = React.useState(null);
   // Partner-Board: Status je Bewertung (Schlüssel wie in ops: url || name|text).
   const [ptasks, setPtasks] = React.useState({});
-  const [psending, setPsending] = React.useState(false);
   const loadPartner = React.useCallback(() => {
     partnerTasks(o.id).then((r) => setPtasks(Object.fromEntries((r.tasks || []).map((t) => [t.itemKey, t])))).catch(() => {});
   }, [o.id]);
   React.useEffect(() => { loadPartner(); }, [loadPartner]);
-  // „An Partner senden" schickt pauschal ALLE Bewertungen des Auftrags (ohne Anhaken) —
-  // außer abgelehnten und solchen, die schon auf dem Board sind. Kunde = Profilname.
-  const toPartner = items.filter((it) => !isDeclined(it) && !ptasks[keyOf(it)]);
-  const customerName = (o.profile || o.company || o.name || "").trim();
-  const sendToPartner = async () => {
-    if (!toPartner.length || psending) return;
-    setPsending(true);
-    try {
-      const r = await partnerSend(o.id, toPartner.map((it) => ({ url: it.url, name: it.name, text: it.text, ...(it.nt ? { nt: true } : it.old ? { old: true } : {}) })), customerName);
-      const link = await partnerLink().then((x) => x.url).catch(() => "");
-      const txt = partnerWhatsAppText(r.tasks || [], link);
-      try { await navigator.clipboard.writeText(txt); } catch (e) { /* Clipboard evtl. blockiert */ }
-      toast(`${(r.tasks || []).map((t) => t.code).join(", ")} an Partner übergeben ✓ — WhatsApp-Text ist kopiert`);
-      loadPartner();
-    } catch (e) { toast("Übergabe fehlgeschlagen: " + e.message); }
-    setPsending(false);
-  };
   const sendStart = async () => {
     if (!chosen.length || starting) return;
     setStarting(true);
@@ -1784,9 +1766,6 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Anzahlung 50 % {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
-        <button className="btn btn-sec btn-sm" disabled={!toPartner.length || psending} onClick={sendToPartner} title={`Alle ${toPartner.length} noch nicht übergebenen Bewertungen ans Partner-Board (Kunde: ${customerName || "—"}) und WhatsApp-Text kopieren`}>
-          <AI.send /> {psending ? "Übergibt…" : toPartner.length ? `Alle an Partner senden (${toPartner.length})` : "Alle beim Partner ✓"}
-        </button>
         {!started ? (
           <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} data-sw={swChosen.length} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
             <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${swChosen.length ? `, ${swChosen.length} Software` : ""}${items.length - chosen.length - swChosen.length && chosen.length ? `, ${items.length - chosen.length - swChosen.length} ablehnen` : ""}`}
