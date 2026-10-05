@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
@@ -558,7 +558,11 @@ app.post("/check", async (req, reply) => {
       await upsertCheck({
         id,
         profile: clip(b.profile, 200), category: clip(b.category, 120), rating: clip(b.rating, 12),
-        reviews: Number(b.reviews) || 0, recommend: clip(b.recommend, 40) || "remove",
+        // Reine Folge-Updates (Stufe, Grund) schicken kein reviews/recommend mit –
+        // dann NICHT mit 0/"remove" überschreiben (COALESCE greift nur bei NULL).
+        reviews: b.reviews != null ? Number(b.reviews) || 0 : undefined,
+        recommend: clip(b.recommend, 40) || (b.profile ? "remove" : undefined),
+        reason: clip(b.reason, 40) || undefined,
         name: clip(b.name, 160), email: clip(b.email, 160) || undefined,
         country: clip(b.country, 6) || "DE", lang: clip(b.lang, 5) || "de",
         // Funnel-Tracking: erreichte Wizard-Stufe (1–4), gesehener Preis, Herkunft.
@@ -1527,6 +1531,15 @@ app.post("/admin/send-template", async (req, reply) => {
 });
 
 // Admin-Dashboard: Aktivitäts-Verlauf einer Bestellung
+// Datenreport: nur aggregierte Kennzahlen (Sterne, Bewertungsanzahl, Branchen) – keine Personendaten.
+app.post("/admin/report-stats", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return { ok: false, error: "Keine Datenbank verbunden." };
+  const stats = await reportStats();
+  return { ok: true, generatedAt: new Date().toISOString(), ...stats };
+});
+
 app.post("/admin/events", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });

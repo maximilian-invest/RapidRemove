@@ -892,3 +892,12 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 @media (prefers-reduced-motion:reduce){.pay-ask,.pay-ask-w{animation:none}}
 .wz-top a.back{text-decoration:none;}
 .wz-top a{display:inline-flex;align-items:center;}
+
+/* Optionale Frage „Warum löschen?" (Bestätigungs-Schritt) */
+.wz-reason{margin-top:18px;}
+.wz-reason-q{font-size:14px;font-weight:800;color:var(--fg);margin:0 0 9px;}
+.wz-reason-q span{font-weight:600;color:var(--fg-muted);}
+.wz-reason-chips{display:flex;flex-wrap:wrap;gap:8px;}
+.wz-reason-chip{font-family:var(--font-body);font-size:13.5px;font-weight:700;color:var(--fg-2);background:#fff;border:1.5px solid var(--hairline-strong);border-radius:var(--r-pill);padding:8px 14px;cursor:pointer;transition:border-color .15s,background .15s,color .15s;}
+.wz-reason-chip:hover{border-color:var(--primary);color:var(--fg);}
+.wz-reason-chip.on{background:var(--orange-50);border-color:var(--primary);color:var(--orange-800);}

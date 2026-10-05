@@ -4,6 +4,7 @@ import { Icon as BaseIcon } from "@/components/Icons";
 import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
+import { ReportStatsDashboard } from "./AdminReportStats";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
@@ -289,6 +290,7 @@ function Sidebar({ view, setView, counts, open, live }) {
     ["templates", Icon.mail, "E-Mail-Vorlagen"],
     ["customers", AI.users, "Kunden"],
     ["redirects", AI.external, "Weiterleitungen"],
+    ["report", AI.trendUp, "Report-Statistik"],
   ];
   return (
     <aside className={"side" + (open ? " open" : "")}>
@@ -2884,7 +2886,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen", report: "Report-Statistik" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -3075,6 +3077,7 @@ function AdminApp() {
   else if (view === "templates") body = <Templates toast={toast} />;
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
+  else if (view === "report") body = <ReportStatsDashboard toast={toast} />;
   else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} onOpenChecks={() => setView("checks")} />;
 
   return (

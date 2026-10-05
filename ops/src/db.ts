@@ -92,7 +92,8 @@ export async function initDb(): Promise<void> {
       ADD COLUMN IF NOT EXISTS lang text, ADD COLUMN IF NOT EXISTS status text, ADD COLUMN IF NOT EXISTS order_id text,
       ADD COLUMN IF NOT EXISTS step integer, ADD COLUMN IF NOT EXISTS amount numeric, ADD COLUMN IF NOT EXISTS source text,
       ADD COLUMN IF NOT EXISTS place_id text, ADD COLUMN IF NOT EXISTS maps_uri text, ADD COLUMN IF NOT EXISTS addr text,
-      ADD COLUMN IF NOT EXISTS enriched_at timestamptz, ADD COLUMN IF NOT EXISTS rueckgewinnung_at timestamptz
+      ADD COLUMN IF NOT EXISTS enriched_at timestamptz, ADD COLUMN IF NOT EXISTS rueckgewinnung_at timestamptz,
+      ADD COLUMN IF NOT EXISTS reason text
   `);
   // Herkunft der Prüfung (nur NEUE, nullable Spalten – kein Backfill, bestehende
   // Spalten unangetastet). `source` bleibt was es war und trägt ab jetzt den
@@ -360,6 +361,7 @@ export type CheckInput = {
   fbclid?: string; fbclidTs?: string; fbc?: string; fbp?: string;
   consentMarketing?: boolean; leadEventId?: string; eventSourceUrl?: string;
   clientIp?: string; clientUa?: string;
+  reason?: string; // optional: „Warum löschen?" aus dem Wizard
 };
 
 export async function upsertCheck(c: CheckInput): Promise<void> {
@@ -370,10 +372,10 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
   await pool.query(
     `INSERT INTO checks (id,profile,category,rating,reviews,flagged,recommend,name,email,country,lang,step,amount,source,place_id,maps_uri,addr,
                          source_first,utm_source,utm_medium,utm_campaign,utm_content,click_id,referrer,landing,attribution,attribution_first,
-                         fbclid,fbclid_ts,fbc,fbp,consent_marketing,lead_event_id,event_source_url,client_ip,client_ua)
+                         fbclid,fbclid_ts,fbc,fbp,consent_marketing,lead_event_id,event_source_url,client_ip,client_ua,reason)
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,
              $18,$19,$20,$21,$22,$23,$24,$25,$26,$27,
-             $28,$29,$30,$31,$32,$33,$34,$35,$36)
+             $28,$29,$30,$31,$32,$33,$34,$35,$36,$37)
      ON CONFLICT (id) DO UPDATE SET
        source_first=COALESCE(EXCLUDED.source_first, checks.source_first),
        utm_source=COALESCE(EXCLUDED.utm_source, checks.utm_source), utm_medium=COALESCE(EXCLUDED.utm_medium, checks.utm_medium),
@@ -394,7 +396,7 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
        name=COALESCE(EXCLUDED.name, checks.name), email=COALESCE(EXCLUDED.email, checks.email),
        amount=COALESCE(EXCLUDED.amount, checks.amount), source=COALESCE(EXCLUDED.source, checks.source),
        place_id=COALESCE(EXCLUDED.place_id, checks.place_id), maps_uri=COALESCE(EXCLUDED.maps_uri, checks.maps_uri),
-       addr=COALESCE(EXCLUDED.addr, checks.addr),
+       addr=COALESCE(EXCLUDED.addr, checks.addr), reason=COALESCE(EXCLUDED.reason, checks.reason),
        step=GREATEST(COALESCE(checks.step,0), COALESCE(EXCLUDED.step,0))`,
     [c.id, c.profile || null, c.category || null, c.rating || null, c.reviews ?? null, c.flagged ?? null,
      c.recommend || null, c.name || null, c.email || null, c.country || null, c.lang || null,
@@ -405,7 +407,7 @@ export async function upsertCheck(c: CheckInput): Promise<void> {
      c.attributionFirst ? JSON.stringify(c.attributionFirst) : null,
      c.fbclid || null, c.fbclidTs || null, c.fbc || null, c.fbp || null,
      c.consentMarketing ?? null, c.leadEventId || null, c.eventSourceUrl || null,
-     c.clientIp || null, c.clientUa || null],
+     c.clientIp || null, c.clientUa || null, c.reason || null],
   );
 }
 
@@ -878,4 +880,66 @@ export async function dbCounts(): Promise<{ orders: number; checks: number }> {
     `SELECT (SELECT count(*) FROM orders)::int AS orders, (SELECT count(*) FROM checks)::int AS checks`,
   );
   return { orders: r.rows[0]?.orders || 0, checks: r.rows[0]?.checks || 0 };
+}
+
+/* ---------- Datenreport: NUR Aggregate (keine Namen, E-Mails, Place-IDs) ----------
+   Grundlage für den öffentlichen „Google Business Profile Removal Report“.
+   Checks: nur echte Google-Daten (place_id gesetzt), je Profil einmal gezählt.
+   Löschungen: Profil-Aufträge (remove/reset/express) mit status='done'. */
+type Agg = {
+  n: number; withRating: number; avg: number | null; median: number | null;
+  stars: Record<string, number>; reviews: Record<string, number>; medianReviews: number | null;
+  categories: { cat: string; n: number; avg: number | null }[];
+  closed?: number; from?: string | null; to?: string | null; reasons?: Record<string, number>;
+};
+
+const STAR_SQL = `CASE WHEN r IS NULL THEN 'none' WHEN r < 2 THEN '1.0-1.9' WHEN r < 3 THEN '2.0-2.9'
+  WHEN r < 4 THEN '3.0-3.9' WHEN r < 4.5 THEN '4.0-4.4' ELSE '4.5-5.0' END`;
+const REV_SQL = `CASE WHEN n IS NULL THEN 'unknown' WHEN n = 0 THEN '0' WHEN n < 10 THEN '1-9' WHEN n < 50 THEN '10-49'
+  WHEN n < 200 THEN '50-199' ELSE '200+' END`;
+const RATING_NUM = (col: string) =>
+  `CASE WHEN replace(${col}, ',', '.') ~ '^[0-9]+(\\.[0-9]+)?$' THEN replace(${col}, ',', '.')::numeric END`;
+
+async function aggregate(baseSql: string, params: unknown[]): Promise<Agg> {
+  const q = (sql: string) => pool!.query(`WITH base AS (${baseSql}) ${sql}`, params);
+  const [t, s, rv, c, rs] = await Promise.all([
+    q(`SELECT count(*)::int AS n, count(r)::int AS wr, round(avg(r), 2) AS avg,
+              percentile_cont(0.5) WITHIN GROUP (ORDER BY r) AS med,
+              percentile_cont(0.5) WITHIN GROUP (ORDER BY n) AS medrev,
+              min(ts) AS f, max(ts) AS t, count(*) FILTER (WHERE closed)::int AS closed FROM base`),
+    q(`SELECT ${STAR_SQL} AS k, count(*)::int AS n FROM base GROUP BY 1`),
+    q(`SELECT ${REV_SQL} AS k, count(*)::int AS n FROM base GROUP BY 1`),
+    q(`SELECT lower(trim(cat)) AS cat, count(*)::int AS n, round(avg(r), 2) AS avg FROM base
+        WHERE COALESCE(trim(cat), '') <> '' GROUP BY 1 ORDER BY 2 DESC LIMIT 40`),
+    q(`SELECT reason AS k, count(*)::int AS n FROM base WHERE reason IS NOT NULL GROUP BY 1`),
+  ]);
+  const x = t.rows[0] || {};
+  const map = (rows: any[]) => Object.fromEntries(rows.map((r) => [r.k, r.n]));
+  const num = (v: unknown) => (v == null ? null : Number(v));
+  return {
+    n: x.n || 0, withRating: x.wr || 0, avg: num(x.avg), median: num(x.med), medianReviews: num(x.medrev),
+    stars: map(s.rows), reviews: map(rv.rows),
+    categories: c.rows.map((r: any) => ({ cat: r.cat, n: r.n, avg: num(r.avg) })),
+    closed: x.closed || 0, reasons: map(rs.rows),
+    from: x.f ? new Date(x.f).toISOString() : null, to: x.t ? new Date(x.t).toISOString() : null,
+  };
+}
+
+export async function reportStats(): Promise<{ checks: Agg; removals: Agg; profileOrders: Agg } | null> {
+  if (!pool) return null;
+  // reviews=0 bei vorhandener Sterne-Bewertung = durch frühere Stufen-Updates genullt → unbekannt.
+  const checksBase = `SELECT DISTINCT ON (place_id) ${RATING_NUM("rating")} AS r,
+      CASE WHEN COALESCE(reviews,0) = 0 AND ${RATING_NUM("rating")} IS NOT NULL THEN NULL ELSE reviews END AS n, category AS cat, reason,
+      created_at AS ts, false AS closed
+    FROM checks WHERE COALESCE(place_id, '') <> '' AND COALESCE(recommend, '') <> 'reviews' ORDER BY place_id, created_at DESC`;
+  const ordersBase = (done: boolean) => `SELECT DISTINCT ON (COALESCE(NULLIF(raw->>'placeId',''), id))
+      ${RATING_NUM("rating")} AS r, reviews AS n, category AS cat, COALESCE(done_at, created_at) AS ts,
+      COALESCE(raw->>'businessStatus','') = 'CLOSED_PERMANENTLY' AS closed, NULL::text AS reason
+    FROM orders WHERE service = ANY($1::text[]) ${done ? "AND status = 'done'" : "AND status <> 'storniert'"}
+    ORDER BY COALESCE(NULLIF(raw->>'placeId',''), id), created_at DESC`;
+  const svc = [["remove", "reset", "express"]];
+  const [checks, removals, profileOrders] = await Promise.all([
+    aggregate(checksBase, []), aggregate(ordersBase(true), svc), aggregate(ordersBase(false), svc),
+  ]);
+  return { checks, removals, profileOrders };
 }

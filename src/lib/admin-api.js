@@ -594,3 +594,16 @@ export const monitorAdd = (data) => monitorPost("add", data);
 export function monitorShotUrl(id, download = false) {
   return OPS + "/admin/monitor-shot/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(TOKEN) + (download ? "&dl=1" : "");
 }
+
+/* ---- Datenreport: nur aggregierte Kennzahlen (Sterne, Bewertungen, Branchen) ---- */
+export async function fetchReportStats() {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert.");
+  const res = await fetch(OPS + "/admin/report-stats", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j; // { ok, generatedAt, checks, removals, profileOrders }
+}
