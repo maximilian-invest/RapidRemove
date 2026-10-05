@@ -78,8 +78,8 @@ const C = {
     legendEn: "English", legendDe: "German",
     howH: "How these removals happen",
     how: [
-      "Every removal counted in this report was commissioned by the owner or managing director of the business concerned. We only use the processes Google itself provides — no fake reports, no tricks, no removal of other people's profiles.",
-      "We only take on a case if the removal is legitimately possible. If it isn't, we say so in the free check — and nothing is charged.",
+      "Every removal counted in this report was commissioned by the owner or managing director of the business concerned. Removals are carried out exclusively through the procedures Google provides for this purpose.",
+      "Each request is reviewed before we accept it — in the free check and, where necessary, in a more detailed review afterwards. If a removal is not legally permissible, we decline the case and nothing is charged. We do not remove profiles that could help consumers identify fraud or other harmful activity.",
     ],
     methH: "Methodology",
     meth: [
@@ -166,8 +166,8 @@ const C = {
     legendEn: "Englisch", legendDe: "Deutsch",
     howH: "Wie diese Löschungen zustande kommen",
     how: [
-      "Jede Löschung in diesem Report wurde vom Inhaber oder Geschäftsführer des betroffenen Unternehmens beauftragt. Wir nutzen ausschließlich die Verfahren, die Google selbst dafür vorsieht – keine Fake-Meldungen, keine Tricks, keine Löschung fremder Profile.",
-      "Wir übernehmen nur Fälle, in denen eine Löschung rechtmäßig möglich ist. Ist sie das nicht, sagen wir das schon beim kostenlosen Check – und es fallen keine Kosten an.",
+      "Jede in diesem Report gezählte Löschung wurde vom Inhaber oder Geschäftsführer des betroffenen Unternehmens beauftragt. Die Löschung erfolgt ausschließlich über die Verfahren, die Google dafür vorsieht.",
+      "Jede Anfrage wird vor der Annahme geprüft – im kostenlosen Check und, wo nötig, in einer anschließenden genaueren Prüfung. Ist eine Löschung rechtlich nicht zulässig, lehnen wir den Fall ab; es entstehen keine Kosten. Profile, die Verbrauchern helfen können, Betrug oder andere schädliche Aktivitäten zu erkennen, löschen wir nicht.",
     ],
     methH: "Methodik",
     meth: [
