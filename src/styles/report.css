@@ -15,11 +15,11 @@
 
 /* key figures */
 .rp-tiles-wrap{padding-bottom:12px;}
-.rp-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.rp-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
 .rp-tile{background:#fff;border:1px solid var(--hairline);border-radius:var(--r-lg);padding:22px 20px;box-shadow:var(--shadow-sm);}
 .rp-tile .v{font-family:var(--font-display);font-weight:700;font-size:34px;letter-spacing:-.5px;color:var(--fg);line-height:1.05;}
 .rp-tile .l{font-size:14px;line-height:1.45;color:var(--fg-2);margin-top:8px;font-weight:600;}
-@media(max-width:1020px){.rp-tiles{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:820px){.rp-tiles{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:620px){.rp-tiles{grid-template-columns:1fr 1fr;}.rp-tile{padding:18px 16px;}.rp-tile .v{font-size:28px;}}
 
 /* findings */
@@ -111,3 +111,9 @@
   .rp-copy{position:static;margin-top:12px;}
   .rp-cta{padding:24px 20px;}
 }
+
+/* how removals happen (legitimacy) */
+.rp-how{padding:32px 0 8px;border-top:1px solid var(--hairline);}
+.rp-how h2{font-family:var(--font-display);font-weight:700;font-size:clamp(22px,2.6vw,28px);letter-spacing:-.3px;margin:0 0 12px;color:var(--fg);}
+.rp-how p{font-size:17px;line-height:1.7;color:var(--fg-2);margin:0 0 12px;}
+.rp-tiles-wrap{max-width:1000px;}

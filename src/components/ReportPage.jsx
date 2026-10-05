@@ -26,6 +26,7 @@ const C = {
       { v: REPORT.totals.checks, l: "free profile checks since March 2024" },
       { v: REPORT.totals.countries, l: "countries our removal clients came from" },
       { v: `${REPORT.totals.enShare2025} %`, l: "of profile checks in 2025 were in English" },
+      { v: "3.5 ★", l: "average Google rating of the profiles we removed" },
       { v: "1 in 4", l: "clients add protection against the profile reappearing" },
     ],
     f1: {
@@ -54,8 +55,18 @@ const C = {
       ],
       chartH: "Paid removals by country, January 2024 – June 2026 (n = 826)",
     },
-    f4: {
+    fs: {
       n: "Finding 4",
+      h: "Half of the removed profiles had fewer than 4 stars — but not all of them",
+      p: [
+        "Since mid-June 2026 we record the Google rating of every profile at the time of the order. The 102 profiles removed since then averaged 3.5 stars (median 3.9). 52 % were below 4 stars, almost one in three below 3 stars. For comparison: all 668 profiles checked in the same period averaged 3.9 stars.",
+        "Poor ratings are a major reason — but not the only one. 29 % of the removed profiles had 4.5 stars or more. Closures, outdated or duplicate listings and changes of ownership lead owners to remove a profile too; 5 % were already marked “permanently closed” on Google. Most were small listings: the median profile had about a dozen reviews, 46 % had fewer than ten.",
+      ],
+      chartH: "Removed profiles by Google star rating at the time of the order (n = 92 rated profiles, June–October 2026)",
+      colH: "Stars",
+    },
+    f4: {
+      n: "Finding 5",
       h: "One in four clients make sure the profile stays gone",
       p: [
         "A deleted Google Business Profile can be re-created by anyone — Google users can suggest a business at the same address. 23 % of our clients in 2025 and 27 % in 2026 added ongoing protection that watches for exactly that.",
@@ -65,11 +76,17 @@ const C = {
     thYear: "Year", thEn: "English", thDe: "German", thShare: "Share", thCountry: "Country",
     partial: { mar: "Mar–Dec", h1: "Jan–Jun", subset: "subset" },
     legendEn: "English", legendDe: "German",
+    howH: "How these removals happen",
+    how: [
+      "Every removal counted in this report was commissioned by the owner or managing director of the business concerned. We only use the processes Google itself provides — no fake reports, no tricks, no removal of other people's profiles.",
+      "We only take on a case if the removal is legitimately possible. If it isn't, we say so in the free check — and nothing is charged.",
+    ],
     methH: "Methodology",
     meth: [
       "Source: RapidRemove's own order and profile-check records from July 2022 to September 2026, including cases our team handled in 2022–2023 under a previous brand name. All figures are aggregated and rounded; no individual business can be identified.",
       "Profile checks: free checks submitted through our website form (whether a Google Business Profile can be removed). Language = the language version of the form (English or German). The 2024 split covers March–December, the 2026 split January to mid-June.",
       "Removals: completed and paid removals of Google Business Profiles. Country = the country of the business profile as recorded on the order. A country was recorded for 826 removals between January 2024 and June 2026; for 2024 this is a subset of 211.",
+      "Star ratings and review counts: as shown on Google at the time of the check or order, recorded since mid-June 2026 — 668 checked and 102 removed profiles, each counted once. Shares may not add up to 100 % due to rounding.",
       "DACH = Germany, Austria and Switzerland. Protection = share of orders that added optional monitoring against the profile being re-created.",
       "These numbers describe RapidRemove's clients — they are not an estimate of the total market.",
     ],
@@ -80,7 +97,7 @@ const C = {
     csv: "Download data (CSV)",
     press: "Press & questions:",
     nextH: "Coming in the next edition",
-    nextP: "Ratings, review counts and categories of the profiles businesses want removed.",
+    nextP: "Why owners remove their profile (we now ask in the free check), plus a breakdown by industry.",
     ctaH: "Want your own profile gone?",
     ctaP: "Our guide explains every option step by step — or check for free whether your profile can be removed.",
     ctaGuide: "Read the guide",
@@ -97,6 +114,7 @@ const C = {
       { v: "20.000+", l: "kostenlose Profil-Checks seit März 2024" },
       { v: REPORT.totals.countries, l: "Länder, aus denen unsere Kunden kamen" },
       { v: `${REPORT.totals.enShare2025} %`, l: "der Profil-Checks 2025 kamen auf Englisch" },
+      { v: "3,5 ★", l: "Sterne im Schnitt hatten die Profile, die wir gelöscht haben" },
       { v: "1 von 4", l: "Kunden sichert sich gegen ein neues Profil ab" },
     ],
     f1: {
@@ -125,8 +143,18 @@ const C = {
       ],
       chartH: "Bezahlte Löschungen nach Land, Jänner 2024 – Juni 2026 (n = 826)",
     },
-    f4: {
+    fs: {
       n: "Ergebnis 4",
+      h: "Die Hälfte der gelöschten Profile hatte unter 4 Sterne – aber längst nicht alle",
+      p: [
+        "Seit Mitte Juni 2026 erfassen wir bei jedem Auftrag die Google-Bewertung des Profils. Die 102 seitdem gelöschten Profile hatten im Schnitt 3,5 Sterne (Median 3,9). 52 % lagen unter 4 Sternen, fast jedes dritte unter 3 Sternen. Zum Vergleich: Alle 668 im selben Zeitraum geprüften Profile kamen im Schnitt auf 3,9 Sterne.",
+        "Schlechte Bewertungen sind ein wichtiger Grund – aber nicht der einzige. 29 % der gelöschten Profile hatten 4,5 Sterne oder mehr. Auch Schließungen, veraltete oder doppelte Einträge und Inhaberwechsel sind Gründe für eine Löschung; 5 % waren bei Google bereits als „dauerhaft geschlossen“ markiert. Meist ging es um kleine Profile: Im Median hatten sie rund ein Dutzend Rezensionen, 46 % weniger als zehn.",
+      ],
+      chartH: "Gelöschte Profile nach Google-Sternen zum Zeitpunkt des Auftrags (n = 92 Profile mit Bewertung, Juni–Oktober 2026)",
+      colH: "Sterne",
+    },
+    f4: {
+      n: "Ergebnis 5",
       h: "Jeder vierte Kunde sorgt dafür, dass das Profil weg bleibt",
       p: [
         "Ein gelöschtes Google-Profil kann von jedem neu angelegt werden – Google-Nutzer können ein Unternehmen an derselben Adresse vorschlagen. 23 % unserer Kunden 2025 und 27 % 2026 haben dafür einen laufenden Schutz dazugebucht, der genau das überwacht.",
@@ -136,11 +164,17 @@ const C = {
     thYear: "Jahr", thEn: "Englisch", thDe: "Deutsch", thShare: "Anteil", thCountry: "Land",
     partial: { mar: "März–Dez.", h1: "Jän.–Juni", subset: "Teilmenge" },
     legendEn: "Englisch", legendDe: "Deutsch",
+    howH: "Wie diese Löschungen zustande kommen",
+    how: [
+      "Jede Löschung in diesem Report wurde vom Inhaber oder Geschäftsführer des betroffenen Unternehmens beauftragt. Wir nutzen ausschließlich die Verfahren, die Google selbst dafür vorsieht – keine Fake-Meldungen, keine Tricks, keine Löschung fremder Profile.",
+      "Wir übernehmen nur Fälle, in denen eine Löschung rechtmäßig möglich ist. Ist sie das nicht, sagen wir das schon beim kostenlosen Check – und es fallen keine Kosten an.",
+    ],
     methH: "Methodik",
     meth: [
       "Quelle: eigene Auftrags- und Profil-Check-Daten von RapidRemove von Juli 2022 bis September 2026, inklusive der Fälle, die unser Team 2022–2023 unter einem früheren Markennamen bearbeitet hat. Alle Zahlen sind aggregiert und gerundet; einzelne Unternehmen sind nicht erkennbar.",
       "Profil-Checks: kostenlose Prüfungen über das Formular auf unserer Website (ob sich ein Google-Unternehmensprofil löschen lässt). Sprache = Sprachversion des Formulars (Deutsch oder Englisch). 2024 umfasst März–Dezember, 2026 Jänner bis Mitte Juni.",
       "Löschungen: abgeschlossene und bezahlte Löschungen von Google-Unternehmensprofilen. Land = Land des Unternehmensprofils laut Auftrag. Erfasst für 826 Löschungen zwischen Jänner 2024 und Juni 2026; 2024 ist das eine Teilmenge von 211.",
+      "Sterne und Anzahl der Rezensionen: wie bei Google zum Zeitpunkt des Checks bzw. Auftrags angezeigt, erfasst seit Mitte Juni 2026 – 668 geprüfte und 102 gelöschte Profile, jedes einmal gezählt. Anteile ergeben wegen Rundung nicht immer 100 %.",
       "DACH = Deutschland, Österreich und Schweiz. Schutz = Anteil der Aufträge mit optionaler Überwachung gegen ein neu angelegtes Profil.",
       "Die Zahlen beschreiben die Kunden von RapidRemove – sie sind keine Schätzung des Gesamtmarkts.",
     ],
@@ -151,7 +185,7 @@ const C = {
     csv: "Daten herunterladen (CSV)",
     press: "Presse & Fragen:",
     nextH: "In der nächsten Ausgabe",
-    nextP: "Sternebewertungen, Anzahl der Rezensionen und Branchen der Profile, die Unternehmen löschen lassen wollen.",
+    nextP: "Warum Inhaber ihr Profil löschen lassen (das fragen wir jetzt im kostenlosen Check ab) – und eine Auswertung nach Branchen.",
     ctaH: "Sie wollen Ihr eigenes Profil loswerden?",
     ctaP: "Unser Ratgeber erklärt alle Wege Schritt für Schritt – oder prüfen Sie kostenlos, ob sich Ihr Profil löschen lässt.",
     ctaGuide: "Zum Ratgeber",
@@ -278,6 +312,8 @@ function ReportBody({ lang, base }) {
   dachRows.colH = c.thYear;
   const countryRows = REPORT.countries.map((r) => ({ label: names[r.code], v: r.v, muted: r.code === "OTHER" }));
   countryRows.colH = c.thCountry;
+  const starRows = REPORT.stars.map((r) => ({ label: `${lang === "de" ? r.k.replace(/\./g, ",") : r.k} ★`, v: r.v }));
+  starRows.colH = c.fs.colH;
   const hub = HUB_PATH[lang] || HUB_PATH.en;
   return (
     <div className="rp">
@@ -325,9 +361,21 @@ function ReportBody({ lang, base }) {
         </section>
 
         <section className="rp-finding">
+          <div className="rp-n">{c.fs.n}</div>
+          <h2>{c.fs.h}</h2>
+          {c.fs.p.map((p) => <p key={p}>{p}</p>)}
+          <BarChart title={c.fs.chartH} rows={starRows} c={c} lang={lang} max={35} cls="rp-stars" />
+        </section>
+
+        <section className="rp-finding">
           <div className="rp-n">{c.f4.n}</div>
           <h2>{c.f4.h}</h2>
           {c.f4.p.map((p) => <p key={p}>{p}</p>)}
+        </section>
+
+        <section className="rp-how">
+          <h2>{c.howH}</h2>
+          {c.how.map((p) => <p key={p}>{p}</p>)}
         </section>
 
         <section className="rp-cta">

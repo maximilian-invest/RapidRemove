@@ -25,6 +25,12 @@ export const REPORT = {
     { year: "2026", partial: "h1", v: 49 },
   ],
   // Länder der bezahlten Löschungen 2024 – Juni 2026 (n = 826 mit erfasstem Land), Anteil in %
+  // Sterne der gelöschten Profile (neues System, seit Mitte Juni 2026; n = 102 Profile, 92 mit Sternen)
+  ratingsN: 102, ratingsRated: 92, ratingsChecksN: 668,
+  ratings: { removedAvg: 3.5, removedMedian: 3.9, checkedAvg: 3.9, checkedMedian: 4.3, below4: 52, below3: 32, top: 29, medianReviews: 12, under10Reviews: 46, closed: 5 },
+  stars: [
+    { k: "1.0–1.9", v: 16 }, { k: "2.0–2.9", v: 15 }, { k: "3.0–3.9", v: 21 }, { k: "4.0–4.4", v: 18 }, { k: "4.5–5.0", v: 29 },
+  ],
   countriesN: 826,
   countries: [
     { code: "DE", v: 40.6 }, { code: "US", v: 11.9 }, { code: "CH", v: 9.0 }, { code: "AT", v: 8.2 },
@@ -41,11 +47,11 @@ export const COUNTRY_NAME = {
 export const REPORT_META = {
   en: {
     title: "Google Business Profile Removal Report 2026",
-    description: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022: more than half of all requests now come in English, the US is the #2 country.",
+    description: "Data from 1,600+ Google Business Profile removals and 20,000+ profile checks since 2022: removed profiles averaged 3.5 stars, more than half of all requests now come in English, the US is the #2 country.",
   },
   de: {
     title: "Google-Profil-Löschungen: Report 2026",
-    description: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022: Jede zweite Anfrage kommt inzwischen auf Englisch, die USA sind Land Nr. 2.",
+    description: "Daten aus über 1.600 Löschungen von Google-Unternehmensprofilen und 20.000+ Profil-Checks seit 2022: gelöschte Profile hatten im Schnitt 3,5 Sterne, jede zweite Anfrage kommt auf Englisch, die USA sind Land Nr. 2.",
   },
 };
 
@@ -63,7 +69,7 @@ export function reportJsonLd(lang, { url, siteUrl, csvUrl }) {
         creator: org, publisher: org, license: "https://creativecommons.org/licenses/by/4.0/",
         isAccessibleForFree: true, temporalCoverage: REPORT.coverage, datePublished: REPORT.published,
         keywords: ["Google Business Profile", "Google Maps", "profile removal", "local SEO", "online reputation"],
-        variableMeasured: ["Share of profile checks by language", "Share of removals outside DACH", "Removals by country", "Share of clients adding protection"],
+        variableMeasured: ["Google star rating of removed profiles", "Share of profile checks by language", "Share of removals outside DACH", "Removals by country", "Share of clients adding protection"],
         distribution: [{ "@type": "DataDownload", encodingFormat: "text/csv", contentUrl: csvUrl }] },
       { "@type": "BreadcrumbList", itemListElement: [
         { "@type": "ListItem", position: 1, name: "Start", item: lang === "de" ? `${siteUrl}/` : `${siteUrl}/${lang}/` },

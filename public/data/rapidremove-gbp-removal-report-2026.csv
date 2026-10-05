@@ -25,3 +25,11 @@ removals_by_country_share,2024-01 to 2026-06,United Arab Emirates,1.2,
 removals_by_country_share,2024-01 to 2026-06,Other countries,11.5,
 clients_adding_protection_share,2025,All paid orders,23,Optional monitoring against the profile being re-created
 clients_adding_protection_share,2026,All orders,27,
+removed_profiles_by_star_rating,2026-06 to 2026-10,1.0-1.9 stars,16,n = 92 removed profiles with a rating at the time of the order
+removed_profiles_by_star_rating,2026-06 to 2026-10,2.0-2.9 stars,15,
+removed_profiles_by_star_rating,2026-06 to 2026-10,3.0-3.9 stars,21,
+removed_profiles_by_star_rating,2026-06 to 2026-10,4.0-4.4 stars,18,
+removed_profiles_by_star_rating,2026-06 to 2026-10,4.5-5.0 stars,29,
+removed_profiles_below_4_stars_share,2026-06 to 2026-10,All rated removed profiles,52,Average 3.5 stars (median 3.9); all 668 checked profiles: average 3.9 (median 4.3)
+removed_profiles_under_10_reviews_share,2026-06 to 2026-10,All removed profiles,46,n = 102; median about 12 reviews
+removed_profiles_already_marked_closed_share,2026-06 to 2026-10,All removed profiles,5,Marked "permanently closed" on Google at the time of the order
