@@ -141,7 +141,7 @@ export function AdminPartner({ toast }) {
                 <input type="checkbox" checked={!!sel[t.id]} onChange={() => setSel((m) => ({ ...m, [t.id]: !m[t.id] }))} disabled={!(t.status === "removed" && !t.paid)} title="Gelöscht & unbezahlt → auswählbar" />
                 <div className="pb-main">
                   <div className="pb-top">
-                    <b>{t.code}</b>
+                    <b>{t.code}</b>{t.test ? <span style={{ marginLeft: 6, fontSize: 10.5, fontWeight: 800, color: "#fff", background: "#ff8000", borderRadius: 999, padding: "1px 7px" }}>TEST</span> : null}
                     <span className="pb-kind">{PARTNER_KIND[t.kind] || t.kind}</span>
                     <button className="pb-price" onClick={() => setPrice(t)} title="Preis ändern">{usd(t.price)}</button>
                     <span className="pb-st" style={{ color: s.color }}>{s.label}{t.paid ? " · bezahlt" : ""}</span>

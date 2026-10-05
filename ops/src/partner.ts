@@ -15,7 +15,7 @@ import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
-import { isPartnerSession } from "./partnerAuth";
+import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
 import { partnerNewOrder } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -52,6 +52,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
+  // Testbestellungen (E-Mail mit „+test"): nur im Test-Board des Admins, nie beim Partner.
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
@@ -89,6 +91,14 @@ export async function partnerToken(rotate = false): Promise<string | null> {
   if (!t) { t = newToken(); await setSetting("token", t); }
   return t;
 }
+/** Test-Board des Admins: eigene Sitzung, sieht und bearbeitet NUR Testaufträge. */
+export const PREVIEW_EMAIL = "admin-preview";
+async function isPreview(t: unknown): Promise<boolean> {
+  const s = String(t || "");
+  return s.startsWith("ps_") && (await partnerSessionEmail(s)) === PREVIEW_EMAIL;
+}
+export const isTestEmail = (e: unknown) => /\+test@/i.test(String(e || ""));
+
 async function checkPartnerToken(t: unknown): Promise<boolean> {
   const s = String(t || "");
   if (s.startsWith("ps_")) return isPartnerSession(s); // Partner-Login (partnerAuth.ts)
@@ -103,7 +113,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
-  touched_at: string | null; working_since: string | null;
+  touched_at: string | null; working_since: string | null; test?: boolean;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -118,7 +128,7 @@ function partnerView(r: Row) {
   };
 }
 function adminView(r: Row) {
-  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null };
+  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test };
 }
 
 async function listTasks(where = "", args: unknown[] = []): Promise<Row[]> {
@@ -128,7 +138,7 @@ async function listTasks(where = "", args: unknown[] = []): Promise<Row[]> {
 }
 
 function totals(rows: Row[]) {
-  const removed = rows.filter((r) => r.status === "removed");
+  const removed = rows.filter((r) => r.status === "removed" && !r.test); // Testaufträge zählen nie
   const open = removed.filter((r) => !r.paid_at);
   return {
     open: rows.filter((r) => ["new", "working", "software"].includes(r.status)).length,
@@ -147,6 +157,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   if (!pool) return [];
   const out: Row[] = [];
   const fresh: { code: string; kind: string }[] = [];
+  const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
   for (const it of items.slice(0, 60)) {
     const url = httpUrl(it.url);
     const name = clip(it.name, 120);
@@ -162,11 +173,11 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
-      [orderId, key, url || null, name || null, text || null, kind, price, customer],
+      [orderId, key, url || null, name || null, text || null, kind, price, customer, test],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {
@@ -176,7 +187,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     }
     out.push(row);
   }
-  if (fresh.length) void partnerNewOrder(customer || "", fresh);
+  if (fresh.length && !test) void partnerNewOrder(customer || "", fresh); // Testauftrag: Partner bekommt nichts
   return out;
 }
 
@@ -275,12 +286,22 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { ok: true, url: `${SITE_URL}/partner#${t}` };
   });
 
+  // Test-Board: zeigt nur Testaufträge (Bestell-E-Mail mit „+test"), der Partner sieht davon nichts.
+  app.post("/admin/partner/test-link", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const t = await createPreviewSession(PREVIEW_EMAIL);
+    if (!t) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    return { ok: true, url: `${SITE_URL}/partner?preview=1#${t}` };
+  });
+
   /* ---- Partner (geheimer Link) ---- */
   app.post("/partner/tasks", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
-    const rows = await listTasks("WHERE status <> 'cancelled'");
-    const p = pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 20`) : { rows: [] as Record<string, unknown>[] };
+    const preview = await isPreview(b.t);
+    const rows = await listTasks(preview ? "WHERE status <> 'cancelled' AND test" : "WHERE status <> 'cancelled' AND NOT test");
+    const p = preview ? { rows: [] as Record<string, unknown>[] } : pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 20`) : { rows: [] as Record<string, unknown>[] };
     // Screenshot der Bewertung (automatisch bei der Bestellung aufgenommen) → Vorschau statt nur Link.
     const shots = new Map<string, number>();
     const oids = [...new Set(rows.map((r) => r.order_id).filter(Boolean))];
@@ -288,7 +309,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const sr = await pool.query(`SELECT DISTINCT ON (order_id, url) id, order_id, url FROM review_shots WHERE status='ok' AND order_id = ANY($1::text[]) ORDER BY order_id, url, id DESC`, [oids]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
       for (const x of sr.rows as { id: number; order_id: string; url: string }[]) shots.set(`${x.order_id}|${x.url}`, Number(x.id));
     }
-    return { ok: true, tasks: rows.map((r) => ({ ...partnerView(r), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    return { ok: true, preview, tasks: rows.map((r) => ({ ...partnerView(r), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
   // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
@@ -312,11 +333,12 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
   const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
-  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
     if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
     if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
+    if (opts.preview !== undefined && !!old.test !== opts.preview) return { error: "not found", code: 404 }; // Test ↔ echt strikt getrennt
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
@@ -343,7 +365,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
     if (changed && !opts.quiet) {
-      void notifyTeam(`${PT[status] || status} · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · "), `${SITE_URL}/admin${row.order_id ? "?order=" + encodeURIComponent(row.order_id) : ""}`, { kind: "partner" });
+      void notifyTeam(`${row.test ? "TEST · " : ""}${PT[status] || status} · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · "), `${SITE_URL}/admin${row.order_id ? "?order=" + encodeURIComponent(row.order_id) : ""}`, { kind: "partner" });
     }
     return { row, changed };
   }
@@ -355,7 +377,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const status = String(b.status || "");
     if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id missing" });
     if (status && !PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
-    const r = await partnerApply(id, status, b.note);
+    const r = await partnerApply(id, status, b.note, { preview: await isPreview(b.t) });
     if (r.error) return reply.code(r.code || 400).send({ ok: false, error: r.error });
     return { ok: true, task: partnerView(r.row as Row) };
   });
@@ -370,14 +392,15 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
     const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = [];
+    const preview = await isPreview(b.t);
     for (const id of ids) {
-      const r = await partnerApply(id, status, undefined, { quiet: true });
+      const r = await partnerApply(id, status, undefined, { quiet: true, preview });
       if (r.error || !r.row) { skipped.push(id); continue; }
       tasks.push(partnerView(r.row));
       if (r.changed) changedCodes.push(r.row.code);
     }
     if (changedCodes.length) {
-      void notifyTeam(`${PT[status] || status} · ${changedCodes.length} Bewertungen`, "Partner · " + changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
+      void notifyTeam(`${preview ? "TEST · " : ""}${PT[status] || status} · ${changedCodes.length} Bewertungen`, "Partner · " + changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
     }
     return { ok: true, tasks, skipped };
   });
@@ -387,10 +410,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    if (await isPreview(b.t)) return reply.code(400).send({ ok: false, error: "test mode" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 1000);
     const r = b.all === true
-      ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE status='removed' AND paid_at IS NULL`)
-      : ids.length ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL`, [ids]) : { rows: [] as { id: string; price_usd: string }[] };
+      ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND NOT test`)
+      : ids.length ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND NOT test`, [ids]) : { rows: [] as { id: string; price_usd: string }[] };
     if (!r.rows.length) return reply.code(400).send({ ok: false, error: "nothing to mark" });
     const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
     const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, "vom Partner als bezahlt bestätigt"]);

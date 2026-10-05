@@ -20,8 +20,11 @@ const KEY = "rr_partner_t";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
 const MOBILE_Q = "(max-width: 860px)";
 
+const isPreviewUrl = () => { try { return new URLSearchParams(window.location.search).get("preview") === "1"; } catch (e) { return false; } };
+
 export default function PartnerBoard() {
   const [token, setToken] = React.useState(null);
+  const [preview, setPreview] = React.useState(false); // Test-Board des Admins (nur Testaufträge)
   const [setup, setSetup] = React.useState(null);
   const [gate, setGate] = React.useState(null); // Push noch nicht an → Vollbild-Aufforderung
   const [offerPk, setOfferPk] = React.useState(false); // nach dem Login: Face ID anbieten // { account } → Login über den persönlichen Link einrichten
@@ -47,7 +50,9 @@ export default function PartnerBoard() {
     let t = "";
     try { t = (window.location.hash || "").replace(/^#/, ""); } catch (e) {}
     const fromLink = !!t;
-    if (t) { try { localStorage.setItem(KEY, t); } catch (e) {} }
+    const pv = isPreviewUrl() && t.startsWith("ps_");
+    setPreview(pv);
+    if (t && !pv) { try { localStorage.setItem(KEY, t); } catch (e) {} } // Test-Board überschreibt keinen echten Login
     else { try { t = localStorage.getItem(KEY) || ""; } catch (e) {} }
     setToken(t);
     // Mit dem persönlichen Link geöffnet und noch kein Login → einmal anbieten (oder per Link neues Passwort setzen).
@@ -224,11 +229,11 @@ export default function PartnerBoard() {
 
   // Push aufdrängen: nach jedem Öffnen, solange nicht eingeschaltet („Not now" gilt nur für diese Sitzung).
   React.useEffect(() => {
-    if (!token || setup || offerPk) return;
+    if (!token || setup || offerPk || preview || isPreviewUrl()) return;
     let off = false;
     pushState("partner").then((st) => { if (!off && ["ask", "install", "blocked"].includes(st)) setGate(st); }).catch(() => {});
     return () => { off = true; };
-  }, [token, setup, offerPk]);
+  }, [token, setup, offerPk, preview]);
 
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
@@ -248,5 +253,14 @@ export default function PartnerBoard() {
     tasks, all, err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,
   };
-  return isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />;
+  const app = isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />;
+  if (!preview) return app;
+  return (
+    <>
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "#ff8000", color: "#fff", font: "700 13px/1.3 Geist, system-ui, sans-serif", textAlign: "center", padding: "8px 12px" }}>
+        TEST MODE · only test orders (+test e-mail) · the partner doesn’t see this
+      </div>
+      {app}
+    </>
+  );
 }

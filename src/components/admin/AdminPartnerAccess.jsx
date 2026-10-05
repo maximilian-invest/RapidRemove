@@ -2,7 +2,7 @@
 /* Admin → Partner: Partner-Zugang mit voller Kontrolle — E-Mail + Passwort sichtbar, neues Passwort
    setzen/erzeugen, E-Mail ändern, Board als Partner öffnen (persönlicher Link). */
 import React from "react";
-import { partnerAccounts, partnerAccountSet, partnerLink } from "@/lib/admin-api";
+import { partnerAccounts, partnerAccountSet, partnerLink, partnerTestLink } from "@/lib/admin-api";
 
 export default function AdminPartnerAccess({ toast }) {
   const [data, setData] = React.useState(null);
@@ -33,6 +33,11 @@ export default function AdminPartnerAccess({ toast }) {
     catch (e) { toast && toast("Fehler: " + e.message); }
     setBusy(false);
   };
+  const openTest = async () => {
+    const w = window.open("about:blank", "_blank"); // sofort öffnen (sonst blockt iOS das Fenster)
+    try { const r = await partnerTestLink(); if (w) w.location.href = r.url; else window.location.href = r.url; }
+    catch (e) { if (w) w.close(); toast && toast("Fehler: " + e.message); }
+  };
   const openAsPartner = async () => {
     try { const r = await partnerLink(false); window.open(r.url, "_blank", "noopener"); } catch (e) { toast && toast("Fehler: " + e.message); }
   };
@@ -44,7 +49,9 @@ export default function AdminPartnerAccess({ toast }) {
         <b>Partner-Zugang</b>
         <span className="muted">Login unter rapid-remove.com/partner{data ? ` · ${data.pushDevices || 0} Gerät(e) mit Push` : ""}</span>
         <button className="btn btn-sec btn-sm" style={{ marginLeft: "auto" }} onClick={openAsPartner}>Als Partner öffnen</button>
+        <button className="btn btn-sec btn-sm" onClick={openTest} title="Nur Testaufträge (Bestell-E-Mail mit +test). Der Partner sieht davon nichts.">Test-Board</button>
       </div>
+      <p className="muted pb-hint" style={{ margin: "0 0 6px" }}>Testen: Bestellung mit „+test“ in der E-Mail aufgeben (z. B. name+test@domain.com) → landet nur im Test-Board, nicht beim Partner, zählt nicht in Earnings.</p>
       {err ? <div className="pb-err">{err}</div> : null}
       {!data ? <p className="muted">Lädt …</p> : !accs.length ? (
         <div className="pb-row"><span className="muted">Noch kein Login angelegt.</span><button className="btn btn-pri btn-sm" disabled={busy} onClick={() => setMail(null)}>Login anlegen</button></div>

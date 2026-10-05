@@ -67,6 +67,13 @@ export async function createPartnerSession(email: string): Promise<string | null
   const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [email]);
   return ex.rowCount ? newSession(email) : null;
 }
+/** Test-Board des Admins: Sitzung ohne Partner-Konto, 1 Tag gültig. */
+export async function createPreviewSession(email: string): Promise<string | null> {
+  if (!pool) return null;
+  const token = "ps_" + crypto.randomBytes(24).toString("base64url");
+  await pool.query(`INSERT INTO partner_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '1 day')`, [sha(token), email]);
+  return token;
+}
 async function newSession(email: string): Promise<string> {
   const token = "ps_" + crypto.randomBytes(24).toString("base64url");
   await pool!.query(`INSERT INTO partner_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 days')`, [sha(token), email]);
@@ -128,6 +135,7 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const b = (req.body || {}) as Record<string, unknown>;
     const t = String(b.t || "");
     if (!(await isPartnerSession(t)) && !(await isLinkToken(t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (t.startsWith("ps_") && (await partnerSessionEmail(t)) === "admin-preview") return reply.code(400).send({ ok: false, error: "test mode" }); // Admin-Gerät nicht als Partner-Gerät
     const sub = (b.sub || {}) as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
     if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) return reply.code(400).send({ ok: false, error: "subscription" });
     await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } });
