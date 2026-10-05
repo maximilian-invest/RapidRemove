@@ -1081,17 +1081,21 @@ const isInkasso = (o, now) => o.status === "done" && !["paid", "refunded"].inclu
 // (Status ≠ done) und noch nicht gelieferte Aufträge aus – die schulden noch nichts.
 const OFFEN_PAY = ["pending", "sent", "mahnung", "failed"];
 const isZahlungOffen = (o) => o.status === "done" && OFFEN_PAY.includes(o.pay);
+// Standard-Arbeitsliste „Offen": alles, was noch Aufmerksamkeit braucht — also
+// NICHT bezahlt und NICHT storniert (= neue + noch nicht bezahlte Aufträge).
+const isOffenOrder = (o) => o.status !== "storniert" && o.pay !== "paid";
 const ASSIGNEE_OPTS = [["all", "Alle Betreuer"], ["max", "Max"], ["matthias", "Matthias"], ["none", "Nicht zugewiesen"]];
 
 function Orders({ orders, openOrder, query, setQuery }) {
   const isMobile = useIsMobile();
   const now = useNow(30000); // Listen-Laufzeiten im Minutentakt aktualisieren
-  const [filter, setFilter] = React.useState("all");
+  const [filter, setFilter] = React.useState("offen");
   const [assignee, setAssignee] = React.useState("all"); // Betreuer-Filter (Max/Matthias/nicht zugewiesen)
   // Zuerst nach Betreuer eingrenzen – Zähler UND Liste beziehen sich danach auf diese Auswahl.
   const scoped = orders.filter((o) => (assignee === "all" ? true : assignee === "none" ? !o.assignee : o.assignee === assignee));
   const inkassoOrders = scoped.filter((o) => isInkasso(o, now));
   const filters = [
+    ["offen", "Offen", scoped.filter(isOffenOrder).length],
     ["all", "Alle", scoped.length],
     ["new", "Neu", scoped.filter((o) => o.status === "new").length],
     ["progress", "In Bearbeitung", scoped.filter((o) => o.status === "progress").length],
@@ -1100,7 +1104,8 @@ function Orders({ orders, openOrder, query, setQuery }) {
     ["inkasso", "Inkasso", inkassoOrders.length],
   ];
   let list = scoped;
-  if (filter === "pending") list = scoped.filter(isZahlungOffen);
+  if (filter === "offen") list = scoped.filter(isOffenOrder);
+  else if (filter === "pending") list = scoped.filter(isZahlungOffen);
   else if (filter === "inkasso") list = inkassoOrders;
   else if (filter !== "all") list = scoped.filter((o) => o.status === filter);
   if (query.trim()) {
@@ -1110,6 +1115,8 @@ function Orders({ orders, openOrder, query, setQuery }) {
   // Kontextbezogener Leer-Hinweis: im Inkasso-Reiter ist „leer" die gute Nachricht.
   const emptyMsg = filter === "inkasso"
     ? "Keine überfälligen Forderungen – alle gelöschten Aufträge sind bezahlt oder jünger als 30 Tage. 🎉"
+    : filter === "offen"
+    ? "Keine offenen Bestellungen – alles abgearbeitet. 🎉"
     : "Keine Bestellungen in diesem Filter.";
   if (isMobile) return (
     <div className="content">
