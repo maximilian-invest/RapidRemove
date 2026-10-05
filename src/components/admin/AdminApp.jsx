@@ -137,7 +137,10 @@ function OrderRow({ o, onClick, now }) {
       <div className="right">
         {o.assignee ? <AssigneeAvatar who={o.assignee} size={24} /> : null}
         <span className="amt">{o.amount ? money(o.amount, o.country) : "—"}</span>
-        <StatusBadge status={o.status} />
+        {/* Gelöscht + Zahlungslink raus (bzw. Mahnung) → mobil „Zahlung offen" statt „Gelöscht". */}
+        {o.status === "done" && ["sent", "mahnung", "failed"].includes(o.pay)
+          ? <span className="badge-st st-payopen"><span className="d"></span>Zahlung offen</span>
+          : <StatusBadge status={o.status} />}
         <OrderTimer since={o.createdAt} status={o.status} now={now} />
       </div>
     </div>

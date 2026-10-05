@@ -607,3 +607,4 @@ button{font-family:inherit;}
 /* Bewertungen: Löschbestätigung-Buttons nebeneinander (auch mobil) */
 .rv-send-row .btn{white-space:normal;line-height:1.25;text-align:left;min-width:0;}
 .rv-shots > summary{list-style-position:inside;}
+.st-payopen{background:var(--warning-soft);color:#b45309;}
