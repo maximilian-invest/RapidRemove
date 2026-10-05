@@ -41,6 +41,8 @@ export async function initCustomerTables(): Promise<void> {
     )
   `);
   await pool.query(`ALTER TABLE cust_notify ADD COLUMN IF NOT EXISTS changes jsonb NOT NULL DEFAULT '{}'::jsonb`);
+  // Einmalige Einladung ins Dashboard (je E-Mail-Adresse höchstens einmal).
+  await pool.query(`CREATE TABLE IF NOT EXISTS cust_invites (email text PRIMARY KEY, sent_at timestamptz NOT NULL DEFAULT now())`);
   // Persönliche Login-Links in den Mails („Dashboard öffnen" → direkt eingeloggt, 30 Tage, mehrfach nutzbar).
   // „Passwort vergessen": einmaliger Link (60 Min.), nur der SHA-256-Hash liegt in der DB.
   await pool.query(`
@@ -659,7 +661,47 @@ export async function requeueNotify(orderId: string, keys: string[], minutes = 1
 }
 
 /* ---- Admin: Dashboard-Zugänge für alle offenen Einzelbewertungs-Aufträge anlegen (OHNE Mail) ---- */
-export function registerCustomerAdminRoutes(app: FastifyInstance, adminToken: string): void {
+export function registerCustomerAdminRoutes(app: FastifyInstance, adminToken: string, hooks: { sendInvite: (email: string, name: string, url: string, lang: string) => Promise<void> }): void {
+  // Einladung ins Dashboard an alle Bewertungs-Kunden: ohne apply = nur Liste, mit apply = senden.
+  // Je Adresse eine Mail (Sprache + Name der letzten Bestellung), nie doppelt.
+  let inviting = false;
+  app.post("/admin/cust/invite", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const r = await pool.query(
+      `SELECT DISTINCT ON (lower(o.email)) lower(o.email) AS email, o.name, o.lang, o.company, o.profile
+         FROM orders o
+        WHERE o.service='reviews' AND o.email IS NOT NULL AND o.email <> '' AND COALESCE(o.status,'') <> 'storniert'
+          AND NOT EXISTS (SELECT 1 FROM cust_invites i WHERE i.email = lower(o.email))
+        ORDER BY lower(o.email), o.created_at DESC`,
+    );
+    const sent = (await pool.query(`SELECT count(*)::int AS n FROM cust_invites`)).rows[0].n as number;
+    const list = (r.rows as Record<string, string>[])
+      .filter((x) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x.email))
+      .map((x) => ({ email: x.email, name: String(x.name || "").trim().split(/\s+/)[0] || "", lang: String(x.lang || "en").slice(0, 2), business: x.company || x.profile || "" }));
+    if (b.apply !== true) return { ok: true, pending: list, alreadySent: sent };
+    if (inviting) return reply.code(409).send({ ok: false, error: "Versand läuft bereits" });
+    inviting = true;
+    const done: string[] = [], failed: { email: string; error: string }[] = [];
+    try {
+      for (const c of list) {
+        // Erst reservieren (verhindert Doppelversand bei parallelen Klicks), bei Fehler wieder freigeben.
+        const ins = await pool.query(`INSERT INTO cust_invites (email) VALUES ($1) ON CONFLICT DO NOTHING`, [c.email]);
+        if (!ins.rowCount) continue;
+        try {
+          await hooks.sendInvite(c.email, c.name, await dashLink(c.email, c.lang), c.lang);
+          done.push(c.email);
+        } catch (e) {
+          await pool.query(`DELETE FROM cust_invites WHERE email=$1`, [c.email]).catch(() => {});
+          failed.push({ email: c.email, error: String((e as Error)?.message || e).slice(0, 160) });
+        }
+        await new Promise((res) => setTimeout(res, 400)); // Mailserver schonen
+      }
+    } finally { inviting = false; }
+    return { ok: true, sent: done.length, failed };
+  });
+
   app.post("/admin/cust/accounts-open", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });

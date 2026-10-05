@@ -7,12 +7,13 @@ import { RedirectsDashboard } from "./AdminRedirects";
 import { ReportStatsDashboard } from "./AdminReportStats";
 import { AdminPartner, PartnerBadge } from "./AdminPartner";
 import { AdminCustAccess } from "./AdminCustAccess";
+import { AdminCustInvite } from "./AdminCustInvite";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList, partnerTasks } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList, partnerTasks, partnerSend } from "@/lib/admin-api";
 import { Monitor } from "@/components/admin/Monitor";
 import "@/styles/monitor.css";
 import { langLabel } from "@/lib/mail-lang";
@@ -1670,10 +1671,27 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [sentItems, setSentItems] = React.useState(null);
   // Partner-Board: Status je Bewertung (Schlüssel wie in ops: url || name|text).
   const [ptasks, setPtasks] = React.useState({});
+  const [ploaded, setPloaded] = React.useState(false);
   const loadPartner = React.useCallback(() => {
-    partnerTasks(o.id).then((r) => setPtasks(Object.fromEntries((r.tasks || []).map((t) => [t.itemKey, t])))).catch(() => {});
+    partnerTasks(o.id).then((r) => { setPtasks(Object.fromEntries((r.tasks || []).map((t) => [t.itemKey, t]))); setPloaded(true); }).catch(() => {});
   }, [o.id]);
   React.useEffect(() => { loadPartner(); }, [loadPartner]);
+  // Bewertungen, die noch nicht am Partner-Board sind → mit einem Klick rüberschieben.
+  const clipK = (v, n) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
+  const boardKey = (it) => { const u = clipK(it.url, 600); return /^https?:\/\/\S+$/i.test(u) ? u : `${clipK(it.name, 120)}|${clipK(it.text, 600)}`; };
+  const onBoard = (it) => ptasks[boardKey(it)] || ptasks[keyOf(it)];
+  const notOnBoard = items.filter((it) => !onBoard(it));
+  const [pushing, setPushing] = React.useState(false);
+  const toPartner = async () => {
+    if (pushing || !notOnBoard.length) return;
+    setPushing(true);
+    try {
+      const r = await partnerSend(o.id, notOnBoard, o.profile || o.company || o.name || "");
+      toast(`${(r.tasks || []).length} an den Partner übergeben ✓`);
+      loadPartner();
+    } catch (e) { toast("Übergabe fehlgeschlagen: " + e.message); }
+    setPushing(false);
+  };
   const sendStart = async () => {
     if (!chosen.length || starting) return;
     setStarting(true);
@@ -1743,7 +1761,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
             {it.url
               ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: isDeclined(it) ? "line-through" : undefined }}>{it.url}</a>
               : <span style={{ fontWeight: 600, textDecoration: off ? "line-through" : undefined }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
-            {ptasks[keyOf(it)] ? <PartnerBadge task={ptasks[keyOf(it)]} /> : null}
+            {onBoard(it) ? <PartnerBadge task={onBoard(it)} /> : null}
             {!started && !sel[i] ? (
               <button type="button" onClick={(e) => { e.preventDefault(); setSwSel((m) => ({ ...m, [i]: !m[i] })); }}
                 title="Nicht normal löschbar, aber per Spezial-Software (300, voll im Voraus, 99 %, sonst Erstattung nach 14 Tagen) → Angebot + Zahlungsbutton in der Startbestätigung"
@@ -1766,6 +1784,11 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
           : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Vorauszahlung {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
+        {ploaded && notOnBoard.length && o.status !== "storniert" ? (
+          <button className="btn btn-sec btn-sm" disabled={pushing} onClick={toPartner} title="Noch nicht am Partner-Board">
+            <AI.send /> {pushing ? "Übergibt…" : `An Partner übergeben (${notOnBoard.length})`}
+          </button>
+        ) : null}
         {!started ? (
           <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} data-sw={swChosen.length} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
             <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${swChosen.length ? `, ${swChosen.length} Software` : ""}${items.length - chosen.length - swChosen.length && chosen.length ? `, ${items.length - chosen.length - swChosen.length} ablehnen` : ""}`}
@@ -3145,7 +3168,7 @@ function AdminApp() {
   else if (view === "subs") body = <SubsDashboard toast={toast} />;
   else if (view === "liga") body = <GamifyLiga />;
   else if (view === "templates") body = <Templates toast={toast} />;
-  else if (view === "customers") body = <React.Fragment><div className="content" style={{ paddingBottom: 0 }}><AdminCustAccess toast={toast} /></div><Customers customers={stripeCustomers} query={query} /></React.Fragment>;
+  else if (view === "customers") body = <React.Fragment><div className="content" style={{ paddingBottom: 0 }}><AdminCustInvite toast={toast} /><AdminCustAccess toast={toast} /></div><Customers customers={stripeCustomers} query={query} /></React.Fragment>;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else if (view === "report") body = <ReportStatsDashboard toast={toast} />;
   else if (view === "partner") body = <AdminPartner toast={toast} />;

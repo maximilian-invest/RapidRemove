@@ -18,7 +18,7 @@ import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
-import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
+import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -28,6 +28,7 @@ import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { resetLinkMail } from "./emails/ResetLinkMail";
+import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
@@ -158,7 +159,11 @@ registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor de
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
 registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
 // Kunden-Dashboard (nur Einzelbewertungen): Login, Status, Zahlungen.
-registerCustomerAdminRoutes(app, ADMIN_TOKEN);
+registerCustomerAdminRoutes(app, ADMIN_TOKEN, {
+  sendInvite: async (email, name, url, lang) => {
+    await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url })), replyTo: process.env.MAIL_REPLY_TO });
+  },
+});
 registerCustomerRoutes(app, {
   sendResetLink: async (email, url, lang) => {
     const m = resetLinkMail(lang, url);
@@ -1727,6 +1732,8 @@ const port = Number(process.env.PORT) || 3000;
 async function start() {
   try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
+    // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
+    void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"));
     if (dbReady()) void runRv60BackfillOnce((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Nachtrag 60 USD fehlgeschlagen")); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {

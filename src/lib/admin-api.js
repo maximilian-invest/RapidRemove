@@ -643,3 +643,12 @@ export async function createOpenCustAccounts() {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/** Einladung ins Kunden-Dashboard: apply=false → nur Empfängerliste, apply=true → senden (je Adresse einmal). */
+export async function custInvite(apply = false) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/cust/invite", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN, apply }) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}

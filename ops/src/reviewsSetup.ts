@@ -45,7 +45,7 @@ function encode(obj: Record<string, any>, prefix = ""): string[] {
 }
 
 // Schlüssel wird je Aufruf gelesen (nicht beim Import), wie bisher im Closure.
-async function sapi<T = any>(method: "GET" | "POST", pathName: string, params?: Record<string, any>): Promise<T> {
+async function sapi<T = any>(method: "GET" | "POST", pathName: string, params?: Record<string, any>, version = "2024-06-20"): Promise<T> {
   const KEY = process.env.STRIPE_SECRET_KEY || "";
   if (!KEY) throw new Error("STRIPE_SECRET_KEY fehlt");
   const isGet = method === "GET";
@@ -54,7 +54,7 @@ async function sapi<T = any>(method: "GET" | "POST", pathName: string, params?: 
   const res = await fetch(url, {
     method,
     headers: {
-      Authorization: `Bearer ${KEY}`, "Stripe-Version": "2024-06-20",
+      Authorization: `Bearer ${KEY}`, "Stripe-Version": version,
       ...(isGet ? {} : { "Content-Type": "application/x-www-form-urlencoded" }),
     },
     body: isGet ? undefined : body,
@@ -62,6 +62,40 @@ async function sapi<T = any>(method: "GET" | "POST", pathName: string, params?: 
   const txt = await res.text();
   if (!res.ok) throw new Error(`Stripe ${method} ${pathName} (${res.status}): ${txt.slice(0, 300)}`);
   return JSON.parse(txt) as T;
+}
+
+/* Jede Zahlung = Firmenkauf mit Rechnung: Firmenname + Rechnungsadresse Pflicht, UID-Nummer
+   (optional, nicht jede Firma hat eine), nach der Zahlung schickt Stripe eine nummerierte Rechnung (PDF).
+   name_collection bei Payment Links gibt es erst ab API-Version 2025-10-29.clover. */
+const PL_VERSION = "2025-10-29.clover";
+const LINK_EXTRAS = {
+  name_collection: { business: { enabled: true, optional: false } },
+  billing_address_collection: "required",
+  tax_id_collection: { enabled: true },
+  invoice_creation: { enabled: true },
+};
+const createLink = (params: Record<string, any>) => sapi<{ url: string }>("POST", "payment_links", { ...params, ...LINK_EXTRAS }, PL_VERSION);
+const linkOk = (pl: any) => !!(pl?.invoice_creation?.enabled && pl?.name_collection?.business?.enabled && pl.name_collection.business.optional === false
+  && pl?.billing_address_collection === "required" && pl?.tax_id_collection?.enabled);
+
+/** Bestehende Bewertungs-Zahlungslinks (schon verschickte Links bleiben gültig) auf Rechnung + Firmendaten umstellen. Idempotent. */
+export async function upgradeReviewLinks(log: (s: string) => void = () => {}): Promise<{ updated: number; ok: number; failed: number }> {
+  const res = { updated: 0, ok: 0, failed: 0 };
+  if (!process.env.STRIPE_SECRET_KEY) return res;
+  const links: any[] = [];
+  for (let i = 0, last = ""; i < 10; i++) {
+    const page = await sapi<{ data: any[]; has_more: boolean }>("GET", `payment_links?active=true&limit=100${last ? `&starting_after=${last}` : ""}`, undefined, PL_VERSION);
+    links.push(...(page.data || []));
+    if (!page.has_more || !page.data?.length) break;
+    last = page.data[page.data.length - 1].id;
+  }
+  for (const pl of links) {
+    if (!pl.metadata || !pl.metadata[MARK]) continue;
+    if (linkOk(pl)) { res.ok++; continue; }
+    try { await sapi("POST", `payment_links/${pl.id}`, LINK_EXTRAS, PL_VERSION); res.updated++; }
+    catch (e) { res.failed++; log(`Zahlungslink ${pl.id}: ${(e as Error).message}`); }
+  }
+  return res;
 }
 
 async function listAll<T = any>(pathName: string, maxPages = 5): Promise<T[]> {
@@ -117,7 +151,7 @@ export async function ensureReviewsLink(qty: number, cur: ReviewsCur): Promise<s
   if (found) { linkCache.set(combo, found.url); return found.url; }
   const productId = await findOrCreateProduct();
   const priceId = await findOrCreatePrice(productId, cur);
-  const pl = await sapi<{ url: string }>("POST", "payment_links", {
+  const pl = await createLink({
     line_items: [{ price: priceId, quantity: n }],
     metadata: { [MARK]: combo },
   });
@@ -174,7 +208,7 @@ export async function runReviewsSetup(opts: { apply: boolean; log?: (line: strin
       const found = existingLinks.find((pl) => pl.metadata && pl.metadata[MARK] === combo);
       if (found) { report.links[combo] = found.url; report.skipped++; log(`  ✓ ${combo} vorhanden`); continue; }
       if (!APPLY) { log(`  · ${combo}: Link würde angelegt (${qty} × ${PRICE_MAJOR[cur]} ${cur.toUpperCase()})`); continue; }
-      const pl = await sapi<{ url: string }>("POST", "payment_links", {
+      const pl = await createLink({
         line_items: [{ price: priceId, quantity: qty }],
         metadata: { [MARK]: combo },
       });
@@ -203,7 +237,7 @@ export async function ensureReviewsAmountLink(totalMajor: number, cur: ReviewsCu
     product: productId,
     metadata: { [MARK]: `amt|${amount}|${cur}` },
   });
-  const pl = await sapi<{ url: string }>("POST", "payment_links", {
+  const pl = await createLink({
     line_items: [{ price: price.id, quantity: 1 }],
     metadata: { [MARK]: combo },
   });
