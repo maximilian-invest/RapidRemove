@@ -82,7 +82,7 @@ export function ReportStatsDashboard({ toast }) {
   const cmp = set === "removals" ? data && data.checks : data && data.removals;
 
   return (
-    <div className="rs">
+    <div className="content rs">
       <div className="rs-head">
         <div>
           <p className="rs-intro">Nur Summen und Durchschnitte – Grundlage für den öffentlichen Datenreport. Jedes Google-Profil wird einmal gezählt.</p>
