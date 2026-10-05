@@ -609,3 +609,21 @@ export async function fetchReportStats() {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j; // { ok, generatedAt, checks, removals, profileOrders }
 }
+
+/* ---- Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner) ---- */
+async function partnerPost(path, body) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + "/admin/partner/" + path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token: TOKEN, ...(body || {}) }),
+  });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+export const partnerSend = (orderId, items) => partnerPost("send", { orderId, items });
+export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderId } : {});
+export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
+export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
+export const partnerLink = (rotate = false) => partnerPost("link", { rotate });

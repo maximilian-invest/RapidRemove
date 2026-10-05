@@ -17,7 +17,7 @@ export default function MetaPixel() {
   // unterscheidet, gibt es hier nicht.
   const pathname = usePathname() || "/";
   // Internes Admin-Panel: kein Tracking (deckungsgleich mit <Consent />).
-  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isAdmin = /^\/(admin|partner)(\/|$)/.test(pathname); // intern: Admin + Partner-Board
 
   // Zuletzt gezählter Seitenaufruf. initMetaPixel() feuert den ersten PageView
   // selbst — ohne diesen Abgleich zählte der Einstieg doppelt.

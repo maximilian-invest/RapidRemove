@@ -28,7 +28,7 @@ const article = {
       "**Infractions évidentes** (spam, insultes, faux engagement manifeste) : souvent de quelques heures à quelques jours.",
       "**Cas limites** qui demandent un examen humain : souvent d'une à quelques semaines.",
       "**Recours et remontées** : ajoutent du temps, parfois plusieurs semaines.",
-      "**Avec nous** : en général quelques jours, parfois jusqu'à trois semaines par avis. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **179 € par avis supprimé**, rien d'avance. Les notes sans texte aussi – procédure spéciale, 300 € payés d'avance.",
+      "**Avec nous** : en général quelques jours, parfois jusqu'à trois semaines par avis. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **179 € par avis supprimé**, rien d'avance. Les notes sans texte aussi – procédure spéciale, 300 € (50 % d'acompte, 50 % après suppression).",
     ] },
     { t: "warn", title: "Des délais typiques, pas garantis", text: "Toutes les durées de cet article sont des fourchettes observées en pratique, pas des engagements de Google. Le délai de traitement varie, et personne ne peut promettre une date – ni une suppression." },
 

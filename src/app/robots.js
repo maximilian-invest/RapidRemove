@@ -8,8 +8,8 @@ const AI_BOTS = ["OAI-SearchBot", "ChatGPT-User", "GPTBot", "PerplexityBot", "Pe
 export default function robots() {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: ["/admin"] },
-      { userAgent: AI_BOTS, allow: "/", disallow: ["/admin"] },
+      { userAgent: "*", allow: "/", disallow: ["/admin", "/partner"] },
+      { userAgent: AI_BOTS, allow: "/", disallow: ["/admin", "/partner"] },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
   };

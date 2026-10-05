@@ -64,7 +64,7 @@ const article = {
       ["Profesjonell fjerning", "Erfaring med prosedyrene; **179 € per fjernet anmeldelse, først ved suksess**", "Koster penger; ærlig kritikk blir uansett stående"],
     ] },
     { t: "p", text: "Til sammenligning tar en advokat som regel betalt på forskudd og per time – også om anmeldelsen ender med å bli stående ([advokat eller teknisk fjerning?](/no/magasin/negativ-google-anmeldelse-advokat/)). En fullstendig prissammenligning finner du i [hva koster det å få fjernet en Google-anmeldelse](/no/magasin/pris-fjerne-google-anmeldelse/)." },
-    { t: "cta", title: "Få en gratis vurdering av om anmeldelsen kan fjernes", text: "Søk etter bedriften din, kryss av for anmeldelsene og se prisen med en gang: **179 € per fjernet anmeldelse** (eldre enn 4 uker 229 €). Ingenting på forskudd – du betaler bare når anmeldelsen faktisk er borte.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Bare Googles offisielle prosedyrer", "Først en ærlig vurdering"] },
+    { t: "cta", title: "Få en gratis vurdering av om anmeldelsen kan fjernes", text: "Søk etter bedriften din, kryss av for anmeldelsene og se prisen med en gang: **179 € per fjernet anmeldelse** (eldre enn 4 uker 229 €). Ingenting på forskudd for anmeldelser med tekst – du betaler bare når anmeldelsen faktisk er borte.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd (med tekst)", "Bare Googles offisielle prosedyrer", "Først en ærlig vurdering"] },
 
     { t: "h2", id: "myter", text: "Myter og feller: dette bør du la være", toc: "Myter" },
     { t: "p", text: "**Det sirkulerer mange «triks» for å slette Google-anmeldelser som ikke fungerer – eller som til og med setter profilen din i fare.** Her er de fire mest seiglivede." },
@@ -105,7 +105,7 @@ const article = {
     { q: "Hva skjer hvis Google avviser rapporteringen min?", a: "Da kan du klage i Reviews Management Tool, **én gang per anmeldelse**. Klagen kan bli eskalert og ender med en endelig avgjørelse fra Google." },
     { q: "Kan jeg be en kunde om å endre anmeldelsen sin?", a: "Ja, hvis det er en ekte kunde og du har løst problemet. Tilby **ingen rabatt, gave eller annen belønning** – det bryter Googles retningslinjer." },
     { q: "Forsvinner anmeldelsene hvis jeg markerer profilen som permanent stengt?", a: "Nei. Ved «permanent stengt» er både opplysningene og anmeldelsene fortsatt synlige. Bare hvis hele bedriftsprofilen slettes, forsvinner alle anmeldelser – også de gode." },
-    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse**, 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting. Også rene stjernevurderinger uten tekst kan fjernes – egen prosedyre, 300 € betalt på forhånd." },
+    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse**, 229 € hvis anmeldelsen er eldre enn 4 uker. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting. Også rene stjernevurderinger uten tekst kan fjernes – egen prosedyre, 300 € (50 % depositum, 50 % etter fjerning)." },
     { q: "Hvor lang tid tar det før en anmeldelse er borte?", a: "Som regel noen få dager, noen ganger opptil 3 uker. Google lover ikke selv noen fast behandlingstid – vurderingen kan ta alt fra dager til uker." },
   ],
   related: [

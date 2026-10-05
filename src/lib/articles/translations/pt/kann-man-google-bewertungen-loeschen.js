@@ -81,7 +81,7 @@ const article = {
     { t: "p", text: "Usamos **apenas os procedimentos do próprio Google**, em nome do proprietário da empresa: sem contas falsas, sem bots e sem falsas notificações legais. O autor da avaliação não fica a saber quem pediu a remoção." },
     { t: "ul", items: [
       "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação pode ser removida. Se não puder, não paga nada.",
-      "**Preço:** 179 € por avaliação removida; avaliações com mais de 4 semanas custam mais 50 € (229 €). Classificações só com estrelas, sem texto: procedimento especial, 300 €, pagos adiantado.",
+      "**Preço:** 179 € por avaliação removida; avaliações com mais de 4 semanas custam mais 50 € (229 €). Classificações só com estrelas, sem texto (poucos casos especiais): procedimento especial, 300 € – 150 € de sinal, 150 € só após a remoção.",
       "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas; classificações só com estrelas, aprox. 80 %.",
       "**Desconto de volume** nas avaliações que aceitamos: a partir de 3, −10 %; a partir de 5, −15 %; a partir de 10, −30 %.",
       "**Duração:** normalmente alguns dias, por vezes até 3 semanas. Paga cada avaliação depois de removida, através de um link de pagamento seguro.",

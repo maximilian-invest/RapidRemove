@@ -58,7 +58,7 @@ const article = {
       "**Endelig afgørelse** – efter klagen er vejen i værktøjet slut. Kun ved ulovligt indhold er der stadig en [juridisk anmodning om fjernelse](https://support.google.com/legal/answer/3110420).",
     ] },
 
-    { t: "cta", title: "Ingen lyst til at vente i ugevis og håbe?", text: "Vælg de anmeldelser, der skal væk, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, som regel klaret på et par dage – og du betaler først, når anmeldelsen faktisk er væk.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
+    { t: "cta", title: "Ingen lyst til at vente i ugevis og håbe?", text: "Vælg de anmeldelser, der skal væk, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, som regel klaret på et par dage – og du betaler først, når anmeldelsen faktisk er væk.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd (med tekst)", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
 
     { t: "h2", id: "rejected", text: "Hvorfor Google afviser rapporter", toc: "Hvorfor afslag?" },
     { t: "p", text: "De fleste afslag har én af tre årsager. Alle kan undgås – undtagen den sidste." },
@@ -99,7 +99,7 @@ const article = {
     { q: "Hvorfor har min rapport stået på ”Decision pending” i flere uger?", a: "Nogle rapporter gennemgås manuelt, og det kan tage længere tid; Google oplyser ingen frist. Tjek, at du har valgt den rigtige kategori – en stærk og korrekt rapport er den bedste måde at sætte tempoet op på." },
     { q: "Får anmelderen at vide, hvem der rapporterede anmeldelsen?", a: "Nej. Når vi anmoder om en fjernelse, får anmelderen ikke at vide, hvem der bad om den." },
     { q: "Kan en fjernet anmeldelse komme tilbage?", a: "En anmeldelse, der er fjernet på grund af en overtrædelse, kommer normalt ikke tilbage. Personen kan dog skrive en ny anmeldelse; den bliver så vurderet for sig og kan rapporteres igen, hvis den også bryder reglerne." },
-    { q: "Betaler jeg mere, hvis det tager længere tid?", a: "Nej. Prisen er **179 € pr. fjernet anmeldelse** (229 € for anmeldelser ældre end 4 uger), uanset hvor lang tid det tager – og du betaler kun, hvis anmeldelsen faktisk er væk. Rene stjernebedømmelser uden tekst fjerner vi med en særlig procedure til 300 €, betalt forud – også her uden tillæg for tid eller alder." },
+    { q: "Betaler jeg mere, hvis det tager længere tid?", a: "Nej. Prisen er **179 € pr. fjernet anmeldelse** (229 € for anmeldelser ældre end 4 uger), uanset hvor lang tid det tager – og du betaler kun, hvis anmeldelsen faktisk er væk. Rene stjernebedømmelser uden tekst fjerner vi med en særlig procedure til 300 € (50 % depositum, 50 % efter fjernelsen) – også her uden tillæg for tid eller alder." },
   ],
   related: [
     { label: "Fjern en Google-anmeldelse: pris, chance og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },

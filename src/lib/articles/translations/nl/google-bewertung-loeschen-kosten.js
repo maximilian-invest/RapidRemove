@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert en oprichter",
     date: "2026-10-05",
   },
-  dek: "Een Google review zelf melden is **gratis**, maar Google wijst veel meldingen af. Een advocaat rekent meestal **per uur en vooraf**, ongeacht de uitkomst. Diensten verschillen sterk: sommige laten u per poging of vooraf betalen, andere noemen geen prijs. Bij RapidRemove betaalt u **€ 179 per verwijderde review** (+ € 50 als de review ouder is dan 4 weken) – en **alleen als hij echt weg is**. Beoordelingen met alleen sterren, zonder tekst, verwijderen we met een speciale procedure: € 300, vooraf te betalen.",
+  dek: "Een Google review zelf melden is **gratis**, maar Google wijst veel meldingen af. Een advocaat rekent meestal **per uur en vooraf**, ongeacht de uitkomst. Diensten verschillen sterk: sommige laten u per poging of vooraf betalen, andere noemen geen prijs. Bij RapidRemove betaalt u **€ 179 per verwijderde review** (+ € 50 als de review ouder is dan 4 weken) – en **alleen als hij echt weg is**. Beoordelingen met alleen sterren, zonder tekst, verwijderen we met een speciale procedure: € 300 – 50 % aanbetaling, 50 % pas na verwijdering (alleen in weinig speciale gevallen).",
   blocks: [
     { t: "h2", id: "kort-antwoord", text: "Het korte antwoord: wat kost een Google review verwijderen?", toc: "Kort antwoord" },
     { t: "p", text: "Het hangt af van de route die u kiest: zelf melden kost niets behalve tijd, een advocaat en sommige diensten kosten geld, ook als de review blijft staan. De echte vraag is dus niet alleen **hoeveel**, maar ook **wanneer u betaalt en voor wat**." },
@@ -19,7 +19,7 @@ const article = {
       "**Zelf melden bij Google:** gratis, maar vaak afgewezen met een standaardantwoord.",
       "**Advocaat:** meestal uurtarief, vaak met voorschot – u betaalt ook als de review blijft staan.",
       "**Diensten met vooruitbetaling:** sommige rekenen per poging of vooraf, andere tonen hun prijs pas na een gesprek.",
-      "**RapidRemove:** € 179 per verwijderde review, € 229 als hij ouder is dan 4 weken. Niets vooraf, geen kosten voor pogingen. Uitzondering: beoordelingen met alleen sterren, zonder tekst – **€ 300**, vooraf te betalen (speciale procedure, ca. 80 % slagingskans).",
+      "**RapidRemove:** € 179 per verwijderde review, € 229 als hij ouder is dan 4 weken. Niets vooraf, geen kosten voor pogingen. Uitzondering (heel weinig speciale gevallen): beoordelingen met alleen sterren, zonder tekst – **€ 300**, waarvan 50 % aanbetaling en 50 % pas na verwijdering (speciale procedure, ca. 80 % slagingskans).",
     ] },
     { t: "p", text: "Wilt u direct de prijs voor uw eigen reviews zien? Met onze [Google review laten verwijderen-service](/nl/review-laten-verwijderen/) vinkt u de reviews aan en ziet u meteen het totaalbedrag." },
 
@@ -28,13 +28,13 @@ const article = {
     { t: "p", text: "**1. Zelf melden (gratis).** U meldt de review via Google Maps, Google Zoeken of uw bedrijfsprofiel met „Review melden” en kiest de soort overtreding. In de [Reviews Management Tool](https://support.google.com/business/workflow/9945796) volgt u de status („Beslissing in behandeling”, „Melding beoordeeld – geen schending van het beleid”) en kunt u **één keer per review in beroep gaan**. Het kost geen geld, wel tijd – en u moet de juiste overtreding uit het [beleid voor verboden en beperkte content](https://support.google.com/contributionpolicy/answer/7400114) kiezen. Google zegt zelf dat u een review niet moet melden alleen omdat u het er niet mee eens bent. Hoe het stap voor stap werkt, leest u in [Google review zelf melden](/nl/magazine/google-review-verwijderen-hoe/)." },
     { t: "p", text: "**2. Een advocaat.** Bij smaad of onrechtmatige inhoud kan een advocaat een [juridisch verwijderverzoek](https://support.google.com/legal/answer/3110420) indienen of de schrijver aanschrijven. Advocaten rekenen meestal **per uur**, vaak met een voorschot, en **los van de uitkomst**. Dat is zinvol bij echte juridische geschillen, maar duur voor één nepreview ([advocaat of technische verwijdering?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/))." },
     { t: "p", text: "**3. Diensten met vooruitbetaling.** De markt is onoverzichtelijk. Sommige aanbieders rekenen per poging, andere vragen een vast bedrag vooraf, en weer andere noemen pas een prijs na een „gratis gesprek”. Het risico dat de review blijft staan, ligt dan bij u." },
-    { t: "p", text: "**4. Betalen alleen bij succes.** Zo werkt RapidRemove: eerst een gratis inschatting, dan werken wij uitsluitend via de eigen procedures van Google, namens u als eigenaar. Bij reviews met tekst betaalt u per review die **echt verwijderd** is; beoordelingen met alleen sterren betaalt u vooraf." },
+    { t: "p", text: "**4. Betalen alleen bij succes.** Zo werkt RapidRemove: eerst een gratis inschatting, dan werken wij uitsluitend via de eigen procedures van Google, namens u als eigenaar. Bij reviews met tekst betaalt u per review die **echt verwijderd** is; bij de zeldzame beoordelingen met alleen sterren betaalt u 50 % aanbetaling en de rest pas na verwijdering." },
 
     { t: "h2", id: "vergelijking", text: "Vergelijking: zelf melden, advocaat, vooruitbetaling of RapidRemove", toc: "Vergelijking" },
     { t: "p", text: "Het grootste verschil zit niet in de prijs, maar in **wie het risico draagt** als de review blijft staan." },
     { t: "table", rrCol: 4, head: ["Criterium", "Zelf melden", "Advocaat", "Dienst met vooruitbetaling", "RapidRemove"], rows: [
-      ["Kostenmodel", "Gratis", "Uurtarief, vaak voorschot", "Per poging of vast bedrag vooraf", "**€ 179 per verwijderde review** (+ € 50 bij ouder dan 4 weken); alleen sterren: € 300, vooraf"],
-      ["Betalen als de review blijft?", "–", "Ja", "Vaak ja", "**Nee** (alleen sterren: ja, vooraf betaald)"],
+      ["Kostenmodel", "Gratis", "Uurtarief, vaak voorschot", "Per poging of vast bedrag vooraf", "**€ 179 per verwijderde review** (+ € 50 bij ouder dan 4 weken); alleen sterren: € 300 (50 % aanbetaling, 50 % na verwijdering)"],
+      ["Betalen als de review blijft?", "–", "Ja", "Vaak ja", "**Nee** (alleen sterren: de aanbetaling van € 150 wordt niet terugbetaald, de tweede helft vervalt)"],
       ["Risico voor u", "Tijd kwijt, vaak afgewezen", "Hoog: kosten ongeacht uitkomst", "Hoog: geld vooraf weg", "**Geen**: alleen bij succes"],
       ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal een paar dagen, soms tot 3 weken"],
       ["Inspanning voor u", "Gemiddeld (melden, volgen, beroep)", "Hoog (dossier, overleg)", "Wisselend", "Ongeveer 2 minuten"],
@@ -47,7 +47,7 @@ const article = {
       ["Tot 4 weken oud", "ca. 90 %", "**€ 179**"],
       ["Ouder dan 4 weken", "ca. 50 %", "**€ 229** (€ 179 + € 50)"],
     ] },
-    { t: "p", text: "**Beoordelingen met alleen sterren, zonder tekst:** die verwijderen we met een **speciale, softwareondersteunde procedure**. Ze kosten **€ 300 per review**, zonder toeslag voor oudere reviews, met een slagingskans van **ca. 80 %**. Hier werkt de betaling anders: de € 300 betaalt u **vooraf** – ze zijn verschuldigd zodra wij de review accepteren (de betaallink komt met de startbevestiging) en worden **niet terugbetaald als de review blijft staan**. In het bestelformulier krijgen ze een eigen prijsregel. De staffelkorting geldt op dezelfde manier en telt mee met alle geaccepteerde reviews van de bestelling." },
+    { t: "p", text: "**Beoordelingen met alleen sterren, zonder tekst:** die verwijderen we met een **speciale, softwareondersteunde procedure**. Ze kosten **€ 300 per review**, zonder toeslag voor oudere reviews, met een slagingskans van **ca. 80 %**. Hier werkt de betaling anders: **50 % aanbetaling (€ 150)** zodra wij de review accepteren (de betaallink komt met de startbevestiging), de **overige 50 % (€ 150) pas nadat hij verwijderd is**. Blijft de review staan, dan wordt **de aanbetaling niet terugbetaald**, maar de tweede helft ook niet in rekening gebracht. Dit geldt alleen voor heel weinig speciale gevallen (beoordelingen met alleen sterren, zonder enige tekst) – de overgrote meerderheid van de reviews betaalt u alleen bij succes, zonder iets vooraf. In het bestelformulier krijgen ze een eigen prijsregel. De staffelkorting geldt voor beide helften en telt mee met alle geaccepteerde reviews van de bestelling." },
     { t: "p", text: "Na de gratis inschatting geldt een **staffelkorting** op het aantal reviews dat wij accepteren. De korting geldt voor elke review die verwijderd wordt:" },
     { t: "table", head: ["Geaccepteerde reviews", "Korting"], rows: [
       ["1 – 2", "–"],
@@ -66,7 +66,8 @@ const article = {
       "**2 verse en 3 oudere reviews:** € 1.045, min 15 % = **€ 888**.",
       "**5 verse reviews geaccepteerd, 4 verwijderd:** 4 × € 179 = € 716, min 15 % = **€ 609**. Voor de vijfde review die blijft staan, betaalt u niets.",
       "**10 reviews (6 vers, 4 ouder):** € 1.990, min 30 % = **€ 1.393**.",
-      "**2 beoordelingen met alleen sterren + 1 verse review met tekst:** 3 geaccepteerd, dus −10 %: 2 × € 300 = € 600, min 10 % = **€ 540 vooraf**; de review met tekst kost € 161,10 en alleen als hij verwijderd wordt.",
+      "**1 beoordeling met alleen sterren:** € 300 = **€ 150 aanbetaling** bij acceptatie + **€ 150 na verwijdering**. Blijft hij staan, dan betaalt u alleen de € 150 aanbetaling.",
+      "**2 beoordelingen met alleen sterren + 1 verse review met tekst:** 3 geaccepteerd, dus −10 %: 2 × € 300 = € 600, min 10 % = € 540 – daarvan **€ 270 aanbetaling** (2 × € 135) en € 135 per beoordeling die verwijderd wordt; de review met tekst kost € 161,10 en alleen als hij verwijderd wordt.",
     ] },
     { t: "tip", title: "Snel zijn loont dubbel", text: "Na 4 weken daalt de slagingskans van ca. 90 % naar ca. 50 % en stijgt de prijs met € 50. Wie een verse nepreview meteen aanpakt, betaalt minder én heeft meer kans." },
 
@@ -77,7 +78,7 @@ const article = {
       "**Wij gaan aan de slag** via de eigen procedures van Google, namens u als eigenaar.",
       "**Review verdwenen?** U krijgt een beveiligde betaallink. Desgewenst krijgt u **per review een aparte betaallink**, zodat u steeds alleen betaalt wat al weg is.",
       "**Liever anders betalen?** PayPal of bankoverschrijving is op aanvraag mogelijk.",
-      "**Beoordelingen met alleen sterren:** hier is het anders – de € 300 zijn verschuldigd zodra wij de review accepteren; de betaallink komt met de startbevestiging, en het bedrag wordt niet terugbetaald als de review blijft staan.",
+      "**Beoordelingen met alleen sterren:** hier is het anders (alleen in weinig speciale gevallen) – de aanbetaling van 50 % (€ 150) is verschuldigd zodra wij de review accepteren; de betaallink komt met de startbevestiging, en de aanbetaling wordt niet terugbetaald als de review blijft staan. De overige € 150 pas na verwijdering.",
     ] },
     { t: "p", text: "Meestal duurt het **een paar dagen**, soms tot **drie weken**. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
 
@@ -112,11 +113,11 @@ const article = {
     { t: "cta", title: "Weet in 2 minuten wat het u kost", text: "Kies uw bedrijf, vink de reviews aan en zie uw exacte prijs inclusief korting. U betaalt **alleen voor reviews die echt verwijderd zijn**.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["€ 179 per verwijderde review", "Niets vooraf", "Betaallink per review mogelijk"] },
   ],
   faq: [
-    { q: "Wat kost het om een Google review te laten verwijderen?", a: "Bij RapidRemove € 179 per verwijderde review, of € 229 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is. Beoordelingen met alleen sterren, zonder tekst: € 300, vooraf te betalen." },
+    { q: "Wat kost het om een Google review te laten verwijderen?", a: "Bij RapidRemove € 179 per verwijderde review, of € 229 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is. Beoordelingen met alleen sterren, zonder tekst (weinig speciale gevallen): € 300 – € 150 aanbetaling, € 150 pas na verwijdering." },
     { q: "Is een Google review verwijderen gratis?", a: "Zelf melden bij Google is gratis. Google wijst meldingen echter vaak af; u kunt dan één keer per review in beroep gaan via de Reviews Management Tool." },
     { q: "Wat kost een advocaat om een Google review te laten verwijderen?", a: "Advocaten rekenen meestal per uur, vaak met een voorschot, en ongeacht de uitkomst. Dat loont vooral bij echte juridische geschillen zoals smaad." },
-    { q: "Moet ik vooraf betalen?", a: "Bij reviews met tekst niet: er wordt **niets vooraf** afgeschreven en pogingen kosten niets. U krijgt pas een betaallink nadat een review verwijderd is. Uitzondering: beoordelingen met alleen sterren (€ 300) betaalt u vooraf, zodra wij ze accepteren – ook als de review blijft staan." },
-    { q: "Wat kost het om een beoordeling met alleen sterren, zonder tekst, te laten verwijderen?", a: "**€ 300 per review**, ongeacht de leeftijd. We verwijderen ze met een speciale, softwareondersteunde procedure, met ca. 80 % slagingskans. U betaalt **vooraf**, zodra wij de review accepteren, en het bedrag wordt niet terugbetaald als de review blijft staan. De staffelkorting geldt, samen met uw andere geaccepteerde reviews." },
+    { q: "Moet ik vooraf betalen?", a: "Bij reviews met tekst niet: er wordt **niets vooraf** afgeschreven en pogingen kosten niets. U krijgt pas een betaallink nadat een review verwijderd is. Uitzondering (heel weinig speciale gevallen): bij beoordelingen met alleen sterren betaalt u 50 % aanbetaling (€ 150) zodra wij ze accepteren – die wordt niet terugbetaald als de review blijft staan; de tweede helft pas na verwijdering." },
+    { q: "Wat kost het om een beoordeling met alleen sterren, zonder tekst, te laten verwijderen?", a: "**€ 300 per review**, ongeacht de leeftijd. We verwijderen ze met een speciale, softwareondersteunde procedure, met ca. 80 % slagingskans. Betaling: **€ 150 aanbetaling** zodra wij de review accepteren, **€ 150 pas nadat hij verwijderd is**; blijft de review staan, dan wordt de aanbetaling niet terugbetaald en de tweede helft niet in rekening gebracht. Dit geldt alleen voor heel weinig speciale gevallen (beoordelingen met alleen sterren, zonder enige tekst) – de overgrote meerderheid van de reviews betaalt u alleen bij succes, zonder iets vooraf. De staffelkorting geldt voor beide helften, samen met uw andere geaccepteerde reviews." },
     { q: "Krijg ik korting bij meerdere reviews?", a: "Ja. Vanaf 3 geaccepteerde reviews 10 %, vanaf 5 reviews 15 % en vanaf 10 reviews 30 % – op elke review die verwijderd wordt." },
     { q: "Kan ik per review apart betalen?", a: "Ja. Omdat reviews op verschillende momenten verdwijnen, kunt u per verwijderde review een aparte betaallink krijgen. PayPal of overschrijving kan op aanvraag." },
     { q: "Kan iemand garanderen dat een review verwijderd wordt?", a: "Nee. Google beslist zelf. Wie een garantie belooft, is niet eerlijk – daarom werken wij met betalen alleen bij succes." },

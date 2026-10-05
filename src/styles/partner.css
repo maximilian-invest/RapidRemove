@@ -1,0 +1,52 @@
+/* Partner board (/partner) — simple, mobile-first. */
+.pt-wrap{max-width:760px;margin:0 auto;padding:20px 16px 48px;font-family:inherit;color:#1c1b19;}
+.pt-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:14px;}
+.pt-brand{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#e67000;}
+.pt-h{font-size:26px;line-height:1.15;margin:2px 0 0;font-weight:800;}
+.pt-refresh{border:1px solid #ddd8cf;background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer;}
+.pt-muted{color:#77736b;}
+.pt-err{background:#fdecec;color:#9b1c1c;border-radius:12px;padding:10px 12px;font-weight:700;margin-bottom:12px;}
+.pt-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+.pt-kpis>div{background:#fff;border:1px solid #ebe6dd;border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;}
+.pt-kpis b{font-size:20px;font-weight:800;}
+.pt-kpis span{font-size:12px;color:#77736b;font-weight:600;}
+.pt-kpis .hl b{color:#15803d;}
+@media (max-width:560px){.pt-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.pt-howto{background:#fff7ef;border:1px solid #f6dcc0;border-radius:14px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-bottom:12px;}
+.pt-tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:12px;}
+.pt-tabs button{border:1px solid #ddd8cf;background:#fff;border-radius:999px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer;}
+.pt-tabs button.on{background:#1c1b19;border-color:#1c1b19;color:#fff;}
+.pt-search{margin-left:auto;border:1px solid #ddd8cf;border-radius:999px;padding:7px 12px;font-size:13px;min-width:0;flex:1 1 140px;max-width:220px;}
+.pt-list{display:flex;flex-direction:column;gap:10px;}
+.pt-card{background:#fff;border:1px solid #ebe6dd;border-left:5px solid #b9b4aa;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;}
+.pt-card.st-working{border-left-color:#2f6db3;}
+.pt-card.st-removed{border-left-color:#15803d;}
+.pt-card.st-no{border-left-color:#b91c1c;}
+.pt-card.st-soft{border-left-color:#6b3fb5;}
+.pt-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+.pt-code{font-size:18px;font-weight:800;letter-spacing:.02em;}
+.pt-kind{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;background:#f3f1ec;border-radius:999px;padding:2px 8px;}
+.pt-kind.k-nt{background:#f0eafb;color:#6b3fb5;}
+.pt-kind.k-old{background:#fff4e0;color:#9a5a00;}
+.pt-price{font-weight:800;}
+.pt-status{margin-left:auto;font-weight:800;font-size:13px;}
+.pt-status.s-working{color:#2f6db3;}.pt-status.s-removed{color:#15803d;}.pt-status.s-no{color:#b91c1c;}.pt-status.s-soft{color:#6b3fb5;}.pt-status.s-new{color:#77736b;}
+.pt-linkrow{display:flex;gap:8px;flex-wrap:wrap;}
+.pt-open{display:inline-block;background:#e67000;color:#fff;text-decoration:none;font-weight:800;border-radius:10px;padding:8px 14px;}
+.pt-copy{border:1px solid #ddd8cf;background:#fff;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer;}
+.pt-review{font-size:13px;color:#4a4740;background:#faf8f4;border-radius:10px;padding:6px 10px;word-break:break-word;}
+.pt-meta{font-size:12px;color:#77736b;}
+.pt-btns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+@media (max-width:560px){.pt-btns{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.pt-btns button{border:1.5px solid #ddd8cf;background:#fff;border-radius:10px;padding:10px 6px;font-weight:800;font-size:13px;cursor:pointer;}
+.pt-btns button:disabled{opacity:.6;cursor:default;}
+.pt-btns .b-working.on{background:#2f6db3;border-color:#2f6db3;color:#fff;}
+.pt-btns .b-removed.on{background:#15803d;border-color:#15803d;color:#fff;}
+.pt-btns .b-no.on{background:#b91c1c;border-color:#b91c1c;color:#fff;}
+.pt-btns .b-soft.on{background:#6b3fb5;border-color:#6b3fb5;color:#fff;}
+.pt-noterow{display:flex;gap:6px;}
+.pt-noterow input{flex:1;min-width:0;border:1px solid #ddd8cf;border-radius:10px;padding:8px 10px;font-size:13px;}
+.pt-noterow button{border:1px solid #ddd8cf;background:#fff;border-radius:10px;padding:8px 10px;font-weight:700;font-size:12.5px;cursor:pointer;white-space:nowrap;}
+.pt-noterow button:disabled{opacity:.5;cursor:default;}
+.pt-payouts{margin-top:18px;background:#fff;border:1px solid #ebe6dd;border-radius:14px;padding:12px 14px;font-size:13px;display:flex;flex-direction:column;gap:4px;}
+.pt-foot{margin-top:18px;font-size:12px;color:#77736b;text-align:center;}

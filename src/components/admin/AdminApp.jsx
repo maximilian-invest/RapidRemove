@@ -5,12 +5,13 @@ import { AdminIcon } from "./AdminIcons";
 import { SubsDashboard } from "./AdminSubs";
 import { RedirectsDashboard } from "./AdminRedirects";
 import { ReportStatsDashboard } from "./AdminReportStats";
+import { AdminPartner, PartnerBadge, partnerWhatsAppText } from "./AdminPartner";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
 import { GamifyLiga } from "./GamifyLiga";
 import { asset } from "@/lib/base";
 import { reviewDiscountPct, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
-import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList } from "@/lib/admin-api";
+import { sendAdminEmail, sendSms, fetchPayLinkUrl, fetchAdminData, fetchStripe, fetchTemplates, sendPayLink, fetchPayLinks, fetchEvents, fetchEmailPreview, sendTemplate, setOrderStatus, correctOrderPayment, markOrderPaid, setOrderAssignee, fetchVapidKey, savePushSub, fetchTemplateDetail, saveTemplateText, saveCheckEmail, enrichCheckEmails, markCheckEnriched, sendReviewsInvoice, sendReviewsStart, sendReviewsStorno, sendReviewsMahnung, fetchReviewShots, reviewShotUrl, monitorList, partnerSend, partnerTasks, partnerLink } from "@/lib/admin-api";
 import { Monitor } from "@/components/admin/Monitor";
 import "@/styles/monitor.css";
 import { langLabel } from "@/lib/mail-lang";
@@ -296,6 +297,7 @@ function Sidebar({ view, setView, counts, open, live }) {
     ["customers", AI.users, "Kunden"],
     ["redirects", AI.external, "Weiterleitungen"],
     ["report", AI.trendUp, "Report-Statistik"],
+    ["partner", AI.users, "Partner-Board"],
   ];
   return (
     <aside className={"side" + (open ? " open" : "")}>
@@ -1479,10 +1481,11 @@ function ReviewsMahnungPanel({ o, toast, onStatus, removed }) {
   const cur = o.country === "US" ? "usd" : "eur";
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
-  const nOld = items.filter((it) => it && it.old).length;
+  const nOld = items.filter((it) => it && it.old && !it.nt).length;
+  const nNtM = items.filter((it) => it && it.nt).length; // ohne Text: Rest 150 (Anzahlung kam mit Start)
   const orderedN = (o.reviewsAccepted && o.reviewsAccepted.length) || (o.reviewItems && o.reviewItems.length) || items.length;
   const pct = reviewDiscountPct(Math.max(items.length, orderedN));
-  const total = Math.round((items.length * 179 + nOld * REVIEW_OLD_SURCHARGE) * (100 - pct) / 100);
+  const total = Math.round(((items.length - nNtM) * 179 + nOld * REVIEW_OLD_SURCHARGE + nNtM * 150) * (100 - pct) / 100);
   // Kunde zahlt per Wise/PayPal (10 % Rabatt) → Mahnung ohne Stripe-Link.
   const revPayMethod = o.payPref === "wise" ? "wise" : (o.paypal ? "paypal" : null);
   const viaName = revPayMethod === "wise" ? "Wise" : revPayMethod ? "PayPal" : "";
@@ -1628,9 +1631,9 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const acceptedList = acceptedLocal || o.reviewsAccepted || null;
   const accKeys = acceptedList ? new Set(acceptedList.map(keyOf)) : null;
   const isDeclined = (it) => !!(accKeys && !accKeys.has(keyOf(it)));
-  // Bewertungen ohne Text (nt): Spezialverfahren, 300 Vorauszahlung mit der Startbestätigung →
-  // nach dem Start nicht mehr in der Rechnung (vorausbezahlt).
-  const isPrepaid = (it) => !!(it && it.nt && accKeys && accKeys.has(keyOf(it)));
+  // Bewertungen ohne Text (nt): Spezialverfahren 300 — 50 % Anzahlung mit der Startbestätigung,
+  // die zweite Hälfte (150) kommt nach der Löschung mit in die Rechnung.
+  const isPrepaid = () => false;
   const started = !!accKeys;
   const basisN = started ? accKeys.size : items.length; // Mengenrabatt nach angenommenen Bewertungen
   const [sel, setSel] = React.useState({});   // Index -> true
@@ -1646,9 +1649,10 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const nOld = chosen.filter((it) => it && it.old && !it.nt).length;
   const nNew = chosen.length - nOld - nNt;
   const pct = chosen.length ? reviewDiscountPct(Math.max(chosen.length, basisN)) : 0;
-  const total = Math.round((nNew * 179 + nOld * (179 + REVIEW_OLD_SURCHARGE) + nNt * 300) * (100 - pct) / 100);
-  const ntUpfront = Math.round(nNt * 300 * (100 - pct) / 100);
-  const per = [nNew ? fmtM(179) : "", nOld ? fmtM(179 + REVIEW_OLD_SURCHARGE) : "", nNt ? fmtM(300) : ""].filter(Boolean).join(" / ") + (pct ? ` (−${pct} %)` : "");
+  const ntUnit = started ? 150 : 300; // nach dem Start: nur noch die zweite Hälfte
+  const total = Math.round((nNew * 179 + nOld * (179 + REVIEW_OLD_SURCHARGE) + nNt * ntUnit) * (100 - pct) / 100);
+  const ntUpfront = Math.round(nNt * 150 * (100 - pct) / 100);
+  const per = [nNew ? fmtM(179) : "", nOld ? fmtM(179 + REVIEW_OLD_SURCHARGE) : "", nNt ? fmtM(ntUnit) : ""].filter(Boolean).join(" / ") + (pct ? ` (−${pct} %)` : "");
   const fmtTotal = fmtM(total);
   // Kunde wollte mit PayPal/Wise zahlen (10 % Rabatt) → eigener Button „Löschbestätigung senden"
   // (ohne Stripe-Link, PayPal-Hinweis bzw. Wise-Kontodaten); Stripe-Rechnung nur mit Schloss + Abfrage.
@@ -1658,6 +1662,26 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const [ask, setAsk] = React.useState(null);
   const [sentVia, setSentVia] = React.useState(null);
   const [sentItems, setSentItems] = React.useState(null);
+  // Partner-Board: Status je Bewertung (Schlüssel wie in ops: url || name|text).
+  const [ptasks, setPtasks] = React.useState({});
+  const [psending, setPsending] = React.useState(false);
+  const loadPartner = React.useCallback(() => {
+    partnerTasks(o.id).then((r) => setPtasks(Object.fromEntries((r.tasks || []).map((t) => [t.itemKey, t])))).catch(() => {});
+  }, [o.id]);
+  React.useEffect(() => { loadPartner(); }, [loadPartner]);
+  const sendToPartner = async () => {
+    if (!chosen.length || psending) return;
+    setPsending(true);
+    try {
+      const r = await partnerSend(o.id, chosen.map((it) => ({ url: it.url, name: it.name, text: it.text, ...(it.nt ? { nt: true } : it.old ? { old: true } : {}) })));
+      const link = await partnerLink().then((x) => x.url).catch(() => "");
+      const txt = partnerWhatsAppText(r.tasks || [], link);
+      try { await navigator.clipboard.writeText(txt); } catch (e) { /* Clipboard evtl. blockiert */ }
+      toast(`${(r.tasks || []).map((t) => t.code).join(", ")} an Partner übergeben ✓ — WhatsApp-Text ist kopiert`);
+      setSel({}); loadPartner();
+    } catch (e) { toast("Übergabe fehlgeschlagen: " + e.message); }
+    setPsending(false);
+  };
   const sendStart = async () => {
     if (!chosen.length || starting) return;
     setStarting(true);
@@ -1725,9 +1749,10 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
             {it.url
               ? <a href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ color: off ? "var(--fg-muted)" : "var(--primary)", fontWeight: 600, wordBreak: "break-all", textDecoration: isDeclined(it) ? "line-through" : undefined }}>{it.url}</a>
               : <span style={{ fontWeight: 600, textDecoration: off ? "line-through" : undefined }}>{it.name}<span className="muted"> — „{(it.text || "").length > 140 ? (it.text || "").slice(0, 140) + "…" : it.text}“</span></span>}
+            {ptasks[keyOf(it)] ? <PartnerBadge task={ptasks[keyOf(it)]} /> : null}
             {isPrepaid(it) ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · Vorauszahlung (nicht in der Rechnung)</span>
               : off ? <span style={{ fontSize: 11, fontWeight: 800, color: "var(--fg-muted)", whiteSpace: "nowrap" }}>nicht angenommen</span>
-              : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>ohne Text · {fmtM(300)} vorab</span>
+              : it.nt ? <span style={{ fontSize: 11, fontWeight: 800, color: "#6b3fb5", whiteSpace: "nowrap" }}>{started ? `ohne Text · Rest ${fmtM(150)} (Anzahlung kam mit Start)` : `ohne Text · ${fmtM(300)} = 50 % Anzahlung + 50 % nach Löschung`}</span>
               : it.old ? <span style={{ fontSize: 11, fontWeight: 800, color: "#b26a00", whiteSpace: "nowrap" }}>älter als 4 Wo. · +50</span> : null}
           </label>
         );
@@ -1736,9 +1761,12 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
         {started || chosen.length === 0
           ? <span style={{ fontWeight: 800 }}>{chosen.length} {started ? "gelöscht" : "ausgewählt"} × {per} = <span style={{ color: "var(--primary)" }}>{fmtTotal}</span>
               {viaName && chosen.length ? <span className="muted" style={{ fontWeight: 700 }}> · {viaName} −10 % = {viaTotal}</span> : null}</span>
-          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Vorauszahlung {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
+          : <span style={{ fontWeight: 800 }}>{chosen.length} von {items.length} ausgewählt{nNt ? <span style={{ color: "#6b3fb5" }}> · {nNt} ohne Text → Anzahlung 50 % {fmtM(ntUpfront)} (Link in der Startbestätigung)</span> : null}</span>}
       </div>
       <div className="rv-send-row" style={{ display: "flex", gap: 8, marginTop: 10, alignItems: "stretch", flexWrap: "wrap" }}>
+        <button className="btn btn-sec btn-sm" disabled={!chosen.length || psending} onClick={sendToPartner} title="Angehakte Bewertungen ans Partner-Board übergeben (Kurznummer, ohne Kundendaten) und WhatsApp-Text kopieren">
+          <AI.send /> {psending ? "Übergibt…" : `An Partner senden${chosen.length ? ` (${chosen.length})` : ""}`}
+        </button>
         {!started ? (
           <button className="btn btn-pri btn-sm" disabled={!chosen.length || starting} onClick={sendStart} title="Angehakte Bewertungen annehmen, Rest ablehnen (kostenfrei)">
             <AI.send /> {starting ? "Sendet…" : `Startbestätigung senden (${langLabel(lang)}) · ${chosen.length} annehmen${items.length - chosen.length && chosen.length ? `, ${items.length - chosen.length} ablehnen` : ""}`}
@@ -2929,7 +2957,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen", report: "Report-Statistik" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen", report: "Report-Statistik", partner: "Partner-Board" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -3121,6 +3149,7 @@ function AdminApp() {
   else if (view === "customers") body = <Customers customers={stripeCustomers} query={query} />;
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else if (view === "report") body = <ReportStatsDashboard toast={toast} />;
+  else if (view === "partner") body = <AdminPartner toast={toast} />;
   else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} onOpenChecks={() => setView("checks")} />;
 
   return (

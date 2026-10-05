@@ -81,7 +81,7 @@ const article = {
     { t: "p", text: "We use **only Google's own procedures**, on behalf of the business owner – no fake accounts, no bots, no fake legal notices. The reviewer is not told who requested the removal." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
-      "**Price:** $179 per removed review; reviews older than 4 weeks cost $50 more ($229). Star-only ratings without text: $300 each via a special procedure, paid upfront (approx. 80 % success chance).",
+      "**Price:** $179 per removed review; reviews older than 4 weeks cost $50 more ($229). Star-only ratings without text: $300 each via a special procedure – 50 % deposit, 50 % after removal (approx. 80 % success chance); this only affects very few special cases.",
       "**Success chance:** approx. 90 % for reviews up to 4 weeks old, approx. 50 % for older ones.",
       "**Volume discount** on the reviews we accept: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Duration:** usually a few days, sometimes up to 3 weeks. You pay per review once it's gone, via a secure payment link.",

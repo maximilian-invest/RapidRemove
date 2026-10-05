@@ -39,7 +39,7 @@ const article = {
     { t: "ul", items: [
       "**Avaliações falsas** sem relação comercial real (p. ex. de concorrentes),",
       "**Insultos, difamação, afirmações factualmente incorretas,**",
-      "**Avaliações de 1 estrela sem texto** sem referência reconhecível (também através da RapidRemove, com um procedimento especial – 300 €, pagos adiantado),",
+      "**Avaliações de 1 estrela sem texto** sem referência reconhecível (também através da RapidRemove, com um procedimento especial – 300 €: 50 % de sinal, 50 % só após a remoção),",
       "**Entradas sem pertinência ou com troca de pessoa.**",
     ] },
     { t: "p", text: "A exigência de uma **relação comercial efetiva** é jurisprudência consolidada na UE — o Tribunal Regional de Lübeck (proc. [9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17)) e o Tribunal Federal de Justiça alemão (BGH, proc. [VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)) confirmaram-no; estes acórdãos alemães reflectem o enquadramento jurídico europeu vigente. Adicionalmente, o **RGPD Art. 17** (direito ao apagamento / direito a ser esquecido) pode ser invocado quando estão em causa dados pessoais." },

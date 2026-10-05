@@ -28,7 +28,7 @@ const article = {
       "**Violazioni evidenti** (spam, insulti, falso coinvolgimento palese): spesso da poche ore a pochi giorni.",
       "**Casi dubbi** che richiedono un controllo umano: spesso da una a qualche settimana.",
       "**Ricorsi ed escalation**: aggiungono tempo, a volte diverse settimane.",
-      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura speciale, 300 € pagati in anticipo.",
+      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura speciale, 300 € (50 % di acconto, 50 % dopo la rimozione).",
     ] },
     { t: "warn", title: "Tempi tipici, non garantiti", text: "Tutte le durate in questo articolo sono intervalli osservati nella pratica, non impegni di Google. I tempi di gestione variano e nessuno può promettere una data – né una rimozione." },
 

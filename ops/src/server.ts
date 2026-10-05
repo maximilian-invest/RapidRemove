@@ -20,6 +20,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
+import { initPartnerTables, registerPartnerRoutes } from "./partner";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
@@ -143,6 +144,8 @@ function normRedirectDest(input: string): string {
 
 // Stripe-Webhook (eigener Scope mit RAW-Body für die Signaturprüfung)
 app.register(stripeWebhook);
+// Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
+registerPartnerRoutes(app, ADMIN_TOKEN);
 
 app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
@@ -1109,18 +1112,18 @@ app.post("/admin/reviews-start", async (req, reply) => {
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
   const startQuote = quoteReviews(items, currency);
   const per = startQuote.per;
-  // Bewertungen ohne Text: Vorauszahlung (rabattiert) per Stripe-Link mit der Startbestätigung.
+  // Bewertungen ohne Text: 50 % Anzahlung (rabattiert) per Stripe-Link mit der Startbestätigung; Rest mit der Rechnung.
   let prepay: { n: number; amount: string; url: string } | undefined;
   if (startQuote.nNt > 0) {
     let payUrl = "";
     if (hasSecretKey()) {
-      try { payUrl = await ensureReviewsAmountLink(startQuote.ntTotal, currency); }
+      try { payUrl = await ensureReviewsAmountLink(startQuote.ntDeposit, currency); }
       catch (e) { app.log.error({ err: e }, "Vorauszahlungs-Link (ohne Text) fehlgeschlagen"); }
     }
     if (!payUrl) return reply.code(400).send({ ok: false, error: hasSecretKey()
       ? "Zahlungslink für die Vorauszahlung (Bewertungen ohne Text) konnte nicht angelegt werden — ops-Log prüfen."
       : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
-    prepay = { n: startQuote.nNt, amount: startQuote.ntTotalStr, url: payUrl };
+    prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: payUrl };
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
@@ -1136,7 +1139,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Vorauszahlung ${prepay.amount} (Link in der Mail)` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Anzahlung 50 % ${prepay.amount} (Link in der Mail)` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.
@@ -1249,18 +1252,17 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const old = o.old === true ? { old: true } : {};
-    if (o.nt === true) return null; // ohne Text = vorausbezahlt → nicht (nochmal) abrechnen
+    const old = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text → hier nur noch die 2. Hälfte
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
   }).filter(Boolean) as RemovedItem[];
-  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine abzurechnenden gelöschten Bewertungen markiert (Bewertungen ohne Text sind vorausbezahlt)" });
+  if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
   // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
-  const quote = quoteReviews(removedItems, currency, submittedCount);
+  const quote = quoteReviews(removedItems, currency, submittedCount, "rest");
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -1334,8 +1336,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const old = o.old === true ? { old: true } : {};
-    if (o.nt === true) return null; // ohne Text = vorausbezahlt → nicht (nochmal) abrechnen
+    const old = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text → hier nur noch die 2. Hälfte
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
@@ -1345,7 +1346,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count));
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest");
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
@@ -1647,7 +1648,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
+  try { await initDb(); await initPartnerTables(); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {
     const addr = await app.listen({ host: "0.0.0.0", port });

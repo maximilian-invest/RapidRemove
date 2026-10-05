@@ -58,12 +58,12 @@ const article = {
       "**Beskeder** med krav om betaling eller trusler.",
       "Ved usande påstande: **dokumenter**, der viser det modsatte.",
     ] },
-    { t: "cta", title: "Få dine anmeldelser vurderet gratis", text: "Søg din virksomhed, sæt flueben ved de anmeldelser, du mener bryder reglerne, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, kun ved succes – intet på forhånd.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
+    { t: "cta", title: "Få dine anmeldelser vurderet gratis", text: "Søg din virksomhed, sæt flueben ved de anmeldelser, du mener bryder reglerne, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, kun ved succes – intet på forhånd ved anmeldelser med tekst.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd (med tekst)", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
 
     { t: "h2", id: "graazone", text: "Gråzoner: stjerner uden tekst, tidligere ansatte, konkurrenter, prisklager", toc: "Gråzoner" },
     { t: "p", text: "Ikke alle irriterende anmeldelser passer pænt ind i én kategori. I disse fire tilfælde afhænger det af detaljerne – og af, hvad du kan dokumentere." },
     { t: "ul", items: [
-      "**Kun stjerner, ingen tekst:** Der er ingen tekst, der kan overtræde politikken, så Google ser primært på anmelderen. Har personen aldrig været kunde, eller er bedømmelsen en del af en bølge, er chancerne gode. Via vores service til fjernelse af enkelte anmeldelser kan sådanne bedømmelser også fjernes – med en særlig procedure til 300 € pr. stk., betalt forud. Læs mere: [fjern en 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/).",
+      "**Kun stjerner, ingen tekst:** Der er ingen tekst, der kan overtræde politikken, så Google ser primært på anmelderen. Har personen aldrig været kunde, eller er bedømmelsen en del af en bølge, er chancerne gode. Via vores service til fjernelse af enkelte anmeldelser kan sådanne bedømmelser også fjernes – med en særlig procedure til 300 € pr. stk. (50 % depositum, 50 % efter fjernelsen). Læs mere: [fjern en 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/).",
       "**Tidligere ansatte:** Anmeldelser fra (tidligere) ansatte om arbejdsgiveren hører under **interessekonflikt**. Udfordringen er, at Google ikke ved, hvem der har arbejdet hos dig – navn, indhold om interne forhold og tidspunkt (lige efter en fyring) hjælper.",
       "**Konkurrenter:** også en interessekonflikt, men fjernes kun, hvis det er sandsynliggjort. Typiske tegn: Samme konto roser en konkurrent i nærheden, eller anmeldelsen fremhæver deres tilbud som alternativ.",
       "**Prisklager:** ”Alt for dyrt” fra en rigtig kunde er en **mening** og bliver ikke fjernet. Påstås der et usandt faktum (”tog 1.500 kr. for ingenting”), og kan du bevise det modsatte, kan misinformation eller en juridisk anmodning være en mulighed.",
@@ -105,7 +105,7 @@ const article = {
     { q: "Er en 1-stjerne-anmeldelse uden tekst en overtrædelse?", a: "Ikke automatisk. Har anmelderen aldrig været kunde, eller er bedømmelsen en del af en falsk bølge eller en interessekonflikt, er chancerne for fjernelse derimod gode." },
     { q: "Hvor mange gange kan jeg klage over ”ingen overtrædelse”?", a: "**Én gang pr. anmeldelse** i Googles værktøj til administration af anmeldelser. Derefter er afgørelsen endelig; ved ulovligt indhold kan du stadig sende en juridisk anmodning." },
     { q: "Hvor lang tid går der, før Google vurderer en rapporteret anmeldelse?", a: "Alt fra dage til uger; Google lover ingen tidsramme. Hos os tager en fjernelse som regel nogle dage, nogle gange op til 3 uger." },
-    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**179 €** pr. fjernet anmeldelse op til 4 uger gammel, **229 €** for ældre. Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd." },
+    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**179 €** pr. fjernet anmeldelse op til 4 uger gammel, **229 €** for ældre. Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd (undtagen 50 % depositum ved rene stjernebedømmelser uden tekst)." },
   ],
   related: [
     { label: "Fjern en Google-anmeldelse – pris og bestilling", url: "/da/fjern-anmeldelse/" },

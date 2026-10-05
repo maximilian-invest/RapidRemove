@@ -90,7 +90,7 @@ const article = {
 
     { t: "h2", id: "multiple", text: "Waarom meerdere reviews niet tegelijk verdwijnen", toc: "Meerdere reviews" },
     { t: "p", text: "Elke review wordt **afzonderlijk** beoordeeld – met een eigen categorie, eigen bewijs en een eigen leeftijd. Daarom kan de ene review na twee dagen weg zijn en de andere pas na drie weken." },
-    { t: "p", text: "Precies daarom rekenen wij **per review** af: u betaalt alleen voor reviews die echt verwijderd zijn (behalve beoordelingen met alleen sterren: € 300, vooraf te betalen), en per review is een aparte betaallink mogelijk. Bij meerdere geaccepteerde reviews krijgt u staffelkorting: **vanaf 3 −10 %, vanaf 5 −15 %, vanaf 10 −30 %** – op elke review die verwijderd wordt. Alle details staan op de pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/)." },
+    { t: "p", text: "Precies daarom rekenen wij **per review** af: u betaalt alleen voor reviews die echt verwijderd zijn (behalve de aanbetaling van 50 % bij de zeldzame beoordelingen met alleen sterren: € 150 van € 300), en per review is een aparte betaallink mogelijk. Bij meerdere geaccepteerde reviews krijgt u staffelkorting: **vanaf 3 −10 %, vanaf 5 −15 %, vanaf 10 −30 %** – op elke review die verwijderd wordt. Alle details staan op de pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/)." },
     { t: "p", text: "Twijfelt u of een advocaat sneller is? In onze vergelijking [advocaat of technische verwijdering](/nl/magazine/negatieve-google-review-verwijderen-advocaat/) ziet u waarom de juridische route meestal maanden duurt." },
   ],
   faq: [

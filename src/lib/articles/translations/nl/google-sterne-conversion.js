@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Wat u hieruit haalt", toc: "Wat te doen" },
     { t: "ul", items: [
       "**Gemiddelde boven 4,0 houden** – actief goede reviews verzamelen, niet alleen op slechte reageren.",
-      "**Onterechte uitschieters verwijderen:** nep-reviews en onrechtmatige 1-sterren trekken het gemiddelde disproportioneel omlaag. Hoe dat werkt, leest u onder [Valse Google-reviews verwijderen](/nl/magazine/valse-google-reviews-verwijderen/) en [1-ster review zonder tekst verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/). Losse uitschieters kunt u ook direct [door RapidRemove laten verwijderen](/nl/review-laten-verwijderen/) – u betaalt alleen per review die echt weg is (beoordelingen met alleen sterren: speciale procedure, € 300, vooraf te betalen).",
+      "**Onterechte uitschieters verwijderen:** nep-reviews en onrechtmatige 1-sterren trekken het gemiddelde disproportioneel omlaag. Hoe dat werkt, leest u onder [Valse Google-reviews verwijderen](/nl/magazine/valse-google-reviews-verwijderen/) en [1-ster review zonder tekst verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/). Losse uitschieters kunt u ook direct [door RapidRemove laten verwijderen](/nl/review-laten-verwijderen/) – u betaalt alleen per review die echt weg is (beoordelingen met alleen sterren: speciale procedure, € 300: 50 % aanbetaling, 50 % pas na verwijdering).",
       "**Is het profiel fundamenteel beschadigd**, dan kan een schone doorstart via de [profielverwijdering](/nl/magazine/google-bedrijfsprofiel-verwijderen/) zinvoller zijn dan de strijd om elke afzonderlijke ster.",
     ] },
 

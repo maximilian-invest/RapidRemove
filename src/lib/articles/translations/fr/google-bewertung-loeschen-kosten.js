@@ -38,12 +38,12 @@ const article = {
     { t: "p", text: "Un coût passe facilement inaperçu : **le temps**. Tant qu'un faux avis 1 étoile reste en haut de votre fiche, chaque prospect qui vous cherche sur Google le voit. Un signalement gratuit qui traîne pendant des semaines et se termine par un refus n'est pas vraiment gratuit s'il vous fait perdre des clients entre-temps." },
 
     { t: "h2", id: "prix", text: "Les prix RapidRemove : 179 € par avis supprimé", toc: "Notre prix" },
-    { t: "p", text: "Vous payez **179 € pour chaque avis réellement supprimé**. Si l'avis a plus de 4 semaines, il coûte **229 €** (179 € + 50 €). Rien n'est facturé d'avance et il n'y a aucun frais de tentative – seule exception : les notes sans texte (voir ci-dessous)." },
+    { t: "p", text: "Vous payez **179 € pour chaque avis réellement supprimé**. Si l'avis a plus de 4 semaines, il coûte **229 €** (179 € + 50 €). Rien n'est facturé d'avance et il n'y a aucun frais de tentative – seule exception, rare : un acompte de 50 % pour les notes sans texte (voir ci-dessous)." },
     { t: "table", rrCol: 2, head: ["Âge de l'avis", "Chances de succès", "Prix par avis supprimé"], rows: [
       ["Jusqu'à 4 semaines", "env. 90 %", "**179 €**"],
       ["Plus de 4 semaines", "env. 50 %", "**229 €** (179 € + 50 €)"],
     ] },
-    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure spéciale assistée par logiciel et coûtent **300 € par note**, sans supplément pour les notes anciennes, avec env. **80 %** de réussite. Ce montant est **payé d'avance** : il est dû dès que nous acceptons la note et **n'est pas remboursé si elle reste en ligne**. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande." },
+    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure spéciale assistée par logiciel et coûtent **300 € par note**, sans supplément pour les notes anciennes, avec env. **80 %** de réussite. Le paiement se fait en deux temps : **50 % d'acompte (150 €)** dès que nous acceptons la note, les **50 % restants (150 €) seulement après sa suppression**. Si elle reste en ligne, l'acompte n'est pas remboursé et la seconde moitié n'est pas facturée. Cela ne concerne que très peu de cas particuliers (notes sans aucun texte) : la grande majorité des avis se paie uniquement en cas de succès, sans rien d'avance. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande." },
     { t: "p", text: "Les avis plus anciens coûtent plus cher parce qu'ils sont **plus difficiles à faire supprimer** : les chances de succès passent d'environ 90 % à environ 50 %. Avant toute commande, vous recevez une **évaluation gratuite** et nous vous disons honnêtement si un avis a peu de chances. Un avis avec texte qui n'est pas supprimé ne vous coûte rien." },
     { t: "p", text: "Si plusieurs avis doivent disparaître, la **remise sur volume** s'applique automatiquement :" },
     { t: "table", head: ["Avis acceptés après l'évaluation", "Remise sur chaque avis supprimé"], rows: [
@@ -62,9 +62,9 @@ const article = {
       ["5 avis (2 récents, 3 anciens)", "358 € + 687 € = 1 045 €, −15 %", "**888 €**"],
       ["10 avis (6 récents, 4 anciens)", "1 074 € + 916 € = 1 990 €, −30 %", "**1 393 €**"],
       ["5 récents acceptés, 4 supprimés", "4 × 179 € = 716 €, −15 %", "**609 €**"],
-      ["1 avis récent + 2 notes sans texte", "2 × 300 € + 179 € = 779 €, −10 %", "**540 €** d'avance + **161 €** si l'avis est supprimé"],
+      ["1 avis récent + 2 notes sans texte", "2 × 300 € + 179 € = 779 €, −10 %", "**270 €** d'acompte (2 × 135 €), puis **135 €** par note supprimée + **161 €** si l'avis est supprimé"],
     ] },
-    { t: "p", text: "L'avant-dernière ligne résume l'essentiel : pour les avis avec texte, **vous ne payez que ceux supprimés**. Les notes sans texte, elles, sont payées d'avance (dernière ligne). Le palier de remise dépend du nombre d'avis que nous acceptons après l'évaluation gratuite, et il s'applique à chaque avis qui disparaît." },
+    { t: "p", text: "L'avant-dernière ligne résume l'essentiel : pour les avis avec texte, **vous ne payez que ceux supprimés**. Pour les rares notes sans texte, 50 % sont dus en acompte et 50 % seulement après suppression (dernière ligne). Le palier de remise dépend du nombre d'avis que nous acceptons après l'évaluation gratuite, et il s'applique à chaque avis qui disparaît." },
     { t: "cta", title: "Votre prix exact en 2 minutes", text: "Recherchez votre entreprise, cochez les avis à supprimer et voyez le total immédiatement, remise comprise. **179 € par avis supprimé**, rien d'avance.", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "Évaluation gratuite d'abord"] },
 
     { t: "h2", id: "paiement", text: "Comment se passe le paiement : avis par avis", toc: "Paiement" },
@@ -74,7 +74,7 @@ const article = {
       "Vous pouvez donc recevoir **un lien de paiement par avis** : vous réglez chacun dès qu'il est supprimé, pas tout le lot d'un coup.",
       "Votre **remise sur volume est déjà incluse** dans chaque lien.",
       "Vous préférez **PayPal ou un virement bancaire** ? C'est possible sur demande.",
-      "**Exception : les notes sans texte.** Elles sont payables d'avance – le lien de paiement arrive avec la confirmation de démarrage, quel que soit le résultat.",
+      "**Exception : les notes sans texte.** 50 % d'acompte – le lien de paiement arrive avec la confirmation de démarrage –, les 50 % restants seulement après la suppression. Cela ne concerne que très peu de cas particuliers (notes sans aucun texte) : la grande majorité des avis se paie uniquement en cas de succès, sans rien d'avance.",
     ] },
     { t: "tip", title: "Aucune facture pour les avis qui restent", text: "Si un avis avec texte ne peut pas être supprimé, vous ne recevez tout simplement pas de lien de paiement pour lui. Rien à annuler, rien à réclamer." },
 
@@ -82,7 +82,7 @@ const article = {
     { t: "p", text: "Un prix bas ne vaut rien si le prestataire utilise des méthodes qui mettent votre fiche en danger. Méfiez-vous si vous voyez l'un de ces signaux :" },
     { t: "ul", items: [
       "**« Suppression garantie » :** seul Google décide si un avis est retiré. Personne ne peut honnêtement le garantir.",
-      "**Paiement intégral d'avance ou frais par tentative :** vous portez tout le risque, même si rien ne se passe.",
+      "**Paiement intégral d'avance pour des avis normaux ou frais par tentative :** vous portez tout le risque, même si rien ne se passe.",
       "**Aucun prix affiché :** si l'on ne vous donne un chiffre qu'après un appel commercial, comparez attentivement.",
       "**Faux comptes, bots ou signalements en masse :** ils enfreignent les règles de Google et peuvent se retourner contre votre propre fiche.",
       "**Fausses mises en demeure :** inventer des plaintes juridiques pour faire pression sur Google ou l'auteur est un vrai problème, pas un raccourci.",
@@ -101,8 +101,8 @@ const article = {
   ],
   faq: [
     { q: "Est-ce gratuit de supprimer un avis Google ?", a: "Signaler un avis à Google vous-même est gratuit, et vous pouvez faire appel une fois dans l'outil de gestion des avis. Mais Google refuse souvent les signalements. Avec RapidRemove, vous payez **179 € par avis, uniquement s'il est supprimé**." },
-    { q: "Est-ce que je paie si l'avis n'est pas supprimé ?", a: "Pour un avis avec texte, non : ni paiement d'avance ni frais de tentative, vous ne payez que les avis qui ont réellement disparu. Exception : les notes sans texte sont payées d'avance et ne sont pas remboursées si elles restent en ligne." },
-    { q: "Combien coûte la suppression d'une note sans texte ?", a: "**300 € par note**, quel que soit son âge. Nous la traitons par une procédure spéciale assistée par logiciel, avec env. 80 % de réussite. Le montant est payé d'avance, dès que nous acceptons la note, et n'est pas remboursé si elle reste. La remise sur volume s'applique, comptée avec tous les avis acceptés de la commande." },
+    { q: "Est-ce que je paie si l'avis n'est pas supprimé ?", a: "Pour un avis avec texte, non : ni paiement d'avance ni frais de tentative, vous ne payez que les avis qui ont réellement disparu. Exception pour quelques rares cas : pour les notes sans texte, l'acompte de 50 % n'est pas remboursé si elles restent en ligne, mais la seconde moitié n'est pas facturée." },
+    { q: "Combien coûte la suppression d'une note sans texte ?", a: "**300 € par note**, quel que soit son âge. Nous la traitons par une procédure spéciale assistée par logiciel, avec env. 80 % de réussite. Paiement : 50 % d'acompte (150 €) dès que nous acceptons la note, 50 % (150 €) seulement après sa suppression ; si elle reste, l'acompte n'est pas remboursé et la seconde moitié n'est pas facturée. Cela ne concerne que très peu de cas particuliers (notes sans aucun texte) : la grande majorité des avis se paie uniquement en cas de succès, sans rien d'avance. La remise sur volume s'applique, comptée avec tous les avis acceptés de la commande." },
     { q: "Pourquoi les avis anciens coûtent-ils plus cher ?", a: "Les avis de plus de 4 semaines sont plus difficiles à faire supprimer : les chances de succès passent d'environ 90 % à environ 50 %. C'est pourquoi ils coûtent **50 € de plus** (229 € au lieu de 179 €)." },
     { q: "Y a-t-il une remise pour plusieurs avis ?", a: "Oui. Dès 3 avis acceptés, vous avez 10 % de remise, dès 5 avis 15 % et dès 10 avis 30 %. La remise s'applique à chaque avis supprimé." },
     { q: "Puis-je payer par PayPal ou par virement ?", a: "Oui. Par défaut, vous recevez un lien de paiement sécurisé après la suppression ; PayPal ou virement bancaire sont possibles sur demande." },

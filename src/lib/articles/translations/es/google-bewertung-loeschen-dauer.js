@@ -96,7 +96,7 @@ const article = {
       "**No** amenaces, no especules en público sobre quién la escribió y no pidas a amigos reseñas de contrapeso: eso también puede infringir las normas de Google sobre interacción falsa.",
       "**Documenta** todo: capturas de la reseña, del perfil del autor y del estado de tu denuncia.",
     ] },
-    { t: "p", text: "Una respuesta tranquila no perjudica tus opciones de eliminación. Para casos especiales como las valoraciones sin texto, mira [eliminar una reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/) (también las eliminamos, con un procedimiento especial: 300 € por adelantado), y si sospechas de reseñas falsas, [cómo eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
+    { t: "p", text: "Una respuesta tranquila no perjudica tus opciones de eliminación. Para casos especiales como las valoraciones sin texto, mira [eliminar una reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/) (también las eliminamos, con un procedimiento especial: 300 €: 50 % de anticipo y 50 % tras la eliminación), y si sospechas de reseñas falsas, [cómo eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
 
     { t: "h2", id: "different-times", text: "Por qué varias reseñas desaparecen en momentos distintos", toc: "Momentos distintos" },
     { t: "p", text: "**Cada reseña se revisa por separado, así que si denuncias cinco, rara vez desaparecen el mismo día.** Una puede irse en dos días, otra necesita apelación y una tercera sigue pendiente a las dos semanas." },
