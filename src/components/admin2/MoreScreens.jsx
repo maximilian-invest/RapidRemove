@@ -3,13 +3,14 @@
 import React from "react";
 import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
-  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon,
+  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3,
 } from "lucide-react";
 import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
 import { monitorShotUrl } from "@/lib/admin-api";
+import PartnerStatsScreen from "./PartnerStats";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
@@ -170,6 +171,7 @@ export function Account({ ctx }) {
   const { moreSub, setMoreSub, logout } = ctx;
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
   if (moreSub === "partner") return <PartnerScreen ctx={ctx} />;
+  if (moreSub === "pstats") return <PartnerStatsScreen ctx={ctx} />;
   if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
   if (moreSub === "activity") return <GlobalActivityScreen ctx={ctx} />;
   const tiles = [
@@ -226,6 +228,7 @@ function PartnerScreen({ ctx }) {
         <div key={p.id} className="apcard">
           <div className="ph1"><span className="pav"><Handshake /></span><div><b>{p.name}</b><span>{p.email || "keine E-Mail"}</span></div><span className="pst">Aktiv</span></div>
           <div className="pst3"><div><b>{b.open || 0}</b><span>In Arbeit</span></div><div><b>{b.removed || 0}</b><span>Gelöscht</span></div></div>
+          <button type="button" className="ir ar" onClick={() => setMoreSub("pstats")}><span className="ico"><BarChart3 /></span><span className="t"><b>Statistiken</b><span>Zeiten, Löschquoten, nicht löschbare Bewertungen, Auffälligkeiten</span></span><ChevronRight /></button>
           <button type="button" className="ir ar" onClick={() => setMoreSub("settings")}><span className="ico"><Zap /></span><span className="t"><b>Auto-Weiterleitung</b><span>{auto ? [auto.autoReviews && "Bewertungen", auto.autoProfiles && "Profile"].filter(Boolean).join(" · ") || "Aus" : "…"}</span></span><ChevronRight /></button>
           <div className="ctas2">
             <a className="cta gh" href={p.email ? "mailto:" + p.email : undefined}><Mail />E-Mail</a>

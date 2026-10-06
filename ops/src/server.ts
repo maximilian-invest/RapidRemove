@@ -37,6 +37,7 @@ import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
+import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
@@ -162,6 +163,7 @@ function normRedirectDest(input: string): string {
 app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
+registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
 registerPartnerAuth(app, ADMIN_TOKEN); // Partner-Login (E-Mail + Passwort), Admin sieht/setzt Zugangsdaten
@@ -352,7 +354,7 @@ app.post("/order", async (req, reply) => {
   const isReviews = service === "reviews";
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; rating?: number; days?: number };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
@@ -361,6 +363,9 @@ app.post("/order", async (req, reply) => {
         const tx = clip(o.text, 400);
         // nt = reine Sternebewertung ohne Text → Spezialverfahren (Festpreis, Vorauszahlung, kein Altersaufschlag)
         const flags = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // old: älter als 4 Wochen → Aufpreis
+        // Für die Partner-Statistik: Sterne + Alter (aus der Google-Suche im Wizard, sonst leer)
+        const rt = Math.round(Number(o.rating)); const dy = Math.round(Number(o.days));
+        Object.assign(flags, rt >= 1 && rt <= 5 ? { rating: rt } : {}, Number.isFinite(dy) && dy >= 0 && dy < 20000 ? { days: dy } : {});
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as ReviewItem;
         if (nm && tx) return { name: nm, text: tx, ...flags } as ReviewItem;
         return null;
@@ -1983,7 +1988,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys(); await initCustPush();
+  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"));

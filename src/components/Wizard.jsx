@@ -2019,7 +2019,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Schritt 4 „Einzelne Bewertungen löschen" gewählt (service === "reviews").
   const revFlow = reviewMode || service === "reviews";
   const reviewList = [
-    ...(pickSel || []).map((r) => ({ url: (r.link || "").trim(), name: (r.name || "").trim(), text: (r.text || "").trim(), ...(!reviewHasText(r) ? { nt: true } : reviewIsOld(r) ? { old: true } : {}) })),
+    ...(pickSel || []).map((r) => ({ url: (r.link || "").trim(), name: (r.name || "").trim(), text: (r.text || "").trim(), ...(!reviewHasText(r) ? { nt: true } : reviewIsOld(r) ? { old: true } : {}), ...(r.rating ? { rating: r.rating } : {}), ...(r.days >= 0 ? { days: r.days } : {}) })),
     ...(reviewItems || []).map((it) => ({ url: (it.url || "").trim(), name: (it.name || "").trim(), text: (it.text || "").trim() })),
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;

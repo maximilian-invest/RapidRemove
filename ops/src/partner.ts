@@ -196,11 +196,12 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
-      [orderId, key, url || null, name || null, text || null, kind, price, customer, test],
+      [orderId, key, url || null, name || null, text || null, kind, price, customer, test,
+        Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {
