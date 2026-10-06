@@ -64,7 +64,7 @@ const title = { fontSize: 19, margin: "0 0 4px", fontWeight: 800, color: "#1c191
 const sub = { fontSize: 13.5, color: "#6b6259", margin: "0 0 18px", lineHeight: 1.5 };
 const errStyle = { color: "#e23b3b", fontSize: 13, fontWeight: 700, marginBottom: 12 };
 
-export function AdminGate() {
+export function AdminGate({ App = AdminApp } = {}) {
   const [mode, setMode] = React.useState("loading"); // loading | password | enroll | faceid | authed
   const [pw, setPw] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -176,7 +176,7 @@ export function AdminGate() {
   };
 
   if (mode === "loading") return <div style={{ padding: 40, fontFamily: "system-ui, sans-serif", color: "#6b6259" }}>Lädt…</div>;
-  if (mode === "authed") return <AdminApp />;
+  if (mode === "authed") return <App />;
 
   if (mode === "faceid") {
     return (
