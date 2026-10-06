@@ -123,7 +123,11 @@ async function askClaude(system: string, msgs: Msg[]): Promise<string> {
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST", signal: ctl.signal,
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      headers: {
+        "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01",
+        // Schlüssel ohne festen Workspace brauchen die Workspace-ID (Railway-Variable ANTHROPIC_WORKSPACE_ID)
+        ...(process.env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID.trim() } : {}),
+      },
       body: JSON.stringify({
         model: MODEL(), max_tokens: 400,
         system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
