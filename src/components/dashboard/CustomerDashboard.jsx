@@ -28,6 +28,7 @@ const seenGet = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) |
 const seenAdd = (ids) => { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...seenGet(), ...ids])].slice(-300))); } catch (e) { /* */ } };
 const pkName = () => { const n = passkeyName(); return n === "fingerprint" ? T("nameFingerprint") : n === "passkey" ? T("namePasskey") : n; };
 
+import { startTracking, stopTracking, track, view } from "./tracker";
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_cust_session";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
@@ -203,6 +204,7 @@ export default function CustomerDashboard() {
   const prev = React.useRef(null);
   const toastT = React.useRef(0);
   const mainRef = React.useRef(null);
+  const payOpen = React.useRef(null); // { at, label } → Rückkehr ohne Zahlung = „Zahlung abgebrochen"
 
   const showToast = React.useCallback((m, bad) => {
     setToast({ m, bad: !!bad }); clearTimeout(toastT.current); toastT.current = setTimeout(() => setToast(null), 3200);
@@ -246,6 +248,14 @@ export default function CustomerDashboard() {
         }
         if (swOk) showToast(T("tPaymentSw"));
         else if (paid) showToast(T("tPaid"));
+        // Dashboard-Aktivität: aus dem Zahlungs-Tab zurück, aber (noch) nicht bezahlt → abgebrochen
+        const po = payOpen.current;
+        if (po && (swOk || paid)) payOpen.current = null;
+        else if (po && document.visibilityState === "visible" && Date.now() - po.at > 5000) {
+          const sec = Math.round((Date.now() - po.at) / 1000);
+          track("payment_abort", `${po.label} · nach ${sec < 120 ? sec + " s" : Math.round(sec / 60) + " Min."}`, { sec });
+          payOpen.current = null;
+        }
       }
       prev.current = d;
       setData(d); setLoadErr("");
@@ -304,6 +314,7 @@ export default function CustomerDashboard() {
     if (!viaPasskey && passkeySupported() && !passkeyOnDevice("customer") && !passkeyDismissed("customer")) setOfferPk(true);
   };
   const logout = async () => {
+    stopTracking();
     const t = token; store.set(""); setToken(""); setData(null); prev.current = null; setTab("home");
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
   };
@@ -324,6 +335,18 @@ export default function CustomerDashboard() {
       if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {});
     } catch (e) { /* */ }
   }, [data]);
+  // Dashboard-Aktivität: Sitzung starten, sobald die Daten da sind; Seitenaufrufe je Ansicht.
+  React.useEffect(() => { if (token && data) startTracking(token); }, [token, !!data]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    if (!token || !data) return;
+    const sh = sheet ? (data.orders || []).find((o) => o.id === sheet.orderId) : null;
+    const it = sh ? sh.items.find((i) => i.key === sheet.key) : null;
+    const name = flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
+      : sheet ? `Bewertung ansehen${it && (it.name || it.url) ? ": " + String(it.name || it.url).slice(0, 60) : ""}`
+      : detailId ? `Bestellung ${detailId}`
+      : ({ home: "Übersicht", orders: "Bestellungen", pay: "Zahlungen", acc: "Konto" })[tab] || tab;
+    view(name, sheet ? sheet.orderId : detailId || undefined);
+  }, [token, !!data, tab, detailId, sheet, flow && flow.step]); // eslint-disable-line react-hooks/exhaustive-deps
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {
@@ -404,6 +427,7 @@ export default function CustomerDashboard() {
     try { w = window.open("", "_blank"); } catch (e) { w = null; }
     try {
       const r = await call(path, { token, ...body });
+      payOpen.current = { at: Date.now(), label: "Rechnung" };
       if (w && !w.closed) w.location.href = r.url; else window.location.href = r.url;
       setBusy("");
       return r.url;
@@ -445,6 +469,7 @@ export default function CustomerDashboard() {
       try {
         if (des.length) await call("software", { token, decision: "decline", items: flowRefs(des) });
         const r = await call("software", { token, decision: "accept", items: flowRefs(sel) });
+        payOpen.current = { at: Date.now(), label: "Software-Vorauszahlung" };
         if (w && !w.closed) w.location.href = r.url; else window.location.href = r.url;
         setFlow({ ...f, step: 4, mode: "waiting", url: r.url, items: sel, pick: new Set(sel.map((i) => i.id)) });
         load(token);

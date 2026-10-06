@@ -469,6 +469,25 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { row, changed };
   }
 
+  // Admin (neu): Status ALLER offenen Bewertungen eines Auftrags setzen — wie der Partner selbst
+  // (Kunden-Dashboard, Kunden-Mail/Push, Software-Zahlungslink, Verlauf). „removed“ bleibt dem Partner vorbehalten.
+  app.post("/admin/partner/order-status", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const orderId = clip(b.orderId, 40);
+    const status = String(b.status || "");
+    if (!orderId || !["working", "software", "not_possible"].includes(status)) return reply.code(400).send({ ok: false, error: "orderId/status fehlt" });
+    const r = await pool.query(`SELECT id FROM partner_tasks WHERE order_id=$1 AND status NOT IN ('cancelled','removed') AND paid_at IS NULL ORDER BY id`, [orderId]);
+    let changed = 0;
+    for (const row of r.rows as { id: number }[]) {
+      const x = await partnerApply(Number(row.id), status, null, { quiet: true });
+      if (x.changed) changed++;
+    }
+    await insertEvent({ orderId, type: "note", title: `Admin: alle Bewertungen → ${LABEL[status] || status}`, detail: `${changed} von ${r.rows.length} Partner-Aufgabe(n) geändert` }).catch(() => {});
+    return { ok: true, total: r.rows.length, changed };
+  });
+
   app.post("/partner/update", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });

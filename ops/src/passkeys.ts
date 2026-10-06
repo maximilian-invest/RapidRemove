@@ -8,6 +8,7 @@ import {
 } from "@simplewebauthn/server";
 import { pool } from "./db";
 import { customerSessionEmail, createCustomerSession } from "./customers";
+import { logCustEvent, deviceOf } from "./custTrack";
 import { partnerSessionEmail, createPartnerSession } from "./partnerAuth";
 
 type Role = "customer" | "partner";
@@ -115,6 +116,7 @@ export function registerPasskeyRoutes(app: FastifyInstance): void {
       await pool.query(`UPDATE passkeys SET counter=$2, last_used=now() WHERE id=$1`, [row.id, v.authenticationInfo.newCounter || 0]);
       const token = ch.role === "customer" ? await createCustomerSession(row.email) : await createPartnerSession(row.email);
       if (!token) return reply.code(401).send({ ok: false, error: "account" });
+      if (ch.role === "customer") void logCustEvent(row.email, "login", "Mit Face ID / Passkey", { device: deviceOf(String(req.headers["user-agent"] || "")) });
       return { ok: true, token };
     } catch (e) {
       return reply.code(401).send({ ok: false, error: "not_verified", detail: String((e as Error).message).slice(0, 160) });

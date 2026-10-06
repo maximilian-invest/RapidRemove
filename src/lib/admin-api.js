@@ -676,3 +676,9 @@ export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve"
 export const payLinkMail = (payload) => adminPost("/admin/paylink", payload);
 export const templateMail = (payload) => adminPost("/admin/send-template", payload);
 export const reviewsMahnungMail = (payload) => adminPost("/admin/reviews-mahnung", payload);
+/** Dashboard-Aktivität eines Kunden (E-Mail des Auftrags) → { loginCount, clickCount, lastSeenAt, lastAction, events[] }. */
+export const customerActivity = (email, orderId) => adminPost("/admin/activity", { email, orderId });
+/** Persönlichen Dashboard-Login-Link an einen Kunden senden. */
+export const custInviteOne = (p) => adminPost("/admin/cust/invite-one", p);
+/** Alle offenen Bewertungen eines Auftrags auf einen Status setzen (wie der Partner): working | software | not_possible. */
+export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner/order-status", { orderId, status });

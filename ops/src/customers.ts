@@ -17,6 +17,7 @@ import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "./reviewsPricing";
+import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 export const DASH_URL = `${SITE_URL}/my-reviews`;
@@ -261,6 +262,8 @@ export async function markReviewPaymentPaid(email: string, amountMajor: number, 
       hit.paid = new Date().toISOString();
       await setOrderRawField(row.id, "reviewsPayments", list);
       await applyPaid(row.id, hit).catch(() => {});
+      const em = email || (await pool.query(`SELECT email FROM orders WHERE id=$1`, [row.id]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email || "";
+      void logCustEvent(em, "payment_success", `${hit.kind === "software" ? "Software-Vorauszahlung" : "Rechnung"} · ${hit.amount} ${String(hit.cur || "").toUpperCase()}`, { amount: hit.amount, cur: hit.cur, kind: hit.kind }, { orderId: row.id });
       return { orderId: row.id, kind: hit.kind };
     }
   }
@@ -410,6 +413,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const token = crypto.randomBytes(24).toString("base64url");
     await pool.query(`INSERT INTO cust_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 days')`, [sha(token), email]);
     await pool.query(`UPDATE cust_accounts SET last_login=now() WHERE email=$1`, [email]);
+    void logCustEvent(email, "login", "Mit Passwort", { device: deviceOf(String(req.headers["user-agent"] || "")) });
     return { ok: true, token };
   });
 
@@ -424,11 +428,13 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (!r.rows[0]) return reply.code(401).send({ ok: false, error: "invalid" });
     const token = await createCustomerSession(r.rows[0].email);
     if (!token) return reply.code(401).send({ ok: false, error: "invalid" });
+    void logCustEvent(r.rows[0].email, "login", "Über den Link aus der E-Mail", { device: deviceOf(String(req.headers["user-agent"] || "")) });
     return { ok: true, token };
   });
 
   app.post("/cust/logout", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
+    if (pool && b.token) { const em = await sessionEmail(b.token); if (em) void logCustEvent(em, "logout", "Abgemeldet"); }
     if (pool && b.token) await pool.query(`DELETE FROM cust_sessions WHERE token_hash=$1`, [sha(String(b.token))]);
     return { ok: true };
   });
@@ -500,6 +506,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
         const c = await pool.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND item_key = ANY($2::text[]) ORDER BY id`, [o, ks]).catch(() => ({ rows: [] as { code: string }[] }));
         dc.push(...c.rows.map((x) => x.code).filter(Boolean));
       }
+      void logCustEvent(email, "software_decline", `Spezial-Software abgelehnt · ${picks.length} Bewertung(en)`, null, { orderId: picks[0].o });
       void notifyPartner(`${isTestEmail(email) ? "TEST · " : ""}Customer declined`, `${dc.slice(0, 4).join(", ") || `${picks.length} review${picks.length > 1 ? "s" : ""}`} · Keeps the review – nothing to do.`, undefined, isTestEmail(email));
       void notifyTeam(`Software abgelehnt · ${picks.length} Bewertung(en)`, `Kunde · ${[...groups.keys()].join(", ")} · nichts zu zahlen`, `${SITE_URL}/admin`, { kind: "customer" });
       return { ok: true, declined: picks.length };
@@ -510,6 +517,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const url = await payLink("software", picks, amount, cur, orders);
     if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
     void notifyTeam(`Software-Zahlung geöffnet · ${amount} ${cur.toUpperCase()}`, `${[...new Set(picks.map((p) => byId.get(p.o)!.business || p.o))].join(", ")} · ${picks.length} Bewertung(en)`, `${SITE_URL}/admin`, { kind: "customer" });
+    void logCustEvent(email, "payment_open", `Software-Vorauszahlung · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "software", n: picks.length }, { orderId: picks[0].o });
     await insertEvent({ orderId: picks[0].o, email, type: "note", title: "Kunde: Software-Vorauszahlung geöffnet (Dashboard)", detail: `${picks.length} Bewertung(en) · ${amount} ${cur.toUpperCase()}`, auto: true }).catch(() => {});
     return { ok: true, url, amount, cur, n: picks.length };
   });
@@ -530,6 +538,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const url = await payLink("invoice", picks, amount, cur, orders);
     if (!url) return reply.code(503).send({ ok: false, error: "payment_unavailable" });
     void notifyTeam(`Zahlung geöffnet · ${amount} ${cur.toUpperCase()}`, `${email} · ${picks.length} gelöschte Bewertung(en)`, `${SITE_URL}/admin`, { kind: "customer" });
+    void logCustEvent(email, "payment_open", `Rechnung · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", n: picks.length }, { orderId: use[0].id });
     return { ok: true, url, amount, cur, n: picks.length };
   });
 
@@ -682,6 +691,20 @@ export function registerCustomerAdminRoutes(app: FastifyInstance, adminToken: st
   // Einladung ins Dashboard an alle Bewertungs-Kunden: ohne apply = nur Liste, mit apply = senden.
   // Je Adresse eine Mail (Sprache + Name der letzten Bestellung), nie doppelt.
   let inviting = false;
+  // Admin (neu) · Dashboard-Aktivität: einem Kunden den persönlichen Login-Link (erneut) senden.
+  app.post("/admin/cust/invite-one", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const email = norm(b.email);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
+    const lang = String(b.lang || "en").slice(0, 5);
+    await ensureCustomerAccount(email);
+    await hooks.sendInvite(email, String(b.name || "").slice(0, 120), await dashLink(email, lang), lang);
+    await insertEvent({ orderId: String(b.orderId || "").slice(0, 40) || undefined, email, type: "mail", title: "Dashboard-Login-Link gesendet", detail: "an " + email }).catch(() => {});
+    return { ok: true };
+  });
+
   app.post("/admin/cust/invite", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });

@@ -9,6 +9,7 @@ import {
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
+import { ActivityRow } from "./Activity";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -138,6 +139,7 @@ export function OrderDetail({ ctx, id }) {
       {isRev ? (
         <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button></div>
       ) : null}
+      <ActivityRow o={o} onOpen={() => ctx.pushAct(o.id)} />
       {stepIx >= 0 ? (
         <>
           <div className="lbl">Fortschritt</div>

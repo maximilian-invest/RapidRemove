@@ -553,3 +553,22 @@
 .an .shn.warn svg{color:#c27a00}
 .an .vi.mail{background:#fff;display:block}
 .an .vi.mail iframe{width:100%;height:100%;border:0;display:block;background:#fff}
+
+/* ===================== Dashboard-Aktivität ===================== */
+.an .alive{flex:none;height:24px;padding:0 9px;border-radius:12px;background:#e7f6ec;color:var(--success);font-size:12px;font-weight:600;display:grid;place-items:center;margin-left:6px}
+.an .atl{padding:4px 16px;background:#fff;border-radius:24px}
+.an .ae{display:flex;align-items:center;gap:12px;min-height:58px}
+.an .ae+.ae{border-top:1px solid var(--g1)}
+.an .ae .ad{width:34px;height:34px;border-radius:50%;background:var(--g1);display:grid;place-items:center;flex:none}
+.an .ae .ad svg{width:16px;height:16px}
+.an .ae .t{flex:1;min-width:0}
+.an .ae b{display:block;font-size:14px;font-weight:500}
+.an .ae .t span{display:block;font-size:12px;color:var(--g3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an .ae .ah{font-size:12px;color:var(--g3);font-variant-numeric:tabular-nums;flex:none}
+.an .anever{display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:24px;padding:22px 18px 18px;gap:4px}
+.an .anever .mi{width:64px;height:64px;border-radius:50%;background:#fdecec;color:var(--danger);display:grid;place-items:center;margin-bottom:8px}
+.an .anever .mi svg{width:28px;height:28px}
+.an .anever b{font-size:18px;font-weight:600}
+.an .anever>span{font-size:14px;color:var(--g3);margin-bottom:14px}
+.an .anever .cta{width:100%}
+.an .lnkb{display:block;margin:14px auto 0;font-size:13px;color:var(--g3);text-decoration:underline;text-underline-offset:3px}

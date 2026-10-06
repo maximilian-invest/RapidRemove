@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerSettings, partnersList,
-  fetchReviewShots, reviewShotUrl, sendReviewsStorno, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
+  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
@@ -18,6 +18,8 @@ import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
+import { ActivityScreen } from "./Activity";
+import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
 const DESK_Q = "(min-width: 900px)";
@@ -68,6 +70,9 @@ export default function AdminNext() {
   const setF = (patch) => setFState((s) => ({ ...s, ...patch }));
 
   /* ---- Daten ---- */
+  const loadPtasks = React.useCallback(() => partnerTasks().then((r) => {
+    const m = {}; (r.tasks || []).forEach((t) => { if (t.orderId) (m[t.orderId] = m[t.orderId] || []).push(t); }); setPtasks(m);
+  }).catch(() => {}), []);
   const reload = React.useCallback(async (silent) => {
     try {
       const d = await fetchAdminData();
@@ -80,9 +85,7 @@ export default function AdminNext() {
     reload(true);
     fetchStripe().then(setStripe).catch(() => setStripe({ connected: false }));
     fetchTemplates().then(setTpls).catch(() => setTpls([]));
-    partnerTasks().then((r) => {
-      const m = {}; (r.tasks || []).forEach((t) => { if (t.orderId) (m[t.orderId] = m[t.orderId] || []).push(t); }); setPtasks(m);
-    }).catch(() => {});
+    loadPtasks();
     partnerSettings().then(setAutoS).catch(() => {});
     partnersList().then(setPartners).catch(() => {});
     monitorList().then(setMon).catch(() => {});
@@ -109,6 +112,7 @@ export default function AdminNext() {
     if (!isDesk) requestAnimationFrame(() => scrollTop("push"));
     void fromOtherTab;
   };
+  const pushAct = (id) => { setStack((s) => [...s.filter((x) => x.v !== "reviews" && x.v !== "act"), { v: "act", id }]); requestAnimationFrame(() => scrollTop("push")); };
   const pushReviews = (id) => { setStack((s) => [...s.filter((x) => x.v !== "reviews"), { v: "reviews", id }]); requestAnimationFrame(() => scrollTop("push")); };
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
   const newOrder = () => { setTab("orders"); setStack([{ v: "list" }, { v: "new", id: "n" + Date.now() }]); requestAnimationFrame(() => scrollTop("push")); };
@@ -153,7 +157,9 @@ export default function AdminNext() {
     patchOrder(o.id, { assignee: who === "none" ? null : who });
   };
   const act = {
-    start: async (o, who) => {
+    start: async (o, who, force) => {
+      // Bewertungen beim Partner → erst warnen und den neuen Status wählen lassen
+      if (!force && o.service === "reviews" && (ptasks[o.id] || []).some((t) => t.status !== "cancelled")) { openSheet({ kind: "rvstart", forId: o.id }); return; }
       if (!o.assignee && !who) { openSheet({ kind: "staff", forId: o.id, start: true }); return; }
       try { if (who) await assign(o, who); await doStatus(o, "progress", { label: "In Bearbeitung" }); toast("Bearbeitung gestartet"); }
       catch (e) { toast("Fehler: " + e.message); }
@@ -208,11 +214,12 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus,
   };
 
   const top = stack[stack.length - 1];
   const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} />
+    : top.v === "act" ? <ActivityScreen ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "new" ? <NewOrder key={top.id} ctx={{ ...ctx, back: isDesk ? closeDrawer : back }} /> : null;
   const inFlow = tab === "orders" && top.v === "new";
   const nNew = orders.filter((o) => o.status === "new").length;
@@ -288,7 +295,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const pick = async (k) => {
       close();
       if (!o) { setF({ staff: k }); return; }
-      if (sheet.start) { await act.start(o, k === "none" ? null : k); return; }
+      if (sheet.start) { await act.start(o, k === "none" ? null : k, true); return; }
       try { await assign(o, k); toast(k === "none" ? "Zuweisung entfernt" : "Zugewiesen an " + staffOf(k).name); } catch (e) { toast("Fehler: " + e.message); }
     };
     body = (
@@ -326,6 +333,39 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     body = (
       <><h3>{sheet.title}</h3>
         <div className="opts">{sheet.opts.map(([k, l, img, n]) => <Opt key={k} on={sheet.cur === k} onClick={() => { sheet.onPick(k); close(); }} right={n != null ? <span className="c">{n}</span> : null}>{img ? <img src={img} alt="" /> : null}{l}</Opt>)}</div></>
+    );
+  } else if (sheet && sheet.kind === "rvstart" && o) {
+    const pt = (ptasks[o.id] || []).filter((t) => t.status !== "cancelled");
+    const open = pt.filter((t) => t.status !== "removed" && !t.paid);
+    const sym = o.country === "US" ? "$" : "€";
+    const OPTS = [
+      ["working", "Löschbar, in Bearbeitung", "Kunde sieht „In Bearbeitung“"],
+      ["software", `Nur mit Spezialsoftware · 300 ${sym}`, "Kunde bekommt das Software-Angebot (Vorauszahlung)"],
+      ["not_possible", "Nicht löschbar", "Kunde wird informiert: Löschung nicht möglich"],
+    ];
+    const pick = confirm && confirm.rv;
+    const run = async () => {
+      setBusy(true);
+      try {
+        const r = await partnerOrderStatus(o.id, pick);
+        if (o.status === "new") await ctx.doStatus(o, "progress", { label: "In Bearbeitung" });
+        await ctx.loadPtasks();
+        toast(`${OPTS.find((x) => x[0] === pick)[1]} · ${r.changed} von ${r.total} Bewertung(en) geändert`);
+        close();
+      } catch (e) { toast("Fehler: " + e.message); }
+      setBusy(false);
+    };
+    body = (
+      <><span className="shx"><AlertTriangle /></span>
+        <h3 style={{ paddingBottom: 6 }}>Achtung, Partner bearbeitet diese Bestellung</h3>
+        <p className="shp">{pt.length} {pt.length === 1 ? "Bewertung liegt" : "Bewertungen liegen"} beim Partner{open.length !== pt.length ? ` (${open.length} noch offen)` : ""}. Sicher den Status ändern? Der neue Status gilt für alle offenen Bewertungen – wie wenn der Partner ihn setzt.</p>
+        <div className="opts">
+          {OPTS.map(([k, l, d]) => <Opt key={k} on={pick === k} onClick={() => setConfirm({ rv: k })}><span className="ol">{l}<br /><small>{d}</small></span></Opt>)}
+        </div>
+        <div className="ctas2" style={{ marginTop: 14 }}><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
+          <button type="button" className={"cta" + (pick === "not_possible" ? " red" : " or")} disabled={!pick || busy || !open.length} onClick={run}>{busy ? <LoaderIcon className="spin" /> : null}Status ändern</button></div>
+        {!open.length ? <p className="shp" style={{ marginTop: 10 }}>Alle Bewertungen sind bereits erledigt (gelöscht oder bezahlt).</p> : null}
+        <button type="button" className="lnkb" onClick={() => act.start(o, null, true)}>Nur den Auftrag auf „In Bearbeitung“ setzen</button></>
     );
   } else if (sheet && sheet.kind === "mahn" && o) {
     body = <MahnSheet key={o.id} o={o} ctx={ctx} close={close} />;

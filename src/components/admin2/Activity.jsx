@@ -1,0 +1,149 @@
+"use client";
+/* Neues Admin — Dashboard-Aktivität (Design-Handoff 9): Zeile im Auftrag + eigener Screen mit Timeline.
+   Daten: ops /admin/activity (customer_events je Kunden-E-Mail). */
+import React from "react";
+import {
+  Activity as ActIcon, ChevronRight, LogIn, LogOut, Eye, MousePointerClick, CreditCard, XCircle, CheckCircle2, ClipboardList,
+  MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft,
+} from "lucide-react";
+import { customerActivity, custInviteOne } from "@/lib/admin-api";
+
+export const ACT_EV = {
+  mail_open: [MailOpen, "E-Mail geöffnet", "var(--info)"],
+  login: [LogIn, "Eingeloggt", "var(--success)"],
+  dash_open: [MonitorSmartphone, "Dashboard geöffnet", "var(--success)"],
+  page_view: [Eye, "Angesehen", "var(--ink)"],
+  click: [MousePointerClick, "Geklickt", "var(--ink)"],
+  payment_open: [CreditCard, "Zahlung geöffnet", "var(--orange-800)"],
+  payment_abort: [XCircle, "Zahlung abgebrochen", "var(--danger)"],
+  payment_success: [CheckCircle2, "Bezahlt", "var(--success)"],
+  software_accept: [CheckCircle2, "Software angenommen", "var(--success)"],
+  software_decline: [Ban, "Software abgelehnt", "var(--danger)"],
+  form_progress: [ClipboardList, "Fragebogen", "var(--ink)"],
+  logout: [LogOut, "Ausgeloggt", "var(--g3)"],
+  session_end: [LogOut, "Sitzung beendet", "var(--g3)"],
+};
+const p2 = (n) => String(n).padStart(2, "0");
+export function relTime(iso, now = Date.now()) {
+  if (!iso) return "—";
+  const m = Math.max(0, Math.round((now - new Date(iso).getTime()) / 60000));
+  if (m < 1) return "gerade eben";
+  if (m < 60) return `vor ${m} Min.`;
+  if (m < 1440) return `vor ${Math.floor(m / 60)} Std.`;
+  const d = Math.floor(m / 1440);
+  return d === 1 ? "gestern" : `vor ${d} Tagen`;
+}
+const dayLbl = (iso, now = new Date()) => {
+  const d = new Date(iso); const a = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const b = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const n = Math.round((b - a) / 864e5);
+  return n === 0 ? "Heute" : n === 1 ? "Gestern" : n < 7 ? `Vor ${n} Tagen` : `${p2(d.getDate())}.${p2(d.getMonth() + 1)}.${d.getFullYear()}`;
+};
+const hhmm = (iso) => { const d = new Date(iso); return `${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+const detailOf = (e) => {
+  const m = e.meta || {};
+  if (e.type === "login" || e.type === "dash_open") return [e.target, m.device].filter(Boolean).join(" · ");
+  if (e.type === "click") return e.target ? `„${e.target}“` : "";
+  if (e.type === "mail_open") return [e.target, m.device].filter(Boolean).join(" · ");
+  return e.target || "";
+};
+
+/** Lädt die Aktivität einer E-Mail (mit kleinem Cache im Speicher). */
+const cache = new Map();
+export function useActivity(email, orderId, bump) {
+  const key = (email || "").toLowerCase();
+  const [d, setD] = React.useState(() => cache.get(key) || null);
+  React.useEffect(() => {
+    if (!key) return;
+    let alive = true;
+    customerActivity(key, orderId).then((r) => { cache.set(key, r); if (alive) setD(r); }).catch(() => { if (alive) setD((x) => x || { error: true, events: [] }); });
+    return () => { alive = false; };
+  }, [key, orderId, bump]);
+  return d;
+}
+
+/** Zeile „Dashboard-Aktivität" im Auftrag (über „Fortschritt"). */
+export function ActivityRow({ o, onOpen }) {
+  const a = useActivity(o.email, o.id);
+  const ev = (a && a.events) || [];
+  const seen = !!(a && (a.lastSeenAt || ev.some((e) => e.type !== "mail_open")));
+  const last = ev.find((e) => !["logout", "session_end", "mail_open"].includes(e.type));
+  const logins = a ? (a.loginCount || 0) + (a.openCount || 0) : 0;
+  return (
+    <div className="info">
+      <button type="button" className="ir" onClick={onOpen}>
+        <span className="ico"><ActIcon /></span>
+        <span className="t"><span>Dashboard-Aktivität</span>
+          <b style={{ color: !a ? "var(--g3)" : seen ? "var(--ink)" : "var(--danger)" }}>
+            {!a ? "Lädt …" : seen ? `Zuletzt ${relTime(a.lastSeenAt || (last && last.ts))}${last ? " · " + ACT_EV[last.type][1] : ""}` : "Noch nie eingeloggt"}</b></span>
+        {seen && logins ? <span className="alive">{logins}×</span> : null}
+        <ChevronRight />
+      </button>
+    </div>
+  );
+}
+
+/** Screen „Aktivität". */
+export function ActivityScreen({ ctx, id }) {
+  const { orders, back, toast, isDesk } = ctx;
+  const o = orders.find((x) => x.id === id);
+  const [bump, setBump] = React.useState(0);
+  const a = useActivity(o && o.email, o && o.id, bump);
+  const [busy, setBusy] = React.useState(false);
+  const [limit, setLimit] = React.useState(150);
+  if (!o) return null;
+  const ev = (a && a.events) || [];
+  const seen = !!(a && (a.lastSeenAt || ev.some((e) => e.type !== "mail_open")));
+  const logins = a ? (a.loginCount || 0) + (a.openCount || 0) : 0;
+  const days = [];
+  for (const e of ev.slice(0, limit)) {
+    const l = dayLbl(e.ts);
+    if (!days.length || days[days.length - 1][0] !== l) days.push([l, []]);
+    days[days.length - 1][1].push(e);
+  }
+  const invite = async () => {
+    setBusy(true);
+    try { await custInviteOne({ email: o.email, name: o.name, lang: o.lang, orderId: o.id }); toast("Login-Link an " + o.email + " gesendet"); setBump((x) => x + 1); }
+    catch (e) { toast("Senden fehlgeschlagen: " + e.message); }
+    setBusy(false);
+  };
+  return (
+    <>
+      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={back}><ArrowLeft /></button>
+        <button type="button" className="circ" aria-label="Aktualisieren" onClick={() => setBump((x) => x + 1)}>{a ? <ActIcon /> : <Loader className="spin" />}</button></div>
+      <div className="dh"><div><h1>Aktivität</h1><p>{o.id} · {o.name || o.email}</p></div></div>
+      <div className="rsum">
+        <div><b>{a ? logins : "–"}</b><span>Logins</span></div>
+        <div><b>{a ? a.clickCount || 0 : "–"}</b><span>Klicks</span></div>
+        <div><b style={{ fontSize: 18, lineHeight: 1.6 }}>{a && seen ? relTime(a.lastSeenAt) : "—"}</b><span>Zuletzt</span></div>
+      </div>
+      {a && !seen ? (
+        <div className="anever"><span className="mi"><UserX /></span><b>Noch nie eingeloggt</b>
+          <span>{o.name || "Der Kunde"} hat das Dashboard noch nicht geöffnet.</span>
+          <button type="button" className="cta" disabled={busy || !o.email} onClick={invite}><Send />{busy ? "Sendet …" : "Login-Link senden"}</button></div>
+      ) : null}
+      {days.map(([l, list]) => (
+        <React.Fragment key={l}>
+          <div className="lbl" style={{ marginTop: 18 }}>{l}</div>
+          <div className="card atl">
+            {list.map((e) => {
+              const E = ACT_EV[e.type] || [Eye, e.type, "var(--ink)"]; const I = E[0];
+              return (
+                <div key={e.id} className="ae">
+                  <span className="ad" style={{ color: E[2] }}><I /></span>
+                  <div className="t"><b>{E[1]}</b><span>{detailOf(e) || " "}</span></div>
+                  <span className="ah">{hhmm(e.ts)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </React.Fragment>
+      ))}
+      {ev.length > limit ? <button type="button" className="more-b" style={{ marginTop: 12 }} onClick={() => setLimit((x) => x + 200)}>Ältere anzeigen</button> : null}
+      {a && seen && !ev.length ? <p className="sh" style={{ marginTop: 14 }}>Zuletzt eingeloggt {relTime(a.lastSeenAt)} – Details werden ab jetzt erfasst.</p> : null}
+      {a && seen ? (
+        <div className="ctas" style={{ marginTop: 18 }}><button type="button" className="cta gh" disabled={busy || !o.email} onClick={invite}><Send />{busy ? "Sendet …" : "Login-Link erneut senden"}</button></div>
+      ) : null}
+      {isDesk ? null : <div style={{ height: 8 }} />}
+    </>
+  );
+}

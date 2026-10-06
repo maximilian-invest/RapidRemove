@@ -25,7 +25,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
+import { customerSessionEmail, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
@@ -33,6 +33,7 @@ import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
+import { registerCustTrack } from "./custTrack";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -172,6 +173,9 @@ registerCustomerRoutes(app, {
     await sendMail({ to: email, subject: m.subject, html: await render(m.el), replyTo: process.env.MAIL_REPLY_TO });
   },
 });
+
+// Dashboard-Aktivität: Tracking aus dem Kunden-Dashboard, Zählpixel, Admin-Timeline.
+registerCustTrack(app, { sessionEmail: customerSessionEmail, adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN });
 
 app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
