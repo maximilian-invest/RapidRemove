@@ -17,6 +17,7 @@ import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
 import SupportChat from "./Chat";
 import PaySheet from "./PaySheet";
+import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
@@ -88,12 +89,12 @@ const statusLine = (r, cur) => stOf(r.status).l
   + (r.status === "removed" ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
 
 function Ring({ r, n }) {
-  const R = 24, C = 2 * Math.PI * R, p = n ? r / n : 0;
+  const R = 24, p = n ? r / n : 0;
   return (
     <div className="ring">
       <svg viewBox="0 0 56 56">
         <circle cx="28" cy="28" r={R} fill="none" stroke="#e2e2e2" strokeWidth="6" />
-        {p ? <circle cx="28" cy="28" r={R} fill="none" stroke={p === 1 ? "var(--success)" : "#111"} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${C * p} ${C}`} /> : null}
+        {p ? <circle className="rg" cx="28" cy="28" r={R} fill="none" stroke={p === 1 ? "var(--success)" : "#111"} strokeWidth="6" strokeLinecap="round" pathLength="100" strokeDasharray={`${Math.max(0.01, p * 100)} 100`} style={{ "--p": p * 100 }} /> : null}
       </svg>
       <b>{r}/{n}</b>
     </div>
@@ -106,6 +107,10 @@ function ProfRing({ st }) {
 }
 const isProf = (o) => o && o.kind === "profile" && o.profileOrder;
 const profOpen = (o) => isProf(o) && (["new", "working"].includes(o.profileOrder.status) || o.profileOrder.open > 0);
+/* Alles, was schon gelöscht ist (für den Erfolgs-Moment): Bewertungen + Profil-Löschungen. */
+const removedKeys = (d) => d.orders.flatMap((o) => (isProf(o)
+  ? (o.profileOrder.status === "removed" ? [{ k: o.id + "#p", at: o.profileOrder.doneAt, biz: o.business, prof: true }] : [])
+  : o.items.filter((i) => i.status === "removed").map((i) => ({ k: o.id + ":" + i.key, at: i.removedAt, biz: o.business }))));
 
 /* ---- Login / Passwort vergessen ---- */
 function Login({ onToken, notice }) {
@@ -214,6 +219,9 @@ export default function CustomerDashboard() {
   const [gate, setGate] = React.useState(null); // Push noch nicht an → Vollbild-Aufforderung
   const [, tick] = React.useState(0);
   const prev = React.useRef(null);
+  const celeSeen = React.useRef(null); // Set der schon gefeierten Löschungen (zusätzlich im localStorage)
+  const [cele, setCele] = React.useState(null);
+  const [intro, setIntro] = React.useState(true);
   const toastT = React.useRef(0);
   const mainRef = React.useRef(null);
   const [imp, setImp] = React.useState(false); // Admin-Ansicht („Kundendashboard öffnen"): nichts tracken, keine Zahlungen
@@ -269,6 +277,7 @@ export default function CustomerDashboard() {
         }
         if (swOk) showToast(T("tPaymentSw"));
         else if (paid) showToast(T("tPaid"));
+        if ((swOk || paid) && !d.adminView && !window.__NO_TRACK) setCele({ id: Date.now(), kind: "paid", title: T("cPaidT"), sub: T("cPaidS") });
         // Dashboard-Aktivität: aus dem Zahlungs-Tab zurück, aber (noch) nicht bezahlt → abgebrochen
         const po = payOpen.current;
         if (po && (swOk || paid)) payOpen.current = null;
@@ -276,6 +285,23 @@ export default function CustomerDashboard() {
           const sec = Math.round((Date.now() - po.at) / 1000);
           track("payment_abort", `${po.label} · nach ${sec < 120 ? sec + " s" : Math.round(sec / 60) + " Min."}`, { sec });
           payOpen.current = null;
+        }
+      }
+      // Erfolgs-Moment: neu gelöschte Bewertungen/Profile seit dem letzten Besuch (auch live, wenn es während des Besuchs passiert).
+      if (!d.adminView && !window.__NO_TRACK) {
+        const sk = "rr_cele_" + String(d.email || "").toLowerCase();
+        const list = removedKeys(d);
+        if (!celeSeen.current) {
+          let stored = null;
+          try { stored = JSON.parse(localStorage.getItem(sk) || "null"); } catch (e) { stored = null; }
+          celeSeen.current = Array.isArray(stored) ? new Set(stored) : new Set(list.filter((x) => !x.at || Date.now() - new Date(x.at).getTime() > 48 * 3600e3).map((x) => x.k));
+        }
+        const fresh = list.filter((x) => !celeSeen.current.has(x.k));
+        list.forEach((x) => celeSeen.current.add(x.k));
+        try { localStorage.setItem(sk, JSON.stringify([...celeSeen.current])); } catch (e) { /* */ }
+        if (fresh.length) {
+          const rv = fresh.filter((x) => !x.prof).length;
+          setCele({ id: Date.now(), kind: "removed", title: rv ? (rv === 1 ? T("cRemT1") : T("cRemTn", { n: rv })) : T("cProfT"), sub: rv ? T("cRemS") : T("cProfS"), items: [...new Set(fresh.map((x) => x.biz).filter(Boolean))] });
         }
       }
       prev.current = d;
@@ -287,6 +313,7 @@ export default function CustomerDashboard() {
   }, [showToast]);
 
   React.useEffect(() => { if (token) load(token); }, [token, load]);
+  React.useEffect(() => { if (!data || !intro || gate) return undefined; const t = setTimeout(() => setIntro(false), 1600); return () => clearTimeout(t); }, [data, intro, gate]);
   // Live: alle 30 s (sichtbar) + beim Zurückkommen in den Tab; Dauer „In progress · 12 min" jede Minute.
   React.useEffect(() => {
     if (!token) return undefined;
@@ -553,7 +580,7 @@ export default function CustomerDashboard() {
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
-      <div className="v">{money(multiPay ? payTotal : viaWise || viaPaypal ? wiseAmount : toPay, payCur)}</div>
+      <div className="v"><CountUp id={"hero-" + payCur} value={multiPay ? payTotal : viaWise || viaPaypal ? wiseAmount : toPay} fmt={(v) => money(v, payCur)} /></div>
       <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
       {multiPay ? (
         <div className="pgrps">
@@ -889,11 +916,11 @@ export default function CustomerDashboard() {
   const TABS = [["home", Home, T("tabHome")], ["orders", List, T("tabOrders")], ["pay", Wallet, T("tabPay")], ["acc", User, T("tabAcc")]];
   const adminView = imp || (data && data.adminView);
   return (
-    <div className={"rra" + (adminView ? " impv" : "")}>
+    <div className={"rra" + (adminView ? " impv" : "") + (intro ? " intro" : "")}>
       {adminView ? <div className="impbar"><span><b>Admin-Ansicht</b> · {data.name || data.email} · nicht getrackt</span><button type="button" onClick={endAdminView}>Beenden</button></div> : null}
       <div className="app">
         <main className="screen" ref={mainRef}>
-          {tab === "home" ? HomeV() : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}
+          <div className="tabin" key={tab}>{tab === "home" ? HomeV() : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}</div>
         </main>
         <nav className="tabbar">
           <div className="brand"><img src="/assets/rapidremove-icon.png" alt="" />RapidRemove</div>
@@ -930,6 +957,7 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
+      <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />

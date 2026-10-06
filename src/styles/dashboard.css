@@ -527,3 +527,58 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .ff-amt b{font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
 .rra .ff-amt .pc-copy{background:#fff;color:#0070e0}
 .rra .ffm p.ff-app{font-size:12.5px;line-height:1.45;color:#777;margin:0 0 12px;text-align:left}
+/* ===== Bewegung (Intro, Tabs, Ringe, Tap) ===== */
+@keyframes rrUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes rrIn{from{opacity:0;transform:translateX(26px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes rrFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes rrRing{from{stroke-dashoffset:var(--p,0)}to{stroke-dashoffset:0}}
+.rra .tabin{animation:rrFade .35s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .tabin{animation:none}
+.rra.intro .hhead{animation:rrUp .6s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .hl>*,.rra.intro .hr>*{animation:rrUp .65s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .hl>*:nth-child(1){animation-delay:.06s}.rra.intro .hl>*:nth-child(2){animation-delay:.12s}.rra.intro .hl>*:nth-child(3){animation-delay:.18s}.rra.intro .hl>*:nth-child(4){animation-delay:.24s}.rra.intro .hl>*:nth-child(5){animation-delay:.3s}.rra.intro .hl>*:nth-child(6){animation-delay:.36s}.rra.intro .hl>*:nth-child(n+7){animation-delay:.42s}
+.rra.intro .hr>*{animation-delay:.3s}
+.rra.intro .carousel .oc{animation:rrIn .7s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .carousel .oc:nth-child(1){animation-delay:.32s}.rra.intro .carousel .oc:nth-child(2){animation-delay:.4s}.rra.intro .carousel .oc:nth-child(3){animation-delay:.48s}.rra.intro .carousel .oc:nth-child(n+4){animation-delay:.56s}
+.rra.intro .act>*{animation:rrUp .55s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .act>*:nth-child(1){animation-delay:.4s}.rra.intro .act>*:nth-child(2){animation-delay:.46s}.rra.intro .act>*:nth-child(3){animation-delay:.52s}.rra.intro .act>*:nth-child(n+4){animation-delay:.58s}
+.rra.intro .pgrp{animation:rrUp .55s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .pgrp:nth-child(1){animation-delay:.3s}.rra.intro .pgrp:nth-child(2){animation-delay:.38s}.rra.intro .pgrp:nth-child(3){animation-delay:.46s}
+.rra.intro .ring .rg{animation:rrRing 1.2s .55s cubic-bezier(.22,1,.36,1) both}
+.rra.intro .hero-img img{animation:rrFloat 1s .2s cubic-bezier(.22,1.4,.36,1) both}
+@keyframes rrFloat{from{opacity:0;transform:translateY(14px) rotate(-8deg) scale(.85)}to{opacity:1;transform:none}}
+.rra .oc,.rra .ai-row,.rra .pgrp,.rra .pill-btn,.rra .cta,.rra .alert{transition:transform .18s cubic-bezier(.22,1,.36,1),background .2s}
+.rra .oc:active,.rra .ai-row:active,.rra .alert:active{transform:scale(.97)}
+.rra .pill-btn:active{transform:scale(.95)}
+
+/* ===== Erfolgs-Moment ===== */
+.rra .cele{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:24px;background:rgba(255,255,255,.86);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);animation:ceBg .35s ease both}
+.rra .ce-box{width:min(380px,100%);text-align:center;display:flex;flex-direction:column;align-items:center}
+.rra .ce-art{position:relative;width:180px;height:180px;display:grid;place-items:center;margin-bottom:8px}
+.rra .ce-check{width:120px;height:120px;position:relative;z-index:2}
+.rra .ce-c{fill:#16a34a;stroke:#16a34a;stroke-width:4;stroke-dasharray:100;stroke-dashoffset:100;transform-origin:60px 60px;animation:ceCircle .6s .1s cubic-bezier(.65,0,.35,1) forwards,ceFill .35s .55s ease forwards,cePop .5s .6s cubic-bezier(.22,1.6,.36,1) both}
+.rra .ce-p{fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;animation:ceDraw .45s .75s cubic-bezier(.65,0,.35,1) forwards}
+.rra .cele.k-paid .ce-c{fill:#111;stroke:#111}
+.rra .ce-ring{position:absolute;inset:30px;border-radius:50%;border:2px solid #16a34a;opacity:0;animation:ceRing 1.4s .55s cubic-bezier(.22,1,.36,1) both}
+.rra .cele.k-paid .ce-ring{border-color:#111}
+.rra .ce-ring.r2{animation-delay:.75s}.rra .ce-ring.r3{animation-delay:.95s}
+.rra .ce-conf{position:absolute;left:50%;top:50%;width:0;height:0;z-index:1}
+.rra .ce-conf i{position:absolute;left:-4px;top:-6px;opacity:0;animation:ceBurst 1.4s calc(.6s + var(--dl)) cubic-bezier(.15,.8,.3,1) forwards}
+.rra .ce-t{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin:6px 0 6px;animation:rrUp .6s .85s cubic-bezier(.22,1,.36,1) both}
+.rra .ce-s{font-size:16px;color:#555;margin:0 0 14px;animation:rrUp .6s .95s cubic-bezier(.22,1,.36,1) both}
+.rra .ce-items{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:18px}
+.rra .ce-items span{background:#f1f1ef;border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;animation:rrUp .5s calc(1.05s + var(--i) * 70ms) cubic-bezier(.22,1,.36,1) both}
+.rra .ce-btn{height:54px;min-width:200px;padding:0 28px;border:0;border-radius:27px;background:#111;color:#fff;font:inherit;font-size:17px;font-weight:700;cursor:pointer;animation:rrUp .6s 1.15s cubic-bezier(.22,1,.36,1) both;box-shadow:0 14px 28px -12px rgba(0,0,0,.5)}
+.rra .ce-btn:active{transform:scale(.97)}
+@keyframes ceBg{from{opacity:0}to{opacity:1}}
+@keyframes ceCircle{to{stroke-dashoffset:0}}
+@keyframes ceFill{from{fill-opacity:0}to{fill-opacity:1}}
+@keyframes cePop{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes ceDraw{to{stroke-dashoffset:0}}
+@keyframes ceRing{0%{opacity:.55;transform:scale(.7)}100%{opacity:0;transform:scale(1.9)}}
+@keyframes ceBurst{0%{opacity:1;transform:translate(0,0) rotate(0) scale(.6)}70%{opacity:1}100%{opacity:0;transform:translate(var(--x),calc(var(--y) + 60px)) rotate(var(--r)) scale(1)}}
+.rra .ce-c{fill-opacity:0}
+@media (prefers-reduced-motion:reduce){
+  .rra .tabin,.rra.intro *,.rra .cele,.rra .cele *{animation:none!important}
+  .rra .ce-c{stroke-dashoffset:0;fill-opacity:1}.rra .ce-p{stroke-dashoffset:0}.rra .ce-ring,.rra .ce-conf{display:none}
+}
