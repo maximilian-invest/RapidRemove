@@ -21,7 +21,7 @@ async function post(path, body) {
   return j;
 }
 
-export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen }) {
+export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {} }) {
   const [msgs, setMsgs] = React.useState(() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "[]"); } catch (e) { return []; } });
   const [busy, setBusy] = React.useState(false);
   const [txt, setTxt] = React.useState("");
@@ -81,7 +81,19 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
     return () => { timers.forEach(clearTimeout); clearInterval(iv); };
   }, [open]);
   const closeTease = (e) => { e.stopPropagation(); setTease(false); ss.set(TEASE_KEY, "x"); };
-  const QS = [T("chQ1"), T("chQ2"), T("chQ3"), T("chQ4"), T("chQ5")];
+  // Schnellfragen passend zur Lage des Kunden (nur was auf seine Aufträge zutrifft).
+  const QS = [
+    sit.sw ? T("chQ2") : null,
+    sit.due ? T("chQ3") : null,
+    sit.due ? T("chQPay") : null,
+    sit.deposit ? T("chQDep") : null,
+    sit.open ? T("chQ1") : null,
+    sit.open ? T("chQ4") : null,
+    sit.notpossible ? T("chQNp") : null,
+    !sit.orders ? T("chQHow") : null,
+    sit.orders && !sit.open && !sit.due && !sit.sw ? T("chQBack") : null,
+    sit.orders && !sit.open && !sit.due && !sit.sw ? T("chQMore") : null,
+  ].filter(Boolean).slice(0, 4).concat(T("chQ5"));
   return (
     <>
       <div className={"ctease" + (tease && !open ? " show" : "")} role="button" tabIndex={-1} onClick={() => setOpen(true)} aria-hidden={!tease || open}>
