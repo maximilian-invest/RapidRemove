@@ -366,9 +366,42 @@ app.post("/order", async (req, reply) => {
     : Array.isArray(b.reviewUrls)
       ? ((b.reviewUrls as unknown[]).map((u) => httpUrl(u, 400)).filter(Boolean).slice(0, 40) as string[]).map((u) => ({ url: u }))
       : [];
+  // Doppelte Beauftragung erkennen (Einzelbewertungen): gleiche Bestell-Nr. (Doppelklick/Retry) → nichts erneut senden;
+  // dieselbe Bewertung schon in einem offenen Auftrag (gleiche E-Mail oder gleiches Profil, 120 Tage) → herausnehmen;
+  // sind ALLE Bewertungen schon beauftragt → keine neue Bestellung, Wizard zeigt „bereits beauftragt".
+  let dupSkipped: { name: string; orderId: string }[] = [];
+  if (isReviews && pool && reviewItems.length) {
+    try {
+      if (orderId) {
+        const ex = await pool.query(`SELECT id FROM orders WHERE id=$1`, [orderId]);
+        if (ex.rows[0]) return { ok: true, duplicate: true, orderId };
+      }
+      const normU = (u?: string) => String(u || "").trim().toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");
+      const normT = (t?: string) => String(t || "").toLowerCase().replace(/\s+/g, " ").trim();
+      const prev = await pool.query(
+        `SELECT id, raw->'reviewItems' AS items FROM orders
+          WHERE service='reviews' AND COALESCE(status,'') <> 'storniert' AND created_at > now() - interval '120 days'
+            AND (lower(email)=lower($1) OR ($2 <> '' AND lower(COALESCE(profile,''))=lower($2)))`,
+        [email, profile || ""],
+      );
+      const seen: { u: string; nt: string; oid: string }[] = [];
+      for (const r of prev.rows) for (const it of (Array.isArray(r.items) ? r.items : []) as ReviewItem[]) {
+        seen.push({ u: normU(it.url), nt: it.name && it.text ? normT(it.name) + "|" + normT(it.text).slice(0, 80) : "", oid: r.id });
+      }
+      const hitOf = (it: ReviewItem) => seen.find((x) => (it.url && x.u && x.u === normU(it.url)) || (it.name && it.text && x.nt && x.nt === normT(it.name) + "|" + normT(it.text).slice(0, 80)));
+      const keep: ReviewItem[] = [];
+      for (const it of reviewItems) { const h = hitOf(it); if (h) dupSkipped.push({ name: it.name || it.url || "", orderId: h.oid }); else keep.push(it); }
+      if (dupSkipped.length && !keep.length) {
+        app.log.warn({ email, orderId, dup: dupSkipped }, "Bestellung: alle Bewertungen bereits beauftragt – keine neue Bestellung");
+        return { ok: false, error: "already_ordered", orders: [...new Set(dupSkipped.map((d) => d.orderId))], items: dupSkipped.map((d) => d.name) };
+      }
+      if (dupSkipped.length) { reviewItems.splice(0, reviewItems.length, ...keep); app.log.warn({ email, orderId, dup: dupSkipped }, "Bestellung: doppelte Bewertungen entfernt"); }
+    } catch (e) { app.log.error({ err: e }, "Doppel-Prüfung fehlgeschlagen – Bestellung läuft normal weiter"); dupSkipped = []; }
+  }
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
   if (isReviews) (b as Record<string, unknown>).reviewItems = reviewItems;
+  if (dupSkipped.length) (b as Record<string, unknown>).duplicatesSkipped = dupSkipped;
   // Affiliate (FirstPromoter): lesbarer Partner-Code aus dem _fprom_ref-Cookie,
   // vom Browser mitgeschickt. Wird in interner Mail, Push und Admin angezeigt,
   // damit sofort sichtbar ist, von welchem Partner die Bestellung kommt.

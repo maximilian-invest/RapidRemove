@@ -20,6 +20,20 @@ import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
    Die verlinkten Texte sind die deutsche Fassung (Vertragssprache Deutsch, Punkt 12.3 AGB);
    lokalisierte Fassungen folgen nach anwaltlicher Freigabe. */
+/* Hinweis „Bewertung bereits beauftragt" (Doppelbestellung derselben Bewertung). */
+const DUP_TXT = {
+  en: { t: "You've already ordered this review", p: (o) => `We're already working on it in your order ${o} – no need to order it again.`, l: "Open my dashboard" },
+  de: { t: "Diese Bewertung wurde bereits beauftragt", p: (o) => `Wir bearbeiten sie schon in Ihrem Auftrag ${o} – eine zweite Bestellung ist nicht nötig.`, l: "Zum Dashboard" },
+  es: { t: "Ya has encargado esta reseña", p: (o) => `Ya estamos trabajando en ella en tu pedido ${o}; no hace falta volver a pedirla.`, l: "Abrir mi panel" },
+  fr: { t: "Tu as déjà commandé cet avis", p: (o) => `Nous y travaillons déjà dans ta commande ${o} – inutile de la recommander.`, l: "Ouvrir mon tableau de bord" },
+  it: { t: "Hai già ordinato questa recensione", p: (o) => `Ci stiamo già lavorando nel tuo ordine ${o}: non serve ordinarla di nuovo.`, l: "Apri la dashboard" },
+  nl: { t: "U heeft deze review al besteld", p: (o) => `We werken er al aan in uw bestelling ${o} – opnieuw bestellen is niet nodig.`, l: "Mijn dashboard openen" },
+  pt: { t: "Já encomendaste esta avaliação", p: (o) => `Já estamos a tratar dela na tua encomenda ${o} – não é preciso encomendar outra vez.`, l: "Abrir o meu painel" },
+  ja: { t: "この口コミはすでにご注文済みです", p: (o) => `ご注文 ${o} で対応中です。再度ご注文いただく必要はありません。`, l: "ダッシュボードを開く" },
+  sv: { t: "Du har redan beställt det här omdömet", p: (o) => `Vi arbetar redan med det i din beställning ${o} – du behöver inte beställa igen.`, l: "Öppna min dashboard" },
+  da: { t: "Du har allerede bestilt denne anmeldelse", p: (o) => `Vi arbejder allerede på den i din ordre ${o} – du behøver ikke bestille igen.`, l: "Åbn mit dashboard" },
+  no: { t: "Du har allerede bestilt denne omtalen", p: (o) => `Vi jobber allerede med den i bestillingen din ${o} – du trenger ikke bestille på nytt.`, l: "Åpne dashbordet mitt" },
+};
 const AGB_CONSENT = {
   de: { pre: "Ich habe die ", agb: "AGB", mid: " und die ", wid: "Widerrufsbelehrung", post: " gelesen und akzeptiere sie.", err: "Bitte bestätigen Sie AGB und Widerrufsbelehrung." },
   en: { pre: "I have read and accept the ", agb: "Terms & Conditions", mid: " and the ", wid: "withdrawal policy", post: ".", err: "Please confirm the Terms and the withdrawal policy." },
@@ -1752,6 +1766,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
   const [payAsk, setPayAsk] = React.useState(false); // Rabatt-Pop-up (Wise/PayPal) vor dem Absenden
+  const [dupOrder, setDupOrder] = React.useState(null); // Bewertung(en) bereits beauftragt → { orders, items }
   const [agbOk, setAgbOk] = React.useState(false);
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
@@ -2210,7 +2225,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // sonst FirstPromoters _fprom_ref-Cookie (Format/Existenz nicht garantiert).
     const fprRef = fprCookie("rr_aff") || fprCookie("_fprom_ref");
     // Bestellung im Hintergrund ans ops-Backend. Profil-Nachweis (Place-ID etc.) inklusive.
-    submitOrder({
+    setDupOrder(null);
+    const sent = submitOrder({
       email: contact.email, name: contact.name, phone: contact.phone,
       company: contact.company, service: revFlow ? "reviews" : service, protection: revFlow ? "" : (protection || ""),
       // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
@@ -2242,11 +2258,17 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
       // Rabatt-Abfrage: "wise" | "paypal" = 10 % Rabatt gewünscht, "none" = abgelehnt.
       ...(payPref ? { payPref } : {}),
-    }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); });
+    }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); return null; });
     // Conversion ans dataLayer (Google Tag Manager): Bestellung abgeschlossen.
     // „order" mit E-Mail + Telefon in der Datenschicht.
     gtmPush("order", { email: contact.email, phone: contact.phone, transaction_id: orderId, value: oneTimeTotal, currency: country === "US" ? "USD" : "EUR" });
-    setTimeout(() => { setProcessing(false); setStep(6); }, 2400);
+    setTimeout(async () => {
+      // Dieselbe Bewertung wurde schon beauftragt → keine neue Bestellung, Hinweis statt Danke-Seite.
+      const r = await Promise.race([sent, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
+      setProcessing(false);
+      if (r && r.error === "already_ordered") { setDupOrder(r); return; }
+      setStep(6);
+    }, 2400);
   };
 
   /* ---------- step bodies ---------- */
@@ -2708,6 +2730,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <div className="wz-eyebrow"><Icon.lock size={14} /> {w.s5.eyebrow}</div>
           <h1 className="wz-h" style={{ fontSize: 26 }}>{w.s5.h}</h1>
           <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s5.sub}</p>
+          {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
+            <div role="alert" style={{ background: "#fff4e0", color: "#5c3a00", borderRadius: 16, padding: "14px 16px", margin: "0 0 18px", fontSize: 14.5, lineHeight: 1.45 }}>
+              <b style={{ display: "block", fontSize: 15.5, marginBottom: 4 }}>{D.t}</b>
+              {D.p((dupOrder.orders || []).join(", "))}{" "}
+              <a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")} style={{ fontWeight: 700, color: "#5c3a00", textDecoration: "underline" }}>{D.l}</a>
+            </div>
+          ); })() : null}
           <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
             <div className="form-grid">
               <div className={"fld full" + (errors.name ? " err" : "")}>
