@@ -70,8 +70,10 @@ export default function AdminNext() {
   const setF = (patch) => setFState((s) => ({ ...s, ...patch }));
 
   /* ---- Daten ---- */
+  const [ptAll, setPtAll] = React.useState(null); // alle Partner-Aufgaben (Löschquote in der Übersicht)
   const loadPtasks = React.useCallback(() => partnerTasks().then((r) => {
     const m = {}; (r.tasks || []).forEach((t) => { if (t.orderId) (m[t.orderId] = m[t.orderId] || []).push(t); }); setPtasks(m);
+    setPtAll((r.tasks || []).filter((t) => !t.test));
   }).catch(() => {}), []);
   const reload = React.useCallback(async (silent) => {
     try {
@@ -214,7 +216,7 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus, ptAll,
   };
 
   const top = stack[stack.length - 1];

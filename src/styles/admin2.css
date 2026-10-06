@@ -572,3 +572,14 @@
 .an .anever>span{font-size:14px;color:var(--g3);margin-bottom:14px}
 .an .anever .cta{width:100%}
 .an .lnkb{display:block;margin:14px auto 0;font-size:13px;color:var(--g3);text-decoration:underline;text-underline-offset:3px}
+
+/* ===================== Löschquote Einzelbewertungen ===================== */
+.an .rrq{padding:6px 16px;display:flex;flex-direction:column;margin-bottom:8px}
+.an .rq{padding:12px 0}
+.an .rq+.rq{border-top:1px solid var(--g1)}
+.an .rq .t{display:flex;justify-content:space-between;align-items:baseline;font-size:14px;margin-bottom:8px}
+.an .rq .t b{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.an .rq.tot .t span{font-weight:600}
+.an .rq.tot .t b{font-size:22px;letter-spacing:-.5px}
+.an .rq .s{display:block;margin-top:7px;font-size:12px;color:var(--g3)}
+.an .rqn{margin:2px 4px 26px;font-size:12px}

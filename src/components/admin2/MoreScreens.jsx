@@ -58,12 +58,55 @@ export function Overview({ ctx }) {
         <div className="kc"><span className="kl">Profile geprüft</span><b>{checks.length}</b><span className="ks">{checks.filter((c) => c.status === "neu" && !c.orderId).length} neu, unbearbeitet</span></div>
         <div className="kc"><span className="kl">In Bearbeitung</span><b>{nWork}</b><span className="ks">{workAvgH != null ? `Ø ${workAvgH} Std. Laufzeit` : "—"}</span></div>
       </div>
+      <RemovalRates ptAll={ctx.ptAll} />
       <div className="sec3"><h2>Pipeline heute</h2></div>
       <div className="card pipe">{pipe.map(([l, n, c]) => <div key={l} className="pr"><div className="t"><span>{l}</span><b>{n}</b></div><span className="bar"><i style={{ "--w": (n / pm) * 100 + "%", background: c }} /></span></div>)}</div>
       <div className="sec3"><h2>Neueste Aufträge</h2><button type="button" className="lk" onClick={() => goOrders(null)}>Alle<ChevronRight /></button></div>
       <div className="card ls">{recent.map((o) => { const bb = bucket(o, now); return (
         <button key={o.id} type="button" className="ord" onClick={() => openOrder(o.id, true)}><Avatar o={o} /><span className="t"><span className="l1"><b>{o.name || o.email}</b><span className="p">{orderMoney(o)}</span></span><span className="l2"><KTag o={o} /><span className={"dt d-" + bb} />{ST[bb].l} · {fmtAge(ageMin(o, bb, now))}</span></span></button>
       ); })}</div>
+    </>
+  );
+}
+
+/* Löschquote je Kategorie (Partner-Aufgaben): gelöscht ÷ entschieden (gelöscht + nicht möglich + nur per Software).
+   Offene (neu/in Arbeit) zählen nicht in die Quote, werden aber angezeigt. */
+const RR_CATS = [["normal", "Bis 4 Wochen", "Bewertungen mit Text, jünger als 4 Wochen"], ["old", "Älter als 4 Wochen", "Bewertungen mit Text, älter als 4 Wochen"], ["nt", "Ohne Text", "Reine Sternebewertungen (Spezialverfahren)"], ["profile", "Ganze Profile", "Profil-Löschungen über den Partner"]];
+function RemovalRates({ ptAll }) {
+  const rows = (ptAll || []).filter((t) => t.status !== "cancelled");
+  const calc = (list) => {
+    const rem = list.filter((t) => t.status === "removed").length;
+    const no = list.filter((t) => t.status === "not_possible").length;
+    const sw = list.filter((t) => t.status === "software").length;
+    const open = list.filter((t) => t.status === "new" || t.status === "working").length;
+    const dec = rem + no + sw;
+    return { rem, no, sw, open, dec, q: dec ? Math.round((rem / dec) * 100) : null, n: list.length };
+  };
+  const cats = RR_CATS.map(([k, l, d]) => [k, l, d, calc(rows.filter((t) => (t.kind || "normal") === k))]).filter(([k, , , c]) => c.n || k !== "profile");
+  const all = calc(rows.filter((t) => t.kind !== "profile"));
+  const col = (q) => (q == null ? "#d4d4d8" : q >= 70 ? "var(--success)" : q >= 40 ? "var(--warning)" : "var(--danger)");
+  const sub = (c) => [c.rem + " gelöscht", c.no ? c.no + " nicht möglich" : "", c.sw ? c.sw + " nur Software" : "", c.open ? c.open + " offen" : ""].filter(Boolean).join(" · ") || "Noch keine Bewertungen";
+  return (
+    <>
+      <div className="sec3"><h2>Löschquote Einzelbewertungen</h2></div>
+      <div className="card rrq">
+        {ptAll == null ? <div className="rq"><span className="t"><span>Lädt …</span></span></div> : null}
+        {ptAll != null ? (
+          <div className="rq tot">
+            <div className="t"><span>Gesamt (ohne Profile)</span><b>{all.q == null ? "–" : all.q + " %"}</b></div>
+            <span className="bar"><i style={{ "--w": (all.q || 0) + "%", background: col(all.q) }} /></span>
+            <span className="s">{sub(all)}</span>
+          </div>
+        ) : null}
+        {ptAll != null ? cats.map(([k, l, d, c]) => (
+          <div key={k} className="rq" title={d}>
+            <div className="t"><span>{l}</span><b style={{ color: c.q == null ? "var(--g3)" : "var(--ink)" }}>{c.q == null ? "–" : c.q + " %"}</b></div>
+            <span className="bar"><i style={{ "--w": (c.q || 0) + "%", background: col(c.q) }} /></span>
+            <span className="s">{sub(c)}</span>
+          </div>
+        )) : null}
+      </div>
+      <p className="sh rqn">Quote = gelöscht ÷ entschieden (gelöscht, nicht möglich, nur per Software). Offene Bewertungen beim Partner zählen erst, wenn sie entschieden sind.</p>
     </>
   );
 }
