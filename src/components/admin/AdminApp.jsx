@@ -7,6 +7,7 @@ import { RedirectsDashboard } from "./AdminRedirects";
 import { ReportStatsDashboard } from "./AdminReportStats";
 import { AdminPartner, PartnerBadge } from "./AdminPartner";
 import { AdminCustAccess } from "./AdminCustAccess";
+import { AdminSettings, AdminPartners } from "./AdminSettings";
 import { AdminCustInvite } from "./AdminCustInvite";
 import { DangerZone } from "./AdminDanger";
 import { AssignControl, AssigneeAvatar } from "./AdminAssign";
@@ -300,6 +301,8 @@ function Sidebar({ view, setView, counts, open, live }) {
     ["redirects", AI.external, "Weiterleitungen"],
     ["report", AI.trendUp, "Report-Statistik"],
     ["partner", AI.users, "Partner-Board"],
+    ["partners", AI.users, "Partner"],
+    ["settings", AI.settings, "Einstellungen"],
   ];
   return (
     <aside className={"side" + (open ? " open" : "")}>
@@ -2988,7 +2991,7 @@ function PayLinkModal({ order, onClose, toast, onStatus, mode }) {
 }
 
 /* ---------- Root ---------- */
-const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen", report: "Report-Statistik", partner: "Partner-Board" };
+const TITLES = { dashboard: "Übersicht", orders: "Bestellungen", monitor: "Monitor", checks: "Geprüfte Profile", subs: "Abos & Umsatz", liga: "Löschungs-Liga", templates: "E-Mail-Vorlagen", customers: "Kunden", redirects: "Weiterleitungen", report: "Report-Statistik", partner: "Partner-Board", partners: "Partner", settings: "Einstellungen" };
 
 function AdminApp() {
   const [orders, setOrders] = React.useState([]);
@@ -3181,6 +3184,8 @@ function AdminApp() {
   else if (view === "redirects") body = <RedirectsDashboard toast={toast} />;
   else if (view === "report") body = <ReportStatsDashboard toast={toast} />;
   else if (view === "partner") body = <AdminPartner toast={toast} />;
+  else if (view === "partners") body = <AdminPartners toast={toast} />;
+  else if (view === "settings") body = <AdminSettings toast={toast} />;
   else body = <Dashboard orders={orders} checks={checks} openOrder={openDetail} openCheck={openDetail} onOpenChecks={() => setView("checks")} />;
 
   return (

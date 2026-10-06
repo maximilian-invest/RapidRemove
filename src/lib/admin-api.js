@@ -654,3 +654,15 @@ export async function custInvite(apply = false) {
   if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
   return j;
 }
+
+/* ---- Einstellungen: automatische Weiterleitung an den Partner + Partner-Liste ---- */
+export const partnerSettings = (patch) => partnerPost("settings", patch || {}); // { autoReviews?, autoProfiles? } → aktuelle Werte
+async function adminPost(path, body) {
+  if (!OPS) throw new Error("Kein ops-Backend konfiguriert (NEXT_PUBLIC_OPS_URL fehlt).");
+  const res = await fetch(OPS + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN, ...(body || {}) }) });
+  const j = await res.json().catch(() => ({}));
+  if (!res.ok || !j.ok) throw new Error(j.error || ("HTTP " + res.status));
+  return j;
+}
+export const partnersList = () => adminPost("/admin/partners");
+export const partnerSave = (p) => adminPost("/admin/partners/save", p);

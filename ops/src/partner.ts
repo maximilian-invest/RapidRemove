@@ -21,7 +21,8 @@ import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
 import { partnerNewOrder } from "./partnerNotify";
 
-export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
+export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
+// USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
 export const PARTNER_STATUSES = ["new", "working", "removed", "not_possible", "software", "cancelled"] as const;
 export type TaskStatus = (typeof PARTNER_STATUSES)[number];
@@ -71,6 +72,21 @@ export async function initPartnerTables(): Promise<void> {
       created_at timestamptz NOT NULL DEFAULT now()
     )
   `);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS partners (
+      id         bigserial PRIMARY KEY,
+      name       text NOT NULL,
+      email      text,
+      phone      text,
+      note       text,
+      active     boolean NOT NULL DEFAULT true,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `);
+  // Aktueller (einziger) Lösch-Partner — einmalig anlegen.
+  await pool.query(`INSERT INTO partners (name, email, phone, note)
+    SELECT 'Reputation Vault Agency', 'reputationvaultagency@gmail.com', '+92 305 6352192', 'Lahore, Pakistan · Google-Bewertungen & -Profile'
+    WHERE NOT EXISTS (SELECT 1 FROM partners)`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS partner_settings (
       key   text PRIMARY KEY,
@@ -171,7 +187,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     // Kunde hat statt eines Links den Bewertungstext ins Link-Feld kopiert → als Text übernehmen.
     const text = clip(it.text, 600) || (!url && !name ? clip(it.url, 600) : "");
     if (!url && !name && !text) continue;
-    const kind: TaskKind = it.nt === true ? "nt" : it.old === true ? "old" : "normal";
+    const kind: TaskKind = it.kind === "profile" ? "profile" : it.nt === true ? "nt" : it.old === true ? "old" : "normal";
     const key = url || `${name}|${text}`;
     const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
@@ -196,6 +212,23 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   }
   if (fresh.length) void partnerNewOrder(customer || "", fresh, test); // Testauftrag → nur an den Test-Login
   return out;
+}
+
+/* ---- Automatische Weiterleitung (Admin → Einstellungen) ---- */
+export type AutoKind = "reviews" | "profiles";
+const AUTO_DEFAULT: Record<AutoKind, boolean> = { reviews: true, profiles: false };
+export async function partnerAutoEnabled(kind: AutoKind): Promise<boolean> {
+  const v = await getSetting("auto_" + kind).catch(() => null);
+  return v == null ? AUTO_DEFAULT[kind] : v === "1";
+}
+
+/** Neue Profil-Bestellung → das Google-Profil als eine Partner-Aufgabe (nur wenn in den Einstellungen aktiv). */
+export async function partnerAutoSendProfile(orderId: string, customer: string, url: string): Promise<number> {
+  if (!pool || !orderId) return 0;
+  const name = clip(customer, 120);
+  const rows = await insertPartnerTasks(orderId, name || null, [{ url, name: name || "Google profile", text: "Remove the whole Google Business Profile", kind: "profile" }]);
+  if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board (Profil)", detail: rows.map((t) => `${t.code} ($${num(t.price_usd)})`).join(" · ") }).catch(() => {});
+  return rows.length;
 }
 
 /** Neue Bewertungs-Bestellung → ALLE Bewertungen automatisch aufs Partner-Board (kein Button mehr). */
@@ -304,6 +337,41 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, clip(b.note, 200) || null]);
     await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
     return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
+  });
+
+  // Admin → Einstellungen: automatische Weiterleitung an den Partner (Bewertungen / Profile).
+  app.post("/admin/partner/settings", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    for (const k of ["reviews", "profiles"] as AutoKind[]) {
+      const key = "auto" + k[0].toUpperCase() + k.slice(1);
+      if (typeof b[key] === "boolean") await setSetting("auto_" + k, b[key] ? "1" : "0");
+    }
+    return { ok: true, autoReviews: await partnerAutoEnabled("reviews"), autoProfiles: await partnerAutoEnabled("profiles") };
+  });
+
+  // Admin → Partner: Liste der Lösch-Partner (anlegen / bearbeiten).
+  app.post("/admin/partners", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return { ok: true, partners: [] };
+    const r = await pool.query(`SELECT id, name, email, phone, note, active, created_at FROM partners ORDER BY active DESC, id`);
+    const t = totals(await listTasks("WHERE status <> 'cancelled'"));
+    return { ok: true, partners: r.rows.map((x) => ({ id: Number(x.id), name: x.name, email: x.email || "", phone: x.phone || "", note: x.note || "", active: !!x.active, created: x.created_at })), board: t };
+  });
+  app.post("/admin/partners/save", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const name = clip(b.name, 120), email = clip(b.email, 160), phone = clip(b.phone, 60), note = clip(b.note, 300);
+    const active = b.active !== false;
+    if (!name) return reply.code(400).send({ ok: false, error: "Name fehlt" });
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
+    const id = Number(b.id);
+    if (Number.isInteger(id) && id > 0) await pool.query(`UPDATE partners SET name=$1, email=$2, phone=$3, note=$4, active=$5 WHERE id=$6`, [name, email || null, phone || null, note || null, active, id]);
+    else await pool.query(`INSERT INTO partners (name, email, phone, note, active) VALUES ($1,$2,$3,$4,$5)`, [name, email || null, phone || null, note || null, active]);
+    return { ok: true };
   });
 
   // Admin: geheimen Partner-Link holen (oder neu erzeugen → alter Link ungültig).

@@ -20,7 +20,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
-import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerOrderStatus } from "./partner";
+import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush } from "./partnerNotify";
@@ -531,9 +531,15 @@ app.post("/order", async (req, reply) => {
       });
       if (checkId) await linkCheck(checkId, id);
       // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
-      if (isReviews && reviewItems.length) {
+      if (isReviews && reviewItems.length && await partnerAutoEnabled("reviews").catch(() => true)) {
         await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));
+      }
+      // Profil-Bestellung (Löschung / Neustart / Express) → Profil als Partner-Aufgabe, falls in den Einstellungen aktiv.
+      if (["remove", "reset", "express"].includes(service) && await partnerAutoEnabled("profiles").catch(() => false)) {
+        const purl = (typeof b.mapsUri === "string" && b.mapsUri) || (/^https?:\/\//i.test(profile) ? profile : "");
+        await partnerAutoSendProfile(id, profile || company || name, purl)
+          .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Profil-Weiterleitung fehlgeschlagen"));
       }
       // Automatische Screenshots (Hintergrund, blockiert die Antwort nicht) → Admin:
       // Bewertungs-Bestellung = jede Bewertung + Google-Profil; Profil-Bestellung =
