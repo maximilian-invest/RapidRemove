@@ -18,7 +18,7 @@ import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
 import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
-import { kundenUpdatePush } from "./emails/KundenUpdateReviews";
+import { customerPush } from "./pushTexts";
 import { partnerNewOrder } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150 } as const; // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -163,7 +163,7 @@ const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S
 async function insertPartnerTasks(orderId: string | null, customer: string | null, items: Record<string, unknown>[]): Promise<Row[]> {
   if (!pool) return [];
   const out: Row[] = [];
-  const fresh: { code: string; kind: string }[] = [];
+  const fresh: { code: string; kind: string; price: number }[] = [];
   const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
   for (const it of items.slice(0, 60)) {
     const url = httpUrl(it.url);
@@ -190,7 +190,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     if (!row.code) {
       const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
       row = u.rows[0] as Row;
-      fresh.push({ code: row.code, kind: row.kind }); // neu angelegt → Partner benachrichtigen
+      fresh.push({ code: row.code, kind: row.kind, price: num(row.price_usd) }); // neu angelegt → Partner benachrichtigen
     }
     out.push(row);
   }
@@ -222,9 +222,20 @@ async function pushCustomerNow(row: Row, from: string, to: string): Promise<void
   const o = await pool.query(`SELECT email, lang FROM orders WHERE id=$1 AND service='reviews'`, [row.order_id]);
   const email = o.rows[0]?.email;
   if (!email) return;
-  const lang = o.rows[0].lang === "de" ? "en" : o.rows[0].lang || "en";
-  const p = kundenUpdatePush(lang, [{ url: row.url, name: row.name || row.customer || null, status: partnerToDash(to) as any, from: partnerToDash(from) as any }]);
-  await notifyCustomer(email, p.title, p.body, `rrc-${row.order_id}-${row.id}`);
+  // Bestellung fertig (nichts mehr offen)? → „3 Bewertungen entfernt · Ihre Bestellung … ist abgeschlossen."
+  const st = await pool.query(`SELECT status, count(*)::int AS n FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled' GROUP BY status`, [row.order_id]);
+  const cnt = Object.fromEntries(st.rows.map((x) => [x.status, x.n])) as Record<string, number>;
+  const open = (cnt.new || 0) + (cnt.working || 0) + (cnt.software || 0);
+  // Offene Entscheidungen (Software) über alle Bestellungen des Kunden = Problem-Zähler + App-Badge.
+  const pr = await pool.query(
+    `SELECT count(DISTINCT t.order_id)::int AS n FROM partner_tasks t JOIN orders o ON o.id = t.order_id
+      WHERE lower(o.email) = lower($1) AND t.status = 'software' AND COALESCE(t.admin_note,'') NOT LIKE $2`,
+    [email, `%${SW_NOTE_DECLINED}%`],
+  ).catch(() => ({ rows: [{ n: 0 }] }));
+  const problems = Number(pr.rows[0]?.n || 0);
+  const p = customerPush(o.rows[0].lang, to, { name: row.name, orderId: row.order_id, orderDone: to === "removed" && !open ? cnt.removed || 0 : 0, problemOrders: problems });
+  void from;
+  await notifyCustomer(email, p.title, p.body, `rrc-${row.order_id}-${row.id}`, { url: `/my-reviews?order=${encodeURIComponent(row.order_id)}`, badge: problems });
 }
 
 /* ---- Routen ---- */

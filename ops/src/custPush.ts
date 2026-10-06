@@ -14,13 +14,13 @@ export async function initCustPush(): Promise<void> {
 }
 
 /** Push an alle Geräte eines Kunden. Gibt zurück, ob mindestens ein Gerät registriert war. */
-export async function notifyCustomer(email: string, title: string, body: string, tag?: string): Promise<boolean> {
+export async function notifyCustomer(email: string, title: string, body: string, tag?: string, opts: { url?: string; badge?: number } = {}): Promise<boolean> {
   try {
     if (!pool || !hasWebPush() || !email) return false;
     const r = await pool.query(`SELECT endpoint, p256dh, auth FROM cust_push_subs WHERE email=$1`, [email.toLowerCase()]);
     if (!r.rows.length) return false;
     const subs: PushSub[] = r.rows.map((x) => ({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } }));
-    const expired = await sendWebPushAll(subs, { title, body, url: "/my-reviews", tag: tag || `rrc-${Date.now().toString(36)}` });
+    const expired = await sendWebPushAll(subs, { title, body, url: opts.url || "/my-reviews", tag: tag || `rrc-${Date.now().toString(36)}`, ...(typeof opts.badge === "number" ? { badge: opts.badge } : {}) });
     for (const ep of expired) await pool.query(`DELETE FROM cust_push_subs WHERE endpoint=$1`, [ep]).catch(() => {});
     return subs.length > expired.length;
   } catch { return false; }

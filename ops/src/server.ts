@@ -425,18 +425,30 @@ app.post("/order", async (req, reply) => {
   // 2b) Push-Benachrichtigung – best effort, blockiert die Antwort nicht.
   // Tap öffnet das Admin-Panel direkt bei dieser Bestellung.
   {
-    const heading = isPress ? "Neue Presse-Prüfung" : "Neue Bestellung";
-    // Uber-Stil: Titel = was + wer, Body = Leistung · Details, darunter Kontakt.
-    const ptitle = `${heading} · ${company || name || email}`;
+    // Design „App-Icon & Push": 1 neuer Auftrag → „Neuer Auftrag · {Firma}", mehrere offen → „{n} neue Aufträge ·
+    // Ältester wartet seit {Dauer}." (eine Meldung, wird ersetzt; App-Badge = Anzahl neuer Aufträge).
+    let newN = 1, oldestMin = 0;
+    try {
+      if (pool && !isPress) {
+        const q = await pool.query(`SELECT count(*)::int AS n, EXTRACT(EPOCH FROM (now() - min(created_at)))::int AS s FROM orders WHERE COALESCE(status,'new')='new' AND created_at > now() - interval '30 days'`);
+        newN = Math.max(1, Number(q.rows[0]?.n || 1)); oldestMin = Math.round(Number(q.rows[0]?.s || 0) / 60);
+      }
+    } catch { /* egal */ }
+    const dur = oldestMin < 60 ? `${Math.max(1, oldestMin)} Min.` : oldestMin < 2880 ? `${Math.round(oldestMin / 60)} Std.` : `${Math.round(oldestMin / 1440)} Tagen`;
+    const heading = isPress ? "Neue Presse-Prüfung" : newN > 1 ? `${newN} neue Aufträge` : "Neuer Auftrag";
+    const ptitle = isPress || newN <= 1 ? `${heading} · ${company || name || email}` : heading;
     const payPrefTxt = b.payPref === "wise" ? "zahlt per Wise (−10 %)" : b.payPref === "paypal" ? "zahlt per PayPal (−10 %)" : "";
-    const pbody = [[service, protection && protection !== "none" ? protection : "", payPrefTxt, affiliate ? "Affiliate " + affiliate : ""].filter(Boolean).join(" · "), [email, phone].filter(Boolean).join(" · ")].filter(Boolean).join("\n");
-    const adminUrl = SITE_URL + "/admin" + (orderId ? "?order=" + encodeURIComponent(orderId) : "");
+    const pbody = !isPress && newN > 1
+      ? `Ältester wartet seit ${dur}. Neu: ${company || name || email}`
+      : [service, payPrefTxt, affiliate ? "Affiliate " + affiliate : ""].filter(Boolean).join(" · ");
+    void protection; void phone;
+    const adminUrl = SITE_URL + "/admin" + (orderId && newN <= 1 ? "?order=" + encodeURIComponent(orderId) : "");
     // Web-Push an die installierte Admin-App (öffnet die App selbst beim Tap)
     try {
       if (hasWebPush() && dbReady()) {
         const subs = await listPushSubscriptions();
         if (subs.length) {
-          const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl, tag: "rr-order-" + (orderId || Date.now()), kind: "order" });
+          const expired = await sendWebPushAll(subs, { title: ptitle, body: pbody, url: adminUrl, tag: isPress ? "rr-order-" + (orderId || Date.now()) : "rr-new-orders", kind: "order", badge: newN });
           for (const ep of expired) await deletePushSubscription(ep).catch(() => {});
         }
       }

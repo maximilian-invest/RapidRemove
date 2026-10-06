@@ -6,7 +6,7 @@ export const metadata = {
   // Partner-App am Home-Bildschirm (Voraussetzung für Push auf dem iPhone).
   manifest: "/partner.webmanifest",
   appleWebApp: { capable: true, title: "RR Partner", statusBarStyle: "default" },
-  icons: { apple: "/assets/rapidremove-icon.png" },
+  icons: { apple: "/assets/app-icon-180.png" },
 };
 
 export default function Page() {

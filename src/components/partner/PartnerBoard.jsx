@@ -228,6 +228,15 @@ export default function PartnerBoard() {
     return [...m];
   }, [visible]);
 
+  // App-Badge = offene Aufgaben (Not started + Working).
+  React.useEffect(() => {
+    if (!tasks) return;
+    try {
+      const n = tasks.filter((t) => t.status === "new" || t.status === "working").length;
+      if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {});
+    } catch (e) { /* */ }
+  }, [tasks]);
+
   // Push aufdrängen: nach jedem Öffnen, solange nicht eingeschaltet („Not now" gilt nur für diese Sitzung).
   React.useEffect(() => {
     if (!token || setup || offerPk || tasks === null) return; // erst nach dem Laden

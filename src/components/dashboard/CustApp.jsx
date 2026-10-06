@@ -37,7 +37,7 @@ export function injectAppManifest(token, lang) {
     for (const [n, c] of [["apple-mobile-web-app-capable", "yes"], ["apple-mobile-web-app-title", "RapidRemove"], ["mobile-web-app-capable", "yes"]]) {
       const m = document.createElement("meta"); m.name = n; m.content = c; document.head.appendChild(m);
     }
-    const ic = document.createElement("link"); ic.rel = "apple-touch-icon"; ic.href = "/assets/rapidremove-icon.png"; document.head.appendChild(ic);
+    const ic = document.createElement("link"); ic.rel = "apple-touch-icon"; ic.href = "/assets/app-icon-180.png"; document.head.appendChild(ic);
   }
 }
 

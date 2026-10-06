@@ -5,9 +5,11 @@ self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim(
 self.addEventListener("push", (event) => {
   let data = {};
   try { data = event.data ? event.data.json() : {}; } catch (e) {}
+  // App-Symbol-Zähler = offene Aktionen (iOS 16.4+/Android, nur App am Home-Bildschirm).
+  try { if (typeof data.badge === "number" && self.navigator && self.navigator.setAppBadge) (data.badge > 0 ? self.navigator.setAppBadge(data.badge) : self.navigator.clearAppBadge()); } catch (e) {}
   event.waitUntil(self.registration.showNotification(data.title || "RapidRemove", {
     body: data.body || "",
-    icon: "/assets/rapidremove-icon.png",
+    icon: "/assets/app-icon-512.png",
     badge: "/assets/push-badge.png",
     tag: data.tag || "rrc-" + Date.now(),
     renotify: true,

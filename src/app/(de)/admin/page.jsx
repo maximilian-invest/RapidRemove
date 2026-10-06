@@ -6,6 +6,7 @@ export const metadata = {
   // Vom Home-Screen als eigenständige App öffnen (Icon-Tap → /admin, Vollbild).
   appleWebApp: { capable: true, title: "RR Admin", statusBarStyle: "default" },
   manifest: "/admin.webmanifest", // eigenes Manifest (Partner-App hat ein eigenes unter /partner)
+  icons: { apple: "/assets/app-icon-180.png" },
 };
 
 export default function Page() {

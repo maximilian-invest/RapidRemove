@@ -14,8 +14,9 @@ export function GET(req) {
     background_color: "#ffffff",
     theme_color: "#ffffff",
     icons: [
-      { src: "/assets/rapidremove-icon.png", sizes: "408x404", type: "image/png", purpose: "any" },
-      { src: "/assets/rapidremove-icon.png", sizes: "408x404", type: "image/png", purpose: "maskable" },
+      { src: "/assets/app-icon-180.png", sizes: "180x180", type: "image/png", purpose: "any" },
+      { src: "/assets/app-icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/assets/app-icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
   };
   return new Response(JSON.stringify(body), { headers: { "content-type": "application/manifest+json", "cache-control": "private, no-store" } });

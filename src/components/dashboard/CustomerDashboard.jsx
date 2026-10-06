@@ -308,6 +308,22 @@ export default function CustomerDashboard() {
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
   };
   const goTab = (t) => { setTab(t); setDetailId(null); try { window.scrollTo(0, 0); if (mainRef.current) mainRef.current.scrollTop = 0; } catch (e) { /* */ } };
+  // Tap auf einen Push (?order=RR-…) → direkt diese Bestellung öffnen; App-Badge = offene Entscheidungen.
+  React.useEffect(() => {
+    if (!data) return;
+    try {
+      const u = new URL(window.location.href);
+      const oid = u.searchParams.get("order");
+      if (oid) {
+        if ((data.orders || []).some((o) => o.id === oid)) setDetailId(oid);
+        u.searchParams.delete("order"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
+      }
+    } catch (e) { /* */ }
+    try {
+      const n = (data.orders || []).reduce((s, o) => s + o.items.filter((i) => i.status === "software").length, 0);
+      if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {});
+    } catch (e) { /* */ }
+  }, [data]);
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {

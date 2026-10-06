@@ -10,9 +10,11 @@ self.addEventListener("push", (event) => {
   try { data = event.data ? event.data.json() : {}; } catch (e) {}
   const title = data.title || "RapidRemove";
   const url = data.url || "/admin";
+  // App-Symbol-Zähler = offene Aktionen (iOS 16.4+/Android, nur App am Home-Bildschirm).
+  try { if (typeof data.badge === "number" && self.navigator && self.navigator.setAppBadge) (data.badge > 0 ? self.navigator.setAppBadge(data.badge) : self.navigator.clearAppBadge()); } catch (e) {}
   event.waitUntil(self.registration.showNotification(title, {
     body: data.body || "",
-    icon: "/assets/rapidremove-icon.png",
+    icon: "/assets/app-icon-512.png",
     badge: "/assets/push-badge.png",
     image: data.image || undefined,
     tag: data.tag || "rr-" + Date.now(),

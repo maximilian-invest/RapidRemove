@@ -213,6 +213,7 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
   }
   if (p.kind !== "software") return;
   let n = 0;
+  const paidCodes: string[] = [];
   for (const [o, ks] of groups) {
     await setDecisions(o, ks, "accepted");
     const u = await pool.query(
@@ -225,7 +226,12 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
   }
   if (n) {
     const test = isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email);
-    void notifyPartner(`${test ? "TEST · " : ""}Paid – please start · ${n} review${n > 1 ? "s" : ""}`, "The customer paid the special-software removal. The task is now set to Working.", undefined, test);
+    for (const [o, ks] of groups) {
+      const c = await pool.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND item_key = ANY($2::text[]) ORDER BY id`, [o, ks]).catch(() => ({ rows: [] as { code: string }[] }));
+      paidCodes.push(...c.rows.map((x) => x.code).filter(Boolean));
+    }
+    // Design: „Customer paid" · „{RV-id} · Software approved – start now."
+    void notifyPartner(`${test ? "TEST · " : ""}Customer paid`, `${paidCodes.slice(0, 4).join(", ") || `${n} review${n > 1 ? "s" : ""}`} · Software approved – start now.`, undefined, test);
   }
   if (n) void notifyTeam(`Software bezahlt · ${p.amount} ${String(p.cur).toUpperCase()}`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner startet (In Arbeit)`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
 }
@@ -489,7 +495,12 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
         ).catch(() => {});
         await insertEvent({ orderId: o, email, type: "note", title: "Kunde: Spezial-Software abgelehnt (Dashboard)", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) storniert`, auto: true }).catch(() => {});
       }
-      void notifyPartner(`${isTestEmail(email) ? "TEST · " : ""}Cancelled by customer · ${picks.length} review${picks.length > 1 ? "s" : ""}`, "The customer declined the special-software removal – nothing to do.", undefined, isTestEmail(email));
+      const dc: string[] = [];
+      for (const [o, ks] of groups) {
+        const c = await pool.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND item_key = ANY($2::text[]) ORDER BY id`, [o, ks]).catch(() => ({ rows: [] as { code: string }[] }));
+        dc.push(...c.rows.map((x) => x.code).filter(Boolean));
+      }
+      void notifyPartner(`${isTestEmail(email) ? "TEST · " : ""}Customer declined`, `${dc.slice(0, 4).join(", ") || `${picks.length} review${picks.length > 1 ? "s" : ""}`} · Keeps the review – nothing to do.`, undefined, isTestEmail(email));
       void notifyTeam(`Software abgelehnt · ${picks.length} Bewertung(en)`, `Kunde · ${[...groups.keys()].join(", ")} · nichts zu zahlen`, `${SITE_URL}/admin`, { kind: "customer" });
       return { ok: true, declined: picks.length };
     }

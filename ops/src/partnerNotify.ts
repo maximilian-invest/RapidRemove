@@ -32,7 +32,9 @@ export async function notifyPartner(title: string, body: string, tag?: string, t
     const r = await pool.query(`SELECT endpoint, p256dh, auth FROM partner_push_subs WHERE test=$1`, [test]);
     if (!r.rows.length) return;
     const subs: PushSub[] = r.rows.map((x) => ({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } }));
-    const expired = await sendWebPushAll(subs, { title, body, url: "/partner", tag: tag || `rrp-${Date.now().toString(36)}` });
+    // App-Badge = offene Aufgaben (Not started + Working).
+    const b = await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE status IN ('new','working') AND test=$1`, [test]).catch(() => ({ rows: [{ n: 0 }] }));
+    const expired = await sendWebPushAll(subs, { title, body, url: "/partner", tag: tag || `rrp-${Date.now().toString(36)}`, badge: Number(b.rows[0]?.n || 0) });
     for (const ep of expired) await pool.query(`DELETE FROM partner_push_subs WHERE endpoint=$1`, [ep]).catch(() => {});
   } catch { /* best effort */ }
 }
@@ -40,13 +42,13 @@ export async function notifyPartner(title: string, body: string, tag?: string, t
 const KIND: Record<string, string> = { normal: "standard", old: "older than 4 weeks", nt: "no text" };
 
 /** Neue Bewertungen auf dem Board → Push + E-Mail an den Partner. */
-export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string }[], test = false): Promise<void> {
+export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string; price?: number }[], test = false): Promise<void> {
   if (!tasks.length) return;
   const n = tasks.length;
   const name = customer || "New customer";
-  const kinds = Object.entries(tasks.reduce((m, t) => ({ ...m, [t.kind]: (m[t.kind] || 0) + 1 }), {} as Record<string, number>))
-    .map(([k, c]) => `${c} ${KIND[k] || k}`).join(", ");
-  await notifyPartner(`${test ? "TEST · " : ""}New order · ${name}`, `${n} review${n > 1 ? "s" : ""} · ${kinds}`, `rrp-order-${tasks[0].code}`, test);
+  const sum = Math.round(tasks.reduce((s, t) => s + Number(t.price || 0), 0) * 100) / 100;
+  // Design: Titel „New order", Text „{Kunde} · {n} reviews · {Betrag}".
+  await notifyPartner(`${test ? "TEST · " : ""}New order`, `${name} · ${n} review${n > 1 ? "s" : ""}${sum ? ` · ${sum} USD` : ""}`, `rrp-order-${tasks[0].code}`, test);
   try {
     if (!pool) return;
     const acc = await pool.query(`SELECT email FROM partner_accounts`);
