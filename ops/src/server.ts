@@ -182,6 +182,7 @@ registerCustChat(app, {
   sessionInfo: customerSessionInfo,
   loadOrders: (email) => loadCustomerOrders(email) as unknown as Promise<{ name: string; lang: string; orders: Record<string, unknown>[] }>,
   sendMail: (a) => sendMail(a),
+  adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN,
 });
 
 app.get("/health", async () => {

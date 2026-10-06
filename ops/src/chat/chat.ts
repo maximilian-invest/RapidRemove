@@ -22,6 +22,7 @@ type Deps = {
   sessionInfo: (t: unknown) => Promise<{ email: string; imp: boolean } | null>;
   loadOrders: (email: string) => Promise<{ name: string; lang: string; orders: Record<string, unknown>[] }>;
   sendMail: (a: { to: string | string[]; subject: string; html: string; replyTo?: string }) => Promise<unknown>;
+  adminOk?: (t: unknown) => boolean;
 };
 
 const MODEL = () => process.env.CHAT_MODEL || "claude-sonnet-5-5";
@@ -140,6 +141,45 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
   const hits = new Map<string, number[]>();
   const limited = (k: string, max: number) => { const now = Date.now(); const a = (hits.get(k) || []).filter((x) => now - x < 60_000); if (a.length >= max) return true; a.push(now); hits.set(k, a); return false; };
 
+
+  /** Antwort erzeugen (KI mit Kontext, sonst Fallback). */
+  async function answer(message: string, history: unknown, d: { name: string; lang: string; orders: Record<string, unknown>[] }): Promise<{ reply: string; handoff: boolean; ai: boolean; err?: string }> {
+    const hist: Msg[] = (Array.isArray(history) ? history : []).slice(-8)
+      .map((m) => m as Record<string, unknown>)
+      .filter((m) => (m.role === "user" || m.role === "assistant") && clip(m.text, 1500))
+      .map((m) => ({ role: m.role as Msg["role"], text: clip(m.text, 1500) }));
+    // Claude-API: muss mit user beginnen und abwechseln
+    const msgs: Msg[] = [];
+    for (const m of [...hist, { role: "user" as const, text: message }]) {
+      if (!msgs.length && m.role !== "user") continue;
+      if (msgs.length && msgs[msgs.length - 1].role === m.role) msgs[msgs.length - 1].text += "\n" + m.text;
+      else msgs.push({ ...m });
+    }
+    try {
+      const txt = await askClaude(SYSTEM(contextOf(d)), msgs);
+      const handoff = /\[\[TEAM\]\]/.test(txt);
+      const reply = txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim();
+      if (!reply) throw new Error("empty");
+      return { reply, handoff, ai: true };
+    } catch (e) {
+      const err = (e as Error).message;
+      if (err !== "no_key") app.log.warn({ err: e }, "Chatbot: Claude-API fehlgeschlagen → Fallback");
+      return { ...fallback(message, d.lang, d), ai: false, err };
+    }
+  }
+
+  // Admin-Test: dieselbe Antwort-Logik für eine Kunden-E-Mail, ohne Speichern/Tracking.
+  app.post("/admin/chat/test", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!deps.adminOk || !deps.adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const email = clip(b.email, 200).toLowerCase();
+    const message = clip(b.message, 1500);
+    if (!message) return reply.code(400).send({ ok: false, error: "empty" });
+    const d = email ? await deps.loadOrders(email).catch(() => ({ name: "", lang: "en", orders: [] as Record<string, unknown>[] })) : { name: "", lang: "en", orders: [] as Record<string, unknown>[] };
+    const out = await answer(message, b.history, d);
+    return { ok: true, model: MODEL(), hasKey: !!process.env.ANTHROPIC_API_KEY, orders: d.orders.length, ...out };
+  });
+
   app.post("/cust/chat", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     const sess = await deps.sessionInfo(b.token);
@@ -157,30 +197,9 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
       void save(sess.email, "assistant", r);
       return { ok: true, reply: r, handoff: true };
     }
-    const hist: Msg[] = (Array.isArray(b.history) ? b.history : []).slice(-8)
-      .map((m) => m as Record<string, unknown>)
-      .filter((m) => (m.role === "user" || m.role === "assistant") && clip(m.text, 1500))
-      .map((m) => ({ role: m.role as Msg["role"], text: clip(m.text, 1500) }));
-    // Claude-API: muss mit user beginnen und abwechseln
-    const msgs: Msg[] = [];
-    for (const m of [...hist, { role: "user" as const, text: message }]) {
-      if (!msgs.length && m.role !== "user") continue;
-      if (msgs.length && msgs[msgs.length - 1].role === m.role) msgs[msgs.length - 1].text += "\n" + m.text;
-      else msgs.push({ ...m });
-    }
-    let out: { reply: string; handoff: boolean };
-    try {
-      const sys = SYSTEM(contextOf(d));
-      const txt = await askClaude(sys, msgs);
-      const handoff = /\[\[TEAM\]\]/.test(txt);
-      out = { reply: txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim(), handoff };
-      if (!out.reply) throw new Error("empty");
-    } catch (e) {
-      if ((e as Error).message !== "no_key") app.log.warn({ err: e }, "Chatbot: Claude-API fehlgeschlagen → Fallback");
-      out = fallback(message, d.lang, d);
-    }
+    const out = await answer(message, b.history, d);
     void save(sess.email, "assistant", out.reply);
-    return { ok: true, ...out };
+    return { ok: true, reply: out.reply, handoff: out.handoff };
   });
 
   app.post("/cust/chat/ticket", async (req, reply) => {
