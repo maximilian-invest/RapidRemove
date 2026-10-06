@@ -111,8 +111,9 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t:
   });
 
   // Zählpixel: /t/o/<payload>.<sig>.gif → „E-Mail geöffnet" (je Mail + Stunde höchstens 1×)
-  app.get("/t/o/:k", async (req, reply) => {
-    const k = String((req.params as Record<string, string>).k || "").replace(/\.gif$/, "");
+  // Wildcard statt :k – der signierte Payload ist länger als Fastifys maxParamLength (100) → sonst 404.
+  app.get("/t/o/*", async (req, reply) => {
+    const k = String((req.params as Record<string, string>)["*"] || "").replace(/\.gif$/, "");
     const [p, s] = k.split(".");
     reply.header("Content-Type", "image/gif").header("Cache-Control", "no-store, max-age=0");
     if (p && s && sign(p) === s && pool) {
