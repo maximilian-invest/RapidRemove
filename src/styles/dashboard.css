@@ -393,3 +393,16 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .pstep.done{color:var(--ink)}.rra .pstep.done i{background:var(--success);border-color:var(--success);color:#fff}
 .rra .pstep.cur{color:var(--ink)}.rra .pstep.cur i{border-color:var(--ink);box-shadow:inset 0 0 0 4px #fff;background:var(--ink)}
 .rra .paycard.pwrap span span{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.4}
+/* Wise-Zahlung (Kunde hat Wise −10 % gewählt) */
+.rra .wsheet .wbig{display:flex;align-items:center;gap:12px;background:var(--ink);color:#fff;border-radius:20px;padding:16px 18px;margin:14px 0 10px}
+.rra .wsheet .wbig span{font-size:13px;opacity:.7;flex:1}.rra .wsheet .wbig b{font-size:30px;font-weight:800;letter-spacing:-1px}
+.rra .wsheet .wbig button{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;display:grid;place-items:center}
+.rra .wsheet .wrow{display:flex;align-items:center;gap:12px;background:var(--g1);border-radius:16px;padding:10px 12px 10px 16px;margin-bottom:8px}
+.rra .wsheet .wrow.hl{background:var(--orange-50);box-shadow:inset 0 0 0 1.5px var(--orange-100)}
+.rra .wsheet .wrow>span{flex:1;min-width:0}.rra .wsheet .wrow small{display:block;font-size:12px;color:var(--g3)}
+.rra .wsheet .wrow b{display:block;font-size:15.5px;font-weight:700;word-break:break-all;font-variant-numeric:tabular-nums}
+.rra .wsheet .wrow button{width:38px;height:38px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none}
+.rra .wsheet button svg{width:17px;height:17px}
+.rra .wsheet .wnote{font-size:13px;color:var(--g3);line-height:1.45;margin:12px 2px 4px;text-align:center}
+.rra .wsheet{max-height:92vh;overflow-y:auto}
+.rra .cfab.gone{opacity:0;pointer-events:none;transform:scale(.6)}

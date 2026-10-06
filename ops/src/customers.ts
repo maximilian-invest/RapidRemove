@@ -368,6 +368,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
+    payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null, // Rabatt-Wunsch −10 %
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
@@ -503,7 +504,10 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
     const d = await loadCustomerOrders(email);
     const imp = !!(await customerSessionInfo(b.token))?.imp;
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp };
+    // Wise-Zahler: Kontodaten (Railway WISE_BANK_DETAILS) nur an Kunden, die Wise gewählt haben.
+    const wantsWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
+    const wiseBank = wantsWise ? String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).map((l) => l.trim()).filter(Boolean) : [];
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */

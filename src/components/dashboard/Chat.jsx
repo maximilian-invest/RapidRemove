@@ -21,7 +21,7 @@ async function post(path, body) {
   return j;
 }
 
-export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {} }) {
+export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {}, hidden = false }) {
   const [msgs, setMsgs] = React.useState(() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "[]"); } catch (e) { return []; } });
   const [busy, setBusy] = React.useState(false);
   const [txt, setTxt] = React.useState("");
@@ -96,11 +96,11 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
   ].filter(Boolean).slice(0, 4).concat(T("chQ5"));
   return (
     <>
-      <div className={"ctease" + (tease && !open ? " show" : "")} role="button" tabIndex={-1} onClick={() => setOpen(true)} aria-hidden={!tease || open}>
+      <div className={"ctease" + (tease && !open && !hidden ? " show" : "")} role="button" tabIndex={-1} onClick={() => setOpen(true)} aria-hidden={!tease || open}>
         <AV /><span><b>{T("chTeaseT")}</b>{T("chTeaseS")}</span>
         <button type="button" className="ct-x" onClick={closeTease} aria-label={T("chClose")}><X /></button>
       </div>
-      <button type="button" className={"cfab" + (open ? " open" : "") + (wig ? " wig" : "")} onClick={() => setOpen(!open)} aria-label={open ? T("chClose") : T("chTitle")} data-track="Chat-Button">
+      <button type="button" className={"cfab" + (open ? " open" : "") + (wig ? " wig" : "") + (hidden && !open ? " gone" : "")} onClick={() => setOpen(!open)} aria-label={open ? T("chClose") : T("chTitle")} data-track="Chat-Button">
         <MessageCircle className="i1" /><ChevronDown className="i2" />{!open && !everOpen.current ? <span className="dot" /> : null}
       </button>
       <section className={"chat" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-label={T("chTitle")}>

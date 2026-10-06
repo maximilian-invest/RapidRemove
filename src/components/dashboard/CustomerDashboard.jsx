@@ -10,7 +10,7 @@ import React from "react";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy,
 } from "lucide-react";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -311,6 +311,7 @@ export default function CustomerDashboard() {
 
   const [offerPk, setOfferPk] = React.useState(false);
   const [chatOpen, setChatOpen] = React.useState(false);
+  const [wiseOpen, setWiseOpen] = React.useState(false);
   // Sprache: Bestellung (nach dem Login) → zuletzt genutzte → Browser → Englisch.
   const [lang, setLangState] = React.useState("en");
   React.useEffect(() => {
@@ -412,6 +413,11 @@ export default function CustomerDashboard() {
   const due = all.filter((r) => r.status === "removed" && !r.paid && r.o.cur === payCur);
   const toPay = dueOrders.filter((o) => o.cur === payCur).reduce((s, o) => s + o.toPay, 0);
   const prices = [...new Set(due.map((r) => r.price))];
+  // Kunde hat Wise (−10 %) gewählt → „Bezahlen" zeigt unsere Wise-Kontodaten statt Stripe.
+  const wiseBank = (data.wiseBank || []).filter(Boolean);
+  const viaWise = !!(wiseBank.length && dueOrders.some((o) => o.cur === payCur && o.payPref === "wise"));
+  const wiseAmount = Math.round(toPay * 0.9);
+  const wiseRef = dueOrders.filter((o) => o.cur === payCur).map((o) => o.id).join(" ");
   const deposits = orders.flatMap((o) => (o.deposits || []).map((d) => ({ ...d, o })));
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
 
@@ -463,7 +469,10 @@ export default function CustomerDashboard() {
       return null;
     }
   };
-  const payAll = async () => { if (await checkout("pay", {}, "pay")) showToast(T("checkoutOpened")); };
+  const payAll = async () => {
+    if (viaWise) { track("payment_open", `Wise · ${wiseAmount} ${String(payCur).toUpperCase()}`, { via: "wise" }); setWiseOpen(true); return; }
+    if (await checkout("pay", {}, "pay")) showToast(T("checkoutOpened"));
+  };
 
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
@@ -522,8 +531,8 @@ export default function CustomerDashboard() {
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
-      <div className="v">{money(toPay, payCur)}</div>
-      <div className="s">{payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
+      <div className="v">{money(viaWise ? wiseAmount : toPay, payCur)}</div>
+      <div className="s">{viaWise ? `${T("wDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
       <div className="row">
         {payments ? <span /> : <span className="rem"><i />{T("remaining", { n: remaining })}</span>}
         <button className="pill-btn" disabled={!!busy} onClick={payAll}>{busy === "pay" ? <Loader className="spin" /> : null}{payments ? T("payNow") : T("pay")}</button>
@@ -886,7 +895,30 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen}
+      <div className={"bg" + (wiseOpen ? " show" : "")} onClick={() => setWiseOpen(false)} />
+      <div className={"rv-sheet wsheet" + (wiseOpen ? " show" : "")} aria-hidden={!wiseOpen}>
+        {wiseOpen ? (() => {
+          const copy = (v) => { try { navigator.clipboard.writeText(v); showToast(T("wCopied")); } catch (e) { /* */ } };
+          const rows = wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
+          return (
+            <>
+              <div className="grab" />
+              <h3>{T("wTitle")}</h3>
+              <div className="meta">{T("wSub")}</div>
+              <div className="wbig"><span>{T("wAmount")}</span><b>{money(wiseAmount, payCur)}</b><button type="button" onClick={() => copy(String(wiseAmount))} aria-label={T("wCopy")}><Copy /></button></div>
+              <div className="wrow hl"><span><small>{T("wRef")}</small><b>{wiseRef}</b></span><button type="button" onClick={() => copy(wiseRef)} aria-label={T("wCopy")}><Copy /></button></div>
+              <div className="sec" style={{ marginTop: 14 }}><h2 style={{ fontSize: 17 }}>{T("wAcct")}</h2></div>
+              {rows.map(([k, v], i) => (
+                <div key={i} className="wrow"><span>{k ? <small>{k}</small> : null}<b>{v}</b></span><button type="button" onClick={() => copy(v)} aria-label={T("wCopy")}><Copy /></button></div>
+              ))}
+              <a className="cta" style={{ marginTop: 16 }} href="https://wise.com/send" target="_blank" rel="noopener noreferrer"><ExternalLink />{T("wOpen")}</a>
+              <p className="wnote">{T("wNote")}</p>
+            </>
+          );
+        })() : null}
+      </div>
+
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>
