@@ -686,3 +686,7 @@ export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });
 /** Globaler Aktivitäten-Feed aller Kunden → { stats, seen[], items[], nextCursor }. */
 export const activityFeed = (p) => adminPost("/admin/activity/feed", p);
+/** Nachfassen: Liste (fällig fürs Team), geplante + gesendete automatische Erinnerungen. */
+export const followupsList = () => adminPost("/admin/followups", {});
+/** Vorschau der automatischen Erinnerungs-Mail. kind: pay | pay2 | sw | never | news | combo */
+export const followupPreview = (kind, lang) => adminPost("/admin/followups/preview", { kind, lang });

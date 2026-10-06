@@ -27,6 +27,7 @@ import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat } from "./chat/chat";
+import { startFollowupWorker, registerFollowupRoutes } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
@@ -184,6 +185,8 @@ registerCustChat(app, {
   sendMail: (a) => sendMail(a),
   adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN,
 });
+// Automatisches Nachfassen (Zahlung · Software · nie eingeloggt · Neuigkeiten) + Admin-Liste „Nachfassen".
+registerFollowupRoutes(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
@@ -1947,6 +1950,7 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
+    startFollowupWorker(app);     // Nachfassen: alle 10 Min., Versand nur 8–20 Uhr Ortszeit des Kunden
     startLeadEnrichWorker(app);   // Auto-E-Mail-Recherche (aktiv nur mit GOOGLE_MAPS_API_KEY)
     // Bewertungs-Screenshots der letzten 14 Tage nachholen (nur mit SCREENSHOTONE_KEY;
     // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.

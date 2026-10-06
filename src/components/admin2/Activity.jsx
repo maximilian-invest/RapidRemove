@@ -4,9 +4,9 @@
 import React from "react";
 import {
   Activity as ActIcon, ChevronRight, LogIn, LogOut, Eye, MousePointerClick, CreditCard, XCircle, CheckCircle2, ClipboardList,
-  MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft, Search, MessageCircle, Headphones,
+  MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft, Search, MessageCircle, Headphones, BellRing, AlarmClock, Clock,
 } from "lucide-react";
-import { customerActivity, custInviteOne, activityFeed } from "@/lib/admin-api";
+import { customerActivity, custInviteOne, activityFeed, followupsList } from "@/lib/admin-api";
 import { isOffen, ageMin, fmtAge } from "./model";
 
 export const ACT_EV = {
@@ -26,6 +26,7 @@ export const ACT_EV = {
   chat_open: [MessageCircle, "Chat geöffnet", "var(--ink)"],
   chat_message: [MessageCircle, "Chat-Frage", "var(--info)"],
   chat_ticket: [Headphones, "Team kontaktiert (Chat)", "var(--orange-800)"],
+  reminder: [BellRing, "Erinnerung gesendet (automatisch)", "var(--orange-800)"],
 };
 const p2 = (n) => String(n).padStart(2, "0");
 export function relTime(iso, now = Date.now()) {
@@ -153,7 +154,9 @@ export function ActivityScreen({ ctx, id }) {
 }
 
 /* ---------------- Globaler Feed „Aktivitäten" (Design-Handoff 11) ---------------- */
-const GA_F = [["all", "Alle"], ["login", "Logins"], ["payment", "Zahlungen"], ["click", "Klicks"], ["never", "Nie eingeloggt"]];
+const GA_F = [["follow", "Nachfassen"], ["all", "Alle"], ["login", "Logins"], ["payment", "Zahlungen"], ["click", "Klicks"], ["never", "Nie eingeloggt"]];
+const FU_KIND = { pay: "Zahlung offen", pay_manual: "Zahlung (PayPal/Wise)", sw: "Software-Entscheidung", never: "Nie eingeloggt", news: "Neuigkeiten nicht angesehen" };
+const fmtWhen = (iso) => { const d = new Date(iso); const p = (n) => String(n).padStart(2, "0"); const t = new Date(); const same = d.toDateString() === t.toDateString(); const tm = new Date(t.getTime() + 864e5).toDateString() === d.toDateString(); return (same ? "Heute" : tm ? "Morgen" : `${p(d.getDate())}.${p(d.getMonth() + 1)}.`) + " · " + p(d.getHours()) + ":" + p(d.getMinutes()); };
 export function GlobalActivityScreen({ ctx }) {
   const { orders, openOrder, setMoreSub, now } = ctx;
   const [f, setF] = React.useState("all");
@@ -180,7 +183,7 @@ export function GlobalActivityScreen({ ctx }) {
     const ql = dq.toLowerCase();
     const emails = ql ? [...byEmail.entries()].filter(([, o]) => ((o.name || "") + " " + o.id).toLowerCase().includes(ql)).map(([k]) => k).concat(orders.filter((o) => o.id.toLowerCase().includes(ql) && o.email).map((o) => o.email.toLowerCase())) : [];
     const types = ql ? Object.entries(ACT_EV).filter(([, v]) => v[1].toLowerCase().includes(ql)).map(([k]) => k) : [];
-    return { filter: f === "never" ? "all" : f, q: dq, emails: [...new Set(emails)].slice(0, 300), types, cursor, limit: 50 };
+    return { filter: f === "never" || f === "follow" ? "all" : f, q: dq, emails: [...new Set(emails)].slice(0, 300), types, cursor, limit: 50 };
   }, [f, dq, byEmail, orders]);
 
   const load = React.useCallback(async (silent) => {
@@ -214,6 +217,12 @@ export function GlobalActivityScreen({ ctx }) {
     io.observe(el); return () => io.disconnect();
   });
 
+  // Nachfassen (automatische Erinnerungen + Liste fürs Team)
+  const [fu, setFu] = React.useState(null);
+  const loadFu = React.useCallback(() => followupsList().then(setFu).catch((e) => setFu({ error: e.message })), []);
+  React.useEffect(() => { loadFu(); }, [loadFu]);
+  const nameOf = (x) => x.name || (x.orderId && byId.get(x.orderId) && byId.get(x.orderId).name) || x.email;
+  const goFu = (x) => { const o = (x.orderId && byId.get(x.orderId)) || byEmail.get(String(x.email || "").toLowerCase()); if (o) openOrder(o.id, true); };
   const seen = React.useMemo(() => new Set((d && d.seen) || []), [d]);
   const neverAll = React.useMemo(() => {
     if (!d) return [];
@@ -241,9 +250,56 @@ export function GlobalActivityScreen({ ctx }) {
         <button type="button" onClick={() => setF("payment")}><b style={{ color: st.paymentAborts7d ? "var(--danger)" : undefined }}>{d ? st.paymentAborts7d || 0 : "–"}</b><span>Abbrüche · 7 T</span></button>
         <button type="button" onClick={() => setF("never")}><b>{d ? neverAll.length : "–"}</b><span>Nie eingeloggt</span></button>
       </div>
-      <div className="achips">{GA_F.map(([k, l]) => <button key={k} type="button" className={"achip" + (f === k ? " on" : "")} onClick={() => setF(k)}>{l}{k === "never" && d ? <span className="n">{neverAll.length}</span> : null}</button>)}</div>
-      {err ? <div className="aempty"><b>Fehler</b>{err}</div> : null}
-      {!d && !err ? <div className="aempty"><b><Loader className="spin" style={{ width: 22, height: 22 }} /></b>Lädt …</div> : null}
+      <div className="achips">{GA_F.map(([k, l]) => <button key={k} type="button" className={"achip" + (f === k ? " on" : "")} onClick={() => setF(k)}>{l}{k === "never" && d ? <span className="n">{neverAll.length}</span> : k === "follow" && fu && fu.attention ? <span className="n">{fu.attention.length}</span> : null}</button>)}</div>
+      {f === "follow" ? (
+        !fu ? <div className="aempty"><b><Loader className="spin" style={{ width: 22, height: 22 }} /></b>Lädt …</div>
+        : fu.error ? <div className="aempty"><b>Fehler</b>{fu.error}</div> : (
+          <>
+            {fu.mode !== "live" ? <div className="fu-mode"><AlarmClock /><span><b>{fu.mode === "off" ? "Automatik aus" : "Testmodus"}</b>{fu.mode === "off" ? "Es werden keine Erinnerungen berechnet oder gesendet." : "Erinnerungen werden berechnet, aber noch nicht verschickt."}</span></div> : null}
+            <div className="lbl" style={{ marginTop: 14 }}>Bitte nachfassen · {fu.attention.length}</div>
+            <div className="card atl">
+              {fu.attention.length ? fu.attention.map((x, i) => (
+                <button key={"a" + i} type="button" className="ae ga" onClick={() => goFu(x)}>
+                  <span className="ad" style={{ color: "var(--danger)" }}><UserX /></span>
+                  <div className="t"><b>{nameOf(x)} · <i>{FU_KIND[x.kind] || x.kind}</i></b><span>{x.text}</span></div>
+                  <ChevronRight />
+                </button>
+              )) : <div className="aempty" style={{ padding: "22px 10px" }}><b>Niemand</b>Alle reagieren oder die Automatik ist noch dran.</div>}
+            </div>
+            {fu.dueNow.length ? (<>
+              <div className="lbl" style={{ marginTop: 18 }}>Jetzt fällig · {fu.dueNow.length}</div>
+              <div className="card atl">{fu.dueNow.map((x, i) => (
+                <button key={"d" + i} type="button" className="ae ga" onClick={() => goFu(x)}>
+                  <span className="ad" style={{ color: "var(--orange-800)" }}><BellRing /></span>
+                  <div className="t"><b>{nameOf(x)} · <i>{FU_KIND[x.kind]}{x.kind === "pay" || x.kind === "sw" || x.kind === "never" ? " · " + x.stage + ". Erinnerung" : ""}</i></b><span>{x.waitQuiet ? "Wartet auf 8–20 Uhr Ortszeit bzw. max. 1 Mail/Tag" : "Geht beim nächsten Durchlauf raus (alle 10 Min.)"}</span></div>
+                  <ChevronRight />
+                </button>))}</div>
+            </>) : null}
+            <div className="lbl" style={{ marginTop: 18 }}>Geplant · {fu.upcoming.length}</div>
+            <div className="card atl">
+              {fu.upcoming.length ? fu.upcoming.slice(0, 60).map((x, i) => (
+                <button key={"u" + i} type="button" className="ae ga" onClick={() => goFu(x)}>
+                  <span className="ad"><Clock /></span>
+                  <div className="t"><b>{nameOf(x)} · <i>{FU_KIND[x.kind]}{x.kind !== "news" ? " · " + x.stage + ". Erinnerung" : ""}</i></b><span>{x.orderId || x.email}</span></div>
+                  <span className="ah">{fmtWhen(x.dueAt)}</span>
+                </button>
+              )) : <div className="aempty" style={{ padding: "22px 10px" }}><b>Nichts geplant</b></div>}
+            </div>
+            {fu.recent.length ? (<>
+              <div className="lbl" style={{ marginTop: 18 }}>Zuletzt automatisch gesendet</div>
+              <div className="card atl">{fu.recent.slice(0, 30).map((x, i) => (
+                <button key={"r" + i} type="button" className="ae ga" onClick={() => goFu({ email: x.email, orderId: x.order_id })}>
+                  <span className="ad" style={{ color: "var(--success)" }}><Send /></span>
+                  <div className="t"><b>{nameOf({ email: x.email, orderId: x.order_id })} · <i>{FU_KIND[x.kind]}{x.kind !== "news" ? " · " + x.stage + ". Erinnerung" : ""}</i></b><span>{x.order_id || x.email}</span></div>
+                  <span className="ah">{fmtWhen(x.sent_at)}</span>
+                </button>))}</div>
+            </>) : null}
+            <p className="sh" style={{ marginTop: 14 }}>Automatik: Zahlung +24 h / +72 h · Software +24 h / +72 h · nie eingeloggt +24 h / +72 h · Neuigkeiten +10 h. Nur 8–20 Uhr Ortszeit, max. 1 Mail pro Kunde und Tag. Letzte Mahnung immer manuell.</p>
+          </>
+        )
+      ) : null}
+      {err && f !== "follow" ? <div className="aempty"><b>Fehler</b>{err}</div> : null}
+      {!d && !err && f !== "follow" ? <div className="aempty"><b><Loader className="spin" style={{ width: 22, height: 22 }} /></b>Lädt …</div> : null}
       {d && f === "never" ? (
         <div className="card atl">
           {never.length ? never.map((o) => (
@@ -255,7 +311,7 @@ export function GlobalActivityScreen({ ctx }) {
           )) : <div className="aempty"><b>{q ? "Nichts gefunden" : "Alle waren schon da"}</b></div>}
         </div>
       ) : null}
-      {d && f !== "never" ? (
+      {d && f !== "never" && f !== "follow" ? (
         <>
           {!items.length ? <div className="aempty"><b>{dq ? "Nichts gefunden" : "Noch keine Aktivität"}</b>{dq ? "" : "Sobald Kunden das Dashboard öffnen, erscheint es hier."}</div> : null}
           {days.map(([l, list]) => (
@@ -279,7 +335,7 @@ export function GlobalActivityScreen({ ctx }) {
           {d.nextCursor ? <button ref={sentinel} type="button" className="more-b" style={{ marginTop: 12 }} disabled={busy} onClick={more}>{busy ? "Lädt …" : "Ältere anzeigen"}</button> : null}
         </>
       ) : null}
-      <p className="sh" style={{ marginTop: 14 }}>Admin-Ansichten werden nicht erfasst.</p>
+      {f !== "follow" ? <p className="sh" style={{ marginTop: 14 }}>Admin-Ansichten werden nicht erfasst.</p> : null}
     </>
   );
 }

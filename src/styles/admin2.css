@@ -614,3 +614,5 @@
 .an .disc .t>b{font-size:14px;font-weight:600;line-height:1.3}
 .an .disc .t>span{font-size:12.5px;color:#3d5a85;line-height:1.35}
 .an .disc .t>span b{color:#1c3a66}
+.an .fu-mode{display:flex;gap:12px;align-items:flex-start;background:#fff4e0;color:#7a4b00;border-radius:18px;padding:12px 14px;margin:4px 0 4px}
+.an .fu-mode svg{width:18px;height:18px;flex:none;margin-top:2px}.an .fu-mode b{display:block;font-size:14px}.an .fu-mode span{font-size:12.5px;line-height:1.4}

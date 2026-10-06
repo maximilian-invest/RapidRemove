@@ -19,7 +19,7 @@ import { pool } from "./db";
 const SECRET = () => "ct|" + (process.env.ADMIN_TOKEN || "rr");
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
-const TYPES = new Set(["login", "page_view", "click", "payment_open", "payment_abort", "payment_success", "software_accept", "software_decline", "form_progress", "logout", "session_end", "mail_open", "dash_open", "chat_open", "chat_message", "chat_ticket"]);
+const TYPES = new Set(["login", "page_view", "click", "payment_open", "payment_abort", "payment_success", "software_accept", "software_decline", "form_progress", "logout", "session_end", "mail_open", "dash_open", "chat_open", "chat_message", "chat_ticket", "reminder"]);
 
 let ready = false;
 export async function initCustTrack(): Promise<void> {
