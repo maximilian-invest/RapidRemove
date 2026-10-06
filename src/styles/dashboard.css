@@ -489,3 +489,35 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .pg-a svg{width:16px;height:16px;opacity:.7}
 .rra .pg-h{font-size:12px;color:#9a9a9a;margin:2px 2px 0;line-height:1.4}
 @media (min-width:821px){.rra .pgrps{padding-right:180px}}
+/* PayPal: Hinweis „Freunde und Familie" vor dem Öffnen */
+.rra button.ps-cta{width:100%;border:0;font-family:inherit;cursor:pointer}
+.rra .ffbg{position:fixed;inset:0;z-index:60;background:rgba(10,10,10,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+.rra .ffbg.show{opacity:1;pointer-events:auto}
+.rra .ffm{position:fixed;z-index:61;left:50%;top:50%;width:min(400px,calc(100% - 32px));max-height:calc(100vh - 32px);overflow:auto;background:#fff;border-radius:28px;padding:24px 20px 16px;text-align:center;transform:translate(-50%,-46%) scale(.94);opacity:0;pointer-events:none;transition:transform .4s cubic-bezier(.22,1.3,.36,1),opacity .2s;box-shadow:0 30px 60px -20px rgba(0,0,0,.35)}
+.rra .ffm.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto}
+.rra .ff-ic{width:56px;height:56px;border-radius:18px;background:#e6f1fd;color:#0070e0;display:grid;place-items:center;margin:0 auto 12px}
+.rra .ffm.show .ff-ic{animation:ffpop .5s .1s cubic-bezier(.22,1.6,.36,1) both}
+.rra .ff-ic svg{width:26px;height:26px}
+.rra .ffm h4{font-size:21px;font-weight:800;letter-spacing:-.5px;line-height:1.2;margin:0 0 8px}
+.rra .ffm p{font-size:15px;line-height:1.5;color:#555;margin:0 0 16px}
+.rra .ff-opts{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;text-align:left}
+.rra .ff-o{display:flex;align-items:center;gap:10px;border-radius:16px;padding:13px 14px;font-size:15px}
+.rra .ff-o b{flex:1;font-weight:700}
+.rra .ff-o.on{border:2px solid #0070e0;background:#f2f8ff}
+.rra .ffm.show .ff-o.on{animation:ffpulse 1.6s .6s ease-in-out 2}
+.rra .ff-o.off{border:1px solid #e6e6e6;color:#aaa}
+.rra .ff-o.off b{text-decoration:line-through}
+.rra .ff-r{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;flex:none}
+.rra .ff-o.on .ff-r{background:#0070e0;color:#fff}
+.rra .ff-o.off .ff-r{color:#c4c4c4}
+.rra .ff-r svg{width:15px;height:15px}
+.rra .ff-o em{font-style:normal;font-size:12px;font-weight:700;color:#137a2c;background:#e4f6e8;border-radius:99px;padding:3px 8px;display:flex;align-items:center;gap:3px}
+.rra .ff-o em svg{width:11px;height:11px}
+.rra .ff-conf{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#f4f4f2;border-radius:16px;padding:12px 14px;font-size:13.5px;line-height:1.45;color:#444}
+.rra .ff-conf svg{width:18px;height:18px;flex:none;margin-top:1px;color:#137a2c}
+.rra .ffm .ps-cta{margin-top:14px}
+.rra .ff-back{margin-top:6px;width:100%;height:44px;border:0;background:none;font:inherit;font-size:15px;font-weight:600;color:#777;cursor:pointer}
+@keyframes ffpop{from{transform:scale(.4) rotate(-12deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes ffpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,112,224,0)}50%{box-shadow:0 0 0 6px rgba(0,112,224,.18)}}
+@media (prefers-reduced-motion:reduce){.rra .ffm.show .ff-ic,.rra .ffm.show .ff-o.on{animation:none}}
+.rra .ff-back{display:flex;align-items:center;justify-content:center;text-align:center}

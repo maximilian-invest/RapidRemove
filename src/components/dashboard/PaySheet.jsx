@@ -3,7 +3,7 @@
    mit Glanz-Animation, 3 Schritte, Vertrauens-Leiste. Kopieren mit Häkchen-Feedback. */
 import React from "react";
 import useSwipeClose from "./useSwipeClose";
-import { X, Copy, Check, ArrowUpRight, ShieldCheck, Mail, Sparkles, AlertCircle, Lock } from "lucide-react";
+import { X, Copy, Check, ArrowUpRight, ShieldCheck, Mail, Sparkles, AlertCircle, Lock, Users, Ban } from "lucide-react";
 
 function useCountUp(target, run) {
   const [v, setV] = React.useState(target);
@@ -22,7 +22,8 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
   const ref = React.useRef(null);
   useSwipeClose(ref, open, onClose);
   const shown = useCountUp(amountNum, open);
-  React.useEffect(() => { if (!open) setCopied(""); }, [open]);
+  const [ff, setFf] = React.useState(false);
+  React.useEffect(() => { if (!open) { setCopied(""); setFf(false); } }, [open]);
   React.useEffect(() => { if (!copied) return; const t = setTimeout(() => setCopied(""), 1600); return () => clearTimeout(t); }, [copied]);
   const copy = (key, v) => { try { navigator.clipboard.writeText(v); setCopied(key); showToast(T("wCopied")); } catch (e) { /* */ } };
   const isPP = via === "paypal";
@@ -85,9 +86,13 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
               <li><i>3</i><span>{T("wStep3")}</span></li>
             </ol>
 
-            <a className={"ps-cta" + (isPP ? " pp" : "")} href={isPP ? ppUrl : "https://wise.com/send"} target="_blank" rel="noopener noreferrer" data-track={isPP ? "PayPal öffnen" : "Wise öffnen"}>
-              {isPP ? T("ppBtn", { amount: fmt(amountNum) }) : T("wOpen")}<ArrowUpRight />
-            </a>
+            {isPP ? (
+              <button type="button" className="ps-cta pp" onClick={() => setFf(true)} data-track="PayPal · Hinweis F&F">
+                {T("ppBtn", { amount: fmt(amountNum) })}<ArrowUpRight />
+              </button>
+            ) : (
+              <a className="ps-cta" href="https://wise.com/send" target="_blank" rel="noopener noreferrer" data-track="Wise öffnen">{T("wOpen")}<ArrowUpRight /></a>
+            )}
 
             <div className="ps-trust">
               <span><ShieldCheck />{T("tr1")}</span>
@@ -95,6 +100,24 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
               {!isPP ? <span><Lock />{T("tr3")}</span> : null}
             </div>
             <p className="ps-legal">RapidRemove · Simple Solution OG · Salzgasse 2, 5400 Hallein, Österreich</p>
+          </>
+        ) : null}
+      </div>
+      {/* PayPal: vor dem Öffnen nochmal „Freunde und Familie" + Bestätigung nach Zahlung */}
+      <div className={"ffbg" + (open && ff ? " show" : "")} onClick={() => setFf(false)} />
+      <div className={"ffm" + (open && ff ? " show" : "")} role="dialog" aria-hidden={!(open && ff)} aria-label={T("ffTitle")}>
+        {open && ff ? (
+          <>
+            <span className="ff-ic"><Users /></span>
+            <h4>{T("ffTitle")}</h4>
+            <p>{T("ffText")}</p>
+            <div className="ff-opts">
+              <div className="ff-o on"><span className="ff-r"><Check /></span><b>{T("ffOpt1")}</b><em>−10 %</em></div>
+              <div className="ff-o off"><span className="ff-r"><Ban /></span><b>{T("ffOpt2")}</b></div>
+            </div>
+            <div className="ff-conf"><Mail /><span>{T("ffConf")}</span></div>
+            <a className="ps-cta pp" href={ppUrl} target="_blank" rel="noopener noreferrer" onClick={() => setTimeout(() => setFf(false), 400)} data-track="PayPal öffnen">{T("ffGo")}<ArrowUpRight /></a>
+            <button type="button" className="ff-back" onClick={() => setFf(false)}>{T("ffBack")}</button>
           </>
         ) : null}
       </div>
