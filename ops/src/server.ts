@@ -1489,7 +1489,7 @@ app.post("/admin/review-shots-backfill", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   if (!shotKey()) return { ok: false, error: "SCREENSHOTONE_KEY fehlt" };
   if (backfillActive()) return { ok: true, started: false, running: true };
-  void backfillReviewShots(Number(b.days) || 14, (o, m) => app.log.info(o, m));
+  void backfillReviewShots(Number(b.days) || 14, (o, m) => app.log.info(o, m), true); // manuell im Admin: immer
   return { ok: true, started: true };
 });
 // Admin: einzelnes Screenshot-Bild (Token als Query, damit <img src> funktioniert).

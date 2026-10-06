@@ -35,6 +35,7 @@ async function ensureTable(): Promise<void> {
       UNIQUE (order_id, idx)
     )
   `);
+  await pool.query(`ALTER TABLE review_shots ADD COLUMN IF NOT EXISTS attempts integer NOT NULL DEFAULT 0`);
   ready = true;
 }
 
@@ -92,8 +93,8 @@ export async function captureShot(url: string): Promise<{ buf: Buffer; mime: str
 
 async function takeOne(orderId: string, idx: number, url: string): Promise<void> {
   await pool!.query(
-    `INSERT INTO review_shots (order_id, idx, url, status) VALUES ($1,$2,$3,'pending')
-     ON CONFLICT (order_id, idx) DO UPDATE SET url = EXCLUDED.url, status = 'pending', error = NULL`,
+    `INSERT INTO review_shots (order_id, idx, url, status, attempts) VALUES ($1,$2,$3,'pending',1)
+     ON CONFLICT (order_id, idx) DO UPDATE SET url = EXCLUDED.url, status = 'pending', error = NULL, attempts = review_shots.attempts + 1`,
     [orderId, idx, url],
   );
   try {
@@ -163,7 +164,7 @@ export function queueReviewShots(orderId: string, items: Item[], log?: (o: objec
 
 /** Alle Screenshots einer neuen Bestellung (Bewertungen und/oder Profil) im Hintergrund. */
 export function queueOrderShots(orderId: string, service: string, raw: Record<string, unknown>, log?: (o: object, m: string) => void): boolean {
-  return enqueue(orderId, entriesFor(service, raw), log);
+  return enqueue(orderId, entriesFor(service, raw), log, true); // nur was noch fehlt – nie doppelt
 }
 
 /** Screenshot des Google-Unternehmensprofils einer Profil-Bestellung (Hintergrund). */
@@ -208,12 +209,19 @@ let backfillRunning = false;
  * Bestellung (keine Lastspitze bei der API). Läuft beim Serverstart automatisch
  * (sobald SCREENSHOTONE_KEY gesetzt ist) und per Admin-Endpunkt.
  */
-export async function backfillReviewShots(days = 14, log?: (o: object, m: string) => void): Promise<{ orders: number; taken: number } | null> {
+export async function backfillReviewShots(days = 14, log?: (o: object, m: string) => void, force = false): Promise<{ orders: number; taken: number } | null> {
   if (!shotKey() || !dbReady() || !pool || backfillRunning) return null;
   backfillRunning = true;
   let orders = 0, taken = 0;
   try {
     await ensureTable();
+    // Höchstens 1× pro Tag (früher bei jedem Deploy → fehlgeschlagene Bilder wurden immer wieder neu bezahlt).
+    if (!force) {
+      await pool.query(`CREATE TABLE IF NOT EXISTS ops_flags (key text PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now())`);
+      const day = new Date().toLocaleDateString("sv-SE", { timeZone: "Europe/Vienna" });
+      const f = await pool.query(`INSERT INTO ops_flags (key) VALUES ($1) ON CONFLICT DO NOTHING RETURNING key`, ["shots-backfill-" + day]);
+      if (!f.rowCount) { if (log) log({ day }, "Screenshots nachholen: heute schon gelaufen"); return { orders: 0, taken: 0 }; }
+    }
     const r = await pool.query(
       `SELECT o.id, o.service, o.raw FROM orders o
         WHERE o.created_at > now() - make_interval(days => $1::int)
@@ -224,11 +232,13 @@ export async function backfillReviewShots(days = 14, log?: (o: object, m: string
     for (const row of r.rows as { id: string; service: string | null; raw: Record<string, unknown> | null }[]) {
       const entries = entriesFor(String(row.service || ""), row.raw);
       if (!entries.length) continue;
-      const ok = await pool.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND status = 'ok'`, [row.id]);
+      // fertig ODER aufgegeben (4 Versuche) → nicht nochmal
+      const ok = await pool.query(`SELECT idx FROM review_shots WHERE order_id = $1 AND (status = 'ok' OR attempts >= 4)`, [row.id]);
       const have = new Set(ok.rows.map((x: { idx: number }) => x.idx));
-      if (entries.every((e) => have.has(e.idx))) continue;
+      const todo = entries.filter((e) => !have.has(e.idx));
+      if (!todo.length) continue;
       orders++;
-      taken += await runShots(row.id, entries, log, true);
+      taken += await runShots(row.id, todo, log, true);
     }
     if (log) log({ days, orders, taken }, "Screenshots nachgeholt");
   } catch (e) {

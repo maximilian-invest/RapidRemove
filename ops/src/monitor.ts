@@ -77,6 +77,7 @@ async function ensureTables(): Promise<void> {
     )
   `);
   await pool.query(`CREATE INDEX IF NOT EXISTS monitor_checks_profile ON monitor_checks (profile_id, checked_at DESC)`);
+  await pool.query(`ALTER TABLE monitor_checks ADD COLUMN IF NOT EXISTS cand_url text`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS monitor_runs (
       id          serial PRIMARY KEY,
@@ -126,10 +127,10 @@ async function getProfile(id: number): Promise<Profile | null> {
   return r.rows[0] || null;
 }
 
-async function addCheck(profileId: number, result: string, note: string, extra: { title?: string; mime?: string; img?: Buffer; actor?: string } = {}): Promise<number> {
+async function addCheck(profileId: number, result: string, note: string, extra: { title?: string; mime?: string; img?: Buffer; actor?: string; cand?: string } = {}): Promise<number> {
   const r = await pool!.query(
-    `INSERT INTO monitor_checks (profile_id, result, note, page_title, mime, img, actor) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-    [profileId, result, note.slice(0, 500), extra.title || null, extra.mime || null, extra.img || null, extra.actor || null],
+    `INSERT INTO monitor_checks (profile_id, result, note, page_title, mime, img, actor, cand_url) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+    [profileId, result, note.slice(0, 500), extra.title || null, extra.mime || null, extra.img || null, extra.actor || null, extra.cand || null],
   );
   return r.rows[0].id;
 }
@@ -310,6 +311,27 @@ async function checkProfile(id: number, actor?: string): Promise<"ok" | "found" 
     await pool!.query(`UPDATE monitor_profiles SET status = CASE WHEN status = 'found' THEN status ELSE 'fail' END, last_check_at = now() WHERE id = $1`, [id]);
     return "fail";
   }
+  // Ressourcen sparen: derselbe Treffer wurde in den letzten 6 Tagen schon per Screenshot geprüft → kein neuer
+  // Screenshot beim automatischen Scan (nur „Jetzt prüfen" macht immer einen frischen).
+  if (actor !== "Jetzt prüfen") {
+    const rc = await pool!.query(
+      `SELECT result, checked_at FROM monitor_checks WHERE profile_id = $1 AND cand_url = $2 AND img IS NOT NULL AND checked_at > now() - interval '6 days' ORDER BY checked_at DESC LIMIT 1`,
+      [id, cand.mapsUrl],
+    ).catch(() => ({ rows: [] as { result: string; checked_at: string }[] }));
+    const last = rc.rows[0];
+    const when = last ? new Date(last.checked_at).toLocaleDateString("de-AT", { timeZone: TZ }) : "";
+    if (last && last.result === "found" && p.status === "found") {
+      await addCheck(id, "found", `Weiterhin sichtbar · letzter Screenshot vom ${when} (kein neuer nötig)`, { actor, cand: cand.mapsUrl });
+      await pool!.query(`UPDATE monitor_profiles SET last_check_at = now() WHERE id = $1`, [id]);
+      return "still";
+    }
+    if (last && last.result === "ok" && p.status !== "found") {
+      await addCheck(id, "ok", `Gleicher möglicher Treffer wie am ${when} – damals per Screenshot nicht bestätigt (kein neuer Screenshot)`, { actor, cand: cand.mapsUrl });
+      const next = p.status === "fail" ? (p.found_at ? "re" : "ok") : p.status;
+      await pool!.query(`UPDATE monitor_profiles SET status = $2, last_check_at = now() WHERE id = $1`, [id, next]);
+      return "ok";
+    }
+  }
   let shot: { buf: Buffer; mime: string; title: string } | null = null;
   try { shot = await captureShot(cand.mapsUrl); }
   catch (e) {
@@ -322,7 +344,7 @@ async function checkProfile(id: number, actor?: string): Promise<"ok" | "found" 
   }
   const verified = titleShowsProfile(shot.title, p.business_name) || titleShowsProfile(shot.title, cand.name);
   if (!verified) {
-    await addCheck(id, "ok", "Möglicher Treffer nicht bestätigt – Google Maps zeigt kein Profil (Titel: „" + (shot.title || "—") + "“)", { title: shot.title, mime: shot.mime, img: shot.buf, actor });
+    await addCheck(id, "ok", "Möglicher Treffer nicht bestätigt – Google Maps zeigt kein Profil (Titel: „" + (shot.title || "—") + "“)", { title: shot.title, mime: shot.mime, img: shot.buf, actor, cand: cand.mapsUrl });
     const next = p.status === "fail" ? (p.found_at ? "re" : "ok") : p.status === "found" ? "re" : p.status;
     await pool!.query(`UPDATE monitor_profiles SET status = $2, last_check_at = now() WHERE id = $1`, [id, next]);
     return "ok";
@@ -332,7 +354,7 @@ async function checkProfile(id: number, actor?: string): Promise<"ok" | "found" 
   const checkId = await addCheck(id, "found", wasFound
     ? "Weiterhin sichtbar · Screenshot aktualisiert"
     : "Profil wieder öffentlich sichtbar · per Screenshot bestätigt" + (cand.placeId && cand.placeId !== p.place_id ? " (neue Profil-ID " + cand.placeId + ")" : ""),
-    { title: shot.title, mime: shot.mime, img: shot.buf, actor });
+    { title: shot.title, mime: shot.mime, img: shot.buf, actor, cand: cand.mapsUrl });
   await pool!.query(
     `UPDATE monitor_profiles SET status = 'found', last_check_at = now(), found_url = $2, found_at = CASE WHEN status = 'found' THEN found_at ELSE now() END WHERE id = $1`,
     [id, cand.mapsUrl],
