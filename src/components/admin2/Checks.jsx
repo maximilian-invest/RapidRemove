@@ -11,7 +11,14 @@ import { fetchProfileById } from "@/lib/places";
 
 const SRCS = [["google_ads", "Google Ads"], ["ms_ads", "Microsoft Ads"], ["social", "Social Media"], ["affiliate", "Affiliate"], ["utm", "UTM"], ["organic", "Organisch"], ["referral", "Verweis"], ["direct", "Direkt"], ["none", "Unbekannt"]];
 const isRevCheck = (c, orders) => c.recommend === "reviews" || (c.orderId && (orders.find((o) => o.id === c.orderId) || {}).service === "reviews");
-const fmtD = (iso) => { try { return new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + "."; } catch (e) { return ""; } };
+/** Datum + Uhrzeit kompakt: „06.10. · 14:02" (heute: „Heute · 14:02"). */
+const fmtDT = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso); if (isNaN(d.getTime())) return "";
+  const p = (n) => String(n).padStart(2, "0");
+  const today = new Date().toDateString() === d.toDateString();
+  return `${today ? "Heute" : p(d.getDate()) + "." + p(d.getMonth() + 1) + "."} · ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]);
 const num = (v) => (Number(v) || 0).toLocaleString("de-DE");
 
@@ -88,7 +95,7 @@ export function ChecksScreen({ ctx }) {
             <button key={c.id} type="button" className="ord ckr" style={{ "--pi": Math.min(j, 10) }} onClick={() => openSheet({ kind: "chk", id: c.id, c })}>
               <span className="t"><span className="l1"><b>{c.profile || c.name || "—"}{c.dupes > 1 ? <i className="x2">{c.dupes}×</i> : null}</b></span>
                 <span className="l2"><span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Bewertungen" : "Profil"}</span>
-                  <span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}</span></span>
+                  <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}</span></span>
               {conv(c) ? <span className="ab ok"><Check /></span> : <span className={"ab" + (em ? " on" : "")}>{em ? <Send /> : <MailPlus />}</span>}
             </button>
           );
@@ -148,14 +155,14 @@ export function CheckSheet({ c, ctx, close }) {
   if (confirm) {
     return (
       <><h3>Angebot senden?</h3>
-        <p className="shp">Rückgewinnungs-Mail an <b>{mail.trim()}</b> ({c.profile || c.name}){sentAt ? <> · bereits gesendet am {fmtD(sentAt)}</> : null}.</p>
+        <p className="shp">Rückgewinnungs-Mail an <b>{mail.trim()}</b> ({c.profile || c.name}){sentAt ? <> · bereits gesendet {fmtDT(sentAt)}</> : null}.</p>
         <div className="ctas2"><button type="button" className="cta gh" onClick={() => setConfirm(false)}>Zurück</button><button type="button" className="cta or" disabled={!!busy} onClick={send}><Send />{busy ? "Sendet …" : "Senden"}</button></div></>
     );
   }
   return (
     <>
       <h3 style={{ paddingBottom: 2 }}>{c.profile || c.name || "—"}</h3>
-      <p className="shp" style={{ fontSize: 13 }}>{[c.addr, c.id, c.created ? c.created.split("·")[0].trim() : ""].filter(Boolean).join(" · ")}</p>
+      <p className="shp" style={{ fontSize: 13 }}>{[c.addr, c.id, c.created ? "geprüft " + c.created.replace("·", "um") + " Uhr" : ""].filter(Boolean).join(" · ")}</p>
       <div className="cks">
         <div><b>{c.rating && c.rating !== "—" ? c.rating + " ★" : "–"}</b><span>{num(c.reviews)} Bewertungen</span></div>
         <div><b>{st}</b><span>{c.status === "konvertiert" ? "Status" : "Abbruch bei"}</span></div>
@@ -169,7 +176,7 @@ export function CheckSheet({ c, ctx, close }) {
           <div className="usrch in-sheet" style={{ margin: "14px 0 10px" }}><Mail /><input type="email" placeholder="E-Mail eintragen" value={mail} onChange={(e) => setMail(e.target.value)} onBlur={() => (valid || !mail.trim()) && save()} /></div>
           {cands && cands.length ? <div className="cats" style={{ marginBottom: 10 }}>{cands.map((e) => <button key={e} type="button" className="achip" onClick={() => { setMail(e); save(e); }}>{e}<Check /></button>)}</div> : null}
           <div className="ctas"><button type="button" className="cta or" disabled={!valid || !!busy} onClick={() => setConfirm(true)}><Send />{sentAt ? "Angebot erneut senden" : "Angebot senden"}</button></div>
-          {sentAt ? <p className="shp" style={{ padding: "8px 4px 0", color: "var(--success)", fontWeight: 600 }}>Angebot gesendet am {fmtD(sentAt)}</p> : null}
+          {sentAt ? <p className="shp" style={{ padding: "8px 4px 0", color: "var(--success)", fontWeight: 600 }}>Angebot gesendet · {fmtDT(sentAt)}</p> : null}
         </>
       )}
       <div className="opts" style={{ marginTop: 12 }}>

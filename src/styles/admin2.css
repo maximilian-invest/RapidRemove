@@ -525,3 +525,5 @@
 .an .ckt{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .an .usrch.in-sheet{background:var(--g1)}
 .an .cats .achip svg{width:13px;height:13px}
+.an .ckr .cdt{font-weight:600;color:var(--ink);margin-right:6px}
+.an .ckr .cdt::after{content:" ·";font-weight:400;color:var(--g3)}

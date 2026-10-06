@@ -46,8 +46,8 @@ min-height:100vh;background:#fff;color:var(--ink);font-family:var(--font-body);f
 .rra .hero .row{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px}
 .rra .hero .rem{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600}
 .rra .hero .rem i{width:8px;height:8px;border-radius:50%;background:var(--warning);display:block}
-.rra .hero-img{pointer-events:none;z-index:1;position:absolute;right:16px;top:16px;width:96px;height:96px;border-radius:24px;background:#fff;overflow:hidden;display:grid;place-items:center}
-.rra .hero-img img{width:118%;height:118%;object-fit:cover}
+.rra .hero-img{pointer-events:none;z-index:1;position:absolute;right:16px;top:16px;width:96px;height:96px;border-radius:24px;background:transparent;overflow:visible;display:grid;place-items:center}
+.rra .hero-img img{width:118%;height:118%;object-fit:contain}
 .rra .hero .k,.rra .hero .v,.rra .hero .s{padding-right:110px}
 .rra .hero.ok{background:var(--success-soft);color:var(--success)}
 .rra .hero.ok .k,.rra .hero.ok .s{color:var(--success)}

@@ -1394,7 +1394,7 @@ app.post("/admin/reviews-storno", async (req, reply) => {
     const key = reason === "impossible" ? "storno-reviews-all" : "storno-reviews";
     const t = TEMPLATES[key];
     const props = reason === "impossible"
-      ? { lang: tlang, name: clip(b.name, 120), orderId }
+      ? { lang: tlang, name: clip(b.name, 120), orderId, dashUrl: await dashLink(to, tlang) }
       : { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: await dashLink(to, tlang) };
     const { html, subject } = await renderTemplate(key, props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
