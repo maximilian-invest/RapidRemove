@@ -670,3 +670,5 @@ export const partnerSave = (p) => adminPost("/admin/partners/save", p);
 export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
 /** Bewertungen eines Google-Profils (SerpApi) zum Anhaken → { enabled, reviews:[{id,name,rating,text,days,link}] }. */
 export const placeReviews = (placeId, lang) => adminPost("/admin/places/reviews", { placeId, lang: lang || "de" });
+/** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
+export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });

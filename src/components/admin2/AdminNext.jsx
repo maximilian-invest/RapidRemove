@@ -16,6 +16,7 @@ import { asset } from "@/lib/base";
 import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen } from "./model";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
+import { CheckSheet } from "./Checks";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
 const DESK_Q = "(min-width: 900px)";
@@ -48,6 +49,7 @@ export default function AdminNext() {
   const [mon, setMon] = React.useState(null);
   const [auto, setAutoS] = React.useState(null);
   const [partners, setPartners] = React.useState(null);
+  const [chk, setChk] = React.useState({ q: "", f: "open", src: "all", type: "all", saved: {}, sent: {}, prog: null }); // Geprüfte Profile (bleibt beim Tab-Wechsel erhalten)
   const [now, setNow] = React.useState(() => Date.now());
   const [spin, setSpin] = React.useState(false);
 
@@ -205,7 +207,7 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"),
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk,
   };
 
   const top = stack[stack.length - 1];
@@ -322,8 +324,10 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
   } else if (sheet && sheet.kind === "pick") {
     body = (
       <><h3>{sheet.title}</h3>
-        <div className="opts">{sheet.opts.map(([k, l, img]) => <Opt key={k} on={sheet.cur === k} onClick={() => { sheet.onPick(k); close(); }}>{img ? <img src={img} alt="" /> : null}{l}</Opt>)}</div></>
+        <div className="opts">{sheet.opts.map(([k, l, img, n]) => <Opt key={k} on={sheet.cur === k} onClick={() => { sheet.onPick(k); close(); }} right={n != null ? <span className="c">{n}</span> : null}>{img ? <img src={img} alt="" /> : null}{l}</Opt>)}</div></>
     );
+  } else if (sheet && sheet.kind === "chk" && sheet.c) {
+    body = <CheckSheet key={sheet.c.id} c={sheet.c} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "storno" && o) {
     const isRev = o.service === "reviews";
     const openPt = (ptasks[o.id] || []).filter((t) => t.status === "new" || t.status === "working").length;

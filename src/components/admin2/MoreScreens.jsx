@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
+import { ChecksScreen } from "./Checks";
 import { monitorShotUrl } from "@/lib/admin-api";
 
 /* ---------------- Übersicht ---------------- */
@@ -125,8 +126,9 @@ export function Account({ ctx }) {
   const { moreSub, setMoreSub, logout } = ctx;
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
   if (moreSub === "partner") return <PartnerScreen ctx={ctx} />;
+  if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
   const tiles = [
-    [Search, "Profile", () => { try { localStorage.setItem("rr_admin_view", "checks"); } catch (e) {} window.location.href = "/admin"; }],
+    [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin"; }],
     [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin"; }],
@@ -137,7 +139,7 @@ export function Account({ ctx }) {
     <>
       <div className="ttl">Konto</div>
       <div className="mgrid">{tiles.map(([I, l, fn]) => <button key={l} type="button" className="mg" onClick={fn}><span className="ico"><I /></span>{l}</button>)}</div>
-      <p className="sh" style={{ marginTop: 16 }}>Profile, Vorlagen und Kunden öffnen vorerst noch im bisherigen Admin.</p>
+      <p className="sh" style={{ marginTop: 16 }}>Vorlagen und Kunden öffnen vorerst noch im bisherigen Admin.</p>
       <a className="cta gh" style={{ marginTop: 8 }} href="/admin">Zum bisherigen Admin</a>
     </>
   );

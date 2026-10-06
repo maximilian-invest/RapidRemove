@@ -32,7 +32,7 @@ import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
-import { registerMonitor, startMonitorScheduler, monitorKeys } from "./monitor";
+import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning, backfillReviewShots, backfillActive } from "./reviewShots";
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
@@ -671,6 +671,25 @@ app.post("/admin/orders/create", async (req, reply) => {
   } catch (e) { app.log.error({ err: e, orderId: id }, "Partner-Board (Admin-Auftrag) fehlgeschlagen"); }
   queueOrderShots(id, service, raw, (o, m) => app.log.info(o, m));
   return { ok: true, id, amount, currency: cur, mailed, partner };
+});
+
+// Admin (neu) · „Neuer Auftrag": Bewertungs-Link auflösen → Profil + Bewertung (Autor, Sterne, Alter).
+// Die Review-ID im Link wird mit der SerpApi-Liste des Profils abgeglichen (neueste zuerst, SERPAPI_PAGES Seiten).
+app.post("/admin/reviews/resolve", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const link = httpUrl(b.link, 600);
+  if (!link) return reply.code(400).send({ ok: false, error: "Link fehlt" });
+  try {
+    const { place, reviewId } = await resolveReviewLink(link);
+    let review = null as null | { name: string; rating: number; days: number; text: string };
+    if (place && place.placeId && reviewId && serpKey()) {
+      const list = await fetchPlaceReviews(place.placeId, mailLang(b.lang || "de")).catch(() => []);
+      const hit = list.find((x) => x.id === reviewId || (x.link && x.link.includes(reviewId)));
+      if (hit) review = { name: hit.name, rating: hit.rating, days: hit.days, text: hit.text };
+    }
+    return { ok: true, place, review };
+  } catch (e) { return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) }); }
 });
 
 // Admin (neu) · „Neuer Auftrag": Bewertungen eines Profils zum Anhaken (SerpApi, ohne Drosselung).

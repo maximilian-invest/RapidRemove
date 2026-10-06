@@ -428,7 +428,7 @@ function MobileTabBar({ view, setView, counts }) {
    Prüfungen (1 Kunde prüft 5×, beauftragt 1×) nicht mehr Zähler & Quote — der Eintrag zählt
    als 1 Prüfung und gilt als konvertiert, sobald IRGENDEINE davon beauftragt wurde.
    `dupes` = Anzahl zusammengefasster Prüfungen (fürs „N× geprüft"-Label). */
-function dedupeChecks(list) {
+export function dedupeChecks(list) {
   const arr = list || [];
   if (arr.length < 2) return arr.map((c) => ({ ...c, dupes: 1 }));
   const norm = (s) => (s || "").trim().toLowerCase();
@@ -764,13 +764,13 @@ function Dashboard({ orders, checks: rawChecks, openOrder, openCheck, onOpenChec
 }
 
 /* Lesbare Bezeichnung je Herkunfts-Kürzel (Last-Touch aus lib/attribution.js). */
-const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", tiktok_ads: "TikTok Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
+export const SRC_LABEL = { google_ads: "Google Ads", ms_ads: "Microsoft Ads", meta_ads: "Meta Ads", tiktok_ads: "TikTok Ads", affiliate: "Affiliate", organic: "Organisch", referral: "Verweis", utm: "UTM", direct: "Direkt" };
 /* „Social Media" fasst die bezahlten sozialen Kanäle zusammen. Meta trennt
    Facebook und Instagram nicht — beide kommen als meta_ads an; welche Platzierung
    es war, steht nur im Ads Manager unter „Aufschlüsselung → Platzierung". */
-const SOCIAL_KINDS = ["meta_ads", "tiktok_ads"];
+export const SOCIAL_KINDS = ["meta_ads", "tiktok_ads"];
 /* Herkunft, die dem Betrachter etwas sagt: bei Verweisen den Host dazu. */
-const srcLabelOf = (c) => {
+export const srcLabelOf = (c) => {
   if (!c || !c.source) return "";
   if (c.source === "referral" && c.refHost) return "Verweis: " + c.refHost;
   return SRC_LABEL[c.source] || c.source;
@@ -778,24 +778,24 @@ const srcLabelOf = (c) => {
 
 /* ---------- Geprüfte Profile: eigener Bereich (Leads aus dem Prüf-Tool) ---------- */
 // Abbruchstelle je Prüfung (erreichte Stufe) – identische Farblogik wie im Dashboard-Trichter.
-const CHECK_DROP = {
+export const CHECK_DROP = {
   1: { t: "Profil-Auswahl", bg: "var(--neutral-100)", fg: "var(--fg-2)" },
   2: { t: "Preis/Leistung", bg: "#fff7e6", fg: "#b45309" },
   3: { t: "Checkout", bg: "#ffe9d6", fg: "#c2410c" },
   4: { t: "Zahlung", bg: "#fdecec", fg: "#b42318" },
 };
-const checkStepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
+export const checkStepOf = (c) => Math.max(Number(c.step) || 1, c.status === "konvertiert" ? 4 : 1);
 // Nur http(s)-Links zulassen – blockt javascript:/data: aus Alt-Daten (XSS-Schutz beim <a href>).
 const safeHttp = (u) => {
   if (!u) return "";
   try { return /^https?:$/.test(new URL(u, "https://x").protocol) && /^https?:\/\//i.test(u) ? u : ""; } catch { return ""; }
 };
 // Klickbarer Google-Link zum geprüften Profil: gespeicherter Maps-Link > Place-ID > Namenssuche.
-const checkMapsUrl = (c) =>
+export const checkMapsUrl = (c) =>
   safeHttp(c.mapsUri)
   || (c.placeId ? "https://www.google.com/maps/place/?q=place_id:" + encodeURIComponent(c.placeId) : "")
   || (c.profile ? "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(c.profile + (c.addr ? " " + c.addr : "")) : "");
-const checkWebSearchUrl = (c) => "https://www.google.com/search?q=" + encodeURIComponent('"' + (c.profile || "") + '" ' + (c.addr || "") + " email kontakt");
+export const checkWebSearchUrl = (c) => "https://www.google.com/search?q=" + encodeURIComponent('"' + (c.profile || "") + '" ' + (c.addr || "") + " email kontakt");
 
 function ChecksView({ checks: rawChecks, orders, openOrder, toast }) {
   const checks = dedupeChecks(rawChecks);

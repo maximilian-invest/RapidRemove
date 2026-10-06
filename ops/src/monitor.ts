@@ -514,6 +514,22 @@ async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: str
   } catch { return { q: url }; }
 }
 
+/** Bewertungs-Teilen-Link → Profil (über die CID im Link) + Review-ID (für den Abgleich mit SerpApi). */
+export async function resolveReviewLink(link: string): Promise<{ place: Place | null; reviewId: string }> {
+  let url = link.trim();
+  if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url)) {
+    try { const res = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(15_000) }); const loc = res.headers.get("location"); if (loc) url = loc; } catch { /* Original */ }
+  }
+  const dec = (() => { try { return decodeURIComponent(url); } catch { return url; } })();
+  const rid = (dec.match(/!1s(C[A-Za-z0-9_-]{16,})/) || [])[1] || "";
+  const r = await resolveMapsLink(url);
+  let place: Place | null = null;
+  if (r.placeId) place = await placeById(r.placeId).catch(() => null);
+  if (!place && r.cid) place = await placeByCid(r.cid).catch(() => null);
+  if (!place && r.q) place = (await searchPlaces(r.q).catch(() => [] as Place[]))[0] || null;
+  return { place, reviewId: rid };
+}
+
 export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) => boolean): void {
   log = (o, m) => app.log.info(o, m);
   const guard = (b: Record<string, unknown>, reply: any) => {

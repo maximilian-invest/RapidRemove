@@ -9,7 +9,7 @@ import {
   X, ArrowLeft, ArrowRight, Link as LinkIcon, Clipboard, Store, Check, Info, CheckCheck, User, Mail, Phone, Send, Wallet,
   FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell,
 } from "lucide-react";
-import { monitorLookup, placeReviews, createAdminOrder } from "@/lib/admin-api";
+import { monitorLookup, placeReviews, createAdminOrder, resolveReviewLinkApi } from "@/lib/admin-api";
 import { reviewQuote } from "@/lib/pricing";
 import { IMG, money, staffOf } from "./model";
 
@@ -65,7 +65,7 @@ export default function NewOrder({ ctx }) {
   /* ---- abgeleitete Werte ---- */
   const revList = (s.revs || []).filter((r) => s.rsf === "all" || (r.rating && r.rating <= 2));
   const items = s.type !== "reviews" ? [] : s.mode === "links"
-    ? s.rl.map((r) => ({ url: r.url, old: !!r.old }))
+    ? s.rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
     : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28 }));
   const q = s.type === "reviews" ? reviewQuote(items, "de") : null;
   const amount = s.type === "reviews" ? q.total : PROFILE_PRICE[cur];
@@ -93,10 +93,17 @@ export default function NewOrder({ ctx }) {
     const u = s.rlin.trim();
     if (!isUrl(u)) { toast("Bitte einen gültigen Link einfügen"); return; }
     if (s.rl.some((r) => r.url === u)) { toast("Link ist schon in der Liste"); set({ rlin: "" }); return; }
-    const first = !s.rl.length;
-    set((x) => ({ rl: [...x.rl, { url: u, old: false }], rlin: "" }));
-    if (first && !s.biz) lookup(u, false);
+    set((x) => ({ rl: [...x.rl, { url: u, old: false, st: "busy", info: null }], rlin: "" }));
+    // Link auflösen: Profil (aus der CID im Link) + Bewertung (Autor, Sterne, Alter) über SerpApi
+    resolveReviewLinkApi(u).then((r) => {
+      const info = r.review || null;
+      set((x) => ({
+        rl: x.rl.map((y) => (y.url === u ? { ...y, st: info ? "ok" : "unknown", info, old: info ? info.days > 28 : y.old } : y)),
+        ...(!x.biz && r.place ? { biz: r.place, bizErr: "" } : {}),
+      }));
+    }).catch(() => set((x) => ({ rl: x.rl.map((y) => (y.url === u ? { ...y, st: "unknown" } : y)) })));
   };
+  const setOld = (i, v) => set((x) => ({ rl: x.rl.map((y, j) => (j === i ? { ...y, old: v } : y)) }));
   const create = async () => {
     set({ busy: true });
     try {
@@ -171,8 +178,18 @@ export default function NewOrder({ ctx }) {
                 {s.rl.map((r, i) => (
                   <div key={r.url} className="rlr">
                     <span className="n">{i + 1}</span>
-                    <div className="t"><b className="lnk">{r.url.replace(/^https?:\/\//, "")}</b>
-                      <button type="button" className={"oldt" + (r.old ? " on" : "")} onClick={() => set((x) => ({ rl: x.rl.map((y, j) => (j === i ? { ...y, old: !y.old } : y)) }))}>{r.old ? <Check /> : null}älter 4 Wo.</button></div>
+                    {r.st === "ok" ? (
+                      <div className="t"><b>{r.info.name} <Stars n={r.info.rating} /></b>
+                        <span className="q">{r.info.text || "Nur Sterne, kein Text"}</span>
+                        <span className={r.old ? "ol" : ""}>{ago(r.info.days)}{r.old ? " · älter 4 Wo." : ""}</span></div>
+                    ) : (
+                      <div className="t"><b className="lnk">{r.url.replace(/^https?:\/\//, "")}</b>
+                        {r.st === "busy" ? <span className="busy"><Loader className="spin" />Bewertung wird erkannt …</span> : (
+                          <span className="agep"><em>Alter nicht erkannt:</em>
+                            <button type="button" className={!r.old ? "on" : ""} onClick={() => setOld(i, false)}>jünger 4 Wo.</button>
+                            <button type="button" className={r.old ? "on" : ""} onClick={() => setOld(i, true)}>älter 4 Wo.</button></span>
+                        )}</div>
+                    )}
                     <button type="button" className="circ sm" aria-label="Entfernen" onClick={() => set((x) => ({ rl: x.rl.filter((_, j) => j !== i) }))}><X /></button>
                   </div>
                 ))}

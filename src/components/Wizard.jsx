@@ -2050,7 +2050,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     submitCheck({
       checkId, profile: sp ? sp.name : name, category: sp ? (sp.cat || "") : "",
       rating: sp ? (sp.rating || "") : "", reviews: sp ? (sp.reviews || 0) : 0,
-      recommend: service, name: name || (sp ? sp.name : ""), country, lang,
+      recommend: wantReviews || service === "reviews" ? "reviews" : service, name: name || (sp ? sp.name : ""), country, lang,
       step: 1, amount: checkAmt || undefined, source: checkSource, // Funnel: Stufe 1 + Preis + Quelle
       // Herkunft serverseitig festhalten — im localStorage sieht sie niemand,
       // der die Anfrage bearbeitet.
@@ -2066,6 +2066,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       placeId: sp ? (sp.placeId || "") : "", mapsUri: sp ? (sp.mapsUri || "") : "", addr: sp ? (sp.addr || "") : "",
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Prüfung senden fehlgeschlagen:", e.message); });
   };
+  // Bewertungs-Fluss erst nach der Profilprüfung gewählt → Prüfung als „Einzelbewertungen“ markieren
+  // (Admin › Geprüfte Profile trennt Profil- und Bewertungs-Prüfungen).
+  const revMarked = React.useRef(false);
+  React.useEffect(() => {
+    if (service !== "reviews" || revMarked.current || !checkSent.current || !checkId) return;
+    revMarked.current = true;
+    submitCheck({ checkId, recommend: "reviews" }).catch(() => {});
+  }, [service, checkId]); // eslint-disable-line react-hooks/exhaustive-deps
   // Funnel-Stufe nachschärfen (nur aufwärts, einmal je Stufe): 2 = Preis gesehen, 3 = Checkout, 4 = Zahlung.
   const stepFired = React.useRef({});
   const updateCheckStep = (n) => {
