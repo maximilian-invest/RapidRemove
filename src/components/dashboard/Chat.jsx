@@ -19,7 +19,7 @@ async function post(path, body) {
   return j;
 }
 
-export default function SupportChat({ token, T, imp, showToast, open, setOpen }) {
+export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen }) {
   const [msgs, setMsgs] = React.useState(() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "[]"); } catch (e) { return []; } });
   const [busy, setBusy] = React.useState(false);
   const [txt, setTxt] = React.useState("");
@@ -44,7 +44,7 @@ export default function SupportChat({ token, T, imp, showToast, open, setOpen })
     setMsgs((m) => [...m.filter((x) => !x.h), { r: "u", t }]);
     setTxt(""); setBusy(true);
     try {
-      const r = await post("chat", { token, message: t, history });
+      const r = await post("chat", { token, message: t, history, lang, contactLabel: T("chContact") });
       setMsgs((m) => [...m, { r: "b", t: String(r.reply || "").trim() }, ...(r.handoff ? [{ h: 1 }] : [])]);
     } catch (e) {
       setMsgs((m) => [...m, { r: "b", t: T("chErr") }, { h: 1 }]);
