@@ -624,3 +624,4 @@
 .an .tb.rf{display:none}
 .an.desk .tb.rf{display:flex;margin-top:auto}
 .an.desk .tb.rf+.tb.old{margin-top:0}
+.an .cta.ok{background:var(--success);color:#fff}

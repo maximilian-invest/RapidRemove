@@ -140,6 +140,7 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
+      {(b === "pay" || b === "inkasso" || (o.status === "done" && o.pay !== "paid")) ? <PaidBtn o={o} ctx={ctx} /> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
@@ -180,6 +181,27 @@ export function OrderDetail({ ctx, id }) {
       {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
+  );
+}
+
+/** „Als bezahlt markieren" (z. B. Wise/PayPal/Überweisung): 2× tippen zur Bestätigung. Bewertungen → im Kunden-Dashboard „Bezahlt". */
+function PaidBtn({ o, ctx }) {
+  const [armed, setArmed] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 4000); return () => clearTimeout(t); }, [armed]);
+  const go = async () => {
+    if (!armed) { setArmed(true); return; }
+    setBusy(true);
+    try { await ctx.doStatus(o, "done", { pay: "paid", label: "Zahlung eingegangen (manuell)" }); ctx.toast(`${o.id} als bezahlt markiert`); }
+    catch (e) { ctx.toast("Fehlgeschlagen: " + e.message); }
+    setBusy(false); setArmed(false);
+  };
+  return (
+    <div className="ctas" style={{ margin: "-4px 0 14px" }}>
+      <button type="button" className={"cta" + (armed ? " ok" : " gh")} disabled={busy} onClick={go}>
+        {busy ? <Loader className="spin" /> : <CheckCircle2 />}{armed ? "Sicher? Nochmal tippen – Zahlung ist eingegangen" : "Als bezahlt markieren"}
+      </button>
+    </div>
   );
 }
 
