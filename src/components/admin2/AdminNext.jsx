@@ -6,6 +6,7 @@ import React from "react";
 import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
   RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake,
+  Search, Settings, LogOut, Activity as ActIcon,
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerSettings, partnersList,
@@ -120,7 +121,11 @@ export default function AdminNext() {
   const newOrder = () => { setTab("orders"); setStack([{ v: "list" }, { v: "new", id: "n" + Date.now() }]); requestAnimationFrame(() => scrollTop("push")); };
   const closeDrawer = () => setStack([{ v: "list" }]);
   const goOrders = (tile) => { setTab("orders"); setStack([{ v: "list" }]); setF({ scope: "open", tile }); };
+  // Desktop: Konto-Unterpunkte direkt in der Seitenleiste ("more:<sub>")
+  // Desktop hat keine Konto-Kachelseite → nie „leer“ auf "more" landen
+  React.useEffect(() => { if (isDesk && tab === "more" && !moreSub) setMoreSub("checked"); }, [isDesk, tab, moreSub]);
   const switchTab = (k) => {
+    if (k.startsWith("more:")) { const sub = k.slice(5); setTab("more"); setMoreSub(sub); const p = paneRefs.current.more; if (p) p.scrollTo({ top: 0 }); return; }
     if (k === tab) {
       if (k === "orders" && stack.length > 1) { setStack([{ v: "list" }]); return; }
       if (k === "more" && moreSub) { setMoreSub(null); return; }
@@ -140,7 +145,7 @@ export default function AdminNext() {
       if (viewer) { setViewer(null); return; }
       if (sheet) { setSheet(null); return; }
       if (tab === "orders" && stack.length > 1) { isDesk && stack.length === 2 ? closeDrawer() : back(); return; }
-      if (tab === "more" && moreSub) setMoreSub(null);
+      if (tab === "more" && moreSub && !isDesk) setMoreSub(null);
     };
     window.addEventListener("keydown", k); return () => window.removeEventListener("keydown", k);
   });
@@ -227,6 +232,11 @@ export default function AdminNext() {
   const nNew = orders.filter((o) => o.status === "new").length;
   const nFound = mon ? (mon.profiles || []).filter((p) => p.status === "found").length : 0;
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
+  // Desktop: keine Konto-Kachelseite – alle Punkte direkt in der Seitenleiste
+  const deskTabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"],
+    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"]];
+  const isOn = (k) => (k.startsWith("more:") ? tab === "more" && moreSub === k.slice(5) : tab === k);
+  const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin"; };
   const pane = (k, body, extra = "") => (
     <main key={k} className={"scr" + extra} ref={(el) => { paneRefs.current[k] = el; }} style={{ display: tab === k ? undefined : "none" }}
       onPointerDown={onDown} onPointerUp={onUp}>{body}</main>
@@ -236,12 +246,22 @@ export default function AdminNext() {
     <div className={"an" + (isDesk ? " desk" : " mob") + (inFlow ? " flow" : "")}>
       <nav className="tabbar">
         {isDesk ? <img className="logo" src={asset("/assets/admin/logo-full.webp")} alt="RapidRemove" /> : null}
-        {tabs.map(([k, I, l, n, c]) => (
-          <button key={k} type="button" className={"tb" + (tab === k ? " on" : "")} onClick={() => switchTab(k)} aria-label={l}>
-            <I /><span>{l}</span>{n ? <span className={"bd " + (c || "")}>{isDesk ? n : ""}</span> : null}
-          </button>
+        {(isDesk ? deskTabs : tabs).map(([k, I, l, n, c], i) => (
+          <React.Fragment key={k}>
+            {isDesk && i === 3 ? <div className="tsec">Verwaltung</div> : null}
+            <button type="button" className={"tb" + (isOn(k) ? " on" : "")} onClick={() => switchTab(k)} aria-label={l} title={l}>
+              <I /><span>{l}</span>{n ? <span className={"bd " + (c || "")}>{isDesk ? n : ""}</span> : null}
+            </button>
+          </React.Fragment>
         ))}
-        {isDesk ? <a className="tb old" href="/admin"><ExternalLink /><span>Bisheriges Admin</span></a> : null}
+        {isDesk ? (
+          <>
+            <button type="button" className="tb" onClick={() => toOld("templates")} aria-label="Vorlagen" title="Vorlagen (bisheriges Admin)"><Mail /><span>Vorlagen</span><ExternalLink className="ext" /></button>
+            <button type="button" className="tb" onClick={() => toOld("customers")} aria-label="Kunden" title="Kunden (bisheriges Admin)"><Users /><span>Kunden</span><ExternalLink className="ext" /></button>
+            <a className="tb old" href="/admin" title="Bisheriges Admin"><ExternalLink /><span>Bisheriges Admin</span></a>
+            <button type="button" className="tb" onClick={logout} aria-label="Abmelden" title="Abmelden"><LogOut /><span>Abmelden</span></button>
+          </>
+        ) : null}
       </nav>
 
       {pane("orders", <OrdersList ctx={ctx} />, " list" + (!isDesk && stack.length > 1 ? " hidden" : ""))}

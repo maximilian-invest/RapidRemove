@@ -230,7 +230,7 @@ export function GlobalActivityScreen({ ctx }) {
   const st = (d && d.stats) || {};
   return (
     <>
-      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Aktivitäten</div>
       <div className="usrch" style={{ marginBottom: 12 }}><Search /><input type="search" placeholder="Kunde, RR-Nr., E-Mail, Aktion" value={q} onChange={(e) => setQ(e.target.value)} /></div>
       <div className="rsum" style={{ marginTop: 0 }}>

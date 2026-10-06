@@ -197,7 +197,7 @@ function SettingsScreen({ ctx }) {
   const pn = p ? p.name : "Partner";
   return (
     <>
-      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
       <div className="sec3"><h2>Automatische Weiterleitung</h2></div>
       <p className="sh">Neue Aufträge gehen direkt an {pn}, ohne manuelle Prüfung.</p>
@@ -219,7 +219,7 @@ function PartnerScreen({ ctx }) {
   const b = (partners && partners.board) || {};
   return (
     <>
-      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Partner</div>
       {!partners ? <div className="aempty"><b>Lädt …</b></div> : null}
       {list.map((p) => (

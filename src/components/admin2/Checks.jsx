@@ -77,7 +77,7 @@ export function ChecksScreen({ ctx }) {
 
   return (
     <>
-      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button>
+      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button>
         {chk.prog ? <span className="arc"><Loader />Recherche {chk.prog.done + 1}/{chk.prog.total}</span> : null}</div>
       <div className="hd" style={{ paddingTop: 4 }}><div><span>{openN} nicht beauftragt</span><h1>Geprüfte Profile</h1></div></div>
       <div className="usrch"><Search /><input type="search" placeholder="Profil, Name, E-Mail" value={chk.q} onChange={(e) => setChk((s) => ({ ...s, q: e.target.value }))} />
