@@ -17,6 +17,7 @@ import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
 import SupportChat from "./Chat";
 import PaySheet from "./PaySheet";
+import useSwipeClose from "./useSwipeClose";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -203,6 +204,8 @@ export default function CustomerDashboard() {
   const [ofilter, setOfilter] = React.useState("all");
   const [detailId, setDetailId] = React.useState(null);
   const [sheet, setSheet] = React.useState(null); // { orderId, key }
+  const rvRef = React.useRef(null);
+  useSwipeClose(rvRef, !!sheet, () => setSheet(null));
   const [flow, setFlow] = React.useState(null); // { step, items, pick:Set, mode, total, n, url }
   const [toast, setToast] = React.useState(null); // { m, bad }
   const [busy, setBusy] = React.useState("");
@@ -880,7 +883,7 @@ export default function CustomerDashboard() {
       <section className={"push" + (detail ? " show" : "")} aria-hidden={!detail}>{DetailV()}</section>
 
       <div className={"bg" + (sheetData ? " show" : "")} onClick={() => setSheet(null)} />
-      <div className={"rv-sheet" + (sheetData ? " show" : "")} aria-hidden={!sheetData}>
+      <div ref={rvRef} className={"rv-sheet" + (sheetData ? " show" : "")} aria-hidden={!sheetData}>
         {sheetData ? (() => {
           const { o, r } = sheetData; const st = stOf(r.status); const isSw = r.status === "software";
           return (

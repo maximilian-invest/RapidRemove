@@ -2,6 +2,7 @@
 /* Zahlung per Wise / PayPal (Kunde hat −10 % gewählt). Design: hell, zentrierter Betrag, Konto als „Karte"
    mit Glanz-Animation, 3 Schritte, Vertrauens-Leiste. Kopieren mit Häkchen-Feedback. */
 import React from "react";
+import useSwipeClose from "./useSwipeClose";
 import { X, Copy, Check, ArrowUpRight, ShieldCheck, Mail, Sparkles, AlertCircle, Lock } from "lucide-react";
 
 function useCountUp(target, run) {
@@ -18,6 +19,8 @@ function useCountUp(target, run) {
 
 export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regular, rows, ppUrl, ppHandle, wiseRef, showToast }) {
   const [copied, setCopied] = React.useState("");
+  const ref = React.useRef(null);
+  useSwipeClose(ref, open, onClose);
   const shown = useCountUp(amountNum, open);
   React.useEffect(() => { if (!open) setCopied(""); }, [open]);
   React.useEffect(() => { if (!copied) return; const t = setTimeout(() => setCopied(""), 1600); return () => clearTimeout(t); }, [copied]);
@@ -38,9 +41,10 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
   return (
     <>
       <div className={"bg" + (open ? " show" : "")} onClick={onClose} />
-      <div className={"psheet" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-label={isPP ? T("ppTitle") : T("wTitle")}>
+      <div ref={ref} className={"psheet" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-label={isPP ? T("ppTitle") : T("wTitle")}>
         {open ? (
           <>
+            <div className="grab" aria-hidden="true" />
             <div className="ps-top">
               <span className="ps-via">{isPP ? "PayPal" : "Wise"}</span>
               <button type="button" className="ps-x" onClick={onClose} aria-label={T("close")}><X /></button>
