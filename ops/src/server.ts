@@ -1585,6 +1585,8 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const payTotal = method ? (currency === "usd" ? `$${Math.round(totalNum * 0.9).toLocaleString("en-US")}` : `${Math.round(totalNum * 0.9).toLocaleString("de-DE")} €`) : "";
   // Zahlungslink wie bei der Rechnung auflösen (Stückzahl-Tabelle → Stripe anlegen → Betrag-Match).
   let url = method ? "-" : quote.simple ? reviewsLinkFor(count, currency) : "";
+  const isPreview = b.preview === true;
+  if (!url && isPreview) url = "https://buy.stripe.com/"; // Vorschau: keinen Stripe-Link anlegen
   if (!url && hasSecretKey()) {
     try { url = quote.simple ? await ensureReviewsLink(count, curSafe) : await ensureReviewsAmountLink(totalNum, curSafe); }
     catch (e) { app.log.error({ err: e }, "Reviews-Mahnung-Link anlegen fehlgeschlagen"); }
@@ -1608,6 +1610,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const t = TEMPLATES["mahnung-reviews"];
     const props = { lang: tlang, name: clip(b.name, 120), removedItems, per, total, payUrl: method ? "" : url, orderId, stage, method, payTotal };
     const html = await render(React.createElement(t.component, props as any));
+    if (isPreview) return { ok: true, preview: true, html, subject: t.subject(props as any), url, count, total, stage };
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({ orderId: orderId || undefined, email: to, type: "pay", title: `Mahnung (Bewertungen) gesendet · Stufe ${stage} (${STAGE_LABEL[stage]}${method ? ", " + (method === "wise" ? "Wise" : "PayPal") : ""})`, detail: `${count} Bewertung(en) · ${total} · Zahlung binnen 48 h · Sprache ${tlang.toUpperCase()} · an ${to}`, html, subject: t.subject(props as any) });
     return { ok: true, url, count, total, stage, lang: tlang };
@@ -1700,6 +1703,8 @@ app.post("/admin/paylink", async (req, reply) => {
     const stage = tplKey === "mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
     const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage };
     const html = await render(React.createElement(t.component, props as any));
+    // Vorschau (Admin neu): genau die Mail, wie sie der Kunde bekäme – ohne Versand/Protokoll.
+    if (b.preview === true) return { ok: true, preview: true, html, subject: t.subject(props as any), url };
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
     const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
@@ -1768,6 +1773,7 @@ app.post("/admin/send-template", async (req, reply) => {
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
     const { html, subject } = await renderTemplate(key, props as any);
+    if (b.preview === true) return { ok: true, preview: true, html, subject };
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel der PayPal-Mahnung startet mit „Mahnung" (für die Mahnstufen-Zählung via /mahnung/i).
     const PP_STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };

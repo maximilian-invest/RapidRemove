@@ -17,6 +17,7 @@ import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, 
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
+import { MahnSheet } from "./Mahnung";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
 const DESK_Q = "(min-width: 900px)";
@@ -124,7 +125,7 @@ export default function AdminNext() {
   };
   const openSheet = (s) => setSheet(s);
   const closeSheet = () => setSheet(null);
-  const openViewer = (v) => { setSheet(null); setViewer(v); };
+  const openViewer = (v) => { if (!v.keep) setSheet(null); setViewer(v); }; // keep: Sheet bleibt dahinter offen (z. B. Mahnung → Vorschau)
 
   /* Esc + Edge-Swipe zurück */
   React.useEffect(() => {
@@ -161,7 +162,7 @@ export default function AdminNext() {
       try { await doStatus(o, "done", { label: "Gelöscht", pay: o.pay === "paid" ? "paid" : o.pay || "pending" }); toast("Als erledigt markiert"); }
       catch (e) { toast("Fehler: " + e.message); }
     },
-    remind: (o) => openSheet({ kind: "tplsend", forId: o.id, key: "mahnung", label: "Mahnung / Zahlungserinnerung" }),
+    remind: (o) => openSheet({ kind: "mahn", forId: o.id }),
     storno: (o) => openSheet({ kind: "storno", forId: o.id }),
     reactivate: (o) => openSheet({ kind: "react", forId: o.id }),
   };
@@ -207,7 +208,7 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder,
   };
 
   const top = stack[stack.length - 1];
@@ -255,7 +256,7 @@ export default function AdminNext() {
           <>
             <div className="vt"><button type="button" className="circ" aria-label="Schließen" onClick={() => setViewer(null)}><X /></button><div><b>{viewer.title}</b><span>{viewer.sub}</span></div>
               {viewer.dl ? <a className="circ" href={viewer.dl} aria-label="Herunterladen"><Download /></a> : <span />}</div>
-            <div className="vi"><img src={viewer.src} alt="" /></div>
+            <div className={"vi" + (viewer.html ? " mail" : "")}>{viewer.html ? <iframe title="E-Mail" srcDoc={viewer.html} sandbox="allow-popups allow-popups-to-escape-sandbox" /> : <img src={viewer.src} alt="" />}</div>
             {viewer.open ? <div className="va"><a className="cta gh" href={viewer.open} target="_blank" rel="noopener noreferrer"><ExternalLink />Bewertung öffnen</a></div> : null}
           </>
         ) : null}
@@ -306,7 +307,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       );
     } else {
       const usage = readTplUsage();
-      const list = (tpls || []).filter((t) => t.key !== "storno-reviews" && t.key !== "storno-reviews-all");
+      const list = (tpls || []).filter((t) => !["storno-reviews", "storno-reviews-all", "mahnung", "mahnung-reviews"].includes(t.key)); // Mahnungen: eigener Ablauf (Mahnung senden)
       const top = [...list].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 5);
       const groups = ["Mitwirkung", "Storno", "Schutz", "Bestellung"].map((g) => [g, list.filter((t) => t.group === g)]).filter(([, l]) => l.length);
       const row = (t) => <Opt key={t.key} onClick={() => setConfirm({ key: t.key, label: t.label })} right={AUTO_KEYS.includes(t.key) ? <span className="zp" title="Wird sonst automatisch versendet"><Zap /></span> : null}><span className="ico"><Mail /></span><span className="ol">{t.label}</span></Opt>;
@@ -326,6 +327,8 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       <><h3>{sheet.title}</h3>
         <div className="opts">{sheet.opts.map(([k, l, img, n]) => <Opt key={k} on={sheet.cur === k} onClick={() => { sheet.onPick(k); close(); }} right={n != null ? <span className="c">{n}</span> : null}>{img ? <img src={img} alt="" /> : null}{l}</Opt>)}</div></>
     );
+  } else if (sheet && sheet.kind === "mahn" && o) {
+    body = <MahnSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {
     body = <CheckSheet key={sheet.c.id} c={sheet.c} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "storno" && o) {

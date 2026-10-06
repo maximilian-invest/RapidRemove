@@ -672,3 +672,7 @@ export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
 export const placeReviews = (placeId, lang) => adminPost("/admin/places/reviews", { placeId, lang: lang || "de" });
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
+/** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */
+export const payLinkMail = (payload) => adminPost("/admin/paylink", payload);
+export const templateMail = (payload) => adminPost("/admin/send-template", payload);
+export const reviewsMahnungMail = (payload) => adminPost("/admin/reviews-mahnung", payload);

@@ -105,8 +105,7 @@ export function OrderDetail({ ctx, id }) {
   const stepIx = b === "new" ? 0 : b === "work" ? 2 : b === "pay" || b === "inkasso" ? 3 : b === "deleted" ? 4 : -1;
   const primary =
     b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
-    : b === "pay" ? (isRev ? <a className="cta" href={`/admin?order=${encodeURIComponent(o.id)}`}><Send />Mahnung im alten Admin senden</a> : <button type="button" className="cta" onClick={() => act.remind(o)}><Send />Zahlungserinnerung senden</button>)
-    : b === "inkasso" ? <a className="cta" href={`/admin?order=${encodeURIComponent(o.id)}`}><Gavel />Inkasso im alten Admin ansehen</a>
+    : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
     : b === "work" ? <button type="button" className="cta" onClick={() => act.done(o)}><Check />Als erledigt markieren</button>
     : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
     : null;
