@@ -4,7 +4,7 @@
 import React from "react";
 import {
   Activity as ActIcon, ChevronRight, LogIn, LogOut, Eye, MousePointerClick, CreditCard, XCircle, CheckCircle2, ClipboardList,
-  MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft, Search,
+  MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft, Search, MessageCircle, Headphones,
 } from "lucide-react";
 import { customerActivity, custInviteOne, activityFeed } from "@/lib/admin-api";
 import { isOffen, ageMin, fmtAge } from "./model";
@@ -23,6 +23,9 @@ export const ACT_EV = {
   form_progress: [ClipboardList, "Fragebogen", "var(--ink)"],
   logout: [LogOut, "Ausgeloggt", "var(--g3)"],
   session_end: [LogOut, "Sitzung beendet", "var(--g3)"],
+  chat_open: [MessageCircle, "Chat geöffnet", "var(--ink)"],
+  chat_message: [MessageCircle, "Chat-Frage", "var(--info)"],
+  chat_ticket: [Headphones, "Team kontaktiert (Chat)", "var(--orange-800)"],
 };
 const p2 = (n) => String(n).padStart(2, "0");
 export function relTime(iso, now = Date.now()) {
@@ -43,7 +46,7 @@ const hhmm = (iso) => { const d = new Date(iso); return `${p2(d.getHours())}:${p
 const detailOf = (e) => {
   const m = e.meta || {};
   if (e.type === "login" || e.type === "dash_open") return [e.target !== "Dashboard geöffnet" ? e.target : "", m.device].filter(Boolean).join(" · ");
-  if (e.type === "click") return e.target ? `„${e.target}“` : "";
+  if (e.type === "click" || e.type === "chat_message") return e.target ? `„${e.target}“` : "";
   if (e.type === "mail_open") return [e.target, m.device].filter(Boolean).join(" · ");
   return e.target || "";
 };

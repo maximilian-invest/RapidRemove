@@ -367,7 +367,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old })), cur, items.length, "rest").total : 0)
     + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
-    id: o.id, created: o.created_at, lang: o.lang, cur, business: o.company || o.profile || "", cancelled,
+    id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
@@ -381,7 +381,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
 }
 type OrderView = ReturnType<typeof orderView>;
 
-async function loadCustomerOrders(email: string): Promise<{ name: string; lang: string; orders: OrderView[] }> {
+export async function loadCustomerOrders(email: string): Promise<{ name: string; lang: string; orders: OrderView[] }> {
   if (!pool) return { name: "", lang: "en", orders: [] };
   const r = await pool.query(
     `SELECT id, created_at, status, pay, lang, country, profile, company, name, raw FROM orders
