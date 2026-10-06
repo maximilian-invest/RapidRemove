@@ -406,3 +406,6 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .wsheet .wnote{font-size:13px;color:var(--g3);line-height:1.45;margin:12px 2px 4px;text-align:center}
 .rra .wsheet{max-height:92vh;overflow-y:auto}
 .rra .cfab.gone{opacity:0;pointer-events:none;transform:scale(.6)}
+.rra .wsheet .wff{display:flex;gap:10px;align-items:flex-start;background:#fff4e0;color:#5c3a00;border-radius:16px;padding:12px 14px;font-size:14px;font-weight:600;line-height:1.4;margin:6px 0 14px}
+.rra .wsheet .wff svg{width:18px;height:18px;flex:none;margin-top:1px}
+.rra .wsheet .cta.pp{background:#0070e0;color:#fff}

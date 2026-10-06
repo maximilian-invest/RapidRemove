@@ -33,6 +33,7 @@ import { startTracking, stopTracking, track, view } from "./tracker";
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_cust_session";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
+const PAYPAL_ME = (process.env.NEXT_PUBLIC_PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "").replace(/\/+$/, "");
 const IMG = { wallet: "/assets/app/wallet.webp", shield: "/assets/app/shield.webp", rocket: "/assets/app/rocket.webp" };
 
 async function call(path, body) {
@@ -416,7 +417,10 @@ export default function CustomerDashboard() {
   // Kunde hat Wise (−10 %) gewählt → „Bezahlen" zeigt unsere Wise-Kontodaten statt Stripe.
   const wiseBank = (data.wiseBank || []).filter(Boolean);
   const viaWise = !!(wiseBank.length && dueOrders.some((o) => o.cur === payCur && o.payPref === "wise"));
+  // PayPal (−10 %): PayPal.me-Link mit Betrag + Währung → Kunde sendet selbst (Freunde & Familie).
+  const viaPaypal = !viaWise && dueOrders.some((o) => o.cur === payCur && o.payPref === "paypal");
   const wiseAmount = Math.round(toPay * 0.9);
+  const ppUrl = `https://www.paypal.me/${PAYPAL_ME}/${wiseAmount}${String(payCur).toUpperCase()}`;
   const wiseRef = dueOrders.filter((o) => o.cur === payCur).map((o) => o.id).join(" ");
   const deposits = orders.flatMap((o) => (o.deposits || []).map((d) => ({ ...d, o })));
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
@@ -470,7 +474,7 @@ export default function CustomerDashboard() {
     }
   };
   const payAll = async () => {
-    if (viaWise) { track("payment_open", `Wise · ${wiseAmount} ${String(payCur).toUpperCase()}`, { via: "wise" }); setWiseOpen(true); return; }
+    if (viaWise || viaPaypal) { track("payment_open", `${viaWise ? "Wise" : "PayPal"} · ${wiseAmount} ${String(payCur).toUpperCase()}`, { via: viaWise ? "wise" : "paypal" }); setWiseOpen(true); return; }
     if (await checkout("pay", {}, "pay")) showToast(T("checkoutOpened"));
   };
 
@@ -531,8 +535,8 @@ export default function CustomerDashboard() {
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
-      <div className="v">{money(viaWise ? wiseAmount : toPay, payCur)}</div>
-      <div className="s">{viaWise ? `${T("wDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
+      <div className="v">{money(viaWise || viaPaypal ? wiseAmount : toPay, payCur)}</div>
+      <div className="s">{viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
       <div className="row">
         {payments ? <span /> : <span className="rem"><i />{T("remaining", { n: remaining })}</span>}
         <button className="pill-btn" disabled={!!busy} onClick={payAll}>{busy === "pay" ? <Loader className="spin" /> : null}{payments ? T("payNow") : T("pay")}</button>
@@ -900,6 +904,18 @@ export default function CustomerDashboard() {
         {wiseOpen ? (() => {
           const copy = (v) => { try { navigator.clipboard.writeText(v); showToast(T("wCopied")); } catch (e) { /* */ } };
           const rows = wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
+          if (viaPaypal) return (
+            <>
+              <div className="grab" />
+              <h3>{T("ppTitle")}</h3>
+              <div className="meta">{T("ppSub")}</div>
+              <div className="wbig"><span>{T("wAmount")}</span><b>{money(wiseAmount, payCur)}</b></div>
+              <div className="wrow hl"><span><small>{T("ppRef")}</small><b>{wiseRef}</b></span><button type="button" onClick={() => copy(wiseRef)} aria-label={T("wCopy")}><Copy /></button></div>
+              <div className="wff"><AlertCircle />{T("ppFF")}</div>
+              <a className="cta pp" href={ppUrl} target="_blank" rel="noopener noreferrer" data-track="PayPal öffnen"><ExternalLink />{T("ppBtn", { amount: money(wiseAmount, payCur) })}</a>
+              <p className="wnote">{T("ppNote")}</p>
+            </>
+          );
           return (
             <>
               <div className="grab" />
