@@ -35,10 +35,10 @@ export default function AdminNext() {
   const [now, setNow] = React.useState(() => Date.now());
   const [spin, setSpin] = React.useState(false);
 
-  const [tab, setTab] = React.useState(() => { try { return localStorage.getItem("rr_admin2_tab") || "orders"; } catch (e) { return "orders"; } });
+  const [tab, setTab] = React.useState("orders"); // Start immer: Aufträge › Neu
   const [stack, setStack] = React.useState([{ v: "list" }]); // Aufträge: list → detail → reviews
   const [moreSub, setMoreSub] = React.useState(null);
-  const [f, setFState] = React.useState({ scope: "open", tile: null, type: "all", staff: "all", q: "" });
+  const [f, setFState] = React.useState({ scope: "open", tile: "new", type: "all", staff: "all", q: "" });
   const [sheet, setSheet] = React.useState(null);
   const [viewer, setViewer] = React.useState(null);
   const [toastS, setToastS] = React.useState(null);
@@ -76,7 +76,6 @@ export default function AdminNext() {
     try { const id = new URLSearchParams(window.location.search).get("order"); if (id) { setTab("orders"); setStack([{ v: "list" }, { v: "detail", id }]); } } catch (e) {}
     return () => { clearInterval(iv); clearInterval(tick); mq.removeEventListener ? mq.removeEventListener("change", on) : mq.removeListener(on); };
   }, [reload]);
-  React.useEffect(() => { try { localStorage.setItem("rr_admin2_tab", tab); } catch (e) {} }, [tab]);
 
   const refresh = async () => { setSpin(false); requestAnimationFrame(() => setSpin(true)); setTimeout(() => setSpin(false), 800); await reload(false); };
   const monLoad = React.useCallback(() => monitorList().then(setMon).catch((e) => toast("Monitor: " + e.message)), [toast]);
