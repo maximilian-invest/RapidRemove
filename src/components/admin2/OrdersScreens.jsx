@@ -29,7 +29,7 @@ export function OrdersList({ ctx }) {
   const ql = f.q.trim().toLowerCase();
   const list = base.filter(inScope).filter((x) => !f.tile || x.b === f.tile)
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
-    .sort((a, b) => (f.scope === "open" ? b.m - a.m : a.m - b.m));
+    .sort((a, b) => (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))); // neueste zuerst (wie im bisherigen Admin)
   const newO = enriched.filter((x) => x.b === "new");
   const oldest = newO.reduce((mx, x) => Math.max(mx, x.m), 0);
   const openN = enriched.filter((x) => OPEN.includes(x.b)).length;
