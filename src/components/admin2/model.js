@@ -48,7 +48,8 @@ export const isLate = (b, m) => (b === "new" || b === "work") && m >= 2880;
 export const cur = (o) => (o.country === "US" ? "$" : "€");
 export function money(n, c = "€") {
   const v = Number(n) || 0;
-  return c === "$" ? "$" + v.toLocaleString("en-US", { maximumFractionDigits: 2 }) : v.toLocaleString("de-DE", { maximumFractionDigits: 2 }) + " €";
+  const d = Number.isInteger(v) ? 0 : 2; // 809.1 → 809.10
+  return c === "$" ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: 2 }) : v.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: 2 }) + " €";
 }
 export const orderMoney = (o) => (o.amount ? money(o.amount, cur(o)) : "—");
 
@@ -88,3 +89,11 @@ export function bumpTplUsage(key) { try { const u = readTplUsage(); u[key] = (u[
 export const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno"];
 /* Vorlagen, die das System automatisch verschickt (⚡ im Sheet). */
 export const AUTO_KEYS = ["auftragsbestaetigung", "auftragsbestaetigung-reviews", "zahlungsbestaetigung", "neues-abo", "abo-deaktiviert", "paypal-erinnerung", "profil-wiedererschienen", "presse-eingang"];
+
+/** Kunde will mit Wise/PayPal zahlen (Rabatt-Abfrage bzw. Fragebogen) → 10 % Rabatt. Wie payPrefName im alten Admin. */
+export function payPrefOf(o) {
+  if (!o) return null;
+  if (o.payPref === "wise") return "Wise";
+  if (o.payPref === "paypal" || o.paypal) return "PayPal";
+  return null;
+}

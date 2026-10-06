@@ -4,9 +4,9 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent,
 } from "lucide-react";
-import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
+import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer } from "./model";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
@@ -91,7 +91,7 @@ export function OrdersList({ ctx }) {
           <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} /><span className={"dt d-" + b} />{ST[b].l} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>{o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
+              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}<span className={"dt d-" + b} />{ST[b].l} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>{o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
         ))}
         {list.length > limit ? <button type="button" className="more-b" onClick={() => setLimit((x) => x + 100)}>Weitere {list.length - limit} anzeigen</button> : null}
@@ -128,6 +128,14 @@ export function OrderDetail({ ctx, id }) {
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
       <div className="amt"><div className="k">Bestellwert</div><div className="v">{orderMoney(o)}</div>
         <div className="r"><span className="st"><span className={"dt d-" + b} />{ST[b].l}</span><span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div></div>
+      {payPrefOf(o) && o.status !== "storniert" ? (
+        <div className="disc">
+          <span className="di"><Percent /></span>
+          <span className="t"><b>Kunde möchte per {payPrefOf(o)} zahlen → 10 % Rabatt gewähren</b>
+            <span>{isRev ? "Gilt auf die gelöschten Bewertungen" : <>Statt {computeOffer(o).regular} nur <b>{computeOffer(o).paypal}</b> · spart {computeOffer(o).savings}</>}{o.paypal && o.paypal !== "ja" ? <> · PayPal: {o.paypal}</> : null}</span>
+            {isRev || (o.lang || "de") !== "de" ? <span>Mahnungen gehen deshalb als {payPrefOf(o)}-Text ohne Stripe-Link raus.</span> : null}</span>
+        </div>
+      ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
