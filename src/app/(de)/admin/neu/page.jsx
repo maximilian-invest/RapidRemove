@@ -1,8 +1,15 @@
-"use client";
-/* Alte Adresse des neuen Admins → /admin (Parameter wie ?order= bleiben erhalten). */
-import React from "react";
+import AdminNextClient from "@/components/admin2/AdminNextClient";
+
+/* Gleiches neues Admin wie /admin. Bleibt bewusst OHNE Weiterleitung bestehen: Home-Bildschirm-Apps, die von
+   /admin/neu aus hinzugefügt wurden, haben diesen Pfad als Bereich – eine Weiterleitung nach /admin würde sie
+   aus dem App-Modus werfen (Safari-Leisten oben/unten). */
+export const metadata = {
+  title: "RapidRemove — Admin",
+  robots: { index: false, follow: false },
+  appleWebApp: { capable: true, title: "RR Admin", statusBarStyle: "default" },
+  icons: { apple: "/assets/app-icon-180.png" },
+};
 
 export default function Page() {
-  React.useEffect(() => { try { window.location.replace("/admin" + window.location.search + window.location.hash); } catch (e) { /* */ } }, []);
-  return <div style={{ padding: 40, fontFamily: "system-ui, sans-serif", color: "#6b6b6b" }}>Weiterleitung…</div>;
+  return <AdminNextClient />;
 }
