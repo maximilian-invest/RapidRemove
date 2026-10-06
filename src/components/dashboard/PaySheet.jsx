@@ -115,8 +115,10 @@ export default function PaySheet({ open, onClose, T, via, amountNum, fmt, regula
               <div className="ff-o on"><span className="ff-r"><Check /></span><b>{T("ffOpt1")}</b><em>−10 %</em></div>
               <div className="ff-o off"><span className="ff-r"><Ban /></span><b>{T("ffOpt2")}</b></div>
             </div>
+            <div className="ff-amt" onClick={() => copy("ffa", String(amountNum))}><span><small>{T("wAmount")}</small><b>{fmt(amountNum)}</b></span><CopyBtn k="ffa" v={String(amountNum)} /></div>
+            <p className="ff-app">{T("ffApp", { amount: fmt(amountNum) })}</p>
             <div className="ff-conf"><Mail /><span>{T("ffConf")}</span></div>
-            <a className="ps-cta pp" href={ppUrl} target="_blank" rel="noopener noreferrer" onClick={() => setTimeout(() => setFf(false), 400)} data-track="PayPal öffnen">{T("ffGo")}<ArrowUpRight /></a>
+            <a className="ps-cta pp" href={ppUrl} target="_blank" rel="noopener noreferrer" onClick={() => { try { navigator.clipboard.writeText(String(amountNum)); } catch (e) { /* */ } setTimeout(() => setFf(false), 400); }} data-track="PayPal öffnen">{T("ffGo")}<ArrowUpRight /></a>
             <button type="button" className="ff-back" onClick={() => setFf(false)}>{T("ffBack")}</button>
           </>
         ) : null}

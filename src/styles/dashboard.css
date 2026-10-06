@@ -521,3 +521,9 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 @keyframes ffpulse{0%,100%{box-shadow:0 0 0 0 rgba(0,112,224,0)}50%{box-shadow:0 0 0 6px rgba(0,112,224,.18)}}
 @media (prefers-reduced-motion:reduce){.rra .ffm.show .ff-ic,.rra .ffm.show .ff-o.on{animation:none}}
 .rra .ff-back{display:flex;align-items:center;justify-content:center;text-align:center}
+.rra .ff-amt{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:#f2f8ff;border-radius:16px;padding:10px 10px 10px 14px;margin-bottom:8px;cursor:pointer}
+.rra .ff-amt span{display:flex;flex-direction:column}
+.rra .ff-amt small{font-size:12px;color:#5b7aa0;font-weight:600}
+.rra .ff-amt b{font-size:22px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums}
+.rra .ff-amt .pc-copy{background:#fff;color:#0070e0}
+.rra .ffm p.ff-app{font-size:12.5px;line-height:1.45;color:#777;margin:0 0 12px;text-align:left}
