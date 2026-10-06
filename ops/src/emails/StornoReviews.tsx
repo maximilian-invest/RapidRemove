@@ -4,7 +4,8 @@
      · "age"  → Bewertung älter als 4 Wochen
      · "text" → Bewertung enthält keinen Text (reine Sternebewertung)
    Kernbotschaft: es entstehen KEINE Kosten (Zahlung ohnehin erst nach Erfolg).
-   Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton.
+   Deutsche Fassung enthalten (Sie-Form, für manuell angelegte Aufträge aus DACH);
+   übrige Sprachen im „du"-Ton.
    Sprache = die, über die der Kunde gekommen ist. */
 import * as React from "react";
 import { DashButton } from "./DashBox";
@@ -41,6 +42,24 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: "Zu Ihrem Auftrag zur Bewertungslöschung – diesen können wir leider nicht übernehmen",
+    preview: "Für Sie entstehen keine Kosten – hier erfahren Sie, warum es in diesem Fall nicht möglich ist.",
+    title: "Wir müssen diesen Auftrag stornieren",
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    p1: "vielen Dank für Ihren Auftrag – leider müssen wir ihn stornieren. Wir sagen es Ihnen lieber gleich, statt Sie wochenlang warten zu lassen.",
+    ageH: "Die Bewertung ist älter als 4 Wochen",
+    ageWhy: "Wir können nur Bewertungen übernehmen, die innerhalb der letzten 4 Wochen veröffentlicht wurden. Danach sinken die Chancen auf eine Löschung so stark, dass wir den Auftrag nicht guten Gewissens annehmen.",
+    textH: "Die Bewertung enthält keinen Text",
+    textWhy: "Reine Sternebewertungen ohne geschriebenen Text lassen sich auf diesem Weg nicht entfernen – es gibt schlicht nichts, das sich beanstanden ließe. Dieser Weg funktioniert nur bei Bewertungen mit Text.",
+    listH: "Betroffene Bewertungen",
+    freeH: "Keine Kosten für Sie",
+    free: "Ihnen wird nichts berechnet. Wie immer bei uns erfolgt die Zahlung erst nach einer erfolgreichen Löschung – und eine solche gab es hier nicht.",
+    againH: "Was Sie tun können",
+    again: "Sie haben eine andere Bewertung, die jünger als 4 Wochen ist und Text enthält? Senden Sie uns diese gerne – wir sehen sie uns umgehend an.",
+    close: "Es tut uns leid, dass wir diesmal nicht helfen konnten. Bei Fragen antworten Sie einfach auf diese E-Mail.",
+    signoff: "Freundliche Grüße,",
+  },
   en: {
     subject: "About your review removal order – we can't take this one on",
     preview: "No costs for you — here's why it doesn't work in this case.",

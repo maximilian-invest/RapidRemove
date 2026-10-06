@@ -6,7 +6,8 @@
    Variante PayPal/Wise (Kunde hat beim Absenden 10 % Rabatt gewählt): KEIN
    Stripe-Link, sondern der rabattierte Betrag + bei PayPal der Hinweis, dass der
    PayPal-Link separat kommt (unbedingt „Freunde & Familie"), bei Wise die Kontodaten.
-   Produkt nur außerhalb DACH → keine deutsche Fassung, „du"-Ton. */
+   Deutsche Fassung enthalten (Sie-Form, für manuell angelegte Aufträge aus DACH);
+   übrige Sprachen im „du"-Ton. */
 import * as React from "react";
 import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, CtaButton, Bullets, brand, type MailLang } from "./components";
@@ -54,6 +55,23 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: (n) => `Erledigt: ${n} Bewertung${n === 1 ? "" : "en"} gelöscht – Ihre Rechnung`,
+    preview: "Die Bewertungen sind entfernt. Hier sind Ihre Bestätigung und Ihre Rechnung.",
+    title: "Bewertungen gelöscht ✓",
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    p1: (n, of) => of > n
+      ? `gute Nachrichten – wir haben ${n} der ${of} von Ihnen eingereichten Bewertungen gelöscht. Wie zugesagt bezahlen Sie nur, was tatsächlich entfernt wurde.`
+      : `gute Nachrichten – ${n === 1 ? "die von Ihnen eingereichte Bewertung wurde" : `alle ${n} von Ihnen eingereichten Bewertungen wurden`} gelöscht.`,
+    listH: "Gelöschte Bewertungen",
+    billH: "Ihre Rechnung",
+    billLine: (n, per, total) => `${n} gelöschte Bewertung${n === 1 ? "" : "en"} × ${per} = ${total}`,
+    billOnly: "Berechnet werden ausschließlich gelöschte Bewertungen – eingereichte Bewertungen, die noch online sind, kosten Sie nichts.",
+    due: "Heute fällig – die Zahlung ist am Tag der Löschung fällig.",
+    cta: "Jetzt sicher bezahlen",
+    close: "Vielen Dank für Ihr Vertrauen! Bei Fragen zur Rechnung antworten Sie einfach auf diese E-Mail.",
+    signoff: "Freundliche Grüße,",
+  },
   en: {
     subject: (n) => `Done: ${n} review${n === 1 ? "" : "s"} removed — your invoice`,
     preview: "The reviews are gone. Here's your confirmation and invoice.",
@@ -229,6 +247,7 @@ export const T: Record<string, Entry> = {
 /** Texte für die PayPal-/Wise-Variante ({m} = Zahlweg, {t} = rabattierter Betrag). */
 interface ViaEntry { disc: string; pp1: string; pp2: string; wise1: string; ref: string }
 export const VIA: Record<string, ViaEntry> = {
+  de: { disc: "Mit Ihrem {m}-Rabatt von 10 % zahlen Sie: {t}", pp1: "Ihren PayPal-Zahlungslink erhalten Sie in Kürze in einer separaten E-Mail.", pp2: "Wichtig: Bitte wählen Sie bei der Zahlung unbedingt „Freunde und Familie“ (nicht „Waren oder Dienstleistungen“).", wise1: "Bitte überweisen Sie {t} per Wise auf folgendes Konto:", ref: "Verwendungszweck" },
   en: { disc: "With your 10 % {m} discount you pay: {t}", pp1: "Your PayPal payment link will follow in a separate email shortly.", pp2: "Important: when paying, please be sure to select “Friends and Family” (not “Goods and Services”).", wise1: "Please transfer {t} via Wise to the following account:", ref: "Payment reference" },
   es: { disc: "Con tu 10 % de descuento por {m} pagas: {t}", pp1: "En breve te enviaremos el enlace de pago de PayPal en un correo aparte.", pp2: "Importante: al pagar, selecciona sin falta «Amigos y familiares» (no «Bienes y servicios»).", wise1: "Transfiere {t} por Wise a la siguiente cuenta:", ref: "Concepto" },
   fr: { disc: "Avec ta remise de 10 % {m}, tu paies : {t}", pp1: "Le lien de paiement PayPal t'arrive très bientôt dans un e-mail séparé.", pp2: "Important : lors du paiement, choisis impérativement « Amis et famille » (et non « Biens et services »).", wise1: "Merci de virer {t} via Wise sur le compte suivant :", ref: "Référence" },

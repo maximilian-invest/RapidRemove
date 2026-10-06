@@ -11,6 +11,7 @@ const MAP: Record<DashSt, St | "declined"> = { new: "checking", working: "in_pro
 interface L { subjChanged: string; titleChanged: string; subject: string; title: string; hi: (n: string) => string; p: string; st: Record<St, string>; declined: string; swHint: (price: string, dep: string) => string; btn: string; close: string; signoff: string }
 
 const T: Record<string, L> = {
+  de: { subjChanged: "Statusänderung – Ihre Bewertungen", titleChanged: "Status geändert", subject: "Neuigkeiten zu Ihren Bewertungen – siehe Dashboard", title: "Neuigkeiten in Ihrem Dashboard", hi: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"), p: "es gibt Neuigkeiten zur Löschung Ihrer Bewertungen:", st: { checking: "wird geprüft", in_progress: "in Bearbeitung", removed: "gelöscht ✓", not_removable: "nicht löschbar (keine Kosten)", software_offer: "mit Spezial-Software möglich", software_in_progress: "in Bearbeitung (Spezial-Software)", cancelled: "storniert" }, declined: "abgelehnt (keine Kosten)", swHint: (p) => `Bitte entscheiden Sie in Ihrem Dashboard: ${p} pro Bewertung im Voraus bezahlen (99 % Erfolgsquote; volle Rückerstattung, falls die Bewertung nicht spätestens innerhalb von 14 Tagen gelöscht wird) – oder mit einem Klick ablehnen, das kostet nichts.`, btn: "Mein Dashboard öffnen", close: "Fragen? Antworten Sie einfach auf diese E-Mail.", signoff: "Mit freundlichen Grüßen," },
   en: { subjChanged: "Status changed – your reviews", titleChanged: "Status changed", subject: "News on your reviews – see your dashboard", title: "News in your dashboard", hi: (n) => (n ? `Hi ${n},` : "Hi there,"), p: "there's an update on your review removal:", st: { checking: "being checked", in_progress: "in progress", removed: "removed ✓", not_removable: "can't be removed (no charge)", software_offer: "possible with special software", software_in_progress: "in progress (special software)", cancelled: "cancelled" }, declined: "declined (no charge)", swHint: (p) => `Please decide in your dashboard: pay ${p} per review in advance (99 % success rate; full refund if the review isn't removed within 14 days at the latest) – or decline with one click, which costs nothing.`, btn: "Open my dashboard", close: "Questions? Just reply to this email.", signoff: "Warm regards," },
   es: { subjChanged: "Cambio de estado – tus reseñas", titleChanged: "Cambio de estado", subject: "Novedades sobre tus reseñas – mira tu panel", title: "Novedades en tu panel", hi: (n) => (n ? `Hola ${n}:` : "Hola:"), p: "hay novedades sobre la eliminación de tus reseñas:", st: { checking: "en revisión", in_progress: "en curso", removed: "eliminada ✓", not_removable: "no se puede eliminar (sin coste)", software_offer: "posible con software especial", software_in_progress: "en curso (software especial)", cancelled: "cancelada" }, declined: "rechazada (sin coste)", swHint: (p) => `Decide en tu panel: paga ${p} por reseña por adelantado (99 % de éxito; si la reseña no se elimina en un plazo máximo de 14 días, te devolvemos el importe íntegro) o recházalo con un clic, sin ningún coste.`, btn: "Abrir mi panel", close: "¿Preguntas? Responde a este correo.", signoff: "Un saludo," },
   fr: { subjChanged: "Changement de statut – tes avis", titleChanged: "Changement de statut", subject: "Du nouveau sur tes avis – vois ton tableau de bord", title: "Du nouveau dans ton tableau de bord", hi: (n) => (n ? `Bonjour ${n},` : "Bonjour,"), p: "il y a du nouveau sur la suppression de tes avis :", st: { checking: "en vérification", in_progress: "en cours", removed: "supprimé ✓", not_removable: "non supprimable (sans frais)", software_offer: "possible avec logiciel spécial", software_in_progress: "en cours (logiciel spécial)", cancelled: "annulé" }, declined: "refusé (sans frais)", swHint: (p) => `Décide dans ton tableau de bord : paie ${p} par avis d'avance (99 % de réussite ; remboursement intégral si l'avis n'est pas supprimé sous 14 jours au plus tard) – ou refuse en un clic, sans aucun frais.`, btn: "Ouvrir mon tableau de bord", close: "Une question ? Réponds simplement à cet e-mail.", signoff: "Bien à toi," },
@@ -29,20 +30,20 @@ export interface KundenUpdateProps {
   cur?: string; swPrice?: number; swDeposit?: number;
 }
 export function kundenUpdateSubject(p: KundenUpdateProps): string {
-  const t = T[p.lang && p.lang !== "de" ? p.lang : "en"] || T.en;
+  const t = T[p.lang && T[p.lang] ? p.lang : "en"] || T.en;
   return p.changed.some((c) => c.from) ? t.subjChanged : t.subject;
 }
 
 /** Kurztext für Push (kleine Statuswechsel gehen nur per Push raus). */
 export function kundenUpdatePush(lang: string | undefined, changed: KundenUpdateProps["changed"]): { title: string; body: string } {
-  const t = T[lang && lang !== "de" && T[lang] ? lang : "en"];
+  const t = T[lang && T[lang] ? lang : "en"];
   const label = (s: DashSt) => { const m = MAP[s]; return m === "declined" ? t.declined : m ? t.st[m] : s; };
   const parts = changed.slice(0, 3).map((c) => `${c.name || "Google"}: ${label(c.status)}`);
   return { title: t.titleChanged, body: parts.join(" · ") + (changed.length > 3 ? ` · +${changed.length - 3}` : "") };
 }
 
 export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "eur", swPrice = 300, swDeposit = 150 }: KundenUpdateProps) {
-  const l = lang && lang !== "de" && T[lang] ? lang : "en";
+  const l = lang && T[lang] ? lang : "en";
   const t = T[l];
   const hasSw = changed.some((c) => c.status === "software");
   const changedAny = changed.some((c) => c.from);

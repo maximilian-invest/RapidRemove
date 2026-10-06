@@ -2,7 +2,8 @@
    Geht SOFORT nach der Bestellung an den Kunden (wie bei allen Produkten).
    Hält die Abrechnungsregeln fest:
    bezahlt wird NUR je tatsächlich gelöschter Bewertung, fällig am Tag der
-   Löschung. Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton. */
+   Löschung. Fremdsprachen im „du"-Ton; deutsche Fassung (Sie-Form) für
+   manuell angelegte Aufträge aus DACH ist enthalten. */
 import * as React from "react";
 import { DashBox, type DashInfo } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
@@ -43,6 +44,23 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: (n) => `Auftrag erhalten – Löschung von ${n} Bewertung${n === 1 ? "" : "en"}`,
+    preview: "Wir haben Ihre Bewertungen erhalten – so funktioniert die Abrechnung.",
+    title: "Auftrag erhalten ✓",
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    p1: (n) => `vielen Dank für Ihren Auftrag! Wir haben ${n === 1 ? "die untenstehende Bewertung" : `die ${n} untenstehenden Bewertungen`} erhalten und beginnen umgehend mit der Bearbeitung.`,
+    listH: "Ihre eingereichten Bewertungen",
+    termsH: "So funktioniert die Abrechnung – zu Ihrem Vorteil",
+    term1: "Sie bezahlen nur für Bewertungen, die wir tatsächlich löschen.",
+    term2: "{per} je gelöschter Bewertung – löschen wir nur eine von fünf, bezahlen Sie auch nur diese eine.",
+    term3: "Die Zahlung ist am Tag der Löschung fällig. Am selben Tag erhalten Sie die Bestätigung samt Rechnung.",
+    condH: "Gut zu wissen",
+    cond1: "Bewertungen, die bis zu 4 Wochen alt sind, haben eine Erfolgsquote von rund 90 %, ältere Bewertungen von rund 50 % (für ältere Bewertungen fällt ein Aufschlag an, der im obigen Preis bereits enthalten ist).",
+    cond2: "Auch Bewertungen ohne Text (reine Sternebewertungen) können gelöscht werden – mit einem Sonderverfahren (betrifft nur wenige Sonderfälle) zu {nt} je Bewertung, vollständig im Voraus zu bezahlen, sobald wir sie annehmen – Erfolgsquote 99 %. Wird eine Bewertung nicht spätestens innerhalb von 14 Tagen gelöscht, erhalten Sie den vollen Betrag zurück.",
+    close: "Wir prüfen nun Ihre Bewertungen und melden uns, sobald wir begonnen haben. Bei Fragen antworten Sie einfach auf diese E-Mail.",
+    signoff: "Mit freundlichen Grüßen",
+  },
   en: {
     subject: (n) => `Order received – removal of ${n} review${n === 1 ? "" : "s"}`,
     preview: "We've got your reviews — here's how billing works.",

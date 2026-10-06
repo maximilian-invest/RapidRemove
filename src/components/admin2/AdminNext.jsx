@@ -33,8 +33,8 @@ const RV_STORNO = [
   ["text", "Kein Bewertungstext", "Nur Sterne, kein Text", MessageSquareOff],
 ];
 const LANG_L = { de: "Deutsch", en: "Englisch", fr: "Französisch", es: "Spanisch", it: "Italienisch", nl: "Niederländisch", pt: "Portugiesisch", sv: "Schwedisch", no: "Norwegisch", ja: "Japanisch" };
-/* Bewertungs-Storno: Sprache aus der Bestellung, sonst Englisch (Produkt außerhalb DACH) — wie im bisherigen Admin. */
-const rvLang = (o) => (o.lang && o.lang !== "de" ? o.lang : "en");
+/* Bewertungs-Storno: Sprache der Bestellung (Deutsch inkl.). */
+const rvLang = (o) => o.lang || "en";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
 
 export default function AdminNext() {

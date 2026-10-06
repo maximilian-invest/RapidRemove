@@ -3,7 +3,8 @@
    offen ist. 3-stufig: 1) freundliche Erinnerung, 2) 2. Mahnung, 3) letzte
    Mahnung — bei Stufe 3 drohen wir an, die gelöschten Bewertungen wieder
    online zu stellen (+ Inkasso). Zahlung jeweils innerhalb 48 Stunden.
-   Produkt nur außerhalb DACH → keine deutsche Fassung, „du"-Ton. */
+   Deutsche Fassung enthalten (Sie-Form, für manuell angelegte Aufträge aus DACH);
+   übrige Sprachen im „du"-Ton. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, DangerBox, CtaButton, brand, type MailLang } from "./components";
 
@@ -46,6 +47,25 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: ["Zahlungserinnerung – Ihre Rechnung ist noch offen", "2. Zahlungserinnerung – Ihre Rechnung ist weiterhin unbezahlt", "Letzte Mahnung – die gelöschten Bewertungen gehen wieder online"],
+    preview: ["Eine kurze Erinnerung an Ihre offene Rechnung.", "Ihre Rechnung ist weiterhin offen – bitte zahlen Sie innerhalb von 48 Stunden.", "Letzte Mahnung: Unbezahlte gelöschte Bewertungen werden wieder veröffentlicht."],
+    title: ["Zahlungserinnerung", "2. Zahlungserinnerung", "Letzte Mahnung"],
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    intro: [
+      "eine freundliche Erinnerung – die Rechnung für die Bewertungen, die wir für Sie gelöscht haben, ist noch offen. Bitte begleichen Sie den Betrag innerhalb der nächsten 48 Stunden.",
+      "Ihre Rechnung für die gelöschten Bewertungen ist weiterhin unbezahlt. Bitte begleichen Sie diese innerhalb von 48 Stunden, um weitere Schritte zu vermeiden.",
+      "trotz unserer Erinnerungen ist Ihre Rechnung für die gelöschten Bewertungen weiterhin unbezahlt. Dies ist unsere letzte Mahnung.",
+    ],
+    billH: "Offene Rechnung",
+    billLine: (n, per, total) => `${n} gelöschte Bewertung${n === 1 ? "" : "en"} × ${per} = ${total}`,
+    deadline: "Die Zahlung ist innerhalb von 48 Stunden fällig.",
+    warnH: "Was passiert, wenn Sie nicht zahlen",
+    warn: (n) => `Geht Ihre Zahlung nicht rechtzeitig bei uns ein, machen wir die Löschung rückgängig und ${n === 1 ? "die Bewertung wird wieder veröffentlicht" : `die ${n} Bewertungen werden wieder veröffentlicht`}. Zudem kann die Forderung an ein Inkassobüro übergeben werden.`,
+    cta: "Jetzt sicher bezahlen",
+    close: "Sie haben inzwischen bereits bezahlt? Dann betrachten Sie diese Erinnerung bitte als gegenstandslos – vielen Dank!",
+    signoff: "Freundliche Grüße,",
+  },
   en: {
     subject: ["Payment reminder — your invoice is still open", "Second reminder — invoice still unpaid", "Final notice — the removed reviews go back online"],
     preview: ["A quick reminder about your open invoice.", "Your invoice is still open — please pay within 48 hours.", "Final notice: unpaid removed reviews will be republished."],
@@ -245,7 +265,7 @@ export function subject(p: MahnungReviewsProps): string {
   return t.subject[clampStage(p.stage) - 1];
 }
 
-const PAY_VIA: Record<string, string> = {"de": "Bitte zahle über die {m}-Zahlungsdaten, die wir dir geschickt haben – mit 10 % Rabatt: {t}.", "en": "Please pay via the {m} payment details we sent you – with your 10% discount: {t}.", "es": "Paga a través de los datos de pago de {m} que te enviamos, con tu 10 % de descuento: {t}.", "fr": "Merci de payer via les coordonnées de paiement {m} que nous t’avons envoyées – avec ta remise de 10 % : {t}.", "it": "Paga tramite i dati di pagamento {m} che ti abbiamo inviato, con il tuo sconto del 10%: {t}.", "nl": "Betaal via de {m}-betaalgegevens die we je hebben gestuurd – met je 10% korting: {t}.", "pt": "Paga através dos dados de pagamento {m} que te enviámos – com o teu desconto de 10%: {t}.", "ja": "お送りした{m}のお支払い情報からお支払いください（10%割引後：{t}）。", "sv": "Betala via {m}-betalningsuppgifterna vi skickade till dig – med din rabatt på 10 %: {t}.", "da": "Betal via de {m}-betalingsoplysninger, vi sendte dig – med din rabat på 10 %: {t}.", "no": "Betal via {m}-betalingsopplysningene vi sendte deg – med rabatten din på 10 %: {t}."};
+const PAY_VIA: Record<string, string> = {"de": "Bitte zahlen Sie über die {m}-Zahlungsdaten, die wir Ihnen gesendet haben – mit 10 % Rabatt: {t}.", "en": "Please pay via the {m} payment details we sent you – with your 10% discount: {t}.", "es": "Paga a través de los datos de pago de {m} que te enviamos, con tu 10 % de descuento: {t}.", "fr": "Merci de payer via les coordonnées de paiement {m} que nous t’avons envoyées – avec ta remise de 10 % : {t}.", "it": "Paga tramite i dati di pagamento {m} che ti abbiamo inviato, con il tuo sconto del 10%: {t}.", "nl": "Betaal via de {m}-betaalgegevens die we je hebben gestuurd – met je 10% korting: {t}.", "pt": "Paga através dos dados de pagamento {m} que te enviámos – com o teu desconto de 10%: {t}.", "ja": "お送りした{m}のお支払い情報からお支払いください（10%割引後：{t}）。", "sv": "Betala via {m}-betalningsuppgifterna vi skickade till dig – med din rabatt på 10 %: {t}.", "da": "Betal via de {m}-betalingsoplysninger, vi sendte dig – med din rabat på 10 %: {t}.", "no": "Betal via {m}-betalingsopplysningene vi sendte deg – med rabatten din på 10 %: {t}."};
 
 export default function MahnungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], per = "", total = "", payUrl = "", orderId = "", stage = 1, method, payTotal = "", _overrides }: MahnungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;

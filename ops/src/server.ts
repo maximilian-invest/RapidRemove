@@ -1336,9 +1336,9 @@ app.post("/admin/reviews-start", async (req, reply) => {
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
-  // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
+  // Sprache der Bestellung (Deutsch ist enthalten, Sie-Form).
   const raw = mailLang(b.lang);
-  const tlang = raw === "de" ? "en" : raw;
+  const tlang = raw;
   const orderId = clip(b.orderId, 40);
   try {
     const t = TEMPLATES["bearbeitung-gestartet-reviews"];
@@ -1388,7 +1388,7 @@ app.post("/admin/reviews-storno", async (req, reply) => {
     return null;
   }).filter(Boolean) as StornoItem[];
   const raw = mailLang(b.lang);
-  const tlang = raw === "de" ? "en" : raw;
+  const tlang = raw;
   const orderId = clip(b.orderId, 40);
   try {
     const key = reason === "impossible" ? "storno-reviews-all" : "storno-reviews";
@@ -1598,9 +1598,9 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     : "STRIPE_SECRET_KEY fehlt auf dem ops-Server — es kann kein Zahlungslink angelegt werden." });
 
   const orderId = clip(b.orderId, 40);
-  // Sprache der Bestellung; Deutsch gibt es für dieses Produkt nicht → Englisch.
+  // Sprache der Bestellung (Deutsch ist enthalten, Sie-Form).
   const rawLang = mailLang(b.lang);
-  const tlang = rawLang === "de" ? "en" : rawLang;
+  const tlang = rawLang;
   const per = quote.per;
   const total = quote.totalStr;
   const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Mahnung", 3: "Letzte Mahnung" };
@@ -1908,7 +1908,7 @@ async function start() {
         for (const group of byEmail.values()) {
           const n = group[0];
           const changed = group.flatMap((g) => g.changed);
-          const lang = n.lang === "de" ? "en" : n.lang;
+          const lang = n.lang;
           // Push ging schon sofort bei der Änderung raus (partner.ts → pushCustomerNow).
           const important = changed.filter((c) => MAIL_WORTHY.has(c.status));
           if (!important.length) {

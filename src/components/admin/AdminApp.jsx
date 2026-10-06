@@ -1431,7 +1431,7 @@ const RV_STORNO = [
   { reason: "text", label: "kein Text", btn: "Storno: kein Text" },
 ];
 function ReviewsStornoPanel({ o, items, toast, onStatus }) {
-  const lang = o.lang && o.lang !== "de" ? o.lang : "en";
+  const lang = o.lang || "en";
   const [sending, setSending] = React.useState("");
   const [sent, setSent] = React.useState(null);
   // Eigener Bestätigungsdialog, damit der Block in beiden Detailansichten
@@ -1653,7 +1653,7 @@ function ReviewsInvoicePanel({ o, toast, onStatus }) {
   const chosen = items.filter((it, i) => sel[i] && !isDeclined(it) && !isPrepaid(it)).map((it) => (swKeys.has(keyOf(it)) ? { ...it, nt: true, sw: true } : it));
   const swChosen = started ? [] : items.filter((it, i) => swSel[i] && !sel[i]);
   const cur = o.country === "US" ? "usd" : "eur";
-  const lang = o.lang && o.lang !== "de" ? o.lang : "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
+  const lang = o.lang || "en"; // Bewertungs-Produkt gibt es nicht auf Deutsch
   // 179 je Bewertung, +50 für ältere als 4 Wochen, Mengenrabatt nach Anzahl (wie ops/reviewsPricing).
   const fmtM = (v) => cur === "usd" ? "$" + v.toLocaleString("en-US") : v.toLocaleString("de-DE") + " €";
   const nNt = chosen.filter((it) => it && it.nt).length;

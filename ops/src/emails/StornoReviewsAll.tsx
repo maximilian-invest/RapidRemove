@@ -1,7 +1,8 @@
 /* Template: Storno „Einzelne Bewertungen löschen" — ganze Bestellung, Löschung nicht möglich.
    Bewusst kurz: Die Bestellung ist storniert, weil die Löschung nicht möglich ist.
    Alles Weitere bekommt der Kunde über den Partner-Workflow.
-   Produkt nur außerhalb DACH → keine deutsche Fassung („de" → Englisch), „du"-Ton wie StornoReviews. */
+   Deutsche Fassung enthalten (Sie-Form, für manuell angelegte Aufträge aus DACH);
+   übrige Sprachen im „du"-Ton wie StornoReviews. */
 import * as React from "react";
 import { EmailShell, P, brand, type MailLang } from "./components";
 
@@ -19,6 +20,14 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: "Ihr Auftrag zur Bewertungslöschung wurde storniert",
+    preview: "Die Löschung ist nicht möglich – Ihre Bestellung wurde storniert.",
+    title: "Bestellung storniert",
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    p1: "leider ist die Löschung nicht möglich, daher haben wir Ihre gesamte Bestellung storniert.",
+    signoff: "Freundliche Grüße,",
+  },
   en: {
     subject: "Your review removal order has been cancelled",
     preview: "The removal isn't possible — your order has been cancelled.",

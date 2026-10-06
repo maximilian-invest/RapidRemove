@@ -3,7 +3,8 @@
    haben — das Gegenstück zur Auftragsbestätigung (Eingang) und zur
    Löschbestätigung (Ergebnis + Rechnung). Hält fest: Bearbeitung läuft,
    Dauer, Abrechnung nur je gelöschter Bewertung, keine Mitwirkung nötig.
-   Produkt nur außerhalb DACH → KEINE deutsche Fassung, „du"-Ton.
+   Produkt primär außerhalb DACH („du"-Ton); deutsche Fassung (Sie-Form) ist
+   enthalten — für manuell angelegte Aufträge aus DACH.
    Die Sprache wählt der Admin nach dem Land des Kunden. */
 import * as React from "react";
 import { DashButton } from "./DashBox";
@@ -61,6 +62,30 @@ interface Entry {
 }
 
 export const T: Record<string, Entry> = {
+  de: {
+    subject: (n) => `Wir haben begonnen – die Löschung ${n === 1 ? "Ihrer Bewertung" : `Ihrer ${n} Bewertungen`} läuft`,
+    preview: "Ihr Auftrag wird nun aktiv bearbeitet.",
+    title: "Wir haben begonnen ✓",
+    greeting: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
+    p1: (n) => `ein kurzes Update: Wir haben mit der Bearbeitung ${n === 1 ? "der unten angeführten Bewertung" : `der ${n} unten angeführten Bewertungen`} begonnen. Ihr Auftrag ist nun aktiv in Bearbeitung.`,
+    listH: "Woran wir arbeiten",
+    nextH: "Wie es weitergeht",
+    next1: "Eine Löschung dauert in der Regel einige Tage, manchmal bis zu drei Wochen.",
+    next2: "Sie müssen nichts weiter tun – wir melden uns, sobald es Neuigkeiten gibt.",
+    next3: "Sie bezahlen nur für Bewertungen, die wir tatsächlich löschen – fällig am Tag der Löschung.",
+    next4: "Jede Bewertung wird einzeln bearbeitet, daher kann die Dauer bis zur Löschung von Bewertung zu Bewertung unterschiedlich sein. Um es für Sie möglichst einfach zu halten, stellen wir jede gelöschte Bewertung unter Umständen separat in Rechnung – wundern Sie sich also nicht, wenn Sie für jede Bewertung einen eigenen Zahlungslink erhalten.",
+    declined: (n) => `Wir haben auch ${n === 1 ? "die weitere Bewertung" : `die weiteren ${n} Bewertungen`} geprüft, die Sie uns übermittelt haben: ${n === 1 ? "Diese kann" : "Diese können"} über die Verfahren von Google nicht gelöscht werden. Wir bearbeiten ${n === 1 ? "sie" : "diese"} daher nicht – und selbstverständlich entstehen Ihnen dafür keine Kosten.`,
+    sw: (n) => `Gute Nachrichten zu ${n === 1 ? "einer weiteren Bewertung" : `${n} weiteren Bewertungen`}: Eine Löschung auf dem regulären Weg ist zwar nicht möglich, wohl aber mit einer Spezial-Software. Diese betreiben wir nicht selbst – es handelt sich um einen externen Dienstleister, an den wir auslagern, weshalb es leider teurer ist: {price} pro Bewertung, vollständig im Voraus zu bezahlen – 99 % Erfolgsquote. Wird ${n === 1 ? "die Bewertung" : "eine Bewertung"} nicht spätestens innerhalb von 14 Tagen gelöscht, erhalten Sie den vollen Betrag${n === 1 ? "" : " dafür"} zurück. Wenn Sie das wünschen, bezahlen Sie einfach unten – wir beginnen, sobald Ihre Zahlung eingegangen ist.`,
+    swBtn: "Im Voraus bezahlen",
+    special: (n, price) => `Für ${n === 1 ? "diese Bewertung" : "diese Bewertungen"} gibt es noch eine weitere Möglichkeit: Eine Löschung ist nur mit einer Spezial-Software möglich. Diese betreiben wir nicht selbst – es handelt sich um einen externen Dienstleister, an den wir auslagern, weshalb es leider kostspielig ist: ${price} pro Bewertung, vollständig im Voraus zu bezahlen – 99 % Erfolgsquote. Wird ${n === 1 ? "die Bewertung" : "eine Bewertung"} nicht spätestens innerhalb von 14 Tagen gelöscht, erhalten Sie den vollen Betrag${n === 1 ? "" : " dafür"} zurück. Wenn Sie diesen Weg gehen möchten, antworten Sie bitte auf diese E-Mail und geben Sie uns Bescheid – wir beginnen erst nach Ihrer ausdrücklichen Bestätigung.`,
+    prepayH: "Vorauszahlung – Bewertungen ohne Text",
+    prepay: (n, amount) => `${n === 1 ? "Eine der Bewertungen enthält" : `${n} der Bewertungen enthalten`} keinen Text, daher löschen wir diese mit unserem speziellen, softwaregestützten Verfahren (99 % Erfolgsquote). Das betrifft nur wenige Sonderfälle: Der volle Betrag von ${amount} (Mengenrabatt bereits berücksichtigt) wird im Voraus bezahlt. Wird ${n === 1 ? "die Bewertung" : "eine Bewertung"} nicht spätestens innerhalb von 14 Tagen gelöscht, erhalten Sie den vollen Betrag${n === 1 ? "" : " dafür"} zurück. Wir beginnen, sobald Ihre Zahlung eingegangen ist.`,
+    prepayBtn: "Im Voraus bezahlen",
+    next3nt: "Bewertungen mit Text bezahlen Sie erst, wenn sie tatsächlich gelöscht wurden – fällig am Tag der Löschung. Bewertungen ohne Text werden im Voraus bezahlt – mit voller Rückerstattung, falls sie nicht spätestens innerhalb von 14 Tagen gelöscht werden.",
+    calm: "Wenn Sie ein paar Tage nichts von uns hören, ist das völlig normal – auf Seiten von Google braucht das seine Zeit. Wir bleiben dran.",
+    close: "Fragen in der Zwischenzeit? Antworten Sie einfach auf diese E-Mail.",
+    signoff: "Mit freundlichen Grüßen,",
+  },
   en: {
     subject: (n) => `We've started – removal of ${n === 1 ? "your review" : `your ${n} reviews`} is under way`,
     preview: "Your case is now actively being worked on.",

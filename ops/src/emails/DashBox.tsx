@@ -1,5 +1,6 @@
 /* Kunden-Dashboard in den Bewertungs-Mails: Box mit Zugangsdaten (Auftragsbestätigung)
-   bzw. „Dashboard öffnen"-Button (Status-Mails) + eigene Mail „neues Passwort". */
+   bzw. „Dashboard öffnen"-Button (Status-Mails) + eigene Mail „neues Passwort".
+   Inkl. deutscher Fassung (Sie-Form, für manuell angelegte Aufträge aus DACH). */
 import * as React from "react";
 import { EmailShell, P, NoteBox, CtaButton, brand, type MailLang } from "./components";
 
@@ -7,6 +8,7 @@ export interface DashInfo { url: string; email?: string; password?: string; exis
 
 interface L { h: string; p: string; login: string; pw: string; existing: string; btn: string; resetSubj: string; resetTitle: string; resetP: string; hi: string }
 export const DASH_L: Record<string, L> = {
+  de: { h: "Ihr persönliches Dashboard", p: "Verfolgen Sie jede Bewertung live – Status, Löschungen und Zahlungen – in Ihrem Dashboard. Zusätzlich informieren wir Sie per E-Mail, sobald sich etwas ändert.", login: "Login", pw: "Passwort", existing: "Melden Sie sich mit Ihrem bestehenden Passwort an (vergessen? Auf der Login-Seite können Sie ein neues anfordern).", btn: "Mein Dashboard öffnen", resetSubj: "Ihr neues Passwort für das RapidRemove-Dashboard", resetTitle: "Neues Passwort", resetP: "hier ist Ihr neues Passwort für Ihr RapidRemove-Dashboard:", hi: "Guten Tag," },
   en: { h: "Your personal dashboard", p: "Follow every review live – status, removals and payments – in your dashboard. We'll also email you whenever something changes.", login: "Login", pw: "Password", existing: "Log in with your existing password (forgot it? You can request a new one on the login page).", btn: "Open my dashboard", resetSubj: "Your new password for the RapidRemove dashboard", resetTitle: "New password", resetP: "here is your new password for your RapidRemove dashboard:", hi: "Hi," },
   es: { h: "Tu panel personal", p: "Sigue cada reseña en directo –estado, eliminaciones y pagos– en tu panel. Además te avisamos por correo cuando cambie algo.", login: "Usuario", pw: "Contraseña", existing: "Entra con tu contraseña actual (¿la olvidaste? Puedes pedir una nueva en la página de acceso).", btn: "Abrir mi panel", resetSubj: "Tu nueva contraseña del panel de RapidRemove", resetTitle: "Nueva contraseña", resetP: "esta es tu nueva contraseña para el panel de RapidRemove:", hi: "Hola:" },
   fr: { h: "Ton tableau de bord", p: "Suis chaque avis en direct – statut, suppressions et paiements – dans ton tableau de bord. Nous t'écrivons aussi dès que quelque chose change.", login: "Identifiant", pw: "Mot de passe", existing: "Connecte-toi avec ton mot de passe actuel (oublié ? Tu peux en demander un nouveau sur la page de connexion).", btn: "Ouvrir mon tableau de bord", resetSubj: "Ton nouveau mot de passe pour le tableau de bord RapidRemove", resetTitle: "Nouveau mot de passe", resetP: "voici ton nouveau mot de passe pour ton tableau de bord RapidRemove :", hi: "Bonjour," },
@@ -18,7 +20,7 @@ export const DASH_L: Record<string, L> = {
   da: { h: "Dit personlige dashboard", p: "Følg hver anmeldelse live – status, fjernelser og betalinger – i dit dashboard. Vi mailer dig også, så snart noget ændrer sig.", login: "Login", pw: "Adgangskode", existing: "Log ind med din nuværende adgangskode (glemt den? Du kan bede om en ny på login-siden).", btn: "Åbn mit dashboard", resetSubj: "Din nye adgangskode til RapidRemove-dashboardet", resetTitle: "Ny adgangskode", resetP: "her er din nye adgangskode til dit RapidRemove-dashboard:", hi: "Hej," },
   no: { h: "Ditt personlige dashbord", p: "Følg hver omtale live – status, fjerninger og betalinger – i dashbordet ditt. Vi sender deg også e-post så snart noe endrer seg.", login: "Innlogging", pw: "Passord", existing: "Logg inn med passordet du allerede har (glemt det? Du kan be om et nytt på innloggingssiden).", btn: "Åpne dashbordet mitt", resetSubj: "Ditt nye passord til RapidRemove-dashbordet", resetTitle: "Nytt passord", resetP: "her er det nye passordet ditt til RapidRemove-dashbordet:", hi: "Hei," },
 };
-const lOf = (lang?: string) => DASH_L[lang && lang !== "de" ? lang : "en"] || DASH_L.en;
+const lOf = (lang?: string) => DASH_L[lang || "en"] || DASH_L.en;
 
 /** Box mit Zugangsdaten (beim Anlegen) bzw. Hinweis aufs bestehende Konto + Button. */
 export function DashBox({ lang, dash }: { lang?: string; dash?: DashInfo }) {
@@ -47,7 +49,7 @@ export function DashButton({ lang, url }: { lang?: string; url?: string }) {
 
 export function resetMail(lang: string, email: string, password: string, url: string): { subject: string; el: React.ReactElement } {
   const l = lOf(lang);
-  const ml = (lang && lang !== "de" ? lang : "en") as MailLang;
+  const ml = (lang || "en") as MailLang;
   return {
     subject: l.resetSubj,
     el: (
