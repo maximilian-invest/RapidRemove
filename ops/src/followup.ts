@@ -98,7 +98,7 @@ async function analyze(email: string, now = Date.now()): Promise<Plan | null> {
   if (!pool) return null;
   const since = SINCE();
   const d = await loadCustomerOrders(email);
-  const orders = (d.orders || []).filter((o) => !o.cancelled);
+  const orders = (d.orders || []).filter((o) => !o.cancelled && (o as { kind?: string }).kind !== "profile"); // nur Einzelbewertungen
   if (!orders.length) return null;
   const meta = await pool.query(`SELECT id, country, raw->>'addr' AS addr, raw->>'payPref' AS pay_pref, form->>'paypal' AS pp FROM orders WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC`, [email]).catch(() => ({ rows: [] as Record<string, string | null>[] }));
   const m0 = meta.rows[0] || {};

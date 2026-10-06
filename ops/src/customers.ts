@@ -379,15 +379,44 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     deposits: payments.filter((p) => p.kind === "deposit" && !p.paid && p.url).map((p) => ({ id: p.id, amount: p.amount, cur: p.cur, url: p.url, n: p.n || null })),
   };
 }
-type OrderView = ReturnType<typeof orderView>;
+type OrderView = ReturnType<typeof orderView> & { kind?: "reviews" | "profile"; profileOrder?: ProfileInfo };
+/** Profil-Löschung (und andere Nicht-Bewertungs-Aufträge) im Kunden-Dashboard. */
+type ProfileInfo = {
+  service: string; status: "new" | "working" | "removed" | "cancelled"; paid: boolean; open: number;
+  amount: number; protAmount: number; protection: string | null; express: boolean; doneAt: string | null; addr: string | null;
+};
+type ProfileRow = OrderRow & { service: string | null; amount: number | string | null; prot_amount: number | string | null; protection: string | null; done_at: string | null };
+function profileView(o: ProfileRow): OrderView {
+  const raw = (o.raw || {}) as Record<string, unknown>;
+  const cur = o.country === "US" ? "usd" : "eur";
+  const st: ProfileInfo["status"] = o.status === "storniert" ? "cancelled" : o.status === "done" ? "removed" : o.status === "progress" ? "working" : "new";
+  const amount = Number(o.amount) || 0;
+  const protAmount = Number(o.prot_amount) || 0;
+  const express = raw.express === true || raw.express === "true";
+  const expressAmount = express ? Number(raw.expressAmount) || 0 : 0;
+  const oneTime = amount + expressAmount + (o.protection === "lifetime" ? protAmount : 0);
+  const paid = o.pay === "paid";
+  const info: ProfileInfo = {
+    service: o.service || "remove", status: st, paid, open: st === "removed" && !paid ? oneTime : 0,
+    amount: oneTime, protAmount, protection: o.protection || null, express, doneAt: o.done_at || null, addr: (raw.addr as string) || null,
+  };
+  return {
+    id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.profile || o.company || "", cancelled: st === "cancelled",
+    pct: 0, swPrice: 0, swDeposit: 0, toPay: 0, items: [],
+    history: paid && oneTime ? [{ id: "p-" + o.id, kind: "profile" as never, amount: oneTime, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
+    deposits: [], kind: "profile", profileOrder: info,
+  } as unknown as OrderView;
+}
 
 export async function loadCustomerOrders(email: string): Promise<{ name: string; lang: string; orders: OrderView[] }> {
   if (!pool) return { name: "", lang: "en", orders: [] };
-  const r = await pool.query(
-    `SELECT id, created_at, status, pay, lang, country, profile, company, name, raw FROM orders
-      WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 20`,
+  // Alle Aufträge des Kunden: Einzelbewertungen + Profil-Löschungen (Presse-Prüfungen „deindex" nicht).
+  const all = await pool.query(
+    `SELECT id, created_at, status, pay, lang, country, profile, company, name, raw, service, amount, prot_amount, protection, done_at FROM orders
+      WHERE lower(email)=$1 AND COALESCE(service,'') <> 'deindex' ORDER BY created_at DESC LIMIT 60`,
     [email],
   );
+  const r = { rows: all.rows.filter((x) => x.service === "reviews") };
   const ids = r.rows.map((x) => x.id);
   type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null; prev_status: string | null };
   const pt = ids.length
@@ -398,7 +427,8 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
     if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map());
     byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at, prev: t.prev_status });
   }
-  return { name: r.rows[0]?.name || "", lang: r.rows[0]?.lang || "en", orders: r.rows.map((o) => orderView(o, byOrder.get(o.id))) };
+  const views = all.rows.map((o) => (o.service === "reviews" ? ({ ...orderView(o, byOrder.get(o.id)), kind: "reviews" } as OrderView) : profileView(o as ProfileRow)));
+  return { name: all.rows[0]?.name || "", lang: all.rows[0]?.lang || "en", orders: views };
 }
 
 /* ---- Routen ---- */
@@ -585,7 +615,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (pool && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) && !limitedHour("reset-mail:" + email, 3)) {
       void (async () => {
         // Bestandskunde ohne Konto (Link bekommen, aber nie Zugangsdaten) → Konto jetzt anlegen.
-        const has = await pool!.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND service='reviews' ORDER BY created_at DESC LIMIT 1`, [email]);
+        const has = await pool!.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND COALESCE(service,'') <> 'deindex' ORDER BY created_at DESC LIMIT 1`, [email]);
         if (has.rowCount) await ensureCustomerAccount(email);
         const acc = await pool!.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [email]);
         if (!acc.rowCount) return;

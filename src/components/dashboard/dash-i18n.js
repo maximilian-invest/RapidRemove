@@ -4,6 +4,7 @@
 import LANGS from "./dash-i18n-langs";
 import APP from "./dash-i18n-app";
 import CHAT from "./dash-i18n-chat";
+import PROFILE from "./dash-i18n-profile";
 
 export const EN = {
   // Zeit
@@ -115,10 +116,10 @@ export function pickLang(...cands) {
 
 /** t(key, vars) für eine Sprache. */
 export function makeT(lang) {
-  const D = { ...EN, ...APP.en, ...CHAT.en, ...(LANGS[lang] || {}), ...(APP[lang] || {}), ...(CHAT[lang] || {}) };
+  const D = { ...EN, ...APP.en, ...CHAT.en, ...PROFILE.en, ...(LANGS[lang] || {}), ...(APP[lang] || {}), ...(CHAT[lang] || {}), ...(PROFILE[lang] || {}) };
   const pr = new Intl.PluralRules(localeOf(lang));
   return (key, vars = {}) => {
-    let v = D[key] ?? EN[key] ?? APP.en[key] ?? CHAT.en[key] ?? key;
+    let v = D[key] ?? EN[key] ?? APP.en[key] ?? CHAT.en[key] ?? PROFILE.en[key] ?? key;
     if (v && typeof v === "object") v = v[pr.select(Number(vars.n ?? 0))] ?? v.other ?? v.one;
     return String(v).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
   };

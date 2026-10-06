@@ -65,7 +65,14 @@ function contextOf(d: { name: string; lang: string; orders: Record<string, unkno
   lines.push(`Dashboard language: ${ui?.lang || d.lang || "en"} (use it only if the latest message's language is unclear). The team button below your reply is labelled "${ui?.contact || "Contact our team"}" – use exactly this label.`);
   if (!d.orders.length) lines.push("The customer has no orders in this dashboard yet.");
   let due = 0;
-  for (const o of d.orders.slice(0, 10)) {
+  const PST: Record<string, string> = { new: "order received, not started yet", working: "profile removal in progress", removed: "profile removed", cancelled: "cancelled" };
+  for (const o of d.orders.slice(0, 15)) {
+    const po = o.profileOrder as Record<string, unknown> | undefined;
+    if (o.kind === "profile" && po) {
+      const c = String(o.cur || cur);
+      lines.push(`Order ${o.id} · Google PROFILE removal (${po.service}) of "${clip(o.business, 80)}" · ordered ${String(o.created || "").slice(0, 10)} · status: ${PST[String(po.status)] || po.status}${po.status === "removed" ? (po.paid ? " · paid" : ` · payment open ${money(Number(po.open) || 0, c)} (payment link was sent by email)`) : ""}${po.protection ? ` · protection: ${po.protection}` : ""}.`);
+      continue;
+    }
     const items = (o.items as Record<string, unknown>[]) || [];
     const c = String(o.cur || cur);
     due += Number(o.toPay) || 0;

@@ -10,7 +10,7 @@ import React from "react";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store,
 } from "lucide-react";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -96,6 +96,13 @@ function Ring({ r, n }) {
     </div>
   );
 }
+
+/* Profil-Löschung: Symbol statt Fortschrittsring (grün = gelöscht, grau = storniert). */
+function ProfRing({ st }) {
+  return <div className={"ring prof p-" + st}><Store /></div>;
+}
+const isProf = (o) => o && o.kind === "profile" && o.profileOrder;
+const profOpen = (o) => isProf(o) && (["new", "working"].includes(o.profileOrder.status) || o.profileOrder.open > 0);
 
 /* ---- Login / Passwort vergessen ---- */
 function Login({ onToken, notice }) {
@@ -542,7 +549,7 @@ export default function CustomerDashboard() {
   const HomeV = () => (
     <>
       <div className="hhead">
-        <div><h1>{firstName ? T("hi", { name: firstName }) : T("hiNoName")}</h1><p className="hsub">{T("removedSoFar", { r: removedN, n: all.length })}</p></div>
+        <div><h1>{firstName ? T("hi", { name: firstName }) : T("hiNoName")}</h1><p className="hsub">{all.length ? T("removedSoFar", { r: removedN, n: all.length }) : T("ordersCount", { n: orders.length })}</p></div>
         <span className="av">{ini}</span>
       </div>
       <div className="hg">
@@ -556,6 +563,16 @@ export default function CustomerDashboard() {
           {orders.length ? (
             <div className="carousel">
               {orders.map((o) => {
+                if (isProf(o)) {
+                  const p = o.profileOrder;
+                  return (
+                    <button key={o.id} className="oc" onClick={() => setDetailId(o.id)}>
+                      <ProfRing st={p.status} />
+                      <span className="n">{o.business || T("orderN", { id: o.id })}</span>
+                      <span className="m">{p.open > 0 ? <b>{T("pOpen", { amount: money(p.open, o.cur) })}</b> : T("pst_" + p.status)}</span>
+                    </button>
+                  );
+                }
                 const n = o.items.length, r = o.items.filter((x) => x.status === "removed").length;
                 const act = o.items.some((x) => x.status === "software");
                 return (
@@ -586,7 +603,7 @@ export default function CustomerDashboard() {
   );
 
   const OrdersV = () => {
-    const F = { all: () => true, open: (o) => o.items.some((x) => OPEN.includes(x.status)), done: (o) => !o.items.some((x) => OPEN.includes(x.status)) };
+    const F = { all: () => true, open: (o) => (isProf(o) ? profOpen(o) : o.items.some((x) => OPEN.includes(x.status))), done: (o) => (isProf(o) ? !profOpen(o) : !o.items.some((x) => OPEN.includes(x.status))) };
     const l = orders.filter(F[ofilter]);
     return (
       <>
@@ -597,6 +614,20 @@ export default function CustomerDashboard() {
           ))}
         </div>
         {l.length ? l.map((o) => {
+          if (isProf(o)) {
+            const p = o.profileOrder;
+            return (
+              <button key={o.id} className="orow" onClick={() => setDetailId(o.id)}>
+                <ProfRing st={p.status} />
+                <span className="t">
+                  <b>{o.business || T("orderN", { id: o.id })}</b>
+                  <span>{T("svc_" + p.service) !== "svc_" + p.service ? T("svc_" + p.service) : T("pTag")} · #{o.id} · {shortDate(o.created)}</span>
+                  {p.open > 0 ? <><br /><span className="tag pr"><AlertCircle />{T("pOpen", { amount: money(p.open, o.cur) })}</span></> : null}
+                </span>
+                <ChevronRight />
+              </button>
+            );
+          }
           const n = o.items.length, r = o.items.filter((x) => x.status === "removed").length, act = o.items.some((x) => x.status === "software");
           return (
             <button key={o.id} className="orow" onClick={() => setDetailId(o.id)}>
@@ -624,7 +655,7 @@ export default function CustomerDashboard() {
         <div key={h.id} className="paycard">
           <span className="ico"><Receipt /></span>
           <span>
-            <b>{h.kind === "software" ? T("h_software") : h.kind === "deposit" ? T("h_deposit") : T("h_invoice")}{h.n > 1 ? " · " + T("hReviews", { n: h.n }) : ""}</b>
+            <b>{h.kind === "profile" ? (isProf(h.o) && T("svc_" + h.o.profileOrder.service) !== "svc_" + h.o.profileOrder.service ? T("svc_" + h.o.profileOrder.service) : T("pTag")) : h.kind === "software" ? T("h_software") : h.kind === "deposit" ? T("h_deposit") : T("h_invoice")}{h.n > 1 ? " · " + T("hReviews", { n: h.n }) : ""}</b>
             <span>{(h.names.length ? h.names.join(", ") : h.o.business) + " · " + shortDate(h.paid)}</span>
           </span>
           <span className="amt">{money(h.amount, h.cur)}</span>
@@ -658,6 +689,28 @@ export default function CustomerDashboard() {
   const detail = detailId ? orders.find((o) => o.id === detailId) : null;
   const DetailV = () => {
     const o = detail; if (!o) return null;
+    if (isProf(o)) {
+      const p = o.profileOrder;
+      const rank = p.status === "cancelled" ? -1 : p.paid ? 4 : p.status === "removed" ? 3 : p.status === "working" ? 1 : 0;
+      const svc = T("svc_" + p.service) !== "svc_" + p.service ? T("svc_" + p.service) : T("pTag");
+      return (
+        <>
+          <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
+          <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>{svc} · #{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
+          <div className="bigprog"><ProfRing st={p.status} /><span><b>{T("pst_" + p.status)}</b><span>{p.paid ? T("pPaid") : p.open > 0 ? T("pOpen", { amount: money(p.open, o.cur) }) : p.addr || ""}</span></span></div>
+          {p.open > 0 ? <div className="paycard due pwrap" style={{ marginBottom: 18 }}><span className="ico pr"><Wallet /></span><span><b>{T("pOpen", { amount: money(p.open, o.cur) })}</b><span>{T("pPayNote")}</span></span></div> : null}
+          {rank >= 0 ? (
+            <div className="psteps">
+              {[T("pStep1"), T("pStep2"), T("pStep3"), T("pStep4")].map((lb, i) => (
+                <div key={i} className={"pstep" + (i < rank || (i === 3 && p.paid) ? " done" : i === rank ? " cur" : "")}><i>{i < rank || (i === 3 && p.paid) ? <Check /> : null}</i><b>{lb}</b></div>
+              ))}
+            </div>
+          ) : null}
+          <div className="sec" style={{ marginTop: 18 }}><h2>{T("pAmount")}</h2></div>
+          <div className="paycard"><span className="ico"><Receipt /></span><span><b>{svc}</b><span>{p.protection ? T("pProt_" + p.protection) : "#" + o.id}</span></span><span className="amt">{money(p.amount, o.cur)}</span></div>
+        </>
+      );
+    }
     const n = o.items.length, r = o.items.filter((x) => x.status === "removed").length;
     const op = o.items.filter((x) => OPEN.includes(x.status)).length, s = o.items.filter((x) => x.status === "software").length;
     return (
