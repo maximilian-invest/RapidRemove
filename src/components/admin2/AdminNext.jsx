@@ -399,6 +399,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       const run = async (fn, okMsg) => { setBusy(true); try { await fn(); toast(okMsg); monLoad(); } catch (e) { toast("Fehler: " + e.message); } setBusy(false); close(); };
       body = (
         <><h3 style={{ paddingBottom: 2 }}>{p.name}</h3><p className="shp" style={{ color: s[1], fontWeight: 600 }}>{s[0]} · zuletzt {fmtDT(p.lastCheckAt || p.foundAt)}</p>
+          {p.status === "fail" && p.lastNote ? <p className="shp" style={{ fontSize: 13, wordBreak: "break-word" }}>{p.lastNote}</p> : null}
           {sheet.inform ? (
             <><p className="shp">Kunde {p.custName || ""} {p.custEmail ? `(${p.custEmail})` : ""} per Mail informieren, dass das Profil wieder online ist?</p>
               <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta" disabled={busy || !p.custEmail} onClick={() => run(() => monitorInform(p.id), "Kunde informiert")}><Mail />Informieren</button></div></>
