@@ -27,6 +27,7 @@ import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat } from "./chat/chat";
+import { notifyTeam } from "./notify";
 import { startFollowupWorker, registerFollowupRoutes } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
@@ -1950,7 +1951,16 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
-    startFollowupWorker(app);     // Nachfassen: alle 10 Min., Versand nur 8–20 Uhr Ortszeit des Kunden
+    startFollowupWorker(app);
+    // Einmalige Team-Push: neues Admin-Dashboard ist live (nur 1×, Merker in ops_flags; 3 Min. Verzögerung, bis die Website deployt ist).
+    setTimeout(() => void (async () => {
+      try {
+        if (!pool) return;
+        await pool.query(`CREATE TABLE IF NOT EXISTS ops_flags (key text PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now())`);
+        const r = await pool.query(`INSERT INTO ops_flags (key) VALUES ('announce-admin-v2') ON CONFLICT DO NOTHING RETURNING key`);
+        if (r.rowCount) await notifyTeam("Das neue Dashboard ist da! 🚀", "Schau es dir jetzt an", `${process.env.SITE_URL || "https://www.rapid-remove.com"}/admin`, { tag: "rr-admin-v2", kind: "info" });
+      } catch (e) { app.log.error({ err: e }, "Ankündigungs-Push fehlgeschlagen"); }
+    })(), 3 * 60_000);     // Nachfassen: alle 10 Min., Versand nur 8–20 Uhr Ortszeit des Kunden
     startLeadEnrichWorker(app);   // Auto-E-Mail-Recherche (aktiv nur mit GOOGLE_MAPS_API_KEY)
     // Bewertungs-Screenshots der letzten 14 Tage nachholen (nur mit SCREENSHOTONE_KEY;
     // fehlende werden ergänzt, vorhandene übersprungen). 20 s Verzögerung nach dem Start.

@@ -124,7 +124,7 @@ export function OrderDetail({ ctx, id }) {
     : null;
   return (
     <>
-      <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
+      <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin/alt?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
       <div className="amt"><div className="k">Bestellwert</div><div className="v">{orderMoney(o)}</div>
         <div className="r"><span className="st"><span className={"dt d-" + b} />{ST[b].l}</span><span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div></div>
@@ -237,7 +237,7 @@ export function ReviewsScreen({ ctx, id }) {
         })}
         {isRev && !items.length ? <div className="aempty"><b>Keine Bewertungen</b>Am Auftrag ist nichts gespeichert.</div> : null}
       </div>
-      {isRev && removed ? <div className="stick"><a className="cta or" href={`/admin?order=${encodeURIComponent(o.id)}`}><Receipt />Rechnung senden · {removed} gelöscht</a></div> : null}
+      {isRev && removed ? <div className="stick"><a className="cta or" href={`/admin/alt?order=${encodeURIComponent(o.id)}`}><Receipt />Rechnung senden · {removed} gelöscht</a></div> : null}
     </>
   );
 }

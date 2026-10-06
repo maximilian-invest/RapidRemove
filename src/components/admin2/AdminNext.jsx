@@ -1,6 +1,6 @@
 "use client";
 /* RapidRemove Admin (neu) — Claude-Design-Handoff „Admin-App · Aufträge & Navigation".
-   Läuft unter /admin/neu parallel zum alten /admin: gleicher Login, gleiche echte Daten, gleiche Backend-Aktionen.
+   Läuft unter /admin (seit 06.10.2026); das alte Admin liegt unter /admin/alt: gleicher Login, gleiche echte Daten, gleiche Backend-Aktionen.
    Mobil: schwebende Tab-Pille, Push-Screens, Bottom-Sheets. Desktop (≥ 900 px): Sidebar, Drawer von rechts, Modals. */
 import React from "react";
 import {
@@ -236,7 +236,7 @@ export default function AdminNext() {
   const deskTabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"],
     ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"]];
   const isOn = (k) => (k.startsWith("more:") ? tab === "more" && moreSub === k.slice(5) : tab === k);
-  const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin"; };
+  const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin/alt"; };
   const pane = (k, body, extra = "") => (
     <main key={k} className={"scr" + extra} ref={(el) => { paneRefs.current[k] = el; }} style={{ display: tab === k ? undefined : "none" }}
       onPointerDown={onDown} onPointerUp={onUp}>{body}</main>
@@ -258,7 +258,7 @@ export default function AdminNext() {
           <>
             <button type="button" className="tb" onClick={() => toOld("templates")} aria-label="Vorlagen" title="Vorlagen (bisheriges Admin)"><Mail /><span>Vorlagen</span><ExternalLink className="ext" /></button>
             <button type="button" className="tb" onClick={() => toOld("customers")} aria-label="Kunden" title="Kunden (bisheriges Admin)"><Users /><span>Kunden</span><ExternalLink className="ext" /></button>
-            <a className="tb old" href="/admin" title="Bisheriges Admin"><ExternalLink /><span>Bisheriges Admin</span></a>
+            <a className="tb old" href="/admin/alt" title="Bisheriges Admin"><ExternalLink /><span>Bisheriges Admin</span></a>
             <button type="button" className="tb" onClick={logout} aria-label="Abmelden" title="Abmelden"><LogOut /><span>Abmelden</span></button>
           </>
         ) : null}

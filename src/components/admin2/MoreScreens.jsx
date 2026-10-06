@@ -176,8 +176,8 @@ export function Account({ ctx }) {
     [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
     [ActIcon, "Aktivitäten", () => setMoreSub("activity")],
-    [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin"; }],
-    [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin"; }],
+    [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin/alt"; }],
+    [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin/alt"; }],
     [Settings, "Einstellungen", () => setMoreSub("settings")],
     [LogOut, "Abmelden", logout],
   ];
@@ -186,7 +186,7 @@ export function Account({ ctx }) {
       <div className="ttl">Konto</div>
       <div className="mgrid">{tiles.map(([I, l, fn]) => <button key={l} type="button" className="mg" onClick={fn}><span className="ico"><I /></span>{l}</button>)}</div>
       <p className="sh" style={{ marginTop: 16 }}>Vorlagen und Kunden öffnen vorerst noch im bisherigen Admin.</p>
-      <a className="cta gh" style={{ marginTop: 8 }} href="/admin">Zum bisherigen Admin</a>
+      <a className="cta gh" style={{ marginTop: 8 }} href="/admin/alt">Zum bisherigen Admin</a>
     </>
   );
 }
