@@ -6,7 +6,7 @@ import {
   ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check,
 } from "lucide-react";
 import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
-import { Avatar } from "./OrdersScreens";
+import { Avatar, KTag } from "./OrdersScreens";
 import { monitorShotUrl } from "@/lib/admin-api";
 
 /* ---------------- Übersicht ---------------- */
@@ -61,7 +61,7 @@ export function Overview({ ctx }) {
       <div className="card pipe">{pipe.map(([l, n, c]) => <div key={l} className="pr"><div className="t"><span>{l}</span><b>{n}</b></div><span className="bar"><i style={{ "--w": (n / pm) * 100 + "%", background: c }} /></span></div>)}</div>
       <div className="sec3"><h2>Neueste Aufträge</h2><button type="button" className="lk" onClick={() => goOrders(null)}>Alle<ChevronRight /></button></div>
       <div className="card ls">{recent.map((o) => { const bb = bucket(o, now); return (
-        <button key={o.id} type="button" className="ord" onClick={() => openOrder(o.id, true)}><Avatar o={o} /><span className="t"><span className="l1"><b>{o.name || o.email}</b><span className="p">{orderMoney(o)}</span></span><span className="l2"><span className={"dt d-" + bb} />{ST[bb].l} · {fmtAge(ageMin(o, bb, now))}</span></span></button>
+        <button key={o.id} type="button" className="ord" onClick={() => openOrder(o.id, true)}><Avatar o={o} /><span className="t"><span className="l1"><b>{o.name || o.email}</b><span className="p">{orderMoney(o)}</span></span><span className="l2"><KTag o={o} /><span className={"dt d-" + bb} />{ST[bb].l} · {fmtAge(ageMin(o, bb, now))}</span></span></button>
       ); })}</div>
     </>
   );

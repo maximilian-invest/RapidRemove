@@ -15,6 +15,7 @@ import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
 import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen } from "./model";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
+import NewOrder from "./NewOrder";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
 const DESK_Q = "(min-width: 900px)";
@@ -107,6 +108,7 @@ export default function AdminNext() {
   };
   const pushReviews = (id) => { setStack((s) => [...s.filter((x) => x.v !== "reviews"), { v: "reviews", id }]); requestAnimationFrame(() => scrollTop("push")); };
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+  const newOrder = () => { setTab("orders"); setStack([{ v: "list" }, { v: "new", id: "n" + Date.now() }]); requestAnimationFrame(() => scrollTop("push")); };
   const closeDrawer = () => setStack([{ v: "list" }]);
   const goOrders = (tile) => { setTab("orders"); setStack([{ v: "list" }]); setF({ scope: "open", tile }); };
   const switchTab = (k) => {
@@ -203,10 +205,13 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
+    newOrder, scrollPush: () => scrollTop("push"),
   };
 
   const top = stack[stack.length - 1];
-  const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} /> : null;
+  const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} />
+    : top.v === "new" ? <NewOrder key={top.id} ctx={{ ...ctx, back: isDesk ? closeDrawer : back }} /> : null;
+  const inFlow = tab === "orders" && top.v === "new";
   const nNew = orders.filter((o) => o.status === "new").length;
   const nFound = mon ? (mon.profiles || []).filter((p) => p.status === "found").length : 0;
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
@@ -216,7 +221,7 @@ export default function AdminNext() {
   );
 
   return (
-    <div className={"an" + (isDesk ? " desk" : " mob")}>
+    <div className={"an" + (isDesk ? " desk" : " mob") + (inFlow ? " flow" : "")}>
       <nav className="tabbar">
         {isDesk ? <img className="logo" src={asset("/assets/admin/logo-full.webp")} alt="RapidRemove" /> : null}
         {tabs.map(([k, I, l, n, c]) => (
@@ -314,6 +319,11 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
           )}</>
       );
     }
+  } else if (sheet && sheet.kind === "pick") {
+    body = (
+      <><h3>{sheet.title}</h3>
+        <div className="opts">{sheet.opts.map(([k, l, img]) => <Opt key={k} on={sheet.cur === k} onClick={() => { sheet.onPick(k); close(); }}>{img ? <img src={img} alt="" /> : null}{l}</Opt>)}</div></>
+    );
   } else if (sheet && sheet.kind === "storno" && o) {
     const isRev = o.service === "reviews";
     const openPt = (ptasks[o.id] || []).filter((t) => t.status === "new" || t.status === "working").length;

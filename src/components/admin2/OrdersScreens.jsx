@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star,
 } from "lucide-react";
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
 
@@ -18,6 +18,12 @@ export function Avatar({ o, big }) {
       {a.ini}{s && !big ? <img className="as" src={s.src} alt="" /> : null}
     </span>
   );
+}
+
+/** Kategorie-Tag vor dem Status: Bewertungen (grau, Stern) · Profil (orange, Laden). */
+export function KTag({ o }) {
+  const p = o.service !== "reviews";
+  return <span className={"ktag" + (p ? " kp" : "")}>{p ? <Store /> : <Star />}{p ? "Profil" : "Bewertungen"}</span>;
 }
 
 /* ---------------- Liste ---------------- */
@@ -44,7 +50,7 @@ export function OrdersList({ ctx }) {
       <div className="hd"><div><span>{hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend"}</span><h1>Aufträge</h1></div>
         <button type="button" className="circ" aria-label="Aktualisieren" onClick={refresh}><Bell />{newO.length ? <span className="dot" /> : null}</button></div>
       <button type="button" className={"hcard" + (f.tile === "new" ? " on" : "")} onClick={() => setF({ scope: "open", tile: f.tile === "new" ? null : "new" })}>
-        <span className="hpill"><Sparkles />Neue Aufträge<ChevronRight /></span>
+        <span className="hpill" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); ctx.newOrder(); }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); ctx.newOrder(); } }}><Plus />Neuer Auftrag<ChevronRight /></span>
         <b>{loaded ? newO.length : "–"}</b>
         <span className="ahs">{newO.length ? "Ältester wartet seit " + fmtAge(oldest) : "Alles abgearbeitet"}</span>
         <img className="himg" src={IMG("hero")} alt="" />
@@ -72,7 +78,7 @@ export function OrdersList({ ctx }) {
           <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{orderMoney(o)}</span></span>
-              <span className="l2"><span className={"dt d-" + b} />{ST[b].l} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>{o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
+              <span className="l2"><KTag o={o} /><span className={"dt d-" + b} />{ST[b].l} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>{o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
         ))}
         {list.length > limit ? <button type="button" className="more-b" onClick={() => setLimit((x) => x + 100)}>Weitere {list.length - limit} anzeigen</button> : null}

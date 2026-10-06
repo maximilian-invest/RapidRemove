@@ -666,3 +666,7 @@ async function adminPost(path, body) {
 }
 export const partnersList = () => adminPost("/admin/partners");
 export const partnerSave = (p) => adminPost("/admin/partners/save", p);
+/** Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen → { id, amount, currency, mailed, partner }. */
+export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
+/** Bewertungen eines Google-Profils (SerpApi) zum Anhaken → { enabled, reviews:[{id,name,rating,text,days,link}] }. */
+export const placeReviews = (placeId, lang) => adminPost("/admin/places/reviews", { placeId, lang: lang || "de" });

@@ -575,6 +575,115 @@ app.post("/order", async (req, reply) => {
   return result;
 });
 
+// Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen (Telefon/WhatsApp-Kunden).
+// Läuft wie eine Website-Bestellung: gleiche Preise (Bewertungen: 179/Stk., +50 älter 4 Wo.,
+// Mengenrabatt; Profil: 450 € / $495), gleiche Auftragsbestätigung (optional), Partner-Auto-
+// Weiterleitung, Screenshots und Verlauf. Land-Chip bestimmt Währung + Sprache:
+// AT/DE/CH → € + Deutsch; USA/UK/Andere → $ + Englisch (intern country "US" = USD).
+const PROFILE_REASONS: Record<string, string> = { closed: "Dauerhaft geschlossen", fake: "Fake / nicht meins", dup: "Doppeltes Profil", moved: "Umgezogen", other: "Sonstiges" };
+app.post("/admin/orders/create", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!dbReady()) return reply.code(503).send({ ok: false, error: "Keine Datenbank" });
+  const type = b.type === "profile" ? "profile" : "reviews";
+  const c = (b.customer || {}) as Record<string, unknown>;
+  const name = clip(c.name, 120), email = clip(c.email, 200).toLowerCase(), phone = clip(c.phone, 60);
+  if (name.length < 2) return reply.code(400).send({ ok: false, error: "Name fehlt" });
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
+  const ctry = ["AT", "DE", "CH", "US", "UK", "XX"].includes(String(c.country)) ? String(c.country) : "AT";
+  const eur = ["AT", "DE", "CH"].includes(ctry);
+  const country = eur ? ctry : "US";
+  const lang = eur ? "de" : "en";
+  const pl = (b.place || {}) as Record<string, unknown>;
+  const company = clip(pl.name, 160);
+  const mapsUri = httpUrl(pl.mapsUrl, 400);
+  const placeId = clip(pl.placeId, 200);
+  const addr = clip(pl.address, 300);
+  type Item = { url?: string; name?: string; text?: string; old?: boolean };
+  const items: Item[] = type === "reviews" && Array.isArray(b.reviewItems)
+    ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
+        const o = (raw || {}) as Record<string, unknown>;
+        const url = httpUrl(o.url, 400), nm = clip(o.name, 80), tx = clip(o.text, 400);
+        const flags = o.old === true ? { old: true } : {};
+        if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as Item;
+        if (nm && tx) return { name: nm, text: tx, ...flags } as Item;
+        return null;
+      }).filter(Boolean) as Item[]
+    : [];
+  if (type === "reviews" && !items.length) return reply.code(400).send({ ok: false, error: "Keine Bewertungen gewählt" });
+  if (type === "profile" && !company && !mapsUri) return reply.code(400).send({ ok: false, error: "Profil fehlt" });
+  const reason = type === "profile" ? (PROFILE_REASONS[String(b.reason)] || "") : "";
+  const cur = eur ? "eur" : "usd";
+  const q = type === "reviews" ? quoteReviews(items, cur) : null;
+  const amount = q ? q.total : (eur ? 450 : 495);
+  const pay = ["link", "paypal", "invoice"].includes(String(b.payment)) ? String(b.payment) : "link";
+  const staff = ["max", "matthias"].includes(String(b.staff)) ? String(b.staff) : null;
+  const sendConfirm = b.sendConfirm !== false;
+  const id = "RR-" + Math.floor(100000 + Math.random() * 899999);
+  const service = type === "reviews" ? "reviews" : "remove";
+  const raw: Record<string, unknown> = {
+    createdBy: "admin", service, orderId: id, name, email, phone, company, profile: company, country, lang,
+    countryChoice: ctry, mapsUri, placeId, addr, amount,
+    payMethod: pay, payPref: pay === "paypal" ? "paypal" : "none",
+    ...(type === "reviews" ? { reviewItems: items } : { reason }),
+  };
+  try {
+    await insertOrder({
+      id, name, email, phone, company, lang, profile: company || mapsUri, service, protection: "",
+      country, category: "", rating: "", reviews: items.length, amount, protAmount: 0,
+      note: reason ? "Grund: " + reason : "", checkId: "", raw, source: "admin",
+    });
+    if (staff) await setOrderAssignee(id, staff).catch(() => false);
+    await insertEvent({ orderId: id, type: "order", title: "Auftrag manuell angelegt (Admin)", detail: `${id} · ${type === "reviews" ? items.length + " Bewertung(en)" : "Profil löschen" + (reason ? " · " + reason : "")} · ${pay === "paypal" ? "PayPal (−10 %)" : pay === "invoice" ? "Rechnung" : "Zahlungslink"}` });
+  } catch (e) {
+    app.log.error({ err: e }, "Admin-Auftrag anlegen fehlgeschlagen");
+    return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
+  }
+  // Auftragsbestätigung wie bei Website-Bestellungen (optional abwählbar)
+  let mailed = false;
+  if (sendConfirm) {
+    try {
+      const tlang = mailLang(lang);
+      const t = TEMPLATES[type === "reviews" ? "auftragsbestaetigung-reviews" : "auftragsbestaetigung"];
+      let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
+      if (type === "reviews") {
+        try {
+          const acc = await ensureCustomerAccount(email);
+          const durl = await dashLink(email, lang);
+          if (acc) dash = acc.created ? { url: durl, email, password: acc.password } : { url: durl, existing: true };
+        } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
+      }
+      const props = type === "reviews"
+        ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash }
+        : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name) };
+      const html = await render(React.createElement(t.component, props as any));
+      const subj = t.subject(props as any);
+      await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
+      mailed = true;
+      await insertEvent({ orderId: id, email, type: "mail", title: (type === "reviews" ? "Auftragsbestätigung (Bewertungen)" : "Auftragsbestätigung") + " gesendet", detail: "an " + email, html, subject: subj }).catch(() => {});
+    } catch (e) { app.log.error({ err: e, orderId: id }, "Auftragsbestätigung (Admin) fehlgeschlagen"); }
+  }
+  // Partner-Board (Auto-Weiterleitung laut Einstellungen) + Screenshots
+  let partner = 0;
+  try {
+    if (type === "reviews" && await partnerAutoEnabled("reviews").catch(() => true)) partner = await partnerAutoSend(id, company || name, items as Record<string, unknown>[]);
+    if (type === "profile" && await partnerAutoEnabled("profiles").catch(() => false)) partner = await partnerAutoSendProfile(id, company || name, mapsUri);
+  } catch (e) { app.log.error({ err: e, orderId: id }, "Partner-Board (Admin-Auftrag) fehlgeschlagen"); }
+  queueOrderShots(id, service, raw, (o, m) => app.log.info(o, m));
+  return { ok: true, id, amount, currency: cur, mailed, partner };
+});
+
+// Admin (neu) · „Neuer Auftrag": Bewertungen eines Profils zum Anhaken (SerpApi, ohne Drosselung).
+app.post("/admin/places/reviews", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!serpKey()) return { ok: true, enabled: false, reviews: [] };
+  const placeId = clip(b.placeId, 200);
+  if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, error: "bad placeId" });
+  try { return { ok: true, enabled: true, reviews: await fetchPlaceReviews(placeId, mailLang(b.lang || "de")) }; }
+  catch (e) { return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) }); }
+});
+
 // Fragebogen-Antworten zur Bestellung speichern (öffentlich: Danke-Schritt ODER Mail-Link). Gedrosselt.
 app.post("/order-form", async (req, reply) => {
   if (!allowCheck(req.ip)) return reply.code(429).send({ ok: false, error: "rate limited" });
