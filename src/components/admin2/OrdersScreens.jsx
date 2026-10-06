@@ -186,7 +186,7 @@ export function Nav({ back, right, isDesk }) {
 
 /* ---------------- Bewertungen / Screenshots ---------------- */
 const PS = {
-  new: ["Partner: noch offen", "var(--g3)"], working: ["Partner arbeitet", "var(--orange-800)"], removed: ["Gelöscht", "var(--success)"],
+  new: ["Beim Partner · noch nicht gestartet", "var(--g3)"], working: ["Partner arbeitet", "var(--orange-800)"], removed: ["Gelöscht", "var(--success)"],
   not_possible: ["Partner: nicht möglich", "var(--danger)"], software: ["Software · wartet auf Kunde", "var(--info)"], cancelled: ["Storniert", "var(--g3)"],
 };
 const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));

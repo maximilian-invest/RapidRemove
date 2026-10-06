@@ -450,7 +450,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const title = it ? (t ? t.code + " · " : "#" + (sheet.idx + 1) + " · ") + (it.name || "Bewertung") : "Profil";
     body = (
       <><h3 style={{ paddingBottom: 2 }}>{title}</h3>
-        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Partner: noch offen", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
+        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
         {it && it.text ? <p className="shq">„{it.text}“</p> : null}
         <div className="opts" style={{ marginTop: 12 }}>
           <Opt onClick={() => (sh ? openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title, sub: "Screenshot", open: it && it.url }) : toast("Noch kein Screenshot vorhanden"))} right={<ChevronRight className="chev" />}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
