@@ -4,12 +4,14 @@
    Antworten: ops /cust/chat (Claude mit Kontext aus den echten Aufträgen), „Team kontaktieren" → /cust/chat/ticket.
    Verlauf bleibt für die Tab-Sitzung erhalten (sessionStorage); an den Server gehen die letzten 8 Nachrichten. */
 import React from "react";
-import { MessageCircle, ChevronDown, ArrowUp, Headphones } from "lucide-react";
+import { MessageCircle, ChevronDown, ArrowUp, Headphones, X } from "lucide-react";
 import { track } from "./tracker";
 import { asset } from "@/lib/base";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const KEY = "rr_cust_chat";
+const TEASE_KEY = "rr_cust_chat_tease"; // Teaser je Tab-Sitzung höchstens 2× (weggeklickt = Ruhe)
+const ss = { get: (k) => { try { return sessionStorage.getItem(k) || ""; } catch (e) { return ""; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) { /* */ } } };
 const AV = () => <span className="ch-av"><img src={asset("/assets/app/rocket-mark.png")} alt="" /></span>;
 
 async function post(path, body) {
@@ -59,11 +61,36 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
       setSent(true); showToast(T("chSent"));
     } catch (e) { showToast(e.code === "too_many" ? T("tooMany") : T("genericErr"), true); }
   };
+  // Launcher: wackelt ab und zu; Sprechblase „Hey, need help?“ nach 6 s und nochmal nach 90 s (max. 2× pro Sitzung).
+  const [wig, setWig] = React.useState(false);
+  const [tease, setTease] = React.useState(false);
+  const everOpen = React.useRef(!!msgs.length);
+  React.useEffect(() => { if (open) { everOpen.current = true; setTease(false); ss.set(TEASE_KEY, "x"); } }, [open]);
+  React.useEffect(() => {
+    const reduce = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timers = [];
+    const shake = () => { if (reduce || open || everOpen.current) return; setWig(true); timers.push(setTimeout(() => setWig(false), 900)); };
+    const showTease = () => {
+      const n = Number(ss.get(TEASE_KEY) || 0);
+      if (everOpen.current || ss.get(TEASE_KEY) === "x" || n >= 2) return;
+      ss.set(TEASE_KEY, String(n + 1)); shake(); setTease(true);
+      timers.push(setTimeout(() => setTease(false), 9000));
+    };
+    timers.push(setTimeout(showTease, 6000), setTimeout(showTease, 90000));
+    const iv = setInterval(shake, 25000);
+    return () => { timers.forEach(clearTimeout); clearInterval(iv); };
+  }, [open]);
+  const closeTease = (e) => { e.stopPropagation(); setTease(false); ss.set(TEASE_KEY, "x"); };
   const QS = [T("chQ1"), T("chQ2"), T("chQ3"), T("chQ4"), T("chQ5")];
   return (
     <>
-      <button type="button" className={"cfab" + (open ? " hide" : "")} onClick={() => setOpen(true)} aria-label={T("chTitle")} data-track="Chat-Button"><MessageCircle />{T("chHelp")}<span className="dot" /></button>
-      <div className={"chbg" + (open ? " show" : "")} onClick={() => setOpen(false)} />
+      <div className={"ctease" + (tease && !open ? " show" : "")} role="button" tabIndex={-1} onClick={() => setOpen(true)} aria-hidden={!tease || open}>
+        <AV /><span><b>{T("chTeaseT")}</b>{T("chTeaseS")}</span>
+        <button type="button" className="ct-x" onClick={closeTease} aria-label={T("chClose")}><X /></button>
+      </div>
+      <button type="button" className={"cfab" + (open ? " open" : "") + (wig ? " wig" : "")} onClick={() => setOpen(!open)} aria-label={open ? T("chClose") : T("chTitle")} data-track="Chat-Button">
+        <MessageCircle className="i1" /><ChevronDown className="i2" />{!open && !everOpen.current ? <span className="dot" /> : null}
+      </button>
       <section className={"chat" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-label={T("chTitle")}>
         <div className="ch-top"><AV /><div className="t"><b>{T("chTitle")}</b><span>{T("chSub")}</span></div>
           <button type="button" className="ch-x" onClick={() => setOpen(false)} aria-label={T("chClose")}><ChevronDown /></button></div>
