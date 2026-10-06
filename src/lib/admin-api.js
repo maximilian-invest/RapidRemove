@@ -682,3 +682,5 @@ export const customerActivity = (email, orderId) => adminPost("/admin/activity",
 export const custInviteOne = (p) => adminPost("/admin/cust/invite-one", p);
 /** Alle offenen Bewertungen eines Auftrags auf einen Status setzen (wie der Partner): working | software | not_possible. */
 export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner/order-status", { orderId, status });
+/** „Kundendashboard öffnen": einmaliger Link zur Admin-Ansicht (ohne Tracking) → { url }. */
+export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });

@@ -204,6 +204,7 @@ export default function CustomerDashboard() {
   const prev = React.useRef(null);
   const toastT = React.useRef(0);
   const mainRef = React.useRef(null);
+  const [imp, setImp] = React.useState(false); // Admin-Ansicht („Kundendashboard öffnen"): nichts tracken, keine Zahlungen
   const payOpen = React.useRef(null); // { at, label } → Rückkehr ohne Zahlung = „Zahlung abgebrochen"
 
   const showToast = React.useCallback((m, bad) => {
@@ -220,6 +221,14 @@ export default function CustomerDashboard() {
     if (rk) { // Passwort-Link: Code aus der Adresse entfernen, Formular zeigen
       try { const u = new URL(window.location.href); u.searchParams.delete("reset"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
       setResetK(rk);
+    }
+    // Admin-Ansicht: einmaliger Code (?imp=…) → eigene Sitzung NUR im Speicher (überschreibt keine echte Kunden-Sitzung)
+    let ik = ""; try { ik = new URLSearchParams(window.location.search).get("imp") || ""; } catch (e) { /* */ }
+    if (ik) {
+      try { window.__NO_TRACK = true; const u = new URL(window.location.href); u.searchParams.delete("imp"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
+      setImp(true);
+      call("impersonate", { k: ik }).then((r) => setToken(r.token)).catch(() => { setImp(false); window.__NO_TRACK = false; setMagicErr(true); setToken(store.get()); });
+      return;
     }
     // Start aus der Home-Bildschirm-App: schon eingeloggt → Code nicht jedes Mal neu einlösen.
     let fromApp = false;
@@ -313,7 +322,13 @@ export default function CustomerDashboard() {
     // Nach dem Passwort-Login einmal Face ID anbieten.
     if (!viaPasskey && passkeySupported() && !passkeyOnDevice("customer") && !passkeyDismissed("customer")) setOfferPk(true);
   };
+  const endAdminView = async () => {
+    try { await call("logout", { token }); } catch (e) { /* egal */ }
+    try { window.close(); } catch (e) { /* */ }
+    setToken(""); setData(null); setImp(false); window.__NO_TRACK = false; setToken(store.get());
+  };
   const logout = async () => {
+    if (imp) { endAdminView(); return; }
     stopTracking();
     const t = token; store.set(""); setToken(""); setData(null); prev.current = null; setTab("home");
     try { await call("logout", { token: t }); } catch (e) { /* egal */ }
@@ -336,9 +351,9 @@ export default function CustomerDashboard() {
     } catch (e) { /* */ }
   }, [data]);
   // Dashboard-Aktivität: Sitzung starten, sobald die Daten da sind; Seitenaufrufe je Ansicht.
-  React.useEffect(() => { if (token && data) startTracking(token); }, [token, !!data]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => { if (token && data && !imp && !data.adminView) startTracking(token); }, [token, !!data, imp]); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => {
-    if (!token || !data) return;
+    if (!token || !data || imp || data.adminView) return;
     const sh = sheet ? (data.orders || []).find((o) => o.id === sheet.orderId) : null;
     const it = sh ? sh.items.find((i) => i.key === sheet.key) : null;
     const name = flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
@@ -350,7 +365,7 @@ export default function CustomerDashboard() {
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {
-    if (!token || !hasData || offerPk) return;
+    if (!token || !hasData || offerPk || imp) return;
     injectAppManifest(token, lang);
     let off = false;
     pushState("customer").then((st) => {
@@ -422,6 +437,7 @@ export default function CustomerDashboard() {
   /* ---- Zahlungen ---- */
   const checkout = async (path, body, label) => {
     if (busy) return null;
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return null; }
     setBusy(label);
     let w = null;
     try { w = window.open("", "_blank"); } catch (e) { w = null; }
@@ -455,6 +471,7 @@ export default function CustomerDashboard() {
     const des = f.items.filter((i) => !f.pick.has(i.id));
     if (f.step === 4) { setFlow(null); load(token); return; }
     if (f.step === 2 && !sel.length) { // alles ablehnen → kostenlos
+      if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
       setBusy("flow");
       try { await call("software", { token, decision: "decline", items: flowRefs(des) }); setFlow({ ...f, step: 4, mode: "declined" }); load(token); }
       catch (e) { showToast(T("genericErr"), true); }
@@ -463,6 +480,7 @@ export default function CustomerDashboard() {
     }
     if (f.step === 3) { // nicht gewählte ablehnen, gewählte bezahlen
       if (busy) return;
+      if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
       setBusy("flow");
       let w = null;
       try { w = window.open("", "_blank"); } catch (e) { w = null; }
@@ -771,8 +789,10 @@ export default function CustomerDashboard() {
   };
 
   const TABS = [["home", Home, T("tabHome")], ["orders", List, T("tabOrders")], ["pay", Wallet, T("tabPay")], ["acc", User, T("tabAcc")]];
+  const adminView = imp || (data && data.adminView);
   return (
-    <div className="rra">
+    <div className={"rra" + (adminView ? " impv" : "")}>
+      {adminView ? <div className="impbar"><span><b>Admin-Ansicht</b> · {data.name || data.email} · nicht getrackt</span><button type="button" onClick={endAdminView}>Beenden</button></div> : null}
       <div className="app">
         <main className="screen" ref={mainRef}>
           {tab === "home" ? HomeV() : tab === "orders" ? OrdersV() : tab === "pay" ? PayV() : AccV()}

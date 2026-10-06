@@ -4,12 +4,13 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard,
 } from "lucide-react";
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
+import { custImpersonate } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -19,6 +20,17 @@ export function Avatar({ o, big }) {
       {a.ini}{s && !big ? <img className="as" src={s.src} alt="" /> : null}
     </span>
   );
+}
+
+/** „Kundendashboard öffnen": Admin-Ansicht im neuen Tab (einmaliger Link, wird NICHT als Aktivität erfasst). */
+async function openCustDash(o, toast) {
+  let w = null;
+  try { w = window.open("", "_blank"); } catch (e) { w = null; }
+  try {
+    const r = await custImpersonate(o.email, o.id);
+    if (w && !w.closed) w.location.href = r.url; else window.open(r.url, "_blank");
+    toast("Kundendashboard geöffnet · nicht getrackt");
+  } catch (e) { if (w && !w.closed) w.close(); toast("Öffnen fehlgeschlagen: " + e.message); }
 }
 
 /** Kategorie-Tag vor dem Status: Bewertungen (grau, Stern) · Profil (orange, Laden). */
@@ -130,6 +142,7 @@ export function OrderDetail({ ctx, id }) {
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>
         <a href={o.phone ? `sms:${o.phone.replace(/\s+/g, "")}` : undefined} aria-disabled={!o.phone}><span><MessageCircle /></span>SMS</a>
         <a href={o.phone ? `tel:${o.phone.replace(/\s+/g, "")}` : undefined} aria-disabled={!o.phone}><span><Phone /></span>Anrufen</a>
+        <button type="button" className="dsh" disabled={!o.email} onClick={() => openCustDash(o, ctx.toast)}><span><LayoutDashboard /></span>Dashboard</button>
       </div>
       <div className="bigs">
         <button type="button" className="big" onClick={() => openSheet({ kind: "tpl", forId: o.id })}><span className="bi"><img src={IMG("tpl")} alt="" /></span><b>Vorlage senden</b><span>{tplCount ? tplCount + " Vorlagen" : "5 beliebte"}</span></button>

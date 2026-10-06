@@ -23,7 +23,7 @@ const send = (beacon) => {
 export function flush(beacon) { clearTimeout(timer); timer = null; send(beacon); }
 
 export function track(type, target, meta, orderId) {
-  if (!token) return;
+  if (!token || (typeof window !== "undefined" && window.__NO_TRACK)) return; // Admin-Ansicht: nie erfassen
   lastAct = Date.now();
   queue.push({ type, target: target ? String(target).slice(0, 200) : "", meta: meta || undefined, orderId: orderId || undefined, ts: Date.now() });
   if (queue.length >= 40) flush(false);
@@ -50,7 +50,7 @@ const endSession = () => {
 
 /** Start nach dem Login bzw. beim Öffnen mit gespeicherter Sitzung. */
 export function startTracking(t, info) {
-  if (!t || !OPS) return;
+  if (!t || !OPS || (typeof window !== "undefined" && window.__NO_TRACK)) return;
   const fresh = token !== t;
   token = t;
   if (!sid) {

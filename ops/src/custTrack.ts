@@ -82,7 +82,7 @@ export function withOpenPixel(html: string, to: string | string[], subject: stri
 const GIF = Buffer.from("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", "base64");
 
 /* ---- Routen ---- */
-export function registerCustTrack(app: FastifyInstance, deps: { sessionEmail: (t: unknown) => Promise<string | null>; adminOk: (t: unknown) => boolean }): void {
+export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t: unknown) => Promise<{ email: string; imp: boolean } | null>; adminOk: (t: unknown) => boolean }): void {
   void initCustTrack().catch(() => {});
 
   // Batch aus dem Dashboard (fetch keepalive / sendBeacon mit text/plain → JSON-String im Body).
@@ -90,8 +90,10 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionEmail: (t
   app.post("/cust/track", async (req, reply) => {
     let b = (req.body || {}) as Record<string, unknown>;
     if (typeof req.body === "string") { try { b = JSON.parse(req.body as string); } catch { b = {}; } }
-    const email = await deps.sessionEmail(b.token);
-    if (!email) return reply.code(401).send({ ok: false });
+    const sess = await deps.sessionInfo(b.token);
+    if (!sess) return reply.code(401).send({ ok: false });
+    if (sess.imp) return { ok: true, ignored: true }; // Admin-Ansicht: nichts erfassen
+    const email = sess.email;
     const now = Date.now(); const a = (hits.get(email) || []).filter((t) => now - t < 60_000);
     if (a.length > 60) return reply.code(429).send({ ok: false }); a.push(now); hits.set(email, a);
     const sid = clip(b.sid, 40);

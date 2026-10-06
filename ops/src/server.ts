@@ -25,7 +25,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { customerSessionEmail, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
+import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual } from "./customers";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
@@ -175,7 +175,7 @@ registerCustomerRoutes(app, {
 });
 
 // Dashboard-Aktivität: Tracking aus dem Kunden-Dashboard, Zählpixel, Admin-Timeline.
-registerCustTrack(app, { sessionEmail: customerSessionEmail, adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN });
+registerCustTrack(app, { sessionInfo: customerSessionInfo, adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN });
 
 app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";

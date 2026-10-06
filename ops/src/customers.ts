@@ -72,6 +72,11 @@ export async function initCustomerTables(): Promise<void> {
       expires_at timestamptz NOT NULL
     )
   `);
+  // Admin-Ansicht („Als Kunde ansehen"): Sitzungen ohne Tracking + Audit-Trail (getrennt von customer_events).
+  await pool.query(`ALTER TABLE cust_sessions ADD COLUMN IF NOT EXISTS impersonation boolean NOT NULL DEFAULT false`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS admin_impersonations (
+      id bigserial PRIMARY KEY, code_hash text UNIQUE NOT NULL, email text NOT NULL, order_id text,
+      created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, used_at timestamptz, session_hash text)`);
 }
 
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
@@ -138,6 +143,14 @@ export async function dashLink(email: string, lang?: string | null): Promise<str
 
 /** Für Passkeys: E-Mail zur Sitzung bzw. neue Sitzung (wie beim Passwort-Login). */
 export const customerSessionEmail = (t: unknown) => sessionEmail(t);
+/** Sitzung inkl. Kennzeichen „Admin-Ansicht" (nicht tracken, keine Zahlungen). */
+export async function customerSessionInfo(token: unknown): Promise<{ email: string; imp: boolean } | null> {
+  if (!pool) return null;
+  const t = String(token || "");
+  if (t.length < 20) return null;
+  const r = await pool.query(`SELECT email, impersonation FROM cust_sessions WHERE token_hash=$1 AND expires_at > now()`, [sha(t)]);
+  return r.rows[0] ? { email: r.rows[0].email, imp: !!r.rows[0].impersonation } : null;
+}
 export async function createCustomerSession(email: string): Promise<string | null> {
   if (!pool) return null;
   const ex = await pool.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [norm(email)]);
@@ -432,9 +445,23 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     return { ok: true, token };
   });
 
+  // Admin-Ansicht einlösen: einmaliger Code (5 Min.) → Sitzung (2 Std.) mit impersonation=true. KEIN Login-Event.
+  app.post("/cust/impersonate", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const k = String(b.k || "");
+    if (k.length < 20) return reply.code(401).send({ ok: false, error: "invalid" });
+    const r = await pool.query(`UPDATE admin_impersonations SET used_at=now() WHERE code_hash=$1 AND used_at IS NULL AND expires_at > now() RETURNING id, email`, [sha(k)]);
+    if (!r.rows[0]) return reply.code(401).send({ ok: false, error: "invalid" });
+    const token = crypto.randomBytes(24).toString("base64url");
+    await pool.query(`INSERT INTO cust_sessions (token_hash, email, expires_at, impersonation) VALUES ($1,$2, now() + interval '2 hours', true)`, [sha(token), r.rows[0].email]);
+    await pool.query(`UPDATE admin_impersonations SET session_hash=$2 WHERE id=$1`, [r.rows[0].id, sha(token)]);
+    return { ok: true, token };
+  });
+
   app.post("/cust/logout", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
-    if (pool && b.token) { const em = await sessionEmail(b.token); if (em) void logCustEvent(em, "logout", "Abgemeldet"); }
+    if (pool && b.token) { const si = await customerSessionInfo(b.token); if (si && !si.imp) void logCustEvent(si.email, "logout", "Abgemeldet"); }
     if (pool && b.token) await pool.query(`DELETE FROM cust_sessions WHERE token_hash=$1`, [sha(String(b.token))]);
     return { ok: true };
   });
@@ -444,7 +471,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const email = await sessionEmail(b.token);
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
     const d = await loadCustomerOrders(email);
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders };
+    const imp = !!(await customerSessionInfo(b.token))?.imp;
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
@@ -475,6 +503,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
 
   // Spezial-Software: Kunde entscheidet je Bewertung (oder alle): voll im Voraus zahlen oder ablehnen (kostenlos).
   app.post("/cust/software", async (req, reply) => {
+    if ((await customerSessionInfo(((req.body || {}) as Record<string, unknown>).token))?.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
     const b = (req.body || {}) as Record<string, unknown>;
     const email = await sessionEmail(b.token);
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
@@ -524,6 +553,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
 
   // „Pay": ein Checkout für alle gelöschten, noch unbezahlten Bewertungen.
   app.post("/cust/pay", async (req, reply) => {
+    if ((await customerSessionInfo(((req.body || {}) as Record<string, unknown>).token))?.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
     const b = (req.body || {}) as Record<string, unknown>;
     const email = await sessionEmail(b.token);
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
@@ -691,6 +721,20 @@ export function registerCustomerAdminRoutes(app: FastifyInstance, adminToken: st
   // Einladung ins Dashboard an alle Bewertungs-Kunden: ohne apply = nur Liste, mit apply = senden.
   // Je Adresse eine Mail (Sprache + Name der letzten Bestellung), nie doppelt.
   let inviting = false;
+  // Admin (neu) · „Kundendashboard öffnen": einmaliger 5-Minuten-Code für die Admin-Ansicht (ohne Tracking).
+  app.post("/admin/cust/impersonate", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const email = norm(b.email);
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
+    await ensureCustomerAccount(email); // Konto ohne Mail anlegen, falls noch keins existiert
+    const k = crypto.randomBytes(24).toString("base64url");
+    await pool.query(`INSERT INTO admin_impersonations (code_hash, email, order_id, expires_at) VALUES ($1,$2,$3, now() + interval '5 minutes')`, [sha(k), email, String(b.orderId || "").slice(0, 40) || null]);
+    const order = String(b.orderId || "").slice(0, 40);
+    return { ok: true, url: `${DASH_URL}?imp=${encodeURIComponent(k)}${order ? "&order=" + encodeURIComponent(order) : ""}` };
+  });
+
   // Admin (neu) · Dashboard-Aktivität: einem Kunden den persönlichen Login-Link (erneut) senden.
   app.post("/admin/cust/invite-one", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;

@@ -134,8 +134,8 @@
 .an .ir .t b{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .an .ir img{width:33px;height:33px;border-radius:50%;object-fit:cover;flex:none}
 .an .ir>svg{color:#bbb;width:18px;height:18px}
-.an .cact{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 16px;background:#fff;border-radius:26px;padding:16px 8px}
-.an .cact a{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px;font-weight:500;padding:4px 0}
+.an .cact{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 16px;background:#fff;border-radius:26px;padding:16px 8px}
+.an .cact a,.an .cact .dsh{display:flex;flex-direction:column;align-items:center;gap:8px;font-size:11px;font-weight:500;padding:4px 0}
 .an .cact a[aria-disabled=true]{opacity:.4;pointer-events:none}
 .an .cact span{width:49px;height:49px;border-radius:50%;background:var(--g1);display:grid;place-items:center}
 .an .bigs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:2px 0 22px}
@@ -583,3 +583,7 @@
 .an .rq.tot .t b{font-size:22px;letter-spacing:-.5px}
 .an .rq .s{display:block;margin-top:7px;font-size:12px;color:var(--g3)}
 .an .rqn{margin:2px 4px 26px;font-size:12px}
+
+.an .cact .dsh{background:none;color:var(--ink)}
+.an .cact .dsh span{background:var(--ink);color:#fff}
+.an .cact .dsh:disabled{opacity:.4}
