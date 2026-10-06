@@ -6,7 +6,7 @@ import {
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
   CheckCircle2, XCircle, CreditCard, Loader, MapPin, X,
 } from "lucide-react";
-import { ST, OPEN, CLOSED, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
+import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
@@ -25,15 +25,15 @@ export function OrdersList({ ctx }) {
   const { orders, now, f, setF, openOrder, openSheet, selId, loaded, refresh } = ctx;
   const enriched = React.useMemo(() => orders.map((o) => { const b = bucket(o, now); return { o, b, m: ageMin(o, b, now), t: typeOf(o) }; }), [orders, now]);
   const base = enriched.filter((x) => f.type === "all" || x.t === f.type).filter((x) => f.staff === "all" || (f.staff === "none" ? !x.o.assignee : x.o.assignee === f.staff));
-  const inScope = (x) => (f.scope === "open" ? OPEN.includes(x.b) : f.scope === "closed" ? CLOSED.includes(x.b) : true);
+  const inScope = (x) => (f.scope === "open" ? isOffen(x.o) : f.scope === "closed" ? !isOffen(x.o) : true);
   const ql = f.q.trim().toLowerCase();
-  const list = base.filter(inScope).filter((x) => !f.tile || x.b === f.tile)
+  const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.b))
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
     .sort((a, b) => (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))); // neueste zuerst (wie im bisherigen Admin)
   const newO = enriched.filter((x) => x.b === "new");
   const oldest = newO.reduce((mx, x) => Math.max(mx, x.m), 0);
-  const openN = enriched.filter((x) => OPEN.includes(x.b)).length;
-  const inWork = openN - newO.length;
+  const openN = enriched.filter((x) => isOffen(x.o)).length;
+  const inWork = enriched.filter((x) => isOffen(x.o) && x.b !== "new").length;
   const tiles = SCOPE_TILES[f.scope] || SCOPE_TILES.open;
   const tot = Math.max(1, base.filter(inScope).length);
   const hr = new Date().getHours();
@@ -53,7 +53,7 @@ export function OrdersList({ ctx }) {
       <div className="sec3 stat-h"><h2>Status</h2><button type="button" className="lk" onClick={() => openSheet({ kind: "scope" })}>{{ open: "Offen", closed: "Abgeschlossen", all: "Alle" }[f.scope]}<ChevronDown /></button></div>
       <div className="gcards">
         {tiles.map((k) => {
-          const n = base.filter((x) => x.b === k).length; const I = TILE_ICON[k];
+          const n = base.filter((x) => inTile(k, x.b)).length; const I = TILE_ICON[k];
           return (
             <button key={k} type="button" className={"gc" + (f.tile === k ? " on" : "")} onClick={() => setF({ tile: f.tile === k ? null : k })}>
               <span className="gi">{ST[k].img ? <img src={IMG(ST[k].img)} alt="" /> : <I />}</span>

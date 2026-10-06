@@ -30,6 +30,10 @@ export function bucket(o, now = Date.now()) {
   }
   return "work"; // progress & alles Übrige, was noch läuft
 }
+/** „Offen" exakt wie im bisherigen Admin: nicht storniert und nicht bezahlt. */
+export const isOffen = (o) => o.status !== "storniert" && o.pay !== "paid";
+/** Status-Kachel ↔ Auftrag, Zählweise wie im bisherigen Admin („Zahlung offen" enthält auch Inkasso-Fälle). */
+export const inTile = (k, b) => (k === "pay" ? b === "pay" || b === "inkasso" : b === k);
 export const typeOf = (o) => (o.service === "reviews" ? "reviews" : "profile");
 
 /** Laufzeit in Minuten: Neu/In Bearbeitung seit Eingang, Zahlung/Inkasso seit Löschung. */

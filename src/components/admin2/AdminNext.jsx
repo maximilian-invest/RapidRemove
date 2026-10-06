@@ -13,7 +13,7 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, bucket, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, OPEN } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen } from "./model";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
@@ -236,7 +236,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders }) {
   const Opt = ({ children, onClick, on, right }) => <button type="button" className="aopt" onClick={onClick}>{children}{right || null}{on ? <span className="ck"><Check /></span> : null}</button>;
 
   if (sheet && sheet.kind === "scope") {
-    const cnt = (k) => orders.filter((x) => { const b = bucket(x, now); return k === "open" ? OPEN.includes(b) : k === "closed" ? !OPEN.includes(b) : true; }).length;
+    const cnt = (k) => orders.filter((x) => (k === "open" ? isOffen(x) : k === "closed" ? !isOffen(x) : true)).length;
     body = <><h3>Anzeigen</h3><div className="opts">{[["open", "Offen"], ["closed", "Abgeschlossen"], ["all", "Alle"]].map(([k, l]) => <Opt key={k} on={f.scope === k} onClick={() => { setF({ scope: k, tile: null }); close(); }} right={<span className="c">{cnt(k)}</span>}>{l}</Opt>)}</div></>;
   } else if (sheet && sheet.kind === "staff") {
     const curS = o ? (o.assignee || "none") : f.staff;
