@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw,
 } from "lucide-react";
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer } from "./model";
 
@@ -61,7 +61,10 @@ export function OrdersList({ ctx }) {
   return (
     <>
       <div className="hd"><div><span>{hr < 11 ? "Guten Morgen" : hr < 18 ? "Hallo" : "Guten Abend"}</span><h1>Aufträge</h1></div>
-        <button type="button" className="circ" aria-label="Aktualisieren" onClick={refresh}><Bell />{newO.length ? <span className="dot" /> : null}</button></div>
+        <div className="hda">
+          <button type="button" className="rfb" aria-label="Aktualisieren" title="Aktualisieren" disabled={ctx.refreshing} onClick={refresh}><RefreshCw className={ctx.refreshing ? "spin" : ""} /><span>{ctx.refreshing ? "Lädt …" : "Aktualisieren"}</span></button>
+          <button type="button" className="circ" aria-label="Neue Aufträge" onClick={() => setF({ scope: "open", tile: "new" })}><Bell />{newO.length ? <span className="dot" /> : null}</button>
+        </div></div>
       <button type="button" className={"hcard" + (f.tile === "new" ? " on" : "")} onClick={() => setF({ scope: "open", tile: f.tile === "new" ? null : "new" })}>
         <span className="hpill" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); ctx.newOrder(); }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); ctx.newOrder(); } }}><Plus />Neuer Auftrag<ChevronRight /></span>
         <b>{loaded ? newO.length : "–"}</b>

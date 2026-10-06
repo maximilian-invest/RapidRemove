@@ -616,3 +616,11 @@
 .an .disc .t>span b{color:#1c3a66}
 .an .fu-mode{display:flex;gap:12px;align-items:flex-start;background:#fff4e0;color:#7a4b00;border-radius:18px;padding:12px 14px;margin:4px 0 4px}
 .an .fu-mode svg{width:18px;height:18px;flex:none;margin-top:2px}.an .fu-mode b{display:block;font-size:14px}.an .fu-mode span{font-size:12.5px;line-height:1.4}
+/* Aktualisieren-Button (Kopfzeile Aufträge + Desktop-Seitenleiste) */
+.an .hda{display:flex;align-items:center;gap:10px}
+.an .rfb{height:46px;padding:0 16px 0 13px;border-radius:23px;background:#fff;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink)}
+.an .rfb svg{width:18px;height:18px}.an .rfb:active{transform:scale(.97)}.an .rfb[disabled]{opacity:.7}
+@media (max-width:420px){.an .rfb span{display:none}.an .rfb{width:46px;padding:0;justify-content:center}}
+.an .tb.rf{display:none}
+.an.desk .tb.rf{display:flex;margin-top:auto}
+.an.desk .tb.rf+.tb.old{margin-top:0}

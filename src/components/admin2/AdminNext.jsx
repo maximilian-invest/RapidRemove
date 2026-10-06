@@ -102,7 +102,14 @@ export default function AdminNext() {
     return () => { clearInterval(iv); clearInterval(tick); mq.removeEventListener ? mq.removeEventListener("change", on) : mq.removeListener(on); };
   }, [reload]);
 
-  const refresh = async () => { setSpin(false); requestAnimationFrame(() => setSpin(true)); setTimeout(() => setSpin(false), 800); await reload(false); };
+  // „Aktualisieren": Aufträge + Partner-Status + Monitor neu laden; dreht, bis alles da ist.
+  const [refreshing, setRefreshing] = React.useState(false);
+  const refresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true); setSpin(false); requestAnimationFrame(() => setSpin(true));
+    try { await Promise.all([reload(true), loadPtasks(), monitorList().then(setMon).catch(() => {})]); toast("Aktualisiert · " + new Date().toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })); }
+    finally { setRefreshing(false); setSpin(false); }
+  };
   const monLoad = React.useCallback(() => monitorList().then(setMon).catch((e) => toast("Monitor: " + e.message)), [toast]);
   const monScan = async (id) => { try { await monitorScan(id); toast(id ? "Prüfung gestartet" : "Scan gestartet"); setTimeout(monLoad, 1500); } catch (e) { toast("Scan: " + e.message); } };
   React.useEffect(() => { if (!mon || !(mon.run || (mon.checking || []).length)) return; const t = setTimeout(monLoad, 4000); return () => clearTimeout(t); }, [mon, monLoad]);
@@ -218,7 +225,7 @@ export default function AdminNext() {
   const logout = () => { try { localStorage.removeItem("rr_admin_token"); sessionStorage.removeItem("rr_admin_token"); localStorage.removeItem("rr_admin_faceid"); } catch (e) {} window.location.reload(); };
 
   const ctx = {
-    orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin,
+    orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
     newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus, ptAll,
@@ -258,6 +265,7 @@ export default function AdminNext() {
           <>
             <button type="button" className="tb" onClick={() => toOld("templates")} aria-label="Vorlagen" title="Vorlagen (bisheriges Admin)"><Mail /><span>Vorlagen</span><ExternalLink className="ext" /></button>
             <button type="button" className="tb" onClick={() => toOld("customers")} aria-label="Kunden" title="Kunden (bisheriges Admin)"><Users /><span>Kunden</span><ExternalLink className="ext" /></button>
+            <button type="button" className="tb rf" onClick={refresh} aria-label="Aktualisieren" title="Aktualisieren"><RefreshCw className={refreshing ? "spin" : ""} /><span>Aktualisieren</span></button>
             <a className="tb old" href="/admin/alt" title="Bisheriges Admin"><ExternalLink /><span>Bisheriges Admin</span></a>
             <button type="button" className="tb" onClick={logout} aria-label="Abmelden" title="Abmelden"><LogOut /><span>Abmelden</span></button>
           </>
