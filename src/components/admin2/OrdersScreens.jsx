@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw,
 } from "lucide-react";
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L } from "./model";
 
@@ -102,6 +102,7 @@ export function OrderDetail({ ctx, id }) {
     : b === "pay" ? (isRev ? <a className="cta" href={`/admin?order=${encodeURIComponent(o.id)}`}><Send />Mahnung im alten Admin senden</a> : <button type="button" className="cta" onClick={() => act.remind(o)}><Send />Zahlungserinnerung senden</button>)
     : b === "inkasso" ? <a className="cta" href={`/admin?order=${encodeURIComponent(o.id)}`}><Gavel />Inkasso im alten Admin ansehen</a>
     : b === "work" ? <button type="button" className="cta" onClick={() => act.done(o)}><Check />Als erledigt markieren</button>
+    : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
     : null;
   return (
     <>
@@ -144,7 +145,8 @@ export function OrderDetail({ ctx, id }) {
             })}
           </div>
         </>
-      ) : <div className="lbl">Storniert</div>}
+      ) : <div className="cxl"><Ban /><span><b>Storniert</b>Der Kunde zahlt nichts. Offene Partner-Aufgaben wurden zurückgezogen.</span></div>}
+      {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
   );

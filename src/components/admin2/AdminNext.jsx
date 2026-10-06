@@ -5,11 +5,11 @@
 import React from "react";
 import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
-  RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store,
+  RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake,
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerSettings, partnersList,
-  fetchReviewShots, reviewShotUrl, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
+  fetchReviewShots, reviewShotUrl, sendReviewsStorno, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
@@ -18,6 +18,20 @@ import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 
 const DESK_Q = "(min-width: 900px)";
+/* Storno-Gründe (Vorlagen aus dem Backend, wie „Auftrag stornieren“ im bisherigen Admin). */
+const STORNO_OPTS = [
+  ["storno", "Löschung nicht möglich", "Storno-Mail · keine Kosten"],
+  ["kundenstorno", "Auf Kundenwunsch", "Kunde hat storniert"],
+  ["rechtestorno", "Keine Rechte am Profil", "Kunde ist nicht berechtigt"],
+  ["scamstorno", "Unlautere Praktiken", "Verdacht auf Missbrauch"],
+];
+const RV_STORNO = [
+  ["age", "Älter als 4 Wochen", "Bewertung zu alt", CalendarClock],
+  ["text", "Kein Bewertungstext", "Nur Sterne, kein Text", MessageSquareOff],
+];
+const LANG_L = { de: "Deutsch", en: "Englisch", fr: "Französisch", es: "Spanisch", it: "Italienisch", nl: "Niederländisch", pt: "Portugiesisch", sv: "Schwedisch", no: "Norwegisch", ja: "Japanisch" };
+/* Bewertungs-Storno: Sprache aus der Bestellung, sonst Englisch (Produkt außerhalb DACH) — wie im bisherigen Admin. */
+const rvLang = (o) => (o.lang && o.lang !== "de" ? o.lang : "en");
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
 
 export default function AdminNext() {
@@ -143,6 +157,28 @@ export default function AdminNext() {
       catch (e) { toast("Fehler: " + e.message); }
     },
     remind: (o) => openSheet({ kind: "tplsend", forId: o.id, key: "mahnung", label: "Mahnung / Zahlungserinnerung" }),
+    storno: (o) => openSheet({ kind: "storno", forId: o.id }),
+    reactivate: (o) => openSheet({ kind: "react", forId: o.id }),
+  };
+  /* Stornieren wie im bisherigen Admin: Storno-Mail (Vorlage bzw. Bewertungs-Storno) + Status „storniert".
+     Der Server zieht dabei offene Partner-Aufgaben des Auftrags automatisch zurück. */
+  const doStorno = async (o, c) => {
+    try {
+      if (c.type === "rv") {
+        await sendReviewsStorno({ orderId: o.id, email: o.email, name: o.name, lang: rvLang(o), reason: c.reason, items: o.reviewItems || [] });
+        await doStatus(o, "storniert", { label: "Storniert" });
+        toast(`Storno (${c.label}) gesendet · storniert`);
+      } else if (c.type === "tpl") {
+        await sendTpl(o, c.key, c.label);
+      } else {
+        await doStatus(o, "storniert", { label: "Storniert" });
+        toast("Auftrag storniert");
+      }
+    } catch (e) { toast("Storno fehlgeschlagen: " + e.message); }
+  };
+  const doReactivate = async (o, withMail) => {
+    if (withMail) { await sendTpl(o, "reaktivierung", "Auftrag wieder aktiviert"); return; }
+    try { await doStatus(o, "progress", { label: "Reaktiviert" }); toast("Auftrag reaktiviert"); } catch (e) { toast("Fehler: " + e.message); }
   };
   const sendTpl = async (o, key, label) => {
     try {
@@ -205,7 +241,7 @@ export default function AdminNext() {
         <main key={top.v + top.id} className="scr push anim" ref={(el) => { paneRefs.current.push = el; }} onPointerDown={onDown} onPointerUp={onUp}>{pushBody}</main>
       ) : null}
 
-      <Sheet ctx={ctx} sheet={sheet} close={closeSheet} tpls={tpls} sendTpl={sendTpl} assign={assign} isDesk={isDesk} orders={orders} />
+      <Sheet ctx={ctx} sheet={sheet} close={closeSheet} tpls={tpls} sendTpl={sendTpl} assign={assign} isDesk={isDesk} orders={orders} doStorno={doStorno} doReactivate={doReactivate} />
       <div className={"vw" + (viewer ? " show" : "")}>
         {viewer ? (
           <>
@@ -222,7 +258,7 @@ export default function AdminNext() {
 }
 
 /* ---------------- Bottom-Sheets / Modals ---------------- */
-function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders }) {
+function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
   const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now } = ctx;
   const [cat, setCat] = React.useState(null);
   const [confirm, setConfirm] = React.useState(null);
@@ -232,7 +268,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders }) {
   React.useEffect(() => { setCat(null); setConfirm(null); setBusy(false); setLink(""); setPlace(null); }, [sheet]);
   const o = sheet && sheet.forId ? orders.find((x) => x.id === sheet.forId) : null;
   let body = null;
-  const Opt = ({ children, onClick, on, right }) => <button type="button" className="aopt" onClick={onClick}>{children}{right || null}{on ? <span className="ck"><Check /></span> : null}</button>;
+  const Opt = ({ children, onClick, on, right, red, disabled }) => <button type="button" className={"aopt" + (red ? " red" : "")} disabled={disabled} onClick={onClick}>{children}{right || null}{on ? <span className="ck"><Check /></span> : null}</button>;
 
   if (sheet && sheet.kind === "scope") {
     const cnt = (k) => orders.filter((x) => (k === "open" ? isOffen(x) : k === "closed" ? !isOffen(x) : true)).length;
@@ -262,7 +298,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders }) {
       );
     } else {
       const usage = readTplUsage();
-      const list = tpls || [];
+      const list = (tpls || []).filter((t) => t.key !== "storno-reviews");
       const top = [...list].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 5);
       const groups = ["Mitwirkung", "Storno", "Schutz", "Bestellung"].map((g) => [g, list.filter((t) => t.group === g)]).filter(([, l]) => l.length);
       const row = (t) => <Opt key={t.key} onClick={() => setConfirm({ key: t.key, label: t.label })} right={AUTO_KEYS.includes(t.key) ? <span className="zp" title="Wird sonst automatisch versendet"><Zap /></span> : null}><span className="ico"><Mail /></span><span className="ol">{t.label}</span></Opt>;
@@ -277,6 +313,46 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders }) {
           )}</>
       );
     }
+  } else if (sheet && sheet.kind === "storno" && o) {
+    const isRev = o.service === "reviews";
+    const openPt = (ptasks[o.id] || []).filter((t) => t.status === "new" || t.status === "working").length;
+    const run = async () => { setBusy(true); await doStorno(o, confirm); setBusy(false); close(); };
+    if (confirm) {
+      const lang = confirm.type === "rv" ? rvLang(o) : (o.lang || "de");
+      body = (
+        <><span className="shx"><Ban /></span><h3 style={{ paddingBottom: 6 }}>Auftrag stornieren?</h3>
+          <p className="shp">{confirm.type === "none"
+            ? <>Der Auftrag <b>{o.id}</b> wird ohne E-Mail auf „Storniert“ gesetzt. {o.name || o.email} erfährt davon nichts.</>
+            : <>„{confirm.label}“ geht an <b>{o.name || o.email}</b> ({o.email}) auf {LANG_L[lang] || lang.toUpperCase()}. Der Auftrag wird storniert, dem Kunden entstehen keine Kosten.</>}</p>
+          {isRev && openPt ? <p className="shn"><Handshake />{openPt === 1 ? "1 offene Bewertung wird" : openPt + " offene Bewertungen werden"} beim Partner automatisch zurückgezogen.</p> : null}
+          <div className="ctas2"><button type="button" className="cta gh" onClick={() => setConfirm(null)}>Zurück</button><button type="button" className="cta red" disabled={busy || (confirm.type !== "none" && !o.email)} onClick={run}><Ban />{busy ? "Storniert …" : confirm.type === "none" ? "Stornieren" : "Storno senden"}</button></div></>
+      );
+    } else {
+      const stTpl = STORNO_OPTS.map(([key, l, sub]) => { const t = (tpls || []).find((x) => x.key === key); return t || !tpls ? { key, label: l, sub } : null; }).filter(Boolean);
+      body = (
+        <><h3 style={{ paddingBottom: 2 }}>Auftrag stornieren</h3>
+          <p className="shp">{o.name || o.email} · {o.id} — Grund wählen, der Kunde bekommt die passende Storno-Mail.</p>
+          {isRev ? <><p className="shl">Bewertung erfüllt Voraussetzungen nicht</p>
+            <div className="opts" style={{ marginBottom: 16 }}>
+              {RV_STORNO.map(([reason, l, sub, I]) => <Opt key={reason} red disabled={!o.email} onClick={() => setConfirm({ type: "rv", reason, label: l })} right={<ChevronRight className="chev" />}><span className="ico"><I /></span><span className="ol">{l}<br /><small>{sub} · Mail auf {LANG_L[rvLang(o)]}</small></span></Opt>)}
+            </div></> : null}
+          <p className="shl">{isRev ? "Anderer Grund" : "Grund"}</p>
+          <div className="opts" style={{ marginBottom: 16 }}>
+            {stTpl.map((t) => <Opt key={t.key} red disabled={!o.email} onClick={() => setConfirm({ type: "tpl", key: t.key, label: t.label })} right={<ChevronRight className="chev" />}><span className="ico"><Mail /></span><span className="ol">{t.label}<br /><small>{t.sub}</small></span></Opt>)}
+          </div>
+          <div className="opts"><Opt onClick={() => setConfirm({ type: "none" })} right={<ChevronRight className="chev" />}><span className="ico"><MailX /></span><span className="ol">Ohne E-Mail stornieren<br /><small>z. B. Test- oder Doppelbestellung</small></span></Opt></div></>
+      );
+    }
+  } else if (sheet && sheet.kind === "react" && o) {
+    const run = async (withMail) => { setBusy(true); await doReactivate(o, withMail); setBusy(false); close(); };
+    body = (
+      <><h3 style={{ paddingBottom: 2 }}>Auftrag reaktivieren</h3>
+        <p className="shp">{o.name || o.email} · {o.id} — der Auftrag geht zurück auf „In Bearbeitung“.</p>
+        <div className="opts">
+          <Opt disabled={busy || !o.email} onClick={() => run(true)}><span className="ico"><Mail /></span><span className="ol">Mit E-Mail an Kunde<br /><small>„Auftrag wieder aktiviert“ an {o.email || "—"}</small></span></Opt>
+          <Opt disabled={busy} onClick={() => run(false)}><span className="ico"><RotateCcw /></span><span className="ol">Ohne E-Mail<br /><small>Nur den Status zurücksetzen</small></span></Opt>
+        </div></>
+    );
   } else if (sheet && sheet.kind === "fb" && o) {
     const fo = o.form || {};
     const filled = !!fo.filledAt;
