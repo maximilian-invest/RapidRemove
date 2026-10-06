@@ -587,3 +587,12 @@
 .an .cact .dsh{background:none;color:var(--ink)}
 .an .cact .dsh span{background:var(--ink);color:#fff}
 .an .cact .dsh:disabled{opacity:.4}
+/* Aktivitäten (globaler Feed, Design 11) */
+.an .rsum button{background:#fff;border-radius:16px;padding:12px 14px;text-align:left;color:inherit}
+.an .ae.ga{width:100%;text-align:left;background:none;color:inherit}
+.an .ae.ga:disabled{opacity:1;cursor:default}
+.an .ae.ga .t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an .ae.ga b i{font-style:normal;color:var(--g3);font-weight:400}
+.an .ae.ga>svg{color:#bbb;width:18px;height:18px;flex:none}
+.an .ae.ga.fresh{animation:gaIn .6s ease}
+@keyframes gaIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}

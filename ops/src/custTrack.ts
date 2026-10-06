@@ -127,6 +127,67 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t:
     return reply.send(GIF);
   });
 
+  // Admin: globaler Feed aller Kunden (Design-Handoff 11 „Aktivitäten").
+  // { token, filter: all|login|payment|click, q, emails[], types[], cursor:"ts|id", limit }
+  //  → { stats:{loginsToday, paymentAborts7d}, seen:[emails mit Login/Dashboard], items:[…], nextCursor }
+  app.post("/admin/activity/feed", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!deps.adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "Keine Datenbank" });
+    await initCustTrack();
+    const FT: Record<string, string[]> = {
+      login: ["login", "dash_open"],
+      payment: ["payment_open", "payment_abort", "payment_success"],
+      click: ["page_view", "click"],
+    };
+    const where: string[] = [];
+    const args: unknown[] = [];
+    const filter = String(b.filter || "all");
+    if (FT[filter]) { args.push(FT[filter]); where.push(`type = ANY($${args.length})`); }
+    const q = clip(b.q, 80).toLowerCase();
+    if (q) {
+      const or: string[] = [];
+      args.push("%" + q.replace(/[%_\\]/g, (m) => "\\" + m) + "%");
+      const p = `$${args.length}`;
+      or.push(`email ILIKE ${p}`, `order_id ILIKE ${p}`, `target ILIKE ${p}`, `meta::text ILIKE ${p}`);
+      const emails = (Array.isArray(b.emails) ? b.emails : []).slice(0, 300).map(norm).filter(Boolean);
+      if (emails.length) { args.push(emails); or.push(`email = ANY($${args.length})`); }
+      const types = (Array.isArray(b.types) ? b.types : []).map(String).filter((t) => TYPES.has(t));
+      if (types.length) { args.push(types); or.push(`type = ANY($${args.length})`); }
+      where.push("(" + or.join(" OR ") + ")");
+    }
+    const cur = String(b.cursor || "").split("|");
+    if (cur.length === 2 && cur[0] && Number(cur[1])) {
+      args.push(cur[0], Number(cur[1]));
+      where.push(`(created_at, id) < ($${args.length - 1}::timestamptz, $${args.length})`);
+    }
+    const limit = Math.min(Math.max(Number(b.limit) || 50, 10), 200);
+    args.push(limit + 1);
+    const rows = (await pool.query(
+      `SELECT id, email, order_id, type, target, meta, created_at FROM customer_events ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY created_at DESC, id DESC LIMIT $${args.length}`,
+      args,
+    )).rows as { id: string; email: string; order_id: string | null; type: string; target: string | null; meta: unknown; created_at: Date }[];
+    const more = rows.length > limit;
+    const list = rows.slice(0, limit);
+    const last = list[list.length - 1];
+    let stats = null; let seen: string[] | null = null;
+    if (!b.cursor) {
+      const s = await pool.query(`SELECT
+          count(*) FILTER (WHERE type IN ('login','dash_open') AND created_at >= (date_trunc('day', now() AT TIME ZONE 'Europe/Vienna') AT TIME ZONE 'Europe/Vienna'))::int AS logins_today,
+          count(*) FILTER (WHERE type = 'payment_abort' AND created_at > now() - interval '7 days')::int AS aborts
+        FROM customer_events`);
+      stats = { loginsToday: s.rows[0].logins_today, paymentAborts7d: s.rows[0].aborts };
+      const sv = await pool.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')
+        UNION SELECT email FROM cust_accounts WHERE last_login IS NOT NULL`).catch(() => pool!.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')`));
+      seen = sv.rows.map((r: { email: string }) => r.email);
+    }
+    return {
+      ok: true, stats, seen,
+      items: list.map((r) => ({ id: Number(r.id), email: r.email, orderId: r.order_id, type: r.type, target: r.target, meta: r.meta, ts: r.created_at })),
+      nextCursor: more && last ? new Date(last.created_at).toISOString() + "|" + last.id : null,
+    };
+  });
+
   // Admin: Aktivität eines Kunden (über die E-Mail des Auftrags)
   app.post("/admin/activity", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;

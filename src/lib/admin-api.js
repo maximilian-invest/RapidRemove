@@ -684,3 +684,5 @@ export const custInviteOne = (p) => adminPost("/admin/cust/invite-one", p);
 export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner/order-status", { orderId, status });
 /** „Kundendashboard öffnen": einmaliger Link zur Admin-Ansicht (ohne Tracking) → { url }. */
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });
+/** Globaler Aktivitäten-Feed aller Kunden → { stats, seen[], items[], nextCursor }. */
+export const activityFeed = (p) => adminPost("/admin/activity/feed", p);

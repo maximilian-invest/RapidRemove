@@ -3,11 +3,12 @@
 import React from "react";
 import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
-  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check,
+  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon,
 } from "lucide-react";
 import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
+import { GlobalActivityScreen } from "./Activity";
 import { monitorShotUrl } from "@/lib/admin-api";
 
 /* ---------------- Übersicht ---------------- */
@@ -170,9 +171,11 @@ export function Account({ ctx }) {
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
   if (moreSub === "partner") return <PartnerScreen ctx={ctx} />;
   if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
+  if (moreSub === "activity") return <GlobalActivityScreen ctx={ctx} />;
   const tiles = [
     [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
+    [ActIcon, "Aktivitäten", () => setMoreSub("activity")],
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin"; }],
     [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin"; }],
     [Settings, "Einstellungen", () => setMoreSub("settings")],
