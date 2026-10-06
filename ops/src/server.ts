@@ -27,6 +27,8 @@ import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat } from "./chat/chat";
+import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
+import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/ZahlungErhaltenReviews";
 import { notifyTeam } from "./notify";
 import { startFollowupWorker, registerFollowupRoutes } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
@@ -193,7 +195,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).filter((l) => l.trim()).length, monitor: monitorKeys(), payLinks: linkUpgrade, orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: wiseAccounts().length, monitor: monitorKeys(), payLinks: linkUpgrade, orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
@@ -1535,9 +1537,11 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   // bzw. Wise-Kontodaten (Railway-Variable WISE_BANK_DETAILS, Zeilen mit „|" oder
   // Zeilenumbruch getrennt — nie im Repo).
   const method = b.method === "paypal" || b.method === "wise" ? (b.method as "paypal" | "wise") : undefined;
-  const bankLines = String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).map((l) => l.trim()).filter(Boolean);
+  const bankLines = wiseBankFor(clip(b.orderId, 40)); // Konto 1/2 je Auftrag (Rotation)
   if (method === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
   const payTotal = method ? fmtReviewMoney(Math.round(totalNum * 0.9), currency === "usd" ? "usd" : "eur") : "";
+  // PayPal: Button „Jetzt mit PayPal senden" (PayPal.me mit Betrag + Währung, Freunde & Familie).
+  const ppUrl = method === "paypal" ? `https://www.paypal.me/${(process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "")}/${Math.round(totalNum * 0.9)}${currency === "usd" ? "USD" : "EUR"}` : "";
 
   // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) bei Bedarf direkt
   // in Stripe anlegen (find-or-create über metadata-Marker — kein Setup-Lauf nötig),
@@ -1565,14 +1569,14 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const total = quote.totalStr;
   try {
     const t = TEMPLATES["loeschbestaetigung-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, orderId, dashUrl: await dashLink(to, tlang) };
+    const props = { lang: tlang, name: clip(b.name, 120), removedItems, submittedCount, per, total, payUrl: invUrl, method, payTotal, bankLines, ppUrl, orderId, dashUrl: await dashLink(to, tlang) };
     const html = await render(React.createElement(t.component, props as any));
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     const viaName = method === "wise" ? "Wise" : "PayPal";
     await insertEvent({ orderId: orderId || undefined, email: to, type: "pay",
       title: method ? `Löschbestätigung (Bewertungen, ${viaName}) gesendet` : "Löschbestätigung + Rechnung (Bewertungen) gesendet",
       detail: method
-        ? `${count} von ${submittedCount} gelöscht · ${total} − 10 % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Link folgt separat" : " · Kontodaten in der Mail"} · an ${to}`
+        ? `${count} von ${submittedCount} gelöscht · ${total} − 10 % = ${payTotal} via ${viaName}${method === "paypal" ? " · PayPal-Button (paypal.me) in der Mail" : " · Kontodaten in der Mail (" + (bankLines[0] || "") + ")"} · an ${to}`
         : `${count} von ${submittedCount} gelöscht · ${total} · fällig heute · an ${to}`,
       html, subject: t.subject(props as any) });
     // Welche Bewertungen abgerechnet wurden → Grundlage für die Mahnungen im Admin.
@@ -1890,6 +1894,20 @@ app.post("/admin/order-status", async (req, reply) => {
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
+  // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (nur 1×).
+  if (pay === "paid" && pool) void (async () => {
+    const r = await pool!.query(`SELECT email, name, lang, raw->>'payPref' AS pp FROM orders WHERE id=$1 AND service='reviews'`, [id]);
+    const o = r.rows[0];
+    if (!o || !o.email || !["wise", "paypal"].includes(String(o.pp))) return;
+    const done = await pool!.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Zahlungsbestätigung (%' LIMIT 1`, [id]);
+    if (done.rowCount) return;
+    const via = o.pp === "wise" ? "Wise" : "PayPal";
+    const props = { lang: mailLang(o.lang), name: o.name || "", via: via as "Wise" | "PayPal", orderId: id, dashUrl: await dashLink(o.email, o.lang) };
+    const html = await render(React.createElement(ZahlungErhaltenReviews, props));
+    const subject = zahlungErhaltenSubject(props);
+    await sendMail({ to: o.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    await insertEvent({ orderId: id, email: o.email, type: "mail", title: `Zahlungsbestätigung (${via}) gesendet`, detail: `automatisch nach „bezahlt" · an ${o.email}`, html, subject, auto: true });
+  })().catch((e) => app.log.error({ err: e }, "Zahlungsbestätigung Wise/PayPal fehlgeschlagen"));
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes

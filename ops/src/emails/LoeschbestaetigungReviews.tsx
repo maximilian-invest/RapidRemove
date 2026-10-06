@@ -37,6 +37,8 @@ export interface LoeschbestaetigungReviewsProps {
   payTotal?: string;
   /** Wise-Kontodaten, je Zeile „Bezeichnung: Wert". */
   bankLines?: string[];
+  /** PayPal.me-Link mit Betrag (Button „Jetzt mit PayPal senden"). */
+  ppUrl?: string;
   orderId?: string;
   /** Link zum Kunden-Dashboard. */
   dashUrl?: string;
@@ -245,19 +247,19 @@ export const T: Record<string, Entry> = {
 };
 
 /** Texte für die PayPal-/Wise-Variante ({m} = Zahlweg, {t} = rabattierter Betrag). */
-interface ViaEntry { disc: string; pp1: string; pp2: string; wise1: string; ref: string }
+interface ViaEntry { disc: string; pp1: string; pp2: string; wise1: string; ref: string; ppNow?: string; ppBtn?: string; conf?: string }
 export const VIA: Record<string, ViaEntry> = {
-  de: { disc: "Mit Ihrem {m}-Rabatt von 10 % zahlen Sie: {t}", pp1: "Ihren PayPal-Zahlungslink erhalten Sie in Kürze in einer separaten E-Mail.", pp2: "Wichtig: Bitte wählen Sie bei der Zahlung unbedingt „Freunde und Familie“ (nicht „Waren oder Dienstleistungen“).", wise1: "Bitte überweisen Sie {t} per Wise auf folgendes Konto:", ref: "Verwendungszweck" },
-  en: { disc: "With your 10 % {m} discount you pay: {t}", pp1: "Your PayPal payment link will follow in a separate email shortly.", pp2: "Important: when paying, please be sure to select “Friends and Family” (not “Goods and Services”).", wise1: "Please transfer {t} via Wise to the following account:", ref: "Payment reference" },
-  es: { disc: "Con tu 10 % de descuento por {m} pagas: {t}", pp1: "En breve te enviaremos el enlace de pago de PayPal en un correo aparte.", pp2: "Importante: al pagar, selecciona sin falta «Amigos y familiares» (no «Bienes y servicios»).", wise1: "Transfiere {t} por Wise a la siguiente cuenta:", ref: "Concepto" },
-  fr: { disc: "Avec ta remise de 10 % {m}, tu paies : {t}", pp1: "Le lien de paiement PayPal t'arrive très bientôt dans un e-mail séparé.", pp2: "Important : lors du paiement, choisis impérativement « Amis et famille » (et non « Biens et services »).", wise1: "Merci de virer {t} via Wise sur le compte suivant :", ref: "Référence" },
-  it: { disc: "Con il tuo sconto del 10 % {m} paghi: {t}", pp1: "Il link di pagamento PayPal ti arriverà a breve in un'e-mail separata.", pp2: "Importante: al momento del pagamento seleziona assolutamente «Amici e familiari» (non «Beni e servizi»).", wise1: "Trasferisci {t} tramite Wise sul seguente conto:", ref: "Causale" },
-  nl: { disc: "Met je 10 % {m}-korting betaal je: {t}", pp1: "De PayPal-betaallink volgt binnenkort in een aparte e-mail.", pp2: "Belangrijk: kies bij het betalen beslist ‘Vrienden en familie’ (niet ‘Goederen en diensten’).", wise1: "Maak {t} via Wise over naar de volgende rekening:", ref: "Betalingskenmerk" },
-  pt: { disc: "Com o teu desconto de 10 % {m} pagas: {t}", pp1: "O link de pagamento PayPal segue em breve num e-mail separado.", pp2: "Importante: ao pagar, escolhe obrigatoriamente “Amigos e familiares” (e não “Bens e serviços”).", wise1: "Transfere {t} via Wise para a seguinte conta:", ref: "Referência" },
-  ja: { disc: "{m}の10%割引適用後のお支払額：{t}", pp1: "PayPalのお支払いリンクは、まもなく別のメールでお送りします。", pp2: "重要：お支払いの際は必ず「友達や家族」を選択してください（「商品やサービス」ではありません）。", wise1: "{t}をWiseで以下の口座へお振込みください：", ref: "振込参照番号" },
-  sv: { disc: "Med din rabatt på 10 % via {m} betalar du: {t}", pp1: "PayPal-betalningslänken kommer inom kort i ett separat mejl.", pp2: "Viktigt: välj absolut ”Vänner och familj” när du betalar (inte ”Varor och tjänster”).", wise1: "För över {t} via Wise till följande konto:", ref: "Betalningsreferens" },
-  da: { disc: "Med din rabat på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslinket kommer om lidt i en separat mail.", pp2: "Vigtigt: Vælg endelig “Venner og familie”, når du betaler (ikke “Varer og tjenester”).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreference" },
-  no: { disc: "Med rabatten din på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslenken kommer snart i en egen e-post.", pp2: "Viktig: Velg for all del «Venner og familie» når du betaler (ikke «Varer og tjenester»).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreferanse" },
+  de: { ppNow: "Senden Sie den Betrag jetzt mit einem Klick per PayPal:", ppBtn: "Jetzt mit PayPal senden", conf: "Ihre Zahlungsbestätigung erhalten Sie, sobald die Zahlung bei uns eingegangen ist.", disc: "Mit Ihrem {m}-Rabatt von 10 % zahlen Sie: {t}", pp1: "Ihren PayPal-Zahlungslink erhalten Sie in Kürze in einer separaten E-Mail.", pp2: "Wichtig: Bitte wählen Sie bei der Zahlung unbedingt „Freunde und Familie“ (nicht „Waren oder Dienstleistungen“).", wise1: "Bitte überweisen Sie {t} per Wise auf folgendes Konto:", ref: "Verwendungszweck" },
+  en: { ppNow: "Send the amount now with one click via PayPal:", ppBtn: "Send with PayPal now", conf: "You'll receive your payment confirmation as soon as your payment has arrived.", disc: "With your 10 % {m} discount you pay: {t}", pp1: "Your PayPal payment link will follow in a separate email shortly.", pp2: "Important: when paying, please be sure to select “Friends and Family” (not “Goods and Services”).", wise1: "Please transfer {t} via Wise to the following account:", ref: "Payment reference" },
+  es: { ppNow: "Envía ahora el importe con un clic por PayPal:", ppBtn: "Enviar ahora con PayPal", conf: "Recibirás la confirmación de pago en cuanto recibamos tu pago.", disc: "Con tu 10 % de descuento por {m} pagas: {t}", pp1: "En breve te enviaremos el enlace de pago de PayPal en un correo aparte.", pp2: "Importante: al pagar, selecciona sin falta «Amigos y familiares» (no «Bienes y servicios»).", wise1: "Transfiere {t} por Wise a la siguiente cuenta:", ref: "Concepto" },
+  fr: { ppNow: "Envoie maintenant le montant en un clic via PayPal :", ppBtn: "Envoyer avec PayPal", conf: "Tu recevras ta confirmation de paiement dès que ton paiement nous sera parvenu.", disc: "Avec ta remise de 10 % {m}, tu paies : {t}", pp1: "Le lien de paiement PayPal t'arrive très bientôt dans un e-mail séparé.", pp2: "Important : lors du paiement, choisis impérativement « Amis et famille » (et non « Biens et services »).", wise1: "Merci de virer {t} via Wise sur le compte suivant :", ref: "Référence" },
+  it: { ppNow: "Invia ora l’importo con un clic tramite PayPal:", ppBtn: "Invia ora con PayPal", conf: "Riceverai la conferma di pagamento non appena il pagamento sarà arrivato.", disc: "Con il tuo sconto del 10 % {m} paghi: {t}", pp1: "Il link di pagamento PayPal ti arriverà a breve in un'e-mail separata.", pp2: "Importante: al momento del pagamento seleziona assolutamente «Amici e familiari» (non «Beni e servizi»).", wise1: "Trasferisci {t} tramite Wise sul seguente conto:", ref: "Causale" },
+  nl: { ppNow: "Stuur het bedrag nu met één klik via PayPal:", ppBtn: "Nu sturen met PayPal", conf: "U ontvangt uw betalingsbevestiging zodra uw betaling binnen is.", disc: "Met je 10 % {m}-korting betaal je: {t}", pp1: "De PayPal-betaallink volgt binnenkort in een aparte e-mail.", pp2: "Belangrijk: kies bij het betalen beslist ‘Vrienden en familie’ (niet ‘Goederen en diensten’).", wise1: "Maak {t} via Wise over naar de volgende rekening:", ref: "Betalingskenmerk" },
+  pt: { ppNow: "Envia agora o valor com um clique pelo PayPal:", ppBtn: "Enviar agora com PayPal", conf: "Recebes a confirmação de pagamento assim que o pagamento chegar.", disc: "Com o teu desconto de 10 % {m} pagas: {t}", pp1: "O link de pagamento PayPal segue em breve num e-mail separado.", pp2: "Importante: ao pagar, escolhe obrigatoriamente “Amigos e familiares” (e não “Bens e serviços”).", wise1: "Transfere {t} via Wise para a seguinte conta:", ref: "Referência" },
+  ja: { ppNow: "PayPalでワンクリックでお送りいただけます：", ppBtn: "今すぐPayPalで送る", conf: "ご入金を確認次第、お支払い確認メールをお送りします。", disc: "{m}の10%割引適用後のお支払額：{t}", pp1: "PayPalのお支払いリンクは、まもなく別のメールでお送りします。", pp2: "重要：お支払いの際は必ず「友達や家族」を選択してください（「商品やサービス」ではありません）。", wise1: "{t}をWiseで以下の口座へお振込みください：", ref: "振込参照番号" },
+  sv: { ppNow: "Skicka beloppet nu med ett klick via PayPal:", ppBtn: "Skicka med PayPal nu", conf: "Du får din betalningsbekräftelse så snart betalningen har kommit in.", disc: "Med din rabatt på 10 % via {m} betalar du: {t}", pp1: "PayPal-betalningslänken kommer inom kort i ett separat mejl.", pp2: "Viktigt: välj absolut ”Vänner och familj” när du betalar (inte ”Varor och tjänster”).", wise1: "För över {t} via Wise till följande konto:", ref: "Betalningsreferens" },
+  da: { ppNow: "Send beløbet nu med ét klik via PayPal:", ppBtn: "Send med PayPal nu", conf: "Du får din betalingsbekræftelse, så snart betalingen er modtaget.", disc: "Med din rabat på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslinket kommer om lidt i en separat mail.", pp2: "Vigtigt: Vælg endelig “Venner og familie”, når du betaler (ikke “Varer og tjenester”).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreference" },
+  no: { ppNow: "Send beløpet nå med ett klikk via PayPal:", ppBtn: "Send med PayPal nå", conf: "Du får betalingsbekreftelsen så snart betalingen er mottatt.", disc: "Med rabatten din på 10 % via {m} betaler du: {t}", pp1: "PayPal-betalingslenken kommer snart i en egen e-post.", pp2: "Viktig: Velg for all del «Venner og familie» når du betaler (ikke «Varer og tjenester»).", wise1: "Overfør {t} via Wise til følgende konto:", ref: "Betalingsreferanse" },
 };
 
 export function subject(p: LoeschbestaetigungReviewsProps): string {
@@ -265,7 +267,7 @@ export function subject(p: LoeschbestaetigungReviewsProps): string {
   return t.subject((p.removedItems || []).length || (p.removedUrls || []).length || 1);
 }
 
-export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", method, payTotal = "", bankLines = [], orderId = "", dashUrl, _overrides }: LoeschbestaetigungReviewsProps = {}) {
+export default function LoeschbestaetigungReviews({ lang = "en", name = "", removedItems = [], removedUrls = [], submittedCount = 0, per = "", total = "", payUrl = "", method, payTotal = "", bankLines = [], ppUrl = "", orderId = "", dashUrl, _overrides }: LoeschbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const v = VIA[lang] || VIA.en;
   const via = (s: string) => s.replace("{m}", method === "wise" ? "Wise" : "PayPal").replace("{t}", payTotal || total);
@@ -296,13 +298,22 @@ export default function LoeschbestaetigungReviews({ lang = "en", name = "", remo
       </NoteBox>
 
       {method === "paypal" ? (
-        <P>{v.pp1}<br /><strong>{v.pp2}</strong></P>
+        ppUrl ? (
+          <>
+            <P>{v.ppNow}</P>
+            <CtaButton variant="pay" href={ppUrl} full>{v.ppBtn}</CtaButton>
+            <P><strong>{v.pp2}</strong></P>
+            <P muted>{v.conf}</P>
+          </>
+        ) : <P>{v.pp1}<br /><strong>{v.pp2}</strong></P>
       ) : method === "wise" ? (
-        <NoteBox>
-          <strong>{via(v.wise1)}</strong><br />
-          {bankLines.map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
-          {orderId ? <React.Fragment>{v.ref}: <strong>{orderId}</strong></React.Fragment> : null}
-        </NoteBox>
+        <>
+          <NoteBox>
+            <strong>{via(v.wise1)}</strong><br />
+            {bankLines.map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
+          </NoteBox>
+          <P muted>{v.conf}</P>
+        </>
       ) : payUrl ? <CtaButton variant="pay" href={payUrl} full>{t.cta}</CtaButton> : null}
 
       <DashButton lang={lang} url={dashUrl} />

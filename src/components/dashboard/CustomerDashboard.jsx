@@ -922,7 +922,6 @@ export default function CustomerDashboard() {
               <h3>{T("wTitle")}</h3>
               <div className="meta">{T("wSub")}</div>
               <div className="wbig"><span>{T("wAmount")}</span><b>{money(wiseAmount, payCur)}</b><button type="button" onClick={() => copy(String(wiseAmount))} aria-label={T("wCopy")}><Copy /></button></div>
-              <div className="wrow hl"><span><small>{T("wRef")}</small><b>{wiseRef}</b></span><button type="button" onClick={() => copy(wiseRef)} aria-label={T("wCopy")}><Copy /></button></div>
               <div className="sec" style={{ marginTop: 14 }}><h2 style={{ fontSize: 17 }}>{T("wAcct")}</h2></div>
               {rows.map(([k, v], i) => (
                 <div key={i} className="wrow"><span>{k ? <small>{k}</small> : null}<b>{v}</b></span><button type="button" onClick={() => copy(v)} aria-label={T("wCopy")}><Copy /></button></div>

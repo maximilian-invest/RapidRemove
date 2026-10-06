@@ -16,6 +16,7 @@ import { notifyTeam } from "./notify";
 import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
+import { wiseBankFor } from "./wiseAccounts";
 import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
@@ -505,8 +506,9 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const d = await loadCustomerOrders(email);
     const imp = !!(await customerSessionInfo(b.token))?.imp;
     // Wise-Zahler: Kontodaten (Railway WISE_BANK_DETAILS) nur an Kunden, die Wise gewählt haben.
-    const wantsWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
-    const wiseBank = wantsWise ? String(process.env.WISE_BANK_DETAILS || "").split(/\r?\n|\|/).map((l) => l.trim()).filter(Boolean) : [];
+    const wiseOrders = d.orders.filter((o) => (o as { payPref?: string | null }).payPref === "wise");
+    const wiseOrder = wiseOrders.find((o) => (Number(o.toPay) || 0) > 0) || wiseOrders[0];
+    const wiseBank = wiseOrder ? wiseBankFor(wiseOrder.id) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Auftrag)
     return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank };
   });
 
