@@ -1426,6 +1426,7 @@ function OrderDrawer({ order, onClose, onStatus, onCompose, onOpenFull, onAssign
    Erfolg). Sprache automatisch aus der Bestellung.
    Versand über POST /admin/reviews-storno. */
 const RV_STORNO = [
+  { reason: "impossible", label: "Löschung nicht möglich (ganze Bestellung)", btn: "Storno: Löschung nicht möglich" },
   { reason: "age", label: "älter als 4 Wochen", btn: "Storno: älter als 4 Wochen" },
   { reason: "text", label: "kein Text", btn: "Storno: kein Text" },
 ];

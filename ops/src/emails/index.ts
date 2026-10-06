@@ -33,6 +33,7 @@ import AuftragsbestaetigungReviews, { subject as auftragsbestaetigungReviewsSubj
 import LoeschbestaetigungReviews, { subject as loeschbestaetigungReviewsSubject, T as loeschbestaetigungReviewsTexts } from "./LoeschbestaetigungReviews";
 import BearbeitungGestartetReviews, { subject as bearbeitungGestartetReviewsSubject, T as bearbeitungGestartetReviewsTexts } from "./BearbeitungGestartetReviews";
 import StornoReviews, { subject as stornoReviewsSubject, T as stornoReviewsTexts } from "./StornoReviews";
+import StornoReviewsAll, { subject as stornoReviewsAllSubject, T as stornoReviewsAllTexts } from "./StornoReviewsAll";
 import MahnungReviews, { subject as mahnungReviewsSubject, T as mahnungReviewsTexts } from "./MahnungReviews";
 import Rueckgewinnung, { subject as rueckgewinnungSubject, T as rueckgewinnungTexts } from "./Rueckgewinnung";
 
@@ -156,6 +157,14 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     subject: stornoReviewsSubject,
     sample: { lang: "en", name: "Alex", reason: "age", items: [{ url: "https://maps.app.goo.gl/example1" }], orderId: "RR-123456" },
     texts: stornoReviewsTexts,
+  },
+  "storno-reviews-all": {
+    label: "Storno Bewertungen (Löschung nicht möglich, ganze Bestellung)",
+    group: "Storno",
+    component: StornoReviewsAll,
+    subject: stornoReviewsAllSubject,
+    sample: { lang: "en", name: "Alex", orderId: "RR-123456" },
+    texts: stornoReviewsAllTexts,
   },
   "loeschbestaetigung-reviews": {
     label: "Löschbestätigung + Rechnung Bewertungen (außerhalb DACH)",

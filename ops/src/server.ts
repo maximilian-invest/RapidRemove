@@ -1245,8 +1245,9 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  const reason = b.reason === "text" ? "text" : b.reason === "age" ? "age" : null;
-  if (!reason) return reply.code(400).send({ ok: false, error: "Grund fehlt (age | text)" });
+  // "impossible" = ganze Bestellung storniert, Löschung nicht möglich (kurze Mail, Rest über den Partner-Workflow).
+  const reason = b.reason === "text" ? "text" : b.reason === "age" ? "age" : b.reason === "impossible" ? "impossible" : null;
+  if (!reason) return reply.code(400).send({ ok: false, error: "Grund fehlt (age | text | impossible)" });
   type StornoItem = { url?: string; name?: string; text?: string };
   const items: StornoItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
@@ -1262,14 +1263,17 @@ app.post("/admin/reviews-storno", async (req, reply) => {
   const tlang = raw === "de" ? "en" : raw;
   const orderId = clip(b.orderId, 40);
   try {
-    const t = TEMPLATES["storno-reviews"];
-    const props = { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: await dashLink(to, tlang) };
-    const { html, subject } = await renderTemplate("storno-reviews", props as any);
+    const key = reason === "impossible" ? "storno-reviews-all" : "storno-reviews";
+    const t = TEMPLATES[key];
+    const props = reason === "impossible"
+      ? { lang: tlang, name: clip(b.name, 120), orderId }
+      : { lang: tlang, name: clip(b.name, 120), reason, items, orderId, dashUrl: await dashLink(to, tlang) };
+    const { html, subject } = await renderTemplate(key, props as any);
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `Grund: ${reason === "age" ? "älter als 4 Wochen" : "kein Text"} · ${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `Grund: ${reason === "age" ? "älter als 4 Wochen" : reason === "text" ? "kein Text" : "Löschung nicht möglich (ganze Bestellung)"} · ${items.length || 1} Bewertung(en) · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     return { ok: true, lang: tlang, reason, count: items.length };

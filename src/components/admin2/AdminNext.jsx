@@ -26,6 +26,7 @@ const STORNO_OPTS = [
   ["scamstorno", "Unlautere Praktiken", "Verdacht auf Missbrauch"],
 ];
 const RV_STORNO = [
+  ["impossible", "Löschung nicht möglich", "Ganze Bestellung storniert", Ban],
   ["age", "Älter als 4 Wochen", "Bewertung zu alt", CalendarClock],
   ["text", "Kein Bewertungstext", "Nur Sterne, kein Text", MessageSquareOff],
 ];
@@ -298,7 +299,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       );
     } else {
       const usage = readTplUsage();
-      const list = (tpls || []).filter((t) => t.key !== "storno-reviews");
+      const list = (tpls || []).filter((t) => t.key !== "storno-reviews" && t.key !== "storno-reviews-all");
       const top = [...list].sort((a, b) => (usage[b.key] || 0) - (usage[a.key] || 0)).slice(0, 5);
       const groups = ["Mitwirkung", "Storno", "Schutz", "Bestellung"].map((g) => [g, list.filter((t) => t.group === g)]).filter(([, l]) => l.length);
       const row = (t) => <Opt key={t.key} onClick={() => setConfirm({ key: t.key, label: t.label })} right={AUTO_KEYS.includes(t.key) ? <span className="zp" title="Wird sonst automatisch versendet"><Zap /></span> : null}><span className="ico"><Mail /></span><span className="ol">{t.label}</span></Opt>;
@@ -332,13 +333,11 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       body = (
         <><h3 style={{ paddingBottom: 2 }}>Auftrag stornieren</h3>
           <p className="shp">{o.name || o.email} · {o.id} — Grund wählen, der Kunde bekommt die passende Storno-Mail.</p>
-          {isRev ? <><p className="shl">Bewertung erfüllt Voraussetzungen nicht</p>
-            <div className="opts" style={{ marginBottom: 16 }}>
-              {RV_STORNO.map(([reason, l, sub, I]) => <Opt key={reason} red disabled={!o.email} onClick={() => setConfirm({ type: "rv", reason, label: l })} right={<ChevronRight className="chev" />}><span className="ico"><I /></span><span className="ol">{l}<br /><small>{sub} · Mail auf {LANG_L[rvLang(o)]}</small></span></Opt>)}
-            </div></> : null}
-          <p className="shl">{isRev ? "Anderer Grund" : "Grund"}</p>
+          <p className="shl">Grund</p>
           <div className="opts" style={{ marginBottom: 16 }}>
-            {stTpl.map((t) => <Opt key={t.key} red disabled={!o.email} onClick={() => setConfirm({ type: "tpl", key: t.key, label: t.label })} right={<ChevronRight className="chev" />}><span className="ico"><Mail /></span><span className="ol">{t.label}<br /><small>{t.sub}</small></span></Opt>)}
+            {isRev
+              ? RV_STORNO.map(([reason, l, sub, I]) => <Opt key={reason} red disabled={!o.email} onClick={() => setConfirm({ type: "rv", reason, label: l })} right={<ChevronRight className="chev" />}><span className="ico"><I /></span><span className="ol">{l}<br /><small>{sub} · Mail auf {LANG_L[rvLang(o)]}</small></span></Opt>)
+              : stTpl.map((t) => <Opt key={t.key} red disabled={!o.email} onClick={() => setConfirm({ type: "tpl", key: t.key, label: t.label })} right={<ChevronRight className="chev" />}><span className="ico"><Mail /></span><span className="ol">{t.label}<br /><small>{t.sub}</small></span></Opt>)}
           </div>
           <div className="opts"><Opt onClick={() => setConfirm({ type: "none" })} right={<ChevronRight className="chev" />}><span className="ico"><MailX /></span><span className="ol">Ohne E-Mail stornieren<br /><small>z. B. Test- oder Doppelbestellung</small></span></Opt></div></>
       );
