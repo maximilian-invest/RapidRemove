@@ -16,6 +16,7 @@ import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
 import SupportChat from "./Chat";
+import PaySheet from "./PaySheet";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed, passkeyRegister, passkeyName, passkeyError } from "@/lib/passkey";
 import { makeT, pickLang, localeOf } from "./dash-i18n";
@@ -899,39 +900,9 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <div className={"bg" + (wiseOpen ? " show" : "")} onClick={() => setWiseOpen(false)} />
-      <div className={"rv-sheet wsheet" + (wiseOpen ? " show" : "")} aria-hidden={!wiseOpen}>
-        {wiseOpen ? (() => {
-          const copy = (v) => { try { navigator.clipboard.writeText(v); showToast(T("wCopied")); } catch (e) { /* */ } };
-          const rows = wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; });
-          if (viaPaypal) return (
-            <>
-              <div className="grab" />
-              <h3>{T("ppTitle")}</h3>
-              <div className="meta">{T("ppSub")}</div>
-              <div className="wbig"><span>{T("wAmount")}</span><b>{money(wiseAmount, payCur)}</b></div>
-              <div className="wrow hl"><span><small>{T("ppRef")}</small><b>{wiseRef}</b></span><button type="button" onClick={() => copy(wiseRef)} aria-label={T("wCopy")}><Copy /></button></div>
-              <div className="wff"><AlertCircle />{T("ppFF")}</div>
-              <a className="cta pp" href={ppUrl} target="_blank" rel="noopener noreferrer" data-track="PayPal öffnen"><ExternalLink />{T("ppBtn", { amount: money(wiseAmount, payCur) })}</a>
-              <p className="wnote">{T("ppNote")}</p>
-            </>
-          );
-          return (
-            <>
-              <div className="grab" />
-              <h3>{T("wTitle")}</h3>
-              <div className="meta">{T("wSub")}</div>
-              <div className="wbig"><span>{T("wAmount")}</span><b>{money(wiseAmount, payCur)}</b><button type="button" onClick={() => copy(String(wiseAmount))} aria-label={T("wCopy")}><Copy /></button></div>
-              <div className="sec" style={{ marginTop: 14 }}><h2 style={{ fontSize: 17 }}>{T("wAcct")}</h2></div>
-              {rows.map(([k, v], i) => (
-                <div key={i} className="wrow"><span>{k ? <small>{k}</small> : null}<b>{v}</b></span><button type="button" onClick={() => copy(v)} aria-label={T("wCopy")}><Copy /></button></div>
-              ))}
-              <a className="cta" style={{ marginTop: 16 }} href="https://wise.com/send" target="_blank" rel="noopener noreferrer"><ExternalLink />{T("wOpen")}</a>
-              <p className="wnote">{T("wNote")}</p>
-            </>
-          );
-        })() : null}
-      </div>
+      <PaySheet open={wiseOpen} onClose={() => setWiseOpen(false)} T={T} via={viaPaypal ? "paypal" : "wise"} amountNum={wiseAmount} regular={toPay}
+        fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
+        ppUrl={ppUrl} ppHandle={PAYPAL_ME} wiseRef={wiseRef} showToast={showToast} />
 
       <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
