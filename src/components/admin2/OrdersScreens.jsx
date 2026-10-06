@@ -48,7 +48,7 @@ export function OrdersList({ ctx }) {
         <b>{loaded ? newO.length : "–"}</b>
         <span className="ahs">{newO.length ? "Ältester wartet seit " + fmtAge(oldest) : "Alles abgearbeitet"}</span>
         <img className="himg" src={IMG("hero")} alt="" />
-        <span className="hbar"><span className="t"><span>{inWork} von {openN} offen in Arbeit</span><span>{openN ? Math.round((inWork / openN) * 100) : 0}%</span></span><span className="bar"><i style={{ "--w": (openN ? (inWork / openN) * 100 : 0) + "%" }} /></span></span>
+        <span className="hbar"><span className="t"><span>{inWork} von {openN} offenen übernommen</span><span>{openN ? Math.round((inWork / openN) * 100) : 0}%</span></span><span className="bar"><i style={{ "--w": (openN ? (inWork / openN) * 100 : 0) + "%" }} /></span></span>
       </button>
       <div className="sec3 stat-h"><h2>Status</h2><button type="button" className="lk" onClick={() => openSheet({ kind: "scope" })}>{{ open: "Offen", closed: "Abgeschlossen", all: "Alle" }[f.scope]}<ChevronDown /></button></div>
       <div className="gcards">
