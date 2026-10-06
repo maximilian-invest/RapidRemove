@@ -177,8 +177,10 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t:
           count(*) FILTER (WHERE type = 'payment_abort' AND created_at > now() - interval '7 days')::int AS aborts
         FROM customer_events`);
       stats = { loginsToday: s.rows[0].logins_today, paymentAborts7d: s.rows[0].aborts };
+      // „schon da gewesen": Ereignisse, Passwort-Login (last_login) oder eine echte (nicht-Admin-)Sitzung, z. B. per Login-Link
       const sv = await pool.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')
-        UNION SELECT email FROM cust_accounts WHERE last_login IS NOT NULL`).catch(() => pool!.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')`));
+        UNION SELECT email FROM cust_accounts WHERE last_login IS NOT NULL
+        UNION SELECT email FROM cust_sessions WHERE NOT impersonation`).catch(() => pool!.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')`));
       seen = sv.rows.map((r: { email: string }) => r.email);
     }
     return {
@@ -196,7 +198,11 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t:
     await initCustTrack();
     const email = norm(b.email);
     if (!email) return reply.code(400).send({ ok: false, error: "E-Mail fehlt" });
-    const acc = await pool.query(`SELECT created_at, last_login FROM cust_accounts WHERE email=$1`, [email]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+    const acc = await pool.query(`SELECT a.created_at, COALESCE(a.last_login, (SELECT max(created_at) FROM cust_sessions s WHERE s.email=a.email AND NOT s.impersonation)) AS last_login FROM cust_accounts a WHERE a.email=$1`, [email]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+    if (!acc.rows[0]) {
+      const ss = await pool.query(`SELECT max(created_at) AS t FROM cust_sessions WHERE email=$1 AND NOT impersonation`, [email]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+      if (ss.rows[0] && ss.rows[0].t) acc.rows.push({ created_at: null, last_login: ss.rows[0].t });
+    }
     const ev = await pool.query(`SELECT id, order_id, session_id, type, target, meta, created_at FROM customer_events WHERE email=$1 ORDER BY created_at DESC LIMIT 500`, [email]);
     const cnt = await pool.query(`SELECT type, count(*)::int AS n, max(created_at) AS last FROM customer_events WHERE email=$1 GROUP BY type`, [email]);
     const by = Object.fromEntries(cnt.rows.map((r: { type: string; n: number; last: string }) => [r.type, r]));

@@ -441,6 +441,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (!r.rows[0]) return reply.code(401).send({ ok: false, error: "invalid" });
     const token = await createCustomerSession(r.rows[0].email);
     if (!token) return reply.code(401).send({ ok: false, error: "invalid" });
+    void pool.query(`UPDATE cust_accounts SET last_login=now() WHERE email=$1`, [r.rows[0].email]).catch(() => {});
     void logCustEvent(r.rows[0].email, "login", "Über den Link aus der E-Mail", { device: deviceOf(String(req.headers["user-agent"] || "")) });
     return { ok: true, token };
   });
