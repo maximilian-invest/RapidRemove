@@ -471,3 +471,21 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
   .rra .psheet.show{transform:translate(-50%,-50%);opacity:1;pointer-events:auto}
 }
 @media (prefers-reduced-motion:reduce){.rra .pcard,.rra .pcard::after,.rra .ps-steps li{animation:none;opacity:1}}
+/* Mehrere offene Zahlungen mit verschiedenen Methoden (Wise / PayPal / Karte) */
+.rra .pgrps{position:relative;z-index:2;display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.rra .pgrp{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:18px;padding:12px 14px;font:inherit;cursor:pointer;transition:background .2s,transform .15s}
+.rra .pgrp:hover{background:rgba(255,255,255,.14)}
+.rra .pgrp:active{transform:scale(.985)}
+.rra .pgrp:disabled{opacity:.6}
+.rra .pg-ic{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-weight:800;font-size:16px;background:#fff;color:var(--ink)}
+.rra .pgrp.wise .pg-ic{background:#9fe870;color:#163300}
+.rra .pgrp.paypal .pg-ic{background:#0070e0;color:#fff}
+.rra .pg-ic svg{width:18px;height:18px}
+.rra .pg-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rra .pg-t b{font-size:15px;display:flex;align-items:center;gap:6px}
+.rra .pg-t em{font-style:normal;font-size:11px;font-weight:700;background:rgba(159,232,112,.18);color:#b9f394;border-radius:99px;padding:2px 7px}
+.rra .pg-t small{font-size:12px;color:#a8a8a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .pg-a{flex:none;display:flex;align-items:center;gap:6px;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+.rra .pg-a svg{width:16px;height:16px;opacity:.7}
+.rra .pg-h{font-size:12px;color:#9a9a9a;margin:2px 2px 0;line-height:1.4}
+@media (min-width:821px){.rra .pgrps{padding-right:180px}}

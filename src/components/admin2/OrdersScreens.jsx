@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers,
 } from "lucide-react";
 import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer } from "./model";
 
@@ -118,6 +118,10 @@ export function OrderDetail({ ctx, id }) {
   const removedN = pt.filter((t) => t.status === "removed").length;
   const accN = o.reviewsAccepted ? o.reviewsAccepted.length : items.length;
   const f = o.form || {};
+  // Weitere offene Zahlungen desselben Kunden (gleiche E-Mail) – gleiche Methode = Sammelzahlung möglich.
+  const em = String(o.email || "").toLowerCase();
+  const sibs = em ? orders.filter((x) => x.id !== o.id && String(x.email || "").toLowerCase() === em && x.status !== "storniert" && payOpen(x, now)) : [];
+  const same = sibs.filter((x) => (payPrefOf(x) || "") === (payPrefOf(o) || ""));
   const stepIx = b === "new" ? 0 : b === "work" ? 2 : b === "pay" || b === "inkasso" ? 3 : b === "deleted" ? 4 : -1;
   const primary =
     b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
@@ -140,7 +144,15 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
-      {(b === "pay" || b === "inkasso" || (o.status === "done" && o.pay !== "paid")) ? <PaidBtn o={o} ctx={ctx} /> : null}
+      {payOpen(o, now) && sibs.length ? (
+        <div className="disc sib">
+          <span className="di"><Layers /></span>
+          <span className="t"><b>Kunde hat noch {sibs.length} weitere offene Zahlung{sibs.length > 1 ? "en" : ""}</b>
+            {sibs.map((x) => <span key={x.id}>#{x.id} · {payPrefOf(x) || "Karte (Stripe)"}{(payPrefOf(x) || "") === (payPrefOf(o) || "") ? " · gleiche Methode" : ""}</span>)}
+            <span>{same.length ? <>Im Kunden-Dashboard sieht er {payPrefOf(o) ? `alle ${payPrefOf(o)}-Aufträge` : "alle Karten-Aufträge"} als eine Summe. Kommt eine Sammelzahlung, unten alle zusammen auf bezahlt setzen – er bekommt dann <b>eine</b> Bestätigung.</> : "Andere Methode – wird separat bezahlt."}</span></span>
+        </div>
+      ) : null}
+      {payOpen(o, now) ? <PaidBtn o={o} ctx={ctx} group={same} /> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
@@ -185,21 +197,42 @@ export function OrderDetail({ ctx, id }) {
 }
 
 /** „Als bezahlt markieren" (z. B. Wise/PayPal/Überweisung): 2× tippen zur Bestätigung. Bewertungen → im Kunden-Dashboard „Bezahlt". */
-function PaidBtn({ o, ctx }) {
+const payOpen = (x, now) => { const bx = bucket(x, now); return bx === "pay" || bx === "inkasso" || (x.status === "done" && x.pay !== "paid"); };
+
+function PaidBtn({ o, ctx, group = [] }) {
   const [armed, setArmed] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   React.useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 4000); return () => clearTimeout(t); }, [armed]);
+  const [armedAll, setArmedAll] = React.useState(false);
+  React.useEffect(() => { if (!armedAll) return; const t = setTimeout(() => setArmedAll(false), 4000); return () => clearTimeout(t); }, [armedAll]);
   const go = async () => {
-    if (!armed) { setArmed(true); return; }
+    if (!armed) { setArmed(true); setArmedAll(false); return; }
     setBusy(true);
     try { await ctx.doStatus(o, "done", { pay: "paid", label: "Zahlung eingegangen (manuell)" }); ctx.toast(`${o.id} als bezahlt markiert`); }
     catch (e) { ctx.toast("Fehlgeschlagen: " + e.message); }
     setBusy(false); setArmed(false);
   };
+  const goAll = async () => {
+    if (!armedAll) { setArmedAll(true); setArmed(false); return; }
+    setBusy(true);
+    const list = [o, ...group];
+    let ok = 0;
+    for (const x of list) {
+      try { await ctx.doStatus(x, "done", { pay: "paid", label: `Zahlung eingegangen (manuell · Sammelzahlung ${list.map((y) => y.id).join(", ")})` }); ok++; }
+      catch (e) { ctx.toast(`${x.id}: ${e.message}`); }
+    }
+    if (ok) ctx.toast(`${ok} Aufträge als bezahlt markiert`);
+    setBusy(false); setArmedAll(false);
+  };
   return (
     <div className="ctas" style={{ margin: "-4px 0 14px" }}>
+      {group.length ? (
+        <button type="button" className={"cta" + (armedAll ? " ok" : "")} disabled={busy} onClick={goAll}>
+          {busy && armedAll ? <Loader className="spin" /> : <CheckCircle2 />}{armedAll ? "Sicher? Nochmal tippen – Sammelzahlung ist eingegangen" : `Alle ${group.length + 1} als bezahlt markieren`}
+        </button>
+      ) : null}
       <button type="button" className={"cta" + (armed ? " ok" : " gh")} disabled={busy} onClick={go}>
-        {busy ? <Loader className="spin" /> : <CheckCircle2 />}{armed ? "Sicher? Nochmal tippen – Zahlung ist eingegangen" : "Als bezahlt markieren"}
+        {busy && !armedAll ? <Loader className="spin" /> : <CheckCircle2 />}{armed ? "Sicher? Nochmal tippen – Zahlung ist eingegangen" : group.length ? "Nur diesen als bezahlt markieren" : "Als bezahlt markieren"}
       </button>
     </div>
   );

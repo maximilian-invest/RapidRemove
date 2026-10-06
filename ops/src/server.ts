@@ -1537,7 +1537,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   // bzw. Wise-Kontodaten (Railway-Variable WISE_BANK_DETAILS, Zeilen mit „|" oder
   // Zeilenumbruch getrennt — nie im Repo).
   const method = b.method === "paypal" || b.method === "wise" ? (b.method as "paypal" | "wise") : undefined;
-  const bankLines = wiseBankFor(clip(b.orderId, 40)); // Konto 1/2 je Auftrag (Rotation)
+  const bankLines = wiseBankFor(to); // Konto 1/2 je Kunde (Rotation) – gleiches Konto für alle Aufträge des Kunden
   if (method === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
   const payTotal = method ? fmtReviewMoney(Math.round(totalNum * 0.9), currency === "usd" ? "usd" : "eur") : "";
   // PayPal: Button „Jetzt mit PayPal senden" (PayPal.me mit Betrag + Währung, Freunde & Familie).
@@ -1878,6 +1878,45 @@ app.post("/admin/email", async (req, reply) => {
   return { ok: true, ...mail };
 });
 
+// Sammel-Zahlungsbestätigung: 25 s warten, alle in der Zeit bezahlt markierten Aufträge des Kunden (gleiche Methode) bündeln.
+const paidQueue = new Map<string, { ids: Set<string>; t: ReturnType<typeof setTimeout> }>();
+function queuePaidConfirm(id: string) {
+  if (!pool) return;
+  void (async () => {
+    const r = await pool!.query(`SELECT email, raw->>'payPref' AS pp FROM orders WHERE id=$1 AND service='reviews'`, [id]);
+    const o = r.rows[0];
+    if (!o || !o.email || !["wise", "paypal"].includes(String(o.pp))) return;
+    const key = String(o.email).toLowerCase() + "|" + o.pp;
+    const q = paidQueue.get(key);
+    if (q) { q.ids.add(id); clearTimeout(q.t); q.t = setTimeout(() => void flushPaidConfirm(key), 25000); return; }
+    paidQueue.set(key, { ids: new Set([id]), t: setTimeout(() => void flushPaidConfirm(key), 25000) });
+  })().catch((e) => app.log.error({ err: e }, "Zahlungsbestätigung: Vormerken fehlgeschlagen"));
+}
+async function flushPaidConfirm(key: string) {
+  const q = paidQueue.get(key);
+  paidQueue.delete(key);
+  if (!q || !pool) return;
+  try {
+    const ids: string[] = [];
+    for (const id of q.ids) {
+      const done = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Zahlungsbestätigung (%' LIMIT 1`, [id]);
+      const still = await pool.query(`SELECT 1 FROM orders WHERE id=$1 AND pay='paid'`, [id]).catch(() => ({ rowCount: 1 }));
+      if (!done.rowCount && still.rowCount) ids.push(id);
+    }
+    if (!ids.length) return;
+    ids.sort();
+    const r = await pool.query(`SELECT email, name, lang, raw->>'payPref' AS pp FROM orders WHERE id=$1`, [ids[0]]);
+    const o = r.rows[0];
+    if (!o) return;
+    const via = o.pp === "wise" ? "Wise" : "PayPal";
+    const props = { lang: mailLang(o.lang), name: o.name || "", via: via as "Wise" | "PayPal", orderId: ids[0], orderIds: ids, dashUrl: await dashLink(o.email, o.lang) };
+    const html = await render(React.createElement(ZahlungErhaltenReviews, props));
+    const subject = zahlungErhaltenSubject(props);
+    await sendMail({ to: o.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+    for (const id of ids) await insertEvent({ orderId: id, email: o.email, type: "mail", title: `Zahlungsbestätigung (${via}) gesendet`, detail: `automatisch nach „bezahlt"${ids.length > 1 ? ` · Sammelbestätigung für ${ids.join(", ")}` : ""} · an ${o.email}`, html, subject, auto: true });
+  } catch (e) { app.log.error({ err: e }, "Zahlungsbestätigung Wise/PayPal fehlgeschlagen"); }
+}
+
 // Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).
 // Bleibt bestehen, bis er erneut geändert wird (z. B. Storno → „storniert“,
 // Reaktivierung → „progress“, Pipeline-Klicks).
@@ -1894,20 +1933,9 @@ app.post("/admin/order-status", async (req, reply) => {
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
-  // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (nur 1×).
-  if (pay === "paid" && pool) void (async () => {
-    const r = await pool!.query(`SELECT email, name, lang, raw->>'payPref' AS pp FROM orders WHERE id=$1 AND service='reviews'`, [id]);
-    const o = r.rows[0];
-    if (!o || !o.email || !["wise", "paypal"].includes(String(o.pp))) return;
-    const done = await pool!.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Zahlungsbestätigung (%' LIMIT 1`, [id]);
-    if (done.rowCount) return;
-    const via = o.pp === "wise" ? "Wise" : "PayPal";
-    const props = { lang: mailLang(o.lang), name: o.name || "", via: via as "Wise" | "PayPal", orderId: id, dashUrl: await dashLink(o.email, o.lang) };
-    const html = await render(React.createElement(ZahlungErhaltenReviews, props));
-    const subject = zahlungErhaltenSubject(props);
-    await sendMail({ to: o.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-    await insertEvent({ orderId: id, email: o.email, type: "mail", title: `Zahlungsbestätigung (${via}) gesendet`, detail: `automatisch nach „bezahlt" · an ${o.email}`, html, subject, auto: true });
-  })().catch((e) => app.log.error({ err: e }, "Zahlungsbestätigung Wise/PayPal fehlgeschlagen"));
+  // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (je Auftrag nur 1×).
+  // Mehrere Aufträge desselben Kunden, die kurz hintereinander auf bezahlt gehen (eine Sammelüberweisung) → EINE Mail.
+  if (pay === "paid") queuePaidConfirm(id);
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes

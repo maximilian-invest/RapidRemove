@@ -16,7 +16,7 @@ import { notifyTeam } from "./notify";
 import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
-import { wiseBankFor } from "./wiseAccounts";
+import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
@@ -506,9 +506,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const d = await loadCustomerOrders(email);
     const imp = !!(await customerSessionInfo(b.token))?.imp;
     // Wise-Zahler: Kontodaten (Railway WISE_BANK_DETAILS) nur an Kunden, die Wise gewählt haben.
-    const wiseOrders = d.orders.filter((o) => (o as { payPref?: string | null }).payPref === "wise");
-    const wiseOrder = wiseOrders.find((o) => (Number(o.toPay) || 0) > 0) || wiseOrders[0];
-    const wiseBank = wiseOrder ? wiseBankFor(wiseOrder.id) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Auftrag)
+    const hasWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
+    const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
     return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank };
   });
 
@@ -598,8 +597,12 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const { orders } = await loadCustomerOrders(email);
     const due = orders.filter((o) => o.toPay > 0);
     if (!due.length) return reply.code(400).send({ ok: false, error: "nothing" });
-    const cur = due[0].cur as "usd" | "eur";
-    const use = due.filter((o) => o.cur === cur);
+    // only:"card" → nur Aufträge OHNE Wise-/PayPal-Wunsch (die zahlt der Kunde separat mit −10 %).
+    const viaOf = (o: { payPref?: string | null }) => (o.payPref === "wise" && wiseAccounts().length ? "wise" : o.payPref === "paypal" ? "paypal" : "card");
+    const pool0 = b.only === "card" ? due.filter((o) => viaOf(o as { payPref?: string | null }) === "card") : due;
+    if (!pool0.length) return reply.code(400).send({ ok: false, error: "nothing" });
+    const cur = pool0[0].cur as "usd" | "eur";
+    const use = pool0.filter((o) => o.cur === cur);
     const picks: PayRef[] = use.flatMap((o) => o.items.filter((it) => it.status === "removed" && !it.paid).map((it) => ({ o: o.id, k: it.key })));
     const amount = use.reduce((s, o) => s + o.toPay, 0);
     const url = await payLink("invoice", picks, amount, cur, orders);
