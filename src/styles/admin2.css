@@ -327,7 +327,7 @@
 .an.desk .tb.old{display:flex;margin-top:auto;font-size:13px}
 .an.desk .tb.old span{font-size:13px!important}
 .an.desk .scr{left:232px;padding:28px 40px 60px}
-.an.desk .scr.col>*{max-width:760px;margin-left:auto;margin-right:auto}
+.an.desk .scr.col>*{max-width:1200px;margin-left:auto;margin-right:auto}
 .an.desk .scr.list>*{max-width:1200px;margin-left:auto;margin-right:auto}
 .an.desk .scr.list .gcards{margin:0 0 22px;padding:2px 0 6px}
 .an.desk .ord{border-radius:14px;margin:0 -10px;padding-left:10px;padding-right:10px;width:calc(100% + 20px)}
@@ -357,7 +357,8 @@
   .an.desk .scr.list>.gcards .gc b{margin-top:0;align-self:end}
   .an.desk .scr.list>.gcards .gc .gn{align-self:start}
   .an.desk .scr.list>.gcards .gc .bar{grid-column:1/-1}
-  .an.desk .scr.list{padding-left:max(40px,calc((100% - 1200px)/2));padding-right:max(40px,calc((100% - 1200px)/2))}
+  .an.desk .scr.list,.an.desk .scr.col{padding-left:max(40px,calc((100% - 1200px)/2));padding-right:max(40px,calc((100% - 1200px)/2))}
+  .an.desk .scr.col>*{max-width:none}
 }
 @media (max-width:1000px){
   .an.desk .tabbar{width:76px;padding:24px 10px}

@@ -195,6 +195,45 @@ async function searchPlaces(q: string): Promise<Place[]> {
   throw new Error("Kein Suchschlüssel (GOOGLE_MAPS_API_KEY oder SERPAPI_KEY)");
 }
 
+/** Profil per Google-CID (Bewertungs-Links enthalten nur „0x…:0x<CID>", keinen Namen).
+ *  1) Places-API (Legacy-Details mit cid) → Place-ID → placeById, 2) SerpApi google_maps data_cid. */
+async function placeByCid(cid: string): Promise<Place | null> {
+  if (!/^\d{5,25}$/.test(cid)) return null;
+  if (gkey()) {
+    try {
+      const res = await fetch(`https://maps.googleapis.com/maps/api/place/details/json?cid=${cid}&fields=place_id&key=${encodeURIComponent(gkey())}`, { signal: AbortSignal.timeout(15_000) });
+      const j: any = await res.json().catch(() => null);
+      const pid = j && j.result && j.result.place_id;
+      if (pid) { const p = await placeById(pid); if (p) return p; }
+    } catch { /* weiter mit SerpApi */ }
+  }
+  if (serpKey()) {
+    const p = new URLSearchParams({ engine: "google_maps", type: "place", data_cid: cid, hl: "de", api_key: serpKey() });
+    const res = await fetch("https://serpapi.com/search.json?" + p, { signal: AbortSignal.timeout(30_000) });
+    const j: any = await res.json().catch(() => null);
+    const x = j && j.place_results;
+    if (x && x.title) return { name: x.title, address: x.address || "", placeId: x.place_id || "", mapsUrl: x.place_id ? mapsFromId(x.place_id) : `https://maps.google.com/?cid=${cid}` };
+  }
+  // 3) Notnagel: Google-Maps-Seite der CID → Vorschau-JSON (Name + Adresse) → normale Suche
+  try {
+    const ua = { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/126 Safari/537.36" };
+    const page = await (await fetch(`https://www.google.com/maps?cid=${cid}&hl=de`, { headers: ua, signal: AbortSignal.timeout(15_000) })).text();
+    const m = page.match(/<link href="(\/maps\/preview\/place\?[^"]+)"/);
+    if (m) {
+      const prev = await (await fetch("https://www.google.com" + m[1].replace(/&amp;/g, "&"), { headers: ua, signal: AbortSignal.timeout(15_000) })).text();
+      const d = JSON.parse(prev.replace(/^\)\]\}'\s*/, ""));
+      const info = d && d[6];
+      const name = info && typeof info[11] === "string" ? info[11] : "";
+      const addr = info && Array.isArray(info[2]) ? info[2].filter((v: unknown) => typeof v === "string").join(", ") : "";
+      if (name) {
+        const list = await searchPlaces([name, addr].filter(Boolean).join(", ")).catch(() => [] as Place[]);
+        return list[0] || { name, address: addr, placeId: "", mapsUrl: `https://maps.google.com/?cid=${cid}` };
+      }
+    }
+  } catch { /* nichts gefunden */ }
+  return null;
+}
+
 /* ---------------- Abgleich ---------------- */
 
 const STOP = new Set(["gmbh", "kg", "og", "ag", "eu", "co", "und", "the", "and", "der", "die", "das", "mbh", "gesmbh", "inh", "e", "u", "ltd", "inc", "llc", "srl", "sl", "sa", "bv", "ab", "as", "aps"]);
@@ -450,7 +489,7 @@ const profileOut = (p: any) => ({
 });
 
 /** Google-Maps-Link → Name (+ Koordinaten) für die Suche. Kurzlinks werden aufgelöst. */
-async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: string }> {
+async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: string; cid?: string }> {
   let url = link.trim();
   if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url)) {
     try {
@@ -467,7 +506,11 @@ async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: str
     const qp = u.searchParams.get("query_place_id"); if (qp) pid = qp;
     const m = decodeURIComponent(u.pathname).match(/\/maps\/place\/([^/]+)/);
     const name = m ? m[1].replace(/\+/g, " ") : q.replace(/place_id:[A-Za-z0-9_-]+/, "").trim();
-    return { q: name, placeId: pid || undefined };
+    // Bewertungs-/Teilen-Links: /maps/reviews/data=…!1s0x0:0x<CID>… oder ?cid=… → CID (dezimal)
+    let cid = u.searchParams.get("cid") || "";
+    const hx = decodeURIComponent(url).match(/0x[0-9a-f]+:0x([0-9a-f]{6,16})/i);
+    if (!cid && hx) { try { cid = BigInt("0x" + hx[1]).toString(); } catch { /* egal */ } }
+    return { q: name, placeId: pid || undefined, cid: cid || undefined };
   } catch { return { q: url }; }
 }
 
@@ -587,8 +630,10 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
       let q = String(b.name || "").trim();
       const city = String(b.city || "").trim();
       let pid = "";
-      if (b.link) { const r = await resolveMapsLink(String(b.link)); q = r.q; pid = r.placeId || ""; }
+      let cid = "";
+      if (b.link) { const r = await resolveMapsLink(String(b.link)); q = r.q; pid = r.placeId || ""; cid = r.cid || ""; }
       if (pid) { const p = await placeById(pid); if (p) return { ok: true, place: p }; }
+      if (!q && cid) { const p = await placeByCid(cid); if (p) return { ok: true, place: p }; }
       if (!q) return reply.code(400).send({ ok: false, error: "Kein Name im Link gefunden – bitte Firmenname + Ort verwenden" });
       const list = await searchPlaces([q, city].filter(Boolean).join(", "));
       if (!list.length) return { ok: true, place: null };
