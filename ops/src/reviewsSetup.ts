@@ -100,6 +100,33 @@ export async function upgradeReviewLinks(log: (s: string) => void = () => {}): P
   return res;
 }
 
+/** ALLE aktiven Einmal-Zahlungslinks (Profil-Löschung, Express, Software, alte Links …): Stripe-Rechnung nach der Zahlung einschalten.
+ *  Nur invoice_creation – Firmenpflichtfelder bleiben Sache der Bewertungs-Links. Abo-Links bekommen ohnehin Rechnungen
+ *  (Stripe lehnt invoice_creation dort ab → zählt als „abo"). Idempotent. Buchhaltung 07.10.2026: „immer überall Rechnungen". */
+export let invoiceUpgrade: { enabled: number; ok: number; abo: number; failed: number; error?: string } | null = null;
+export async function enableInvoicesAllLinks(log: (s: string) => void = () => {}): Promise<NonNullable<typeof invoiceUpgrade>> {
+  const res = { enabled: 0, ok: 0, abo: 0, failed: 0 } as NonNullable<typeof invoiceUpgrade>;
+  if (!process.env.STRIPE_SECRET_KEY) return res;
+  const links: any[] = [];
+  for (let i = 0, last = ""; i < 10; i++) {
+    const page = await sapi<{ data: any[]; has_more: boolean }>("GET", `payment_links?active=true&limit=100${last ? `&starting_after=${last}` : ""}`, undefined, PL_VERSION);
+    links.push(...(page.data || []));
+    if (!page.has_more || !page.data?.length) break;
+    last = page.data[page.data.length - 1].id;
+  }
+  for (const pl of links) {
+    if (pl?.invoice_creation?.enabled) { res.ok++; continue; }
+    try { await sapi("POST", `payment_links/${pl.id}`, { invoice_creation: { enabled: true } }, PL_VERSION); res.enabled++; }
+    catch (e) {
+      const m = (e as Error).message;
+      if (/subscription|recurring/i.test(m)) { res.abo++; continue; }
+      res.failed++; res.error = m.slice(0, 200); log(`Rechnung für Zahlungslink ${pl.id}: ${m}`);
+    }
+  }
+  invoiceUpgrade = res;
+  return res;
+}
+
 async function listAll<T = any>(pathName: string, maxPages = 5): Promise<T[]> {
   const out: T[] = [];
   for (let i = 0; i < maxPages; i++) {

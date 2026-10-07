@@ -18,7 +18,7 @@ import { sendPush } from "./integrations/push";
 import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpush";
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
-import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade } from "./reviewsSetup";
+import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
@@ -204,7 +204,7 @@ app.get("/health", async () => {
   let orders = 0, checks = 0, dbError = "";
   try { const c = await dbCounts(); orders = c.orders; checks = c.checks; }
   catch (e) { dbError = String((e as Error)?.message || e).slice(0, 160); }
-  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: wiseAccounts().length, monitor: monitorKeys(), payLinks: linkUpgrade, orders, checks, ...(dbError ? { dbError } : {}) };
+  return { ok: true, db: dbReady(), stripe: hasSecretKey(), sms: hasClickSend(), firstPromoter: hasFirstPromoter(), serpapi: !!serpKey(), serpUsage: serpUsage(), screenshots: !!shotKey(), googleMaps: !!(process.env.GOOGLE_MAPS_API_KEY || "").trim(), wiseBank: wiseAccounts().length, monitor: monitorKeys(), payLinks: linkUpgrade, invoiceLinks: invoiceUpgrade, orders, checks, ...(dbError ? { dbError } : {}) };
 });
 
 // Öffentlich: aktive 301/302-Weiterleitungen für die Middleware der Marketing-Site.
@@ -2031,7 +2031,8 @@ async function start() {
   try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
-    void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"));
+    void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"))
+      .then(() => enableInvoicesAllLinks((m) => app.log.warn(m))).then((r) => r && app.log.info(r, "Alle Zahlungslinks: Rechnung an")).catch((e) => app.log.error({ err: e }, "Rechnung für alle Zahlungslinks fehlgeschlagen"));
     if (dbReady()) void runRv60BackfillOnce((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Nachtrag 60 USD fehlgeschlagen")); if (dbReady()) app.log.info("DB verbunden, Tabellen bereit"); }
   catch (e) { app.log.error({ err: e }, "DB-Init fehlgeschlagen – Backend läuft ohne DB weiter"); }
   try {

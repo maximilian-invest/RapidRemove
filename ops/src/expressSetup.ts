@@ -201,6 +201,7 @@ export async function runExpressSetup(opts: {
     // customer_creation ist bei Abo-Positionen nicht erlaubt (Stripe legt dort ohnehin immer einen Kunden an).
     if (hs.customer_creation && !hasRecurring) params.customer_creation = hs.customer_creation;
     if (hs.locale) params.locale = hs.locale;
+    if (!hasRecurring) params.invoice_creation = { enabled: true }; // Einmalzahlung → immer Stripe-Rechnung (Abos haben ohnehin eine)
     if (hs.after_completion?.type) {
       params.after_completion = hs.after_completion.type === "redirect" && hs.after_completion.redirect?.url
         ? { type: "redirect", redirect: { url: hs.after_completion.redirect.url } }
