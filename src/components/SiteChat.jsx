@@ -48,6 +48,7 @@ const sidOf = () => { let s = ss.get(SID); if (!s) { s = Math.random().toString(
 /** Nahtlos an Tidio übergeben: Skript laden lassen, öffnen, letzte Frage + Verlauf mitgeben (je Sitzung 1×). */
 export function handoffToTidio(msgs, onFail) {
   if (typeof window === "undefined") return;
+  window.__rrTidioAllowed = true; // nur diese Übergabe darf Tidio öffnen
   window.dispatchEvent(new Event("rr-tidio-load"));
   const users = (msgs || []).filter((m) => m.r === "u" && m.t);
   const last = users.slice(-2).map((m) => m.t).join("\n");

@@ -844,6 +844,7 @@ function openTidioChat(e) {
   if (typeof window === "undefined") return;
   trackContact("chat");
   if (window.__rrSiteChat) { window.dispatchEvent(new Event("rr-chat-open")); return; }
+  window.__rrTidioAllowed = true;
   const run = () => { try { if (!window.tidioChatApi) return; if (window.tidioChatApi.show) window.tidioChatApi.show(); window.tidioChatApi.open(); } catch (err) {} };
   if (window.tidioChatApi) { run(); return; }
   const onReady = () => { run(); document.removeEventListener("tidioChat-ready", onReady); };

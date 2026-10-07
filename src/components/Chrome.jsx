@@ -589,7 +589,17 @@ function WhatsAppFloat({ hideBubble = false }) {
       if (MQ.matches && !open) f.style.setProperty("bottom", LIFT, "important");
       else f.style.removeProperty("bottom");
     };
-    const onOpen = () => { open = true; apply(); };
+    // Tidio darf sich NUR öffnen, wenn wir es wollen (Übergabe aus Lenas Chat bzw. Fallback ohne Website-Chat).
+    // Öffnet es sich von selbst (Tidio-Flows/Lyro-Begrüßung, Auto-Pop-up), sofort wieder zu → Besucher landet bei Lena.
+    const onOpen = () => {
+      let handed = false; try { handed = sessionStorage.getItem("rr_site_chat_handed") === "1"; } catch (e) { /* */ }
+      if (window.__rrSiteChat && !handed && !window.__rrTidioAllowed) {
+        try { window.tidioChatApi && window.tidioChatApi.close && window.tidioChatApi.close(); } catch (e) { /* */ }
+        open = false; apply();
+        return;
+      }
+      open = true; apply();
+    };
     const onClose = () => { open = false; apply(); };
     document.addEventListener("tidioChat-ready", apply);
     document.addEventListener("tidioChat-open", onOpen);
@@ -621,6 +631,7 @@ function openChat(e) {
   if (typeof window === "undefined") return;
   trackContact("chat"); // ein Ort für alle Chat-Einstiege der Seite
   if (window.__rrSiteChat) { window.dispatchEvent(new Event("rr-chat-open")); return; } // erst die Assistentin, Team per Klick
+  window.__rrTidioAllowed = true;
   const go = () => {
     try {
       if (!window.tidioChatApi) return;
