@@ -150,7 +150,9 @@ export default function SiteChat({ hideBubble = false }) {
     const wait = 1400 - (Date.now() - t0); if (wait > 0) await sleep(wait);
     const prof = rs.find((r) => r.ok && r.type === "profile");
     const revs = rs.filter((r) => r.ok && r.type === "review");
-    if (prof) {
+    if (prof && !(prof.reviews || []).length) {
+      await botSay(cur, P.notIn);
+    } else if (prof) {
       lastPick.current = { place: prof.place, reviews: prof.reviews || [] };
       cur = await botSay(cur, P.pick.replace("{name}", prof.place.name));
       cur = [...cur, { pick: { place: prof.place, reviews: prof.reviews || [] } }]; setMsgs(cur);
