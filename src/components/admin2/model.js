@@ -21,6 +21,9 @@ const OFFEN_PAY = ["pending", "sent", "mahnung", "failed"];
 /** Bucket eines Auftrags (deckungsgleich mit den Reitern im alten Admin). */
 export function bucket(o, now = Date.now()) {
   if (o.status === "storniert") return "cancel";
+  // Bezahlt = abgeschlossen, auch wenn der Status nie von „Neu"/„In Bearbeitung" umgestellt wurde (07.10.2026).
+  // Bewertungen mit noch offenen Partner-Aufgaben holt bucketsOf trotzdem zurück nach „In Bearbeitung".
+  if (["paid", "refunded"].includes(o.pay)) return "deleted";
   if (o.status === "new") return "new";
   if (o.status === "done") {
     if (["paid", "refunded"].includes(o.pay)) return "deleted";
