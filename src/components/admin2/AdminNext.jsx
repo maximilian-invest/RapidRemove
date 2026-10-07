@@ -497,7 +497,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     body = (
       <><h3>Profil überwachen</h3>
         <div className="usrch in-sheet"><LinkIcon /><input autoFocus placeholder="Google-Maps-Link einfügen" value={link} onChange={(e) => { setLink(e.target.value); setPlace(null); }} onKeyDown={(e) => e.key === "Enter" && link.trim().length > 6 && look()} /></div>
-        {place ? <div className="opts" style={{ marginBottom: 12 }}><div className="aopt"><span className="ico"><Store /></span><span className="ol"><b>{place.name}</b><br /><small>{place.address}</small></span></div></div> : null}
+        {place ? <div className="opts" style={{ marginBottom: 12 }}><div className="aopt"><span className="ico"><Store /></span><span className="ol"><b>{place.name}</b><br /><small>{place.hidden ? "Aktuell nicht öffentlich bei Google (z. B. schon gelöscht) – wird trotzdem überwacht" : place.address}</small></span></div></div> : null}
         <div className="ctas">{place ? <button type="button" className="cta" disabled={busy} onClick={add}><Plus />Hinzufügen</button> : <button type="button" className="cta" disabled={busy || link.trim().length < 7} onClick={look}>{busy ? "Sucht …" : "Profil suchen"}</button>}</div></>
     );
   }

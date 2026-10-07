@@ -172,12 +172,12 @@ async function placeById(pid: string): Promise<Place | null> {
 }
 
 /** Textsuche (Name + Ort/Adresse) → Kandidaten. Wirft bei technischen Fehlern. */
-async function searchPlaces(q: string): Promise<Place[]> {
+async function searchPlaces(q: string, near?: { lat: number; lng: number }): Promise<Place[]> {
   if (gkey()) {
     const res = await fetch(PLACES_BASE() + "/v1/places:searchText", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Goog-Api-Key": gkey(), "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.googleMapsUri,places.businessStatus" },
-      body: JSON.stringify({ textQuery: q, languageCode: "de", pageSize: 10 }),
+      body: JSON.stringify({ textQuery: q, languageCode: "de", pageSize: 10, ...(near ? { locationBias: { circle: { center: { latitude: near.lat, longitude: near.lng }, radius: 3000 } } } : {}) }),
       signal: AbortSignal.timeout(20_000),
     });
     const j: any = await res.json().catch(() => null);
@@ -185,7 +185,7 @@ async function searchPlaces(q: string): Promise<Place[]> {
     return ((j && j.places) || []).map((x: any) => ({ name: x.displayName?.text || "", address: x.formattedAddress || "", placeId: x.id, mapsUrl: x.googleMapsUri || mapsFromId(x.id), status: x.businessStatus || "" }));
   }
   if (serpKey()) {
-    const p = new URLSearchParams({ engine: "google_maps", q, type: "search", hl: "de", api_key: serpKey() });
+    const p = new URLSearchParams({ engine: "google_maps", q, type: "search", hl: "de", api_key: serpKey(), ...(near ? { ll: `@${near.lat},${near.lng},15z` } : {}) });
     const res = await fetch("https://serpapi.com/search.json?" + p, { signal: AbortSignal.timeout(30_000) });
     const j: any = await res.json().catch(() => null);
     if (j && j.error && /hasn't returned any results|no results/i.test(String(j.error))) return [];
@@ -511,7 +511,7 @@ const profileOut = (p: any) => ({
 });
 
 /** Google-Maps-Link → Name (+ Koordinaten) für die Suche. Kurzlinks werden aufgelöst. */
-async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: string; cid?: string }> {
+async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: string; cid?: string; lat?: number; lng?: number; url?: string }> {
   let url = link.trim();
   if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url)) {
     try {
@@ -532,7 +532,11 @@ async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: str
     let cid = u.searchParams.get("cid") || "";
     const hx = decodeURIComponent(url).match(/0x[0-9a-f]+:0x([0-9a-f]{6,16})/i);
     if (!cid && hx) { try { cid = BigInt("0x" + hx[1]).toString(); } catch { /* egal */ } }
-    return { q: name, placeId: pid || undefined, cid: cid || undefined };
+    // Koordinaten (genauer: !3d…!4d…, sonst @lat,lng) → Suche auf die Umgebung eingrenzen
+    const dd = decodeURIComponent(url);
+    const pr = dd.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || dd.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    const lat = pr ? Number(pr[1]) : undefined, lng = pr ? Number(pr[2]) : undefined;
+    return { q: name, placeId: pid || undefined, cid: cid || undefined, lat, lng, url };
   } catch { return { q: url }; }
 }
 
@@ -669,13 +673,24 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
       const city = String(b.city || "").trim();
       let pid = "";
       let cid = "";
-      if (b.link) { const r = await resolveMapsLink(String(b.link)); q = r.q; pid = r.placeId || ""; cid = r.cid || ""; }
-      if (pid) { const p = await placeById(pid); if (p) return { ok: true, place: p }; }
-      if (!q && cid) { const p = await placeByCid(cid); if (p) return { ok: true, place: p }; }
+      let near: { lat: number; lng: number } | undefined;
+      let linkUrl = "";
+      if (b.link) { const r = await resolveMapsLink(String(b.link)); q = r.q; pid = r.placeId || ""; cid = r.cid || ""; if (r.lat != null && r.lng != null) near = { lat: r.lat, lng: r.lng }; linkUrl = String(b.link).trim(); }
+      // Reihenfolge: Profil-ID → CID (eindeutig, steckt in jedem Maps-Link) → Name in der Umgebung der Koordinaten → Name allein.
+      if (pid) { const p = await placeById(pid).catch(() => null); if (p) return { ok: true, place: p }; }
+      if (cid) { const p = await placeByCid(cid).catch(() => null); if (p) return { ok: true, place: p }; }
       if (!q) return reply.code(400).send({ ok: false, error: "Kein Name im Link gefunden – bitte Firmenname + Ort verwenden" });
-      const list = await searchPlaces([q, city].filter(Boolean).join(", "));
-      if (!list.length) return { ok: true, place: null };
-      return { ok: true, place: list[0], more: list.slice(1, 5) };
+      let list = near ? await searchPlaces(q, near).catch(() => [] as Place[]) : [];
+      if (!list.length) list = await searchPlaces([q, city].filter(Boolean).join(", "));
+      if (list.length) {
+        // Bei Koordinaten: den Treffer mit passendem Namen bevorzugen
+        const nq = q.toLowerCase();
+        const best = list.find((x) => x.name.toLowerCase().includes(nq) || nq.includes(x.name.toLowerCase())) || list[0];
+        return { ok: true, place: best, more: list.filter((x) => x !== best).slice(0, 4) };
+      }
+      // Nichts Öffentliches gefunden (z. B. Profil bereits gelöscht) → trotzdem überwachbar: Daten aus dem Link.
+      if (linkUrl) return { ok: true, place: { name: q, address: "", placeId: "", mapsUrl: linkUrl, hidden: true } };
+      return { ok: true, place: null };
     } catch (e) { return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) }); }
   });
 
