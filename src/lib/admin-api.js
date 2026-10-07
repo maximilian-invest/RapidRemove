@@ -97,6 +97,8 @@ function fmtDate(iso) {
 function mapOrder(r) {
   return {
     id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, doneAt: r.done_at || null, name: r.name || "", email: r.email || "", phone: r.phone || "",
+    // Testbestellung (Inhaber-Adresse / „+test", vom Backend markiert): im Admin markiert, zählt in keine Statistik.
+    test: !!r.test || /\+test@/i.test(r.email || ""),
     company: r.company || "", profile: r.profile || "", reviews: Number(r.reviews) || 0, rating: r.rating || "—",
     service: r.service || "remove", protection: r.protection || null, status: r.status || "new", pay: r.pay || "pending",
     // Bewertungs-Produkt: eingereichte Bewertungen (aus dem raw-JSON der Bestellung).
@@ -137,6 +139,7 @@ function mapOrder(r) {
 function mapCheck(r) {
   return {
     id: r.id, created: fmtDate(r.created_at), createdAt: r.created_at || null, profile: r.profile || "", name: r.name || "—", email: r.email || "",
+    test: !!r.test || /\+test@/i.test(r.email || ""),
     rating: r.rating || "—", reviews: Number(r.reviews) || 0, flagged: Number(r.flagged) || 0,
     recommend: r.recommend || "remove", status: r.status || "neu", orderId: r.order_id || null,
     // Funnel-Insights: erreichte Stufe (1–4) – null = keine Funnel-Daten (Alt-Prüfung); Preis; Herkunft.

@@ -7,6 +7,7 @@
  */
 import { Pool } from "pg";
 import type { DeletionRow, ReviewsRow } from "./gamification";
+import { notTestSql } from "./testAccounts";
 
 const url = process.env.DATABASE_URL || "";
 // Railway-intern (.railway.internal) und localhost brauchen kein SSL; öffentliche Proxy-URLs schon.
@@ -676,6 +677,7 @@ export async function deletionsForGamification(): Promise<DeletionRow[]> {
       WHERE status = 'done'
         AND assignee IN ('max','matthias')
         AND service = ANY($1::text[])
+        AND ${notTestSql("email")} -- Testbestellungen zählen nicht in der Liga
       ORDER BY COALESCE(done_at, created_at) ASC`,
     [["remove", "reset", "express"]],
   );
@@ -709,6 +711,7 @@ export async function reviewsForGamification(): Promise<ReviewsRow[]> {
        FROM orders
       WHERE service = 'reviews'
         AND assignee IN ('max','matthias')
+        AND ${notTestSql("email")} -- Testbestellungen zählen nicht in der Liga
       ORDER BY created_at ASC`,
   );
   return r.rows.map((x: any) => ({
@@ -931,11 +934,11 @@ export async function reportStats(): Promise<{ checks: Agg; removals: Agg; profi
   const checksBase = `SELECT DISTINCT ON (place_id) ${RATING_NUM("rating")} AS r,
       CASE WHEN COALESCE(reviews,0) = 0 AND ${RATING_NUM("rating")} IS NOT NULL THEN NULL ELSE reviews END AS n, category AS cat, reason,
       created_at AS ts, false AS closed
-    FROM checks WHERE COALESCE(place_id, '') <> '' AND COALESCE(recommend, '') <> 'reviews' ORDER BY place_id, created_at DESC`;
+    FROM checks WHERE COALESCE(place_id, '') <> '' AND COALESCE(recommend, '') <> 'reviews' AND ${notTestSql("email")} ORDER BY place_id, created_at DESC`;
   const ordersBase = (done: boolean) => `SELECT DISTINCT ON (COALESCE(NULLIF(raw->>'placeId',''), id))
       ${RATING_NUM("rating")} AS r, reviews AS n, category AS cat, COALESCE(done_at, created_at) AS ts,
       COALESCE(raw->>'businessStatus','') = 'CLOSED_PERMANENTLY' AS closed, NULL::text AS reason
-    FROM orders WHERE service = ANY($1::text[]) ${done ? "AND status = 'done'" : "AND status <> 'storniert'"}
+    FROM orders WHERE service = ANY($1::text[]) AND ${notTestSql("email")} ${done ? "AND status = 'done'" : "AND status <> 'storniert'"}
     ORDER BY COALESCE(NULLIF(raw->>'placeId',''), id), created_at DESC`;
   const svc = [["remove", "reset", "express"]];
   const [checks, removals, profileOrders] = await Promise.all([

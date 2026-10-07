@@ -28,6 +28,7 @@ import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
+import { isTestEmail } from "./testAccounts";
 import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/ZahlungErhaltenReviews";
 import { notifyTeam } from "./notify";
 import { startFollowupWorker, registerFollowupRoutes } from "./followup";
@@ -1028,7 +1029,9 @@ app.post("/admin/data", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const [orders, checks] = await Promise.all([listOrders(200), listChecks(200)]);
-  return { ok: true, db: dbReady(), orders, checks };
+  // Test-Flag (Inhaber-Adresse, „+test", TEST_EMAILS): Admin markiert diese Aufträge und lässt sie aus allen Zahlen raus.
+  const flag = <T extends Record<string, unknown>>(r: T) => ({ ...r, test: isTestEmail(r.email) });
+  return { ok: true, db: dbReady(), orders: orders.map(flag), checks: checks.map(flag) };
 });
 
 // Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).
