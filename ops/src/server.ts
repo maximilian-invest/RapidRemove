@@ -26,7 +26,7 @@ import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./part
 import { initPartnerPush } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
-import { registerCustChat } from "./chat/chat";
+import { registerCustChat, registerSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/ZahlungErhaltenReviews";
 import { notifyTeam } from "./notify";
@@ -190,6 +190,7 @@ registerCustChat(app, {
   sendMail: (a) => sendMail(a),
   adminOk: (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN,
 });
+registerSiteChat(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN); // Website-Chat (öffentlich) → Tidio bei Team-Wunsch
 // Automatisches Nachfassen (Zahlung · Software · nie eingeloggt · Neuigkeiten) + Admin-Liste „Nachfassen".
 registerFollowupRoutes(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 

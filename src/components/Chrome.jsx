@@ -12,6 +12,7 @@ import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { getResumeProfile } from "@/lib/resume";
 import { consentLabel } from "@/components/Consent";
 import { trackContact } from "@/lib/metaPixel";
+import SiteChat from "@/components/SiteChat";
 import { reviewsBlocked } from "@/lib/reviews-product";
 
 
@@ -558,8 +559,9 @@ function WhatsAppFloat({ hideBubble = false }) {
     let timer;
     const trigger = () => { evs.forEach((e) => window.removeEventListener(e, trigger)); clearTimeout(timer); setTidioLoad(true); };
     evs.forEach((e) => window.addEventListener(e, trigger, { passive: true }));
-    timer = setTimeout(trigger, 5000); // Fallback: Bubble erscheint auch ohne Interaktion
-    return () => { evs.forEach((e) => window.removeEventListener(e, trigger)); clearTimeout(timer); };
+    window.addEventListener("rr-tidio-load", trigger); // Übergabe aus dem Website-Chat
+    timer = setTimeout(trigger, 5000); // Tidio vorladen, damit die Übergabe sofort klappt
+    return () => { evs.forEach((e) => window.removeEventListener(e, trigger)); window.removeEventListener("rr-tidio-load", trigger); clearTimeout(timer); };
   }, [tidioLoad]);
   React.useEffect(() => {
     const MQ = window.matchMedia("(max-width: 920px)");
@@ -567,7 +569,8 @@ function WhatsAppFloat({ hideBubble = false }) {
     let lastHide = null;
     const LIFT = "calc(106px + env(safe-area-inset-bottom))";
     const apply = () => {
-      const wantHide = hideRef.current && MQ.matches && !open;
+      // Tidio-Bubble immer versteckt (eigener Website-Chat davor); Tidio erscheint nur, wenn der Chat geöffnet ist (Team-Übergabe).
+      const wantHide = !open;
       // Offizielle Tidio-API – blendet den Launcher zuverlässig aus (unabhängig vom DOM-Aufbau).
       if (wantHide !== lastHide) {
         try {
@@ -602,7 +605,12 @@ function WhatsAppFloat({ hideBubble = false }) {
       if (MQ.removeEventListener) MQ.removeEventListener("change", apply); else MQ.removeListener(apply);
     };
   }, []);
-  return tidioLoad ? <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" /> : null;
+  return (
+    <>
+      <SiteChat hideBubble={hideBubble} />
+      {tidioLoad ? <Script id="tidio-chat" src="https://code.tidio.co/tylql9ee8vvmwslaqmdxgbiuv90hs3sq.js" strategy="afterInteractive" /> : null}
+    </>
+  );
 }
 
 /* Öffnet den Tidio-Live-Chat. Ersetzt frühere WhatsApp-/„Kontakt"-Links überall auf der Seite.
@@ -611,6 +619,7 @@ function openChat(e) {
   if (e && e.preventDefault) e.preventDefault();
   if (typeof window === "undefined") return;
   trackContact("chat"); // ein Ort für alle Chat-Einstiege der Seite
+  if (window.__rrSiteChat) { window.dispatchEvent(new Event("rr-chat-open")); return; } // erst die Assistentin, Team per Klick
   const go = () => {
     try {
       if (!window.tidioChatApi) return;

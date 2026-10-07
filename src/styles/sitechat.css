@@ -1,0 +1,60 @@
+/* Website-Chat (SiteChat.jsx) – eigenständig, alles unter .rsc */
+.rsc{--sc-ink:#111;--sc-g1:#f4f4f4;--sc-g2:#e8e8e8;--sc-g3:#6b6b6b;--sc-or:#ff8000;--sc-ok:#16a34a;--sc-ease:cubic-bezier(.22,1,.36,1);font-family:inherit;color:var(--sc-ink)}
+.rsc button{font:inherit;border:0;background:none;cursor:pointer;color:inherit;padding:0}
+.rsc .sc-fab{position:fixed;right:16px;bottom:calc(106px + env(safe-area-inset-bottom));z-index:9990;width:60px;height:60px;border-radius:50%;background:var(--sc-ink);color:#fff;display:grid;place-items:center;box-shadow:0 10px 28px rgba(0,0,0,.28);transition:transform .25s var(--sc-ease),opacity .2s}
+.rsc .sc-fab:hover{transform:scale(1.06)}.rsc .sc-fab:active{transform:scale(.94)}
+.rsc .sc-fab svg{width:27px;height:27px;grid-area:1/1;transition:transform .3s var(--sc-ease),opacity .2s}
+.rsc .sc-fab .i2{opacity:0;transform:rotate(-90deg) scale(.6)}
+.rsc .sc-fab.open .i1{opacity:0;transform:rotate(90deg) scale(.6)}.rsc .sc-fab.open .i2{opacity:1;transform:none}
+.rsc .sc-fab .dot{position:absolute;top:3px;right:3px;width:14px;height:14px;border-radius:50%;background:var(--sc-or);box-shadow:0 0 0 3px #fff}
+.rsc .sc-fab.wig{animation:scwig .9s var(--sc-ease)}
+.rsc .sc-fab.gone{opacity:0;pointer-events:none;transform:scale(.6)}
+@keyframes scwig{0%,100%{transform:rotate(0)}15%{transform:rotate(-14deg) scale(1.08)}30%{transform:rotate(12deg) scale(1.08)}45%{transform:rotate(-9deg)}60%{transform:rotate(6deg)}75%{transform:rotate(-3deg)}}
+.rsc .sc-tease{position:fixed;right:16px;bottom:calc(180px + env(safe-area-inset-bottom));z-index:9990;max-width:min(300px,calc(100vw - 32px));display:flex;align-items:center;gap:10px;padding:12px 38px 12px 12px;border-radius:18px 18px 6px 18px;background:#fff;box-shadow:0 12px 32px rgba(0,0,0,.18);cursor:pointer;opacity:0;transform:translateY(10px) scale(.95);transform-origin:bottom right;pointer-events:none;transition:opacity .3s var(--sc-ease),transform .35s var(--sc-ease)}
+.rsc .sc-tease.show{opacity:1;transform:none;pointer-events:auto}
+.rsc .sc-tease .sc-av{width:36px;height:36px}.rsc .sc-tease .sc-av img{width:22px;height:22px}
+.rsc .sc-tease>span{font-size:13.5px;line-height:1.35;color:var(--sc-g3)}.rsc .sc-tease b{display:block;font-size:15px;color:var(--sc-ink)}
+.rsc .sc-tx{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:var(--sc-g1)!important;display:grid;place-items:center}
+.rsc .sc-tx svg{width:14px;height:14px}
+.rsc .sc-chat{position:fixed;inset:0;z-index:9995;background:#fff;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .45s var(--sc-ease),visibility 0s linear .45s;visibility:hidden;font-size:15px;line-height:1.4}
+.rsc .sc-chat.show{transform:none;visibility:visible;transition:transform .45s var(--sc-ease)}
+.rsc .sc-top{display:flex;align-items:center;gap:12px;padding:14px 16px 12px;padding-top:max(14px,env(safe-area-inset-top));border-bottom:1px solid var(--sc-g1)}
+.rsc .sc-av{width:42px;height:42px;border-radius:50%;background:var(--sc-ink);display:grid;place-items:center;flex:none;position:relative}
+.rsc .sc-av img{width:26px;height:26px;filter:brightness(0) invert(1)}
+.rsc .sc-av::after{content:"";position:absolute;right:0;bottom:0;width:11px;height:11px;border-radius:50%;background:var(--sc-ok);box-shadow:0 0 0 2px #fff}
+.rsc .sc-top .t{flex:1;min-width:0}.rsc .sc-top b{display:block;font-size:16px;font-weight:700}.rsc .sc-top .t span{font-size:12px;color:var(--sc-g3)}
+.rsc .sc-x{width:40px;height:40px;border-radius:50%;background:var(--sc-g1)!important;display:grid;place-items:center;flex:none}.rsc .sc-x svg{width:20px;height:20px}
+.rsc .sc-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;overscroll-behavior:contain}
+.rsc .sc-msg{max-width:82%;padding:11px 14px;border-radius:20px;font-size:15px;line-height:1.4;animation:scin .3s var(--sc-ease);white-space:pre-wrap;overflow-wrap:anywhere}
+@keyframes scin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.rsc .sc-msg.b{background:var(--sc-g1);border-bottom-left-radius:6px;align-self:flex-start}
+.rsc .sc-msg.u{background:var(--sc-ink);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+.rsc .sc-msg.typ{display:flex;gap:4px;padding:14px 16px}
+.rsc .sc-msg.typ i{width:7px;height:7px;border-radius:50%;background:#aaa;animation:scbl 1s infinite}
+.rsc .sc-msg.typ i:nth-child(2){animation-delay:.15s}.rsc .sc-msg.typ i:nth-child(3){animation-delay:.3s}
+@keyframes scbl{0%,100%{opacity:.3}50%{opacity:1}}
+.rsc .sc-sys{align-self:center;font-size:12.5px;color:var(--sc-g3);background:#fff4e8;border-radius:12px;padding:7px 12px;margin:4px 0;animation:scin .3s var(--sc-ease)}
+.rsc .sc-hi{text-align:center;padding:18px 10px 10px}
+.rsc .sc-hi .sc-av{width:64px;height:64px;margin:0 auto 10px}.rsc .sc-hi .sc-av img{width:38px;height:38px}
+.rsc .sc-hi b{display:block;font-size:20px;font-weight:700}.rsc .sc-hi span{font-size:14px;color:var(--sc-g3)}
+.rsc .sc-qs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:0 16px 10px;flex:none}.rsc .sc-qs::-webkit-scrollbar{display:none}
+.rsc .sc-qs button{flex:none;height:38px;padding:0 14px!important;border-radius:19px;background:#fff!important;box-shadow:inset 0 0 0 1.5px var(--sc-g2);font-size:14px;font-weight:600;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.rsc .sc-qs button.tm{box-shadow:inset 0 0 0 1.5px var(--sc-ink)}
+.rsc .sc-qs button svg{width:15px;height:15px}
+.rsc .sc-in{display:flex;align-items:center;gap:8px;padding:8px 12px max(14px,env(safe-area-inset-bottom));border-top:1px solid var(--sc-g1);flex:none;margin:0}
+.rsc .sc-in input{flex:1;min-width:0;height:46px;border-radius:23px;border:0;background:var(--sc-g1);padding:0 16px;font:inherit;font-size:16px;outline:none;color:var(--sc-ink);box-shadow:none}
+.rsc .sc-in button{width:46px;height:46px;border-radius:50%;background:var(--sc-ink)!important;color:#fff;display:grid;place-items:center;flex:none;transition:opacity .2s}
+.rsc .sc-in button[disabled]{opacity:.25}.rsc .sc-in button svg{width:20px;height:20px}
+.rsc .sc-human{align-self:flex-start;display:flex;align-items:center;gap:6px;height:36px;padding:0 14px!important;border-radius:18px;background:#fff!important;box-shadow:inset 0 0 0 1.5px var(--sc-ink);font-size:13px;font-weight:600}
+.rsc .sc-human svg{width:16px;height:16px}
+@media (max-width:820px){.rsc .sc-chat.show~.sc-fab,.rsc .sc-fab.open{opacity:0;pointer-events:none}}
+@media (min-width:921px){
+  .rsc .sc-fab{right:24px;bottom:24px}
+  .rsc .sc-tease{right:24px;bottom:98px}
+}
+@media (min-width:821px){
+  .rsc .sc-chat{inset:auto 24px 98px auto;width:390px;height:min(640px,calc(100vh - 130px));border-radius:24px;box-shadow:0 24px 60px rgba(17,17,17,.22);overflow:hidden;transform:translateY(16px) scale(.96);transform-origin:bottom right;opacity:0;transition:transform .3s var(--sc-ease),opacity .25s var(--sc-ease),visibility 0s linear .3s}
+  .rsc .sc-chat.show{transform:none;opacity:1;transition:transform .3s var(--sc-ease),opacity .25s var(--sc-ease)}
+}
+@media (min-width:821px) and (max-width:920px){.rsc .sc-chat{bottom:180px}}
+@media (prefers-reduced-motion:reduce){.rsc .sc-fab.wig{animation:none}}
