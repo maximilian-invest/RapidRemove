@@ -21,7 +21,7 @@ export default function PartnerLogin({ mode = "login", linkToken = "", account =
     if (setup && pw.length < 8) { setErr("Please use at least 8 characters."); return; }
     setBusy(true);
     try {
-      const r = setup ? await call("setup", { t: linkToken, email, password: pw }) : await call("login", { email, password: pw });
+      const r = setup ? await call("setup", { t: linkToken, email, password: pw }) : await call("login", { email: email.trim(), password: pw });
       onToken(r.token);
     } catch (x) {
       setErr(x.message === "too_many" ? "Too many attempts – please wait a few minutes."
@@ -44,11 +44,11 @@ export default function PartnerLogin({ mode = "login", linkToken = "", account =
               : "Log in to see your removal tasks and earnings."}</p>
           </div>
           <label className="fld"><span>Email</span>
-            <input type="email" autoComplete={setup ? "username" : "email"} required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
+            <input type="email" autoComplete={setup ? "username" : "email"} autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
           </label>
           <label className="fld"><span>{setup ? "Password (min. 8 characters)" : "Password"}</span>
             <span style={{ position: "relative", display: "block" }}>
-              <input type={show ? "text" : "password"} autoComplete={setup ? "new-password" : "current-password"} required value={pw} onChange={(e) => setPw(e.target.value)} style={{ width: "100%", paddingRight: 52 }} />
+              <input type={show ? "text" : "password"} autoComplete={setup ? "new-password" : "current-password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} required value={pw} onChange={(e) => setPw(e.target.value)} style={{ width: "100%", paddingRight: 52 }} />
               <button type="button" onClick={() => setShow(!show)} aria-label={show ? "Hide password" : "Show password"}
                 style={{ position: "absolute", right: 6, top: 6, width: 44, height: 44, display: "grid", placeItems: "center", color: "var(--g3)" }}>
                 {show ? <EyeOff /> : <Eye />}

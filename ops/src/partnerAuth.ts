@@ -157,12 +157,22 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     if (limited("pl:" + req.ip, 20)) return reply.code(429).send({ ok: false, error: "too_many" });
     const email = norm(b.email);
+    // Handy-Tastaturen/Kopieren: Leerzeichen am Rand, „smarte" Bindestriche (‐ ‑ – —) und unsichtbare Zeichen → zusätzlich bereinigt prüfen.
+    const raw = String(b.password || "");
+    const clean = raw.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "").replace(/[\u2010-\u2015\u2212]/g, "-").trim();
+    const cands = [...new Set([raw, clean])];
     // Test-Login des Inhabers: wird beim ersten Login mit dem übergebenen Passwort angelegt (nur Testaufträge).
-    if (isTestEmail(email) && verifyPassword(String(b.password || ""), TEST_LOGIN_PW_HASH)) {
-      await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING`, [email, TEST_LOGIN_PW_HASH, encPw(String(b.password))]);
+    if (isTestEmail(email) && cands.some((c) => verifyPassword(c, TEST_LOGIN_PW_HASH))) {
+      await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING`, [email, TEST_LOGIN_PW_HASH, encPw(clean)]);
     }
     const r = await pool.query(`SELECT pass_hash, pw_enc FROM partner_accounts WHERE email=$1`, [email]);
-    if (!r.rows[0] || !verifyPassword(String(b.password || ""), r.rows[0].pass_hash)) return reply.code(401).send({ ok: false, error: "invalid" });
+    const okPw = r.rows[0] ? cands.find((c) => verifyPassword(c, r.rows[0].pass_hash)) : undefined;
+    if (!r.rows[0] || okPw === undefined) {
+      // Diagnose ohne Passwort: unbekannte E-Mail oder falsches Passwort (Länge + ob Sonderzeichen bereinigt wurden).
+      req.log.warn({ email, known: !!r.rows[0], len: raw.length, cleaned: raw !== clean }, "Partner-Login fehlgeschlagen");
+      return reply.code(401).send({ ok: false, error: "invalid" });
+    }
+    b.password = okPw;
     // Admin soll das Passwort jederzeit sehen: beim Login verschlüsselt mitspeichern, falls noch nicht vorhanden.
     if (!r.rows[0].pw_enc) await pool.query(`UPDATE partner_accounts SET pw_enc=$2 WHERE email=$1`, [email, encPw(String(b.password || ""))]).catch(() => {});
     return { ok: true, token: await newSession(email) };
