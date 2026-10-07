@@ -88,7 +88,13 @@ export default function SiteChat({ hideBubble = false }) {
   const body = React.useRef(null), inp = React.useRef(null), everOpen = React.useRef(false);
   React.useEffect(() => { try { const m = JSON.parse(sessionStorage.getItem(KEY) || "[]"); if (m.length) { setMsgs(m); everOpen.current = true; } } catch (e) { /* */ } }, []);
   React.useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify(msgs.slice(-40))); } catch (e) { /* */ } }, [msgs]);
-  React.useEffect(() => { const b = body.current; if (b) b.scrollTop = b.scrollHeight; }, [msgs, busy, open]);
+  // Immer ans Ende scrollen – auch nachdem Karten/Buttons fertig aufgebaut sind (sonst bleibt die Angebotskarte halb verdeckt)
+  React.useEffect(() => {
+    const b = body.current; if (!b) return undefined;
+    const go = () => { b.scrollTop = b.scrollHeight; };
+    go(); const r = requestAnimationFrame(go); const t1 = setTimeout(go, 120); const t2 = setTimeout(go, 600);
+    return () => { cancelAnimationFrame(r); clearTimeout(t1); clearTimeout(t2); };
+  }, [msgs, busy, open]);
   // Alle „Chat"-Buttons der Seite öffnen jetzt diesen Chat
   React.useEffect(() => {
     window.__rrSiteChat = true;
@@ -181,10 +187,7 @@ export default function SiteChat({ hideBubble = false }) {
             : <div key={i} className={"sc-msg " + (m.r === "u" ? "u" : "b")}>{m.t}</div>))}
           {busy ? <div className="sc-msg b typ"><i /><i /><i /></div> : null}
         </div>
-        <div className="sc-qs">
-          {userCount < 3 ? t.q.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>) : null}
-          <button type="button" className="tm" onClick={() => (retained.current ? toTeam() : send(t.team, { teamReq: true }))} disabled={busy}><Headphones />{t.team}</button>
-        </div>
+        {userCount < 1 ? <div className="sc-qs">{t.q.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>)}</div> : null}
         <form className="sc-in" onSubmit={(e) => { e.preventDefault(); send(txt); }}>
           <input ref={inp} value={txt} onChange={(e) => setTxt(e.target.value)} placeholder={t.ph} autoComplete="off" maxLength={1200} enterKeyHint="send" />
           <button type="submit" disabled={!txt.trim() || busy} aria-label={t.send}><ArrowUp /></button>
