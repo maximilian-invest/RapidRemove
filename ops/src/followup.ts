@@ -155,7 +155,8 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
   }
 
   /* Software-Entscheidung offen */
-  const sw = items.filter((i) => i.status === "software");
+  // Software-Fälle mit Zustimmung bei der Bestellung (pre) haben eigene Mails (Zahlungsaufforderung + Erinnerung vor Fristende).
+  const sw = items.filter((i) => i.status === "software" && !(i as { pre?: boolean }).pre);
   if (sw.length) {
     const first = Math.min(...sw.map((i) => ts(i.changedAt) || now));
     const ref = iso(first).slice(0, 16);

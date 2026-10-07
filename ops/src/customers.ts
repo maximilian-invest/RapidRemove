@@ -185,6 +185,8 @@ export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id"
   return id;
 }
 
+/** Bestätigter Software-Fall: so lange ist der Platz reserviert (Countdown im Dashboard, Erinnerung 1 Std. vorher). */
+export const SW_HOLD_H = 5;
 export const SW_NOTE_PAID = "Kunde hat die Software-Vorauszahlung bezahlt (Dashboard) → bitte starten";
 export const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
@@ -321,6 +323,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const removed: Item[] = Array.isArray(raw.reviewsRemovedAll) ? (raw.reviewsRemovedAll as Item[]) : Array.isArray(raw.reviewsRemoved) ? (raw.reviewsRemoved as Item[]) : [];
   const payments: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
   const decisions = ((raw.reviewsSwDecision as Record<string, Decision>) || {});
+  const swConfirmed = ((raw.reviewsSwConfirmed as Record<string, string>) || {});
   const paidKeys = new Set<string>(Array.isArray(raw.reviewsPaidKeys) ? (raw.reviewsPaidKeys as string[]) : []);
   const acc = new Set((accepted || []).map(keyOf));
   const sw = new Set(software.map(keyOf));
@@ -368,6 +371,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
       pre: !!it.nt || !!it.sw, // Software-Fall laut Partner-Regel: Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
+      // Bestätigter Software-Fall (bei Bestellung zugestimmt): Platz 5 Std. reserviert → Frist fürs Dashboard (Countdown).
+      swDue: status === "software" && (it.nt || it.sw) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,
       waived: cancelled && status === "removed" && !(special ? prepaidFor(k) || isPaid(k) : isPaid(k)), // storniert → nichts mehr zu zahlen
     };
   });
@@ -709,10 +714,18 @@ export async function partnerStatusChanged(
   const delayMin = isTestEmail(r.rows[0].email) ? 1 : NOTIFY_DELAY_MIN; // Testbestellung: Kunden-Update nach 1 Min. statt 15
   const raw = (r.rows[0].raw || {}) as Record<string, unknown>;
   const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
+  let fast = false;
   if (status === "software" && itemKey) {
     const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
     const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
+    // Software-Fall, dem der Kunde bei der Bestellung schon zugestimmt hat: Partner hat bestätigt → 5-Stunden-Frist startet,
+    // Zahlungsaufforderung geht gleich (1 Min.) raus statt erst nach 15 Min.
+    if (it && (it.nt || it.sw)) {
+      const conf = { ...((raw.reviewsSwConfirmed as Record<string, string>) || {}) };
+      if (!conf[itemKey]) { conf[itemKey] = new Date().toISOString(); await setOrderRawField(orderId, "reviewsSwConfirmed", conf); }
+      fast = true;
+    }
   } else if (itemKey && ["new", "working", "not_possible"].includes(status) && sw.some((x) => keyOf(x) === itemKey)) {
     const dec = ((raw.reviewsSwDecision as Record<string, Decision>) || {})[itemKey];
     const pays: CustPayment[] = Array.isArray(raw.reviewsPayments) ? (raw.reviewsPayments as CustPayment[]) : [];
@@ -730,12 +743,12 @@ export async function partnerStatusChanged(
     `INSERT INTO cust_notify (order_id, due_at, keys, changes) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb, $4::jsonb)
      ON CONFLICT (order_id) DO UPDATE SET due_at = EXCLUDED.due_at, changes = EXCLUDED.changes,
        keys = (SELECT jsonb_agg(DISTINCT k) FROM jsonb_array_elements(cust_notify.keys || EXCLUDED.keys) k)`,
-    [orderId, String(delayMin), JSON.stringify(itemKey ? [itemKey] : []), JSON.stringify(changes)],
+    [orderId, String(fast ? 1 : delayMin), JSON.stringify(itemKey ? [itemKey] : []), JSON.stringify(changes)],
   );
 }
 
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null }[] }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[] }[]> {
   if (!pool) return [];
   const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys, changes`);
   const out = [];
@@ -749,7 +762,7 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const ch = (d.changes || {}) as Record<string, { from: string | null; to: string }>;
     const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => {
       const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
-      return { url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null };
+      return { url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
     });
     out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys });
   }

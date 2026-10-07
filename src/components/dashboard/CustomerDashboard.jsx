@@ -203,6 +203,22 @@ function SetPassword({ k, onToken, onCancel }) {
 }
 
 /* ---- App ---- */
+/* Countdown bis zum Fristende (bestätigter Software-Fall). Danach 0:00:00 + Hinweis „Platz kann jederzeit vergeben werden". */
+function Countdown({ to }) {
+  const [now, setNow] = React.useState(Date.now());
+  React.useEffect(() => { const iv = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(iv); }, []);
+  const left = Math.max(0, to - now);
+  const h = Math.floor(left / 3600e3), m = Math.floor((left % 3600e3) / 60e3), sec = Math.floor((left % 60e3) / 1000);
+  const pad = (x) => String(x).padStart(2, "0");
+  return (
+    <div className={"cdn" + (left ? "" : " over")}>
+      <span className="cdn-l">{T("swLeft")}</span>
+      <b className="cdn-t">{h}:{pad(m)}:{pad(sec)}</b>
+      {left ? null : <span className="cdn-o">{T("swOver")}</span>}
+    </div>
+  );
+}
+
 /* „Status geändert": öffnet sich von selbst – am Handy als Sheet von unten (Griff, wegwischen), am Desktop als Pop-up.
    Erst mit „Verstanden" (oder Wegwischen) gilt es als gelesen und kommt nicht wieder. */
 function ChangedSheet({ open, items, onDone, onOpen }) {
@@ -422,10 +438,13 @@ export default function CustomerDashboard() {
       // genau wie beim Tippen auf „There is a problem" (gleiche Einträge wie openFlow).
       if (u.searchParams.get("open") === "software") {
         u.searchParams.delete("open"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
-        const items = (data.orders || []).flatMap((o) => o.items.filter((i) => i.status === "software").map((i) => ({
-          id: o.id + "\u0001" + i.key, orderId: o.id, key: i.key, name: i.name || T("googleReview"), text: i.text, business: o.business, cur: o.cur, price: o.swPrice, dep: o.swDeposit,
+        const all0 = (data.orders || []).filter((o) => !o.cancelled).flatMap((o) => o.items.filter((i) => i.status === "software").map((i) => ({
+          id: o.id + "\u0001" + i.key, orderId: o.id, key: i.key, name: i.name || T("googleReview"), text: i.text, business: o.business, cur: o.cur, price: o.swPrice, dep: o.swDeposit, pre: !!i.pre, dl: i.swDue || null,
         })));
-        if (items.length) { setSheet(null); setFlow({ step: 0, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" }); }
+        // wie openFlow: eine Währung je Zahlung; bei der Bestellung schon zugestimmt → direkt zur Zahlung.
+        const items = all0.filter((i) => all0.length && i.cur === all0[0].cur);
+        const pre = items.length > 0 && items.every((i) => i.pre);
+        if (items.length) { setSheet(null); setFlow({ step: pre ? 3 : 0, pre, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" }); }
       }
     } catch (e) { /* */ }
     try {
@@ -561,7 +580,7 @@ export default function CustomerDashboard() {
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
     setSheet(null);
-    const all0 = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre }));
+    const all0 = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre, dl: r.swDue || null }));
     if (!all0.length) return;
     // Ein Zahlungslink = eine Währung: Aufträge in € und $ nicht mischen (sonst zeigt die App die Summe beider, Stripe nur eine).
     const items = all0.filter((i) => i.cur === all0[0].cur);
@@ -910,11 +929,22 @@ export default function CustomerDashboard() {
       btn = n ? T("contPay") : T("declineAll", { amount: money(0, cur) });
     }
     if (S === 3) {
-      body = (
+      // Schon bei der Bestellung zugestimmt → keine Erklärungen mehr: „angenommen, bitte binnen 5 Std. zahlen" + Countdown.
+      const dl = f.pre ? Math.min(...sel.map((i) => (i.dl ? new Date(i.dl).getTime() : Infinity))) : Infinity;
+      body = f.pre ? (
+        <>
+          <div className="fl-k">{T("swOkK")}</div>
+          <h2>{T("swOkH")}</h2>
+          <p>{T("swOkP")}</p>
+          {Number.isFinite(dl) ? <Countdown to={dl} /> : null}
+          <div className="sw-items">{sel.map((i) => <div key={i.id} className="sw-it"><span><b>{i.name}</b><span>{i.business}</span></span><b>{money(i.dep, cur)}</b></div>)}</div>
+          <div className="totl"><span>{T("totalToday")}</span><b>{money(dep, cur)}</b></div>
+          <div className="secure"><Lock />{T("secure")}</div>
+        </>
+      ) : (
         <>
           <div className="fl-k">{T("f3k")}</div>
           <h2>{T("f3h", { amount: money(dep, cur) })}</h2>
-          {f.pre ? <p className="strong">{T("fPre")}</p> : null}
           <p>{T("f3p", { n })}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
           <div className="pms">
             <div className="pm"><span className="ico"><CreditCard /></span>{T("card")}<CheckCircle2 className="ok" /></div>

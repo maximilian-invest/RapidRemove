@@ -597,3 +597,12 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 /* Solange „Status geändert" offen ist: Chat-Button/-Hinweis ausblenden */
 .rra:has(.rv-sheet.chg.show) .ctease,.rra:has(.rv-sheet.chg.show) .cfab{opacity:0;pointer-events:none}
 .rra .pgrp.sw .pg-ic{background:#efebff;color:#6d4cff}
+/* Bestätigter Software-Fall: Countdown + Posten */
+.rra .cdn{display:flex;flex-direction:column;align-items:center;gap:4px;background:#fff4e6;border-radius:20px;padding:16px;margin:4px 0 6px;text-align:center}
+.rra .cdn-l{font-size:13px;font-weight:700;color:#c25e00;text-transform:uppercase;letter-spacing:.06em}
+.rra .cdn-t{font-size:40px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.rra .cdn.over{background:var(--g1)}.rra .cdn.over .cdn-l{color:var(--g3)}
+.rra .cdn-o{font-size:14px;line-height:1.5;color:#333;margin-top:4px}
+.rra .sw-items{display:flex;flex-direction:column}
+.rra .sw-it{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--g2)}
+.rra .sw-it>span{min-width:0;display:flex;flex-direction:column}.rra .sw-it>span b{font-size:15px}.rra .sw-it>span span{font-size:13px;color:var(--g3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -35,6 +35,7 @@ import { notifyTeam } from "./notify";
 import { startFollowupWorker, registerFollowupRoutes } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import KundenSoftwareReviews, { kundenSoftwareSubject } from "./emails/KundenSoftwareReviews";
+import KundenSoftwarePayReviews, { kundenSoftwarePaySubject } from "./emails/KundenSoftwarePayReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
@@ -2048,7 +2049,22 @@ async function start() {
           const changed = group.flatMap((g) => g.changed);
           const lang = n.lang;
           // Push ging schon sofort bei der Änderung raus (partner.ts → pushCustomerNow).
-          const important = changed.filter((c) => MAIL_WORTHY.has(c.status));
+          // Bestätigte Software-Fälle (Kunde hat bei der Bestellung zugestimmt) → eigene Zahlungsaufforderung mit 5-Std.-Frist.
+          const prePay = group.flatMap((g) => g.changed.filter((c) => c.status === "software" && c.pre).map((c) => ({ ...c, g })));
+          if (prePay.length) {
+            try {
+              const cur = prePay[0].g.cur;
+              const same = prePay.filter((x) => x.g.cur === cur);
+              const amount = fmtReviewMoney(same.reduce((s0, x) => s0 + (Number(x.g.swDeposit) || 0), 0), cur);
+              const url = await dashLink(n.email, n.lang);
+              const props = { lang, name: n.name, dashUrl: url + (url.includes("?") ? "&" : "?") + "open=software", orderId: new Set(same.map((x) => x.g.orderId)).size === 1 ? same[0].g.orderId : undefined, n: same.length, amount };
+              const html = await render(React.createElement(KundenSoftwarePayReviews as any, props as any));
+              const subject = kundenSoftwarePaySubject(props as any);
+              await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+              for (const oid of new Set(same.map((x) => x.g.orderId))) await insertEvent({ orderId: oid, email: n.email, type: "mail", title: "Software bestätigt – Zahlungsaufforderung (5 Std.) gesendet", detail: same.map((x) => x.name || x.url).join(" · "), html, subject, auto: true }).catch(() => {});
+            } catch (e) { app.log.error({ err: e }, "Software-Zahlungsaufforderung fehlgeschlagen"); }
+          }
+          const important = changed.filter((c) => MAIL_WORTHY.has(c.status) && !(c.status === "software" && c.pre));
           if (!important.length) {
             for (const g of group) await insertEvent({ orderId: g.orderId, email: g.email, type: "note", title: "Statusänderung nur im Dashboard/Push (keine Mail)", detail: g.changed.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), auto: true }).catch(() => {});
             continue;
@@ -2072,6 +2088,36 @@ async function start() {
     }, 60_000);
     startPaymentReconciler(app);
     startFollowupWorker(app);
+    // Bestätigte Software-Fälle: ca. 1 Std. vor Ablauf der 5-Std.-Frist einmal erinnern (je Bewertung nur 1×).
+    setInterval(() => void (async () => {
+      if (!pool) return;
+      try {
+        await pool.query(`CREATE TABLE IF NOT EXISTS sw_pay_reminders (order_id text NOT NULL, item_key text NOT NULL, sent_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY (order_id, item_key))`);
+        const r = await pool.query(`SELECT DISTINCT lower(email) AS email FROM orders WHERE service='reviews' AND raw ? 'reviewsSwConfirmed' AND COALESCE(status,'') <> 'storniert' AND created_at > now() - interval '60 days'`);
+        const now = Date.now();
+        for (const row of r.rows as { email: string }[]) {
+          const d = await loadCustomerOrders(row.email);
+          const due = d.orders.flatMap((o) => (o.items || []).filter((i) => i.status === "software" && i.swDue).map((i) => ({ o, i, t: new Date(String(i.swDue)).getTime() })))
+            .filter((x) => now >= x.t - 3600e3 && now < x.t);
+          if (!due.length) continue;
+          const fresh = [];
+          for (const x of due) {
+            const ins = await pool.query(`INSERT INTO sw_pay_reminders (order_id, item_key) VALUES ($1,$2) ON CONFLICT DO NOTHING RETURNING order_id`, [x.o.id, x.i.key]);
+            if (ins.rowCount) fresh.push(x);
+          }
+          if (!fresh.length) continue;
+          const cur = fresh[0].o.cur;
+          const same = fresh.filter((x) => x.o.cur === cur);
+          const amount = fmtReviewMoney(same.reduce((s0, x) => s0 + (Number(x.o.swDeposit) || 0), 0), cur);
+          const url = await dashLink(row.email, d.lang);
+          const props = { lang: mailLang(d.lang), name: d.name, dashUrl: url + (url.includes("?") ? "&" : "?") + "open=software", n: same.length, amount, reminder: true };
+          const html = await render(React.createElement(KundenSoftwarePayReviews as any, props as any));
+          const subject = kundenSoftwarePaySubject(props as any);
+          await sendMail({ to: row.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+          for (const oid of new Set(same.map((x) => x.o.id))) await insertEvent({ orderId: oid, email: row.email, type: "mail", title: "Software-Zahlung: Erinnerung 1 Std. vor Fristende gesendet", detail: same.map((x) => x.i.name || x.i.url).join(" · "), html, subject, auto: true }).catch(() => {});
+        }
+      } catch (e) { app.log.error({ err: e }, "Software-Zahlungs-Erinnerung fehlgeschlagen"); }
+    })(), 5 * 60_000);
     startPartnerReminders((o, m) => app.log.info(o, m)); // stündlich: „Customer waiting for order confirmation"
     // Einmalige Team-Push: neues Admin-Dashboard ist live (nur 1×, Merker in ops_flags; 3 Min. Verzögerung, bis die Website deployt ist).
     setTimeout(() => void (async () => {

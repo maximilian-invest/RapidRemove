@@ -14,6 +14,7 @@ export const EN = {
   st_new: "Being checked", st_working: "In progress", st_removed: "Removed", st_notpossible: "Not removable",
   st_software: "Needs your decision", st_sw_accepted: "Specialist removal running", st_sw_declined: "Declined", st_cancelled: "Cancelled",
   st_swpay: "Confirmed – please pay", why_swpay: "Software removal is possible for this review. Pay the prepayment and we start right away.", fPre: "Good news: software removal works for your review. As agreed when you ordered, it’s paid upfront – we start as soon as the payment is in.",
+  swOkK: "Software removal confirmed", swOkH: "Please pay within 5 hours to secure your spot", swOkP: "Our partner has confirmed that software removal works for your review. Your spot is reserved – once you've paid, we start right away.", swLeft: "Time left", swOver: "Time's up – your spot can be given away at any time. Right now it's still free: the sooner you pay, the better.",
   why_new: "We’re checking whether this review can be removed.",
   why_working: "We’re working on the removal right now.",
   why_removed: "This review is gone from Google.",
