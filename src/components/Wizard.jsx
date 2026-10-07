@@ -1852,6 +1852,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const checkSent = React.useRef(false);
   const checkedRef = React.useRef(R ? R.placeId : null); // Schlüssel des zuletzt geprüften Profils — keine Wiederholung bei gleicher Wahl
   const bodyRef = React.useRef(null);
+  // Info-Sheet / Rabatt-Pop-up offen → Hintergrund (Wizard-Body + Seite) nicht mehr scrollbar, Position bleibt erhalten.
+  React.useEffect(() => {
+    if (!swInfo && !payAsk) return;
+    const el = bodyRef.current, html = document.documentElement, body = document.body;
+    const prev = [el && el.style.overflow, html.style.overflow, body.style.overflow, body.style.overscrollBehavior];
+    if (el) el.style.overflow = "hidden";
+    html.style.overflow = "hidden"; body.style.overflow = "hidden"; body.style.overscrollBehavior = "none";
+    return () => { if (el) el.style.overflow = prev[0] || ""; html.style.overflow = prev[1] || ""; body.style.overflow = prev[2] || ""; body.style.overscrollBehavior = prev[3] || ""; };
+  }, [swInfo, payAsk]);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);

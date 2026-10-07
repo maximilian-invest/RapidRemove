@@ -925,3 +925,6 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .sw-ok{width:100%;border:none;border-radius:16px;background:var(--neutral-900,#1c1916);color:#fff;font:inherit;font-weight:800;font-size:16px;padding:15px;cursor:pointer}
 @media(max-width:560px){.sw-sheet-w{align-items:flex-end;padding:0}.sw-sheet{border-radius:24px 24px 0 0;max-height:92vh;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}}
 @media (prefers-reduced-motion:reduce){.sw-sheet,.sw-sheet-w{animation:none}}
+/* Pop-ups: Wischen auf dem Hintergrund scrollt nicht die Seite dahinter (iOS) */
+.sw-sheet-w,.pay-ask-w{touch-action:none;overscroll-behavior:contain}
+.sw-sheet,.pay-ask{touch-action:pan-y;overscroll-behavior:contain}
