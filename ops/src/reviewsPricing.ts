@@ -23,7 +23,13 @@ export const fmtReviewMoney = (v: number, cur: string) => {
  *  Bei Einzelabrechnung pro Bewertung = Anzahl der beauftragten Bewertungen → der
  *  Rabatt wird anteilig auf jede einzeln abgerechnete Bewertung verteilt. */
 /** mode "rest": Abrechnung nach der Löschung → Bewertungen ohne Text sind schon voll bezahlt (0). */
-export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full") {
+/** Chat-Rabatt (Website-Chat, max. 10 %) – gilt NICHT zusätzlich zu PayPal/Wise (−10 %): der höhere zählt. */
+export function chatPctOf(raw: unknown): number {
+  const r = (raw || {}) as Record<string, unknown>;
+  if (r.payPref === "wise" || r.payPref === "paypal") return 0;
+  return Math.max(0, Math.min(10, Math.round(Number(r.chatPct) || 0)));
+}
+export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
   const nNt = items.filter((it) => it && it.nt).length;
@@ -31,7 +37,7 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   const nNew = n - nOld - nNt;
   const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
   const subtotal = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit;
-  const pct = reviewDiscountPct(Math.max(n, rateBasis || 0));
+  const pct = Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))); // Mengen- oder Chat-Rabatt, der höhere
   const total = Math.round((subtotal * (100 - pct)) / 100);
   // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
   const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100);

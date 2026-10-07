@@ -8,6 +8,8 @@ import { MessageCircle, ChevronDown, ArrowUp, Headphones, X } from "lucide-react
 import { asset } from "@/lib/base";
 import { useLang } from "@/lib/lang-context";
 import "@/styles/sitechat.css";
+import { OfferCard, Checkout } from "@/components/SiteChatCheckout";
+import { CO } from "@/components/sitechat-co-i18n";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const NAME = process.env.NEXT_PUBLIC_CHAT_PERSONA || "Lena";
@@ -79,6 +81,7 @@ export default function SiteChat({ hideBubble = false }) {
   const [txt, setTxt] = React.useState("");
   const [wig, setWig] = React.useState(false);
   const [tease, setTease] = React.useState(false);
+  const [coOpen, setCoOpen] = React.useState(null); // Bestellformular im Chat
   const [handed, setHanded] = React.useState(false); // mit dem Team verbunden → eigene Bubble weg, nur noch Tidio
   React.useEffect(() => { if (ss.get("rr_site_chat_handed")) setHanded(true); }, []);
   const body = React.useRef(null), inp = React.useRef(null), everOpen = React.useRef(false);
@@ -123,7 +126,7 @@ export default function SiteChat({ hideBubble = false }) {
   const send = async (raw) => {
     const q = String(raw || "").trim();
     if (!q || busy) return;
-    const history = msgs.filter((m) => m.t && !m.sys).slice(-8).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
+    const history = msgs.filter((m) => m.t && !m.sys).slice(-20).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
     const next = [...msgs.filter((x) => !x.h), { r: "u", t: q }];
     setMsgs(next); setTxt(""); setBusy(true);
     const t0 = Date.now();
@@ -141,6 +144,7 @@ export default function SiteChat({ hideBubble = false }) {
         setMsgs(cur);
         if (k < parts.length - 1) await sleep(450);
       }
+      if (j.checkout && !j.handoff) { await sleep(500); cur = [...cur, { co: j.checkout }]; setMsgs(cur); }
       if (j.handoff) { setMsgs([...cur, { h: 1 }]); setBusy(false); setTimeout(() => toTeam(cur), 1600); return; } // fließend: Team übernimmt automatisch
     } catch (e) {
       setMsgs([...next, { r: "b", t: t.err }, { h: 1 }]);
@@ -163,7 +167,9 @@ export default function SiteChat({ hideBubble = false }) {
           <button type="button" className="sc-x" onClick={() => setOpen(false)} aria-label={t.close}><ChevronDown /></button></div>
         <div className="sc-body" ref={body}>
           {!msgs.length ? <div className="sc-hi"><AV /><b>{t.hi}</b>{t.hiS ? <span>{t.hiS}</span> : null}</div> : null}
-          {msgs.map((m, i) => (m.h
+          {msgs.map((m, i) => (m.co
+            ? <OfferCard key={i} co={m.co} lang={lang} ordered={m.ordered} onOrder={() => setCoOpen({ ...m.co, idx: i })} />
+            : m.h
             ? <button key={i} type="button" className="sc-human" onClick={() => toTeam()}><Headphones />{t.team}</button>
             : m.sys ? <div key={i} className="sc-sys">{m.t}</div>
             : <div key={i} className={"sc-msg " + (m.r === "u" ? "u" : "b")}>{m.t}</div>))}
@@ -178,6 +184,11 @@ export default function SiteChat({ hideBubble = false }) {
           <button type="submit" disabled={!txt.trim() || busy} aria-label={t.send}><ArrowUp /></button>
         </form>
         <p className="sc-ai">{t.ai}</p>
+        {coOpen ? <Checkout co={coOpen} lang={lang} sid={sidOf()} onClose={() => setCoOpen(null)} onDone={(id) => {
+          const c = CO[lang] || CO.en;
+          setMsgs((m) => [...m.map((x, k) => (k === coOpen.idx ? { ...x, ordered: id } : x)), { r: "b", t: c.okMsg.replace("{id}", id) }]);
+          setCoOpen(null);
+        }} /> : null}
       </section>
     </div>
   );

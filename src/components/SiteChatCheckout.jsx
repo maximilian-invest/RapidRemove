@@ -1,0 +1,166 @@
+"use client";
+/* Bestellen direkt im Website-Chat: Angebotskarte (Preis, Rabatt-Badge) + Bestellformular mit AGB/Datenschutz.
+   Der Rabatt wird NUR serverseitig aus dem Chat-Angebot übernommen (/chat/site/order) – hier nur angezeigt. */
+import React from "react";
+import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
+import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
+import { pagePath } from "@/lib/page-routes";
+
+const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
+const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
+const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.isInteger(n) ? String(n) : n.toFixed(2); return usd ? "$" + s : s.replace(".", ",") + " €"; };
+
+/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen: 179/229, Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
+export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none" }) {
+  const usd = country === "US";
+  const pp = payPref === "wise" || payPref === "paypal";
+  if (service === "reviews") {
+    const n = Math.max(1, reviews.length);
+    const nOld = reviews.filter((r) => r.age === "old").length;
+    const sub = (n - nOld) * 179 + nOld * 229;
+    const vp = volPct(n), cp = pp ? 0 : pct;
+    const d = Math.max(vp, cp);
+    let total = Math.round((sub * (100 - d)) / 100);
+    const payD = pp ? Math.round(total * 0.1) : 0;
+    total -= payD;
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229 };
+  }
+  const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
+  const cp = pp ? 0 : pct;
+  let total = Math.round(base * (100 - cp)) / 100;
+  const payD = pp ? Math.round(base * 0.1 * 100) / 100 : 0;
+  total = Math.round((total - payD) * 100) / 100;
+  return { usd, sub: base, d: cp, dKind: cp ? "chat" : "", payD, total };
+}
+
+export function OfferCard({ co, lang, onOrder, ordered }) {
+  const c = CO[lang] || CO.en;
+  const p = priceOf({ ...co, reviews: co.service === "reviews" ? [{ age: "new" }] : [] });
+  const Icon = co.service === "reviews" ? Star : Store;
+  return (
+    <div className={"sc-offer" + (ordered ? " done" : "")}>
+      {co.pct ? <span className="so-badge"><Sparkles />−{co.pct} %</span> : null}
+      <div className="so-h"><span className="so-ic"><Icon /></span><b>{c.svc[co.service]}</b></div>
+      <div className="so-p">
+        {co.service === "reviews"
+          ? <><s className={co.pct ? "" : "hide"}>{fmt(179, p.usd)}</s><b>{fmt(Math.round(179 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev}</span></>
+          : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b></>}
+      </div>
+      <div className="so-f"><ShieldCheck />{c.after}</div>
+      {ordered
+        ? <div className="so-ok"><Check />#{ordered}</div>
+        : <button type="button" className="so-btn" onClick={onOrder}>{c.order}<ArrowRight /></button>}
+    </div>
+  );
+}
+
+export function Checkout({ co, lang, sid, onClose, onDone }) {
+  const c = CO[lang] || CO.en;
+  const [f, setF] = React.useState({ name: "", email: "", phone: "", company: "", profileLink: "", country: co.country || "", payPref: "none", agb: false });
+  const [revs, setRevs] = React.useState([{ url: "", age: "new" }]);
+  const [bad, setBad] = React.useState({});
+  const [err, setErr] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [ok, setOk] = React.useState(null);
+  const set = (k) => (e) => { const v = e && e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e; setF((x) => ({ ...x, [k]: v })); setBad((b) => ({ ...b, [k]: false })); setErr(""); };
+  const isRev = co.service === "reviews";
+  const p = priceOf({ service: co.service, country: f.country, pct: co.pct, reviews: revs, payPref: f.payPref });
+  const legal = (k) => pagePath(k, lang);
+  const submit = async () => {
+    const b = {};
+    if (f.name.trim().length < 2) b.name = 1;
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim())) b.email = 1;
+    if (!f.country) b.country = 1;
+    if (isRev) { if (!revs.some((r) => /^https?:\/\//i.test(r.url.trim()))) b.revs = 1; if (f.country === "DE" || f.country === "AT") { setErr(c.errDach); setBad({ ...b, country: 1 }); return; } }
+    else if (!/^https?:\/\//i.test(f.profileLink.trim()) && f.company.trim().length < 2) b.profileLink = 1;
+    if (!f.agb) b.agb = 1;
+    setBad(b);
+    if (Object.keys(b).length) { setErr(c.errFill); return; }
+    setErr(""); setBusy(true);
+    try {
+      const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+        sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref: f.payPref, agb: true, page: window.location.pathname,
+        reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age })) : [],
+      }) });
+      const j = await res.json().catch(() => ({}));
+      if (!res.ok || !j.ok) { setErr(j.error === "already_ordered" ? c.errDup : j.error === "reviews_dach" ? c.errDach : c.errGen); setBusy(false); return; }
+      setOk({ id: j.orderId, email: f.email.trim() });
+      try { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: "order", transaction_id: j.orderId, value: p.total, currency: p.usd ? "USD" : "EUR", source: "chat" }); } catch (e) { /* */ }
+      setTimeout(() => onDone(j.orderId, f.email.trim()), 2600);
+    } catch (e) { setErr(c.errGen); }
+    setBusy(false);
+  };
+  if (ok) {
+    return (
+      <div className="sc-co ok">
+        <div className="co-ok">
+          <svg className="ce-check" viewBox="0 0 120 120"><circle className="ce-c" cx="60" cy="60" r="46" pathLength="100" /><path className="ce-p" d="M40 62 L54 76 L82 46" pathLength="100" /></svg>
+          <b>{c.okT}</b><span>#{ok.id}</span><p>{c.okS.replace("{email}", ok.email)}</p>
+        </div>
+      </div>
+    );
+  }
+  const F = (k, label, props = {}) => (
+    <label className={"co-f" + (bad[k] ? " bad" : "")}><span>{label}</span><input value={f[k]} onChange={set(k)} {...props} /></label>
+  );
+  return (
+    <div className="sc-co">
+      <div className="co-top"><b>{c.title}</b><button type="button" onClick={onClose} aria-label={c.back}><X /></button></div>
+      <div className="co-body">
+        <div className="co-sum">
+          <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && f.payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
+          {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old") ? ` / ${fmt(229, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
+          {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
+          <div className="cs-t"><span>{isRev ? c.maxTotal : c.total}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
+          <div className="cs-n"><ShieldCheck />{c.note}</div>
+        </div>
+
+        {isRev ? (
+          <div className={"co-revs" + (bad.revs ? " bad" : "")}>
+            <span className="co-l">{c.reviews}</span>
+            {revs.map((r, i) => (
+              <div key={i} className="co-rev">
+                <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />
+                <div className="co-age">
+                  {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}
+                  {revs.length > 1 ? <button type="button" className="rm" aria-label="−" onClick={() => setRevs((x) => x.filter((_, n) => n !== i))}><Trash2 /></button> : null}
+                </div>
+              </div>
+            ))}
+            {revs.length < 20 ? <button type="button" className="co-add" onClick={() => setRevs((x) => [...x, { url: "", age: "new" }])}><Plus />{c.addRev}</button> : null}
+            {F("company", c.company, { autoComplete: "organization" })}
+          </div>
+        ) : (
+          <>
+            {F("profileLink", c.profile, { placeholder: c.phProfile, inputMode: "url" })}
+            {F("company", c.company, { autoComplete: "organization" })}
+          </>
+        )}
+        <label className={"co-f" + (bad.country ? " bad" : "")}><span>Land / Country</span>
+          <select value={f.country} onChange={set("country")}>
+            <option value="">—</option>
+            {COUNTRIES.map((k) => <option key={k} value={k}>{k === "OTHER" ? "…" : (() => { try { return new Intl.DisplayNames([lang], { type: "region" }).of(k); } catch (e) { return k; } })()}</option>)}
+          </select>
+        </label>
+        {F("name", c.name, { autoComplete: "name" })}
+        {F("email", c.email, { type: "email", autoComplete: "email", inputMode: "email" })}
+        {F("phone", c.phone, { type: "tel", autoComplete: "tel" })}
+        <span className="co-l">{c.pay}</span>
+        <div className="co-pay">
+          {[["none", c.card], ["paypal", "PayPal −10 %"], ["wise", "Wise −10 %"]].map(([k, l]) => <button key={k} type="button" className={f.payPref === k ? "on" : ""} onClick={() => set("payPref")(k)}>{l}</button>)}
+        </div>
+        <label className={"co-agb" + (bad.agb ? " bad" : "")}>
+          <input type="checkbox" checked={f.agb} onChange={set("agb")} />
+          <span>{c.agb1} <a href={legal("agb")} target="_blank" rel="noopener noreferrer">{c.agbL}</a> {c.agb2} <a href={legal("datenschutz")} target="_blank" rel="noopener noreferrer">{c.dsL}</a> {c.agb3}</span>
+        </label>
+        {err ? <div className="co-err">{err}</div> : null}
+      </div>
+      <div className="co-foot">
+        <button type="button" className="co-buy" disabled={busy} onClick={submit}>{busy ? <><Loader2 className="spin" />{c.sending}</> : <><Lock />{c.buy} · {fmt(p.total, p.usd)}</>}</button>
+        <button type="button" className="co-back" onClick={onClose}>{c.back}</button>
+      </div>
+    </div>
+  );
+}

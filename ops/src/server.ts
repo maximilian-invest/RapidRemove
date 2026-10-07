@@ -19,7 +19,8 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade } from "./reviewsSetup";
-import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf } from "./reviewsPricing";
+import { CHAT_INTERNAL } from "./chat/chat";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
@@ -424,7 +425,8 @@ app.post("/order", async (req, reply) => {
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
   // Bewertungs-Produkt: Stückpreis/Maximalbetrag in der Währung der Bestellung.
   const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
-  const revQ = quoteReviews(reviewItems, revCur);
+  const revChatPct = req.headers["x-rr-chat"] === CHAT_INTERNAL && !["wise", "paypal"].includes(String(b.payPref)) ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
+  const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct);
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
@@ -566,6 +568,8 @@ app.post("/order", async (req, reply) => {
       b.affiliate = affiliate; // aufgelösten Partner im raw-JSON mitspeichern → Admin zeigt ihn an
       // Rabatt-Abfrage beim Absenden: nur bekannte Werte speichern.
       b.payPref = ["wise", "paypal", "none"].includes(String(b.payPref)) ? String(b.payPref) : undefined;
+      // Website-Chat: Rabatt NUR über den internen Aufruf aus /chat/site/order (nie vom Browser direkt).
+      b.chatPct = req.headers["x-rr-chat"] === CHAT_INTERNAL ? (Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) || undefined) : undefined;
       await insertOrder({
         id, name, email, phone, company, lang, profile, service, protection,
         country: clip(b.country, 6) || "DE",
@@ -1366,7 +1370,8 @@ app.post("/admin/reviews-start", async (req, reply) => {
   }).filter(Boolean) as StartItem[];
   // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
-  const startQuote = quoteReviews(items, currency);
+  const startChatPct = await chatPctForOrder(b.orderId);
+  const startQuote = quoteReviews(items, currency, undefined, "full", startChatPct);
   const per = startQuote.per;
   // Bewertungen ohne Text: voller Betrag im Voraus (rabattiert) per Stripe-Link mit der Startbestätigung.
   let prepay: { n: number; amount: string; url: string } | undefined;
@@ -1385,7 +1390,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   // Spezial-Software-Angebot: voller Betrag im Voraus (Rabattstufe nach angenommenen + Software-Bewertungen).
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
-    const swQ = quoteReviews([...items, ...swItems], currency);
+    const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct);
     const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // voller Betrag im Voraus
     let swUrl = "";
     if (hasSecretKey()) {
@@ -1540,7 +1545,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
   // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
-  const quote = quoteReviews(removedItems, currency, submittedCount, "rest");
+  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", await chatPctForOrder(b.orderId));
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -1640,7 +1645,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest");
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", await chatPctForOrder(b.orderId));
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
@@ -1925,6 +1930,14 @@ async function flushPaidConfirm(key: string) {
     await sendMail({ to: o.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     for (const id of ids) await insertEvent({ orderId: id, email: o.email, type: "mail", title: `Zahlungsbestätigung (${via}) gesendet`, detail: `automatisch nach „bezahlt"${ids.length > 1 ? ` · Sammelbestätigung für ${ids.join(", ")}` : ""} · an ${o.email}`, html, subject, auto: true });
   } catch (e) { app.log.error({ err: e }, "Zahlungsbestätigung Wise/PayPal fehlgeschlagen"); }
+}
+
+/** Chat-Rabatt einer Bestellung (0 bei PayPal/Wise – der höhere Rabatt gilt). */
+async function chatPctForOrder(orderId: unknown): Promise<number> {
+  const id = clip(orderId, 40);
+  if (!id || !pool) return 0;
+  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [id]).catch(() => ({ rows: [] as { raw: unknown }[] }));
+  return chatPctOf(r.rows[0]?.raw);
 }
 
 // Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).
