@@ -2,7 +2,7 @@
 /* Partner board — desktop master–detail view (Claude Design handoff „Partner Review Tasks"). */
 import React from "react";
 import {
-  RefreshCw, Keyboard, Search, ArrowDownUp, ChevronsDownUp, ChevronDown, ChevronUp, X,
+  RefreshCw, Keyboard, LogOut, Search, ArrowDownUp, ChevronsDownUp, ChevronDown, ChevronUp, X,
   Link as LinkIcon, ArrowUpRight, StickyNote, Store, Clock, Wallet, Banknote,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, TABS, canRemove, usd, ago, pillLabel } from "./shared";
@@ -188,6 +188,7 @@ export default function PartnerDesktop({ api }) {
           <span className="vsep" />
           <button type="button" className={"ib" + (spin ? " spin" : "")} data-tip="Refresh list" onClick={() => { setSpin(false); requestAnimationFrame(() => setSpin(true)); setTimeout(() => setSpin(false), 700); flush(); load(true).then(() => showToast("List is up to date")); }}><RefreshCw /></button>
           <button type="button" className="ib" data-tip="Keyboard shortcuts" data-k="?" onClick={() => showToast(SHORTCUTS, null, 6000)}><Keyboard /></button>
+          <button type="button" className="ib" data-tip="Log out" onClick={() => { try { flush(true); } catch (e) {} try { localStorage.removeItem("rr_partner_t"); } catch (e) {} window.location.replace(window.location.pathname); }}><LogOut /></button>
         </header>
 
         <div className={"bar" + (sel.size ? " bulk" : "")}>
