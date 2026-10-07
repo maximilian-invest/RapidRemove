@@ -2,6 +2,7 @@
 import React from "react";
 import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
+import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
@@ -1830,6 +1831,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   };
   const [swInfo, setSwInfo] = React.useState(false); // Info-Sheet „Warum Software?"
   const [priceInfo, setPriceInfo] = React.useState(false); // Pop-up „Erfolgschance & Preis"
+  // Am Handy: Sheets am Griff (oder ganz oben) nach unten wegwischen.
+  const swRef = React.useRef(null), piRef = React.useRef(null);
+  useSwipeClose(swRef, swInfo, () => setSwInfo(false));
+  useSwipeClose(piRef, priceInfo, () => setPriceInfo(false));
   const pickToggle = (r) => {
     setReviewErr("");
     setPickSel((sel) => sel.some((x) => x.id === r.id) ? sel.filter((x) => x.id !== r.id) : [...sel, r]);
@@ -3229,7 +3234,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       {confetti && <Confetti />}
       {priceInfo ? (
         <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPriceInfo(false); }}>
-          <div className="sw-sheet" role="dialog" aria-modal="true" aria-labelledby="pi-sheet-t">
+          <div className="sw-sheet" ref={piRef} role="dialog" aria-modal="true" aria-labelledby="pi-sheet-t">
+            <div className="grab" aria-hidden="true" />
             <button type="button" className="pay-ask-x" onClick={() => setPriceInfo(false)} aria-label="×"><Icon.x size={18} /></button>
             <h2 id="pi-sheet-t" style={{ marginTop: 6, paddingRight: 40 }}>{pk.infoH}</h2>
             <ul className="pi-rows">
@@ -3244,7 +3250,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       ) : null}
       {swInfo ? (
         <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setSwInfo(false); }}>
-          <div className="sw-sheet" role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
+          <div className="sw-sheet" ref={swRef} role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
+            <div className="grab" aria-hidden="true" />
             <button type="button" className="pay-ask-x" onClick={() => setSwInfo(false)} aria-label="×"><Icon.x size={18} /></button>
             <div className="sw-art"><img src="/assets/app/shield.webp" alt="" /></div>
             <div className="sw-k">{pk.swK}</div>
