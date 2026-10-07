@@ -3,13 +3,14 @@
  *
  * Regeln (mit Maximilian abgestimmt, 06.10.2026):
  *  - Versand nur 8–20 Uhr Ortszeit des Kunden (Zeitzone aus Land bzw. US-/CA-/AU-Bundesstaat der Adresse).
- *  - Höchstens 1 automatische Mail pro Kunde und Tag; alles Fällige kommt gesammelt in diese Mail.
+ *  - Höchstens 1 automatische Mail pro Kunde und Tag; alles Fällige kommt gesammelt in diese Mail –
+ *    inkl. allem, was in den nächsten 24 h fällig würde (außer Zahlungsstufen), damit nichts auf morgen rutscht (07.10.2026).
  *  - Jede Erinnerung stoppt, sobald der Kunde das Nötige erledigt hat (zahlen / entscheiden / einloggen).
  *
  *   Fall                                   Erinnerung 1             Erinnerung 2        Danach
  *   Update-Mail, aber nicht eingeloggt     +10 h „Neuigkeiten"      –                   –
  *   Noch nie eingeloggt seit Bestellung    +24 h                    +48 h nach Erinn. 1 Admin „Nachfassen"
- *   Software-Entscheidung offen            +24 h (Mail + Push)      +48 h nach Erinn. 1 Tag 7: Admin „Nachfassen"
+ *   Software-Entscheidung offen            +6 h (Mail + Push)       +24 h nach Erinn. 1 Tag 3: Admin „Nachfassen"
  *   Zahlung offen (gelöschte Bewertungen)  +24 h Stufe 1            +48 h → Stufe 2     Tag 5: Admin „Letzte Mahnung fällig"
  *  Die letzte Mahnung (Stufe 3: wieder online + Inkasso) geht NIE automatisch. PayPal-/Wise-Zahler: keine
  *  automatische Zahlungserinnerung (eigene Zahlungsdaten) → direkt in „Nachfassen".
@@ -94,7 +95,10 @@ const ts = (v: unknown) => (v ? new Date(String(v)).getTime() : 0);
 const iso = (n: number) => new Date(n).toISOString();
 const daysTxt = (ms: number) => { const d = Math.floor(ms / (24 * H)); return d >= 1 ? `${d} T` : `${Math.floor(ms / H)} Std`; };
 
-async function analyze(email: string, now = Date.now()): Promise<Plan | null> {
+/** horizon: Erinnerungen, die innerhalb dieser Zeit fällig würden, gelten schon als fällig (Zusammenfassen beim Versand).
+ *  Zahlungsstufen nie vorziehen (Eskalation bleibt beim festen Rhythmus). */
+async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Plan | null> {
+  const soon = now + horizon;
   if (!pool) return null;
   const since = SINCE();
   const d = await loadCustomerOrders(email);
@@ -161,9 +165,10 @@ async function analyze(email: string, now = Date.now()): Promise<Plan | null> {
     const o = sw[0].o;
     if (first >= since) {
       const price = fmtReviewMoney(Number(o.swPrice) || 300, String(o.cur || "eur"));
-      if (st === 0) { const at = first + 24 * H; if (now >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 1, dueAt: iso(at) }); }
-      else if (st === 1) { const at = lastT + 48 * H; if (now >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 2, dueAt: iso(at) }); }
-      if (now - first >= 7 * 24 * H) plan.attention.push({ email, name: d.name, orderId: o.id as string, kind: "sw", since: iso(first), text: `Software-Entscheidung offen seit ${daysTxt(now - first)} (${sw.length} Bewertung${sw.length > 1 ? "en" : ""}) · ${st} Erinnerung${st === 1 ? "" : "en"} – bitte entscheiden` });
+      // Schneller als die anderen Fälle: es hängt eine Vorauszahlung dran (+6 h, dann +24 h, ab Tag 3 Admin).
+      if (st === 0) { const at = first + 6 * H; if (soon >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 1, dueAt: iso(at) }); }
+      else if (st === 1) { const at = lastT + 24 * H; if (soon >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 2, dueAt: iso(at) }); }
+      if (now - first >= 3 * 24 * H) plan.attention.push({ email, name: d.name, orderId: o.id as string, kind: "sw", since: iso(first), text: `Software-Entscheidung offen seit ${daysTxt(now - first)} (${sw.length} Bewertung${sw.length > 1 ? "en" : ""}) · ${st} Erinnerung${st === 1 ? "" : "en"} – bitte entscheiden` });
     }
   }
 
@@ -176,8 +181,8 @@ async function analyze(email: string, now = Date.now()): Promise<Plan | null> {
     const st = s.reduce((mx, r) => Math.max(mx, Number(r.stage)), 0);
     const lastT = s.reduce((mx, r) => Math.max(mx, ts(r.sent_at)), 0);
     if (created >= since) {
-      if (st === 0) { const at = created + 24 * H; if (now >= at) plan.due.never = { ref, stage: 1, orderId: ref }; else plan.upcoming.push({ email, name: d.name, orderId: ref, kind: "never", stage: 1, dueAt: iso(at) }); }
-      else if (st === 1) { const at = lastT + 48 * H; if (now >= at) plan.due.never = { ref, stage: 2, orderId: ref }; else plan.upcoming.push({ email, name: d.name, orderId: ref, kind: "never", stage: 2, dueAt: iso(at) }); }
+      if (st === 0) { const at = created + 24 * H; if (soon >= at) plan.due.never = { ref, stage: 1, orderId: ref }; else plan.upcoming.push({ email, name: d.name, orderId: ref, kind: "never", stage: 1, dueAt: iso(at) }); }
+      else if (st === 1) { const at = lastT + 48 * H; if (soon >= at) plan.due.never = { ref, stage: 2, orderId: ref }; else plan.upcoming.push({ email, name: d.name, orderId: ref, kind: "never", stage: 2, dueAt: iso(at) }); }
       else if (now - lastT >= 24 * H) plan.attention.push({ email, name: d.name, orderId: ref, kind: "never", since: iso(created), text: `Noch nie eingeloggt seit ${daysTxt(now - created)} · 2 Erinnerungen – anrufen oder WhatsApp` });
     }
   } else {
@@ -189,7 +194,7 @@ async function analyze(email: string, now = Date.now()): Promise<Plan | null> {
       const ref = String(e.id);
       if (t >= since && lastSeen < t && !sent("news", ref).length) {
         const at = t + 10 * H;
-        if (now >= at) plan.due.news = { ref, orderId: (e.order_id as string) || null };
+        if (soon >= at) plan.due.news = { ref, orderId: (e.order_id as string) || null };
         else plan.upcoming.push({ email, name: d.name, orderId: (e.order_id as string) || null, kind: "news", stage: 1, dueAt: iso(at) });
       }
     }
@@ -211,7 +216,7 @@ async function sendPlan(app: FastifyInstance, p: Plan): Promise<boolean> {
   const due = p.due;
   if (!due.pay && !due.sw && !due.never && !due.news) return false;
   const props: ErinnerungProps = {
-    lang: p.lang, name: p.name, dashUrl: await dashLink(p.email, p.lang),
+    lang: p.lang, name: p.name, dashUrl: await dashLink(p.email, p.lang).then((u) => (due.sw ? u + (u.includes("?") ? "&" : "?") + "open=software" : u)), // Software: Entscheidung öffnet sich direkt
     pay: due.pay ? { stage: due.pay.stage, amount: due.pay.amount, n: due.pay.n } : null,
     sw: due.sw ? { n: due.sw.n, price: due.sw.price } : null,
     never: !!due.never, news: !!due.news,
@@ -259,8 +264,10 @@ async function tick(app: FastifyInstance): Promise<void> {
         if (!has) continue;
         if (now - p.lastAutoAt < 20 * H) continue; // max. 1 automatische Mail pro Tag
         if (!quietOk(p.tz)) continue;              // nur 8–20 Uhr Ortszeit
-        if (MODE() !== "live") { app.log.info({ email, due: Object.keys(p.due) }, "Nachfassen (dry): würde senden"); continue; }
-        await sendPlan(app, p);
+        // Was ohnehin in den nächsten 24 h fällig würde, gleich mitschicken (1 Mail statt Warten auf morgen).
+        const full = (await analyze(email, now, 24 * H)) || p;
+        if (MODE() !== "live") { app.log.info({ email, due: Object.keys(full.due) }, "Nachfassen (dry): würde senden"); continue; }
+        await sendPlan(app, full);
       } catch (e) { app.log.error({ err: e, email }, "Nachfassen: Fehler bei Kunde"); }
     }
   } finally { running = false; }
