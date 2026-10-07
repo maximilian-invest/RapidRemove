@@ -21,6 +21,7 @@ import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
+import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
@@ -441,6 +442,8 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     );
   } else if (sheet && sheet.kind === "mahn" && o) {
     body = <MahnSheet key={o.id} o={o} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "paylink" && o) {
+    body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {
     body = <CheckSheet key={sheet.c.id} c={sheet.c} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "storno" && o) {

@@ -152,7 +152,8 @@ export function OrderDetail({ ctx, id }) {
     : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
     : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
     : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
-    : b === "work" ? <button type="button" className="cta" onClick={() => act.done(o)}><Check />Als erledigt markieren</button>
+    // Profil gelöscht → Zahlungslink senden (Link vorher ansehen/ändern); „ohne Link erledigt" steckt im Sheet.
+    : b === "work" ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
     : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
     : null;
   return (
@@ -189,6 +190,7 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {payOpen(o, now, ptasks) ? <PaidBtn o={o} ctx={ctx} group={same} /> : null}
+      {payOpen(o, now, ptasks) && !isRev && o.amount ? <div className="ctas" style={{ margin: "-6px 0 14px" }}><button type="button" className="cta gh" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />{o.paylinkSent ? "Zahlungslink erneut senden / ändern" : "Zahlungslink senden"}</button></div> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
