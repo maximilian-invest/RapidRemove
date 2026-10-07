@@ -181,10 +181,9 @@ export default function SiteChat({ hideBubble = false }) {
             : <div key={i} className={"sc-msg " + (m.r === "u" ? "u" : "b")}>{m.t}</div>))}
           {busy ? <div className="sc-msg b typ"><i /><i /><i /></div> : null}
         </div>
-        <div className="sc-qs">
-          {userCount < 3 ? t.q.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>) : null}
-          <button type="button" className="tm" onClick={() => (retained.current ? toTeam() : send(t.team, { teamReq: true }))} disabled={busy}><Headphones />{t.team}</button>
-        </div>
+        {userCount < 3 ? <div className="sc-qs">
+          {t.q.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>)}
+        </div> : null}
         <form className="sc-in" onSubmit={(e) => { e.preventDefault(); send(txt); }}>
           <input ref={inp} value={txt} onChange={(e) => setTxt(e.target.value)} placeholder={t.ph} autoComplete="off" maxLength={1200} enterKeyHint="send" />
           <button type="submit" disabled={!txt.trim() || busy} aria-label={t.send}><ArrowUp /></button>
