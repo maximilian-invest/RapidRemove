@@ -29,6 +29,25 @@ export type TaskStatus = (typeof PARTNER_STATUSES)[number];
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
+/** Verfahren (sw/legal/std) für alte, noch nicht begonnene Aufgaben nachtragen – nur status 'new', nur einmal (method danach gesetzt). */
+async function backfillMethods(): Promise<void> {
+  if (!pool) return;
+  const r = await pool.query(
+    `SELECT t.id, t.item_key, t.kind, o.country, o.raw->>'profileCountry' AS pc, o.raw->>'addr' AS addr, o.raw->'reviewItems' AS items
+       FROM partner_tasks t JOIN orders o ON o.id = t.order_id
+      WHERE t.method IS NULL AND t.status = 'new' AND t.kind <> 'profile'`,
+  ).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+  for (const x of r.rows as { id: number; item_key: string; kind: string; country: string | null; pc: string | null; addr: string | null; items: Record<string, unknown>[] | null }[]) {
+    const it = (Array.isArray(x.items) ? x.items : []).find((i) => (String(i.url || "") || `${i.name || ""}|${i.text || ""}`) === x.item_key) || {};
+    const addr = String(x.addr || "");
+    const us = (x.pc || "").toUpperCase() === "US" || /(\busa\b|united states)\s*$/i.test(addr) || /,\s*[A-Z]{2}\s+\d{5}(-\d{4})?(,\s*(usa|united states))?\s*$/i.test(addr) || (!x.pc && !addr && x.country === "US");
+    const nt = it.nt === true || x.kind === "nt";
+    const old = it.old === true || x.kind === "old";
+    const m = nt || it.sw === true || (old && us) ? "sw" : old ? "legal" : "std";
+    await pool.query(`UPDATE partner_tasks SET method=$2 WHERE id=$1 AND method IS NULL`, [x.id, m]).catch(() => {});
+  }
+}
+
 export async function initPartnerTables(): Promise<void> {
   if (!pool) return;
   await pool.query(`
@@ -62,6 +81,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
   // Verfahren laut Partner-Regel (10/2026): sw = Software nötig (alt + USA mit Text, oder ohne Text), legal = erst rechtliche Meldung.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS method text`);
+  // Einmalig: noch nicht begonnene Aufgaben aus Bestellungen VOR der Regel einordnen (Land aus Profil-Adresse bzw. Bestellung).
+  await backfillMethods().catch((e) => console.error("Partner: Verfahren nachtragen fehlgeschlagen", e));
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
