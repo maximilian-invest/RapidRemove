@@ -538,8 +538,10 @@ export default function CustomerDashboard() {
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
     setSheet(null);
-    const items = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre }));
-    if (!items.length) return;
+    const all0 = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre }));
+    if (!all0.length) return;
+    // Ein Zahlungslink = eine Währung: Aufträge in € und $ nicht mischen (sonst zeigt die App die Summe beider, Stripe nur eine).
+    const items = all0.filter((i) => i.cur === all0[0].cur);
     // Schon bei der Bestellung zugestimmt (Software-Fall) → keine Entscheidung mehr, direkt zur Zahlung.
     const pre = items.every((i) => i.pre);
     setFlow({ step: pre ? 3 : 0, pre, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" });
