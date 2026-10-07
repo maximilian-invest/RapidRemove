@@ -63,6 +63,7 @@ export function norm(t) {
     note: t.note || "", created: t.created ? new Date(t.created).getTime() : 0, touched: !!t.touched,
     workingSince: t.workingSince ? new Date(t.workingSince).getTime() : null,
     sw: t.sw || null, // 'pending' = waiting for the customer · 'paid' = customer prepaid, start now
+    method: t.method || null, // 'sw' = Software-Fall (erst bestätigen, Kunde zahlt vorab) · 'legal' = erst rechtliche Meldung
   };
 }
 

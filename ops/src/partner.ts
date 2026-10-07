@@ -83,6 +83,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS method text`);
   // Einmalig: noch nicht begonnene Aufgaben aus Bestellungen VOR der Regel einordnen (Land aus Profil-Adresse bzw. Bestellung).
   await backfillMethods().catch((e) => console.error("Partner: Verfahren nachtragen fehlgeschlagen", e));
+  // Software-Fälle bekommt der Partner mit dem Software-Preis bezahlt (offene, noch nicht ausgezahlte Aufgaben).
+  await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
@@ -213,7 +215,8 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     if (!url && !name && !text) continue;
     const kind: TaskKind = it.kind === "profile" ? "profile" : it.nt === true ? "nt" : it.old === true ? "old" : "normal";
     const key = url || `${name}|${text}`;
-    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : PARTNER_PRICES[kind];
+    // Software-Fall (ohne Text bzw. alte US-Bewertung mit Text) → Software-Preis für den Partner.
+    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : it.sw === true ? PARTNER_PRICES.nt : PARTNER_PRICES[kind];
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {
       const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
