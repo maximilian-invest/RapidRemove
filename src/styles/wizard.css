@@ -904,3 +904,24 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .wz-reason-done{margin-top:22px;padding:18px 20px;border:1px solid var(--hairline);border-radius:var(--r-lg);background:var(--neutral-50);}
 .wz-reason-thx{margin-top:10px;font-size:13px;font-weight:700;color:var(--success);}
 .rv-nt-note{margin:8px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted, #6b6b6b);}
+
+/* Bewertungs-Verfahren (Partner-Regel 10/2026): Software-Fälle lila mit Info-Icon, rechtliche Meldung petrol */
+.rv-chance.sw{color:#6d4cff}
+.rv-chance.legal{color:#0e7a8a}
+.rv-sw-i{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;margin-left:5px;vertical-align:-6px;border-radius:50%;border:none;background:#efebff;color:#6d4cff;cursor:pointer;padding:0;vertical-align:middle;flex:none}
+.rv-sw-i:hover{background:#6d4cff;color:#fff}
+.rv-sw-i:focus-visible{outline:2px solid #6d4cff;outline-offset:2px}
+.sw-sheet-w{position:fixed;inset:0;z-index:210;background:rgba(28,25,22,.42);display:flex;align-items:center;justify-content:center;padding:20px;animation:payFade .18s ease}
+.sw-sheet{position:relative;width:100%;max-width:440px;max-height:calc(100vh - 40px);overflow:auto;background:#fff;border-radius:26px;box-shadow:0 24px 60px rgba(28,25,22,.28);padding:22px 24px 22px;text-align:left;animation:payUp .26s cubic-bezier(.22,1,.36,1)}
+.sw-art{border:1px solid var(--hairline,#e9e3dd);border-radius:20px;height:170px;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;margin:26px 0 18px;background:#fff}
+.sw-art img{width:230px;max-width:80%;display:block;margin-bottom:-24px}
+.sw-k{color:var(--primary,#ff8000);font-weight:800;font-size:14px;margin-bottom:6px}
+.sw-sheet h2{margin:0 0 10px;font-family:var(--font-display);font-weight:600;font-size:25px;line-height:1.15;letter-spacing:-.4px;text-wrap:balance}
+.sw-sheet p{margin:0 0 12px;color:var(--fg-2,#4a423b);font-weight:600;font-size:14.5px;line-height:1.55}
+.sw-sheet p.strong{color:var(--fg,#1c1916);font-weight:800}
+.sw-f{list-style:none;margin:4px 0 18px;padding:0;display:grid;gap:8px}
+.sw-f li{display:flex;align-items:center;gap:9px;font-weight:700;font-size:14px;color:var(--fg,#1c1916)}
+.sw-f li svg{color:var(--success,#16a34a);flex:none}
+.sw-ok{width:100%;border:none;border-radius:16px;background:var(--neutral-900,#1c1916);color:#fff;font:inherit;font-weight:800;font-size:16px;padding:15px;cursor:pointer}
+@media(max-width:560px){.sw-sheet-w{align-items:flex-end;padding:0}.sw-sheet{border-radius:24px 24px 0 0;max-height:92vh;padding:20px 18px calc(18px + env(safe-area-inset-bottom,0px))}}
+@media (prefers-reduced-motion:reduce){.sw-sheet,.sw-sheet-w{animation:none}}

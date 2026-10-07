@@ -61,12 +61,36 @@ export function reviewQuote(items, lang) {
   const base = Number(String(profileFor(lang).review).replace(",", ".")) || 179;
   const list = Array.isArray(items) ? items : [];
   const n = list.length;
-  const nNt = list.filter((it) => it && it.nt).length;
-  const nOld = list.filter((it) => it && it.old && !it.nt).length;
+  const nNt = list.filter((it) => it && (it.nt || it.sw)).length; // Software-Fälle (ohne Text + alte US-Bewertungen)
+  const nOld = list.filter((it) => it && it.old && !it.nt && !it.sw).length;
   const nNew = n - nOld - nNt;
   const subtotal = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
   const pct = reviewDiscountPct(n);
   const total = Math.round(subtotal * (100 - pct) / 100);
   const ntTotal = Math.round(nNt * REVIEW_NOTEXT_PRICE * (100 - pct) / 100);
   return { n, nOld, nNew, nNt, base, oldPrice: base + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, discount: subtotal - total, total, ntTotal };
+}
+
+/* Verfahren je Bewertung (Partner-Regel 10/2026, synchron mit ops/src/reviewsPricing.ts):
+   "sw"    Software: ohne Text (alle Länder) oder älter als 4 Wochen mit Text aus den USA → 300, vorab,
+           aber erst nach unserer Prüfung (Zahlungsaufforderung, wenn der Partner Software bestätigt).
+   "legal" älter als 4 Wochen, andere Länder → erst rechtliche Meldung (90 %+), Zahlung nach Löschung.
+   "std"   bis 4 Wochen → Zahlung nach Löschung. */
+export function reviewMethod({ hasText, days }, country) {
+  if (!hasText) return "sw";
+  if (!(days > REVIEW_OLD_DAYS)) return "std";
+  return country === "US" ? "sw" : "legal";
+}
+const COUNTRY_RE = [[/vereinigte staaten|united states|\busa\b|états-unis|estados unidos|stati uniti|verenigde staten|förenta staterna|forenede stater|アメリカ/i, "US"],
+  [/deutschland|germany|allemagne|alemania|germania|duitsland|tyskland|ドイツ/i, "DE"], [/österreich|austria|autriche|oostenrijk|østrig|österrike/i, "AT"],
+  [/schweiz|switzerland|suisse|svizzera|suiza|zwitserland/i, "CH"], [/vereinigtes königreich|united kingdom|\buk\b|royaume-uni|reino unido|regno unito|england|scotland|wales/i, "GB"],
+  [/kanada|canada/i, "CA"], [/australien|australia/i, "AU"]];
+/** Land eines Google-Profils aus der Adresse („…, Austin, TX 78701, USA" → "US"). Unbekannt → "". */
+export function addrCountry(addr) {
+  const a = String(addr || "").trim(); if (!a) return "";
+  const last = a.split(",").pop() || "";
+  for (const [re, c] of COUNTRY_RE) if (re.test(last)) return c;
+  // US-Adresse ohne Ländernamen: „Austin, TX 78701"
+  if (/,\s*[A-Z]{2}\s+\d{5}(-\d{4})?\s*$/.test(a)) return "US";
+  return "";
 }

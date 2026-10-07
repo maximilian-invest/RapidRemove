@@ -11,7 +11,22 @@ export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n 
 export const REVIEW_NOTEXT_PRICE = 300;
 export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur noch für Bestandsfälle
 
-export type PricedItem = { old?: boolean; nt?: boolean };
+export type PricedItem = { old?: boolean; nt?: boolean; sw?: boolean };
+
+/** Verfahren je Bewertung (Partner-Regel, 10/2026):
+ *  - "sw"    Software, voller Betrag im Voraus: ohne Text (alle Länder) und älter als 4 Wochen mit Text aus den USA
+ *            → Google entfernt die in der Regel nicht von Hand.
+ *  - "legal" Rechtliche Meldung: älter als 4 Wochen mit Text, andere Länder → 90 %+ Erfolg, Zahlung nach Löschung;
+ *            was danach bleibt, geht nur noch per Software (Partner setzt „software" → Angebot im Dashboard).
+ *  - "std"   bis 4 Wochen alt, mit Text → Zahlung nach Löschung. */
+export type ReviewMethod = "sw" | "legal" | "std";
+export const isSwItem = (it: PricedItem | null | undefined) => !!it && (!!it.nt || !!it.sw);
+export function reviewMethod(it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string; days?: number }, country: string): ReviewMethod {
+  if (it.nt || it.sw) return "sw";
+  const old = it.old === true || (Number.isFinite(Number(it.days)) && Number(it.days) > 28);
+  if (!old) return "std";
+  return String(country || "").toUpperCase() === "US" ? "sw" : "legal";
+}
 
 /** Betrag in der Währung der Bestellung ("$179" / "179 €", Cent nur wenn nötig). */
 export const fmtReviewMoney = (v: number, cur: string) => {
@@ -32,8 +47,8 @@ export function chatPctOf(raw: unknown): number {
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
-  const nNt = items.filter((it) => it && it.nt).length;
-  const nOld = items.filter((it) => it && it.old && !it.nt).length;
+  const nNt = items.filter(isSwItem).length; // Software-Fälle (ohne Text + alte US-Bewertungen), Name historisch
+  const nOld = items.filter((it) => it && it.old && !isSwItem(it)).length;
   const nNew = n - nOld - nNt;
   const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
   const subtotal = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit;

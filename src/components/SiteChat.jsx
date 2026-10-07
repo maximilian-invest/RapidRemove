@@ -237,7 +237,7 @@ export default function SiteChat({ hideBubble = false }) {
           {msgs.map((m, i) => (m.pick
             ? <ReviewPicker key={i} pick={m.pick} lang={lang} P={P} done={m.done} onNext={(items) => { setMsgs((x) => confirmItems(x.map((y, k) => (k === i ? { ...y, done: 1 } : y)), items, m.pick.place)); }} />
             : m.conf
-            ? <ConfirmCard key={i} conf={m.conf} lang={lang} P={P} done={m.done || m.ordered} onYes={() => setCoOpen({ service: "reviews", country: (m.conf.place && m.conf.place.country) || "", pct: maxPct(), items: m.conf.items, company: (m.conf.place && m.conf.place.name) || "", idx: i })}
+            ? <ConfirmCard key={i} conf={m.conf} lang={lang} P={P} done={m.done || m.ordered} onYes={() => setCoOpen({ service: "reviews", country: (m.conf.place && m.conf.place.country) || "", placeCountry: (m.conf.place && m.conf.place.country) || "", pct: maxPct(), items: m.conf.items, company: (m.conf.place && m.conf.place.name) || "", idx: i })}
                 onNo={() => setMsgs((x) => [...x.map((y, k) => (k === i ? { ...y, done: 1 } : y)), { r: "b", t: P.change }, ...(lastPick.current ? [{ pick: lastPick.current }] : [])])} />
             : m.chs
             ? <div key={i} className="sc-chs">{m.chs.map((c, k) => <button key={k} type="button" className={c.value === "__team__" ? "tm" : ""} style={{ animationDelay: k * 60 + "ms" }} disabled={busy}

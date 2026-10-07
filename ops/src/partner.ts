@@ -60,6 +60,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%'`).catch(() => {});
   // Testbestellungen (E-Mail mit „+test"): nur im Test-Board des Admins, nie beim Partner.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
+  // Verfahren laut Partner-Regel (10/2026): sw = Software nötig (alt + USA mit Text, oder ohne Text), legal = erst rechtliche Meldung.
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS method text`);
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
@@ -136,7 +138,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
-  touched_at: string | null; working_since: string | null; test?: boolean;
+  touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -147,6 +149,7 @@ function partnerView(r: Row) {
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
+    method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && (r.admin_note || "").includes(SW_NOTE_PAID) ? "paid" : null),
   };
 }
@@ -196,12 +199,13 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
       [orderId, key, url || null, name || null, text || null, kind, price, customer, test,
-        Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null],
+        Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null,
+        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {

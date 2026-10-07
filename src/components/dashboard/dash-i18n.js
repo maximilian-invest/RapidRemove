@@ -69,7 +69,7 @@ export const EN = {
   // Spezialisten-Flow
   f0k: "What happened",
   f0h: { one: "Google is protecting {n} of your reviews", other: "Google is protecting {n} of your reviews" },
-  f0p1: "We tried our standard removal, but Google declined it. This happens when a review is worded carefully enough that it doesn’t break Google’s rules on its own.",
+  f0p1: "Google usually doesn’t remove older reviews from the USA or star-only ratings without text by hand. For older reviews from other countries we first file legal notices, which removes over 90 % of them. The ones that remain, like these, can only be removed with special software.",
   f0p2: "There’s still a way – and you decide if you want it.",
   f1k: "Your options",
   f1h: { one: "A specialist can still remove it", other: "A specialist can still remove them" },

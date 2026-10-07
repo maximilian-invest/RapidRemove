@@ -16,14 +16,15 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
     const n = Math.max(1, reviews.length);
-    const nOld = reviews.filter((r) => r.age === "old").length;
-    const sub = (n - nOld) * 179 + nOld * 229;
+    const nSw = reviews.filter((r) => r.sw).length; // Software-Fälle: 300, vorab – aber erst nach Prüfung durch den Partner
+    const nOld = reviews.filter((r) => r.age === "old" && !r.sw).length;
+    const sub = (n - nOld - nSw) * 179 + nOld * 229 + nSw * 300;
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
     const payD = pp ? Math.round(total * 0.1) : 0;
     total -= payD;
-    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229 };
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229, nSw };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -66,7 +67,9 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const [ok, setOk] = React.useState(null);
   const set = (k) => (e) => { const v = e && e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e; setF((x) => ({ ...x, [k]: v })); setBad((b) => ({ ...b, [k]: false })); setErr(""); };
   const isRev = co.service === "reviews";
-  const p = priceOf({ service: co.service, country: f.country, pct: co.pct, reviews: revs, payPref: f.payPref });
+  // Alte Bewertungen mit Text aus einem US-Profil → Software (Partner-Regel); Land kommt aus dem Profil-Link.
+  const swOf = (r) => co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim();
+  const p = priceOf({ service: co.service, country: f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref: f.payPref });
   const legal = (k) => pagePath(k, lang);
   const submit = async () => {
     const b = {};
@@ -82,7 +85,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     try {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
-        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref: f.payPref, agb: true, page: window.location.pathname,
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref: f.payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
@@ -112,7 +115,8 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-body">
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && f.payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
-          {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old") ? ` / ${fmt(229, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old" && !swOf(r)) ? ` / ${fmt(229, p.usd)}` : ""}{p.nSw ? ` / ${fmt(300, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {isRev && p.nSw ? <div className="cs-sw">{p.nSw} × {fmt(300, p.usd)} · {c.sw}</div> : null}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
@@ -124,7 +128,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
             <span className="co-l">{c.reviews}</span>
             {revs.map((r, i) => (
               <div key={i} className="co-rev">
-                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
+                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) ? <i className="co-swt">{c.sw}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
                 <div className="co-age">
                   {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}
                   {revs.length > 1 ? <button type="button" className="rm" aria-label="−" onClick={() => setRevs((x) => x.filter((_, n) => n !== i))}><Trash2 /></button> : null}

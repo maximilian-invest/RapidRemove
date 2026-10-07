@@ -359,7 +359,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else if (acc.has(k)) status = "working";
     else if (accepted) status = "notpossible";
     else status = "new";
-    const special = !!it.nt || sw.has(k) || swPaidFor(k);
+    const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k);
     const price = special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
     return {
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),

@@ -19,7 +19,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade } from "./reviewsSetup";
-import { quoteReviews, fmtReviewMoney, chatPctOf } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -358,7 +358,7 @@ app.post("/order", async (req, reply) => {
   const isReviews = service === "reviews";
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; rating?: number; days?: number };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
@@ -408,6 +408,15 @@ app.post("/order", async (req, reply) => {
       }
       if (dupSkipped.length) { reviewItems.splice(0, reviewItems.length, ...keep); app.log.warn({ email, orderId, dup: dupSkipped }, "Bestellung: doppelte Bewertungen entfernt"); }
     } catch (e) { app.log.error({ err: e }, "Doppel-Prüfung fehlgeschlagen – Bestellung läuft normal weiter"); dupSkipped = []; }
+  }
+  // Verfahren je Bewertung (Partner-Regel): Software-Fälle (ohne Text; älter als 4 Wochen mit Text aus den USA) kosten 300
+  // und werden VOR dem Start bezahlt – aber erst, wenn der Partner bestätigt, dass Software verfügbar ist (keine Zahlung bei der Bestellung).
+  // Land = Land des Google-Profils (aus der Adresse), nicht die Website-Sprache.
+  const pcRaw = String(b.profileCountry || "").trim().toUpperCase();
+  const ruleCountry = /^[A-Z]{2}$/.test(pcRaw) ? pcRaw : "";
+  (b as Record<string, unknown>).profileCountry = ruleCountry || undefined;
+  if (isReviews) for (const it of reviewItems) {
+    if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
@@ -595,6 +604,8 @@ app.post("/order", async (req, reply) => {
       if (checkId) await linkCheck(checkId, id);
       if (b.chatSid) void linkSiteChat(b.chatSid, id, email).catch(() => {}); // Website-Chat → Bestellung (Admin: „hat bestellt")
       // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
+      // Software-Fälle (sw) sind normale Aufgaben: der Partner prüft, ob Software verfügbar ist, und setzt dann „Software"
+      // → Kunde bekommt die Zahlungsaufforderung im Dashboard → nach Zahlung „Customer paid – start now".
       if (isReviews && reviewItems.length && await partnerAutoEnabled("reviews").catch(() => true)) {
         await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));
@@ -1347,14 +1358,14 @@ app.post("/admin/reviews-start", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type StartItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
+  type StartItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
   const items: StartItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
     const o = (raw || {}) as Record<string, unknown>;
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const flags = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text (Vorauszahlung) · old: älter als 4 Wochen
+    const flags = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software (Vorauszahlung) · old: älter als 4 Wochen
     if (url) return { url, ...flags };
     if (nm && tx) return { name: nm, text: tx, ...flags };
     if (nm && flags.nt) return { name: nm, ...flags };
@@ -1527,7 +1538,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1536,7 +1547,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const old = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text → hier nur noch die 2. Hälfte
+    const old = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software, schon vorab bezahlt → hier 0
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;
@@ -1627,7 +1638,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1636,7 +1647,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const old = o.nt === true ? { nt: true } : o.old === true ? { old: true } : {}; // nt: ohne Text → hier nur noch die 2. Hälfte
+    const old = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software, schon vorab bezahlt → hier 0
     if (url) return { url, ...old };
     if (nm && tx) return { name: nm, text: tx, ...old };
     return null;

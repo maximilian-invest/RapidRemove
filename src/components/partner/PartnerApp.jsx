@@ -36,7 +36,7 @@ function stLabel(t) {
   if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
-  if (t.status === "software") return "Software · waiting for customer";
+  if (t.status === "software") return "Software · waiting for payment";
   return (STATUS[t.status] || STATUS.new).l;
 }
 
@@ -281,9 +281,13 @@ export default function PartnerApp({ api }) {
         {t.status === "software" && t.sw === "declined" ? (
           <div className="swb"><XCircle /><span><b>Customer declined deletion</b>The customer decided to keep this review online. Nothing to do.</span></div>
         ) : t.status === "software" ? (
-          <div className="swb"><Hourglass /><span><b>Waiting for customer</b>The customer decides in their dashboard. You’ll see it here once they’ve paid.</span></div>
+          <div className="swb"><Hourglass /><span><b>Waiting for payment</b>The customer got a payment request for the software removal. You’ll see “Customer paid” here before you start.</span></div>
         ) : t.sw === "paid" ? (
           <div className="swb ok"><CheckCircle2 /><span><b>Customer paid</b>Prepayment received – start the software removal now.</span></div>
+        ) : (t.status === "new" || t.status === "working") && t.method === "sw" ? (
+          <div className="swb"><Info /><span><b>Software case</b>Old review from the USA or rating without text – Google usually won’t remove it manually. Check if software removal is available, then mark “Software”. The customer gets a payment request; start only once you see “Customer paid”.</span></div>
+        ) : (t.status === "new" || t.status === "working") && t.method === "legal" ? (
+          <div className="swb"><Info /><span><b>Legal notice first</b>Old review outside the USA – use legal reporting first (90 %+ success). If it stays online, mark “Software”.</span></div>
         ) : null}
         {t.shot ? <ReviewShot id={t.shot} token={api.token} url={t.url} /> : null}
         {t.text || !t.shot ? <div className="quote"><b>{t.who}</b>{t.text ? `“${t.text}”` : t.url ? <span style={{ display: "block", fontSize: 14, color: "var(--g3)", fontWeight: 500 }}>Tap “Open review” to see it on Google</span> : null}</div> : null}

@@ -165,3 +165,5 @@
 .rsc .cf-b{display:flex;flex-direction:column;gap:2px}
 .rsc .cf-no{height:36px;font-size:13.5px;font-weight:600!important;color:var(--sc-g3)!important}
 .rsc .co-rv{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;padding:4px 6px}.rsc .co-rv b{font-size:14px}.rsc .co-rv span:not(.pk-st){font-size:12.5px;color:#555;flex-basis:100%}
+.rsc .cs-sw{font-size:12px;font-weight:700;color:#6d4cff;margin:-2px 0 4px}
+.rsc .co-swt{display:block;font-style:normal;font-size:11.5px;font-weight:800;color:#6d4cff;margin-top:2px}
