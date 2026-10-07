@@ -386,6 +386,15 @@ export default function CustomerDashboard() {
         if ((data.orders || []).some((o) => o.id === oid)) setDetailId(oid);
         u.searchParams.delete("order"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
       }
+      // Link aus der Software-Mail (?open=software) → Schritt-für-Schritt-Entscheidung sofort öffnen,
+      // genau wie beim Tippen auf „There is a problem" (gleiche Einträge wie openFlow).
+      if (u.searchParams.get("open") === "software") {
+        u.searchParams.delete("open"); window.history.replaceState(null, "", u.pathname + (u.search || ""));
+        const items = (data.orders || []).flatMap((o) => o.items.filter((i) => i.status === "software").map((i) => ({
+          id: o.id + "\u0001" + i.key, orderId: o.id, key: i.key, name: i.name || T("googleReview"), text: i.text, business: o.business, cur: o.cur, price: o.swPrice, dep: o.swDeposit,
+        })));
+        if (items.length) { setSheet(null); setFlow({ step: 0, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" }); }
+      }
     } catch (e) { /* */ }
     try {
       const n = (data.orders || []).reduce((s, o) => s + o.items.filter((i) => i.status === "software").length, 0);
