@@ -780,3 +780,5 @@
 .an .amt .abo b{color:#fff;font-weight:600}
 .an .amt .abo.lt{background:rgba(255,179,71,.15);color:#ffe2bd}.an .amt .abo.lt svg{color:#ffb347}
 .an .ktag.kabo{background:#e9f9ef;color:#15803d;font-weight:600}
+/* Testbestellungen */
+.an .ktag.ktest{background:#f3e8ff;color:#7e22ce;font-weight:700;letter-spacing:.02em}

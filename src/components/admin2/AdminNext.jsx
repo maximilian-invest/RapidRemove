@@ -15,7 +15,7 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf } from "./model";
 import PaidCelebration from "./Celebrate";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
@@ -275,7 +275,7 @@ export default function AdminNext() {
     : top.v === "act" ? <ActivityScreen ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "new" ? <NewOrder key={top.id} ctx={{ ...ctx, back: isDesk ? closeDrawer : back }} /> : null;
   const inFlow = tab === "orders" && top.v === "new";
-  const nNew = orders.filter((o) => o.status === "new").length;
+  const nNew = orders.filter((o) => !o.test && bucketsOf(o, now, ptasks[o.id]).includes("new")).length; // wie die Kachel „Neu", ohne Tests
   const nFound = mon ? (mon.profiles || []).filter((p) => p.status === "found").length : 0;
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
   // Desktop: keine Konto-Kachelseite – alle Punkte direkt in der Seitenleiste

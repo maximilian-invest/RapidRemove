@@ -15,7 +15,9 @@ import SiteChatsScreen from "./SiteChats";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
-  const { orders, checks, now, stripe, goOrders, openOrder, refresh, spin, ptasks } = ctx;
+  const { orders: allOrders, checks: allChecks, now, stripe, goOrders, openOrder, refresh, spin, ptasks } = ctx;
+  // Statistiken ohne Testbestellungen/-prüfungen (Inhaber-Adresse, „+test").
+  const orders = allOrders.filter((o) => !o.test), checks = allChecks.filter((c) => !c.test);
   const bsOf = (o) => bucketsOf(o, now, (ptasks || {})[o.id]); // Bewertungen: Status aus den Partner-Aufgaben
   const b = orders.map(bsOf);
   const nNew = b.filter((x) => x.includes("new")).length, nWork = b.filter((x) => x.includes("work")).length;

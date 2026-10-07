@@ -18,3 +18,13 @@ export function isTestEmail(e: unknown): boolean {
   if (TEST_EMAIL_SHA.has(crypto.createHash("sha256").update(s).digest("hex"))) return true;
   return String(process.env.TEST_EMAILS || "").split(",").map(norm).filter(Boolean).includes(s);
 }
+
+/** SQL-Bedingung „ist KEINE Test-Adresse" für eine E-Mail-Spalte – für Statistiken (Report, Liga).
+ *  Gleiche Regeln wie isTestEmail: „+test", Inhaber-Hash, TEST_EMAILS. Werte sind Hex-Hashes bzw.
+ *  aus der Umgebung (escaped), keine Nutzereingaben. Braucht PostgreSQL ≥ 11 (sha256). */
+export function notTestSql(col = "email"): string {
+  const e = `lower(trim(COALESCE(${col},'')))`;
+  const hashes = [...TEST_EMAIL_SHA].map((h) => `'${h.replace(/[^0-9a-f]/g, "")}'`).join(",");
+  const envList = String(process.env.TEST_EMAILS || "").split(",").map(norm).filter(Boolean).map((x) => `'${x.replace(/'/g, "''")}'`);
+  return `(${e} NOT LIKE '%+test@%' AND encode(sha256(convert_to(${e}, 'UTF8')), 'hex') NOT IN (${hashes})${envList.length ? ` AND ${e} NOT IN (${envList.join(",")})` : ""})`;
+}

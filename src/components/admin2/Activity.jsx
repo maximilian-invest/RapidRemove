@@ -226,7 +226,7 @@ export function GlobalActivityScreen({ ctx }) {
   const seen = React.useMemo(() => new Set((d && d.seen) || []), [d]);
   const neverAll = React.useMemo(() => {
     if (!d) return [];
-    return [...byEmail.values()].filter((o) => isOffen(o) && !seen.has((o.email || "").toLowerCase()))
+    return [...byEmail.values()].filter((o) => !o.test && isOffen(o) && !seen.has((o.email || "").toLowerCase()))
       .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
   }, [d, byEmail, seen]);
   const ql = dq.toLowerCase();

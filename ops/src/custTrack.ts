@@ -15,6 +15,7 @@
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
+import { notTestSql } from "./testAccounts";
 
 const SECRET = () => "ct|" + (process.env.ADMIN_TOKEN || "rr");
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
@@ -176,7 +177,7 @@ export function registerCustTrack(app: FastifyInstance, deps: { sessionInfo: (t:
       const s = await pool.query(`SELECT
           count(*) FILTER (WHERE type IN ('login','dash_open') AND created_at >= (date_trunc('day', now() AT TIME ZONE 'Europe/Vienna') AT TIME ZONE 'Europe/Vienna'))::int AS logins_today,
           count(*) FILTER (WHERE type = 'payment_abort' AND created_at > now() - interval '7 days')::int AS aborts
-        FROM customer_events`);
+        FROM customer_events WHERE ${notTestSql("email")}`); // Testkonten zählen nicht
       stats = { loginsToday: s.rows[0].logins_today, paymentAborts7d: s.rows[0].aborts };
       // „schon da gewesen": Ereignisse, Passwort-Login (last_login) oder eine echte (nicht-Admin-)Sitzung, z. B. per Login-Link
       const sv = await pool.query(`SELECT DISTINCT email FROM customer_events WHERE type IN ('login','dash_open','page_view','click')

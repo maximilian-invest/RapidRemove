@@ -37,7 +37,7 @@ async function openCustDash(o, toast) {
 /** Kategorie-Tag vor dem Status: Bewertungen (grau, Stern) · Profil (orange, Laden). */
 export function KTag({ o }) {
   const p = o.service !== "reviews";
-  return <span className={"ktag" + (p ? " kp" : "")}>{p ? <Store /> : <Star />}{p ? "Profil" : "Bewertungen"}</span>;
+  return <>{o.test ? <span className="ktag ktest" title="Testbestellung – zählt in keine Statistik">Test</span> : null}<span className={"ktag" + (p ? " kp" : "")}>{p ? <Store /> : <Star />}{p ? "Profil" : "Bewertungen"}</span></>;
 }
 
 /** Mehrere Kacheln („In Bearbeitung · Zahlung offen") als ein Label. */
@@ -62,12 +62,14 @@ export function OrdersList({ ctx }) {
   const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.bs))
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
     .sort((a, b) => (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))); // neueste zuerst (wie im bisherigen Admin)
-  const newO = enriched.filter((x) => x.bs.includes("new"));
+  // Zähler ohne Testbestellungen (in der Liste bleiben sie sichtbar, mit „Test"-Tag).
+  const real = enriched.filter((x) => !x.o.test);
+  const newO = real.filter((x) => x.bs.includes("new"));
   const oldest = newO.reduce((mx, x) => Math.max(mx, x.m), 0);
-  const openN = enriched.filter(open).length;
-  const inWork = enriched.filter((x) => open(x) && !x.bs.includes("new")).length;
+  const openN = real.filter(open).length;
+  const inWork = real.filter((x) => open(x) && !x.bs.includes("new")).length;
   const tiles = SCOPE_TILES[f.scope] || SCOPE_TILES.open;
-  const tot = Math.max(1, base.filter(inScope).length);
+  const tot = Math.max(1, base.filter((x) => !x.o.test && inScope(x)).length);
   const hr = new Date().getHours();
   const st = staffOf(f.staff);
   const [limit, setLimit] = React.useState(80);
@@ -88,7 +90,7 @@ export function OrdersList({ ctx }) {
       <div className="sec3 stat-h"><h2>Status</h2><button type="button" className="lk" onClick={() => openSheet({ kind: "scope" })}>{{ open: "Offen", closed: "Abgeschlossen", all: "Alle" }[f.scope]}<ChevronDown /></button></div>
       <div className="gcards">
         {tiles.map((k) => {
-          const n = base.filter((x) => inTile(k, x.bs)).length; const I = TILE_ICON[k];
+          const n = base.filter((x) => !x.o.test && inTile(k, x.bs)).length; const I = TILE_ICON[k];
           return (
             <button key={k} type="button" className={"gc" + (f.tile === k ? " on" : "")} onClick={() => setF({ tile: f.tile === k ? null : k })}>
               <span className="gi">{ST[k].img ? <img src={IMG(ST[k].img)} alt="" /> : <I />}</span>

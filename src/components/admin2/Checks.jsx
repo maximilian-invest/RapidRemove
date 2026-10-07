@@ -72,7 +72,7 @@ export function ChecksScreen({ ctx }) {
   const ql = chk.q.trim().toLowerCase();
   const list = base.filter(CF[chk.f]).filter((c) => !ql || `${c.profile} ${c.name} ${eff(c)} ${c.addr || ""} ${c.id} ${srcLabelOf(c)}`.toLowerCase().includes(ql));
   const [limit, setLimit] = React.useState(80);
-  const openN = checks.filter((c) => !conv(c)).length;
+  const openN = checks.filter((c) => !c.test && !conv(c)).length; // ohne Test-Prüfungen
   const srcOpts = [["all", "Alle Quellen", checks.length], ...SRCS.map(([k, l]) => [k, l, checks.filter((c) => srcOk(c, k)).length]).filter(([, , n]) => n > 0)];
 
   return (
@@ -84,7 +84,7 @@ export function ChecksScreen({ ctx }) {
         <button type="button" className="bt" onClick={() => openSheet({ kind: "pick", title: "Quelle", cur: chk.src, opts: srcOpts.map(([k, l, n]) => [k, l, null, n]), onPick: (k) => setChk((s) => ({ ...s, src: k })) })}>
           <Filter />{chk.src === "all" ? "Quelle" : (srcOpts.find((x) => x[0] === chk.src) || [0, "Quelle"])[1]}</button></div>
       <div className="sec3 ckh">
-        <div className="achips">{[["open", "Offen"], ["hired", "Beauftragt"], ["all", "Alle"]].map(([k, l]) => <button key={k} type="button" className={"achip" + (chk.f === k ? " on" : "")} onClick={() => setChk((s) => ({ ...s, f: k }))}>{l}<span className="n">{base.filter(CF[k]).length}</span></button>)}</div>
+        <div className="achips">{[["open", "Offen"], ["hired", "Beauftragt"], ["all", "Alle"]].map(([k, l]) => <button key={k} type="button" className={"achip" + (chk.f === k ? " on" : "")} onClick={() => setChk((s) => ({ ...s, f: k }))}>{l}<span className="n">{base.filter((c) => !c.test && CF[k](c)).length}</span></button>)}</div>
         <div className="seg2">{[["all", "Alle"], ["profile", "Profile"], ["reviews", "Bewertungen"]].map(([k, l]) => <button key={k} type="button" className={chk.type === k ? "on" : ""} onClick={() => setChk((s) => ({ ...s, type: k }))}>{l}</button>)}</div>
       </div>
       <div className="card ls">
@@ -94,7 +94,7 @@ export function ChecksScreen({ ctx }) {
           return (
             <button key={c.id} type="button" className="ord ckr" style={{ "--pi": Math.min(j, 10) }} onClick={() => openSheet({ kind: "chk", id: c.id, c })}>
               <span className="t"><span className="l1"><b>{c.profile || c.name || "—"}{c.dupes > 1 ? <i className="x2">{c.dupes}×</i> : null}</b></span>
-                <span className="l2"><span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Bewertungen" : "Profil"}</span>
+                <span className="l2">{c.test ? <span className="ktag ktest">Test</span> : null}<span className={"ktag" + (c.isRev ? "" : " kp")}>{c.isRev ? <Star /> : <Store />}{c.isRev ? "Bewertungen" : "Profil"}</span>
                   <span className="cdt">{fmtDT(c.createdAt)}</span><span className="rt">{c.rating && c.rating !== "—" ? c.rating + " ★" : "– ★"}</span>&nbsp;{num(c.reviews)} · {st}{c.source ? " · " + srcLabelOf(c) : ""}</span></span>
               {conv(c) ? <span className="ab ok"><Check /></span> : <span className={"ab" + (em ? " on" : "")}>{em ? <Send /> : <MailPlus />}</span>}
             </button>
