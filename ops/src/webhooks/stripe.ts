@@ -117,7 +117,11 @@ async function sendInvoiceMail(
   const bcc = obj?.billing_reason === "subscription_cycle" ? undefined : [TRUSTPILOT_BCC];
   await sendTemplate(
     log, "zahlungsbestaetigung", lang, obj?.customer_email,
-    { invoiceUrl: obj?.hosted_invoice_url || undefined },
+    {
+      invoiceUrl: obj?.hosted_invoice_url || undefined,
+      // Empfehlungslink: echte Adresse statt Platzhalter „{{email}}", Sprache wie die Mail (de → /de, sonst Startseite).
+      friendUrl: `https://www.rapid-remove.com/${lang === "de" ? "de" : ""}${obj?.customer_email ? `?friend=${encodeURIComponent(String(obj.customer_email))}` : ""}`,
+    },
     { bcc, attachments },
   );
 }
