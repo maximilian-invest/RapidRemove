@@ -5,7 +5,7 @@ import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
   ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle,
 } from "lucide-react";
-import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
+import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
@@ -15,9 +15,10 @@ import SiteChatsScreen from "./SiteChats";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
-  const { orders, checks, now, stripe, goOrders, openOrder, refresh, spin } = ctx;
-  const b = orders.map((o) => bucket(o, now));
-  const nNew = b.filter((x) => x === "new").length, nWork = b.filter((x) => x === "work").length;
+  const { orders, checks, now, stripe, goOrders, openOrder, refresh, spin, ptasks } = ctx;
+  const bsOf = (o) => bucketsOf(o, now, (ptasks || {})[o.id]); // Bewertungen: Status aus den Partner-Aufgaben
+  const b = orders.map(bsOf);
+  const nNew = b.filter((x) => x.includes("new")).length, nWork = b.filter((x) => x.includes("work")).length;
   const nDone = orders.filter((o) => o.status === "done").length, nCancel = orders.filter((o) => o.status === "storniert").length;
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const isToday = (iso) => iso && new Date(iso).getTime() >= today.getTime();
@@ -65,7 +66,7 @@ export function Overview({ ctx }) {
       <div className="sec3"><h2>Pipeline heute</h2></div>
       <div className="card pipe">{pipe.map(([l, n, c]) => <div key={l} className="pr"><div className="t"><span>{l}</span><b>{n}</b></div><span className="bar"><i style={{ "--w": (n / pm) * 100 + "%", background: c }} /></span></div>)}</div>
       <div className="sec3"><h2>Neueste Aufträge</h2><button type="button" className="lk" onClick={() => goOrders(null)}>Alle<ChevronRight /></button></div>
-      <div className="card ls">{recent.map((o) => { const bb = bucket(o, now); return (
+      <div className="card ls">{recent.map((o) => { const bb = mainBucket(bsOf(o)); return (
         <button key={o.id} type="button" className="ord" onClick={() => openOrder(o.id, true)}><Avatar o={o} /><span className="t"><span className="l1"><b>{o.name || o.email}</b><span className="p">{orderMoney(o)}</span></span><span className="l2"><KTag o={o} /><span className={"dt d-" + bb} />{ST[bb].l} · {fmtAge(ageMin(o, bb, now))}</span></span></button>
       ); })}</div>
     </>

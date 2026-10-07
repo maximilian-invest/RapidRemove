@@ -110,6 +110,11 @@ function mapOrder(r) {
     reviewsSoftware: (r.raw && Array.isArray(r.raw.reviewsSoftware)) ? r.raw.reviewsSoftware.filter((it) => it && (it.url || it.name)) : [],
     reviewsPayments: (r.raw && Array.isArray(r.raw.reviewsPayments)) ? r.raw.reviewsPayments : [],
     reviewsRemoved: (r.raw && Array.isArray(r.raw.reviewsRemoved)) ? r.raw.reviewsRemoved.filter((it) => it && (it.url || (it.name && it.text))) : null,
+    // Für „Zahlung offen" je Bewertung (gleiche Logik wie das Kunden-Dashboard): alle bisher abgerechneten,
+    // einzeln bezahlte Bewertungen und Software-Entscheidungen des Kunden.
+    reviewsRemovedAll: (r.raw && Array.isArray(r.raw.reviewsRemovedAll)) ? r.raw.reviewsRemovedAll.filter((it) => it && (it.url || (it.name && it.text))) : [],
+    reviewsPaidKeys: (r.raw && Array.isArray(r.raw.reviewsPaidKeys)) ? r.raw.reviewsPaidKeys : [],
+    reviewsSwDecision: (r.raw && r.raw.reviewsSwDecision && typeof r.raw.reviewsSwDecision === "object") ? r.raw.reviewsSwDecision : {},
     amount: Number(r.amount) || 0, protAmount: Number(r.prot_amount) || 0, country: r.country || "DE", lang: r.lang || "de", note: r.note || "",
     express: !!(r.raw && r.raw.express), expressAmount: (r.raw && Number(r.raw.expressAmount)) || 0,
     // Rabatt-Wunsch (10 %): neu aus der Abfrage beim Absenden (raw.payPref = wise | paypal | none),
