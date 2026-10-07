@@ -5,6 +5,7 @@
    contact data is ever shown. Status changes are committed after the undo window, one after the
    other, so an accidental „Software only" never reaches the customer dashboard. */
 import React from "react";
+import useAutoUpdate from "@/lib/useAutoUpdate";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
 import PartnerDesktop from "./PartnerDesktop";
@@ -25,6 +26,7 @@ const isPreviewUrl = () => { try { return new URLSearchParams(window.location.se
 const fmtWait = (since) => { const m = Math.max(1, Math.round((Date.now() - since) / 60000)); return m < 60 ? m + " min" : m < 2880 ? Math.floor(m / 60) + " h" : Math.floor(m / 1440) + " days"; };
 
 export default function PartnerBoard() {
+  useAutoUpdate(); // nach einem Deploy automatisch die neue Version laden (Home-Bildschirm-App)
   const [token, setToken] = React.useState(null);
   const [preview, setPreview] = React.useState(false); // Test-Board des Admins (nur Testaufträge)
   const [setup, setSetup] = React.useState(null);

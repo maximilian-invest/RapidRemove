@@ -11,7 +11,10 @@ import { BUILTIN_REDIRECTS } from "./src/lib/builtin-redirects.mjs";
 const isPages = process.env.GITHUB_PAGES === "true";
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
 
-const nextConfig = { reactStrictMode: true };
+// Build-Kennung: steckt im Client-Bundle UND kommt über /api/build → offene Apps (Partner/Kunde am Home-Bildschirm)
+// merken nach einem Deploy, dass sie veraltet sind, und laden sich selbst neu.
+const BUILD_ID = process.env.RAILWAY_GIT_COMMIT_SHA || String(Date.now());
+const nextConfig = { reactStrictMode: true, env: { NEXT_PUBLIC_BUILD_ID: BUILD_ID } };
 
 if (isPages) {
   nextConfig.output = "export";

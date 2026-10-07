@@ -7,6 +7,7 @@
    (neuer Tab); beim Zurückkommen lädt die App neu und zeigt den bezahlten Stand.
    Wortwahl laut Handoff: externer Spezialist — nie „unsere Software". */
 import React from "react";
+import useAutoUpdate from "@/lib/useAutoUpdate";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
@@ -203,6 +204,7 @@ function SetPassword({ k, onToken, onCancel }) {
 
 /* ---- App ---- */
 export default function CustomerDashboard() {
+  useAutoUpdate(); // nach einem Deploy automatisch die neue Version laden (Home-Bildschirm-App)
   const [token, setToken] = React.useState(null); // null = noch nicht gelesen
   const [data, setData] = React.useState(null);
   const [loadErr, setLoadErr] = React.useState("");
