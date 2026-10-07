@@ -260,6 +260,8 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
  * Team gewünscht → [[TEAM]] → die Website öffnet nahtlos den Tidio-Live-Chat mit dem Verlauf.
  * Gespeichert in site_chat (12 Monate) zum Nachlesen; keine personenbezogenen Daten nötig.
  * ====================================================================================== */
+// Nur echter Wunsch nach einem Menschen (nicht „Ex-Mitarbeiter hat bewertet" o. Ä.)
+const SITE_HUMAN_RE = /\b(sprechen|reden|schreiben|verbinden|chatten|telefonieren|kontaktieren)\b.{0,30}\b(mensch|mitarbeiter|team|person|jemand|berater)|\b(mit|zu)\s+(einem|einer|dem|der|jemandem|ihrem|eurem)?\s*(mensch\w*|mitarbeiter\w*|team|person\w*|jemand\w*|berater\w*)\b.{0,30}\b(sprechen|reden|schreiben|verbinden|chatten)|echte[nmr]? (mensch|person)|\b(talk|speak|chat) (to|with) (a |an |someone|somebody|your )?(human|person|agent|team|someone|somebody|real)|\b(real person|live agent|human agent|representative)\b|hablar con (una persona|alguien|un agente)|parler (à|a) (quelqu|un humain|une personne)|parlare con (una persona|qualcuno|un operatore)/i;
 const PERSONA = () => (process.env.CHAT_PERSONA || "Lena").trim();
 const SITE_SYSTEM = (lang: string, page: string) => `You are ${PERSONA()}, the digital assistant in the chat on rapid-remove.com (RapidRemove removes Google business profiles and individual Google reviews). Visitors are business owners who have not ordered yet, or are deciding.
 
@@ -327,7 +329,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     void saveSite(sid, "user", message, page, lang);
     const em = message.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
     if (em) void linkSiteChat(sid, null, em[0]);
-    if (HUMAN_RE.test(message) && message.length < 120) {
+    if (SITE_HUMAN_RE.test(message) && message.length < 160) {
       const de = lang === "de" || /mitarbeiter|mensch|jemand/i.test(message);
       const r = de ? "Gerne, ich hole Ihnen jemanden aus dem Team dazu – einen Moment." : "Sure, I'll bring in someone from our team – one moment.";
       void saveSite(sid, "assistant", r, page, lang, true);
@@ -392,7 +394,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
         LEFT JOIN site_chat_links l ON l.sid = c.sid
         LEFT JOIN orders lo ON lo.id = l.order_id
         LEFT JOIN LATERAL (SELECT id, name, amount, service, country FROM orders o2 WHERE l.email IS NOT NULL AND lower(o2.email) = l.email ORDER BY created_at DESC LIMIT 1) eo ON true
-       WHERE c.created_at > now() - make_interval(days => $1::int)
+       WHERE c.created_at > now() - make_interval(days => $1::int) AND c.sid NOT LIKE 'test-%'
        GROUP BY c.sid, l.order_id, l.email, lo.id, lo.name, lo.amount, lo.service, lo.country, eo.id, eo.name, eo.amount, eo.service, eo.country
        ORDER BY max(c.created_at) DESC LIMIT 300`, [days]);
     const chats = r.rows;

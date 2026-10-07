@@ -59,3 +59,4 @@
 @media (min-width:821px) and (max-width:920px){.rsc .sc-chat{bottom:180px}}
 @media (prefers-reduced-motion:reduce){.rsc .sc-fab.wig{animation:none}}
 .rsc.handed .sc-fab,.rsc.handed .sc-tease{display:none!important}
+.rsc .sc-ai{margin:-8px 0 0;padding:0 16px max(8px,env(safe-area-inset-bottom));font-size:11px;color:#9a9a9a;text-align:center;flex:none}.rsc .sc-in{padding-bottom:12px}
