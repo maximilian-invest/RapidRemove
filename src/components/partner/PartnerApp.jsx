@@ -22,8 +22,13 @@ const F = {
   wk: (t) => t.status === "working",
   all: () => true,
 };
-const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", all: "All tasks" };
-const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open" };
+const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", all: "All tasks", pending: "Pending · waiting for customer" };
+const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw" };
+/** Fortschritt eines Kunden – überall gleich formuliert („2 of 9 done · 1 waiting for customer"). */
+const progressOf = (l) => {
+  const todo = l.filter(isTodo).length, sw = l.filter(F.sw).length;
+  return `${l.length - todo} of ${l.length} done${sw ? ` · ${sw} waiting for customer` : ""}`;
+};
 const sum = (a) => a.reduce((s, t) => s + t.price, 0);
 const byCreated = (a, b) => (a.created - b.created) || (a.id - b.id);
 
@@ -62,6 +67,11 @@ export default function PartnerApp({ api }) {
   const stack = stacks[tab0];
   const cur = stack ? stack[stack.length - 1] : null;
   const byId = (id) => all.find((t) => t.id === id);
+  // „Pending": Kunden, bei denen nichts mehr zu tun ist, aber Software-Bewertungen auf die Entscheidung des Kunden warten.
+  const pendC = new Set();
+  { const m = new Map(); all.forEach((t) => { const x = m.get(t.cust) || { todo: 0, sw: 0 }; if (isTodo(t)) x.todo++; if (t.status === "software") x.sw++; m.set(t.cust, x); });
+    m.forEach((x, c) => { if (!x.todo && x.sw) pendC.add(c); }); }
+  const FX = { ...F, pending: (t) => t.status === "software" && pendC.has(t.cust) };
 
   const bump = () => { setAnim((x) => x + 1); requestAnimationFrame(() => { if (mainRef.current) mainRef.current.scrollTop = 0; }); };
   const go = (s) => { setStacks((p) => ({ ...p, [tab0]: [...p[tab0], s] })); setSel(new Set()); bump(); };
@@ -129,8 +139,8 @@ export default function PartnerApp({ api }) {
   /* ---------- screens ---------- */
   function HomeV() {
     const nc = custsOf(isTodo);
-    const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["closed", "Not possible", "c-notpossible"]];
-    const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, closed: STATUS.notpossible.I };
+    const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["pending", "Pending", "c-software"], ["closed", "Not possible", "c-notpossible"]];
+    const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, pending: Hourglass, closed: STATUS.notpossible.I };
     return (
       <>
         <div className="hhead"><h1>Tasks</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
@@ -138,17 +148,17 @@ export default function PartnerApp({ api }) {
         <div className="stats">
           {tiles.map(([k, l, c]) => { const I = icon[k]; return (
             <button key={k} type="button" className="stat" onClick={() => go({ v: "list", k })}>
-              <span className={"si " + c}><I /></span><b>{all.filter(F[k]).length}</b><span>{l}<ChevronRight /></span>
+              <span className={"si " + c}><I /></span><b>{k === "pending" ? pendC.size : all.filter(FX[k]).length}</b><span>{l}<ChevronRight /></span>
             </button>
           ); })}
         </div>
         <div className="sec" style={{ marginTop: 0 }}><h2>New orders</h2><span>{nc.length}</span></div>
         {nc.map(([c, l]) => {
-          const allT = all.filter((t) => t.cust === c), done = allT.length - allT.filter(isTodo).length, wt = allT.filter(F.sw).length, nw = isNewC(c);
+          const allT = all.filter((t) => t.cust === c), nw = isNewC(c);
           return (
             <button key={c} type="button" className={"big" + (nw ? " new" : "")} onClick={() => go({ v: "cust", c, cf: "open" })}>
               <span className="bi">{nw ? <Sparkles /> : <Loader />}</span>
-              <span className="t"><b>{c}</b><span>{nw ? `Customer waiting for order confirmation · ${l.length} review${l.length > 1 ? "s" : ""}` : `${done} of ${allT.length} done${wt ? ` · ${wt} waiting for customer` : ""}`}</span></span>
+              <span className="t"><b>{c}</b><span>{nw ? `Customer waiting for order confirmation · ${l.length} review${l.length > 1 ? "s" : ""}` : progressOf(allT)}</span></span>
               <span className="n">{l.length}</span><ChevronRight />
             </button>
           );
@@ -159,17 +169,18 @@ export default function PartnerApp({ api }) {
   }
 
   function OrdersV() {
-    const cs = custsOf(() => true).map(([c, l]) => ({ c, l, open: l.filter(isTodo).length, rem: l.filter(F.removed).length, wk: l.filter(F.wk).length }))
-      .filter((x) => ofl === "all" || (ofl === "open" ? x.open : !x.open))
+    // „Software" = wartet auf die Entscheidung des Kunden → nicht abgeschlossen, bleibt unter „Active".
+    const cs = custsOf(() => true).map(([c, l]) => ({ c, l, open: l.filter(isTodo).length, rem: l.filter(F.removed).length, wk: l.filter(F.wk).length, sw: l.filter(F.sw).length }))
+      .filter((x) => ofl === "all" || (ofl === "open" ? x.open : ofl === "pending" ? !x.open && x.sw : !x.open && !x.sw))
       .sort((a, b) => (isNewC(b.c) - isNewC(a.c)) || (b.open - a.open));
     return (
       <>
         <div className="hhead"><h1>Orders</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
-        <div className="chips">{[["open", "Active"], ["done", "Completed"], ["all", "All"]].map(([k, l]) => <button key={k} type="button" className={"chip" + (ofl === k ? " on" : "")} onClick={() => setOfl(k)}>{l}</button>)}</div>
+        <div className="chips">{[["open", "Active"], ["pending", "Pending"], ["done", "Completed"], ["all", "All"]].map(([k, l]) => <button key={k} type="button" className={"chip" + (ofl === k ? " on" : "")} onClick={() => setOfl(k)}>{l}</button>)}</div>
         {cs.map((x) => (
           <button key={x.c} type="button" className="lrow" onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
             <Ring r={x.rem} n={x.l.length} />
-            <span className="t"><b>{x.c}</b><span>{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open ? `${x.open} open · ${x.wk} working` : "Completed"}</span></span>
+            <span className="t"><b>{x.c}</b><span>{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open || x.sw ? progressOf(x.l) : "Completed"}</span></span>
             <ChevronRight />
           </button>
         ))}
@@ -179,15 +190,15 @@ export default function PartnerApp({ api }) {
   }
 
   function ListV({ k }) {
-    const cs = custsOf(F[k]);
+    const cs = custsOf(FX[k]);
     return (
       <>
         {nav()}
         <div className="pt">{FL[k]}</div>
-        <div className="ps">{all.filter(F[k]).length} reviews · {cs.length} customers</div>
+        <div className="ps">{all.filter(FX[k]).length} reviews · {cs.length} customers</div>
         {cs.map(([c, l]) => (
           <button key={c} type="button" className="lrow" onClick={() => go({ v: "cust", c, cf: CF_OF[k] })}>
-            <span className="t"><b>{c}</b><span>{usd(sum(l))}{isNewC(c) ? <> · <em className="newin">New</em></> : null}</span></span>
+            <span className="t"><b>{c}</b><span>{k === "pending" ? progressOf(all.filter((t) => t.cust === c)) : usd(sum(l))}{isNewC(c) ? <> · <em className="newin">New</em></> : null}</span></span>
             <span className="n">{l.length}</span><ChevronRight />
           </button>
         ))}
