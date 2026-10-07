@@ -27,7 +27,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -2096,6 +2096,9 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
+    // Dashboard-Zahlungen (Rechnung / Software-Vorauszahlung) direkt bei Stripe abgleichen – falls der Webhook nichts zuordnet.
+    const payPoll = () => void pollReviewPayments((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Stripe-Abgleich Dashboard-Zahlungen fehlgeschlagen"));
+    setTimeout(payPoll, 30_000); setInterval(payPoll, 2 * 60_000);
     startFollowupWorker(app);
     // Sicherheitsnetz: gelöscht, aber keine Zahlungsaufforderung raus → nachholen (alle 10 Min., erster Lauf nach 2 Min.).
     const guard = () => void payRequestGuard((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Sicherheitsnetz Zahlungsaufforderung fehlgeschlagen"));
