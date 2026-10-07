@@ -715,3 +715,4 @@
 .an .pstx .px-o .a{text-align:right;flex:none}
 .an .pstx .px-o .a b{font-size:14px}
 @media (prefers-reduced-motion:reduce){.an .pstx .px-db .col i,.an .pstx .hcol i{animation:none}}
+.an .mbacks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin:2px 0 6px}.an .mbacks .mback{margin-bottom:0}
