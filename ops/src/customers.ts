@@ -293,6 +293,12 @@ export async function markOrderReviewsPaidManual(orderId: string): Promise<void>
   for (const p of list) if (p.kind === "invoice" && !p.paid) { p.paid = new Date().toISOString(); (p.keys || []).forEach((k) => keys.add(k)); }
   const rem: Item[] = Array.isArray(raw.reviewsRemovedAll) ? (raw.reviewsRemovedAll as Item[]) : [];
   rem.forEach((it) => keys.add(keyOf(it)));
+  // Auch vom Partner gelöschte, aber noch nicht abgerechnete Bewertungen: Admin sagt „bezahlt" →
+  // alles, was bis jetzt gelöscht ist, gilt als bezahlt (sonst bleibt es in „Zahlung offen" bzw. im Dashboard offen).
+  if (pool) {
+    const pr = await pool.query(`SELECT item_key FROM partner_tasks WHERE order_id=$1 AND status='removed' AND item_key IS NOT NULL`, [orderId]).catch(() => ({ rows: [] as { item_key: string }[] }));
+    pr.rows.forEach((x) => keys.add(x.item_key));
+  }
   await setOrderRawField(orderId, "reviewsPayments", list);
   await addPaidKeys(orderId, [...keys]);
 }

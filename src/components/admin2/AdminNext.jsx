@@ -15,7 +15,8 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf } from "./model";
+import PaidCelebration from "./Celebrate";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
@@ -163,6 +164,43 @@ export default function AdminNext() {
 
   /* ---- Aktionen (echte Backend-Calls wie im alten Admin) ---- */
   const patchOrder = (id, patch) => setOrders((os) => os.map((o) => (o.id === id ? { ...o, ...patch } : o)));
+  /* „Als bezahlt markieren": erst speichern, dann Feier, dann gleitet der Auftrag aus „Zahlung offen".
+     Lokal sofort wie nach dem nächsten Laden: Auftrag bezahlt, bei Bewertungen alle bis jetzt gelöschten als bezahlt
+     (das Backend macht dasselbe in markOrderReviewsPaidManual). */
+  const [cel, setCel] = React.useState(null);
+  const [leaving, setLeaving] = React.useState({});
+  const paidPatch = (o) => {
+    const r = revState(o, ptasks[o.id]);
+    return { status: "done", pay: "paid", doneAt: o.doneAt || new Date().toISOString(), ...(r && r.unpaidKeys ? { reviewsPaidKeys: [...new Set([...(o.reviewsPaidKeys || []), ...r.unpaidKeys])] } : {}) };
+  };
+  const dueOf = (o) => {
+    const r = revState(o, ptasks[o.id]);
+    if (r) return payPrefOf(o) ? Math.round(r.unpaidAmt * 90) / 100 : r.unpaidAmt; // PayPal/Wise: 10 % Rabatt
+    const oneTime = (Number(o.amount) || 0) + (o.express ? Number(o.expressAmount) || 0 : 0) + (o.protection === "lifetime" ? Number(o.protAmount) || 0 : 0);
+    if (!payPrefOf(o)) return oneTime; // Karte: Abo läuft separat über Stripe
+    // PayPal/Wise wie im Angebot (computeOffer): Einmalbetrag −10 % + Schutz-Abo als Jahr zum Preis von 10 Monaten.
+    const sub = (o.protection === "monthly" || o.protection === "monitor") ? (Number(o.protAmount) || 0) * 10 : 0;
+    return Math.round((oneTime * 0.9 + sub) * 100) / 100;
+  };
+  const markPaid = async (list, label) => {
+    const ok = [];
+    for (const x of list) {
+      try { await setOrderStatus({ orderId: x.id, status: "done", pay: "paid", label }); ok.push(x); }
+      catch (e) { toast(`${x.id}: ${e.message}`); }
+    }
+    if (!ok.length) return 0;
+    const first = ok[0];
+    setCel({ k: Date.now(), ids: ok.map((x) => x.id), amt: ok.filter((x) => cur(x) === cur(first)).reduce((s, x) => s + dueOf(x), 0), c: cur(first), name: first.name || first.company || first.email || first.id, n: ok.length, patches: ok.map((x) => [x.id, paidPatch(x)]) });
+    return ok.length;
+  };
+  const celRef = React.useRef(null); celRef.current = cel;
+  const celDone = React.useCallback(() => {
+    const c = celRef.current; if (!c) return;
+    setCel(null);
+    setStack([{ v: "list" }]); // Auftrag schließen …
+    setLeaving(Object.fromEntries(c.ids.map((id) => [id, true]))); // … Zeile gleitet raus …
+    setTimeout(() => { c.patches.forEach(([id, p]) => patchOrder(id, p)); setLeaving({}); }, 450); // … und verschwindet aus der Kachel
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const doStatus = async (o, status, extra = {}) => {
     await setOrderStatus({ orderId: o.id, status, label: extra.label, pay: extra.pay });
     patchOrder(o.id, { status, ...(extra.pay ? { pay: extra.pay } : {}), ...(status === "done" ? { doneAt: o.doneAt || new Date().toISOString() } : {}) });
@@ -229,7 +267,7 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus, ptAll,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus, ptAll, markPaid, leaving,
   };
 
   const top = stack[stack.length - 1];
@@ -300,6 +338,7 @@ export default function AdminNext() {
         ) : null}
       </div>
       <div className={"atoast" + (toastS ? " show" : "")}><CheckCircle2 /><span>{toastS ? toastS.m : ""}</span></div>
+      <PaidCelebration data={cel} onDone={celDone} />
     </div>
   );
 }

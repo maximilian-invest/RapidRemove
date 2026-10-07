@@ -4,9 +4,9 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck,
 } from "lucide-react";
-import { ST, isOffen, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB } from "./model";
+import { ST, isOffen, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
@@ -107,10 +107,10 @@ export function OrdersList({ ctx }) {
           // In „Zahlung offen"/„Inkasso" zählt, was jetzt fällig ist – nicht der ganze Bestellwert.
           const dueView = r && r.unpaidN && (f.tile === "pay" || f.tile === "inkasso");
           return (
-          <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
+          <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
+              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
           );
@@ -158,6 +158,7 @@ export function OrderDetail({ ctx, id }) {
       <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin/alt?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
       <div className="amt"><div className="k">Bestellwert</div><div className="v">{orderMoney(o)}</div>
+        {aboOf(o) ? <div className={"abo" + (aboOf(o).recurring ? "" : " lt")}><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).price ? <span>+ {aboOf(o).price}</span> : null}</div> : null}
         <div className="r">{bs.map((x) => <span key={x} className="st"><span className={"dt d-" + x} />{ST[x].l}</span>)}<span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div>
         {r ? (
           <div className="rvst">
@@ -247,20 +248,14 @@ function PaidBtn({ o, ctx, group = [] }) {
   const go = async () => {
     if (!armed) { setArmed(true); setArmedAll(false); return; }
     setBusy(true);
-    try { await ctx.doStatus(o, "done", { pay: "paid", label: "Zahlung eingegangen (manuell)" }); ctx.toast(`${o.id} als bezahlt markiert`); }
-    catch (e) { ctx.toast("Fehlgeschlagen: " + e.message); }
+    await ctx.markPaid([o], "Zahlung eingegangen (manuell)"); // → Feier, danach verschwindet der Auftrag aus „Zahlung offen"
     setBusy(false); setArmed(false);
   };
   const goAll = async () => {
     if (!armedAll) { setArmedAll(true); setArmed(false); return; }
     setBusy(true);
     const list = [o, ...group];
-    let ok = 0;
-    for (const x of list) {
-      try { await ctx.doStatus(x, "done", { pay: "paid", label: `Zahlung eingegangen (manuell · Sammelzahlung ${list.map((y) => y.id).join(", ")})` }); ok++; }
-      catch (e) { ctx.toast(`${x.id}: ${e.message}`); }
-    }
-    if (ok) ctx.toast(`${ok} Aufträge als bezahlt markiert`);
+    await ctx.markPaid(list, `Zahlung eingegangen (manuell · Sammelzahlung ${list.map((y) => y.id).join(", ")})`);
     setBusy(false); setArmedAll(false);
   };
   return (
