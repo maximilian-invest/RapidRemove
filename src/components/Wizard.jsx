@@ -1865,7 +1865,19 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const prev = [el && el.style.overflow, html.style.overflow, body.style.overflow, body.style.overscrollBehavior];
     if (el) el.style.overflow = "hidden";
     html.style.overflow = "hidden"; body.style.overflow = "hidden"; body.style.overscrollBehavior = "none";
-    return () => { if (el) el.style.overflow = prev[0] || ""; html.style.overflow = prev[1] || ""; body.style.overflow = prev[2] || ""; body.style.overscrollBehavior = prev[3] || ""; };
+    // Ist die Seite am Handy hineingezoomt (Pinch/iOS-Auto-Zoom), sitzt ein fixes Pop-up im „großen" Layout und ragt über
+    // den Rand. Dann das Pop-up genau auf den sichtbaren Bereich (visualViewport) legen.
+    const vv = window.visualViewport;
+    const fit = () => document.querySelectorAll(".sw-sheet-w,.pay-ask-w").forEach((w) => {
+      if (!vv || vv.scale <= 1.01) { ["left", "top", "width", "height", "right", "bottom"].forEach((k) => { w.style[k] = ""; }); return; }
+      Object.assign(w.style, { left: vv.offsetLeft + "px", top: vv.offsetTop + "px", width: vv.width + "px", height: vv.height + "px", right: "auto", bottom: "auto" });
+    });
+    const raf = requestAnimationFrame(fit);
+    if (vv) { vv.addEventListener("resize", fit); vv.addEventListener("scroll", fit); }
+    return () => {
+      cancelAnimationFrame(raf); if (vv) { vv.removeEventListener("resize", fit); vv.removeEventListener("scroll", fit); }
+      if (el) el.style.overflow = prev[0] || ""; html.style.overflow = prev[1] || ""; body.style.overflow = prev[2] || ""; body.style.overscrollBehavior = prev[3] || "";
+    };
   }, [swInfo, payAsk, priceInfo]);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
   const [sug, setSug] = React.useState([]);

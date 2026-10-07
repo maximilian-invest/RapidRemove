@@ -483,7 +483,9 @@ export default function CustomerDashboard() {
   const swOrders = new Set(sw.map((r) => r.o.id)).size;
 
   const dueOrders = orders.filter((o) => o.toPay > 0);
-  const payCur = dueOrders[0]?.cur || orders[0]?.cur || "eur";
+  // Software-Fälle, die der Partner bestätigt hat und denen der Kunde schon bei der Bestellung zugestimmt hat → gehören in „Zu zahlen".
+  const swPre = sw.filter((r) => r.pre);
+  const payCur = dueOrders[0]?.cur || swPre[0]?.o.cur || orders[0]?.cur || "eur";
   const due = all.filter((r) => r.status === "removed" && !r.paid && !r.o.cancelled && r.o.cur === payCur); // stornierter Auftrag → nichts mehr offen
   const toPay = dueOrders.filter((o) => o.cur === payCur).reduce((s, o) => s + o.toPay, 0);
   const prices = [...new Set(due.map((r) => r.price))];
@@ -498,6 +500,11 @@ export default function CustomerDashboard() {
     const amount = via === "card" ? regular : os.reduce((s, o) => s + Math.round(o.toPay * 0.9), 0); // wie in der Löschbestätigung je Auftrag gerundet
     return { via, orders: os, regular, amount, ref: os.map((o) => o.id).join(" ") };
   }).filter((g) => g.orders.length);
+  {
+    const ss = swPre.filter((r) => r.o.cur === payCur);
+    const amt = ss.reduce((s0, r) => s0 + (Number(r.o.swDeposit) || 0), 0);
+    if (amt > 0) { const os = [...new Map(ss.map((r) => [r.o.id, r.o])).values()]; payGroups.push({ via: "sw", orders: os, regular: amt, amount: amt, ref: os.map((o) => o.id).join(" "), n: ss.length }); }
+  }
   const multiPay = payGroups.length > 1;
   const payTotal = payGroups.reduce((s, g) => s + g.amount, 0);
   const g0 = payGroups[0] || null;
@@ -545,6 +552,7 @@ export default function CustomerDashboard() {
   };
   const payGroup = async (g) => {
     if (!g) return;
+    if (g.via === "sw") { openFlow(); return; } // Software-Vorauszahlung → Zahlungsschritt
     if (g.via !== "card") { track("payment_open", `${g.via === "wise" ? "Wise" : "PayPal"} · ${g.amount} ${String(payCur).toUpperCase()} · ${g.ref}`, { via: g.via }); setPayVia(g.via); setWiseOpen(true); return; }
     if (await checkout("pay", multiPay ? { only: "card" } : {}, "pay")) showToast(T("checkoutOpened"));
   };
@@ -607,18 +615,19 @@ export default function CustomerDashboard() {
       <span className="ar"><ArrowRight /></span>
     </button>
   );
-  const Hero = ({ payments }) => (due.length ? (
+  const swOnly = !due.length && g0 && g0.via === "sw";
+  const Hero = ({ payments }) => (due.length || swOnly ? (
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
-      <div className="v"><CountUp id={"hero-" + payCur} value={multiPay ? payTotal : viaWise || viaPaypal ? wiseAmount : toPay} fmt={(v) => money(v, payCur)} /></div>
-      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
+      <div className="v"><CountUp id={"hero-" + payCur} value={multiPay ? payTotal : swOnly ? g0.amount : viaWise || viaPaypal ? wiseAmount : toPay} fmt={(v) => money(v, payCur)} /></div>
+      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : swOnly ? T("st_swpay") : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
       {multiPay ? (
         <div className="pgrps">
           {payGroups.map((g) => (
             <button key={g.via} type="button" className={"pgrp " + g.via} disabled={!!busy} onClick={() => payGroup(g)} data-track={"Bezahlen · " + g.via}>
-              <span className="pg-ic">{g.via === "wise" ? "W" : g.via === "paypal" ? "P" : <CreditCard />}</span>
-              <span className="pg-t"><b>{g.via === "wise" ? "Wise" : g.via === "paypal" ? "PayPal" : T("card")}{g.via !== "card" ? <em>−10 %</em> : null}</b><small>{g.orders.map((o) => "#" + o.id).join(" · ")}</small></span>
+              <span className="pg-ic">{g.via === "wise" ? "W" : g.via === "paypal" ? "P" : g.via === "sw" ? <Cpu /> : <CreditCard />}</span>
+              <span className="pg-t"><b>{g.via === "wise" ? "Wise" : g.via === "paypal" ? "PayPal" : g.via === "sw" ? T("st_swpay") : T("card")}{g.via === "wise" || g.via === "paypal" ? <em>−10 %</em> : null}</b><small>{g.orders.map((o) => "#" + o.id).join(" · ")}</small></span>
               <span className="pg-a">{busy === "pay" && g.via === "card" ? <Loader className="spin" /> : money(g.amount, payCur)}<ArrowRight /></span>
             </button>
           ))}
@@ -626,7 +635,7 @@ export default function CustomerDashboard() {
         </div>
       ) : (
         <div className="row">
-          {payments ? <span /> : <span className="rem"><i />{T("remaining", { n: remaining })}</span>}
+          {payments ? <span /> : <span className="rem"><i />{T("remainingInProgress", { n: remaining })}</span>}
           <button className="pill-btn" disabled={!!busy} onClick={payAll}>{busy === "pay" ? <Loader className="spin" /> : null}{payments ? T("payNow") : T("pay")}</button>
         </div>
       )}

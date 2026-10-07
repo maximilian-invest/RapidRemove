@@ -596,3 +596,4 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .rv-sheet.chg .chg-r svg{color:var(--g3);flex:none}
 /* Solange „Status geändert" offen ist: Chat-Button/-Hinweis ausblenden */
 .rra:has(.rv-sheet.chg.show) .ctease,.rra:has(.rv-sheet.chg.show) .cfab{opacity:0;pointer-events:none}
+.rra .pgrp.sw .pg-ic{background:#efebff;color:#6d4cff}
