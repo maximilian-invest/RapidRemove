@@ -153,8 +153,14 @@ async function maybeSendSchutzhinweis(
   // Reset-Aufträge (Löschen + Neuanlegen) bekommen keinen Schutz-Upsell.
   // Best effort: ohne Treffer wird normal gesendet (keine fälschliche Unterdrückung).
   try {
-    if ((await latestOrder(email))?.service?.toLowerCase() === "reset") {
+    const svc = (await latestOrder(email))?.service?.toLowerCase();
+    if (svc === "reset") {
       log.info(`Webhook: Schutzhinweis übersprungen (Reset-Auftrag) für ${email}`);
+      return;
+    }
+    // Einzelbewertungen (inkl. Software-Vorauszahlung): kein Profil gelöscht → „Profil-Schutz"-Mail passt nicht (RR-583155, 07.10.2026).
+    if (svc === "reviews") {
+      log.info(`Webhook: Schutzhinweis übersprungen (Bewertungs-Auftrag) für ${email}`);
       return;
     }
   } catch (e) {

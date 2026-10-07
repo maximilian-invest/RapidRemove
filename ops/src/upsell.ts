@@ -10,7 +10,7 @@ import { render } from "@react-email/render";
 import type { FastifyInstance } from "fastify";
 import { TEMPLATES } from "./emails/index";
 import { sendMail, mailTrace } from "./mailer";
-import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt, insertEvent } from "./db";
+import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt, insertEvent, latestOrder, cancelUpsellForEmail } from "./db";
 
 const TICK_MS = Number(process.env.UPSELL_TICK_MS) || 60_000;
 
@@ -22,6 +22,12 @@ async function runDue(log: FastifyInstance["log"]): Promise<void> {
     const lang = j.lang === "en" ? "en" : "de";
     const variant = Math.min(3, Math.max(1, Number(j.step) || 1)) as 1 | 2 | 3;
     const props = { lang, variant };
+    // Bewertungs-Kunden bekommen keinen Profil-Schutz-Hinweis (auch bereits eingeplante Folge-Mails nicht).
+    if ((await latestOrder(j.email).catch(() => null))?.service === "reviews") {
+      const n = await cancelUpsellForEmail(j.email).catch(() => 0);
+      log.info(`Upsell: Schutzhinweis für ${j.email} gestoppt (Bewertungs-Auftrag, ${n} Mail(s))`);
+      continue;
+    }
     try {
       const html = await render(React.createElement(t.component, props));
       const res = await sendMail({ to: j.email, subject: t.subject(props), html, replyTo: process.env.MAIL_REPLY_TO });
