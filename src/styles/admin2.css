@@ -748,3 +748,35 @@
 .an .amt .rvst .due b{color:#cfe4ff}
 .an .ir .t .srcd{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
 .an .ir .t .srcx{font-weight:500;margin-top:1px}
+
+/* ===================== Bezahlt-Feier ===================== */
+.an .paidcel{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(10,10,10,.62);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:pcIn .22s ease-out both;cursor:pointer}
+.an .paidcel.out{animation:pcOut .26s ease-in both}
+.an .paidcel .pc-cv{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.an .paidcel .pc-box{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;color:#fff;padding:0 24px;animation:pcPop .5s cubic-bezier(.2,1.4,.4,1) both}
+.an .paidcel .pc-halo{position:relative;width:108px;height:108px;display:grid;place-items:center;margin-bottom:18px}
+.an .paidcel .pc-halo i{position:absolute;inset:0;border-radius:50%;border:2px solid #4ade80;opacity:0;animation:pcWave 1.4s cubic-bezier(.1,.6,.3,1) infinite}
+.an .paidcel .pc-halo i:nth-child(2){animation-delay:.25s}.an .paidcel .pc-halo i:nth-child(3){animation-delay:.5s}
+.an .paidcel .pc-check{width:108px;height:108px;filter:drop-shadow(0 8px 28px rgba(22,163,74,.55))}
+.an .paidcel .pc-check circle{fill:#16a34a;stroke:#4ade80;stroke-width:2;transform-origin:center;animation:pcDot .45s cubic-bezier(.2,1.6,.4,1) both}
+.an .paidcel .pc-check path{fill:none;stroke:#fff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:40;stroke-dashoffset:40;animation:pcDraw .42s .28s ease-out forwards}
+.an .paidcel .pc-amt{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 4px 24px rgba(74,222,128,.35)}
+.an .paidcel .pc-l{margin-top:8px;font-size:15px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#4ade80}
+.an .paidcel .pc-s{margin-top:10px;font-size:13px;color:rgba(255,255,255,.7);max-width:340px}
+@keyframes pcIn{from{opacity:0}to{opacity:1}}
+@keyframes pcOut{to{opacity:0}}
+@keyframes pcPop{from{opacity:0;transform:scale(.7) translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pcDot{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes pcDraw{to{stroke-dashoffset:0}}
+@keyframes pcWave{0%{opacity:.9;transform:scale(.85)}100%{opacity:0;transform:scale(2.3)}}
+/* Auftrag gleitet nach dem Bezahlen aus der Liste */
+.an .ord.paidout{animation:ordPaidOut .45s cubic-bezier(.4,0,.2,1) forwards;pointer-events:none;overflow:hidden}
+.an .ord.paidout .p{color:var(--success)}
+@keyframes ordPaidOut{0%{opacity:1;max-height:90px;background:#e9f9ef}45%{opacity:1;transform:translateX(0);background:#e9f9ef}100%{opacity:0;transform:translateX(48px);max-height:0;padding-top:0;padding-bottom:0;margin:0}}
+@media (prefers-reduced-motion:reduce){.an .paidcel,.an .paidcel .pc-box,.an .paidcel .pc-halo i,.an .paidcel .pc-check circle,.an .ord.paidout{animation-duration:.01s}.an .paidcel .pc-check path{stroke-dashoffset:0;animation:none}}
+/* Schutz-Abo beim Bestellwert + Tag in der Liste */
+.an .amt .abo{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 11px;border-radius:9px;background:rgba(74,222,128,.14);color:#bbf7d0;font-size:12.5px}
+.an .amt .abo svg{width:15px;height:15px;color:#4ade80}
+.an .amt .abo b{color:#fff;font-weight:600}
+.an .amt .abo.lt{background:rgba(255,179,71,.15);color:#ffe2bd}.an .amt .abo.lt svg{color:#ffb347}
+.an .ktag.kabo{background:#e9f9ef;color:#15803d;font-weight:600}

@@ -95,7 +95,7 @@ export function revState(o, tasks) {
     // das kann bei später nachgereichten Bewertungen kleiner sein als die tatsächlich bearbeiteten.
     total: Math.max(pt.length, c.removed) || items.length,
     ...c, started, pct,
-    unpaidN: unpaid.length, unpaidAmt, unbilledN: unpaid.filter((u) => !u.billed).length,
+    unpaidN: unpaid.length, unpaidAmt, unbilledN: unpaid.filter((u) => !u.billed).length, unpaidKeys: unpaid.map((u) => u.k),
     unpaidSince: ats.length ? Math.min(...ats) : null,
   };
 }
@@ -173,6 +173,15 @@ export function bumpTplUsage(key) { try { const u = readTplUsage(); u[key] = (u[
 export const STORNO_KEYS = ["storno", "kundenstorno", "rechtestorno", "scamstorno"];
 /* Vorlagen, die das System automatisch verschickt (⚡ im Sheet). */
 export const AUTO_KEYS = ["auftragsbestaetigung", "auftragsbestaetigung-reviews", "zahlungsbestaetigung", "neues-abo", "abo-deaktiviert", "paypal-erinnerung", "profil-wiedererschienen", "presse-eingang"];
+
+/** Schutz-Abo des Auftrags (gebucht bei der Bestellung): monatlich/Überwachung = laufendes Abo, lifetime = einmalig. */
+export function aboOf(o) {
+  const p = o && o.protection;
+  if (!p || p === "none") return null;
+  const c = cur(o), amt = Number(o.protAmount) || 0;
+  if (p === "lifetime") return { kind: p, short: "Lifetime", label: "Lebenslanger Schutz", price: amt ? money(amt, c) + " einmalig" : "", recurring: false };
+  return { kind: p, short: "Abo", label: p === "monitor" ? "Schutz-Abo + tägliche Überwachung" : "Schutz-Abo", price: amt ? money(amt, c) + " / Monat" : "", recurring: true };
+}
 
 /** Kunde will mit Wise/PayPal zahlen (Rabatt-Abfrage bzw. Fragebogen) → 10 % Rabatt. Wie payPrefName im alten Admin. */
 export function payPrefOf(o) {
