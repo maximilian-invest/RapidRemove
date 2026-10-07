@@ -37,6 +37,7 @@ export default function PartnerBoard() {
   const tableView = isMobile === false && typeof window !== "undefined" && /[?&]view=table\b/.test(window.location.search);
   const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
+  const [cancelled, setCancelled] = React.useState([]); // von RapidRemove stornierte Aufgaben (letzte 30 Tage) – nur zur Info
   const [err, setErr] = React.useState("");
   const [tab, setTab] = React.useState("todo");
   const [q, setQ] = React.useState("");
@@ -86,7 +87,8 @@ export default function PartnerBoard() {
     if (!manual && (pending.current || Object.keys(noteTimers.current).length)) return; // keep unsaved local changes
     try {
       const j = await call("tasks", { t: token });
-      setTasks((j.tasks || []).map(norm)); setErr("");
+      const ts = (j.tasks || []).map(norm);
+      setTasks(ts.filter((t) => t.status !== "cancelled")); setCancelled(ts.filter((t) => t.status === "cancelled")); setErr("");
       if (j.preview) setPreview(true); // Test-Login / Test-Board: nur Testaufträge
     } catch (e) {
       if (e.message === "invalid link" && String(token).startsWith("ps_")) { try { localStorage.removeItem(KEY); } catch (x) {} setToken(""); return; } // Sitzung abgelaufen → Login
@@ -295,7 +297,7 @@ export default function PartnerBoard() {
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
   const api = {
-    tasks, all, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
+    tasks, all, cancelled, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,
   };
   const waitPop = nag && waiting.length ? (

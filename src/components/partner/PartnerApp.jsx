@@ -54,7 +54,7 @@ function Ring({ r, n }) {
 }
 
 export default function PartnerApp({ api }) {
-  const { tasks, all, err, isNewC, sel, setSel, toast, closeToast, setMany, markPaid, copyLinks, openReview, saveNote, load, flush } = api;
+  const { tasks, all, cancelled = [], err, isNewC, sel, setSel, toast, closeToast, setMany, markPaid, copyLinks, openReview, saveNote, load, flush } = api;
   const [tab0, setTab0] = React.useState("tasks");
   const [stacks, setStacks] = React.useState({ tasks: [{ v: "home" }], orders: [{ v: "orders" }] });
   const [ofl, setOfl] = React.useState("open");
@@ -69,6 +69,8 @@ export default function PartnerApp({ api }) {
   const cur = stack ? stack[stack.length - 1] : null;
   const byId = (id) => all.find((t) => t.id === id);
   // „Pending": Kunden, bei denen nichts mehr zu tun ist, aber Software-Bewertungen auf die Entscheidung des Kunden warten.
+  // Stornierte nach Kunde gruppiert (neueste zuerst).
+  const cxC = (() => { const m = new Map(); [...cancelled].sort((a, b) => b.created - a.created).forEach((t) => { if (!m.has(t.cust)) m.set(t.cust, []); m.get(t.cust).push(t); }); return [...m.entries()]; })();
   const pendC = new Set();
   { const m = new Map(); all.forEach((t) => { const x = m.get(t.cust) || { todo: 0, sw: 0 }; if (isTodo(t)) x.todo++; if (t.status === "software") x.sw++; m.set(t.cust, x); });
     m.forEach((x, c) => { if (!x.todo && x.sw) pendC.add(c); }); }
@@ -141,16 +143,16 @@ export default function PartnerApp({ api }) {
   function HomeV() {
     // „New orders" = Kunden mit Bewertungen, die der Partner noch nicht angefangen hat (Status new). Laufende stehen unter Working/Orders.
     const nc = custsOf(F.nw);
-    const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["pending", "Pending", "c-software"], ["closed", "Not possible", "c-notpossible"]];
-    const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, pending: Hourglass, closed: STATUS.notpossible.I };
+    const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["pending", "Pending", "c-software"], ["closed", "Not possible", "c-notpossible"], ["cx", "Cancelled", "c-cancelled"]];
+    const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, pending: Hourglass, closed: STATUS.notpossible.I, cx: XCircle };
     return (
       <>
         <div className="hhead"><h1>Tasks</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
         {hero()}
         <div className="stats">
           {tiles.map(([k, l, c]) => { const I = icon[k]; return (
-            <button key={k} type="button" className="stat" onClick={() => go({ v: "list", k })}>
-              <span className={"si " + c}><I /></span><b>{k === "pending" ? pendC.size : all.filter(FX[k]).length}</b><span>{l}<ChevronRight /></span>
+            <button key={k} type="button" className="stat" onClick={() => go(k === "cx" ? { v: "cancelled" } : { v: "list", k })}>
+              <span className={"si " + c}><I /></span><b>{k === "cx" ? cancelled.length : k === "pending" ? pendC.size : all.filter(FX[k]).length}</b><span>{l}<ChevronRight /></span>
             </button>
           ); })}
         </div>
@@ -187,6 +189,26 @@ export default function PartnerApp({ api }) {
           </button>
         ))}
         {!cs.length ? empty("No orders", "", false) : null}
+      </>
+    );
+  }
+
+  /* Von RapidRemove stornierte Aufträge (letzte 30 Tage): nur Info, nichts mehr zu tun. */
+  function CancelledV() {
+    return (
+      <>
+        {nav()}
+        <div className="pt">Cancelled</div>
+        <div className="ps">Cancelled by RapidRemove · no need to work on these</div>
+        {cxC.map(([c, l]) => (
+          <div key={c} className="cxg">
+            <div className="cxh"><b>{c}</b><span>{l.length} review{l.length > 1 ? "s" : ""}</span></div>
+            {l.map((t) => (
+              <div key={t.id} className="cxr"><XCircle /><span className="t"><b>{t.code}</b><span>{t.who}{t.text ? " · “" + (t.text.length > 70 ? t.text.slice(0, 70) + "…" : t.text) + "”" : ""}</span></span></div>
+            ))}
+          </div>
+        ))}
+        {!cxC.length ? empty("Nothing cancelled", "Cancelled orders show up here.") : null}
       </>
     );
   }
@@ -398,6 +420,7 @@ export default function PartnerApp({ api }) {
   else if (cur.v === "home") body = HomeV();
   else if (cur.v === "orders") body = OrdersV();
   else if (cur.v === "list") body = ListV(cur);
+  else if (cur.v === "cancelled") body = CancelledV();
   else if (cur.v === "cust") body = CustV(cur);
   else if (cur.v === "rev") body = RevV(cur);
   else if (cur.v === "note") body = NoteV(cur);

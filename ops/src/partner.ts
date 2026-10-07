@@ -19,7 +19,7 @@ import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./p
 import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
-import { partnerNewOrder } from "./partnerNotify";
+import { partnerNewOrder, notifyPartner } from "./partnerNotify";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
 // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -76,7 +76,11 @@ export async function initPartnerTables(): Promise<void> {
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
   // Früher abgelehnte Software-Aufgaben (storniert) wieder unter „Software" zeigen – mit „Customer declined deletion".
-  await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%'`).catch(() => {});
+  await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%'
+    AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.id = partner_tasks.order_id AND o.status = 'storniert')`).catch(() => {});
+  // Stornierte Aufträge: offene Aufgaben bleiben storniert (auch wenn eine ältere Regel sie zurückgeholt hat).
+  await pool.query(`UPDATE partner_tasks SET status='cancelled', updated_at=now() WHERE status IN ('new','working','not_possible','software') AND paid_at IS NULL
+    AND order_id IN (SELECT id FROM orders WHERE status = 'storniert')`).catch(() => {});
   // Testbestellungen (E-Mail mit „+test"): nur im Test-Board des Admins, nie beim Partner.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
   // Verfahren laut Partner-Regel (10/2026): sw = Software nötig (alt + USA mit Text, oder ohne Text), legal = erst rechtliche Meldung.
@@ -272,7 +276,12 @@ export async function partnerAutoSend(orderId: string, customer: string, items: 
 export async function partnerOrderStatus(orderId: string, status: string): Promise<void> {
   if (!pool || !orderId) return;
   if (status === "storniert") {
-    await pool.query(`UPDATE partner_tasks SET status='cancelled', updated_at=now() WHERE order_id=$1 AND status IN ('new','working','not_possible','software') AND paid_at IS NULL`, [orderId]);
+    const r = await pool.query(`UPDATE partner_tasks SET status='cancelled', updated_at=now() WHERE order_id=$1 AND status IN ('new','working','not_possible','software') AND paid_at IS NULL RETURNING code, customer, test`, [orderId]);
+    // Partner sofort informieren: Auftrag ist weg vom Board (steht unter „Cancelled").
+    if (r.rows.length) {
+      const test = !!r.rows[0].test, cust = r.rows[0].customer || "a customer", n = r.rows.length;
+      void notifyPartner(`${test ? "TEST · " : ""}Order cancelled`, `RapidRemove cancelled the order for ${cust} · ${n} review${n > 1 ? "s" : ""} (${r.rows.slice(0, 4).map((x) => x.code).join(", ")}). No need to work on it.`, undefined, test);
+    }
   } else if (status === "progress" || status === "new") { // Reaktivierung eines stornierten Auftrags
     await pool.query(`UPDATE partner_tasks SET status='new', updated_at=now() WHERE order_id=$1 AND status='cancelled'`, [orderId]);
   }
@@ -426,7 +435,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     const preview = await isPreview(b.t);
-    const rows = await listTasks(preview ? "WHERE status <> 'cancelled' AND test" : "WHERE status <> 'cancelled' AND NOT test");
+    // Stornierte der letzten 30 Tage mitschicken → Partner sieht sie unter „Cancelled" (nicht mehr in der Arbeit).
+    const rows = await listTasks(preview ? "WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND test" : "WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND NOT test");
     const p = preview ? { rows: [] as Record<string, unknown>[] } : pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 20`) : { rows: [] as Record<string, unknown>[] };
     // Screenshot der Bewertung (automatisch bei der Bestellung aufgenommen) → Vorschau statt nur Link.
     const shots = new Map<string, number>();
