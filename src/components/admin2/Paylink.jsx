@@ -132,6 +132,7 @@ export function PayLinkSheet({ o, ctx, close }) {
         </button>
       </div>
       {o.status !== "done" ? <button type="button" className="lnkb" onClick={() => { close(); act.done(o); }}>Ohne Zahlungslink als gelöscht markieren</button> : null}
+      <button type="button" className="lnkb" onClick={async () => { close(); try { await ctx.doStatus(o, "done", { pay: "paid", label: "Erledigt · bereits bezahlt (manuell)" }); toast(`${o.id} als erledigt + bezahlt markiert`); } catch (e) { toast("Fehler: " + e.message); } }}>Kunde hat schon bezahlt → als erledigt markieren</button>
     </>
   );
 }

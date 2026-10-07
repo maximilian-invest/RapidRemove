@@ -147,15 +147,20 @@ export function OrderDetail({ ctx, id }) {
   const same = sibs.filter((x) => (payPrefOf(x) || "") === (payPrefOf(o) || ""));
   const stepIx = b === "new" ? 0 : b === "work" ? 2 : b === "pay" || b === "inkasso" ? 3 : b === "deleted" ? 4 : -1;
   const altHref = `/admin/alt?order=${encodeURIComponent(o.id)}`;
+  const doneBtn = (lbl) => <button type="button" className="cta ok" onClick={() => { act.done(o); back(); }}><CheckCircle2 />{lbl}</button>;
   const primary =
+    // Schon bezahlt, Status aber noch Neu/In Bearbeitung → einfach abschließen (kein Zahlungslink, keine Mahnung).
+    o.pay === "paid" && (b === "new" || b === "work") ? doneBtn("Als erledigt markieren · bereits bezahlt")
     // Gelöscht, aber noch nicht abgerechnet → zuerst Löschbestätigung + Rechnung (sonst würde die Mahnung alle Bewertungen anmahnen).
-    r && r.unbilledN && (b === "pay" || b === "inkasso") ? <a className="cta or" href={altHref}><Receipt />Rechnung senden · {r.unbilledN} gelöscht · {money(r.unpaidAmt, cur(o))}</a>
+    : r && r.unbilledN && (b === "pay" || b === "inkasso") ? <a className="cta or" href={altHref}><Receipt />Rechnung senden · {r.unbilledN} gelöscht · {money(r.unpaidAmt, cur(o))}</a>
     // Partner arbeitet schon, wir haben aber noch nicht übernommen → Übernehmen bleibt sichtbar.
     : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
     : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
     : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
     // Profil gelöscht → Zahlungslink senden (Link vorher ansehen/ändern); „ohne Link erledigt" steckt im Sheet.
-    : b === "work" ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
+    : b === "work" && !isRev ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
+    // Bewertungen ohne Partner-Aufgaben (manuell bearbeitet) → wie früher abschließen.
+    : b === "work" ? doneBtn("Als erledigt markieren")
     : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
     : null;
   return (
