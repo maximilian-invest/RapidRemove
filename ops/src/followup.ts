@@ -10,7 +10,8 @@
  *   Fall                                   Erinnerung 1             Erinnerung 2        Danach
  *   Update-Mail, aber nicht eingeloggt     +10 h „Neuigkeiten"      –                   –
  *   Noch nie eingeloggt seit Bestellung    +24 h                    +48 h nach Erinn. 1 Admin „Nachfassen"
- *   Software-Entscheidung offen            +6 h (Mail + Push)       +24 h nach Erinn. 1 Tag 3: Admin „Nachfassen"
+ *   Software-Entscheidung offen            +2 h (Mail + Push)       alle 2 h, max. 6     danach / Tag 3: Admin „Nachfassen"
+ *     (07.10.2026: Software-Erinnerungen ignorieren die 1-Mail-pro-Tag-Grenze, aber nur 8–20 Uhr Ortszeit)
  *   Zahlung offen (gelöschte Bewertungen)  +24 h Stufe 1            +48 h → Stufe 2     Tag 5: Admin „Letzte Mahnung fällig"
  *  Die letzte Mahnung (Stufe 3: wieder online + Inkasso) geht NIE automatisch. PayPal-/Wise-Zahler: keine
  *  automatische Zahlungserinnerung (eigene Zahlungsdaten) → direkt in „Nachfassen".
@@ -93,6 +94,7 @@ type Plan = {
 };
 const ts = (v: unknown) => (v ? new Date(String(v)).getTime() : 0);
 const iso = (n: number) => new Date(n).toISOString();
+const SW_EVERY = 2 * H, SW_MAX = 6; // Software-Bestätigung: alle 2 h, max. 6 Erinnerungen
 const daysTxt = (ms: number) => { const d = Math.floor(ms / (24 * H)); return d >= 1 ? `${d} T` : `${Math.floor(ms / H)} Std`; };
 
 /** horizon: Erinnerungen, die innerhalb dieser Zeit fällig würden, gelten schon als fällig (Zusammenfassen beim Versand).
@@ -166,9 +168,13 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
     if (first >= since) {
       const price = fmtReviewMoney(Number(o.swPrice) || 300, String(o.cur || "eur"));
       // Schneller als die anderen Fälle: es hängt eine Vorauszahlung dran (+6 h, dann +24 h, ab Tag 3 Admin).
-      if (st === 0) { const at = first + 6 * H; if (soon >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 1, dueAt: iso(at) }); }
-      else if (st === 1) { const at = lastT + 24 * H; if (soon >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string }; else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: 2, dueAt: iso(at) }); }
-      if (now - first >= 3 * 24 * H) plan.attention.push({ email, name: d.name, orderId: o.id as string, kind: "sw", since: iso(first), text: `Software-Entscheidung offen seit ${daysTxt(now - first)} (${sw.length} Bewertung${sw.length > 1 ? "en" : ""}) · ${st} Erinnerung${st === 1 ? "" : "en"} – bitte entscheiden` });
+      // Alle 2 h „Wir warten auf Ihre Bestätigung", höchstens SW_MAX-mal – danach ruft das Team an.
+      if (st < SW_MAX) {
+        const at = (st === 0 ? first : lastT) + SW_EVERY;
+        if (soon >= at) plan.due.sw = { ref, n: sw.length, price, orderId: o.id as string };
+        else plan.upcoming.push({ email, name: d.name, orderId: o.id as string, kind: "sw", stage: st + 1, dueAt: iso(at) });
+      }
+      if (st >= SW_MAX || now - first >= 3 * 24 * H) plan.attention.push({ email, name: d.name, orderId: o.id as string, kind: "sw", since: iso(first), text: `Software-Entscheidung offen seit ${daysTxt(now - first)} (${sw.length} Bewertung${sw.length > 1 ? "en" : ""}) · ${st} Erinnerung${st === 1 ? "" : "en"} – bitte entscheiden` });
     }
   }
 
@@ -262,7 +268,7 @@ async function tick(app: FastifyInstance): Promise<void> {
         if (!p) continue;
         const has = p.due.pay || p.due.sw || p.due.never || p.due.news;
         if (!has) continue;
-        if (now - p.lastAutoAt < 20 * H) continue; // max. 1 automatische Mail pro Tag
+        if (now - p.lastAutoAt < 20 * H && !p.due.sw) continue; // max. 1 automatische Mail pro Tag (Software-Bestätigung ausgenommen)
         if (!quietOk(p.tz)) continue;              // nur 8–20 Uhr Ortszeit
         // Was ohnehin in den nächsten 24 h fällig würde, gleich mitschicken (1 Mail statt Warten auf morgen).
         const full = (await analyze(email, now, 24 * H)) || p;
@@ -296,7 +302,7 @@ export function registerFollowupRoutes(app: FastifyInstance, adminOk: (t: unknow
       upcoming.push(...p.upcoming);
       for (const k of Object.keys(p.due) as Kind[]) {
         const x = p.due[k] as { orderId?: string | null; stage?: number };
-        dueNow.push({ email, name: p.name, orderId: x.orderId || null, kind: k, stage: x.stage || 1, dueAt: iso(now), waitQuiet: !quietOk(p.tz) || now - p.lastAutoAt < 20 * H });
+        dueNow.push({ email, name: p.name, orderId: x.orderId || null, kind: k, stage: x.stage || 1, dueAt: iso(now), waitQuiet: !quietOk(p.tz) || (now - p.lastAutoAt < 20 * H && !p.due.sw) });
       }
     }
     const recent = await pool.query(`SELECT email, kind, stage, order_id, sent_at FROM cust_followups ORDER BY sent_at DESC LIMIT 50`);
