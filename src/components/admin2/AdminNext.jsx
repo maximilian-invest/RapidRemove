@@ -232,11 +232,13 @@ export default function AdminNext() {
       if (c.type === "rv") {
         await sendReviewsStorno({ orderId: o.id, email: o.email, name: o.name, lang: rvLang(o), reason: c.reason, items: o.reviewItems || [] });
         await doStatus(o, "storniert", { label: "Storniert" });
+        closeDrawer(); // nach dem Stornieren Auftrag schließen
         toast(`Storno (${c.label}) gesendet · storniert`);
       } else if (c.type === "tpl") {
         await sendTpl(o, c.key, c.label);
       } else {
         await doStatus(o, "storniert", { label: "Storniert" });
+        closeDrawer();
         toast("Auftrag storniert");
       }
     } catch (e) { toast("Storno fehlgeschlagen: " + e.message); }
@@ -250,7 +252,7 @@ export default function AdminNext() {
       await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o) });
       bumpTplUsage(key);
       let note = "";
-      if (STORNO_KEYS.includes(key)) { await doStatus(o, "storniert", { label: "Storniert" }); note = " · storniert"; }
+      if (STORNO_KEYS.includes(key)) { await doStatus(o, "storniert", { label: "Storniert" }); note = " · storniert"; closeDrawer(); }
       else if (key === "reaktivierung") { await doStatus(o, "progress", { label: "Reaktiviert" }); note = " · reaktiviert"; }
       else if (key === "mahnung" && o.status === "done") { await doStatus(o, "done", { pay: "mahnung", label: "Mahnung" }); }
       toast(`„${label}“ gesendet${note}`);
