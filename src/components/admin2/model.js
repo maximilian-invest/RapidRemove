@@ -54,6 +54,7 @@ export function revState(o, tasks) {
   const items = o.reviewItems || [];
   const pt = (tasks || []).filter((t) => t.status !== "cancelled");
   const billed = new Set([...(o.reviewsRemovedAll || []), ...(o.reviewsRemoved || [])].map(rvKey));
+  const asked = o.reviewsPayReq || {}; // per Sammel-Mail automatisch zur Zahlung aufgefordert → zählt wie abgerechnet
   if (!pt.length && !billed.size) return null;
   const byKey = new Map(pt.map((t) => [t.itemKey, t]));
   const pays = o.reviewsPayments || [];
@@ -81,7 +82,7 @@ export function revState(o, tasks) {
       c.removed++;
       const special = !!it.nt || swSet.has(k);
       if (!(special && prepaid(k)) && !isPaid(k)) {
-        unpaid.push({ k, special, old: !!it.old && !it.nt, billed: billed.has(k) || keyedInv.some((p) => p.keys.includes(k)), at: t && t.removed ? new Date(t.removed).getTime() : null });
+        unpaid.push({ k, special, old: !!it.old && !it.nt, billed: billed.has(k) || !!asked[k] || keyedInv.some((p) => p.keys.includes(k)), asked: asked[k] || null, at: t && t.removed ? new Date(t.removed).getTime() : null });
       }
     } else if (s === "working") { c.open++; c.working++; }
     else if (s === "new") { c.open++; c.waiting++; }
@@ -100,6 +101,7 @@ export function revState(o, tasks) {
     ...c, started, pct,
     unpaidN: unpaid.length, unpaidAmt, unbilledN: unpaid.filter((u) => !u.billed).length, unpaidKeys: unpaid.map((u) => u.k),
     unpaidSince: ats.length ? Math.min(...ats) : null,
+    askedAt: unpaid.map((u) => u.asked).filter(Boolean).sort()[0] || null, // erste automatische Zahlungsaufforderung
   };
 }
 

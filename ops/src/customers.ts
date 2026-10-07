@@ -750,7 +750,7 @@ export async function partnerStatusChanged(
 }
 
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[] }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { key: string; url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[] }[]> {
   if (!pool) return [];
   const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys, changes`);
   const out = [];
@@ -764,11 +764,86 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const ch = (d.changes || {}) as Record<string, { from: string | null; to: string }>;
     const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => {
       const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
-      return { url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
+      return { key: v.key, url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
     });
     out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys });
   }
   return out;
+}
+
+/* ---- Zahlungsaufforderung nach der Löschung: Nachweis + Sicherheitsnetz ----
+ * Gelöscht (Partner) → Sammel-Mail „Neuigkeiten" mit Zahlungsaufforderung (Dashboard). Nach erfolgreichem Versand merken wir je
+ * Bewertung, wann der Kunde zur Zahlung aufgefordert wurde (raw.reviewsPayReq) → Admin zeigt dann nicht mehr „Rechnung senden".
+ * Sicherheitsnetz (alle 10 Min.): gelöscht seit > 30 Min., unbezahlt, weder aufgefordert noch per Löschbestätigung abgerechnet
+ * und nichts in der Warteschlange → Aufforderung nachholen (max. 2×, danach Push ans Team). */
+export async function markPayRequested(orderId: string, keys: string[]): Promise<void> {
+  if (!pool || !keys.length) return;
+  const r = await pool.query(`SELECT raw->'reviewsPayReq' AS m FROM orders WHERE id=$1`, [orderId]);
+  const m = { ...((r.rows[0]?.m || {}) as Record<string, string>) };
+  const at = new Date().toISOString();
+  let ch = false;
+  for (const k of keys) if (k && !m[k]) { m[k] = at; ch = true; }
+  if (ch) await setOrderRawField(orderId, "reviewsPayReq", m);
+}
+
+async function payReqBackfillOnce(): Promise<void> {
+  if (!pool) return;
+  await pool.query(`CREATE TABLE IF NOT EXISTS ops_flags (key text PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now())`);
+  const f = await pool.query(`INSERT INTO ops_flags (key) VALUES ('payreq-backfill-1') ON CONFLICT DO NOTHING RETURNING key`);
+  if (!f.rowCount) return;
+  // Bestand: Aufforderungen, die schon per Sammel-Mail rausgingen (Detail „Name: removed"), nachträglich vermerken.
+  const r = await pool.query(`SELECT t.order_id, t.item_key, t.removed_at, o.raw->'reviewItems' AS items FROM partner_tasks t JOIN orders o ON o.id=t.order_id
+     WHERE t.status='removed' AND t.removed_at > now() - interval '90 days' AND o.service='reviews'`);
+  const byOrder = new Map<string, { key: string; at: number; label: string }[]>();
+  for (const x of r.rows) {
+    const it = (Array.isArray(x.items) ? x.items : [] as Item[]).find((i: Item) => keyOf(i) === x.item_key) as Item | undefined;
+    const label = it ? (it.name || it.url || "") : "";
+    if (!label) continue;
+    byOrder.set(x.order_id, [...(byOrder.get(x.order_id) || []), { key: x.item_key, at: new Date(x.removed_at).getTime(), label }]);
+  }
+  for (const [oid, list] of byOrder) {
+    const ev = await pool.query(`SELECT detail, created_at FROM events WHERE order_id=$1 AND title LIKE 'Dashboard-Update an Kunden gesendet%'`, [oid]);
+    const done = list.filter((x) => ev.rows.some((e) => new Date(e.created_at).getTime() >= x.at - 120_000 && String(e.detail || "").includes(`${x.label}: removed`)));
+    if (done.length) await markPayRequested(oid, done.map((x) => x.key)).catch(() => {});
+  }
+}
+
+export async function payRequestGuard(log: (o: unknown, m: string) => void = () => {}): Promise<void> {
+  if (!pool) return;
+  await payReqBackfillOnce().catch((e) => log({ err: e }, "Zahlungsaufforderung: Nachtrag fehlgeschlagen"));
+  const since = process.env.FOLLOWUP_SINCE || "2026-10-04T00:00:00Z";
+  const r = await pool.query(
+    `SELECT t.order_id, array_agg(t.item_key) AS keys FROM partner_tasks t JOIN orders o ON o.id=t.order_id
+      WHERE t.status='removed' AND t.removed_at < now() - interval '30 minutes' AND t.removed_at > GREATEST($1::timestamptz, now() - interval '30 days')
+        AND o.service='reviews' AND COALESCE(o.status,'') <> 'storniert' AND COALESCE(o.pay,'') <> 'paid' AND COALESCE(o.email,'') <> ''
+        AND NOT EXISTS (SELECT 1 FROM cust_notify n WHERE n.order_id=t.order_id)
+      GROUP BY t.order_id`, [since]);
+  for (const row of r.rows as { order_id: string; keys: string[] }[]) {
+    const o = await pool.query(`SELECT id, email, name, profile, company, raw FROM orders WHERE id=$1`, [row.order_id]);
+    const x = o.rows[0]; if (!x) continue;
+    const raw = (x.raw || {}) as Record<string, unknown>;
+    const req = (raw.reviewsPayReq || {}) as Record<string, string>;
+    const billed = new Set([...(Array.isArray(raw.reviewsRemovedAll) ? raw.reviewsRemovedAll as Item[] : []), ...(Array.isArray(raw.reviewsRemoved) ? raw.reviewsRemoved as Item[] : [])].map(keyOf));
+    let missing = row.keys.filter((k) => !req[k] && !billed.has(k));
+    if (!missing.length) continue;
+    // Nur unbezahlte (Software-Vorauszahlung / einzeln bezahlt / erlassen → keine Aufforderung nötig).
+    const d = await loadCustomerOrders(String(x.email).toLowerCase());
+    const ov = d.orders.find((v) => v.id === x.id);
+    const open = new Set((ov?.items || []).filter((i) => i.status === "removed" && !i.paid && !(i as { waived?: boolean }).waived).map((i) => i.key));
+    missing = missing.filter((k) => open.has(k));
+    if (!missing.length) continue;
+    const g = (raw.reviewsPayGuard || {}) as { n?: number; at?: string };
+    if (g.at && Date.now() - new Date(g.at).getTime() < 6 * 3600e3) continue;
+    const n = (g.n || 0) + 1;
+    await setOrderRawField(x.id, "reviewsPayGuard", { n, at: new Date().toISOString() });
+    if (n > 2) {
+      if (n === 3) void notifyTeam(`Zahlungsaufforderung fehlt · ${x.profile || x.company || x.email}`, `Auftrag ${x.id}: ${missing.length} gelöschte Bewertung(en) – Aufforderung ging 2× nicht raus, bitte Rechnung manuell senden`, `${process.env.SITE_URL || "https://www.rapid-remove.com"}/admin?order=${encodeURIComponent(x.id)}`, { kind: "customer" });
+      continue;
+    }
+    await requeueNotify(x.id, missing, 0);
+    await insertEvent({ orderId: x.id, email: x.email, type: "note", title: "Sicherheitsnetz: Zahlungsaufforderung fehlte – wird jetzt nachgeholt", detail: `${missing.length} gelöschte Bewertung(en) ohne Aufforderung · Versuch ${n}/2`, auto: true }).catch(() => {});
+    log({ orderId: x.id, n: missing.length }, "Sicherheitsnetz: Zahlungsaufforderung nachgeholt");
+  }
 }
 
 /** Fehlgeschlagene Sammel-Mail später nochmal versuchen. */

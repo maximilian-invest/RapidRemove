@@ -27,7 +27,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -2085,6 +2085,8 @@ async function start() {
             const html = await render(React.createElement((swMail ? KundenSoftwareReviews : KundenUpdateReviews) as any, props as any));
             const subject = swMail ? kundenSoftwareSubject(props as any) : kundenUpdateSubject(props as any);
             await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+            // Nachweis: diese Bewertungen sind jetzt zur Zahlung aufgefordert (Admin: kein „Rechnung senden" mehr; Sicherheitsnetz).
+            for (const g of group) { const ks = g.changed.filter((c) => c.status === "removed").map((c) => c.key); if (ks.length) await markPayRequested(g.orderId, ks).catch((e) => app.log.error({ err: e }, "Zahlungsaufforderung vermerken fehlgeschlagen")); }
             for (const g of group) await insertEvent({ orderId: g.orderId, email: g.email, type: "mail", title: "Dashboard-Update an Kunden gesendet (automatisch)", detail: important.map((c) => `${c.name || c.url}: ${c.status}`).join(" · "), html, subject, auto: true });
           } catch (e) {
             app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen – neuer Versuch in 15 Min.");
@@ -2095,6 +2097,9 @@ async function start() {
     }, 60_000);
     startPaymentReconciler(app);
     startFollowupWorker(app);
+    // Sicherheitsnetz: gelöscht, aber keine Zahlungsaufforderung raus → nachholen (alle 10 Min., erster Lauf nach 2 Min.).
+    const guard = () => void payRequestGuard((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Sicherheitsnetz Zahlungsaufforderung fehlgeschlagen"));
+    setTimeout(guard, 2 * 60_000); setInterval(guard, 10 * 60_000);
     // Bestätigte Software-Fälle: ca. 1 Std. vor Ablauf der 5-Std.-Frist einmal erinnern (je Bewertung nur 1×).
     setInterval(() => void (async () => {
       if (!pool) return;

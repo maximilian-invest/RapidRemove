@@ -63,7 +63,8 @@ export function OrdersList({ ctx }) {
   const ql = f.q.trim().toLowerCase();
   const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.bs))
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
-    .sort((a, b) => (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))); // neueste zuerst (wie im bisherigen Admin)
+    // Zahlung offen / Inkasso: zuletzt fällig gewordene zuerst (kürzeste Wartezeit oben); sonst neueste Bestellung zuerst.
+    .sort((a, b) => (f.tile === "pay" || f.tile === "inkasso" ? a.m - b.m : (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))));
   // Zähler ohne Testbestellungen (in der Liste bleiben sie sichtbar, mit „Test"-Tag).
   const real = enriched.filter((x) => !x.o.test);
   const newO = real.filter((x) => x.bs.includes("new"));
@@ -188,6 +189,13 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
+      {r && r.unpaidN && !r.unbilledN && r.askedAt && o.status !== "storniert" ? (
+        <div className="disc">
+          <span className="di"><Send /></span>
+          <span className="t"><b>Zahlungsaufforderung automatisch gesendet · {new Date(r.askedAt).toLocaleString("de-AT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</b>
+            <span>Kunde zahlt im Dashboard (Mail + Push bei der Löschung). Keine Rechnung nötig.</span></span>
+        </div>
+      ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">

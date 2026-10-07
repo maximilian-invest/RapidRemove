@@ -108,6 +108,7 @@ function mapOrder(r) {
       : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
     // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
+    reviewsPayReq: r.raw && r.raw.reviewsPayReq && typeof r.raw.reviewsPayReq === "object" ? r.raw.reviewsPayReq : null, // automatisch zur Zahlung aufgefordert (je Bewertung)
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,
     reviewsSoftware: (r.raw && Array.isArray(r.raw.reviewsSoftware)) ? r.raw.reviewsSoftware.filter((it) => it && (it.url || it.name)) : [],
