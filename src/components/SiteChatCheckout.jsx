@@ -69,7 +69,8 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const isRev = co.service === "reviews";
   // Alte Bewertungen mit Text aus einem US-Profil → Software (Partner-Regel); Land kommt aus dem Profil-Link.
   const swOf = (r) => co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim();
-  const p = priceOf({ service: co.service, country: f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref: f.payPref });
+  // Bewertungen: Währung nach Land des Profils (aus dem Link), sonst nach dem angegebenen Land.
+  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref: f.payPref });
   const legal = (k) => pagePath(k, lang);
   const submit = async () => {
     const b = {};

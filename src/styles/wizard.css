@@ -928,3 +928,14 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 /* Pop-ups: Wischen auf dem Hintergrund scrollt nicht die Seite dahinter (iOS) */
 .sw-sheet-w,.pay-ask-w{touch-action:none;overscroll-behavior:contain}
 .sw-sheet,.pay-ask{touch-action:pan-y;overscroll-behavior:contain}
+/* „Erfolgschance & Preis" als Button + Pop-up */
+.rv-price-btn{display:flex;align-items:center;gap:10px;width:100%;padding:13px 16px;border-radius:16px;border:1.5px solid var(--hairline-strong,#e3dcd3);background:var(--surface,#faf8f6);font:inherit;font-weight:800;font-size:15px;color:var(--fg,#1c1916);cursor:pointer;text-align:left}
+.rv-price-btn:hover{border-color:var(--primary,#ff8000);background:var(--orange-50,#fff4e6)}
+.rv-price-btn:focus-visible{outline:2px solid var(--primary,#ff8000);outline-offset:2px}
+.rv-price-btn>svg{margin-left:auto;color:var(--primary,#ff8000);flex:none}
+.rv-price-ic{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--primary,#ff8000);flex:none;box-shadow:0 0 0 1px var(--hairline,#e9e3dd)}
+.pi-rows{list-style:none;margin:14px 0 18px;padding:0;display:grid;gap:12px}
+.pi-rows li{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;font-weight:600;line-height:1.5;color:var(--fg-2,#4a423b)}
+.pi-ic{flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
+.pi-ic.g{background:#e8f7ee;color:#16a34a}.pi-ic.t{background:#e3f4f6;color:#0e7a8a}.pi-ic.s{background:#efebff;color:#6d4cff}.pi-ic.o{background:#fff4e6;color:#ff8000}
+.pi-more{display:inline;border:none;background:none;padding:0;font:inherit;font-weight:800;color:#6d4cff;text-decoration:underline;text-underline-offset:3px;cursor:pointer}

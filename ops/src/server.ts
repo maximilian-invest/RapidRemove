@@ -415,6 +415,8 @@ app.post("/order", async (req, reply) => {
   const pcRaw = String(b.profileCountry || "").trim().toUpperCase();
   const ruleCountry = /^[A-Z]{2}$/.test(pcRaw) ? pcRaw : "";
   (b as Record<string, unknown>).profileCountry = ruleCountry || undefined;
+  // Bewertungs-Produkt: Währung + Land des Auftrags = Land des Profils (US-Profil → $, sonst €), nicht die Website-Sprache.
+  if (isReviews && ruleCountry) (b as Record<string, unknown>).country = ruleCountry;
   if (isReviews) for (const it of reviewItems) {
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
