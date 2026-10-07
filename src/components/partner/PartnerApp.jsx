@@ -138,7 +138,8 @@ export default function PartnerApp({ api }) {
 
   /* ---------- screens ---------- */
   function HomeV() {
-    const nc = custsOf(isTodo);
+    // „New orders" = Kunden mit Bewertungen, die der Partner noch nicht angefangen hat (Status new). Laufende stehen unter Working/Orders.
+    const nc = custsOf(F.nw);
     const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["pending", "Pending", "c-software"], ["closed", "Not possible", "c-notpossible"]];
     const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, pending: Hourglass, closed: STATUS.notpossible.I };
     return (
@@ -163,7 +164,7 @@ export default function PartnerApp({ api }) {
             </button>
           );
         })}
-        {!nc.length ? empty("All done", "No open orders right now.") : null}
+        {!nc.length ? empty("All caught up", "No new orders – everything has been started.") : null}
       </>
     );
   }
