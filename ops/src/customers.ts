@@ -368,9 +368,11 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
       pre: !!it.nt || !!it.sw, // Software-Fall laut Partner-Regel: Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
+      waived: cancelled && status === "removed" && !(special ? prepaidFor(k) || isPaid(k) : isPaid(k)), // storniert → nichts mehr zu zahlen
     };
   });
-  const unpaid = view.filter((v) => v.status === "removed" && !v.paid);
+  // Ganz stornierter Auftrag → keine offenen Zahlungen mehr (auch nicht für vorher gelöschte Bewertungen).
+  const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
   const unpaidN = unpaid.filter((v) => !v.special);
   const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old })), cur, items.length, "rest", chatPct).total : 0)
@@ -386,7 +388,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       names: (p.keys || []).map((k) => items.find((it) => keyOf(it) === k)?.name || "").filter(Boolean).slice(0, 3),
     })),
     // Offene Anzahlungen für bestellte Bewertungen ohne Text (Startbestätigung).
-    deposits: payments.filter((p) => p.kind === "deposit" && !p.paid && p.url).map((p) => ({ id: p.id, amount: p.amount, cur: p.cur, url: p.url, n: p.n || null })),
+    deposits: payments.filter((p) => !cancelled && p.kind === "deposit" && !p.paid && p.url).map((p) => ({ id: p.id, amount: p.amount, cur: p.cur, url: p.url, n: p.n || null })),
   };
 }
 type OrderView = ReturnType<typeof orderView> & { kind?: "reviews" | "profile"; profileOrder?: ProfileInfo };

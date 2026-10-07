@@ -582,3 +582,17 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
   .rra .tabin,.rra.intro *,.rra .cele,.rra .cele *{animation:none!important}
   .rra .ce-c{stroke-dashoffset:0;fill-opacity:1}.rra .ce-p{stroke-dashoffset:0}.rra .ce-ring,.rra .ce-conf{display:none}
 }
+/* „Status geändert" als Sheet (Handy) bzw. Pop-up (Desktop) */
+.rra .bg.chgbg{z-index:90}.rra .rv-sheet.chg{z-index:91} /* über Chat-Button und -Hinweis */
+.rra .rv-sheet.chg .chg-h{display:flex;align-items:center;gap:14px}
+.rra .rv-sheet.chg .chg-h .ico{background:var(--g1)}
+.rra .rv-sheet.chg .chg-h .meta{display:block;margin-top:2px}
+.rra .rv-sheet.chg .chg-l{display:flex;flex-direction:column;max-height:45vh;overflow:auto}
+.rra .rv-sheet.chg .chg-r{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--g2);text-align:left;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;cursor:pointer}
+.rra .rv-sheet.chg .chg-r .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.rra .rv-sheet.chg .chg-r .t b{font-size:15px;font-weight:700}
+.rra .rv-sheet.chg .chg-r .t>span{font-size:14px;color:var(--g3)}
+.rra .rv-sheet.chg .chg-r .t>span b{color:var(--ink);font-size:14px}
+.rra .rv-sheet.chg .chg-r svg{color:var(--g3);flex:none}
+/* Solange „Status geändert" offen ist: Chat-Button/-Hinweis ausblenden */
+.rra:has(.rv-sheet.chg.show) .ctease,.rra:has(.rv-sheet.chg.show) .cfab{opacity:0;pointer-events:none}

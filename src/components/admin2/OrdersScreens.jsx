@@ -245,6 +245,7 @@ export function OrderDetail({ ctx, id }) {
 
 /** „Als bezahlt markieren" (z. B. Wise/PayPal/Überweisung): 2× tippen zur Bestätigung. Bewertungen → im Kunden-Dashboard „Bezahlt". */
 const payOpen = (x, now, ptasks) => {
+  if (x.status === "storniert") return false; // ganz storniert → keine offene Zahlung mehr
   const r = revState(x, (ptasks || {})[x.id]);
   if (r) return r.unpaidN > 0; // Bewertungen: offen, sobald eine gelöschte Bewertung unbezahlt ist
   const bx = bucketsOf(x, now); return bx.includes("pay") || bx.includes("inkasso") || (x.status === "done" && x.pay !== "paid");

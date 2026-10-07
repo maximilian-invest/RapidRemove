@@ -88,7 +88,7 @@ const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p 
 const OPEN = ["new", "working", "software", "sw_accepted"];
 const statusLine = (r, cur) => stOf(r.status, r.pre).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
-  + (r.status === "removed" ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
+  + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
 
 function Ring({ r, n }) {
   const R = 24, p = n ? r / n : 0;
@@ -203,6 +203,35 @@ function SetPassword({ k, onToken, onCancel }) {
 }
 
 /* ---- App ---- */
+/* „Status geändert": öffnet sich von selbst – am Handy als Sheet von unten (Griff, wegwischen), am Desktop als Pop-up.
+   Erst mit „Verstanden" (oder Wegwischen) gilt es als gelesen und kommt nicht wieder. */
+function ChangedSheet({ open, items, onDone, onOpen }) {
+  const ref = React.useRef(null);
+  useSwipeClose(ref, open, onDone);
+  return (
+    <>
+      <div className={"bg chgbg" + (open ? " show" : "")} onClick={onDone} />
+      <div ref={ref} className={"rv-sheet chg" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-modal="true">
+        {open ? (
+          <>
+            <div className="grab" />
+            <div className="chg-h"><span className="ico in"><Info /></span><span><h3>{T("statusChanged")}</h3><span className="meta">{T("statusChangedSub", { n: items.length })}</span></span></div>
+            <div className="chg-l">
+              {items.slice(0, 6).map((r) => (
+                <button key={r.id} type="button" className="chg-r" onClick={() => onOpen(r)}>
+                  <span className="t"><b>{r.name || T("googleReview")} · {r.o.business}</b><span>{stOf(r.prevStatus).l} → <b>{stOf(r.status, r.pre).l}</b></span></span>
+                  <ChevronRight />
+                </button>
+              ))}
+            </div>
+            <button type="button" className="cta" onClick={onDone}>{T("gotIt")}</button>
+          </>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
 export default function CustomerDashboard() {
   useAutoUpdate(); // nach einem Deploy automatisch die neue Version laden (Home-Bildschirm-App)
   const [token, setToken] = React.useState(null); // null = noch nicht gelesen
@@ -455,7 +484,7 @@ export default function CustomerDashboard() {
 
   const dueOrders = orders.filter((o) => o.toPay > 0);
   const payCur = dueOrders[0]?.cur || orders[0]?.cur || "eur";
-  const due = all.filter((r) => r.status === "removed" && !r.paid && r.o.cur === payCur);
+  const due = all.filter((r) => r.status === "removed" && !r.paid && !r.o.cancelled && r.o.cur === payCur); // stornierter Auftrag → nichts mehr offen
   const toPay = dueOrders.filter((o) => o.cur === payCur).reduce((s, o) => s + o.toPay, 0);
   const prices = [...new Set(due.map((r) => r.price))];
   // Zahlungsgruppen: jeder Auftrag wird so bezahlt, wie der Kunde ihn bestellt hat.
@@ -491,21 +520,7 @@ export default function CustomerDashboard() {
   // „Status geändert": letzte 14 Tage, noch nicht weggeklickt (je Gerät).
   const seen = new Set(seenGet());
   const changedNew = all.filter((r) => r.prevStatus && r.changedAt && Date.now() - new Date(r.changedAt).getTime() < 14 * 864e5 && !seen.has(r.id + "|" + r.changedAt));
-  const ChangedCard = () => (changedNew.length ? (
-    <div className="paycard" style={{ flexDirection: "column", alignItems: "stretch", gap: 10, marginBottom: 24 }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <span className="ico in"><Info /></span>
-        <span style={{ minWidth: 0 }}><b>{T("statusChanged")}</b><span style={{ fontSize: 13, color: "var(--g3)", display: "block" }}>{T("statusChangedSub", { n: changedNew.length })}</span></span>
-      </div>
-      {changedNew.slice(0, 4).map((r) => (
-        <button key={r.id} className="ai-row" style={{ padding: "6px 0", borderTop: "1px solid var(--g2)" }} onClick={() => setSheet({ orderId: r.o.id, key: r.key })}>
-          <span className="t"><b style={{ fontSize: 14 }}>{r.name || T("googleReview")} · {r.o.business}</b><span>{stOf(r.prevStatus).l} → <b style={{ display: "inline", color: "var(--ink)" }}>{stOf(r.status, r.pre).l}</b></span></span>
-          <ChevronRight />
-        </button>
-      ))}
-      <button className="cta gh" style={{ height: 44, fontSize: 15 }} onClick={() => { seenAdd(changedNew.map((r) => r.id + "|" + r.changedAt)); tick((x) => x + 1); }}>{T("gotIt")}</button>
-    </div>
-  ) : null);
+  const chgDone = (list) => { seenAdd((list || changedNew).map((r) => r.id + "|" + r.changedAt)); tick((x) => x + 1); };
 
   /* ---- Zahlungen ---- */
   const checkout = async (path, body, label) => {
@@ -642,7 +657,6 @@ export default function CustomerDashboard() {
       <div className="hg">
         <div className="hl">
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
-          <ChangedCard />
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
@@ -974,6 +988,8 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
+      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !cele && !wiseOpen && !detail} items={changedNew}
+        onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
