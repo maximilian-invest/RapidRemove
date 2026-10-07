@@ -6,7 +6,8 @@ import {
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
   CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers,
 } from "lucide-react";
-import { ST, isOffen, inTile, IMG, bucket, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer } from "./model";
+import { ST, isOffen, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB } from "./model";
+import { SourceTag } from "./Source";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
@@ -39,20 +40,32 @@ export function KTag({ o }) {
   return <span className={"ktag" + (p ? " kp" : "")}>{p ? <Store /> : <Star />}{p ? "Profil" : "Bewertungen"}</span>;
 }
 
+/** Mehrere Kacheln („In Bearbeitung · Zahlung offen") als ein Label. */
+export const bsLabel = (bs) => bs.map((x) => ST[x].l).join(" · ");
+/** Laufzeit: bei offener Zahlung für Bewertungen seit der ersten unbezahlten Löschung. */
+export function ageOf(o, b, r, now) {
+  if (r && r.unpaidSince && (b === "pay" || b === "inkasso")) return Math.max(0, Math.round((now - r.unpaidSince) / 60000));
+  return ageMin(o, b, now);
+}
+
 /* ---------------- Liste ---------------- */
 export function OrdersList({ ctx }) {
-  const { orders, now, f, setF, openOrder, openSheet, selId, loaded, refresh } = ctx;
-  const enriched = React.useMemo(() => orders.map((o) => { const b = bucket(o, now); return { o, b, m: ageMin(o, b, now), t: typeOf(o) }; }), [orders, now]);
+  const { orders, now, f, setF, openOrder, openSheet, selId, loaded, refresh, ptasks } = ctx;
+  const enriched = React.useMemo(() => orders.map((o) => {
+    const pt = (ptasks || {})[o.id]; const r = revState(o, pt); const bs = bucketsOf(o, now, pt); const b = mainBucket(bs);
+    return { o, r, bs, b, m: ageOf(o, b, r, now), t: typeOf(o) };
+  }), [orders, now, ptasks]);
   const base = enriched.filter((x) => f.type === "all" || x.t === f.type).filter((x) => f.staff === "all" || (f.staff === "none" ? !x.o.assignee : x.o.assignee === f.staff));
-  const inScope = (x) => (f.scope === "open" ? isOffen(x.o) : f.scope === "closed" ? !isOffen(x.o) : true);
+  const open = (x) => (x.r ? isOpenB(x.bs) : isOffen(x.o)); // Bewertungen: offen, solange etwas läuft oder unbezahlt ist
+  const inScope = (x) => (f.scope === "open" ? open(x) : f.scope === "closed" ? !open(x) : true);
   const ql = f.q.trim().toLowerCase();
-  const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.b))
+  const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.bs))
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
     .sort((a, b) => (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))); // neueste zuerst (wie im bisherigen Admin)
-  const newO = enriched.filter((x) => x.b === "new");
+  const newO = enriched.filter((x) => x.bs.includes("new"));
   const oldest = newO.reduce((mx, x) => Math.max(mx, x.m), 0);
-  const openN = enriched.filter((x) => isOffen(x.o)).length;
-  const inWork = enriched.filter((x) => isOffen(x.o) && x.b !== "new").length;
+  const openN = enriched.filter(open).length;
+  const inWork = enriched.filter((x) => open(x) && !x.bs.includes("new")).length;
   const tiles = SCOPE_TILES[f.scope] || SCOPE_TILES.open;
   const tot = Math.max(1, base.filter(inScope).length);
   const hr = new Date().getHours();
@@ -75,7 +88,7 @@ export function OrdersList({ ctx }) {
       <div className="sec3 stat-h"><h2>Status</h2><button type="button" className="lk" onClick={() => openSheet({ kind: "scope" })}>{{ open: "Offen", closed: "Abgeschlossen", all: "Alle" }[f.scope]}<ChevronDown /></button></div>
       <div className="gcards">
         {tiles.map((k) => {
-          const n = base.filter((x) => inTile(k, x.b)).length; const I = TILE_ICON[k];
+          const n = base.filter((x) => inTile(k, x.bs)).length; const I = TILE_ICON[k];
           return (
             <button key={k} type="button" className={"gc" + (f.tile === k ? " on" : "")} onClick={() => setF({ tile: f.tile === k ? null : k })}>
               <span className="gi">{ST[k].img ? <img src={IMG(ST[k].img)} alt="" /> : <I />}</span>
@@ -90,13 +103,18 @@ export function OrdersList({ ctx }) {
       <div className="sec3"><h2>{f.tile ? ST[f.tile].l : "Alle Aufträge"}</h2>
         <div className="seg2">{[["all", "Alle"], ["reviews", "Bewertungen"], ["profile", "Profile"]].map(([k, l]) => <button key={k} type="button" className={f.type === k ? "on" : ""} onClick={() => setF({ type: k })}>{l}</button>)}</div></div>
       <div className="card ls">
-        {list.slice(0, limit).map(({ o, b, m }, j) => (
+        {list.slice(0, limit).map(({ o, r, bs, b, m }, j) => {
+          // In „Zahlung offen"/„Inkasso" zählt, was jetzt fällig ist – nicht der ganze Bestellwert.
+          const dueView = r && r.unpaidN && (f.tile === "pay" || f.tile === "inkasso");
+          return (
           <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
-            <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}<span className={"dt d-" + b} />{ST[b].l} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>{o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
+            <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
+              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
+                {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
-        ))}
+          );
+        })}
         {list.length > limit ? <button type="button" className="more-b" onClick={() => setLimit((x) => x + 100)}>Weitere {list.length - limit} anzeigen</button> : null}
         {loaded && !list.length ? <div className="aempty"><b>Alles erledigt</b>Keine Aufträge hier.</div> : null}
         {!loaded ? <div className="aempty"><b>Lädt …</b></div> : null}
@@ -110,21 +128,27 @@ export function OrderDetail({ ctx, id }) {
   const { orders, now, back, openSheet, act, pushReviews, ptasks, tplCount, isDesk } = ctx;
   const o = orders.find((x) => x.id === id);
   if (!o) return <><Nav back={back} isDesk={isDesk} /><div className="aempty"><b>Nicht gefunden</b>Dieser Auftrag ist nicht (mehr) in der Liste.</div></>;
-  const b = bucket(o, now), m = ageMin(o, b, now), late = isLate(b, m);
+  const pt = ptasks[o.id] || [];
+  const r = revState(o, pt);
+  const bs = bucketsOf(o, now, pt), b = mainBucket(bs), m = ageOf(o, b, r, now), late = isLate(b, m);
   const s = staffOf(o.assignee);
   const isRev = o.service === "reviews";
   const items = o.reviewItems || [];
-  const pt = ptasks[o.id] || [];
   const removedN = pt.filter((t) => t.status === "removed").length;
   const accN = o.reviewsAccepted ? o.reviewsAccepted.length : items.length;
   const f = o.form || {};
   // Weitere offene Zahlungen desselben Kunden (gleiche E-Mail) – gleiche Methode = Sammelzahlung möglich.
   const em = String(o.email || "").toLowerCase();
-  const sibs = em ? orders.filter((x) => x.id !== o.id && String(x.email || "").toLowerCase() === em && x.status !== "storniert" && payOpen(x, now)) : [];
+  const sibs = em ? orders.filter((x) => x.id !== o.id && String(x.email || "").toLowerCase() === em && x.status !== "storniert" && payOpen(x, now, ptasks)) : [];
   const same = sibs.filter((x) => (payPrefOf(x) || "") === (payPrefOf(o) || ""));
   const stepIx = b === "new" ? 0 : b === "work" ? 2 : b === "pay" || b === "inkasso" ? 3 : b === "deleted" ? 4 : -1;
+  const altHref = `/admin/alt?order=${encodeURIComponent(o.id)}`;
   const primary =
-    b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
+    // Gelöscht, aber noch nicht abgerechnet → zuerst Löschbestätigung + Rechnung (sonst würde die Mahnung alle Bewertungen anmahnen).
+    r && r.unbilledN && (b === "pay" || b === "inkasso") ? <a className="cta or" href={altHref}><Receipt />Rechnung senden · {r.unbilledN} gelöscht · {money(r.unpaidAmt, cur(o))}</a>
+    // Partner arbeitet schon, wir haben aber noch nicht übernommen → Übernehmen bleibt sichtbar.
+    : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
+    : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
     : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
     : b === "work" ? <button type="button" className="cta" onClick={() => act.done(o)}><Check />Als erledigt markieren</button>
     : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
@@ -134,7 +158,16 @@ export function OrderDetail({ ctx, id }) {
       <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin/alt?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
       <div className="amt"><div className="k">Bestellwert</div><div className="v">{orderMoney(o)}</div>
-        <div className="r"><span className="st"><span className={"dt d-" + b} />{ST[b].l}</span><span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div></div>
+        <div className="r">{bs.map((x) => <span key={x} className="st"><span className={"dt d-" + x} />{ST[x].l}</span>)}<span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div>
+        {r ? (
+          <div className="rvst">
+            <span><b>{r.removed}/{r.total}</b> gelöscht</span>
+            {r.open ? <span><b>{r.open}</b> beim Partner{r.working !== r.open ? ` (${r.working} in Arbeit)` : ""}</span> : null}
+            {r.software ? <span><b>{r.software}</b> Software · wartet auf Kunde</span> : null}
+            {r.notPossible ? <span><b>{r.notPossible}</b> nicht möglich</span> : null}
+            {r.unpaidN ? <span className="due"><b>{money(r.unpaidAmt, cur(o))}</b> offen · {r.unpaidN} Bew.{r.unbilledN ? ` · ${r.unbilledN} noch nicht abgerechnet` : ""}</span> : null}
+          </div>
+        ) : null}</div>
       {payPrefOf(o) && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><Percent /></span>
@@ -144,7 +177,7 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
-      {payOpen(o, now) && sibs.length ? (
+      {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
           <span className="di"><Layers /></span>
           <span className="t"><b>Kunde hat noch {sibs.length} weitere offene Zahlung{sibs.length > 1 ? "en" : ""}</b>
@@ -152,12 +185,13 @@ export function OrderDetail({ ctx, id }) {
             <span>{same.length ? <>Im Kunden-Dashboard sieht er {payPrefOf(o) ? `alle ${payPrefOf(o)}-Aufträge` : "alle Karten-Aufträge"} als eine Summe. Kommt eine Sammelzahlung, unten alle zusammen auf bezahlt setzen – er bekommt dann <b>eine</b> Bestätigung.</> : "Andere Methode – wird separat bezahlt."}</span></span>
         </div>
       ) : null}
-      {payOpen(o, now) ? <PaidBtn o={o} ctx={ctx} group={same} /> : null}
+      {payOpen(o, now, ptasks) ? <PaidBtn o={o} ctx={ctx} group={same} /> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
           <span className="t"><span>Betreuer</span><b>{s ? s.name : "Nicht zugewiesen"}</b></span><ChevronRight /></button>
         <div className="ir"><span className="ico"><Mail /></span><span className="t"><span>E-Mail</span><b>{o.email || "—"}</b></span></div>
+        <SourceTag o={o} />
         {o.phone ? <div className="ir"><span className="ico"><Phone /></span><span className="t"><span>Telefon</span><b>{o.phone}</b></span></div> : null}
         <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
         {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
@@ -181,9 +215,10 @@ export function OrderDetail({ ctx, id }) {
         <>
           <div className="lbl">Fortschritt</div>
           <div className="asteps">
-            {[["new", "Bestellung eingegangen"], ["work", "Löschung läuft"], ["del", "Gelöscht"], ["pay", b === "inkasso" ? "Zahlung (Inkasso)" : "Bezahlt"]].map(([k, lb], i) => {
+            {[["new", "Bestellung eingegangen"], ["work", "Löschung läuft"], ["del", r ? `Gelöscht · ${r.removed}/${r.total}` : "Gelöscht"], ["pay", b === "inkasso" ? "Zahlung (Inkasso)" : "Bezahlt"]].map(([k, lb], i) => {
               // Unser Ablauf: erst löschen, dann bezahlen → Zahlung offen/Inkasso = Schritt 4 aktiv.
-              const rank = b === "new" ? 0 : b === "work" ? 1 : b === "pay" || b === "inkasso" ? 3 : 4;
+              // Bewertungen: solange beim Partner noch etwas läuft, steht der Auftrag bei „Löschung läuft".
+              const rank = b === "new" ? 0 : b === "work" || bs.includes("work") ? 1 : b === "pay" || b === "inkasso" ? 3 : 4;
               const done = i < rank, curS = i === rank;
               return <div key={k} className={"stp" + (done ? " done" : curS ? " cur" : "")}><i>{done ? <Check /> : null}</i><b>{lb}</b>{curS ? <span>seit {fmtAge(m)}</span> : null}</div>;
             })}
@@ -197,7 +232,11 @@ export function OrderDetail({ ctx, id }) {
 }
 
 /** „Als bezahlt markieren" (z. B. Wise/PayPal/Überweisung): 2× tippen zur Bestätigung. Bewertungen → im Kunden-Dashboard „Bezahlt". */
-const payOpen = (x, now) => { const bx = bucket(x, now); return bx === "pay" || bx === "inkasso" || (x.status === "done" && x.pay !== "paid"); };
+const payOpen = (x, now, ptasks) => {
+  const r = revState(x, (ptasks || {})[x.id]);
+  if (r) return r.unpaidN > 0; // Bewertungen: offen, sobald eine gelöschte Bewertung unbezahlt ist
+  const bx = bucketsOf(x, now); return bx.includes("pay") || bx.includes("inkasso") || (x.status === "done" && x.pay !== "paid");
+};
 
 function PaidBtn({ o, ctx, group = [] }) {
   const [armed, setArmed] = React.useState(false);
