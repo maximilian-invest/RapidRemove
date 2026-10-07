@@ -373,3 +373,12 @@
 .prt .gnew{text-transform:none;letter-spacing:0}
 /* 5 Kacheln: die letzte („Not possible") über die volle Breite */
 .pra .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
+
+/* Desktop: App-Design als mittige Spalte (transform → Sheets/Pop-ups der App bleiben in der Spalte) */
+@media (min-width:861px){
+  body:has(.pra){background:#ececec}
+  .pra{left:50%;right:auto;width:480px;margin-left:-240px;transform:translateZ(0);box-shadow:0 0 0 1px #e2e2e2,0 24px 70px rgba(0,0,0,.12)}
+}
+/* Test-Zugang: orange Leiste oben, App rutscht darunter (statt sie zu verdecken) */
+.prt-testbar{position:fixed;top:0;left:0;right:0;z-index:60;height:calc(32px + env(safe-area-inset-top,0px));padding:calc(8px + env(safe-area-inset-top,0px)) 12px 0;background:#ff8000;color:#fff;font:700 13px/1.3 Geist,system-ui,sans-serif;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prt-test .pra,.prt-test .prt{top:32px}

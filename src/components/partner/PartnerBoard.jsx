@@ -31,6 +31,9 @@ export default function PartnerBoard() {
   const [gate, setGate] = React.useState(null); // Push noch nicht an → Vollbild-Aufforderung
   const [offerPk, setOfferPk] = React.useState(false); // nach dem Login: Face ID anbieten // { account } → Login über den persönlichen Link einrichten
   const [isMobile, setIsMobile] = React.useState(null);
+  // App-Design überall; die alte Tabellen-Ansicht gibt es am Desktop nur noch mit ?view=table.
+  const tableView = isMobile === false && typeof window !== "undefined" && /[?&]view=table\b/.test(window.location.search);
+  const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
   const [err, setErr] = React.useState("");
   const [tab, setTab] = React.useState("todo");
@@ -46,7 +49,7 @@ export default function PartnerBoard() {
   const chain = React.useRef(Promise.resolve()); // server writes strictly in order
   const noteTimers = React.useRef({});
   const toastTimer = React.useRef(null);
-  const undoMs = isMobile ? 3500 : 4000;
+  const undoMs = appUi ? 3500 : 4000;
 
   React.useEffect(() => {
     let t = "";
@@ -152,7 +155,7 @@ export default function PartnerBoard() {
     const mine = { run, timer: null };
     mine.timer = setTimeout(() => { if (pending.current === mine) flush(); }, undoMs);
     pending.current = mine;
-    const code = ids.length === 1 ? ts.find((x) => x.id === ids[0]).code : ids.length + (isMobile ? " reviews" : " tasks");
+    const code = ids.length === 1 ? ts.find((x) => x.id === ids[0]).code : ids.length + (appUi ? " reviews" : " tasks");
     showToast(`${code} → ${STATUS[status].l}`, () => {
       if (pending.current !== mine) return; // already committed
       clearTimeout(mine.timer); pending.current = null;
@@ -160,7 +163,7 @@ export default function PartnerBoard() {
       setTasks((xs) => (xs || []).map((t) => (m.has(t.id) ? { ...t, ...m.get(t.id) } : t)));
     }, undoMs);
     return ids;
-  }, [patch, flush, enqueue, token, showToast, load, undoMs, isMobile]);
+  }, [patch, flush, enqueue, token, showToast, load, undoMs, appUi]);
 
   /** Partner confirms a payout (per review or all). Committed after the undo window like status changes. */
   const markPaid = React.useCallback((idsIn) => {
@@ -239,7 +242,7 @@ export default function PartnerBoard() {
     document.addEventListener("visibilitychange", check);
     return () => { clearTimeout(first); clearInterval(iv); document.removeEventListener("visibilitychange", check); };
   }, [waiting.length]);
-  const sortAsc = isMobile ? true : sortOld;
+  const sortAsc = appUi ? true : sortOld;
   const visible = React.useMemo(() => {
     const f = TABS.find((x) => x[0] === tab)[2];
     const ql = q.trim().toLowerCase();
@@ -305,14 +308,13 @@ export default function PartnerBoard() {
       </div>
     </div>
   ) : null;
-  const app = <>{isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />}{waitPop}</>;
+  // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
+  const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}</>;
   if (!preview) return app;
   return (
     <>
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "#ff8000", color: "#fff", font: "700 13px/1.3 Geist, system-ui, sans-serif", textAlign: "center", padding: "8px 12px" }}>
-        TEST MODE · only test orders · the partner doesn’t see this
-      </div>
-      {app}
+      <div className="prt-testbar">TEST MODE · only test orders · the partner doesn’t see this</div>
+      <div className="prt-test">{app}</div>
     </>
   );
 }
