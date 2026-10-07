@@ -159,8 +159,9 @@ export default function PartnerApp({ api }) {
   }
 
   function OrdersV() {
-    const cs = custsOf(() => true).map(([c, l]) => ({ c, l, open: l.filter(isTodo).length, rem: l.filter(F.removed).length, wk: l.filter(F.wk).length }))
-      .filter((x) => ofl === "all" || (ofl === "open" ? x.open : !x.open))
+    // „Software" = wartet auf die Entscheidung des Kunden → nicht abgeschlossen, bleibt unter „Active".
+    const cs = custsOf(() => true).map(([c, l]) => ({ c, l, open: l.filter(isTodo).length, rem: l.filter(F.removed).length, wk: l.filter(F.wk).length, sw: l.filter(F.sw).length }))
+      .filter((x) => ofl === "all" || (ofl === "open" ? x.open || x.sw : !x.open && !x.sw))
       .sort((a, b) => (isNewC(b.c) - isNewC(a.c)) || (b.open - a.open));
     return (
       <>
@@ -169,7 +170,7 @@ export default function PartnerApp({ api }) {
         {cs.map((x) => (
           <button key={x.c} type="button" className="lrow" onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
             <Ring r={x.rem} n={x.l.length} />
-            <span className="t"><b>{x.c}</b><span>{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open ? `${x.open} open · ${x.wk} working` : "Completed"}</span></span>
+            <span className="t"><b>{x.c}</b><span>{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open ? `${x.open} open · ${x.wk} working${x.sw ? ` · ${x.sw} waiting for customer` : ""}` : x.sw ? `Waiting for customer · ${x.sw} software` : "Completed"}</span></span>
             <ChevronRight />
           </button>
         ))}
