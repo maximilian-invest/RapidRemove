@@ -449,7 +449,7 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
