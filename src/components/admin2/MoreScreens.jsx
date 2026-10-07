@@ -131,12 +131,6 @@ export function MonitorScreen({ ctx }) {
   return (
     <>
       <div className="hd"><div><span>{mon ? `${active} Profile überwacht` : "Lädt …"}</span><h1>Monitor</h1></div><button type="button" className="circ" aria-label="Profil hinzufügen" onClick={() => openSheet({ kind: "madd" })}><Plus /></button></div>
-      <div className={"mhero" + (back.length ? " alert" : "")}>
-        <span className="mi"><img src={IMG(back.length ? "inkasso" : "hero")} alt="" /></span>
-        <b>{back.length ? `${back.length} wieder aufgetaucht` : "Alles sauber"}</b>
-        <span>{back.length ? "Diese Profile sind wieder online." : "Kein gelöschtes Profil ist zurück."}</span>
-        <button type="button" className={"scan" + (running ? " spin" : "")} disabled={running} onClick={() => monScan()}><span><RefreshCw />{running ? (mon.run && mon.run.current ? "Prüft: " + mon.run.current : "Prüfung läuft …") : "Scan täglich 05:00"}</span><b>{running ? "Läuft" : "Jetzt prüfen"}</b></button>
-      </div>
       {back.map((p) => (
         <div key={p.id} className="mback">
           <button type="button" className="mshot" onClick={() => p.lastShotId && openViewer({ src: monitorShotUrl(p.lastShotId), dl: monitorShotUrl(p.lastShotId, true), title: p.name, sub: "Screenshot · " + fmtDT(p.foundAt) })}>
@@ -150,6 +144,12 @@ export function MonitorScreen({ ctx }) {
           </div>
         </div>
       ))}
+      <div className={"mhero" + (back.length ? " alert" : "")}>
+        <span className="mi"><img src={IMG(back.length ? "inkasso" : "hero")} alt="" /></span>
+        <b>{back.length ? `${back.length} wieder aufgetaucht` : "Alles sauber"}</b>
+        <span>{back.length ? "Diese Profile sind wieder online." : "Kein gelöschtes Profil ist zurück."}</span>
+        <button type="button" className={"scan" + (running ? " spin" : "")} disabled={running} onClick={() => monScan()}><span><RefreshCw />{running ? (mon.run && mon.run.current ? "Prüft: " + mon.run.current : "Prüfung läuft …") : "Scan täglich 05:00"}</span><b>{running ? "Läuft" : "Jetzt prüfen"}</b></button>
+      </div>
       <div className="sec3" style={{ marginTop: 14 }}><h2>Profile</h2><div className="seg2">{[["all", "Alle"], ["ok", "Gelöscht"], ["fail", "Fehler"]].map(([k, lb]) => <button key={k} type="button" className={mf === k ? "on" : ""} onClick={() => setMf(k)}>{lb}</button>)}</div></div>
       <div className="card ls">
         {l.map((p) => { const s = MS[p.status] || MS.ok; return (
@@ -199,7 +199,7 @@ function SettingsScreen({ ctx }) {
   const pn = p ? p.name : "Partner";
   return (
     <>
-      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
       <div className="sec3"><h2>Automatische Weiterleitung</h2></div>
       <p className="sh">Neue Aufträge gehen direkt an {pn}, ohne manuelle Prüfung.</p>
@@ -221,7 +221,7 @@ function PartnerScreen({ ctx }) {
   const b = (partners && partners.board) || {};
   return (
     <>
-      <div className="anav"><button type="button" className="circ mback" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Partner</div>
       {!partners ? <div className="aempty"><b>Lädt …</b></div> : null}
       {list.map((p) => (
