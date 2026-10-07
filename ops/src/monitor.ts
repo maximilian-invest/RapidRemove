@@ -426,7 +426,7 @@ async function startRun(kind: "auto" | "manual"): Promise<Run | null> {
   if (run || !dbReady() || !pool) return run;
   await ensureTables();
   await syncFromOrders();
-  const r = await pool.query(`SELECT id, business_name FROM monitor_profiles WHERE status NOT IN ('paused','exp') AND source <> 'deleted' ORDER BY (status = 'found') DESC, id`);
+  const r = await pool.query(`SELECT id, business_name FROM monitor_profiles WHERE status NOT IN ('paused','exp') AND source NOT IN ('deleted','archived') ORDER BY (status = 'found') DESC, id`);
   const ins = await pool.query(`INSERT INTO monitor_runs (kind, total) VALUES ($1,$2) RETURNING id, started_at`, [kind, r.rows.length]);
   const cur: Run = { id: ins.rows[0].id, kind, total: r.rows.length, done: 0, found: 0, failed: 0, current: "", cancel: false, startedAt: ins.rows[0].started_at };
   run = cur;
@@ -574,7 +574,7 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
         FROM monitor_profiles p
         LEFT JOIN LATERAL (SELECT id FROM monitor_checks c WHERE c.profile_id = p.id AND c.img IS NOT NULL AND c.result = 'found' ORDER BY checked_at DESC LIMIT 1) lc ON true
         LEFT JOIN LATERAL (SELECT note FROM monitor_checks c WHERE c.profile_id = p.id ORDER BY checked_at DESC LIMIT 1) ln ON true
-      WHERE p.source <> 'deleted'
+      WHERE p.source NOT IN ('deleted','archived')
        ORDER BY p.id`);
     const last = await pool!.query(`SELECT id, kind, started_at, finished_at, total, done, found, failed, cancelled FROM monitor_runs WHERE finished_at IS NOT NULL ORDER BY started_at DESC LIMIT 1`);
     return {
@@ -638,6 +638,11 @@ export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) 
     } else if (a === "type") {
       const t = b.type === "lifetime" ? "lifetime" : "monthly";
       await pool!.query(`UPDATE monitor_profiles SET type = $2 WHERE id = $1`, [id, t]);
+    } else if (a === "archive") {
+      // Aus der Liste nehmen, ohne Verlauf/Screenshots zu löschen (rückgängig: action "unarchive"). Sync legt es nicht neu an (order_id bleibt belegt).
+      await pool!.query(`UPDATE monitor_profiles SET source = 'archived', status = 'exp', note = COALESCE(note, '') || $2 WHERE id = $1`, [id, `\n[archiviert ${new Date().toISOString().slice(0, 10)}, vorher ${p.source}/${p.status}]`]);
+    } else if (a === "unarchive") {
+      await pool!.query(`UPDATE monitor_profiles SET source = CASE WHEN order_id IS NULL THEN 'manual' ELSE 'order' END, status = 'ok' WHERE id = $1`, [id]);
     } else if (a === "delete") {
       await pool!.query(`DELETE FROM monitor_checks WHERE profile_id = $1`, [id]);
       await pool!.query(`DELETE FROM monitor_profiles WHERE id = $1`, [id]);
