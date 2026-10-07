@@ -11,7 +11,7 @@ import useAutoUpdate from "@/lib/useAutoUpdate";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2,
 } from "lucide-react";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -81,11 +81,11 @@ const initials = (name, email) => {
 /* ---- Status (intern → Kunde) ---- */
 const ST_ = {
   new: { I: Search, ico: "in" }, working: { I: Loader, ico: "wk" }, removed: { I: CheckCircle2, ico: "ok" }, notpossible: { I: Ban, ico: "no" },
-  software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
+  verify: { I: ShieldCheck, ico: "pr" }, software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
 };
 // pre = Software-Fall, dem der Kunde schon bei der Bestellung zugestimmt hat → Partner hat bestätigt, jetzt nur noch zahlen.
 const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p = k === "software" && pre; return { ...ST_[k], l: T(p ? "st_swpay" : "st_" + k), why: T(p ? "why_swpay" : "why_" + k) }; };
-const OPEN = ["new", "working", "software", "sw_accepted"];
+const OPEN = ["new", "verify", "working", "software", "sw_accepted"];
 const statusLine = (r, cur) => stOf(r.status, r.pre).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
   + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
@@ -219,6 +219,88 @@ function Countdown({ to }) {
   );
 }
 
+/* Inhaber-Nachweis (4–5-Sterne-Bewertungen beauftragt): Kunde lädt ein Dokument hoch → KI prüft sofort →
+   passt es, startet der Auftrag ganz normal. Gleicher Aufbau wie der Software-Zahlungsschritt (Vollbild am Handy, Pop-up am Desktop). */
+const vNeeds = (o) => !!(o && o.verify && o.verify.status !== "ok");
+async function fileToUpload(file) {
+  const asData = (blob) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result)); r.onerror = rej; r.readAsDataURL(blob); });
+  if (file.type === "application/pdf") return { mime: "application/pdf", data: await asData(file), size: file.size };
+  // Fotos: verkleinern (max. 2200 px) und als JPEG schicken – kleiner, schneller und auch HEIC vom iPhone wird lesbar.
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, 2200 / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas"); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+    const data = c.toDataURL("image/jpeg", 0.85);
+    return { mime: "image/jpeg", data, size: Math.round(data.length * 0.75) };
+  } finally { URL.revokeObjectURL(url); }
+}
+function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
+  const [up, setUp] = React.useState(false);
+  const [res, setRes] = React.useState(null); // Antwort des letzten Uploads in dieser Sitzung
+  const fileRef = React.useRef(null);
+  React.useEffect(() => { setRes(null); setUp(false); }, [order && order.id]);
+  const v = (order && order.verify) || {};
+  const ph = up || v.status === "checking" ? "checking" : res ? (res.manual ? "manual" : res.status) : v.status === "rejected" ? "rejected" : v.status === "ok" ? "ok" : v.uploaded ? "manual" : "";
+  const reason = (res && res.reason) || v.reason || "";
+  const pick = () => { if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; } if (fileRef.current) { fileRef.current.value = ""; fileRef.current.click(); } };
+  const onFile = async (e) => {
+    const f = e.target.files && e.target.files[0]; if (!f || !order) return;
+    if (!/^image\//.test(f.type) && f.type !== "application/pdf") { showToast(T("vType"), true); return; }
+    if (f.size > 25 * 1024 * 1024) { showToast(T("vBig"), true); return; }
+    setUp(true);
+    try {
+      const u = await fileToUpload(f).catch(() => null);
+      if (!u) { showToast(T("vType"), true); setUp(false); return; }
+      if (u.size > 10 * 1024 * 1024) { showToast(T("vBig"), true); setUp(false); return; }
+      const r = await call("verify-upload", { token, orderId: order.id, mime: u.mime, data: u.data });
+      setRes(r);
+      track("verify_upload", `${order.id} · ${r.status}`, { status: r.status });
+      onDone();
+    } catch (err) {
+      showToast(err.code === "too_many" ? T("vMany") : err.code === "size" ? T("vBig") : err.code === "type" ? T("vType") : T("genericErr"), true);
+    }
+    setUp(false);
+  };
+  let body = null, btn = null;
+  if (ph === "checking") body = (
+    <div className="vf-chk"><Loader className="spin" /><h2>{T("vChk")}</h2><p>{T("vChkP")}</p></div>
+  );
+  else if (ph === "ok") { body = (<><div className="fl-art"><img src={IMG.rocket} alt="" /></div><h2>{T("vOkH")}</h2><p>{T("vOkP")}</p></>); btn = <button className="cta" onClick={onClose}>{T("done")}</button>; }
+  else if (ph === "manual") { body = (<><div className="fl-art"><img src={IMG.shield} alt="" /></div><h2>{T("vManH")}</h2><p>{T("vManP")}</p></>); btn = <button className="cta" onClick={onClose}>{T("done")}</button>; }
+  else {
+    body = (
+      <>
+        {ph === "rejected" ? null : <div className="fl-art"><img src={IMG.shield} alt="" /></div>}
+        <div className="fl-k">{T("vK")}</div>
+        <h2>{ph === "rejected" ? T("vNoH") : T("vH", { biz: order ? order.business || "" : "" })}</h2>
+        {ph === "rejected" ? <div className="note bad vf-why">{reason || T("vNoP")}</div> : <p>{T("vP")}</p>}
+        <div className="fl-k vf-dk">{T("vDocs")}</div>
+        <div className="fl-feat vf-docs">
+          <div className="ff"><span className="ico"><Building2 /></span><span><b>{T("vD1")}</b></span></div>
+          <div className="ff"><span className="ico"><Receipt /></span><span><b>{T("vD2")}</b></span></div>
+          <div className="ff"><span className="ico"><Store /></span><span><b>{T("vD3")}</b></span></div>
+        </div>
+        <div className="secure"><Lock />{T("vSafe")}</div>
+      </>
+    );
+    btn = <button className="cta" onClick={pick}><Upload />{ph === "rejected" ? T("vAgain") : T("vUp")}</button>;
+  }
+  return (
+    <section className={"flow vf" + (order ? " show" : "")} aria-hidden={!order} onClick={(e) => { if (e.target === e.currentTarget && !up) onClose(); }}>
+      {order ? (
+        <div className="fl-card">
+          <div className="fl-top"><button className="x" onClick={onClose} disabled={up} aria-label="Close"><X /></button><div className="fl-bar" /></div>
+          <div className="fl-body">{body}</div>
+          {btn ? <div className="fl-foot">{btn}</div> : null}
+          <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 /* „Status geändert": öffnet sich von selbst – am Handy als Sheet von unten (Griff, wegwischen), am Desktop als Pop-up.
    Erst mit „Verstanden" (oder Wegwischen) gilt es als gelesen und kommt nicht wieder. */
 function ChangedSheet({ open, items, onDone, onOpen }) {
@@ -260,6 +342,8 @@ export default function CustomerDashboard() {
   const rvRef = React.useRef(null);
   useSwipeClose(rvRef, !!sheet, () => setSheet(null));
   const [flow, setFlow] = React.useState(null); // { step, items, pick:Set, mode, total, n, url }
+  const [vfId, setVfId] = React.useState(null); // Inhaber-Nachweis: offene Bestellung
+  const vfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [toast, setToast] = React.useState(null); // { m, bad }
   const [busy, setBusy] = React.useState("");
   const [magicErr, setMagicErr] = React.useState(false);
@@ -452,6 +536,12 @@ export default function CustomerDashboard() {
       if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {});
     } catch (e) { /* */ }
   }, [data]);
+  // Inhaber-Nachweis offen → einmal je Sitzung von selbst öffnen (wie die Software-Zahlung).
+  React.useEffect(() => {
+    if (!data || vfAuto.current || imp || data.adminView) return;
+    const o = (data.orders || []).find((x) => vNeeds(x) && x.verify.status !== "checking" && !(x.verify.status === "pending" && x.verify.uploaded));
+    if (o) { vfAuto.current = true; setVfId(o.id); }
+  }, [data, imp]);
   // Dashboard-Aktivität: Sitzung starten, sobald die Daten da sind; Seitenaufrufe je Ansicht.
   React.useEffect(() => { if (token && data && !imp && !data.adminView) startTracking(token); }, [token, !!data, imp]); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => {
@@ -492,7 +582,10 @@ export default function CustomerDashboard() {
   }
 
   /* ---- Abgeleitete Daten ---- */
-  const orders = data.orders || [];
+  // Auftrag wartet auf den Inhaber-Nachweis → seine Bewertungen zeigen „Wartet auf Nachweis" statt „Wird geprüft".
+  const orders = (data.orders || []).map((o) => (vNeeds(o) ? { ...o, items: o.items.map((i) => (i.status === "new" ? { ...i, status: "verify" } : i)) } : o));
+  const vNeed = orders.filter(vNeeds);
+  const vfOrder = vfId ? orders.find((o) => o.id === vfId) || null : null;
   const all = orders.flatMap((o) => o.items.map((r) => ({ ...r, o, id: o.id + "\u0001" + r.key })));
   const removedN = all.filter((r) => r.status === "removed").length;
   const remaining = all.filter((r) => OPEN.includes(r.status)).length;
@@ -627,8 +720,8 @@ export default function CustomerDashboard() {
   };
 
   /* ---- Bausteine ---- */
-  const AlertBtn = ({ title, sub }) => (
-    <button className="alert" onClick={openFlow}>
+  const AlertBtn = ({ title, sub, onClick }) => (
+    <button className="alert" onClick={onClick || openFlow}>
       <span className="ai"><AlertTriangle /></span>
       <span><b>{title}</b><span>{sub}</span></span>
       <span className="ar"><ArrowRight /></span>
@@ -684,6 +777,7 @@ export default function CustomerDashboard() {
       </div>
       <div className="hg">
         <div className="hl">
+          {vNeed.length ? <AlertBtn title={T("vAlert")} sub={vNeed[0].verify.uploaded && vNeed[0].verify.status !== "rejected" ? T("vManP") : T("vAlertS")} onClick={() => setVfId(vNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
@@ -847,6 +941,7 @@ export default function CustomerDashboard() {
         <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
         <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>#{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
         <div className="bigprog"><Ring r={r} n={n} /><span><b>{T("removedOf", { r, n })}</b><span>{op ? T("stillInProgress", { n: op }) : o.cancelled ? T("cancelled") : T("completed")}</span></span></div>
+        {vNeeds(o) ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("vAlert")} sub={T("vAlertS")} onClick={() => setVfId(o.id)} /></div> : null}
         {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
         <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {
@@ -1027,14 +1122,16 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !cele && !wiseOpen && !detail} items={changedNew}
+      <VerifyFlow order={vfOrder} token={token} imp={!!adminView} showToast={showToast} onClose={() => { setVfId(null); load(token); }} onDone={() => load(token)} />
+
+      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !vfOrder && !cele && !wiseOpen && !detail} items={changedNew}
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow}
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!vfOrder}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>

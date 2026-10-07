@@ -606,3 +606,15 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .sw-items{display:flex;flex-direction:column}
 .rra .sw-it{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--g2)}
 .rra .sw-it>span{min-width:0;display:flex;flex-direction:column}.rra .sw-it>span b{font-size:15px}.rra .sw-it>span span{font-size:13px;color:var(--g3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Inhaber-Nachweis (Upload → KI-Prüfung) */
+.rra .vf .fl-bar{visibility:hidden}
+.rra .vf-dk{margin-top:22px}
+.rra .vf-docs{margin-top:12px;gap:12px}
+.rra .vf-docs .ff b{font-size:15px;font-weight:600;line-height:1.35}
+.rra .vf-docs .ico{width:36px;height:36px;border-radius:12px;background:var(--g1);display:grid;place-items:center;flex:none}
+.rra .vf-docs .ico svg{width:18px;height:18px}
+.rra .vf-why{margin:4px 0 6px;line-height:1.45}
+.rra .vf-chk{min-height:52vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px}
+.rra .vf-chk>svg{width:44px;height:44px;color:var(--primary);margin-bottom:10px}
+.rra .vf .secure{flex-wrap:nowrap;text-align:left;justify-content:flex-start}

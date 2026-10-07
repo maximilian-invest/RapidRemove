@@ -19,6 +19,8 @@ export interface AuftragsbestaetigungReviewsProps {
   name?: string;
   /** Chat-Rabatt in % (der höhere aus Mengen- und Chat-Rabatt gilt). */
   chatPct?: number;
+  /** Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen beauftragt) → Hinweis + Upload im Dashboard. */
+  verify?: boolean;
   /** Die zu löschenden Bewertungen (wie im Wizard eingereicht). */
   items?: ReviewRef[];
   /** Veraltet: nur Links (ältere Bestellungen) — wird zu items normalisiert. */
@@ -271,12 +273,27 @@ export const T: Record<string, Entry> = {
 
 const fill = (s: string, per: string) => (s || "").replace(/\{per\}/g, per || "");
 
+/** Inhaber-Nachweis (4–5-Sterne-Bewertungen): Hinweis in der Auftragsbestätigung. */
+const VF: Record<string, [string, string]> = {
+  de: ["Bitte kurz bestätigen, dass das Unternehmen Ihnen gehört", "Weil Sie Bewertungen mit 4 oder 5 Sternen beauftragt haben, brauchen wir einmalig einen Nachweis (z. B. Gewerbeschein, Firmenbuch-/Handelsregisterauszug oder Steuerbescheid) – damit niemand die guten Bewertungen fremder Unternehmen löschen lassen kann. Laden Sie ihn im Dashboard hoch: Die Prüfung dauert nur Sekunden, danach starten wir sofort."],
+  en: ["Please confirm the business is yours", "Because you ordered the removal of reviews with 4 or 5 stars, we need a one-time proof (e.g. business licence, company register extract or tax document) – so nobody can have another company's good reviews removed. Upload it in your dashboard: the check takes seconds, then we start right away."],
+  es: ["Confirma que la empresa es tuya", "Como has encargado eliminar reseñas de 4 o 5 estrellas, necesitamos una prueba única (p. ej. licencia de actividad, extracto del registro mercantil o documento fiscal), para que nadie pueda eliminar las buenas reseñas de otra empresa. Súbela en tu panel: la comprobación tarda segundos y después empezamos enseguida."],
+  fr: ["Merci de confirmer que l’entreprise t’appartient", "Comme tu as demandé la suppression d’avis à 4 ou 5 étoiles, nous avons besoin une seule fois d’un justificatif (p. ex. Kbis, extrait du registre ou document fiscal), pour que personne ne puisse faire supprimer les bons avis d’une autre entreprise. Envoie-le dans ton espace client : la vérification prend quelques secondes, puis nous commençons tout de suite."],
+  it: ["Conferma che l’attività è tua", "Poiché hai ordinato la rimozione di recensioni a 4 o 5 stelle, ci serve una prova una tantum (es. visura camerale o documento fiscale), così nessuno può far rimuovere le buone recensioni di un’altra attività. Caricala nella dashboard: la verifica richiede pochi secondi, poi iniziamo subito."],
+  nl: ["Bevestig dat het bedrijf van u is", "Omdat u de verwijdering van reviews met 4 of 5 sterren hebt besteld, hebben we eenmalig een bewijs nodig (bijv. KvK-uittreksel of belastingdocument), zodat niemand de goede reviews van een ander bedrijf kan laten verwijderen. Upload het in uw dashboard: de controle duurt seconden, daarna starten we meteen."],
+  pt: ["Confirma que a empresa é tua", "Como encomendaste a remoção de avaliações de 4 ou 5 estrelas, precisamos uma única vez de uma prova (p. ex. certidão permanente ou documento fiscal), para que ninguém possa mandar remover as boas avaliações de outra empresa. Envia-a no painel: a verificação demora segundos e depois começamos de imediato."],
+  ja: ["ビジネスのオーナーであることをご確認ください", "星4〜5の口コミの削除をご依頼いただいたため、一度だけオーナー証明（営業許可証、登記事項証明書、税務書類など）が必要です。他社の良い口コミを第三者が削除できないようにするためです。ダッシュボードからアップロードしてください。確認は数秒で終わり、すぐに開始します。"],
+  sv: ["Bekräfta att företaget är ditt", "Eftersom du har beställt borttagning av omdömen med 4 eller 5 stjärnor behöver vi ett engångsbevis (t.ex. registreringsbevis eller skattedokument) – så att ingen kan få ett annat företags bra omdömen borttagna. Ladda upp det i din översikt: kontrollen tar sekunder, sedan börjar vi direkt."],
+  da: ["Bekræft, at virksomheden er din", "Da du har bestilt fjernelse af anmeldelser med 4 eller 5 stjerner, har vi én gang brug for et bevis (fx CVR-udskrift eller skattedokument) – så ingen kan få en anden virksomheds gode anmeldelser fjernet. Upload det i dit dashboard: kontrollen tager sekunder, derefter går vi straks i gang."],
+  no: ["Bekreft at bedriften er din", "Siden du har bestilt fjerning av anmeldelser med 4 eller 5 stjerner, trenger vi ett bevis én gang (f.eks. firmaattest eller skattedokument) – slik at ingen kan få et annet firmas gode anmeldelser fjernet. Last det opp i dashbordet: kontrollen tar sekunder, deretter starter vi med en gang."],
+};
+
 export function subject(p: AuftragsbestaetigungReviewsProps): string {
   const t = T[p.lang || "en"] || T.en;
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -320,6 +337,13 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       ) : null}
 
       {rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
+
+      {verify ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(VF[lang] || VF.en)[0]}</span><br />
+          {(VF[lang] || VF.en)[1]}
+        </NoteBox>
+      ) : null}
 
       <DashBox lang={lang} dash={dash} />
       <P>{t.close}</P>

@@ -11,7 +11,7 @@ import { SourceTag } from "./Source";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -187,6 +187,7 @@ export function OrderDetail({ ctx, id }) {
             {isRev || (o.lang || "de") !== "de" ? <span>Mahnungen gehen deshalb als {payPrefOf(o)}-Text ohne Stripe-Link raus.</span> : null}</span>
         </div>
       ) : null}
+      {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
@@ -240,6 +241,51 @@ export function OrderDetail({ ctx, id }) {
       {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
+  );
+}
+
+/** Inhaber-Nachweis (Bewertung mit 4–5 Sternen beauftragt): Status, Dokument ansehen, selbst freigeben/ablehnen.
+ *  Freigabe → Auftrag geht aufs Partner-Board (normaler Ablauf). */
+function VerifyBox({ o, ctx }) {
+  const v = o.verify || {};
+  const [busy, setBusy] = React.useState("");
+  const [st, setSt] = React.useState(v.status);
+  React.useEffect(() => setSt(v.status), [v.status]);
+  const ok = st === "ok";
+  const L = { pending: v.doc ? "Hochgeladen · KI nicht erreichbar – bitte selbst prüfen" : "Wartet auf Upload des Kunden", checking: "KI prüft gerade …", rejected: "Von " + (v.by === "admin" ? "uns" : "der KI") + " abgelehnt", ok: "Freigegeben" + (v.by === "admin" ? " (Admin)" : " (KI)") };
+  const show = async () => {
+    setBusy("doc");
+    const w = window.open("", "_blank");
+    try {
+      const r = await verifyDoc(o.id);
+      const bin = atob(r.data); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([u8], { type: r.mime }));
+      if (w && !w.closed) w.location.href = url; else window.open(url, "_blank");
+      if (r.result && ctx.toast) ctx.toast(`KI: ${r.result.approve ? "passt" : "passt nicht"} · ${Math.round((r.result.confidence || 0) * 100)} % · ${r.result.doc_type || ""}`);
+    } catch (e) { if (w && !w.closed) w.close(); if (ctx.toast) ctx.toast(e.message || "Kein Dokument"); }
+    setBusy("");
+  };
+  const set = async (action) => {
+    let reason = "";
+    if (action === "reject") { reason = window.prompt("Grund für den Kunden (wird im Dashboard angezeigt):", "") || ""; if (!reason.trim()) return; }
+    setBusy(action);
+    try { const r = await verifySet(o.id, action, reason); setSt(r.status); if (ctx.toast) ctx.toast(action === "approve" ? "Freigegeben – Auftrag ist auf dem Partner-Board" : "Abgelehnt"); if (ctx.refresh) ctx.refresh(); if (ctx.loadPtasks) ctx.loadPtasks(); }
+    catch (e) { if (ctx.toast) ctx.toast(e.message || "Fehler"); }
+    setBusy("");
+  };
+  return (
+    <div className={"disc vfy" + (ok ? " ok" : "")}>
+      <span className="di"><ShieldCheck /></span>
+      <span className="t"><b>Inhaber-Nachweis · {L[st] || st}</b>
+        {v.reason ? <span>{v.reason}</span> : null}
+        {!ok ? <span>Bewertung mit 4–5 Sternen beauftragt → Auftrag startet erst nach dem Nachweis.</span> : null}
+        <span className="vfy-b">
+          {v.doc ? <button type="button" disabled={!!busy} onClick={show}>{busy === "doc" ? "Lädt …" : "Dokument ansehen"}</button> : null}
+          {!ok ? <button type="button" className="go" disabled={!!busy} onClick={() => set("approve")}>{busy === "approve" ? "…" : "Freigeben"}</button> : null}
+          {!ok ? <button type="button" disabled={!!busy} onClick={() => set("reject")}>{busy === "reject" ? "…" : "Ablehnen"}</button> : null}
+        </span>
+      </span>
+    </div>
   );
 }
 

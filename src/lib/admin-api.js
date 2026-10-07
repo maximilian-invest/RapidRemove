@@ -108,6 +108,7 @@ function mapOrder(r) {
       : ((r.raw && Array.isArray(r.raw.reviewUrls)) ? r.raw.reviewUrls.filter(Boolean).map((u) => ({ url: u })) : []),
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
     // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
+    verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,
     reviewsSoftware: (r.raw && Array.isArray(r.raw.reviewsSoftware)) ? r.raw.reviewsSoftware.filter((it) => it && (it.url || it.name)) : [],
     reviewsPayments: (r.raw && Array.isArray(r.raw.reviewsPayments)) ? r.raw.reviewsPayments : [],
@@ -694,6 +695,9 @@ export const custInviteOne = (p) => adminPost("/admin/cust/invite-one", p);
 /** Alle offenen Bewertungen eines Auftrags auf einen Status setzen (wie der Partner): working | software | not_possible. */
 export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner/order-status", { orderId, status });
 /** „Kundendashboard öffnen": einmaliger Link zur Admin-Ansicht (ohne Tracking) → { url }. */
+/** Inhaber-Nachweis: Dokument laden ({ mime, data b64, result }) bzw. selbst freigeben/ablehnen. */
+export const verifyDoc = (orderId) => adminPost("/admin/verify-doc", { orderId });
+export const verifySet = (orderId, action, reason) => adminPost("/admin/verify-set", { orderId, action, reason });
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });
 /** Globaler Aktivitäten-Feed aller Kunden → { stats, seen[], items[], nextCursor }. */
 export const activityFeed = (p) => adminPost("/admin/activity/feed", p);
