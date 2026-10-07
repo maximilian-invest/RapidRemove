@@ -8,8 +8,8 @@ import { MessageCircle, ChevronDown, ArrowUp, Headphones, X } from "lucide-react
 import { asset } from "@/lib/base";
 import { useLang } from "@/lib/lang-context";
 import "@/styles/sitechat.css";
-import { OfferCard, Checkout } from "@/components/SiteChatCheckout";
-import { CO } from "@/components/sitechat-co-i18n";
+import { OfferCard, Checkout, ReviewPicker, ConfirmCard } from "@/components/SiteChatCheckout";
+import { CO, PK } from "@/components/sitechat-co-i18n";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const NAME = process.env.NEXT_PUBLIC_CHAT_PERSONA || "Lena";
@@ -82,7 +82,8 @@ export default function SiteChat({ hideBubble = false }) {
   const [wig, setWig] = React.useState(false);
   const [tease, setTease] = React.useState(false);
   const [coOpen, setCoOpen] = React.useState(null); // Bestellformular im Chat
-  const retained = React.useRef(false); // Team-Wunsch schon einmal mit „Ich helfe sofort“ beantwortet
+  const retained = React.useRef(false);
+  const lastPick = React.useRef(null); // zuletzt geladenes Profil mit Bewertungen (für „Namen schreiben“) // Team-Wunsch schon einmal mit „Ich helfe sofort“ beantwortet
   const [handed, setHanded] = React.useState(false); // mit dem Team verbunden → eigene Bubble weg, nur noch Tidio
   React.useEffect(() => { if (ss.get("rr_site_chat_handed")) setHanded(true); }, []);
   const body = React.useRef(null), inp = React.useRef(null), everOpen = React.useRef(false);
@@ -130,9 +131,63 @@ export default function SiteChat({ hideBubble = false }) {
       handoffToTidio(l, () => { ss.set("rr_site_chat_handed", ""); setHanded(false); setMsgs((m) => [...m, { sys: 2, t: t.fail }]); setOpen(true); });
     }, 900);
   };
+  const P = PK[lang] || PK.en;
+  const maxPct = () => msgs.reduce((m, x) => Math.max(m, (x.co && x.co.pct) || 0), 0);
+  const botSay = async (cur, text) => { const n = [...cur, { r: "b", t: text }]; setMsgs(n); return n; };
+  /** Bestätigung „Diese X Bewertungen löschen?“ (Bewertungen ohne Text fliegen raus – nur mit Vorauszahlung). */
+  const confirmItems = (cur, items, place) => {
+    const ok = items.filter((r) => !(r.rating && !String(r.text || "").trim() && r.name));
+    const nt = items.length - ok.length;
+    if (!ok.length) return [...cur, { r: "b", t: P.nt.replace("{n}", nt) }];
+    return [...cur, { conf: { items: ok, nt, place } }];
+  };
+  /** Google-Links im Chat: Bewertungs-Link(s) → Bestätigung, Profil-Link → Auswahlliste. */
+  const handleLinks = async (q, links) => {
+    let cur = [...msgs.filter((x) => !x.h && !x.chs), { r: "u", t: q }];
+    setMsgs(cur); setTxt(""); setBusy(true);
+    const t0 = Date.now();
+    const rs = await Promise.all(links.slice(0, 5).map((link) => fetch(OPS + "/chat/site/link", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sid: sidOf(), link, lang, message: q, page: window.location.pathname }) }).then((r) => r.json()).catch(() => ({ ok: false }))));
+    const wait = 1400 - (Date.now() - t0); if (wait > 0) await sleep(wait);
+    const prof = rs.find((r) => r.ok && r.type === "profile");
+    const revs = rs.filter((r) => r.ok && r.type === "review");
+    if (prof) {
+      lastPick.current = { place: prof.place, reviews: prof.reviews || [] };
+      cur = await botSay(cur, P.pick.replace("{name}", prof.place.name));
+      cur = [...cur, { pick: { place: prof.place, reviews: prof.reviews || [] } }]; setMsgs(cur);
+    } else if (revs.length) {
+      const items = revs.map((r) => ({ ...r.review, link: r.review.link }));
+      const names = items.map((r) => r.name).filter(Boolean);
+      cur = await botSay(cur, names.length ? (names.length > 1 ? P.foundN : P.found).replace("{list}", names.join(", ")) : P.conf.replace("{n}", items.length));
+      cur = confirmItems(cur, items, revs[0].place); setMsgs(cur);
+    } else {
+      await botSay(cur, P.unknown);
+    }
+    setBusy(false);
+  };
+  /** Namen aus der geladenen Liste erkennen („Müller, Anna K.“) → Bestätigung. */
+  const matchNames = (q) => {
+    const pk = lastPick.current; if (!pk || !pk.reviews.length) return null;
+    const toks = q.split(/,|;|\n| und | and | & | sowie | y | et | e /i).map((x) => x.trim().toLowerCase()).filter((x) => x.length >= 3);
+    if (!toks.length) return null;
+    const hits = []; let matched = 0;
+    for (const tk of toks) {
+      const h = pk.reviews.filter((r) => { const n = String(r.name || "").toLowerCase(); return n && (n.includes(tk) || (n.length >= 5 && tk.split(/\s+/).length <= 6 && tk.includes(n))); });
+      if (h.length) { matched++; h.forEach((r) => { if (!hits.includes(r)) hits.push(r); }); }
+    }
+    return matched && matched >= Math.ceil(toks.length / 2) ? hits.slice(0, 20) : null;
+  };
   const send = async (raw, extra = {}) => {
     const q = String(raw || "").trim();
     if (!q || busy) return;
+    const links = (q.match(/https?:\/\/\S+/g) || []).filter((u) => /google\.[a-z.]+\/maps|maps\.app\.goo\.gl|goo\.gl\/maps|g\.co\/|maps\.google\./i.test(u));
+    if (links.length) { await handleLinks(q, links); return; }
+    const named = matchNames(q);
+    if (named) {
+      let cur = [...msgs.filter((x) => !x.h && !x.chs), { r: "u", t: q }];
+      setMsgs(cur); setTxt(""); setBusy(true); await sleep(900);
+      cur = confirmItems(cur, named, lastPick.current.place); setMsgs(cur); setBusy(false);
+      return;
+    }
     const history = msgs.filter((m) => m.t && !m.sys).slice(-20).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
     const next = [...msgs.filter((x) => !x.h && !x.chs), { r: "u", t: q }];
     setMsgs(next); setTxt(""); setBusy(true);
@@ -176,7 +231,12 @@ export default function SiteChat({ hideBubble = false }) {
           <button type="button" className="sc-x" onClick={() => setOpen(false)} aria-label={t.close}><ChevronDown /></button></div>
         <div className="sc-body" ref={body}>
           {!msgs.length ? <div className="sc-hi"><AV /><b>{t.hi}</b>{t.hiS ? <span>{t.hiS}</span> : null}</div> : null}
-          {msgs.map((m, i) => (m.chs
+          {msgs.map((m, i) => (m.pick
+            ? <ReviewPicker key={i} pick={m.pick} lang={lang} P={P} done={m.done} onNext={(items) => { setMsgs((x) => confirmItems(x.map((y, k) => (k === i ? { ...y, done: 1 } : y)), items, m.pick.place)); }} />
+            : m.conf
+            ? <ConfirmCard key={i} conf={m.conf} lang={lang} P={P} done={m.done || m.ordered} onYes={() => setCoOpen({ service: "reviews", country: (m.conf.place && m.conf.place.country) || "", pct: maxPct(), items: m.conf.items, company: (m.conf.place && m.conf.place.name) || "", idx: i })}
+                onNo={() => setMsgs((x) => [...x.map((y, k) => (k === i ? { ...y, done: 1 } : y)), { r: "b", t: P.change }, ...(lastPick.current ? [{ pick: lastPick.current }] : [])])} />
+            : m.chs
             ? <div key={i} className="sc-chs">{m.chs.map((c, k) => <button key={k} type="button" className={c.value === "__team__" ? "tm" : ""} style={{ animationDelay: k * 60 + "ms" }} disabled={busy}
                 onClick={() => { if (c.value === "__team__") { setMsgs((x) => [...x.filter((y) => !y.chs), { r: "u", t: c.label }]); toTeam([...msgs.filter((y) => !y.chs), { r: "u", t: c.label }]); } else send(c.label); }}>{c.value === "__team__" ? <Headphones /> : null}{c.label}</button>)}</div>
             : m.co

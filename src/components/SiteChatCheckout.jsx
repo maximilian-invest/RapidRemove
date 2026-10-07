@@ -56,8 +56,10 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
 
 export function Checkout({ co, lang, sid, onClose, onDone }) {
   const c = CO[lang] || CO.en;
-  const [f, setF] = React.useState({ name: "", email: "", phone: "", company: "", profileLink: "", country: co.country || "", payPref: "none", agb: false });
-  const [revs, setRevs] = React.useState([{ url: "", age: "new" }]);
+  const [f, setF] = React.useState({ name: "", email: "", phone: "", company: co.company || "", profileLink: "", country: co.country || "", payPref: "none", agb: false });
+  const [revs, setRevs] = React.useState(() => (co.items && co.items.length
+    ? co.items.map((r) => ({ url: r.link || r.url || "", age: r.days > 28 ? "old" : "new", name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days, fixed: true }))
+    : [{ url: "", age: "new" }]));
   const [bad, setBad] = React.useState({});
   const [err, setErr] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -81,7 +83,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
         country: f.country === "OTHER" ? "XX" : f.country, lang, payPref: f.payPref, agb: true, page: window.location.pathname,
-        reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age })) : [],
+        reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) { setErr(j.error === "already_ordered" ? c.errDup : j.error === "reviews_dach" ? c.errDach : c.errGen); setBusy(false); return; }
@@ -122,7 +124,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
             <span className="co-l">{c.reviews}</span>
             {revs.map((r, i) => (
               <div key={i} className="co-rev">
-                <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />
+                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
                 <div className="co-age">
                   {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}
                   {revs.length > 1 ? <button type="button" className="rm" aria-label="−" onClick={() => setRevs((x) => x.filter((_, n) => n !== i))}><Trash2 /></button> : null}
@@ -161,6 +163,53 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         <button type="button" className="co-buy" disabled={busy} onClick={submit}>{busy ? <><Loader2 className="spin" />{c.sending}</> : <><Lock />{c.buy} · {fmt(p.total, p.usd)}</>}</button>
         <button type="button" className="co-back" onClick={onClose}>{c.back}</button>
       </div>
+    </div>
+  );
+}
+
+/* ---------- Bewertungen aus einem Google-Profil auswählen ---------- */
+const ago = (days, lang) => {
+  if (days == null || days < 0) return "";
+  try {
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+    return days < 1 ? rtf.format(0, "day") : days < 30 ? rtf.format(-days, "day") : days < 365 ? rtf.format(-Math.round(days / 30), "month") : rtf.format(-Math.round(days / 365), "year");
+  } catch (e) { return days + " d"; }
+};
+export const Stars = ({ n }) => (n ? <span className="pk-st">{"★".repeat(n)}<i>{"★".repeat(5 - n)}</i></span> : null);
+
+export function ReviewPicker({ pick, lang, P, onNext, done }) {
+  const [q, setQ] = React.useState("");
+  const [sel, setSel] = React.useState(() => new Set());
+  const list = pick.reviews.filter((r) => !q.trim() || `${r.name} ${r.text}`.toLowerCase().includes(q.trim().toLowerCase()));
+  const tog = (id) => setSel((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
+  return (
+    <div className={"sc-pick" + (done ? " done" : "")}>
+      <div className="pk-h"><span className="so-ic"><Store /></span><span><b>{pick.place.name}</b><small>{pick.place.address}</small></span></div>
+      <input className="pk-q" value={q} onChange={(e) => setQ(e.target.value)} placeholder={P.search} disabled={done} />
+      <div className="pk-l">
+        {list.length ? list.map((r) => (
+          <button key={r.id} type="button" className={"pk-r" + (sel.has(r.id) ? " on" : "")} onClick={() => !done && tog(r.id)}>
+            <span className="pk-c">{sel.has(r.id) ? <Check /> : null}</span>
+            <span className="pk-t"><span className="l1"><b>{r.name}</b><Stars n={r.rating} /></span><span className="l2">{r.text || "—"}</span><span className="l3">{ago(r.days, lang)}</span></span>
+          </button>
+        )) : <div className="pk-none">{P.none}</div>}
+      </div>
+      <div className="pk-f"><small>{P.notIn}</small>
+        <button type="button" className="so-btn" disabled={!sel.size || done} onClick={() => onNext(pick.reviews.filter((r) => sel.has(r.id)))}>{sel.size ? P.sel.replace("{n}", sel.size) + " · " : ""}{P.next}<ArrowRight /></button>
+      </div>
+    </div>
+  );
+}
+
+export function ConfirmCard({ conf, lang, P, onYes, onNo, done }) {
+  return (
+    <div className={"sc-conf" + (done ? " done" : "")}>
+      <b>{P.conf.replace("{n}", conf.items.length)}</b>
+      <div className="cf-l">{conf.items.map((r, i) => (
+        <div key={i} className="cf-r"><span className="l1"><b>{r.name || P.unk + " " + (i + 1)}</b><Stars n={r.rating} /><em>{ago(r.days, lang)}</em></span>{r.text ? <span className="l2">„{r.text}“</span> : null}</div>
+      ))}</div>
+      {conf.nt ? <p className="cf-nt">{P.nt.replace("{n}", conf.nt)}</p> : null}
+      {done ? null : <div className="cf-b"><button type="button" className="so-btn" onClick={onYes}><Check />{P.yes}</button><button type="button" className="cf-no" onClick={onNo}>{P.no}</button></div>}
     </div>
   );
 }

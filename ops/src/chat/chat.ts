@@ -18,6 +18,7 @@ import { logCustEvent } from "../custTrack";
 import { KNOWLEDGE } from "./knowledge";
 import { quoteReviews } from "../reviewsPricing";
 import { resolveReviewLink } from "../monitor";
+import { fetchPlaceReviews, serpKey } from "../reviewsFetch";
 const quoteReviewsLite = (items: { old: boolean }[], pct: number) => quoteReviews(items, "eur", undefined, "full", pct);
 
 type Msg = { role: "user" | "assistant"; text: string };
@@ -287,6 +288,7 @@ What to do:
 - Answer questions about services, prices, process, duration, payment, safety and legality using ONLY the knowledge base. Never invent prices, timelines or promises; never say "100 %" or "guaranteed".
 - Individual reviews: only possible outside Germany and Austria (see knowledge base). Whole profile removal works everywhere.
 - Mention "payment only after success" where it applies, and the 10 % PayPal/Wise discount when you state a price.
+- SINGLE REVIEWS – HOW THE VISITOR SHOWS THEM: ask how many reviews they want removed (buttons "1", "2", "3–5", "More than 5"). For 1–2 reviews: ask them to paste the link of each review here in the chat (Google Maps → the review → Share → copy link). For 3 or more: ask them to paste the link to their Google business profile here – the chat then loads all reviews and they simply tap the ones to remove or type the reviewer names. The chat handles the links, prices and the order form itself, so for single reviews do NOT add [[CHECKOUT:reviews…]] unless the visitor says they cannot get the links.
 - ORDER RIGHT HERE IN THE CHAT: the visitor can order directly in this chat – never send them to a form or link to order. As soon as they want to order, or you have recommended a service and they sound interested, add the token [[CHECKOUT:<service>:<country>]] at the very end of your reply. service = remove (whole Google profile), reset (profile removal + new profile), reviews (single reviews: only outside Germany/Austria, only reviews WITH text; stars-only reviews need prepayment → hand over to the team). country = ISO-2 code of the business (DE, AT, CH, GB, US …); ask for the country first if you don't know it. The chat then shows a neat order form with price, the visitor's details, links and the terms – do NOT ask for name, email or links yourself, say something like "Ich habe Ihnen das Bestellformular direkt hier eingeblendet".
 - PRICES the form uses: profile removal 450 € (USA: $495), profile + restart 850 € (USA: $950), single review with text 179 per removed review if younger than 4 weeks, 229 if older (same number in € and $; € except for US businesses), volume discount 10 % from 3, 15 % from 5, 30 % from 10 reviews. Payment only after success.
 - CHAT DISCOUNT: you may grant a discount to close the deal – 5 % if the visitor hesitates, at most 10 % if price is clearly the obstacle. Never in your first reply, never unprompted to someone who is already happy to order. To grant it, say it clearly (valid for orders placed now in this chat) and add [[DISCOUNT:5]] or [[DISCOUNT:10]]. It does not stack with the 10 % PayPal/Wise discount or the volume discount – the higher one applies. Never promise more than 10 %.
@@ -398,6 +400,40 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     return { ok: true, reply: out, handoff, checkout, choices: handoff || checkout ? null : choices };
   });
 
+  // Google-Link im Chat: Bewertungs-Link → genau diese Bewertung (Name, Sterne, Text, Alter); Profil-Link → alle Bewertungen zum Aussuchen.
+  const COUNTRY_RE: [RegExp, string][] = [[/deutschland|germany|allemagne|alemania|germania|duitsland|tyskland|ドイツ/i, "DE"], [/österreich|austria|autriche|oostenrijk|østrig|österrike/i, "AT"], [/schweiz|switzerland|suisse|svizzera|suiza|zwitserland/i, "CH"],
+    [/vereinigtes königreich|united kingdom|\buk\b|royaume-uni|reino unido|regno unito|england|scotland|wales/i, "GB"], [/vereinigte staaten|united states|\busa\b|états-unis|estados unidos|stati uniti/i, "US"], [/irland|ireland|irlande/i, "IE"],
+    [/niederlande|netherlands|nederland|pays-bas/i, "NL"], [/belgien|belgium|belgique|belgië/i, "BE"], [/luxemburg|luxembourg/i, "LU"], [/frankreich|france/i, "FR"], [/italien|italy|italia/i, "IT"], [/spanien|spain|españa|espagne/i, "ES"],
+    [/portugal/i, "PT"], [/dänemark|denmark|danmark/i, "DK"], [/schweden|sweden|sverige/i, "SE"], [/norwegen|norway|norge/i, "NO"], [/kanada|canada/i, "CA"], [/australien|australia/i, "AU"], [/japan|日本/i, "JP"]];
+  const countryOf = (addr: string) => { const last = String(addr || "").split(",").pop() || ""; for (const [re, c] of COUNTRY_RE) if (re.test(last)) return c; return ""; };
+  const shortR = (r: { id: string; name: string; rating: number; text: string; days: number; link: string; date?: string }) => ({ id: r.id, name: r.name, rating: r.rating, text: String(r.text || "").slice(0, 280), days: r.days, link: r.link });
+  app.post("/chat/site/link", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    const sid = clip(b.sid, 40) || "anon";
+    const link = clip(b.link, 600);
+    if (!/^https?:\/\/\S+$/i.test(link)) return reply.code(400).send({ ok: false, error: "link" });
+    if (limited("l:" + ip, 12) || limited("ls:" + sid, 20, 3600_000)) return reply.code(429).send({ ok: false, error: "too_many" });
+    void saveSite(sid, "user", clip(b.message, 1200) || link, clip(b.page, 200), clip(b.lang, 5));
+    try {
+      const r = await resolveReviewLink(link);
+      if (!r.place) return { ok: true, type: "unknown" };
+      const place = { name: r.place.name, address: r.place.address, placeId: r.place.placeId, country: countryOf(r.place.address) };
+      let reviews: ReturnType<typeof shortR>[] = [];
+      if (serpKey() && place.placeId) {
+        try { reviews = (await fetchPlaceReviews(place.placeId, clip(b.lang, 5) || "en")).map(shortR); } catch (e) { app.log.warn({ err: e }, "Website-Chat: Bewertungen laden fehlgeschlagen"); }
+      }
+      if (r.reviewId) {
+        const hit = reviews.find((x) => x.id === r.reviewId || (x.link || "").includes(r.reviewId)) || null;
+        return { ok: true, type: "review", place, review: hit ? { ...hit, link } : { id: r.reviewId, name: "", rating: 0, text: "", days: -1, link } };
+      }
+      return { ok: true, type: "profile", place, reviews, more: reviews.length >= 25 };
+    } catch (e) {
+      app.log.warn({ err: e }, "Website-Chat: Link auflösen fehlgeschlagen");
+      return reply.code(502).send({ ok: false, error: "resolve" });
+    }
+  });
+
   // Bestellung direkt im Chat (Formular im Chat). Rabatt kommt NUR aus dem gespeicherten Chat-Angebot (site_chat_offers),
   // nie aus dem Browser. Legt die Bestellung über den normalen /order-Weg an (Mails, Dashboard, Partner, Admin).
   app.post("/chat/site/order", async (req, reply) => {
@@ -433,12 +469,12 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     if (service === "reviews") {
       if (country === "DE" || country === "AT") return reply.code(400).send({ ok: false, error: "reviews_dach" });
       const items = (Array.isArray(b.reviews) ? b.reviews : []).slice(0, 20).map((x) => x as Record<string, unknown>)
-        .map((x) => ({ url: clip(x.url, 400), old: x.age === "old" }))
+        .map((x) => ({ url: clip(x.url, 400), old: x.age === "old", name: clip(x.name, 80), text: clip(x.text, 400), rating: Math.round(Number(x.rating) || 0), days: Math.round(Number(x.days)) }))
         .filter((x) => isUrl(x.url));
       if (!items.length) return reply.code(400).send({ ok: false, error: "reviews" });
       const q = quoteReviewsLite(items, pct);
       Object.assign(payload, {
-        reviewItems: items.map((x) => ({ url: x.url, ...(x.old ? { old: true } : {}) })), reviewUrls: items.map((x) => x.url), reviewCount: items.length,
+        reviewItems: items.map((x) => ({ url: x.url, ...(x.name ? { name: x.name } : {}), ...(x.text ? { text: x.text } : {}), ...(x.old ? { old: true } : {}), ...(x.rating >= 1 && x.rating <= 5 ? { rating: x.rating } : {}), ...(Number.isFinite(x.days) && x.days >= 0 ? { days: x.days } : {}) })), reviewUrls: items.map((x) => x.url), reviewCount: items.length,
         profile: company || "Google-Bewertungen", amount: q.total, saleTotal: q.total,
         note: `Bestellt im Website-Chat (Lena)${pct ? ` · Chat-Rabatt −${pct} %` : ""}${payPref !== "none" ? ` · will per ${payPref === "wise" ? "Wise" : "PayPal"} zahlen (−10 %)` : ""}\n${items.map((x) => x.url + (x.old ? "  [älter als 4 Wochen]" : "")).join("\n")}`,
       });
