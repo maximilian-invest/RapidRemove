@@ -271,7 +271,7 @@ async function pushCustomerNow(row: Row, from: string, to: string): Promise<void
     [email, `%${SW_NOTE_DECLINED}%`],
   ).catch(() => ({ rows: [{ n: 0 }] }));
   const problems = Number(pr.rows[0]?.n || 0);
-  const p = customerPush(o.rows[0].lang, to, { name: row.name, orderId: row.order_id, orderDone: to === "removed" && !open ? cnt.removed || 0 : 0, problemOrders: problems });
+  const p = customerPush(o.rows[0].lang, to, { name: row.name, orderId: row.order_id, orderDone: to === "removed" && !open ? cnt.removed || 0 : 0, problemOrders: problems, pre: row.method === "sw" });
   void from;
   await notifyCustomer(email, p.title, p.body, `rrc-${row.order_id}-${row.id}`, { url: `/my-reviews?order=${encodeURIComponent(row.order_id)}`, badge: problems });
 }
@@ -435,13 +435,16 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
   const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
-  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
     if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
     if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
     if (opts.preview !== undefined && !!old.test !== opts.preview) return { error: "not found", code: 404 }; // Test ↔ echt strikt getrennt
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
+    // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
+    const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID);
+    if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
@@ -486,7 +489,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const r = await pool.query(`SELECT id FROM partner_tasks WHERE order_id=$1 AND status NOT IN ('cancelled','removed') AND paid_at IS NULL ORDER BY id`, [orderId]);
     let changed = 0;
     for (const row of r.rows as { id: number }[]) {
-      const x = await partnerApply(Number(row.id), status, null, { quiet: true });
+      const x = await partnerApply(Number(row.id), status, null, { quiet: true, admin: true });
       if (x.changed) changed++;
     }
     await insertEvent({ orderId, type: "note", title: `Admin: alle Bewertungen → ${LABEL[status] || status}`, detail: `${changed} von ${r.rows.length} Partner-Aufgabe(n) geändert` }).catch(() => {});

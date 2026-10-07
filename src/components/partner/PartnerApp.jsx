@@ -37,6 +37,7 @@ function stLabel(t) {
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
   if (t.status === "software") return "Software · waiting for payment";
+  if (t.method === "sw" && t.status === "new") return "Software case · check & confirm";
   return (STATUS[t.status] || STATUS.new).l;
 }
 
@@ -262,7 +263,9 @@ export default function PartnerApp({ api }) {
     const f = F[k] || isTodo;
     const l = all.filter((x) => x.cust === c && f(x)).sort(byCreated);
     const i = l.findIndex((x) => x.id === id);
-    const opts = t.paid ? [] : MARKS.filter((m) => m !== "removed" || canRemove(t));
+    // Software-Fall (alte US-Bewertung / ohne Text): erst Software bestätigen → Kunde zahlt → „Customer paid" → dann Working/Removed.
+    const swGate = t.method === "sw" && t.sw !== "paid";
+    const opts = t.paid ? [] : swGate ? ["software", "notpossible"] : MARKS.filter((m) => m !== "removed" || canRemove(t));
     const mark = (m) => {
       const applied = setMany([t.id], m);
       if (!applied.length) return;
@@ -285,7 +288,7 @@ export default function PartnerApp({ api }) {
         ) : t.sw === "paid" ? (
           <div className="swb ok"><CheckCircle2 /><span><b>Customer paid</b>Prepayment received – start the software removal now.</span></div>
         ) : (t.status === "new" || t.status === "working") && t.method === "sw" ? (
-          <div className="swb"><Info /><span><b>Software case</b>Old review from the USA or rating without text – Google usually won’t remove it manually. Check if software removal is available, then mark “Software”. The customer gets a payment request; start only once you see “Customer paid”.</span></div>
+          <div className="swb"><Info /><span><b>Software case – check first</b>Old review from the USA or rating without text – Google usually won’t remove it manually. The customer already agreed to pay upfront.</span></div>
         ) : (t.status === "new" || t.status === "working") && t.method === "legal" ? (
           <div className="swb"><Info /><span><b>Legal notice first</b>Old review outside the USA – use legal reporting first (90 %+ success). If it stays online, mark “Software”.</span></div>
         ) : null}
@@ -301,11 +304,12 @@ export default function PartnerApp({ api }) {
             <div className="lbl2">Mark as</div>
             <div className={"mgrid" + (opts.length === 3 ? " three" : "")}>
               {opts.map((m) => { const M = STATUS[m]; return (
-                <button key={m} type="button" className={"mk " + m + (t.status === m ? " on" : "") + (m === "removed" ? " hot" : "")} onClick={() => (t.status === m ? null : mark(m))}><M.I />{M.l}</button>
+                <button key={m} type="button" className={"mk " + m + (t.status === m ? " on" : "") + (m === "removed" || (swGate && m === "software") ? " hot" : "")} onClick={() => (t.status === m ? null : mark(m))}><M.I />{swGate && m === "software" ? "Software deletion confirmed" : M.l}</button>
               ); })}
               <button type="button" className="mk note wide" onClick={() => { setNoteDraft(t.note || ""); go({ v: "note", id: t.id }); }}><StickyNote />{t.note ? "Edit note" : "Add note"}</button>
             </div>
-            {!canRemove(t) && t.status !== "removed" ? <div className="hint"><Info />“Removed” appears once you set it to Working.</div> : null}
+            {swGate ? <div className="hint"><Info />{t.status === "software" ? "Confirmed – the customer got a payment request. You can start once it says “Customer paid”." : "Software possible? Tap “Software deletion confirmed” – the customer then gets a payment request. Start only after “Customer paid”."}</div>
+              : !canRemove(t) && t.status !== "removed" ? <div className="hint"><Info />“Removed” appears once you set it to Working.</div> : null}
           </>
         )}
       </>

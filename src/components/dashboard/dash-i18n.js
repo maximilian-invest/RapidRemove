@@ -13,6 +13,7 @@ export const EN = {
   // Status (intern → Kunde) + Erklärung
   st_new: "Being checked", st_working: "In progress", st_removed: "Removed", st_notpossible: "Not removable",
   st_software: "Needs your decision", st_sw_accepted: "Specialist removal running", st_sw_declined: "Declined", st_cancelled: "Cancelled",
+  st_swpay: "Confirmed – please pay", why_swpay: "Software removal is possible for this review. Pay the prepayment and we start right away.", fPre: "Good news: software removal works for your review. As agreed when you ordered, it’s paid upfront – we start as soon as the payment is in.",
   why_new: "We’re checking whether this review can be removed.",
   why_working: "We’re working on the removal right now.",
   why_removed: "This review is gone from Google.",

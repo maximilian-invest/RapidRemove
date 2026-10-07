@@ -82,9 +82,10 @@ const ST_ = {
   new: { I: Search, ico: "in" }, working: { I: Loader, ico: "wk" }, removed: { I: CheckCircle2, ico: "ok" }, notpossible: { I: Ban, ico: "no" },
   software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
 };
-const stOf = (status) => { const k = ST_[status] ? status : "new"; return { ...ST_[k], l: T("st_" + k), why: T("why_" + k) }; };
+// pre = Software-Fall, dem der Kunde schon bei der Bestellung zugestimmt hat → Partner hat bestätigt, jetzt nur noch zahlen.
+const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p = k === "software" && pre; return { ...ST_[k], l: T(p ? "st_swpay" : "st_" + k), why: T(p ? "why_swpay" : "why_" + k) }; };
 const OPEN = ["new", "working", "software", "sw_accepted"];
-const statusLine = (r, cur) => stOf(r.status).l
+const statusLine = (r, cur) => stOf(r.status, r.pre).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
   + (r.status === "removed" ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
 
@@ -478,10 +479,10 @@ export default function CustomerDashboard() {
   const history = orders.flatMap((o) => (o.history || []).map((h) => ({ ...h, o }))).sort((a, b) => String(b.paid).localeCompare(String(a.paid)));
 
   const acts = [
-    ...sw.map((r) => ({ k: "d" + r.id, I: AlertCircle, c: "pr", t: T("act_decision"), s: r, tm: r.changedAt ? ago(r.changedAt) : T("today"), at: Date.now() + 1 })),
+    ...sw.map((r) => ({ k: "d" + r.id, I: AlertCircle, c: "pr", t: T(r.pre ? "st_swpay" : "act_decision"), s: r, tm: r.changedAt ? ago(r.changedAt) : T("today"), at: Date.now() + 1 })),
     ...all.filter((r) => r.status === "working").map((r) => ({ k: "w" + r.id, I: Loader, c: "wk", t: T("act_working") + (r.since ? " · " + dur(r.since) : ""), s: r, tm: T("now"), at: Date.now() })),
     ...all.filter((r) => r.status === "sw_accepted").map((r) => ({ k: "a" + r.id, I: Cpu, c: "wk", t: T("act_specialist"), s: r, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
-    ...all.filter((r) => r.prevStatus && !["removed", "working"].includes(r.status)).map((r) => ({ k: "c" + r.id, I: Info, c: "in", t: T("statusChanged"), s: r, sub: `${stOf(r.prevStatus).l} → ${stOf(r.status).l}`, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
+    ...all.filter((r) => r.prevStatus && !["removed", "working"].includes(r.status)).map((r) => ({ k: "c" + r.id, I: Info, c: "in", t: T("statusChanged"), s: r, sub: `${stOf(r.prevStatus).l} → ${stOf(r.status, r.pre).l}`, tm: ago(r.changedAt), at: r.changedAt ? new Date(r.changedAt).getTime() : 0 })),
     ...all.filter((r) => r.status === "removed").map((r) => ({ k: "r" + r.id, I: Check, c: "ok", t: T("act_removed"), s: r, tm: ago(r.removedAt), at: r.removedAt ? new Date(r.removedAt).getTime() : 0 })),
   ].sort((a, b) => b.at - a.at).slice(0, 6);
 
@@ -496,7 +497,7 @@ export default function CustomerDashboard() {
       </div>
       {changedNew.slice(0, 4).map((r) => (
         <button key={r.id} className="ai-row" style={{ padding: "6px 0", borderTop: "1px solid var(--g2)" }} onClick={() => setSheet({ orderId: r.o.id, key: r.key })}>
-          <span className="t"><b style={{ fontSize: 14 }}>{r.name || T("googleReview")} · {r.o.business}</b><span>{stOf(r.prevStatus).l} → <b style={{ display: "inline", color: "var(--ink)" }}>{stOf(r.status).l}</b></span></span>
+          <span className="t"><b style={{ fontSize: 14 }}>{r.name || T("googleReview")} · {r.o.business}</b><span>{stOf(r.prevStatus).l} → <b style={{ display: "inline", color: "var(--ink)" }}>{stOf(r.status, r.pre).l}</b></span></span>
           <ChevronRight />
         </button>
       ))}
@@ -535,9 +536,11 @@ export default function CustomerDashboard() {
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
     setSheet(null);
-    const items = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit }));
+    const items = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre }));
     if (!items.length) return;
-    setFlow({ step: 0, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" });
+    // Schon bei der Bestellung zugestimmt (Software-Fall) → keine Entscheidung mehr, direkt zur Zahlung.
+    const pre = items.every((i) => i.pre);
+    setFlow({ step: pre ? 3 : 0, pre, items, pick: new Set(items.map((i) => i.id)), mode: "", url: "" });
   };
   const flowRefs = (list) => list.map((i) => ({ orderId: i.orderId, key: i.key }));
   const flowNext = async () => {
@@ -634,7 +637,7 @@ export default function CustomerDashboard() {
       </div>
       <div className="hg">
         <div className="hl">
-          {sw.length ? <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} /> : null}
+          {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <ChangedCard />
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
@@ -801,7 +804,7 @@ export default function CustomerDashboard() {
         {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
         <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {
-          const st = stOf(x.status);
+          const st = stOf(x.status, x.pre);
           return (
             <button key={x.key} className="rrow" onClick={() => setSheet({ orderId: o.id, key: x.key })}>
               <span className={"ico " + st.ico}><st.I /></span>
@@ -884,6 +887,7 @@ export default function CustomerDashboard() {
         <>
           <div className="fl-k">{T("f3k")}</div>
           <h2>{T("f3h", { amount: money(dep, cur) })}</h2>
+          {f.pre ? <p className="strong">{T("fPre")}</p> : null}
           <p>{T("f3p", { n })}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
           <div className="pms">
             <div className="pm"><span className="ico"><CreditCard /></span>{T("card")}<CheckCircle2 className="ok" /></div>
@@ -915,7 +919,7 @@ export default function CustomerDashboard() {
         </div>
         <div className="fl-body">{body}</div>
         <div className="fl-foot">
-          {S > 0 && S < 4 ? <button className="bk" onClick={() => setFlow({ ...f, step: S - 1 })} aria-label="Back"><ArrowLeft /></button> : null}
+          {S > 0 && S < 4 && !f.pre ? <button className="bk" onClick={() => setFlow({ ...f, step: S - 1 })} aria-label="Back"><ArrowLeft /></button> : null}
           <button className={"cta " + cls} disabled={busy === "flow"} onClick={flowNext}>{busy === "flow" ? <Loader className="spin" /> : S === 3 ? <Lock /> : null}{btn}</button>
         </div>
       </div>
@@ -948,7 +952,7 @@ export default function CustomerDashboard() {
       <div className={"bg" + (sheetData ? " show" : "")} onClick={() => setSheet(null)} />
       <div ref={rvRef} className={"rv-sheet" + (sheetData ? " show" : "")} aria-hidden={!sheetData}>
         {sheetData ? (() => {
-          const { o, r } = sheetData; const st = stOf(r.status); const isSw = r.status === "software";
+          const { o, r } = sheetData; const st = stOf(r.status, r.pre); const isSw = r.status === "software";
           return (
             <>
               <div className="grab" />
@@ -956,7 +960,7 @@ export default function CustomerDashboard() {
               <div className="meta">{o.business} · #{o.id}</div>
               <div className="q">{r.text ? "“" + r.text + "”" : <i>{T("noText")}</i>}</div>
               <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{st.why}</span></span></div>
-              {isSw ? <button className="cta or" onClick={openFlow}>{T("showProblem")}<ArrowRight /></button> : null}
+              {isSw ? <button className="cta or" onClick={openFlow}>{T(r.pre ? "payNow" : "showProblem")}<ArrowRight /></button> : null}
               {r.url ? <a className={"cta" + (isSw ? " gh" : "")} href={r.url} target="_blank" rel="noopener noreferrer"><ExternalLink />{T("openGoogle")}</a>
                 : <button className={"cta" + (isSw ? " gh" : "")} onClick={() => setSheet(null)}>{T("close")}</button>}
             </>
