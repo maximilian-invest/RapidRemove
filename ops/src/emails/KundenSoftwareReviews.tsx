@@ -1,119 +1,40 @@
-/* Eigene Mail für den Fall „nur mit Spezial-Software löschbar" (Einzelbewertungen).
-   Aufbau: gute Nachricht (löschbar) → der Haken (nur per Software, Vorauszahlung) → Konditionen →
-   Entscheidung im Dashboard (zahlen oder kostenlos ablehnen). Andere Änderungen derselben Sammel-Mail
-   (gelöscht, nicht löschbar …) stehen klein darunter, damit der Kunde nur EINE Mail bekommt.
-   Sprachen: vorerst EN + DE; für alle anderen geht weiter KundenUpdateReviews raus (SW_MAIL_LANGS). */
+/* Mail bei „nur mit Spezial-Software löschbar" (Einzelbewertungen): bewusst OHNE Details –
+   nur „gute Nachricht, es gibt ein Update" + Button ins Dashboard. Alles Weitere (welche Bewertungen,
+   Preis, zahlen oder ablehnen) sieht und entscheidet der Kunde im Dashboard (→ Login-/Klick-Daten). */
 import * as React from "react";
-import { Section, Text } from "@react-email/components";
-import { EmailShell, P, Bullets, CtaButton, brand, type MailLang } from "./components";
-import { fmtReviewMoney } from "../reviewsPricing";
+import { EmailShell, P, CtaButton, brand, type MailLang } from "./components";
 
-export const SW_MAIL_LANGS = new Set(["en", "de"]);
-
-type Item = { url: string | null; name: string | null; status: string; from?: string | null };
-
-interface L {
-  subject: (n: number) => string; title: string; hi: (n: string) => string;
-  intro: (order: string) => string;
-  goodH: string; good: (n: number) => string;
-  badH: string; bad: (n: number) => string;
-  terms: (price: string) => string[];
-  decide: (n: number) => string; decline: string;
-  btn: string; others: string; st: Record<string, string>; close: string; signoff: string;
-}
+interface L { subject: string; title: string; hi: (n: string) => string; p: (order: string) => string; p2: string; btn: string; close: string; signoff: string }
 
 const T: Record<string, L> = {
-  en: {
-    subject: (n) => `Good news and bad news about your review${n > 1 ? "s" : ""}`,
-    title: "Good news – with one catch",
-    hi: (n) => (n ? `Hi ${n},` : "Hi there,"),
-    intro: (o) => `we have an update on your order${o ? ` #${o}` : ""} – some good news and some bad news.`,
-    goodH: "The good news",
-    good: (n) => (n > 1 ? `These ${n} reviews can be removed:` : "This review can be removed:"),
-    badH: "The catch",
-    bad: (n) => `Google won't take ${n > 1 ? "them" : "it"} down through the standard route. ${n > 1 ? "They" : "It"} can only be removed with our special software – a separate, more involved process that is paid in advance.`,
-    terms: (p) => [`${p} per review, paid in advance`, "99 % success rate", "Full refund if a review isn't removed within 14 days at the latest"],
-    decide: (n) => `Just tell us in your dashboard how you'd like to proceed${n > 1 ? " – you can decide for each review separately" : ""}.`,
-    decline: "Prefer not to? Decline with one click – it costs you nothing, and the rest of your order isn't affected.",
-    btn: "Decide in my dashboard",
-    others: "Other updates on your order:",
-    st: { removed: "removed ✓", notpossible: "can't be removed (no charge)", working: "in progress", new: "being checked", sw_accepted: "in progress (special software)", sw_declined: "declined (no charge)", cancelled: "cancelled" },
-    close: "Questions? Just reply to this email.",
-    signoff: "Warm regards,",
-  },
-  de: {
-    subject: (n) => `Gute und schlechte Nachrichten zu Ihre${n > 1 ? "n Bewertungen" : "r Bewertung"}`,
-    title: "Gute Nachricht – mit einem Haken",
-    hi: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"),
-    intro: (o) => `es gibt Neuigkeiten zu Ihrem Auftrag${o ? ` #${o}` : ""} – eine gute und eine schlechte Nachricht.`,
-    goodH: "Die gute Nachricht",
-    good: (n) => (n > 1 ? `Diese ${n} Bewertungen können gelöscht werden:` : "Diese Bewertung kann gelöscht werden:"),
-    badH: "Der Haken",
-    bad: (n) => `Google entfernt sie nicht über den normalen Weg. ${n > 1 ? "Sie lassen" : "Sie lässt"} sich nur mit unserer Spezial-Software löschen – ein eigenes, aufwendigeres Verfahren, das im Voraus bezahlt wird.`,
-    terms: (p) => [`${p} pro Bewertung, im Voraus`, "99 % Erfolgsquote", "Volle Rückerstattung, falls eine Bewertung nicht spätestens nach 14 Tagen gelöscht ist"],
-    decide: (n) => `Sagen Sie uns einfach in Ihrem Dashboard, wie Sie weitermachen möchten${n > 1 ? " – Sie können für jede Bewertung einzeln entscheiden" : ""}.`,
-    decline: "Lieber nicht? Mit einem Klick ablehnen – das kostet Sie nichts, und der Rest Ihres Auftrags läuft unverändert weiter.",
-    btn: "Im Dashboard entscheiden",
-    others: "Weitere Neuigkeiten zu Ihrem Auftrag:",
-    st: { removed: "gelöscht ✓", notpossible: "nicht löschbar (keine Kosten)", working: "in Bearbeitung", new: "wird geprüft", sw_accepted: "in Bearbeitung (Spezial-Software)", sw_declined: "abgelehnt (keine Kosten)", cancelled: "storniert" },
-    close: "Fragen? Antworten Sie einfach auf diese E-Mail.",
-    signoff: "Mit freundlichen Grüßen,",
-  },
+  en: { subject: "Good news – there's an update on your order", title: "Good news!", hi: (n) => (n ? `Hi ${n},` : "Hi there,"), p: (o) => `there's an update on your order${o}.`, p2: "Log in to your dashboard to see the details.", btn: "Open my dashboard", close: "Questions? Just reply to this email.", signoff: "Warm regards," },
+  de: { subject: "Gute Nachrichten – es gibt ein Update zu Ihrem Auftrag", title: "Gute Nachrichten!", hi: (n) => (n ? `Guten Tag ${n},` : "Guten Tag,"), p: (o) => `es gibt ein Update zu Ihrem Auftrag${o}.`, p2: "Alle Details finden Sie in Ihrem Dashboard.", btn: "Mein Dashboard öffnen", close: "Fragen? Antworten Sie einfach auf diese E-Mail.", signoff: "Mit freundlichen Grüßen," },
+  es: { subject: "Buenas noticias: hay novedades sobre tu pedido", title: "¡Buenas noticias!", hi: (n) => (n ? `Hola ${n}:` : "Hola:"), p: (o) => `hay novedades sobre tu pedido${o}.`, p2: "Entra en tu panel para ver los detalles.", btn: "Abrir mi panel", close: "¿Preguntas? Responde a este correo.", signoff: "Un saludo," },
+  fr: { subject: "Bonne nouvelle – il y a du nouveau sur ta commande", title: "Bonne nouvelle !", hi: (n) => (n ? `Bonjour ${n},` : "Bonjour,"), p: (o) => `il y a du nouveau sur ta commande${o}.`, p2: "Connecte-toi à ton tableau de bord pour voir les détails.", btn: "Ouvrir mon tableau de bord", close: "Une question ? Réponds simplement à cet e-mail.", signoff: "Bien à toi," },
+  it: { subject: "Buone notizie – c'è un aggiornamento sul tuo ordine", title: "Buone notizie!", hi: (n) => (n ? `Ciao ${n},` : "Ciao,"), p: (o) => `c'è un aggiornamento sul tuo ordine${o}.`, p2: "Accedi alla tua dashboard per vedere i dettagli.", btn: "Apri la mia dashboard", close: "Domande? Rispondi a questa e-mail.", signoff: "Un caro saluto," },
+  nl: { subject: "Goed nieuws – er is een update over uw bestelling", title: "Goed nieuws!", hi: (n) => (n ? `Beste ${n},` : "Hallo,"), p: (o) => `er is een update over uw bestelling${o}.`, p2: "Log in op uw dashboard om de details te bekijken.", btn: "Mijn dashboard openen", close: "Vragen? Antwoord gewoon op deze e-mail.", signoff: "Met vriendelijke groet," },
+  pt: { subject: "Boas notícias – há novidades sobre a tua encomenda", title: "Boas notícias!", hi: (n) => (n ? `Olá ${n},` : "Olá,"), p: (o) => `há novidades sobre a tua encomenda${o}.`, p2: "Entra no teu painel para ver os detalhes.", btn: "Abrir o meu painel", close: "Dúvidas? Responde a este e-mail.", signoff: "Cumprimentos," },
+  ja: { subject: "朗報です – ご注文に更新があります", title: "朗報です！", hi: (n) => (n ? `${n} 様` : "こんにちは。"), p: (o) => `ご注文${o}に更新があります。`, p2: "詳細はダッシュボードにログインしてご確認ください。", btn: "ダッシュボードを開く", close: "ご不明な点は、このメールにご返信ください。", signoff: "よろしくお願いいたします。" },
+  sv: { subject: "Goda nyheter – det finns en uppdatering om din beställning", title: "Goda nyheter!", hi: (n) => (n ? `Hej ${n},` : "Hej,"), p: (o) => `det finns en uppdatering om din beställning${o}.`, p2: "Logga in i din dashboard för att se detaljerna.", btn: "Öppna min dashboard", close: "Frågor? Svara bara på det här mejlet.", signoff: "Vänliga hälsningar," },
+  da: { subject: "Gode nyheder – der er en opdatering på din ordre", title: "Gode nyheder!", hi: (n) => (n ? `Hej ${n},` : "Hej,"), p: (o) => `der er en opdatering på din ordre${o}.`, p2: "Log ind på dit dashboard for at se detaljerne.", btn: "Åbn mit dashboard", close: "Spørgsmål? Svar bare på denne mail.", signoff: "Venlig hilsen," },
+  no: { subject: "Gode nyheter – det er en oppdatering på bestillingen din", title: "Gode nyheter!", hi: (n) => (n ? `Hei ${n},` : "Hei,"), p: (o) => `det er en oppdatering på bestillingen din${o}.`, p2: "Logg inn på dashbordet ditt for å se detaljene.", btn: "Åpne dashbordet mitt", close: "Spørsmål? Bare svar på denne e-posten.", signoff: "Vennlig hilsen," },
 };
 
-export interface KundenSoftwareProps {
-  lang?: string; name?: string; dashUrl: string; orderId?: string;
-  changed: Item[]; cur?: string; swPrice?: number;
-}
+export interface KundenSoftwareProps { lang?: string; name?: string; dashUrl: string; orderId?: string }
 const tOf = (lang?: string) => T[lang && T[lang] ? lang : "en"];
-export const kundenSoftwareSubject = (p: KundenSoftwareProps) => tOf(p.lang).subject(p.changed.filter((c) => c.status === "software").length);
+export const kundenSoftwareSubject = (p: KundenSoftwareProps) => tOf(p.lang).subject;
 
-function Box({ bg, border, children }: { bg: string; border: string; children: React.ReactNode }) {
-  return <Section style={{ background: bg, borderLeft: `4px solid ${border}`, borderRadius: 16, padding: "14px 18px", margin: "6px 0 14px" }}>{children}</Section>;
-}
-const H = ({ c, children }: { c: string; children: React.ReactNode }) => (
-  <Text style={{ margin: "0 0 6px", fontSize: 13, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: c }}>{children}</Text>
-);
-const link = (c: Item) => (c.url
-  ? <a href={c.url} style={{ color: brand.ink, fontWeight: 700, wordBreak: "break-all" }}>{c.name || c.url}</a>
-  : <strong>{c.name}</strong>);
-
-export default function KundenSoftwareReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "usd", swPrice = 300 }: KundenSoftwareProps) {
+export default function KundenSoftwareReviews({ lang = "en", name = "", dashUrl, orderId }: KundenSoftwareProps) {
   const l = lang && T[lang] ? lang : "en";
   const t = T[l];
-  const sw = changed.filter((c) => c.status === "software");
-  const others = changed.filter((c) => c.status !== "software");
-  const n = sw.length;
-  const price = fmtReviewMoney(swPrice, cur);
+  const order = orderId ? ` #${orderId}` : "";
   return (
-    <EmailShell preview={t.subject(n)} title={t.title} lang={l as MailLang}>
+    <EmailShell preview={t.subject} title={t.title} lang={l as MailLang}>
       <P><strong>{t.hi((name || "").trim())}</strong></P>
-      <P>{t.intro(orderId || "")}</P>
-
-      <Box bg="#e9f9ef" border="#16a34a">
-        <H c="#15803d">{t.goodH}</H>
-        <Text style={{ margin: "0 0 4px", fontSize: 15, lineHeight: "1.55", color: brand.text }}>{t.good(n)}</Text>
-        <Bullets items={sw.map((c, i) => <span key={i}>{link(c)}</span>)} />
-      </Box>
-
-      <Box bg="#fff4e5" border={brand.accent}>
-        <H c={brand.accentDark}>{t.badH}</H>
-        <Text style={{ margin: 0, fontSize: 15, lineHeight: "1.55", color: brand.text }}>{t.bad(n)}</Text>
-      </Box>
-
-      <Bullets items={t.terms(price).map((x, i) => <strong key={i}>{x}</strong>)} />
-      <P>{t.decide(n)}</P>
-      <div style={{ textAlign: "center", margin: "10px 0 18px" }}><CtaButton href={dashUrl}>{t.btn}</CtaButton></div>
-      <P muted>{t.decline}</P>
-
-      {others.length ? (
-        <>
-          <P>{t.others}</P>
-          <Bullets items={others.map((c, i) => <span key={i}>{link(c)}{" — "}<strong>{t.st[c.status] || c.status}</strong></span>)} />
-        </>
-      ) : null}
-
-      <P>{t.close}</P>
+      <P>{t.p(order)}</P>
+      <P>{t.p2}</P>
+      <div style={{ textAlign: "center", margin: "14px 0 22px" }}><CtaButton href={dashUrl}>{t.btn}</CtaButton></div>
+      <P><span style={{ color: brand.muted }}>{t.close}</span></P>
       <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>
   );

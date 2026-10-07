@@ -34,7 +34,7 @@ import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/Zahlung
 import { notifyTeam } from "./notify";
 import { startFollowupWorker, registerFollowupRoutes } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
-import KundenSoftwareReviews, { kundenSoftwareSubject, SW_MAIL_LANGS } from "./emails/KundenSoftwareReviews";
+import KundenSoftwareReviews, { kundenSoftwareSubject } from "./emails/KundenSoftwareReviews";
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
@@ -2042,8 +2042,8 @@ async function start() {
           }
           try {
             const props = { lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: group.length === 1 ? n.orderId : undefined, changed: important, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
-            // „Nur mit Spezial-Software löschbar" → eigene Mail (gute/schlechte Nachricht + Entscheidung), sonst das normale Update.
-            const swMail = important.some((c) => c.status === "software") && SW_MAIL_LANGS.has(String(lang || "en"));
+            // „Nur mit Spezial-Software löschbar" → kurze Mail ohne Details („gute Nachricht, Update") – entschieden wird im Dashboard.
+            const swMail = important.some((c) => c.status === "software");
             const html = await render(React.createElement((swMail ? KundenSoftwareReviews : KundenUpdateReviews) as any, props as any));
             const subject = swMail ? kundenSoftwareSubject(props as any) : kundenUpdateSubject(props as any);
             await sendMail({ to: n.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
