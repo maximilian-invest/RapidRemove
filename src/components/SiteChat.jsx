@@ -82,6 +82,7 @@ export default function SiteChat({ hideBubble = false }) {
   const [wig, setWig] = React.useState(false);
   const [tease, setTease] = React.useState(false);
   const [coOpen, setCoOpen] = React.useState(null); // Bestellformular im Chat
+  const retained = React.useRef(false); // Team-Wunsch schon einmal mit „Ich helfe sofort“ beantwortet
   const [handed, setHanded] = React.useState(false); // mit dem Team verbunden → eigene Bubble weg, nur noch Tidio
   React.useEffect(() => { if (ss.get("rr_site_chat_handed")) setHanded(true); }, []);
   const body = React.useRef(null), inp = React.useRef(null), everOpen = React.useRef(false);
@@ -123,15 +124,15 @@ export default function SiteChat({ hideBubble = false }) {
       handoffToTidio(l, () => { ss.set("rr_site_chat_handed", ""); setHanded(false); setMsgs((m) => [...m, { sys: 2, t: t.fail }]); setOpen(true); });
     }, 900);
   };
-  const send = async (raw) => {
+  const send = async (raw, extra = {}) => {
     const q = String(raw || "").trim();
     if (!q || busy) return;
     const history = msgs.filter((m) => m.t && !m.sys).slice(-20).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
-    const next = [...msgs.filter((x) => !x.h), { r: "u", t: q }];
+    const next = [...msgs.filter((x) => !x.h && !x.chs), { r: "u", t: q }];
     setMsgs(next); setTxt(""); setBusy(true);
     const t0 = Date.now();
     try {
-      const res = await fetch(OPS + "/chat/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sid: sidOf(), message: q, history, lang, page: window.location.pathname }) });
+      const res = await fetch(OPS + "/chat/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sid: sidOf(), message: q, history, lang, page: window.location.pathname, retained: retained.current, ...extra }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) throw new Error(j.error || "HTTP " + res.status);
       // Natürlich wirken: lange Antworten in 2 Nachrichten, „schreibt …" je nach Länge (Lesezeit + Tippen)
@@ -144,6 +145,8 @@ export default function SiteChat({ hideBubble = false }) {
         setMsgs(cur);
         if (k < parts.length - 1) await sleep(450);
       }
+      if (j.retain) retained.current = true;
+      if (j.choices && j.choices.length && !j.handoff) { await sleep(250); cur = [...cur, { chs: j.choices }]; setMsgs(cur); }
       if (j.checkout && !j.handoff) { await sleep(500); cur = [...cur, { co: j.checkout }]; setMsgs(cur); }
       if (j.handoff) { setMsgs([...cur, { h: 1 }]); setBusy(false); setTimeout(() => toTeam(cur), 1600); return; } // fließend: Team übernimmt automatisch
     } catch (e) {
@@ -167,7 +170,10 @@ export default function SiteChat({ hideBubble = false }) {
           <button type="button" className="sc-x" onClick={() => setOpen(false)} aria-label={t.close}><ChevronDown /></button></div>
         <div className="sc-body" ref={body}>
           {!msgs.length ? <div className="sc-hi"><AV /><b>{t.hi}</b>{t.hiS ? <span>{t.hiS}</span> : null}</div> : null}
-          {msgs.map((m, i) => (m.co
+          {msgs.map((m, i) => (m.chs
+            ? <div key={i} className="sc-chs">{m.chs.map((c, k) => <button key={k} type="button" className={c.value === "__team__" ? "tm" : ""} style={{ animationDelay: k * 60 + "ms" }} disabled={busy}
+                onClick={() => { if (c.value === "__team__") { setMsgs((x) => [...x.filter((y) => !y.chs), { r: "u", t: c.label }]); toTeam([...msgs.filter((y) => !y.chs), { r: "u", t: c.label }]); } else send(c.label); }}>{c.value === "__team__" ? <Headphones /> : null}{c.label}</button>)}</div>
+            : m.co
             ? <OfferCard key={i} co={m.co} lang={lang} ordered={m.ordered} onOrder={() => setCoOpen({ ...m.co, idx: i })} />
             : m.h
             ? <button key={i} type="button" className="sc-human" onClick={() => toTeam()}><Headphones />{t.team}</button>
@@ -177,7 +183,7 @@ export default function SiteChat({ hideBubble = false }) {
         </div>
         <div className="sc-qs">
           {userCount < 3 ? t.q.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>) : null}
-          <button type="button" className="tm" onClick={() => toTeam()} disabled={busy}><Headphones />{t.team}</button>
+          <button type="button" className="tm" onClick={() => (retained.current ? toTeam() : send(t.team, { teamReq: true }))} disabled={busy}><Headphones />{t.team}</button>
         </div>
         <form className="sc-in" onSubmit={(e) => { e.preventDefault(); send(txt); }}>
           <input ref={inp} value={txt} onChange={(e) => setTxt(e.target.value)} placeholder={t.ph} autoComplete="off" maxLength={1200} enterKeyHint="send" />
