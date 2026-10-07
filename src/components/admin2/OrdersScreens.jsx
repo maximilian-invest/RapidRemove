@@ -6,7 +6,7 @@ import {
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
   CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck,
 } from "lucide-react";
-import { ST, isOffen, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
+import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
@@ -56,7 +56,9 @@ export function OrdersList({ ctx }) {
     return { o, r, bs, b, m: ageOf(o, b, r, now), t: typeOf(o) };
   }), [orders, now, ptasks]);
   const base = enriched.filter((x) => f.type === "all" || x.t === f.type).filter((x) => f.staff === "all" || (f.staff === "none" ? !x.o.assignee : x.o.assignee === f.staff));
-  const open = (x) => (x.r ? isOpenB(x.bs) : isOffen(x.o)); // Bewertungen: offen, solange etwas läuft oder unbezahlt ist
+  // Offen = steht in einer offenen Kachel (Neu/In Bearbeitung/Zahlung offen/Inkasso) – gleiche Regel für Kachel-Zahl und Liste.
+  // Auch bereits bezahlte Aufträge, die noch auf „Neu"/„In Bearbeitung" stehen (Vorauszahlung oder Status nie umgestellt).
+  const open = (x) => isOpenB(x.bs);
   const inScope = (x) => (f.scope === "open" ? open(x) : f.scope === "closed" ? !open(x) : true);
   const ql = f.q.trim().toLowerCase();
   const list = base.filter(inScope).filter((x) => !f.tile || inTile(f.tile, x.bs))
@@ -112,7 +114,7 @@ export function OrdersList({ ctx }) {
           <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} />{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
+              <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
           );

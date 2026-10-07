@@ -790,3 +790,4 @@
 .an .plk-cur .t svg{width:16px;height:16px;vertical-align:-3px;margin-right:6px}
 .an .plk-cur .chg{flex:none;border:0;background:#fff;border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
 .an .opts.plk{max-height:52vh;overflow-y:auto}
+.an .ktag.kpaid{background:#e9f9ef;color:#15803d;font-weight:700}
