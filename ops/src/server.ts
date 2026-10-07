@@ -23,7 +23,7 @@ import { quoteReviews, fmtReviewMoney } from "./reviewsPricing";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
-import { initPartnerPush } from "./partnerNotify";
+import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
 import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
@@ -2038,6 +2038,7 @@ async function start() {
     }, 60_000);
     startPaymentReconciler(app);
     startFollowupWorker(app);
+    startPartnerReminders((o, m) => app.log.info(o, m)); // stündlich: „Customer waiting for order confirmation"
     // Einmalige Team-Push: neues Admin-Dashboard ist live (nur 1×, Merker in ops_flags; 3 Min. Verzögerung, bis die Website deployt ist).
     setTimeout(() => void (async () => {
       try {

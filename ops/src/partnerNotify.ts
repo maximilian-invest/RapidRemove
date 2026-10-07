@@ -67,3 +67,37 @@ export async function partnerNewOrder(customer: string, tasks: { code: string; k
     for (const email of to) await sendMail({ to: email, subject: `New order: ${name} – ${n} review${n > 1 ? "s" : ""}`, html, replyTo: process.env.MAIL_REPLY_TO });
   } catch { /* best effort */ }
 }
+
+/* ---- Erinnerung: Kunde wartet auf Bestätigung ----
+ * Ein Kunde gilt als „neu", solange der Partner bei KEINER seiner offenen Bewertungen einen Status gesetzt hat
+ * (alles noch „new" und nie auf Working). Ab 1 h Wartezeit: stündlich Push „Customer waiting for order confirmation",
+ * nachts in Pakistan (01–08 Uhr PKT) Ruhe. Testaufträge nur an Test-Geräte. */
+async function remindWaiting(): Promise<void> {
+  if (!pool) return;
+  await pool.query(`CREATE TABLE IF NOT EXISTS partner_reminders (customer text NOT NULL, test boolean NOT NULL DEFAULT false, last_at timestamptz NOT NULL DEFAULT now(), n integer NOT NULL DEFAULT 0, PRIMARY KEY (customer, test))`);
+  const pk = Number(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi", hour: "numeric", hour12: false })) % 24;
+  if (pk >= 1 && pk < 8) return;
+  const r = await pool.query(`
+    SELECT COALESCE(customer, '') AS customer, test, count(*)::int AS n, min(created_at) AS since
+      FROM partner_tasks
+     WHERE status IN ('new','working')
+     GROUP BY COALESCE(customer, ''), test
+    HAVING bool_and(status = 'new' AND working_since IS NULL AND first_working_at IS NULL)
+       AND min(created_at) < now() - interval '1 hour'`);
+  for (const g of r.rows as { customer: string; test: boolean; n: number; since: string }[]) {
+    const last = await pool.query(`SELECT last_at FROM partner_reminders WHERE customer = $1 AND test = $2`, [g.customer, g.test]);
+    const lastAt = last.rows[0] ? new Date(last.rows[0].last_at).getTime() : 0;
+    if (Date.now() - lastAt < 58 * 60_000) continue;
+    const h = Math.max(1, Math.floor((Date.now() - new Date(g.since).getTime()) / 3600e3));
+    await notifyPartner(`${g.test ? "TEST · " : ""}Customer waiting for order confirmation`,
+      `${g.customer || "Customer"} · ${g.n} review${g.n > 1 ? "s" : ""} · waiting ${h} h – please start now`,
+      `rrp-wait-${(g.customer || "x").slice(0, 40)}`, g.test);
+    await pool.query(`INSERT INTO partner_reminders (customer, test, last_at, n) VALUES ($1,$2,now(),1)
+      ON CONFLICT (customer, test) DO UPDATE SET last_at = now(), n = partner_reminders.n + 1`, [g.customer, g.test]);
+  }
+}
+export function startPartnerReminders(log?: (o: object, m: string) => void): void {
+  const run = () => { remindWaiting().catch((e) => log && log({ err: String((e as Error)?.message || e) }, "Partner-Erinnerung fehlgeschlagen")); };
+  setTimeout(run, 60_000);
+  setInterval(run, 5 * 60_000);
+}

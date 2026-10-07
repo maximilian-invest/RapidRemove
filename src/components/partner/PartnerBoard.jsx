@@ -22,6 +22,8 @@ const MOBILE_Q = "(max-width: 860px)";
 
 const isPreviewUrl = () => { try { return new URLSearchParams(window.location.search).get("preview") === "1"; } catch (e) { return false; } };
 
+const fmtWait = (since) => { const m = Math.max(1, Math.round((Date.now() - since) / 60000)); return m < 60 ? m + " min" : m < 2880 ? Math.floor(m / 60) + " h" : Math.floor(m / 1440) + " days"; };
+
 export default function PartnerBoard() {
   const [token, setToken] = React.useState(null);
   const [preview, setPreview] = React.useState(false); // Test-Board des Admins (nur Testaufträge)
@@ -211,8 +213,32 @@ export default function PartnerBoard() {
 
   /* ---- derived ---- */
   const all = tasks || [];
-  const touchedC = React.useMemo(() => new Set(all.filter((t) => t.touched).map((t) => t.cust)), [all]);
-  const isNewC = React.useCallback((c) => !touchedC.has(c), [touchedC]);
+  // „New order" = der Partner hat bei KEINER offenen Bewertung dieses Kunden einen Status gesetzt
+  // (alles noch „new", nie auf Working). Ansehen/Link kopieren zählt nicht als Start.
+  const waiting = React.useMemo(() => {
+    const m = new Map();
+    for (const t of all) {
+      if (t.status !== "new" && t.status !== "working") continue;
+      const g = m.get(t.cust) || { c: t.cust, n: 0, since: Infinity, started: false };
+      g.n++; g.since = Math.min(g.since, t.created || Date.now());
+      if (t.status !== "new" || t.workingSince) g.started = true;
+      m.set(t.cust, g);
+    }
+    return [...m.values()].filter((g) => !g.started).sort((a, b) => a.since - b.since);
+  }, [all]);
+  const newSet = React.useMemo(() => new Set(waiting.map((g) => g.c)), [waiting]);
+  const isNewC = React.useCallback((c) => newSet.has(c), [newSet]);
+  // Stündlich aufploppen, solange Kunden auf die Bestätigung warten (auch beim Öffnen der App)
+  const [nag, setNag] = React.useState(false);
+  const nagAt = React.useRef(0);
+  React.useEffect(() => {
+    if (!waiting.length) { setNag(false); return undefined; }
+    const check = () => { if (Date.now() - nagAt.current >= 60 * 60_000 && document.visibilityState === "visible") { nagAt.current = Date.now(); setNag(true); } };
+    const first = setTimeout(check, 1500);
+    const iv = setInterval(check, 60_000);
+    document.addEventListener("visibilitychange", check);
+    return () => { clearTimeout(first); clearInterval(iv); document.removeEventListener("visibilitychange", check); };
+  }, [waiting.length]);
   const sortAsc = isMobile ? true : sortOld;
   const visible = React.useMemo(() => {
     const f = TABS.find((x) => x[0] === tab)[2];
@@ -264,10 +290,22 @@ export default function PartnerBoard() {
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
   const api = {
-    tasks, all, err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
+    tasks, all, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,
   };
-  const app = isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />;
+  const waitPop = nag && waiting.length ? (
+    <div className="pwait-bg" onClick={() => setNag(false)}>
+      <div className="pwait" role="alertdialog" onClick={(e) => e.stopPropagation()}>
+        <span className="pw-ic">⏳</span>
+        <b>Customer waiting for order confirmation</b>
+        <p>{waiting.length === 1 ? "This order hasn't been started yet:" : `${waiting.length} orders haven't been started yet:`}</p>
+        <ul>{waiting.slice(0, 6).map((g) => <li key={g.c}><span>{g.c}</span><em>{g.n} review{g.n > 1 ? "s" : ""} · waiting {fmtWait(g.since)}</em></li>)}</ul>
+        <p className="pw-s">Please set the reviews to <b>Working</b> as soon as you start – the customer sees it live.</p>
+        <button type="button" onClick={() => setNag(false)}>OK, starting now</button>
+      </div>
+    </div>
+  ) : null;
+  const app = <>{isMobile ? <PartnerApp api={api} /> : <PartnerDesktop api={api} />}{waitPop}</>;
   if (!preview) return app;
   return (
     <>

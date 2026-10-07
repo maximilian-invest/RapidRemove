@@ -245,7 +245,7 @@ export default function PartnerDesktop({ api }) {
                     <button type="button" className="gt" data-tip={(col ? "Expand" : "Collapse") + " customer"} onClick={() => setExpanded((s) => { const n = new Set(s); n.has(c) ? n.delete(c) : n.add(c); return n; })}>
                       <ChevronDown />
                       <span className="gn">{c}</span>
-                      {isNew ? <span className="gnew" data-tip="New order – no action taken yet">New</span> : null}
+                      {isNew ? <span className="gnew" data-tip="Not started yet – set the reviews to Working">New · customer waiting for confirmation</span> : null}
                       <span className="gm">{list.length} {tab === "todo" ? "open" : "review" + (list.length === 1 ? "" : "s")} · {removed} removed · {usd(list.reduce((s, t) => s + t.price, 0))}</span>
                     </button>
                   </div>

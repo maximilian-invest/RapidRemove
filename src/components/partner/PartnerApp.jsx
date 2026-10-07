@@ -148,7 +148,7 @@ export default function PartnerApp({ api }) {
           return (
             <button key={c} type="button" className={"big" + (nw ? " new" : "")} onClick={() => go({ v: "cust", c, cf: "open" })}>
               <span className="bi">{nw ? <Sparkles /> : <Loader />}</span>
-              <span className="t"><b>{c}</b><span>{nw ? `${l.length} reviews · not started` : `${done} of ${allT.length} done${wt ? ` · ${wt} waiting for customer` : ""}`}</span></span>
+              <span className="t"><b>{c}</b><span>{nw ? `Customer waiting for order confirmation · ${l.length} review${l.length > 1 ? "s" : ""}` : `${done} of ${allT.length} done${wt ? ` · ${wt} waiting for customer` : ""}`}</span></span>
               <span className="n">{l.length}</span><ChevronRight />
             </button>
           );
@@ -206,7 +206,7 @@ export default function PartnerApp({ api }) {
       <>
         {nav(<button type="button" className="circ" aria-label="Copy all links" onClick={() => copyLinks(l.map((t) => t.id), c)}><Copy /></button>)}
         <div className="pt">{c}</div>
-        <div className="ps">{allT.length} reviews · {nw ? <b className="newin">New order</b> : "In progress"}</div>
+        <div className="ps">{allT.length} reviews · {nw ? <b className="newin">New order · customer waiting for confirmation</b> : "In progress"}</div>
         <div className="cstats">
           <div><b>{allT.filter(isTodo).length}</b><span>Open</span></div>
           <div><b>{allT.filter(F.wk).length}</b><span>Working</span></div>
