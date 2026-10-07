@@ -2239,6 +2239,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         reviewCount,
       } : {}),
       express: !revFlow && !!express, expressAmount: !revFlow && express ? num(p.express) : 0,
+      chatSid: (() => { try { return sessionStorage.getItem("rr_site_chat_sid") || ""; } catch (e) { return ""; } })(), // Website-Chat ↔ Bestellung
       profile: reviewMode ? (contact.company || rv.service) : (selected ? selected.name : ""), orderId, lang,
       addr: selected ? (selected.addr || "") : "", mapsUri: selected ? (selected.mapsUri || "") : "",
       placeId: selected ? (selected.placeId || "") : "", businessStatus: selected ? (selected.businessStatus || "") : "",

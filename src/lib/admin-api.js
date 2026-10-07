@@ -628,6 +628,8 @@ export const partnerSend = (orderId, items, customer) => partnerPost("send", { o
 export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderId } : {});
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
+export const siteChats = (days) => adminPost("/admin/chat/site", { days: days || 60 });
+export const siteChatThread = (sid) => adminPost("/admin/chat/site/thread", { sid });
 export const partnerStats = (days) => partnerPost("stats", { days: days || 0 });
 export const partnerLink = (rotate = false) => partnerPost("link", { rotate });
 /** Test-Board: nur Testaufträge (Bestell-E-Mail mit „+test"), der Partner sieht davon nichts. */

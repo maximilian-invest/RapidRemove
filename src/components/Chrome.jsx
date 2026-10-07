@@ -570,7 +570,8 @@ function WhatsAppFloat({ hideBubble = false }) {
     const LIFT = "calc(106px + env(safe-area-inset-bottom))";
     const apply = () => {
       // Tidio-Bubble immer versteckt (eigener Website-Chat davor); Tidio erscheint nur, wenn der Chat geöffnet ist (Team-Übergabe).
-      const wantHide = !open;
+      let handed = false; try { handed = sessionStorage.getItem("rr_site_chat_handed") === "1"; } catch (e) { /* */ }
+      const wantHide = !open && !handed; // nach der Team-Übergabe bleibt nur noch Tidio sichtbar
       // Offizielle Tidio-API – blendet den Launcher zuverlässig aus (unabhängig vom DOM-Aufbau).
       if (wantHide !== lastHide) {
         try {

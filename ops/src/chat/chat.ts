@@ -269,6 +269,12 @@ Voice:
 - LANGUAGE: reply in exactly the language of the visitor's LATEST message (German → German with "Sie" unless they use "du"; English → English …). If unclear use the site language: ${lang || "en"}.
 - Max 3 short sentences (about 60 words). Plain text, no markdown, no lists. At most one emoji, rarely.
 
+Your goal: every conversation should end with the visitor buying something that genuinely fits them (profile removal, profile + restart, single review removal, protection/monitoring) – or at least starting "Profil prüfen" / the order form. Work like a top sales colleague who is honest:
+- Find out quickly what they need (one short question at a time: which country, whole profile or single reviews, how many, how urgent) and recommend the ONE best-fitting service with its price.
+- Lead with what convinces: payment only after success, fast (profile ~24 h, single reviews 1–3 business days), EU company, 260+ Trustpilot reviews, 10 % off with PayPal/Wise. Offer protection/monitoring as a sensible add-on after a profile removal.
+- Handle doubts (price, legality, "does it really work") with facts from the knowledge base, then guide back to the next step. End most replies with a clear, easy next step or a question that moves them forward.
+- Never pressure with false urgency, never invent discounts, results or facts. If something doesn't fit them (e.g. single reviews in DE/AT), say so and offer what does work.
+
 What to do:
 - Answer questions about services, prices, process, duration, payment, safety and legality using ONLY the knowledge base. Never invent prices, timelines or promises; never say "100 %" or "guaranteed".
 - Individual reviews: only possible outside Germany and Austria (see knowledge base). Whole profile removal works everywhere.
@@ -288,10 +294,20 @@ async function initSite(): Promise<void> {
   if (!pool || siteReady) return;
   await pool.query(`CREATE TABLE IF NOT EXISTS site_chat (id bigserial PRIMARY KEY, sid text NOT NULL, role text NOT NULL, text text NOT NULL, page text, lang text, created_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`CREATE INDEX IF NOT EXISTS site_chat_sid ON site_chat (sid, created_at)`);
+  await pool.query(`ALTER TABLE site_chat ADD COLUMN IF NOT EXISTS handoff boolean NOT NULL DEFAULT false`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS site_chat_links (sid text PRIMARY KEY, order_id text, email text, created_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`DELETE FROM site_chat WHERE created_at < now() - interval '12 months'`).catch(() => {});
   siteReady = true;
 }
-const saveSite = (sid: string, role: string, text: string, page: string, lang: string) => (pool ? initSite().then(() => pool!.query(`INSERT INTO site_chat (sid, role, text, page, lang) VALUES ($1,$2,$3,$4,$5)`, [sid, role, text.slice(0, 4000), page || null, lang || null])).catch(() => {}) : Promise.resolve());
+const saveSite = (sid: string, role: string, text: string, page: string, lang: string, handoff = false) => (pool ? initSite().then(() => pool!.query(`INSERT INTO site_chat (sid, role, text, page, lang, handoff) VALUES ($1,$2,$3,$4,$5,$6)`, [sid, role, text.slice(0, 4000), page || null, lang || null, handoff])).catch(() => {}) : Promise.resolve());
+/** Website-Chat einer Bestellung bzw. einer im Chat genannten E-Mail zuordnen (Admin sieht „wer"). */
+export async function linkSiteChat(sid: unknown, orderId: string | null, email: string | null): Promise<void> {
+  const id = clip(sid, 40);
+  if (!pool || !id) return;
+  await initSite();
+  await pool.query(`INSERT INTO site_chat_links (sid, order_id, email) VALUES ($1,$2,$3)
+    ON CONFLICT (sid) DO UPDATE SET order_id = COALESCE(EXCLUDED.order_id, site_chat_links.order_id), email = COALESCE(site_chat_links.email, EXCLUDED.email)`, [id, orderId, email ? email.toLowerCase() : null]).catch(() => {});
+}
 
 export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => boolean): void {
   void initSite().catch(() => {});
@@ -309,10 +325,12 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     if (!message) return reply.code(400).send({ ok: false, error: "empty" });
     if (limited("ip:" + ip, 12) || limited("sid:" + sid, 40, 3600_000)) return reply.code(429).send({ ok: false, error: "too_many" });
     void saveSite(sid, "user", message, page, lang);
+    const em = message.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    if (em) void linkSiteChat(sid, null, em[0]);
     if (HUMAN_RE.test(message) && message.length < 120) {
       const de = lang === "de" || /mitarbeiter|mensch|jemand/i.test(message);
       const r = de ? "Gerne, ich hole Ihnen jemanden aus dem Team dazu – einen Moment." : "Sure, I'll bring in someone from our team – one moment.";
-      void saveSite(sid, "assistant", r, page, lang);
+      void saveSite(sid, "assistant", r, page, lang, true);
       return { ok: true, reply: r, handoff: true };
     }
     const today = new Date().toISOString().slice(0, 10);
@@ -341,17 +359,52 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
       out = de ? "Da hole ich am besten gleich jemanden aus dem Team dazu, der hilft Ihnen direkt weiter." : "Let me bring in someone from our team – they'll help you right away.";
       handoff = true;
     }
-    void saveSite(sid, "assistant", out, page, lang);
+    void saveSite(sid, "assistant", out, page, lang, handoff);
     return { ok: true, reply: out, handoff };
   });
 
-  // Admin: letzte Website-Chats nachlesen
+  // Besucher hat auf „Mit dem Team chatten" getippt → im Verlauf vermerken
+  app.post("/chat/site/handoff", async (req) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const sid = clip(b.sid, 40);
+    if (sid && !limited("h:" + sid, 5)) void saveSite(sid, "event", "An das Team übergeben (Tidio geöffnet)", clip(b.page, 200), clip(b.lang, 5), true);
+    return { ok: true };
+  });
+
+  // Admin: Website-Chats als Gespräche (wer, wann, Seite, Sprache, an Team übergeben, hat bestellt)
   app.post("/admin/chat/site", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return { ok: true, chats: [] };
     await initSite();
-    const r = await pool.query(`SELECT sid, role, text, page, lang, created_at FROM site_chat WHERE created_at > now() - interval '30 days' ORDER BY created_at DESC LIMIT 600`);
+    const days = Math.max(1, Math.min(365, Number(b.days) || 60));
+    const r = await pool.query(`
+      SELECT c.sid, min(c.created_at) AS started, max(c.created_at) AS last,
+             count(*) FILTER (WHERE c.role = 'user')::int AS n_user, count(*)::int AS n,
+             bool_or(c.handoff) AS handoff,
+             (array_agg(c.text ORDER BY c.created_at) FILTER (WHERE c.role = 'user'))[1] AS first_q,
+             (array_agg(c.lang ORDER BY c.created_at DESC))[1] AS lang,
+             array_remove(array_agg(DISTINCT c.page), NULL) AS pages,
+             l.order_id, l.email,
+             COALESCE(lo.id, eo.id) AS order_ref, COALESCE(lo.name, eo.name) AS cust_name, COALESCE(lo.amount, eo.amount) AS amount,
+             COALESCE(lo.service, eo.service) AS service, COALESCE(lo.country, eo.country) AS country
+        FROM site_chat c
+        LEFT JOIN site_chat_links l ON l.sid = c.sid
+        LEFT JOIN orders lo ON lo.id = l.order_id
+        LEFT JOIN LATERAL (SELECT id, name, amount, service, country FROM orders o2 WHERE l.email IS NOT NULL AND lower(o2.email) = l.email ORDER BY created_at DESC LIMIT 1) eo ON true
+       WHERE c.created_at > now() - make_interval(days => $1::int)
+       GROUP BY c.sid, l.order_id, l.email, lo.id, lo.name, lo.amount, lo.service, lo.country, eo.id, eo.name, eo.amount, eo.service, eo.country
+       ORDER BY max(c.created_at) DESC LIMIT 300`, [days]);
+    const chats = r.rows;
+    const n = chats.length, ordered = chats.filter((c) => c.order_ref).length, handed = chats.filter((c) => c.handoff).length;
+    return { ok: true, days, stats: { chats: n, ordered, handed, conv: n ? Math.round((ordered / n) * 100) : 0 }, chats };
+  });
+  app.post("/admin/chat/site/thread", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminOk(b.token)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return { ok: true, rows: [] };
+    await initSite();
+    const r = await pool.query(`SELECT role, text, page, lang, handoff, created_at FROM site_chat WHERE sid = $1 ORDER BY created_at, id`, [clip(b.sid, 40)]);
     return { ok: true, rows: r.rows };
   });
 }

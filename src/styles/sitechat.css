@@ -58,3 +58,4 @@
 }
 @media (min-width:821px) and (max-width:920px){.rsc .sc-chat{bottom:180px}}
 @media (prefers-reduced-motion:reduce){.rsc .sc-fab.wig{animation:none}}
+.rsc.handed .sc-fab,.rsc.handed .sc-tease{display:none!important}

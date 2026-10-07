@@ -7,6 +7,7 @@ import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
   RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake,
   Search, Settings, LogOut, Activity as ActIcon,
+  MessageCircle as MsgCircle,
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerSettings, partnersList,
@@ -241,7 +242,7 @@ export default function AdminNext() {
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
   // Desktop: keine Konto-Kachelseite – alle Punkte direkt in der Seitenleiste
   const deskTabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"],
-    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"]];
+    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:chats", MsgCircle, "Website-Chats"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"]];
   const isOn = (k) => (k.startsWith("more:") ? tab === "more" && moreSub === k.slice(5) : tab === k);
   const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin/alt"; };
   const pane = (k, body, extra = "") => (

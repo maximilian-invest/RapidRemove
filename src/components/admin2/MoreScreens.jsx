@@ -3,7 +3,7 @@
 import React from "react";
 import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
-  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3,
+  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle,
 } from "lucide-react";
 import { IMG, bucket, ageMin, fmtAge, orderMoney, money, ST } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
@@ -11,6 +11,7 @@ import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
 import { monitorShotUrl } from "@/lib/admin-api";
 import PartnerStatsScreen from "./PartnerStats";
+import SiteChatsScreen from "./SiteChats";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
@@ -176,10 +177,12 @@ export function Account({ ctx }) {
   if (moreSub === "pstats") return <PartnerStatsScreen ctx={ctx} />;
   if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
   if (moreSub === "activity") return <GlobalActivityScreen ctx={ctx} />;
+  if (moreSub === "chats") return <SiteChatsScreen ctx={ctx} />;
   const tiles = [
     [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
     [ActIcon, "Aktivitäten", () => setMoreSub("activity")],
+    [MessageCircle, "Website-Chats", () => setMoreSub("chats")],
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin/alt"; }],
     [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin/alt"; }],
     [Settings, "Einstellungen", () => setMoreSub("settings")],

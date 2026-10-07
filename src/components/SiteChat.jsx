@@ -29,6 +29,18 @@ const TX = {
 };
 
 const AV = () => <span className="sc-av"><img src={asset("/assets/app/rocket-mark.png")} alt="" /></span>;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+/** Lange Antwort an einer Satzgrenze in 2 Nachrichten teilen. */
+function splitReply(txt) {
+  if (txt.length < 170) return [txt];
+  const ss2 = txt.match(/[^.!?。！？]+[.!?。！？]+["“”»)]?\s*|[^.!?。！？]+$/g) || [txt];
+  if (ss2.length < 2) return [txt];
+  let a = "", i = 0;
+  while (i < ss2.length - 1 && (a + ss2[i]).length < txt.length * 0.6) a += ss2[i++];
+  if (!a) a = ss2[i++];
+  const b = ss2.slice(i).join("").trim();
+  return b ? [a.trim(), b] : [txt];
+}
 const sidOf = () => { let s = ss.get(SID); if (!s) { s = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); ss.set(SID, s); } return s; };
 
 /** Nahtlos an Tidio übergeben: Skript laden lassen, öffnen, letzte Frage + Verlauf mitgeben (je Sitzung 1×). */
@@ -44,8 +56,8 @@ export function handoffToTidio(msgs, onFail) {
       if (!api) return;
       if (api.show) api.show();
       api.open();
-      if (!ss.get("rr_site_chat_handed")) {
-        ss.set("rr_site_chat_handed", "1");
+      if (!ss.get("rr_site_chat_sent")) {
+        ss.set("rr_site_chat_sent", "1");
         try { if (api.setContactProperties && transcript) api.setContactProperties({ ki_chat_verlauf: transcript.slice(0, 1900) }); } catch (e) { /* */ }
         try { if (api.messageFromVisitor && last) api.messageFromVisitor(last); } catch (e) { /* */ }
       }
@@ -67,6 +79,8 @@ export default function SiteChat({ hideBubble = false }) {
   const [txt, setTxt] = React.useState("");
   const [wig, setWig] = React.useState(false);
   const [tease, setTease] = React.useState(false);
+  const [handed, setHanded] = React.useState(false); // mit dem Team verbunden → eigene Bubble weg, nur noch Tidio
+  React.useEffect(() => { if (ss.get("rr_site_chat_handed")) setHanded(true); }, []);
   const body = React.useRef(null), inp = React.useRef(null), everOpen = React.useRef(false);
   React.useEffect(() => { try { const m = JSON.parse(sessionStorage.getItem(KEY) || "[]"); if (m.length) { setMsgs(m); everOpen.current = true; } } catch (e) { /* */ } }, []);
   React.useEffect(() => { try { sessionStorage.setItem(KEY, JSON.stringify(msgs.slice(-40))); } catch (e) { /* */ } }, [msgs]);
@@ -100,7 +114,11 @@ export default function SiteChat({ hideBubble = false }) {
   const toTeam = (list) => {
     const l = list || msgs;
     setMsgs((m) => (m.some((x) => x.sys === 1) ? m : [...m.filter((x) => !x.h), { sys: 1, t: t.teamGo }]));
-    setTimeout(() => { setOpen(false); handoffToTidio(l, () => { setMsgs((m) => [...m, { sys: 2, t: t.fail }]); setOpen(true); }); }, 900);
+    try { fetch(OPS + "/chat/site/handoff", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sid: sidOf(), page: window.location.pathname, lang }), keepalive: true }); } catch (e) { /* */ }
+    setTimeout(() => {
+      ss.set("rr_site_chat_handed", "1"); setHanded(true); setOpen(false);
+      handoffToTidio(l, () => { ss.set("rr_site_chat_handed", ""); setHanded(false); setMsgs((m) => [...m, { sys: 2, t: t.fail }]); setOpen(true); });
+    }, 900);
   };
   const send = async (raw) => {
     const q = String(raw || "").trim();
@@ -108,13 +126,22 @@ export default function SiteChat({ hideBubble = false }) {
     const history = msgs.filter((m) => m.t && !m.sys).slice(-8).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
     const next = [...msgs.filter((x) => !x.h), { r: "u", t: q }];
     setMsgs(next); setTxt(""); setBusy(true);
+    const t0 = Date.now();
     try {
       const res = await fetch(OPS + "/chat/site", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sid: sidOf(), message: q, history, lang, page: window.location.pathname }) });
       const j = await res.json().catch(() => ({}));
       if (!res.ok || !j.ok) throw new Error(j.error || "HTTP " + res.status);
-      const withReply = [...next, { r: "b", t: String(j.reply || "").trim() }];
-      setMsgs(j.handoff ? [...withReply, { h: 1 }] : withReply);
-      if (j.handoff) setTimeout(() => toTeam(withReply), 1600); // fließend: Team übernimmt automatisch
+      // Natürlich wirken: lange Antworten in 2 Nachrichten, „schreibt …" je nach Länge (Lesezeit + Tippen)
+      const parts = splitReply(String(j.reply || "").trim());
+      let cur = next;
+      for (let k = 0; k < parts.length; k++) {
+        const wait = Math.min(5200, 700 + parts[k].length * 28) - (k === 0 ? Date.now() - t0 : 0);
+        if (wait > 0) await sleep(wait);
+        cur = [...cur, { r: "b", t: parts[k] }];
+        setMsgs(cur);
+        if (k < parts.length - 1) await sleep(450);
+      }
+      if (j.handoff) { setMsgs([...cur, { h: 1 }]); setBusy(false); setTimeout(() => toTeam(cur), 1600); return; } // fließend: Team übernimmt automatisch
     } catch (e) {
       setMsgs([...next, { r: "b", t: t.err }, { h: 1 }]);
     }
@@ -123,12 +150,12 @@ export default function SiteChat({ hideBubble = false }) {
   const closeTease = (e) => { e.stopPropagation(); setTease(false); ss.set(TEASE, "x"); };
   const userCount = msgs.filter((m) => m.r === "u").length;
   return (
-    <div className="rsc">
+    <div className={"rsc" + (handed ? " handed" : "")}>
       <div className={"sc-tease" + (tease && !open && !hideBubble ? " show" : "")} role="button" tabIndex={-1} onClick={() => setOpen(true)} aria-hidden={!tease || open}>
         <AV /><span><b>{t.tT}</b>{t.tS}</span>
         <button type="button" className="sc-tx" onClick={closeTease} aria-label={t.close}><X /></button>
       </div>
-      <button type="button" className={"sc-fab" + (open ? " open" : "") + (wig ? " wig" : "") + (hideBubble && !open ? " gone" : "")} onClick={() => { if (!open && ss.get("rr_site_chat_handed")) { handoffToTidio([]); return; } setOpen(!open); }} aria-label={open ? t.close : t.open}>
+      <button type="button" className={"sc-fab" + (open ? " open" : "") + (wig ? " wig" : "") + (hideBubble && !open ? " gone" : "")} onClick={() => setOpen(!open)} aria-label={open ? t.close : t.open}>
         <MessageCircle className="i1" /><ChevronDown className="i2" />{!open && !everOpen.current ? <span className="dot" /> : null}
       </button>
       <section className={"sc-chat" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-label={NAME}>
