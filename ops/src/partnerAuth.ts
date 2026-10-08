@@ -166,7 +166,9 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
       await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING`, [email, TEST_LOGIN_PW_HASH, encPw(clean)]);
     }
     const r = await pool.query(`SELECT pass_hash, pw_enc FROM partner_accounts WHERE email=$1`, [email]);
-    const okPw = r.rows[0] ? cands.find((c) => verifyPassword(c, r.rows[0].pass_hash)) : undefined;
+    // Test-Login des Inhabers: das übergebene Test-Passwort gilt IMMER – auch wenn das Konto inzwischen ein anderes Passwort hat
+    // (vorher: Konto existierte mit anderem Passwort → INSERT … DO NOTHING → Test-Passwort abgelehnt).
+    const okPw = r.rows[0] ? (cands.find((c) => verifyPassword(c, r.rows[0].pass_hash)) ?? (isTestEmail(email) ? cands.find((c) => verifyPassword(c, TEST_LOGIN_PW_HASH)) : undefined)) : undefined;
     if (!r.rows[0] || okPw === undefined) {
       // Diagnose ohne Passwort: unbekannte E-Mail oder falsches Passwort (Länge + ob Sonderzeichen bereinigt wurden).
       req.log.warn({ email, known: !!r.rows[0], len: raw.length, cleaned: raw !== clean }, "Partner-Login fehlgeschlagen");
