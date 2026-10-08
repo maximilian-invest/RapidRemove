@@ -445,6 +445,22 @@ export default function CustomerDashboard() {
   }, [showToast]);
 
   React.useEffect(() => { if (token) load(token); }, [token, load]);
+  // Rückkehr aus Stripe („Zahlungsart hinterlegen"): ?autopay=done&cs=… → speichern (+ offene Beträge abbuchen).
+  const apDone = React.useRef(false);
+  React.useEffect(() => {
+    if (!token || apDone.current) return;
+    let ap = "", cs = "";
+    try { const sp = new URLSearchParams(window.location.search); ap = sp.get("autopay") || ""; cs = sp.get("cs") || ""; } catch (e) { return; }
+    if (!ap) return;
+    apDone.current = true;
+    try { const u = new URL(window.location.href); u.searchParams.delete("autopay"); u.searchParams.delete("cs"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
+    if (ap !== "done" || !cs) { showToast(T("apCancel"), true); return; }
+    setBusy("ap");
+    call("autopay/confirm", { token, cs })
+      .then((r) => { showToast(r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : T("apSaved")); if (r.charged && !window.__NO_TRACK) setCele({ id: Date.now(), kind: "paid", title: T("cPaidT"), sub: T("cPaidS") }); })
+      .catch(() => showToast(T("genericErr"), true))
+      .finally(() => { setBusy(""); prev.current = null; load(token); }); // kein zweiter „Bezahlt"-Toast aus dem Vergleich
+  }, [token, load, showToast]);
   React.useEffect(() => { if (!data || !intro || gate) return undefined; const t = setTimeout(() => setIntro(false), 1600); return () => clearTimeout(t); }, [data, intro, gate]);
   // Live: alle 30 s (sichtbar) + beim Zurückkommen in den Tab; Dauer „In progress · 12 min" jede Minute.
   React.useEffect(() => {
@@ -477,6 +493,7 @@ export default function CustomerDashboard() {
   const [chatOpen, setChatOpen] = React.useState(false);
   const [wiseOpen, setWiseOpen] = React.useState(false);
   const [payVia, setPayVia] = React.useState("");
+  const [apArm, setApArm] = React.useState(false); // „Entfernen" zweimal tippen
   // Sprache: Bestellung (nach dem Login) → zuletzt genutzte → Browser → Englisch.
   const [lang, setLangState] = React.useState("en");
   React.useEffect(() => {
@@ -762,6 +779,46 @@ export default function CustomerDashboard() {
       <div className="s">{remaining ? T("remainingInProgress", { n: remaining }) : T("nothingOpen")}</div>
     </div>
   ));
+  /* ---- Automatisch bezahlen (hinterlegte Zahlungsart) ---- */
+  const ap = data.autopay || null;
+  const apStart = async () => {
+    if (busy) return;
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy("ap");
+    try {
+      const r = await call("autopay/start", { token, returnUrl: window.location.origin + window.location.pathname });
+      track("autopay_open", "Zahlungsart hinterlegen");
+      window.location.href = r.url; // gleicher Tab: Stripe leitet zurück (?autopay=done)
+    } catch (e) { showToast(e.code === "payment_unavailable" ? T("payUnavailable") : T("genericErr"), true); setBusy(""); }
+  };
+  const apRemove = async () => {
+    if (busy) return;
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!apArm) { setApArm(true); setTimeout(() => setApArm(false), 4000); return; }
+    setApArm(false); setBusy("ap");
+    try { await call("autopay/remove", { token }); showToast(T("apGone")); } catch (e) { showToast(T("genericErr"), true); }
+    setBusy(""); load(token);
+  };
+  const AutoPayCard = () => {
+    if (!ap && (!data.autopayAvailable || !all.length)) return null; // vorerst nur Bewertungs-Kunden mit freigeschalteter Funktion
+    if (ap) return (
+      <div className={"paycard apc on" + (ap.error ? " err" : "")}>
+        <span className="ico"><CreditCard /></span>
+        <span><b>{T("apOnT")}{ap.mode === "test" ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apOnS", { pm: ap.label })}</span>{ap.error ? <span className="aperr">{T("apFail")}</span> : null}</span>
+        <span className="apbtns">
+          <button className="mini ghost" disabled={!!busy} onClick={apStart}>{T("apChange")}</button>
+          <button className={"mini ghost" + (apArm ? " arm" : "")} disabled={!!busy} onClick={apRemove}>{busy === "ap" ? <Loader className="spin" /> : null}{apArm ? T("apRmQ") : T("apRm")}</button>
+        </span>
+      </div>
+    );
+    return (
+      <div className="paycard apc">
+        <span className="ico"><CreditCard /></span>
+        <span><b>{T("apT")}{data.autopayTest ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apS")}</span></span>
+        <button className="mini" disabled={!!busy} onClick={apStart}>{busy === "ap" ? <Loader className="spin" /> : <Lock />}{T("apBtn")}</button>
+      </div>
+    );
+  };
   const DepositCards = () => deposits.map((d) => (
     <div key={d.id} className="paycard due">
       <span className="ico pr"><Lock /></span>
@@ -784,6 +841,7 @@ export default function CustomerDashboard() {
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
+          <AutoPayCard />
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
           <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>
           {orders.length ? (
@@ -875,6 +933,7 @@ export default function CustomerDashboard() {
     <>
       <div className="ttl">{T("payments")}</div>
       <Hero payments />
+      <AutoPayCard />
       <DepositCards />
       <div className="sec" style={{ marginTop: due.length || deposits.length ? 8 : 0 }}><h2>{T("history")}</h2></div>
       {history.length ? history.map((h) => (
@@ -882,9 +941,9 @@ export default function CustomerDashboard() {
           <span className="ico"><Receipt /></span>
           <span>
             <b>{h.kind === "profile" ? (isProf(h.o) && T("svc_" + h.o.profileOrder.service) !== "svc_" + h.o.profileOrder.service ? T("svc_" + h.o.profileOrder.service) : T("pTag")) : h.kind === "software" ? T("h_software") : h.kind === "deposit" ? T("h_deposit") : T("h_invoice")}{h.n > 1 ? " · " + T("hReviews", { n: h.n }) : ""}</b>
-            <span>{(h.names.length ? h.names.join(", ") : h.o.business) + " · " + shortDate(h.paid)}</span>
+            <span>{(h.names.length ? h.names.join(", ") : h.o.business) + " · " + shortDate(h.paid) + (h.auto ? " · " + T("apAuto") : "")}</span>
           </span>
-          <span className="amt">{money(h.amount, h.cur)}</span>
+          <span className="amt">{money(h.amount, h.cur)}{h.invoiceUrl ? <a className="hinv" href={h.invoiceUrl} target="_blank" rel="noopener noreferrer">{T("apInv")}</a> : null}</span>
         </div>
       )) : <div className="empty"><img src={IMG.wallet} alt="" />{T("noPayments")}</div>}
     </>

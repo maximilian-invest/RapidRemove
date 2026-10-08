@@ -168,9 +168,15 @@ export type CustPayment = {
   id: string; kind: "deposit" | "software" | "invoice"; amount: number; cur: string; url: string; n?: number;
   keys?: string[];      // Bewertungen DIESES Auftrags, die die Zahlung abdeckt
   refs?: PayRef[];      // Bewertungen ANDERER Aufträge desselben Kunden (Dashboard: „alles zahlen")
-  via?: "dashboard" | "admin";
+  via?: "dashboard" | "admin" | "autopay";
   created: string; paid?: string | null;
 };
+/* Automatisch bezahlen (autopay.ts registriert sich hier – vermeidet zirkuläre Importe). */
+export type AutoCharged = { amount: number; cur: string; label: string; invoiceUrl: string };
+export const autopayHooks: {
+  charge?: (email: string) => Promise<AutoCharged | null>;
+  info?: (email: string) => Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
+} = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");
 /** Stripe-Payment-Link mit eindeutiger Zuordnung (client_reference_id landet in checkout.session.completed). */
 export const withRef = (url: string, id: string) => (url ? `${url}${url.includes("?") ? "&" : "?"}client_reference_id=rr_${id}` : url);
@@ -428,7 +434,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     items: view.map(({ special, old, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
     history: payments.filter((p) => p.paid).map((p) => ({
-      id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, paid: p.paid, n: p.n || (p.keys || []).length + (p.refs || []).length || null,
+      id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, paid: p.paid, auto: p.via === "autopay", invoiceUrl: p.via === "autopay" ? p.url : null, n: p.n || (p.keys || []).length + (p.refs || []).length || null,
       names: (p.keys || []).map((k) => items.find((it) => keyOf(it) === k)?.name || "").filter(Boolean).slice(0, 3),
     })),
     // Offene Anzahlungen für bestellte Bewertungen ohne Text (Startbestätigung).
@@ -562,7 +568,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     // Wise-Zahler: Kontodaten (Railway WISE_BANK_DETAILS) nur an Kunden, die Wise gewählt haben.
     const hasWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
     const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank };
+    const ap = autopayHooks.info ? await autopayHooks.info(email).catch(() => null) : null;
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
@@ -791,7 +798,7 @@ export async function partnerStatusChanged(
  * Währung des Auftrags) und liegt noch etwas beim Partner, pausiert der Auftrag: Partner bekommt „Order on hold" (kann nichts
  * Neues starten), Kunde sieht „Zwischenzahlung nötig". Nach der Zahlung (Betrag < Schwelle) geht es automatisch weiter. */
 export const PAY_HOLD = () => Math.max(1, Number(process.env.PAY_HOLD_AMOUNT) || 400);
-export type OrderProgress = { total: number; removed: number; inProgress: number; waiting: number; due: number; cur: string; hold: boolean };
+export type OrderProgress = { total: number; removed: number; inProgress: number; waiting: number; due: number; cur: string; hold: boolean; charged?: AutoCharged | null };
 function progressOfView(view: ReturnType<typeof orderView>, raw: Record<string, unknown>): OrderProgress {
   const it = view.items.filter((i) => i.status !== "cancelled");
   return {
@@ -846,7 +853,7 @@ export async function payHoldSweep(): Promise<void> {
 }
 
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { key: string; url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[]; progress: OrderProgress | null }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { key: string; url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[]; progress: OrderProgress | null; charged: AutoCharged | null }[]> {
   if (!pool) return [];
   const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys, changes`);
   const out = [];
@@ -854,6 +861,9 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1`, [d.order_id]);
     const row = o.rows[0];
     if (!row || !row.email) continue;
+    // Zahlungsart hinterlegt → offenen Betrag sofort abbuchen (dann gibt es weder Aufforderung noch Zwischenzahlung).
+    const ks0: string[] = Array.isArray(d.keys) ? d.keys : [];
+    const charged = autopayHooks.charge && ks0.length ? await autopayHooks.charge(String(row.email)).catch(() => null) : null;
     // Gelöscht → offener Betrag gestiegen: Zwischenzahlung prüfen, bevor die Mail rausgeht (Mail zeigt dann den Hinweis).
     const progress = await evaluatePayHold(d.order_id).catch(() => null);
     const pt = await pool.query(`SELECT item_key, status, working_since FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
@@ -864,7 +874,7 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
       const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
       return { key: v.key, url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
     });
-    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys, progress });
+    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys, progress: progress && charged ? { ...progress, charged } : progress, charged });
   }
   return out;
 }

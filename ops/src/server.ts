@@ -22,6 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
+import { registerAutopayRoutes } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -170,6 +171,7 @@ app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
+registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner

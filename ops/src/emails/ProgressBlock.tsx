@@ -18,6 +18,12 @@ export default function ProgressBlock({ p, lang, payUrl, showGood = true }: { p:
         <tbody><tr>{seg(p.removed, "#16a34a")}{seg(p.inProgress, brand.accent)}{seg(p.waiting, "#3b82f6")}{seg(rest, "#ececec")}</tr></tbody>
       </table>
       {legend ? <Text style={{ fontSize: 13, color: brand.muted, margin: "8px 0 14px" }}>{legend}</Text> : null}
+      {p.charged && p.charged.amount > 0 ? (
+        <Section style={{ background: "#ecfdf3", border: "1px solid #bbf7d0", borderRadius: 14, padding: "14px 18px", margin: "4px 0 14px" }}>
+          <Text style={{ margin: 0, fontSize: 14, color: "#166534", lineHeight: "21px" }}>{fillP(t.autoPaid, { a: fmtReviewMoney(p.charged.amount, p.charged.cur) }).replace("{pm}", p.charged.label || "")}</Text>
+          {p.charged.invoiceUrl ? <Text style={{ margin: "8px 0 0", fontSize: 13 }}><a href={p.charged.invoiceUrl} style={{ color: "#166534", fontWeight: 700 }}>{t.autoInv} →</a></Text> : null}
+        </Section>
+      ) : null}
       {p.due > 0 ? (
         <Section style={{ background: brand.tint, borderRadius: 14, padding: "16px 18px", margin: "4px 0 14px" }}>
           <Text style={{ margin: 0, fontSize: 14, color: brand.muted }}>{t.due}</Text>

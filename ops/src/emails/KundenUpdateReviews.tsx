@@ -36,6 +36,7 @@ export interface KundenUpdateProps {
 export function kundenUpdateSubject(p: KundenUpdateProps): string {
   const t = T[p.lang && T[p.lang] ? p.lang : "en"] || T.en;
   const pr = p.progress;
+  if (pr && pr.charged && pr.charged.amount > 0 && !(pr.due > 0) && p.changed.some((c) => c.status === "removed")) return fillP(progT(p.lang).autoSubj, { r: pr.removed, n: pr.total });
   if (pr && pr.due > 0 && p.changed.some((c) => c.status === "removed")) {
     const pt = progT(p.lang); const a = fmtReviewMoney(pr.due, pr.cur);
     return pr.hold && pr.inProgress ? fillP(pt.holdSubj, { a }) : fillP(pt.progSubj, { r: pr.removed, n: pr.total, a });
