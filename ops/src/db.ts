@@ -828,7 +828,7 @@ export async function enqueueUpsellSeries(opts: {
     const r = await pool.query(
       `INSERT INTO upsell_jobs (email, lang, step, send_at, dedup_key)
        VALUES ($1,$2,$3,$4,$5) ON CONFLICT (dedup_key, step) DO NOTHING`,
-      [opts.email, opts.lang === "en" ? "en" : "de", i + 1, sendAt, opts.dedupKey],
+      [opts.email, ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"].includes(opts.lang) ? opts.lang : "en", i + 1, sendAt, opts.dedupKey],
     );
     inserted += r.rowCount || 0;
   }

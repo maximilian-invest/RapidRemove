@@ -40,7 +40,7 @@ import KundenSoftwarePayReviews, { kundenSoftwarePaySubject } from "./emails/Kun
 import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
-import { startUpsellWorker } from "./upsell";
+import { startUpsellWorker, scheduleProtectionUpsell } from "./upsell";
 import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
@@ -1982,6 +1982,7 @@ app.post("/admin/order-status", async (req, reply) => {
   // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (je Auftrag nur 1×).
   // Mehrere Aufträge desselben Kunden, die kurz hintereinander auf bezahlt gehen (eine Sammelüberweisung) → EINE Mail.
   if (pay === "paid") queuePaidConfirm(id);
+  if (pay === "paid") void scheduleProtectionUpsell(id, app.log).catch(() => {}); // Profil-Löschung bezahlt (z. B. PayPal/Wise) → Schutz-Hinweis in 2 Tagen
   const label = clip(b.label, 80) || status;
   // noEvent=true → nur Status/Zahlung persistieren, KEIN „Status → …"-Eintrag (z. B. wenn
   // beim Zahlungslink-/Mahnung-Versand der Auftrag bereits „done" ist → kein erneutes

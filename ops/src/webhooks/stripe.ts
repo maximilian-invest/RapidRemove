@@ -19,6 +19,7 @@
  * Signaturprüfung über STRIPE_WEBHOOK_SECRET gegen den RAW-Body.
  */
 import { markReviewPaymentPaid } from "../customers";
+import { scheduleProtectionUpsell } from "../upsell";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import * as React from "react";
 import { render } from "@react-email/render";
@@ -28,7 +29,7 @@ import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
 import {
-  dbReady, latestOrder, enqueueUpsellSeries, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic,
+  dbReady, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic,
 } from "../db.js";
 import { notifyPaymentReceived } from "../notify.js";
 
@@ -126,66 +127,8 @@ async function sendInvoiceMail(
   );
 }
 
-/** make.com: Upsell nur bei Gesamtbetrag < 990,00 (in Minor Units → < 99000). */
-const UPSELL_MAX_TOTAL = 99000;
-
-/**
- * Upsell-Serie „Hinweis zum Schutzmodell" nach einer Einmalzahlung ohne Abo
- * (make.com „Payment Stripe to sevDesk", Module 43 DE / 44 EN), aufgefächert auf
- * 3 Mails mit unterschiedlichem Text über ~2 Wochen (Tag 0/7/14).
- *   Bedingungen: keine Abo-Zeile UND Gesamtbetrag < 99000 UND kein Reset-Auftrag
- *   (Löschen + Neuanlegen – der bekommt keinen Schutz-Upsell).
- *   Sprache wie die Rechnung (EUR → de, sonst → en).
- * Umsetzung: 3 Jobs in der DB einplanen; ein Worker (src/upsell.ts) versendet sie
- *   fällig. Idempotent über die Invoice-ID (kein Doppel-Enqueue bei invoice.paid +
- *   payment_succeeded oder Stripe-Retries). Ohne DB: einmaliger Sofortversand.
- * Fehler werden geschluckt, damit ein misslungener Upsell den Webhook nicht kippt.
- */
-async function maybeSendSchutzhinweis(
-  log: FastifyInstance["log"], obj: any, lang: Lang,
-): Promise<void> {
-  const lines: any[] = obj?.lines?.data ?? [];
-  const hasSubscription = !!obj?.subscription || lines.some((l) => !!l?.subscription);
-  const total = Number(obj?.total);
-  if (hasSubscription || !Number.isFinite(total) || total >= UPSELL_MAX_TOTAL) {
-    log.info(`Webhook: Schutzhinweis übersprungen (Abo=${hasSubscription}, total=${obj?.total})`);
-    return;
-  }
-  const email: string | undefined = obj?.customer_email ?? undefined;
-  if (!email) { log.warn("Webhook: Schutzhinweis ohne Empfänger – übersprungen"); return; }
-
-  // Reset-Aufträge (Löschen + Neuanlegen) bekommen keinen Schutz-Upsell.
-  // Best effort: ohne Treffer wird normal gesendet (keine fälschliche Unterdrückung).
-  try {
-    const svc = (await latestOrder(email))?.service?.toLowerCase();
-    if (svc === "reset") {
-      log.info(`Webhook: Schutzhinweis übersprungen (Reset-Auftrag) für ${email}`);
-      return;
-    }
-    // Einzelbewertungen (inkl. Software-Vorauszahlung): kein Profil gelöscht → „Profil-Schutz"-Mail passt nicht (RR-583155, 07.10.2026).
-    if (svc === "reviews") {
-      log.info(`Webhook: Schutzhinweis übersprungen (Bewertungs-Auftrag) für ${email}`);
-      return;
-    }
-  } catch (e) {
-    log.error(`Webhook: Reset-Prüfung fehlgeschlagen (sende trotzdem): ${(e as Error).message}`);
-  }
-
-  if (dbReady()) {
-    try {
-      const n = await enqueueUpsellSeries({ email, lang, dedupKey: String(obj?.id || email) });
-      log.info(`Webhook: Schutzhinweis-Serie eingeplant (${n} Mails, Tag 0/7/14) für ${email}`);
-    } catch (e) {
-      log.error(`Webhook: Schutzhinweis-Serie konnte nicht eingeplant werden: ${(e as Error).message}`);
-    }
-  } else {
-    try {
-      await sendTemplate(log, "schutzhinweis", lang, email, { variant: 1 });
-    } catch (e) {
-      log.error(`Webhook: Schutzhinweis-Sofortversand fehlgeschlagen (ignoriert): ${(e as Error).message}`);
-    }
-  }
-}
+/* Schutz-Hinweis („Hinweis zum Schutzmodell"): seit 08.10.2026 nicht mehr je Stripe-Rechnung, sondern je bezahltem
+ * Profil-Löschungs-Auftrag → scheduleProtectionUpsell() in upsell.ts (Tag 2/9/16, kein Reset, keine Bewertungen, kein Schutz). */
 
 /**
  * Automatische Zahlungszuordnung: passt die Stripe-Kunden-E-Mail zu einer offenen
@@ -215,6 +158,7 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
     const oid = await markOrderPaidByEmail(email);
     if (oid) {
       app.log.info(`Webhook: Bestellung ${oid} automatisch als bezahlt markiert (${email}, ${source})`);
+      void scheduleProtectionUpsell(oid, app.log).catch(() => {}); // Profil-Löschung bezahlt → Schutz-Hinweis in 2 Tagen
       await insertEvent({ orderId: oid, type: "pay", title: "Zahlung eingegangen", detail: `Automatisch via Stripe zugeordnet (${email})`, auto: true });
       // 💰 Team-Push „Zahlung eingegangen" (real-time). Betrag in Minor-Units → /100.
       try {
@@ -240,7 +184,6 @@ async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
       // Zahlung zuerst der Bestellung zuordnen (Übersicht: bezahlt), dann Mails.
       await autoMatchPayment(app, obj, event.type);
       await sendInvoiceMail(app.log, obj, lang);
-      await maybeSendSchutzhinweis(app.log, obj, lang);
       // TODO M3: sevDesk-Beleg (createContact → uploadVoucher → createVoucher)
       return;
     }

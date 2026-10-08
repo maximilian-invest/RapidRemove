@@ -10,7 +10,8 @@ import { render } from "@react-email/render";
 import type { FastifyInstance } from "fastify";
 import { TEMPLATES } from "./emails/index";
 import { sendMail, mailTrace } from "./mailer";
-import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt, insertEvent, latestOrder, cancelUpsellForEmail } from "./db";
+import { dbReady, dueUpsellJobs, markUpsellSent, bumpUpsellAttempt, insertEvent, latestOrder, cancelUpsellForEmail, enqueueUpsellSeries, pool } from "./db";
+import { isTestEmail } from "./testAccounts";
 
 const TICK_MS = Number(process.env.UPSELL_TICK_MS) || 60_000;
 
@@ -19,11 +20,13 @@ async function runDue(log: FastifyInstance["log"]): Promise<void> {
   if (!jobs.length) return;
   const t = TEMPLATES["schutzhinweis"];
   for (const j of jobs) {
-    const lang = j.lang === "en" ? "en" : "de";
+    const lang = (["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"].includes(j.lang) ? j.lang : "en") as "de";
     const variant = Math.min(3, Math.max(1, Number(j.step) || 1)) as 1 | 2 | 3;
     const props = { lang, variant };
-    // Bewertungs-Kunden bekommen keinen Profil-Schutz-Hinweis (auch bereits eingeplante Folge-Mails nicht).
-    if ((await latestOrder(j.email).catch(() => null))?.service === "reviews") {
+    // Nur Profil-Löschungen ohne Schutz: Bewertungs-/Reset-Kunden und wer inzwischen Schutz hat → Serie stoppen.
+    const lo = await latestOrder(j.email).catch(() => null);
+    const hasProt = pool ? ((await pool.query(`SELECT 1 FROM orders WHERE lower(email)=lower($1) AND COALESCE(protection,'none') NOT IN ('none','') AND COALESCE(status,'') <> 'storniert' LIMIT 1`, [j.email]).catch(() => ({ rowCount: 0 }))).rowCount || 0) > 0 : false;
+    if (lo?.service === "reviews" || lo?.service === "reset" || hasProt) {
       const n = await cancelUpsellForEmail(j.email).catch(() => 0);
       log.info(`Upsell: Schutzhinweis für ${j.email} gestoppt (Bewertungs-Auftrag, ${n} Mail(s))`);
       continue;
@@ -48,6 +51,24 @@ async function runDue(log: FastifyInstance["log"]): Promise<void> {
       });
     }
   }
+}
+
+/** Schutz-Hinweis nach bezahlter PROFIL-LÖSCHUNG (Maximilian 08.10.2026): nur Profil-Löschung (remove/express, kein Reset,
+ *  keine Bewertungen), ohne gebuchten Schutz; erste Mail 2 Tage nach der Zahlung, Folge-Mails nach 9 und 16 Tagen.
+ *  Auslöser: Stripe-Zahlung (Webhook/Abgleich) oder Admin „bezahlt" (PayPal/Wise). Idempotent je Auftrag. */
+export async function scheduleProtectionUpsell(orderId: string, log?: { info: (m: string) => void }): Promise<number> {
+  if (!pool || !orderId) return 0;
+  const r = await pool.query(`SELECT id, email, lang, service, protection, status FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as Record<string, string | null>[] }));
+  const o = r.rows[0];
+  if (!o || !o.email || isTestEmail(o.email)) return 0;
+  if (!["remove", "express"].includes(String(o.service || ""))) return 0;
+  if (String(o.protection || "none") !== "none" || o.status === "storniert") return 0;
+  const n = await enqueueUpsellSeries({ email: String(o.email), lang: String(o.lang || "en").slice(0, 2), dedupKey: "order:" + o.id, offsetsDays: [2, 9, 16] });
+  if (n) {
+    log?.info(`Upsell: Schutzhinweis-Serie für ${o.id} eingeplant (Tag 2/9/16)`);
+    await insertEvent({ orderId: String(o.id), email: String(o.email), type: "note", title: "Schutz-Hinweis eingeplant (in 2 Tagen)", detail: "Profil-Löschung bezahlt, kein Schutz gebucht · Folge-Mails nach 9 und 16 Tagen", auto: true }).catch(() => {});
+  }
+  return n;
 }
 
 /** Startet den periodischen Versand fälliger Upsell-Mails (no-op ohne DB). */

@@ -16,6 +16,7 @@ import { hasSecretKey, listDeletionPayments } from "./integrations/stripe";
 import { dbReady, reconcileOrderForPayment, insertEvent, isPaymentReconciled, recordReconciledPayment } from "./db";
 import { notifyPaymentReceived } from "./notify";
 import { sendPurchaseForOrder } from "./integrations/metaCapi";
+import { scheduleProtectionUpsell } from "./upsell";
 
 export interface ReconcileReport {
   ok: true;
@@ -44,6 +45,7 @@ export async function reconcilePaymentsOnce(log?: FastifyInstance["log"]): Promi
       if (r.status === "marked") {
         matched.push({ name: label, orderId: r.id! });
         await recordReconciledPayment(p.id, r.id || null);     // einmalig „verbraucht"
+        if (r.id) void scheduleProtectionUpsell(r.id).catch(() => {}); // Profil-Löschung bezahlt → Schutz-Hinweis in 2 Tagen
         void sendPurchaseForOrder(r.id || "", log); // bezahlt + gelöscht → Meta melden
         await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung eingegangen", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
         // 💰 Team-Push „Zahlung eingegangen" für neu zugeordnete Zahlungen.
