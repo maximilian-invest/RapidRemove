@@ -7,22 +7,28 @@
 import React from "react";
 import {
   X, ArrowLeft, ArrowRight, Link as LinkIcon, Clipboard, Store, Check, Info, CheckCheck, User, Mail, Phone, Send, Wallet,
-  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell,
+  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe,
 } from "lucide-react";
+import { searchProfiles } from "@/lib/places";
 import { monitorLookup, placeReviews, createAdminOrder, resolveReviewLinkApi } from "@/lib/admin-api";
 import { reviewQuote } from "@/lib/pricing";
 import { IMG, money, staffOf } from "./model";
 
 const CTRY = [["AT", "Österreich", "€"], ["DE", "Deutschland", "€"], ["CH", "Schweiz", "€"], ["US", "USA", "$"], ["UK", "UK", "$"], ["XX", "Andere", "$"]];
 const REASONS = [["closed", "Dauerhaft geschlossen", Store], ["fake", "Fake / nicht meins", UserX], ["dup", "Doppeltes Profil", Copy], ["moved", "Umgezogen", MapPin], ["other", "Sonstiges", MoreHorizontal]];
-const PAYS = [["link", "Zahlungslink per E-Mail", Send], ["paypal", "PayPal (−10 %)", Wallet], ["invoice", "Rechnung", FileText]];
+const PAYS = [
+  ["auto", "Zahlungsdaten hinterlegen – automatische Abbuchung bei Löschung", CreditCard],
+  ["link", "Kunde zahlt selbst („Pay“ im Dashboard / Zahlungslink)", Send],
+  ["paypal", "PayPal (−10 %)", Wallet], ["invoice", "Rechnung", FileText],
+];
+const LANGS = [["de", "Deutsch"], ["en", "English"], ["es", "Español"], ["fr", "Français"], ["it", "Italiano"], ["nl", "Nederlands"], ["pt", "Português"], ["sv", "Svenska"], ["da", "Dansk"], ["no", "Norsk"], ["ja", "日本語"]];
 const PROFILE_PRICE = { "€": 450, $: 495 };
 const MAPS_RE = /(maps|goo\.gl|g\.page|google\.)/i;
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
 const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} ${Math.round(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 
-const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", pay: "link", staff: "max", confirm: true, busy: false, done: null });
+const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false });
 
 export default function NewOrder({ ctx }) {
   const { back, auto, partners, openSheet, openOrder, toast, refresh, isDesk, scrollPush } = ctx;
@@ -61,6 +67,30 @@ export default function NewOrder({ ctx }) {
     const t = setTimeout(() => lookup(u, s.type === "reviews").then(() => set((x) => (x.biz ? { biz: { ...x.biz, _src: u } } : {}))), 450);
     return () => clearTimeout(t);
   }, [s.url, view, s.mode, s.type]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ---- Profil per Name suchen (wie im Bestellprozess): „Firma + Ort" → Treffer wählen ---- */
+  const searchSeq = React.useRef(0);
+  React.useEffect(() => {
+    if (view !== "revs" && view !== "prof") return undefined;
+    if (view === "revs" && s.mode !== "profile") return undefined;
+    const q = s.url.trim();
+    if (!q || isUrl(q) || q.length < 3 || (s.biz && s.biz._src === q)) { if (!q) set({ cands: null }); return undefined; }
+    const seq = ++searchSeq.current;
+    const t = setTimeout(async () => {
+      set({ candBusy: true });
+      try { const r = await searchProfiles(q, "de"); if (seq === searchSeq.current) set({ cands: r, candBusy: false }); }
+      catch (e) { if (seq === searchSeq.current) set({ cands: [], candBusy: false }); }
+    }, 450);
+    return () => clearTimeout(t);
+  }, [s.url, view, s.mode]); // eslint-disable-line react-hooks/exhaustive-deps
+  const pickCand = async (c) => {
+    const biz = { name: c.name, address: c.addr, placeId: c.placeId, mapsUrl: c.mapsUri, _src: s.url.trim() };
+    set({ biz, bizErr: "", cands: null, ...(s.type === "reviews" ? { revs: null, revErr: "", sel: [] } : {}) });
+    if (s.type === "reviews" && c.placeId) {
+      try { const rv = await placeReviews(c.placeId, "de"); set(rv.enabled === false ? { revs: [], revErr: "Bewertungsliste nicht verfügbar – bitte „Bewertungs-Links“ nutzen." } : { revs: rv.reviews || [] }); }
+      catch (e) { set({ revs: [], revErr: "Bewertungen konnten nicht geladen werden: " + e.message }); }
+    }
+  };
 
   /* ---- abgeleitete Werte ---- */
   const revList = (s.revs || []).filter((r) => s.rsf === "all" || (r.rating && r.rating <= 2));
@@ -110,7 +140,7 @@ export default function NewOrder({ ctx }) {
       const r = await createAdminOrder({
         type: s.type, reviewItems: items, reason: s.reason, payment: s.pay, staff: s.staff, sendConfirm: s.confirm,
         place: s.biz ? { name: s.biz.name, address: s.biz.address, placeId: s.biz.placeId, mapsUrl: s.biz.mapsUrl || s.url } : { mapsUrl: s.url },
-        customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country },
+        customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country, lang: s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en") },
       });
       set({ busy: false, done: r });
       refresh && refresh(true);
@@ -127,7 +157,7 @@ export default function NewOrder({ ctx }) {
         <h1>Auftrag angelegt</h1>
         <p>{d.id} · {(s.biz && s.biz.name) || s.name}</p>
         <p className="m">{d.mailed ? <>Auftragsbestätigung an {s.email.trim()} gesendet.</> : s.confirm ? "Bestätigung konnte nicht gesendet werden – bitte im Auftrag prüfen." : "Keine E-Mail an den Kunden gesendet."}</p>
-        {d.partner ? <p>{d.partner === 1 ? "1 Aufgabe" : d.partner + " Aufgaben"} automatisch ans Partner-Board.</p> : null}
+        {d.payGate ? <p>Startet, sobald der Kunde im Dashboard seine Zahlungsart hinterlegt hat.</p> : d.partner ? <p>{d.partner === 1 ? "1 Aufgabe" : d.partner + " Aufgaben"} automatisch ans Partner-Board.</p> : null}
         <div className="ctas" style={{ width: "100%", marginTop: 28 }}>
           <button type="button" className="cta" onClick={() => openOrder(d.id)}><ArrowRight />Auftrag öffnen</button>
           <button type="button" className="cta gh" onClick={back}>Fertig</button>
@@ -158,10 +188,21 @@ export default function NewOrder({ ctx }) {
     const links = view === "revs" && s.mode === "links";
     const urlField = (
       <>
-        <p className="nasub">Google-Maps-Link des Unternehmens einfügen.</p>
-        <div className="usrch nain"><LinkIcon /><input placeholder="https://maps.google.com/…" value={s.url} onChange={(e) => set({ url: e.target.value })} inputMode="url" autoComplete="off" />
+        <p className="nasub">Unternehmen suchen (Name + Ort) – oder Google-Maps-Link einfügen.</p>
+        <div className="usrch nain">{isUrl(s.url.trim()) ? <LinkIcon /> : <Search />}<input placeholder="z. B. Café Mozart Salzburg" value={s.url} onChange={(e) => set({ url: e.target.value, ...(s.biz && e.target.value !== s.biz._src ? { biz: null } : {}) })} autoComplete="off" />
           <button type="button" className="bt" onClick={() => paste("url")}><Clipboard />Einfügen</button></div>
-        {bizCard(false) || <div className="nahint"><Info />Profil wird automatisch erkannt.</div>}
+        {!s.biz && s.candBusy ? <div className="nahint"><Loader className="spin" />Suche …</div> : null}
+        {!s.biz && s.cands && s.cands.length ? (
+          <div className="card ls narl">
+            {s.cands.map((c) => (
+              <button key={c.placeId || c.id} type="button" className="rlr pk" onClick={() => pickCand(c)}>
+                <span className="mav"><Store /></span>
+                <div className="t"><b>{c.name}</b><span className="q">{c.addr}</span><span>{c.cat}{c.reviews ? ` · ${c.rating} ★ · ${c.reviews} Bewertungen` : ""}</span></div>
+              </button>
+            ))}
+          </div>
+        ) : !s.biz && s.cands && !s.candBusy ? <div className="nahint"><Info />Nichts gefunden – anders schreiben oder Maps-Link einfügen.</div> : null}
+        {bizCard(false) || (!s.cands ? <div className="nahint"><Info />Profil wird automatisch erkannt.</div> : null)}
       </>
     );
     body = (
@@ -245,6 +286,8 @@ export default function NewOrder({ ctx }) {
         {f("phone", "Telefon", "tel", "+43 …", Phone)}
         <div className="naf"><span>Land · bestimmt Währung</span>
           <div className="nachips">{CTRY.map(([c, l]) => <button key={c} type="button" className={"achip" + (s.country === c ? " on" : "")} onClick={() => set({ country: c })}>{l}</button>)}</div></div>
+        <div className="naf"><span>Sprache · Mails & Dashboard des Kunden</span>
+          <div className="nachips">{LANGS.map(([c, l]) => { const on = (s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en")) === c; return <button key={c} type="button" className={"achip" + (on ? " on" : "")} onClick={() => set({ lang: c })}>{l}</button>; })}</div></div>
       </>
     );
   } else if (view === "sum") {
@@ -260,6 +303,7 @@ export default function NewOrder({ ctx }) {
           <div className="nsr"><span>Kunde</span><b>{s.name.trim()}</b></div>
           <div className="nsr"><span>E-Mail</span><b>{s.email.trim()}</b></div>
           {s.phone.trim() ? <div className="nsr"><span>Telefon</span><b>{s.phone.trim()}</b></div> : null}
+          <div className="nsr"><span>Sprache</span><b>{(LANGS.find((x) => x[0] === (s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en"))) || LANGS[0])[1]}</b></div>
           <div className="nsr tot"><span>{s.type === "reviews" ? "Betrag (max.)" : "Betrag"}</span><b>{fmt(shown)}</b></div>
         </div>
         <div className="sec3" style={{ marginTop: 20 }}><h2>Zahlung</h2></div>
@@ -273,7 +317,9 @@ export default function NewOrder({ ctx }) {
           <button type="button" className="ir" onClick={() => set((x) => ({ confirm: !x.confirm }))}>
             <span className="ico"><Bell /></span><span className="t"><span>Kunde</span><b>Auftragsbestätigung per E-Mail</b></span><span className={"tg" + (s.confirm ? " on" : "")}><i /></span></button>
         </div>
-        <p className="nasub" style={{ marginTop: 4 }}>{s.type === "reviews" ? "Bezahlt werden nur gelöschte Bewertungen – der Zahlungslink geht wie gewohnt nach der Löschung raus." : "Der Zahlungslink geht wie gewohnt nach der Löschung raus."}</p>
+        <p className="nasub" style={{ marginTop: 4 }}>{s.pay === "auto"
+          ? "Der Kunde bekommt Auftragsbestätigung + Dashboard-Zugang und hinterlegt dort seine Zahlungsart. Erst dann startet der Auftrag. Abgebucht wird automatisch " + (s.type === "reviews" ? "nach jeder geprüften Löschung." : "sobald das Profil auf „gelöscht“ steht.")
+          : s.type === "reviews" ? "Bezahlt werden nur gelöschte Bewertungen – der Kunde zahlt selbst („Pay“ im Dashboard bzw. Zahlungslink nach der Löschung)." : "Der Zahlungslink geht wie gewohnt nach der Löschung raus."}</p>
       </>
     );
   }

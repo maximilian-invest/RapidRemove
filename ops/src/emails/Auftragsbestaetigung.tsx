@@ -1,14 +1,34 @@
 /* Template: Auftragsbestätigung / Order Confirmation (DE/EN).
    Enthält AGB + Widerrufsbelehrung im Volltext (dauerhafter Datenträger, FAGG). */
 import * as React from "react";
-import { EmailShell, P, NoteBox } from "./components";
+import { EmailShell, P, NoteBox, brand } from "./components";
+import { DashBox, type DashInfo } from "./DashBox";
 import { LegalSection } from "./legal";
 
 export interface AuftragsbestaetigungProps {
   lang?: "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
   /** optionale persönliche Anrede, sonst formell */
   anrede?: string;
+  /** Kunden-Dashboard (Profil-Aufträge mit automatischer Abbuchung) */
+  dash?: DashInfo;
+  /** Zahlungsart muss erst hinterlegt werden (Auftrag startet danach) */
+  payGate?: boolean;
 }
+
+/** Profil-Löschung mit automatischer Abbuchung: Zahlungsart hinterlegen, dann starten wir. */
+const PGP: Record<string, [string, string]> = {
+  de: ["Letzter Schritt: Zahlungsart hinterlegen", "Bitte hinterlegen Sie in Ihrem Dashboard eine Zahlungsart (Karte, PayPal …). Abgebucht wird erst, wenn Ihr Profil tatsächlich gelöscht ist – vorher zahlen Sie nichts. Sobald die Zahlungsart hinterlegt ist, starten wir."],
+  en: ["Last step: add a payment method", "Please add a payment method (card, PayPal …) in your dashboard. You're only charged once your profile has actually been removed – nothing before that. As soon as it's saved, we start."],
+  es: ["Último paso: añade un método de pago", "Añade un método de pago (tarjeta, PayPal…) en tu panel. Solo se cobra cuando tu perfil se haya eliminado de verdad; antes no pagas nada. En cuanto esté guardado, empezamos."],
+  fr: ["Dernière étape : ajoute un moyen de paiement", "Ajoute un moyen de paiement (carte, PayPal…) dans ton espace client. Tu n'es débité qu'une fois ton profil réellement supprimé – rien avant. Dès qu'il est enregistré, nous commençons."],
+  it: ["Ultimo passo: aggiungi un metodo di pagamento", "Aggiungi un metodo di pagamento (carta, PayPal…) nella dashboard. L'addebito avviene solo quando il profilo è stato davvero rimosso – prima non paghi nulla. Appena è salvato, iniziamo."],
+  nl: ["Laatste stap: voeg een betaalmethode toe", "Voeg in uw dashboard een betaalmethode toe (kaart, PayPal …). Er wordt pas afgeschreven als uw profiel echt is verwijderd – daarvoor betaalt u niets. Zodra die is opgeslagen, starten we."],
+  pt: ["Último passo: adiciona um método de pagamento", "Adiciona um método de pagamento (cartão, PayPal…) no teu painel. Só é cobrado quando o teu perfil for realmente removido – antes disso não pagas nada. Assim que estiver guardado, começamos."],
+  ja: ["最後のステップ：お支払い方法の登録", "ダッシュボードでお支払い方法（カード、PayPalなど）をご登録ください。請求はプロフィールが実際に削除された後のみで、それまでは一切かかりません。登録が完了次第、開始します。"],
+  sv: ["Sista steget: lägg till en betalningsmetod", "Lägg till en betalningsmetod (kort, PayPal …) i din översikt. Du debiteras först när din profil faktiskt har tagits bort – inget innan dess. Så snart den är sparad börjar vi."],
+  da: ["Sidste trin: tilføj en betalingsmetode", "Tilføj en betalingsmetode (kort, PayPal …) i dit dashboard. Der trækkes først, når din profil faktisk er fjernet – intet før. Så snart den er gemt, går vi i gang."],
+  no: ["Siste steg: legg til en betalingsmetode", "Legg til en betalingsmetode (kort, PayPal …) i dashbordet. Du belastes først når profilen din faktisk er fjernet – ingenting før det. Så snart den er lagret, starter vi."],
+};
 
 const T = {
   de: {
@@ -149,7 +169,7 @@ export function subject(p: AuftragsbestaetigungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Auftragsbestaetigung({ lang = "de", anrede }: AuftragsbestaetigungProps = {}) {
+export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate }: AuftragsbestaetigungProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
@@ -158,6 +178,13 @@ export default function Auftragsbestaetigung({ lang = "de", anrede }: Auftragsbe
       <NoteBox>
         <strong>{t.noteBold}</strong>{t.note}
       </NoteBox>
+      {payGate ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PGP[lang] || PGP.en)[0]}</span><br />
+          {(PGP[lang] || PGP.en)[1]}
+        </NoteBox>
+      ) : null}
+      {dash ? <DashBox lang={lang} dash={dash} /> : null}
       <P muted>{t.outro}</P>
       <LegalSection lang={lang} />
     </EmailShell>

@@ -23,7 +23,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
-import { registerAutopayRoutes, payGateNeeded, retryTick } from "./autopay";
+import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -711,7 +711,9 @@ app.post("/admin/orders/create", async (req, reply) => {
   const ctry = ["AT", "DE", "CH", "US", "UK", "XX"].includes(String(c.country)) ? String(c.country) : "AT";
   const eur = ["AT", "DE", "CH"].includes(ctry);
   const country = eur ? ctry : "US";
-  const lang = eur ? "de" : "en";
+  // Sprache der Kunden-Mails/Dashboards: im Admin wählbar, sonst aus dem Land (DACH → de, sonst en).
+  const langIn = String(c.lang || "").slice(0, 2);
+  const lang = MAIL_LANGS.includes(langIn) ? langIn : eur ? "de" : "en";
   const pl = (b.place || {}) as Record<string, unknown>;
   const company = clip(pl.name, 160);
   const mapsUri = httpUrl(pl.mapsUrl, 400);
@@ -734,7 +736,10 @@ app.post("/admin/orders/create", async (req, reply) => {
   const cur = eur ? "eur" : "usd";
   const q = type === "reviews" ? quoteReviews(items, cur) : null;
   const amount = q ? q.total : (eur ? 450 : 495);
-  const pay = ["link", "paypal", "invoice"].includes(String(b.payment)) ? String(b.payment) : "link";
+  const pay = ["auto", "link", "paypal", "invoice"].includes(String(b.payment)) ? String(b.payment) : "link";
+  // „auto": Kunde hinterlegt im Dashboard seine Zahlungsart → Auftrag startet erst danach, abgebucht wird bei Löschung.
+  const autoPay = pay === "auto" && autopayAvailable(email);
+  const gate = autoPay && !(await hasSavedMethod(email).catch(() => false));
   const staff = ["max", "matthias"].includes(String(b.staff)) ? String(b.staff) : null;
   const sendConfirm = b.sendConfirm !== false;
   const id = "RR-" + Math.floor(100000 + Math.random() * 899999);
@@ -742,7 +747,8 @@ app.post("/admin/orders/create", async (req, reply) => {
   const raw: Record<string, unknown> = {
     createdBy: "admin", service, orderId: id, name, email, phone, company, profile: company, country, lang,
     countryChoice: ctry, mapsUri, placeId, addr, amount,
-    payMethod: pay, payPref: pay === "paypal" ? "paypal" : "none",
+    payMethod: autoPay ? "auto" : pay === "auto" ? "link" : pay, payPref: pay === "paypal" ? "paypal" : "none",
+    ...(gate ? { payGate: { status: "pending", at: new Date().toISOString() } } : {}),
     ...(type === "reviews" ? { reviewItems: items } : { reason }),
   };
   try {
@@ -752,7 +758,7 @@ app.post("/admin/orders/create", async (req, reply) => {
       note: reason ? "Grund: " + reason : "", checkId: "", raw, source: "admin",
     });
     if (staff) await setOrderAssignee(id, staff).catch(() => false);
-    await insertEvent({ orderId: id, type: "order", title: "Auftrag manuell angelegt (Admin)", detail: `${id} · ${type === "reviews" ? items.length + " Bewertung(en)" : "Profil löschen" + (reason ? " · " + reason : "")} · ${pay === "paypal" ? "PayPal (−10 %)" : pay === "invoice" ? "Rechnung" : "Zahlungslink"}` });
+    await insertEvent({ orderId: id, type: "order", title: "Auftrag manuell angelegt (Admin)", detail: `${id} · ${type === "reviews" ? items.length + " Bewertung(en)" : "Profil löschen" + (reason ? " · " + reason : "")} · ${autoPay ? "automatische Abbuchung" + (gate ? " (wartet auf Zahlungsart)" : "") : pay === "paypal" ? "PayPal (−10 %)" : pay === "invoice" ? "Rechnung" : "Zahlungslink"}` });
   } catch (e) {
     app.log.error({ err: e }, "Admin-Auftrag anlegen fehlgeschlagen");
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
@@ -764,7 +770,7 @@ app.post("/admin/orders/create", async (req, reply) => {
       const tlang = mailLang(lang);
       const t = TEMPLATES[type === "reviews" ? "auftragsbestaetigung-reviews" : "auftragsbestaetigung"];
       let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
-      if (type === "reviews") {
+      { // Dashboard-Zugang für jeden Admin-Auftrag (Bewertungen + Profil): Status, „Pay" bzw. Zahlungsart hinterlegen
         try {
           const acc = await ensureCustomerAccount(email);
           const durl = await dashLink(email, lang);
@@ -772,8 +778,8 @@ app.post("/admin/orders/create", async (req, reply) => {
         } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
       }
       const props = type === "reviews"
-        ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash }
-        : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name) };
+        ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash, payGate: gate }
+        : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name), dash, payGate: gate };
       const html = await render(React.createElement(t.component, props as any));
       const subj = t.subject(props as any);
       await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
@@ -784,11 +790,12 @@ app.post("/admin/orders/create", async (req, reply) => {
   // Partner-Board (Auto-Weiterleitung laut Einstellungen) + Screenshots
   let partner = 0;
   try {
-    if (type === "reviews" && await partnerAutoEnabled("reviews").catch(() => true)) partner = await partnerAutoSend(id, company || name, items as Record<string, unknown>[]);
-    if (type === "profile" && await partnerAutoEnabled("profiles").catch(() => false)) partner = await partnerAutoSendProfile(id, company || name, mapsUri);
+    if (gate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Auftrag startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst bei Löschung", auto: true }).catch(() => {});
+    else if (type === "reviews" && await partnerAutoEnabled("reviews").catch(() => true)) partner = await partnerAutoSend(id, company || name, items as Record<string, unknown>[]);
+    else if (type === "profile" && await partnerAutoEnabled("profiles").catch(() => false)) partner = await partnerAutoSendProfile(id, company || name, mapsUri);
   } catch (e) { app.log.error({ err: e, orderId: id }, "Partner-Board (Admin-Auftrag) fehlgeschlagen"); }
   queueOrderShots(id, service, raw, (o, m) => app.log.info(o, m));
-  return { ok: true, id, amount, currency: cur, mailed, partner };
+  return { ok: true, id, amount, currency: cur, mailed, partner, payGate: gate, autoPay };
 });
 
 // Admin (neu) · „Neuer Auftrag": Bewertungs-Link auflösen → Profil + Bewertung (Autor, Sterne, Alter).
@@ -2179,6 +2186,8 @@ app.post("/admin/order-status", async (req, reply) => {
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
+  // Profil gelöscht + Kunde zahlt automatisch → sofort von der hinterlegten Zahlungsart abbuchen (Rechnung per Mail).
+  if (status === "done" && pay !== "paid") void chargeProfileOrder(id).then((r) => { if (r?.ok) { void sendPurchaseForOrder(id, app.log); void scheduleProtectionUpsell(id, app.log).catch(() => {}); } }).catch((e) => app.log.error({ err: e }, "Profil-Abbuchung fehlgeschlagen"));
   // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (je Auftrag nur 1×).
   // Mehrere Aufträge desselben Kunden, die kurz hintereinander auf bezahlt gehen (eine Sammelüberweisung) → EINE Mail.
   if (pay === "paid") queuePaidConfirm(id);

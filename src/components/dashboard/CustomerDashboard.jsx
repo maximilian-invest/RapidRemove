@@ -304,7 +304,7 @@ function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
 }
 
 /* Zahlungsart hinterlegen, bevor der Auftrag startet (abgebucht wird nur je gelöschter Bewertung). */
-function PayGateFlow({ open, zero, busy, onClose, onGo }) {
+function PayGateFlow({ open, zero, busy, onClose, onGo, prof }) {
   return (
     <section className={"flow vf" + (open ? " show" : "")} aria-hidden={!open} onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
       {open ? (
@@ -314,10 +314,10 @@ function PayGateFlow({ open, zero, busy, onClose, onGo }) {
             <div className="fl-art"><img src={IMG.wallet} alt="" /></div>
             <div className="fl-k">{T("pgK")}</div>
             <h2>{T("pgH")}</h2>
-            <p>{T("pgP")}</p>
+            <p>{T(prof ? "pgPprof" : "pgP")}</p>
             <div className="fl-feat vf-docs">
               <div className="ff"><span className="ico"><Check /></span><span><b>{T("pgF1", { zero })}</b></span></div>
-              <div className="ff"><span className="ico"><Receipt /></span><span><b>{T("pgF2")}</b></span></div>
+              <div className="ff"><span className="ico"><Receipt /></span><span><b>{T(prof ? "pgF2prof" : "pgF2")}</b></span></div>
               <div className="ff"><span className="ico"><FileText /></span><span><b>{T("pgF3")}</b></span></div>
             </div>
             <div className="secure"><Lock />{T("pgSafe")}</div>
@@ -916,7 +916,7 @@ export default function CustomerDashboard() {
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
-          {pgNeed.length && !pgNeed.some(vNeeds) ? <AlertBtn title={T("pgAlert")} sub={T("pgAlertS")} onClick={() => setPgOpen(true)} /> : null}
+          {pgNeed.length && !pgNeed.some(vNeeds) ? <AlertBtn title={T("pgAlert")} sub={T(pgNeed.every((o) => o.kind === "profile") ? "pgF2prof" : "pgAlertS")} onClick={() => setPgOpen(true)} /> : null}
           {vNeed.length ? <AlertBtn title={T("vAlert")} sub={vNeed[0].verify.uploaded && vNeed[0].verify.status !== "rejected" ? T("vManP") : T("vAlertS")} onClick={() => setVfId(vNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
@@ -1343,7 +1343,7 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <PayGateFlow open={pgOpen && pgNeed.length > 0 && !vfOrder} zero={pgZero} busy={busy === "ap"} onClose={() => setPgOpen(false)} onGo={apStart} />
+      <PayGateFlow open={pgOpen && pgNeed.length > 0 && !vfOrder} zero={pgZero} busy={busy === "ap"} onClose={() => setPgOpen(false)} onGo={apStart} prof={pgNeed.length > 0 && pgNeed.every((o) => o.kind === "profile")} />
       <VerifyFlow order={vfOrder} token={token} imp={!!adminView} showToast={showToast} onClose={() => { setVfId(null); load(token); }} onDone={() => load(token)} />
 
       <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !vfOrder && !cele && !wiseOpen && !detail} items={changedNew}

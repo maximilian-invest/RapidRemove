@@ -59,7 +59,7 @@ export async function payGateNeeded(email: string): Promise<boolean> {
 /** Zahlungsart ist da → wartende Aufträge freigeben und (falls sonst nichts fehlt) starten. */
 async function releasePayGates(email: string, label: string): Promise<number> {
   if (!pool) return 0;
-  const r = await pool.query(`SELECT id FROM orders WHERE lower(email)=$1 AND service='reviews' AND raw->'payGate'->>'status'='pending' AND COALESCE(status,'') <> 'storniert'`, [email.toLowerCase()]);
+  const r = await pool.query(`SELECT id FROM orders WHERE lower(email)=$1 AND raw->'payGate'->>'status'='pending' AND COALESCE(status,'') <> 'storniert'`, [email.toLowerCase()]);
   for (const o of r.rows as { id: string }[]) {
     await setOrderRawField(o.id, "payGate", { status: "ok", at: new Date().toISOString(), label });
     await insertEvent({ orderId: o.id, email, type: "note", title: "Zahlungsart hinterlegt – Auftrag kann starten", detail: label, auto: true }).catch(() => {});
@@ -208,6 +208,55 @@ async function sendInvoiceMail(email: string, inv: { id: string; number?: string
   }
   await sendMail({ to: email, subject, html, attachments, replyTo: process.env.MAIL_REPLY_TO });
   for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "mail", title: `Rechnung ${props.nr} gesendet (automatisch)`, detail: `${props.amount} · ${label}${attachments.length ? " · PDF im Anhang" : " · ohne PDF (nur Link)"}`, html, subject, auto: true }).catch(() => {});
+}
+
+/* ---- Profil-Löschung: bei „Profil gelöscht" automatisch abbuchen (Auftrag mit Zahlungsart „automatisch") ---- */
+export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean; amount?: number; cur?: string; error?: string } | null> {
+  if (!pool) return null;
+  const o = (await pool.query(`SELECT id, email, name, lang, country, status, pay, service, amount, prot_amount, protection, raw FROM orders WHERE id=$1`, [orderId])).rows[0];
+  if (!o || o.service === "reviews" || o.service === "deindex" || o.pay === "paid" || o.status === "storniert") return null;
+  const raw = (o.raw || {}) as Record<string, unknown>;
+  if (raw.payMethod !== "auto" && !(raw.payGate as { status?: string } | undefined)) return null; // nur Aufträge mit „automatisch abbuchen"
+  const email = String(o.email || "").toLowerCase();
+  const k = keyFor(email);
+  const row = await rowOf(email);
+  if (!k || !row || !row.pm || row.mode !== k.mode) return null; // keine Zahlungsart → normaler Weg (Zahlungslink)
+  const cur = o.country === "US" ? "usd" : "eur";
+  const express = raw.express === true || raw.express === "true";
+  const amount = Math.round(((Number(o.amount) || 0) + (express ? Number(raw.expressAmount) || 0 : 0) + (o.protection === "lifetime" ? Number(o.prot_amount) || 0 : 0)) * 100) / 100;
+  if (!(amount > 0)) return null;
+  const id = newPayId();
+  const desc = `Google-Profil gelöscht · ${orderId}`;
+  let inv: any = null;
+  try {
+    await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
+    const bill = await billingOf(email).catch(() => emptyBilling);
+    inv = await sx(k.key, "POST", "invoices", {
+      ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
+      customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
+      default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
+      metadata: { rr_pay: id, rr_email: email, rr_orders: orderId },
+    }, `rr-inv-${id}`);
+    await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc }, `rr-ii-${id}`);
+    inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
+    inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
+    if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);
+  } catch (e) {
+    const err = e as StripeErr;
+    const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 300);
+    if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {});
+    await pool.query(`UPDATE cust_autopay SET last_error=$2, updated_at=now() WHERE email=$1`, [email, msg]).catch(() => {});
+    await insertEvent({ orderId, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || ""} · ${msg} → bitte Zahlungslink senden`, auto: true }).catch(() => {});
+    void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen (Profil) · ${amount} ${cur.toUpperCase()}`, `${email} · ${msg}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+    return { ok: false, error: msg };
+  }
+  await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [orderId]);
+  await pool.query(`UPDATE cust_autopay SET last_error=NULL, updated_at=now() WHERE email=$1`, [email]).catch(() => {});
+  await insertEvent({ orderId, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${row.label || ""} · Stripe-Rechnung ${inv.number || inv.id} · Profil gelöscht`, auto: true }).catch(() => {});
+  void logCustEvent(email, "payment_success", `Automatisch abgebucht (Profil) · ${amount} ${cur.toUpperCase()}`, { amount, cur, auto: true }, { orderId });
+  void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt (Profil) · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+  await sendInvoiceMail(email, inv, amount, cur, row.label || "", 1, [orderId]).catch((e) => console.error("Rechnungs-Mail (Profil) fehlgeschlagen", e));
+  return { ok: true, amount, cur };
 }
 
 /* ---- Abbuchen ---- */

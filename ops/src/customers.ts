@@ -515,6 +515,7 @@ function profileView(o: ProfileRow): OrderView {
     pct: 0, swPrice: 0, swDeposit: 0, toPay: 0, items: [],
     history: paid && oneTime ? [{ id: "p-" + o.id, kind: "profile" as never, amount: oneTime, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
     deposits: [], kind: "profile", profileOrder: info,
+    payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
   } as unknown as OrderView;
 }
 
