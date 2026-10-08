@@ -210,8 +210,12 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
         setup_intent_data: { metadata: { rr_email: si.email } }, metadata: { rr_email: si.email },
       };
       let ses: any;
-      try { ses = await sx(k.key, "POST", "checkout/sessions", params); }
-      catch (e) { app.log.warn({ err: e }, "Setup-Checkout mit automatischen Zahlungsarten fehlgeschlagen – nur Karte"); ses = await sx(k.key, "POST", "checkout/sessions", { ...params, payment_method_types: ["card"] }); }
+      // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal, Link.
+      // KEINE Lastschrift/Bankkonto (US-Bankkonto, SEPA): Abbuchung dauert Tage und kann noch platzen.
+      for (const types of [["card", "paypal", "link"], ["card", "link"], ["card"]]) {
+        try { ses = await sx(k.key, "POST", "checkout/sessions", { ...params, payment_method_types: types }); break; }
+        catch (e) { app.log.warn({ err: e, types }, "Setup-Checkout: Zahlungsarten nicht verfügbar – nächster Versuch"); if (types.length === 1) throw e; }
+      }
       void logCustEvent(si.email, "autopay_open", "Zahlungsart hinterlegen geöffnet", { mode: k.mode });
       return { ok: true, url: ses.url, mode: k.mode };
     } catch (e) {
