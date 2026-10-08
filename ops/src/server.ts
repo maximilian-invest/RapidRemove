@@ -22,6 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
+import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
@@ -1792,14 +1793,15 @@ app.post("/admin/paylink", async (req, reply) => {
     const due = tplKey === "mahnung" ? (DUE_MAHN[tlang] || DUE_MAHN.en) : (DUE_NOW[tlang] || DUE_NOW.en);
     // Mahnstufe 1–4 (nur für die Mahnung). Default 1 (freundliche Zahlungserinnerung).
     const stage = tplKey === "mahnung" ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
-    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage };
+    const dueDate = tplKey === "mahnung" ? clip(b.dueDate, 40) || undefined : undefined; // Zahlungsziel abgelaufen (automatisch)
+    const props = { lang: tlang, total: money, due, payUrl: url, protectionLabel: clip(b.protectionLabel, 160) || undefined, expressLabel: clip(b.expressLabel, 160) || undefined, service: service || undefined, stage, dueDate };
     const html = await render(React.createElement(t.component, props as any));
     // Vorschau (Admin neu): genau die Mail, wie sie der Kunde bekäme – ohne Versand/Protokoll.
     if (b.preview === true) return { ok: true, preview: true, html, subject: t.subject(props as any), url };
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
     const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
-    const title = tplKey === "mahnung" ? `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})` : "Zahlungslink gesendet";
+    const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})`) : "Zahlungslink gesendet";
     // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
     // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
     // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
@@ -1817,6 +1819,68 @@ app.post("/admin/paylink", async (req, reply) => {
     return reply.code(502).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 240) });
   }
 });
+
+// Admin: Zahlungsziel für Profil-Aufträge setzen/ändern/entfernen. Läuft es ohne Zahlung ab, geht SOFORT eine Mail
+// mit Bezug auf das Zahlungsziel raus (Worker unten). Danach geht der normale Mahnverlauf (Admin „Mahnung senden") weiter.
+// Neues Datum = neue Mail beim nächsten Ablauf.
+app.post("/admin/pay-due", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "keine DB" });
+  const id = clip(b.orderId, 40);
+  const raw = String(b.due || "").trim();
+  const at = raw ? new Date(raw) : null;
+  if (at && isNaN(at.getTime())) return reply.code(400).send({ ok: false, error: "Datum ungültig" });
+  const r = await pool.query(`SELECT raw->'payDue' AS pd FROM orders WHERE id=$1 AND COALESCE(service,'') <> 'reviews'`, [id]);
+  if (!r.rows[0]) return reply.code(404).send({ ok: false, error: "Profil-Auftrag nicht gefunden" });
+  const prev = r.rows[0].pd as { at?: string } | null;
+  const pd = at ? { at: at.toISOString(), set: new Date().toISOString(), sent: null, tries: 0 } : null;
+  await setOrderRawField(id, "payDue", pd);
+  const fmt = (iso: string) => new Date(iso).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Vienna" });
+  await insertEvent({ orderId: id, type: "pay", title: at ? (prev?.at ? `Zahlungsziel geändert → ${fmt(at.toISOString())}` : `Zahlungsziel gesetzt: ${fmt(at.toISOString())}`) : "Zahlungsziel entfernt", detail: prev?.at ? `vorher ${fmt(prev.at)}` : "im Admin gesetzt" }).catch(() => {});
+  return { ok: true, payDue: pd };
+});
+
+/** Zahlungsziel abgelaufen → Mail (Stripe-Mahnung bzw. PayPal-/Wise-Mahnung mit Bezug aufs Zahlungsziel). Alle 2 Min. */
+async function payDueTick(): Promise<void> {
+  if (!pool) return;
+  const r = await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, form, raw FROM orders
+     WHERE COALESCE(service,'') <> 'reviews' AND raw->'payDue'->>'at' IS NOT NULL AND raw->'payDue'->>'sent' IS NULL
+       AND (raw->'payDue'->>'at')::timestamptz <= now() AND COALESCE(pay,'') <> 'paid' AND COALESCE(status,'') <> 'storniert'
+       AND COALESCE((raw->'payDue'->>'tries')::int, 0) < 3 LIMIT 20`);
+  for (const o of r.rows as Record<string, any>[]) {
+    const raw = (o.raw || {}) as Record<string, any>;
+    const pd = { ...(raw.payDue || {}) } as { at: string; tries?: number; sent?: string | null };
+    const lang = mailLang(o.lang);
+    const usd = o.country === "US";
+    const amount = Number(o.amount) || 0, prot = o.protection && o.protection !== "none" ? Number(o.prot_amount) || 0 : 0;
+    const express = raw.express === true || raw.express === "true";
+    const paypal = String((o.form || {}).paypal || "").trim();
+    const method = lang === "de" ? null : raw.payPref === "wise" ? "wise" : paypal || raw.payPref === "paypal" ? "paypal" : null;
+    const c = usd ? "$" : "€";
+    const payload = method
+      ? { url: "/admin/send-template", body: { token: ADMIN_TOKEN, key: method === "wise" ? "wise-mahnung" : "paypal-mahnung", to: o.email, orderId: o.id, lang, name: o.name || "", service: o.service, stage: 1, dueDate: pd.at } }
+      : { url: "/admin/paylink", body: { token: ADMIN_TOKEN, email: o.email, name: o.name, orderId: o.id, currency: usd ? "usd" : "eur", service: o.service, protection: o.protection || "none",
+          serviceAmount: amount, protAmount: prot, protType: prot ? o.protection : "", total: amount + prot, express,
+          expressLabel: express ? `Express-Bearbeitung (≤6 h)${raw.expressAmount ? " · +" + raw.expressAmount + " " + c : ""}` : undefined,
+          lang, template: "mahnung", stage: 1, dueDate: pd.at } };
+    try {
+      const res = await app.inject({ method: "POST", url: payload.url, payload: payload.body, headers: { "content-type": "application/json" } });
+      const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as { ok?: boolean; error?: string };
+      if (res.statusCode >= 400 || !j.ok) throw new Error(j.error || "HTTP " + res.statusCode);
+      await setOrderRawField(o.id, "payDue", { ...pd, sent: new Date().toISOString() });
+      void notifyTeam(`Zahlungsziel abgelaufen · ${o.name || o.email}`, `Mail an den Kunden gesendet · Auftrag ${o.id} · danach normaler Mahnverlauf`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "pay" });
+    } catch (e) {
+      const tries = (pd.tries || 0) + 1;
+      await setOrderRawField(o.id, "payDue", { ...pd, tries });
+      app.log.error({ err: e, orderId: o.id }, "Zahlungsziel-Mail fehlgeschlagen");
+      if (tries >= 3) {
+        await insertEvent({ orderId: o.id, type: "note", title: "Zahlungsziel abgelaufen – Mail konnte nicht gesendet werden", detail: String((e as Error).message).slice(0, 200), auto: true }).catch(() => {});
+        void notifyTeam(`Zahlungsziel-Mail fehlgeschlagen · ${o.name || o.email}`, `Auftrag ${o.id}: bitte Mahnung manuell senden`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "pay" });
+      }
+    }
+  }
+}
 
 // Admin-Dashboard: Gamification-Leaderboard (Lösch-Counter, Ränge, Achievements).
 // Wird live aus den Bestellungen (status=done, echte Löschung) abgeleitet – Vergangenheit inklusive.
@@ -1861,6 +1925,7 @@ app.post("/admin/send-template", async (req, reply) => {
       offer: (b.offer && typeof b.offer === "object") ? b.offer : undefined, // berechnete Ersparnis (Beträge)
       service: clip(b.service, 40) || undefined,       // „reset" → Mahnung droht mit Wiederherstellung der Bewertungen
       stage,                                            // PayPal-Mahnstufe (1–4)
+      dueDate: isPayMahnung ? clip(b.dueDate, 40) || undefined : undefined, // Zahlungsziel abgelaufen (automatisch)
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
     };
     const { html, subject } = await renderTemplate(key, props as any);
@@ -1868,7 +1933,9 @@ app.post("/admin/send-template", async (req, reply) => {
     await sendMail({ to, subject, html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel der PayPal-Mahnung startet mit „Mahnung" (für die Mahnstufen-Zählung via /mahnung/i).
     const PP_STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
-    const evtTitle = isPayMahnung
+    const evtTitle = isPayMahnung && b.dueDate
+      ? `Mahnung gesendet · Zahlungsziel ${dueDateText(clip(b.dueDate, 40), "de")} abgelaufen (${key === "wise-mahnung" ? "Wise" : "PayPal"}, automatisch)`
+      : isPayMahnung
       ? `Mahnung gesendet · Stufe ${stage} (${key === "wise-mahnung" ? "Wise" : "PayPal"}, ${PP_STAGE_LABEL[stage as number] || ""})`
       : t.label + " gesendet";
     // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
@@ -2099,6 +2166,8 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
+    // Zahlungsziel (Profil-Aufträge) abgelaufen → Mail sofort (Prüfung alle 2 Min.).
+    setInterval(() => void payDueTick().catch((e) => app.log.error({ err: e }, "Zahlungsziel-Prüfung fehlgeschlagen")), 2 * 60_000);
     // Dashboard-Zahlungen (Rechnung / Software-Vorauszahlung) direkt bei Stripe abgleichen – falls der Webhook nichts zuordnet.
     const payPoll = () => void pollReviewPayments((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Stripe-Abgleich Dashboard-Zahlungen fehlgeschlagen"));
     setTimeout(payPoll, 30_000); setInterval(payPoll, 2 * 60_000);

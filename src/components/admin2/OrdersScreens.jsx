@@ -4,14 +4,14 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate, verifyDoc, verifySet } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, setPayDue } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -189,6 +189,7 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
+      {!isRev && o.status !== "storniert" && o.pay !== "paid" ? <PayDueBox o={o} ctx={ctx} /> : null}
       {r && r.unpaidN && !r.unbilledN && r.askedAt && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><Send /></span>
@@ -249,6 +250,52 @@ export function OrderDetail({ ctx, id }) {
       {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
+  );
+}
+
+/** Zahlungsziel (Profil-Aufträge): setzen/ändern/entfernen. Läuft es ohne Zahlung ab, geht sofort automatisch eine Mail
+ *  mit Bezug aufs Zahlungsziel raus; danach normaler Mahnverlauf („Mahnung senden"). */
+function PayDueBox({ o, ctx }) {
+  const pd = o.payDue || null;
+  const [edit, setEdit] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const toLocal = (iso) => { const d = iso ? new Date(iso) : new Date(Date.now() + 7 * 864e5); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
+  const [val, setVal] = React.useState(toLocal(pd && pd.at));
+  const fmt = (iso) => new Date(iso).toLocaleString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  const over = pd && pd.at && new Date(pd.at).getTime() <= Date.now();
+  const save = async (due) => {
+    setBusy(true);
+    try {
+      const r = await setPayDue(o.id, due ? new Date(due).toISOString() : "");
+      if (ctx.patchOrder) ctx.patchOrder(o.id, { payDue: r.payDue || null });
+      if (ctx.toast) ctx.toast(due ? "Zahlungsziel gespeichert" : "Zahlungsziel entfernt");
+      setEdit(false);
+    } catch (e) { if (ctx.toast) ctx.toast(e.message || "Fehler"); }
+    setBusy(false);
+  };
+  return (
+    <div className={"disc pdue" + (over ? " over" : "")}>
+      <span className="di"><CalendarClock /></span>
+      <span className="t">
+        <b>{pd && pd.at ? `Zahlungsziel: ${fmt(pd.at)}` : "Kein Zahlungsziel gesetzt"}</b>
+        {pd && pd.sent ? <span>Abgelaufen · Mail an den Kunden gesendet {fmt(pd.sent)} – weiter mit „Mahnung senden"</span>
+          : over ? <span>Abgelaufen · Mail geht in den nächsten 2 Minuten raus</span>
+          : pd && pd.at ? <span>Läuft es ohne Zahlung ab, geht sofort automatisch eine Mail raus.</span>
+          : <span>Setzen, dann geht bei Ablauf ohne Zahlung automatisch eine Mail an den Kunden.</span>}
+        {edit ? (
+          <span className="pdue-e">
+            <input type="datetime-local" value={val} onChange={(e) => setVal(e.target.value)} />
+            <button type="button" className="go" disabled={busy || !val} onClick={() => save(val)}>{busy ? "…" : "Speichern"}</button>
+            <button type="button" disabled={busy} onClick={() => setEdit(false)}>Abbrechen</button>
+          </span>
+        ) : (
+          <span className="vfy-b">
+            <button type="button" className="go" onClick={() => { setVal(toLocal(pd && pd.at && !over ? pd.at : null)); setEdit(true); }}>{pd && pd.at ? "Ändern" : "Zahlungsziel setzen"}</button>
+            {pd && pd.at ? <button type="button" disabled={busy} onClick={() => save("")}>Entfernen</button> : null}
+          </span>
+        )}
+      </span>
+    </div>
   );
 }
 

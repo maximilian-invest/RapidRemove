@@ -109,6 +109,7 @@ function mapOrder(r) {
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
     // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
     reviewsPayReq: r.raw && r.raw.reviewsPayReq && typeof r.raw.reviewsPayReq === "object" ? r.raw.reviewsPayReq : null, // automatisch zur Zahlung aufgefordert (je Bewertung)
+    payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,
     reviewsSoftware: (r.raw && Array.isArray(r.raw.reviewsSoftware)) ? r.raw.reviewsSoftware.filter((it) => it && (it.url || it.name)) : [],
@@ -697,6 +698,8 @@ export const custInviteOne = (p) => adminPost("/admin/cust/invite-one", p);
 export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner/order-status", { orderId, status });
 /** „Kundendashboard öffnen": einmaliger Link zur Admin-Ansicht (ohne Tracking) → { url }. */
 /** Inhaber-Nachweis: Dokument laden ({ mime, data b64, result }) bzw. selbst freigeben/ablehnen. */
+/** Zahlungsziel setzen/ändern (ISO) oder entfernen (due = ""). */
+export const setPayDue = (orderId, due) => adminPost("/admin/pay-due", { orderId, due });
 export const verifyDoc = (orderId) => adminPost("/admin/verify-doc", { orderId });
 export const verifySet = (orderId, action, reason) => adminPost("/admin/verify-set", { orderId, action, reason });
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });

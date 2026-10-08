@@ -800,3 +800,11 @@
 .an .vfy-b button{height:34px;padding:0 14px;border-radius:999px;background:#fff;font-size:13px;font-weight:600;color:inherit;border:1px solid rgba(0,0,0,.08)}
 .an .vfy-b button.go{background:#16a34a;color:#fff;border-color:#16a34a}
 .an .vfy-b button:disabled{opacity:.6}
+/* Zahlungsziel */
+.an .disc.pdue{background:#eef2ff;color:#1e2a5a}
+.an .disc.pdue.over{background:#fff1f0;color:#7a1d12}
+.an .disc.pdue.over .di{color:#dc2626}
+.an .pdue-e{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.an .pdue-e input{height:36px;border-radius:10px;border:1px solid rgba(0,0,0,.15);padding:0 10px;font:inherit;font-size:14px;background:#fff;color:#111}
+.an .pdue-e button{height:34px;padding:0 14px;border-radius:999px;background:#fff;font-size:13px;font-weight:600;color:inherit;border:1px solid rgba(0,0,0,.08)}
+.an .pdue-e button.go{background:#16a34a;color:#fff;border-color:#16a34a}

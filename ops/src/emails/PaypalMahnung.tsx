@@ -14,6 +14,7 @@
  * Bewertungen gedroht (statt Reaktivierung des Profils).
  */
 import * as React from "react";
+import { dueSubject, dueIntro } from "./dueText";
 import { EmailShell, P, NoteBox, DangerBox, brand, type MailLang } from "./components";
 
 /** Berechnete Ersparnis – vorformatierte Beträge (erinnert an den PayPal-Vorteil). */
@@ -35,6 +36,8 @@ export interface PaypalMahnungProps {
   stage?: 1 | 2 | 3 | 4;
   /** Zahlungsweg: "paypal" (Standard) oder "wise" (Wise-Mahnung, gleicher Ablauf). */
   method?: "paypal" | "wise";
+  /** Zahlungsziel (ISO) abgelaufen → eigener Betreff + Einleitung mit dem Datum. */
+  dueDate?: string;
   /** Im Admin bearbeitete Text-Overrides (überschreiben Default-Texte pro Feld). */
   _overrides?: Record<string, string>;
 }
@@ -177,13 +180,14 @@ const clampStage = (s: unknown): 1 | 2 | 3 | 4 => {
 const pickLang = (l?: string): Lang => (l && (LANGS as string[]).includes(l) ? (l as Lang) : "en");
 
 export function subject(p: PaypalMahnungProps = {} as PaypalMahnungProps): string {
+  if (p.dueDate) return dueSubject(p.lang);
   return STAGES[clampStage(p.stage)][pickLang(p.lang)].subject;
 }
 
 /** „PayPal" im Text durch den gewählten Zahlungsweg ersetzen (Wise-Mahnung). */
 const viaMethod = (txt: string, method?: string) => (method === "wise" ? (txt || "").replace(/PayPal/g, "Wise") : txt);
 
-export default function PaypalMahnung({ lang = "en", name = "", offer, service, stage, method, _overrides }: PaypalMahnungProps = {}) {
+export default function PaypalMahnung({ lang = "en", name = "", offer, service, stage, method, dueDate, _overrides }: PaypalMahnungProps = {}) {
   const L = pickLang(lang);
   const st = clampStage(stage);
   const c = COMMON[L];
@@ -194,7 +198,7 @@ export default function PaypalMahnung({ lang = "en", name = "", offer, service, 
   return (
     <EmailShell preview={s.preview} title={s.title} lang={L}>
       <P><strong>{c.greeting(who)}</strong></P>
-      <P>{s.intro}</P>
+      <P>{dueDate ? dueIntro(L, dueDate) : s.intro}</P>
       <P>{viaMethod(c.payLine, method)}</P>
       {offer ? <P><strong style={{ color: brand.tintText }}>{viaMethod(fillOffer(SAVINGS_LINE[L], offer), method)}</strong></P> : null}
 

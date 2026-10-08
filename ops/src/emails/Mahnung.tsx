@@ -9,6 +9,7 @@
  * Bewertungen gedroht (statt Reaktivierung des Profils).
  */
 import * as React from "react";
+import { dueSubject, dueIntro, dueBox } from "./dueText";
 import { Column, Hr, Row, Section, Text } from "@react-email/components";
 import { EmailShell, P, CtaButton, brand } from "./components";
 
@@ -24,6 +25,8 @@ export interface MahnungProps {
   service?: string;
   /** Mahnstufe 1–4 (Standard 1). */
   stage?: 1 | 2 | 3 | 4;
+  /** Zahlungsziel (ISO) abgelaufen → eigener Betreff + Einleitung mit dem Datum. */
+  dueDate?: string;
 }
 
 type Lang = NonNullable<MahnungProps["lang"]>;
@@ -163,20 +166,21 @@ const clampStage = (s: unknown): 1 | 2 | 3 | 4 => {
 const pickLang = (l?: string): Lang => (l && (LANGS as string[]).includes(l) ? (l as Lang) : "de");
 
 export function subject(p: MahnungProps): string {
+  if (p.dueDate) return dueSubject(p.lang);
   return STAGES[clampStage(p.stage)][pickLang(p.lang)].subject;
 }
 
-export default function Mahnung({ lang = "de", total, payUrl, service, stage }: MahnungProps) {
+export default function Mahnung({ lang = "de", total, payUrl, service, stage, dueDate }: MahnungProps) {
   const L = pickLang(lang);
   const st = clampStage(stage);
   const c = COMMON[L];
   const s = STAGES[st][L];
-  const warn = (st === 3 || st === 4) && service === "reset" ? RESET_WARN[st][L] : s.warn;
+  const warn = dueDate && st === 1 ? dueBox(L) : (st === 3 || st === 4) && service === "reset" ? RESET_WARN[st][L] : s.warn;
   const b = BOX[st];
   return (
     <EmailShell preview={s.preview} title={s.title} lang={L}>
       <P><strong>{c.greeting}</strong></P>
-      <P>{s.intro}</P>
+      <P>{dueDate ? dueIntro(L, dueDate) : s.intro}</P>
 
       <Hr style={{ borderColor: brand.hr, margin: "8px 0 4px" }} />
       <Row>
