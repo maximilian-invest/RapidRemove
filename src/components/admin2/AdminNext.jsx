@@ -47,6 +47,25 @@ const LANG_L = { de: "Deutsch", en: "Englisch", fr: "Französisch", es: "Spanisc
 const rvLang = (o) => o.lang || "en";
 const FONT_HREF = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
 
+/* Fehler in einer Ansicht (z. B. ein Auftrag mit unerwarteten Daten) → kein weißer Bildschirm, sondern Fehlermeldung + Zurück. */
+class ViewGuard extends React.Component {
+  constructor(p) { super(p); this.state = { err: null }; }
+  static getDerivedStateFromError(err) { return { err }; }
+  componentDidCatch(err, info) { try { console.error("Admin-Ansicht abgestürzt", err, info && info.componentStack); } catch (e) { /* */ } }
+  render() {
+    if (!this.state.err) return this.props.children;
+    const e = this.state.err;
+    return (
+      <div style={{ padding: 24 }}>
+        <h2 style={{ fontSize: 22, fontWeight: 800, marginBottom: 8 }}>Diese Ansicht hat einen Fehler</h2>
+        <p style={{ color: "var(--g3)", marginBottom: 12 }}>Bitte Screenshot an den Support – die App läuft normal weiter.</p>
+        <pre style={{ whiteSpace: "pre-wrap", fontSize: 12, background: "#fff", borderRadius: 14, padding: 14, maxHeight: 260, overflow: "auto" }}>{String((e && e.message) || e)}{"\n"}{String((e && e.stack) || "").split("\n").slice(0, 6).join("\n")}</pre>
+        <button type="button" className="cta" style={{ marginTop: 14 }} onClick={this.props.back}>Zurück</button>
+      </div>
+    );
+  }
+}
+
 export default function AdminNext() {
   const [isDesk, setIsDesk] = React.useState(() => typeof window !== "undefined" && window.matchMedia(DESK_Q).matches);
   const [orders, setOrders] = React.useState([]);
@@ -335,7 +354,7 @@ export default function AdminNext() {
           <main className={"scr dpane" + (tab === "orders" && pushBody ? " open" : "")} ref={(el) => { paneRefs.current.push = el; }}>{tab === "orders" ? pushBody : null}</main>
         </>
       ) : tab === "orders" && pushBody ? (
-        <main key={top.v + top.id} className="scr push anim" ref={(el) => { paneRefs.current.push = el; }} onPointerDown={onDown} onPointerUp={onUp}>{pushBody}</main>
+        <main key={top.v + top.id} className="scr push anim" ref={(el) => { paneRefs.current.push = el; }} onPointerDown={onDown} onPointerUp={onUp}><ViewGuard key={top.v + top.id} back={back}>{pushBody}</ViewGuard></main>
       ) : null}
 
       <Sheet ctx={ctx} sheet={sheet} close={closeSheet} tpls={tpls} sendTpl={sendTpl} assign={assign} isDesk={isDesk} orders={orders} doStorno={doStorno} doReactivate={doReactivate} />
