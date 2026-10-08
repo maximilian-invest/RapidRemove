@@ -21,6 +21,7 @@ export interface AuftragsbestaetigungReviewsProps {
   chatPct?: number;
   /** Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen beauftragt) → Hinweis + Upload im Dashboard. */
   verify?: boolean;
+  payGate?: boolean;
   /** Die zu löschenden Bewertungen (wie im Wizard eingereicht). */
   items?: ReviewRef[];
   /** Veraltet: nur Links (ältere Bestellungen) — wird zu items normalisiert. */
@@ -288,12 +289,27 @@ const VF: Record<string, [string, string]> = {
   no: ["Bekreft at bedriften er din", "Siden du har bestilt fjerning av anmeldelser med 4 eller 5 stjerner, trenger vi ett bevis én gang (f.eks. firmaattest eller skattedokument) – slik at ingen kan få et annet firmas gode anmeldelser fjernet. Last det opp i dashbordet: kontrollen tar sekunder, deretter starter vi med en gang."],
 };
 
+/** Zahlungsart hinterlegen („Automatisch bezahlen"): Auftrag startet erst danach. */
+const PG: Record<string, [string, string]> = {
+  de: ["Letzter Schritt: Zahlungsart hinterlegen", "Bitte hinterlegen Sie in Ihrem Dashboard eine Zahlungsart (Karte, PayPal …). Abgebucht wird nur, wenn eine Bewertung tatsächlich gelöscht ist – vorher zahlen Sie nichts. Sobald die Zahlungsart hinterlegt ist, starten wir mit der Löschung."],
+  en: ["Last step: add a payment method", "Please add a payment method (card, PayPal …) in your dashboard. You're only charged when a review has actually been removed – nothing before that. As soon as it's saved, we start the removal."],
+  es: ["Último paso: añade un método de pago", "Añade un método de pago (tarjeta, PayPal…) en tu panel. Solo se cobra cuando una reseña se ha eliminado de verdad; antes no pagas nada. En cuanto esté guardado, empezamos con la eliminación."],
+  fr: ["Dernière étape : ajoute un moyen de paiement", "Ajoute un moyen de paiement (carte, PayPal…) dans ton espace client. Tu n'es débité que lorsqu'un avis a réellement été supprimé – rien avant. Dès qu'il est enregistré, nous lançons la suppression."],
+  it: ["Ultimo passo: aggiungi un metodo di pagamento", "Aggiungi un metodo di pagamento (carta, PayPal…) nella dashboard. L'addebito avviene solo quando una recensione è stata davvero rimossa – prima non paghi nulla. Appena è salvato, iniziamo la rimozione."],
+  nl: ["Laatste stap: voeg een betaalmethode toe", "Voeg in uw dashboard een betaalmethode toe (kaart, PayPal …). Er wordt alleen afgeschreven als een review echt is verwijderd – daarvoor betaalt u niets. Zodra die is opgeslagen, starten we met verwijderen."],
+  pt: ["Último passo: adiciona um método de pagamento", "Adiciona um método de pagamento (cartão, PayPal…) no teu painel. Só é cobrado quando uma avaliação é realmente removida – antes disso não pagas nada. Assim que estiver guardado, começamos a remoção."],
+  ja: ["最後のステップ：お支払い方法の登録", "ダッシュボードでお支払い方法（カード、PayPalなど）をご登録ください。請求は口コミが実際に削除された場合のみで、それまでは一切かかりません。登録が完了次第、削除を開始します。"],
+  sv: ["Sista steget: lägg till en betalningsmetod", "Lägg till en betalningsmetod (kort, PayPal …) i din översikt. Du debiteras bara när ett omdöme faktiskt har tagits bort – inget innan dess. Så snart den är sparad börjar vi med borttagningen."],
+  da: ["Sidste trin: tilføj en betalingsmetode", "Tilføj en betalingsmetode (kort, PayPal …) i dit dashboard. Der trækkes kun, når en anmeldelse faktisk er fjernet – intet før. Så snart den er gemt, går vi i gang med fjernelsen."],
+  no: ["Siste steg: legg til en betalingsmetode", "Legg til en betalingsmetode (kort, PayPal …) i dashbordet. Du belastes bare når en anmeldelse faktisk er fjernet – ingenting før det. Så snart den er lagret, starter vi fjerningen."],
+};
+
 export function subject(p: AuftragsbestaetigungReviewsProps): string {
   const t = T[p.lang || "en"] || T.en;
   return t.subject((p.items || []).length || (p.urls || []).length || 1);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
@@ -342,6 +358,13 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
         <NoteBox>
           <span style={{ color: brand.tintText, fontWeight: 700 }}>{(VF[lang] || VF.en)[0]}</span><br />
           {(VF[lang] || VF.en)[1]}
+        </NoteBox>
+      ) : null}
+
+      {payGate ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PG[lang] || PG.en)[0]}</span><br />
+          {(PG[lang] || PG.en)[1]}
         </NoteBox>
       ) : null}
 

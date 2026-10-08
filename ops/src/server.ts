@@ -22,7 +22,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
-import { registerAutopayRoutes } from "./autopay";
+import { registerAutopayRoutes, payGateNeeded } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
@@ -426,6 +426,10 @@ app.post("/order", async (req, reply) => {
   // 4–5-Sterne-Bewertungen beauftragt → erst Inhaber-Nachweis (Dashboard-Upload, KI prüft), dann normaler Ablauf.
   const verifyNeeded = isReviews && needsVerify(reviewItems);
   if (verifyNeeded) (b as Record<string, unknown>).verify = { status: "pending", at: new Date().toISOString() };
+  // Zahlungsart hinterlegen („Automatisch bezahlen"): Auftrag startet erst, wenn sie im Dashboard hinterlegt ist.
+  // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
+  const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
+  if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   if (isReviews) for (const it of reviewItems) {
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
@@ -460,7 +464,7 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, payGate }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -618,8 +622,9 @@ app.post("/order", async (req, reply) => {
       // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
       // Software-Fälle (sw) sind normale Aufgaben: der Partner prüft, ob Software verfügbar ist, und setzt dann „Software"
       // → Kunde bekommt die Zahlungsaufforderung im Dashboard → nach Zahlung „Customer paid – start now".
-      if (verifyNeeded) {
-        await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen)", detail: "Auftrag geht erst nach dem Nachweis aufs Partner-Board", auto: true }).catch(() => {});
+      if (verifyNeeded || payGate) {
+        if (verifyNeeded) await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen)", detail: "Auftrag geht erst nach dem Nachweis aufs Partner-Board", auto: true }).catch(() => {});
+        if (payGate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Auftrag startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst je Löschung", auto: true }).catch(() => {});
       } else if (isReviews && reviewItems.length && await partnerAutoEnabled("reviews").catch(() => true)) {
         await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));

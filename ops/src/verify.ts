@@ -11,7 +11,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, setOrderRawField, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
 import { customerSessionInfo } from "./customers";
-import { partnerAutoSend, partnerAutoEnabled } from "./partner";
+import { startOrderIfReady } from "./orderStart";
 
 export type VerifyState = { status: "pending" | "checking" | "ok" | "rejected"; reason?: string; at?: string; by?: "ai" | "admin"; doc?: number; tries?: number };
 
@@ -83,11 +83,9 @@ async function orderOf(id: string): Promise<OrderRow | null> {
 async function approve(o: OrderRow, by: "ai" | "admin", extra: Partial<VerifyState> = {}): Promise<void> {
   const prev = (o.raw?.verify || {}) as VerifyState;
   await setOrderRawField(o.id, "verify", { ...prev, ...extra, status: "ok", by, at: new Date().toISOString() });
-  const items = Array.isArray(o.raw?.reviewItems) ? (o.raw!.reviewItems as Record<string, unknown>[]) : [];
-  if (items.length && await partnerAutoEnabled("reviews").catch(() => true)) {
-    await partnerAutoSend(o.id, o.profile || o.company || o.name || "", items).catch((e) => console.error("Partner-Board nach Freigabe fehlgeschlagen", e));
-  }
   await insertEvent({ orderId: o.id, email: o.email, type: "note", title: `Inhaber-Nachweis freigegeben (${by === "ai" ? "KI" : "Admin"})`, detail: extra.reason || "", auto: by === "ai" }).catch(() => {});
+  // Partner-Board erst, wenn auch die Zahlungsart hinterlegt ist (falls verlangt).
+  await startOrderIfReady(o.id).catch((e) => console.error("Partner-Board nach Freigabe fehlgeschlagen", e));
 }
 
 export function registerVerifyRoutes(app: FastifyInstance, adminToken: string): void {

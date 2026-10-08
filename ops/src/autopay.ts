@@ -11,7 +11,8 @@
  * Damit ist es live für echte Kunden AUS, bis es freigeschaltet wird.
  */
 import type { FastifyInstance } from "fastify";
-import { pool, insertEvent } from "./db";
+import { pool, insertEvent, setOrderRawField } from "./db";
+import { startOrderIfReady } from "./orderStart";
 import { isTestEmail } from "./testAccounts";
 import { notifyTeam } from "./notify";
 import { logCustEvent } from "./custTrack";
@@ -30,6 +31,27 @@ function keyFor(email: string): { key: string; mode: Mode } | null {
   return k ? { key: k, mode: "live" } : null;
 }
 export const autopayAvailable = (email: string) => !!keyFor(email);
+/** Hat der Kunde schon eine gültige Zahlungsart hinterlegt (gleicher Modus)? */
+export async function hasSavedMethod(email: string): Promise<boolean> {
+  const k = keyFor(email); if (!k) return false;
+  const r = await rowOf(email).catch(() => null);
+  return !!(r && r.pm && r.mode === k.mode);
+}
+/** Neue Bestellung: Zahlungsart verlangen, bevor der Auftrag startet? (Funktion freigeschaltet + noch keine hinterlegt) */
+export async function payGateNeeded(email: string): Promise<boolean> {
+  return autopayAvailable(email) && !(await hasSavedMethod(email));
+}
+/** Zahlungsart ist da → wartende Aufträge freigeben und (falls sonst nichts fehlt) starten. */
+async function releasePayGates(email: string, label: string): Promise<number> {
+  if (!pool) return 0;
+  const r = await pool.query(`SELECT id FROM orders WHERE lower(email)=$1 AND service='reviews' AND raw->'payGate'->>'status'='pending' AND COALESCE(status,'') <> 'storniert'`, [email.toLowerCase()]);
+  for (const o of r.rows as { id: string }[]) {
+    await setOrderRawField(o.id, "payGate", { status: "ok", at: new Date().toISOString(), label });
+    await insertEvent({ orderId: o.id, email, type: "note", title: "Zahlungsart hinterlegt – Auftrag kann starten", detail: label, auto: true }).catch(() => {});
+    await startOrderIfReady(o.id).catch(() => 0);
+  }
+  return r.rows.length;
+}
 
 /* ---- Stripe (fetch, form-encoded) ---- */
 function form(obj: Record<string, unknown>, prefix = "", out: string[] = []): string[] {
@@ -213,7 +235,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       if (!si2 || si2.status !== "succeeded" || !si2.payment_method) return reply.code(400).send({ ok: false, error: "not_completed" });
       const pm = si2.payment_method;
       const label = pmLabel(pm);
-      if (row.pm === pm.id) return { ok: true, label, charged: null }; // schon gespeichert (Neuladen)
+      if (row.pm === pm.id) { await releasePayGates(si.email, label).catch(() => 0); return { ok: true, label, charged: null }; } // schon gespeichert (Neuladen)
       if (row.pm && row.pm !== pm.id) void sx(k.key, "POST", `payment_methods/${row.pm}/detach`, {}).catch(() => {});
       await sx(k.key, "POST", `customers/${row.customer}`, { invoice_settings: { default_payment_method: pm.id } }).catch(() => {});
       await pool.query(`UPDATE cust_autopay SET pm=$2, label=$3, pm_type=$4, last_error=NULL, updated_at=now() WHERE email=$1`, [si.email, pm.id, label, pm.type || null]);
@@ -223,8 +245,9 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       }
       void logCustEvent(si.email, "autopay_on", `Automatisch bezahlen aktiviert · ${label}`, { mode: k.mode });
       void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Zahlungsart hinterlegt`, `${si.email} · ${label} · zahlt ab jetzt automatisch`, `${SITE_URL}/admin`, { kind: "customer" });
+      const started = await releasePayGates(si.email, label).catch((e) => { app.log.error({ err: e }, "Aufträge freigeben fehlgeschlagen"); return 0; });
       const charged = await chargeDue(si.email, "Zahlungsart hinterlegt").catch(() => null);
-      return { ok: true, label, charged };
+      return { ok: true, label, charged, started };
     } catch (e) {
       app.log.error({ err: e }, "Automatisch bezahlen: Bestätigung fehlgeschlagen");
       return reply.code(503).send({ ok: false, error: "payment_unavailable" });

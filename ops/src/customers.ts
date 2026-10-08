@@ -429,6 +429,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null, // Rabatt-Wunsch −10 %
     // Inhaber-Nachweis (4–5-Sterne-Bewertungen): pending/checking/rejected → Dashboard fordert den Upload an.
     hold: !!raw.payHold && !cancelled, // Zwischenzahlung nötig (Partner pausiert)
+    payGate: !cancelled && (raw.payGate as { status?: string } | undefined)?.status === "pending", // wartet auf hinterlegte Zahlungsart
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
