@@ -1085,6 +1085,51 @@ app.post("/admin/reset-data", async (req, reply) => {
   }
 });
 
+// Admin: EIN Test-Konto leeren (nur Test-Adressen laut isTestEmail). Ohne apply = nur zählen.
+// Löscht Aufträge + alles daran (Partner-Aufgaben, Verlauf, Mails, Zahlungs-/Mahn-Daten, Dashboard-Aktivität, Zahlungsart).
+// Login bleibt: Kundenkonto, Sitzungen, Passkeys, Push-Geräte, Partner-Zugang.
+app.post("/admin/test-purge", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  const email = String(b.email || "").trim().toLowerCase();
+  if (!email || !isTestEmail(email)) return reply.code(400).send({ ok: false, error: "nur für Test-Konten" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const apply = b.apply === true && String(b.confirm || "") === "TESTKONTO-LEEREN";
+  const ids = (await pool.query(`SELECT id FROM orders WHERE lower(email)=$1`, [email])).rows.map((x) => x.id as string);
+  const steps: [string, string, unknown[]][] = [
+    ["partner_tasks", `DELETE FROM partner_tasks WHERE order_id = ANY($1::text[])`, [ids]],
+    ["cust_notify", `DELETE FROM cust_notify WHERE order_id = ANY($1::text[])`, [ids]],
+    ["sw_pay_reminders", `DELETE FROM sw_pay_reminders WHERE order_id = ANY($1::text[])`, [ids]],
+    ["reconciled_payments", `DELETE FROM reconciled_payments WHERE order_id = ANY($1::text[])`, [ids]],
+    ["events", `DELETE FROM events WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["customer_events", `DELETE FROM customer_events WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["cust_followups", `DELETE FROM cust_followups WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["cust_verify_docs", `DELETE FROM cust_verify_docs WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["monitor_profiles", `DELETE FROM monitor_profiles WHERE order_id = ANY($1::text[]) OR lower(cust_email)=$2`, [ids, email]],
+    ["site_chat_links", `DELETE FROM site_chat_links WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["checks", `DELETE FROM checks WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["admin_impersonations", `DELETE FROM admin_impersonations WHERE order_id = ANY($1::text[]) OR lower(email)=$2`, [ids, email]],
+    ["upsell_jobs", `DELETE FROM upsell_jobs WHERE lower(email)=$1`, [email]],
+    ["chat_messages", `DELETE FROM chat_messages WHERE lower(email)=$1`, [email]],
+    ["cust_invites", `DELETE FROM cust_invites WHERE lower(email)=$1`, [email]],
+    ["cust_autopay", `DELETE FROM cust_autopay WHERE lower(email)=$1`, [email]],
+    ["orders", `DELETE FROM orders WHERE id = ANY($1::text[])`, [ids]],
+  ];
+  const counts: Record<string, number | string> = {};
+  const c = await pool.connect();
+  try {
+    await c.query("BEGIN");
+    for (const [t, sql, args] of steps) {
+      await c.query(`SAVEPOINT s`);
+      try { counts[t] = (await c.query(sql, args)).rowCount ?? 0; await c.query(`RELEASE SAVEPOINT s`); }
+      catch (e) { await c.query(`ROLLBACK TO SAVEPOINT s`); counts[t] = "–"; } // Tabelle gibt es (noch) nicht
+    }
+    await c.query(apply ? "COMMIT" : "ROLLBACK");
+  } catch (e) { await c.query("ROLLBACK").catch(() => {}); throw e; } finally { c.release(); }
+  if (apply) app.log.warn({ email, counts }, "Admin: Test-Konto geleert");
+  return { ok: true, applied: apply, orders: ids, counts };
+});
+
 // Admin: NUR die Profil-Prüfungen zurücksetzen (Bestellungen/Zahlungen/Verlauf bleiben).
 // Doppelt abgesichert: Admin-Token + Bestätigungswort.
 app.post("/admin/reset-checks", async (req, reply) => {
