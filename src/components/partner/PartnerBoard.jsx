@@ -12,6 +12,7 @@ import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared"
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
+import RemovalCheck from "./RemovalCheck";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed } from "@/lib/passkey";
@@ -152,6 +153,7 @@ export default function PartnerBoard() {
       return [];
     }
     flush(); // commit whatever was still waiting
+    if (status === "removed") { verifyRemoved(ids); return ids; } // „Removed" nur nach Lenas Prüfung (Kunde wird belastet)
     const prev = ids.map((id) => { const t = ts.find((x) => x.id === id); return [id, { status: t.status, touched: t.touched, workingSince: t.workingSince }]; });
     const now = Date.now();
     patch(ids, (t) => ({ status, touched: true, workingSince: status === "working" && t.status !== "working" ? now : t.workingSince }));
@@ -169,7 +171,33 @@ export default function PartnerBoard() {
       setTasks((xs) => (xs || []).map((t) => (m.has(t.id) ? { ...t, ...m.get(t.id) } : t)));
     }, undoMs);
     return ids;
-  }, [patch, flush, enqueue, token, showToast, load, undoMs, appUi]);
+  }, [patch, flush, enqueue, token, showToast, load, undoMs, appUi]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /* ---- „Removed" mit Prüfung (Lena öffnet Google und vergleicht) ---- */
+  const [ver, setVer] = React.useState(null); // { ids, codes, phase: "checking"|"done", results, run }
+  const applyResults = React.useCallback((results) => {
+    const done = new Map(results.filter((r) => r.task).map((r) => [r.id, norm(r.task)]));
+    if (done.size) setTasks((xs) => (xs || []).map((t) => (done.has(t.id) ? { ...t, ...done.get(t.id) } : t)));
+  }, []);
+  const verifyRemoved = React.useCallback(async (ids) => {
+    const ts = tasksRef.current || [];
+    const codes = ids.map((id) => (ts.find((x) => x.id === id) || {}).code || "#" + id);
+    setVer({ ids, codes, phase: "checking", results: [], run: Date.now() });
+    try {
+      const j = await call("verify-removed", { t: token, ids });
+      applyResults(j.results || []);
+      setVer((v) => ({ ...(v || { ids, codes }), phase: "done", results: j.results || [] }));
+    } catch (e) {
+      setVer((v) => ({ ...(v || { ids, codes }), phase: "done", results: ids.map((id, i) => ({ id, code: codes[i], result: "unknown", reason: "The check failed (" + e.message + ")." })) }));
+    }
+  }, [token, applyResults]);
+  const confirmRemoved = React.useCallback(async (ids) => {
+    for (const id of ids) {
+      try { const j = await call("update", { t: token, id, status: "removed", confirm: true }); if (j.task) applyResults([{ id, task: j.task }]); }
+      catch (e) { showToast("Could not save: " + e.message); }
+    }
+    setVer((v) => (v ? { ...v, results: v.results.map((r) => (ids.includes(r.id) ? { ...r, result: "gone" } : r)) } : v));
+  }, [token, applyResults, showToast]);
 
   /** Partner confirms a payout (per review or all). Committed after the undo window like status changes. */
   const markPaid = React.useCallback((idsIn) => {
@@ -315,7 +343,8 @@ export default function PartnerBoard() {
     </div>
   ) : null;
   // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
-  const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}</>;
+  const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}
+    <RemovalCheck state={ver} token={token} onClose={() => { setVer(null); load(false); }} onAgain={(ids) => verifyRemoved(ids)} onConfirm={confirmRemoved} /></>;
   if (!preview) return app;
   return (
     <>

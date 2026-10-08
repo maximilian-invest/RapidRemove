@@ -11,6 +11,7 @@
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, bumpChange } from "./db";
+import { checkRemoval, removalShot } from "./removalCheck";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
@@ -477,7 +478,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
   const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
-  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean; verified?: boolean; confirmed?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
     if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
@@ -494,6 +495,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
+    // „Removed" belastet den Kunden → nur nach Lenas Prüfung (verified) oder ausdrücklicher Bestätigung, wenn keine Prüfung möglich war.
+    if (!opts.admin && status === "removed" && old.status !== "removed" && !opts.verified && !opts.confirmed) return { error: "verify", code: 409 };
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
     const st = status || old.status;
     const r = await pool.query(
@@ -516,7 +519,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }
     if (changed && row.order_id) {
-      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
+      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? " (von Lena geprüft)" : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
+      if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(row.order_id)}`, { kind: "partner" });
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
     if (changed && !opts.quiet) {
@@ -551,9 +555,51 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const status = String(b.status || "");
     if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id missing" });
     if (status && !PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
-    const r = await partnerApply(id, status, b.note, { preview: await isPreview(b.t) });
+    const r = await partnerApply(id, status, b.note, { preview: await isPreview(b.t), confirmed: b.confirm === true });
     if (r.error) return reply.code(r.code || 400).send({ ok: false, error: r.error });
     return { ok: true, task: partnerView(r.row as Row) };
+  });
+
+  // „Removed" mit Prüfung: Lena öffnet jeden Bewertungs-Link jetzt und vergleicht mit dem Screenshot von der Bestellung.
+  // Nur was wirklich weg ist, geht auf „removed" (→ Kunde wird belastet). Max. 3 Prüfungen gleichzeitig.
+  app.post("/partner/verify-removed", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const preview = await isPreview(b.t);
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20);
+    if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
+    const rows = (await pool.query(`SELECT id, order_id, url, name, text, status, test, code FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows.filter((x) => !!x.test === preview);
+    const out: { id: number; code: string; result: string; reason: string; checkId?: number; task?: ReturnType<typeof partnerView>; error?: string }[] = [];
+    const queue = [...rows];
+    const worker = async () => {
+      for (let x = queue.shift(); x; x = queue.shift()) {
+        if (x.status !== "working") { out.push({ id: Number(x.id), code: x.code, result: "skipped", reason: x.status === "removed" ? "Already removed." : "Set it to Working first." }); continue; }
+        const c = await checkRemoval(x);
+        const item: (typeof out)[number] = { id: Number(x.id), code: x.code, ...c };
+        if (c.result === "gone") {
+          const r = await partnerApply(Number(x.id), "removed", undefined, { quiet: true, preview, verified: true });
+          if (r.row) item.task = partnerView(r.row); else item.error = r.error;
+        } else if (x.order_id) {
+          await insertEvent({ orderId: x.order_id, type: "note", title: `Lena-Prüfung: ${x.code} ${c.result === "visible" ? "noch sichtbar – nicht als gelöscht übernommen" : "nicht eindeutig"}`, detail: c.reason, auto: true }).catch(() => {});
+        }
+        out.push(item);
+      }
+    };
+    await Promise.all([worker(), worker(), worker()]);
+    const gone = out.filter((x) => x.result === "gone");
+    if (gone.length) void notifyTeam(`${preview ? "TEST · " : ""}Gelöscht ✓ (geprüft) · ${gone.length}`, "Partner · " + gone.map((x) => x.code).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
+    return { ok: true, results: out };
+  });
+
+  // Aktueller Screenshot einer Prüfung (für „Still visible on Google").
+  app.post("/partner/removal-shot", async (req, reply) => {
+    const q = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(q.t))) return reply.code(401).send({ ok: false });
+    const s = await removalShot(Number(q.id));
+    if (!s) return reply.code(404).send({ ok: false });
+    reply.header("Content-Type", s.mime).header("Cache-Control", "private, max-age=3600");
+    return reply.send(s.img);
   });
 
   // Sammel-Update (Mehrfachauswahl): ein Status für viele Aufgaben, EINE Team-Benachrichtigung.
@@ -568,7 +614,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = [];
     const preview = await isPreview(b.t);
     for (const id of ids) {
-      const r = await partnerApply(id, status, undefined, { quiet: true, preview });
+      const r = await partnerApply(id, status, undefined, { quiet: true, preview, confirmed: b.confirm === true });
       if (r.error || !r.row) { skipped.push(id); continue; }
       tasks.push(partnerView(r.row));
       if (r.changed) changedCodes.push(r.row.code);
