@@ -11,6 +11,11 @@
  * Damit ist es live für echte Kunden AUS, bis es freigeschaltet wird.
  */
 import type { FastifyInstance } from "fastify";
+import * as React from "react";
+import { render } from "@react-email/render";
+import { sendMail } from "./mailer";
+import { fmtReviewMoney } from "./reviewsPricing";
+import RechnungAuto, { rechnungAutoSubject } from "./emails/RechnungAuto";
 import { pool, insertEvent, setOrderRawField } from "./db";
 import { startOrderIfReady } from "./orderStart";
 import { isTestEmail } from "./testAccounts";
@@ -180,6 +185,22 @@ export async function retryTick(log: (o: unknown, m: string) => void = () => {})
   }
 }
 
+/** Rechnung als PDF holen (Stripe invoice_pdf) und per Mail an den Kunden; landet im Mail-Verlauf der Aufträge. */
+async function sendInvoiceMail(email: string, inv: { id: string; number?: string; invoice_pdf?: string; hosted_invoice_url?: string }, amount: number, cur: string, label: string, n: number, orderIds: string[]): Promise<void> {
+  if (!pool) return;
+  const o = (await pool.query(`SELECT name, lang FROM orders WHERE id = ANY($1::text[]) ORDER BY created_at DESC LIMIT 1`, [orderIds])).rows[0] || {};
+  const props = { lang: String(o.lang || "en").slice(0, 2), name: o.name || "", nr: inv.number || inv.id, amount: fmtReviewMoney(amount, cur), pm: label, n, url: inv.hosted_invoice_url || "" };
+  const html = await render(React.createElement(RechnungAuto, props));
+  const subject = rechnungAutoSubject(props);
+  let attachments: { filename: string; content: Buffer; contentType: string }[] = [];
+  if (inv.invoice_pdf) {
+    const r = await fetch(inv.invoice_pdf).catch(() => null);
+    if (r && r.ok) attachments = [{ filename: `Rechnung-${props.nr}.pdf`, content: Buffer.from(await r.arrayBuffer()), contentType: "application/pdf" }];
+  }
+  await sendMail({ to: email, subject, html, attachments, replyTo: process.env.MAIL_REPLY_TO });
+  for (const oid of orderIds) await insertEvent({ orderId: oid, email, type: "mail", title: `Rechnung ${props.nr} gesendet (automatisch)`, detail: `${props.amount} · ${label}${attachments.length ? " · PDF im Anhang" : " · ohne PDF (nur Link)"}`, html, subject, auto: true }).catch(() => {});
+}
+
 /* ---- Abbuchen ---- */
 const busy = new Set<string>();
 /** Offene Beträge (gelöschte, unbezahlte Bewertungen) aller Aufträge des Kunden abbuchen – je Währung eine Rechnung. */
@@ -235,6 +256,8 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       for (const oid of new Set(picks.map((p) => p.o))) {
         await insertEvent({ orderId: oid, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${row.label || ""} · ${picks.length} Bewertung(en) · Stripe-Rechnung ${inv.number || inv.id} · Anlass: ${why}`, auto: true }).catch(() => {});
       }
+      // Rechnung an den Kunden (PDF im Anhang) – nach JEDER Abbuchung, wie bei den Zahlungslinks.
+      await sendInvoiceMail(email, inv, amount, cur, row.label || "", picks.length, [...new Set(use.map((o) => o.id))]).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
       void logCustEvent(email, "payment_success", `Automatisch abgebucht · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", auto: true }, { orderId: primary });
       void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${picks.length} gelöschte Bewertung(en)`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
       res = { amount: ((res as AutoCharged | null)?.amount || 0) + amount, cur, label: row.label || "", invoiceUrl: url };
