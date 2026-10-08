@@ -32,7 +32,7 @@ export default function ProgressBlock({ p, lang, payUrl, showGood = true }: { p:
           <Text style={{ margin: "12px 0 0", fontSize: 13, color: brand.muted }}>{t.hint}</Text>
         </Section>
       ) : null}
-      {p.hold && p.inProgress ? <DangerBox>{fillP(t.hold, { k: p.inProgress })}</DangerBox> : null}
+      {p.hold && p.inProgress ? <DangerBox>{p.cardFail ? fillP(t.failHold, { k: p.inProgress }).replace("{pm}", p.cardFail) : fillP(t.hold, { k: p.inProgress })}</DangerBox> : null}
     </>
   );
 }

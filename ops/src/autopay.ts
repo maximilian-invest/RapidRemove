@@ -16,7 +16,9 @@ import { startOrderIfReady } from "./orderStart";
 import { isTestEmail } from "./testAccounts";
 import { notifyTeam } from "./notify";
 import { logCustEvent } from "./custTrack";
-import { approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
+import { notifyPartner } from "./partnerNotify";
+import { notifyCustomer } from "./custPush";
+import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
@@ -113,6 +115,44 @@ async function info(email: string): Promise<{ available: boolean; test?: boolean
   return { available: !!k, test: k?.mode === "test", saved };
 }
 
+/* ---- Fehlgeschlagene Abbuchung → Auftrag sofort pausieren ----
+ * Partner: „Order on hold" (startet nichts Neues). Kunde: Hinweis in Mail/Dashboard „Zahlungsart aktualisieren".
+ * Frei erst, wenn alles bezahlt ist (customers.ts evaluatePayHold, reason=autopay). Wiederholung nach 24 h und 48 h (retryTick). */
+async function holdForCard(orderIds: string[], email: string, label: string, msg: string, money: string, test: boolean): Promise<void> {
+  if (!pool) return;
+  const r = await pool.query(`SELECT id, raw->'payHold' AS h FROM orders WHERE id = ANY($1::text[])`, [orderIds]);
+  for (const o of r.rows as { id: string; h: Record<string, unknown> | null }[]) {
+    const prog = await orderProgress(o.id).catch(() => null);
+    if (!prog || prog.inProgress <= 0) continue; // nichts mehr beim Partner → keine Pause nötig (normale Zahlungsaufforderung reicht)
+    if (o.h && o.h.reason === "autopay") { await setOrderRawField(o.id, "payHold", { ...o.h, msg, last: new Date().toISOString() }); continue; } // schon pausiert: Versuche/Zeit behalten
+    await setOrderRawField(o.id, "payHold", { at: new Date().toISOString(), amount: prog.due, cur: prog.cur, reason: "autopay", label, msg, tries: 0 });
+    const c = (await pool.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND status IN ('new','working') ORDER BY id`, [o.id]).catch(() => ({ rows: [] as { code: string }[] }))).rows.map((x) => x.code).filter(Boolean);
+    await insertEvent({ orderId: o.id, email, type: "pay", title: `Auftrag pausiert – Abbuchung fehlgeschlagen (${money})`, detail: `${prog.inProgress} Bewertung(en) beim Partner pausiert, bis bezahlt ist · neuer Versuch in 24 Std.${c.length ? " · " + c.join(", ") : ""}`, auto: true }).catch(() => {});
+    void notifyPartner(`${test ? "TEST · " : ""}Order on hold`, `${c.slice(0, 4).join(", ") || o.id} · customer payment pending – please pause until “Customer paid”.`, undefined, test);
+  }
+  const lang = String((await pool.query(`SELECT lang FROM orders WHERE id = ANY($1::text[]) LIMIT 1`, [orderIds]).catch(() => ({ rows: [] as { lang?: string }[] }))).rows[0]?.lang || "en").slice(0, 2);
+  const pf = PUSH_FAIL[lang] || PUSH_FAIL.en;
+  void notifyCustomer(email, pf.t, pf.b, `rrc-apfail`, { url: "/my-reviews" }).catch(() => false);
+}
+const PUSH_FAIL: Record<string, { t: string; b: string }> = { en: { t: "Payment failed", b: "Please update your payment method – we continue right after." }, de: { t: "Zahlung fehlgeschlagen", b: "Bitte aktualisieren Sie Ihre Zahlungsart – danach geht es sofort weiter." }, es: { t: "Pago fallido", b: "Actualiza tu método de pago y seguimos enseguida." }, fr: { t: "Paiement échoué", b: "Mets à jour ton moyen de paiement – on reprend aussitôt." }, it: { t: "Pagamento non riuscito", b: "Aggiorna il metodo di pagamento: riprendiamo subito dopo." }, nl: { t: "Betaling mislukt", b: "Werk uw betaalmethode bij – daarna gaan we meteen verder." }, pt: { t: "Pagamento falhou", b: "Atualiza o teu método de pagamento – continuamos logo a seguir." }, ja: { t: "お支払いに失敗しました", b: "お支払い方法を更新してください。更新後すぐに再開します。" }, sv: { t: "Betalningen misslyckades", b: "Uppdatera din betalningsmetod – sedan fortsätter vi direkt." }, da: { t: "Betalingen mislykkedes", b: "Opdater din betalingsmetode – så fortsætter vi straks." }, no: { t: "Betalingen mislyktes", b: "Oppdater betalingsmetoden din – så fortsetter vi med en gang." } };
+
+/** Alle 30 Min.: pausierte Aufträge (fehlgeschlagene Abbuchung) nach 24 h bzw. 48 h nochmal abbuchen. Danach normale Mahnungen. */
+export async function retryTick(log: (o: unknown, m: string) => void = () => {}): Promise<void> {
+  if (!pool) return;
+  const r = await pool.query(`SELECT id, lower(email) AS email, raw->'payHold' AS h FROM orders WHERE service='reviews' AND raw->'payHold'->>'reason'='autopay' AND COALESCE(status,'') <> 'storniert'`);
+  const done = new Set<string>();
+  for (const o of r.rows as { id: string; email: string; h: { at?: string; tries?: number } }[]) {
+    const tries = Number(o.h?.tries) || 0;
+    if (tries >= 2 || done.has(o.email)) continue;
+    if (Date.now() < new Date(String(o.h?.at || 0)).getTime() + (tries + 1) * 24 * 3600e3) continue;
+    done.add(o.email);
+    for (const x of r.rows as { id: string; email: string; h: Record<string, unknown> }[]) if (x.email === o.email) await setOrderRawField(x.id, "payHold", { ...x.h, tries: tries + 1 });
+    const res = await chargeDue(o.email, `Wiederholung ${tries + 1}/2`).catch(() => null);
+    log({ email: o.email, try: tries + 1, ok: !!res }, "Automatisch bezahlen: neuer Abbuchungsversuch");
+    if (!res && tries + 1 >= 2) void notifyTeam("Abbuchung 3× fehlgeschlagen", `${o.email} · Auftrag ${o.id} bleibt pausiert · Mahnungen laufen normal`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "pay" });
+  }
+}
+
 /* ---- Abbuchen ---- */
 const busy = new Set<string>();
 /** Offene Beträge (gelöschte, unbezahlte Bewertungen) aller Aufträge des Kunden abbuchen – je Währung eine Rechnung. */
@@ -153,7 +193,8 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
         const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 300);
         if (inv?.id) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {}); // keine offene Doppel-Rechnung stehen lassen
         await pool.query(`UPDATE cust_autopay SET last_error=$2, updated_at=now() WHERE email=$1`, [email, msg]).catch(() => {});
-        await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → normale Zahlungsaufforderung`, auto: true }).catch(() => {});
+        await insertEvent({ orderId: primary, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, detail: `${row.label || "Zahlungsart"} · ${msg} → Auftrag pausiert, Kunde soll Zahlungsart aktualisieren`, auto: true }).catch(() => {});
+        await holdForCard([...new Set(use.map((o) => o.id))], email, row.label || "", msg, `${amount} ${cur.toUpperCase()}`, k.mode === "test").catch(() => {});
         void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${msg}`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
         continue;
       }
@@ -267,6 +308,8 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
     const si = await auth(b);
     if (!si || !pool) return reply.code(401).send({ ok: false, error: "session" });
     if (si.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
+    // Laufende Aufträge → nur „Ändern" erlaubt (sonst könnte man nach den ersten Löschungen die Abbuchung abdrehen).
+    if (ordersRunning((await loadCustomerOrders(si.email)).orders)) return reply.code(409).send({ ok: false, error: "orders_running" });
     const row = await rowOf(si.email);
     const k = keyFor(si.email);
     if (row?.pm && k && row.mode === k.mode) await sx(k.key, "POST", `payment_methods/${row.pm}/detach`, {}).catch((e) => app.log.warn({ err: e }, "PM lösen fehlgeschlagen"));

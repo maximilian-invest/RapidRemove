@@ -464,6 +464,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null, // Rabatt-Wunsch −10 %
     // Inhaber-Nachweis (4–5-Sterne-Bewertungen): pending/checking/rejected → Dashboard fordert den Upload an.
     hold: !!raw.payHold && !cancelled, // Zwischenzahlung nötig (Partner pausiert)
+    holdCard: !!raw.payHold && !cancelled && (raw.payHold as { reason?: string }).reason === "autopay", // Pause wegen fehlgeschlagener Abbuchung
     payGate: !cancelled && (raw.payGate as { status?: string } | undefined)?.status === "pending", // wartet auf hinterlegte Zahlungsart
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
@@ -527,6 +528,12 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
   }
   const views = all.rows.map((o) => (o.service === "reviews" ? ({ ...orderView(o, byOrder.get(o.id)), kind: "reviews" } as OrderView) : profileView(o as ProfileRow)));
   return { name: all.rows[0]?.name || "", lang: all.rows[0]?.lang || "en", orders: views };
+}
+
+/** Laufen noch Aufträge (in Bearbeitung, wartend, offen zu zahlen)? → hinterlegte Zahlungsart darf nicht entfernt werden, nur getauscht. */
+export function ordersRunning(orders: OrderView[]): boolean {
+  return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate
+    || o.items.some((i) => ["new", "working", "software", "sw_accepted"].includes(i.status))));
 }
 
 /* ---- Routen ---- */
@@ -605,7 +612,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const hasWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
     const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
     const ap = autopayHooks.info ? await autopayHooks.info(email).catch(() => null) : null;
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test };
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders) };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
@@ -847,7 +854,7 @@ export async function partnerStatusChanged(
  * Währung des Auftrags) und liegt noch etwas beim Partner, pausiert der Auftrag: Partner bekommt „Order on hold" (kann nichts
  * Neues starten), Kunde sieht „Zwischenzahlung nötig". Nach der Zahlung (Betrag < Schwelle) geht es automatisch weiter. */
 export const PAY_HOLD = () => Math.max(1, Number(process.env.PAY_HOLD_AMOUNT) || 400);
-export type OrderProgress = { total: number; removed: number; inProgress: number; waiting: number; due: number; cur: string; hold: boolean; charged?: AutoCharged | null };
+export type OrderProgress = { total: number; removed: number; inProgress: number; waiting: number; due: number; cur: string; hold: boolean; charged?: AutoCharged | null; cardFail?: string | null };
 function progressOfView(view: ReturnType<typeof orderView>, raw: Record<string, unknown>): OrderProgress {
   const it = view.items.filter((i) => i.status !== "cancelled");
   return {
@@ -855,6 +862,8 @@ function progressOfView(view: ReturnType<typeof orderView>, raw: Record<string, 
     inProgress: it.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length,
     waiting: it.filter((i) => i.status === "software").length,
     due: Number(view.toPay) || 0, cur: view.cur, hold: !!raw.payHold,
+    // Pause wegen fehlgeschlagener automatischer Abbuchung → Mail zeigt „Zahlung fehlgeschlagen" statt „Zwischenzahlung".
+    cardFail: raw.payHold && (raw.payHold as { reason?: string }).reason === "autopay" ? String((raw.payHold as { label?: string }).label || "") || "—" : null,
   };
 }
 async function loadView(orderId: string): Promise<{ row: OrderRow & { email: string; name: string | null; lang: string | null; country: string | null }; view: ReturnType<typeof orderView>; raw: Record<string, unknown> } | null> {
@@ -885,11 +894,12 @@ export async function evaluatePayHold(orderId: string): Promise<OrderProgress | 
     void notifyTeam(`Zwischenzahlung nötig · ${v.row.name || v.row.email}`, `${money} offen · ${p.inProgress} Bewertung(en) pausiert · Auftrag ${orderId}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
     return { ...p, hold: true };
   }
-  if (held && (p.due < PAY_HOLD() || p.inProgress === 0)) {
+  const cardHold = held && (v.raw.payHold as { reason?: string }).reason === "autopay"; // fehlgeschlagene Abbuchung: erst frei, wenn alles bezahlt
+  if (held && (cardHold ? p.due <= 0 || p.inProgress === 0 : p.due < PAY_HOLD() || p.inProgress === 0)) {
     await setOrderRawField(orderId, "payHold", null);
     const c = await codes();
-    await insertEvent({ orderId, email: v.row.email, type: "pay", title: p.due < PAY_HOLD() ? "Zwischenzahlung eingegangen – Auftrag läuft weiter" : "Pause aufgehoben (nichts mehr beim Partner offen)", detail: `${p.inProgress} Bewertung(en) beim Partner`, auto: true }).catch(() => {});
-    if (p.inProgress && p.due < PAY_HOLD()) void notifyPartner(`${test ? "TEST · " : ""}Customer paid`, `${c.slice(0, 4).join(", ") || orderId} · hold lifted – continue now.`, undefined, test);
+    await insertEvent({ orderId, email: v.row.email, type: "pay", title: cardHold && p.due <= 0 ? "Zahlung eingegangen – Pause aufgehoben (Abbuchung)" : p.due < PAY_HOLD() ? "Zwischenzahlung eingegangen – Auftrag läuft weiter" : "Pause aufgehoben (nichts mehr beim Partner offen)", detail: `${p.inProgress} Bewertung(en) beim Partner`, auto: true }).catch(() => {});
+    if (p.inProgress && (cardHold ? p.due <= 0 : p.due < PAY_HOLD())) void notifyPartner(`${test ? "TEST · " : ""}Customer paid`, `${c.slice(0, 4).join(", ") || orderId} · hold lifted – continue now.`, undefined, test);
     return { ...p, hold: false };
   }
   return p;

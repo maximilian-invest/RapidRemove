@@ -644,7 +644,8 @@ export default function CustomerDashboard() {
   const pgPrices = [...new Set(pgNeed.flatMap((o) => o.items.map((i) => money(i.price, o.cur))))];
   const vNeed = orders.filter(vNeeds);
   // Zwischenzahlung: Auftrag pausiert, bis der offene Betrag bezahlt ist → Anzahl der pausierten Bewertungen.
-  const holdN = orders.filter((o) => o.hold).reduce((n, o) => n + o.items.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length, 0);
+  const holdCard = orders.some((o) => o.holdCard); // Pause wegen fehlgeschlagener Abbuchung → „Zahlungsart aktualisieren"
+  const holdN = orders.filter((o) => o.hold && !o.holdCard).reduce((n, o) => n + o.items.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length, 0);
   const vfOrder = vfId ? orders.find((o) => o.id === vfId) || null : null;
   const all = orders.flatMap((o) => o.items.map((r) => ({ ...r, o, id: o.id + "\u0001" + r.key })));
   const removedN = all.filter((r) => r.status === "removed").length;
@@ -846,7 +847,7 @@ export default function CustomerDashboard() {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!apArm) { setApArm(true); setTimeout(() => setApArm(false), 4000); return; }
     setApArm(false); setBusy("ap");
-    try { await call("autopay/remove", { token }); showToast(T("apGone")); } catch (e) { showToast(T("genericErr"), true); }
+    try { await call("autopay/remove", { token }); showToast(T("apGone")); } catch (e) { showToast(e.code === "orders_running" ? T("apLocked") : T("genericErr"), true); }
     setBusy(""); load(token);
   };
   const AutoPayCard = () => {
@@ -854,10 +855,10 @@ export default function CustomerDashboard() {
     if (ap) return (
       <div className={"paycard apc on" + (ap.error ? " err" : "")}>
         <span className="ico"><CreditCard /></span>
-        <span><b>{T("apOnT")}{ap.mode === "test" ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apOnS", { pm: ap.label })}</span>{ap.error ? <span className="aperr">{T("apFail")}</span> : null}</span>
+        <span><b>{T("apOnT")}{ap.mode === "test" ? <em className="aptest">{T("apTest")}</em> : null}</b><span>{T("apOnS", { pm: ap.label })}</span>{ap.error ? <span className="aperr">{T("apFail")}</span> : null}{data.autopayLocked ? <span className="aplock">{T("apLocked")}</span> : null}</span>
         <span className="apbtns">
           <button className="mini ghost" disabled={!!busy} onClick={apStart}>{T("apChange")}</button>
-          <button className={"mini ghost" + (apArm ? " arm" : "")} disabled={!!busy} onClick={apRemove}>{busy === "ap" ? <Loader className="spin" /> : null}{apArm ? T("apRmQ") : T("apRm")}</button>
+          {data.autopayLocked ? null : <button className={"mini ghost" + (apArm ? " arm" : "")} disabled={!!busy} onClick={apRemove}>{busy === "ap" ? <Loader className="spin" /> : null}{apArm ? T("apRmQ") : T("apRm")}</button>}
         </span>
       </div>
     );
@@ -886,6 +887,7 @@ export default function CustomerDashboard() {
       </div>
       <div className="hg">
         <div className="hl">
+          {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {pgNeed.length && !pgNeed.some(vNeeds) ? <AlertBtn title={T("pgAlert")} sub={T("pgAlertS")} onClick={() => setPgOpen(true)} /> : null}
           {vNeed.length ? <AlertBtn title={T("vAlert")} sub={vNeed[0].verify.uploaded && vNeed[0].verify.status !== "rejected" ? T("vManP") : T("vAlertS")} onClick={() => setVfId(vNeed[0].id)} /> : null}

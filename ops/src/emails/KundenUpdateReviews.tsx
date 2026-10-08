@@ -39,7 +39,7 @@ export function kundenUpdateSubject(p: KundenUpdateProps): string {
   if (pr && pr.charged && pr.charged.amount > 0 && !(pr.due > 0) && p.changed.some((c) => c.status === "removed")) return fillP(progT(p.lang).autoSubj, { r: pr.removed, n: pr.total });
   if (pr && pr.due > 0 && p.changed.some((c) => c.status === "removed")) {
     const pt = progT(p.lang); const a = fmtReviewMoney(pr.due, pr.cur);
-    return pr.hold && pr.inProgress ? fillP(pt.holdSubj, { a }) : fillP(pt.progSubj, { r: pr.removed, n: pr.total, a });
+    return pr.hold && pr.inProgress && pr.cardFail ? pt.failSubj : pr.hold && pr.inProgress ? fillP(pt.holdSubj, { a }) : fillP(pt.progSubj, { r: pr.removed, n: pr.total, a });
   }
   return p.changed.some((c) => c.from) ? t.subjChanged : t.subject;
 }
