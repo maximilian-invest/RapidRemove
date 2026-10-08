@@ -13,6 +13,30 @@ import { revState } from "./model";
 
 const stageOf = (t) => { const m = String(t || "").match(/Stufe\s*(\d)/i); return m ? Number(m[1]) : null; };
 const dShort = (iso) => new Date(iso).toLocaleDateString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit" });
+/* Versandzeit der Auto-Mails: nur 8–20 Uhr Ortszeit des Kunden (wie am Server, followup.ts tzOf/quietOk). */
+const US_TZ = { NY: "America/New_York", NJ: "America/New_York", FL: "America/New_York", GA: "America/New_York", MA: "America/New_York", PA: "America/New_York", NC: "America/New_York", VA: "America/New_York", OH: "America/New_York", MI: "America/Detroit", MD: "America/New_York", SC: "America/New_York", CT: "America/New_York",
+  TX: "America/Chicago", IL: "America/Chicago", MN: "America/Chicago", MO: "America/Chicago", TN: "America/Chicago", WI: "America/Chicago", LA: "America/Chicago", AL: "America/Chicago", OK: "America/Chicago", KS: "America/Chicago", IA: "America/Chicago",
+  CO: "America/Denver", UT: "America/Denver", NM: "America/Denver", AZ: "America/Phoenix", CA: "America/Los_Angeles", WA: "America/Los_Angeles", OR: "America/Los_Angeles", NV: "America/Los_Angeles", HI: "Pacific/Honolulu", AK: "America/Anchorage" };
+const CC_TZ = { US: "America/Chicago", CA: "America/Toronto", AU: "Australia/Sydney", GB: "Europe/London", UK: "Europe/London", IE: "Europe/Dublin", PT: "Europe/Lisbon", NZ: "Pacific/Auckland", ZA: "Africa/Johannesburg", AE: "Asia/Dubai", SG: "Asia/Singapore", JP: "Asia/Tokyo", BR: "America/Sao_Paulo", MX: "America/Mexico_City" };
+const custTz = (o) => {
+  const a = String(o.addr || ""), cc = String(o.country || "").toUpperCase();
+  if (cc === "US" || /\bUSA\b|United States/i.test(a)) { const m = a.match(/,\s*([A-Z]{2})\s+\d{5}/); return (m && US_TZ[m[1]]) || CC_TZ.US; }
+  return CC_TZ[cc] || "Europe/Vienna";
+};
+const hourIn = (ms, tz) => { try { const p = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "numeric", hourCycle: "h23", timeZone: tz }).formatToParts(new Date(ms)); const g = (t) => Number((p.find((x) => x.type === t) || {}).value || 0); return g("hour") + g("minute") / 60; } catch (e) { return new Date(ms).getHours(); } };
+/** Frühester Versand: ab `at`, aber nur 8–20 Uhr beim Kunden → sonst nächster Morgen 8 Uhr (Kundenzeit). */
+const sendAtOf = (at, o) => {
+  const tz = custTz(o); let t = Math.max(at, Date.now());
+  const h = hourIn(t, tz);
+  if (h >= 20) t += (32 - h) * 3600e3; else if (h < 8) t += (8 - h) * 3600e3;
+  return { t, shifted: t > Math.max(at, Date.now()) + 60e3, tz };
+};
+const whenTxt = (at, o) => {
+  const { t, shifted } = sendAtOf(at, o);
+  const d = new Date(t), now = new Date();
+  const day = d.toDateString() === now.toDateString() ? "heute" : new Date(now.getTime() + 864e5).toDateString() === d.toDateString() ? "morgen" : dShort(d.toISOString());
+  return `${day}, ca. ${d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })} Uhr${shifted ? " (8 Uhr beim Kunden)" : ""}`;
+};
 const dTime = (iso) => { const d = new Date(iso); return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) + ", " + d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" }); };
 
 /** Nächster Schritt im Mahnverlauf. Bewertungen (nicht PayPal/Wise): Stufe 1 + 2 gehen automatisch raus
@@ -23,7 +47,7 @@ export function nextStep(o, pm, ptasks) {
   if (o.pay === "inkasso") return { label: "An Inkasso übergeben", sub: "", auto: false };
   const isRev = o.service === "reviews";
   const pd = o.payDue && o.payDue.at ? o.payDue : null;
-  if (!isRev && pd && !pd.sent) return { label: "Zahlungsziel-Mail", sub: dShort(pd.at), auto: true };
+  if (!isRev && pd && !pd.sent) { const d = new Date(Math.max(new Date(pd.at).getTime(), Date.now())); return { label: "Zahlungsziel-Mail", sub: `${dShort(d.toISOString())}, ca. ${d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })} Uhr`, auto: true }; }
   if (pm.level >= pm.stages.length) return { label: "Übergabe an Inkasso", sub: "", auto: false };
   const label = pm.stages[pm.level][1];
   const ppw = o.payPref === "wise" || o.payPref === "paypal" || !!o.paypal;
@@ -31,7 +55,7 @@ export function nextStep(o, pm, ptasks) {
     const r = revState(o, (ptasks || {})[o.id]);
     const lastMahn = pm.sent.filter((x) => x.kind === "mahn").map((x) => new Date(x.ts).getTime()).sort((a, b) => b - a)[0];
     const at = pm.level === 0 ? (r && r.unpaidSince ? r.unpaidSince + 24 * 3600e3 : null) : lastMahn ? lastMahn + 48 * 3600e3 : null;
-    if (at) return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
+    if (at) return { label, sub: whenTxt(at, o), auto: true };
   }
   // Profil: Stufe 1–3 automatisch alle 48 h ab dem Zahlungslink (ab 08.10.2026), Stufe 4 + Inkasso von euch.
   if (!isRev && pm.level < 3) {
@@ -39,7 +63,7 @@ export function nextStep(o, pm, ptasks) {
     const firstLink = Math.min(...pm.sent.filter((x) => x.kind === "link").map((x) => new Date(x.ts).getTime()), Infinity);
     if (pays.length && Number.isFinite(firstLink) && firstLink >= Date.parse("2026-10-08T00:00:00Z")) {
       const at = Math.max(...pays) + 2 * 864e5; // 48 h
-      return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
+      return { label, sub: whenTxt(at, o), auto: true };
     }
   }
   return { label, sub: "", auto: false };
