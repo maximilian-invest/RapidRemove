@@ -192,6 +192,13 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
+      {o.payGate && o.status !== "storniert" ? (
+        <div className="disc">
+          <span className="di"><CreditCard /></span>
+          <span className="t"><b>Wartet auf Zahlungsart des Kunden</b>
+            <span>{o.payGate.keys ? `${o.payGate.keys.length} ${o.payGate.keys.length === 1 ? "nachbestellte Bewertung startet" : "nachbestellte Bewertungen starten"} erst, wenn der Kunde im Dashboard eine Zahlungsart hinterlegt hat. Die übrigen laufen weiter.` : "Der Auftrag startet, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat."}</span></span>
+        </div>
+      ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
@@ -225,7 +232,8 @@ export function OrderDetail({ ctx, id }) {
         <button type="button" className="big" onClick={() => pushReviews(o.id)}><span className="bi"><img src={IMG("rev")} alt="" /></span><b>{isRev ? "Bewertungen" : "Screenshots"}</b><span>{isRev ? `${items.length} · ${removedN} gelöscht` : "Profil"}</span></button>
       </div>
       {isRev ? (
-        <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button></div>
+        <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button>
+          {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}</div>
       ) : null}
       <ActivityRow o={o} onOpen={() => ctx.pushAct(o.id)} />
       {stepIx >= 0 ? (

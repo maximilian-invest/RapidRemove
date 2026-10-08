@@ -35,6 +35,8 @@ export interface AuftragsbestaetigungReviewsProps {
   orderId?: string;
   /** Kunden-Dashboard: Link + Zugangsdaten (nur beim Anlegen). */
   dash?: DashInfo;
+  /** Nachbestellung: Bewertung(en) zu einem bestehenden Auftrag hinzugefügt. */
+  added?: boolean;
   _overrides?: Record<string, string>;
 }
 
@@ -304,13 +306,32 @@ const PG: Record<string, [string, string]> = {
   no: ["Siste steg: legg til en betalingsmetode", "Legg til en betalingsmetode (kort, PayPal …) i dashbordet. Du belastes bare når en anmeldelse faktisk er fjernet – ingenting før det. Så snart den er lagret, starter vi fjerningen."],
 };
 
+/** Nachbestellung: [Betreff, Titel, Einleitung] – n = Anzahl, id = Bestell-Nr. */
+type AddT = [(n: number, id: string) => string, string, (n: number, id: string) => string];
+const ADD: Record<string, AddT> = {
+  de: [(n, id) => `${n === 1 ? "Bewertung" : `${n} Bewertungen`} zu Ihrem Auftrag ${id} hinzugefügt`, "Bewertung hinzugefügt ✓", (n, id) => `wir haben ${n === 1 ? "die untenstehende Bewertung" : `die ${n} untenstehenden Bewertungen`} zu Ihrem Auftrag ${id} hinzugefügt. Es gelten dieselben Bedingungen wie bisher.`],
+  en: [(n, id) => `${n === 1 ? "Review" : `${n} reviews`} added to your order ${id}`, "Review added ✓", (n, id) => `we've added ${n === 1 ? "the review below" : `the ${n} reviews below`} to your order ${id}. Same terms as before.`],
+  es: [(n, id) => `${n === 1 ? "Reseña añadida" : `${n} reseñas añadidas`} a tu pedido ${id}`, "Reseña añadida ✓", (n, id) => `hemos añadido ${n === 1 ? "la reseña de abajo" : `las ${n} reseñas de abajo`} a tu pedido ${id}. Se aplican las mismas condiciones que hasta ahora.`],
+  fr: [(n, id) => `${n === 1 ? "Avis ajouté" : `${n} avis ajoutés`} à ta commande ${id}`, "Avis ajouté ✓", (n, id) => `nous avons ajouté ${n === 1 ? "l’avis ci-dessous" : `les ${n} avis ci-dessous`} à ta commande ${id}. Les conditions restent les mêmes.`],
+  it: [(n, id) => `${n === 1 ? "Recensione aggiunta" : `${n} recensioni aggiunte`} al tuo ordine ${id}`, "Recensione aggiunta ✓", (n, id) => `abbiamo aggiunto ${n === 1 ? "la recensione qui sotto" : `le ${n} recensioni qui sotto`} al tuo ordine ${id}. Valgono le stesse condizioni di prima.`],
+  nl: [(n, id) => `${n === 1 ? "Review" : `${n} reviews`} toegevoegd aan uw opdracht ${id}`, "Review toegevoegd ✓", (n, id) => `we hebben ${n === 1 ? "de onderstaande review" : `de ${n} onderstaande reviews`} toegevoegd aan uw opdracht ${id}. Dezelfde voorwaarden als voorheen.`],
+  pt: [(n, id) => `${n === 1 ? "Avaliação adicionada" : `${n} avaliações adicionadas`} à tua encomenda ${id}`, "Avaliação adicionada ✓", (n, id) => `adicionámos ${n === 1 ? "a avaliação abaixo" : `as ${n} avaliações abaixo`} à tua encomenda ${id}. Mantêm-se as mesmas condições.`],
+  ja: [(n, id) => `ご注文${id}に口コミ${n}件を追加しました`, "口コミを追加しました ✓", (n, id) => `以下の口コミ${n}件をご注文${id}に追加しました。条件はこれまでと同じです。`],
+  sv: [(n, id) => `${n === 1 ? "Omdöme" : `${n} omdömen`} tillagt i din beställning ${id}`, "Omdöme tillagt ✓", (n, id) => `vi har lagt till ${n === 1 ? "omdömet nedan" : `de ${n} omdömena nedan`} i din beställning ${id}. Samma villkor som tidigare.`],
+  da: [(n, id) => `${n === 1 ? "Anmeldelse" : `${n} anmeldelser`} tilføjet til din ordre ${id}`, "Anmeldelse tilføjet ✓", (n, id) => `vi har tilføjet ${n === 1 ? "anmeldelsen nedenfor" : `de ${n} anmeldelser nedenfor`} til din ordre ${id}. Samme betingelser som hidtil.`],
+  no: [(n, id) => `${n === 1 ? "Anmeldelse" : `${n} anmeldelser`} lagt til i bestillingen din ${id}`, "Anmeldelse lagt til ✓", (n, id) => `vi har lagt til ${n === 1 ? "anmeldelsen nedenfor" : `de ${n} anmeldelsene nedenfor`} i bestillingen din ${id}. Samme vilkår som før.`],
+};
+
 export function subject(p: AuftragsbestaetigungReviewsProps): string {
+  const n = (p.items || []).length || (p.urls || []).length || 1;
+  if (p.added) return (ADD[p.lang || "en"] || ADD.en)[0](n, p.orderId || "");
   const t = T[p.lang || "en"] || T.en;
-  return t.subject((p.items || []).length || (p.urls || []).length || 1);
+  return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, added = false, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
+  const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
   const cur = reviewCurrency(currency, per);
@@ -321,9 +342,9 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
   const swUnit = fmtReviewMoney(Math.round((REVIEW_NOTEXT_PRICE * (100 - all.pct)) / 100), cur);
   const prices = <ReviewPriceLines lang={lang} items={list} currency={cur} minPct={chatPct} />;
   return (
-    <EmailShell preview={t.preview} title={t.title} lang={lang}>
+    <EmailShell preview={ad ? ad[0](list.length || 1, orderId) : t.preview} title={ad ? ad[1] : t.title} lang={lang}>
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
-      <P>{sw.length && !rest.length ? t.p1sw(n) : t.p1(n)}{orderId ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
+      <P>{ad ? ad[2](n, orderId) : sw.length && !rest.length ? t.p1sw(n) : t.p1(n)}{orderId && !ad ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
 
       <P><strong>{t.listH}</strong></P>
       <Bullets items={list.map((it, i) => it.url

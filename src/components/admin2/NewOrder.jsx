@@ -7,14 +7,20 @@
 import React from "react";
 import {
   X, ArrowLeft, ArrowRight, Link as LinkIcon, Clipboard, Store, Check, Info, CheckCheck, User, Mail, Phone, Send, Wallet,
-  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe,
+  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe, ChevronDown,
 } from "lucide-react";
 import { searchProfiles } from "@/lib/places";
 import { monitorLookup, placeReviews, createAdminOrder, resolveReviewLinkApi } from "@/lib/admin-api";
-import { reviewQuote } from "@/lib/pricing";
+import { reviewQuote, addrCountry } from "@/lib/pricing";
 import { IMG, money, staffOf } from "./model";
 
-const CTRY = [["AT", "Österreich", "€"], ["DE", "Deutschland", "€"], ["CH", "Schweiz", "€"], ["US", "USA", "$"], ["UK", "UK", "$"], ["XX", "Andere", "$"]];
+/* Land = Land des Google-Profils (wie im Bestellprozess): USA → $, sonst €. Wird aus dem gewählten Profil übernommen. */
+const CTRY0 = ["AT", "DE", "CH", "LI", "IT", "FR", "ES", "NL", "BE", "LU", "PT", "GB", "IE", "SE", "DK", "NO", "FI", "PL", "CZ", "HU", "SI", "HR", "GR", "US", "CA", "AU", "NZ", "AE", "JP"];
+const ctryName = (c) => { try { return new Intl.DisplayNames(["de"], { type: "region" }).of(c) || c; } catch (e) { return c; } };
+const curOf = (c) => (c === "US" ? "$" : "€");
+/* Sprache aus dem Land (änderbar). */
+const LANG_OF = { AT: "de", DE: "de", CH: "de", LI: "de", LU: "de", IT: "it", FR: "fr", BE: "nl", NL: "nl", ES: "es", MX: "es", AR: "es", CO: "es", CL: "es", PE: "es", PT: "pt", BR: "pt", SE: "sv", DK: "da", NO: "no", JP: "ja" };
+const langOf = (c) => LANG_OF[c] || "en";
 const REASONS = [["closed", "Dauerhaft geschlossen", Store], ["fake", "Fake / nicht meins", UserX], ["dup", "Doppeltes Profil", Copy], ["moved", "Umgezogen", MapPin], ["other", "Sonstiges", MoreHorizontal]];
 const PAYS = [
   ["auto", "Zahlungsdaten hinterlegen – automatische Abbuchung bei Löschung", CreditCard],
@@ -28,13 +34,14 @@ const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
 const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} ${Math.round(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 
-const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false });
+const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false });
 
 export default function NewOrder({ ctx }) {
   const { back, auto, partners, openSheet, openOrder, toast, refresh, isDesk, scrollPush } = ctx;
   const [s, setS] = React.useState(NA0);
   const set = (p) => setS((x) => ({ ...x, ...(typeof p === "function" ? p(x) : p) }));
-  const cur = CTRY.find((c) => c[0] === s.country)[2];
+  const cur = curOf(s.country);
+  const lang = s.lang || langOf(s.country);
   const steps = s.type === "profile" ? ["Kategorie", "Profil", "Grund", "Kunde", "Abschluss"] : ["Kategorie", "Bewertungen", "Kunde", "Abschluss"];
   // Ansicht je Schritt: reviews 0 cat · 1 revs · 2 cust · 3 sum — profile 0 cat · 1 prof · 2 reason · 3 cust · 4 sum
   const view = s.type === "profile" ? ["cat", "prof", "reason", "cust", "sum"][s.step] : ["cat", "revs", "cust", "sum"][s.step];
@@ -84,7 +91,7 @@ export default function NewOrder({ ctx }) {
     return () => clearTimeout(t);
   }, [s.url, view, s.mode]); // eslint-disable-line react-hooks/exhaustive-deps
   const pickCand = async (c) => {
-    const biz = { name: c.name, address: c.addr, placeId: c.placeId, mapsUrl: c.mapsUri, _src: s.url.trim() };
+    const biz = { name: c.name, address: c.addr, placeId: c.placeId, mapsUrl: c.mapsUri, cc: c.cc, _src: s.url.trim() };
     set({ biz, bizErr: "", cands: null, ...(s.type === "reviews" ? { revs: null, revErr: "", sel: [] } : {}) });
     if (s.type === "reviews" && c.placeId) {
       try { const rv = await placeReviews(c.placeId, "de"); set(rv.enabled === false ? { revs: [], revErr: "Bewertungsliste nicht verfügbar – bitte „Bewertungs-Links“ nutzen." } : { revs: rv.reviews || [] }); }
@@ -92,11 +99,21 @@ export default function NewOrder({ ctx }) {
     }
   };
 
+  /* ---- Land + Sprache aus dem Google-Profil übernehmen (solange nicht von Hand geändert) ---- */
+  React.useEffect(() => {
+    if (!s.biz) return;
+    const c = String(s.biz.cc || s.biz.country || "").toUpperCase().replace(/^UK$/, "GB") || addrCountry(s.biz.address);
+    if (!/^[A-Z]{2}$/.test(c)) return;
+    set((x) => ({ ...(x.ctryAuto ? { country: c } : {}), ...(x.langAuto ? { lang: langOf(x.ctryAuto ? c : x.country) } : {}) }));
+  }, [s.biz && s.biz.placeId, s.biz && s.biz.address]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* ---- abgeleitete Werte ---- */
   const revList = (s.revs || []).filter((r) => s.rsf === "all" || (r.rating && r.rating <= 2));
   const items = s.type !== "reviews" ? [] : s.mode === "links"
-    ? s.rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
-    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28 }));
+    ? s.rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, rating: r.info.rating, days: r.info.days, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
+    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days }));
+  // US-Profil + älter als 4 Wochen → Software-Verfahren (300), wie im Backend
+  if (s.country === "US") for (const it of items) if (it.old) it.sw = true;
   const q = s.type === "reviews" ? reviewQuote(items, "de") : null;
   const amount = s.type === "reviews" ? q.total : PROFILE_PRICE[cur];
   const fmt = (v) => money(v, cur);
@@ -140,7 +157,7 @@ export default function NewOrder({ ctx }) {
       const r = await createAdminOrder({
         type: s.type, reviewItems: items, reason: s.reason, payment: s.pay, staff: s.staff, sendConfirm: s.confirm,
         place: s.biz ? { name: s.biz.name, address: s.biz.address, placeId: s.biz.placeId, mapsUrl: s.biz.mapsUrl || s.url } : { mapsUrl: s.url },
-        customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country, lang: s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en") },
+        customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country, lang },
       });
       set({ busy: false, done: r });
       refresh && refresh(true);
@@ -284,10 +301,16 @@ export default function NewOrder({ ctx }) {
         {f("name", "Name *", "text", "Vor- und Nachname", User)}
         {f("email", "E-Mail *", "email", "name@firma.at", Mail)}
         {f("phone", "Telefon", "tel", "+43 …", Phone)}
-        <div className="naf"><span>Land · bestimmt Währung</span>
-          <div className="nachips">{CTRY.map(([c, l]) => <button key={c} type="button" className={"achip" + (s.country === c ? " on" : "")} onClick={() => set({ country: c })}>{l}</button>)}</div></div>
-        <div className="naf"><span>Sprache · Mails & Dashboard des Kunden</span>
-          <div className="nachips">{LANGS.map(([c, l]) => { const on = (s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en")) === c; return <button key={c} type="button" className={"achip" + (on ? " on" : "")} onClick={() => set({ lang: c })}>{l}</button>; })}</div></div>
+        <div className="nasel2">
+          <label className="naf"><span>Land{s.biz && s.ctryAuto ? " · aus Profil" : ""} · {cur === "$" ? "USD" : "EUR"}</span>
+            <div className="usrch nain sel"><MapPin /><select value={s.country} onChange={(e) => set((x) => ({ country: e.target.value, ctryAuto: false, ...(x.langAuto ? { lang: langOf(e.target.value) } : {}) }))}>
+              {[...new Set([...CTRY0, s.country])].map((c) => [c, ctryName(c)]).sort((a, b) => a[1].localeCompare(b[1], "de")).map(([c, l]) => <option key={c} value={c}>{l}</option>)}
+            </select><ChevronDown /></div></label>
+          <label className="naf"><span>Sprache{s.biz && s.langAuto ? " · aus Profil" : ""}</span>
+            <div className="usrch nain sel"><Globe /><select value={lang} onChange={(e) => set({ lang: e.target.value, langAuto: false })}>
+              {LANGS.map(([c, l]) => <option key={c} value={c}>{l}</option>)}
+            </select><ChevronDown /></div></label>
+        </div>
       </>
     );
   } else if (view === "sum") {
@@ -303,7 +326,7 @@ export default function NewOrder({ ctx }) {
           <div className="nsr"><span>Kunde</span><b>{s.name.trim()}</b></div>
           <div className="nsr"><span>E-Mail</span><b>{s.email.trim()}</b></div>
           {s.phone.trim() ? <div className="nsr"><span>Telefon</span><b>{s.phone.trim()}</b></div> : null}
-          <div className="nsr"><span>Sprache</span><b>{(LANGS.find((x) => x[0] === (s.lang || (["AT", "DE", "CH"].includes(s.country) ? "de" : "en"))) || LANGS[0])[1]}</b></div>
+          <div className="nsr"><span>Land · Sprache</span><b>{ctryName(s.country)} · {(LANGS.find((x) => x[0] === lang) || LANGS[0])[1]}</b></div>
           <div className="nsr tot"><span>{s.type === "reviews" ? "Betrag (max.)" : "Betrag"}</span><b>{fmt(shown)}</b></div>
         </div>
         <div className="sec3" style={{ marginTop: 20 }}><h2>Zahlung</h2></div>

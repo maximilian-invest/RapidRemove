@@ -61,7 +61,7 @@ export async function fetchPlaceReviews(placeId: string, lang: string): Promise<
     });
     if (token) { params.set("next_page_token", token); params.set("num", "20"); }
     countCall();
-    const res = await fetch("https://serpapi.com/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) });
+    const res = await fetch((process.env.SERPAPI_BASE || "https://serpapi.com") + "/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) });
     const data: any = await res.json().catch(() => null);
     if (!res.ok || !data || data.error) {
       if (out.length) break; // was wir haben, reicht

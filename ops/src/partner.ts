@@ -212,6 +212,8 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   const out: Row[] = [];
   const fresh: { code: string; kind: string; price: number }[] = [];
   const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
+  // Auftrag hat schon Aufgaben → Nachbestellung („Review added" statt „New order").
+  const had = orderId ? Number((await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0]?.n || 0) > 0 : false;
   for (const it of items.slice(0, 60)) {
     const url = httpUrl(it.url);
     const name = clip(it.name, 120);
@@ -244,7 +246,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     }
     out.push(row);
   }
-  if (fresh.length) void partnerNewOrder(customer || "", fresh, test); // Testauftrag → nur an den Test-Login
+  if (fresh.length) void partnerNewOrder(customer || "", fresh, test, had); // Testauftrag → nur an den Test-Login
   return out;
 }
 

@@ -130,6 +130,7 @@ function mapOrder(r) {
     form: r.form || null,
     addr: (r.raw && r.raw.addr) || "", mapsUri: (r.raw && r.raw.mapsUri) || "", placeId: (r.raw && r.raw.placeId) || "", businessStatus: (r.raw && r.raw.businessStatus) || "", category: r.category || "",
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",
+    payGate: (r.raw && r.raw.payGate && r.raw.payGate.status === "pending") ? { keys: Array.isArray(r.raw.payGate.keys) ? r.raw.payGate.keys : null, at: r.raw.payGate.at || null } : null,
     assignee: r.assignee || null,
     mahnungCount: Number(r.mahnung_count) || 0,
     paylinkSent: (Number(r.paylink_count) || 0) > 0,
@@ -685,6 +686,8 @@ export const partnerSave = (p) => adminPost("/admin/partners/save", p);
 export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
 /** Bewertungen eines Google-Profils (SerpApi) zum Anhaken → { enabled, reviews:[{id,name,rating,text,days,link}] }. */
 export const placeReviews = (placeId, lang) => adminPost("/admin/places/reviews", { placeId, lang: lang || "de" });
+/** Nachbestellung: Bewertungen zu bestehendem Auftrag (gate: Zahlungsart-Pflicht für die neuen, falls noch keine hinterlegt). */
+export const addReviewsToOrderApi = (p) => adminPost("/admin/orders/add-reviews", p);
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */

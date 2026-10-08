@@ -23,6 +23,7 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
+import { registerOrderAddRoutes } from "./orderAdd";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
@@ -192,6 +193,7 @@ app.register(stripeWebhook);
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
+registerOrderAddRoutes(app, ADMIN_TOKEN); // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
@@ -708,23 +710,31 @@ app.post("/admin/orders/create", async (req, reply) => {
   const name = clip(c.name, 120), email = clip(c.email, 200).toLowerCase(), phone = clip(c.phone, 60);
   if (name.length < 2) return reply.code(400).send({ ok: false, error: "Name fehlt" });
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
-  const ctry = ["AT", "DE", "CH", "US", "UK", "XX"].includes(String(c.country)) ? String(c.country) : "AT";
-  const eur = ["AT", "DE", "CH"].includes(ctry);
-  const country = eur ? ctry : "US";
+  // Land = Land des Google-Profils (Admin übernimmt es aus dem Profil): USA → $, sonst € – wie bei Website-Bestellungen.
+  const cIn = String(c.country || "").toUpperCase().replace(/^UK$/, "GB");
+  const ctry = /^[A-Z]{2}$/.test(cIn) && cIn !== "XX" ? cIn : "AT";
+  const eur = ctry !== "US";
+  const country = ctry;
   // Sprache der Kunden-Mails/Dashboards: im Admin wählbar, sonst aus dem Land (DACH → de, sonst en).
   const langIn = String(c.lang || "").slice(0, 2);
-  const lang = MAIL_LANGS.includes(langIn) ? langIn : eur ? "de" : "en";
+  const lang = MAIL_LANGS.includes(langIn) ? langIn : ["AT", "DE", "CH", "LI"].includes(ctry) ? "de" : "en";
   const pl = (b.place || {}) as Record<string, unknown>;
   const company = clip(pl.name, 160);
   const mapsUri = httpUrl(pl.mapsUrl, 400);
   const placeId = clip(pl.placeId, 200);
   const addr = clip(pl.address, 300);
-  type Item = { url?: string; name?: string; text?: string; old?: boolean };
+  type Item = { url?: string; name?: string; text?: string; old?: boolean; sw?: boolean; rating?: number; days?: number };
+  const ctryPre = String(c.country || "").toUpperCase();
   const items: Item[] = type === "reviews" && Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
         const url = httpUrl(o.url, 400), nm = clip(o.name, 80), tx = clip(o.text, 400);
-        const flags = o.old === true ? { old: true } : {};
+        const flags: Record<string, unknown> = o.old === true ? { old: true } : {};
+        const rt = Math.round(Number(o.rating)), dy = Math.round(Number(o.days));
+        if (rt >= 1 && rt <= 5) flags.rating = rt;
+        if (Number.isFinite(dy) && dy >= 0 && dy < 20000 && o.days !== null && o.days !== undefined) flags.days = dy;
+        // Software-Fall (Partner-Regel): ältere Bewertung mit Text aus den USA → wie Website-Bestellungen.
+        if (reviewMethod({ old: o.old === true, days: flags.days as number }, ctryPre) === "sw") { flags.sw = true; flags.old = true; }
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as Item;
         if (nm && tx) return { name: nm, text: tx, ...flags } as Item;
         return null;

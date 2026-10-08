@@ -42,29 +42,32 @@ export async function notifyPartner(title: string, body: string, tag?: string, t
 const KIND: Record<string, string> = { normal: "standard", old: "older than 4 weeks", nt: "no text" };
 
 /** Neue Bewertungen auf dem Board → Push + E-Mail an den Partner. */
-export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string; price?: number }[], test = false): Promise<void> {
+export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string; price?: number }[], test = false, added = false): Promise<void> {
   if (!tasks.length) return;
   const n = tasks.length;
   const name = customer || "New customer";
   const sum = Math.round(tasks.reduce((s, t) => s + Number(t.price || 0), 0) * 100) / 100;
-  // Design: Titel „New order", Text „{Kunde} · {n} reviews · {Betrag}".
-  await notifyPartner(`${test ? "TEST · " : ""}New order`, `${name} · ${n} review${n > 1 ? "s" : ""}${sum ? ` · ${sum} USD` : ""}`, `rrp-order-${tasks[0].code}`, test);
+  const rv = `review${n > 1 ? "s" : ""}`;
+  // Design: Titel „New order", Text „{Kunde} · {n} reviews · {Betrag}". Nachbestellung: „Review added", „{Kunde} · +1 review …".
+  const head = added ? `${n > 1 ? "Reviews" : "Review"} added` : "New order";
+  await notifyPartner(`${test ? "TEST · " : ""}${head}`, `${name} · ${added ? "+" : ""}${n} ${rv}${added ? " (existing customer)" : ""}${sum ? ` · ${sum} USD` : ""}`, `rrp-order-${tasks[0].code}`, test);
   try {
     if (!pool) return;
     const acc = await pool.query(`SELECT email FROM partner_accounts`);
     const to = acc.rows.map((x) => x.email).filter((e) => e && isTestEmail(e) === test); // Test ↔ echt strikt getrennt
     if (!to.length) return;
     const url = `${SITE_URL}/partner`;
-    const el = React.createElement(EmailShell as any, { preview: `New order: ${name} – ${n} review${n > 1 ? "s" : ""}`, title: "New order on your board", lang: "en" },
+    const subj = added ? `${head}: ${name} – +${n} ${rv}` : `New order: ${name} – ${n} ${rv}`;
+    const el = React.createElement(EmailShell as any, { preview: subj, title: added ? `${head} to an existing order` : "New order on your board", lang: "en" },
       React.createElement(P as any, null, React.createElement("strong", null, "Hi,")),
-      React.createElement(P as any, null, `there's a new order on your RapidRemove board: ${name} – ${n} review${n > 1 ? "s" : ""}.`),
+      React.createElement(P as any, null, added ? `${name} has ordered ${n === 1 ? "one more review" : `${n} more reviews`} – it's on your board now.` : `there's a new order on your RapidRemove board: ${name} – ${n} ${rv}.`),
       React.createElement(Bullets as any, { items: tasks.slice(0, 20).map((t) => `${t.code} · ${KIND[t.kind] || t.kind}`) }),
       React.createElement("div", { style: { textAlign: "center", margin: "10px 0 20px" } }, React.createElement(CtaButton as any, { href: url }, "Open my board")),
       React.createElement(P as any, { muted: true }, "Please set each review to Working when you start, and to Removed once it's gone."),
       React.createElement(P as any, { muted: true }, "Tip: add rapid-remove.com/partner to your home screen and turn on notifications under Account – then you get every new order instantly."),
     );
     const html = await render(el);
-    for (const email of to) await sendMail({ to: email, subject: `New order: ${name} – ${n} review${n > 1 ? "s" : ""}`, html, replyTo: process.env.MAIL_REPLY_TO });
+    for (const email of to) await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
   } catch { /* best effort */ }
 }
 

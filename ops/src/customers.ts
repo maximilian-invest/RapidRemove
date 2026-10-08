@@ -477,6 +477,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     hold: !!raw.payHold && !cancelled, // Zwischenzahlung nötig (Partner pausiert)
     holdCard: !!raw.payHold && !cancelled && (raw.payHold as { reason?: string }).reason === "autopay", // Pause wegen fehlgeschlagener Abbuchung
     payGate: !cancelled && (raw.payGate as { status?: string } | undefined)?.status === "pending", // wartet auf hinterlegte Zahlungsart
+    // Nachbestellung: nur diese Bewertungen warten auf die Zahlungsart (die übrigen laufen weiter). null = ganzer Auftrag.
+    payGateKeys: !cancelled && (raw.payGate as { status?: string; keys?: string[] } | undefined)?.status === "pending" && Array.isArray((raw.payGate as { keys?: string[] }).keys) ? (raw.payGate as { keys: string[] }).keys : null,
+    placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
