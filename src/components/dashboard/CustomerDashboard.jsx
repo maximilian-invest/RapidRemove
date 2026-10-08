@@ -803,6 +803,8 @@ export default function CustomerDashboard() {
     </button>
   );
   const swOnly = !due.length && g0 && g0.via === "sw";
+  // Zahlungsart hinterlegt (ohne Fehler): Gelöschtes wird gleich automatisch abgebucht → kein „Bezahlen"-Knopf.
+  const apSoon = !!(data.autopay && !data.autopay.error && due.length && !multiPay && !swOnly);
   const Hero = ({ payments }) => (due.length || swOnly ? (
     <div className="hero">
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
@@ -819,6 +821,11 @@ export default function CustomerDashboard() {
             </button>
           ))}
           <p className="pg-h">{T("payGrpHint")}</p>
+        </div>
+      ) : apSoon ? (
+        <div className="row">
+          <span className="rem"><i />{T("apSoon", { pm: data.autopay.label })}</span>
+          <span className="pill-btn apchip"><CreditCard />{T("apAutoChip")}</span>
         </div>
       ) : (
         <div className="row">

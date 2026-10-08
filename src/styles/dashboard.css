@@ -688,3 +688,4 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 @keyframes ccGlow{0%{opacity:0;transform:scale(.6)}40%{opacity:1}100%{opacity:.55;transform:scale(1)}}
 @keyframes ccBadge{0%{opacity:0;transform:scale(0) rotate(-30deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media (prefers-reduced-motion:reduce){.rra .ce-card,.rra .cc-badge,.rra .cc-shine::after,.rra .ce-glow{animation-duration:.01s !important;animation-delay:0s !important}}
+.rra .pill-btn.apchip{pointer-events:none;gap:6px;opacity:.95}.rra .pill-btn.apchip svg{width:16px;height:16px}
