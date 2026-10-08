@@ -13,7 +13,7 @@ import { autopayAvailable, hasSavedMethod } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { gatesOpen } from "./orderStart";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
-import { quoteReviews, reviewMethod } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -26,7 +26,7 @@ const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S
 const normU = (u?: string) => String(u || "").trim().toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");
 const normT = (t?: string) => String(t || "").toLowerCase().replace(/\s+/g, " ").trim();
 
-export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean };
+export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; country: string | null; company: string | null; profile: string | null; status: string | null; service: string | null; raw: Record<string, unknown> | null };
 export type AddResult =
   | { ok: true; added: number; skipped: string[]; gate: boolean; partner: number; mailed: boolean; keys: string[] }
@@ -77,6 +77,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (x.days !== undefined && x.days !== null && Number.isFinite(dy) && dy >= 0 && dy < 20000) it.days = dy;
     if (x.old === true || (it.days !== undefined && it.days > 28)) it.old = true;
     if (x.nt === true) it.nt = true;
+    if (opts.by === "admin" && cpOf(x as { cp?: unknown })) it.cp = cpOf(x as { cp?: unknown }); // individueller Preis nur vom Admin
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
     clean.push(it);
   }

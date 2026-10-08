@@ -4,7 +4,7 @@
    Optional: Kunde muss zuerst eine Zahlungsart hinterlegen (nur die neuen warten – laufende Bewertungen laufen weiter).
    Partner bekommt „Review added", Kunde eine Bestätigung „Bewertung hinzugefügt". */
 import React from "react";
-import { Link as LinkIcon, Clipboard, Check, Info, Loader, Plus, X, CreditCard, Bell, StarOff } from "lucide-react";
+import { Link as LinkIcon, Clipboard, Check, Info, Loader, Plus, X, CreditCard, Bell, StarOff, Tag } from "lucide-react";
 import { placeReviews, resolveReviewLinkApi, addReviewsToOrderApi } from "@/lib/admin-api";
 import { reviewQuote } from "@/lib/pricing";
 import { Nav } from "./OrdersScreens";
@@ -30,6 +30,7 @@ export default function AddReviews({ ctx, id }) {
   const [gate, setGate] = React.useState(true);
   const [mail, setMail] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
+  const [cpAll, setCpAll] = React.useState("");
   React.useEffect(() => {
     if (!o || !o.placeId || mode !== "profile" || revs) return;
     placeReviews(o.placeId, o.lang || "de").then((r) => { if (r.enabled === false) { setRevs([]); setRevErr("Bewertungsliste nicht verfügbar – bitte Links einfügen."); } else setRevs(r.reviews || []); })
@@ -44,6 +45,8 @@ export default function AddReviews({ ctx, id }) {
     ? rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, rating: r.info.rating, days: r.info.days, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
     : (revs || []).filter((r) => sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days }));
   const c = o.country === "US" ? "$" : "€";
+  const cpv = (() => { const n = Number(String(cpAll || "").replace(/\s/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 && n < 100000 ? Math.round(n * 100) / 100 : 0; })();
+  if (cpv) for (const it of items) it.cp = cpv;
   const q = reviewQuote(items, "de");
   const paste = async () => { try { const t = await navigator.clipboard.readText(); if (t) setRlin(t.trim()); } catch (e) { toast("Einfügen nicht erlaubt – bitte manuell einfügen"); } };
   const addLink = () => {
@@ -124,6 +127,8 @@ export default function AddReviews({ ctx, id }) {
             )}
         </>
       )}
+      <label className="naf" style={{ marginTop: 14 }}><span>Preis pro Bewertung · leer = Preisliste</span>
+        <div className="usrch nain"><Tag /><input inputMode="decimal" placeholder="Preisliste" value={cpAll} onChange={(e) => setCpAll(e.target.value)} /><b className="curx">{c}</b></div></label>
       {items.length ? <div className="natot"><span>{items.length} {items.length === 1 ? "Bewertung" : "Bewertungen"} · nur bei Löschung</span><b>{money(q.total, c)} max.</b></div> : null}
       <div className="info" style={{ marginTop: 14 }}>
         <button type="button" className="ir" onClick={() => setGate((x) => !x)}>

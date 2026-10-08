@@ -57,18 +57,23 @@ export function reviewDiscountPct(n) {
 /** Reine Sternebewertungen ohne Text: Spezialverfahren, Festpreis (€ und $), Vorauszahlung, kein Altersaufschlag. */
 export const REVIEW_NOTEXT_PRICE = 300;
 /** items: [{ old?: boolean, nt?: boolean }] → { n, nOld, nNew, nNt, base, oldPrice, ntPrice, subtotal, pct, discount, total, ntTotal } */
+/** cp = individueller Endpreis je Bewertung (Admin): ohne Altersaufschlag und Mengenrabatt – synchron mit ops/src/reviewsPricing.ts. */
+export const cpOf = (it) => { const v = Number(it && it.cp); return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : 0; };
 export function reviewQuote(items, lang) {
   const base = Number(String(profileFor(lang).review).replace(",", ".")) || 179;
   const list = Array.isArray(items) ? items : [];
   const n = list.length;
-  const nNt = list.filter((it) => it && (it.nt || it.sw)).length; // Software-Fälle (ohne Text + alte US-Bewertungen)
-  const nOld = list.filter((it) => it && it.old && !it.nt && !it.sw).length;
-  const nNew = n - nOld - nNt;
-  const subtotal = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
-  const pct = reviewDiscountPct(n);
-  const total = Math.round(subtotal * (100 - pct) / 100);
-  const ntTotal = Math.round(nNt * REVIEW_NOTEXT_PRICE * (100 - pct) / 100);
-  return { n, nOld, nNew, nNt, base, oldPrice: base + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, discount: subtotal - total, total, ntTotal };
+  const std = list.filter((it) => !cpOf(it)), fixed = list.filter((it) => cpOf(it));
+  const nNt = std.filter((it) => it && (it.nt || it.sw)).length; // Software-Fälle (ohne Text + alte US-Bewertungen)
+  const nOld = std.filter((it) => it && it.old && !it.nt && !it.sw).length;
+  const nNew = std.length - nOld - nNt;
+  const cpTotal = Math.round(fixed.reduce((s, it) => s + cpOf(it), 0) * 100) / 100;
+  const subStd = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
+  const pct = std.length ? reviewDiscountPct(n) : 0;
+  const total = Math.round(subStd * (100 - pct) / 100) + cpTotal;
+  const subtotal = subStd + cpTotal;
+  const ntTotal = Math.round(nNt * REVIEW_NOTEXT_PRICE * (100 - pct) / 100) + fixed.filter((it) => it.nt || it.sw).reduce((s, it) => s + cpOf(it), 0);
+  return { n, nOld, nNew, nNt, nCp: fixed.length, cpTotal, base, oldPrice: base + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, discount: subtotal - total, total, ntTotal };
 }
 
 /* Verfahren je Bewertung (Partner-Regel 10/2026, synchron mit ops/src/reviewsPricing.ts):

@@ -7,7 +7,7 @@
 import React from "react";
 import {
   X, ArrowLeft, ArrowRight, Link as LinkIcon, Clipboard, Store, Check, Info, CheckCheck, User, Mail, Phone, Send, Wallet,
-  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe, ChevronDown,
+  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe, ChevronDown, Tag,
 } from "lucide-react";
 import { searchProfiles } from "@/lib/places";
 import { monitorLookup, placeReviews, createAdminOrder, resolveReviewLinkApi } from "@/lib/admin-api";
@@ -30,11 +30,13 @@ const PAYS = [
 const LANGS = [["de", "Deutsch"], ["en", "English"], ["es", "Español"], ["fr", "Français"], ["it", "Italiano"], ["nl", "Nederlands"], ["pt", "Português"], ["sv", "Svenska"], ["da", "Dansk"], ["no", "Norsk"], ["ja", "日本語"]];
 const PROFILE_PRICE = { "€": 450, $: 495 };
 const MAPS_RE = /(maps|goo\.gl|g\.page|google\.)/i;
+const num = (v) => { const n = Number(String(v || "").replace(/\s/g, "").replace(",", ".")); return Number.isFinite(n) && n > 0 && n < 100000 ? Math.round(n * 100) / 100 : 0; };
+const rkey = (it) => it.url || `${it.name || ""}|${it.text || ""}`;
 const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
 const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} ${Math.round(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 
-const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false });
+const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false, cpAll: "", cpMap: {}, cpOpen: false, profAmt: "" });
 
 export default function NewOrder({ ctx }) {
   const { back, auto, partners, openSheet, openOrder, toast, refresh, isDesk, scrollPush } = ctx;
@@ -114,8 +116,10 @@ export default function NewOrder({ ctx }) {
     : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days }));
   // US-Profil + älter als 4 Wochen → Software-Verfahren (300), wie im Backend
   if (s.country === "US") for (const it of items) if (it.old) it.sw = true;
+  // Individueller Preis je Bewertung (einzeln > für alle) – genau der wird abgebucht und verrechnet.
+  for (const it of items) { const v = num(s.cpMap[rkey(it)]) || num(s.cpAll); if (v) it.cp = v; }
   const q = s.type === "reviews" ? reviewQuote(items, "de") : null;
-  const amount = s.type === "reviews" ? q.total : PROFILE_PRICE[cur];
+  const amount = s.type === "reviews" ? q.total : num(s.profAmt) || PROFILE_PRICE[cur];
   const fmt = (v) => money(v, cur);
   const valid = [
     !!s.type,
@@ -155,7 +159,7 @@ export default function NewOrder({ ctx }) {
     set({ busy: true });
     try {
       const r = await createAdminOrder({
-        type: s.type, reviewItems: items, reason: s.reason, payment: s.pay, staff: s.staff, sendConfirm: s.confirm,
+        type: s.type, reviewItems: items, reason: s.reason, ...(s.type === "profile" && num(s.profAmt) ? { amount: num(s.profAmt) } : {}), payment: s.pay, staff: s.staff, sendConfirm: s.confirm,
         place: s.biz ? { name: s.biz.name, address: s.biz.address, placeId: s.biz.placeId, mapsUrl: s.biz.mapsUrl || s.url } : { mapsUrl: s.url },
         customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country, lang },
       });
@@ -329,6 +333,22 @@ export default function NewOrder({ ctx }) {
           <div className="nsr"><span>Land · Sprache</span><b>{ctryName(s.country)} · {(LANGS.find((x) => x[0] === lang) || LANGS[0])[1]}</b></div>
           <div className="nsr tot"><span>{s.type === "reviews" ? "Betrag (max.)" : "Betrag"}</span><b>{fmt(shown)}</b></div>
         </div>
+        <div className="sec3" style={{ marginTop: 20 }}><h2>Preis</h2></div>
+        <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(179)} / ${fmt(229)} älter, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
+          <div className="usrch nain"><Tag /><input inputMode="decimal" placeholder={s.type === "reviews" ? "Preisliste" : String(PROFILE_PRICE[cur])} value={s.type === "reviews" ? s.cpAll : s.profAmt}
+            onChange={(e) => set(s.type === "reviews" ? { cpAll: e.target.value } : { profAmt: e.target.value })} /><b className="curx">{cur}</b></div></label>
+        {s.type === "reviews" && items.length > 1 ? <button type="button" className="nasel" onClick={() => set((x) => ({ cpOpen: !x.cpOpen }))}>{s.cpOpen ? <><X />Einzelpreise schließen</> : <><Tag />Einzeln anpassen</>}</button> : null}
+        {s.type === "reviews" && s.cpOpen ? (
+          <div className="card ls narl">
+            {items.map((it) => (
+              <div key={rkey(it)} className="rlr cpr">
+                <div className="t"><b>{it.name || it.url}</b><span>{it.cp ? "individuell" : it.sw ? "Software · Preisliste" : it.old ? "älter 4 Wo. · Preisliste" : "Preisliste"}</span></div>
+                <div className="cpin"><input inputMode="decimal" placeholder={s.cpAll || (it.sw ? "300" : it.old ? "229" : "179")} value={s.cpMap[rkey(it)] || ""} onChange={(e) => { const v = e.target.value; set((x) => ({ cpMap: { ...x.cpMap, [rkey(it)]: v } })); }} /><span>{cur}</span></div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {q && q.nCp ? <p className="nasub" style={{ marginTop: 6 }}>Individueller Preis: genau dieser Betrag wird bei Löschung abgebucht und auf der Rechnung ausgewiesen (Endpreis, kein Mengenrabatt).</p> : null}
         <div className="sec3" style={{ marginTop: 20 }}><h2>Zahlung</h2></div>
         <div className="naopts">
           {PAYS.map(([k, l, I]) => <button key={k} type="button" className={"aopt" + (s.pay === k ? " sel" : "")} onClick={() => set({ pay: k })}><span className="ico"><I /></span>{l}{s.pay === k ? <span className="ck"><Check /></span> : null}</button>)}

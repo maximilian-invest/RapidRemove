@@ -53,6 +53,8 @@ const store = {
   set: (v) => { try { v ? localStorage.setItem(KEY, v) : localStorage.removeItem(KEY); } catch (e) { /* privat */ } },
 };
 
+/* EU-Länder außer Österreich: Reverse Charge nur mit gültiger UID (sonst 20 % österr. USt im Preis). */
+const EU_RC = ["BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"];
 /* ---- Format ---- */
 const money = (v, cur) => { try { return new Intl.NumberFormat(LOC, { style: "currency", currency: cur === "usd" ? "USD" : "EUR", maximumFractionDigits: Number(v) % 1 ? 2 : 0 }).format(Number(v || 0)); } catch (e) { return (cur === "usd" ? "$" : "€") + Number(v || 0); } };
 const shortDate = (iso) => { try { return new Date(iso).toLocaleDateString(LOC, { month: "short", day: "numeric" }); } catch (e) { return ""; } };
@@ -1168,6 +1170,7 @@ export default function CustomerDashboard() {
             </select>
           </label>
           {inp("vat", T("fVat"), { autoComplete: "off", autoCapitalize: "characters" })}
+          {EU_RC.includes(f.country) ? <p className="bsub rc">{data.billing && data.billing.vatStatus === "valid" && data.billing.country === f.country && !bill ? T("bRcOk") : T("bRcHint")}</p> : null}
           {!bill && data.billing && data.billing.saved ? (
             <div className="bstat">
               {data.billing.addrChecked ? <span className="ok"><Check />{T("bAddrOk")}</span> : null}

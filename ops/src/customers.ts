@@ -17,7 +17,7 @@ import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
-import { quoteReviews, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf } from "./reviewsPricing";
+import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -451,8 +451,10 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else if (accepted) status = "notpossible";
     else status = "new";
     const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
-    const price = special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
+    const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
+    const price = cp || (special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
+      cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
@@ -464,11 +466,14 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       waived: cancelled && status === "removed" && !(special ? prepaidFor(k) || isPaid(k) : isPaid(k)), // storniert → nichts mehr zu zahlen
     };
   });
+  // Software-Preis je Bewertung: individueller Preis, falls alle Software-Fälle denselben haben, sonst Preisliste.
+  const swCps = [...new Set(view.filter((v) => v.special).map((v) => v.cp))];
+  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : disc(REVIEW_NOTEXT_PRICE);
   // Ganz stornierter Auftrag → keine offenen Zahlungen mehr (auch nicht für vorher gelöschte Bewertungen).
   const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
   const unpaidN = unpaid.filter((v) => !v.special);
-  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old })), cur, items.length, "rest", chatPct).total : 0)
+  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old, cp: v.cp })), cur, items.length, "rest", chatPct).total : 0)
     + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
@@ -481,8 +486,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     payGateKeys: !cancelled && (raw.payGate as { status?: string; keys?: string[] } | undefined)?.status === "pending" && Array.isArray((raw.payGate as { keys?: string[] }).keys) ? (raw.payGate as { keys: string[] }).keys : null,
     placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
-    pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
-    items: view.map(({ special, old, ...v }) => v),
+    pct, swPrice: swUnit, swDeposit: swUnit, toPay, // swDeposit = Vorauszahlung = voller Preis
+    items: view.map(({ special, old, cp, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
     history: payments.filter((p) => p.paid).map((p) => ({
       id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, paid: p.paid, auto: p.via === "autopay", invoiceUrl: p.via === "autopay" ? p.url : null, n: p.n || (p.keys || []).length + (p.refs || []).length || null,

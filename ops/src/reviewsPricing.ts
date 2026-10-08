@@ -11,7 +11,10 @@ export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n 
 export const REVIEW_NOTEXT_PRICE = 300;
 export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur noch für Bestandsfälle
 
-export type PricedItem = { old?: boolean; nt?: boolean; sw?: boolean };
+/** cp = individueller Endpreis je Bewertung (im Admin festgelegt): ersetzt Grundpreis, Altersaufschlag und Mengenrabatt.
+ *  Genau dieser Betrag wird bei Löschung abgebucht und in Rechnung gestellt (Endpreis inkl. allfälliger USt). */
+export type PricedItem = { old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
+export const cpOf = (it: { cp?: unknown } | null | undefined): number => { const v = Number(it?.cp); return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : 0; };
 
 /** Verfahren je Bewertung (Partner-Regel, 10/2026):
  *  - "sw"    Software, voller Betrag im Voraus: ohne Text (alle Länder) und älter als 4 Wochen mit Text aus den USA
@@ -47,17 +50,29 @@ export function chatPctOf(raw: unknown): number {
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
-  const nNt = items.filter(isSwItem).length; // Software-Fälle (ohne Text + alte US-Bewertungen), Name historisch
-  const nOld = items.filter((it) => it && it.old && !isSwItem(it)).length;
-  const nNew = n - nOld - nNt;
+  // Individuelle Preise (cp) zählen fest – ohne Aufschlag/Rabatt; der Rest nach Preisliste.
+  const fixed = items.filter((it) => cpOf(it) > 0), std = items.filter((it) => !cpOf(it));
+  const nNt = std.filter(isSwItem).length; // Software-Fälle (ohne Text + alte US-Bewertungen), Name historisch
+  const nOld = std.filter((it) => it && it.old && !isSwItem(it)).length;
+  const nNew = std.length - nOld - nNt;
   const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
-  const subtotal = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit;
-  const pct = Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))); // Mengen- oder Chat-Rabatt, der höhere
-  const total = Math.round((subtotal * (100 - pct)) / 100);
+  const subStd = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit;
+  const pct = std.length ? Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))) : 0; // Mengen- oder Chat-Rabatt, der höhere
+  // Software-Fälle mit eigenem Preis sind (wie alle Software-Fälle) vorab bezahlt → in „rest" 0.
+  const cpLines = new Map<number, number>();
+  let cpTotal = 0, cpSw = 0;
+  for (const it of fixed) {
+    const v = mode === "rest" && isSwItem(it) ? 0 : cpOf(it);
+    cpTotal += v; if (isSwItem(it)) cpSw += cpOf(it);
+    if (v) cpLines.set(v, (cpLines.get(v) || 0) + 1);
+  }
+  cpTotal = Math.round(cpTotal * 100) / 100;
+  const subtotal = subStd + cpTotal;
+  const total = Math.round((subStd * (100 - pct)) / 100) + cpTotal;
   // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
-  const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100);
-  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && ntUnit ? fmt(ntUnit) : ""].filter(Boolean);
-  let per = prices.length ? prices.join(" / ") : fmt(REVIEW_BASE);
+  const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw;
+  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && ntUnit ? fmt(ntUnit) : "", ...[...cpLines.keys()].map(fmt)].filter(Boolean);
+  let per = prices.length ? [...new Set(prices)].join(" / ") : fmt(REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;
-  return { n, nOld, nNew, nNt, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: subtotal - total, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: nOld === 0 && nNt === 0 && pct === 0 };
+  return { n, nOld, nNew, nNt, nCp: fixed.length, cpLines: [...cpLines.entries()].map(([price, k]) => ({ price, n: k })), cpTotal, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: Math.round((subtotal - total) * 100) / 100, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: new Set(prices).size <= 1 && pct === 0 };
 }

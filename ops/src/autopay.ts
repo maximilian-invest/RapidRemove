@@ -156,6 +156,61 @@ async function pushBillingToStripe(email: string, key: string, customer: string)
   });
 }
 
+/* ---- Umsatzsteuer auf unseren Rechnungen (Simple Solution OG, Österreich, UID ATU72401536) ----
+ * Preise sind Endpreise inkl. allfälliger USt (AGB 6.1). Je Kunde (Rechnungsland + geprüfte UID):
+ *   "at"     Österreich – oder EU ohne gültige UID (privat/nicht nachgewiesen): 20 % österr. USt, im Preis enthalten
+ *   "rc"     EU-Ausland mit gültiger UID (VIES geprüft): Reverse Charge, keine USt, beide UIDs + Hinweis auf der Rechnung
+ *   "export" Drittland (z. B. USA, Schweiz, UK): Leistungsort beim Empfänger (§ 3a Abs. 6 UStG) → in Österreich nicht steuerbar
+ * Ohne gültige UID gibt es KEIN Reverse Charge (z. B. DE-Kunde muss seine USt-IdNr. in den Rechnungsdetails angeben). */
+const OUR_UID = (process.env.COMPANY_UID || "ATU72401536").trim();
+const EU_TAX = new Set(["BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "EL", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"]);
+export type TaxMode = "at" | "rc" | "export";
+export function taxModeFor(country: string, vatStatus: string): TaxMode {
+  const c = String(country || "").toUpperCase();
+  if (!c || c === "AT") return "at";
+  if (EU_TAX.has(c)) return vatStatus === "valid" ? "rc" : "at";
+  return "export";
+}
+const taxRateIds = new Map<string, string>();
+async function atTaxRate(key: string): Promise<string> {
+  if (taxRateIds.has(key)) return taxRateIds.get(key)!;
+  const list = await sx(key, "GET", "tax_rates", { active: "true", limit: 100 }).catch(() => ({ data: [] as any[] }));
+  let tr = ((list as { data?: any[] }).data || []).find((x: any) => x.metadata?.rr === "at20" && x.inclusive && Number(x.percentage) === 20);
+  if (!tr) tr = await sx(key, "POST", "tax_rates", { display_name: "USt", description: "Umsatzsteuer Österreich 20 %", percentage: 20, inclusive: true, country: "AT", jurisdiction: "AT", tax_type: "vat", metadata: { rr: "at20" } }, "rr-taxrate-at20");
+  taxRateIds.set(key, tr.id);
+  return tr.id;
+}
+/** Steuer für die nächste Rechnung festlegen: Stripe-Kunde (tax_exempt + UID) aktualisieren, Steuersatz/Fußzeile zurückgeben. */
+async function taxFor(email: string, key: string, customer: string): Promise<{ mode: TaxMode; rates: string[]; footer: string }> {
+  let b = await billingOf(email).catch(() => emptyBilling);
+  // UID gespeichert, aber (VIES war down) noch nicht bestätigt → jetzt nochmal prüfen.
+  if (b.vat && b.vatStatus !== "valid" && b.vatStatus !== "invalid" && b.country) {
+    const v = await checkVat(b.vat, b.country).catch(() => null);
+    if (v && v.status !== "unchecked" && pool) {
+      await pool.query(`UPDATE cust_billing SET vat_status=$2, vat_name=COALESCE($3, vat_name), updated_at=now() WHERE email=$1`, [email.toLowerCase(), v.status, v.name || null]).catch(() => {});
+      b = { ...b, vatStatus: v.status };
+    }
+  }
+  const mode = taxModeFor(b.country, b.vatStatus || "");
+  await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : mode === "export" ? "exempt" : "none" }).catch(() => {});
+  if (b.vat && (mode === "rc" || mode === "export")) {
+    const type = b.country === "GB" ? "gb_vat" : b.country === "CH" ? "ch_vat" : EU_TAX.has(b.country) ? "eu_vat" : "";
+    if (type) {
+      const ids = await sx(key, "GET", `customers/${customer}/tax_ids`, { limit: 20 }).catch(() => ({ data: [] as any[] }));
+      const val = b.vat.replace(/[\s.\-]/g, "").toUpperCase();
+      if (!((ids as { data?: any[] }).data || []).some((x: any) => String(x.value || "").replace(/[\s.\-]/g, "").toUpperCase() === val)) {
+        await sx(key, "POST", `customers/${customer}/tax_ids`, { type, value: b.vat }).catch(() => {});
+      }
+    }
+  }
+  const footer = mode === "rc"
+    ? `Reverse Charge – Steuerschuldnerschaft des Leistungsempfängers (Art. 196 MwSt-Richtlinie) / VAT reverse charge. UID Leistungsempfänger: ${b.vat} · UID Leistender: ${OUR_UID}`
+    : mode === "export"
+      ? `Leistungsort beim Leistungsempfänger – in Österreich nicht steuerbar (§ 3a Abs. 6 UStG) / Place of supply: recipient's country, not subject to Austrian VAT.${b.vat ? ` VAT ID recipient: ${b.vat} ·` : ""} UID: ${OUR_UID}`
+      : `Preis inkl. 20 % USt. UID: ${OUR_UID}`;
+  return { mode, rates: mode === "at" ? [await atTaxRate(key)] : [], footer };
+}
+
 /* ---- Fehlgeschlagene Abbuchung → Auftrag sofort pausieren ----
  * Partner: „Order on hold" (startet nichts Neues). Kunde: Hinweis in Mail/Dashboard „Zahlungsart aktualisieren".
  * Frei erst, wenn alles bezahlt ist (customers.ts evaluatePayHold, reason=autopay). Wiederholung nach 24 h und 48 h (retryTick). */
@@ -231,13 +286,14 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
   try {
     await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
     const bill = await billingOf(email).catch(() => emptyBilling);
+    const tax = await taxFor(email, k.key, row.customer);
     inv = await sx(k.key, "POST", "invoices", {
       ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
       customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
-      default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
-      metadata: { rr_pay: id, rr_email: email, rr_orders: orderId },
+      default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc, footer: tax.footer,
+      metadata: { rr_pay: id, rr_email: email, rr_orders: orderId, rr_tax: tax.mode },
     }, `rr-inv-${id}`);
-    await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc }, `rr-ii-${id}`);
+    await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc, ...(tax.rates.length ? { tax_rates: tax.rates } : {}) }, `rr-ii-${id}`);
     inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
     inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
     if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);
@@ -287,13 +343,14 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       try {
         await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
         const bill = await billingOf(email).catch(() => emptyBilling);
+        const tax = await taxFor(email, k.key, row.customer);
         inv = await sx(k.key, "POST", "invoices", {
           ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
           customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
-          default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
-          metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(",") },
+          default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc, footer: tax.footer,
+          metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(","), rr_tax: tax.mode },
         }, `rr-inv-${id}`);
-        await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc }, `rr-ii-${id}`);
+        await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc, ...(tax.rates.length ? { tax_rates: tax.rates } : {}) }, `rr-ii-${id}`);
         inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
         inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
         if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);

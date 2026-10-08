@@ -87,3 +87,41 @@ export async function fetchPlaceReviews(placeId: string, lang: string): Promise<
   if (cache.size > 500) cache.delete(cache.keys().next().value as string);
   return out;
 }
+
+/** Eine bestimmte Bewertung (Review-ID aus dem Teilen-Link) finden – auch wenn sie nicht unter den neuesten ist:
+ *  1) neueste Seiten (Cache von fetchPlaceReviews), 2) nach Sternen sortiert (schlechteste zuerst, max. 10 Seiten),
+ *  3) beste zuerst (falls eine gute Bewertung gemeint ist). Gefundene Bewertungen 6 h im Cache. */
+const oneCache = new Map<string, { ts: number; r: FetchedReview | null }>();
+const mapR = (r: any, i: number): FetchedReview => ({
+  id: String(r.review_id || r.link || i), name: String(r.user?.name || "Google user").slice(0, 120), photo: String(r.user?.thumbnail || ""),
+  rating: Math.round(Number(r.rating) || 0), text: String(r.extracted_snippet?.original || r.snippet || "").slice(0, 2000),
+  date: String(r.iso_date || ""), days: daysSince(r.iso_date), link: String(r.link || ""),
+});
+export async function findPlaceReview(placeId: string, reviewId: string, lang: string): Promise<FetchedReview | null> {
+  const key = serpKey();
+  if (!key || !placeId || !reviewId) return null;
+  const ck = placeId + "|" + reviewId;
+  const c = oneCache.get(ck);
+  if (c && Date.now() - c.ts < CACHE_MS) return c.r;
+  const hit = (l: FetchedReview[]) => l.find((x) => x.id === reviewId || (x.link && x.link.includes(reviewId))) || null;
+  let found = hit(await fetchPlaceReviews(placeId, lang).catch(() => [] as FetchedReview[]));
+  for (const sort of ["ratingLow", "ratingHigh"]) {
+    if (found) break;
+    let token: string | null = null;
+    for (let page = 0; page < (sort === "ratingLow" ? 10 : 4) && !found; page++) {
+      const params = new URLSearchParams({ engine: "google_maps_reviews", place_id: placeId, sort_by: sort, hl: lang, api_key: key });
+      if (token) { params.set("next_page_token", token); params.set("num", "20"); }
+      countCall();
+      const res = await fetch((process.env.SERPAPI_BASE || "https://serpapi.com") + "/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) }).catch(() => null);
+      const data: any = res ? await res.json().catch(() => null) : null;
+      if (!res || !res.ok || !data || data.error) break;
+      const list: any[] = Array.isArray(data.reviews) ? data.reviews : [];
+      found = hit(list.map(mapR));
+      token = data.serpapi_pagination?.next_page_token || null;
+      if (!token || !list.length) break;
+    }
+  }
+  oneCache.set(ck, { ts: Date.now(), r: found });
+  if (oneCache.size > 500) oneCache.delete(oneCache.keys().next().value as string);
+  return found;
+}

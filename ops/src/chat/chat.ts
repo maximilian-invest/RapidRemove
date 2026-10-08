@@ -18,7 +18,7 @@ import { logCustEvent } from "../custTrack";
 import { KNOWLEDGE } from "./knowledge";
 import { quoteReviews } from "../reviewsPricing";
 import { resolveReviewLink } from "../monitor";
-import { fetchPlaceReviews, serpKey } from "../reviewsFetch";
+import { fetchPlaceReviews, findPlaceReview, serpKey } from "../reviewsFetch";
 const quoteReviewsLite = (items: { old: boolean; sw?: boolean }[], pct: number) => quoteReviews(items, "eur", undefined, "full", pct);
 
 type Msg = { role: "user" | "assistant"; text: string };
@@ -424,7 +424,8 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
         try { reviews = (await fetchPlaceReviews(place.placeId, clip(b.lang, 5) || "en")).map(shortR); } catch (e) { app.log.warn({ err: e }, "Website-Chat: Bewertungen laden fehlgeschlagen"); }
       }
       if (r.reviewId) {
-        const hit = reviews.find((x) => x.id === r.reviewId || (x.link || "").includes(r.reviewId)) || null;
+        let hit = reviews.find((x) => x.id === r.reviewId || (x.link || "").includes(r.reviewId)) || null;
+        if (!hit && place.placeId) { const f = await findPlaceReview(place.placeId, r.reviewId, clip(b.lang, 5) || "en").catch(() => null); if (f) hit = shortR(f); }
         return { ok: true, type: "review", place, review: hit ? { ...hit, link } : { id: r.reviewId, name: "", rating: 0, text: "", days: -1, link } };
       }
       return { ok: true, type: "profile", place, reviews, more: reviews.length >= 25 };

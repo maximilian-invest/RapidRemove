@@ -734,3 +734,4 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .ar-row .x.none{font-style:italic}
 .rra .ar-row .in{font-size:12px;font-weight:600;color:var(--g3)}
 .rra .ar-max{text-align:center;font-size:13px;color:var(--g3);margin-bottom:8px;width:100%}
+.rra .bsub.rc{margin:-4px 0 10px;font-size:13px}

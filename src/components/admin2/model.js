@@ -83,7 +83,7 @@ export function revState(o, tasks) {
       c.removed++;
       const special = !!it.nt || swSet.has(k);
       if (!(special && prepaid(k)) && !isPaid(k)) {
-        unpaid.push({ k, special, old: !!it.old && !it.nt, billed: billed.has(k) || !!asked[k] || keyedInv.some((p) => p.keys.includes(k)), asked: asked[k] || null, at: t && t.removed ? new Date(t.removed).getTime() : null });
+        unpaid.push({ k, special, cp: Number(it.cp) > 0 ? Number(it.cp) : 0, old: !!it.old && !it.nt, billed: billed.has(k) || !!asked[k] || keyedInv.some((p) => p.keys.includes(k)), asked: asked[k] || null, at: t && t.removed ? new Date(t.removed).getTime() : null });
       }
     } else if (s === "working") { c.open++; c.working++; }
     else if (s === "new") { c.open++; c.waiting++; }
@@ -91,9 +91,11 @@ export function revState(o, tasks) {
     else if (s === "not_possible") c.notPossible++;
   }
   // Rechnung wie im Backend (quoteReviews „rest"): Mengenrabatt nach Gesamtanzahl, Spezialverfahren voll (rabattiert).
-  const normal = unpaid.filter((u) => !u.special);
+  // Individueller Preis (cp) zählt fest, ohne Rabatt.
+  const normal = unpaid.filter((u) => !u.special && !u.cp);
   const sub = normal.reduce((s, u) => s + (u.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE), 0);
-  const unpaidAmt = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special).length * Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100);
+  const unpaidAmt = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special && !u.cp).length * Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100)
+    + unpaid.filter((u) => u.cp).reduce((s, u) => s + u.cp, 0);
   const ats = unpaid.map((u) => u.at).filter(Boolean);
   return {
     // Nenner für „x/y gelöscht": was beim Partner liegt (bzw. abgerechnet wurde) – nicht reviewsAccepted,

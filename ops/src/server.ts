@@ -20,7 +20,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
-import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerOrderAddRoutes } from "./orderAdd";
@@ -45,7 +45,7 @@ import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker, scheduleProtectionUpsell } from "./upsell";
-import { serpKey, fetchPlaceReviews, serpUsage } from "./reviewsFetch";
+import { serpKey, fetchPlaceReviews, findPlaceReview, serpUsage } from "./reviewsFetch";
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
@@ -723,7 +723,7 @@ app.post("/admin/orders/create", async (req, reply) => {
   const mapsUri = httpUrl(pl.mapsUrl, 400);
   const placeId = clip(pl.placeId, 200);
   const addr = clip(pl.address, 300);
-  type Item = { url?: string; name?: string; text?: string; old?: boolean; sw?: boolean; rating?: number; days?: number };
+  type Item = { url?: string; name?: string; text?: string; old?: boolean; sw?: boolean; rating?: number; days?: number; cp?: number };
   const ctryPre = String(c.country || "").toUpperCase();
   const items: Item[] = type === "reviews" && Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
@@ -735,6 +735,7 @@ app.post("/admin/orders/create", async (req, reply) => {
         if (Number.isFinite(dy) && dy >= 0 && dy < 20000 && o.days !== null && o.days !== undefined) flags.days = dy;
         // Software-Fall (Partner-Regel): ältere Bewertung mit Text aus den USA → wie Website-Bestellungen.
         if (reviewMethod({ old: o.old === true, days: flags.days as number }, ctryPre) === "sw") { flags.sw = true; flags.old = true; }
+        if (cpOf(o)) flags.cp = cpOf(o); // individueller Preis je Bewertung (wird so abgebucht + verrechnet)
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as Item;
         if (nm && tx) return { name: nm, text: tx, ...flags } as Item;
         return null;
@@ -745,7 +746,9 @@ app.post("/admin/orders/create", async (req, reply) => {
   const reason = type === "profile" ? (PROFILE_REASONS[String(b.reason)] || "") : "";
   const cur = eur ? "eur" : "usd";
   const q = type === "reviews" ? quoteReviews(items, cur) : null;
-  const amount = q ? q.total : (eur ? 450 : 495);
+  // Profil: individueller Preis möglich (Admin), sonst Preisliste.
+  const profAmt = Number(b.amount);
+  const amount = q ? q.total : profAmt > 0 && profAmt < 100000 ? Math.round(profAmt * 100) / 100 : (eur ? 450 : 495);
   const pay = ["auto", "link", "paypal", "invoice"].includes(String(b.payment)) ? String(b.payment) : "link";
   // „auto": Kunde hinterlegt im Dashboard seine Zahlungsart → Auftrag startet erst danach, abgebucht wird bei Löschung.
   const autoPay = pay === "auto" && autopayAvailable(email);
@@ -819,8 +822,8 @@ app.post("/admin/reviews/resolve", async (req, reply) => {
     const { place, reviewId } = await resolveReviewLink(link);
     let review = null as null | { name: string; rating: number; days: number; text: string };
     if (place && place.placeId && reviewId && serpKey()) {
-      const list = await fetchPlaceReviews(place.placeId, mailLang(b.lang || "de")).catch(() => []);
-      const hit = list.find((x) => x.id === reviewId || (x.link && x.link.includes(reviewId)));
+      // auch ältere Bewertungen finden (nicht nur die neuesten Seiten): Suche nach Review-ID, schlechteste zuerst
+      const hit = await findPlaceReview(place.placeId, reviewId, mailLang(b.lang || "de")).catch(() => null);
       if (hit) review = { name: hit.name, rating: hit.rating, days: hit.days, text: hit.text };
     }
     return { ok: true, place, review };
@@ -1641,12 +1644,23 @@ app.get("/admin/review-shot/:id", async (req, reply) => {
   return reply.send(shot.img);
 });
 
+/** Individuelle Preise (cp) kommen IMMER aus dem Auftrag (nicht aus dem Browser): je Bewertung per Schlüssel übernehmen. */
+async function withOrderCp<T extends { url?: string; name?: string; text?: string; cp?: number }>(orderId: unknown, items: T[]): Promise<T[]> {
+  const id = clip(orderId, 40);
+  if (!id || !pool) return items;
+  const r = await pool.query(`SELECT raw->'reviewItems' AS a FROM orders WHERE id=$1`, [id]).catch(() => null);
+  const all = (Array.isArray(r?.rows[0]?.a) ? r!.rows[0].a : []) as { url?: string; name?: string; text?: string; cp?: number }[];
+  const key = (it: { url?: string; name?: string; text?: string }) => it.url || `${it.name || ""}|${it.text || ""}`;
+  const by = new Map(all.filter((x) => cpOf(x) > 0).map((x) => [key(x), cpOf(x)]));
+  return items.map((it) => (by.has(key(it)) ? { ...it, cp: by.get(key(it)) } : it));
+}
+
 app.post("/admin/reviews-invoice", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1661,6 +1675,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
+  removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
@@ -1746,7 +1761,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1761,6 +1776,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
     return null;
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine offenen Bewertungen ausgewählt" });
+  removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
   const stage = [1, 2, 3].includes(Number(b.stage)) ? Number(b.stage) : 1;
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
