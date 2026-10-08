@@ -173,6 +173,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
 }
 
 /* ---- Routen ---- */
+let lastErr: { at: string; where: string; msg: string } | null = null; // letzte Stripe-Fehlermeldung (Diagnose, ohne Schlüssel)
 export function registerAutopayRoutes(app: FastifyInstance): void {
   autopayHooks.charge = (email) => chargeDue(email).catch((e) => { app.log.error({ err: e }, "Automatisch bezahlen: Abbuchung fehlgeschlagen"); return null; });
   autopayHooks.info = info;
@@ -214,7 +215,8 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       return { ok: true, url: ses.url, mode: k.mode };
     } catch (e) {
       app.log.error({ err: e }, "Automatisch bezahlen: Start fehlgeschlagen");
-      return reply.code(503).send({ ok: false, error: "payment_unavailable" });
+      lastErr = { at: new Date().toISOString(), where: "start", msg: String((e as Error)?.message || e).slice(0, 300) };
+      return reply.code(503).send({ ok: false, error: "payment_unavailable", ...(k.mode === "test" ? { detail: lastErr.msg } : {}) });
     }
   });
 
@@ -270,5 +272,5 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
   });
 
   // Admin: Status je Kunde (für Tests/Support).
-  app.get("/health/autopay", async () => ({ ok: true, testKey: /^(sk|rk)_test_/.test(process.env.STRIPE_TEST_SECRET_KEY || ""), live: String(process.env.AUTOPAY_LIVE || "").toLowerCase() === "on" }));
+  app.get("/health/autopay", async () => ({ ok: true, testKey: /^(sk|rk)_test_/.test(process.env.STRIPE_TEST_SECRET_KEY || ""), live: String(process.env.AUTOPAY_LIVE || "").toLowerCase() === "on", lastError: lastErr }));
 }
