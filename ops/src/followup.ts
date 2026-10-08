@@ -64,7 +64,7 @@ export function tzOf(country: string | null | undefined, addr: string | null | u
 export function localHour(tz: string, at = new Date()): number {
   try { return Number(new Intl.DateTimeFormat("en-US", { hour: "numeric", hourCycle: "h23", timeZone: tz }).format(at)) % 24; } catch { return at.getUTCHours(); }
 }
-const quietOk = (tz: string) => { const h = localHour(tz); return h >= 8 && h < 20; };
+export const quietOk = (tz: string) => { const h = localHour(tz); return h >= 8 && h < 20; };
 
 /* ---------- Tabelle ---------- */
 let ready = false;

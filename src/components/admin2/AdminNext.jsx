@@ -17,11 +17,11 @@ import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
 import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf } from "./model";
 import PaidCelebration from "./Celebrate";
-import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoSheet } from "./OrdersScreens";
+import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoScreen, isPayOpen } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
-import { DueSheet, MailHistSheet } from "./PayFlow";
+import { DueSheet, MailHistSheet, MailsScreen } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
@@ -126,6 +126,7 @@ export default function AdminNext() {
     if (!isDesk) requestAnimationFrame(() => scrollTop("push"));
     void fromOtherTab;
   };
+  const pushSub = (v, id) => { setStack((s) => [...s.filter((x) => !["reviews", "act", "mails", "info"].includes(x.v)), { v, id }]); requestAnimationFrame(() => scrollTop("push")); };
   const pushAct = (id) => { setStack((s) => [...s.filter((x) => x.v !== "reviews" && x.v !== "act"), { v: "act", id }]); requestAnimationFrame(() => scrollTop("push")); };
   const pushReviews = (id) => { setStack((s) => [...s.filter((x) => x.v !== "reviews"), { v: "reviews", id }]); requestAnimationFrame(() => scrollTop("push")); };
   const back = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
@@ -271,12 +272,14 @@ export default function AdminNext() {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, loadPtasks, doStatus, ptAll, markPaid, leaving,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving,
   };
 
   const top = stack[stack.length - 1];
   const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "act" ? <ActivityScreen ctx={{ ...ctx, back }} id={top.id} />
+    : top.v === "mails" ? <MailsScreen ctx={{ ...ctx, back }} id={top.id} payOpen={(x) => isPayOpen(x, now, ptasks)} />
+    : top.v === "info" ? <OrderInfoScreen ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "new" ? <NewOrder key={top.id} ctx={{ ...ctx, back: isDesk ? closeDrawer : back }} /> : null;
   const inFlow = tab === "orders" && top.v === "new";
   const nNew = orders.filter((o) => !o.test && bucketsOf(o, now, ptasks[o.id]).includes("new")).length; // wie die Kachel „Neu", ohne Tests
@@ -447,8 +450,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     body = <DueSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "mailhist" && o) {
     body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} payOpen={!!sheet.payOpen} />;
-  } else if (sheet && sheet.kind === "orderinfo" && o) {
-    body = <OrderInfoSheet key={o.id} o={o} ctx={ctx} close={close} />;
+
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {

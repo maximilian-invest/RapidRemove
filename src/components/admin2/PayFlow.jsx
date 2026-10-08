@@ -6,7 +6,7 @@
    Versand läuft über das bestehende Mahnungs-Sheet (Vorschau + „Jetzt senden"), Zahlungsziel über /admin/pay-due:
    läuft es ohne Zahlung ab, geht automatisch die Zahlungsziel-Mail raus. Weitere Mahnungen sendet ihr selbst. */
 import React from "react";
-import { Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard } from "lucide-react";
+import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard } from "lucide-react";
 import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
@@ -32,6 +32,15 @@ export function nextStep(o, pm, ptasks) {
     const lastMahn = pm.sent.filter((x) => x.kind === "mahn").map((x) => new Date(x.ts).getTime()).sort((a, b) => b - a)[0];
     const at = pm.level === 0 ? (r && r.unpaidSince ? r.unpaidSince + 24 * 3600e3 : null) : lastMahn ? lastMahn + 48 * 3600e3 : null;
     if (at) return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
+  }
+  // Profil: Stufe 1–3 automatisch alle 3 Tage ab dem Zahlungslink (ab 08.10.2026), Stufe 4 + Inkasso von euch.
+  if (!isRev && pm.level < 3) {
+    const pays = pm.sent.filter((x) => x.kind === "link" || x.kind === "mahn" || x.kind === "due").map((x) => new Date(x.ts).getTime());
+    const firstLink = Math.min(...pm.sent.filter((x) => x.kind === "link").map((x) => new Date(x.ts).getTime()), Infinity);
+    if (pays.length && Number.isFinite(firstLink) && firstLink >= Date.parse("2026-10-08T00:00:00Z")) {
+      const at = Math.max(...pays) + 3 * 864e5;
+      return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
+    }
   }
   return { label, sub: "", auto: false };
 }
@@ -167,7 +176,7 @@ export function MailRow({ o, ctx, payOpen }) {
   const next = !pm ? "…" : ns ? (o.pay === "inkasso" ? "bei Inkasso" : `Nächste: ${ns.label}${ns.auto ? ` · automatisch${ns.sub ? " " + (/^\D/.test(ns.sub) ? ns.sub : "am " + ns.sub) : ""}` : " · manuell"}`)
     : pm.mails.length ? `Zuletzt: ${pm.mails[0].label} · ${dShort(pm.mails[0].ts)}` : "Noch keine Mail";
   return (
-    <button type="button" className="ir" onClick={() => ctx.openSheet({ kind: "mailhist", forId: o.id, payOpen })}>
+    <button type="button" className="ir" onClick={() => ctx.pushSub("mails", o.id)}>
       <span className="ico"><Mail /></span>
       <span className="t"><span>Mail-Verlauf · {pm ? pm.mails.length : "…"} {pm && pm.mails.length === 1 ? "Mail" : "Mails"}</span><b>{next}</b></span>
       <ChevronRight />
@@ -250,6 +259,70 @@ export function MailHistSheet({ o, ctx, payOpen }) {
           </>
         )}
       </div>
+    </>
+  );
+}
+
+
+/** Eigener Bereich „Mail-Verlauf" (wie Dashboard-Aktivität): alle Mails an den Kunden, nach Tag gruppiert. */
+const dayLbl = (iso) => { const d = new Date(iso), t = new Date(); const n = Math.round((new Date(t.toDateString()) - new Date(d.toDateString())) / 864e5); return n === 0 ? "Heute" : n === 1 ? "Gestern" : n < 7 ? `Vor ${n} Tagen` : d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" }); };
+const hhmm = (iso) => new Date(iso).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" });
+export function MailsScreen({ ctx, id, payOpen }) {
+  const { orders, back, isDesk } = ctx;
+  const o = orders.find((x) => x.id === id);
+  const pm = usePayMails(o || { id });
+  const [busy, setBusy] = React.useState("");
+  if (!o) return null;
+  const isOpen = payOpen ? payOpen(o) : false;
+  const ns = isOpen ? nextStep(o, pm, ctx.ptasks) : null;
+  const show = async (x) => {
+    if (!x.hasHtml) return;
+    setBusy(String(x.id));
+    try {
+      const r = await fetchEmailPreview(x.id);
+      if (r && r.ok && r.html) ctx.openViewer({ keep: true, html: r.html, title: r.subject || x.label, sub: "Gesendet " + dTime(x.ts) + " · an " + o.email });
+      else ctx.toast((r && r.error) || "Keine Kopie gespeichert");
+    } catch (e) { ctx.toast("Vorschau: " + e.message); }
+    setBusy("");
+  };
+  const mails = pm ? pm.mails : [];
+  const days = [];
+  for (const m of mails) { const l = dayLbl(m.ts); if (!days.length || days[days.length - 1][0] !== l) days.push([l, []]); days[days.length - 1][1].push(m); }
+  const nAuto = mails.filter((m) => m.auto).length;
+  return (
+    <>
+      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
+      <div className="dh"><div><h1>Mail-Verlauf</h1><p>{o.id} · {o.name || o.email} · {o.email}</p></div></div>
+      <div className="rsum">
+        <div><b>{pm ? mails.length : "–"}</b><span>Mails</span></div>
+        <div><b>{pm ? nAuto : "–"}</b><span>Automatisch</span></div>
+        <div><b style={{ fontSize: 18, lineHeight: 1.6 }}>{mails[0] ? dShort(mails[0].ts) : "—"}</b><span>Zuletzt</span></div>
+      </div>
+      {ns ? (
+        <>
+          <div className="lbl" style={{ marginTop: 18 }}>Als Nächstes</div>
+          <div className="card atl">
+            <div className="ae"><span className="ad" style={{ color: "var(--primary)" }}><Clock /></span>
+              <div className="t"><b>{ns.label}</b><span>{o.pay === "inkasso" ? "" : ns.auto ? "automatisch" + (ns.sub ? " · " + ns.sub : "") : "von euch (Hauptbutton im Auftrag)"}</span></div></div>
+          </div>
+        </>
+      ) : null}
+      {!pm ? <p className="sh" style={{ marginTop: 18 }}><Loader className="spin" /> Lädt …</p> : !mails.length ? <p className="sh" style={{ marginTop: 18 }}>Noch keine Mail an den Kunden.</p> : null}
+      {days.map(([l, list]) => (
+        <React.Fragment key={l}>
+          <div className="lbl" style={{ marginTop: 18 }}>{l}</div>
+          <div className="card atl">
+            {list.map((m) => (
+              <button key={m.id} type="button" className="ae" disabled={!m.hasHtml} onClick={() => show(m)} style={{ width: "100%", textAlign: "left" }}>
+                <span className="ad" style={{ color: m.auto ? "var(--info)" : "var(--ink)" }}>{busy === String(m.id) ? <Loader className="spin" /> : <Mail />}</span>
+                <div className="t"><b>{m.label}</b><span>{m.auto ? "automatisch" : "von euch gesendet"}{m.hasHtml ? " · tippen zum Ansehen" : ""}</span></div>
+                <span className="ah">{hhmm(m.ts)}</span>
+              </button>
+            ))}
+          </div>
+        </React.Fragment>
+      ))}
+      {isDesk ? null : <div style={{ height: 8 }} />}
     </>
   );
 }

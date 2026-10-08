@@ -821,3 +821,4 @@
 .an .sh-info .ir+.ir{border-top-color:#e6e6e6}
 .an .sh-info .ir .ico{background:#fff}
 .an .aopt .ol small{display:block;font-size:12px}
+.an button.ae:disabled{opacity:1;color:inherit;cursor:default}

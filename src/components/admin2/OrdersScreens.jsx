@@ -212,7 +212,7 @@ export function OrderDetail({ ctx, id }) {
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
           <span className="t"><span>Betreuer</span><b>{s ? s.name : "Nicht zugewiesen"}</b></span><ChevronRight /></button>
-        <button type="button" className="ir" onClick={() => openSheet({ kind: "orderinfo", forId: o.id })}>
+        <button type="button" className="ir" onClick={() => ctx.pushSub("info", o.id)}>
           <span className="ico"><ClipboardList /></span>
           <span className="t"><span>Bestellinfo</span><b>{[o.email, isRev ? `${items.length} Bewertungen` : (o.profile || o.company), o.source && o.source.label].filter(Boolean).join(" · ") || "—"}</b></span>
           <ChevronRight /></button>
@@ -306,18 +306,22 @@ const payOpen = (x, now, ptasks) => {
   if (r) return r.unpaidN > 0; // Bewertungen: offen, sobald eine gelöschte Bewertung unbezahlt ist
   const bx = bucketsOf(x, now); return bx.includes("pay") || bx.includes("inkasso") || (x.status === "done" && x.pay !== "paid");
 };
+export const isPayOpen = payOpen;
 
 /** Sheet „Bestellinfo": Kontakt, Quelle, Leistung, Adresse, Screenshots – damit der Auftrag oben kompakt bleibt. */
-export function OrderInfoSheet({ o, ctx, close }) {
+export function OrderInfoScreen({ ctx, id }) {
+  const o = ctx.orders.find((x) => x.id === id);
+  if (!o) return null;
+  const close = () => {};
   const isRev = o.service === "reviews";
   const items = o.reviewItems || [];
   const created = o.createdAt ? new Date(o.createdAt).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
   const copy = (v, l) => { try { navigator.clipboard.writeText(v); ctx.toast(l + " kopiert"); } catch (e) { /* */ } };
   return (
     <>
-      <h3 style={{ paddingBottom: 2 }}>Bestellinfo</h3>
-      <p className="shp">{o.id}{created ? " · bestellt " + created : ""}</p>
-      <div className="info sh-info">
+      <div className="anav"><button type="button" className="circ" aria-label="Zurück" onClick={ctx.back}><ArrowLeft /></button></div>
+      <div className="dh"><div><h1>Bestellinfo</h1><p>{o.id}{created ? " · bestellt " + created : ""}</p></div></div>
+      <div className="info">
         <button type="button" className="ir" onClick={() => o.email && copy(o.email, "E-Mail")}><span className="ico"><Mail /></span><span className="t"><span>E-Mail · tippen zum Kopieren</span><b>{o.email || "—"}</b></span></button>
         {o.phone ? <button type="button" className="ir" onClick={() => copy(o.phone, "Telefon")}><span className="ico"><Phone /></span><span className="t"><span>Telefon · tippen zum Kopieren</span><b>{o.phone}</b></span></button> : null}
         <SourceTag o={o} />

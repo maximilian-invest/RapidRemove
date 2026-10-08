@@ -34,7 +34,7 @@ import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
 import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/ZahlungErhaltenReviews";
 import { notifyTeam } from "./notify";
-import { startFollowupWorker, registerFollowupRoutes } from "./followup";
+import { startFollowupWorker, registerFollowupRoutes, quietOk, tzOf } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import KundenSoftwareReviews, { kundenSoftwareSubject } from "./emails/KundenSoftwareReviews";
 import KundenSoftwarePayReviews, { kundenSoftwarePaySubject } from "./emails/KundenSoftwarePayReviews";
@@ -1801,7 +1801,7 @@ app.post("/admin/paylink", async (req, reply) => {
     await sendMail({ to, subject: t.subject(props as any), html, replyTo: process.env.MAIL_REPLY_TO });
     // Titel startet IMMER mit "Mahnung" (für die mahnung_count-Zählung via LIKE 'Mahnung%').
     const STAGE_LABEL: Record<number, string> = { 1: "Zahlungserinnerung", 2: "2. Erinnerung", 3: "Mahnung", 4: "Letzte Mahnung" };
-    const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})`) : "Zahlungslink gesendet";
+    const title = tplKey === "mahnung" ? (dueDate ? `Mahnung gesendet · Zahlungsziel ${dueDateText(dueDate, "de")} abgelaufen (automatisch)` : `Mahnung gesendet · Stufe ${stage} (${STAGE_LABEL[stage as number] || ""})${b.auto === true ? " · automatisch" : ""}`) : "Zahlungslink gesendet";
     // Immer protokollieren – mit E-Mail UND (falls vorhanden) Order-ID. So bleibt der
     // Eintrag auch dann auffindbar, wenn keine orderId mitkam (E-Mail-Verknüpfung) und
     // erscheint im Kunden-Verlauf (der per E-Mail lädt) zuverlässig mit „Vorschau".
@@ -1882,6 +1882,58 @@ async function payDueTick(): Promise<void> {
   }
 }
 
+/* Automatische Mahnungen bei Profil-Aufträgen (Maximilian 08.10.2026: „die Auto-Mahnungen will ich haben").
+ * Ablauf ab dem Zahlungslink: alle 3 Tage die nächste Stufe – 1 Zahlungserinnerung · 2 2. Erinnerung · 3 Mahnung.
+ * Stufe 4 (Letzte Mahnung) und „An Inkasso übergeben" bleiben beim Team (Admin: Hauptbutton).
+ * Zahlungsziel gesetzt → erst dessen Mail abwarten, danach geht es 3 Tage später weiter. Nur 8–20 Uhr Ortszeit.
+ * Nur Aufträge, deren Zahlungslink ab 08.10.2026 rausging (kein Nachversand an den Bestand). Abschalten: AUTO_DUNNING=off. */
+const DUN_GAP = 3 * 24 * 3600e3;
+const DUN_SINCE = () => new Date(process.env.AUTO_DUNNING_SINCE || "2026-10-08T00:00:00Z").getTime();
+async function payDunTick(): Promise<void> {
+  if (!pool || (process.env.AUTO_DUNNING || "on").toLowerCase() === "off") return;
+  const r = await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, form, raw FROM orders
+     WHERE COALESCE(service,'') NOT IN ('reviews','deindex') AND status='done' AND COALESCE(pay,'') NOT IN ('paid','refunded','inkasso')
+       AND COALESCE(email,'') <> '' AND created_at > now() - interval '120 days' LIMIT 300`);
+  for (const o of r.rows as Record<string, any>[]) {
+    try {
+      if (isTestEmail(o.email)) continue;
+      const raw = (o.raw || {}) as Record<string, any>;
+      const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [o.id]);
+      const ts = (x: { created_at: string }) => new Date(x.created_at).getTime();
+      const link = ev.rows.filter((x) => !/^Mahnung/i.test(x.title));
+      const mahn = ev.rows.filter((x) => /^Mahnung/i.test(x.title));
+      const start = Math.min(...link.map(ts), Infinity);
+      if (!Number.isFinite(start) || start < DUN_SINCE()) continue;           // kein Zahlungslink oder Altbestand
+      const pd = raw.payDue as { at?: string; sent?: string | null } | null;
+      if (pd && pd.at && !pd.sent) continue;                                  // Zahlungsziel läuft noch → dessen Mail zuerst
+      const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
+      const next = level + 1;
+      if (next > 3) continue;                                                 // Stufe 4 + Inkasso: Team
+      const last = Math.max(start, ...mahn.map(ts));
+      if (Date.now() < last + DUN_GAP) continue;
+      if (!quietOk(tzOf(o.country, raw.addr))) continue;
+      const lang = mailLang(o.lang);
+      const usd = o.country === "US";
+      const amount = Number(o.amount) || 0, prot = o.protection && o.protection !== "none" ? Number(o.prot_amount) || 0 : 0;
+      const express = raw.express === true || raw.express === "true";
+      const paypal = String((o.form || {}).paypal || "").trim();
+      const method = lang === "de" ? null : raw.payPref === "wise" ? "wise" : paypal || raw.payPref === "paypal" ? "paypal" : null;
+      const payload = method
+        ? { url: "/admin/send-template", body: { token: ADMIN_TOKEN, key: method === "wise" ? "wise-mahnung" : "paypal-mahnung", to: o.email, orderId: o.id, lang, name: o.name || "", service: o.service, stage: next, auto: true } }
+        : { url: "/admin/paylink", body: { token: ADMIN_TOKEN, email: o.email, name: o.name, orderId: o.id, currency: usd ? "usd" : "eur", service: o.service, protection: o.protection || "none",
+            serviceAmount: amount, protAmount: prot, protType: prot ? o.protection : "", total: amount + prot, express,
+            expressLabel: express ? `Express-Bearbeitung (≤6 h)${raw.expressAmount ? " · +" + raw.expressAmount + " " + (usd ? "$" : "€") : ""}` : undefined,
+            lang, template: "mahnung", stage: next, auto: true } };
+      const res = await app.inject({ method: "POST", url: payload.url, payload: payload.body, headers: { "content-type": "application/json" } });
+      const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as { ok?: boolean; error?: string };
+      if (res.statusCode >= 400 || !j.ok) throw new Error(j.error || "HTTP " + res.statusCode);
+      await pool.query(`UPDATE orders SET pay='mahnung' WHERE id=$1 AND COALESCE(pay,'') NOT IN ('paid','refunded','inkasso')`, [o.id]);
+      app.log.info({ orderId: o.id, stage: next }, "Auto-Mahnung gesendet");
+      if (next === 3) void notifyTeam(`Auto-Mahnung Stufe 3 · ${o.name || o.email}`, `Auftrag ${o.id} · als Nächstes: Letzte Mahnung (von euch)`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "pay" });
+    } catch (e) { app.log.error({ err: e, orderId: o.id }, "Auto-Mahnung fehlgeschlagen"); }
+  }
+}
+
 // Admin-Dashboard: Gamification-Leaderboard (Lösch-Counter, Ränge, Achievements).
 // Wird live aus den Bestellungen (status=done, echte Löschung) abgeleitet – Vergangenheit inklusive.
 app.post("/admin/gamification", async (req, reply) => {
@@ -1936,7 +1988,7 @@ app.post("/admin/send-template", async (req, reply) => {
     const evtTitle = isPayMahnung && b.dueDate
       ? `Mahnung gesendet · Zahlungsziel ${dueDateText(clip(b.dueDate, 40), "de")} abgelaufen (${key === "wise-mahnung" ? "Wise" : "PayPal"}, automatisch)`
       : isPayMahnung
-      ? `Mahnung gesendet · Stufe ${stage} (${key === "wise-mahnung" ? "Wise" : "PayPal"}, ${PP_STAGE_LABEL[stage as number] || ""})`
+      ? `Mahnung gesendet · Stufe ${stage} (${key === "wise-mahnung" ? "Wise" : "PayPal"}, ${PP_STAGE_LABEL[stage as number] || ""})${b.auto === true ? " · automatisch" : ""}`
       : t.label + " gesendet";
     // Auch ohne orderId protokollieren (z. B. Rückgewinnung an einen Prüfungs-Lead):
     // der Eintrag bleibt über die E-Mail auffindbar (Kunden-Verlauf lädt per E-Mail).
@@ -2166,6 +2218,8 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
+    // Profil-Aufträge: automatische Mahnungen (Stufe 1–3, alle 3 Tage) – Prüfung alle 15 Min.
+    setInterval(() => void payDunTick().catch((e) => app.log.error({ err: e }, "Auto-Mahnungen fehlgeschlagen")), 15 * 60_000);
     // Zahlungsziel (Profil-Aufträge) abgelaufen → Mail sofort (Prüfung alle 2 Min.).
     setInterval(() => void payDueTick().catch((e) => app.log.error({ err: e }, "Zahlungsziel-Prüfung fehlgeschlagen")), 2 * 60_000);
     // Dashboard-Zahlungen (Rechnung / Software-Vorauszahlung) direkt bei Stripe abgleichen – falls der Webhook nichts zuordnet.
