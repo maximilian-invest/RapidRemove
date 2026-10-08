@@ -8,6 +8,7 @@
    Wortwahl laut Handoff: externer Spezialist — nie „unsere Software". */
 import React from "react";
 import useAutoUpdate from "@/lib/useAutoUpdate";
+import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
@@ -477,6 +478,7 @@ export default function CustomerDashboard() {
   }, [showToast]);
 
   React.useEffect(() => { if (token) load(token); }, [token, load]);
+  useLive(() => load(token), !!token); // Live: Änderungen (Partner, Zahlung …) sofort, ohne App-Neustart
   // Rückkehr aus Stripe („Zahlungsart hinterlegen"): ?autopay=done&cs=… → speichern (+ offene Beträge abbuchen).
   const apDone = React.useRef(false);
   React.useEffect(() => {

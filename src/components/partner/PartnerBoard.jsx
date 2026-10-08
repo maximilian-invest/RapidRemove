@@ -5,6 +5,7 @@
    contact data is ever shown. Status changes are committed after the undo window, one after the
    other, so an accidental „Software only" never reaches the customer dashboard. */
 import React from "react";
+import useLive from "@/lib/useLive";
 import useAutoUpdate from "@/lib/useAutoUpdate";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
@@ -96,6 +97,7 @@ export default function PartnerBoard() {
     }
   }, [token]);
   React.useEffect(() => { load(true); const i = setInterval(() => load(false), 60000); return () => clearInterval(i); }, [load]);
+  useLive(() => load(false), !!token); // Live: neue Aufträge / Kunde hat bezahlt sofort sichtbar
 
   const showToast = React.useCallback((msg, undo, ms) => {
     setToast({ msg, undo: undo || null, k: Date.now() });

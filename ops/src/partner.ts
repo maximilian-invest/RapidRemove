@@ -10,7 +10,7 @@
  */
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
-import { pool, insertEvent } from "./db";
+import { pool, insertEvent, bumpChange } from "./db";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
@@ -505,6 +505,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     );
     const row = r.rows[0] as Row;
     const changed = !!status && status !== old.status;
+    bumpChange(); // Live-Aktualisierung (Admin/Kunde/Partner)
     // Kunde: Push SOFORT bei jeder Änderung (Mail kommt gebündelt später, nur bei Wichtigem).
     if (changed && row.order_id) void pushCustomerNow(row, old.status, status).catch(() => {});
     // Kunden-Dashboard: Status sofort sichtbar; Sammel-Mail an den Kunden nach der letzten Änderung.

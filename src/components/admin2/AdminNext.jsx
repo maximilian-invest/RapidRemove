@@ -3,6 +3,7 @@
    Läuft unter /admin (seit 06.10.2026); das alte Admin liegt unter /admin/alt: gleicher Login, gleiche echte Daten, gleiche Backend-Aktionen.
    Mobil: schwebende Tab-Pille, Push-Screens, Bottom-Sheets. Desktop (≥ 900 px): Sidebar, Drawer von rechts, Modals. */
 import React from "react";
+import useLive from "@/lib/useLive";
 import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
   RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake,
@@ -114,6 +115,8 @@ export default function AdminNext() {
     try { await Promise.all([reload(true), loadPtasks(), monitorList().then(setMon).catch(() => {})]); toast("Aktualisiert · " + new Date().toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })); }
     finally { setRefreshing(false); setSpin(false); }
   };
+  // Live: neue Bestellung, Partner-Status, Zahlung … → still neu laden (ohne App-Neustart).
+  useLive(() => Promise.all([reload(true), loadPtasks()]));
   const monLoad = React.useCallback(() => monitorList().then(setMon).catch((e) => toast("Monitor: " + e.message)), [toast]);
   const monScan = async (id) => { try { await monitorScan(id); toast(id ? "Prüfung gestartet" : "Scan gestartet"); setTimeout(monLoad, 1500); } catch (e) { toast("Scan: " + e.message); } };
   React.useEffect(() => { if (!mon || !(mon.run || (mon.checking || []).length)) return; const t = setTimeout(monLoad, 4000); return () => clearTimeout(t); }, [mon, monLoad]);

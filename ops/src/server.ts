@@ -7,7 +7,7 @@ import { render } from "@react-email/render";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import stripeWebhook from "./webhooks/stripe";
-import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats } from "./db";
+import { initDb, dbReady, insertOrder, upsertCheck, linkCheck, listOrders, listChecks, dbCounts, insertEvent, listEvents, listEventsByEmail, getEventEmail, updateOrderStatus, correctOrderPayment, markOrderPaidById, setOrderForm, setOrderAssignee, getOrderBasic, savePushSubscription, listPushSubscriptions, deletePushSubscription, wipeOrderData, wipeChecks, listRedirects, listEnabledRedirects, upsertRedirect, deleteRedirect, deletionsForGamification, reviewsForGamification, getTemplateOverrides, saveTemplateOverride, setCheckEmail, markCheckEnriched, markCheckRueckgewinnung, setOrderRawField, reportStats, changeVersion } from "./db";
 import { renderTemplate, editableFields } from "./renderTemplate";
 import { normalizeWebsite, scanWebsiteEmails, pickBestEmail, startLeadEnrichWorker } from "./leadEnrich";
 import { buildBoard, buildReviewsBoard, personStats, rankInfo, PEOPLE, DELETION_SERVICES, type Assignee } from "./gamification";
@@ -82,6 +82,9 @@ app.addHook("onRequest", async (req, reply) => {
   reply.header("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return reply.code(204).send();
 });
+
+// Live-Aktualisierung: Kunden-App, Admin und Partner-Board fragen alle paar Sekunden, ob sich etwas geändert hat (nur ein Zähler, keine Daten).
+app.get("/ping", async (_req, reply) => { reply.header("Cache-Control", "no-store"); return { v: changeVersion() }; });
 
 // einfache In-Memory-Drosselung pro IP (Missbrauchsschutz)
 function throttle(map: Map<string, number[]>, ip: string, limit: number): boolean {

@@ -2,6 +2,7 @@
 /* Neues Admin — Dashboard-Aktivität (Design-Handoff 9): Zeile im Auftrag + eigener Screen mit Timeline.
    Daten: ops /admin/activity (customer_events je Kunden-E-Mail). */
 import React from "react";
+import useLive from "@/lib/useLive";
 import {
   Activity as ActIcon, ChevronRight, LogIn, LogOut, Eye, MousePointerClick, CreditCard, XCircle, CheckCircle2, ClipboardList,
   MailOpen, UserX, Send, Loader, MonitorSmartphone, Ban, ArrowLeft, Search, MessageCircle, Headphones, BellRing, AlarmClock, Clock,
@@ -203,6 +204,7 @@ export function GlobalActivityScreen({ ctx }) {
   }, [params]);
   React.useEffect(() => { setD(null); load(false); }, [load]);
   React.useEffect(() => { const t = setInterval(() => { if (document.visibilityState === "visible") load(true); }, 30000); return () => clearInterval(t); }, [load]);
+  useLive(() => load(true));
   const more = async () => {
     if (!d || !d.nextCursor || busy) return;
     setBusy(true);

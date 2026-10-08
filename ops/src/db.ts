@@ -309,8 +309,15 @@ export type OrderInput = {
   consentMarketing?: boolean; eventSourceUrl?: string; clientIp?: string; clientUa?: string;
 };
 
+/* Live-Aktualisierung: jede Schreib-Änderung zählt hoch; Apps fragen /ping ab und laden bei Änderung neu. */
+const changeBoot = Date.now().toString(36);
+let changeSeq = 0;
+export function bumpChange(): void { changeSeq++; }
+export function changeVersion(): string { return `${changeBoot}.${changeSeq}`; }
+
 export async function insertOrder(o: OrderInput): Promise<void> {
   if (!pool) return;
+  bumpChange();
   await pool.query(
     `INSERT INTO orders
        (id,name,email,phone,company,country,lang,profile,category,rating,reviews,service,protection,amount,prot_amount,note,check_id,raw,
@@ -462,6 +469,7 @@ export async function linkCheck(checkId: string, orderId: string): Promise<void>
 /** Status (und optional Zahlungsstatus) einer Bestellung dauerhaft setzen.
  *  Gibt true zurück, wenn eine Bestellung mit dieser ID aktualisiert wurde. */
 export async function updateOrderStatus(id: string, status: string, pay?: string): Promise<boolean> {
+  bumpChange();
   if (!pool || !id || !status) return false;
   // done_at wird beim ERSTEN Wechsel auf "done" gesetzt (für zeitbasierte Gamification).
   const doneClause = `, done_at = CASE WHEN $2 = 'done' THEN COALESCE(done_at, now()) ELSE done_at END`;
@@ -479,6 +487,7 @@ export async function updateOrderStatus(id: string, status: string, pay?: string
  * Idempotent: bei erneutem Aufruf (Stripe-Retry) gibt es nichts Offenes mehr → null.
  */
 export async function markOrderPaidByEmail(email: string): Promise<string | null> {
+  bumpChange();
   if (!pool || !email) return null;
   const r = await pool.query(
     `UPDATE orders SET pay='paid'
@@ -499,6 +508,7 @@ export async function markOrderPaidByEmail(email: string): Promise<string | null
  *  (z. B. Status → „Profil gelöscht" oder echter späterer Zahlungseingang im Dashboard)
  *  bleibt möglich, da updateOrderStatus den Lock NICHT prüft. */
 export async function correctOrderPayment(id: string): Promise<boolean> {
+  bumpChange();
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET pay='pending', pay_locked=true WHERE id=$1`, [id]);
   return (r.rowCount ?? 0) > 0;
@@ -551,6 +561,7 @@ export async function releaseCapiSend(
 }
 
 export async function markOrderPaidById(id: string): Promise<boolean> {
+  bumpChange();
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [id]);
   return (r.rowCount ?? 0) > 0;
@@ -639,6 +650,7 @@ export async function recordReconciledPayment(invoiceId: string, orderId: string
 
 /** Bestellung einem Bearbeiter zuweisen ("max" | "matthias" | null = entfernen). */
 export async function setOrderAssignee(id: string, assignee: string | null): Promise<boolean> {
+  bumpChange();
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET assignee=$2 WHERE id=$1`, [id, assignee || null]);
   return (r.rowCount ?? 0) > 0;
@@ -646,6 +658,7 @@ export async function setOrderAssignee(id: string, assignee: string | null): Pro
 
 /** Fragebogen-Antworten (5 Ja/Nein + filledAt) zu einer Bestellung speichern. */
 export async function setOrderForm(id: string, form: unknown): Promise<boolean> {
+  bumpChange();
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET form=$2 WHERE id=$1`, [id, form ? JSON.stringify(form) : null]);
   return (r.rowCount ?? 0) > 0;
@@ -655,6 +668,7 @@ export async function setOrderForm(id: string, form: unknown): Promise<boolean> 
 export async function setOrderRawField(id: string, key: string, value: unknown): Promise<boolean> {
   if (!pool || !id) return false;
   const r = await pool.query(`UPDATE orders SET raw = COALESCE(raw, '{}'::jsonb) || jsonb_build_object($2::text, $3::jsonb) WHERE id=$1`, [id, key, JSON.stringify(value)]);
+  if (r.rowCount) bumpChange();
   return (r.rowCount ?? 0) > 0;
 }
 
@@ -754,6 +768,7 @@ export async function listChecks(limit = 200): Promise<Record<string, unknown>[]
  */
 export async function insertEvent(e: { orderId?: string; email?: string; type?: string; title?: string; detail?: string; auto?: boolean; html?: string; subject?: string }): Promise<void> {
   if (!pool) return;
+  bumpChange();
   try {
     let orderId = e.orderId || null;
     if (!orderId && e.email) orderId = await latestOrderId(e.email);
