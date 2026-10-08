@@ -8,7 +8,7 @@ export const CLOSED = ["deleted", "cancel"];
 export const ST = {
   new: { l: "Neu", img: "new" },
   work: { l: "In Bearbeitung", img: "work" },
-  nopm: { l: "Zahlungsdaten fehlen" },
+  nopm: { l: "Zahlungsart fehlt", img: "nopm" },
   pay: { l: "Zahlung offen", img: "pay" },
   inkasso: { l: "Inkasso", img: "inkasso" },
   deleted: { l: "Gelöscht" },
