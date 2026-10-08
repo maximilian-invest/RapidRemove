@@ -213,6 +213,21 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
   } finally { busy.delete(email); }
 }
 
+/** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */
+const NO_CHARGE: Record<string, string> = {
+  de: "ES WIRD JETZT NICHTS ABGEBUCHT. Sie hinterlegen nur Ihre Zahlungsart. Abgebucht wird erst, wenn eine Bewertung tatsächlich gelöscht ist – und nur dafür.",
+  en: "NOTHING IS CHARGED NOW. You're only saving your payment method. We charge only when a review has actually been removed – and only for that review.",
+  es: "AHORA NO SE COBRA NADA. Solo guardas tu método de pago. Cobramos únicamente cuando una reseña se ha eliminado de verdad, y solo por esa reseña.",
+  fr: "RIEN N'EST DÉBITÉ MAINTENANT. Tu enregistres seulement ton moyen de paiement. Nous débitons uniquement quand un avis a réellement été supprimé – et seulement pour cet avis.",
+  it: "ORA NON VIENE ADDEBITATO NULLA. Stai solo salvando il metodo di pagamento. Addebitiamo solo quando una recensione è stata davvero rimossa, e solo per quella.",
+  nl: "ER WORDT NU NIETS AFGESCHREVEN. U slaat alleen uw betaalmethode op. We schrijven pas af als een review echt is verwijderd – en alleen voor die review.",
+  pt: "AGORA NÃO É COBRADO NADA. Só guardas o teu método de pagamento. Cobramos apenas quando uma avaliação for realmente removida – e só por essa avaliação.",
+  ja: "現在、料金は一切発生しません。お支払い方法を登録するだけです。口コミが実際に削除された場合にのみ、その分だけ請求します。",
+  sv: "INGET DRAS NU. Du sparar bara din betalningsmetod. Vi drar pengar först när ett omdöme verkligen har tagits bort – och bara för det omdömet.",
+  da: "DER TRÆKKES INTET NU. Du gemmer kun din betalingsmetode. Vi trækker først, når en anmeldelse faktisk er fjernet – og kun for den anmeldelse.",
+  no: "INGENTING BELASTES NÅ. Du lagrer bare betalingsmetoden din. Vi belaster først når en anmeldelse faktisk er fjernet – og bare for den anmeldelsen.",
+};
+
 /* ---- Routen ---- */
 let lastErr: { at: string; where: string; msg: string } | null = null; // letzte Stripe-Fehlermeldung (Diagnose, ohne Schlüssel)
 export function registerAutopayRoutes(app: FastifyInstance): void {
@@ -234,7 +249,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
     if (si.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
     const k = keyFor(si.email);
     if (!k) return reply.code(400).send({ ok: false, error: "unavailable" });
-    const { orders, name } = await loadCustomerOrders(si.email);
+    const { orders, name, lang } = await loadCustomerOrders(si.email);
     const cur = (orders[0]?.cur as string) || "eur";
     let row = await rowOf(si.email);
     try {
@@ -249,6 +264,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
         mode: "setup", customer: row!.customer, currency: cur, locale: "auto",
         success_url: `${base}?autopay=done&cs={CHECKOUT_SESSION_ID}`, cancel_url: `${base}?autopay=cancel`,
         setup_intent_data: { metadata: { rr_email: si.email } }, metadata: { rr_email: si.email },
+        custom_text: { submit: { message: NO_CHARGE[String(lang || "en").slice(0, 2)] || NO_CHARGE.en } },
       };
       let ses: any;
       // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal, Link.
