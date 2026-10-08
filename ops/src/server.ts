@@ -1883,11 +1883,11 @@ async function payDueTick(): Promise<void> {
 }
 
 /* Automatische Mahnungen bei Profil-Aufträgen (Maximilian 08.10.2026: „die Auto-Mahnungen will ich haben").
- * Ablauf ab dem Zahlungslink: alle 3 Tage die nächste Stufe – 1 Zahlungserinnerung · 2 2. Erinnerung · 3 Mahnung.
+ * Ablauf ab dem Zahlungslink: alle 48 h die nächste Stufe – 1 Zahlungserinnerung · 2 2. Erinnerung · 3 Mahnung.
  * Stufe 4 (Letzte Mahnung) und „An Inkasso übergeben" bleiben beim Team (Admin: Hauptbutton).
- * Zahlungsziel gesetzt → erst dessen Mail abwarten, danach geht es 3 Tage später weiter. Nur 8–20 Uhr Ortszeit.
+ * Zahlungsziel gesetzt → erst dessen Mail abwarten, danach geht es 48 h später weiter. Nur 8–20 Uhr Ortszeit.
  * Nur Aufträge, deren Zahlungslink ab 08.10.2026 rausging (kein Nachversand an den Bestand). Abschalten: AUTO_DUNNING=off. */
-const DUN_GAP = 3 * 24 * 3600e3;
+const DUN_GAP = 48 * 3600e3; // Zahlungsziel bei Profil-Löschungen: 48 h (Maximilian 08.10.2026)
 const DUN_SINCE = () => new Date(process.env.AUTO_DUNNING_SINCE || "2026-10-08T00:00:00Z").getTime();
 async function payDunTick(): Promise<void> {
   if (!pool || (process.env.AUTO_DUNNING || "on").toLowerCase() === "off") return;
@@ -2218,7 +2218,7 @@ async function start() {
       } catch (e) { app.log.error({ err: e }, "Dashboard-Sammelmail fehlgeschlagen"); }
     }, 60_000);
     startPaymentReconciler(app);
-    // Profil-Aufträge: automatische Mahnungen (Stufe 1–3, alle 3 Tage) – Prüfung alle 15 Min.
+    // Profil-Aufträge: automatische Mahnungen (Stufe 1–3, alle 48 h) – Prüfung alle 15 Min.
     setInterval(() => void payDunTick().catch((e) => app.log.error({ err: e }, "Auto-Mahnungen fehlgeschlagen")), 15 * 60_000);
     // Zahlungsziel (Profil-Aufträge) abgelaufen → Mail sofort (Prüfung alle 2 Min.).
     setInterval(() => void payDueTick().catch((e) => app.log.error({ err: e }, "Zahlungsziel-Prüfung fehlgeschlagen")), 2 * 60_000);

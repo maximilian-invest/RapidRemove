@@ -33,12 +33,12 @@ export function nextStep(o, pm, ptasks) {
     const at = pm.level === 0 ? (r && r.unpaidSince ? r.unpaidSince + 24 * 3600e3 : null) : lastMahn ? lastMahn + 48 * 3600e3 : null;
     if (at) return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
   }
-  // Profil: Stufe 1–3 automatisch alle 3 Tage ab dem Zahlungslink (ab 08.10.2026), Stufe 4 + Inkasso von euch.
+  // Profil: Stufe 1–3 automatisch alle 48 h ab dem Zahlungslink (ab 08.10.2026), Stufe 4 + Inkasso von euch.
   if (!isRev && pm.level < 3) {
     const pays = pm.sent.filter((x) => x.kind === "link" || x.kind === "mahn" || x.kind === "due").map((x) => new Date(x.ts).getTime());
     const firstLink = Math.min(...pm.sent.filter((x) => x.kind === "link").map((x) => new Date(x.ts).getTime()), Infinity);
     if (pays.length && Number.isFinite(firstLink) && firstLink >= Date.parse("2026-10-08T00:00:00Z")) {
-      const at = Math.max(...pays) + 3 * 864e5;
+      const at = Math.max(...pays) + 2 * 864e5; // 48 h
       return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
     }
   }
