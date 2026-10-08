@@ -191,13 +191,6 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
-      {r && r.unpaidN && !r.unbilledN && r.askedAt && o.status !== "storniert" ? (
-        <div className="disc">
-          <span className="di"><Send /></span>
-          <span className="t"><b>Zahlungsaufforderung automatisch gesendet · {new Date(r.askedAt).toLocaleString("de-AT", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</b>
-            <span>Kunde zahlt im Dashboard (Mail + Push bei der Löschung). Keine Rechnung nötig.</span></span>
-        </div>
-      ) : null}
       {primary ? <div className="ctas" style={{ margin: "4px 0 14px" }}>{primary}</div> : null}
       {payOpen(o, now, ptasks) && sibs.length ? (
         <div className="disc sib">
