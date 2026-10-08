@@ -215,17 +215,17 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
 
 /** Hinweis auf der Stripe-Seite (über dem Bestätigen-Knopf): beim Hinterlegen wird nichts abgebucht. */
 const NO_CHARGE: Record<string, string> = {
-  de: "ES WIRD JETZT NICHTS ABGEBUCHT. Sie hinterlegen nur Ihre Zahlungsart. Abgebucht wird erst, wenn eine Bewertung tatsächlich gelöscht ist – und nur dafür.",
-  en: "NOTHING IS CHARGED NOW. You're only saving your payment method. We charge only when a review has actually been removed – and only for that review.",
-  es: "AHORA NO SE COBRA NADA. Solo guardas tu método de pago. Cobramos únicamente cuando una reseña se ha eliminado de verdad, y solo por esa reseña.",
-  fr: "RIEN N'EST DÉBITÉ MAINTENANT. Tu enregistres seulement ton moyen de paiement. Nous débitons uniquement quand un avis a réellement été supprimé – et seulement pour cet avis.",
-  it: "ORA NON VIENE ADDEBITATO NULLA. Stai solo salvando il metodo di pagamento. Addebitiamo solo quando una recensione è stata davvero rimossa, e solo per quella.",
-  nl: "ER WORDT NU NIETS AFGESCHREVEN. U slaat alleen uw betaalmethode op. We schrijven pas af als een review echt is verwijderd – en alleen voor die review.",
-  pt: "AGORA NÃO É COBRADO NADA. Só guardas o teu método de pagamento. Cobramos apenas quando uma avaliação for realmente removida – e só por essa avaliação.",
-  ja: "現在、料金は一切発生しません。お支払い方法を登録するだけです。口コミが実際に削除された場合にのみ、その分だけ請求します。",
-  sv: "INGET DRAS NU. Du sparar bara din betalningsmetod. Vi drar pengar först när ett omdöme verkligen har tagits bort – och bara för det omdömet.",
-  da: "DER TRÆKKES INTET NU. Du gemmer kun din betalingsmetode. Vi trækker først, når en anmeldelse faktisk er fjernet – og kun for den anmeldelse.",
-  no: "INGENTING BELASTES NÅ. Du lagrer bare betalingsmetoden din. Vi belaster først når en anmeldelse faktisk er fjernet – og bare for den anmeldelsen.",
+  de: "Jetzt: {z} – abgebucht wird erst bei Löschung. Sie hinterlegen nur Ihre Zahlungsart; bezahlt wird nur für Bewertungen, die tatsächlich gelöscht sind.",
+  en: "Now: {z} – charged only on removal. You're only saving your payment method; you pay only for reviews that are actually removed.",
+  es: "Ahora: {z} – solo se cobra al eliminar. Solo guardas tu método de pago; pagas únicamente por las reseñas que se eliminan de verdad.",
+  fr: "Maintenant : {z} – débité seulement à la suppression. Tu enregistres seulement ton moyen de paiement ; tu ne paies que les avis réellement supprimés.",
+  it: "Ora: {z} – addebito solo alla rimozione. Salvi solo il metodo di pagamento; paghi solo per le recensioni davvero rimosse.",
+  nl: "Nu: {z} – pas afgeschreven bij verwijdering. U slaat alleen uw betaalmethode op; u betaalt alleen voor reviews die echt zijn verwijderd.",
+  pt: "Agora: {z} – cobrado só na remoção. Só guardas o método de pagamento; pagas apenas pelas avaliações realmente removidas.",
+  ja: "現在のお支払い：{z}（削除時のみ請求）。お支払い方法を登録するだけで、実際に削除された口コミの分だけお支払いいただきます。",
+  sv: "Nu: {z} – dras först vid borttagning. Du sparar bara din betalningsmetod; du betalar bara för omdömen som faktiskt tas bort.",
+  da: "Nu: {z} – trækkes først ved fjernelse. Du gemmer kun din betalingsmetode; du betaler kun for anmeldelser, der faktisk fjernes.",
+  no: "Nå: {z} – belastes først ved fjerning. Du lagrer bare betalingsmetoden; du betaler bare for anmeldelser som faktisk fjernes.",
 };
 
 /* ---- Routen ---- */
@@ -264,13 +264,15 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
         mode: "setup", customer: row!.customer, currency: cur, locale: "auto",
         success_url: `${base}?autopay=done&cs={CHECKOUT_SESSION_ID}`, cancel_url: `${base}?autopay=cancel`,
         setup_intent_data: { metadata: { rr_email: si.email } }, metadata: { rr_email: si.email },
-        custom_text: { submit: { message: NO_CHARGE[String(lang || "en").slice(0, 2)] || NO_CHARGE.en } },
+        custom_text: { submit: { message: (NO_CHARGE[String(lang || "en").slice(0, 2)] || NO_CHARGE.en).replace("{z}", cur === "usd" ? "$0" : "0 €") } },
       };
       let ses: any;
       // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal, Link.
       // KEINE Lastschrift/Bankkonto (US-Bankkonto, SEPA): Abbuchung dauert Tage und kann noch platzen.
       for (const types of [["card", "paypal", "link"], ["card", "link"], ["card"]]) {
         try { ses = await sx(k.key, "POST", "checkout/sessions", { ...params, payment_method_types: types }); break; }
+        catch (e) { if (!/custom_text/i.test(String((e as Error)?.message))) { if (types.length === 1) throw e; continue; } app.log.warn({ err: e }, "Setup-Checkout: Hinweistext nicht erlaubt – ohne"); }
+        try { const { custom_text: _ct, ...p2 } = params; ses = await sx(k.key, "POST", "checkout/sessions", { ...p2, payment_method_types: types }); break; }
         catch (e) { app.log.warn({ err: e, types }, "Setup-Checkout: Zahlungsarten nicht verfügbar – nächster Versuch"); if (types.length === 1) throw e; }
       }
       void logCustEvent(si.email, "autopay_open", "Zahlungsart hinterlegen geöffnet", { mode: k.mode });
