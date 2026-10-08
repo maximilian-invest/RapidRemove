@@ -2309,6 +2309,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       const r = await Promise.race([sent, new Promise((ok) => setTimeout(() => ok(null), 6000))]);
       setProcessing(false);
       if (r && r.error === "already_ordered") { setDupOrder(r); return; }
+      // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
+      if (r && r.autologin) { try { window.location.href = "/my-reviews#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       setStep(6);
     }, 2400);
   };

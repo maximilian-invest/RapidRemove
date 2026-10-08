@@ -407,6 +407,13 @@ export default function CustomerDashboard() {
       try { const u = new URL(window.location.href); u.searchParams.delete("reset"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
       setResetK(rk);
     }
+    // Direkt nach der Bestellung: einmaliger Code im #-Teil (#a=…) → eigene Sitzung (24 Std.), Code sofort aus der Adresse entfernen.
+    let ak = ""; try { const h = new URLSearchParams(String(window.location.hash || "").replace(/^#/, "")); ak = h.get("a") || ""; } catch (e) { /* */ }
+    if (ak) {
+      try { window.history.replaceState(null, "", window.location.pathname + window.location.search); } catch (e) { /* */ }
+      call("autologin", { k: ak }).then((r) => { store.set(r.token); setToken(r.token); }).catch(() => setToken(store.get()));
+      return;
+    }
     // Admin-Ansicht: einmaliger Code (?imp=…) → eigene Sitzung NUR im Speicher (überschreibt keine echte Kunden-Sitzung)
     let ik = ""; try { ik = new URLSearchParams(window.location.search).get("imp") || ""; } catch (e) { /* */ }
     if (ik) {

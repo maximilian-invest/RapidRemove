@@ -44,6 +44,23 @@ if (isPages) {
         },
       ],
     },
+    // Sicherheits-Header für alle Seiten (Kunden-Dashboard, Admin, Partner): kein Einbetten in fremde Seiten
+    // (Clickjacking), kein MIME-Sniffing, nur HTTPS, keine vollen URLs an Dritte.
+    {
+      source: "/:path*",
+      headers: [
+        { key: "X-Frame-Options", value: "SAMEORIGIN" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+        { key: "Permissions-Policy", value: "camera=(self), microphone=(), geolocation=(), payment=(self)" },
+      ],
+    },
+    // Dashboards nie in geteilten Caches (CDN) ablegen.
+    {
+      source: "/(my-reviews|admin|partner)(.*)",
+      headers: [{ key: "Cache-Control", value: "private, no-store" }],
+    },
   ];
 }
 

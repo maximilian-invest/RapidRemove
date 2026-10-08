@@ -152,6 +152,17 @@ export async function customerSessionInfo(token: unknown): Promise<{ email: stri
   const r = await pool.query(`SELECT email, impersonation FROM cust_sessions WHERE token_hash=$1 AND expires_at > now()`, [sha(t)]);
   return r.rows[0] ? { email: r.rows[0].email, imp: !!r.rows[0].impersonation } : null;
 }
+/* ---- Direkt nach der Bestellung ins Dashboard ----
+ * Einmaliger Code (15 Min., nur EINMAL einlösbar, nur Hash gespeichert) → Sitzung mit 24 Std. Laufzeit.
+ * Nur für NEU angelegte Konten (siehe /order). Danach Login per Passwort oder Mail-Link. */
+export async function createAutologin(email: string): Promise<string | null> {
+  if (!pool) return null;
+  await pool.query(`CREATE TABLE IF NOT EXISTS cust_autologin (code_hash text PRIMARY KEY, email text NOT NULL, expires_at timestamptz NOT NULL, used_at timestamptz)`);
+  const code = crypto.randomBytes(24).toString("base64url");
+  await pool.query(`INSERT INTO cust_autologin (code_hash, email, expires_at) VALUES ($1,$2, now() + interval '15 minutes')`, [sha(code), norm(email)]);
+  return code;
+}
+
 export async function createCustomerSession(email: string): Promise<string | null> {
   if (!pool) return null;
   const ex = await pool.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [norm(email)]);
@@ -578,6 +589,22 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (!token) return reply.code(401).send({ ok: false, error: "invalid" });
     void pool.query(`UPDATE cust_accounts SET last_login=now() WHERE email=$1`, [r.rows[0].email]).catch(() => {});
     void logCustEvent(r.rows[0].email, "login", "Über den Link aus der E-Mail", { device: deviceOf(String(req.headers["user-agent"] || "")) });
+    return { ok: true, token };
+  });
+
+  // Direkt nach der Bestellung: Code einlösen (einmalig) → Sitzung 24 Std.
+  app.post("/cust/autologin", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    if (limited("auto:" + req.ip, 20)) return reply.code(429).send({ ok: false, error: "too_many" });
+    const k = String(b.k || "");
+    if (k.length < 20) return reply.code(401).send({ ok: false, error: "invalid" });
+    await pool.query(`CREATE TABLE IF NOT EXISTS cust_autologin (code_hash text PRIMARY KEY, email text NOT NULL, expires_at timestamptz NOT NULL, used_at timestamptz)`);
+    const r = await pool.query(`UPDATE cust_autologin SET used_at=now() WHERE code_hash=$1 AND used_at IS NULL AND expires_at > now() RETURNING email`, [sha(k)]);
+    if (!r.rows[0]) return reply.code(401).send({ ok: false, error: "invalid" });
+    const token = crypto.randomBytes(24).toString("base64url");
+    await pool.query(`INSERT INTO cust_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '24 hours')`, [sha(token), r.rows[0].email]);
+    void logCustEvent(r.rows[0].email, "login", "Direkt nach der Bestellung", { device: deviceOf(String(req.headers["user-agent"] || "")) });
     return { ok: true, token };
   });
 

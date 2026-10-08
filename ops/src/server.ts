@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 /* Vorschau-/Test-Server: zeigt alle Templates im Browser und kann
    Test-Mails per Link versenden. Auf Railway: Start-Command "npm start". */
 import "dotenv/config";
@@ -29,7 +30,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { createAutologin, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -81,6 +82,22 @@ app.addHook("onRequest", async (req, reply) => {
   reply.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   reply.header("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return reply.code(204).send();
+});
+
+// Schutz gegen Durchprobieren von Admin-Token / Logins: zu viele abgelehnte Anfragen (401/403) je IP → 15 Min. gesperrt.
+const authFails = new Map<string, number[]>();
+const AUTH_LIMIT = 25;
+const isAuthPath = (u: string) => /^\/(admin|partner|cust)\//.test(u);
+app.addHook("onRequest", async (req, reply) => {
+  if (!isAuthPath(req.url)) return;
+  const a = (authFails.get(req.ip) || []).filter((t) => Date.now() - t < 15 * 60_000);
+  authFails.set(req.ip, a);
+  if (a.length >= AUTH_LIMIT) return reply.code(429).send({ ok: false, error: "too_many" });
+});
+app.addHook("onResponse", async (req, reply) => {
+  if (!isAuthPath(req.url) || (reply.statusCode !== 401 && reply.statusCode !== 403)) return;
+  const a = authFails.get(req.ip) || []; a.push(Date.now()); authFails.set(req.ip, a.slice(-100));
+  if (a.length === AUTH_LIMIT) app.log.warn({ ip: req.ip, url: req.url.split("?")[0] }, "Zu viele abgelehnte Zugriffe – IP 15 Min. gesperrt");
 });
 
 // Live-Aktualisierung: Kunden-App, Admin und Partner-Board fragen alle paar Sekunden, ob sich etwas geändert hat (nur ein Zähler, keine Daten).
@@ -459,11 +476,15 @@ app.post("/order", async (req, reply) => {
   const revTotal = revQ.totalStr;
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
   let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
+  let autologin: string | null = null;
   if (isReviews && dbReady() && email) {
     try {
       const acc = await ensureCustomerAccount(email);
       const durl = await dashLink(email, lang);
       if (acc) dash = acc.created ? { url: durl, email: email.trim().toLowerCase(), password: acc.password } : { url: durl, existing: true };
+      // Direkt ins Dashboard (nur NEUES Konto): einmaliger Code, 15 Min., Sitzung nur 24 Std. – wer eine fremde E-Mail angibt,
+      // kommt so höchstens in ein Konto mit seiner eigenen Bestellung und verliert den Zugang nach 24 Std. Bestehende Konten → Login/Mail-Link.
+      if (acc?.created) autologin = await createAutologin(email).catch(() => null);
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
@@ -669,7 +690,7 @@ app.post("/order", async (req, reply) => {
     result.saveError = String((e as Error)?.message || e).slice(0, 200);
   }
 
-  return result;
+  return autologin ? { ...result, autologin } : result;
 });
 
 // Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen (Telefon/WhatsApp-Kunden).
@@ -936,9 +957,12 @@ app.get("/reviews", async (req, reply) => {
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)
-app.post("/admin/verify", async (req) => {
+app.post("/admin/verify", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
-  return { ok: !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN };
+  const t = Buffer.from(String(b.token || "")), r = Buffer.from(ADMIN_TOKEN || "");
+  const ok = !!ADMIN_TOKEN && t.length === r.length && crypto.timingSafeEqual(t, r);
+  if (!ok) reply.code(401); // zählt für die Sperre nach zu vielen Fehlversuchen
+  return { ok };
 });
 
 // FirstPromoter-Diagnose (im Browser aufrufbar): legt einen Test-Referral + Test-Sale an
