@@ -4,7 +4,7 @@ import * as React from "react";
 import { EmailShell, P, Bullets, CtaButton, NoteBox, brand, type MailLang } from "./components";
 import { fmtReviewMoney } from "../reviewsPricing";
 import ProgressBlock from "./ProgressBlock";
-import { progT, fillP, type Progress } from "./progressText";
+import { progT, fillP, isDone, type Progress } from "./progressText";
 
 type St = "checking" | "in_progress" | "removed" | "not_removable" | "software_offer" | "software_in_progress" | "cancelled";
 /** Dashboard-Status (customers.ts) → Mail-Bezeichnung. */
@@ -36,6 +36,7 @@ export interface KundenUpdateProps {
 export function kundenUpdateSubject(p: KundenUpdateProps): string {
   const t = T[p.lang && T[p.lang] ? p.lang : "en"] || T.en;
   const pr = p.progress;
+  if (pr && isDone(pr) && !(pr.hold && pr.cardFail) && p.changed.some((c) => c.status === "removed")) return fillP(progT(p.lang).doneSubj, { r: pr.removed, n: pr.total }); // fertig → „Auftrag abgeschlossen"
   if (pr && pr.charged && pr.charged.amount > 0 && !(pr.due > 0) && p.changed.some((c) => c.status === "removed")) return fillP(progT(p.lang).autoSubj, { r: pr.removed, n: pr.total });
   if (pr && pr.due > 0 && p.changed.some((c) => c.status === "removed")) {
     const pt = progT(p.lang); const a = fmtReviewMoney(pr.due, pr.cur);
@@ -59,7 +60,7 @@ export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, o
   const changedAny = changed.some((c) => c.from);
   const label = (s: DashSt) => { const m = MAP[s]; return m === "declined" ? t.declined : m ? t.st[m] : s; };
   return (
-    <EmailShell preview={changedAny ? t.subjChanged : t.subject} title={changedAny ? t.titleChanged : t.title} lang={l as MailLang}>
+    <EmailShell preview={kundenUpdateSubject({ lang, name, dashUrl, orderId, changed, cur, swPrice, swDeposit, progress })} title={progress && isDone(progress) && changed.some((c) => c.status === "removed") ? progT(l).doneTitle : changedAny ? t.titleChanged : t.title} lang={l as MailLang}>
       <P><strong>{t.hi((name || "").trim())}</strong></P>
       <P>{t.p}{orderId ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
       {changed.length ? (

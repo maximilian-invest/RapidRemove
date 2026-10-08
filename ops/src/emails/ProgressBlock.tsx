@@ -3,7 +3,7 @@ import * as React from "react";
 import { Section, Text } from "@react-email/components";
 import { CtaButton, DangerBox, brand } from "./components";
 import { fmtReviewMoney } from "../reviewsPricing";
-import { progT, fillP, type Progress } from "./progressText";
+import { progT, fillP, isDone, type Progress } from "./progressText";
 
 export default function ProgressBlock({ p, lang, payUrl, showGood = true }: { p: Progress; lang?: string; payUrl: string; showGood?: boolean }) {
   const t = progT(lang);
@@ -13,7 +13,7 @@ export default function ProgressBlock({ p, lang, payUrl, showGood = true }: { p:
   const legend = [p.removed ? `${p.removed} ${t.removed}` : "", p.inProgress ? `${p.inProgress} ${t.inProgress}` : "", p.waiting ? `${p.waiting} ${t.waiting}` : ""].filter(Boolean).join(" · ");
   return (
     <>
-      {showGood && p.removed ? <Text style={{ fontSize: 17, fontWeight: 700, color: brand.ink, margin: "6px 0 10px" }}>{fillP(t.good, { r: p.removed, n: p.total })}</Text> : null}
+      {showGood && p.removed ? <Text style={{ fontSize: 17, fontWeight: 700, color: isDone(p) ? "#15803d" : brand.ink, margin: "6px 0 10px" }}>{isDone(p) ? fillP(p.removed >= p.total ? t.doneAll : t.donePart, { r: p.removed, n: p.total }) : fillP(t.good, { r: p.removed, n: p.total })}</Text> : null}
       <table role="presentation" cellPadding={0} cellSpacing={0} style={{ width: "100%", borderCollapse: "separate", borderRadius: 6, overflow: "hidden", background: "#ececec" }}>
         <tbody><tr>{seg(p.removed, "#16a34a")}{seg(p.inProgress, brand.accent)}{seg(p.waiting, "#3b82f6")}{seg(rest, "#ececec")}</tr></tbody>
       </table>

@@ -16,6 +16,7 @@ import { render } from "@react-email/render";
 import { sendMail } from "./mailer";
 import { fmtReviewMoney } from "./reviewsPricing";
 import RechnungAuto, { rechnungAutoSubject } from "./emails/RechnungAuto";
+import { checkAddress, checkVat } from "./billingCheck";
 import { pool, insertEvent, setOrderRawField } from "./db";
 import { startOrderIfReady } from "./orderStart";
 import { isTestEmail } from "./testAccounts";
@@ -95,6 +96,7 @@ async function init(): Promise<void> {
   await pool.query(`CREATE TABLE IF NOT EXISTS cust_billing (
     email text PRIMARY KEY, company text, name text, line1 text, postal text, city text, country text, vat text,
     updated_at timestamptz NOT NULL DEFAULT now())`);
+  await pool.query(`ALTER TABLE cust_billing ADD COLUMN IF NOT EXISTS vat_status text, ADD COLUMN IF NOT EXISTS vat_name text, ADD COLUMN IF NOT EXISTS addr_checked boolean`);
   ready = true;
 }
 type Row = { email: string; mode: Mode; customer: string; pm: string | null; label: string | null; pm_type: string | null; last_error: string | null; updated_at: string };
@@ -124,14 +126,14 @@ async function info(email: string): Promise<{ available: boolean; test?: boolean
 }
 
 /* ---- Rechnungsdetails (erscheinen auf allen künftigen Stripe-Rechnungen) ---- */
-type Billing = { company: string; name: string; line1: string; postal: string; city: string; country: string; vat: string; saved: boolean };
+type Billing = { company: string; name: string; line1: string; postal: string; city: string; country: string; vat: string; saved: boolean; vatStatus?: string; vatName?: string; addrChecked?: boolean };
 const emptyBilling: Billing = { company: "", name: "", line1: "", postal: "", city: "", country: "", vat: "", saved: false };
 async function billingOf(email: string): Promise<Billing> {
   if (!pool) return emptyBilling;
   await init();
   const r = await pool.query(`SELECT * FROM cust_billing WHERE email=$1`, [email.toLowerCase()]);
   const b = r.rows[0];
-  if (b) return { company: b.company || "", name: b.name || "", line1: b.line1 || "", postal: b.postal || "", city: b.city || "", country: b.country || "", vat: b.vat || "", saved: true };
+  if (b) return { company: b.company || "", name: b.name || "", line1: b.line1 || "", postal: b.postal || "", city: b.city || "", country: b.country || "", vat: b.vat || "", saved: true, vatStatus: b.vat_status || "", vatName: b.vat_name || "", addrChecked: !!b.addr_checked };
   // Noch nichts gespeichert → aus der letzten Bestellung vorbefüllen.
   const o = (await pool.query(`SELECT name, company, country FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email.toLowerCase()])).rows[0];
   return { ...emptyBilling, name: o?.name || "", company: o?.company || "", country: /^[A-Z]{2}$/.test(String(o?.country || "")) ? o.country : "" };
@@ -386,13 +388,19 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
     const country = c(b.country, 2).toUpperCase();
     const v = { company: c(b.company, 120), name: c(b.name, 120), line1: c(b.line1, 160), postal: c(b.postal, 20), city: c(b.city, 80), country: /^[A-Z]{2}$/.test(country) ? country : "", vat: c(b.vat, 30).replace(/\s+/g, "") };
     if (!v.company && !v.name) return reply.code(400).send({ ok: false, error: "name" });
-    await pool.query(`INSERT INTO cust_billing (email, company, name, line1, postal, city, country, vat) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
-      ON CONFLICT (email) DO UPDATE SET company=$2, name=$3, line1=$4, postal=$5, city=$6, country=$7, vat=$8, updated_at=now()`,
-      [si.email, v.company, v.name, v.line1, v.postal, v.city, v.country, v.vat]);
+    // Adresse muss existieren und zum Land passen; UID wird beim Register geprüft (EU: VIES, GB: HMRC).
+    const ad = await checkAddress(v);
+    if (!ad.ok) return reply.code(400).send({ ok: false, error: "addr_" + (ad.reason || "invalid") });
+    const vt = await checkVat(v.vat, v.country);
+    if (!vt.ok) return reply.code(400).send({ ok: false, error: vt.reason || "vat_invalid" });
+    v.vat = vt.vat;
+    await pool.query(`INSERT INTO cust_billing (email, company, name, line1, postal, city, country, vat, vat_status, vat_name, addr_checked) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+      ON CONFLICT (email) DO UPDATE SET company=$2, name=$3, line1=$4, postal=$5, city=$6, country=$7, vat=$8, vat_status=$9, vat_name=$10, addr_checked=$11, updated_at=now()`,
+      [si.email, v.company, v.name, v.line1, v.postal, v.city, v.country, v.vat, v.vat ? vt.status : null, vt.name || null, ad.checked]);
     const k = keyFor(si.email); const row = await rowOf(si.email);
     if (k && row && row.mode === k.mode) await pushBillingToStripe(si.email, k.key, row.customer).catch((e) => app.log.warn({ err: e }, "Rechnungsdetails an Stripe fehlgeschlagen"));
     void logCustEvent(si.email, "billing_saved", `Rechnungsdetails gespeichert · ${v.company || v.name}`);
-    return { ok: true, billing: { ...v, saved: true } };
+    return { ok: true, billing: { ...v, saved: true, vatStatus: v.vat ? vt.status : "", vatName: vt.name || "", addrChecked: ad.checked } };
   });
 
   app.post("/cust/autopay/remove", async (req, reply) => {

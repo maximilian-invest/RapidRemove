@@ -689,3 +689,25 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 @keyframes ccBadge{0%{opacity:0;transform:scale(0) rotate(-30deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
 @media (prefers-reduced-motion:reduce){.rra .ce-card,.rra .cc-badge,.rra .cc-shine::after,.rra .ce-glow{animation-duration:.01s !important;animation-delay:0s !important}}
 .rra .pill-btn.apchip{pointer-events:none;gap:6px;opacity:.95}.rra .pill-btn.apchip svg{width:16px;height:16px}
+/* Rechnungsdetails: Prüf-Status */
+.rra .bstat{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--g3)}
+.rra .bstat .ok{color:#16a34a;font-weight:600;display:flex;align-items:center;gap:6px}
+.rra .bstat svg{width:15px;height:15px}
+/* „Zahlung läuft" (automatische Abbuchung nach einer Löschung) */
+.rra .payprog{position:relative;display:inline-flex;align-items:center;gap:10px;height:48px;padding:0 18px 0 8px;border-radius:24px;background:#fff;color:var(--ink);font-weight:700;font-size:15px;overflow:hidden;white-space:nowrap;flex:none}
+.rra .payprog::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,122,26,.22) 50%,transparent 80%);transform:translateX(-100%);animation:ppSweep 1.6s ease-in-out infinite}
+.rra .pp-card{position:relative;width:34px;height:34px;border-radius:50%;background:#fff3e8;color:#ff6a00;display:grid;place-items:center;overflow:hidden;animation:ppPulse 1.6s ease-in-out infinite}
+.rra .pp-card svg{width:18px;height:18px;position:relative;z-index:1}
+.rra .pp-scan{position:absolute;left:0;right:0;height:2px;background:#ff6a00;opacity:.55;animation:ppScan 1.2s ease-in-out infinite}
+.rra .pp-t{position:relative;display:inline-flex;align-items:baseline}
+.rra .pp-dots{display:inline-flex;gap:2px;margin-left:2px}
+.rra .pp-dots i{width:4px;height:4px;border-radius:50%;background:currentColor;display:block;animation:ppDot 1.2s infinite}
+.rra .pp-dots i:nth-child(2){animation-delay:.2s}.rra .pp-dots i:nth-child(3){animation-delay:.4s}
+@keyframes ppSweep{to{transform:translateX(100%)}}
+@keyframes ppPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,106,0,.35)}50%{box-shadow:0 0 0 6px rgba(255,106,0,0)}}
+@keyframes ppScan{0%{top:6px}50%{top:26px}100%{top:6px}}
+@keyframes ppDot{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+@media (prefers-reduced-motion:reduce){.rra .payprog::before,.rra .pp-card,.rra .pp-scan,.rra .pp-dots i{animation:none}}
+.rra .hero .row.ppcol{flex-direction:column;align-items:stretch;gap:10px}
+.rra .hero .row.ppcol .payprog{width:100%}
+.rra .pp-sub{font-size:13px;color:rgba(255,255,255,.7);line-height:1.4}

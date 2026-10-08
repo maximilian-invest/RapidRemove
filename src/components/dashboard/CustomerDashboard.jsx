@@ -825,9 +825,12 @@ export default function CustomerDashboard() {
           <p className="pg-h">{T("payGrpHint")}</p>
         </div>
       ) : apSoon ? (
-        <div className="row">
-          <span className="rem"><i />{T("apSoon", { pm: data.autopay.label })}</span>
-          <span className="pill-btn apchip"><CreditCard />{T("apAutoChip")}</span>
+        <div className="row ppcol">
+          <span className="payprog" role="status" aria-live="polite">
+            <span className="pp-card"><CreditCard /><i className="pp-scan" /></span>
+            <span className="pp-t">{T("apProg")}<span className="pp-dots"><i /><i /><i /></span></span>
+          </span>
+          <span className="pp-sub">{T("apSoon", { pm: data.autopay.label })}</span>
         </div>
       ) : (
         <div className="row">
@@ -1048,8 +1051,15 @@ export default function CustomerDashboard() {
       if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
       if (!String(f.company || "").trim() && !String(f.name || "").trim()) { showToast(T("bNeedName"), true); return; }
       setBusy("bill");
-      try { await call("billing", { token, ...f }); showToast(T("bSaved")); setBill(null); load(token); }
-      catch (e) { showToast(e.code === "name" ? T("bNeedName") : T("genericErr"), true); }
+      try {
+        const r = await call("billing", { token, ...f });
+        const b = r.billing || {};
+        showToast(b.vat && b.vatStatus === "valid" ? T("bVatOk") + (b.vatName ? " · " + b.vatName : "") : b.vat && b.vatStatus === "unchecked" ? T("bVatUnchecked") : T("bSaved"), false);
+        setBill(null); load(token);
+      } catch (e) {
+        const M = { name: "bNeedName", addr_incomplete: "bErrIncomplete", addr_zip: "bErrZip", addr_country: "bErrIncomplete", addr_country_mismatch: "bErrCountry", addr_notfound: "bErrAddr", addr_mismatch: "bErrAddr", vat_invalid: "bErrVat", vat_country: "bErrVatCountry", vat_format: "bErrVatFormat" };
+        showToast(M[e.code] ? T(M[e.code]) : T("genericErr"), true);
+      }
       setBusy("");
     };
     const inp = (k, label, extra = {}) => (
@@ -1081,8 +1091,15 @@ export default function CustomerDashboard() {
               {[...new Set([f.country, ...COUNTRIES].filter(Boolean))].map((c) => <option key={c} value={c}>{cName(c)}</option>)}
             </select>
           </label>
-          {inp("vat", T("fVat"), { autoComplete: "off" })}
-          <button className="cta" disabled={busy === "bill"} onClick={save}>{busy === "bill" ? <Loader className="spin" /> : <Check />}{T("bSave")}</button>
+          {inp("vat", T("fVat"), { autoComplete: "off", autoCapitalize: "characters" })}
+          {!bill && data.billing && data.billing.saved ? (
+            <div className="bstat">
+              {data.billing.addrChecked ? <span className="ok"><Check />{T("bAddrOk")}</span> : null}
+              {data.billing.vat && data.billing.vatStatus === "valid" ? <span className="ok"><Check />{T("bVatOk")}{data.billing.vatName ? " · " + data.billing.vatName : ""}</span> : null}
+              {data.billing.vat && data.billing.vatStatus === "unchecked" ? <span>{T("bVatUnchecked")}</span> : null}
+            </div>
+          ) : null}
+          <button className="cta" disabled={busy === "bill"} onClick={save}>{busy === "bill" ? <Loader className="spin" /> : <Check />}{busy === "bill" ? T("bChecking") : T("bSave")}</button>
         </div>
       </>
     );
