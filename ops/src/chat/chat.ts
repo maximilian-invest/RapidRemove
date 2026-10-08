@@ -108,15 +108,24 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
   lines.push(f.pm === null ? "Payment method: automatic charging is not active for this customer (they pay via the payment link / Pay button)." : f.pm ? "Payment method: SAVED in the dashboard – removed reviews are charged automatically, invoice by email." : "Payment method: NOT saved yet – the customer adds one in the dashboard (Payments tab or the banner on Home); nothing is charged before a review is removed.");
   if (!d.orders.length) lines.push("The customer has no orders in this dashboard yet.");
   // Dieselbe Bewertung in mehreren Aufträgen (gleicher Link oder gleicher Name + Text)
-  const keysOf = (it: Record<string, unknown>) => [String(it.url || ""), it.name ? normTxt(it.name) + "|" + normTxt(it.text) : ""].filter(Boolean);
+  // Doppelt = dieselbe Bewertung auf DEMSELBEN Unternehmensprofil (gleicher Link, oder gleicher Name + Text beim selben Profil).
+  // Gleicher Bewerter/Text auf zwei verschiedenen Profilen = zwei eigene Bewertungen (beide werden gelöscht und einzeln verrechnet).
+  const bizOf = (o: Record<string, unknown>) => String((f.raw.get(String(o.id)) || {}).placeId || "") || normTxt(o.business);
+  const keysOf = (o: Record<string, unknown>, it: Record<string, unknown>) => [String(it.url || ""), it.name ? bizOf(o) + "|" + normTxt(it.name) + "|" + normTxt(it.text) : ""].filter(Boolean);
   const seen = new Map<string, Set<string>>();
+  const sameName = new Map<string, Set<string>>(); // gleicher Bewerter + Text über alle Profile → Hinweis „andere Filiale"
   for (const o of d.orders) if (!o.cancelled) for (const it of ((o.items as Record<string, unknown>[]) || [])) {
-    for (const k of keysOf(it)) { const s = seen.get(k) || new Set<string>(); s.add(String(o.id)); seen.set(k, s); }
+    for (const k of keysOf(o, it)) { const s = seen.get(k) || new Set<string>(); s.add(String(o.id)); seen.set(k, s); }
+    if (it.name) { const k = normTxt(it.name) + "|" + normTxt(it.text); const s = sameName.get(k) || new Set<string>(); s.add(String(o.id)); sameName.set(k, s); }
   }
-  const dupOf = (oid: string, it: Record<string, unknown>) => {
-    const other = new Set<string>();
-    for (const k of keysOf(it)) (seen.get(k) || new Set<string>()).forEach((x) => { if (x !== oid) other.add(x); });
+  const dupOf = (o: Record<string, unknown>, it: Record<string, unknown>) => {
+    const oid = String(o.id); const other = new Set<string>();
+    for (const k of keysOf(o, it)) (seen.get(k) || new Set<string>()).forEach((x) => { if (x !== oid) other.add(x); });
     return [...other];
+  };
+  const twinOf = (o: Record<string, unknown>, it: Record<string, unknown>, dup: string[]) => {
+    if (!it.name) return [];
+    return [...(sameName.get(normTxt(it.name) + "|" + normTxt(it.text)) || new Set<string>())].filter((x) => x !== String(o.id) && !dup.includes(x));
   };
   let due = 0;
   const PST: Record<string, string> = { new: "order received, not started yet", working: "profile removal in progress", removed: "profile removed", cancelled: "cancelled" };
@@ -162,7 +171,8 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
         const h = st === "working" ? hoursSince(it.since) : null;
         const rating = Number(r.rating) || 0;
         const days = r.days != null ? Number(r.days) : NaN;
-        const dup = dupOf(oid, it);
+        const dup = dupOf(o, it);
+        const twin = twinOf(o, it, dup);
         const txt = String(it.text || "");
         const bits = [
           `- "${clip(it.name, 80) || "Google review"}"${rating ? ` ${rating}★` : ""}${it.noText ? " (stars only, no text)" : txt ? ` – text: "${clip(txt, 160)}${txt.length > 160 ? "…" : ""}"` : ""}`,
@@ -178,7 +188,8 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
           it.swWant ? "customer accepted software – starts as soon as a payment method is saved" : "",
           st === "removed" ? (it.waived ? "no charge (order cancelled)" : it.paid ? "paid" : `to pay ${money(Number(it.price) || 0, c)}`) : "",
           st === "software" || st === "sw_accepted" ? "special software, charged only once removed, nothing to pay if it fails" : "",
-          dup.length ? `SAME REVIEW ALSO IN ORDER ${dup.join(", ")} (duplicate – the team merges it so it's only charged once)` : "",
+          dup.length ? `SAME REVIEW ON THE SAME BUSINESS PROFILE ALSO IN ORDER ${dup.join(", ")} (real duplicate – the team merges it so it's only charged once)` : "",
+          twin.length ? `same reviewer and text also in order ${twin.join(", ")}, but on a DIFFERENT business profile – that is a separate review: both are removed and each is charged only if removed` : "",
           it.url ? `link: ${clip(it.url, 160)}` : "",
         ].filter(Boolean);
         lines.push(bits.join(" · "));
@@ -207,7 +218,7 @@ How to answer:
 - PRICES: the "agreed price" per review in the order data is binding – it was fixed at checkout and is exactly what this customer pays per removed review, even if we use special software. Never quote a different price (e.g. the general 300 software price) for reviews already in their orders. The general price list only applies to NEW reviews. Currency comes from the region and cannot be chosen.
 - "Extra/additional charge": nothing is ever charged before a review is removed. If a customer mentions an additional charge per review, they usually mean the higher price for reviews older than 4 weeks shown at checkout (229 instead of 179) – explain that calmly; it's only charged once that review is actually removed. Only if they say money was really taken from their card, hand over to the team.
 - SUCCESS & TIMING depend on the review: the "over 90 %" and "1–3 business days" only apply to reviews up to 4 weeks old. For reviews older than 4 weeks say it usually takes longer (often 1–2 weeks) and don't quote a percentage; for older US reviews or stars-only reviews we use special software. Check the order data (age, country) before answering.
-- The same review in two orders: point it out and say the team will merge it so it is only charged once (then [[TEAM]]).
+- Duplicates: only a review marked "SAME REVIEW ON THE SAME BUSINESS PROFILE" is a real duplicate – then say the team merges it so it's only charged once ([[TEAM]]). The same reviewer/text on a DIFFERENT business profile (another location/listing) is a separate review: never call it a duplicate; both get removed and each is charged only once it is removed. Always check the business name of each order before answering.
 - Status meanings in the dashboard: Being checked = we check if it can be removed. In progress = removal running. Removed = gone from Google, billed per removed review: charged automatically to the payment method saved once in the dashboard, invoice by email. Not removable = no charge. Needs your decision = can only be removed with special software (our partner has checked it is possible for that review); the customer can accept or decline per review, declining costs nothing. Accepting (or having agreed at checkout) needs a saved payment method, then we start right away; the confirmed slot is reserved for 5 hours (countdown in the dashboard). No prepayment, also not for software: charged only once the review is removed, nothing to pay if it fails. Why software: Google usually doesn't remove older reviews from the USA or star-only ratings without text by hand; for older reviews from other countries we first file legal notices (removes 90 %+), the rest can only be removed with software. Say "special software", never "outsourced".
 - PayPal/Wise (10 % off, only businesses outside DE/AT/CH): mention it ONLY if the customer asks how to pay or about paying differently – never as an add-on to other answers.
 - Hand over to the team for: order problems you cannot answer from the data, payment problems, cancellation, invoice corrections, complaints, refunds, multiple profiles, agencies, press/links, phone or video calls, instalments, anything you are unsure about. When you hand over, say the team replies by email and end your reply with the exact token [[TEAM]].
