@@ -12,7 +12,7 @@ import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
 
 const stageOf = (t) => { const m = String(t || "").match(/Stufe\s*(\d)/i); return m ? Number(m[1]) : null; };
-const dShort = (iso) => new Date(iso).toLocaleDateString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit" });
+const dShort = (iso) => { const d = new Date(iso); return d.toLocaleDateString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit", ...(d.getFullYear() !== new Date().getFullYear() ? { year: "numeric" } : {}) }); };
 /* Versandzeit der Auto-Mails: nur 8–20 Uhr Ortszeit des Kunden (wie am Server, followup.ts tzOf/quietOk). */
 const US_TZ = { NY: "America/New_York", NJ: "America/New_York", FL: "America/New_York", GA: "America/New_York", MA: "America/New_York", PA: "America/New_York", NC: "America/New_York", VA: "America/New_York", OH: "America/New_York", MI: "America/Detroit", MD: "America/New_York", SC: "America/New_York", CT: "America/New_York",
   TX: "America/Chicago", IL: "America/Chicago", MN: "America/Chicago", MO: "America/Chicago", TN: "America/Chicago", WI: "America/Chicago", LA: "America/Chicago", AL: "America/Chicago", OK: "America/Chicago", KS: "America/Chicago", IA: "America/Chicago",
@@ -217,6 +217,10 @@ export function DueSheet({ o, ctx, close }) {
   const ymd = (d) => { const x = new Date(d); const p = (n) => String(n).padStart(2, "0"); return `${x.getFullYear()}-${p(x.getMonth() + 1)}-${p(x.getDate())}`; };
   const curYmd = pd ? ymd(pd.at) : "";
   const first = (o.name || o.email || "").split(/\s+/)[0];
+  // Eigenes Datum erst mit „OK" speichern (beim Tippen feuert das Feld schon Zwischenwerte wie Jahr „0002").
+  const [own, setOwn] = React.useState(curYmd && ![3, 7, 14, 30].some((n) => ymd(inDays(n)) === curYmd) ? curYmd : "");
+  const ownT = own ? new Date(own + "T12:00").getTime() : NaN;
+  const ownOk = /^\d{4}-\d{2}-\d{2}$/.test(own) && ownT > Date.now() && ownT < Date.now() + 366 * 864e5;
   const save = async (date) => {
     setBusy(true);
     try {
@@ -239,10 +243,10 @@ export function DueSheet({ o, ctx, close }) {
             </button>
           );
         })}
-        <label className="aopt">Eigenes Datum
-          <input type="date" className="duein" min={ymd(Date.now() + 864e5)} defaultValue={curYmd && ![3, 7, 14, 30].some((n) => ymd(inDays(n)) === curYmd) ? curYmd : ""} disabled={busy}
-            onChange={(e) => { if (e.target.value) save(endOf(e.target.value + "T12:00")); }} />
-        </label>
+        <div className="aopt">Eigenes Datum
+          <input type="date" className="duein" min={ymd(Date.now() + 864e5)} max={ymd(Date.now() + 365 * 864e5)} value={own} disabled={busy} onChange={(e) => setOwn(e.target.value)} />
+          <button type="button" className="duego" disabled={busy || !ownOk} onClick={() => save(endOf(own + "T12:00"))}>OK</button>
+        </div>
         {pd ? <button type="button" className="aopt red" disabled={busy} onClick={() => save(null)} style={{ color: "var(--danger)" }}>Zahlungsziel entfernen</button> : null}
       </div>
     </>

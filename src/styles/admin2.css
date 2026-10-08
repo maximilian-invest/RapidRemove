@@ -822,3 +822,4 @@
 .an .sh-info .ir .ico{background:#fff}
 .an .aopt .ol small{display:block;font-size:12px}
 .an button.ae:disabled{opacity:1;color:inherit;cursor:default}
+.an .duego{margin-left:8px;height:36px;padding:0 14px;border-radius:10px;background:var(--ink);color:#fff;font-size:13px;font-weight:700}.an .duego:disabled{opacity:.3}

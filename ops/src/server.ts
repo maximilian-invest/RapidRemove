@@ -1831,6 +1831,8 @@ app.post("/admin/pay-due", async (req, reply) => {
   const raw = String(b.due || "").trim();
   const at = raw ? new Date(raw) : null;
   if (at && isNaN(at.getTime())) return reply.code(400).send({ ok: false, error: "Datum ungültig" });
+  // Nur Zukunft, max. 1 Jahr (Schutz vor Tippfehlern wie Jahr „0002" – sonst ginge sofort die Ablauf-Mail raus).
+  if (at && (at.getTime() < Date.now() + 5 * 60e3 || at.getTime() > Date.now() + 366 * 864e5)) return reply.code(400).send({ ok: false, error: "Zahlungsziel muss in der Zukunft liegen (max. 1 Jahr)" });
   const r = await pool.query(`SELECT raw->'payDue' AS pd FROM orders WHERE id=$1 AND COALESCE(service,'') <> 'reviews'`, [id]);
   if (!r.rows[0]) return reply.code(404).send({ ok: false, error: "Profil-Auftrag nicht gefunden" });
   const prev = r.rows[0].pd as { at?: string } | null;
