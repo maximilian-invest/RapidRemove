@@ -71,7 +71,7 @@ const article = {
   ],
   related: [
     { label: "Was kostet eine schlechte Google-Bewertung wirklich?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
-    { label: "Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
   ],
 };

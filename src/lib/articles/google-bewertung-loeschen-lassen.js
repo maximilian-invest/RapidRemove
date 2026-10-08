@@ -99,7 +99,7 @@ const article = {
     { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Fake-Bewertung bei Google melden und löschen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Anwalt oder technische Löschung – was lohnt sich wirklich?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google-Bewertung löschen: Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
   ],
 };
 export default article;

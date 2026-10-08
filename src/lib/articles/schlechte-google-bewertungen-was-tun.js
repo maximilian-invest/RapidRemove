@@ -70,7 +70,7 @@ const article = {
   related: [
     { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Google Maps Eintrag löschen: eigene & fremde entfernen", url: "https://www.rapid-remove.com/google-maps-eintrag-loeschen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google-Bewertung löschen: Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

@@ -102,7 +102,7 @@ const article = {
   ],
   related: [
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google-Bewertung löschen: Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Online-Reputationsmanagement – der Leitfaden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
   ],
 };

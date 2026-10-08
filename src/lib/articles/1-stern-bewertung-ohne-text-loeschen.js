@@ -68,7 +68,7 @@ const article = {
   ],
   related: [
     { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
-    { label: "Negative Bewertung: Anwalt oder technische Löschung?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
+    { label: "Google-Bewertung löschen: Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google Rezension löschen lassen: Formular, Kosten & Anleitung", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Schlechte Google-Bewertung – was tun?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },
     { label: "Google Unternehmensprofil löschen – wie geht das?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
