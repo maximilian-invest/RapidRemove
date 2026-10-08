@@ -3,11 +3,12 @@
 import { ASSIGNEES } from "@/components/admin/AdminAssign";
 import { asset } from "@/lib/base";
 
-export const OPEN = ["new", "work", "pay", "inkasso"];
+export const OPEN = ["new", "work", "nopm", "pay", "inkasso"];
 export const CLOSED = ["deleted", "cancel"];
 export const ST = {
   new: { l: "Neu", img: "new" },
   work: { l: "In Bearbeitung", img: "work" },
+  nopm: { l: "Zahlungsdaten fehlen" },
   pay: { l: "Zahlung offen", img: "pay" },
   inkasso: { l: "Inkasso", img: "inkasso" },
   deleted: { l: "Gelöscht" },
@@ -113,6 +114,9 @@ export function revState(o, tasks) {
 export function bucketsOf(o, now = Date.now(), tasks) {
   const base = bucket(o, now);
   if (base === "cancel") return [base];
+  // Kunde hat trotz Erinnerungen keine Zahlungsart hinterlegt → eigener Reiter (Storno automatisch am pgStale.cancelAt).
+  if (o.pgStale && o.payGate && !o.payGate.keys) return ["nopm"];
+  if (o.pgStale) { const b = bucketsOf({ ...o, pgStale: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];

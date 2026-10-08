@@ -297,6 +297,17 @@ export async function approveSoftwareDeferred(groups: Map<string, string[]>, why
   }
   return n;
 }
+/** Software-Fälle ohne Zahlungsart nach Ablauf der Frist zurückziehen (pgRemind): wie „abgelehnt" – Partner sieht „Customer declined". */
+export async function declineSoftwareKeys(orderId: string, keys: string[], why: string): Promise<void> {
+  if (!pool || !keys.length) return;
+  await setDecisions(orderId, keys, "declined");
+  await pool.query(
+    `UPDATE partner_tasks SET status='software', updated_at=now(), ${appendNote("admin_note", 3)}
+      WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','working','software','not_possible') AND paid_at IS NULL`,
+    [orderId, keys, SW_NOTE_DECLINED],
+  ).catch(() => {});
+  await insertEvent({ orderId, type: "note", title: `Software zurückgezogen (${why})`, detail: `${keys.length} Bewertung(en) · keine Zahlungsart hinterlegt`, auto: true }).catch(() => {});
+}
 /** Zahlungsart neu hinterlegt → bestätigte Software-Fälle mit Zustimmung bei der Bestellung (pre), die noch auf die Vorauszahlung warten, sofort starten. */
 export async function approvePendingPre(email: string): Promise<number> {
   const { orders } = await loadCustomerOrders(email.toLowerCase());

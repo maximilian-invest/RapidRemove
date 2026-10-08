@@ -10,10 +10,10 @@ import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, 
 import { SourceTag } from "./Source";
 import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
-const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
+const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
 import { custImpersonate, verifyDoc, verifySet, reviewShotUrl } from "@/lib/admin-api";
-const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
+const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
   const a = avatarOf(o); const s = staffOf(o.assignee);
@@ -192,6 +192,13 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
+      {o.pgStale && o.status !== "storniert" ? (
+        <div className="disc due">
+          <span className="di"><CalendarClock /></span>
+          <span className="t"><b>Zahlungsdaten fehlen · Storno am {new Date(o.pgStale.cancelAt).toLocaleDateString("de-AT")}</b>
+            <span>Alle Erinnerungen sind raus, der Kunde hat die finale Mail. Hinterlegt er bis dahin keine Zahlungsart, wird {o.pgStale.keys ? "die Nachbestellung" : "der Auftrag"} automatisch storniert (Storno-Mail, keine Kosten).</span></span>
+        </div>
+      ) : null}
       {o.payGate && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><CreditCard /></span>
