@@ -303,7 +303,7 @@ function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
 }
 
 /* Zahlungsart hinterlegen, bevor der Auftrag startet (abgebucht wird nur je gelöschter Bewertung). */
-function PayGateFlow({ open, price, busy, onClose, onGo }) {
+function PayGateFlow({ open, zero, busy, onClose, onGo }) {
   return (
     <section className={"flow vf" + (open ? " show" : "")} aria-hidden={!open} onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
       {open ? (
@@ -315,8 +315,8 @@ function PayGateFlow({ open, price, busy, onClose, onGo }) {
             <h2>{T("pgH")}</h2>
             <p>{T("pgP")}</p>
             <div className="fl-feat vf-docs">
-              <div className="ff"><span className="ico"><Check /></span><span><b>{T("pgF1")}</b></span></div>
-              <div className="ff"><span className="ico"><Receipt /></span><span><b>{price ? T("pgF2p", { price }) : T("pgF2")}</b></span></div>
+              <div className="ff"><span className="ico"><Check /></span><span><b>{T("pgF1", { zero })}</b></span></div>
+              <div className="ff"><span className="ico"><Receipt /></span><span><b>{T("pgF2")}</b></span></div>
               <div className="ff"><span className="ico"><FileText /></span><span><b>{T("pgF3")}</b></span></div>
             </div>
             <div className="secure"><Lock />{T("pgSafe")}</div>
@@ -641,7 +641,7 @@ export default function CustomerDashboard() {
   // Auftrag wartet auf den Inhaber-Nachweis → seine Bewertungen zeigen „Wartet auf Nachweis" statt „Wird geprüft".
   const orders = (data.orders || []).map((o) => (vNeeds(o) || pgNeeds(o) ? { ...o, items: o.items.map((i) => (i.status === "new" ? { ...i, status: vNeeds(o) ? "verify" : "paygate" } : i)) } : o));
   const pgNeed = orders.filter((o) => pgNeeds(o) && !data.autopay);
-  const pgPrices = [...new Set(pgNeed.flatMap((o) => o.items.map((i) => money(i.price, o.cur))))];
+  const pgZero = money(0, pgNeed[0]?.cur || orders[0]?.cur || "eur"); // „0 €" / „$0" in der Währung des Auftrags – keine Stückpreise (können je Bewertung abweichen)
   const vNeed = orders.filter(vNeeds);
   // Zwischenzahlung: Auftrag pausiert, bis der offene Betrag bezahlt ist → Anzahl der pausierten Bewertungen.
   const holdCard = orders.some((o) => o.holdCard); // Pause wegen fehlgeschlagener Abbuchung → „Zahlungsart aktualisieren"
@@ -1250,7 +1250,7 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <PayGateFlow open={pgOpen && pgNeed.length > 0 && !vfOrder} price={pgPrices.length === 1 ? pgPrices[0] : ""} busy={busy === "ap"} onClose={() => setPgOpen(false)} onGo={apStart} />
+      <PayGateFlow open={pgOpen && pgNeed.length > 0 && !vfOrder} zero={pgZero} busy={busy === "ap"} onClose={() => setPgOpen(false)} onGo={apStart} />
       <VerifyFlow order={vfOrder} token={token} imp={!!adminView} showToast={showToast} onClose={() => { setVfId(null); load(token); }} onDone={() => load(token)} />
 
       <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !vfOrder && !cele && !wiseOpen && !detail} items={changedNew}
