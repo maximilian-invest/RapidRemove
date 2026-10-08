@@ -449,3 +449,5 @@
 @keyframes rckShim{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.rck-beam,.rck-lens,.rck-done *{animation-duration:.01s !important}}
 .rck > .rck-btn{width:100%;flex:none}
+.rck-open{margin-top:10px;width:100%;min-height:44px;border-radius:14px;border:1px solid #e5e5e5;background:#fff;color:#111;font:inherit;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.rck-open svg{width:17px;height:17px}

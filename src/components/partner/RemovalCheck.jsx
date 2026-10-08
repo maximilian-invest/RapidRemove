@@ -2,7 +2,7 @@
 /* „Removed" mit Prüfung: Lena (KI) öffnet die Bewertung jetzt auf Google und vergleicht mit dem Screenshot von der Bestellung.
    Phasen: checking (Animation) → done (pro Bewertung: gone ✓ / still visible / couldn't verify → ausdrücklich bestätigen). */
 import React from "react";
-import { CheckCircle2, Eye, HelpCircle, RotateCw, X, Search, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Eye, HelpCircle, RotateCw, X, Search, ShieldCheck, ArrowUpRight } from "lucide-react";
 import { OPS } from "./shared";
 
 /* Aktueller Google-Screenshot der Prüfung (per POST geladen – Token nicht in der Adresse). */
@@ -19,7 +19,7 @@ function Shot({ id, token }) {
 
 const STEPS = ["Opening the review on Google…", "Lena compares before & after…", "Checking reviewer and text…", "Almost done…"];
 
-export default function RemovalCheck({ state, token, onClose, onAgain, onConfirm }) {
+export default function RemovalCheck({ state, token, onClose, onAgain, onConfirm, onOpen }) {
   const [step, setStep] = React.useState(0);
   const checking = state && state.phase === "checking";
   React.useEffect(() => {
@@ -77,12 +77,14 @@ export default function RemovalCheck({ state, token, onClose, onAgain, onConfirm
                 <div className="rck-row"><Eye /><span><b>{r.code}</b> is still online – not marked as removed.</span></div>
                 {r.reason ? <p className="rck-why">{r.reason}</p> : null}
                 {r.checkId ? <Shot id={r.checkId} token={token} /> : null}
+                <button type="button" className="rck-open" onClick={() => onOpen && onOpen(r.id)}><ArrowUpRight />Open review on Google</button>
               </div>
             ))}
             {unk.map((r) => (
               <div key={r.id} className="rck-item unk">
                 <div className="rck-row"><HelpCircle /><span><b>{r.code}</b> – {r.reason || "the check was not conclusive."}</span></div>
                 <p className="rck-why">Nothing was changed and the customer is not charged. Please try again in a few minutes – RapidRemove has been notified.</p>
+                <button type="button" className="rck-open" onClick={() => onOpen && onOpen(r.id)}><ArrowUpRight />Open review on Google</button>
               </div>
             ))}
             {skip.length ? <p className="rck-why">{skip.map((r) => `${r.code}: ${r.reason}`).join(" · ")}</p> : null}
