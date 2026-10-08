@@ -808,3 +808,12 @@
 .an .pdue-e input{height:36px;border-radius:10px;border:1px solid rgba(0,0,0,.15);padding:0 10px;font:inherit;font-size:14px;background:#fff;color:#111}
 .an .pdue-e button{height:34px;padding:0 14px;border-radius:999px;background:#fff;font-size:13px;font-weight:600;color:inherit;border:1px solid rgba(0,0,0,.08)}
 .an .pdue-e button.go{background:#16a34a;color:#fff;border-color:#16a34a}
+/* Zahlung offen (Okt 2026): Hauptbutton + „Zahlung bereits erhalten?", Zahlungsziel-Sheet */
+.an .pact{margin:4px 0 14px;gap:2px}
+.an .paylk{display:flex;align-items:center;justify-content:center;gap:6px;height:40px;width:100%;font-size:14px;font-weight:600;color:var(--g3)}
+.an .paylk svg{width:16px;height:16px}
+.an .paylk:hover{color:var(--ink)}
+.an .paylk.cf{color:var(--success)}
+.an .duein{margin-left:auto;height:36px;padding:0 10px;border-radius:10px;background:#fff;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--ink)}
+.an label.aopt{cursor:pointer}
+.an .lnkb svg{width:14px;height:14px;vertical-align:-2px;margin-right:5px}

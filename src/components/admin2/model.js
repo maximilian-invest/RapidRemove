@@ -27,6 +27,7 @@ export function bucket(o, now = Date.now()) {
   if (o.status === "new") return "new";
   if (o.status === "done") {
     if (["paid", "refunded"].includes(o.pay)) return "deleted";
+    if (o.pay === "inkasso") return "inkasso"; // im Admin an Inkasso übergeben
     if (o.doneAt && now - new Date(o.doneAt).getTime() > INKASSO_MS) return "inkasso";
     if (OFFEN_PAY.includes(o.pay)) return "pay";
     return "deleted";
@@ -115,7 +116,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   if (!r.started && base === "new") return ["new"];
   const out = [];
   if (r.open || r.software) out.push("work");
-  if (r.unpaidN) out.push(r.unpaidSince && now - r.unpaidSince > INKASSO_MS ? "inkasso" : "pay");
+  if (r.unpaidN) out.push(o.pay === "inkasso" || (r.unpaidSince && now - r.unpaidSince > INKASSO_MS) ? "inkasso" : "pay");
   if (out.length) return out;
   if (r.removed) return ["deleted"]; // alles gelöscht und bezahlt
   return [base === "new" ? "work" : base];

@@ -21,6 +21,7 @@ import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
+import { DueSheet, MailHistSheet } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
@@ -441,7 +442,11 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         <button type="button" className="lnkb" onClick={() => act.start(o, null, true)}>Nur den Auftrag auf „In Bearbeitung“ setzen</button></>
     );
   } else if (sheet && sheet.kind === "mahn" && o) {
-    body = <MahnSheet key={o.id} o={o} ctx={ctx} close={close} />;
+    body = <MahnSheet key={o.id + "|" + (sheet.stage || "")} o={o} ctx={ctx} close={close} initialStage={sheet.stage} direct={sheet.direct} />;
+  } else if (sheet && sheet.kind === "due" && o) {
+    body = <DueSheet key={o.id} o={o} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "mailhist" && o) {
+    body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {

@@ -8,10 +8,11 @@ import {
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
+import { usePayMails, PayActions, PayRows } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate, verifyDoc, verifySet, setPayDue } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -153,7 +154,8 @@ export function OrderDetail({ ctx, id }) {
     // Schon bezahlt, Status aber noch Neu/In Bearbeitung → einfach abschließen (kein Zahlungslink, keine Mahnung).
     o.pay === "paid" && (b === "new" || b === "work") ? doneBtn("Als erledigt markieren · bereits bezahlt")
     // Gelöscht, aber noch nicht abgerechnet → zuerst Löschbestätigung + Rechnung (sonst würde die Mahnung alle Bewertungen anmahnen).
-    : r && r.unbilledN && (b === "pay" || b === "inkasso") ? <a className="cta or" href={altHref}><Receipt />Rechnung senden · {r.unbilledN} gelöscht · {money(r.unpaidAmt, cur(o))}</a>
+    // Zahlung offen / Inkasso → eigener Block (PayActions: eskalierender Hauptbutton + „Zahlung bereits erhalten?").
+    : payOpen(o, now, ptasks) && (b === "pay" || b === "inkasso") ? null
     // Partner arbeitet schon, wir haben aber noch nicht übernommen → Übernehmen bleibt sichtbar.
     : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
     : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
@@ -189,7 +191,6 @@ export function OrderDetail({ ctx, id }) {
         </div>
       ) : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
-      {!isRev && o.status !== "storniert" && o.pay !== "paid" ? <PayDueBox o={o} ctx={ctx} /> : null}
       {r && r.unpaidN && !r.unbilledN && r.askedAt && o.status !== "storniert" ? (
         <div className="disc">
           <span className="di"><Send /></span>
@@ -206,8 +207,7 @@ export function OrderDetail({ ctx, id }) {
             <span>{same.length ? <>Im Kunden-Dashboard sieht er {payPrefOf(o) ? `alle ${payPrefOf(o)}-Aufträge` : "alle Karten-Aufträge"} als eine Summe. Kommt eine Sammelzahlung, unten alle zusammen auf bezahlt setzen – er bekommt dann <b>eine</b> Bestätigung.</> : "Andere Methode – wird separat bezahlt."}</span></span>
         </div>
       ) : null}
-      {payOpen(o, now, ptasks) ? <PaidBtn o={o} ctx={ctx} group={same} /> : null}
-      {payOpen(o, now, ptasks) && !isRev && o.amount ? <div className="ctas" style={{ margin: "-6px 0 14px" }}><button type="button" className="cta gh" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />{o.paylinkSent ? "Zahlungslink erneut senden / ändern" : "Zahlungslink senden"}</button></div> : null}
+      {payOpen(o, now, ptasks) ? <PayBlock o={o} ctx={ctx} r={r} group={same} altHref={altHref} /> : null}
       <div className="info">
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
@@ -217,6 +217,7 @@ export function OrderDetail({ ctx, id }) {
         {o.phone ? <div className="ir"><span className="ico"><Phone /></span><span className="t"><span>Telefon</span><b>{o.phone}</b></span></div> : null}
         <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
         {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
+        {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
       </div>
       <div className="cact">
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>
@@ -250,52 +251,6 @@ export function OrderDetail({ ctx, id }) {
       {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
-  );
-}
-
-/** Zahlungsziel (Profil-Aufträge): setzen/ändern/entfernen. Läuft es ohne Zahlung ab, geht sofort automatisch eine Mail
- *  mit Bezug aufs Zahlungsziel raus; danach normaler Mahnverlauf („Mahnung senden"). */
-function PayDueBox({ o, ctx }) {
-  const pd = o.payDue || null;
-  const [edit, setEdit] = React.useState(false);
-  const [busy, setBusy] = React.useState(false);
-  const toLocal = (iso) => { const d = iso ? new Date(iso) : new Date(Date.now() + 7 * 864e5); const p = (n) => String(n).padStart(2, "0"); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
-  const [val, setVal] = React.useState(toLocal(pd && pd.at));
-  const fmt = (iso) => new Date(iso).toLocaleString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
-  const over = pd && pd.at && new Date(pd.at).getTime() <= Date.now();
-  const save = async (due) => {
-    setBusy(true);
-    try {
-      const r = await setPayDue(o.id, due ? new Date(due).toISOString() : "");
-      if (ctx.patchOrder) ctx.patchOrder(o.id, { payDue: r.payDue || null });
-      if (ctx.toast) ctx.toast(due ? "Zahlungsziel gespeichert" : "Zahlungsziel entfernt");
-      setEdit(false);
-    } catch (e) { if (ctx.toast) ctx.toast(e.message || "Fehler"); }
-    setBusy(false);
-  };
-  return (
-    <div className={"disc pdue" + (over ? " over" : "")}>
-      <span className="di"><CalendarClock /></span>
-      <span className="t">
-        <b>{pd && pd.at ? `Zahlungsziel: ${fmt(pd.at)}` : "Kein Zahlungsziel gesetzt"}</b>
-        {pd && pd.sent ? <span>Abgelaufen · Mail an den Kunden gesendet {fmt(pd.sent)} – weiter mit „Mahnung senden"</span>
-          : over ? <span>Abgelaufen · Mail geht in den nächsten 2 Minuten raus</span>
-          : pd && pd.at ? <span>Läuft es ohne Zahlung ab, geht sofort automatisch eine Mail raus.</span>
-          : <span>Setzen, dann geht bei Ablauf ohne Zahlung automatisch eine Mail an den Kunden.</span>}
-        {edit ? (
-          <span className="pdue-e">
-            <input type="datetime-local" value={val} onChange={(e) => setVal(e.target.value)} />
-            <button type="button" className="go" disabled={busy || !val} onClick={() => save(val)}>{busy ? "…" : "Speichern"}</button>
-            <button type="button" disabled={busy} onClick={() => setEdit(false)}>Abbrechen</button>
-          </span>
-        ) : (
-          <span className="vfy-b">
-            <button type="button" className="go" onClick={() => { setVal(toLocal(pd && pd.at && !over ? pd.at : null)); setEdit(true); }}>{pd && pd.at ? "Ändern" : "Zahlungsziel setzen"}</button>
-            {pd && pd.at ? <button type="button" disabled={busy} onClick={() => save("")}>Entfernen</button> : null}
-          </span>
-        )}
-      </span>
-    </div>
   );
 }
 
@@ -352,37 +307,14 @@ const payOpen = (x, now, ptasks) => {
   const bx = bucketsOf(x, now); return bx.includes("pay") || bx.includes("inkasso") || (x.status === "done" && x.pay !== "paid");
 };
 
-function PaidBtn({ o, ctx, group = [] }) {
-  const [armed, setArmed] = React.useState(false);
-  const [busy, setBusy] = React.useState(false);
-  React.useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 4000); return () => clearTimeout(t); }, [armed]);
-  const [armedAll, setArmedAll] = React.useState(false);
-  React.useEffect(() => { if (!armedAll) return; const t = setTimeout(() => setArmedAll(false), 4000); return () => clearTimeout(t); }, [armedAll]);
-  const go = async () => {
-    if (!armed) { setArmed(true); setArmedAll(false); return; }
-    setBusy(true);
-    await ctx.markPaid([o], "Zahlung eingegangen (manuell)"); // → Feier, danach verschwindet der Auftrag aus „Zahlung offen"
-    setBusy(false); setArmed(false);
-  };
-  const goAll = async () => {
-    if (!armedAll) { setArmedAll(true); setArmed(false); return; }
-    setBusy(true);
-    const list = [o, ...group];
-    await ctx.markPaid(list, `Zahlung eingegangen (manuell · Sammelzahlung ${list.map((y) => y.id).join(", ")})`);
-    setBusy(false); setArmedAll(false);
-  };
-  return (
-    <div className="ctas" style={{ margin: "-4px 0 14px" }}>
-      {group.length ? (
-        <button type="button" className={"cta" + (armedAll ? " ok" : "")} disabled={busy} onClick={goAll}>
-          {busy && armedAll ? <Loader className="spin" /> : <CheckCircle2 />}{armedAll ? "Sicher? Nochmal tippen – Sammelzahlung ist eingegangen" : `Alle ${group.length + 1} als bezahlt markieren`}
-        </button>
-      ) : null}
-      <button type="button" className={"cta" + (armed ? " ok" : " gh")} disabled={busy} onClick={go}>
-        {busy && !armedAll ? <Loader className="spin" /> : <CheckCircle2 />}{armed ? "Sicher? Nochmal tippen – Zahlung ist eingegangen" : group.length ? "Nur diesen als bezahlt markieren" : "Als bezahlt markieren"}
-      </button>
-    </div>
-  );
+/** „Zahlung offen": Hauptaktion (eskaliert) + „Zahlung bereits erhalten?" – Design Okt 2026. */
+function PayBlock({ o, ctx, r, group, altHref }) {
+  const pm = usePayMails(o);
+  return <PayActions o={o} ctx={ctx} r={r} pm={pm} group={group} altHref={altHref} />;
+}
+function PayInfoRows({ o, ctx }) {
+  const pm = usePayMails(o);
+  return <PayRows o={o} ctx={ctx} pm={pm} />;
 }
 
 export function Nav({ back, right, isDesk }) {

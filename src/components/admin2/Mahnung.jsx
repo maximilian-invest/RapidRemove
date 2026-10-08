@@ -8,13 +8,13 @@ import { Send, Eye, Check, Loader, AlertTriangle, Mail } from "lucide-react";
 import { fetchEvents, fetchEmailPreview, payLinkMail, templateMail, reviewsMahnungMail, setOrderStatus } from "@/lib/admin-api";
 import { computeOffer, money, cur } from "./model";
 
-const PROFILE_STAGES = [
+export const PROFILE_STAGES = [
   [1, "Zahlungserinnerung", "Freundlich, mit Zahlungslink"],
   [2, "2. Erinnerung", "Bestimmter, Frist zur Zahlung"],
   [3, "Mahnung", "Androhung Inkasso + Wiederherstellung"],
   [4, "Letzte Mahnung", "Zahlung heute – sonst Reaktivierung + Inkasso"],
 ];
-const REVIEW_STAGES = [
+export const REVIEW_STAGES = [
   [1, "Zahlungserinnerung", "Freundlich, Zahlung binnen 48 h"],
   [2, "2. Mahnung", "Bestimmter, Zahlung binnen 48 h"],
   [3, "Letzte Mahnung", "Bewertungen gehen wieder online + Inkasso"],
@@ -57,15 +57,15 @@ async function mahnRequest(o, stage, preview) {
   return payLinkMail({ ...profilePayload(o, stage), preview });
 }
 
-export function MahnSheet({ o, ctx, close }) {
+export function MahnSheet({ o, ctx, close, initialStage, direct }) {
   const { toast, openViewer, patchOrder } = ctx;
   const isRev = o.service === "reviews";
   const STAGES = isRev ? REVIEW_STAGES : PROFILE_STAGES;
   const method = payMethodOf(o);
   const [events, setEvents] = React.useState(null);
-  const [stage, setStage] = React.useState(null);
+  const [stage, setStage] = React.useState(initialStage || null);
   const [busy, setBusy] = React.useState("");
-  const [confirm, setConfirm] = React.useState(false);
+  const [confirm, setConfirm] = React.useState(!!direct); // Hauptbutton im Auftrag → direkt „senden?“ mit Vorschau-Möglichkeit
   const load = React.useCallback(() => fetchEvents(o.id, o.email).then(setEvents).catch(() => setEvents([])), [o.id, o.email]);
   React.useEffect(() => { load(); }, [load]);
   const sent = (events || []).filter((e) => MAHN_RE.test(e.t) || /zahlungslink gesendet/i.test(e.t));
@@ -111,7 +111,8 @@ export function MahnSheet({ o, ctx, close }) {
         <h3 style={{ paddingBottom: 6 }}>{st[1]} senden?</h3>
         <p className="shp">An <b>{o.name || o.email}</b> ({o.email}) · Stufe {cur0} von {STAGES.length}{method ? ` · ${method === "wise" ? "Wise" : "PayPal"}-Text (ohne Stripe-Link)` : ""}. {st[2]}.</p>
         {recent ? <p className="shn warn"><AlertTriangle />Die letzte Mahnung ging erst {fmtDT(new Date(lastTs).toISOString())} raus – so kurz danach kann den Kunden verärgern.</p> : null}
-        <div className="ctas2"><button type="button" className="cta gh" onClick={() => setConfirm(false)}>Zurück</button>
+        <button type="button" className="lnkb" disabled={!!busy} onClick={preview} style={{ marginBottom: 6 }}><Eye />{busy === "pv" ? "Lädt …" : "Vorschau ansehen"}</button>
+        <div className="ctas2"><button type="button" className="cta gh" onClick={() => setConfirm(false)}>{direct ? "Andere Stufe" : "Zurück"}</button>
           <button type="button" className={"cta" + (cur0 >= 3 ? " red" : " or")} disabled={!!busy} onClick={send}><Send />{busy === "send" ? "Sendet …" : "Jetzt senden"}</button></div>
       </>
     );
