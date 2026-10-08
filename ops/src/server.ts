@@ -24,6 +24,7 @@ import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf } from "./r
 import { CHAT_INTERNAL } from "./chat/chat";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerOrderAddRoutes } from "./orderAdd";
+import { startPgRemindWorker } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus } from "./partner";
@@ -2340,6 +2341,7 @@ async function start() {
     const payPoll = () => void pollReviewPayments((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Stripe-Abgleich Dashboard-Zahlungen fehlgeschlagen"));
     setTimeout(payPoll, 30_000); setInterval(payPoll, 2 * 60_000);
     startFollowupWorker(app);
+    startPgRemindWorker(app); // „Zahlungsart fehlt noch" – mehrmals täglich (8–20 Uhr Ortszeit), max. 9×, dann Team-Push
     // Sicherheitsnetz: gelöscht, aber keine Zahlungsaufforderung raus → nachholen (alle 10 Min., erster Lauf nach 2 Min.).
     const guard = () => void payRequestGuard((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Sicherheitsnetz Zahlungsaufforderung fehlgeschlagen"));
     setTimeout(guard, 2 * 60_000); setInterval(guard, 10 * 60_000);

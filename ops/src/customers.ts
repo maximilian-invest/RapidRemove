@@ -465,7 +465,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       swWant: status === "software" && !!swWant[k],
       pre: !!it.nt || !!it.sw, // Software-Fall laut Partner-Regel: Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
       // Bestätigter Software-Fall (bei Bestellung zugestimmt): Platz 5 Std. reserviert → Frist fürs Dashboard (Countdown).
-      swDue: status === "software" && (it.nt || it.sw) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,
+      swDue: status === "software" && (it.nt || it.sw || swWant[k]) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,
       waived: cancelled && status === "removed" && !(special ? prepaidFor(k) || isPaid(k) : isPaid(k)), // storniert → nichts mehr zu zahlen
     };
   });
@@ -863,15 +863,18 @@ export async function partnerStatusChanged(
     const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
     const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
-    // Software-Fall, dem der Kunde bei der Bestellung schon zugestimmt hat: Partner hat bestätigt → 5-Stunden-Frist startet,
-    // Zahlungsaufforderung geht gleich (1 Min.) raus statt erst nach 15 Min.
-    const savedPm = it && (it.nt || it.sw) && autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
+    // Seit 08.10.2026: Partner bestätigt „Software möglich" → es geht SOFORT los, keine Zustimmung des Kunden mehr nötig
+    // (Abbuchung erst bei Erfolg). Einzige Voraussetzung: hinterlegte Zahlungsart. Fehlt sie → vormerken (startet automatisch,
+    // sobald sie hinterlegt ist), 5-Std.-Platz + Aufforderung „Zahlungsart hinterlegen" gehen gleich (1 Min.) raus.
+    const savedPm = autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
     if (savedPm) {
-      // Zahlungsart hinterlegt + bei der Bestellung zugestimmt → keine 5-Std.-Vorauszahlung: sofort starten, Abbuchung bei Erfolg.
-      await approveSoftwareDeferred(new Map([[orderId, [itemKey]]]), "bei Bestellung zugestimmt + Zahlungsart hinterlegt");
-    } else if (it && (it.nt || it.sw)) {
+      await approveSoftwareDeferred(new Map([[orderId, [itemKey]]]), "Partner bestätigt + Zahlungsart hinterlegt");
+    } else {
+      const now = new Date().toISOString();
       const conf = { ...((raw.reviewsSwConfirmed as Record<string, string>) || {}) };
-      if (!conf[itemKey]) { conf[itemKey] = new Date().toISOString(); await setOrderRawField(orderId, "reviewsSwConfirmed", conf); }
+      if (!conf[itemKey]) { conf[itemKey] = now; await setOrderRawField(orderId, "reviewsSwConfirmed", conf); }
+      const want = { ...((raw.reviewsSwWant as Record<string, string>) || {}) };
+      if (!want[itemKey]) { want[itemKey] = now; await setOrderRawField(orderId, "reviewsSwWant", want); }
       fast = true;
     }
   } else if (itemKey && ["new", "working", "not_possible"].includes(status) && sw.some((x) => keyOf(x) === itemKey)) {
@@ -977,7 +980,7 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const ch = (d.changes || {}) as Record<string, { from: string | null; to: string }>;
     const changed = view.items.filter((v) => keys.includes(v.key)).map((v) => {
       const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
-      return { key: v.key, url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
+      return { key: v.key, url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre || !!(v as { swWant?: boolean }).swWant, swDue: v.swDue || null };
     });
     out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys, progress: progress && charged ? { ...progress, charged } : progress, charged });
   }

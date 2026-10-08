@@ -297,7 +297,7 @@ async function pushCustomerNow(row: Row, from: string, to: string): Promise<void
   const email = o.rows[0]?.email;
   if (!email) return;
   // Software bestätigt, Kunde hat Zahlungsart hinterlegt → wird ohne Vorauszahlung gestartet: kein „bitte zahlen"-Push.
-  if (to === "software" && row.method === "sw" && autopayHooks.saved && await autopayHooks.saved(email).catch(() => false)) return;
+  if (to === "software" && autopayHooks.saved && await autopayHooks.saved(email).catch(() => false)) return; // startet sofort (keine Kunden-Bestätigung mehr)
   // Bestellung fertig (nichts mehr offen)? → „3 Bewertungen entfernt · Ihre Bestellung … ist abgeschlossen."
   const st = await pool.query(`SELECT status, count(*)::int AS n FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled' GROUP BY status`, [row.order_id]);
   const cnt = Object.fromEntries(st.rows.map((x) => [x.status, x.n])) as Record<string, number>;

@@ -855,7 +855,7 @@ export default function CustomerDashboard() {
   /* ---- Problem-Flow (Spezialist) ---- */
   const openFlow = () => {
     setSheet(null);
-    const all0 = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre, dl: r.swDue || null }));
+    const all0 = sw.map((r) => ({ id: r.id, orderId: r.o.id, key: r.key, name: r.name || T("googleReview"), text: r.text, business: r.o.business, cur: r.o.cur, price: r.o.swPrice, dep: r.o.swDeposit, pre: !!r.pre || !!r.swWant, dl: r.swDue || null }));
     if (!all0.length) return;
     // Ein Zahlungslink = eine Währung: Aufträge in € und $ nicht mischen (sonst zeigt die App die Summe beider, Stripe nur eine).
     const items = all0.filter((i) => i.cur === all0[0].cur);
