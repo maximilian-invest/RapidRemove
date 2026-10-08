@@ -137,7 +137,7 @@ export async function dashLink(email: string, lang?: string | null): Promise<str
   try {
     await ensureCustomerAccount(e);
     const k = crypto.randomBytes(24).toString("base64url");
-    await pool.query(`INSERT INTO cust_magic (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '30 days')`, [sha(k), e]);
+    await pool.query(`INSERT INTO cust_magic (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '7 days')`, [sha(k), e]); // Login-Link aus Mails: 7 Tage (vorher 30)
     return `${DASH_URL}?k=${k}${l}`;
   } catch { return DASH_URL; }
 }

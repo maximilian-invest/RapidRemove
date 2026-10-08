@@ -2313,6 +2313,10 @@ async function start() {
     setTimeout(guard, 2 * 60_000); setInterval(guard, 10 * 60_000);
     // Zwischenzahlung: pausierte Aufträge freigeben, sobald bezahlt (alle 10 Min.; Stripe/Admin lösen es meist schon direkt aus).
     setInterval(() => void payHoldSweep().catch((e) => app.log.error({ err: e }, "Zwischenzahlung-Prüfung fehlgeschlagen")), 10 * 60_000);
+    // Datenschutz: hochgeladene Inhaber-Nachweise 30 Tage nach dem Upload automatisch löschen (Ergebnis/Vermerk bleibt im Verlauf).
+    const purgeDocs = () => void pool?.query(`DELETE FROM cust_verify_docs WHERE created_at < now() - interval '30 days'`)
+      .then((r) => { if (r.rowCount) app.log.info({ n: r.rowCount }, "Inhaber-Nachweise gelöscht (älter als 30 Tage)"); }).catch(() => {});
+    setTimeout(purgeDocs, 5 * 60_000); setInterval(purgeDocs, 6 * 3600_000);
     // Automatisch bezahlen: fehlgeschlagene Abbuchung nach 24 h / 48 h nochmal versuchen (Prüfung alle 30 Min.).
     setInterval(() => void retryTick((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Abbuchung-Wiederholung fehlgeschlagen")), 30 * 60_000);
     // Bestätigte Software-Fälle: ca. 1 Std. vor Ablauf der 5-Std.-Frist einmal erinnern (je Bewertung nur 1×).

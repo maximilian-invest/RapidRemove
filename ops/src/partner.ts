@@ -496,7 +496,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
     // „Removed" belastet den Kunden → nur nach Lenas Prüfung (verified) oder ausdrücklicher Bestätigung, wenn keine Prüfung möglich war.
-    if (!opts.admin && status === "removed" && old.status !== "removed" && !opts.verified && !opts.confirmed) return { error: "verify", code: 409 };
+    if (!opts.admin && status === "removed" && old.status !== "removed" && !opts.verified) return { error: "verify", code: 409 }; // ohne Prüfung KEIN „removed" (auch nicht mit Bestätigung)
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
     const st = status || old.status;
     const r = await pool.query(
@@ -581,8 +581,10 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
           const r = await partnerApply(Number(x.id), "removed", undefined, { quiet: true, preview, verified: true });
           if (r.row) item.task = partnerView(r.row); else item.error = r.error;
         } else if (x.order_id) {
-          await insertEvent({ orderId: x.order_id, type: "note", title: `Lena-Prüfung: ${x.code} ${c.result === "visible" ? "noch sichtbar – nicht als gelöscht übernommen" : "nicht eindeutig"}`, detail: c.reason, auto: true }).catch(() => {});
+          await insertEvent({ orderId: x.order_id, type: "note", title: `Lena-Prüfung: ${x.code} ${c.result === "visible" ? "noch sichtbar – nicht als gelöscht übernommen" : "nicht möglich – Status unverändert"}`, detail: [c.reason, (c as { why?: string }).why].filter(Boolean).join(" · "), auto: true }).catch(() => {});
+          if (c.result === "unknown") void notifyTeam(`${preview ? "TEST · " : ""}Lena-Prüfung nicht möglich · ${x.code}`, String((c as { why?: string }).why || c.reason).slice(0, 180), `${SITE_URL}/admin?order=${encodeURIComponent(x.order_id)}`, { kind: "partner" });
         }
+        delete (item as { why?: string }).why; // interner Grund nicht an den Partner
         out.push(item);
       }
     };

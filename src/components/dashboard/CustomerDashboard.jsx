@@ -147,7 +147,7 @@ function Login({ onToken, notice }) {
             <input type="password" autoComplete="current-password" required value={pw} onChange={(e) => setPw(e.target.value)} />
           </label>
         ) : null}
-        {notice && !err && !info ? <div className="note bad">{notice}</div> : null}
+        {notice && !err && !info ? <div className={"note" + (notice === T("orderLogin") ? "" : " bad")}>{notice}</div> : null}
         {err ? <div className="note bad">{err}</div> : null}
         {info ? <div className="note good">{info}</div> : null}
         <button className="cta" disabled={busy}>{busy ? <Loader className="spin" /> : null}{forgot ? T("sendNewPw") : T("login")}</button>
@@ -640,7 +640,10 @@ export default function CustomerDashboard() {
 
   if (token === null) return <div className="rra" />;
   if (resetK) return <div className="rra"><SetPassword k={resetK} onCancel={() => { setResetK(""); store.set(""); setToken(""); }} onToken={(t) => { setResetK(""); onToken(t); showToast(T("pwSaved")); }} /></div>;
-  if (!token) return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : ""} /></div>;
+  if (!token) {
+    let fromOrder = false; try { fromOrder = new URLSearchParams(window.location.search).get("from") === "order"; } catch (e) { /* */ }
+    return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : fromOrder ? T("orderLogin") : ""} /></div>;
+  }
   if (offerPk) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(T("pkIsOn", { name: pkName() })); }} T={T} />;
   if (gate && data) return <PushGate role="customer" token={token} state={gate} T={T} onDone={(on) => { setGate(null); if (on) showToast(T("pushOn")); }} />;
   if (!data) {

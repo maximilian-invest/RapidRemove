@@ -70,7 +70,7 @@ export default function RemovalCheck({ state, token, onClose, onAgain, onConfirm
         ) : (
           <>
             <button type="button" className="rck-x" onClick={onClose} aria-label="Close"><X /></button>
-            <h3>{vis.length ? "Still visible on Google" : unk.length ? "Couldn’t verify automatically" : "Check finished"}</h3>
+            <h3>{vis.length ? "Still visible on Google" : unk.length ? "Check not possible right now" : "Check finished"}</h3>
             {gone.length ? <div className="rck-row ok"><CheckCircle2 /><span><b>{gone.map((r) => r.code).join(", ")}</b> verified – removed</span></div> : null}
             {vis.map((r) => (
               <div key={r.id} className="rck-item vis">
@@ -82,7 +82,7 @@ export default function RemovalCheck({ state, token, onClose, onAgain, onConfirm
             {unk.map((r) => (
               <div key={r.id} className="rck-item unk">
                 <div className="rck-row"><HelpCircle /><span><b>{r.code}</b> – {r.reason || "the check was not conclusive."}</span></div>
-                <button type="button" className="rck-confirm" onClick={() => onConfirm([r.id])}><ShieldCheck />Yes, it’s removed – charge the customer</button>
+                <p className="rck-why">Nothing was changed and the customer is not charged. Please try again in a few minutes – RapidRemove has been notified.</p>
               </div>
             ))}
             {skip.length ? <p className="rck-why">{skip.map((r) => `${r.code}: ${r.reason}`).join(" · ")}</p> : null}
