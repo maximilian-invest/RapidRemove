@@ -18,6 +18,7 @@ import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
 import { isTestEmail } from "./testAccounts";
+import KundenPreisKorrektur, { preisKorrekturSubject } from "./emails/KundenPreisKorrektur";
 
 const SITE_URL = (process.env.SITE_URL || "https://rapid-remove.com").replace(/\/+$/, "");
 const MAIL_LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
@@ -218,7 +219,40 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
 }
 
 /* ---------- Admin: Preise eines bestehenden Auftrags anpassen (individueller Preis je Bewertung bzw. Profil-Preis) ---------- */
+/* Mail „Preis korrigiert" an den Kunden: Gesamtwert (+ Preis je Bewertung, wenn alle gleich). */
+async function sendPriceMail(o: OrderRow, items: { cp?: number }[], total: number): Promise<void> {
+  const lang = MAIL_LANGS.includes(String(o.lang || "")) ? String(o.lang) : "en";
+  const usd = String(o.country || "").toUpperCase() === "US";
+  const fmt = (v: number) => new Intl.NumberFormat(lang === "en" && !usd ? "en-IE" : lang, { style: "currency", currency: usd ? "USD" : "EUR", minimumFractionDigits: Number.isInteger(v) ? 0 : 2, maximumFractionDigits: 2 }).format(v);
+  const cps = items.map((it) => Number(it.cp) || 0);
+  const per = cps.length && cps.every((v) => v > 0 && v === cps[0]) ? fmt(cps[0]) : undefined;
+  const props = { lang, name: o.name || "", orderId: o.id, per, n: items.length, total: fmt(total), dashUrl: await dashLink(o.email, lang) };
+  const html = await render(React.createElement(KundenPreisKorrektur, props));
+  await sendMail({ to: o.email, subject: preisKorrekturSubject(props), html, replyTo: process.env.MAIL_REPLY_TO });
+  await insertEvent({ orderId: o.id, type: "mail", title: `Mail an Kunden: Preis korrigiert · Gesamtwert ${fmt(total)}` });
+}
+
+/* Einmalig (08.10.2026): RR-670348 – Preis wurde im Admin bereits auf 500 € korrigiert, Kunde bekommt die Korrektur-Mail. */
+async function oneOffPriceMails(): Promise<void> {
+  if (!pool) return;
+  for (const id of ["RR-670348"]) {
+    try {
+      const o = await loadOrder(id);
+      if (!o) continue;
+      const amt = Number((o.raw || {}).amount);
+      if (!(amt >= 499 && amt <= 501)) { console.warn(`[price-mail] ${id}: Betrag ${amt} ≠ 500 – nicht gesendet`); continue; }
+      await pool.query(`CREATE TABLE IF NOT EXISTS ops_flags (key text PRIMARY KEY, created_at timestamptz NOT NULL DEFAULT now())`);
+      const f = await pool.query(`INSERT INTO ops_flags (key) VALUES ($1) ON CONFLICT DO NOTHING RETURNING key`, ["price-mail-" + id]);
+      if (!f.rowCount) continue;
+      const items = (Array.isArray((o.raw || {}).reviewItems) ? (o.raw || {}).reviewItems : []) as { cp?: number }[];
+      await sendPriceMail(o, items, amt);
+      console.log(`[price-mail] ${id}: Korrektur-Mail gesendet`);
+    } catch (e) { console.error("[price-mail]", id, e); }
+  }
+}
+
 export function registerPriceEditRoute(app: FastifyInstance, adminToken: string): void {
+  setTimeout(() => { void oneOffPriceMails(); }, 60_000);
   app.post("/admin/orders/prices", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
@@ -254,6 +288,7 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     await setOrderRawField(o.id, "amount", total);
     await pool.query(`UPDATE orders SET amount=$2 WHERE id=$1`, [o.id, total]);
     if (changes.length) await insertEvent({ orderId: o.id, type: "note", title: `Preise angepasst (Admin) · Bestellwert ${total} ${cur.toUpperCase()}`, detail: changes.join(" · ") });
+    if (b.notify === true) await sendPriceMail(o, next as { cp?: number }[], total).catch((e) => console.error("[price-mail]", e));
     bumpChange();
     return { ok: true, amount: total };
   });

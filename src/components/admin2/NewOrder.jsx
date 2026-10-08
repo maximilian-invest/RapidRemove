@@ -336,7 +336,7 @@ export default function NewOrder({ ctx }) {
         <div className="sec3" style={{ marginTop: 20 }}><h2>Preis</h2></div>
         <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(179)} / ${fmt(229)} älter, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
           <div className="usrch nain"><Tag /><input inputMode="decimal" placeholder={s.type === "reviews" ? "Preisliste" : String(PROFILE_PRICE[cur])} value={s.type === "reviews" ? s.cpAll : s.profAmt}
-            onChange={(e) => set(s.type === "reviews" ? { cpAll: e.target.value } : { profAmt: e.target.value })} /><b className="curx">{cur}</b></div></label>
+            onChange={(e) => set(s.type === "reviews" ? { cpAll: e.target.value, cpMap: {} } : { profAmt: e.target.value })} /><b className="curx">{cur}</b></div></label>
         {s.type === "reviews" && items.length > 1 ? <button type="button" className="nasel" onClick={() => set((x) => ({ cpOpen: !x.cpOpen }))}>{s.cpOpen ? <><X />Einzelpreise schließen</> : <><Tag />Einzeln anpassen</>}</button> : null}
         {s.type === "reviews" && s.cpOpen ? (
           <div className="card ls narl">

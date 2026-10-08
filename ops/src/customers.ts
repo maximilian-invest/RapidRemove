@@ -501,7 +501,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
     pct, swPrice: swUnit, swDeposit: swUnit, toPay, // swDeposit = Vorauszahlung = voller Preis
-    items: view.map(({ special, old, cp, ...v }) => v),
+    items: view.map(({ special, cp, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").
     history: payments.filter((p) => p.paid).map((p) => ({
       id: p.id, kind: p.kind, amount: p.amount, cur: p.cur, paid: p.paid, auto: p.via === "autopay", invoiceUrl: p.via === "autopay" ? p.url : null, n: p.n || (p.keys || []).length + (p.refs || []).length || null,
@@ -877,6 +877,15 @@ export async function partnerStatusChanged(
     // Seit 08.10.2026: Partner bestätigt „Software möglich" → es geht SOFORT los, keine Zustimmung des Kunden mehr nötig
     // (Abbuchung erst bei Erfolg). Einzige Voraussetzung: hinterlegte Zahlungsart. Fehlt sie → vormerken (startet automatisch,
     // sobald sie hinterlegt ist), 5-Std.-Platz + Aufforderung „Zahlungsart hinterlegen" gehen gleich (1 Min.) raus.
+    // Festpreis (AGB 6.1): wurde die Bewertung NICHT als Software-Fall bestellt (z. B. 179/229), bleibt es beim bestellten Preis –
+    // auch wenn wir per Software löschen. Der bestellte Preis wird als individueller Preis (cp) am Auftrag festgeschrieben.
+    if (it && !it.nt && !it.sw && !cpOf(it as { cp?: unknown })) {
+      const all: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
+      const pct = Math.max(reviewDiscountPct(all.length), chatPctOf(raw));
+      const quoted = Math.round(((it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE) * (100 - pct)) / 100);
+      await setOrderRawField(orderId, "reviewItems", all.map((x) => (keyOf(x) === itemKey ? { ...x, cp: quoted } : x)));
+      await insertEvent({ orderId, type: "note", title: `Software-Löschung zum bestellten Preis (${quoted})`, detail: "Bewertung war nicht als Software-Fall bestellt → Festpreis laut Bestellung bleibt", auto: true }).catch(() => {});
+    }
     const savedPm = autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
     if (savedPm) {
       await approveSoftwareDeferred(new Map([[orderId, [itemKey]]]), "Partner bestätigt + Zahlungsart hinterlegt");

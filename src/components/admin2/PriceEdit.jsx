@@ -19,6 +19,7 @@ export default function PriceEdit({ ctx, id }) {
   const [map, setMap] = React.useState(() => Object.fromEntries(items.filter((it) => Number(it.cp) > 0).map((it) => [keyOf(it), String(it.cp)])));
   const [prof, setProf] = React.useState(o ? String(o.amount || "") : "");
   const [busy, setBusy] = React.useState(false);
+  const [notify, setNotify] = React.useState(true);
   if (!o) return <Nav back={back} isDesk={isDesk} />;
   const c = o.country === "US" ? "$" : "€";
   const ptBy = Object.fromEntries((ptasks[o.id] || []).map((t) => [t.itemKey, t]));
@@ -28,9 +29,9 @@ export default function PriceEdit({ ctx, id }) {
     setBusy(true);
     try {
       const r = isRev
-        ? await setOrderPricesApi({ orderId: o.id, prices: Object.fromEntries(items.map((it) => [keyOf(it), num(map[keyOf(it)]) || num(all) || null])) })
+        ? await setOrderPricesApi({ orderId: o.id, prices: Object.fromEntries(items.map((it) => [keyOf(it), num(map[keyOf(it)]) || num(all) || null])), notify })
         : await setOrderPricesApi({ orderId: o.id, amount: num(prof) });
-      toast(`Gespeichert · Bestellwert ${money(r.amount, c)}`);
+      toast(`Gespeichert · Bestellwert ${money(r.amount, c)}${isRev && notify ? " · Kunde informiert" : ""}`);
       if (refresh) refresh(true);
       back();
     } catch (e) { toast("Fehler: " + e.message); }
@@ -61,6 +62,12 @@ export default function PriceEdit({ ctx, id }) {
         <label className="naf"><span>Preis des Auftrags</span>
           <div className="usrch nain"><Tag /><input inputMode="decimal" value={prof} onChange={(e) => setProf(e.target.value)} /><b className="curx">{c}</b></div></label>
       )}
+      {isRev ? (
+        <label className="pnotify" style={{ display: "flex", alignItems: "center", gap: 10, margin: "14px 2px 0", fontSize: 14, cursor: "pointer" }}>
+          <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} style={{ width: 18, height: 18, accentColor: "var(--or, #f97316)" }} />
+          <span>Kunde per Mail über den korrigierten Preis informieren</span>
+        </label>
+      ) : null}
       <div className="natot"><span>{isRev ? `${items.length} Bewertungen · Bestellwert` : "Bestellwert"}</span><b>{money(total || 0, c)}</b></div>
       <div className="nastick">
         <button type="button" className="cta or" disabled={busy || (!isRev && !num(prof))} onClick={save}>{busy ? <Loader className="spin" /> : <Check />}{busy ? "Speichert …" : "Preise speichern"}</button>

@@ -80,7 +80,7 @@ export function ActivityRow({ o, onOpen }) {
         <span className="ico"><ActIcon /></span>
         <span className="t"><span>Dashboard-Aktivität</span>
           <b style={{ color: !a ? "var(--g3)" : seen ? "var(--ink)" : "var(--danger)" }}>
-            {!a ? "Lädt …" : seen ? `Zuletzt ${relTime(a.lastSeenAt || (last && last.ts))}${last ? " · " + ACT_EV[last.type][1] : ""}` : "Noch nie eingeloggt"}</b></span>
+            {!a ? "Lädt …" : seen ? `Zuletzt ${relTime(a.lastSeenAt || (last && last.ts))}${last ? " · " + (ACT_EV[last.type] || [null, last.type])[1] : ""}` : "Noch nie eingeloggt"}</b></span>
         {seen && logins ? <span className="alive">{logins}×</span> : null}
         <ChevronRight />
       </button>
