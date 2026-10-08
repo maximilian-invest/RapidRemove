@@ -689,6 +689,8 @@ export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
 export const placeReviews = (placeId, lang) => adminPost("/admin/places/reviews", { placeId, lang: lang || "de" });
 /** Nachbestellung: Bewertungen zu bestehendem Auftrag (gate: Zahlungsart-Pflicht für die neuen, falls noch keine hinterlegt). */
 export const addReviewsToOrderApi = (p) => adminPost("/admin/orders/add-reviews", p);
+/** Preise eines bestehenden Auftrags: { orderId, prices: { itemKey: Preis | null } } bzw. { orderId, amount } (Profil). */
+export const setOrderPricesApi = (p) => adminPost("/admin/orders/prices", p);
 /** Bewertungs-Link auflösen → { place, review:{name,rating,days,text}|null }. */
 export const resolveReviewLinkApi = (link) => adminPost("/admin/reviews/resolve", { link, lang: "de" });
 /** Admin (neu) · Mahnung: Vorschau/Versand über die bestehenden Endpunkte (preview:true = nur rendern). */

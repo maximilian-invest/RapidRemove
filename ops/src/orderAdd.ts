@@ -216,3 +216,45 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     return r.ok ? { ok: true, added: r.added, gate: r.gate } : reply.code(r.error === "already_ordered" ? 409 : 400).send({ ok: false, error: r.error });
   });
 }
+
+/* ---------- Admin: Preise eines bestehenden Auftrags anpassen (individueller Preis je Bewertung bzw. Profil-Preis) ---------- */
+export function registerPriceEditRoute(app: FastifyInstance, adminToken: string): void {
+  app.post("/admin/orders/prices", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "db" });
+    const o = await loadOrder(clip(b.orderId, 40));
+    if (!o) return reply.code(404).send({ ok: false, error: "order" });
+    const raw = (o.raw || {}) as Record<string, unknown>;
+    const cur = String(o.country || "").toUpperCase() === "US" ? "usd" : "eur";
+    if (o.service !== "reviews") {
+      const amt = Number(b.amount);
+      if (!(amt > 0 && amt < 100000)) return reply.code(400).send({ ok: false, error: "amount" });
+      const v = Math.round(amt * 100) / 100;
+      await pool.query(`UPDATE orders SET amount=$2 WHERE id=$1`, [o.id, v]);
+      await setOrderRawField(o.id, "amount", v);
+      await insertEvent({ orderId: o.id, type: "note", title: `Preis angepasst (Admin): ${v} ${cur.toUpperCase()}` });
+      bumpChange();
+      return { ok: true, amount: v };
+    }
+    const prices = (b.prices && typeof b.prices === "object" ? b.prices : {}) as Record<string, unknown>;
+    const paidKeys = new Set<string>(Array.isArray(raw.reviewsPaidKeys) ? (raw.reviewsPaidKeys as string[]) : []);
+    const items = (Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as (AddItem & { cp?: number })[];
+    const changes: string[] = [];
+    const next = items.map((it) => {
+      const k = keyOf(it);
+      if (!(k in prices) || paidKeys.has(k)) return it; // bezahlte Bewertungen nicht mehr ändern
+      const v = cpOf({ cp: prices[k] });
+      const { cp: _old, ...rest } = it;
+      changes.push(`${it.name || it.url || k}: ${v ? v : "Preisliste"}`);
+      return v ? { ...rest, cp: v } : rest;
+    });
+    const total = quoteReviews(next, cur).total;
+    await setOrderRawField(o.id, "reviewItems", next);
+    await setOrderRawField(o.id, "amount", total);
+    await pool.query(`UPDATE orders SET amount=$2 WHERE id=$1`, [o.id, total]);
+    if (changes.length) await insertEvent({ orderId: o.id, type: "note", title: `Preise angepasst (Admin) · Bestellwert ${total} ${cur.toUpperCase()}`, detail: changes.join(" · ") });
+    bumpChange();
+    return { ok: true, amount: total };
+  });
+}

@@ -226,6 +226,7 @@ export function OrderDetail({ ctx, id }) {
           <ChevronRight /></button>
         {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
         <MailRow o={o} ctx={ctx} payOpen={payOpen(o, now, ptasks)} />
+        {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("prices", o.id)}><span className="ico"><Percent /></span><span className="t"><span>Preis</span><b>{orderMoney(o)} · anpassen</b></span><ChevronRight /></button> : null}
       </div>
       <div className="cact">
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>
