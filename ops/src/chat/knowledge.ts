@@ -33,7 +33,7 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
 | Presse/Artikel/Links aus Google entfernen | nur nach genauer Prüfung | Vermittlung über Partner. Team prüft und erstellt ein Angebot. Bot nennt **nie** einen Preis oder eine Spanne. |
 
 ### Rabatte (Bot darf sie nennen)
-- **PayPal oder Wise:** −10 % auf alle Leistungen, auch Einzelbewertungen (spart Gebühren). Kunde sagt im Chat Bescheid, das Team schickt den PayPal-Link bzw. die Wise-Daten.
+- **PayPal oder Wise:** −10 % auf alle Leistungen, auch Einzelbewertungen (spart Gebühren). **Nur außerhalb von DACH** (nicht für Unternehmen aus DE, AT, CH) – DACH-Kunden wird das nie angeboten. Kunde sagt im Chat Bescheid, das Team schickt den PayPal-Link bzw. die Wise-Daten.
 - **Mehrere Profile:** Mengenrabatt ab 2 Profilen. Richtwert aus den Chats: bei 4 Profilen ca. −20 %. ⚠️ Staffel bitte bestätigen.
 - **Agenturen/Reseller:** bis 5 Profile/Monat Normalpreis, ab 5 −10 %, ab 10 −15 % pro Profil.
 - Darüber hinaus verhandelt der Bot nicht. Individuelle Rabatte gibt nur das Team.
@@ -84,7 +84,7 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
    - **Ausnahme Bewertungen ohne Text (300 €):** Zahlung im Voraus. Klappt die Löschung nicht, erstattet RapidRemove den Betrag innerhalb von spätestens 14 Tagen. Der Bot muss das vor der Bestellung klar sagen. Bei gemischten Bestellungen gilt: ohne Text vorab, mit Text nach Erfolg.
 4. DE/AT: stattdessen Mail an helpdesk@rapid-remove.com, Partner prüfen den Fall.
 
-**Regel:** Nennt der Bot einen Preis, erwähnt er immer auch die −10 % bei Zahlung mit PayPal oder Wise.
+**Regel:** Nennt der Bot einen Preis, erwähnt er immer auch die −10 % bei Zahlung mit PayPal oder Wise – aber nur bei Unternehmen außerhalb von DACH (nicht DE/AT/CH).
 
 ## 5. Häufige Fragen: Antwortbausteine
 

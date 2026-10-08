@@ -70,7 +70,10 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   // Alte Bewertungen mit Text aus einem US-Profil → Software (Partner-Regel); Land kommt aus dem Profil-Link.
   const swOf = (r) => co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim();
   // Bewertungen: Währung nach Land des Profils (aus dem Link), sonst nach dem angegebenen Land.
-  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref: f.payPref });
+  // PayPal/Wise −10 % nur außerhalb von DACH (DE/AT/CH) – dort gibt es die Auswahl gar nicht.
+  const dach = ["DE", "AT", "CH"].includes(f.country) || ["DE", "AT", "CH"].includes(co.placeCountry || "");
+  const payPref = dach ? "none" : f.payPref;
+  const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref });
   const legal = (k) => pagePath(k, lang);
   const submit = async () => {
     const b = {};
@@ -86,7 +89,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     try {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
-        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref: f.payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
@@ -115,7 +118,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-top"><b>{c.title}</b><button type="button" onClick={onClose} aria-label={c.back}><X /></button></div>
       <div className="co-body">
         <div className="co-sum">
-          <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && f.payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
+          <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
           {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old" && !swOf(r)) ? ` / ${fmt(229, p.usd)}` : ""}{p.nSw ? ` / ${fmt(300, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {isRev && p.nSw ? <div className="cs-sw">{p.nSw} × {fmt(300, p.usd)} · {c.sw}</div> : null}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
@@ -154,10 +157,12 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
         {F("name", c.name, { autoComplete: "name" })}
         {F("email", c.email, { type: "email", autoComplete: "email", inputMode: "email" })}
         {F("phone", c.phone, { type: "tel", autoComplete: "tel" })}
+        {dach ? null : (<>
         <span className="co-l">{c.pay}</span>
         <div className="co-pay">
           {[["none", c.card], ["paypal", "PayPal −10 %"], ["wise", "Wise −10 %"]].map(([k, l]) => <button key={k} type="button" className={f.payPref === k ? "on" : ""} onClick={() => set("payPref")(k)}>{l}</button>)}
         </div>
+        </>)}
         <label className={"co-agb" + (bad.agb ? " bad" : "")}>
           <input type="checkbox" checked={f.agb} onChange={set("agb")} />
           <span>{c.agb1} <a href={legal("agb")} target="_blank" rel="noopener noreferrer">{c.agbL}</a> {c.agb2} <a href={legal("datenschutz")} target="_blank" rel="noopener noreferrer">{c.dsL}</a> {c.agb3}</span>

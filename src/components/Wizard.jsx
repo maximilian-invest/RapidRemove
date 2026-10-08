@@ -2229,7 +2229,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Wise/PayPal −10 % zeigen; die Auswahl geht als payPref mit der Bestellung mit.
   const submit = () => {
     if (!validateCheckout()) return;
-    if (lang !== "de") { setPayAsk(true); return; }
+    // Land des Google-Profils (nicht die Website-Sprache); unbekannt → deutschsprachig gilt als DACH.
+    const bizCc = revPlace ? String(revPlace.cc || addrCountry(revPlace.addr || "") || "").toUpperCase() : "";
+    const dach = bizCc ? ["DE", "AT", "CH"].includes(bizCc) : lang === "de";
+    if (!dach) { setPayAsk(true); return; }
     doSubmit("");
   };
   const validateCheckout = () => {

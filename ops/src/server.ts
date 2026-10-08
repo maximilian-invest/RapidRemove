@@ -586,6 +586,7 @@ app.post("/order", async (req, reply) => {
       b.affiliate = affiliate; // aufgelösten Partner im raw-JSON mitspeichern → Admin zeigt ihn an
       // Rabatt-Abfrage beim Absenden: nur bekannte Werte speichern.
       b.payPref = ["wise", "paypal", "none"].includes(String(b.payPref)) ? String(b.payPref) : undefined;
+      if (["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase()) && b.payPref !== "none") b.payPref = undefined; // PayPal/Wise −10 % nur außerhalb von DACH
       // Website-Chat: Rabatt NUR über den internen Aufruf aus /chat/site/order (nie vom Browser direkt).
       b.chatPct = req.headers["x-rr-chat"] === CHAT_INTERNAL ? (Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) || undefined) : undefined;
       await insertOrder({
