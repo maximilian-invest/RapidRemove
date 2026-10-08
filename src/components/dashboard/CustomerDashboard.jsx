@@ -759,6 +759,15 @@ export default function CustomerDashboard() {
       if (busy) return;
       if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
       setBusy("flow");
+      if (data && data.autopay) { // Zahlungsart hinterlegt → zustimmen ohne Vorauszahlung (kein Stripe-Tab)
+        try {
+          if (des.length) await call("software", { token, decision: "decline", items: flowRefs(des) });
+          await call("software", { token, decision: "accept", items: flowRefs(sel) });
+          setFlow({ ...f, step: 4, mode: "approved", items: sel, pick: new Set(sel.map((i) => i.id)) });
+        } catch (e) { showToast(T("genericErr"), true); }
+        setBusy(""); load(token);
+        return;
+      }
       let w = null;
       try { w = window.open("", "_blank"); } catch (e) { w = null; }
       try {
@@ -1125,9 +1134,22 @@ export default function CustomerDashboard() {
           
         </>
       );
-      btn = n ? T("contPay") : T("declineAll", { amount: money(0, cur) });
+      btn = n ? (ap ? T("cont") : T("contPay")) : T("declineAll", { amount: money(0, cur) });
     }
-    if (S === 3) {
+    if (S === 3 && ap) {
+      // Zahlungsart hinterlegt → keine Vorauszahlung: zustimmen, wir starten, Abbuchung erst bei Erfolg.
+      body = (
+        <>
+          <div className="fl-k">{T("dfK")}</div>
+          <h2>{T("dfH")}</h2>
+          <p>{T("dfP", { pm: ap.label })}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
+          <div className="sw-items">{sel.map((i) => <div key={i.id} className="sw-it"><span><b>{i.name}</b><span>{i.business}</span></span><b>{money(i.price, cur)}</b></div>)}</div>
+          <div className="totl"><span>{T("dfTot")}</span><b>{money(full, cur)}</b></div>
+          <div className="secure"><CreditCard />{ap.label}</div>
+        </>
+      );
+      btn = T("dfBtn"); cls = "or";
+    } else if (S === 3) {
       // Schon bei der Bestellung zugestimmt → keine Erklärungen mehr: „angenommen, bitte binnen 5 Std. zahlen" + Countdown.
       const dl = f.pre ? Math.min(...sel.map((i) => (i.dl ? new Date(i.dl).getTime() : Infinity))) : Infinity;
       body = f.pre ? (
@@ -1160,8 +1182,8 @@ export default function CustomerDashboard() {
       body = (
         <>
           <div className="fl-art"><img src={IMG.rocket} alt="" /></div>
-          <h2>{f.mode === "declined" ? T("f4hDeclined") : paid ? T("f4hPaid") : T("f4hWait")}</h2>
-          <p>{f.mode === "declined" ? T("f4pDeclined") : paid ? T("f4pPaid", { amount: money(dep, cur), n }) : T("f4pWait")}</p>
+          <h2>{f.mode === "declined" ? T("f4hDeclined") : f.mode === "approved" ? T("dfDoneH") : paid ? T("f4hPaid") : T("f4hWait")}</h2>
+          <p>{f.mode === "declined" ? T("f4pDeclined") : f.mode === "approved" ? T("dfDoneP", { amount: money(full, cur) }) : paid ? T("f4pPaid", { amount: money(dep, cur), n }) : T("f4pWait")}</p>
           {waiting && f.url ? <a className="fl-again" href={f.url} target="_blank" rel="noopener noreferrer">{T("openAgain")}</a> : null}
         </>
       );
@@ -1176,7 +1198,7 @@ export default function CustomerDashboard() {
         <div className="fl-body">{body}</div>
         <div className="fl-foot">
           {S > 0 && S < 4 && !f.pre ? <button className="bk" onClick={() => setFlow({ ...f, step: S - 1 })} aria-label="Back"><ArrowLeft /></button> : null}
-          <button className={"cta " + cls} disabled={busy === "flow"} onClick={flowNext}>{busy === "flow" ? <Loader className="spin" /> : S === 3 ? <Lock /> : null}{btn}</button>
+          <button className={"cta " + cls} disabled={busy === "flow"} onClick={flowNext}>{busy === "flow" ? <Loader className="spin" /> : S === 3 ? (ap ? <Check /> : <Lock />) : null}{btn}</button>
         </div>
       </div>
     );

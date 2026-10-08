@@ -175,6 +175,7 @@ export type CustPayment = {
 export type AutoCharged = { amount: number; cur: string; label: string; invoiceUrl: string };
 export const autopayHooks: {
   charge?: (email: string) => Promise<AutoCharged | null>;
+  saved?: (email: string) => Promise<boolean>; // gültige Zahlungsart hinterlegt
   info?: (email: string) => Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
 } = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");
@@ -195,6 +196,8 @@ export async function addOrderPayment(orderId: string, p: Omit<CustPayment, "id"
 export const SW_HOLD_H = 5;
 export const SW_NOTE_PAID = "Kunde hat die Software-Vorauszahlung bezahlt (Dashboard) → bitte starten";
 export const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
+/** Kunde mit hinterlegter Zahlungsart hat zugestimmt – keine Vorauszahlung, Abbuchung erst bei Erfolg. */
+export const SW_NOTE_APPROVED = "Kunde hat zugestimmt – zahlt bei Erfolg (hinterlegte Zahlungsart) → bitte starten";
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
 
 async function rawOf(orderId: string): Promise<Record<string, unknown> | null> {
@@ -202,12 +205,12 @@ async function rawOf(orderId: string): Promise<Record<string, unknown> | null> {
   const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [orderId]);
   return r.rows[0] ? ((r.rows[0].raw || {}) as Record<string, unknown>) : null;
 }
-type Decision = { d: "accepted" | "declined"; at: string };
-async function setDecisions(orderId: string, keys: string[], d: Decision["d"]): Promise<void> {
+type Decision = { d: "accepted" | "declined"; at: string; def?: boolean }; // def = zugestimmt ohne Vorauszahlung (Abbuchung bei Erfolg)
+async function setDecisions(orderId: string, keys: string[], d: Decision["d"], def = false): Promise<void> {
   const raw = await rawOf(orderId);
   if (!raw) return;
   const dec = { ...((raw.reviewsSwDecision as Record<string, Decision>) || {}) };
-  for (const k of keys) dec[k] = { d, at: new Date().toISOString() };
+  for (const k of keys) dec[k] = { d, at: new Date().toISOString(), ...(def ? { def: true } : {}) };
   await setOrderRawField(orderId, "reviewsSwDecision", dec);
 }
 async function addPaidKeys(orderId: string, keys: string[]): Promise<void> {
@@ -258,6 +261,37 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
     void notifyPartner(`${test ? "TEST · " : ""}Customer paid`, `${paidCodes.slice(0, 4).join(", ") || `${n} review${n > 1 ? "s" : ""}`} · Software approved – start now.`, undefined, test);
   }
   if (n) void notifyTeam(`Software bezahlt · ${p.amount} ${String(p.cur).toUpperCase()}`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner startet (In Arbeit)`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+}
+
+/** Software-Fall OHNE Vorauszahlung freigeben (Kunde hat Zahlungsart hinterlegt): Partner startet sofort, abgebucht wird bei Erfolg. */
+export async function approveSoftwareDeferred(groups: Map<string, string[]>, why: string): Promise<number> {
+  if (!pool) return 0;
+  let n = 0; const codes: string[] = []; let test = false; let first = "";
+  for (const [o, ks] of groups) {
+    if (!ks.length) continue;
+    first = first || o;
+    await setDecisions(o, ks, "accepted", true);
+    const u = await pool.query(
+      `UPDATE partner_tasks SET status='working', working_since=now(), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL, ${appendNote("admin_note", 3)}
+        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING code, test`,
+      [o, ks, SW_NOTE_APPROVED],
+    ).catch(() => ({ rows: [] as { code: string; test: boolean }[], rowCount: 0 }));
+    u.rows.forEach((x) => { if (x.code) codes.push(x.code); if (x.test) test = true; });
+    n += ks.length;
+    await insertEvent({ orderId: o, type: "note", title: `Software freigegeben ohne Vorauszahlung (${why})`, detail: `${ks.length} Bewertung(en) · Partner startet · Abbuchung von der hinterlegten Zahlungsart erst bei Erfolg`, auto: true }).catch(() => {});
+  }
+  if (n) {
+    void notifyPartner(`${test ? "TEST · " : ""}Customer approved`, `${codes.slice(0, 4).join(", ") || `${n} review${n > 1 ? "s" : ""}`} · Software approved – start now.`, undefined, test);
+    void notifyTeam(`${test ? "TEST · " : ""}Software freigegeben (zahlt bei Erfolg)`, `${n} Bewertung(en) · Auftrag ${first} · Partner startet`, `${SITE_URL}/admin?order=${encodeURIComponent(first)}`, { kind: "customer" });
+  }
+  return n;
+}
+/** Zahlungsart neu hinterlegt → bestätigte Software-Fälle mit Zustimmung bei der Bestellung (pre), die noch auf die Vorauszahlung warten, sofort starten. */
+export async function approvePendingPre(email: string): Promise<number> {
+  const { orders } = await loadCustomerOrders(email.toLowerCase());
+  const g = new Map<string, string[]>();
+  for (const o of orders) for (const it of o.items) if (it.status === "software" && it.pre) g.set(o.id, [...(g.get(o.id) || []), it.key]);
+  return g.size ? approveSoftwareDeferred(g, "Zahlungsart hinterlegt") : 0;
 }
 
 /** Stripe-Zahlung der passenden offenen Zahlung zuordnen: zuerst über client_reference_id (rr_<id>), sonst E-Mail + Betrag. */
@@ -374,7 +408,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const chatPct = chatPctOf(raw);
   const pct = Math.max(reviewDiscountPct(items.length), chatPct); // Mengen- oder Chat-Rabatt (der höhere)
   const disc = (v: number) => Math.round((v * (100 - pct)) / 100);
-  const swPaidFor = (k: string) => decisions[k]?.d === "accepted" || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
+  // Software vorab bezahlt (Zustimmung OHNE def = nach Zahlung). Zustimmung mit def (hinterlegte Zahlungsart) = gestartet, aber erst bei Erfolg fällig.
+  const swPaidFor = (k: string) => (decisions[k]?.d === "accepted" && !decisions[k]?.def) || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
   // Spezialverfahren wird voll im Voraus bezahlt (Software-Zahlung oder Vorauszahlung „ohne Text" aus der Startbestätigung).
   const prepaidFor = (k: string) => swPaidFor(k) || payments.some((p) => p.kind === "deposit" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : true));
   // Bezahlt? 1) Dashboard/Webhook (reviewsPaidKeys) bzw. Zahlung mit Schlüssel, 2) Alt-Rechnungen ohne Schlüssel, 3) Auftrag bezahlt.
@@ -397,14 +432,14 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     if (rem.has(k) || ps === "removed") status = "removed";
     else if (cancelled) status = "cancelled";
     else if (dec === "declined") status = "sw_declined";
-    else if (swPaidFor(k)) status = "sw_accepted";
+    else if (swPaidFor(k) || decisions[k]?.d === "accepted") status = "sw_accepted";
     else if (ps === "software" || sw.has(k)) status = "software";
     else if (ps === "not_possible") status = "notpossible";
     else if (ps === "working") status = "working";
     else if (acc.has(k)) status = "working";
     else if (accepted) status = "notpossible";
     else status = "new";
-    const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k);
+    const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
     const price = special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE);
     return {
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
@@ -639,6 +674,15 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
       return { ok: true, declined: picks.length };
     }
     const cur = byId.get(picks[0].o)!.cur as "usd" | "eur";
+    // Zahlungsart hinterlegt → keine Vorauszahlung: zustimmen, Partner startet, Abbuchung erst bei Erfolg.
+    if (autopayHooks.saved && await autopayHooks.saved(email).catch(() => false)) {
+      const g = new Map<string, string[]>();
+      for (const p of picks) g.set(p.o, [...(g.get(p.o) || []), p.k]);
+      const n = await approveSoftwareDeferred(g, "Kunde im Dashboard");
+      const amt = picks.reduce((s, p) => s + byId.get(p.o)!.swPrice, 0);
+      void logCustEvent(email, "software_accept", `Spezial-Software zugestimmt · ${picks.length} Bewertung(en) · zahlt bei Erfolg`, { amount: amt, cur, n: picks.length, deferred: true }, { orderId: picks[0].o });
+      return { ok: true, deferred: true, n, amount: amt, cur };
+    }
     picks = picks.filter((p) => byId.get(p.o)!.cur === cur);
     const amount = picks.reduce((s, p) => s + byId.get(p.o)!.swDeposit, 0);
     const url = await payLink("software", picks, amount, cur, orders);
@@ -768,7 +812,11 @@ export async function partnerStatusChanged(
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
     // Software-Fall, dem der Kunde bei der Bestellung schon zugestimmt hat: Partner hat bestätigt → 5-Stunden-Frist startet,
     // Zahlungsaufforderung geht gleich (1 Min.) raus statt erst nach 15 Min.
-    if (it && (it.nt || it.sw)) {
+    const savedPm = it && (it.nt || it.sw) && autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
+    if (savedPm) {
+      // Zahlungsart hinterlegt + bei der Bestellung zugestimmt → keine 5-Std.-Vorauszahlung: sofort starten, Abbuchung bei Erfolg.
+      await approveSoftwareDeferred(new Map([[orderId, [itemKey]]]), "bei Bestellung zugestimmt + Zahlungsart hinterlegt");
+    } else if (it && (it.nt || it.sw)) {
       const conf = { ...((raw.reviewsSwConfirmed as Record<string, string>) || {}) };
       if (!conf[itemKey]) { conf[itemKey] = new Date().toISOString(); await setOrderRawField(orderId, "reviewsSwConfirmed", conf); }
       fast = true;

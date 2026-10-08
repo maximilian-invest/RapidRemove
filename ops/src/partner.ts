@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
-import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, partnerToDash } from "./customers";
+import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
@@ -177,7 +177,7 @@ function partnerView(r: Row) {
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
-    sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && (r.admin_note || "").includes(SW_NOTE_PAID) ? "paid" : null),
+    sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && ((r.admin_note || "").includes(SW_NOTE_PAID) || (r.admin_note || "").includes(SW_NOTE_APPROVED)) ? "paid" : null),
   };
 }
 function adminView(r: Row) {
@@ -293,6 +293,8 @@ async function pushCustomerNow(row: Row, from: string, to: string): Promise<void
   const o = await pool.query(`SELECT email, lang FROM orders WHERE id=$1 AND service='reviews'`, [row.order_id]);
   const email = o.rows[0]?.email;
   if (!email) return;
+  // Software bestätigt, Kunde hat Zahlungsart hinterlegt → wird ohne Vorauszahlung gestartet: kein „bitte zahlen"-Push.
+  if (to === "software" && row.method === "sw" && autopayHooks.saved && await autopayHooks.saved(email).catch(() => false)) return;
   // Bestellung fertig (nichts mehr offen)? → „3 Bewertungen entfernt · Ihre Bestellung … ist abgeschlossen."
   const st = await pool.query(`SELECT status, count(*)::int AS n FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled' GROUP BY status`, [row.order_id]);
   const cnt = Object.fromEntries(st.rows.map((x) => [x.status, x.n])) as Record<string, number>;
@@ -483,7 +485,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (opts.preview !== undefined && !!old.test !== opts.preview) return { error: "not found", code: 404 }; // Test ↔ echt strikt getrennt
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
     // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
-    const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID);
+    const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID) || String(old.admin_note || "").includes(SW_NOTE_APPROVED); // bezahlt ODER freigegeben (zahlt bei Erfolg)
     if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
     // Zwischenzahlung offen (Auftrag pausiert): nichts Neues starten, bis der Kunde bezahlt hat.
     if (!opts.admin && status === "working" && old.status === "new" && old.order_id) {

@@ -16,7 +16,7 @@ import { startOrderIfReady } from "./orderStart";
 import { isTestEmail } from "./testAccounts";
 import { notifyTeam } from "./notify";
 import { logCustEvent } from "./custTrack";
-import { customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
+import { approvePendingPre, customerSessionInfo, loadCustomerOrders, addOrderPayment, markReviewPaymentPaid, newPayId, autopayHooks, DASH_URL, type PayRef, type AutoCharged } from "./customers";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
@@ -177,6 +177,7 @@ let lastErr: { at: string; where: string; msg: string } | null = null; // letzte
 export function registerAutopayRoutes(app: FastifyInstance): void {
   autopayHooks.charge = (email) => chargeDue(email).catch((e) => { app.log.error({ err: e }, "Automatisch bezahlen: Abbuchung fehlgeschlagen"); return null; });
   autopayHooks.info = info;
+  autopayHooks.saved = (email) => hasSavedMethod(String(email || "").toLowerCase());
   void init().catch((e) => app.log.error({ err: e }, "cust_autopay anlegen fehlgeschlagen"));
 
   const auth = async (b: Record<string, unknown>) => {
@@ -247,6 +248,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       }
       void logCustEvent(si.email, "autopay_on", `Automatisch bezahlen aktiviert · ${label}`, { mode: k.mode });
       void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Zahlungsart hinterlegt`, `${si.email} · ${label} · zahlt ab jetzt automatisch`, `${SITE_URL}/admin`, { kind: "customer" });
+      await approvePendingPre(si.email).catch((e) => app.log.error({ err: e }, "Software-Fälle freigeben fehlgeschlagen"));
       const started = await releasePayGates(si.email, label).catch((e) => { app.log.error({ err: e }, "Aufträge freigeben fehlgeschlagen"); return 0; });
       const charged = await chargeDue(si.email, "Zahlungsart hinterlegt").catch(() => null);
       return { ok: true, label, charged, started };
