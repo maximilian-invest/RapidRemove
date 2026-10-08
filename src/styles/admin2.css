@@ -842,3 +842,7 @@
 .an .cpin input{width:70px;border:0;background:none;font-size:15px;text-align:right;color:var(--ink)}
 .an .cpin input:focus{outline:none}
 .an .cpin span{color:var(--g3);font-weight:600}
+/* Sterne der Bewertung (Bestellinfo → Bewertungen) */
+.an .rstars{font-size:13px;letter-spacing:1px;color:#f5a623;font-weight:400;white-space:nowrap;margin-left:4px}
+.an .rstars s{text-decoration:none;color:#d4d4d4}
+.an .rstars.s1,.an .rstars.s2{color:#e5484d}

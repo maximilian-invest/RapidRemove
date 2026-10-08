@@ -18,7 +18,7 @@ import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
 import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf } from "./model";
 import PaidCelebration from "./Celebrate";
-import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoScreen, isPayOpen } from "./OrdersScreens";
+import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoScreen, isPayOpen, RStars, rvStars } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import AddReviews from "./AddReviews";
 import { CheckSheet } from "./Checks";
@@ -516,7 +516,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const dec = it && acc ? (acc.has(keyOf(it)) ? (it.old ? "Angenommen · älter 4 Wo." : "Angenommen") : "Abgelehnt") : null;
     const title = it ? (t ? t.code + " · " : "#" + (sheet.idx + 1) + " · ") + (it.name || "Bewertung") : "Profil";
     body = (
-      <><h3 style={{ paddingBottom: 2 }}>{title}</h3>
+      <><h3 style={{ paddingBottom: 2 }}>{title} <RStars n={rvStars(it, t)} /></h3>
         <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
         {it && it.text ? <p className="shq">„{it.text}“</p> : null}
         <div className="opts" style={{ marginTop: 12 }}>

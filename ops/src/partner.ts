@@ -182,7 +182,7 @@ function partnerView(r: Row) {
   };
 }
 function adminView(r: Row) {
-  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test };
+  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test };
 }
 
 async function listTasks(where = "", args: unknown[] = []): Promise<Row[]> {

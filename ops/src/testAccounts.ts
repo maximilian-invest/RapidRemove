@@ -6,6 +6,7 @@ import crypto from "crypto";
 
 const TEST_EMAIL_SHA = new Set([
   "101d9a7baf3732fb357fd1315c44cb0bf28e07b00d17fd83b880d6ef10746e4a", // Inhaber
+  "66e53db523debfe02203f7360703ffef8da9ae845973ac938df2df9634329a27", // Team-Testkonto (helpdesk@)
 ]);
 /** Passwort des Inhaber-Test-Logins (im Chat übergeben) – nur der scrypt-Hash. */
 export const TEST_LOGIN_PW_HASH = "s1$854c77a82661705d281aef789c039413$72ba40190f5b2faf8d559d54254135af8a0b23e704602348d172201e2249d02e";

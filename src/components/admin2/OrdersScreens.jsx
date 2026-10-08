@@ -363,6 +363,12 @@ const PS = {
   not_possible: ["Partner: nicht möglich", "var(--danger)"], software: ["Software · wartet auf Kunde", "var(--info)"], cancelled: ["Storniert", "var(--g3)"],
 };
 const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
+/** Sterne einer Bewertung (aus der Bestellung bzw. der Partner-Aufgabe). */
+export const rvStars = (it, t) => { const n = Math.round(Number((it && it.rating) || (t && t.rating)) || 0); return n >= 1 && n <= 5 ? n : 0; };
+export function RStars({ n }) {
+  if (!n) return null;
+  return <span className={"rstars s" + n} aria-label={n + " Sterne"}>{"★".repeat(n)}<s>{"★".repeat(5 - n)}</s></span>;
+}
 
 export function ReviewsScreen({ ctx, id }) {
   const { orders, back, ptasks, shots, loadShots, openSheet, isDesk } = ctx;
@@ -402,7 +408,7 @@ export function ReviewsScreen({ ctx, id }) {
           return (
             <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>
-              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")}</b><span style={{ color: ps[1] }}>{ps[0]}</span></span>
+              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span></span>
               {r.dec ? <span className="ac" style={{ color: r.dec === "ok" ? "var(--success)" : r.dec === "old" ? "var(--orange-800)" : "var(--g3)" }}>{r.dec === "ok" ? "Angenommen" : r.dec === "old" ? "Älter 4 Wo." : "Abgelehnt"}</span> : null}
               <ChevronRight />
             </button>
