@@ -489,7 +489,10 @@ export default function CustomerDashboard() {
     if (ap !== "done" || !cs) { showToast(T("apCancel"), true); return; }
     setBusy("ap"); setPgOpen(false); pgAuto.current = true;
     call("autopay/confirm", { token, cs })
-      .then((r) => { showToast(r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : r.started ? T("apStarted") : T("apSaved")); if (r.charged && !window.__NO_TRACK) setCele({ id: Date.now(), kind: "paid", title: T("cPaidT"), sub: T("cPaidS") }); })
+      .then((r) => {
+        // Großer Moment: Karte fliegt rein, Häkchen, Konfetti, Ton (Celebrate kind „card").
+        setCele({ id: Date.now(), kind: "card", label: r.label || "", title: T("ceCardT"), sub: r.charged ? T("apSavedPaid", { amount: money(r.charged.amount, r.charged.cur) }) : r.started ? T("ceCardS") : T("ceCardS2") });
+      })
       .catch(() => showToast(T("genericErr"), true))
       .finally(() => { setBusy(""); prev.current = null; load(token); }); // kein zweiter „Bezahlt"-Toast aus dem Vergleich
   }, [token, load, showToast]);
@@ -526,6 +529,8 @@ export default function CustomerDashboard() {
   const [wiseOpen, setWiseOpen] = React.useState(false);
   const [payVia, setPayVia] = React.useState("");
   const [apArm, setApArm] = React.useState(false); // „Entfernen" zweimal tippen
+  const [billOpen, setBillOpen] = React.useState(false); // Konto → Zahlung & Abrechnung
+  const [bill, setBill] = React.useState(null); // Formular Rechnungsdetails
   // Sprache: Bestellung (nach dem Login) → zuletzt genutzte → Browser → Englisch.
   const [lang, setLangState] = React.useState("en");
   React.useEffect(() => {
@@ -894,7 +899,6 @@ export default function CustomerDashboard() {
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
-          <AutoPayCard />
           {deposits.length ? <div style={{ marginBottom: 24 }}><DepositCards /></div> : null}
           <div className="sec" style={{ marginTop: 4 }}><h2>{T("yourOrders")}</h2>{orders.length ? <button onClick={() => goTab("orders")}>{T("seeAll")}</button> : null}</div>
           {orders.length ? (
@@ -986,7 +990,6 @@ export default function CustomerDashboard() {
     <>
       <div className="ttl">{T("payments")}</div>
       <Hero payments />
-      <AutoPayCard />
       <DepositCards />
       <div className="sec" style={{ marginTop: due.length || deposits.length ? 8 : 0 }}><h2>{T("history")}</h2></div>
       {history.length ? history.map((h) => (
@@ -1017,12 +1020,64 @@ export default function CustomerDashboard() {
           try { await call("password-link", { token, lang: LANG }); showToast(T("linkSent")); } catch (e) { showToast(e.code === "too_many" ? T("tooMany") : T("genericErr"), true); }
         }}><span className="ico"><KeyRound /></span><span className="t"><b>{T("changePw")}</b><span>{T("changePwSub")}</span></span><ChevronRight /></button>
         <button className="ai-row" onClick={() => setChatOpen(true)}><span className="ico"><MessageCircle /></span><span className="t"><b>{T("help")}</b><span>{T("helpSub")}</span></span><ChevronRight /></button>
+        <button className="ai-row" onClick={() => { setBill(null); setBillOpen(true); }}><span className="ico"><CreditCard /></span><span className="t"><b>{T("billT")}</b><span>{ap ? ap.label : T("billSub")}</span></span><ChevronRight /></button>
         <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>{T("invoices")}</b><span>{T("invoicesSub")}</span></span><ChevronRight /></button>
         <a className="ai-row" href="/en/privacy-policy" target="_blank" rel="noopener noreferrer"><span className="ico"><ShieldCheck /></span><span className="t"><b>{T("privacy")}</b></span><ChevronRight /></a>
         <button className="ai-row" onClick={logout}><span className="ico"><LogOut /></span><span className="t"><b>{T("logout")}</b></span><ChevronRight /></button>
       </div>
     </>
   );
+
+  /* ---- Konto → Zahlung & Abrechnung ---- */
+  const COUNTRIES = ["AT", "DE", "CH", "LI", "IT", "NL", "BE", "LU", "FR", "ES", "PT", "IE", "GB", "DK", "SE", "NO", "FI", "PL", "CZ", "SK", "HU", "SI", "HR", "US", "CA", "AU", "NZ", "AE", "ZA"];
+  const cName = (c) => { try { return new Intl.DisplayNames([LOC], { type: "region" }).of(c); } catch (e) { return c; } };
+  const BillingV = () => {
+    const f = bill || data.billing || {};
+    const set = (k) => (e) => setBill({ ...f, [k]: e.target.value });
+    const save = async () => {
+      if (busy) return;
+      if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+      if (!String(f.company || "").trim() && !String(f.name || "").trim()) { showToast(T("bNeedName"), true); return; }
+      setBusy("bill");
+      try { await call("billing", { token, ...f }); showToast(T("bSaved")); setBill(null); load(token); }
+      catch (e) { showToast(e.code === "name" ? T("bNeedName") : T("genericErr"), true); }
+      setBusy("");
+    };
+    const inp = (k, label, extra = {}) => (
+      <label className="bf"><span>{label}</span><input value={f[k] || ""} onChange={set(k)} {...extra} /></label>
+    );
+    return (
+      <>
+        <button className="back" onClick={() => setBillOpen(false)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
+        <div className="dh"><h1>{T("billT")}</h1></div>
+        {ap || data.autopayAvailable ? (
+          <>
+            <div className="sec" style={{ marginTop: 18 }}><h2>{T("pmH")}</h2></div>
+            <AutoPayCard />
+          </>
+        ) : null}
+        <div className="sec" style={{ marginTop: 22 }}><h2>{T("invH")}</h2></div>
+        <p className="bsub">{T("invSub")}</p>
+        <div className="bform">
+          {inp("company", T("fCompany"), { autoComplete: "organization" })}
+          {inp("name", T("fName"), { autoComplete: "name" })}
+          {inp("line1", T("fStreet"), { autoComplete: "address-line1" })}
+          <div className="brow">
+            {inp("postal", T("fZip"), { autoComplete: "postal-code", inputMode: "text" })}
+            {inp("city", T("fCity"), { autoComplete: "address-level2" })}
+          </div>
+          <label className="bf"><span>{T("fCountry")}</span>
+            <select value={f.country || ""} onChange={set("country")}>
+              <option value="">–</option>
+              {[...new Set([f.country, ...COUNTRIES].filter(Boolean))].map((c) => <option key={c} value={c}>{cName(c)}</option>)}
+            </select>
+          </label>
+          {inp("vat", T("fVat"), { autoComplete: "off" })}
+          <button className="cta" disabled={busy === "bill"} onClick={save}>{busy === "bill" ? <Loader className="spin" /> : <Check />}{T("bSave")}</button>
+        </div>
+      </>
+    );
+  };
 
   const detail = detailId ? orders.find((o) => o.id === detailId) : null;
   const DetailV = () => {
@@ -1228,6 +1283,8 @@ export default function CustomerDashboard() {
 
       <div className={"dbg" + (detail ? " show" : "")} onClick={() => setDetailId(null)} />
       <section className={"push" + (detail ? " show" : "")} aria-hidden={!detail}>{DetailV()}</section>
+      <div className={"dbg" + (billOpen ? " show" : "")} onClick={() => setBillOpen(false)} />
+      <section className={"push" + (billOpen ? " show" : "")} aria-hidden={!billOpen}>{billOpen ? BillingV() : null}</section>
 
       <div className={"bg" + (sheetData ? " show" : "")} onClick={() => setSheet(null)} />
       <div ref={rvRef} className={"rv-sheet" + (sheetData ? " show" : "")} aria-hidden={!sheetData}>
@@ -1260,7 +1317,7 @@ export default function CustomerDashboard() {
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!vfOrder || (pgOpen && pgNeed.length > 0)}
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!vfOrder || (pgOpen && pgNeed.length > 0) || billOpen}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>

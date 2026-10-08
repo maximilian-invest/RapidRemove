@@ -176,7 +176,7 @@ export type AutoCharged = { amount: number; cur: string; label: string; invoiceU
 export const autopayHooks: {
   charge?: (email: string) => Promise<AutoCharged | null>;
   saved?: (email: string) => Promise<boolean>; // gültige Zahlungsart hinterlegt
-  info?: (email: string) => Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
+  info?: (email: string) => Promise<{ billing?: Record<string, unknown>; available: boolean; test?: boolean; saved: { label: string; mode: string; type: string | null; error: string | null } | null }>;
 } = {};
 export const newPayId = () => crypto.randomBytes(6).toString("hex");
 /** Stripe-Payment-Link mit eindeutiger Zuordnung (client_reference_id landet in checkout.session.completed). */
@@ -612,7 +612,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const hasWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
     const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
     const ap = autopayHooks.info ? await autopayHooks.info(email).catch(() => null) : null;
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders) };
+    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */

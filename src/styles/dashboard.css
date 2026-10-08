@@ -645,3 +645,46 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .fl-foot.pgf{flex-direction:column;align-items:stretch}
 .rra .pg-later{background:none;border:0;text-align:center;width:100%;color:var(--g3);font-weight:600;font-size:14px;padding:8px;cursor:pointer}
 .rra .paycard .aplock{margin-top:4px;font-size:12px !important}
+/* Konto → Zahlung & Abrechnung */
+.rra .bsub{color:var(--g3);font-size:14px;margin:-6px 0 14px}
+.rra .bform{display:flex;flex-direction:column;gap:12px;max-width:520px;padding-bottom:24px}
+.rra .bform .brow{display:grid;grid-template-columns:120px 1fr;gap:10px}
+.rra .bf{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--g3)}
+.rra .bf input,.rra .bf select{height:50px;border-radius:14px;border:1px solid var(--g2);background:var(--g1);padding:0 14px;font:inherit;font-size:16px;font-weight:500;color:var(--ink);outline:none;width:100%;-webkit-appearance:none;appearance:none}
+.rra .bf input:focus,.rra .bf select:focus{border-color:var(--ink);background:#fff}
+.rra .bform .cta{margin-top:6px}
+
+/* Erfolgs-Moment „Zahlungsart gespeichert" (kind card): dunkle Bühne, Karte fliegt in 3D rein, Glanz, Häkchen, Konfetti */
+.rra .cele.k-card{background:radial-gradient(120% 90% at 50% 30%,#2a1606 0%,#0b0b0c 55%,#000 100%);color:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}
+.rra .cele.k-card .ce-t{color:#fff;animation-delay:1.25s}
+.rra .cele.k-card .ce-s{color:rgba(255,255,255,.72);animation-delay:1.35s;max-width:320px}
+.rra .cele.k-card .ce-btn{background:#ff7a1a;color:#fff;box-shadow:0 18px 40px -14px rgba(255,122,26,.75);animation-delay:1.5s}
+.rra .ce-card-wrap{position:relative;width:300px;height:230px;display:grid;place-items:center;perspective:900px;margin-bottom:10px}
+.rra .ce-glow{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(255,122,26,.55) 0%,rgba(255,122,26,0) 65%);opacity:0;animation:ccGlow 1.6s .45s ease-out forwards}
+.rra .ce-card{position:relative;z-index:2;width:268px;height:168px;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;overflow:visible;
+  background:linear-gradient(135deg,#ff9a3d 0%,#ff6a00 45%,#e5480b 100%);box-shadow:0 30px 60px -20px rgba(255,106,0,.65),inset 0 1px 0 rgba(255,255,255,.35);
+  transform-style:preserve-3d;animation:ccFly .9s cubic-bezier(.2,1.25,.3,1) both,ccFloat 3.6s 1.4s ease-in-out infinite}
+.rra .cc-shine{position:absolute;inset:0;border-radius:20px;overflow:hidden;pointer-events:none}
+.rra .cc-shine::after{content:"";position:absolute;top:-40%;left:-60%;width:40%;height:180%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(18deg);animation:ccShine .9s .75s ease-in-out both}
+.rra .cc-top{display:flex;justify-content:space-between;align-items:center}
+.rra .cc-chip{width:40px;height:30px;border-radius:7px;background:linear-gradient(135deg,#ffe7a8,#d9a441);display:flex;flex-direction:column;justify-content:space-evenly;padding:0 6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.rra .cc-chip i{display:block;height:1px;background:rgba(0,0,0,.25)}
+.rra .cc-nfc{display:flex;gap:3px;align-items:center}
+.rra .cc-nfc i{display:block;width:8px;height:16px;border:2px solid rgba(255,255,255,.85);border-left:0;border-top-color:transparent;border-bottom-color:transparent;border-radius:0 50% 50% 0}
+.rra .cc-nfc i:nth-child(2){height:12px}.rra .cc-nfc i:nth-child(3){height:8px}
+.rra .cc-num{font-size:21px;font-weight:700;letter-spacing:1.5px;text-shadow:0 1px 2px rgba(0,0,0,.2);font-variant-numeric:tabular-nums}
+.rra .cc-bot{display:flex;justify-content:space-between;align-items:flex-end;font-size:12px;font-weight:700;letter-spacing:.6px;opacity:.92}
+.rra .cc-auto{background:rgba(0,0,0,.22);border-radius:6px;padding:3px 7px}
+.rra .cc-badge{position:absolute;right:-16px;top:-16px;width:52px;height:52px;opacity:0;transform:scale(0);animation:ccBadge .55s 1s cubic-bezier(.22,1.7,.36,1) forwards;filter:drop-shadow(0 8px 16px rgba(22,163,74,.55))}
+.rra .cc-badge svg{width:100%;height:100%}
+.rra .cc-badge circle{fill:#16a34a;stroke:#fff;stroke-width:3}
+.rra .cc-badge path{fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:30;stroke-dashoffset:30;animation:ceDraw .35s 1.2s ease forwards}
+.rra .cele.k-card .ce-ring{inset:auto;width:200px;height:200px;border-color:rgba(255,122,26,.8);animation-delay:.7s}
+.rra .cele.k-card .ce-ring.r2{animation-delay:.95s}
+.rra .cele.k-card .ce-conf i{animation-delay:calc(1s + var(--dl))}
+@keyframes ccFly{0%{opacity:0;transform:translateY(120%) rotateX(65deg) rotateZ(-14deg) scale(.55)}55%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes ccFloat{0%,100%{transform:translateY(0) rotateX(0) rotateY(0)}50%{transform:translateY(-6px) rotateX(4deg) rotateY(-5deg)}}
+@keyframes ccShine{from{left:-60%}to{left:130%}}
+@keyframes ccGlow{0%{opacity:0;transform:scale(.6)}40%{opacity:1}100%{opacity:.55;transform:scale(1)}}
+@keyframes ccBadge{0%{opacity:0;transform:scale(0) rotate(-30deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@media (prefers-reduced-motion:reduce){.rra .ce-card,.rra .cc-badge,.rra .cc-shine::after,.rra .ce-glow{animation-duration:.01s !important;animation-delay:0s !important}}

@@ -87,6 +87,9 @@ async function init(): Promise<void> {
   await pool.query(`CREATE TABLE IF NOT EXISTS cust_autopay (
     email text PRIMARY KEY, mode text NOT NULL, customer text NOT NULL, pm text, label text, pm_type text,
     last_error text, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now())`);
+  await pool.query(`CREATE TABLE IF NOT EXISTS cust_billing (
+    email text PRIMARY KEY, company text, name text, line1 text, postal text, city text, country text, vat text,
+    updated_at timestamptz NOT NULL DEFAULT now())`);
   ready = true;
 }
 type Row = { email: string; mode: Mode; customer: string; pm: string | null; label: string | null; pm_type: string | null; last_error: string | null; updated_at: string };
@@ -108,11 +111,35 @@ function pmLabel(pm: any): string {
 }
 
 /** Info fürs Dashboard (/cust/me). */
-async function info(email: string): Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: Mode; type: string | null; error: string | null } | null }> {
+async function info(email: string): Promise<{ available: boolean; test?: boolean; saved: { label: string; mode: Mode; type: string | null; error: string | null } | null; billing: Billing }> {
   const k = keyFor(email);
   const r = await rowOf(email).catch(() => null);
   const saved = r && r.pm && k && r.mode === k.mode ? { label: r.label || "", mode: r.mode, type: r.pm_type, error: r.last_error } : null;
-  return { available: !!k, test: k?.mode === "test", saved };
+  return { available: !!k, test: k?.mode === "test", saved, billing: await billingOf(email).catch(() => emptyBilling) };
+}
+
+/* ---- Rechnungsdetails (erscheinen auf allen künftigen Stripe-Rechnungen) ---- */
+type Billing = { company: string; name: string; line1: string; postal: string; city: string; country: string; vat: string; saved: boolean };
+const emptyBilling: Billing = { company: "", name: "", line1: "", postal: "", city: "", country: "", vat: "", saved: false };
+async function billingOf(email: string): Promise<Billing> {
+  if (!pool) return emptyBilling;
+  await init();
+  const r = await pool.query(`SELECT * FROM cust_billing WHERE email=$1`, [email.toLowerCase()]);
+  const b = r.rows[0];
+  if (b) return { company: b.company || "", name: b.name || "", line1: b.line1 || "", postal: b.postal || "", city: b.city || "", country: b.country || "", vat: b.vat || "", saved: true };
+  // Noch nichts gespeichert → aus der letzten Bestellung vorbefüllen.
+  const o = (await pool.query(`SELECT name, company, country FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email.toLowerCase()])).rows[0];
+  return { ...emptyBilling, name: o?.name || "", company: o?.company || "", country: /^[A-Z]{2}$/.test(String(o?.country || "")) ? o.country : "" };
+}
+/** Rechnungsdetails an den Stripe-Kunden übertragen (Name/Firma + Adresse). */
+async function pushBillingToStripe(email: string, key: string, customer: string): Promise<void> {
+  const b = await billingOf(email);
+  if (!b.saved) return;
+  await sx(key, "POST", `customers/${customer}`, {
+    name: b.company || b.name || undefined,
+    address: b.line1 || b.city || b.postal || b.country ? { line1: b.line1 || undefined, postal_code: b.postal || undefined, city: b.city || undefined, country: b.country || undefined } : undefined,
+    metadata: { rr_contact: b.company && b.name ? b.name : "" },
+  });
 }
 
 /* ---- Fehlgeschlagene Abbuchung → Auftrag sofort pausieren ----
@@ -179,7 +206,10 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       const desc = `Entfernte Google-Bewertungen · ${picks.length} × · ${[...new Set(use.map((o) => o.id))].join(", ")}`;
       let inv: any = null;
       try {
+        await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
+        const bill = await billingOf(email).catch(() => emptyBilling);
         inv = await sx(k.key, "POST", "invoices", {
+          ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
           customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
           default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
           metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(",") },
@@ -304,6 +334,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       if (row.pm === pm.id) { await releasePayGates(si.email, label).catch(() => 0); return { ok: true, label, charged: null }; } // schon gespeichert (Neuladen)
       if (row.pm && row.pm !== pm.id) void sx(k.key, "POST", `payment_methods/${row.pm}/detach`, {}).catch(() => {});
       await sx(k.key, "POST", `customers/${row.customer}`, { invoice_settings: { default_payment_method: pm.id } }).catch(() => {});
+      await pushBillingToStripe(si.email, k.key, row.customer).catch(() => {});
       await pool.query(`UPDATE cust_autopay SET pm=$2, label=$3, pm_type=$4, last_error=NULL, updated_at=now() WHERE email=$1`, [si.email, pm.id, label, pm.type || null]);
       const { orders } = await loadCustomerOrders(si.email);
       for (const o of orders.filter((x) => !x.cancelled).slice(0, 5)) {
@@ -319,6 +350,26 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       app.log.error({ err: e }, "Automatisch bezahlen: Bestätigung fehlgeschlagen");
       return reply.code(503).send({ ok: false, error: "payment_unavailable" });
     }
+  });
+
+  // Rechnungsdetails speichern (Dashboard → Konto → Zahlung & Abrechnung).
+  app.post("/cust/billing", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const si = await auth(b);
+    if (!si || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (si.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
+    await init();
+    const c = (v: unknown, n: number) => String(v ?? "").replace(/[\r\n<>]/g, " ").trim().slice(0, n);
+    const country = c(b.country, 2).toUpperCase();
+    const v = { company: c(b.company, 120), name: c(b.name, 120), line1: c(b.line1, 160), postal: c(b.postal, 20), city: c(b.city, 80), country: /^[A-Z]{2}$/.test(country) ? country : "", vat: c(b.vat, 30).replace(/\s+/g, "") };
+    if (!v.company && !v.name) return reply.code(400).send({ ok: false, error: "name" });
+    await pool.query(`INSERT INTO cust_billing (email, company, name, line1, postal, city, country, vat) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      ON CONFLICT (email) DO UPDATE SET company=$2, name=$3, line1=$4, postal=$5, city=$6, country=$7, vat=$8, updated_at=now()`,
+      [si.email, v.company, v.name, v.line1, v.postal, v.city, v.country, v.vat]);
+    const k = keyFor(si.email); const row = await rowOf(si.email);
+    if (k && row && row.mode === k.mode) await pushBillingToStripe(si.email, k.key, row.customer).catch((e) => app.log.warn({ err: e }, "Rechnungsdetails an Stripe fehlgeschlagen"));
+    void logCustEvent(si.email, "billing_saved", `Rechnungsdetails gespeichert · ${v.company || v.name}`);
+    return { ok: true, billing: { ...v, saved: true } };
   });
 
   app.post("/cust/autopay/remove", async (req, reply) => {
