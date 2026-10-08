@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "C'est utile quand plusieurs avis sont concernés, qu'un signalement a déjà été refusé ou que vous manquez de temps. RapidRemove passe uniquement par les procédures officielles de Google, pour le compte du propriétaire de l'établissement : pas de faux comptes, pas de bots, pas de fausses mises en demeure, et l'auteur ne sait pas qui a demandé la suppression." },
     { t: "ul", items: [
       "**Évaluation gratuite d'abord :** nous vous disons honnêtement si un avis est supprimable. Sinon, c'est gratuit.",
-      "**179 € par avis supprimé**, 250 € pour les avis de plus de 4 semaines. Vous payez seulement une fois l'avis disparu.",
+      "**179 € par avis supprimé**, 229 € pour les avis de plus de 4 semaines. Vous payez seulement une fois l'avis disparu.",
       "**Chances de succès :** environ **90 %** pour les avis de moins de 4 semaines, environ **50 %** pour les plus anciens.",
       "**Remise sur volume** pour les avis acceptés : 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Délai :** généralement quelques jours, parfois jusqu'à 3 semaines.",
@@ -104,9 +104,9 @@ const article = {
     { q: "Quels avis Google enfreignent le règlement ?", a: "Ceux qui ne reposent pas sur une expérience réelle, ceux rédigés en conflit d'intérêts (employés, anciens salariés, concurrents) et ceux qui contiennent harcèlement, haine, grossièretés, informations personnelles, spam ou contenu hors sujet. **Les opinions négatives de vrais clients ne sont pas des infractions.**" },
     { q: "Google supprime-t-il un avis simplement parce qu'il est injuste ?", a: "Non. Google précise qu'il ne faut pas signaler un avis par simple désaccord. Un avis n'est supprimé que s'il enfreint une règle précise ou la loi." },
     { q: "Puis-je supprimer moi-même un avis Google en tant que propriétaire ?", a: "Non. Seul l'auteur peut modifier ou supprimer son avis. En tant que propriétaire, vous pouvez le signaler, faire appel une fois, déposer une demande juridique pour contenu illicite et répondre publiquement." },
-    { q: "Une note 1 étoile sans texte enfreint-elle le règlement ?", a: "Pas en soi. Elle devient supprimable s'il existe des indices qu'elle est fausse, par exemple aucune trace du client et un profil à l'activité suspecte, ou une vague de notes similaires. Chez RapidRemove, ces notes peuvent aussi être supprimées par une procédure spéciale : 300 € par note supprimée, env. 80 % de réussite." },
+    { q: "Une note 1 étoile sans texte enfreint-elle le règlement ?", a: "Pas en soi. Elle devient supprimable s'il existe des indices qu'elle est fausse, par exemple aucune trace du client et un profil à l'activité suspecte, ou une vague de notes similaires. Chez RapidRemove, ces notes peuvent aussi être supprimées par une procédure plus approfondie : 300 € par note supprimée." },
     { q: "Que se passe-t-il si Google ne constate aucune infraction ?", a: "Vous pouvez **faire appel une fois par avis** dans l'outil de gestion des avis ; l'appel peut être transmis à un niveau supérieur et reçoit une décision définitive. Pour la diffamation ou un contenu illicite, la demande juridique est une voie distincte." },
-    { q: "Combien coûte la suppression d'un avis contraire au règlement ?", a: "Avec RapidRemove, **179 € par avis supprimé** (250 € pour les avis de plus de 4 semaines), payés uniquement une fois l'avis disparu. L'évaluation préalable est gratuite." },
+    { q: "Combien coûte la suppression d'un avis contraire au règlement ?", a: "Avec RapidRemove, **179 € par avis supprimé** (229 € pour les avis de plus de 4 semaines), payés uniquement une fois l'avis disparu. L'évaluation préalable est gratuite." },
   ],
   related: [
     { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },

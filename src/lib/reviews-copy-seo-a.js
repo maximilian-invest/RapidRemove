@@ -32,7 +32,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparativa", compareH: "Tus opciones para eliminar una reseña de Google",
     compareHead: ["", "Denunciarla tú mismo", "Abogado", "RapidRemove"],
     compareRows: [
-      ["Coste", "Gratis", "Honorarios por hora, a menudo por adelantado", "179 € por reseña eliminada"],
+      ["Coste", "Gratis", "Honorarios por hora, a menudo por adelantado", "Desde 179 € por reseña eliminada"],
       ["Pago solo si hay éxito", "–", "No", "Sí"],
       ["Duración habitual", "De días a semanas, a menudo rechazada", "De semanas a meses", "De unos días a 3 semanas"],
       ["Tu esfuerzo", "Alto: políticas, pruebas, apelaciones", "Reuniones y documentos", "Pegar el enlace, y listo"],
@@ -49,8 +49,8 @@ export const RVW_SEO_A = {
       { q: "¿Qué reseñas no se pueden eliminar?", a: "Las críticas honestas y basadas en hechos de clientes reales, aunque sean duras. Google protege las experiencias auténticas, y nosotros también. Si una reseña no incumple ninguna norma, te lo decimos desde el principio en lugar de cobrarte." },
       { q: "¿Puede volver a aparecer una reseña eliminada?", a: "Rara vez. Si la misma persona la vuelve a publicar, envíanosla: una reseña eliminada que se publica de nuevo suele retirarse otra vez rápidamente." },
       { q: "¿Denunciar reseñas perjudica mi perfil de Google?", a: "No. Denunciar reseñas que incumplen las políticas de Google es un proceso normal y previsto, y no tiene ningún efecto negativo en tu perfil ni en tu posicionamiento." },
-      { q: "¿Se pueden eliminar valoraciones de 1 estrella sin texto?", a: "Sí, con un procedimiento especial apoyado por software. Las valoraciones solo con estrellas cuestan 300 € por reseña y se pagan íntegramente por adelantado en cuanto aceptamos la reseña. La tasa de éxito es del 99 % y se aplica el descuento por volumen. Si la valoración no se ha eliminado en un plazo máximo de 14 días, te devolvemos el importe íntegro. Esto solo afecta a muy pocos casos especiales: la gran mayoría de las reseñas se pagan solo si se eliminan, sin nada por adelantado." },
-      { q: "¿Cómo pago?", a: "En cuanto se elimina una reseña, recibes una confirmación con un enlace de pago seguro. Si lo prefieres, también puedes pagar por PayPal o transferencia bancaria." },
+      { q: "¿Se pueden eliminar valoraciones de 1 estrella sin texto?", a: "Sí. Las valoraciones sin texto son un caso complejo: requieren un procedimiento más amplio y cuestan 300 € por valoración eliminada; se aplica el descuento por volumen. Como con todas las reseñas, guardas una tarjeta o PayPal al hacer el pedido: no se cobra nada por adelantado y la valoración se cobra solo después de haber sido eliminada. Si sigue publicada, no pagas nada por ella." },
+      { q: "¿Cómo pago?", a: "Al hacer el pedido guardas una tarjeta o PayPal. No se cobra nada por adelantado: cada reseña se cobra automáticamente solo después de haber sido eliminada, y recibes una confirmación. Si una reseña sigue publicada, no pagas nada por ella." },
     ],
   },
   fr: {
@@ -85,7 +85,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparatif", compareH: "Vos options pour faire supprimer un avis Google",
     compareHead: ["", "Le signaler vous-même", "Avocat", "RapidRemove"],
     compareRows: [
-      ["Coût", "Gratuit", "Honoraires horaires, souvent payés d'avance", "179 € par avis supprimé"],
+      ["Coût", "Gratuit", "Honoraires horaires, souvent payés d'avance", "À partir de 179 € par avis supprimé"],
       ["Paiement au résultat uniquement", "–", "Non", "Oui"],
       ["Durée habituelle", "De quelques jours à plusieurs semaines – souvent refusé", "Des semaines, voire des mois", "Quelques jours à 3 semaines"],
       ["Votre effort", "Élevé : règles, preuves, recours", "Rendez-vous et documents", "Coller le lien – c'est tout"],
@@ -102,8 +102,8 @@ export const RVW_SEO_A = {
       { q: "Quels avis ne peuvent pas être supprimés ?", a: "Les critiques honnêtes et factuelles de vrais clients – même sévères. Google protège les expériences authentiques, et nous aussi. Si un avis n'enfreint aucune règle, nous vous le disons d'emblée au lieu de prendre votre argent." },
       { q: "Un avis supprimé peut-il réapparaître ?", a: "Rarement. Si la même personne le republie, envoyez-le-nous : un avis supprimé puis republié est généralement retiré à nouveau rapidement." },
       { q: "Signaler des avis nuit-il à ma fiche Google ?", a: "Non. Signaler des avis qui enfreignent les règles de Google est une démarche normale et prévue, sans aucun effet négatif sur votre fiche ni sur votre classement." },
-      { q: "Pouvez-vous supprimer des notes 1 étoile sans texte ?", a: "Oui, grâce à une procédure spéciale assistée par logiciel. Les notes sans texte coûtent 300 € par avis, payés intégralement d'avance dès que nous acceptons l'avis. Le taux de réussite est de 99 %, et la remise sur quantité s'applique. Si la note n'est pas supprimée sous 14 jours au plus tard, nous vous remboursons l'intégralité du montant. Cela ne concerne que de rares cas particuliers : la grande majorité des avis ne se paient qu'en cas de succès, sans rien d'avance." },
-      { q: "Comment se passe le paiement ?", a: "Dès qu'un avis est supprimé, vous recevez une confirmation avec un lien de paiement sécurisé. Sur demande, vous pouvez aussi payer par PayPal ou par virement bancaire." },
+      { q: "Pouvez-vous supprimer des notes 1 étoile sans texte ?", a: "Oui. Les notes sans texte sont un cas complexe : elles nécessitent une procédure plus approfondie et coûtent 300 € par note supprimée ; la remise sur quantité s'applique. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande : rien n'est débité d'avance, et la note n'est facturée qu'après sa suppression. Si elle reste en ligne, vous ne payez rien pour elle." },
+      { q: "Comment se passe le paiement ?", a: "Lors de la commande, vous enregistrez une carte ou PayPal. Rien n'est débité d'avance : chaque avis est facturé automatiquement uniquement après sa suppression, et vous recevez une confirmation. Si un avis reste en ligne, vous ne payez rien pour lui." },
     ],
   },
   it: {
@@ -138,7 +138,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "A confronto", compareH: "Le tue opzioni per far rimuovere una recensione Google",
     compareHead: ["", "Segnalarla da solo", "Avvocato", "RapidRemove"],
     compareRows: [
-      ["Costo", "Gratis", "Tariffe orarie, spesso pagate in anticipo", "179 € per recensione rimossa"],
+      ["Costo", "Gratis", "Tariffe orarie, spesso pagate in anticipo", "Da 179 € per recensione rimossa"],
       ["Paghi solo a risultato ottenuto", "–", "No", "Sì"],
       ["Durata tipica", "Da giorni a settimane – spesso respinta", "Da settimane a mesi", "Da pochi giorni a 3 settimane"],
       ["Il tuo impegno", "Alto: norme, prove, ricorsi", "Incontri e documenti", "Incolli il link – fatto"],
@@ -155,8 +155,8 @@ export const RVW_SEO_A = {
       { q: "Quali recensioni non si possono rimuovere?", a: "Le critiche oneste e fattuali di clienti veri – anche se dure. Google tutela le esperienze autentiche, e noi pure. Se una recensione non viola alcuna regola, te lo diciamo subito invece di prendere i tuoi soldi." },
       { q: "Una recensione rimossa può ricomparire?", a: "Raramente. Se la stessa persona la ripubblica, inviacela: una recensione rimossa e poi ripubblicata di solito viene rimossa di nuovo in fretta." },
       { q: "Segnalare recensioni danneggia il mio profilo Google?", a: "No. Segnalare recensioni che violano le norme di Google è una procedura normale e prevista, senza alcun effetto negativo sul tuo profilo o sul posizionamento." },
-      { q: "Potete rimuovere valutazioni a 1 stella senza testo?", a: "Sì, con una procedura speciale supportata da software. Le valutazioni con sole stelle costano 300 € per recensione, da pagare per intero in anticipo non appena accettiamo la recensione. La percentuale di successo è del 99 % e si applica lo sconto quantità. Se la valutazione non viene rimossa entro massimo 14 giorni, ti rimborsiamo l'intero importo. Riguarda solo pochissimi casi particolari: la grande maggioranza delle recensioni si paga solo a rimozione avvenuta, senza nulla in anticipo." },
-      { q: "Come si paga?", a: "Quando una recensione viene rimossa ricevi una conferma con un link di pagamento sicuro. Su richiesta puoi pagare anche con PayPal o bonifico bancario." },
+      { q: "Potete rimuovere valutazioni a 1 stella senza testo?", a: "Sì. Le valutazioni senza testo sono un caso complesso: richiedono una procedura più approfondita e costano 300 € per valutazione rimossa; si applica lo sconto quantità. Come per tutte le recensioni, al momento dell'ordine registri una carta o PayPal: nulla viene addebitato in anticipo e la valutazione viene addebitata solo dopo la rimozione. Se resta online, non paghi nulla." },
+      { q: "Come si paga?", a: "Al momento dell'ordine registri una carta o PayPal. Nulla viene addebitato in anticipo: ogni recensione viene addebitata automaticamente solo dopo la rimozione e ricevi una conferma. Se una recensione resta online, non paghi nulla." },
     ],
   },
   pt: {
@@ -191,7 +191,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparação", compareH: "As suas opções para remover uma avaliação do Google",
     compareHead: ["", "Denunciar sozinho", "Advogado", "RapidRemove"],
     compareRows: [
-      ["Custo", "Grátis", "Honorários à hora, muitas vezes pagos adiantados", "179 € por avaliação removida"],
+      ["Custo", "Grátis", "Honorários à hora, muitas vezes pagos adiantados", "A partir de 179 € por avaliação removida"],
       ["Só paga com sucesso", "–", "Não", "Sim"],
       ["Duração típica", "Dias a semanas – muitas vezes recusada", "Semanas a meses", "Alguns dias a 3 semanas"],
       ["O seu esforço", "Elevado: políticas, provas, recursos", "Reuniões e documentos", "Colar o link – e pronto"],
@@ -208,8 +208,8 @@ export const RVW_SEO_A = {
       { q: "Que avaliações não podem ser removidas?", a: "Críticas honestas e factuais de clientes reais – mesmo que duras. O Google protege experiências genuínas, e nós também. Se uma avaliação não viola nenhuma regra, dizemos-lhe logo à partida em vez de lhe cobrar." },
       { q: "Uma avaliação removida pode voltar a aparecer?", a: "Raramente. Se a mesma pessoa a voltar a publicar, envie-nos – uma avaliação removida que é republicada costuma ser removida de novo rapidamente." },
       { q: "Denunciar avaliações prejudica o meu perfil do Google?", a: "Não. Denunciar avaliações que violam as políticas do Google é um processo normal e previsto, sem qualquer efeito negativo no seu perfil ou no posicionamento." },
-      { q: "Conseguem remover avaliações de 1 estrela sem texto?", a: "Sim, com um procedimento especial apoiado por software. As classificações só com estrelas custam 300 € por avaliação, pagos na totalidade antecipadamente assim que aceitamos a avaliação. A taxa de sucesso é de 99 % e aplica-se o desconto por quantidade. Se a classificação não for removida no prazo máximo de 14 dias, devolvemos-lhe o valor total. Isto só diz respeito a muito poucos casos especiais: a grande maioria das avaliações paga-se apenas em caso de sucesso, sem nada antecipado." },
-      { q: "Como pago?", a: "Assim que uma avaliação é removida, recebe uma confirmação com um link de pagamento seguro. A pedido, também pode pagar por PayPal ou transferência bancária." },
+      { q: "Conseguem remover avaliações de 1 estrela sem texto?", a: "Sim. As classificações sem texto são um caso complexo: exigem um procedimento mais extenso e custam 300 € por classificação removida; aplica-se o desconto por quantidade. Como em todas as avaliações, regista um cartão ou PayPal ao encomendar: nada é cobrado antecipadamente e a classificação só é cobrada depois de removida. Se continuar online, não paga nada por ela." },
+      { q: "Como pago?", a: "Ao encomendar, regista um cartão ou PayPal. Nada é cobrado antecipadamente: cada avaliação é cobrada automaticamente só depois de removida, e recebe uma confirmação. Se uma avaliação continuar online, não paga nada por ela." },
     ],
   },
   nl: {
@@ -244,7 +244,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Vergelijking", compareH: "Uw opties om een Google-review te laten verwijderen",
     compareHead: ["", "Zelf melden", "Advocaat", "RapidRemove"],
     compareRows: [
-      ["Kosten", "Gratis", "Uurtarief, vaak vooraf te betalen", "€ 179 per verwijderde review"],
+      ["Kosten", "Gratis", "Uurtarief, vaak vooraf te betalen", "Vanaf € 179 per verwijderde review"],
       ["Alleen betalen bij succes", "–", "Nee", "Ja"],
       ["Gebruikelijke duur", "Dagen tot weken – vaak afgewezen", "Weken tot maanden", "Een paar dagen tot 3 weken"],
       ["Uw inspanning", "Hoog: richtlijnen, bewijs, bezwaar", "Overleg en documenten", "Link plakken – klaar"],
@@ -261,31 +261,31 @@ export const RVW_SEO_A = {
       { q: "Welke reviews kunnen niet worden verwijderd?", a: "Eerlijke, feitelijke kritiek van echte klanten – ook als die hard is. Google beschermt echte ervaringen, en wij ook. Schendt een review geen enkele regel, dan zeggen we dat vooraf in plaats van uw geld aan te nemen." },
       { q: "Kan een verwijderde review terugkomen?", a: "Zelden. Plaatst dezelfde persoon hem opnieuw, stuur hem dan naar ons – een opnieuw geplaatste review wordt meestal snel weer verwijderd." },
       { q: "Schaadt het melden van reviews mijn Google-profiel?", a: "Nee. Reviews melden die de richtlijnen van Google schenden is een normaal, bedoeld proces en heeft geen negatief effect op uw profiel of uw ranking." },
-      { q: "Kunnen jullie 1-sterbeoordelingen zonder tekst verwijderen?", a: "Ja, met een speciale, softwarematig ondersteunde procedure. Beoordelingen met alleen sterren kosten € 300 per review, die u volledig vooraf betaalt zodra we de review accepteren. De slagingskans is 99 % en de staffelkorting geldt ook. Is de beoordeling niet uiterlijk binnen 14 dagen verwijderd, dan krijgt u het volledige bedrag terug. Dit betreft maar heel weinig speciale gevallen – de overgrote meerderheid van de reviews betaalt u alleen bij succes, zonder iets vooraf." },
-      { q: "Hoe betaal ik?", a: "Zodra een review verwijderd is, krijgt u een bevestiging met een veilige betaallink. Op verzoek kunt u ook via PayPal of bankoverschrijving betalen." },
+      { q: "Kunnen jullie 1-sterbeoordelingen zonder tekst verwijderen?", a: "Ja. Beoordelingen zonder tekst zijn een complex geval: ze vereisen een uitgebreidere procedure en kosten € 300 per verwijderde beoordeling; de staffelkorting geldt ook. Zoals bij alle reviews legt u bij het bestellen een kaart of PayPal vast: er wordt niets vooraf afgeschreven en de beoordeling wordt pas na verwijdering afgerekend. Blijft hij online, dan betaalt u er niets voor." },
+      { q: "Hoe betaal ik?", a: "Bij het bestellen legt u een kaart of PayPal vast. Er wordt niets vooraf afgeschreven: elke review wordt pas na verwijdering automatisch afgerekend en u ontvangt een bevestiging. Blijft een review online, dan betaalt u er niets voor." },
     ],
   },
 };
 
 export const RVW_META_A = {
   es: {
-    title: "Eliminar reseña de Google – 179 €, pagas solo si se borra",
-    description: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. 179 € por reseña eliminada, solo si hay éxito.",
+    title: "Eliminar reseña de Google – desde 179 €, pagas solo si se borra",
+    description: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. Desde 179 € por reseña eliminada, cobrado solo tras la eliminación.",
   },
   fr: {
-    title: "Supprimer un avis Google – 179 €, payé seulement au résultat",
-    description: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. 179 € par avis supprimé, au résultat.",
+    title: "Supprimer un avis Google – dès 179 €, payé seulement au résultat",
+    description: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. Dès 179 € par avis supprimé, facturé uniquement après suppression.",
   },
   it: {
-    title: "Eliminare recensione Google – 179 €, paghi solo a risultato",
-    description: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. 179 € per recensione rimossa, solo a risultato.",
+    title: "Eliminare recensione Google – da 179 €, paghi solo a risultato",
+    description: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. Da 179 € per recensione rimossa, addebitati solo dopo la rimozione.",
   },
   pt: {
-    title: "Remover avaliação do Google – 179 €, só paga se sair",
-    description: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. 179 € por avaliação removida, só paga com sucesso.",
+    title: "Remover avaliação do Google – desde 179 €, só paga se sair",
+    description: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. A partir de 179 € por avaliação removida, cobrado só após a remoção.",
   },
   nl: {
-    title: "Google review verwijderen – € 179, alleen betalen bij succes",
-    description: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. € 179 per verwijderde review, alleen bij succes.",
+    title: "Google review verwijderen – vanaf € 179, alleen bij succes",
+    description: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. Vanaf € 179 per verwijderde review, pas afgerekend na verwijdering.",
   },
 };

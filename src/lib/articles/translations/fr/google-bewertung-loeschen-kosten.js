@@ -11,7 +11,7 @@ const article = {
     authorRole: "Expert Google et fondateur",
     date: "2026-10-05",
   },
-  dek: "Signaler vous-même un avis Google est **gratuit**, mais Google refuse souvent le signalement. Les avocats facturent en général **à l'heure et d'avance**, que l'avis disparaisse ou non. Les prestataires de suppression sont très différents : certains facturent chaque tentative ou se font payer d'avance, d'autres n'affichent aucun prix. Chez RapidRemove, vous payez **179 € par avis supprimé** (250 € s'il a plus de 4 semaines), et **uniquement une fois qu'il a vraiment disparu**.",
+  dek: "Signaler vous-même un avis Google est **gratuit**, mais Google refuse souvent le signalement. Les avocats facturent en général **à l'heure et d'avance**, que l'avis disparaisse ou non. Les prestataires de suppression sont très différents : certains facturent chaque tentative ou se font payer d'avance, d'autres n'affichent aucun prix. Chez RapidRemove, vous payez **179 € par avis supprimé** (229 € s'il a plus de 4 semaines), et **uniquement une fois qu'il a vraiment disparu**.",
   blocks: [
     { t: "h2", id: "reponse-courte", text: "La réponse courte : combien coûte la suppression d'un avis Google", toc: "Réponse courte" },
     { t: "p", text: "Supprimer un avis Google coûte de **0 € à plusieurs centaines d'euros**, selon qui s'en charge et comment il facture. La vraie question n'est pas le prix affiché, mais **qui supporte le risque** si l'avis reste en ligne." },
@@ -19,14 +19,14 @@ const article = {
       "**Le signaler vous-même :** gratuit. Vous payez avec votre temps, et Google répond souvent par une décision type « aucun non-respect du règlement ».",
       "**Avocat :** généralement facturé à l'heure, souvent avec une provision versée d'avance. Vous payez **quel que soit le résultat**.",
       "**Prestataires payés d'avance :** des prix et des modèles très variables. Certains facturent chaque tentative ou avant tout travail, d'autres ne donnent un prix qu'après un appel commercial.",
-      "**RapidRemove :** **179 € par avis supprimé**, **250 €** si l'avis a plus de 4 semaines. Rien d'avance, aucun frais de tentative. Vous ne payez que les avis réellement supprimés.",
+      "**RapidRemove :** **179 € par avis supprimé**, **229 €** si l'avis a plus de 4 semaines. Rien d'avance, aucun frais de tentative. Vous ne payez que les avis réellement supprimés.",
     ] },
     { t: "p", text: "Vous voulez simplement le prix pour vos avis ? Notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) l'affiche immédiatement dès que vous cochez les avis à faire retirer." },
 
     { t: "h2", id: "comparatif", text: "Vous-même, avocat, prestataire payé d'avance ou paiement au succès", toc: "Comparatif" },
     { t: "p", text: "Les quatre options se distinguent moins par ce qu'elles peuvent obtenir que par **la façon dont vous payez et ce qui se passe en cas d'échec**. Le récapitulatif :" },
     { t: "table", rrCol: 4, head: ["Critère", "Signaler vous-même", "Avocat", "Prestataires payés d'avance", "RapidRemove"], rows: [
-      ["Mode de facturation", "Gratuit", "À l'heure, le plus souvent d'avance", "Par tentative ou d'avance ; prix souvent cachés", "**179 € par avis supprimé** (250 € au-delà de 4 semaines)"],
+      ["Mode de facturation", "Gratuit", "À l'heure, le plus souvent d'avance", "Par tentative ou d'avance ; prix souvent cachés", "**179 € par avis supprimé** (229 € au-delà de 4 semaines)"],
       ["Si l'avis reste", "Du temps perdu", "Vous payez quand même", "L'argent est généralement perdu", "**Vous ne payez rien**"],
       ["Risque", "Coût faible, peu de succès", "Coût élevé, issue incertaine", "Payer pour rien", "**Aucun sur le coût**"],
       ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "Quelques jours, jusqu'à 3 semaines"],
@@ -38,12 +38,12 @@ const article = {
     { t: "p", text: "Un coût passe facilement inaperçu : **le temps**. Tant qu'un faux avis 1 étoile reste en haut de votre fiche, chaque prospect qui vous cherche sur Google le voit. Un signalement gratuit qui traîne pendant des semaines et se termine par un refus n'est pas vraiment gratuit s'il vous fait perdre des clients entre-temps." },
 
     { t: "h2", id: "prix", text: "Les prix RapidRemove : 179 € par avis supprimé", toc: "Notre prix" },
-    { t: "p", text: "Vous payez **179 € pour chaque avis réellement supprimé**. Si l'avis a plus de 4 semaines, il coûte **250 €**. Dans certains cas, un avis ancien peut ensuite nécessiter la procédure spéciale assistée par logiciel (300 €). Rien n'est facturé d'avance et il n'y a aucun frais de tentative, notes sans texte comprises (voir ci-dessous)." },
+    { t: "p", text: "Vous payez **179 € pour chaque avis réellement supprimé**. Si l'avis a plus de 4 semaines, il coûte **229 €**. Les cas complexes coûtent 300 € : les notes sans texte et les avis de plus de 4 semaines provenant des États-Unis (300 $), car ils nécessitent une procédure plus approfondie. Dans certains cas, un avis ancien encore en ligne après la procédure standard peut devenir un cas complexe ; nous ne poursuivons qu'avec votre accord. Rien n'est facturé d'avance et il n'y a aucun frais de tentative, notes sans texte comprises (voir ci-dessous)." },
     { t: "table", rrCol: 2, head: ["Âge de l'avis", "Chances de succès", "Prix par avis supprimé"], rows: [
       ["Jusqu'à 4 semaines", "env. 90 %", "**179 €**"],
-      ["Plus de 4 semaines", "env. 50 %", "**250 €**"],
+      ["Plus de 4 semaines", "env. 50 %", "**229 €**"],
     ] },
-    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure spéciale assistée par logiciel et coûtent **300 € par note**, sans supplément pour les notes anciennes, avec env. **80 %** de réussite. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande." },
+    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie (cas complexe) et coûtent **300 € par note**, sans supplément pour les notes anciennes. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande." },
     { t: "p", text: "Les avis plus anciens coûtent plus cher parce qu'ils sont **plus difficiles à faire supprimer** : les chances de succès passent d'environ 90 % à environ 50 %. Avant toute commande, vous recevez une **évaluation gratuite** et nous vous disons honnêtement si un avis a peu de chances. Un avis qui n'est pas supprimé ne vous coûte rien." },
     { t: "p", text: "Si plusieurs avis doivent disparaître, la **remise sur volume** s'applique automatiquement :" },
     { t: "table", head: ["Avis acceptés après l'évaluation", "Remise sur chaque avis supprimé"], rows: [
@@ -57,10 +57,10 @@ const article = {
     { t: "p", text: "Voici ce que coûtent des commandes typiques, arrondi à l'euro. « Récent » signifie jusqu'à 4 semaines, « ancien » plus de 4 semaines." },
     { t: "table", rrCol: 2, head: ["Cas", "Calcul", "Vous payez"], rows: [
       ["1 avis récent", "1 × 179 €", "**179 €**"],
-      ["1 avis ancien", "1 × 250 €", "**250 €**"],
+      ["1 avis ancien", "1 × 229 €", "**229 €**"],
       ["3 avis récents", "3 × 179 € = 537 €, −10 %", "**483 €**"],
-      ["5 avis (2 récents, 3 anciens)", "358 € + 750 € = 1 108 €, −15 %", "**942 €**"],
-      ["10 avis (6 récents, 4 anciens)", "1 074 € + 1 000 € = 2 074 €, −30 %", "**1 452 €**"],
+      ["5 avis (2 récents, 3 anciens)", "358 € + 687 € = 1 045 €, −15 %", "**888 €**"],
+      ["10 avis (6 récents, 4 anciens)", "1 074 € + 916 € = 1 990 €, −30 %", "**1 393 €**"],
       ["5 récents acceptés, 4 supprimés", "4 × 179 € = 716 €, −15 %", "**609 €**"],
       ["1 avis récent + 2 notes sans texte", "2 × 300 € + 179 € = 779 €, −10 %", "**701 €** (2 × 270 € + 161 €), facturés uniquement après suppression"],
     ] },
@@ -102,8 +102,8 @@ const article = {
   faq: [
     { q: "Est-ce gratuit de supprimer un avis Google ?", a: "Signaler un avis à Google vous-même est gratuit, et vous pouvez faire appel une fois dans l'outil de gestion des avis. Mais Google refuse souvent les signalements. Avec RapidRemove, vous payez **179 € par avis, uniquement s'il est supprimé**." },
     { q: "Est-ce que je paie si l'avis n'est pas supprimé ?", a: "Non : ni paiement d'avance ni frais de tentative, vous ne payez que les avis qui ont réellement disparu. Cela vaut aussi pour les notes sans texte." },
-    { q: "Combien coûte la suppression d'une note sans texte ?", a: "**300 € par note**, quel que soit son âge. Nous la traitons par une procédure spéciale assistée par logiciel, avec env. 80 % de réussite. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. La remise sur volume s'applique, comptée avec tous les avis acceptés de la commande." },
-    { q: "Pourquoi les avis anciens coûtent-ils plus cher ?", a: "Les avis de plus de 4 semaines sont plus difficiles à faire supprimer : les chances de succès passent d'environ 90 % à environ 50 %. C'est pourquoi ils coûtent **250 €** au lieu de 179 €." },
+    { q: "Combien coûte la suppression d'une note sans texte ?", a: "**300 € par note**, quel que soit son âge. Nous la traitons par une procédure plus approfondie (cas complexe). Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. La remise sur volume s'applique, comptée avec tous les avis acceptés de la commande." },
+    { q: "Pourquoi les avis anciens coûtent-ils plus cher ?", a: "Les avis de plus de 4 semaines sont plus difficiles à faire supprimer : les chances de succès passent d'environ 90 % à environ 50 %. C'est pourquoi ils coûtent **229 €** au lieu de 179 €." },
     { q: "Y a-t-il une remise pour plusieurs avis ?", a: "Oui. Dès 3 avis acceptés, vous avez 10 % de remise, dès 5 avis 15 % et dès 10 avis 30 %. La remise s'applique à chaque avis supprimé." },
     { q: "Puis-je payer par PayPal ?", a: "Oui. Lors de la commande, vous enregistrez une carte ou PayPal ; le prélèvement a lieu automatiquement, uniquement après la suppression d'un avis." },
     { q: "Pourquoi ai-je été prélevé plusieurs fois ?", a: "Les avis sont supprimés à des moments différents : chaque avis est donc **prélevé séparément** dès qu'il a disparu." },

@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "O que fazer com isto", toc: "O que fazer" },
     { t: "ul", items: [
       "**Manter a média acima de 4,0** — recolher ativamente boas avaliações em vez de reagir apenas às más.",
-      "**Remover os casos injustos:** Avaliações falsas e 1 estrela ilegítimas puxam a média desproporcionalmente. Como fazer isso, leia em [Remover avaliação falsa do Google](/pt/revista/remover-avaliacoes-falsas-google/) e [Remover avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/) — ou [mande remover avaliações individuais](/pt/remover-uma-avaliacao/) diretamente, pagando só pelas que forem realmente removidas (classificações só com estrelas: procedimento especial, 300 € por avaliação removida).",
+      "**Remover os casos injustos:** Avaliações falsas e 1 estrela ilegítimas puxam a média desproporcionalmente. Como fazer isso, leia em [Remover avaliação falsa do Google](/pt/revista/remover-avaliacoes-falsas-google/) e [Remover avaliação de 1 estrela sem texto](/pt/revista/remover-avaliacao-1-estrela-sem-texto/) — ou [mande remover avaliações individuais](/pt/remover-uma-avaliacao/) diretamente, pagando só pelas que forem realmente removidas (classificações só com estrelas: caso complexo, 300 € por avaliação removida).",
       "**Se o perfil estiver fundamentalmente comprometido**, um recomeço limpo através da [eliminação do perfil](/pt/revista/eliminar-perfil-empresa-google/) pode ser mais sensato do que lutar por cada estrela individual.",
     ] },
 

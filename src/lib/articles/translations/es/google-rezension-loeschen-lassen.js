@@ -40,7 +40,7 @@ const article = {
       ["Denunciar tú mismo (formulario)", "gratis", "a menudo bajo"],
       ["Proveedores baratos", "aprox. 19 – 49 € / reseña", "muy variable"],
       ["Abogados especializados (reseña suelta)", "aprox. 100 – 159 € / reseña", "aprox. 90 %, lento"],
-      ["Reseñas individuales (RapidRemove)", "179 € / reseña eliminada (250 € si tiene más de 4 semanas)", "aprox. 90 % (≤ 4 semanas) / aprox. 50 %, pago solo si hay éxito"],
+      ["Reseñas individuales (RapidRemove)", "179 € / reseña eliminada (229 € si tiene más de 4 semanas)", "aprox. 90 % (≤ 4 semanas) / aprox. 50 %, pago solo si hay éxito"],
       ["Eliminación del perfil (RapidRemove)", "precio fijo, pagadero tras el éxito", "garantizado (todas las reseñas fuera)"],
     ] },
 
@@ -59,7 +59,7 @@ const article = {
       "**sin esfuerzo** para ti, sin riesgo Streisand",
       "**nuevo comienzo opcional** con un perfil limpio",
     ] },
-    { t: "warn", title: "Importante", text: "La eliminación del perfil quita el **perfil completo**, no una reseña individual. Quien solo quiera eliminar una reseña y conservar el perfil tiene la denuncia, la vía del abogado o la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove: 179 € por reseña eliminada (250 € si tiene más de 4 semanas), solo tras el éxito." },
+    { t: "warn", title: "Importante", text: "La eliminación del perfil quita el **perfil completo**, no una reseña individual. Quien solo quiera eliminar una reseña y conservar el perfil tiene la denuncia, la vía del abogado o la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove: 179 € por reseña eliminada (229 € si tiene más de 4 semanas), solo tras el éxito." },
     { t: "cta", title: "¿Perfil dañado de forma permanente? Comprueba la eliminabilidad gratis.", text: "En segundos verás si tu perfil y todas sus reseñas se pueden eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://www.rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },
   ],
   faq: [
@@ -67,8 +67,8 @@ const article = {
     { q: "¿Hay un formulario para eliminar una reseña de Google?", a: "Sí. Con el menú de tres puntos junto a la reseña llegas a «Denunciar reseña» y, con ello, al formulario de denuncia. Sigues el estado con la herramienta de Google para gestionar reseñas." },
     { q: "¿Puedo eliminar una reseña de Google gratis?", a: "Las propias sí. Las ajenas puedes denunciarlas gratis, aunque que Google las elimine no está garantizado. Para una eliminación segura hay servicios de pago con honorario de éxito." },
     { q: "¿Cómo veo si mi reseña denunciada se eliminó?", a: "La reseña desaparece del perfil y la media y el número de reseñas cambian. No se muestra un estado explícito; una captura previa ayuda a comparar." },
-    { q: "¿Cuánto cuesta eliminar una reseña de Google?", a: "Desde gratis (autodenuncia) hasta 19–49 € (servicios baratos) o 100–159 € por reseña con abogado. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove pagas 179 € por reseña eliminada (250 € si tiene más de 4 semanas), solo si desaparece. En la eliminación del perfil rige un precio fijo, pagadero tras el éxito." },
-    { q: "¿RapidRemove elimina reseñas individuales?", a: "Sí. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) eliges exactamente las reseñas que deben desaparecer, también valoraciones solo de estrellas, sin texto (procedimiento especial: 300 € por valoración eliminada; aprox. 80 % de éxito). Reseñas de hasta 4 semanas: aprox. 90 % de éxito, 179 € por reseña eliminada; más antiguas: aprox. 50 %, 250 € cada una. Descuento por volumen: desde 3 reseñas −10 %, desde 5 −15 %, desde 10 −30 %. Nada por adelantado: pagas solo por las que realmente desaparecen. Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas sigue siendo la vía más completa." },
+    { q: "¿Cuánto cuesta eliminar una reseña de Google?", a: "Desde gratis (autodenuncia) hasta 19–49 € (servicios baratos) o 100–159 € por reseña con abogado. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove pagas 179 € por reseña eliminada (229 € si tiene más de 4 semanas), solo si desaparece. En la eliminación del perfil rige un precio fijo, pagadero tras el éxito." },
+    { q: "¿RapidRemove elimina reseñas individuales?", a: "Sí. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) eliges exactamente las reseñas que deben desaparecer, también valoraciones solo de estrellas, sin texto (procedimiento más exhaustivo: 300 € por valoración eliminada). Reseñas de hasta 4 semanas: aprox. 90 % de éxito, 179 € por reseña eliminada; más antiguas: aprox. 50 %, 229 € cada una. Descuento por volumen: desde 3 reseñas −10 %, desde 5 −15 %, desde 10 −30 %. Nada por adelantado: pagas solo por las que realmente desaparecen. Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas sigue siendo la vía más completa." },
   ],
   related: [
     { label: "Eliminar reseñas de Google: costes y métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

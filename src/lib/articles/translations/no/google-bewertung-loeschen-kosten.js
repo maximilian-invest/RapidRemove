@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-ekspert",
     date: "2026-10-05",
   },
-  dek: "Det er **gratis** å rapportere en Google-anmeldelse selv, men Google avviser mange rapporter. En advokat tar som regel betalt **per time og på forskudd**, uansett resultat. Tjenestene er svært forskjellige: noen tar betalt per forsøk eller på forskudd, andre oppgir ingen priser i det hele tatt. Hos RapidRemove betaler du **179 € per fjernet anmeldelse** (250 € hvis den er eldre enn 4 uker) – og **bare når den faktisk er borte**.",
+  dek: "Det er **gratis** å rapportere en Google-anmeldelse selv, men Google avviser mange rapporter. En advokat tar som regel betalt **per time og på forskudd**, uansett resultat. Tjenestene er svært forskjellige: noen tar betalt per forsøk eller på forskudd, andre oppgir ingen priser i det hele tatt. Hos RapidRemove betaler du **179 € per fjernet anmeldelse** (229 € hvis den er eldre enn 4 uker) – og **bare når den faktisk er borte**.",
   blocks: [
     { t: "h2", id: "kort-svar", text: "Kort svar: hva koster det å fjerne en Google-anmeldelse?", toc: "Kort svar" },
     { t: "p", text: "Det avhenger av hvilken vei du velger: å rapportere selv koster bare tid, mens advokater og enkelte tjenester koster penger også når anmeldelsen blir stående. Det viktige spørsmålet er derfor ikke bare **hvor mye**, men **når du betaler, og for hva**." },
@@ -19,7 +19,7 @@ const article = {
       "**Rapportere selv til Google:** gratis, men avvises ofte med et standardsvar.",
       "**Advokat:** som regel timepris, ofte med forskudd – du betaler også om anmeldelsen blir stående.",
       "**Tjenester med forskuddsbetaling:** noen tar betalt per forsøk eller på forhånd, andre oppgir prisen først etter en samtale.",
-      "**RapidRemove:** 179 € per fjernet anmeldelse, 250 € hvis den er eldre enn 4 uker. Ingenting på forskudd, ingen gebyrer for forsøk. Rene stjernevurderinger uten tekst (egen prosedyre): 300 € per fjernet anmeldelse.",
+      "**RapidRemove:** 179 € per fjernet anmeldelse, 229 € hvis den er eldre enn 4 uker. Ingenting på forskudd, ingen gebyrer for forsøk. Rene stjernevurderinger uten tekst (komplekst tilfelle): 300 € per fjernet anmeldelse.",
     ] },
     { t: "p", text: "Vil du se prisen for akkurat dine anmeldelser med en gang? I vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) krysser du av for anmeldelsene og ser totalbeløpet med en gang." },
 
@@ -33,7 +33,7 @@ const article = {
     { t: "h2", id: "sammenligning", text: "Sammenligning: selv, advokat, forskuddstjeneste eller RapidRemove", toc: "Sammenligning" },
     { t: "p", text: "Den største forskjellen ligger ikke i prisen, men i **hvem som bærer risikoen** hvis anmeldelsen blir stående." },
     { t: "table", rrCol: 4, head: ["Kriterium", "Rapportere selv", "Advokat", "Tjeneste med forskudd", "RapidRemove"], rows: [
-      ["Prismodell", "Gratis", "Timepris, ofte forskudd", "Per forsøk eller fast beløp på forhånd", "**179 € per fjernet anmeldelse** (eldre enn 4 uker: 250 €); uten tekst 300 €"],
+      ["Prismodell", "Gratis", "Timepris, ofte forskudd", "Per forsøk eller fast beløp på forhånd", "**179 € per fjernet anmeldelse** (eldre enn 4 uker: 229 €); uten tekst 300 €"],
       ["Betaler du hvis anmeldelsen blir?", "–", "Ja", "Ofte ja", "**Nei** (unntatt vurderinger uten tekst)"],
       ["Risiko for deg", "Tapt tid, avvises ofte", "Høy: kostnad uansett utfall", "Høy: pengene er allerede betalt", "**Ingen**: bare ved suksess"],
       ["Varighet", "Dager til uker, ingen fast frist", "Ofte måneder", "Varierer", "Som regel noen dager, av og til opptil 3 uker"],
@@ -42,13 +42,13 @@ const article = {
     { t: "p", text: "Hvor lang tid Google selv bruker, og hvordan klagen fungerer, kan du lese i [hvor lang tid tar det for Google å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
 
     { t: "h2", id: "priser", text: "RapidRemoves priser i korte trekk", toc: "Våre priser" },
-    { t: "p", text: "Du betaler **179 € per fjernet anmeldelse**; er anmeldelsen eldre enn 4 uker, koster den **250 €**. Ferske anmeldelser er billigere fordi de er mye lettere å få fjernet. I USA går anmeldelser som er eldre enn 4 uker, alltid gjennom vår egen programvareprosedyre (300 $); andre steder kan en eldre anmeldelse i enkelte tilfeller senere også trenge den (300 €)." },
+    { t: "p", text: "Du betaler **179 € per fjernet anmeldelse**; er anmeldelsen eldre enn 4 uker, koster den **229 €**. Ferske anmeldelser er billigere fordi de er mye lettere å få fjernet. Komplekse tilfeller koster **300 €**: vurderinger uten tekst og anmeldelser fra USA som er eldre enn 4 uker (300 $), fordi de krever en mer omfattende prosedyre. I enkelte tilfeller kan en eldre anmeldelse som fortsatt er synlig etter standardprosedyren, bli et komplekst tilfelle – vi fortsetter bare med ditt samtykke." },
     { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Sjanse for å lykkes", "Pris per fjernet anmeldelse"], rows: [
       ["Opptil 4 uker gammel", "ca. 90 %", "**179 €**"],
-      ["Eldre enn 4 uker", "ca. 50 %", "**250 €**"],
-      ["Stjernevurdering uten tekst (egen prosedyre)", "ca. 80 %", "**300 €** per fjernet anmeldelse"],
+      ["Eldre enn 4 uker", "ca. 50 %", "**229 €**"],
+      ["Komplekst tilfelle (vurdering uten tekst)", "–", "**300 €** per fjernet anmeldelse"],
     ] },
-    { t: "p", text: "**Rene stjernevurderinger uten tekst** fjerner vi med en egen, programvarestøttet prosedyre. De koster **300 € per fjernet anmeldelse** uansett alder. Som ved alle anmeldelser lagrer du et kort eller PayPal ved bestillingen; ingenting trekkes nå, og **beløpet trekkes automatisk først når vurderingen er fjernet**. Sjansen for å lykkes er ca. 80 %." },
+    { t: "p", text: "**Rene stjernevurderinger uten tekst** fjerner vi med en mer omfattende prosedyre. De koster **300 € per fjernet anmeldelse** uansett alder. Som ved alle anmeldelser lagrer du et kort eller PayPal ved bestillingen; ingenting trekkes nå, og **beløpet trekkes automatisk først når vurderingen er fjernet**." },
     { t: "p", text: "Etter den gratis vurderingen får du **mengderabatt** ut fra hvor mange anmeldelser vi aksepterer. Rabatten gjelder hver anmeldelse som blir fjernet – og også stjernevurderinger uten tekst, som teller med i antallet:" },
     { t: "table", head: ["Aksepterte anmeldelser", "Rabatt"], rows: [
       ["1 – 2", "–"],
@@ -59,18 +59,18 @@ const article = {
     { t: "cta", title: "Se med en gang hva anmeldelsene dine koster", text: "Søk etter bedriften din, kryss av for anmeldelsene som skal bort – prisen vises med en gang. **179 € per fjernet anmeldelse**, ingenting på forskudd.", btn: "Beregn pris", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal bare ved suksess", "Gratis vurdering"] },
 
     { t: "h2", id: "regneeksempler", text: "Regneeksempler: slik blir prisen din", toc: "Regneeksempler" },
-    { t: "p", text: "Utregningen er enkel: antall fjernede anmeldelser × 179 € (eller 250 €), minus mengderabatten. Noen eksempler:" },
+    { t: "p", text: "Utregningen er enkel: antall fjernede anmeldelser × 179 € (eller 229 €), minus mengderabatten. Noen eksempler:" },
     { t: "ul", items: [
       "**1 fersk falsk anmeldelse:** 179 €. Blir den stående, betaler du 0 €.",
-      "**1 anmeldelse som er tre måneder gammel:** **250 €**.",
+      "**1 anmeldelse som er tre måneder gammel:** **229 €**.",
       "**3 ferske anmeldelser:** 537 €, minus 10 % = **483 €**.",
-      "**2 ferske og 3 eldre anmeldelser:** 1 108 €, minus 15 % = **942 €**.",
+      "**2 ferske og 3 eldre anmeldelser:** 1 045 €, minus 15 % = **888 €**.",
       "**5 ferske anmeldelser akseptert, 4 fjernet:** 4 × 179 € = 716 €, minus 15 % = **609 €**. Den femte, som blir stående, koster ingenting.",
-      "**10 anmeldelser (6 ferske, 4 eldre):** 2 074 €, minus 30 % = **1 452 €**.",
+      "**10 anmeldelser (6 ferske, 4 eldre):** 1 990 €, minus 30 % = **1 393 €**.",
       "**1 stjernevurdering uten tekst:** **300 €**, trukket automatisk etter fjerningen – blir den stående, betaler du ingenting.",
       "**2 ferske anmeldelser med tekst + 1 uten tekst:** 3 anmeldelser = −10 %: **270 €** for stjernevurderingen og 2 × 161,10 € = **322,20 €** for anmeldelsene med tekst – hver bare hvis den blir fjernet.",
     ] },
-    { t: "tip", title: "Det lønner seg dobbelt å være rask", text: "Etter 4 uker faller sjansen fra rundt 90 % til rundt 50 %, og prisen øker fra 179 € til 250 €. Den som reagerer med en gang på en fersk falsk anmeldelse, betaler mindre og har større sjanse." },
+    { t: "tip", title: "Det lønner seg dobbelt å være rask", text: "Etter 4 uker faller sjansen fra rundt 90 % til rundt 50 %, og prisen øker fra 179 € til 229 €. Den som reagerer med en gang på en fersk falsk anmeldelse, betaler mindre og har større sjanse." },
 
     { t: "h2", id: "betaling", text: "Slik fungerer betalingen: per fjernet anmeldelse", toc: "Betaling" },
     { t: "p", text: "Du betaler først **når en anmeldelse faktisk er borte** – aldri på forskudd og aldri for et forsøk. Fordi ulike anmeldelser forsvinner til ulike tider, trekkes det **per anmeldelse**. Det gjelder også rene stjernevurderinger uten tekst." },
@@ -112,7 +112,7 @@ const article = {
     { t: "cta", title: "Få prisen på 2 minutter", text: "Velg bedriften din, kryss av for anmeldelsene og se nøyaktig pris inkludert rabatt. Du betaler **bare for anmeldelser som faktisk fjernes**.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["179 € per fjernet anmeldelse", "Ingenting på forskudd", "Trekkes automatisk etter fjerning"] },
   ],
   faq: [
-    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove 179 € per fjernet anmeldelse, eller 250 € hvis anmeldelsen er eldre enn 4 uker. Rene stjernevurderinger uten tekst (egen prosedyre, ca. 80 % sjanse) koster 300 €. Du betaler bare hvis anmeldelsen faktisk forsvinner – også uten tekst." },
+    { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove 179 € per fjernet anmeldelse, eller 229 € hvis anmeldelsen er eldre enn 4 uker. Rene stjernevurderinger uten tekst (komplekst tilfelle) koster 300 €. Du betaler bare hvis anmeldelsen faktisk forsvinner – også uten tekst." },
     { q: "Kan man fjerne en Google-anmeldelse gratis?", a: "Det er gratis å rapportere selv til Google. Google avviser likevel ofte rapporter; da kan du klage én gang per anmeldelse i Reviews Management Tool." },
     { q: "Hva koster en advokat for å fjerne en Google-anmeldelse?", a: "Advokater tar som regel betalt per time, ofte med forskudd og uansett resultat. Det lønner seg særlig ved reelle juridiske tvister som ærekrenkelse." },
     { q: "Må jeg betale på forskudd?", a: "Nei: **ingenting trekkes på forskudd**, og forsøk koster ingenting – heller ikke ved rene stjernevurderinger uten tekst. Du lagrer et kort eller PayPal ved bestillingen, og beløpet trekkes automatisk først når en anmeldelse er fjernet." },

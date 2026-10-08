@@ -49,7 +49,7 @@ const article = {
     { t: "p", text: "Tre vägar leder vidare:" },
     { t: "ul", items: [
       "**Advokatvägen:** en juridiskt grundad begäran om borttagning kan lyckas vid klart olagliga recensioner – men tar ofta veckor till månader, faktureras per recension och kan provocera upphovspersonen till »hämndrecensioner» (Streisandeffekten).",
-      "**Borttagning av enskilda recensioner:** du väljer ut just de falska recensionerna och RapidRemove [tar bort dem åt dig](/sv/ta-bort-omdome/) – 179 € per borttagen recension (äldre än 4 veckor: 250 €), betalt endast vid framgång, oftast på några dagar.",
+      "**Borttagning av enskilda recensioner:** du väljer ut just de falska recensionerna och RapidRemove [tar bort dem åt dig](/sv/ta-bort-omdome/) – 179 € per borttagen recension (äldre än 4 veckor: 229 €), betalt endast vid framgång, oftast på några dagar.",
       "**Profilborttagning:** i stället för att angripa varje falsk recension för sig tas hela profilen bort – alla recensioner försvinner med.",
     ] },
 
@@ -72,7 +72,7 @@ const article = {
     { q: "Hur anmäler jag en falsk recension till Google?", a: "Klicka via trepunktsmenyn bredvid recensionen på »Rapportera recension», välj brottet och skicka anmälan. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Är falska recensioner straffbara?", a: "Medvetet falska recensioner kan få civil-, konkurrens- och delvis straffrättsliga följder. I praktiken är upphovspersonen dock ofta anonym, varför borttagning av recensionen oftast är den snabbare hävstången än en anmälan. Detta är inte juridisk rådgivning." },
     { q: "Vad kan jag göra om Google inte tar bort den falska recensionen?", a: "Avvisas anmälan kan du för en enskild recension gå advokatvägen eller låta RapidRemove ta bort just den recensionen – betalt endast vid framgång. Är profilen skadad av många falska är profilborttagning via RapidRemove den mest tillförlitliga vägen: hela profilen tas bort, alla recensioner försvinner med." },
-    { q: "Tar RapidRemove bort enskilda falska recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) markerar du de falska recensionerna; du betalar bara för dem som faktiskt tas bort. Recensioner upp till 4 veckor gamla har ca. 90 % chans att lyckas (179 € per recension), äldre ca. 50 % (250 € per recension); även rena stjärnbetyg utan text kan väljas (särskilt förfarande, 300 € per borttaget betyg). Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
+    { q: "Tar RapidRemove bort enskilda falska recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) markerar du de falska recensionerna; du betalar bara för dem som faktiskt tas bort. Recensioner upp till 4 veckor gamla har ca. 90 % chans att lyckas (179 € per recension), äldre ca. 50 % (229 € per recension); även rena stjärnbetyg utan text kan väljas (komplext fall, 300 € per borttaget betyg). Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
     { q: "Hur snabbt blir man av med de falska recensionerna?", a: "Via profilborttagning finns resultat ofta inom 24 till 48 timmar, enskilda recensioner tas oftast bort på några dagar, ibland upp till tre veckor – båda betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [

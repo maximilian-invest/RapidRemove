@@ -127,7 +127,7 @@ import { PRICES } from "@/lib/pricing";
       eyebrow: "Preguntas frecuentes",
       h2: "Todo lo que quieres saber.",
       items: [
-        { q: "¿Es realmente legal?", a: "Sí. Nuestro método funciona exclusivamente por canales oficiales y ha sido revisado por juristas. No eludimos nada ni accedemos sin autorización." },
+        { q: "¿Es realmente legal?", a: "Sí. Nuestro método funciona exclusivamente por canales oficiales y ha sido revisado por juristas. Actuamos siempre por encargo del propietario." },
         { q: "¿Tendré problemas con Google?", a: "No. La eliminación es un proceso regular y previsto. Tu cuenta de Google, Gmail y cualquier cuenta de Ads quedan intactas." },
         { q: "¿Afecta a mi SEO, web o Ads?", a: "No. Solo se elimina el perfil de empresa (Google Maps / Perfil de Empresa). Tu web, posicionamiento y campañas no cambian." },
         { q: "¿La eliminación es permanente?", a: "Sí, el perfil y todas las reseñas se eliminan de forma permanente. Con la protección opcional lo eliminamos de nuevo gratis si un tercero lo vuelve a publicar." },
@@ -330,7 +330,7 @@ import { PRICES } from "@/lib/pricing";
       eyebrow: "Questions fréquentes",
       h2: "Tout ce que vous voulez savoir.",
       items: [
-        { q: "Est-ce vraiment légal ?", a: "Oui. Notre méthode passe exclusivement par les canaux officiels et a été validée par des juristes. Nous ne contournons rien et n'obtenons aucun accès non autorisé." },
+        { q: "Est-ce vraiment légal ?", a: "Oui. Notre méthode passe exclusivement par les canaux officiels et a été validée par des juristes. Nous agissons toujours au nom du propriétaire." },
         { q: "Vais-je avoir des problèmes avec Google ?", a: "Non. La suppression est un processus normal et prévu. Votre compte Google, Gmail et vos comptes Ads restent totalement intacts." },
         { q: "Cela affecte-t-il mon SEO, mon site ou mes Ads ?", a: "Non. Seule la fiche d'établissement (Google Maps / Fiche d'établissement) est supprimée. Votre site, votre classement et vos campagnes restent inchangés." },
         { q: "La suppression est-elle définitive ?", a: "Oui, la fiche et tous les avis sont supprimés définitivement. Avec la protection optionnelle, nous la supprimons à nouveau gratuitement si un tiers la republie." },

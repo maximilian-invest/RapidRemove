@@ -44,7 +44,7 @@ const article = {
     { t: "p", text: "O Tribunal de Justiça da União Europeia deixou claro que os motores de busca devem, em determinadas condições, remover resultados relativos a uma pessoa de pesquisas pelo seu nome, quando o interesse em ser esquecido supera o interesse público na informação. São determinantes, entre outros fatores, a antiguidade e atualidade da informação, a sua correção e o papel da pessoa na esfera pública. Esta é a alavanca jurídica com que se podem retirar resultados pessoais da pesquisa do Google — sem que o meio tenha de eliminar o artigo. O fundamento é o **RGPD Art. 17**, aplicável em toda a UE." },
 
     { t: "h2", id: "streisand", text: "O caminho errado: o efeito Streisand", toc: "Efeito Streisand" },
-    { t: "p", text: "Quem pressiona publicamente um meio de comunicação ou envia cartas de advogado com ameaças arrisca o efeito contrário: ainda mais atenção, novas reportagens, capturas de ecrã partilhadas. Este fenómeno chama-se **efeito Streisand**. Por isso, uma desindexação séria funciona de forma **silenciosa** — através dos procedimentos previstos junto do Google e, quando necessário, com fundamento jurídico sólido, em vez de confronto." },
+    { t: "p", text: "Quem pressiona publicamente um meio de comunicação ou envia cartas de advogado com ameaças arrisca o efeito contrário: ainda mais atenção, novas reportagens, capturas de ecrã partilhadas. Este fenómeno chama-se **efeito Streisand**. Por isso, uma desindexação séria funciona de forma **discreta** — através dos procedimentos previstos junto do Google e, quando necessário, com fundamento jurídico sólido, em vez de confronto." },
 
     { t: "h2", id: "vorgehen", text: "Como proceder", toc: "Como proceder" },
     { t: "ol", items: [

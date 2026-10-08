@@ -40,7 +40,7 @@ const article = {
       ["Denunciar por si mesmo (formulário)", "gratuito", "muitas vezes baixo"],
       ["Fornecedores baratos", "cerca de 19 – 49 € / avaliação", "muito variável"],
       ["Advogados especializados (avaliação isolada)", "cerca de 100 – 159 € / avaliação", "cerca de 90 %, lento"],
-      ["Remoção de avaliações individuais (RapidRemove)", "179 € / avaliação removida (mais de 4 semanas: 250 €), só após sucesso", "aprox. 90 % (até 4 semanas), aprox. 50 % (mais antigas)"],
+      ["Remoção de avaliações individuais (RapidRemove)", "179 € / avaliação removida (mais de 4 semanas: 229 €), só após sucesso", "aprox. 90 % (até 4 semanas), aprox. 50 % (mais antigas)"],
       ["Remoção do perfil (RapidRemove)", "preço fixo, a pagar após sucesso", "garantido (todas as avaliações fora)"],
     ] },
 
@@ -67,8 +67,8 @@ const article = {
     { q: "Existe um formulário para mandar remover uma avaliação do Google?", a: "Sim. Pelo menu de três pontos junto à avaliação chega a «Denunciar avaliação» e, assim, ao formulário de denúncia. Acompanhe o estado com a ferramenta do Google para gestão de avaliações." },
     { q: "Posso remover uma avaliação do Google gratuitamente?", a: "As suas, sim. As de terceiros pode denunciá-las gratuitamente, mas que o Google as remova não é garantido. Para uma remoção segura existem serviços pagos com comissão de sucesso." },
     { q: "Como vejo se a minha avaliação denunciada foi removida?", a: "A avaliação desaparece do perfil e a média e o número de avaliações mudam. Não é mostrado um estado explícito; uma captura de ecrã anterior ajuda a comparar." },
-    { q: "Quanto custa remover uma avaliação do Google?", a: "De grátis (denúncia própria) a 19–49 € (serviços baratos) ou 100–159 € por avaliação com um advogado. Na RapidRemove, uma avaliação individual custa 179 € (até 4 semanas) ou 250 € (mais antiga), com desconto por quantidade a partir de 3; na remoção do perfil vale um preço fixo. Em ambos os casos, a pagar só após sucesso." },
-    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; em avaliações até 4 semanas a probabilidade de sucesso é de aprox. 90 %; as mais antigas também são possíveis (aprox. 50 %, 250 € cada); também podem ser selecionadas classificações só com estrelas, sem texto (procedimento especial, 300 € por avaliação removida). A partir de 3 avaliações aplica-se desconto por quantidade (−10 %, de 5 −15 %, de 10 −30 %). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
+    { q: "Quanto custa remover uma avaliação do Google?", a: "De grátis (denúncia própria) a 19–49 € (serviços baratos) ou 100–159 € por avaliação com um advogado. Na RapidRemove, uma avaliação individual custa 179 € (até 4 semanas) ou 229 € (mais antiga), com desconto por quantidade a partir de 3; na remoção do perfil vale um preço fixo. Em ambos os casos, a pagar só após sucesso." },
+    { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](/pt/remover-uma-avaliacao/) – 179 € por avaliação removida, paga só em caso de sucesso; em avaliações até 4 semanas a probabilidade de sucesso é de aprox. 90 %; as mais antigas também são possíveis (aprox. 50 %, 229 € cada); também podem ser selecionadas classificações só com estrelas, sem texto (caso complexo, 300 € por avaliação removida). A partir de 3 avaliações aplica-se desconto por quantidade (−10 %, de 5 −15 %, de 10 −30 %). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
   ],
   related: [
     { label: "Remover avaliações do Google: custos e métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

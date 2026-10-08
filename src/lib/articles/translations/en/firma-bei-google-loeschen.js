@@ -36,14 +36,14 @@ const article = {
     { t: "cta", title: "Get Your Listing Checked — Free.", text: "Enter your business name and we'll tell you in seconds whether your listing can be removed and how quickly.", btn: "Check Removal Eligibility", href: "https://www.rapid-remove.com/", trust: ["Free analysis", "Includes guarantee", "No commitment"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Individual Reviews or the Whole Listing?", toc: "Review or listing" },
-    { t: "p", text: "If the issue is a single unfair review, you don't need to remove the whole listing: report it, go through a lawyer, or have it removed individually by RapidRemove — $179 per removed review up to 4 weeks old, $250 for older ones, nothing upfront ([prices & process](/en/magazine/google-review-removal-service/)). Our guide on [removing Google reviews](/en/magazine/remove-google-reviews/) compares the options. If the listing itself is beyond repair and you want a clean break, full removal is the more direct route." },
+    { t: "p", text: "If the issue is a single unfair review, you don't need to remove the whole listing: report it, go through a lawyer, or have it removed individually by RapidRemove — $179 per removed review up to 4 weeks old, $229 for older ones, nothing upfront ([prices & process](/en/magazine/google-review-removal-service/)). Our guide on [removing Google reviews](/en/magazine/remove-google-reviews/) compares the options. If the listing itself is beyond repair and you want a clean break, full removal is the more direct route." },
 
     { t: "h2", id: "kosten", text: "What Does Removing a Business Listing Cost?", toc: "What it costs" },
     { t: "p", text: "Prices vary widely depending on the provider:" },
     { t: "table", head: ["Provider type", "Price range", "Outcome"], rows: [
       ["Budget services", "~$20–50 per review", "Highly variable success rate"],
       ["Specialist lawyers", "~$110–170 per review", "~90% success rate, but slow"],
-      ["Single-review removal (RapidRemove)", "$179 per removed review ($250 if older than 4 weeks)", "Profile stays — you pay only for reviews actually removed"],
+      ["Single-review removal (RapidRemove)", "$179 per removed review ($229 if older than 4 weeks)", "Profile stays — you pay only for reviews actually removed"],
       ["Full listing removal (RapidRemove)", "Fixed price, charged after success", "All reviews removed — you pay only if it works"],
     ] },
 
@@ -63,7 +63,7 @@ const article = {
     { q: "How long does removal take?", a: "Through a professional deletion service, usually 24–48 hours — significantly faster than the months-long legal process typically involved in challenging individual reviews." },
     { q: "Will my website and search rankings be affected?", a: "No. Removing the Google Business Profile does not affect your website, your Google account, or your organic search rankings. Creating a new, clean profile afterward is optional." },
     { q: "Will fake reviews disappear too?", a: "Yes. Because the entire listing is removed, all reviews go with it — including fake or otherwise illegitimate ones." },
-    { q: "What does removing the business listing cost?", a: "RapidRemove charges a fixed price, payable only after successful removal. Services that target individual reviews — whether budget providers or lawyers — typically bill per review, often upfront and without any guarantee of success. If you only want individual reviews gone, RapidRemove's [single-review removal](/en/remove-single-reviews/) costs $179 per removed review ($250 if older than 4 weeks), charged only on success." },
+    { q: "What does removing the business listing cost?", a: "RapidRemove charges a fixed price, payable only after successful removal. Services that target individual reviews — whether budget providers or lawyers — typically bill per review, often upfront and without any guarantee of success. If you only want individual reviews gone, RapidRemove's [single-review removal](/en/remove-single-reviews/) costs $179 per removed review ($229 if older than 4 weeks), charged only on success." },
   ],
   related: [
     { label: "Delete your Google Business Profile: the complete guide", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

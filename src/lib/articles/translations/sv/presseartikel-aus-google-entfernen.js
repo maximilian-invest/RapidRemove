@@ -44,7 +44,7 @@ const article = {
     { t: "p", text: "EU-domstolen har fastslaget att sökmotorer under vissa förutsättningar måste ta bort resultat kopplade till en persons namn när intresset av att bli glömd väger tyngre än informationsintresset. Avgörande faktorer är bland annat informationens ålder och aktualitet, dess riktighet och personens roll i offentligheten. GDPR Art. 17 – med EU-täckning – är det rättsliga instrumentet för att ta bort personrelaterade träffar ur Google-sökningen, utan att mediet behöver radera artikeln. Tyska domstolsbeslut som Bundesgerichtshofs avgöranden bekräftar hur detta tillämpas i praktiken i EU-domstolarna." },
 
     { t: "h2", id: "streisand", text: "Fel väg: Streisand-effekten", toc: "Streisand-effekten" },
-    { t: "p", text: "Den som sätter ett medium under offentlig press eller skickar advokatbrev riskerar motsatsen: ännu mer uppmärksamhet, nya rapporter, delade skärmbilder. Det fenomenet kallas **Streisand-effekten**. Därför sker en seriös avindexering **i det tysta** – via de föreskrivna rutinerna hos Google och, där det behövs, med rättslig grund – i stället för konfrontation." },
+    { t: "p", text: "Den som sätter ett medium under offentlig press eller skickar advokatbrev riskerar motsatsen: ännu mer uppmärksamhet, nya rapporter, delade skärmbilder. Det fenomenet kallas **Streisand-effekten**. Därför sker en seriös avindexering **diskret** – via de föreskrivna rutinerna hos Google och, där det behövs, med rättslig grund – i stället för konfrontation." },
 
     { t: "h2", id: "vorgehen", text: "Så går du tillväga", toc: "Tillvägagångssätt" },
     { t: "ol", items: [

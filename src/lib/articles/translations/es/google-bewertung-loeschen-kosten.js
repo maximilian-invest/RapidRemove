@@ -11,7 +11,7 @@ const article = {
     authorRole: "Experto en Google y fundador",
     date: "2026-10-05",
   },
-  dek: "Denunciar tú mismo una reseña de Google es **gratis**, pero Google la rechaza con frecuencia. Los abogados suelen cobrar **por horas y por adelantado**, se elimine la reseña o no. Los servicios de eliminación varían muchísimo: algunos cobran por intento o antes de empezar, otros ni siquiera publican sus precios. En RapidRemove pagas **179 € por reseña eliminada** (250 € si tiene más de 4 semanas) y **solo cuando ha desaparecido de verdad**.",
+  dek: "Denunciar tú mismo una reseña de Google es **gratis**, pero Google la rechaza con frecuencia. Los abogados suelen cobrar **por horas y por adelantado**, se elimine la reseña o no. Los servicios de eliminación varían muchísimo: algunos cobran por intento o antes de empezar, otros ni siquiera publican sus precios. En RapidRemove pagas **179 € por reseña eliminada** (229 € si tiene más de 4 semanas) y **solo cuando ha desaparecido de verdad**.",
   blocks: [
     { t: "h2", id: "respuesta-corta", text: "Respuesta corta: cuánto cuesta eliminar una reseña de Google", toc: "Respuesta corta" },
     { t: "p", text: "Eliminar una reseña de Google cuesta desde **0 € hasta varios cientos de euros**, según quién lo haga y cómo cobre. Más importante que el precio es **quién asume el riesgo** si la reseña sigue online." },
@@ -19,14 +19,14 @@ const article = {
       "**Denunciarla tú mismo:** gratis. Pagas con tu tiempo, y Google responde a menudo con una decisión estándar de \"no infringe las políticas\".",
       "**Abogado:** normalmente por horas, a menudo con una provisión de fondos por adelantado. Pagas **independientemente del resultado**.",
       "**Servicios con pago por adelantado:** precios y modelos muy distintos. Algunos cobran por intento o antes de empezar, otros solo dan precio tras una llamada comercial.",
-      "**RapidRemove:** **179 € por reseña eliminada**, **250 €** si la reseña tiene más de 4 semanas. Nada por adelantado, sin coste por intentos. Solo pagas las reseñas que realmente se eliminan. Valoraciones solo de estrellas, sin texto: **300 €** por valoración eliminada con un procedimiento especial.",
+      "**RapidRemove:** **179 € por reseña eliminada**, **229 €** si la reseña tiene más de 4 semanas. Nada por adelantado, sin coste por intentos. Solo pagas las reseñas que realmente se eliminan. Valoraciones solo de estrellas, sin texto: **300 €** por valoración eliminada con un procedimiento más exhaustivo.",
     ] },
     { t: "p", text: "Si solo quieres saber el precio para tus reseñas concretas: nuestro [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/) te lo muestra al instante en cuanto marcas las que quieres quitar." },
 
     { t: "h2", id: "comparativa", text: "Hacerlo tú, abogado, servicios con pago previo o pago por éxito", toc: "Comparativa" },
     { t: "p", text: "Las cuatro opciones se diferencian menos en lo que pueden conseguir y más en **cómo pagas y qué pasa si no funciona**. Este es el resumen:" },
     { t: "table", rrCol: 4, head: ["Criterio", "Denunciar tú mismo", "Abogado", "Servicios con pago previo", "RapidRemove"], rows: [
-      ["Modelo de coste", "Gratis", "Por horas, normalmente por adelantado", "Por intento o por adelantado; precios a menudo ocultos", "**179 € por reseña eliminada** (250 € si tiene más de 4 semanas); solo estrellas: 300 € por valoración eliminada"],
+      ["Modelo de coste", "Gratis", "Por horas, normalmente por adelantado", "Por intento o por adelantado; precios a menudo ocultos", "**179 € por reseña eliminada** (229 € si tiene más de 4 semanas); solo estrellas: 300 € por valoración eliminada"],
       ["Si la reseña se queda", "Has perdido tiempo", "Pagas igualmente", "El dinero suele estar perdido", "**No pagas nada**"],
       ["Riesgo", "Coste bajo, pocas probabilidades", "Coste alto, resultado incierto", "Pagar por nada", "**Ninguno en el coste**"],
       ["Duración habitual", "De días a semanas, sin plazo fijo", "A menudo meses", "Variable", "Unos días, hasta 3 semanas"],
@@ -38,13 +38,13 @@ const article = {
     { t: "p", text: "Hay un coste que se pasa por alto con facilidad: **el tiempo**. Mientras una reseña falsa de 1 estrella está arriba del todo en tu perfil, cada posible cliente que te busca en Google la ve. Una denuncia gratuita que se alarga semanas y acaba rechazada no es realmente gratis si mientras tanto te cuesta clientes." },
 
     { t: "h2", id: "precio", text: "Precios de RapidRemove: 179 € por reseña eliminada", toc: "Nuestro precio" },
-    { t: "p", text: "Pagas **179 € por cada reseña que realmente se elimina**. Si la reseña tiene más de 4 semanas, cuesta **250 €**. En casos concretos, una reseña antigua puede necesitar más adelante el procedimiento especial por software (300 €). No se cobra nada por adelantado y no hay coste por intentos." },
+    { t: "p", text: "Pagas **179 € por cada reseña que realmente se elimina**. Si la reseña tiene más de 4 semanas, cuesta **229 €**. Los casos complejos cuestan 300 €: valoraciones sin texto y reseñas de EE. UU. con más de 4 semanas (300 $), porque requieren un procedimiento más exhaustivo. En casos concretos, una reseña antigua que sigue en línea tras el procedimiento estándar puede convertirse en un caso complejo; solo continuamos con tu consentimiento. No se cobra nada por adelantado y no hay coste por intentos." },
     { t: "table", rrCol: 2, head: ["Reseña", "Probabilidad de éxito", "Precio"], rows: [
       ["Hasta 4 semanas", "aprox. 90 %", "**179 €** por reseña eliminada"],
-      ["Más de 4 semanas", "aprox. 50 %", "**250 €** por reseña eliminada"],
-      ["Valoración solo de estrellas (sin texto, cualquier antigüedad)", "aprox. 80 %", "**300 €** por valoración eliminada"],
+      ["Más de 4 semanas", "aprox. 50 %", "**229 €** por reseña eliminada"],
+      ["Valoración solo de estrellas (sin texto, cualquier antigüedad)", "decide Google", "**300 €** por valoración eliminada"],
     ] },
-    { t: "p", text: "Las **valoraciones solo de estrellas** (sin texto) las eliminamos con un **procedimiento especial apoyado por software** por **300 € cada una**, sin recargo por antigüedad y con aprox. un **80 %** de probabilidad de éxito. Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. Cuentan para el descuento por volumen junto con todas las demás reseñas del pedido." },
+    { t: "p", text: "Las **valoraciones solo de estrellas** (sin texto) las eliminamos con un **procedimiento más exhaustivo (caso complejo)** por **300 € cada una**, sin recargo por antigüedad. Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. Cuentan para el descuento por volumen junto con todas las demás reseñas del pedido." },
     { t: "p", text: "Las reseñas antiguas cuestan más porque son **más difíciles de eliminar**: la probabilidad de éxito baja de alrededor del 90 % a alrededor del 50 %. Antes de encargar nada, recibes una **valoración gratuita** y te decimos con honestidad si una reseña tiene pocas opciones. Si una reseña no se elimina, no te cuesta nada." },
     { t: "p", text: "Si hay que eliminar varias reseñas, el **descuento por volumen** se aplica automáticamente:" },
     { t: "table", head: ["Reseñas aceptadas tras la valoración", "Descuento en cada reseña eliminada"], rows: [
@@ -58,10 +58,10 @@ const article = {
     { t: "p", text: "Esto es lo que cuestan pedidos habituales, redondeado a euros enteros. \"Reciente\" significa hasta 4 semanas; \"antigua\", más de 4 semanas." },
     { t: "table", rrCol: 2, head: ["Caso", "Cálculo", "Pagas"], rows: [
       ["1 reseña reciente", "1 × 179 €", "**179 €**"],
-      ["1 reseña antigua", "1 × 250 €", "**250 €**"],
+      ["1 reseña antigua", "1 × 229 €", "**229 €**"],
       ["3 reseñas recientes", "3 × 179 € = 537 €, −10 %", "**483 €**"],
-      ["5 reseñas (2 recientes, 3 antiguas)", "358 € + 750 € = 1.108 €, −15 %", "**942 €**"],
-      ["10 reseñas (6 recientes, 4 antiguas)", "1.074 € + 1.000 € = 2.074 €, −30 %", "**1.452 €**"],
+      ["5 reseñas (2 recientes, 3 antiguas)", "358 € + 687 € = 1.045 €, −15 %", "**888 €**"],
+      ["10 reseñas (6 recientes, 4 antiguas)", "1.074 € + 916 € = 1.990 €, −30 %", "**1.393 €**"],
       ["5 recientes aceptadas, 4 eliminadas", "4 × 179 € = 716 €, −15 %", "**609 €**"],
       ["1 valoración solo de estrellas", "1 × 300 €, cobrados tras la eliminación", "**300 €**"],
       ["3 reseñas (2 recientes, 1 solo de estrellas)", "358 € + 300 € = 658 €, −10 %", "**592 €** (parte solo estrellas 270 €, cobrados tras la eliminación)"],
@@ -104,8 +104,8 @@ const article = {
   faq: [
     { q: "¿Es gratis eliminar una reseña de Google?", a: "Denunciar una reseña a Google tú mismo es gratis, y puedes apelar una vez en la herramienta de gestión de reseñas. Pero Google rechaza muchas denuncias. Con RapidRemove pagas **179 € por reseña, solo si se elimina**." },
     { q: "¿Pago algo si la reseña no se elimina?", a: "No: no hay pago por adelantado ni coste por intentos, solo pagas las reseñas que realmente desaparecen. Esto también vale para las valoraciones solo de estrellas." },
-    { q: "¿Cuánto cuesta eliminar una valoración solo de estrellas, sin texto?", a: "**300 € por valoración**, sin recargo por antigüedad. Usamos un procedimiento especial apoyado por software, con aprox. un **80 %** de probabilidad de éxito. Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. El descuento por volumen se aplica, contando todas las reseñas del pedido." },
-    { q: "¿Por qué son más caras las reseñas antiguas?", a: "Las reseñas de más de 4 semanas son más difíciles de eliminar: la probabilidad de éxito baja de aprox. el 90 % a aprox. el 50 %. Por eso cuestan **250 €** en lugar de 179 €." },
+    { q: "¿Cuánto cuesta eliminar una valoración solo de estrellas, sin texto?", a: "**300 € por valoración**, sin recargo por antigüedad. Usamos un procedimiento más exhaustivo (caso complejo). Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. El descuento por volumen se aplica, contando todas las reseñas del pedido." },
+    { q: "¿Por qué son más caras las reseñas antiguas?", a: "Las reseñas de más de 4 semanas son más difíciles de eliminar: la probabilidad de éxito baja de aprox. el 90 % a aprox. el 50 %. Por eso cuestan **229 €** en lugar de 179 €." },
     { q: "¿Hay descuento por varias reseñas?", a: "Sí. A partir de 3 reseñas aceptadas tienes un 10 % de descuento, a partir de 5 un 15 % y a partir de 10 un 30 %. El descuento se aplica a cada reseña eliminada." },
     { q: "¿Puedo pagar con PayPal?", a: "Sí. Al hacer el pedido guardas una tarjeta o PayPal; el cargo se hace automáticamente solo cuando una reseña se ha eliminado." },
     { q: "¿Por qué se me ha cobrado varias veces?", a: "Las reseñas se eliminan en momentos distintos, así que cada reseña se **cobra por separado** en cuanto ha desaparecido." },

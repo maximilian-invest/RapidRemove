@@ -11,7 +11,7 @@ const article = {
     authorRole: "Esperto Google e fondatore",
     date: "2026-10-05",
   },
-  dek: "Segnalare da solo una recensione Google è **gratis**, ma Google respinge spesso la segnalazione. Gli avvocati di solito fatturano **a ore e in anticipo**, che la recensione sparisca o no. Le agenzie di rimozione sono molto diverse: alcune si fanno pagare per ogni tentativo o in anticipo, altre non pubblicano proprio i prezzi. Con RapidRemove paghi **179 € per recensione rimossa** (250 € se ha più di 4 settimane), e **solo quando è davvero sparita**.",
+  dek: "Segnalare da solo una recensione Google è **gratis**, ma Google respinge spesso la segnalazione. Gli avvocati di solito fatturano **a ore e in anticipo**, che la recensione sparisca o no. Le agenzie di rimozione sono molto diverse: alcune si fanno pagare per ogni tentativo o in anticipo, altre non pubblicano proprio i prezzi. Con RapidRemove paghi **179 € per recensione rimossa** (229 € se ha più di 4 settimane), e **solo quando è davvero sparita**.",
   blocks: [
     { t: "h2", id: "risposta-breve", text: "La risposta breve: quanto costa rimuovere una recensione Google", toc: "Risposta breve" },
     { t: "p", text: "Rimuovere una recensione Google costa da **0 € a diverse centinaia di euro**, a seconda di chi se ne occupa e di come si fa pagare. La domanda vera non è il prezzo, ma **chi si assume il rischio** se la recensione resta online." },
@@ -19,14 +19,14 @@ const article = {
       "**Segnalarla da solo:** gratis. Paghi con il tuo tempo, e Google risponde spesso con una decisione standard di \"nessuna violazione delle norme\".",
       "**Avvocato:** di solito a ore, spesso con un fondo spese versato in anticipo. Paghi **indipendentemente dal risultato**.",
       "**Agenzie con pagamento anticipato:** prezzi e modelli molto diversi. Alcune chiedono soldi per ogni tentativo o prima di iniziare, altre danno un prezzo solo dopo una telefonata commerciale.",
-      "**RapidRemove:** **179 € per recensione rimossa**, **250 €** se la recensione ha più di 4 settimane. Nulla in anticipo, nessun costo per i tentativi. Paghi solo le recensioni effettivamente rimosse.",
+      "**RapidRemove:** **179 € per recensione rimossa**, **229 €** se la recensione ha più di 4 settimane. Nulla in anticipo, nessun costo per i tentativi. Paghi solo le recensioni effettivamente rimosse.",
     ] },
     { t: "p", text: "Vuoi solo sapere il prezzo per le tue recensioni? Il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) te lo mostra subito, appena spunti quelle da eliminare." },
 
     { t: "h2", id: "confronto", text: "Fai da te, avvocato, agenzie con anticipo o pagamento a risultato", toc: "Confronto" },
     { t: "p", text: "Le quattro opzioni si distinguono meno per ciò che possono ottenere e più per **come paghi e cosa succede se non funziona**. Ecco il quadro:" },
     { t: "table", rrCol: 4, head: ["Criterio", "Segnalazione fai da te", "Avvocato", "Agenzie con anticipo", "RapidRemove"], rows: [
-      ["Modello di costo", "Gratis", "A ore, di solito in anticipo", "Per tentativo o in anticipo; prezzi spesso nascosti", "**179 € per recensione rimossa** (250 € oltre le 4 settimane)"],
+      ["Modello di costo", "Gratis", "A ore, di solito in anticipo", "Per tentativo o in anticipo; prezzi spesso nascosti", "**179 € per recensione rimossa** (229 € oltre le 4 settimane)"],
       ["Se la recensione resta", "Hai perso tempo", "Paghi comunque", "I soldi di solito sono persi", "**Non paghi nulla**"],
       ["Rischio", "Costo basso, poche probabilità", "Costo alto, esito incerto", "Pagare per niente", "**Nessuno sul costo**"],
       ["Tempi tipici", "Da giorni a settimane, nessun termine garantito", "Spesso mesi", "Variabili", "Pochi giorni, fino a 3 settimane"],
@@ -38,12 +38,12 @@ const article = {
     { t: "p", text: "C'è un costo che si dimentica facilmente: **il tempo**. Finché una recensione falsa a 1 stella resta in cima al tuo profilo, ogni potenziale cliente che ti cerca su Google la vede. Una segnalazione gratuita che si trascina per settimane e finisce con un rifiuto non è davvero gratis, se nel frattempo ti fa perdere clienti." },
 
     { t: "h2", id: "prezzo", text: "Prezzi RapidRemove: 179 € per recensione rimossa", toc: "Il nostro prezzo" },
-    { t: "p", text: "Paghi **179 € per ogni recensione effettivamente rimossa**. Se la recensione ha più di 4 settimane, costa **250 €**. In singoli casi una recensione più vecchia può richiedere in seguito la procedura speciale supportata da software (300 €). Nulla viene addebitato in anticipo e non ci sono costi per i tentativi, anche per le valutazioni senza testo (vedi sotto)." },
+    { t: "p", text: "Paghi **179 € per ogni recensione effettivamente rimossa**. Se la recensione ha più di 4 settimane, costa **229 €**. I casi complessi costano 300 €: valutazioni senza testo e recensioni dagli Stati Uniti più vecchie di 4 settimane (300 $), perché richiedono una procedura più approfondita. In singoli casi una recensione più vecchia ancora online dopo la procedura standard può diventare un caso complesso: procediamo solo con il tuo consenso. Nulla viene addebitato in anticipo e non ci sono costi per i tentativi, anche per le valutazioni senza testo (vedi sotto)." },
     { t: "table", rrCol: 2, head: ["Età della recensione", "Probabilità di successo", "Prezzo per recensione rimossa"], rows: [
       ["Fino a 4 settimane", "ca. 90 %", "**179 €**"],
-      ["Oltre 4 settimane", "ca. 50 %", "**250 €**"],
+      ["Oltre 4 settimane", "ca. 50 %", "**229 €**"],
     ] },
-    { t: "p", text: "**Valutazioni senza testo (solo stelle):** passano per una procedura speciale supportata da software e costano **300 € a valutazione**, senza supplemento per quelle più vecchie, con ca. l'**80 %** di successo. Come per tutte le recensioni, al momento dell'ordine salvi una carta o PayPal e l'addebito avviene automaticamente solo dopo che la valutazione è stata rimossa. Per lo sconto quantità contano insieme a tutte le altre recensioni accettate dell'ordine." },
+    { t: "p", text: "**Valutazioni senza testo (solo stelle):** passano per una procedura più approfondita (caso complesso) e costano **300 € a valutazione**, senza supplemento per quelle più vecchie. Come per tutte le recensioni, al momento dell'ordine salvi una carta o PayPal e l'addebito avviene automaticamente solo dopo che la valutazione è stata rimossa. Per lo sconto quantità contano insieme a tutte le altre recensioni accettate dell'ordine." },
     { t: "p", text: "Le recensioni più vecchie costano di più perché sono **più difficili da rimuovere**: la probabilità di successo scende da circa il 90 % a circa il 50 %. Prima dell'ordine ricevi una **valutazione gratuita** e ti diciamo onestamente se una recensione ha poche possibilità. Una recensione che non viene rimossa non ti costa nulla." },
     { t: "p", text: "Se le recensioni da eliminare sono più di una, lo **sconto quantità** si applica in automatico:" },
     { t: "table", head: ["Recensioni accettate dopo la valutazione", "Sconto su ogni recensione rimossa"], rows: [
@@ -57,10 +57,10 @@ const article = {
     { t: "p", text: "Ecco quanto costano ordini tipici, arrotondati all'euro. \"Recente\" significa fino a 4 settimane, \"vecchia\" oltre le 4 settimane." },
     { t: "table", rrCol: 2, head: ["Caso", "Calcolo", "Paghi"], rows: [
       ["1 recensione recente", "1 × 179 €", "**179 €**"],
-      ["1 recensione vecchia", "1 × 250 €", "**250 €**"],
+      ["1 recensione vecchia", "1 × 229 €", "**229 €**"],
       ["3 recensioni recenti", "3 × 179 € = 537 €, −10 %", "**483 €**"],
-      ["5 recensioni (2 recenti, 3 vecchie)", "358 € + 750 € = 1.108 €, −15 %", "**942 €**"],
-      ["10 recensioni (6 recenti, 4 vecchie)", "1.074 € + 1.000 € = 2.074 €, −30 %", "**1.452 €**"],
+      ["5 recensioni (2 recenti, 3 vecchie)", "358 € + 687 € = 1.045 €, −15 %", "**888 €**"],
+      ["10 recensioni (6 recenti, 4 vecchie)", "1.074 € + 916 € = 1.990 €, −30 %", "**1.393 €**"],
       ["5 recenti accettate, 4 rimosse", "4 × 179 € = 716 €, −15 %", "**609 €**"],
       ["1 recensione recente + 2 valutazioni senza testo", "2 × 300 € + 179 € = 779 €, −10 %", "**701 €** (2 × 270 € + 161 €), addebitati solo dopo la rimozione"],
     ] },
@@ -102,8 +102,8 @@ const article = {
   faq: [
     { q: "Rimuovere una recensione Google è gratis?", a: "Segnalare da solo una recensione a Google è gratis, e puoi fare ricorso una volta nello strumento di gestione delle recensioni. Però Google respinge molte segnalazioni. Con RapidRemove paghi **179 € per recensione, solo se viene rimossa**." },
     { q: "Pago qualcosa se la recensione non viene rimossa?", a: "No: nessun pagamento anticipato né costo per i tentativi, paghi solo le recensioni che spariscono davvero. Vale anche per le valutazioni senza testo." },
-    { q: "Quanto costa rimuovere una valutazione senza testo?", a: "**300 € a valutazione**, indipendentemente dall'età. La trattiamo con una procedura speciale supportata da software, con ca. l'80 % di successo. Come per tutte le recensioni, al momento dell'ordine salvi una carta o PayPal e l'addebito avviene automaticamente solo dopo che la valutazione è stata rimossa. Lo sconto quantità si applica, calcolato insieme a tutte le recensioni accettate dell'ordine." },
-    { q: "Perché le recensioni più vecchie costano di più?", a: "Le recensioni con più di 4 settimane sono più difficili da rimuovere: la probabilità di successo scende da circa il 90 % a circa il 50 %. Per questo costano **250 €** invece di 179 €." },
+    { q: "Quanto costa rimuovere una valutazione senza testo?", a: "**300 € a valutazione**, indipendentemente dall'età. La trattiamo con una procedura più approfondita (caso complesso). Come per tutte le recensioni, al momento dell'ordine salvi una carta o PayPal e l'addebito avviene automaticamente solo dopo che la valutazione è stata rimossa. Lo sconto quantità si applica, calcolato insieme a tutte le recensioni accettate dell'ordine." },
+    { q: "Perché le recensioni più vecchie costano di più?", a: "Le recensioni con più di 4 settimane sono più difficili da rimuovere: la probabilità di successo scende da circa il 90 % a circa il 50 %. Per questo costano **229 €** invece di 179 €." },
     { q: "C'è uno sconto per più recensioni?", a: "Sì. Da 3 recensioni accettate hai il 10 % di sconto, da 5 il 15 % e da 10 il 30 %. Lo sconto vale per ogni recensione rimossa." },
     { q: "Posso pagare con PayPal?", a: "Sì. Al momento dell'ordine salvi una carta o PayPal; l'addebito avviene automaticamente solo dopo che una recensione è stata rimossa." },
     { q: "Perché ho ricevuto più addebiti?", a: "Le recensioni vengono rimosse in momenti diversi, quindi ogni recensione viene **addebitata separatamente**. Paghi ciascuna appena è sparita." },

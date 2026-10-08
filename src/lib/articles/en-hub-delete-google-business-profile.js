@@ -125,7 +125,7 @@ const article = {
       "**SEO-friendly:** your website and rankings stay intact; a clean new profile is optional",
       "**Discreet:** no correspondence with reviewers, no Streisand risk",
     ] },
-    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one or a few reviews gone while keeping the profile, RapidRemove offers that too: [removal of individual reviews](/en/remove-single-reviews/) – $179 per removed review up to 4 weeks old (approx. 90 % success chance), $250 for older ones (approx. 50 %), and you only pay for reviews that are actually removed." },
+    { t: "warn", title: "Important", text: "Full removal deletes the **entire profile**, not a single review. If you only want one or a few reviews gone while keeping the profile, RapidRemove offers that too: [removal of individual reviews](/en/remove-single-reviews/) – $179 per removed review up to 4 weeks old (approx. 90 % success chance), $229 for older ones (approx. 50 %), and you only pay for reviews that are actually removed." },
 
     { t: "cta", title: "See whether your profile can be removed – free.", text: "Enter your business name and see in seconds whether and how fast your profile and all its reviews can be removed.", btn: "Check removability", href: "https://www.rapid-remove.com/en/check-profile", trust: ["Free analysis", "Incl. guarantee", "No risk"] },
 
@@ -138,7 +138,7 @@ const article = {
       ["Cheap services", "$20 – 55 per review", "Highly variable"],
       ["Overseas services", "$55 – 110 per review", "Unclear"],
       ["Specialist lawyers (single review)", "$110 – 175 per review", "~90%, but slow"],
-      ["Single-review removal (RapidRemove)", "$179 per removed review ($250 if older than 4 weeks)", "~90% (≤ 4 weeks) / ~50% (older) – pay only if removed"],
+      ["Single-review removal (RapidRemove)", "$179 per removed review ($229 if older than 4 weeks)", "~90% (≤ 4 weeks) / ~50% (older) – pay only if removed"],
       ["Profile removal (RapidRemove)", "Fixed price, payable after success", "All reviews gone – pay only on success"],
     ] },
 
@@ -187,7 +187,7 @@ const article = {
     { q: "How long does a full profile removal take?", a: "Typically 24–48 hours via professional removal, compared with the months a single-review legal route can take." },
     { q: "Will my website or rankings be affected?", a: "No. Removing the Business Profile does not touch your website, your Google account or your search rankings. A clean new profile can be set up afterwards if you wish." },
     { q: "Does removal include fake reviews?", a: "Yes. Because the entire profile is removed, every review disappears with it – including fake or unjustified ones." },
-    { q: "What does it cost?", a: "RapidRemove works on a fixed price, payable only after success. Lawyers and most single-review providers charge per review, often upfront and without a guaranteed result. If you only need individual reviews removed, RapidRemove's [single-review removal](/en/remove-single-reviews/) costs $179 per removed review ($250 if older than 4 weeks), with a volume discount from 3 reviews – charged only on success." },
+    { q: "What does it cost?", a: "RapidRemove works on a fixed price, payable only after success. Lawyers and most single-review providers charge per review, often upfront and without a guaranteed result. If you only need individual reviews removed, RapidRemove's [single-review removal](/en/remove-single-reviews/) costs $179 per removed review ($229 if older than 4 weeks), with a volume discount from 3 reviews – charged only on success." },
   ],
 };
 export default article;

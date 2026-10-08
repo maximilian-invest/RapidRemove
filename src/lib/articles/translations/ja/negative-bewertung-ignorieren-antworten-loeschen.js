@@ -43,7 +43,7 @@ const article = {
       "**誤認やまったく無関係**な投稿",
     ] },
     { t: "p", text: "実際の取引関係があったかどうかが重要な判断基準です。ドイツの判例（LG Lübeck・BGH、それぞれ[Az. 9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17)・[Az. VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)）もこの点を確認しています——これらはドイツ/EUの判例として参考情報であり、日本の法制度には直接適用されません。日本での対応は**誹謗中傷対策**や**開示請求**を含む法的手段が選択肢になります。不当な口コミへの対応については、弁護士へのご相談をお勧めします。" },
-    { t: "p", text: "対応方法は2種類あります。個別の口コミ向けには**Googleへの通報、弁護士を通じた削除依頼、またはRapidRemoveの[口コミ個別削除](/ja/remove-review/)**（1件$179〜、削除できた分だけのお支払い。本文のない星だけの評価も特別な手続きで削除1件$300）。プロフィール全体がダメージを受けている場合は**技術的なプロフィール削除**です。詳細な比較は[弁護士か技術的削除か？](/ja/magazine/google-teihyoka-kuchikomi-bengoshi/)をご覧ください。費用と方法については[Google口コミを削除する方法](/ja/magazine/google-kuchikomi-sakujo/)をご参照ください。" },
+    { t: "p", text: "対応方法は2種類あります。個別の口コミ向けには**Googleへの通報、弁護士を通じた削除依頼、またはRapidRemoveの[口コミ個別削除](/ja/remove-review/)**（1件$179〜、削除できた分だけのお支払い。本文のない星だけの評価も複雑なケースとして削除1件$300）。プロフィール全体がダメージを受けている場合は**技術的なプロフィール削除**です。詳細な比較は[弁護士か技術的削除か？](/ja/magazine/google-teihyoka-kuchikomi-bengoshi/)をご覧ください。費用と方法については[Google口コミを削除する方法](/ja/magazine/google-kuchikomi-sakujo/)をご参照ください。" },
     { t: "p", text: "**削除が正解のとき：** 口コミが不当・虚偽・違法である場合、またはプロフィール全体が回復不可能な状態にある場合。" },
 
     { t: "h2", id: "schnell", text: "対応方法の早見表", toc: "早見表" },

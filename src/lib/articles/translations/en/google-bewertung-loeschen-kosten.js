@@ -11,7 +11,7 @@ const article = {
     authorRole: "Founder",
     date: "2026-10-05",
   },
-  dek: "Reporting a Google review yourself is **free**, but Google often rejects the report. Lawyers usually bill **by the hour and upfront**, whether the review comes down or not. Removal services vary widely: some charge per attempt or in advance, some don't publish prices at all. At RapidRemove you pay **$179 per removed review** ($250 if it's older than 4 weeks), and **only once it's actually gone**.",
+  dek: "Reporting a Google review yourself is **free**, but Google often rejects the report. Lawyers usually bill **by the hour and upfront**, whether the review comes down or not. Removal services vary widely: some charge per attempt or in advance, some don't publish prices at all. At RapidRemove you pay **$179 per removed review** ($229 if it's older than 4 weeks), and **only once it's actually gone**.",
   blocks: [
     { t: "h2", id: "short-answer", text: "The short answer: what removing a Google review costs", toc: "Short answer" },
     { t: "p", text: "Removing a Google review costs anything from **$0 to several hundred dollars**, depending on who does it and how they charge. The bigger question isn't the price tag but **who carries the risk** if the review stays online." },
@@ -19,14 +19,14 @@ const article = {
       "**Report it yourself:** free. You pay with your time, and Google often answers with a standard \"no policy violation\" decision.",
       "**Lawyer:** usually billed by the hour, often with an upfront retainer. You pay **regardless of the outcome**.",
       "**Removal services with upfront fees:** prices and models differ a lot. Some charge per attempt or before any work starts, others only quote after a sales call.",
-      "**RapidRemove:** **$179 per removed review**, **$250** if the review is older than 4 weeks. Nothing upfront, no fee for attempts. You pay only for reviews that are actually removed. Star-only ratings without text: **$300** per removed review with a special procedure.",
+      "**RapidRemove:** **$179 per removed review**, **$229** if the review is older than 4 weeks. Nothing upfront, no fee for attempts. You pay only for reviews that are actually removed. Star-only ratings without text: **$300** per removed review as a complex case.",
     ] },
     { t: "p", text: "If you just want the price for your specific reviews: our [Google review removal service](/en/remove-single-reviews/) shows it instantly once you tick the reviews you want gone." },
 
     { t: "h2", id: "comparison", text: "DIY, lawyer, upfront services or pay-on-success: compared", toc: "Comparison" },
     { t: "p", text: "The four options differ less in what they can achieve and more in **how you pay and what happens if it fails**. Here's the overview:" },
     { t: "table", rrCol: 4, head: ["Criterion", "Report yourself", "Lawyer", "Services with upfront fees", "RapidRemove"], rows: [
-      ["Cost model", "Free", "Hourly, usually upfront", "Per attempt or in advance; prices often hidden", "**$179 per removed review** ($250 if older than 4 weeks); star-only ratings $300 per removed review"],
+      ["Cost model", "Free", "Hourly, usually upfront", "Per attempt or in advance; prices often hidden", "**$179 per removed review** ($229 if older than 4 weeks); star-only ratings $300 per removed review"],
       ["If the review stays", "You've lost time", "You still pay", "Money is usually gone", "**You pay nothing**"],
       ["Risk", "Low cost, low success rate", "High cost, uncertain outcome", "Paying for nothing", "**None on cost**"],
       ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "A few days, up to 3 weeks"],
@@ -38,13 +38,13 @@ const article = {
     { t: "p", text: "One cost is easy to overlook: **time**. While a fake 1-star review sits at the top of your profile, every prospect who checks you on Google sees it. A free report that drags on for weeks and ends in a rejection isn't really free if it costs you customers in the meantime." },
 
     { t: "h2", id: "price", text: "RapidRemove pricing: $179 per removed review", toc: "Our price" },
-    { t: "p", text: "You pay **$179 for each review that is actually removed**. If a review is older than 4 weeks, it costs **$250**. In the USA, reviews older than 4 weeks always go through our special software procedure ($300); elsewhere an older review can occasionally need it too. Nothing is charged upfront and there's no fee for attempts." },
+    { t: "p", text: "You pay **$179 for each review that is actually removed**. If a review is older than 4 weeks, it costs **$229**. Complex cases cost $300: ratings without text, and reviews older than 4 weeks from the USA, because they require a more extensive procedure. In individual cases an older review that is still online after the standard procedure can become a complex case – we only continue with your consent. Nothing is charged upfront and there's no fee for attempts." },
     { t: "table", rrCol: 2, head: ["Review", "Success chance", "Price"], rows: [
       ["Up to 4 weeks old", "approx. 90 %", "**$179** per removed review"],
-      ["Older than 4 weeks", "approx. 50 %", "**$250** per removed review"],
-      ["Star-only rating (no text, any age)", "approx. 80 %", "**$300** per removed review"],
+      ["Older than 4 weeks", "approx. 50 %", "**$229** per removed review"],
+      ["Star-only rating (no text, any age)", "Google decides", "**$300** per removed review"],
     ] },
-    { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **special software-supported procedure** at **$300 per review**, with no surcharge for older ones and a success chance of around **80 %**. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. They count towards the volume discount together with all other reviews in the order." },
+    { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure** (complex case) at **$300 per review**, with no surcharge for older ones. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. They count towards the volume discount together with all other reviews in the order." },
     { t: "p", text: "Older reviews cost more because they're **harder to remove**: the success chance drops from around 90 % to around 50 %. Before you order, we give you a **free assessment** and tell you honestly if a review has poor chances. If a review isn't removed, it costs you nothing." },
     { t: "p", text: "If several reviews need to go, the **volume discount** applies automatically:" },
     { t: "table", head: ["Reviews accepted after the assessment", "Discount on every removed review"], rows: [
@@ -58,10 +58,10 @@ const article = {
     { t: "p", text: "Here's what typical orders cost, rounded to whole dollars. \"Recent\" means up to 4 weeks old, \"older\" means more than 4 weeks." },
     { t: "table", rrCol: 2, head: ["Scenario", "Calculation", "You pay"], rows: [
       ["1 recent review", "1 × $179", "**$179**"],
-      ["1 older review", "1 × $250", "**$250**"],
+      ["1 older review", "1 × $229", "**$229**"],
       ["3 recent reviews", "3 × $179 = $537, −10 %", "**$483**"],
-      ["5 reviews (2 recent, 3 older)", "$358 + $750 = $1,108, −15 %", "**$942**"],
-      ["10 reviews (6 recent, 4 older)", "$1,074 + $1,000 = $2,074, −30 %", "**$1,452**"],
+      ["5 reviews (2 recent, 3 older)", "$358 + $687 = $1,045, −15 %", "**$888**"],
+      ["10 reviews (6 recent, 4 older)", "$1,074 + $916 = $1,990, −30 %", "**$1,393**"],
       ["5 recent accepted, 4 removed", "4 × $179 = $716, −15 %", "**$609**"],
       ["1 star-only rating", "1 × $300, charged after removal", "**$300**"],
       ["3 reviews (2 recent, 1 star-only)", "$358 + $300 = $658, −10 %", "**$592** (star-only share $270, charged after removal)"],
@@ -104,8 +104,8 @@ const article = {
   faq: [
     { q: "Is it free to remove a Google review?", a: "Reporting a review to Google yourself is free, and you can appeal once in the Reviews Management Tool. Google often rejects reports, though. With RapidRemove you pay **$179 per review, only if it's removed**." },
     { q: "Do I pay if the review isn't removed?", a: "No. No upfront payment, no fee for attempts – you only pay for reviews that are actually gone. This applies to star-only ratings too." },
-    { q: "What does it cost to remove a star-only rating without text?", a: "**$300 per rating**, no surcharge for older ones. We use a special software-supported procedure with a success chance of around **80 %**. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. The volume discount applies, counted together with all reviews in your order." },
-    { q: "Why are older reviews more expensive?", a: "Reviews older than 4 weeks are harder to remove: the success chance drops from about 90 % to about 50 %. That's why they cost **$250** instead of $179. In the USA, reviews older than 4 weeks always go through our special software procedure ($300); elsewhere an older review can occasionally need it too." },
+    { q: "What does it cost to remove a star-only rating without text?", a: "**$300 per rating**, no surcharge for older ones. They are handled as a complex case with a more extensive procedure. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. The volume discount applies, counted together with all reviews in your order." },
+    { q: "Why are older reviews more expensive?", a: "Reviews older than 4 weeks are harder to remove: the success chance drops from about 90 % to about 50 %. That's why they cost **$229** instead of $179. Complex cases cost $300: ratings without text, and reviews older than 4 weeks from the USA, because they require a more extensive procedure. In individual cases an older review that is still online after the standard procedure can become a complex case – we only continue with your consent." },
     { q: "Is there a discount for several reviews?", a: "Yes. From 3 accepted reviews you get 10 % off, from 5 reviews 15 % and from 10 reviews 30 %. The discount applies to every review that is removed." },
     { q: "Can I pay by PayPal?", a: "Yes. When ordering you store a card or PayPal; it is charged automatically only after a review has been removed." },
     { q: "Why was I charged several times?", a: "Reviews are removed at different times, so each review is **charged separately** as soon as it's gone." },

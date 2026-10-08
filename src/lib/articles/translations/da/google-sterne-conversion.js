@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Hvad I kan gøre ved det", toc: "Hvad du kan gøre" },
     { t: "ul", items: [
       "**Hold gennemsnittet over 4,0** – opsøg aktivt gode anmeldelser frem for kun at reagere på dårlige.",
-      "**Fjern unfair udliggere:** Falske og retsstridige 1-stjernere trækker gennemsnittet uforholdsmæssigt ned. Hvordan det gøres, kan I læse under [Fjern falske Google-anmeldelser](/da/magasin/fjern-falske-google-anmeldelser/) og [Fjern 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/) – eller lad os [fjerne de enkelte anmeldelser direkte](/da/fjern-anmeldelse/) (også rene stjernebedømmelser – særlig procedure, 300 € pr. fjernet anmeldelse), mens profilen og de gode anmeldelser bliver stående.",
+      "**Fjern unfair udliggere:** Falske og retsstridige 1-stjernere trækker gennemsnittet uforholdsmæssigt ned. Hvordan det gøres, kan I læse under [Fjern falske Google-anmeldelser](/da/magasin/fjern-falske-google-anmeldelser/) og [Fjern 1-stjerne-anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/) – eller lad os [fjerne de enkelte anmeldelser direkte](/da/fjern-anmeldelse/) (også rene stjernebedømmelser – komplekst tilfælde, 300 € pr. fjernet anmeldelse), mens profilen og de gode anmeldelser bliver stående.",
       "**Er profilen grundlæggende beskadiget**, kan en ren start via [profil-sletning](/da/magasin/slet-google-virksomhedsprofil/) være bedre end kampen om hver enkelt stjerne.",
     ] },
 

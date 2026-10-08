@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**The right category from the start** – a precise first report saves you the appeal.",
       "**Evidence ready** – screenshots of the review and the reviewer profile, a note on why there's no customer contact, dates.",
-      "**Act within four weeks** – fresh reviews have far better odds, and with us they cost $179 instead of $250.",
+      "**Act within four weeks** – fresh reviews have far better odds, and with us they cost $179 instead of $229.",
       "**One clean report, not ten** – repeated reports of the same review don't jump the queue.",
       "**Fake waves and blackmail** – if 1-star reviews arrive together with a demand for money, use Google's dedicated form and read our guide on [Google review extortion](/en/magazine/google-review-extortion/). Don't pay, don't engage, keep screenshots.",
     ] },
-    { t: "cta", title: "Don't wait weeks for a standard reply", text: "Search your business, tick the reviews that should go and see the price instantly. **$179 per removed review**, $250 if older than 4 weeks – charged only once the review is gone.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free honest assessment"] },
+    { t: "cta", title: "Don't wait weeks for a standard reply", text: "Search your business, tick the reviews that should go and see the price instantly. **$179 per removed review**, $229 if older than 4 weeks – charged only once the review is gone.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Free honest assessment"] },
 
     { t: "h2", id: "while-waiting", text: "What to do while you wait", toc: "While you wait" },
     { t: "p", text: "**Reply publicly, briefly and calmly – that's the one thing you can always do, and future customers read it.** A good reply doesn't argue and doesn't reveal customer data." },
@@ -96,7 +96,7 @@ const article = {
       "**Don't** threaten, don't guess who wrote it in public, and don't ask friends for counter-reviews – that can itself break Google's rules on fake engagement.",
       "**Document** everything: screenshots of the review, the reviewer profile and your report status.",
     ] },
-    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/) – we remove those too, with a special procedure ($300 per removed review) – and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
+    { t: "p", text: "A calm reply doesn't hurt your removal chances. For special cases such as wordless ratings see [removing a 1-star review without text](/en/magazine/remove-1-star-review-without-text/) – we remove those too, as complex cases ($300 per removed review) – and for suspected fakes [how to remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
 
     { t: "h2", id: "different-times", text: "Why several reviews come down at different times", toc: "Different times" },
     { t: "p", text: "**Every review is checked on its own, so if you report five, they rarely disappear on the same day.** One may be gone after two days, another needs an appeal, a third is still pending after two weeks." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Can I appeal more than once?", a: "No. In the Reviews Management Tool you get **one appeal per review**. After the final decision, the only other official route is a legal removal request – and only if the content is unlawful." },
     { q: "Does Google notify the reviewer?", a: "The reviewer is **not told who reported the review or requested its removal** – neither with your own report nor when we handle it. They may simply notice that their review is no longer visible." },
     { q: "Can a removed review come back?", a: "A review Google removes for a policy violation normally stays removed. The same person can write a new review, though – that one is checked separately and can be reported again." },
-    { q: "How fast is it with RapidRemove?", a: "Usually **a few days, sometimes up to three weeks** per review. You pay **$179 per removed review** ($250 if older than 4 weeks) – only once it's gone." },
+    { q: "How fast is it with RapidRemove?", a: "Usually **a few days, sometimes up to three weeks** per review. You pay **$179 per removed review** ($229 if older than 4 weeks) – only once it's gone." },
     { q: "Does a reply to the review hurt my chances?", a: "No. A short, calm public reply is always allowed and doesn't affect the check. Just avoid insults and customer data." },
   ],
   related: [

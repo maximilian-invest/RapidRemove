@@ -36,14 +36,14 @@ const article = {
     { t: "cta", title: "Kontrollera om din profil kan raderas – kostnadsfritt.", text: "Ange ditt företagsnamn – vi kontrollerar på sekunder om och hur snabbt din profil med alla recensioner kan tas bort.", btn: "Kontrollera raderbarhet", href: "https://www.rapid-remove.com/", trust: ["Kostnadsfri analys", "Inkl. garanti", "Utan risk"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "Enskilda recensioner eller hela profilen?", toc: "En eller hela" },
-    { t: "p", text: "Handlar det bara om en eller några obefogade recensioner behöver du inte radera profilen: då är **anmälningsvägen**, juridisk hjälp eller RapidRemoves **borttagning av enskilda recensioner** rätt alternativ (179 € per borttagen recension, äldre än 4 veckor 250 €, endast vid framgång) – läs mer under [ta bort Google-recensioner](/sv/magasin/ta-bort-google-recensioner/) och i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/). Är profilen i grunden skadad och du vill ha en riktig nystart är fullständig borttagning den rakaste vägen." },
+    { t: "p", text: "Handlar det bara om en eller några obefogade recensioner behöver du inte radera profilen: då är **anmälningsvägen**, juridisk hjälp eller RapidRemoves **borttagning av enskilda recensioner** rätt alternativ (179 € per borttagen recension, äldre än 4 veckor 229 €, endast vid framgång) – läs mer under [ta bort Google-recensioner](/sv/magasin/ta-bort-google-recensioner/) och i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/). Är profilen i grunden skadad och du vill ha en riktig nystart är fullständig borttagning den rakaste vägen." },
 
     { t: "h2", id: "kosten", text: "Vad kostar det att ta bort företagsprofilen?", toc: "Vad det kostar" },
     { t: "p", text: "Priserna varierar kraftigt beroende på leverantör:" },
     { t: "table", head: ["Leverantörstyp", "Prisintervall", "Resultat"], rows: [
       ["Billiga tjänsteleverantörer", "19 – 49 € per recension", "Kraftigt varierande"],
       ["Specialiserade jurister", "100 – 159 € per recension", "ca. 90 %, men långsamt"],
-      ["Enskilda recensioner (RapidRemove)", "179 € per borttagen recension (äldre än 4 veckor: 250 €)", "ca. 90 % resp. ca. 50 % – betalning bara vid framgång"],
+      ["Enskilda recensioner (RapidRemove)", "179 € per borttagen recension (äldre än 4 veckor: 229 €)", "ca. 90 % resp. ca. 50 % – betalning bara vid framgång"],
       ["Profilradering (RapidRemove)", "Fast pris, betalas efter lyckat resultat", "Alla recensioner borta – betalning bara vid framgång"],
     ] },
 

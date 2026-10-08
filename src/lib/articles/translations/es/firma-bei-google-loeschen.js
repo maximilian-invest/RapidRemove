@@ -36,14 +36,14 @@ const article = {
     { t: "cta", title: "Compruebe si puede eliminar su perfil — sin compromiso.", text: "Introduzca el nombre de su empresa y en segundos le diremos si es posible eliminarlo y en cuánto tiempo.", btn: "Comprobar elegibilidad", href: "https://www.rapid-remove.com/", trust: ["Análisis gratuito", "Garantía incluida", "Sin riesgo"] },
 
     { t: "h2", id: "einzeln-vs-ganz", text: "¿Reseñas individuales o el perfil completo?", toc: "Reseña o perfil" },
-    { t: "p", text: "Si el problema es una sola reseña injustificada, no hace falta eliminar el perfil: la denuncia formal, la vía legal o la [eliminación de reseñas individuales de RapidRemove](/es/revista/servicio-eliminar-resenas-google/) son el camino adecuado. Con esta última usted marca las reseñas concretas y solo paga por las que desaparecen: 179 € cada una (reseñas de hasta 4 semanas, aprox. 90 % de éxito) o 250 € si son más antiguas (aprox. 50 %). Puede obtener más información en nuestra guía [eliminar reseñas de Google](/es/revista/eliminar-resenas-de-google/). Si el perfil en su conjunto está dañado y lo que busca es un punto de partida limpio, la eliminación completa es la opción más directa." },
+    { t: "p", text: "Si el problema es una sola reseña injustificada, no hace falta eliminar el perfil: la denuncia formal, la vía legal o la [eliminación de reseñas individuales de RapidRemove](/es/revista/servicio-eliminar-resenas-google/) son el camino adecuado. Con esta última usted marca las reseñas concretas y solo paga por las que desaparecen: 179 € cada una (reseñas de hasta 4 semanas, aprox. 90 % de éxito) o 229 € si son más antiguas (aprox. 50 %). Puede obtener más información en nuestra guía [eliminar reseñas de Google](/es/revista/eliminar-resenas-de-google/). Si el perfil en su conjunto está dañado y lo que busca es un punto de partida limpio, la eliminación completa es la opción más directa." },
 
     { t: "h2", id: "kosten", text: "¿Cuánto cuesta eliminar el perfil de empresa?", toc: "Cuánto cuesta" },
     { t: "p", text: "Los precios varían mucho según el proveedor:" },
     { t: "table", head: ["Tipo de proveedor", "Rango de precios", "Resultado"], rows: [
       ["Servicios económicos", "19 – 49 € por reseña", "Muy variable"],
       ["Abogados especializados", "100 – 159 € por reseña", "~90 %, pero lento"],
-      ["Reseñas individuales (RapidRemove)", "179 € por reseña eliminada (250 € si tiene más de 4 semanas)", "Se paga solo por las reseñas que desaparecen"],
+      ["Reseñas individuales (RapidRemove)", "179 € por reseña eliminada (229 € si tiene más de 4 semanas)", "Se paga solo por las reseñas que desaparecen"],
       ["Eliminación del perfil (RapidRemove)", "Precio cerrado, pago solo si hay resultado", "Todas las reseñas eliminadas — se paga únicamente si funciona"],
     ] },
 

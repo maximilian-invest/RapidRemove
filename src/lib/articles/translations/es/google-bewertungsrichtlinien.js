@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "zonas-grises", text: "Zonas grises: solo estrellas, exempleados, competencia y precios", toc: "Zonas grises" },
     { t: "p", text: "Estos casos no son eliminables por defecto ni intocables por defecto. El resultado depende de si puedes demostrar una infracción, no de lo injusta que te parezca la reseña." },
     { t: "ul", items: [
-      "**Valoraciones solo con estrellas, sin texto:** no hay contenido que pueda infringir una norma, así que la clave es si la persona fue cliente real. Las de 1 estrella sin texto desde perfiles desconocidos suelen ser contenido falso; lo explicamos en [reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/). Nuestra eliminación de reseñas individuales también las cubre, con un procedimiento especial (300 € por valoración eliminada).",
+      "**Valoraciones solo con estrellas, sin texto:** no hay contenido que pueda infringir una norma, así que la clave es si la persona fue cliente real. Las de 1 estrella sin texto desde perfiles desconocidos suelen ser contenido falso; lo explicamos en [reseña de 1 estrella sin texto](/es/revista/eliminar-resena-1-estrella-sin-texto/). Nuestra eliminación de reseñas individuales también las cubre, con un procedimiento más exhaustivo (300 € por valoración eliminada).",
       "**Antiguos empleados:** Google considera el empleo actual o anterior un **conflicto de intereses**. Una reseña de un exempleado sobre la empresa como empleador es un caso sólido, sobre todo si nunca fue cliente.",
       "**Competidores:** las reseñas publicadas por o para la competencia son conflicto de intereses. Rara vez hay pruebas directas, así que cuentan el momento, la redacción y las demás reseñas del autor.",
       "**Reseñas sobre precios:** «demasiado caro» es una opinión y se queda. Solo es eliminable si contiene algo más, como afirmaciones falsas, insultos o un enlace a la competencia.",
@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "Tiene sentido cuando hay varias reseñas, cuando una denuncia ya fue rechazada o cuando simplemente no tienes tiempo. RapidRemove trabaja solo con los procedimientos propios de Google, en nombre del propietario de la empresa: sin cuentas falsas, sin bots, sin requerimientos legales falsos, y el autor no sabe quién pidió la eliminación." },
     { t: "ul", items: [
       "**Primero, valoración gratuita:** te decimos con honestidad si una reseña se puede eliminar. Si no, no cuesta nada.",
-      "**179 € por reseña eliminada**, 250 € si tiene más de 4 semanas. Solo pagas cuando la reseña ha desaparecido.",
+      "**179 € por reseña eliminada**, 229 € si tiene más de 4 semanas. Solo pagas cuando la reseña ha desaparecido.",
       "**Probabilidad de éxito:** aprox. **90 %** en reseñas de hasta 4 semanas, aprox. **50 %** en las más antiguas.",
       "**Descuento por volumen** en las reseñas aceptadas: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Plazo:** normalmente unos días, a veces hasta 3 semanas.",
@@ -106,7 +106,7 @@ const article = {
     { q: "¿Puedo borrar yo una reseña de Google siendo el propietario?", a: "No. Solo el autor puede editar o eliminar su reseña. Como propietario puedes denunciarla, recurrir una vez, presentar una solicitud legal si el contenido es ilícito y responder públicamente." },
     { q: "¿Una valoración de 1 estrella sin texto infringe las políticas?", a: "Por sí sola, no. Es eliminable cuando hay indicios de que es falsa, por ejemplo ningún registro de cliente y un perfil con actividad sospechosa, o una oleada de valoraciones parecidas." },
     { q: "¿Qué pasa si Google dice que no hay infracción?", a: "Puedes **recurrir una vez por reseña** en la herramienta de gestión de reseñas; el recurso puede escalarse y recibe una decisión definitiva. Para difamación u otro contenido ilícito existe además la solicitud legal de retirada." },
-    { q: "¿Cuánto cuesta eliminar una reseña que infringe las políticas?", a: "Con RapidRemove, **179 € por reseña eliminada** (250 € si tiene más de 4 semanas), solo cuando la reseña ha desaparecido. La valoración previa es gratuita." },
+    { q: "¿Cuánto cuesta eliminar una reseña que infringe las políticas?", a: "Con RapidRemove, **179 € por reseña eliminada** (229 € si tiene más de 4 semanas), solo cuando la reseña ha desaparecido. La valoración previa es gratuita." },
   ],
   related: [
     { label: "Servicio para eliminar reseñas de Google", url: "/es/eliminar-una-resena/" },

@@ -11,7 +11,7 @@ const article = {
     authorRole: "Fundador",
     date: "2026-10-05",
   },
-  dek: "Denunciar uma avaliação do Google por conta própria é **grátis**, mas o Google rejeita muitas vezes a denúncia. Os advogados costumam cobrar **à hora e adiantado**, quer a avaliação saia quer não. As empresas de remoção variam muito: umas cobram por tentativa ou antes de começar, outras nem sequer publicam preços. Na RapidRemove paga **179 € por avaliação removida** (250 € se tiver mais de 4 semanas), e **só depois de ter mesmo desaparecido**. Classificações só com estrelas, sem texto (poucos casos especiais), removemos com um procedimento especial: 300 € por avaliação removida, também só em caso de sucesso.",
+  dek: "Denunciar uma avaliação do Google por conta própria é **grátis**, mas o Google rejeita muitas vezes a denúncia. Os advogados costumam cobrar **à hora e adiantado**, quer a avaliação saia quer não. As empresas de remoção variam muito: umas cobram por tentativa ou antes de começar, outras nem sequer publicam preços. Na RapidRemove paga **179 € por avaliação removida** (229 € se tiver mais de 4 semanas), e **só depois de ter mesmo desaparecido**. Classificações só com estrelas, sem texto, são um caso complexo, com um procedimento mais extenso: 300 € por avaliação removida, também só em caso de sucesso.",
   blocks: [
     { t: "h2", id: "resposta-curta", text: "Resposta curta: quanto custa remover uma avaliação do Google", toc: "Resposta curta" },
     { t: "p", text: "Remover uma avaliação do Google custa entre **0 € e várias centenas de euros**, consoante quem trata do assunto e como cobra. Mais importante do que o preço é **quem assume o risco** se a avaliação continuar online." },
@@ -19,14 +19,14 @@ const article = {
       "**Denunciar por conta própria:** grátis. Paga com o seu tempo, e o Google responde muitas vezes com uma decisão-padrão de \"sem violação das políticas\".",
       "**Advogado:** normalmente à hora, muitas vezes com uma provisão paga adiantado. Paga **independentemente do resultado**.",
       "**Empresas com pagamento adiantado:** preços e modelos muito diferentes. Umas cobram por tentativa ou antes de qualquer trabalho, outras só dão preço depois de uma chamada comercial.",
-      "**RapidRemove:** **179 € por avaliação removida**, **250 €** se a avaliação tiver mais de 4 semanas. Nada adiantado, sem custos por tentativa. Só paga as avaliações que são efetivamente removidas. Classificações só com estrelas, sem texto: **300 € por avaliação removida** (procedimento especial, aprox. 80 % de sucesso).",
+      "**RapidRemove:** **179 € por avaliação removida**, **229 €** se a avaliação tiver mais de 4 semanas. Nada adiantado, sem custos por tentativa. Só paga as avaliações que são efetivamente removidas. Classificações só com estrelas, sem texto: **300 € por avaliação removida** (caso complexo, procedimento mais extenso).",
     ] },
     { t: "p", text: "Quer apenas saber o preço para as suas avaliações? O nosso [serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/) mostra-o de imediato, assim que marcar as que quer retirar." },
 
     { t: "h2", id: "comparacao", text: "Sozinho, advogado, empresas com pagamento adiantado ou pagamento por sucesso", toc: "Comparação" },
     { t: "p", text: "As quatro opções distinguem-se menos pelo que conseguem e mais pela **forma como paga e pelo que acontece se não resultar**. Eis o resumo:" },
     { t: "table", rrCol: 4, head: ["Critério", "Denunciar sozinho", "Advogado", "Empresas com pagamento adiantado", "RapidRemove"], rows: [
-      ["Modelo de custo", "Grátis", "À hora, normalmente adiantado", "Por tentativa ou adiantado; preços muitas vezes ocultos", "**179 € por avaliação removida** (250 € acima de 4 semanas); só estrelas: 300 € por avaliação removida"],
+      ["Modelo de custo", "Grátis", "À hora, normalmente adiantado", "Por tentativa ou adiantado; preços muitas vezes ocultos", "**179 € por avaliação removida** (229 € acima de 4 semanas); só estrelas: 300 € por avaliação removida"],
       ["Se a avaliação fica", "Perdeu tempo", "Paga na mesma", "O dinheiro normalmente perde-se", "**Não paga nada**"],
       ["Risco", "Custo baixo, poucas hipóteses", "Custo alto, resultado incerto", "Pagar por nada", "**Nenhum no custo**"],
       ["Prazo habitual", "De dias a semanas, sem prazo garantido", "Muitas vezes meses", "Variável", "Poucos dias, até 3 semanas"],
@@ -38,13 +38,13 @@ const article = {
     { t: "p", text: "Há um custo que se esquece facilmente: **o tempo**. Enquanto uma avaliação falsa de 1 estrela está no topo do seu perfil, cada potencial cliente que o procura no Google vê-a. Uma denúncia gratuita que se arrasta durante semanas e acaba rejeitada não é realmente grátis se, entretanto, lhe custar clientes." },
 
     { t: "h2", id: "preco", text: "Preços da RapidRemove: 179 € por avaliação removida", toc: "O nosso preço" },
-    { t: "p", text: "Paga **179 € por cada avaliação efetivamente removida**. Se a avaliação tiver mais de 4 semanas, custa **250 €**. Nada é cobrado adiantado e não há custos por tentativa. Em casos pontuais, uma avaliação mais antiga pode mais tarde precisar do procedimento especial apoiado por software (300 €). Nos EUA, as avaliações mais antigas passam sempre por este procedimento (300 $)." },
+    { t: "p", text: "Paga **179 € por cada avaliação efetivamente removida**. Se a avaliação tiver mais de 4 semanas, custa **229 €**. Nada é cobrado adiantado e não há custos por tentativa. Os casos complexos custam **300 €**: classificações sem texto e, nos EUA, avaliações com mais de 4 semanas (300 $), porque exigem um procedimento mais extenso. Em casos pontuais, uma avaliação mais antiga que continue online após o procedimento padrão pode tornar-se um caso complexo – só continuamos com o seu consentimento." },
     { t: "table", rrCol: 2, head: ["Idade da avaliação", "Probabilidade de sucesso", "Preço por avaliação removida"], rows: [
       ["Até 4 semanas", "aprox. 90 %", "**179 €**"],
-      ["Mais de 4 semanas", "aprox. 50 %", "**250 €**"],
+      ["Mais de 4 semanas", "aprox. 50 %", "**229 €**"],
     ] },
     { t: "p", text: "As avaliações mais antigas custam mais porque são **mais difíceis de remover**: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Antes de encomendar, recebe uma **análise gratuita** e dizemos-lhe com honestidade se uma avaliação tem poucas hipóteses. Se não for removível, não lhe custa nada." },
-    { t: "p", text: "**Classificações só com estrelas, sem texto:** removemo-las com um **procedimento especial apoiado por software**. Custam **300 € por avaliação removida**, sem acréscimo para as mais antigas, com uma probabilidade de sucesso de **aprox. 80 %**. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. No formulário de encomenda aparecem com a sua própria linha de preço. O desconto por quantidade também se aplica e conta em conjunto com todas as avaliações aceites da encomenda." },
+    { t: "p", text: "**Classificações só com estrelas, sem texto:** são **casos complexos**, que exigem um procedimento mais extenso. Custam **300 € por avaliação removida**, sem acréscimo para as mais antigas. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. No formulário de encomenda aparecem com a sua própria linha de preço. O desconto por quantidade também se aplica e conta em conjunto com todas as avaliações aceites da encomenda." },
     { t: "p", text: "Se houver várias avaliações a remover, o **desconto por quantidade** aplica-se automaticamente:" },
     { t: "table", head: ["Avaliações aceites após a análise", "Desconto em cada avaliação removida"], rows: [
       ["1 – 2", "–"],
@@ -57,10 +57,10 @@ const article = {
     { t: "p", text: "Eis quanto custam encomendas típicas, arredondado ao euro. \"Recente\" significa até 4 semanas; \"antiga\", mais de 4 semanas." },
     { t: "table", rrCol: 2, head: ["Caso", "Cálculo", "Paga"], rows: [
       ["1 avaliação recente", "1 × 179 €", "**179 €**"],
-      ["1 avaliação antiga", "1 × 250 €", "**250 €**"],
+      ["1 avaliação antiga", "1 × 229 €", "**229 €**"],
       ["3 avaliações recentes", "3 × 179 € = 537 €, −10 %", "**483 €**"],
-      ["5 avaliações (2 recentes, 3 antigas)", "358 € + 750 € = 1.108 €, −15 %", "**942 €**"],
-      ["10 avaliações (6 recentes, 4 antigas)", "1.074 € + 1.000 € = 2.074 €, −30 %", "**1.452 €**"],
+      ["5 avaliações (2 recentes, 3 antigas)", "358 € + 687 € = 1.045 €, −15 %", "**888 €**"],
+      ["10 avaliações (6 recentes, 4 antigas)", "1.074 € + 916 € = 1.990 €, −30 %", "**1.393 €**"],
       ["1 só estrelas (sem texto)", "300 € por avaliação removida", "**300 €** se removida"],
       ["2 só estrelas + 1 recente com texto", "300 € −10 % = 270 € por cada só estrelas; 179 € −10 % = 161 €, sempre só se removida", "**270 €** por cada só estrelas removida + **161 €** se removida"],
       ["5 recentes aceites, 4 removidas", "4 × 179 € = 716 €, −15 %", "**609 €**"],
@@ -102,8 +102,8 @@ const article = {
   faq: [
     { q: "Remover uma avaliação do Google é grátis?", a: "Denunciar uma avaliação ao Google por conta própria é grátis, e pode recorrer uma vez na ferramenta de gestão de avaliações. Mas o Google rejeita muitas denúncias. Com a RapidRemove paga **179 € por avaliação, só se for removida**." },
     { q: "Pago alguma coisa se a avaliação não for removida?", a: "Não: não há pagamento adiantado nem custos por tentativa. Só paga as avaliações que desaparecem de facto – também nas classificações só com estrelas." },
-    { q: "Quanto custa remover uma classificação só com estrelas, sem texto?", a: "**300 € por avaliação removida**, independentemente da idade. Removemo-las com um procedimento especial apoiado por software, com aprox. 80 % de probabilidade de sucesso. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. O desconto por quantidade também se aplica, contado em conjunto com as restantes avaliações aceites." },
-    { q: "Porque é que as avaliações antigas são mais caras?", a: "As avaliações com mais de 4 semanas são mais difíceis de remover: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Por isso custam **250 €** em vez de 179 €." },
+    { q: "Quanto custa remover uma classificação só com estrelas, sem texto?", a: "**300 € por avaliação removida**, independentemente da idade. São casos complexos, que exigem um procedimento mais extenso. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. O desconto por quantidade também se aplica, contado em conjunto com as restantes avaliações aceites." },
+    { q: "Porque é que as avaliações antigas são mais caras?", a: "As avaliações com mais de 4 semanas são mais difíceis de remover: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Por isso custam **229 €** em vez de 179 €." },
     { q: "Há desconto para várias avaliações?", a: "Sim. A partir de 3 avaliações aceites tem 10 % de desconto, a partir de 5 tem 15 % e a partir de 10 tem 30 %. O desconto aplica-se a cada avaliação removida." },
     { q: "Posso pagar por PayPal?", a: "Sim. Ao encomendar regista um cartão ou PayPal; o valor só é cobrado automaticamente depois de a avaliação ser removida." },
     { q: "Porque vejo várias cobranças?", a: "As avaliações são removidas em momentos diferentes, por isso cada avaliação é **cobrada em separado**, automaticamente assim que desaparece." },

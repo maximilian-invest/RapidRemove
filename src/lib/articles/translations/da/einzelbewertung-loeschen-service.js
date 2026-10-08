@@ -7,7 +7,7 @@ const article = {
       slug: "fjern-google-anmeldelse-service",
       title: "Fjernelse af Google-anmeldelser: priser, succesrate og bestilling (2026)",
       h1: "Få fjernet en enkelt Google-anmeldelse: priser, chancer og sådan foregår bestillingen",
-      description: "Hvad koster det at få fjernet en Google-anmeldelse? 179 € pr. fjernet anmeldelse (250 € efter 4 uger), kun ved succes. Succesrater, rabat og bestilling.",
+      description: "Hvad koster det at få fjernet en Google-anmeldelse? 179 € pr. fjernet anmeldelse (229 € efter 4 uger), kun ved succes. Succesrater, rabat og bestilling.",
       keywords: ["hvad koster det at fjerne en google anmeldelse", "fjern google anmeldelse pris", "pris for at fjerne google anmeldelse", "betale for at fjerne google anmeldelse", "bestil fjernelse af google anmeldelse", "succesrate fjernelse af google anmeldelse"],
       author: "Maximilian Hölzl",
       authorRole: "Google-ekspert og grundlægger",
@@ -30,7 +30,7 @@ const article = {
         "Anmeldelser fra personer, der **aldrig har været kunder**",
         "**Fornærmelser**, personangreb og **usande faktuelle påstande**",
         "Uvedkommende indhold, spam eller anmeldelser, der var ment til **en anden virksomhed**",
-        "**Rene stjernebedømmelser uden tekst** – med en særlig procedure ([baggrund](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/))",
+        "**Rene stjernebedømmelser uden tekst** – med en mere omfattende procedure ([baggrund](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/))",
       ] },
       { t: "warn", title: "Det lover vi ikke", text: "Ærlig, saglig kritik fra rigtige kunder er som regel beskyttet – og ingen kan seriøst garantere, at enhver anmeldelse bliver fjernet. Netop derfor **betaler du kun for anmeldelser, der faktisk er væk** – også ved rene stjernebedømmelser uden tekst." },
 
@@ -38,10 +38,10 @@ const article = {
       { t: "p", text: "Prisen afhænger frem for alt af én ting: **hvor gammel anmeldelsen er**. Friske anmeldelser er langt nemmere at fjerne end anmeldelser, der har været online i månedsvis. Hvordan priserne står i forhold til en advokat og andre udbydere, gennemgår vi i [hvad det koster at fjerne en Google-anmeldelse](/da/magasin/pris-fjerne-google-anmeldelse/)." },
       { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Succesrate", "Pris pr. fjernet anmeldelse"], rows: [
         ["Op til 4 uger gammel", "ca. 90 %", "**179 €**"],
-        ["Ældre end 4 uger", "ca. 50 %", "**250 €**"],
+        ["Ældre end 4 uger", "ca. 50 %", "**229 €**"],
       ] },
-      { t: "p", text: "I enkelte tilfælde kan en ældre anmeldelse senere kræve vores særlige softwareprocedure (300 €). I USA går anmeldelser, der er ældre end 4 uger, altid gennem softwareproceduren (300 $)." },
-      { t: "p", text: "**Stjernebedømmelser uden tekst:** dem fjerner vi med en **særlig, softwareunderstøttet procedure**. Prisen er **300 € pr. fjernet anmeldelse** – uden tillæg for ældre bedømmelser – og succesraten er **ca. 80 %**. Betaling: som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen – der trækkes intet nu, og **beløbet trækkes automatisk først, når bedømmelsen er fjernet**. I bestillingsformularen kan de vælges og vises med deres egen prislinje." },
+      { t: "p", text: "Komplekse tilfælde koster **300 €**: bedømmelser uden tekst samt anmeldelser fra USA, der er ældre end 4 uger (300 $), fordi de kræver en mere omfattende procedure. I enkelte tilfælde kan en ældre anmeldelse, der stadig er online efter standardproceduren, blive et komplekst tilfælde – vi fortsætter kun med dit samtykke." },
+      { t: "p", text: "**Stjernebedømmelser uden tekst:** dem fjerner vi med en **mere omfattende procedure**. Prisen er **300 € pr. fjernet anmeldelse** – uden tillæg for ældre bedømmelser. Betaling: som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen – der trækkes intet nu, og **beløbet trækkes automatisk først, når bedømmelsen er fjernet**. I bestillingsformularen kan de vælges og vises med deres egen prislinje." },
       { t: "p", text: "Skal flere anmeldelser væk, gælder **mængderabatten** automatisk:" },
       { t: "table", head: ["Antal anmeldelser", "Rabat"], rows: [
         ["1 – 2", "–"],
@@ -49,9 +49,9 @@ const article = {
         ["5 – 9", "**−15 %**"],
         ["10 eller flere", "**−30 %**"],
       ] },
-      { t: "p", text: "**Eksempler:** 3 nye anmeldelser koster 537 €, minus 10 % = **483 €**. 2 nye og 3 ældre anmeldelser koster 1.108 €, minus 15 % = **942 €**. Rabattrinnet afhænger af, hvor mange anmeldelser **vi accepterer efter den gratis vurdering**, og rabatten gælder for hver af dem, der bliver fjernet. Du betaler stadig kun for anmeldelser, der faktisk forsvinder: accepterer vi 3, og 2 bliver fjernet, betaler du 2 × 179 € minus 10 % = **322,20 €**. Bedømmelser uden tekst tæller med i rabattrinnet: 2 nye anmeldelser med tekst + 1 uden tekst = 3 anmeldelser, altså −10 % – stjernebedømmelsen koster **270 €**, anmeldelserne med tekst 161,10 € hver; hvert beløb trækkes først, når anmeldelsen er fjernet." },
+      { t: "p", text: "**Eksempler:** 3 nye anmeldelser koster 537 €, minus 10 % = **483 €**. 2 nye og 3 ældre anmeldelser koster 1.045 €, minus 15 % = **888 €**. Rabattrinnet afhænger af, hvor mange anmeldelser **vi accepterer efter den gratis vurdering**, og rabatten gælder for hver af dem, der bliver fjernet. Du betaler stadig kun for anmeldelser, der faktisk forsvinder: accepterer vi 3, og 2 bliver fjernet, betaler du 2 × 179 € minus 10 % = **322,20 €**. Bedømmelser uden tekst tæller med i rabattrinnet: 2 nye anmeldelser med tekst + 1 uden tekst = 3 anmeldelser, altså −10 % – stjernebedømmelsen koster **270 €**, anmeldelserne med tekst 161,10 € hver; hvert beløb trækkes først, når anmeldelsen er fjernet." },
       { t: "p", text: "**Betaling pr. anmeldelse:** hvor lang tid fjernelsen tager, kan variere fra anmeldelse til anmeldelse – som regel få dage, nogle gange op til tre uger. Derfor trækkes betalingen pr. anmeldelse: hver anmeldelse trækkes automatisk fra dit gemte kort eller PayPal, så snart den er fjernet. Anmeldelser, vi stadig arbejder på, koster dig endnu ingenting." },
-      { t: "tip", title: "Bestil tidligt", text: "Succesraten falder fra ca. 90 % til ca. 50 %, så snart en anmeldelse er ældre end fire uger – og prisen stiger fra 179 € til 250 €. En frisk falsk anmeldelse er den billigste og sikreste at få fjernet. Til sammenligning: advokater tager typisk betaling pr. anmeldelse **på forhånd**, og det tager ofte måneder ([advokat eller teknisk fjernelse?](/da/magasin/negativ-google-anmeldelse-advokat/))." },
+      { t: "tip", title: "Bestil tidligt", text: "Succesraten falder fra ca. 90 % til ca. 50 %, så snart en anmeldelse er ældre end fire uger – og prisen stiger fra 179 € til 229 €. En frisk falsk anmeldelse er den billigste og sikreste at få fjernet. Til sammenligning: advokater tager typisk betaling pr. anmeldelse **på forhånd**, og det tager ofte måneder ([advokat eller teknisk fjernelse?](/da/magasin/negativ-google-anmeldelse-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Sådan bestiller du – på cirka to minutter", toc: "Sådan bestiller du" },
       { t: "ol", items: [
@@ -88,10 +88,10 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "Hvad koster det at få fjernet en Google-anmeldelse?", a: "179 € pr. fjernet anmeldelse, hvis anmeldelsen er op til 4 uger gammel, og 250 €, hvis den er ældre. Fra 3 accepterede anmeldelser får du 10 % rabat, fra 5 15 % og fra 10 30 %, og rabatten gælder for hver anmeldelse, der bliver fjernet. Rene stjernebedømmelser uden tekst (særlig procedure) koster 300 € pr. fjernet anmeldelse. Du betaler kun for anmeldelser, der faktisk bliver fjernet: du gemmer et kort eller PayPal ved bestillingen, og der trækkes automatisk først efter fjernelsen." },
+      { q: "Hvad koster det at få fjernet en Google-anmeldelse?", a: "179 € pr. fjernet anmeldelse, hvis anmeldelsen er op til 4 uger gammel, og 229 €, hvis den er ældre. Fra 3 accepterede anmeldelser får du 10 % rabat, fra 5 15 % og fra 10 30 %, og rabatten gælder for hver anmeldelse, der bliver fjernet. Rene stjernebedømmelser uden tekst (komplekst tilfælde) koster 300 € pr. fjernet anmeldelse. Du betaler kun for anmeldelser, der faktisk bliver fjernet: du gemmer et kort eller PayPal ved bestillingen, og der trækkes automatisk først efter fjernelsen." },
       { q: "Hvad sker der, hvis en anmeldelse ikke kan fjernes?", a: "Så betaler du ingenting for den – ingen forudbetaling og intet gebyr for forsøg. Det gælder også rene stjernebedømmelser uden tekst." },
-      { q: "Kan anmeldelser, der er ældre end 4 uger, fjernes?", a: "Ja. Succesraten er lavere (ca. 50 % i stedet for ca. 90 %), og prisen er 250 € i stedet for 179 € pr. fjernet anmeldelse. Derfor kan det betale sig at handle hurtigt på friske falske anmeldelser." },
-      { q: "Kan 1-stjernede anmeldelser uden tekst fjernes?", a: "Ja – med en særlig, softwareunderstøttet procedure. Prisen er **300 € pr. fjernet anmeldelse**, uden tillæg for ældre bedømmelser, og mængderabatten gælder sammen med ordrens øvrige anmeldelser. Som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen, og **der trækkes automatisk først efter fjernelsen**. Succesraten er **ca. 80 %**. I bestillingsformularen kan bedømmelserne vælges og vises med deres egen prislinje. Mere: [1-stjernet anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/)." },
+      { q: "Kan anmeldelser, der er ældre end 4 uger, fjernes?", a: "Ja. Succesraten er lavere (ca. 50 % i stedet for ca. 90 %), og prisen er 229 € i stedet for 179 € pr. fjernet anmeldelse. Derfor kan det betale sig at handle hurtigt på friske falske anmeldelser." },
+      { q: "Kan 1-stjernede anmeldelser uden tekst fjernes?", a: "Ja – med en mere omfattende procedure. Prisen er **300 € pr. fjernet anmeldelse**, uden tillæg for ældre bedømmelser, og mængderabatten gælder sammen med ordrens øvrige anmeldelser. Som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen, og **der trækkes automatisk først efter fjernelsen**. I bestillingsformularen kan bedømmelserne vælges og vises med deres egen prislinje. Mere: [1-stjernet anmeldelse uden tekst](/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/)." },
       { q: "Finder anmelderen ud af, at det var mig?", a: "Nej. Anmelderen får ikke at vide, hvem der har anmodet om fjernelsen." },
       { q: "Skal jeg slette hele min profil?", a: "Nej. Ved fjernelse af enkelte anmeldelser bevarer du din profil og alle dine gode anmeldelser. Fjernelse af [hele profilen](/da/magasin/slet-google-virksomhedsprofil/) giver kun mening, hvis den er beskadiget hele vejen igennem." },
       { q: "Hvor mange anmeldelser kan jeg bestille på én gang?", a: "Så mange, du vil. Mængderabatten stiger ved 3, 5 og 10 anmeldelser, som vi accepterer efter den gratis vurdering, og trækkes automatisk fra." },

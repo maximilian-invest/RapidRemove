@@ -125,7 +125,7 @@ import { PRICES } from "@/lib/pricing";
       eyebrow: "Domande frequenti",
       h2: "Tutto ciò che vuoi sapere.",
       items: [
-        { q: "È davvero legale?", a: "Sì. Il nostro metodo opera esclusivamente tramite canali ufficiali ed è stato verificato da giuristi. Non aggiriamo nulla e non otteniamo accessi non autorizzati." },
+        { q: "È davvero legale?", a: "Sì. Il nostro metodo opera esclusivamente tramite canali ufficiali ed è stato verificato da giuristi. Agiamo sempre per conto del titolare." },
         { q: "Avrò problemi con Google?", a: "No. La rimozione è un processo regolare e previsto. Il tuo account Google, Gmail ed eventuali account Ads restano del tutto intatti." },
         { q: "Influisce su SEO, sito o Ads?", a: "No. Viene rimosso solo il profilo aziendale (Google Maps / Profilo dell'attività). Sito, posizionamento e campagne restano invariati." },
         { q: "La rimozione è definitiva?", a: "Sì, il profilo e tutte le recensioni vengono rimossi in modo permanente. Con la protezione opzionale lo rimuoviamo di nuovo gratis se un terzo lo ripubblica." },

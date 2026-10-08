@@ -93,7 +93,7 @@ const article = {
     { t: "tip", title: "Den avgjørende fordelen", text: "En fjernet profil kan ikke vise frem gamle eller nye anmeldelser. Problemet er dermed ikke utsatt, men løst." },
 
     { t: "h2", id: "legal", text: "Er slettingen lovlig?", toc: "Er det lovlig?" },
-    { t: "p", text: "Ja. En profesjonell fjerning skjer utelukkende gjennom de **offisielle prosedyrene Google selv har lagt opp til**, og er juridisk gjennomgått. Ingenting hackes, ingenting omgås, og det skaffes ingen uautorisert tilgang. Din Google-konto, Gmail og eventuelle Google Ads-kontoer forblir helt upåvirket — det samme gjelder nettstedet ditt, den organiske rangeringen din og kampanjene dine." },
+    { t: "p", text: "Ja. En profesjonell fjerning skjer utelukkende gjennom de **offisielle prosedyrene Google selv har lagt opp til**, og er juridisk gjennomgått. Din Google-konto, Gmail og eventuelle Google Ads-kontoer forblir helt upåvirket — det samme gjelder nettstedet ditt, den organiske rangeringen din og kampanjene dine." },
     { t: "p", text: "En seriøs leverandør kjenner du igjen på at de oppgir et reelt firma med adresse og organisasjonsnummer, er åpne om metoden og **fakturerer først etter vellykket resultat** — ikke på vage løfter om «hemmelig tilgang til Google»." },
 
     { t: "h2", id: "kosten", text: "Hvor lang tid tar det — og hva koster det?", toc: "Tid og kostnad" },

@@ -99,7 +99,7 @@ const article = {
     { t: "tip", title: "L'avantage décisif", text: "Une fiche supprimée ne peut plus afficher d'anciens avis *ni* en accumuler de nouveaux. Le problème n'est pas déplacé — il est éliminé." },
 
     { t: "h2", id: "legal", text: "Est-ce légal ?", toc: "Est-ce légal ?" },
-    { t: "p", text: "Oui. Une suppression professionnelle s'opère exclusivement via les **procédures officielles prévues par Google** et a été validée juridiquement. Rien n'est piraté, rien n'est contourné, aucun accès non autorisé n'est utilisé. Votre compte Google, Gmail et vos éventuels comptes Google Ads restent entièrement intacts — tout comme votre site web, votre référencement naturel et vos campagnes publicitaires." },
+    { t: "p", text: "Oui. Une suppression professionnelle s'opère exclusivement via les **procédures officielles prévues par Google** et a été validée juridiquement. Nous agissons exclusivement via les procédures officielles de Google, toujours au nom du propriétaire. Votre compte Google, Gmail et vos éventuels comptes Google Ads restent entièrement intacts — tout comme votre site web, votre référencement naturel et vos campagnes publicitaires." },
     { t: "p", text: "Pour reconnaître un prestataire sérieux : il indique une entreprise réelle avec une adresse et un numéro SIRET ou équivalent, il est transparent sur sa méthode et **ne facture qu'après résultat** — il ne promet pas des « accès secrets à Google » vagues et invérifiables." },
 
     { t: "h2", id: "kosten", text: "Combien de temps faut-il — et quel est le coût ?", toc: "Délai et coût" },

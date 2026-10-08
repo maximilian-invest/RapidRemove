@@ -81,8 +81,8 @@ const article = {
     { t: "p", text: "Usamos **apenas os procedimentos do próprio Google**, em nome do proprietário da empresa: sem contas falsas, sem bots e sem falsas notificações legais. O autor da avaliação não fica a saber quem pediu a remoção." },
     { t: "ul", items: [
       "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação pode ser removida. Se não puder, não paga nada.",
-      "**Preço:** 179 € por avaliação removida; avaliações com mais de 4 semanas custam 250 €. Classificações só com estrelas, sem texto (poucos casos especiais): procedimento especial, 300 € por avaliação removida.",
-      "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas; classificações só com estrelas, aprox. 80 %.",
+      "**Preço:** 179 € por avaliação removida; avaliações com mais de 4 semanas custam 229 €. Classificações só com estrelas, sem texto: caso complexo, 300 € por avaliação removida.",
+      "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas.",
       "**Desconto de volume** nas avaliações que aceitamos: a partir de 3, −10 %; a partir de 5, −15 %; a partir de 10, −30 %.",
       "**Duração:** normalmente alguns dias, por vezes até 3 semanas. Cada avaliação é cobrada automaticamente depois de removida, no cartão ou PayPal registado ao encomendar.",
     ] },
@@ -95,7 +95,7 @@ const article = {
     { q: "Responder a uma avaliação negativa prejudica?", a: "Não: uma resposta calma e factual não prejudica e mostra aos potenciais clientes como lida com os problemas. Evite respostas a quente e nunca revele dados pessoais do cliente." },
     { q: "Posso descobrir quem escreveu uma avaliação anónima?", a: "Em geral, não. O Google não revela quem está por trás de uma avaliação. Perante conteúdo claramente ilícito, podem existir vias legais consoante o país; é uma questão para um advogado." },
     { q: "Se eliminar o Perfil da Empresa, as avaliações desaparecem?", a: "Sim, eliminar o perfil inteiro remove todas as avaliações, incluindo as boas. Se o problema forem só algumas, normalmente é melhor removê-las uma a uma." },
-    { q: "Posso pagar para remover uma avaliação do Google?", a: "Sim, desde que se usem apenas os procedimentos do próprio Google. Com a RapidRemove são **179 € por avaliação removida** (250 € se tiver mais de 4 semanas), e não paga nada se a avaliação ficar." },
+    { q: "Posso pagar para remover uma avaliação do Google?", a: "Sim, desde que se usem apenas os procedimentos do próprio Google. Com a RapidRemove são **179 € por avaliação removida** (229 € se tiver mais de 4 semanas), e não paga nada se a avaliação ficar." },
     { q: "Posso pedir a um cliente que apague a avaliação?", a: "Pode pedir com educação a um cliente real que atualize a avaliação se tiver resolvido o problema. Oferecer descontos, reembolsos ou ofertas em troca viola a política do Google." },
   ],
   related: [

@@ -7,7 +7,7 @@ const article = {
       slug: "google-review-removal-service",
       title: "Google Review Removal: Prices, Success Rates & How to Order (2026)",
       h1: "Removing a single Google review: prices, odds and how ordering works",
-      description: "What does it cost to remove a Google review? $179 per removed review, $250 if older than 4 weeks – paid only on success. Odds, discounts and ordering.",
+      description: "What does it cost to remove a Google review? $179 per removed review, $229 if older than 4 weeks – paid only on success. Odds, discounts and ordering.",
       keywords: ["how much does it cost to remove a google review", "google review removal price", "google review removal success rate", "how to order google review removal", "pay to remove google review", "remove a single google review"],
       author: "Maximilian Hölzl",
       authorRole: "Founder",
@@ -30,7 +30,7 @@ const article = {
         "Reviews from people who were **never customers**",
         "**Insults**, personal attacks and **false factual claims**",
         "Off-topic content, spam or reviews meant for **another business**",
-        "**Star-only ratings without text** – via a separate, software-supported procedure ([background](/en/magazine/remove-1-star-review-without-text/))",
+        "**Star-only ratings without text** – via a more extensive procedure (complex case) ([background](/en/magazine/remove-1-star-review-without-text/))",
       ] },
       { t: "warn", title: "What we won't promise", text: "Honest, factual criticism from real customers is usually protected – and nobody can seriously guarantee the removal of every review. That's exactly why you **only pay when a review is actually gone** – star-only ratings included." },
 
@@ -38,10 +38,10 @@ const article = {
       { t: "p", text: "The price depends on two things: **whether the review has text** and **how old it is**. Fresh reviews are much easier to remove than reviews that have been online for months. How these prices compare with lawyers and other providers is covered in [Google review removal cost](/en/magazine/google-review-removal-cost/)." },
       { t: "table", rrCol: 2, head: ["Review age", "Success chance", "Price per removed review"], rows: [
         ["Up to 4 weeks old", "approx. 90 %", "**$179**"],
-        ["Older than 4 weeks", "approx. 50 %", "**$250**"],
-        ["Star-only rating (no text, any age)", "approx. 80 %", "**$300** per removed review"],
+        ["Older than 4 weeks", "approx. 50 %", "**$229**"],
+        ["Star-only rating (no text, any age)", "Google decides", "**$300** per removed review"],
       ] },
-      { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **special software-supported procedure**. They cost **$300 per review**, with no surcharge for older ones. The success chance is around **80 %**. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed." },
+      { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure** (complex case). They cost **$300 per review**, with no surcharge for older ones. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed." },
       { t: "p", text: "If several reviews need to go, the **volume discount** applies automatically:" },
       { t: "table", head: ["Number of reviews", "Discount"], rows: [
         ["1 – 2", "–"],
@@ -49,9 +49,9 @@ const article = {
         ["5 – 9", "**−15 %**"],
         ["10 or more", "**−30 %**"],
       ] },
-      { t: "p", text: "**Examples:** 3 recent reviews cost $537, minus 10 % = **$483**. 2 recent and 3 older reviews cost $1,108, minus 15 % = **$942**. The discount level is set by the number of reviews **we accept after the free assessment** – star-only ratings count too – and applies to every one of them. You still only pay for reviews that are actually removed: if we accept 3 and 2 come down, you pay 2 × $179 minus 10 % = **$322.20**. Mixed order: 2 recent reviews with text plus 1 star-only rating = 3 reviews, so 10 % off – the star-only rating costs **$270**, the two others $161.10 each – each charged only after removal." },
+      { t: "p", text: "**Examples:** 3 recent reviews cost $537, minus 10 % = **$483**. 2 recent and 3 older reviews cost $1,045, minus 15 % = **$888**. The discount level is set by the number of reviews **we accept after the free assessment** – star-only ratings count too – and applies to every one of them. You still only pay for reviews that are actually removed: if we accept 3 and 2 come down, you pay 2 × $179 minus 10 % = **$322.20**. Mixed order: 2 recent reviews with text plus 1 star-only rating = 3 reviews, so 10 % off – the star-only rating costs **$270**, the two others $161.10 each – each charged only after removal." },
       { t: "p", text: "**Payment per review:** removal times can differ from review to review – usually a few days, sometimes up to three weeks. That's why payment can happen per review, each charged automatically to your stored card or PayPal once it's removed. Reviews that we're still working on don't cost you anything yet." },
-      { t: "tip", title: "Order early", text: "The success chance drops from around 90 % to around 50 % once a review is older than four weeks – and the price rises to $250. A fresh fake review is the cheapest and safest one to remove. For comparison: lawyers typically charge per review **upfront**, and it often takes months ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
+      { t: "tip", title: "Order early", text: "The success chance drops from around 90 % to around 50 % once a review is older than four weeks – and the price rises to $229. A fresh fake review is the cheapest and safest one to remove. For comparison: lawyers typically charge per review **upfront**, and it often takes months ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
 
       { t: "h2", id: "bestellen", text: "How to order – in about two minutes", toc: "How to order" },
       { t: "ol", items: [
@@ -88,10 +88,10 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "How much does it cost to remove a Google review?", a: "$179 per removed review if the review is up to 4 weeks old, $250 if it's older. In the USA, reviews older than 4 weeks always go through our special software procedure ($300); elsewhere an older review can occasionally need it too. From 3 accepted reviews you get 10 % off, from 5 15 % and from 10 30 % – applied to every review that is removed. You only pay for reviews that are actually removed. Star-only ratings without text cost $300 per removed review." },
+      { q: "How much does it cost to remove a Google review?", a: "$179 per removed review if the review is up to 4 weeks old, $229 if it's older. Complex cases cost $300: ratings without text, and reviews older than 4 weeks from the USA, because they require a more extensive procedure. In individual cases an older review that is still online after the standard procedure can become a complex case – we only continue with your consent. From 3 accepted reviews you get 10 % off, from 5 15 % and from 10 30 % – applied to every review that is removed. You only pay for reviews that are actually removed. Star-only ratings without text cost $300 per removed review." },
       { q: "What happens if a review can't be removed?", a: "You pay nothing – no upfront payment, no fee for attempts. This applies to star-only ratings too." },
-      { q: "Can reviews older than 4 weeks be removed?", a: "Yes. The success chance is lower (approx. 50 % instead of approx. 90 %), and the price is $250 per review. That's why it pays to act quickly on fresh fake reviews." },
-      { q: "Can 1-star reviews without text be removed?", a: "Yes – with a special software-supported procedure. Star-only ratings cost **$300 per review** (no surcharge for older ones), with a success chance of around **80 %**. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. The volume discount applies, counted together with all other reviews in your order." },
+      { q: "Can reviews older than 4 weeks be removed?", a: "Yes. The success chance is lower (approx. 50 % instead of approx. 90 %), and the price is $229 per review. That's why it pays to act quickly on fresh fake reviews." },
+      { q: "Can 1-star reviews without text be removed?", a: "Yes – with a more extensive procedure (complex case). Star-only ratings cost **$300 per review** (no surcharge for older ones). As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. The volume discount applies, counted together with all other reviews in your order." },
       { q: "Will the reviewer find out it was me?", a: "No. The reviewer is not told who requested the removal." },
       { q: "Do I have to delete my whole profile?", a: "No. With single-review removal your profile and all your good reviews stay. Removing the [entire profile](/en/magazine/delete-google-business-profile/) only makes sense if it's damaged across the board." },
       { q: "How many reviews can I order at once?", a: "As many as you like. The volume discount increases at 3, 5 and 10 reviews accepted after the free assessment and is applied automatically." },
