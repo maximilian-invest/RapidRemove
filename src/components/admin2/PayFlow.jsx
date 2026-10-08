@@ -51,6 +51,14 @@ export function nextStep(o, pm, ptasks) {
   if (pm.level >= pm.stages.length) return { label: "Übergabe an Inkasso", sub: "", auto: false };
   const label = pm.stages[pm.level][1];
   const ppw = o.payPref === "wise" || o.payPref === "paypal" || !!o.paypal;
+  // Bewertungen, solange noch etwas beim Partner liegt: keine Mahnstufen, sondern Fortschritts-Updates (48 h, bei Zwischenzahlung 24 h).
+  const inProg = isRev && ((ptasks || {})[o.id] || []).some((t) => t.status === "new" || t.status === "working");
+  if (isRev && !ppw && inProg) {
+    const r = revState(o, (ptasks || {})[o.id]);
+    const lastP = (pm.mails || []).filter((x) => /^Fortschritts-Update/i.test(x.label)).map((x) => new Date(x.ts).getTime()).sort((a, b) => b - a)[0];
+    const at = lastP ? lastP + (o.payHold ? 24 : 48) * 3600e3 : r && r.unpaidSince ? r.unpaidSince + 24 * 3600e3 : null;
+    if (at) return { label: o.payHold ? "Fortschritts-Update · Zwischenzahlung" : "Fortschritts-Update", sub: whenTxt(at, o), auto: true };
+  }
   if (isRev && !ppw && pm.level < 2) {
     const r = revState(o, (ptasks || {})[o.id]);
     const lastMahn = pm.sent.filter((x) => x.kind === "mahn").map((x) => new Date(x.ts).getTime()).sort((a, b) => b - a)[0];

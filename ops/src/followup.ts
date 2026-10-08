@@ -29,6 +29,7 @@ import { loadCustomerOrders, dashLink } from "./customers";
 import { logCustEvent } from "./custTrack";
 import { notifyCustomer } from "./custPush";
 import { fmtReviewMoney } from "./reviewsPricing";
+import type { Progress } from "./emails/progressText";
 import KundenErinnerungReviews, { erinnerungSubject, erinnerungTitle, type ErinnerungProps } from "./emails/KundenErinnerungReviews";
 
 const H = 3600_000;
@@ -89,7 +90,7 @@ export type Attention = { email: string; name: string; orderId: string | null; k
 export type Upcoming = { email: string; name: string; orderId: string | null; kind: Kind; stage: number; dueAt: string; waitQuiet?: boolean };
 type Plan = {
   email: string; name: string; lang: string; tz: string;
-  due: { pay?: { stage: 1 | 2; ref: string; amount: string; n: number; orderId: string }; sw?: { ref: string; n: number; price: string; orderId: string }; never?: { ref: string; stage: 1 | 2; orderId: string }; news?: { ref: string; orderId: string | null } };
+  due: { pay?: { stage: 1 | 2; ref: string; amount: string; n: number; orderId: string; slot?: number; prog?: Progress | null }; sw?: { ref: string; n: number; price: string; orderId: string }; never?: { ref: string; stage: 1 | 2; orderId: string }; news?: { ref: string; orderId: string | null } };
   upcoming: Upcoming[]; attention: Attention[]; lastAutoAt: number;
 };
 const ts = (v: unknown) => (v ? new Date(String(v)).getTime() : 0);
@@ -134,16 +135,38 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
     const cur = String(payOrder.cur || "eur");
     const amountNum = orders.filter((o) => o.cur === cur).reduce((s, o) => s + (Number(o.toPay) || 0), 0);
     const ref = iso(first).slice(0, 16);
+    // Fortschritt (08.10.2026): Solange bei einem Auftrag mit offenem Betrag noch etwas beim Partner liegt, gibt es KEINE
+    // Mahnstufen, sondern freundliche Fortschritts-Updates (alle 48 h, bei Zwischenzahlung alle 24 h). Mahnstufen erst,
+    // wenn beim Partner nichts mehr offen ist.
+    type OV = (typeof orders)[number] & { hold?: boolean };
+    const upOrders = [...new Set(unpaid.map((i) => i.o))] as OV[];
+    const isActive = (o: OV) => (o.items as unknown as { status: string }[]).some((i) => ["new", "working", "sw_accepted"].includes(i.status));
+    const active = upOrders.filter(isActive);
+    const progOf = (o: OV): Progress => {
+      const it = (o.items as unknown as { status: string }[]).filter((i) => i.status !== "cancelled");
+      return { total: it.length, removed: it.filter((i) => i.status === "removed").length, inProgress: it.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length,
+        waiting: it.filter((i) => i.status === "software").length, due: Number(o.toPay) || 0, cur: String(o.cur || "eur"), hold: !!o.hold };
+    };
+    const pRef = "p:" + ref;
+    const pRows = sent("pay", pRef);
+    const pN = pRows.reduce((mx, r) => Math.max(mx, Number(r.stage)), 0);
+    const pLast = pRows.reduce((mx, r) => Math.max(mx, ts(r.sent_at)), 0);
+    if (active.length && !payPref && first >= since && amountNum > 0) {
+      const o0 = active[0]; const prog = progOf(o0);
+      const at = pN === 0 ? first + 24 * H : pLast + (prog.hold ? 24 : 48) * H;
+      if (now >= at) plan.due.pay = { stage: 1, ref: pRef, slot: pN + 1, amount: fmtReviewMoney(amountNum, cur), n: unpaid.length, orderId: o0.id as string, prog };
+      else plan.upcoming.push({ email, name: d.name, orderId: o0.id as string, kind: "pay", stage: 1, dueAt: iso(at) });
+    }
     // Manuell gesendete Mahnungen zählen mit (Stufe aus dem Titel).
     const man = await pool.query(`SELECT title, created_at FROM events WHERE lower(email)=$1 AND title LIKE 'Mahnung (Bewertungen)%' AND created_at > $2`, [email, iso(first)]).catch(() => ({ rows: [] as { title: string; created_at: string }[] }));
     const stages = [...sent("pay", ref).map((r) => ({ s: Number(r.stage), t: ts(r.sent_at) })), ...man.rows.map((r) => ({ s: Number((String(r.title).match(/Stufe\s*(\d)/) || [])[1] || 1), t: ts(r.created_at) }))];
     const cur0 = stages.reduce((mx, x) => Math.max(mx, x.s), 0);
     const lastT = stages.reduce((mx, x) => Math.max(mx, x.t), 0);
-    if (first >= since && amountNum > 0) {
+    if (first >= since && amountNum > 0 && !(active.length && !payPref)) {
       if (payPref) {
         if (now - first >= 72 * H) plan.attention.push({ email, name: d.name, orderId: payOrder.id as string, kind: "pay_manual", since: iso(first), text: `Zahlung offen seit ${daysTxt(now - first)} · will per ${payPref} zahlen – keine automatische Erinnerung` });
       } else if (cur0 === 0) {
-        const at = first + 24 * H;
+        const at = Math.max(first + 24 * H, pLast ? pLast + 48 * H : 0); // nach Fortschritts-Updates: 48 h Abstand
         if (now >= at) plan.due.pay = { stage: 1, ref, amount: fmtReviewMoney(amountNum, cur), n: unpaid.length, orderId: payOrder.id as string };
         else plan.upcoming.push({ email, name: d.name, orderId: payOrder.id as string, kind: "pay", stage: 1, dueAt: iso(at) });
       } else if (cur0 === 1) {
@@ -224,7 +247,7 @@ async function sendPlan(app: FastifyInstance, p: Plan): Promise<boolean> {
   if (!due.pay && !due.sw && !due.never && !due.news) return false;
   const props: ErinnerungProps = {
     lang: p.lang, name: p.name, dashUrl: await dashLink(p.email, p.lang).then((u) => (due.sw ? u + (u.includes("?") ? "&" : "?") + "open=software" : u)), // Software: Entscheidung öffnet sich direkt
-    pay: due.pay ? { stage: due.pay.stage, amount: due.pay.amount, n: due.pay.n } : null,
+    pay: due.pay ? { stage: due.pay.stage, amount: due.pay.amount, n: due.pay.n, prog: due.pay.prog || null } : null,
     sw: due.sw ? { n: due.sw.n, price: due.sw.price } : null,
     never: !!due.never, news: !!due.news,
   };
@@ -235,7 +258,8 @@ async function sendPlan(app: FastifyInstance, p: Plan): Promise<boolean> {
   const rec = async (kind: Kind, ref: string, stage: number, orderId: string | null) => {
     await pool!.query(`INSERT INTO cust_followups (email, kind, ref, stage, order_id) VALUES ($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`, [p.email, kind, ref, stage, orderId]);
   };
-  if (due.pay) { await rec("pay", due.pay.ref, due.pay.stage, due.pay.orderId); parts.push(`Zahlung ${due.pay.amount} · Stufe ${due.pay.stage}`); }
+  if (due.pay && due.pay.prog) { await rec("pay", due.pay.ref, due.pay.slot || 1, due.pay.orderId); parts.push(`Fortschritt ${due.pay.prog.removed}/${due.pay.prog.total} · ${due.pay.amount} offen${due.pay.prog.hold ? " · Zwischenzahlung" : ""}`); }
+  else if (due.pay) { await rec("pay", due.pay.ref, due.pay.stage, due.pay.orderId); parts.push(`Zahlung ${due.pay.amount} · Stufe ${due.pay.stage}`); }
   if (due.sw) {
     const st = (await pool!.query(`SELECT count(*)::int AS n FROM cust_followups WHERE email=$1 AND kind='sw' AND ref=$2`, [p.email, due.sw.ref])).rows[0].n + 1;
     await rec("sw", due.sw.ref, st, due.sw.orderId); parts.push(`Software-Entscheidung (${due.sw.n}) · Erinnerung ${st}`);
@@ -244,7 +268,9 @@ async function sendPlan(app: FastifyInstance, p: Plan): Promise<boolean> {
   if (due.news) { await rec("news", due.news.ref, 1, due.news.orderId); parts.push("Neuigkeiten nicht angesehen"); }
   const orderId = due.pay?.orderId || due.sw?.orderId || due.never?.orderId || due.news?.orderId || undefined;
   // Admin: Verlauf/Mahnungs-Historie (Titel mit „Mahnung (Bewertungen) … Stufe N" zählt in „Mahnung senden" mit).
-  const title = due.pay
+  const title = due.pay && due.pay.prog
+    ? `Fortschritts-Update gesendet (automatisch) · ${parts.join(" · ")}`
+    : due.pay
     ? `Mahnung (Bewertungen) gesendet · Stufe ${due.pay.stage} (automatische Erinnerung${parts.length > 1 ? " + " + parts.slice(1).join(", ") : ""})`
     : `Erinnerung gesendet (automatisch) · ${parts.join(" · ")}`;
   await insertEvent({ orderId, email: p.email, type: due.pay ? "pay" : "mail", title, detail: `${parts.join(" · ")} · ${erinnerungTitle(props)} · Sprache ${p.lang.toUpperCase()} · ${p.tz}`, html, subject, auto: true });

@@ -618,3 +618,10 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .vf-chk{min-height:52vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:4px}
 .rra .vf-chk>svg{width:44px;height:44px;color:var(--primary);margin-bottom:10px}
 .rra .vf .secure{flex-wrap:nowrap;text-align:left;justify-content:flex-start}
+
+/* Zwischenzahlung nötig */
+.rra .holdn{display:flex;gap:12px;align-items:flex-start;background:#fff4e5;color:#6b3b00;border-radius:20px;padding:14px 16px;margin-bottom:14px}
+.rra .holdn .ai{width:34px;height:34px;border-radius:50%;background:#fff;color:#d97706;display:grid;place-items:center;flex:none}
+.rra .holdn .ai svg{width:18px;height:18px}
+.rra .holdn b{display:block;font-size:15px;font-weight:700}
+.rra .holdn span>span{font-size:14px;line-height:1.4}

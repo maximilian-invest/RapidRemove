@@ -178,6 +178,7 @@ export function OrderDetail({ ctx, id }) {
             <span><b>{r.removed}/{r.total}</b> gelöscht</span>
             {r.open ? <span><b>{r.open}</b> beim Partner{r.working !== r.open ? ` (${r.working} in Arbeit)` : ""}</span> : null}
             {r.software ? <span><b>{r.software}</b> Software · wartet auf Kunde</span> : null}
+            {o.payHold ? <span className="due"><b>Pausiert</b> · Zwischenzahlung offen</span> : null}
             {r.notPossible ? <span><b>{r.notPossible}</b> nicht möglich</span> : null}
             {r.unpaidN ? <span className="due"><b>{money(r.unpaidAmt, cur(o))}</b> offen · {r.unpaidN} Bew.{r.unbilledN ? ` · ${r.unbilledN} noch nicht abgerechnet` : ""}</span> : null}
           </div>

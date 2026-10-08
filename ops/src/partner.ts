@@ -445,7 +445,13 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const sr = await pool.query(`SELECT DISTINCT ON (order_id, url) id, order_id, url FROM review_shots WHERE status='ok' AND order_id = ANY($1::text[]) ORDER BY order_id, url, id DESC`, [oids]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
       for (const x of sr.rows as { id: number; order_id: string; url: string }[]) shots.set(`${x.order_id}|${x.url}`, Number(x.id));
     }
-    return { ok: true, preview, tasks: rows.map((r) => ({ ...partnerView(r), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    // Pausierte Aufträge (Zwischenzahlung offen) → Partner sieht „On hold".
+    const held = new Set<string>();
+    if (pool && oids.length) {
+      const hr = await pool.query(`SELECT id FROM orders WHERE id = ANY($1::text[]) AND jsonb_typeof(raw->'payHold')='object'`, [oids]).catch(() => ({ rows: [] as { id: string }[] }));
+      for (const x of hr.rows as { id: string }[]) held.add(x.id);
+    }
+    return { ok: true, preview, tasks: rows.map((r) => ({ ...partnerView(r), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
   // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
@@ -479,6 +485,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
     const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID);
     if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
+    // Zwischenzahlung offen (Auftrag pausiert): nichts Neues starten, bis der Kunde bezahlt hat.
+    if (!opts.admin && status === "working" && old.status === "new" && old.order_id) {
+      const h = await pool.query(`SELECT jsonb_typeof(raw->'payHold')='object' AS h FROM orders WHERE id=$1`, [old.order_id]).catch(() => ({ rows: [] as { h: boolean }[] }));
+      if (h.rows[0]?.h) return { error: "order on hold – wait until “Customer paid”", code: 400 };
+    }
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;

@@ -28,7 +28,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -2201,7 +2201,8 @@ async function start() {
             continue;
           }
           try {
-            const props = { lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: group.length === 1 ? n.orderId : undefined, changed: important, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit };
+            // Fortschritt (Balken, offener Betrag, ggf. Zwischenzahlung) nur bei einem Auftrag je Mail.
+            const props = { lang, name: n.name, dashUrl: await dashLink(n.email, n.lang), orderId: group.length === 1 ? n.orderId : undefined, changed: important, cur: n.cur, swPrice: n.swPrice, swDeposit: n.swDeposit, progress: group.length === 1 ? n.progress : null };
             // „Nur mit Spezial-Software löschbar" → kurze Mail ohne Details („gute Nachricht, Update") – entschieden wird im Dashboard.
             const swMail = important.some((c) => c.status === "software");
             // Software-Mail: Link öffnet im Dashboard direkt die Schritt-für-Schritt-Entscheidung (?open=software).
@@ -2231,6 +2232,8 @@ async function start() {
     // Sicherheitsnetz: gelöscht, aber keine Zahlungsaufforderung raus → nachholen (alle 10 Min., erster Lauf nach 2 Min.).
     const guard = () => void payRequestGuard((o, m) => app.log.info(o as object, m)).catch((e) => app.log.error({ err: e }, "Sicherheitsnetz Zahlungsaufforderung fehlgeschlagen"));
     setTimeout(guard, 2 * 60_000); setInterval(guard, 10 * 60_000);
+    // Zwischenzahlung: pausierte Aufträge freigeben, sobald bezahlt (alle 10 Min.; Stripe/Admin lösen es meist schon direkt aus).
+    setInterval(() => void payHoldSweep().catch((e) => app.log.error({ err: e }, "Zwischenzahlung-Prüfung fehlgeschlagen")), 10 * 60_000);
     // Bestätigte Software-Fälle: ca. 1 Std. vor Ablauf der 5-Std.-Frist einmal erinnern (je Bewertung nur 1×).
     setInterval(() => void (async () => {
       if (!pool) return;

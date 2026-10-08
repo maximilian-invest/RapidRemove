@@ -225,6 +225,7 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
   }
   if (p.kind === "invoice") {
     for (const [o, ks] of groups) await addPaidKeys(o, ks);
+    for (const o of groups.keys()) void evaluatePayHold(o).catch(() => {}); // Zwischenzahlung da → Partner macht weiter
     if (p.via === "dashboard") void notifyTeam(`Bezahlt · ${p.amount} ${String(p.cur).toUpperCase()}`, `Kunde im Dashboard · ${[...groups.values()].flat().length} gelöschte Bewertung(en) · Auftrag ${orderId}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
     return;
   }
@@ -337,6 +338,7 @@ export async function markOrderReviewsPaidManual(orderId: string): Promise<void>
   }
   await setOrderRawField(orderId, "reviewsPayments", list);
   await addPaidKeys(orderId, [...keys]);
+  await evaluatePayHold(orderId).catch(() => null); // Zwischenzahlung erledigt → Partner macht weiter
 }
 
 /* ---- Status je Bewertung (für das Dashboard) ---- */
@@ -420,6 +422,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
     payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null, // Rabatt-Wunsch −10 %
     // Inhaber-Nachweis (4–5-Sterne-Bewertungen): pending/checking/rejected → Dashboard fordert den Upload an.
+    hold: !!raw.payHold && !cancelled, // Zwischenzahlung nötig (Partner pausiert)
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
     pct, swPrice: disc(REVIEW_NOTEXT_PRICE), swDeposit: disc(REVIEW_NOTEXT_PRICE), toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, old, ...v }) => v),
@@ -783,8 +786,67 @@ export async function partnerStatusChanged(
   );
 }
 
+/* ---- Fortschritt + Zwischenzahlung (08.10.2026) ----
+ * Bewertungen werden pro Löschung fällig. Erreicht der offene Betrag eines Auftrags PAY_HOLD_AMOUNT (Standard 400, in der
+ * Währung des Auftrags) und liegt noch etwas beim Partner, pausiert der Auftrag: Partner bekommt „Order on hold" (kann nichts
+ * Neues starten), Kunde sieht „Zwischenzahlung nötig". Nach der Zahlung (Betrag < Schwelle) geht es automatisch weiter. */
+export const PAY_HOLD = () => Math.max(1, Number(process.env.PAY_HOLD_AMOUNT) || 400);
+export type OrderProgress = { total: number; removed: number; inProgress: number; waiting: number; due: number; cur: string; hold: boolean };
+function progressOfView(view: ReturnType<typeof orderView>, raw: Record<string, unknown>): OrderProgress {
+  const it = view.items.filter((i) => i.status !== "cancelled");
+  return {
+    total: it.length, removed: it.filter((i) => i.status === "removed").length,
+    inProgress: it.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length,
+    waiting: it.filter((i) => i.status === "software").length,
+    due: Number(view.toPay) || 0, cur: view.cur, hold: !!raw.payHold,
+  };
+}
+async function loadView(orderId: string): Promise<{ row: OrderRow & { email: string; name: string | null; lang: string | null; country: string | null }; view: ReturnType<typeof orderView>; raw: Record<string, unknown> } | null> {
+  if (!pool) return null;
+  const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1 AND service='reviews'`, [orderId]);
+  const row = o.rows[0]; if (!row) return null;
+  const pt = await pool.query(`SELECT item_key, status, working_since FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [orderId]);
+  return { row, view: orderView(row, new Map(pt.rows.map((x) => [x.item_key, { status: x.status, since: x.working_since }]))), raw: (row.raw || {}) as Record<string, unknown> };
+}
+export async function orderProgress(orderId: string): Promise<OrderProgress | null> {
+  const v = await loadView(orderId); return v ? progressOfView(v.view, v.raw) : null;
+}
+/** Zwischenzahlung prüfen: pausieren bzw. freigeben. Gibt den (neuen) Fortschritt zurück. */
+export async function evaluatePayHold(orderId: string): Promise<OrderProgress | null> {
+  const v = await loadView(orderId);
+  if (!v || !pool) return null;
+  const p = progressOfView(v.view, v.raw);
+  if (v.row.status === "storniert" || v.view.cancelled) return p;
+  const held = !!v.raw.payHold;
+  const codes = async () => (await pool!.query(`SELECT code FROM partner_tasks WHERE order_id=$1 AND status IN ('new','working') ORDER BY id`, [orderId]).catch(() => ({ rows: [] as { code: string }[] }))).rows.map((x) => x.code).filter(Boolean);
+  const test = isTestEmail(v.row.email);
+  const money = `${Math.round(p.due)} ${String(p.cur).toUpperCase()}`;
+  if (!held && p.due >= PAY_HOLD() && p.inProgress > 0) {
+    await setOrderRawField(orderId, "payHold", { at: new Date().toISOString(), amount: p.due, cur: p.cur });
+    const c = await codes();
+    await insertEvent({ orderId, email: v.row.email, type: "pay", title: `Zwischenzahlung nötig – Auftrag pausiert (${money} offen)`, detail: `${p.inProgress} Bewertung(en) beim Partner pausiert bis zur Zahlung${c.length ? " · " + c.join(", ") : ""}`, auto: true }).catch(() => {});
+    void notifyPartner(`${test ? "TEST · " : ""}Order on hold`, `${c.slice(0, 4).join(", ") || orderId} · customer payment pending – please pause until “Customer paid”.`, undefined, test);
+    void notifyTeam(`Zwischenzahlung nötig · ${v.row.name || v.row.email}`, `${money} offen · ${p.inProgress} Bewertung(en) pausiert · Auftrag ${orderId}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+    return { ...p, hold: true };
+  }
+  if (held && (p.due < PAY_HOLD() || p.inProgress === 0)) {
+    await setOrderRawField(orderId, "payHold", null);
+    const c = await codes();
+    await insertEvent({ orderId, email: v.row.email, type: "pay", title: p.due < PAY_HOLD() ? "Zwischenzahlung eingegangen – Auftrag läuft weiter" : "Pause aufgehoben (nichts mehr beim Partner offen)", detail: `${p.inProgress} Bewertung(en) beim Partner`, auto: true }).catch(() => {});
+    if (p.inProgress && p.due < PAY_HOLD()) void notifyPartner(`${test ? "TEST · " : ""}Customer paid`, `${c.slice(0, 4).join(", ") || orderId} · hold lifted – continue now.`, undefined, test);
+    return { ...p, hold: false };
+  }
+  return p;
+}
+/** Alle 10 Min.: pausierte Aufträge prüfen (Zahlung über andere Wege, Admin „bezahlt" …). */
+export async function payHoldSweep(): Promise<void> {
+  if (!pool) return;
+  const r = await pool.query(`SELECT id FROM orders WHERE service='reviews' AND raw->'payHold' IS NOT NULL AND jsonb_typeof(raw->'payHold')='object'`);
+  for (const x of r.rows as { id: string }[]) await evaluatePayHold(x.id).catch(() => {});
+}
+
 /** Fällige Sammel-Mails holen (und aus der Warteschlange nehmen). */
-export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { key: string; url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[] }[]> {
+export async function takeDueNotifications(): Promise<{ orderId: string; email: string; name: string; lang: string; country: string | null; cur: string; swPrice: number; swDeposit: number; keys: string[]; changed: { key: string; url: string | null; name: string | null; status: ItemStatus; from?: ItemStatus | null; pre?: boolean; swDue?: string | null }[]; progress: OrderProgress | null }[]> {
   if (!pool) return [];
   const due = await pool.query(`DELETE FROM cust_notify WHERE due_at <= now() RETURNING order_id, keys, changes`);
   const out = [];
@@ -792,6 +854,8 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
     const o = await pool.query(`SELECT id, created_at, status, pay, lang, country, profile, company, name, email, raw FROM orders WHERE id=$1`, [d.order_id]);
     const row = o.rows[0];
     if (!row || !row.email) continue;
+    // Gelöscht → offener Betrag gestiegen: Zwischenzahlung prüfen, bevor die Mail rausgeht (Mail zeigt dann den Hinweis).
+    const progress = await evaluatePayHold(d.order_id).catch(() => null);
     const pt = await pool.query(`SELECT item_key, status, working_since FROM partner_tasks WHERE order_id=$1 AND status <> 'cancelled'`, [d.order_id]);
     const view = orderView(row, new Map(pt.rows.map((x) => [x.item_key, { status: x.status, since: x.working_since }])));
     const keys: string[] = Array.isArray(d.keys) ? d.keys : [];
@@ -800,7 +864,7 @@ export async function takeDueNotifications(): Promise<{ orderId: string; email: 
       const from = ch[v.key]?.from ? partnerToDash(ch[v.key].from as string) : null;
       return { key: v.key, url: v.url, name: v.name, status: v.status, from: from && from !== v.status ? from : null, pre: !!v.pre, swDue: v.swDue || null };
     });
-    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys });
+    out.push({ orderId: row.id, email: row.email, name: row.name || "", lang: row.lang || "en", country: row.country, cur: view.cur, swPrice: view.swPrice, swDeposit: view.swDeposit, changed, keys, progress });
   }
   return out;
 }

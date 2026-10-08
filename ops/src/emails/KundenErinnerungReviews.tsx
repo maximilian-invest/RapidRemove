@@ -3,6 +3,8 @@
    noch nie eingeloggt · Neuigkeiten nicht angesehen). Button = persönlicher Login-Link ins Dashboard. */
 import * as React from "react";
 import { EmailShell, P, NoteBox, DangerBox, CtaButton, type MailLang } from "./components";
+import ProgressBlock from "./ProgressBlock";
+import { progT, fillP, type Progress } from "./progressText";
 
 type N = number;
 interface L {
@@ -152,7 +154,7 @@ const T: Record<MailLang, L> = {
 
 export interface ErinnerungProps {
   lang?: string; name?: string; dashUrl: string;
-  pay?: { stage: 1 | 2; amount: string; n: number } | null;
+  pay?: { stage: 1 | 2; amount: string; n: number; prog?: Progress | null } | null;
   sw?: { n: number; price: string } | null;
   never?: boolean; news?: boolean;
 }
@@ -161,6 +163,7 @@ const tOf = (lang?: string) => T[(lang && (T as Record<string, L>)[lang] ? lang 
 /** Betreff + Überschrift nach dem wichtigsten Punkt (Zahlung > Software > nie eingeloggt > Neuigkeiten). */
 export function erinnerungSubject(p: ErinnerungProps): string {
   const t = tOf(p.lang);
+  if (p.pay && p.pay.prog) { const pt = progT(p.lang), g = p.pay.prog; return g.hold && g.inProgress ? fillP(pt.holdSubj, { a: p.pay.amount }) : fillP(pt.progSubj, { r: g.removed, n: g.total, a: p.pay.amount }); }
   if (p.pay) return p.pay.stage === 2 ? t.subjPay2(p.pay.amount) : t.subjPay1(p.pay.amount);
   if (p.sw) return t.subjSw(p.sw.n);
   if (p.never) return t.subjNever;
@@ -168,6 +171,7 @@ export function erinnerungSubject(p: ErinnerungProps): string {
 }
 export function erinnerungTitle(p: ErinnerungProps): string {
   const t = tOf(p.lang);
+  if (p.pay && p.pay.prog) { const pt = progT(p.lang); return p.pay.prog.hold && p.pay.prog.inProgress ? pt.holdTitle : pt.progTitle; }
   return p.pay ? (p.pay.stage === 2 ? t.tPay2 : t.tPay1) : p.sw ? t.tSw : p.never ? t.tNever : t.tNews;
 }
 
@@ -178,11 +182,11 @@ export default function KundenErinnerungReviews(p: ErinnerungProps) {
   return (
     <EmailShell preview={erinnerungSubject(p)} title={title} lang={l}>
       <P><strong>{t.hi((p.name || "").trim())}</strong></P>
-      {p.pay ? (p.pay.stage === 2 ? <DangerBox>{t.pay2(p.pay.amount)}</DangerBox> : <NoteBox>{t.pay1(p.pay.amount, p.pay.n)}</NoteBox>) : null}
+      {p.pay && p.pay.prog ? <><P>{progT(l).progP}</P><ProgressBlock p={p.pay.prog} lang={l} payUrl={p.dashUrl} /></> : p.pay ? (p.pay.stage === 2 ? <DangerBox>{t.pay2(p.pay.amount)}</DangerBox> : <NoteBox>{t.pay1(p.pay.amount, p.pay.n)}</NoteBox>) : null}
       {p.sw ? <NoteBox>{t.sw(p.sw.n)}</NoteBox> : null}
       {p.never ? <P>{t.never}</P> : p.news && !p.pay && !p.sw ? <P>{t.news}</P> : null}
       <div style={{ textAlign: "center", margin: "10px 0 20px" }}>
-        <CtaButton href={p.dashUrl} variant={p.pay ? "pay" : "primary"}>{p.pay ? t.btnPay : t.btn}</CtaButton>
+        <CtaButton href={p.dashUrl} variant={p.pay && !p.pay.prog ? "pay" : "primary"}>{p.pay && !p.pay.prog ? t.btnPay : t.btn}</CtaButton>
       </div>
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>

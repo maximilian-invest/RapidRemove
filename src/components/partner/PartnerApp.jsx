@@ -33,6 +33,7 @@ const sum = (a) => a.reduce((s, t) => s + t.price, 0);
 const byCreated = (a, b) => (a.created - b.created) || (a.id - b.id);
 
 function stLabel(t) {
+  if (t.hold && (t.status === "new" || t.status === "working")) return "On hold · waiting for customer payment";
   if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
@@ -287,7 +288,7 @@ export default function PartnerApp({ api }) {
     const i = l.findIndex((x) => x.id === id);
     // Software-Fall (alte US-Bewertung / ohne Text): erst Software bestätigen → Kunde zahlt → „Customer paid" → dann Working/Removed.
     const swGate = t.method === "sw" && t.sw !== "paid";
-    const opts = t.paid ? [] : swGate ? ["software", "notpossible"] : MARKS.filter((m) => m !== "removed" || canRemove(t));
+    const opts = t.paid ? [] : swGate ? ["software", "notpossible"] : MARKS.filter((m) => (m !== "removed" || canRemove(t)) && !(t.hold && t.status === "new" && m === "working"));
     const mark = (m) => {
       const applied = setMany([t.id], m);
       if (!applied.length) return;
@@ -303,7 +304,9 @@ export default function PartnerApp({ api }) {
         <div className="ps" style={{ margin: "8px 0 0" }}>{t.cust}</div>
         <div className="rvh"><b>{t.code}</b><span>{usd(t.price)}</span></div>
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
-        {t.status === "software" && t.sw === "declined" ? (
+        {t.hold ? (
+          <div className="swb"><Hourglass /><span><b>On hold – customer payment pending</b>The customer has to make an interim payment first. Don’t start new work on this order until you see “Customer paid”.</span></div>
+        ) : t.status === "software" && t.sw === "declined" ? (
           <div className="swb"><XCircle /><span><b>Customer declined deletion</b>The customer decided to keep this review online. Nothing to do.</span></div>
         ) : t.status === "software" ? (
           <div className="swb"><Hourglass /><span><b>Waiting for payment</b>The customer got a payment request for the software removal. You’ll see “Customer paid” here before you start.</span></div>

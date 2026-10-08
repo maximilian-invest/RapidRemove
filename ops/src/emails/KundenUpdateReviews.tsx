@@ -3,6 +3,8 @@
 import * as React from "react";
 import { EmailShell, P, Bullets, CtaButton, NoteBox, brand, type MailLang } from "./components";
 import { fmtReviewMoney } from "../reviewsPricing";
+import ProgressBlock from "./ProgressBlock";
+import { progT, fillP, type Progress } from "./progressText";
 
 type St = "checking" | "in_progress" | "removed" | "not_removable" | "software_offer" | "software_in_progress" | "cancelled";
 /** Dashboard-Status (customers.ts) → Mail-Bezeichnung. */
@@ -28,9 +30,16 @@ export interface KundenUpdateProps {
   lang?: string; name?: string; dashUrl: string; orderId?: string;
   changed: { url: string | null; name: string | null; status: DashSt; from?: DashSt | null }[];
   cur?: string; swPrice?: number; swDeposit?: number;
+  /** Fortschritt des Auftrags (nur bei einem Auftrag je Mail): Balken, offener Betrag, ggf. Zwischenzahlung. */
+  progress?: Progress | null;
 }
 export function kundenUpdateSubject(p: KundenUpdateProps): string {
   const t = T[p.lang && T[p.lang] ? p.lang : "en"] || T.en;
+  const pr = p.progress;
+  if (pr && pr.due > 0 && p.changed.some((c) => c.status === "removed")) {
+    const pt = progT(p.lang); const a = fmtReviewMoney(pr.due, pr.cur);
+    return pr.hold && pr.inProgress ? fillP(pt.holdSubj, { a }) : fillP(pt.progSubj, { r: pr.removed, n: pr.total, a });
+  }
   return p.changed.some((c) => c.from) ? t.subjChanged : t.subject;
 }
 
@@ -42,7 +51,7 @@ export function kundenUpdatePush(lang: string | undefined, changed: KundenUpdate
   return { title: t.titleChanged, body: parts.join(" · ") + (changed.length > 3 ? ` · +${changed.length - 3}` : "") };
 }
 
-export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "eur", swPrice = 300, swDeposit = 150 }: KundenUpdateProps) {
+export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "eur", swPrice = 300, swDeposit = 150, progress }: KundenUpdateProps) {
   const l = lang && T[lang] ? lang : "en";
   const t = T[l];
   const hasSw = changed.some((c) => c.status === "software");
@@ -60,6 +69,7 @@ export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, o
           </span>
         ))} />
       ) : null}
+      {progress && changed.some((c) => c.status === "removed") ? <ProgressBlock p={progress} lang={l} payUrl={dashUrl} /> : null}
       {hasSw ? (
         <NoteBox>{t.swHint(fmtReviewMoney(swPrice, cur), fmtReviewMoney(swDeposit, cur))}</NoteBox>
       ) : null}

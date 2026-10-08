@@ -585,6 +585,8 @@ export default function CustomerDashboard() {
   // Auftrag wartet auf den Inhaber-Nachweis → seine Bewertungen zeigen „Wartet auf Nachweis" statt „Wird geprüft".
   const orders = (data.orders || []).map((o) => (vNeeds(o) ? { ...o, items: o.items.map((i) => (i.status === "new" ? { ...i, status: "verify" } : i)) } : o));
   const vNeed = orders.filter(vNeeds);
+  // Zwischenzahlung: Auftrag pausiert, bis der offene Betrag bezahlt ist → Anzahl der pausierten Bewertungen.
+  const holdN = orders.filter((o) => o.hold).reduce((n, o) => n + o.items.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length, 0);
   const vfOrder = vfId ? orders.find((o) => o.id === vfId) || null : null;
   const all = orders.flatMap((o) => o.items.map((r) => ({ ...r, o, id: o.id + "\u0001" + r.key })));
   const removedN = all.filter((r) => r.status === "removed").length;
@@ -777,6 +779,7 @@ export default function CustomerDashboard() {
       </div>
       <div className="hg">
         <div className="hl">
+          {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {vNeed.length ? <AlertBtn title={T("vAlert")} sub={vNeed[0].verify.uploaded && vNeed[0].verify.status !== "rejected" ? T("vManP") : T("vAlertS")} onClick={() => setVfId(vNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
