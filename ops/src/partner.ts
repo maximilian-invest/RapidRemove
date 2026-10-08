@@ -571,7 +571,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const preview = await isPreview(b.t);
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
-    const rows = (await pool.query(`SELECT id, order_id, url, name, text, status, test, code FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows.filter((x) => !!x.test === preview);
+    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows.filter((x) => !!x.test === preview);
     const out: { id: number; code: string; result: string; reason: string; checkId?: number; task?: ReturnType<typeof partnerView>; error?: string }[] = [];
     const queue = [...rows];
     const worker = async () => {

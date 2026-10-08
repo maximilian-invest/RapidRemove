@@ -540,12 +540,25 @@ async function resolveMapsLink(link: string): Promise<{ q: string; placeId?: str
   } catch { return { q: url }; }
 }
 
-/** Bewertungs-Teilen-Link → Profil (über die CID im Link) + Review-ID (für den Abgleich mit SerpApi). */
-export async function resolveReviewLink(link: string): Promise<{ place: Place | null; reviewId: string }> {
-  let url = link.trim();
-  if (/maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url)) {
-    try { const res = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(15_000) }); const loc = res.headers.get("location"); if (loc) url = loc; } catch { /* Original */ }
+/** Kurzlinks (share.google, maps.app.goo.gl, goo.gl, g.co) bis zur echten Google-Maps-Adresse auflösen (max. 5 Weiterleitungen).
+ *  Auch bei gelöschten Bewertungen kommt eine /maps/reviews/…-Adresse heraus – mit Profil-CID und Review-ID darin. */
+const SHORT_RE = /^https?:\/\/(share\.google|maps\.app\.goo\.gl|goo\.gl|g\.co)\/|^https?:\/\/(www\.)?google\.[a-z.]+\/share\.google/i;
+export async function expandShortLink(link: string): Promise<string> {
+  let url = String(link || "").trim();
+  for (let i = 0; i < 5 && SHORT_RE.test(url); i++) {
+    try {
+      const res = await fetch(url, { redirect: "manual", signal: AbortSignal.timeout(15_000), headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36", "Accept-Language": "en-US,en;q=0.8" } });
+      const loc = res.headers.get("location");
+      if (!loc) break;
+      url = new URL(loc, url).toString();
+    } catch { break; }
   }
+  return url;
+}
+
+/** Bewertungs-Teilen-Link → Profil (über die CID im Link) + Review-ID (für den Abgleich mit SerpApi). */
+export async function resolveReviewLink(link: string): Promise<{ place: Place | null; reviewId: string; url: string }> {
+  const url = await expandShortLink(link);
   const dec = (() => { try { return decodeURIComponent(url); } catch { return url; } })();
   const rid = (dec.match(/!1s(C[A-Za-z0-9_-]{16,})/) || [])[1] || "";
   const r = await resolveMapsLink(url);
@@ -553,7 +566,7 @@ export async function resolveReviewLink(link: string): Promise<{ place: Place | 
   if (r.placeId) place = await placeById(r.placeId).catch(() => null);
   if (!place && r.cid) place = await placeByCid(r.cid).catch(() => null);
   if (!place && r.q) place = (await searchPlaces(r.q).catch(() => [] as Place[]))[0] || null;
-  return { place, reviewId: rid };
+  return { place, reviewId: rid, url };
 }
 
 export function registerMonitor(app: FastifyInstance, adminOk: (token: unknown) => boolean): void {

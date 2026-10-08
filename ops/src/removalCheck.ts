@@ -7,6 +7,7 @@
  * Jede Prüfung wird gespeichert (removal_checks) – Nachweis für Admin und Kunde. */
 import { pool } from "./db";
 import { captureShot, shotKey } from "./reviewShots";
+import { expandShortLink, resolveReviewLink } from "./monitor";
 
 const MODEL = () => process.env.REMOVAL_MODEL || process.env.VERIFY_MODEL || process.env.CHAT_MODEL || "claude-sonnet-5-5";
 export type RemovalResult = { result: "gone" | "visible" | "unknown"; reason: string; checkId?: number };
@@ -20,7 +21,7 @@ async function init(): Promise<void> {
   ready = true;
 }
 
-type Task = { id: string | number; order_id: string | null; url: string | null; name: string | null; text: string | null };
+type Task = { id: string | number; order_id: string | null; url: string | null; name: string | null; text: string | null; rating?: number | null };
 
 async function ai(before: { buf: Buffer; mime: string } | null, after: { buf: Buffer; mime: string }, t: Task): Promise<{ visible: boolean | null; confidence: number; reason: string } | null> {
   const key = process.env.ANTHROPIC_API_KEY;
@@ -28,6 +29,7 @@ async function ai(before: { buf: Buffer; mime: string } | null, after: { buf: Bu
   const system = `You check whether ONE specific Google review has been deleted. A removal partner claims it is gone; the customer is charged only if that is true, so be strict.
 You get ${before ? "two screenshots: BEFORE (taken when the order was placed – shows the review) and AFTER (taken just now by opening the same review link)" : "one screenshot AFTER (taken just now by opening the review link)"}.
 When a Google review is deleted, its link usually opens the business page / Google Maps without that review, a generic Maps view, or a "not available" notice.
+IMPORTANT: a Google Maps notice "Unsupported link" / "Link not supported" / "Nicht unterstützter Link" / "Link wird nicht unterstützt" (or the same in any language) on a review link means the review no longer exists → visible: false with high confidence (0.9).
 If AFTER still shows the same review (same reviewer name and same text/stars), it is still visible.
 If AFTER is a consent page, a blank/loading page, an error that is not about the review, or otherwise does not allow a decision, answer visible: null.
 Answer ONLY with JSON: {"visible": true|false|null, "confidence": 0.0-1.0, "reason": "one short sentence in English for the partner"}`;
@@ -68,8 +70,9 @@ async function serpCheck(t: Task, rating: number | null, placeId: string | null)
   const key = (process.env.SERPAPI_KEY || "").trim();
   if (!key) return { result: "unknown", why: "SERPAPI_KEY fehlt" };
   const url = String(t.url || "");
-  const dataId = (/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i.exec(url) || [])[1] || "";
-  const reviewId = (/!1s(Ci[0-9A-Za-z_-]{10,})/.exec(url) || [])[1] || "";
+  const dataId0 = (/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i.exec(url) || [])[1] || "";
+  const dataId = /^0x0:/i.test(dataId0) ? "" : dataId0; // „0x0:0x…" = nur die CID (Teilen-Links) → Profil über placeId
+  const reviewId = (/!1s(C[ih][0-9A-Za-z_-]{10,})/.exec(url) || [])[1] || "";
   if (!dataId && !placeId) return { result: "unknown", why: "kein Profil im Link" };
   const nm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
   const wantName = nm(String(t.name || "")), wantText = nm(String(t.text || "")).slice(0, 60);
@@ -104,6 +107,9 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   if (!pool) return { result: "unknown", reason: "no database" };
   await init();
   if (!t.url || !/^https?:\/\//.test(t.url)) return { result: "unknown", reason: "No review link – can't check automatically.", why: "kein Link" };
+  // Kurzlinks (share.google, maps.app.goo.gl …) auflösen: die echte Adresse enthält Profil-CID + Review-ID – auch wenn die Bewertung gelöscht ist
+  // (Google zeigt dann beim Öffnen „Nicht unterstützter Link").
+  const longUrl = await expandShortLink(t.url).catch(() => t.url as string);
   // Sterne + Profil aus der Bestellung (für Methode 1)
   let rating: number | null = null, placeId: string | null = null;
   if (t.order_id) {
@@ -113,7 +119,10 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
     rating = it && Number(it.rating) >= 1 ? Math.round(Number(it.rating)) : null;
     placeId = String(o?.raw?.placeId || "") || null;
   }
-  const sc = await serpCheck(t, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
+  if (rating == null && Number(t.rating) >= 1 && Number(t.rating) <= 5) rating = Math.round(Number(t.rating));
+  // Kein Profil aus der Bestellung (z. B. manuelle Aufgabe) → über die CID im Link
+  if (!placeId) placeId = (await resolveReviewLink(longUrl).catch(() => null))?.place?.placeId || null;
+  const sc = await serpCheck({ ...t, url: longUrl }, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
   if (sc.result !== "unknown") {
     await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence) VALUES ($1,$2,$3,$4,$5)`,
       [Number(t.id), t.order_id, sc.result, sc.reason + " (Google review list)", 0.95]).catch(() => {});
@@ -122,7 +131,7 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   // Methode 2: Screenshot jetzt + KI-Vergleich mit dem Screenshot von der Bestellung
   if (!shotKey() || !process.env.ANTHROPIC_API_KEY) return { result: "unknown", reason: "The check isn't possible right now.", why: `Liste: ${sc.why} · Screenshot/KI nicht eingerichtet` };
   let after: { buf: Buffer; mime: string };
-  try { const s = await captureShot(t.url); after = { buf: s.buf, mime: s.mime }; }
+  try { const s = await captureShot(longUrl); after = { buf: s.buf, mime: s.mime }; }
   catch (e) { return { result: "unknown", reason: "Google could not be checked right now.", why: `Liste: ${sc.why} · Screenshot: ${String((e as Error)?.message || e).replace(/https?:\S+/g, "").slice(0, 160)}` }; }
   const b = t.order_id ? (await pool.query(`SELECT mime, img FROM review_shots WHERE order_id=$1 AND url=$2 AND status='ok' AND img IS NOT NULL ORDER BY created_at LIMIT 1`, [t.order_id, t.url]).catch(() => ({ rows: [] as { mime: string; img: Buffer }[] }))).rows[0] : null;
   const before = b ? { buf: b.img as Buffer, mime: String(b.mime || "image/jpeg") } : null;
