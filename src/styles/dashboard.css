@@ -735,3 +735,38 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .ar-row .in{font-size:12px;font-weight:600;color:var(--g3)}
 .rra .ar-max{text-align:center;font-size:13px;color:var(--g3);margin-bottom:8px;width:100%}
 .rra .bsub.rc{margin:-4px 0 10px;font-size:13px}
+/* Zahlungsart hinterlegen – Sheet von unten (Handy), kompakt ohne Scrollen; Desktop: Pop-up */
+.rra .rv-sheet.pgs{gap:10px;padding-top:10px;max-height:92vh;overflow:hidden}
+.rra .rv-sheet.pgs .grab{margin:0 auto 2px}
+.rra .pgs-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--g1);display:grid;place-items:center;border:0;cursor:pointer}
+.rra .pgs-x svg{width:18px;height:18px}
+.rra .pgs-art{height:clamp(72px,13vh,120px);display:grid;place-items:center}
+.rra .pgs-art img{height:100%;width:auto;object-fit:contain}
+.rra .rv-sheet.pgs h3{font-size:clamp(22px,6.2vw,26px);line-height:1.12;letter-spacing:-.7px;text-wrap:balance;margin:0}
+.rra .pgs-p{font-size:15px;line-height:1.45;color:#444;margin:0;text-wrap:pretty}
+.rra .pgs-f{display:flex;flex-direction:column;gap:8px;margin-top:2px}
+.rra .pgs-f>div{display:flex;align-items:center;gap:12px;font-size:14px}
+.rra .pgs-f .ico{width:34px;height:34px;flex:none}
+.rra .pgs-f .ico svg{width:17px;height:17px}
+.rra .pgs-f b{font-weight:600;line-height:1.3}
+.rra .rv-sheet.pgs .secure{margin-top:2px}
+.rra .rv-sheet.pgs .cta{margin-top:2px}
+.rra .rv-sheet.pgs .pg-later{padding:4px}
+@media (max-height:640px){.rra .pgs-art{display:none}.rra .pgs-p{font-size:14px}}
+@media (min-width:821px){.rra .rv-sheet.pgs{width:460px;max-height:none;padding:26px 28px}}
+/* Nach der Bestellung: „Ihr Dashboard wird eingerichtet" */
+.rra .setup{position:fixed;inset:0;z-index:200;background:#fff;display:grid;place-items:center;padding:24px;transition:opacity .4s ease}
+.rra .setup.out{opacity:0}
+.rra .setup-in{width:min(360px,100%);text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.rra .setup-art{width:120px;height:120px;animation:suFloat 2.4s ease-in-out infinite}
+.rra .setup-art img{width:100%;height:100%;object-fit:contain}
+.rra .setup h2{font-size:24px;font-weight:800;letter-spacing:-.6px;margin:4px 0 0}
+.rra .setup-bar{width:100%;height:8px;border-radius:5px;background:var(--g1);overflow:hidden}
+.rra .setup-bar i{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,var(--primary,#ff7a00),#ffb347);animation:suBar 3s cubic-bezier(.4,0,.2,1) forwards}
+.rra .setup p{font-size:15px;color:var(--g3);min-height:22px;animation:suIn .35s ease}
+@keyframes suBar{0%{width:4%}35%{width:42%}70%{width:78%}100%{width:100%}}
+@keyframes suIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@keyframes suFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.rra .setup-art{animation:none}}
+.rra .rv-sheet.pgs .pgs-art{overflow:hidden;flex:none}
+.rra .rv-sheet.pgs .pgs-art img{position:static;display:block;height:clamp(72px,13vh,120px);width:auto;max-width:100%;transform:none}

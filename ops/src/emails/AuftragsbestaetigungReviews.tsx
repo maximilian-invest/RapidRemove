@@ -1,8 +1,8 @@
 /* Template: Auftragsbestätigung „Einzelne Bewertungen löschen".
    Geht SOFORT nach der Bestellung an den Kunden (wie bei allen Produkten).
    Hält die Abrechnungsregeln fest:
-   bezahlt wird NUR je tatsächlich gelöschter Bewertung, fällig am Tag der
-   Löschung. Fremdsprachen im „du"-Ton; deutsche Fassung (Sie-Form) für
+   bezahlt wird NUR je tatsächlich gelöschter Bewertung (auch Software-Fälle),
+   automatisch abgebucht am Tag der Löschung. Fremdsprachen im „du"-Ton; deutsche Fassung (Sie-Form) für
    manuell angelegte Aufträge aus DACH ist enthalten. */
 import * as React from "react";
 import { DashBox, type DashInfo } from "./DashBox";
@@ -62,13 +62,13 @@ export const T: Record<string, Entry> = {
     termsH: "So funktioniert die Abrechnung – zu Ihrem Vorteil",
     term1: "Sie bezahlen nur für Bewertungen, die wir tatsächlich löschen.",
     term2: "{per} je gelöschter Bewertung – löschen wir nur eine von fünf, bezahlen Sie auch nur diese eine.",
-    term3: "Die Zahlung ist am Tag der Löschung fällig. Am selben Tag erhalten Sie die Bestätigung samt Rechnung.",
+    term3: "Abgebucht wird automatisch von Ihrer hinterlegten Zahlungsart, sobald eine Bewertung gelöscht ist. Die Rechnung kommt am selben Tag per E-Mail.",
     condH: "Gut zu wissen",
     cond1: "Bewertungen bis 4 Wochen alt haben eine Erfolgsquote von ca. 90 %. Bei älteren Bewertungen außerhalb der USA gehen wir zuerst mit rechtlichen Meldungen vor, damit verschwinden über 90 % (der Aufpreis ist im Preis oben schon enthalten).",
-    cond2: "Ältere Bewertungen aus den USA und Bewertungen ohne Text (reine Sternebewertungen) lassen sich meist nur per Spezial-Software löschen, weil Google sie nicht von Hand entfernt. Dasselbe gilt für ältere Bewertungen aus anderen Ländern, die nach unserer rechtlichen Meldung stehen bleiben. Die Software-Löschung kostet {nt} je Bewertung und wird vorab bezahlt, aber erst, wenn wir geprüft haben, dass sie bei Ihrer Bewertung möglich ist. Erfolgsquote 99 %: Ist die Bewertung nach spätestens 14 Tagen nicht gelöscht, erhalten Sie den vollen Betrag zurück.",
+    cond2: "Ältere Bewertungen aus den USA und Bewertungen ohne Text (reine Sternebewertungen) lassen sich meist nur per Spezial-Software löschen, weil Google sie nicht von Hand entfernt. Dasselbe gilt für ältere Bewertungen aus anderen Ländern, die nach unserer rechtlichen Meldung stehen bleiben. Die Software-Löschung kostet {nt} je Bewertung. Wir prüfen zuerst, ob sie bei Ihrer Bewertung möglich ist, und auch hier wird erst abgebucht, wenn die Bewertung gelöscht ist. Klappt es nicht, zahlen Sie nichts.",
     p1sw: (n) => `vielen Dank für Ihren Auftrag! Wir haben ${n === 1 ? "die untenstehende Bewertung" : `die ${n} untenstehenden Bewertungen`} erhalten und prüfen jetzt, ob die Software-Löschung möglich ist.`,
-    swH: "Software-Löschung – vorab bezahlt, aber erst nach unserer Prüfung", swWhy: "Ältere Bewertungen aus den USA und reine Sternebewertungen ohne Text entfernt Google in der Regel nicht von Hand – sie lassen sich nur per Spezial-Software löschen.",
-    sw1: "Wir prüfen zuerst, ob die Software-Löschung bei Ihrer Bewertung möglich ist. Jetzt zahlen Sie noch nichts.", sw2: "Ist sie möglich, bekommen Sie eine Zahlungsaufforderung über {nt} je Bewertung (Mengenrabatt schon abgezogen) – sobald bezahlt ist, starten wir.", sw3: "Erfolgsquote 99 %: Ist eine Bewertung nach spätestens 14 Tagen nicht gelöscht, erhalten Sie den vollen Betrag zurück. Ist keine Software-Löschung möglich, zahlen Sie nichts.",
+    swH: "Software-Löschung – bezahlt wird nur bei Erfolg", swWhy: "Ältere Bewertungen aus den USA und reine Sternebewertungen ohne Text entfernt Google in der Regel nicht von Hand – sie lassen sich nur per Spezial-Software löschen.",
+    sw1: "Wir prüfen zuerst, ob die Software-Löschung bei Ihrer Bewertung möglich ist. Bis dahin zahlen Sie nichts.", sw2: "Ist sie möglich, starten wir sofort – Voraussetzung ist eine hinterlegte Zahlungsart in Ihrem Dashboard. Abgebucht werden {nt} je Bewertung (Mengenrabatt schon abgezogen), aber erst, wenn die Bewertung gelöscht ist.", sw3: "Die Erfolgsquote ist sehr hoch. Klappt es trotzdem nicht oder ist keine Software-Löschung möglich, zahlen Sie nichts.",
     close: "Wir prüfen nun Ihre Bewertungen und melden uns, sobald wir begonnen haben. Bei Fragen antworten Sie einfach auf diese E-Mail.",
     signoff: "Mit freundlichen Grüßen",
   },
@@ -82,13 +82,13 @@ export const T: Record<string, Entry> = {
     termsH: "How billing works — in your favour",
     term1: "You only pay for reviews we actually remove.",
     term2: "{per} per removed review — if we remove just one out of five, you pay for that one only.",
-    term3: "Payment is due on the day of removal. You'll receive a confirmation with the invoice the same day.",
+    term3: "You're charged automatically to your saved payment method once a review has been removed. The invoice arrives by email the same day.",
     condH: "Good to know",
     cond1: "Reviews up to 4 weeks old have a success rate of about 90 %. For older reviews outside the USA we first file legal notices, which removes over 90 % of them (the surcharge is already included in the price above).",
-    cond2: "Older reviews from the USA and reviews without text (star ratings only) can usually only be removed with special software, because Google doesn't remove them by hand. The same applies to older reviews from other countries that remain after our legal notice. Software removal costs {nt} per review, paid in full upfront, but only once we have checked that it is possible for your review. 99 % success rate: if a review isn't removed within 14 days at the latest, you get a full refund.",
+    cond2: "Older reviews from the USA and reviews without text (star ratings only) can usually only be removed with special software, because Google doesn't remove them by hand. The same applies to older reviews from other countries that remain after our legal notice. Software removal costs {nt} per review. We first check whether it's possible for your review, and here too you're only charged once the review has been removed. If it doesn't work, you pay nothing.",
     p1sw: (n) => `thanks for your order! We've received ${n === 1 ? "the review" : `the ${n} reviews`} below and are now checking whether software removal is possible.`,
-    swH: "Software removal – paid upfront, but only after our check", swWhy: "Google usually doesn't remove older reviews from the USA or star-only ratings without text by hand – they can only be removed with special software.",
-    sw1: "We first check whether software removal is possible for your review. You don't pay anything yet.", sw2: "If it is, you'll get a payment request for {nt} per review (volume discount already applied) – we start as soon as it's paid.", sw3: "99 % success rate: if a review isn't removed within 14 days at the latest, you get a full refund. If software removal isn't possible, you pay nothing.",
+    swH: "Software removal – charged only on success", swWhy: "Google usually doesn't remove older reviews from the USA or star-only ratings without text by hand – they can only be removed with special software.",
+    sw1: "We first check whether software removal is possible for your review. You don't pay anything until then.", sw2: "If it is, we start right away – all you need is a saved payment method in your dashboard. {nt} per review (volume discount already applied) is only charged once the review has been removed.", sw3: "The success rate is very high. If it still doesn't work, or software removal isn't possible, you pay nothing.",
     close: "We'll now check your reviews and let you know as soon as we've started. Questions? Just reply to this email.",
     signoff: "Warm regards,",
   },
@@ -102,13 +102,13 @@ export const T: Record<string, Entry> = {
     termsH: "Así funciona la facturación — a tu favor",
     term1: "Solo pagas por las reseñas que realmente eliminamos.",
     term2: "{per} por reseña eliminada: si de cinco solo quitamos una, pagas solo esa.",
-    term3: "El pago vence el día de la eliminación. Ese mismo día recibirás la confirmación con la factura.",
+    term3: "Se cobra automáticamente a tu método de pago guardado en cuanto se elimina una reseña. La factura te llega por correo el mismo día.",
     condH: "A tener en cuenta",
     cond1: "Las reseñas de hasta 4 semanas tienen una tasa de éxito de aprox. el 90 %. Para las reseñas antiguas de fuera de EE. UU., primero presentamos avisos legales, con los que se elimina más del 90 % (el recargo ya está incluido en el precio de arriba).",
-    cond2: "Las reseñas antiguas de EE. UU. y las reseñas sin texto (solo estrellas) normalmente solo se pueden eliminar con un software especial, porque Google no las elimina a mano. Lo mismo vale para las reseñas antiguas de otros países que siguen ahí tras nuestro aviso legal. La eliminación por software cuesta {nt} por reseña y se paga íntegramente por adelantado, pero solo después de comprobar que es posible en tu reseña. Tasa de éxito del 99 %: si una reseña no se elimina en un plazo máximo de 14 días, te devolvemos el importe íntegro.",
+    cond2: "Las reseñas antiguas de EE. UU. y las reseñas sin texto (solo estrellas) normalmente solo se pueden eliminar con un software especial, porque Google no las elimina a mano. Lo mismo vale para las reseñas antiguas de otros países que siguen ahí tras nuestro aviso legal. La eliminación por software cuesta {nt} por reseña. Primero comprobamos si es posible en tu reseña y, también aquí, solo se cobra cuando la reseña se ha eliminado. Si no funciona, no pagas nada.",
     p1sw: (n) => `¡gracias por tu pedido! Hemos recibido ${n === 1 ? "la reseña" : `las ${n} reseñas`} de abajo y ahora comprobamos si es posible la eliminación por software.`,
-    swH: "Eliminación por software: pago por adelantado, pero solo tras nuestra revisión", swWhy: "Google normalmente no elimina a mano las reseñas antiguas de EE. UU. ni las valoraciones solo con estrellas sin texto: solo se pueden eliminar con un software especial.",
-    sw1: "Primero comprobamos si la eliminación por software es posible para tu reseña. De momento no pagas nada.", sw2: "Si es posible, recibirás una solicitud de pago de {nt} por reseña (descuento por volumen ya aplicado); empezamos en cuanto esté pagada.", sw3: "99 % de éxito: si una reseña no se elimina en un máximo de 14 días, te devolvemos el importe íntegro. Si la eliminación por software no es posible, no pagas nada.",
+    swH: "Eliminación por software: solo pagas si funciona", swWhy: "Google normalmente no elimina a mano las reseñas antiguas de EE. UU. ni las valoraciones solo con estrellas sin texto: solo se pueden eliminar con un software especial.",
+    sw1: "Primero comprobamos si la eliminación por software es posible para tu reseña. Hasta entonces no pagas nada.", sw2: "Si es posible, empezamos enseguida; solo necesitas un método de pago guardado en tu panel. Los {nt} por reseña (descuento por volumen ya aplicado) se cobran solo cuando la reseña se ha eliminado.", sw3: "La tasa de éxito es muy alta. Si aun así no funciona o la eliminación por software no es posible, no pagas nada.",
     close: "Ahora revisamos tus reseñas y te avisamos en cuanto empecemos. ¿Dudas? Responde a este correo.",
     signoff: "Un saludo,",
   },
@@ -122,13 +122,13 @@ export const T: Record<string, Entry> = {
     termsH: "Comment fonctionne la facturation — en ta faveur",
     term1: "Tu ne paies que les avis que nous supprimons réellement.",
     term2: "{per} par avis supprimé — si nous n'en retirons qu'un sur cinq, tu ne paies que celui-là.",
-    term3: "Le paiement est dû le jour de la suppression. Tu recevras la confirmation avec la facture le jour même.",
+    term3: "Le montant est débité automatiquement sur ton moyen de paiement enregistré dès qu'un avis est supprimé. La facture t'arrive par e-mail le jour même.",
     condH: "Bon à savoir",
     cond1: "Les avis de moins de 4 semaines ont un taux de réussite d'environ 90 %. Pour les avis plus anciens hors des États-Unis, nous passons d'abord par des signalements juridiques, qui en font disparaître plus de 90 % (le supplément est déjà inclus dans le prix ci-dessus).",
-    cond2: "Les avis anciens provenant des États-Unis et les avis sans texte (étoiles uniquement) ne peuvent généralement être supprimés qu'avec un logiciel spécial, car Google ne les supprime pas manuellement. Il en va de même pour les avis anciens d'autres pays qui restent en ligne après notre signalement juridique. La suppression par logiciel coûte {nt} par avis, payé intégralement d'avance, mais seulement une fois que nous avons vérifié qu'elle est possible pour ton avis. 99 % de réussite : si un avis n'est pas supprimé sous 14 jours au plus tard, nous te remboursons l'intégralité du montant.",
+    cond2: "Les avis anciens provenant des États-Unis et les avis sans texte (étoiles uniquement) ne peuvent généralement être supprimés qu'avec un logiciel spécial, car Google ne les supprime pas manuellement. Il en va de même pour les avis anciens d'autres pays qui restent en ligne après notre signalement juridique. La suppression par logiciel coûte {nt} par avis. Nous vérifions d'abord qu'elle est possible pour ton avis et, là aussi, le débit n'a lieu qu'une fois l'avis supprimé. Si ça ne marche pas, tu ne paies rien.",
     p1sw: (n) => `merci pour ta commande ! Nous avons bien reçu ${n === 1 ? "l'avis" : `les ${n} avis`} ci-dessous et vérifions maintenant si la suppression par logiciel est possible.`,
-    swH: "Suppression par logiciel – payée d'avance, mais seulement après notre vérification", swWhy: "Google ne supprime généralement pas à la main les avis anciens des États-Unis ni les notes sans texte : ils ne peuvent être supprimés qu'avec un logiciel spécial.",
-    sw1: "Nous vérifions d'abord si la suppression par logiciel est possible pour ton avis. Tu ne paies rien pour l'instant.", sw2: "Si c'est possible, tu recevras une demande de paiement de {nt} par avis (remise sur quantité déjà déduite) – nous commençons dès que c'est payé.", sw3: "99 % de réussite : si un avis n'est pas supprimé sous 14 jours au plus tard, nous te remboursons l'intégralité. Si la suppression par logiciel n'est pas possible, tu ne paies rien.",
+    swH: "Suppression par logiciel – payée seulement en cas de succès", swWhy: "Google ne supprime généralement pas à la main les avis anciens des États-Unis ni les notes sans texte : ils ne peuvent être supprimés qu'avec un logiciel spécial.",
+    sw1: "Nous vérifions d'abord si la suppression par logiciel est possible pour ton avis. Jusque-là, tu ne paies rien.", sw2: "Si c'est possible, nous commençons tout de suite – il suffit d'un moyen de paiement enregistré dans ton espace client. Les {nt} par avis (remise sur quantité déjà déduite) ne sont débités qu'une fois l'avis supprimé.", sw3: "Le taux de réussite est très élevé. Si ça ne marche quand même pas, ou si la suppression par logiciel n'est pas possible, tu ne paies rien.",
     close: "Nous vérifions maintenant tes avis et te prévenons dès que nous commençons. Des questions ? Réponds à cet e-mail.",
     signoff: "Bien à toi,",
   },
@@ -142,13 +142,13 @@ export const T: Record<string, Entry> = {
     termsH: "Come funziona la fatturazione — a tuo favore",
     term1: "Paghi solo le recensioni che rimuoviamo davvero.",
     term2: "{per} per recensione rimossa — se su cinque ne togliamo una sola, paghi solo quella.",
-    term3: "Il pagamento è dovuto il giorno della rimozione. Lo stesso giorno riceverai la conferma con la fattura.",
+    term3: "L'addebito avviene automaticamente sul metodo di pagamento salvato appena una recensione viene rimossa. La fattura ti arriva via e-mail lo stesso giorno.",
     condH: "Buono a sapersi",
     cond1: "Le recensioni fino a 4 settimane hanno una probabilità di successo di circa il 90 %. Per le recensioni più vecchie fuori dagli USA presentiamo prima delle segnalazioni legali, che ne rimuovono oltre il 90 % (il supplemento è già incluso nel prezzo sopra).",
-    cond2: "Le recensioni più vecchie dagli USA e le recensioni senza testo (solo stelle) di solito si possono rimuovere solo con un software speciale, perché Google non le rimuove a mano. Lo stesso vale per le recensioni più vecchie di altri Paesi che restano online dopo la nostra segnalazione legale. La rimozione tramite software costa {nt} a recensione e si paga per intero in anticipo, ma solo dopo che abbiamo verificato che è possibile per la tua recensione. 99 % di successo: se una recensione non viene rimossa entro massimo 14 giorni, ti rimborsiamo l'intero importo.",
+    cond2: "Le recensioni più vecchie dagli USA e le recensioni senza testo (solo stelle) di solito si possono rimuovere solo con un software speciale, perché Google non le rimuove a mano. Lo stesso vale per le recensioni più vecchie di altri Paesi che restano online dopo la nostra segnalazione legale. La rimozione tramite software costa {nt} a recensione. Prima verifichiamo che sia possibile per la tua recensione e, anche qui, l'addebito avviene solo quando la recensione è stata rimossa. Se non funziona, non paghi nulla.",
     p1sw: (n) => `grazie per il tuo ordine! Abbiamo ricevuto ${n === 1 ? "la recensione" : `le ${n} recensioni`} qui sotto e ora verifichiamo se la rimozione via software è possibile.`,
-    swH: "Rimozione via software – pagata in anticipo, ma solo dopo la nostra verifica", swWhy: "Di solito Google non rimuove a mano le recensioni vecchie dagli USA né le valutazioni solo a stelle senza testo: si possono rimuovere solo con un software speciale.",
-    sw1: "Prima verifichiamo se la rimozione via software è possibile per la tua recensione. Per ora non paghi nulla.", sw2: "Se è possibile, riceverai una richiesta di pagamento di {nt} per recensione (sconto quantità già applicato): iniziamo appena è pagata.", sw3: "99 % di successo: se una recensione non viene rimossa entro 14 giorni al massimo, ti rimborsiamo l'intero importo. Se la rimozione via software non è possibile, non paghi nulla.",
+    swH: "Rimozione via software – paghi solo se riesce", swWhy: "Di solito Google non rimuove a mano le recensioni vecchie dagli USA né le valutazioni solo a stelle senza testo: si possono rimuovere solo con un software speciale.",
+    sw1: "Prima verifichiamo se la rimozione via software è possibile per la tua recensione. Fino ad allora non paghi nulla.", sw2: "Se è possibile, iniziamo subito: basta un metodo di pagamento salvato nella dashboard. I {nt} a recensione (sconto quantità già applicato) vengono addebitati solo quando la recensione è stata rimossa.", sw3: "La percentuale di successo è molto alta. Se comunque non funziona o la rimozione via software non è possibile, non paghi nulla.",
     close: "Ora controlliamo le tue recensioni e ti avvisiamo appena iniziamo. Domande? Rispondi a questa e-mail.",
     signoff: "Un caro saluto,",
   },
@@ -162,13 +162,13 @@ export const T: Record<string, Entry> = {
     termsH: "Zo werkt de facturering — in jouw voordeel",
     term1: "Je betaalt alleen voor reviews die we daadwerkelijk verwijderen.",
     term2: "{per} per verwijderde review — halen we er van vijf maar één weg, dan betaal je alleen die ene.",
-    term3: "Betaling is verschuldigd op de dag van verwijdering. Je ontvangt diezelfde dag de bevestiging met de factuur.",
+    term3: "Het bedrag wordt automatisch afgeschreven van je opgeslagen betaalmethode zodra een review is verwijderd. De factuur krijg je diezelfde dag per e-mail.",
     condH: "Goed om te weten",
     cond1: "Reviews tot 4 weken oud hebben een slagingskans van ongeveer 90 %. Bij oudere reviews van buiten de VS dienen we eerst juridische meldingen in, waarmee meer dan 90 % verdwijnt (de toeslag is al inbegrepen in de prijs hierboven).",
-    cond2: "Oudere reviews uit de VS en reviews zonder tekst (alleen sterren) kunnen meestal alleen met speciale software worden verwijderd, omdat Google ze niet handmatig verwijdert. Hetzelfde geldt voor oudere reviews uit andere landen die na onze juridische melding blijven staan. Verwijdering met software kost {nt} per review en wordt volledig vooraf betaald, maar pas nadat we hebben gecontroleerd dat het bij uw review mogelijk is. 99 % slagingskans: is een review niet uiterlijk binnen 14 dagen verwijderd, dan krijgt u het volledige bedrag terug.",
+    cond2: "Oudere reviews uit de VS en reviews zonder tekst (alleen sterren) kunnen meestal alleen met speciale software worden verwijderd, omdat Google ze niet handmatig verwijdert. Hetzelfde geldt voor oudere reviews uit andere landen die na onze juridische melding blijven staan. Verwijdering met software kost {nt} per review. We controleren eerst of het bij uw review mogelijk is, en ook hier wordt pas afgeschreven als de review verwijderd is. Lukt het niet, dan betaalt u niets.",
     p1sw: (n) => `bedankt voor je bestelling! We hebben ${n === 1 ? "de review" : `de ${n} reviews`} hieronder ontvangen en controleren nu of verwijdering via software mogelijk is.`,
-    swH: "Verwijdering via software – vooraf betaald, maar pas na onze controle", swWhy: "Google verwijdert oudere reviews uit de VS en beoordelingen met alleen sterren zonder tekst meestal niet handmatig – die kunnen alleen met speciale software worden verwijderd.",
-    sw1: "We controleren eerst of verwijdering via software mogelijk is voor je review. Je betaalt nu nog niets.", sw2: "Is het mogelijk, dan krijg je een betaalverzoek van {nt} per review (volumekorting al verrekend) – we starten zodra het betaald is.", sw3: "99 % succes: is een review na uiterlijk 14 dagen niet verwijderd, dan krijg je het volledige bedrag terug. Is verwijdering via software niet mogelijk, dan betaal je niets.",
+    swH: "Verwijdering via software – je betaalt alleen bij succes", swWhy: "Google verwijdert oudere reviews uit de VS en beoordelingen met alleen sterren zonder tekst meestal niet handmatig – die kunnen alleen met speciale software worden verwijderd.",
+    sw1: "We controleren eerst of verwijdering via software mogelijk is voor je review. Tot dan betaal je niets.", sw2: "Is het mogelijk, dan starten we meteen – je hebt alleen een opgeslagen betaalmethode in je dashboard nodig. De {nt} per review (volumekorting al verrekend) wordt pas afgeschreven als de review verwijderd is.", sw3: "De slagingskans is zeer hoog. Lukt het toch niet of is verwijdering via software niet mogelijk, dan betaal je niets.",
     close: "We controleren nu je reviews en laten je weten zodra we beginnen. Vragen? Beantwoord gewoon deze e-mail.",
     signoff: "Hartelijke groet,",
   },
@@ -182,13 +182,13 @@ export const T: Record<string, Entry> = {
     termsH: "Como funciona a faturação — a teu favor",
     term1: "Só pagas pelas avaliações que removemos de facto.",
     term2: "{per} por avaliação removida — se de cinco removermos só uma, pagas apenas essa.",
-    term3: "O pagamento vence no dia da remoção. Nesse mesmo dia recebes a confirmação com a fatura.",
+    term3: "O valor é cobrado automaticamente no método de pagamento guardado assim que uma avaliação é removida. A fatura chega-te por e-mail no mesmo dia.",
     condH: "Bom saber",
     cond1: "As avaliações com até 4 semanas têm uma taxa de sucesso de cerca de 90 %. Nas avaliações mais antigas de fora dos EUA, começamos por apresentar denúncias legais, que removem mais de 90 % (o suplemento já está incluído no preço acima).",
-    cond2: "As avaliações antigas dos EUA e as avaliações sem texto (só estrelas) normalmente só podem ser removidas com um software especial, porque o Google não as remove manualmente. O mesmo se aplica às avaliações antigas de outros países que ficam online depois da nossa denúncia legal. A remoção por software custa {nt} por avaliação e é paga na totalidade antecipadamente, mas só depois de verificarmos que é possível na tua avaliação. 99 % de sucesso: se uma avaliação não for removida no prazo máximo de 14 dias, devolvemos-te o valor total.",
+    cond2: "As avaliações antigas dos EUA e as avaliações sem texto (só estrelas) normalmente só podem ser removidas com um software especial, porque o Google não as remove manualmente. O mesmo se aplica às avaliações antigas de outros países que ficam online depois da nossa denúncia legal. A remoção por software custa {nt} por avaliação. Primeiro verificamos se é possível na tua avaliação e, também aqui, só é cobrada quando a avaliação for removida. Se não resultar, não pagas nada.",
     p1sw: (n) => `obrigado pela tua encomenda! Recebemos ${n === 1 ? "a avaliação" : `as ${n} avaliações`} abaixo e estamos agora a verificar se a remoção por software é possível.`,
-    swH: "Remoção por software – paga antecipadamente, mas só depois da nossa verificação", swWhy: "Normalmente, o Google não remove manualmente avaliações antigas dos EUA nem classificações só com estrelas sem texto – só podem ser removidas com software especial.",
-    sw1: "Primeiro verificamos se a remoção por software é possível para a tua avaliação. Para já não pagas nada.", sw2: "Se for possível, recebes um pedido de pagamento de {nt} por avaliação (desconto de volume já aplicado) – começamos assim que estiver pago.", sw3: "99 % de sucesso: se uma avaliação não for removida no prazo máximo de 14 dias, devolvemos-te o valor total. Se a remoção por software não for possível, não pagas nada.",
+    swH: "Remoção por software – só pagas se resultar", swWhy: "Normalmente, o Google não remove manualmente avaliações antigas dos EUA nem classificações só com estrelas sem texto – só podem ser removidas com software especial.",
+    sw1: "Primeiro verificamos se a remoção por software é possível para a tua avaliação. Até lá não pagas nada.", sw2: "Se for possível, começamos logo – basta um método de pagamento guardado no teu painel. Os {nt} por avaliação (desconto de volume já aplicado) só são cobrados quando a avaliação for removida.", sw3: "A taxa de sucesso é muito alta. Se mesmo assim não resultar, ou se a remoção por software não for possível, não pagas nada.",
     close: "Vamos agora verificar as tuas avaliações e avisamos-te assim que começarmos. Dúvidas? Responde a este e-mail.",
     signoff: "Um abraço,",
   },
@@ -202,13 +202,13 @@ export const T: Record<string, Entry> = {
     termsH: "お支払いの仕組み — お客様に有利な形です",
     term1: "実際に削除できた口コミの分だけお支払いいただきます。",
     term2: "削除1件につき{per}。5件中1件のみ削除できた場合は、その1件分だけのお支払いです。",
-    term3: "お支払いは削除当日が期日です。同日に削除確認と請求書をお送りします。",
+    term3: "口コミが削除されると、ご登録のお支払い方法に自動で請求されます。請求書は同日にメールでお届けします。",
     condH: "ご参考までに",
     cond1: "投稿から4週間以内の口コミの成功率は約90%です。米国以外の古い口コミについては、まず法的な申し立てを行い、90%以上が削除されます（追加料金は上記の料金に含まれています）。",
-    cond2: "米国の古い口コミと本文のない口コミ（星のみの評価）は、Googleが手作業で削除しないため、通常は専用ソフトウェアでしか削除できません。その他の国の古い口コミで、法的な申し立ての後も残ったものも同様です。ソフトウェアによる削除は1件{nt}で、全額前払いとなりますが、お支払いはお客様の口コミで削除が可能であることを当社が確認した後です。成功率99%：遅くとも14日以内に削除されなかった場合は、全額返金いたします。",
+    cond2: "米国の古い口コミと本文のない口コミ（星のみの評価）は、Googleが手作業で削除しないため、通常は専用ソフトウェアでしか削除できません。その他の国の古い口コミで、法的な申し立ての後も残ったものも同様です。ソフトウェアによる削除は1件{nt}です。まずお客様の口コミで削除が可能かを当社が確認し、こちらも口コミが削除された場合にのみ請求されます。削除できなかった場合、お支払いは発生しません。",
     p1sw: (n) => `ご注文ありがとうございます。以下の口コミ${n}件を受領し、ソフトウェアによる削除が可能かを確認しています。`,
-    swH: "ソフトウェア削除 – 前払い（ただし当社の確認後）", swWhy: "米国の古い口コミや本文のない星だけの評価は、通常Googleが手動で削除しないため、専用ソフトウェアでのみ削除できます。",
-    sw1: "まず、お客様の口コミがソフトウェアで削除可能かを確認します。現時点でのお支払いは不要です。", sw2: "削除可能な場合、口コミ1件あたり{nt}（まとめ割引適用済み）のお支払いのご案内をお送りします。お支払い確認後すぐに開始します。", sw3: "成功率99 %：遅くとも14日以内に削除されない場合は全額返金します。ソフトウェア削除ができない場合、お支払いは発生しません。",
+    swH: "ソフトウェア削除 – 成功した場合のみ請求", swWhy: "米国の古い口コミや本文のない星だけの評価は、通常Googleが手動で削除しないため、専用ソフトウェアでのみ削除できます。",
+    sw1: "まず、お客様の口コミがソフトウェアで削除可能かを確認します。それまでお支払いは発生しません。", sw2: "削除可能な場合、ダッシュボードにお支払い方法が登録されていればすぐに開始します。口コミ1件あたり{nt}（まとめ割引適用済み）は、口コミが削除された時点で初めて請求されます。", sw3: "成功率は非常に高いですが、万一削除できなかった場合やソフトウェア削除ができない場合、お支払いは発生しません。",
     close: "これから口コミを確認し、作業を開始し次第ご連絡します。ご不明な点はこのメールにご返信ください。",
     signoff: "どうぞよろしくお願いいたします。",
   },
@@ -222,13 +222,13 @@ export const T: Record<string, Entry> = {
     termsH: "Så fungerar faktureringen — till din fördel",
     term1: "Du betalar bara för omdömen som vi faktiskt tar bort.",
     term2: "{per} per borttaget omdöme — tar vi bara bort ett av fem betalar du bara för det.",
-    term3: "Betalningen förfaller samma dag som borttagningen. Samma dag får du bekräftelsen med fakturan.",
+    term3: "Beloppet dras automatiskt från din sparade betalningsmetod så snart ett omdöme har tagits bort. Fakturan kommer via mejl samma dag.",
     condH: "Bra att veta",
     cond1: "Omdömen upp till 4 veckor gamla har en framgångsgrad på cirka 90 %. För äldre omdömen utanför USA gör vi först juridiska anmälningar, som tar bort över 90 % (tillägget ingår redan i priset ovan).",
-    cond2: "Äldre omdömen från USA och omdömen utan text (bara stjärnor) kan oftast bara tas bort med specialprogramvara, eftersom Google inte tar bort dem manuellt. Detsamma gäller äldre omdömen från andra länder som ligger kvar efter vår juridiska anmälan. Borttagning med programvara kostar {nt} per omdöme och betalas i sin helhet i förskott, men först när vi har kontrollerat att det är möjligt för ditt omdöme. 99 % chans att lyckas: tas ett omdöme inte bort inom senast 14 dagar får du hela beloppet tillbaka.",
+    cond2: "Äldre omdömen från USA och omdömen utan text (bara stjärnor) kan oftast bara tas bort med specialprogramvara, eftersom Google inte tar bort dem manuellt. Detsamma gäller äldre omdömen från andra länder som ligger kvar efter vår juridiska anmälan. Borttagning med programvara kostar {nt} per omdöme. Vi kontrollerar först att det är möjligt för ditt omdöme, och även här dras pengarna först när omdömet har tagits bort. Lyckas det inte betalar du ingenting.",
     p1sw: (n) => `tack för din beställning! Vi har tagit emot ${n === 1 ? "omdömet" : `de ${n} omdömena`} nedan och kontrollerar nu om borttagning med mjukvara är möjlig.`,
-    swH: "Borttagning med mjukvara – betalas i förskott, men först efter vår kontroll", swWhy: "Google tar oftast inte bort äldre omdömen från USA eller betyg med bara stjärnor utan text manuellt – de kan bara tas bort med specialmjukvara.",
-    sw1: "Vi kontrollerar först om borttagning med mjukvara är möjlig för ditt omdöme. Du betalar ingenting nu.", sw2: "Om det går får du en betalningsbegäran på {nt} per omdöme (mängdrabatt redan avdragen) – vi börjar så fort det är betalt.", sw3: "99 % lyckandegrad: tas ett omdöme inte bort inom senast 14 dagar får du hela beloppet tillbaka. Är borttagning med mjukvara inte möjlig betalar du ingenting.",
+    swH: "Borttagning med mjukvara – du betalar bara om det lyckas", swWhy: "Google tar oftast inte bort äldre omdömen från USA eller betyg med bara stjärnor utan text manuellt – de kan bara tas bort med specialmjukvara.",
+    sw1: "Vi kontrollerar först om borttagning med mjukvara är möjlig för ditt omdöme. Fram till dess betalar du ingenting.", sw2: "Om det går börjar vi direkt – du behöver bara en sparad betalningsmetod i din översikt. {nt} per omdöme (mängdrabatt redan avdragen) dras först när omdömet har tagits bort.", sw3: "Lyckandegraden är mycket hög. Går det ändå inte, eller är borttagning med mjukvara inte möjlig, betalar du ingenting.",
     close: "Vi går nu igenom dina omdömen och hör av oss så fort vi har börjat. Frågor? Svara bara på det här mejlet.",
     signoff: "Vänliga hälsningar,",
   },
@@ -242,13 +242,13 @@ export const T: Record<string, Entry> = {
     termsH: "Sådan fungerer faktureringen — til din fordel",
     term1: "Du betaler kun for anmeldelser, vi faktisk fjerner.",
     term2: "{per} pr. fjernet anmeldelse — fjerner vi kun én ud af fem, betaler du kun for den ene.",
-    term3: "Betalingen forfalder på fjernelsesdagen. Samme dag modtager du bekræftelsen med fakturaen.",
+    term3: "Beløbet trækkes automatisk fra din gemte betalingsmetode, så snart en anmeldelse er fjernet. Fakturaen kommer på mail samme dag.",
     condH: "Godt at vide",
     cond1: "Anmeldelser op til 4 uger gamle har en succesrate på ca. 90 %. Ved ældre anmeldelser uden for USA sender vi først juridiske indberetninger, som fjerner over 90 % (tillægget er allerede med i prisen ovenfor).",
-    cond2: "Ældre anmeldelser fra USA og anmeldelser uden tekst (kun stjerner) kan som regel kun fjernes med speciel software, fordi Google ikke fjerner dem manuelt. Det samme gælder ældre anmeldelser fra andre lande, der stadig står der efter vores juridiske indberetning. Fjernelse med software koster {nt} pr. anmeldelse og betales fuldt ud forud, men først når vi har tjekket, at det er muligt for din anmeldelse. 99 % succesrate: bliver en anmeldelse ikke fjernet senest efter 14 dage, får du hele beløbet tilbage.",
+    cond2: "Ældre anmeldelser fra USA og anmeldelser uden tekst (kun stjerner) kan som regel kun fjernes med speciel software, fordi Google ikke fjerner dem manuelt. Det samme gælder ældre anmeldelser fra andre lande, der stadig står der efter vores juridiske indberetning. Fjernelse med software koster {nt} pr. anmeldelse. Vi tjekker først, om det er muligt for din anmeldelse, og også her trækkes beløbet først, når anmeldelsen er fjernet. Lykkes det ikke, betaler du intet.",
     p1sw: (n) => `tak for din bestilling! Vi har modtaget ${n === 1 ? "anmeldelsen" : `de ${n} anmeldelser`} nedenfor og tjekker nu, om fjernelse med software er mulig.`,
-    swH: "Fjernelse med software – betales forud, men først efter vores tjek", swWhy: "Google fjerner som regel ikke ældre anmeldelser fra USA eller bedømmelser med kun stjerner uden tekst manuelt – de kan kun fjernes med specialsoftware.",
-    sw1: "Vi tjekker først, om fjernelse med software er mulig for din anmeldelse. Du betaler ikke noget endnu.", sw2: "Hvis det er muligt, får du en betalingsanmodning på {nt} pr. anmeldelse (mængderabat allerede fratrukket) – vi går i gang, så snart der er betalt.", sw3: "99 % succesrate: bliver en anmeldelse ikke fjernet senest inden for 14 dage, får du hele beløbet tilbage. Er fjernelse med software ikke mulig, betaler du intet.",
+    swH: "Fjernelse med software – du betaler kun, hvis det lykkes", swWhy: "Google fjerner som regel ikke ældre anmeldelser fra USA eller bedømmelser med kun stjerner uden tekst manuelt – de kan kun fjernes med specialsoftware.",
+    sw1: "Vi tjekker først, om fjernelse med software er mulig for din anmeldelse. Indtil da betaler du ikke noget.", sw2: "Hvis det er muligt, går vi i gang med det samme – du skal blot have en gemt betalingsmetode i dit dashboard. {nt} pr. anmeldelse (mængderabat allerede fratrukket) trækkes først, når anmeldelsen er fjernet.", sw3: "Succesraten er meget høj. Lykkes det alligevel ikke, eller er fjernelse med software ikke mulig, betaler du intet.",
     close: "Vi gennemgår nu dine anmeldelser og giver besked, så snart vi er gået i gang. Spørgsmål? Svar blot på denne mail.",
     signoff: "Venlig hilsen,",
   },
@@ -262,13 +262,13 @@ export const T: Record<string, Entry> = {
     termsH: "Slik fungerer faktureringen — til din fordel",
     term1: "Du betaler kun for omtaler vi faktisk fjerner.",
     term2: "{per} per fjernet omtale — fjerner vi bare én av fem, betaler du kun for den ene.",
-    term3: "Betalingen forfaller samme dag som fjerningen. Samme dag får du bekreftelsen med fakturaen.",
+    term3: "Beløpet trekkes automatisk fra den lagrede betalingsmetoden din så snart en omtale er fjernet. Fakturaen kommer på e-post samme dag.",
     condH: "Greit å vite",
     cond1: "Omtaler som er opptil 4 uker gamle har en suksessrate på rundt 90 %. For eldre omtaler utenfor USA sender vi først juridiske varsler, som fjerner over 90 % (tillegget er allerede inkludert i prisen over).",
-    cond2: "Eldre omtaler fra USA og omtaler uten tekst (bare stjerner) kan som regel bare fjernes med spesialprogramvare, fordi Google ikke fjerner dem manuelt. Det samme gjelder eldre omtaler fra andre land som blir stående etter vårt juridiske varsel. Fjerning med programvare koster {nt} per omtale og betales i sin helhet på forskudd, men først når vi har sjekket at det er mulig for omtalen din. 99 % suksessrate: blir en omtale ikke fjernet senest innen 14 dager, får du hele beløpet tilbake.",
+    cond2: "Eldre omtaler fra USA og omtaler uten tekst (bare stjerner) kan som regel bare fjernes med spesialprogramvare, fordi Google ikke fjerner dem manuelt. Det samme gjelder eldre omtaler fra andre land som blir stående etter vårt juridiske varsel. Fjerning med programvare koster {nt} per omtale. Vi sjekker først at det er mulig for omtalen din, og også her trekkes beløpet først når omtalen er fjernet. Lykkes det ikke, betaler du ingenting.",
     p1sw: (n) => `takk for bestillingen! Vi har mottatt ${n === 1 ? "omtalen" : `de ${n} omtalene`} nedenfor og sjekker nå om fjerning med programvare er mulig.`,
-    swH: "Fjerning med programvare – betales på forskudd, men først etter vår sjekk", swWhy: "Google fjerner som regel ikke eldre omtaler fra USA eller vurderinger med bare stjerner uten tekst manuelt – de kan bare fjernes med spesialprogramvare.",
-    sw1: "Vi sjekker først om fjerning med programvare er mulig for omtalen din. Du betaler ingenting ennå.", sw2: "Er det mulig, får du en betalingsforespørsel på {nt} per omtale (mengderabatt allerede trukket fra) – vi starter så snart det er betalt.", sw3: "99 % suksessrate: blir en omtale ikke fjernet senest innen 14 dager, får du hele beløpet tilbake. Er fjerning med programvare ikke mulig, betaler du ingenting.",
+    swH: "Fjerning med programvare – du betaler bare hvis det lykkes", swWhy: "Google fjerner som regel ikke eldre omtaler fra USA eller vurderinger med bare stjerner uten tekst manuelt – de kan bare fjernes med spesialprogramvare.",
+    sw1: "Vi sjekker først om fjerning med programvare er mulig for omtalen din. Frem til da betaler du ingenting.", sw2: "Er det mulig, starter vi med en gang – du trenger bare en lagret betalingsmetode i dashbordet. {nt} per omtale (mengderabatt allerede trukket fra) trekkes først når omtalen er fjernet.", sw3: "Suksessraten er svært høy. Lykkes det likevel ikke, eller er fjerning med programvare ikke mulig, betaler du ingenting.",
     close: "Vi går nå gjennom omtalene dine og gir beskjed så snart vi har startet. Spørsmål? Bare svar på denne e-posten.",
     signoff: "Vennlig hilsen,",
   },
@@ -335,7 +335,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
   const cur = reviewCurrency(currency, per);
-  // Zwei Verfahren: „Zahlung nach Löschung" (Standard / rechtliche Meldung) und Software-Fälle (vorab, erst nach unserer Prüfung).
+  // Zwei Verfahren: „Zahlung nach Löschung" (Standard / rechtliche Meldung) und Software-Fälle (erst nach unserer Prüfung; abgebucht ebenfalls erst bei Erfolg).
   const sw = list.filter(isSwItem), rest = list.filter((it) => !isSwItem(it));
   const all = quoteReviews(list, cur, undefined, "full", chatPct);
   const perRest = rest.length ? quoteReviews(rest, cur, list.length, "full", chatPct).per : per;
@@ -345,6 +345,22 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
     <EmailShell preview={ad ? ad[0](list.length || 1, orderId) : t.preview} title={ad ? ad[1] : t.title} lang={lang}>
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
       <P>{ad ? ad[2](n, orderId) : sw.length && !rest.length ? t.p1sw(n) : t.p1(n)}{orderId && !ad ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
+      {/* Wichtigstes zuerst: Nachweis / Zahlungsart / Dashboard-Button – nicht erst ganz unten. */}
+      {verify ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(VF[lang] || VF.en)[0]}</span><br />
+          {(VF[lang] || VF.en)[1]}
+        </NoteBox>
+      ) : null}
+
+      {payGate ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PG[lang] || PG.en)[0]}</span><br />
+          {(PG[lang] || PG.en)[1]}
+        </NoteBox>
+      ) : null}
+
+      <DashBox lang={lang} dash={dash} />
 
       <P><strong>{t.listH}</strong></P>
       <Bullets items={list.map((it, i) => it.url
@@ -375,21 +391,6 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
 
       {rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
 
-      {verify ? (
-        <NoteBox>
-          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(VF[lang] || VF.en)[0]}</span><br />
-          {(VF[lang] || VF.en)[1]}
-        </NoteBox>
-      ) : null}
-
-      {payGate ? (
-        <NoteBox>
-          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PG[lang] || PG.en)[0]}</span><br />
-          {(PG[lang] || PG.en)[1]}
-        </NoteBox>
-      ) : null}
-
-      <DashBox lang={lang} dash={dash} />
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>
     </EmailShell>

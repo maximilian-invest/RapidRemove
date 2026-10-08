@@ -1,4 +1,4 @@
-/* Wissensbasis für den Support-Chatbot im Kunden-Dashboard (Stand 06.10.2026, Quelle: claude/chatbot-wissensbasis.md).
+/* Wissensbasis für den Support-Chatbot im Kunden-Dashboard (Stand 08.10.2026, Quelle: claude/chatbot-wissensbasis.md).
    Abschnitte 2–8; Statistik und offene Punkte bewusst weggelassen. Bei Änderungen hier aktualisieren. */
 export const KNOWLEDGE = `## 2. Firma & Kontakt
 
@@ -16,15 +16,15 @@ export const KNOWLEDGE = `## 2. Firma & Kontakt
 
 ## 3. Leistungen & Preise
 
-Alle Preise sind netto. EUR für DE/AT/EU, USD international.
+Alle Preise sind Endpreise (inkl. allfälliger USt, siehe AGB 6.1). EUR für DE/AT/EU, USD international.
 
 | Leistung | Preis | Hinweise |
 |---|---|---|
 | Profil-Löschung (komplettes Google-Unternehmensprofil inkl. aller Bewertungen, Fotos, Maps-Eintrag) | 450 € / 495 USD | Zahlung erst nach Erfolg. Dauer ca. 24 h ab Rechteübertragung. |
 | Profil + Neustart (altes Profil löschen und neues mit korrekten Daten/Kategorien aufsetzen) | 850 € / 950 USD | Neues Profil braucht 1–5 Tage Google-Verifizierung, danach ca. 5–7 Tage, bis es in der Suche normal rankt. Kunde wird wieder als Inhaber eingetragen. |
-| Einzelne Bewertung, max. 4 Wochen alt, mit Text | 179 € / 179 USD pro **gelöschter** Bewertung | **Nur außerhalb von DE/AT.** Neu seit Okt 2026. Erfolgsquote über 90 %. Dauer 1–3 Werktage. Zahlung direkt nach Löschung. |
-| Einzelne Bewertung, älter als 4 Wochen, mit Text | 250 € / 250 USD pro gelöschter Bewertung | Nur außerhalb DE/AT. Ca. 50 % Erfolgschance, Zahlung nur bei Erfolg. |
-| Einzelne Bewertung ohne Text (nur Sterne), egal wie alt | 300 € / 300 USD pro Bewertung | Nur außerhalb DE/AT. Nur mit Spezialsoftware möglich, klappt in der Regel. **Ausnahme: Zahlung im Voraus.** Wird die Bewertung nicht gelöscht, gibt es eine Rückerstattung innerhalb von spätestens 14 Tagen. Bot sagt „Spezialsoftware", **nicht** „ausgelagert", und nie „100 %". |
+| Einzelne Bewertung, max. 4 Wochen alt, mit Text | 179 € / 179 USD pro **gelöschter** Bewertung | **Nur außerhalb von DE/AT.** Neu seit Okt 2026. Erfolgsquote über 90 %. Dauer 1–3 Werktage. Zahlung nur bei Erfolg: automatisch bei Löschung von der hinterlegten Zahlungsart abgebucht. |
+| Einzelne Bewertung, älter als 4 Wochen, mit Text (außerhalb der USA) | 229 € / 229 USD pro gelöschter Bewertung | Nur außerhalb DE/AT. Zuerst rechtliche Meldung, damit verschwinden über 90 %. Zahlung nur bei Erfolg. Bleibt sie danach stehen, ist eine Software-Löschung möglich (siehe nächste Zeile). |
+| Software-Löschung: Bewertung ohne Text (nur Sterne, egal wie alt), ältere US-Bewertung (älter als 4 Wochen) oder Bewertung, die nach unserer rechtlichen Meldung bleibt | 300 € / 300 USD pro **gelöschter** Bewertung | Nur außerhalb DE/AT. Nur mit Spezialsoftware möglich, klappt in der Regel. **Keine Vorauszahlung:** abgebucht wird erst bei erfolgreicher Löschung, klappt es nicht, zahlt der Kunde nichts. Ablauf siehe 4b. Bot sagt „Spezialsoftware", **nicht** „ausgelagert", und nie „100 %". |
 | Schutz bei Wiederauftauchen | 24,90 €/USD pro Monat | Taucht ein neues Profil auf (von Dritten erstellt), wird es kostenlos wieder gelöscht. Keine Mindestlaufzeit, kündbar zum Ende des Abrechnungszeitraums. Nur gültig, wenn **vor** dem Wiederauftauchen gebucht. |
 | Schutz + Monitoring | 69,90 €/USD pro Monat | Wie oben, zusätzlich tägliche Überwachung durch RapidRemove. |
 | Lifetime-Schutz | 990 €/USD einmalig | Zusätzlich zur Löschung. „Solange es uns gibt", gilt für das Unternehmen an dieser Adresse, egal welche E-Mail. Inkl. Monitoring. |
@@ -36,18 +36,20 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
 - **PayPal oder Wise:** −10 % auf alle Leistungen, auch Einzelbewertungen (spart Gebühren). **Nur außerhalb von DACH** (nicht für Unternehmen aus DE, AT, CH) – DACH-Kunden wird das nie angeboten. Kunde sagt im Chat Bescheid, das Team schickt den PayPal-Link bzw. die Wise-Daten.
 - **Mehrere Profile:** Mengenrabatt ab 2 Profilen. Richtwert aus den Chats: bei 4 Profilen ca. −20 %. ⚠️ Staffel bitte bestätigen.
 - **Agenturen/Reseller:** bis 5 Profile/Monat Normalpreis, ab 5 −10 %, ab 10 −15 % pro Profil.
+- **Einzelbewertungen, Mengenrabatt:** ab 3 Bewertungen −10 %, ab 5 −15 %, ab 10 −30 %.
 - Darüber hinaus verhandelt der Bot nicht. Individuelle Rabatte gibt nur das Team.
 
 ### Mehrwertsteuer
-- Preise sind netto. RapidRemove ist eine österreichische Firma.
-- EU-Unternehmen mit USt-ID: Reverse Charge, also keine USt. Im Checkout „Als Unternehmen kaufen" anhaken und die USt-ID eingeben.
-- EU-Privatkunden bzw. Firmen ohne USt-ID: plus USt des Landes (z. B. DE 19 %).
+- Preise sind Endpreise (inkl. allfälliger USt). RapidRemove ist eine österreichische Firma (UID ATU72401536).
+- Österreich sowie EU-Kunden ohne gültige USt-ID: 20 % österreichische USt sind im Preis enthalten (kein Aufschlag).
+- EU-Unternehmen außerhalb Österreichs mit gültiger USt-ID: Reverse Charge, Rechnung ohne USt. Dafür die USt-ID im Dashboard unter „Rechnungsdetails" eintragen (wird automatisch geprüft) bzw. im Checkout angeben. Ohne gültige USt-ID kein Reverse Charge.
 - Kunden außerhalb der EU (UK, CH, US, AU …): keine USt.
 - Die Rechnung kommt automatisch nach der Zahlung vom Zahlungsanbieter. Firmendaten im Checkout eintragen. Rechnung ist i. d. R. betrieblich absetzbar.
 
 ### Zahlung
-- Erst nach erfolgreicher Löschung. Kein Vorkasse, keine Kreditkarte vorab.
-- Nach der Löschung kommen Bestätigung und Zahlungslink per E-Mail. **Zahlung innerhalb von 48 Stunden**, sonst wird das Profil wiederhergestellt.
+- Erst nach erfolgreicher Löschung. Keine Vorkasse, nichts wird vorab abgebucht – auch nicht bei Einzelbewertungen oder Software-Löschungen.
+- **Profil-Löschung:** Nach der Löschung kommen Bestätigung und Zahlungslink per E-Mail. **Zahlung innerhalb von 48 Stunden**, sonst wird das Profil wiederhergestellt.
+- **Einzelbewertungen:** Der Kunde hinterlegt einmal eine Zahlungsart in seinem Dashboard (Karte, Apple Pay / Google Pay, PayPal bzw. Link), jederzeit änderbar. Abgebucht wird automatisch, sobald eine Bewertung gelöscht ist, die Rechnung kommt automatisch per E-Mail. Bis dahin zahlt er nichts. Den „Zahlen"-Button im Dashboard gibt es nur als Ausweg, z. B. wenn eine Abbuchung fehlschlägt.
 - Zahlungsarten: Kreditkarte, PayPal, Klarna, SEPA-Lastschrift u. a. Bei SEPA kann die Zahlungsbestätigung bis zu 7 Tage dauern.
 - Überweisung auf Rechnung, Ratenzahlung, Sonderwünsche: übernimmt das Team, nicht der Bot.
 - Bei Profil-Löschung ohne Schutz „kein Schutz" wählen. Wurde der Schutz versehentlich gebucht, entfernt ihn das Team.
@@ -78,10 +80,11 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
      1. **Zuerst Google Places API** (günstig, max. 5 Bewertungen pro Abruf). Negative Bewertungen = unter 3 Sterne, also 1–2 Sterne. Hat der Kunde bis zu 4 negative Bewertungen, reicht das in der Regel. Der Bot zeigt die gefundenen und fragt: „Ist die Bewertung, die Sie löschen möchten, dabei?"
      2. **SerpApi nur, wenn** der Kunde sagt, seine Bewertung ist nicht dabei (oder Places API liefert gar keine negative): \`engine=google_maps_reviews\`, \`place_id\`/\`data_id\`, \`sort_by=newestFirst\`, weitere Seiten über \`next_page_token\`, nur bei Bedarf.
      - Hinweis: Die Places API sagt nicht, wie viele negative Bewertungen ein Profil insgesamt hat. Die „bis zu 4"-Prüfung läuft deshalb praktisch über die Rückfrage an den Kunden.
-   - **Preis automatisch zuordnen:** Datum jünger als 28 Tage und Text vorhanden → 179 €; älter mit Text → 250 €; kein Text → 300 € (Vorauszahlung).
+   - **Preis automatisch zuordnen:** Datum jünger als 28 Tage und Text vorhanden → 179 €; älter mit Text → 229 € (außerhalb der USA, zuerst rechtliche Meldung); älter mit Text aus den USA oder kein Text → 300 € (Spezialsoftware, Abbuchung erst bei Erfolg).
 2. RapidRemove startet. Dauer 1–3 Werktage. Kein Zugang und keine Inhaberrechte nötig.
-3. Nach der Löschung kommt der Zahlungslink. Bezahlt wird nur pro tatsächlich gelöschter Bewertung, und zwar gleich, sonst kann die Bewertung wiederhergestellt werden.
-   - **Ausnahme Bewertungen ohne Text (300 €):** Zahlung im Voraus. Klappt die Löschung nicht, erstattet RapidRemove den Betrag innerhalb von spätestens 14 Tagen. Der Bot muss das vor der Bestellung klar sagen. Bei gemischten Bestellungen gilt: ohne Text vorab, mit Text nach Erfolg.
+   - **Software-Fälle (300 €):** Wir prüfen zuerst mit unserem Partner, ob die Software-Löschung bei dieser Bewertung möglich ist. Dann bestätigt der Kunde im Dashboard (oder hat bei der Bestellung schon zugestimmt). Voraussetzung ist eine hinterlegte Zahlungsart, danach starten wir sofort. Der bestätigte Platz beim Partner ist 5 Stunden reserviert (Countdown im Dashboard): in dieser Zeit Zahlungsart hinterlegen bzw. bestätigen.
+3. Abrechnung: Der Kunde hinterlegt einmal eine Zahlungsart in seinem Dashboard. Sobald eine Bewertung gelöscht ist, wird automatisch abgebucht, die Rechnung kommt per E-Mail. Bezahlt wird nur pro tatsächlich gelöschter Bewertung. Schlägt eine Abbuchung fehl, Zahlungsart im Dashboard aktualisieren oder über „Zahlen" zahlen, sonst kann die Bewertung wiederhergestellt werden.
+   - **Das gilt ohne Ausnahme, auch für Software-Löschungen (300 €):** keine Vorauszahlung, Abbuchung erst bei erfolgreicher Löschung. Klappt es nicht, zahlt der Kunde nichts. Eine Erstattung ist deshalb nicht nötig.
 4. DE/AT: stattdessen Mail an helpdesk@rapid-remove.com, Partner prüfen den Fall.
 
 **Regel:** Nennt der Bot einen Preis, erwähnt er immer auch die −10 % bei Zahlung mit PayPal oder Wise – aber nur bei Unternehmen außerhalb von DACH (nicht DE/AT/CH).
@@ -90,11 +93,11 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
 
 **Könnt ihr eine einzelne Bewertung löschen?**
 - Kunde aus DE/AT: Bitte eine E-Mail an helpdesk@rapid-remove.com schreiben. Wegen der Rechtslage ist das in DE/AT nicht so einfach, RapidRemove selbst darf das dort nicht. Es gibt aber Partner, die den Fall prüfen. Alternative: komplettes Profil löschen, danach Neustart mit 0 Bewertungen.
-- Kunde außerhalb DE/AT: Ja, nur bei Erfolg. Max. 4 Wochen alt mit Text: 179 € (über 90 %). Älter als 4 Wochen: 250 € (ca. 50 %). Ohne Text: 300 € (Spezialsoftware). Dauer 1–3 Werktage. Alternative: ganzes Profil löschen.
+- Kunde außerhalb DE/AT: Ja, nur bei Erfolg. Max. 4 Wochen alt mit Text: 179 € (über 90 %). Älter als 4 Wochen: 229 € (zuerst rechtliche Meldung, über 90 %). Ohne Text oder ältere US-Bewertung: 300 € (Spezialsoftware). Abgebucht wird immer erst bei Löschung, automatisch von der im Dashboard hinterlegten Zahlungsart. Dauer 1–3 Werktage. Alternative: ganzes Profil löschen.
 - Standort unklar (z. B. deutschsprachiger Kunde): zuerst fragen, wo das Unternehmen ist.
 - Bewertungen auf anderen Plattformen (Trustpilot, TripAdvisor, Facebook, Yelp, Airbnb, golocal …): Nein, das bietet RapidRemove nicht an.
 
-**Was kostet es?** Profil-Löschung 450 € netto bzw. 495 USD, Zahlung nur bei Erfolg.
+**Was kostet es?** Profil-Löschung 450 € bzw. 495 USD, Zahlung nur bei Erfolg.
 
 **Wie lange dauert es?** In der Regel ca. 24 h nach Übertragung der Rechte. Muss Google das Profil erst verifizieren, kann es einige Tage länger dauern.
 
@@ -151,7 +154,7 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
 ## 7. Regeln für den Bot
 
 1. **Keine Preise erfinden, nicht verhandeln.** Nur die Preise und Rabatte aus Abschnitt 3. Alles darüber hinaus (individuelle Rabatte, Raten, Jahres-Schutz, Presse) macht das Team. Die 0800-Nummer nennt der Bot nicht.
-2. **Nie „100 %" versprechen.** Stattdessen: „über 90 % Erfolgsquote", „Zahlung nur bei Erfolg". Einzige Ausnahme vom Prinzip „Zahlung nach Erfolg": Bewertungen ohne Text, die sind vorab zu zahlen, mit Rückerstattung innerhalb von 14 Tagen.
+2. **Nie „100 %" versprechen.** Stattdessen: „über 90 % Erfolgsquote", „Zahlung nur bei Erfolg". Das gilt ohne Ausnahme, auch für Bewertungen ohne Text und andere Software-Löschungen: keine Vorauszahlung (also auch keine Erstattung nötig), abgebucht wird erst bei Löschung.
 3. **24 h nur als Regelfall nennen.** Immer dazusagen, dass eine nötige Google-Verifizierung länger dauern kann.
 4. **Keine Passwörter annehmen, keine IBAN/Bankdaten im Chat posten.**
 5. **DE/AT + Einzelbewertung:** nicht selbst anbieten. Kunde soll eine E-Mail schreiben, Partner prüfen den Fall. Alternative Komplett-Profil nennen. Keine Rechtsberatung.
@@ -171,6 +174,7 @@ Alle Preise sind netto. EUR für DE/AT/EU, USD international.
 - „Gelöscht in 24h" als Begrüßung, wenn eine Verifizierung nötig ist: führt zu Frust.
 - Scherz- und Troll-Antworten an Spammer.
 - AGB enthielten bis 05.10.2026 noch „keine Einzelbewertungen". Wurde korrigiert.
+- Bis 08.10.2026 galt: Software-Löschungen (z. B. Bewertungen ohne Text) vorab zahlen, Erstattung nach 14 Tagen; ältere Bewertungen 250 €; Zahlungslink nach der Löschung. **Gilt nicht mehr:** keine Vorauszahlung, ältere Bewertungen 229 €, Abbuchung automatisch bei Löschung.
 
 ---
 `;

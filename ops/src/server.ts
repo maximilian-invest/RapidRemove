@@ -1496,32 +1496,16 @@ app.post("/admin/reviews-start", async (req, reply) => {
   const startChatPct = await chatPctForOrder(b.orderId);
   const startQuote = quoteReviews(items, currency, undefined, "full", startChatPct);
   const per = startQuote.per;
-  // Bewertungen ohne Text: voller Betrag im Voraus (rabattiert) per Stripe-Link mit der Startbestätigung.
+  // Bewertungen ohne Text / Spezial-Software: KEINE Vorauszahlung mehr (10/2026) – Button führt ins Dashboard
+  // (Zahlungsart hinterlegen bzw. Software bestätigen), abgebucht wird erst bei erfolgreicher Löschung.
+  const swDash = async () => { const u = await dashLink(String(b.email || "").trim().toLowerCase(), mailLang(b.lang)); return u + (u.includes("?") ? "&" : "?") + "open=software"; };
   let prepay: { n: number; amount: string; url: string } | undefined;
-  const prepayPid = newPayId(), swPid = newPayId(); // Zahlungs-IDs vorab → Link trägt client_reference_id (eindeutige Zuordnung)
-  if (startQuote.nNt > 0) {
-    let payUrl = "";
-    if (hasSecretKey()) {
-      try { payUrl = await ensureReviewsAmountLink(startQuote.ntDeposit, currency); }
-      catch (e) { app.log.error({ err: e }, "Vorauszahlungs-Link (ohne Text) fehlgeschlagen"); }
-    }
-    if (!payUrl) return reply.code(400).send({ ok: false, error: hasSecretKey()
-      ? "Zahlungslink für die Vorauszahlung (Bewertungen ohne Text) konnte nicht angelegt werden — ops-Log prüfen."
-      : "STRIPE_SECRET_KEY fehlt — Vorauszahlungs-Link für Bewertungen ohne Text kann nicht angelegt werden." });
-    prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: withRef(payUrl, prepayPid) };
-  }
-  // Spezial-Software-Angebot: voller Betrag im Voraus (Rabattstufe nach angenommenen + Software-Bewertungen).
+  if (startQuote.nNt > 0) prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: await swDash() };
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
     const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct);
-    const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // voller Betrag im Voraus
-    let swUrl = "";
-    if (hasSecretKey()) {
-      try { swUrl = await ensureReviewsAmountLink(amountNum, currency); }
-      catch (e) { app.log.error({ err: e }, "Software-Vorauszahlungslink fehlgeschlagen"); }
-    }
-    if (!swUrl) return reply.code(400).send({ ok: false, error: "Zahlungslink für die Spezial-Software-Vorauszahlung konnte nicht angelegt werden." });
-    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: withRef(swUrl, swPid), price: fmtReviewMoney(300, currency), amountNum };
+    const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // Betrag bei Erfolg
+    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: await swDash(), price: fmtReviewMoney(300, currency), amountNum };
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));
@@ -1537,16 +1521,14 @@ app.post("/admin/reviews-start", async (req, reply) => {
     await insertEvent({
       orderId: orderId || undefined, email: to, type: "mail",
       title: t.label + " gesendet",
-      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: Vorauszahlung ${prepay.amount} (Link in der Mail)` : ""}${software ? ` · ${software.items.length} per Spezial-Software angeboten: Vorauszahlung ${software.amount}` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
+      detail: `${items.length || 1} Bewertung(en) angenommen${declined ? ` · ${declined} abgelehnt` : ""}${prepay ? ` · ${prepay.n} ohne Text: ${prepay.amount} bei Erfolg (Dashboard-Link)` : ""}${software ? ` · ${software.items.length} per Spezial-Software angeboten: ${software.amount} bei Erfolg` : ""} · Sprache ${tlang.toUpperCase()} · an ${to}`,
       html, subject,
     });
     // Angenommene Bewertungen merken → Basis für Mengenrabatt, Rechnung und Mahnung.
     if (orderId && items.length) await setOrderRawField(orderId, "reviewsAccepted", items).catch(() => {});
     if (orderId && prepay) await setOrderRawField(orderId, "reviewsPrepay", { ...prepay, at: new Date().toISOString() }).catch(() => {});
     if (orderId && software) await setOrderRawField(orderId, "reviewsSoftware", software.items).catch(() => {});
-    // Offene Zahlungen fürs Kunden-Dashboard.
-    if (orderId && prepay) await addOrderPayment(orderId, { id: prepayPid, kind: "deposit", amount: startQuote.ntDeposit, cur: currency, url: prepay.url, n: prepay.n, keys: items.filter((it) => it.nt).map(keyOf), via: "admin" }).catch(() => {});
-    if (orderId && software) await addOrderPayment(orderId, { id: swPid, kind: "software", amount: software.amountNum, cur: currency, url: software.url, n: software.items.length, keys: software.items.map(keyOf), via: "admin" }).catch(() => {});
+    // Keine offenen Vorauszahlungen mehr anlegen (10/2026): Software/ohne Text wird im Dashboard bestätigt, abgebucht erst bei Erfolg.
     return { ok: true, lang: tlang, count: items.length };
   } catch (e) {
     app.log.error({ err: e }, "Reviews-Startbestätigung fehlgeschlagen");
@@ -1654,13 +1636,26 @@ async function withOrderCp<T extends { url?: string; name?: string; text?: strin
   const by = new Map(all.filter((x) => cpOf(x) > 0).map((x) => [key(x), cpOf(x)]));
   return items.map((it) => (by.has(key(it)) ? { ...it, cp: by.get(key(it)) } : it));
 }
+/** Software-Fälle, die NICHT vorab bezahlt wurden (Standard seit 10/2026: Abbuchung erst bei Erfolg) → due:true, damit sie in der
+ *  Abrechnung nach der Löschung („rest") voll zählen. Gleiche Regel wie orderView/prepaidFor (customers.ts). */
+async function markSwDue<T extends { url?: string; name?: string; text?: string; nt?: boolean; sw?: boolean; due?: boolean }>(orderId: unknown, items: T[]): Promise<T[]> {
+  const id = clip(orderId, 40);
+  if (!id || !pool) return items;
+  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [id]).catch(() => null);
+  const raw = (r?.rows[0]?.raw || {}) as Record<string, unknown>;
+  const pays = (Array.isArray(raw.reviewsPayments) ? raw.reviewsPayments : []) as { kind?: string; paid?: string | null; keys?: string[] }[];
+  const dec = (raw.reviewsSwDecision || {}) as Record<string, { d?: string; def?: boolean }>;
+  const key = (it: { url?: string; name?: string; text?: string }) => it.url || `${it.name || ""}|${it.text || ""}`;
+  const prepaid = (k: string) => (dec[k]?.d === "accepted" && !dec[k]?.def) || pays.some((p) => (p.kind === "software" || p.kind === "deposit") && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : true));
+  return items.map((it) => ((it.nt || it.sw) && !prepaid(key(it)) ? { ...it, due: true } : it));
+}
 
 app.post("/admin/reviews-invoice", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1676,6 +1671,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine gelöschten Bewertungen markiert" });
   removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
+  removedItems.splice(0, removedItems.length, ...(await markSwDue(b.orderId, removedItems)));
   const submittedCount = Math.max(Number(b.submittedCount) || 0, removedItems.length);
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
@@ -1761,7 +1757,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1777,6 +1773,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   }).filter(Boolean) as RemovedItem[];
   if (!removedItems.length) return reply.code(400).send({ ok: false, error: "keine offenen Bewertungen ausgewählt" });
   removedItems.splice(0, removedItems.length, ...(await withOrderCp(b.orderId, removedItems)));
+  removedItems.splice(0, removedItems.length, ...(await markSwDue(b.orderId, removedItems)));
   const stage = [1, 2, 3].includes(Number(b.stage)) ? Number(b.stage) : 1;
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;

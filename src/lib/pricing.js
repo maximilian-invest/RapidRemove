@@ -54,7 +54,7 @@ export const REVIEW_OLD_SURCHARGE = 50;
 export function reviewDiscountPct(n) {
   return n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0;
 }
-/** Reine Sternebewertungen ohne Text: Spezialverfahren, Festpreis (€ und $), Vorauszahlung, kein Altersaufschlag. */
+/** Reine Sternebewertungen ohne Text: Spezialverfahren, Festpreis (€ und $), abgebucht erst nach Löschung, kein Altersaufschlag. */
 export const REVIEW_NOTEXT_PRICE = 300;
 /** items: [{ old?: boolean, nt?: boolean }] → { n, nOld, nNew, nNt, base, oldPrice, ntPrice, subtotal, pct, discount, total, ntTotal } */
 /** cp = individueller Endpreis je Bewertung (Admin): ohne Altersaufschlag und Mengenrabatt – synchron mit ops/src/reviewsPricing.ts. */
@@ -77,8 +77,8 @@ export function reviewQuote(items, lang) {
 }
 
 /* Verfahren je Bewertung (Partner-Regel 10/2026, synchron mit ops/src/reviewsPricing.ts):
-   "sw"    Software: ohne Text (alle Länder) oder älter als 4 Wochen mit Text aus den USA → 300, vorab,
-           aber erst nach unserer Prüfung (Zahlungsaufforderung, wenn der Partner Software bestätigt).
+   "sw"    Software: ohne Text (alle Länder) oder älter als 4 Wochen mit Text aus den USA → 300; nach unserer Prüfung
+           bestätigt der Kunde (Zahlungsart hinterlegt), abgebucht wird erst bei erfolgreicher Löschung.
    "legal" älter als 4 Wochen, andere Länder → erst rechtliche Meldung (90 %+), Zahlung nach Löschung.
    "std"   bis 4 Wochen → Zahlung nach Löschung. */
 export function reviewMethod({ hasText, days }, country) {

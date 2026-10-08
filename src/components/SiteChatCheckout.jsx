@@ -16,7 +16,7 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
     const n = Math.max(1, reviews.length);
-    const nSw = reviews.filter((r) => r.sw).length; // Software-Fälle: 300, vorab – aber erst nach Prüfung durch den Partner
+    const nSw = reviews.filter((r) => r.sw).length; // Software-Fälle: 300, nach Prüfung durch den Partner – abgebucht erst bei erfolgreicher Löschung
     const nOld = reviews.filter((r) => r.age === "old" && !r.sw).length;
     const sub = (n - nOld - nSw) * 179 + nOld * 229 + nSw * 300;
     const vp = volPct(n), cp = pp ? 0 : pct;

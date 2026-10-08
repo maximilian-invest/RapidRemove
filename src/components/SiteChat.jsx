@@ -135,7 +135,7 @@ export default function SiteChat({ hideBubble = false }) {
   const P = PK[lang] || PK.en;
   const maxPct = () => msgs.reduce((m, x) => Math.max(m, (x.co && x.co.pct) || 0), 0);
   const botSay = async (cur, text) => { const n = [...cur, { r: "b", t: text }]; setMsgs(n); return n; };
-  /** Bestätigung „Diese X Bewertungen löschen?“ (Bewertungen ohne Text fliegen raus – nur mit Vorauszahlung). */
+  /** Bestätigung „Diese X Bewertungen löschen?“ (Bewertungen ohne Text fliegen raus – nur per Spezial-Software, übernimmt das Team). */
   const confirmItems = (cur, items, place) => {
     const ok = items.filter((r) => !(r.rating && !String(r.text || "").trim() && r.name));
     const nt = items.length - ok.length;

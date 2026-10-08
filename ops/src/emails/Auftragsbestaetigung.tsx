@@ -175,9 +175,6 @@ export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGat
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{anrede || t.greeting}</strong></P>
       <P>{t.intro}<strong>{t.introBold}</strong>{t.introRest}</P>
-      <NoteBox>
-        <strong>{t.noteBold}</strong>{t.note}
-      </NoteBox>
       {payGate ? (
         <NoteBox>
           <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PGP[lang] || PGP.en)[0]}</span><br />
@@ -185,6 +182,9 @@ export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGat
         </NoteBox>
       ) : null}
       {dash ? <DashBox lang={lang} dash={dash} /> : null}
+      <NoteBox>
+        <strong>{t.noteBold}</strong>{t.note}
+      </NoteBox>
       <P muted>{t.outro}</P>
       <LegalSection lang={lang} />
     </EmailShell>
