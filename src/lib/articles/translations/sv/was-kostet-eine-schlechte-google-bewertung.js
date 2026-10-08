@@ -58,7 +58,7 @@ const article = {
   faq: [
     { q: "Hur mycket omsättning kostar en dålig Google-recension?", a: "En Harvard-studie (Michael Luca) sätter effekten av en hel stjärna till 5–9 % omsättning för oberoende verksamheter. En enskild recension påverkar olika mycket beroende på hur många recensioner ni totalt har – ju färre recensioner, desto hårdare drar en dålig ner snittet." },
     { q: "När blir ett dåligt snitt affärsskadligt?", a: "Det börjar bli kritiskt under ungefär 4,0 stjärnor; under 3 stjärnor stänger du enligt BrightLocal i praktiken ute merparten av kunderna, eftersom bara 3 % överväger ett företag med två stjärnor eller färre." },
-    { q: "Lönar det sig att agera mot en enskild recension?", a: "Vid obefogade, fabricerade eller rättsstridiga recensioner vanligtvis ja – den löpande omsättningsförlusten överstiger i regel kostnaderna för borttagning klart (hos RapidRemove 179 € per borttagen recension, äldre än 4 veckor 229 €, endast vid framgång). Saklig, genuin kritik bemöter man hellre, i stället för att bekämpa den." },
+    { q: "Lönar det sig att agera mot en enskild recension?", a: "Vid obefogade, fabricerade eller rättsstridiga recensioner vanligtvis ja – den löpande omsättningsförlusten överstiger i regel kostnaderna för borttagning klart (hos RapidRemove 179 € per borttagen recension, äldre än 4 veckor 250 €, endast vid framgång). Saklig, genuin kritik bemöter man hellre, i stället för att bekämpa den." },
     { q: "Hur beräknar jag min konkreta skada?", a: "Månadsomsättning × konservativt 5 % × synlighetsperioden i månader. Redan med försiktiga antaganden ligger årsbeloppet oftast klart över lösningskostnaderna." },
   ],
   related: [

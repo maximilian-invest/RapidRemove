@@ -64,7 +64,7 @@ const article = {
       ["Professionell borttagning", "Vana vid procedurerna; **179 € per borttagen recension, först efter lyckat resultat**", "Kostar pengar; ärlig kritik ligger ändå kvar"],
     ] },
     { t: "p", text: "Som jämförelse: en advokat tar oftast betalt i förskott och per timme – även om recensionen till slut ligger kvar ([advokat eller teknisk borttagning?](/sv/magasin/negativ-google-recension-advokat/)). En fullständig kostnadsjämförelse finns i [vad kostar det att ta bort en Google-recension](/sv/magasin/kostnad-ta-bort-google-recension/)." },
-    { t: "cta", title: "Få en gratis bedömning av om recensionen kan tas bort", text: "Sök ditt företag, bocka i recensionerna och se priset direkt: **179 € per borttagen recension** (äldre än 4 veckor 229 €). Inget i förskott – du betalar bara när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Bara Googles officiella procedurer", "Först en ärlig bedömning"] },
+    { t: "cta", title: "Få en gratis bedömning av om recensionen kan tas bort", text: "Sök ditt företag, bocka i recensionerna och se priset direkt: **179 € per borttagen recension** (äldre än 4 veckor 250 €). Inget i förskott – du betalar bara när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Bara Googles officiella procedurer", "Först en ärlig bedömning"] },
 
     { t: "h2", id: "myter", text: "Myter och fällor: det här ska du låta bli", toc: "Myter" },
     { t: "p", text: "**Det cirkulerar många ”knep” för att ta bort Google-recensioner som inte fungerar – eller till och med sätter din profil på spel.** Här är de fyra vanligaste." },
@@ -105,7 +105,7 @@ const article = {
     { q: "Vad händer om Google avslår min rapport?", a: "Då kan du överklaga i Reviews Management Tool, **en gång per recension**. Överklagandet kan eskaleras och avslutas med ett slutgiltigt beslut från Google." },
     { q: "Får jag be en kund ändra sin recension?", a: "Ja, om det är en riktig kund och du har löst problemet. Erbjud **ingen rabatt, present eller annan belöning** – det bryter mot Googles policy." },
     { q: "Försvinner recensionerna om jag markerar profilen som permanent stängd?", a: "Nej. Vid ”permanent stängd” syns både uppgifterna och recensionerna kvar. Bara om hela företagsprofilen raderas försvinner alla recensioner – även de bra." },
-    { q: "Vad kostar det att få en Google-recension borttagen?", a: "Hos RapidRemove **179 € per borttagen recension**, 229 € om recensionen är äldre än 4 veckor. Du betalar bara om recensionen verkligen försvinner; går den inte att ta bort kostar det ingenting. Även rena stjärnbetyg utan text tar vi bort, med ett särskilt förfarande (300 €: 50 % i handpenning, 50 % efter borttagning, ca. 80 % chans att lyckas)." },
+    { q: "Vad kostar det att få en Google-recension borttagen?", a: "Hos RapidRemove **179 € per borttagen recension**, 250 € om recensionen är äldre än 4 veckor. Du betalar bara om recensionen verkligen försvinner; går den inte att ta bort kostar det ingenting. Även rena stjärnbetyg utan text tar vi bort, med ett särskilt förfarande (300 € per borttaget betyg, ca. 80 % chans att lyckas)." },
     { q: "Hur lång tid tar det innan en recension är borta?", a: "Oftast några dagar, ibland upp till 3 veckor. Google lovar själv ingen fast handläggningstid – granskningen kan ta allt från dagar till veckor." },
   ],
   related: [

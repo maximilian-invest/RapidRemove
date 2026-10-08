@@ -62,7 +62,7 @@ const article = {
     { q: "Quanto tempo demora a remoção?", a: "Através da remoção profissional, geralmente 24 a 48 horas — consideravelmente mais rápido do que o processo judicial para avaliações individuais, que pode levar meses." },
     { q: "O meu site e o meu posicionamento ficam afetados?", a: "Não. A eliminação do perfil de empresa não tem qualquer impacto no seu site, na sua conta Google ou no seu posicionamento nos resultados de pesquisa. Após a remoção, é possível criar um novo perfil limpo, se assim o desejar." },
     { q: "As avaliações falsas também desaparecem?", a: "Sim. Como o perfil inteiro é removido, todas as avaliações desaparecem — incluindo as falsas ou injustificadas." },
-    { q: "Quanto custa a remoção do perfil de empresa?", a: "A RapidRemove trabalha com um preço fixo, pago apenas após o sucesso. Os advogados e muitos prestadores para avaliações individuais cobram normalmente por avaliação, sem garantia de resultado. Se só quiser remover algumas avaliações, a RapidRemove cobra 179 € por avaliação removida (229 € se tiver mais de 4 semanas) — também só após o sucesso." },
+    { q: "Quanto custa a remoção do perfil de empresa?", a: "A RapidRemove trabalha com um preço fixo, pago apenas após o sucesso. Os advogados e muitos prestadores para avaliações individuais cobram normalmente por avaliação, sem garantia de resultado. Se só quiser remover algumas avaliações, a RapidRemove cobra 179 € por avaliação removida (250 € se tiver mais de 4 semanas) — também só após o sucesso." },
   ],
   related: [
     { label: "Eliminar perfil de empresa do Google: o guia completo", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

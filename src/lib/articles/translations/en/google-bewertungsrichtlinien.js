@@ -62,7 +62,7 @@ const article = {
     { t: "h2", id: "grey-areas", text: "Grey areas: star-only ratings, ex-employees, competitors, prices", toc: "Grey areas" },
     { t: "p", text: "These cases are not automatically removable or automatically safe. The outcome depends on whether you can show a policy breach, not on how unfair the review feels." },
     { t: "ul", items: [
-      "**Star-only ratings without text:** there is nothing for a content rule to catch, so the question is whether the person was a real customer. Wordless 1-star ratings from unknown profiles are often fake engagement; see our guide to the [1-star review without text](/en/magazine/remove-1-star-review-without-text/). Our single-review removal also covers them, with a special procedure ($300 each: 50 % deposit, 50 % after removal).",
+      "**Star-only ratings without text:** there is nothing for a content rule to catch, so the question is whether the person was a real customer. Wordless 1-star ratings from unknown profiles are often fake engagement; see our guide to the [1-star review without text](/en/magazine/remove-1-star-review-without-text/). Our single-review removal also covers them, with a special procedure ($300 per removed review).",
       "**Ex-employees:** Google lists current or former employment as a **conflict of interest**. A review from an ex-employee about the business as an employer is a strong report case, especially if the person was never a customer.",
       "**Competitors:** reviews posted by or for a competitor are a conflict of interest. Proof is rarely direct, so timing, wording and the reviewer's other reviews do the work.",
       "**Reviews about prices:** “too expensive” is an opinion and stays. It becomes removable only if it contains something else, such as false statements of fact, profanity or a link to a competitor.",
@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "Getting help makes sense when several reviews are involved, a report was already rejected, or you simply don't have the time. RapidRemove works only through Google's own procedures, on behalf of the business owner: no fake accounts, no bots, no fake legal notices, and the reviewer is not told who requested the removal." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
-      "**$179 per removed review**, +$50 for reviews older than 4 weeks. You pay only once the review is gone.",
+      "**$179 per removed review**, $250 for reviews older than 4 weeks. You pay only once the review is gone.",
       "**Success chance:** approx. **90 %** for reviews up to 4 weeks old, approx. **50 %** for older ones.",
       "**Volume discount** on accepted reviews: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Duration:** usually a few days, sometimes up to 3 weeks.",
@@ -106,7 +106,7 @@ const article = {
     { q: "Can I delete a Google review myself as the business owner?", a: "No. Only the reviewer can edit or delete their own review. As the owner you can report it, appeal once, file a legal request for unlawful content, and reply publicly." },
     { q: "Is a 1-star rating without text a policy violation?", a: "Not by itself. It is removable when there are signs it is fake, for example no customer record and a profile with suspicious activity, or a wave of similar ratings." },
     { q: "What happens if Google says there's no policy violation?", a: "You can **appeal once per review** in the Reviews Management Tool; the appeal may be escalated and gets a final decision. For defamation or other unlawful content, a legal removal request is a separate option." },
-    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$179 per removed review** ($229 for reviews older than 4 weeks), paid only once the review is gone. The assessment beforehand is free." },
+    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$179 per removed review** ($250 for reviews older than 4 weeks), paid only once the review is gone. The assessment beforehand is free." },
   ],
   related: [
     { label: "Google review removal service", url: "/en/remove-single-reviews/" },

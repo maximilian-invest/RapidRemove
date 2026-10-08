@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Hva du kan gjøre med dette", toc: "Hva du kan gjøre" },
     { t: "ul", items: [
       "**Hold snittet over 4,0** – be aktivt om gode anmeldelser i stedet for bare å reagere på dårlige.",
-      "**Fjern urettferdige utliggere:** Falske og ulovlige 1-stjernere trekker snittet uforholdsmessig ned. Hvordan du gjør det, leser du under [Fjern falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/) og [Fjern 1-stjerne-anmeldelse uten tekst](/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/). Vil du heller at noen tar det for deg, kan du [få enkeltanmeldelser fjernet](/no/fjern-omtale/) fra 179 € – betaling kun ved suksess (rene stjernevurderinger uten tekst: egen prosedyre, 300 €, 50 % depositum).",
+      "**Fjern urettferdige utliggere:** Falske og ulovlige 1-stjernere trekker snittet uforholdsmessig ned. Hvordan du gjør det, leser du under [Fjern falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/) og [Fjern 1-stjerne-anmeldelse uten tekst](/no/magasin/fjern-1-stjerne-anmeldelse-uten-tekst/). Vil du heller at noen tar det for deg, kan du [få enkeltanmeldelser fjernet](/no/fjern-omtale/) fra 179 € – betaling kun ved suksess (også rene stjernevurderinger uten tekst: egen prosedyre, 300 €).",
       "**Er profilen grunnleggende skadet**, kan en ren ny start via [profilsletting](/no/magasin/slett-google-bedriftsprofil/) være mer fornuftig enn å kjempe for hver enkelt stjerne.",
     ] },
 

@@ -81,10 +81,10 @@ const article = {
     { t: "p", text: "Usiamo **solo le procedure ufficiali di Google**, per conto del titolare dell'attività: niente account falsi, niente bot, niente finte diffide legali. L'autore della recensione non viene a sapere chi ha richiesto la rimozione." },
     { t: "ul", items: [
       "**Prima una valutazione gratuita:** ti diciamo onestamente se una recensione è rimovibile. Se non lo è, non ti costa nulla.",
-      "**Prezzo:** 179 € per recensione rimossa; le recensioni con più di 4 settimane costano 50 € in più (229 €). Anche le valutazioni senza testo – procedura speciale, 300 €: 50 % di acconto, 50 % dopo la rimozione (ca. 80 % di successo).",
+      "**Prezzo:** 179 € per recensione rimossa; le recensioni con più di 4 settimane costano 250 €. Anche le valutazioni senza testo – procedura speciale, 300 € per valutazione rimossa (ca. 80 % di successo). Come per tutte le recensioni, al momento dell'ordine salvi una carta e l'addebito avviene automaticamente solo dopo che la recensione è stata rimossa.",
       "**Probabilità di successo:** circa 90 % per le recensioni fino a 4 settimane, circa 50 % per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni che accettiamo: da 3, −10 %; da 5, −15 %; da 10, −30 %.",
-      "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane. Paghi ogni recensione quando è sparita, tramite un link di pagamento sicuro.",
+      "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane. Ogni recensione viene addebitata automaticamente sulla carta o PayPal salvati quando è sparita.",
     ] },
     { t: "p", text: "Dal 2023 abbiamo rimosso oltre 1.600 Profili dell'attività su Google, eseguito più di 20.000 controlli gratuiti e lavorato per clienti in oltre 50 paesi. Con le recensioni false conviene muoversi in fretta: [come riconoscere ed eliminare le recensioni false su Google](/it/rivista/eliminare-recensioni-false-google/)." },
     { t: "cta", title: "Scopri quali recensioni possono sparire", text: "Cerca il tuo profilo, spunta le recensioni: il prezzo compare subito. **Paghi solo le recensioni effettivamente rimosse.**", btn: "Verifica le mie recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Valutazione gratuita", "Da 179 € a recensione", "Massima discrezione"] },
@@ -95,7 +95,7 @@ const article = {
     { q: "Rispondere a una recensione negativa fa male?", a: "No: una risposta pacata e nel merito non danneggia e mostra ai potenziali clienti come gestisci i problemi. Evita le risposte a caldo e non rivelare mai dati personali del cliente." },
     { q: "Posso scoprire chi ha scritto una recensione anonima?", a: "In genere no. Google non rivela chi c'è dietro una recensione. In caso di contenuti chiaramente illeciti possono esistere strade legali a seconda del paese: è una domanda da porre a un avvocato." },
     { q: "Se elimino il Profilo dell'attività spariscono le recensioni?", a: "Sì, eliminando l'intero profilo spariscono tutte le recensioni, anche quelle positive. Se il problema sono solo poche recensioni, di solito conviene rimuoverle singolarmente." },
-    { q: "Si può pagare per far rimuovere una recensione Google?", a: "Sì, purché si usino solo le procedure ufficiali di Google. Con RapidRemove costa **179 € per recensione rimossa** (229 € se ha più di 4 settimane), e non paghi nulla se la recensione resta." },
+    { q: "Si può pagare per far rimuovere una recensione Google?", a: "Sì, purché si usino solo le procedure ufficiali di Google. Con RapidRemove costa **179 € per recensione rimossa** (250 € se ha più di 4 settimane), e non paghi nulla se la recensione resta." },
     { q: "Posso chiedere a un cliente di cancellare la sua recensione?", a: "Puoi chiedere con garbo a un cliente reale di aggiornare la recensione se hai risolto il problema. Offrire sconti, rimborsi o regali in cambio viola le norme di Google." },
   ],
   related: [

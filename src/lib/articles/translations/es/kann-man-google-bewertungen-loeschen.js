@@ -81,10 +81,10 @@ const article = {
     { t: "p", text: "Usamos **solo los procedimientos propios de Google**, en nombre del propietario del negocio: sin cuentas falsas, sin bots y sin falsos avisos legales. Al autor de la reseña no se le dice quién ha pedido la eliminación." },
     { t: "ul", items: [
       "**Primero, valoración gratuita:** te decimos con honestidad si una reseña se puede eliminar. Si no, no te cuesta nada.",
-      "**Precio:** 179 € por reseña eliminada; las reseñas con más de 4 semanas cuestan 50 € más (229 €). Valoraciones solo de estrellas, sin texto: 300 € cada una con un procedimiento especial: 50 % de anticipo y 50 % tras la eliminación (aprox. 80 % de éxito); esto solo afecta a muy pocos casos especiales.",
+      "**Precio:** 179 € por reseña eliminada; las reseñas con más de 4 semanas cuestan 250 €. Valoraciones solo de estrellas, sin texto: 300 € por valoración eliminada con un procedimiento especial (aprox. 80 % de éxito). Como en todas las reseñas, al hacer el pedido guardas una tarjeta y el cargo se hace automáticamente solo cuando la reseña se ha eliminado.",
       "**Probabilidad de éxito:** aprox. 90 % en reseñas de hasta 4 semanas, aprox. 50 % en las más antiguas.",
       "**Descuento por volumen** sobre las reseñas que aceptamos: desde 3, −10 %; desde 5, −15 %; desde 10, −30 %.",
-      "**Duración:** normalmente unos días, a veces hasta 3 semanas. Pagas cada reseña cuando ya no está, mediante un enlace de pago seguro.",
+      "**Duración:** normalmente unos días, a veces hasta 3 semanas. Cada reseña se cobra automáticamente en tu tarjeta o PayPal guardados cuando ya no está.",
     ] },
     { t: "p", text: "Desde 2023 hemos eliminado más de 1.600 Perfiles de Empresa de Google, hecho más de 20.000 comprobaciones gratuitas y trabajado para clientes en más de 50 países. Con las reseñas falsas compensa actuar rápido: [cómo detectar y eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
     { t: "cta", title: "Descubre qué reseñas se pueden quitar", text: "Busca tu perfil, marca las reseñas y el precio aparece al instante. **Solo pagas por las reseñas que se eliminan de verdad.**", btn: "Comprobar mis reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Valoración gratuita", "Desde 179 € por reseña", "Discreción total"] },
@@ -95,7 +95,7 @@ const article = {
     { q: "¿Responder a una reseña negativa perjudica?", a: "No: una respuesta tranquila y objetiva no perjudica y muestra a los futuros clientes cómo gestionas los problemas. Evita las respuestas en caliente y nunca publiques datos personales del cliente." },
     { q: "¿Puedo averiguar quién escribió una reseña anónima?", a: "Por lo general, no. Google no revela quién está detrás de una reseña. Ante contenido claramente ilícito pueden existir vías legales según el país; es una cuestión para un abogado." },
     { q: "¿Si elimino mi Perfil de Empresa desaparecen las reseñas?", a: "Sí, al eliminar el perfil entero desaparecen todas las reseñas, también las buenas. Si el problema son solo unas pocas, suele ser mejor eliminarlas una a una." },
-    { q: "¿Puedo pagar para que eliminen una reseña de Google?", a: "Sí, siempre que se usen solo los procedimientos oficiales de Google. Con RapidRemove son **179 € por reseña eliminada** (229 € si tiene más de 4 semanas), y no pagas nada si la reseña se queda." },
+    { q: "¿Puedo pagar para que eliminen una reseña de Google?", a: "Sí, siempre que se usen solo los procedimientos oficiales de Google. Con RapidRemove son **179 € por reseña eliminada** (250 € si tiene más de 4 semanas), y no pagas nada si la reseña se queda." },
     { q: "¿Puedo pedir a un cliente que borre su reseña?", a: "Puedes pedir con educación a un cliente real que actualice su reseña si has resuelto el problema. Ofrecer descuentos, reembolsos o regalos a cambio infringe la política de Google." },
   ],
   related: [

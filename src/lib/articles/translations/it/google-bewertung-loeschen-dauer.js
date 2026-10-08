@@ -28,7 +28,7 @@ const article = {
       "**Violazioni evidenti** (spam, insulti, falso coinvolgimento palese): spesso da poche ore a pochi giorni.",
       "**Casi dubbi** che richiedono un controllo umano: spesso da una a qualche settimana.",
       "**Ricorsi ed escalation**: aggiungono tempo, a volte diverse settimane.",
-      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura speciale, 300 € (50 % di acconto, 50 % dopo la rimozione).",
+      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura speciale, 300 € per valutazione rimossa.",
     ] },
     { t: "warn", title: "Tempi tipici, non garantiti", text: "Tutte le durate in questo articolo sono intervalli osservati nella pratica, non impegni di Google. I tempi di gestione variano e nessuno può promettere una data – né una rimozione." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**La categoria giusta fin dall'inizio** – una prima segnalazione precisa ti risparmia il ricorso.",
       "**Prove pronte** – screenshot della recensione e del profilo dell'autore, una nota sul perché non c'è stato contatto con il cliente, date.",
-      "**Agisci entro quattro settimane** – le recensioni recenti hanno molte più probabilità e da noi costano 179 € invece di 229 €.",
+      "**Agisci entro quattro settimane** – le recensioni recenti hanno molte più probabilità e da noi costano 179 € invece di 250 €.",
       "**Una segnalazione pulita, non dieci** – segnalare più volte la stessa recensione non ti fa passare avanti.",
       "**Ondate di recensioni false e ricatti** – se arrivano recensioni da 1 stella insieme a una richiesta di denaro, usa il modulo dedicato di Google e leggi la nostra guida sull'[estorsione con recensioni Google](/it/rivista/estorsione-recensioni-google/). Non pagare, non rispondere, conserva gli screenshot.",
     ] },
-    { t: "cta", title: "Non aspettare settimane una risposta standard", text: "Cerca la tua attività, spunta le recensioni da eliminare e vedi subito il prezzo. **179 € per recensione rimossa**, 229 € se ha più di 4 settimane – addebitati solo quando la recensione è sparita.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi solo a risultato", "Valutazione onesta e gratuita"] },
+    { t: "cta", title: "Non aspettare settimane una risposta standard", text: "Cerca la tua attività, spunta le recensioni da eliminare e vedi subito il prezzo. **179 € per recensione rimossa**, 250 € se ha più di 4 settimane – addebitati solo quando la recensione è sparita.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi solo a risultato", "Valutazione onesta e gratuita"] },
 
     { t: "h2", id: "while-waiting", text: "Cosa fare mentre aspetti", toc: "Mentre aspetti" },
     { t: "p", text: "**Rispondi in pubblico, in modo breve e calmo – è l'unica cosa che puoi sempre fare, e i futuri clienti la leggono.** Una buona risposta non polemizza e non rivela dati dei clienti." },
@@ -100,7 +100,7 @@ const article = {
 
     { t: "h2", id: "different-times", text: "Perché più recensioni spariscono in momenti diversi", toc: "Momenti diversi" },
     { t: "p", text: "**Ogni recensione viene esaminata singolarmente, quindi se ne segnali cinque raramente spariscono lo stesso giorno.** Una può andarsene in due giorni, un'altra richiede un ricorso, una terza è ancora in sospeso dopo due settimane." },
-    { t: "p", text: "Per questo **fatturiamo per recensione**: paghi ciascuna quando è stata davvero rimossa – è possibile un link di pagamento separato per ogni recensione. Quelle su cui stiamo ancora lavorando non ti costano nulla, e con 3, 5 o 10 recensioni accettate lo sconto quantità (−10 %, −15 %, −30 %) vale per ognuna che viene rimossa. Tutti i prezzi e i confronti sono in [costo della rimozione di una recensione Google](/it/rivista/costo-rimozione-recensione-google/), e l'ordine si fa dalla nostra pagina per [rimuovere una singola recensione Google](/it/rimuovere-una-recensione/)." },
+    { t: "p", text: "Per questo **fatturiamo per recensione**: paghi ciascuna quando è stata davvero rimossa – ciascuna viene addebitata separatamente sulla carta o PayPal salvati. Quelle su cui stiamo ancora lavorando non ti costano nulla, e con 3, 5 o 10 recensioni accettate lo sconto quantità (−10 %, −15 %, −30 %) vale per ognuna che viene rimossa. Tutti i prezzi e i confronti sono in [costo della rimozione di una recensione Google](/it/rivista/costo-rimozione-recensione-google/), e l'ordine si fa dalla nostra pagina per [rimuovere una singola recensione Google](/it/rimuovere-una-recensione/)." },
     { t: "cta", title: "Scopri quali recensioni hanno davvero una possibilità", text: "Prima una valutazione gratuita: ti diciamo onestamente se una recensione è rimovibile. L'ordine richiede circa due minuti – di solito risolto in pochi giorni, a volte fino a tre settimane.", btn: "Avvia la verifica gratuita", href: "/it/verifica-profilo/?start=reviews", trust: ["Solo procedure ufficiali di Google", "L'autore non sa chi l'ha richiesto", "Oltre 1.600 profili rimossi dal 2023"] },
   ],
   faq: [
@@ -109,7 +109,7 @@ const article = {
     { q: "Posso fare ricorso più di una volta?", a: "No. Nello strumento di gestione delle recensioni hai **un solo ricorso per recensione**. Dopo la decisione finale l'unica altra via ufficiale è una richiesta di rimozione per motivi legali – e solo se il contenuto è illecito." },
     { q: "Google avvisa l'autore della recensione?", a: "All'autore **non viene detto chi ha segnalato la recensione né chi ne ha chiesto la rimozione** – né quando segnali tu, né quando ce ne occupiamo noi. Al massimo si accorgerà che la sua recensione non è più visibile." },
     { q: "Una recensione rimossa può ricomparire?", a: "Una recensione rimossa da Google per violazione delle norme di solito resta rimossa. La stessa persona però può scriverne una nuova, che viene esaminata separatamente e può essere segnalata di nuovo." },
-    { q: "Quanto ci vuole con RapidRemove?", a: "Di solito **pochi giorni, a volte fino a tre settimane** per recensione. Paghi **179 € per recensione rimossa** (229 € se ha più di 4 settimane) – solo quando è sparita." },
+    { q: "Quanto ci vuole con RapidRemove?", a: "Di solito **pochi giorni, a volte fino a tre settimane** per recensione. Paghi **179 € per recensione rimossa** (250 € se ha più di 4 settimane) – solo quando è sparita." },
     { q: "Rispondere alla recensione peggiora le mie probabilità?", a: "No. Una risposta pubblica breve e calma è sempre consentita e non influisce sul controllo. Evita solo insulti e dati dei clienti." },
   ],
   related: [

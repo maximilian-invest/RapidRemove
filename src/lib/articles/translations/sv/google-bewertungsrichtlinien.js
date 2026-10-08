@@ -63,7 +63,7 @@ const article = {
     { t: "h2", id: "grazon", text: "Gråzoner: stjärnor utan text, tidigare anställda, konkurrenter, prisklagomål", toc: "Gråzoner" },
     { t: "p", text: "Alla jobbiga recensioner passar inte snyggt in i en kategori. I de här fyra fallen avgör detaljerna – och vad du kan visa." },
     { t: "ul", items: [
-      "**Bara stjärnor, ingen text:** det finns ingen text som kan bryta mot policyn, så Google tittar främst på recensenten. Har personen aldrig varit kund eller ingår betyget i en våg är chanserna goda. RapidRemove tar bort även sådana betyg, med ett särskilt förfarande (300 €: 50 % i handpenning, 50 % efter borttagning, ca. 80 % chans att lyckas). Mer om det: [ta bort en 1-stjärnig recension utan text](/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/).",
+      "**Bara stjärnor, ingen text:** det finns ingen text som kan bryta mot policyn, så Google tittar främst på recensenten. Har personen aldrig varit kund eller ingår betyget i en våg är chanserna goda. RapidRemove tar bort även sådana betyg, med ett särskilt förfarande (300 € per borttaget betyg, ca. 80 % chans att lyckas). Mer om det: [ta bort en 1-stjärnig recension utan text](/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/).",
       "**Tidigare anställda:** recensioner från (före detta) anställda om arbetsgivaren räknas som **intressekonflikt**. Svårigheten är att Google inte vet vem som har jobbat hos dig – namn, innehåll om interna förhållanden och tidpunkt (strax efter en uppsägning) hjälper.",
       "**Konkurrenter:** också en intressekonflikt, men tas bara bort om det är troligt. Typiska tecken: samma konto berömmer en konkurrent i närheten, eller recensionen pekar ut deras erbjudande som alternativ.",
       "**Prisklagomål:** ”alldeles för dyrt” från en riktig kund är en **åsikt** och tas inte bort. Påstås ett osant faktum (”tog 2 000 kr för ingenting”) och du kan bevisa motsatsen kan felaktig information eller en juridisk begäran vara ett alternativ.",
@@ -94,7 +94,7 @@ const article = {
     { t: "p", text: "Hjälp lönar sig mest för **färska recensioner**: upp till 4 veckor gamla är chansen ca **90 %**, därefter ca **50 %**. Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) betalar du bara för recensioner som faktiskt försvinner." },
     { t: "table", rrCol: 2, head: ["Recensionens ålder", "Chans att lyckas", "Pris per borttagen recension"], rows: [
       ["Upp till 4 veckor", "ca. 90 %", "**179 €**"],
-      ["Äldre än 4 veckor", "ca. 50 %", "**229 €** (179 € + 50 €)"],
+      ["Äldre än 4 veckor", "ca. 50 %", "**250 €**"],
     ] },
     { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. Oftast tar det några dagar, ibland upp till 3 veckor. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
     { t: "cta", title: "Vilka av dina recensioner bryter mot reglerna?", text: "Sök din profil, bocka i recensionerna så säger vi ärligt vilka som kan tas bort. **Du betalar bara när recensionen faktiskt är borta.**", btn: "Få gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Gratis bedömning", "Bara vid framgång", "Bara Googles procedurer"] },
@@ -105,7 +105,7 @@ const article = {
     { q: "Är en 1-stjärnig recension utan text en överträdelse?", a: "Inte automatiskt. Har recensenten aldrig varit kund, eller ingår betyget i en falsk våg eller en intressekonflikt, är chanserna att få bort den däremot goda." },
     { q: "Hur många gånger kan jag överklaga ”ingen överträdelse”?", a: "**En gång per recension**, i Googles verktyg för hantering av recensioner. Därefter är beslutet slutgiltigt; vid olagligt innehåll kan du fortfarande skicka en juridisk begäran." },
     { q: "Hur lång tid tar det innan Google granskar en anmäld recension?", a: "Allt från dagar till veckor; Google lovar ingen tidsram. Hos oss tar en borttagning oftast några dagar, ibland upp till 3 veckor." },
-    { q: "Vad kostar det att få en recension borttagen?", a: "**179 €** per borttagen recension upp till 4 veckor gammal, **229 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 300 € med ett särskilt förfarande – 50 % i handpenning, 50 % efter borttagning." },
+    { q: "Vad kostar det att få en recension borttagen?", a: "**179 €** per borttagen recension upp till 4 veckor gammal, **250 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 300 € per borttaget betyg med ett särskilt förfarande." },
   ],
   related: [
     { label: "Ta bort en Google-recension – pris och beställning", url: "/sv/ta-bort-omdome/" },

@@ -76,7 +76,7 @@ const article = {
       "**Bewijs en context:** wat ontbreekt er in uw administratie, wat valt op aan het profiel van de schrijver, welke zinnen zijn beledigend of onwaar.",
       "**Snel handelen:** verse reviews zijn veel makkelijker te verwijderen. Bij ons is de slagingskans **ca. 90 % bij reviews tot 4 weken oud** en **ca. 50 % bij oudere reviews**.",
     ] },
-    { t: "p", text: "Daarom kost een review ouder dan 4 weken bij ons **€ 229** in plaats van € 179 – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
+    { t: "p", text: "Daarom kost een review ouder dan 4 weken bij ons **€ 250** in plaats van € 179 – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
 
     { t: "h2", id: "waiting", text: "Wat u kunt doen terwijl u wacht", toc: "Tijdens het wachten" },
     { t: "p", text: "Wachten betekent niet stilzitten. Zo beperkt u de schade terwijl Google beslist:" },
@@ -90,7 +90,7 @@ const article = {
 
     { t: "h2", id: "multiple", text: "Waarom meerdere reviews niet tegelijk verdwijnen", toc: "Meerdere reviews" },
     { t: "p", text: "Elke review wordt **afzonderlijk** beoordeeld – met een eigen categorie, eigen bewijs en een eigen leeftijd. Daarom kan de ene review na twee dagen weg zijn en de andere pas na drie weken." },
-    { t: "p", text: "Precies daarom rekenen wij **per review** af: u betaalt alleen voor reviews die echt verwijderd zijn (behalve de aanbetaling van 50 % bij de zeldzame beoordelingen met alleen sterren: € 150 van € 300), en per review is een aparte betaallink mogelijk. Bij meerdere geaccepteerde reviews krijgt u staffelkorting: **vanaf 3 −10 %, vanaf 5 −15 %, vanaf 10 −30 %** – op elke review die verwijderd wordt. Alle details staan op de pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/)." },
+    { t: "p", text: "Precies daarom rekenen wij **per review** af: u betaalt alleen voor reviews die echt verwijderd zijn – er wordt per review automatisch afgeschreven, pas na de verwijdering. Bij meerdere geaccepteerde reviews krijgt u staffelkorting: **vanaf 3 −10 %, vanaf 5 −15 %, vanaf 10 −30 %** – op elke review die verwijderd wordt. Alle details staan op de pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/)." },
     { t: "p", text: "Twijfelt u of een advocaat sneller is? In onze vergelijking [advocaat of technische verwijdering](/nl/magazine/negatieve-google-review-verwijderen-advocaat/) ziet u waarom de juridische route meestal maanden duurt." },
   ],
   faq: [
@@ -99,7 +99,7 @@ const article = {
     { q: "Waarom staat mijn melding al weken op “Decision pending”?", a: "Sommige meldingen worden handmatig beoordeeld en dat kan langer duren; Google geeft geen termijn. Controleer of u de juiste categorie heeft gekozen – een sterke, correcte melding is de beste versneller." },
     { q: "Hoort de schrijver wie de review heeft gemeld?", a: "Nee. Wanneer wij een verwijdering aanvragen, krijgt de schrijver niet te horen wie daarom heeft gevraagd." },
     { q: "Kan een verwijderde review terugkomen?", a: "Een review die wegens een schending is verwijderd, komt normaal gesproken niet terug. De persoon kan wel een nieuwe review schrijven; die wordt dan opnieuw op zichzelf beoordeeld en kan, als hij weer de regels schendt, opnieuw gemeld worden." },
-    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 179 per verwijderde review** (€ 229 bij reviews ouder dan 4 weken), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
+    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 179 per verwijderde review** (€ 250 bij reviews ouder dan 4 weken), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
   ],
   related: [
     { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },

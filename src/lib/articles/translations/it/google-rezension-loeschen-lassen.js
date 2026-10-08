@@ -40,7 +40,7 @@ const article = {
       ["Segnalare da soli (modulo)", "gratis", "spesso basso"],
       ["Fornitori economici", "ca. 19 – 49 € / recensione", "molto variabile"],
       ["Avvocati specializzati (singola recensione)", "ca. 100 – 159 € / recensione", "ca. 90 %, lento"],
-      ["Singole recensioni (RapidRemove)", "179 € / recensione rimossa (+50 € se più vecchia di 4 settimane)", "ca. 90 % (≤ 4 settimane), ca. 50 % (più vecchie) – paghi solo se rimossa"],
+      ["Singole recensioni (RapidRemove)", "179 € / recensione rimossa (250 € se più vecchia di 4 settimane)", "ca. 90 % (≤ 4 settimane), ca. 50 % (più vecchie) – paghi solo se rimossa"],
       ["Rimozione del profilo (RapidRemove)", "prezzo fisso, pagabile dopo il successo", "garantito (tutte le recensioni via)"],
     ] },
 
@@ -67,8 +67,8 @@ const article = {
     { q: "Esiste un modulo per far eliminare una recensione Google?", a: "Sì. Tramite il menu a tre puntini accanto alla recensione arrivi a «Segnala recensione» e quindi al modulo di segnalazione. Segui lo stato con lo strumento Google per la gestione delle recensioni." },
     { q: "Posso eliminare una recensione Google gratis?", a: "Le tue sì. Le recensioni altrui puoi segnalarle gratis, ma che Google le rimuova non è garantito. Per una rimozione sicura esistono servizi a pagamento con onorario di successo." },
     { q: "Come vedo se la mia recensione segnalata è stata eliminata?", a: "La recensione sparisce dal profilo e la media e il numero di recensioni cambiano. Non viene mostrato uno stato esplicito; uno screenshot precedente aiuta a confrontare." },
-    { q: "Quanto costa eliminare una recensione Google?", a: "Da gratis (auto-segnalazione) a 19–49 € (servizi economici) o 100–159 € a recensione con un avvocato. Con RapidRemove una singola recensione costa 179 € (229 € se più vecchia di 4 settimane), pagabili solo se viene rimossa; per la rimozione del profilo vale un prezzo fisso, pagabile dopo il successo." },
-    { q: "RapidRemove elimina singole recensioni?", a: "Sì: [rimuovere una recensione Google](/it/rimuovere-una-recensione/) – 179 € per recensione rimossa se ha al massimo 4 settimane (ca. 90 % di successo); per le recensioni più vecchie ca. 50 % di successo, +50 €. Anche le valutazioni senza testo si possono selezionare (procedura speciale: 300 € l'una, 50 % di acconto, 50 % dopo la rimozione, ca. 80 % di successo); sconto quantità da 3 recensioni (−10 %), 5 (−15 %) e 10 (−30 %). Per le recensioni con testo si paga solo se vengono rimosse. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
+    { q: "Quanto costa eliminare una recensione Google?", a: "Da gratis (auto-segnalazione) a 19–49 € (servizi economici) o 100–159 € a recensione con un avvocato. Con RapidRemove una singola recensione costa 179 € (250 € se più vecchia di 4 settimane), pagabili solo se viene rimossa; per la rimozione del profilo vale un prezzo fisso, pagabile dopo il successo." },
+    { q: "RapidRemove elimina singole recensioni?", a: "Sì: [rimuovere una recensione Google](/it/rimuovere-una-recensione/) – 179 € per recensione rimossa se ha al massimo 4 settimane (ca. 90 % di successo); per le recensioni più vecchie ca. 50 % di successo, 250 €. Anche le valutazioni senza testo si possono selezionare (procedura speciale: 300 € per valutazione rimossa, ca. 80 % di successo); sconto quantità da 3 recensioni (−10 %), 5 (−15 %) e 10 (−30 %). Si paga solo se vengono rimosse. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
   ],
   related: [
     { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

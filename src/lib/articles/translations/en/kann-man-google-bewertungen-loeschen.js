@@ -81,10 +81,10 @@ const article = {
     { t: "p", text: "We use **only Google's own procedures**, on behalf of the business owner – no fake accounts, no bots, no fake legal notices. The reviewer is not told who requested the removal." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
-      "**Price:** $179 per removed review; reviews older than 4 weeks cost $50 more ($229). Star-only ratings without text: $300 each via a special procedure – 50 % deposit, 50 % after removal (approx. 80 % success chance); this only affects very few special cases.",
+      "**Price:** $179 per removed review; reviews older than 4 weeks cost $250. In the USA, reviews older than 4 weeks always go through our special software procedure ($300); elsewhere an older review can occasionally need it too. Star-only ratings without text: $300 per removed review via a special procedure (approx. 80 % success chance). As with all reviews, you store a card when ordering and it is charged automatically only after the review has been removed.",
       "**Success chance:** approx. 90 % for reviews up to 4 weeks old, approx. 50 % for older ones.",
       "**Volume discount** on the reviews we accept: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Duration:** usually a few days, sometimes up to 3 weeks. You pay per review once it's gone, via a secure payment link.",
+      "**Duration:** usually a few days, sometimes up to 3 weeks. Each review is charged automatically to your stored card or PayPal once it's gone.",
     ] },
     { t: "p", text: "Since 2023 we've removed more than 1,600 Google Business Profiles, run over 20,000 free profile checks and worked for clients in 50+ countries. Fake reviews in particular are worth acting on fast: [how to spot and remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
     { t: "cta", title: "Find out which reviews can go", text: "Search your profile, tick the reviews – the price appears instantly. **You pay only for reviews that are actually removed.**", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Free assessment", "From $179 per review", "Discreet"] },
@@ -95,7 +95,7 @@ const article = {
     { q: "Does responding to a negative review hurt?", a: "No – a calm, factual reply doesn't hurt and shows prospects how you deal with problems. Avoid emotional replies and never reveal a customer's personal details." },
     { q: "Can I find out who wrote an anonymous review?", a: "Generally not. Google doesn't disclose who is behind a review. In cases of clearly unlawful content, legal steps may be possible depending on the country – that's a question for a lawyer." },
     { q: "Does deleting my Business Profile remove the reviews?", a: "Yes, deleting the whole profile removes all reviews – including the good ones. If only a few reviews are the problem, removing them individually is usually the better choice." },
-    { q: "Can I pay someone to remove a Google review?", a: "Yes, as long as only Google's own procedures are used. With RapidRemove it's **$179 per removed review** ($229 if older than 4 weeks), and you pay nothing if the review stays." },
+    { q: "Can I pay someone to remove a Google review?", a: "Yes, as long as only Google's own procedures are used. With RapidRemove it's **$179 per removed review** ($250 if older than 4 weeks), and you pay nothing if the review stays." },
     { q: "Can I ask a customer to delete their review?", a: "You may politely ask a real customer to update their review if you've fixed the issue. Offering discounts, refunds or gifts in exchange violates Google's policy." },
   ],
   related: [

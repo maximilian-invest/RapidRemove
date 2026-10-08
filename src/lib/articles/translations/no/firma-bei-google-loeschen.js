@@ -43,7 +43,7 @@ const article = {
     { t: "table", head: ["Leverandørtype", "Prisramme", "Resultat"], rows: [
       ["Rimelige tjenesteleverandører", "19 – 49 € per anmeldelse", "Svært variabelt"],
       ["Spesialiserte advokater", "100 – 159 € per anmeldelse", "Ca. 90 %, men tregt"],
-      ["Enkeltanmeldelser (RapidRemove)", "179 € per fjernet anmeldelse (eldre enn 4 uker: 229 €)", "Betaling kun ved resultat – profilen blir stående"],
+      ["Enkeltanmeldelser (RapidRemove)", "179 € per fjernet anmeldelse (eldre enn 4 uker: 250 €)", "Betaling kun ved resultat – profilen blir stående"],
       ["Profilsletting (RapidRemove)", "Fast pris, betales etter suksess", "Alle anmeldelser borte – betaling kun ved resultat"],
     ] },
 

@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**A categoria certa desde o início** – uma primeira denúncia precisa poupa-lhe o recurso.",
       "**Provas preparadas** – capturas de ecrã da avaliação e do perfil do autor, uma nota a explicar porque não houve contacto com o cliente, datas.",
-      "**Aja em menos de quatro semanas** – as avaliações recentes têm muito mais hipóteses e, connosco, custam 179 € em vez de 229 €.",
+      "**Aja em menos de quatro semanas** – as avaliações recentes têm muito mais hipóteses e, connosco, custam 179 € em vez de 250 €.",
       "**Uma denúncia bem feita, não dez** – denunciar várias vezes a mesma avaliação não o faz passar à frente na fila.",
       "**Vagas de avaliações falsas e chantagem** – se chegarem avaliações de 1 estrela acompanhadas de um pedido de dinheiro, use o formulário próprio do Google e leia o nosso guia sobre [extorsão com avaliações do Google](/pt/revista/extorsao-avaliacoes-google/). Não pague, não responda, guarde capturas de ecrã.",
     ] },
-    { t: "cta", title: "Não espere semanas por uma resposta-padrão", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o preço de imediato. **179 € por avaliação removida**, 229 € se tiver mais de 4 semanas – cobrado apenas quando a avaliação desaparecer.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só em caso de sucesso", "Avaliação honesta e gratuita"] },
+    { t: "cta", title: "Não espere semanas por uma resposta-padrão", text: "Pesquise a sua empresa, marque as avaliações que devem sair e veja o preço de imediato. **179 € por avaliação removida**, 250 € se tiver mais de 4 semanas – cobrado apenas quando a avaliação desaparecer.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só em caso de sucesso", "Avaliação honesta e gratuita"] },
 
     { t: "h2", id: "while-waiting", text: "O que fazer enquanto espera", toc: "Enquanto espera" },
     { t: "p", text: "**Responda publicamente, de forma breve e calma – é a única coisa que pode fazer sempre, e os futuros clientes leem-na.** Uma boa resposta não discute nem revela dados de clientes." },
@@ -100,7 +100,7 @@ const article = {
 
     { t: "h2", id: "different-times", text: "Porque é que várias avaliações desaparecem em momentos diferentes", toc: "Momentos diferentes" },
     { t: "p", text: "**Cada avaliação é analisada separadamente, por isso, se denunciar cinco, raramente desaparecem no mesmo dia.** Uma pode sair em dois dias, outra precisa de recurso e uma terceira continua pendente ao fim de duas semanas." },
-    { t: "p", text: "É por isso que **cobramos por avaliação**: paga cada uma quando é efetivamente removida – é possível receber um link de pagamento separado por avaliação. As que ainda estamos a tratar não lhe custam nada (exceto o sinal de 50 % nas raras classificações só com estrelas: 150 € de 300 €) e, com 3, 5 ou 10 avaliações aceites, o desconto por volume (−10 %, −15 %, −30 %) aplica-se a cada uma que é removida. Todos os preços e comparações estão em [preço para remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/), e a encomenda faz-se na nossa página para [remover uma avaliação do Google específica](/pt/remover-uma-avaliacao/)." },
+    { t: "p", text: "É por isso que **cobramos por avaliação**: paga cada uma quando é efetivamente removida – a cobrança é feita automaticamente, avaliação a avaliação. As que ainda estamos a tratar não lhe custam nada e, com 3, 5 ou 10 avaliações aceites, o desconto por volume (−10 %, −15 %, −30 %) aplica-se a cada uma que é removida. Todos os preços e comparações estão em [preço para remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/), e a encomenda faz-se na nossa página para [remover uma avaliação do Google específica](/pt/remover-uma-avaliacao/)." },
     { t: "cta", title: "Veja que avaliações têm hipóteses reais", text: "Primeiro uma análise gratuita: dizemos-lhe com honestidade se uma avaliação pode ser removida. A encomenda demora cerca de dois minutos – normalmente resolvido em poucos dias, por vezes até três semanas.", btn: "Iniciar verificação gratuita", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só procedimentos oficiais do Google", "O autor não sabe quem pediu", "Mais de 1.600 perfis removidos desde 2023"] },
   ],
   faq: [
@@ -109,7 +109,7 @@ const article = {
     { q: "Posso recorrer mais do que uma vez?", a: "Não. Na ferramenta de gestão de avaliações tem **um único recurso por avaliação**. Depois da decisão final, a única outra via oficial é um pedido de remoção por motivos legais – e apenas se o conteúdo for ilegal." },
     { q: "O Google avisa o autor da avaliação?", a: "Ao autor **não é dito quem denunciou a avaliação nem quem pediu a sua remoção** – nem quando denuncia por si, nem quando somos nós a tratar. No máximo, vai reparar que a avaliação deixou de estar visível." },
     { q: "Uma avaliação removida pode voltar?", a: "Uma avaliação removida pelo Google por violar as políticas normalmente não volta. A mesma pessoa pode, no entanto, escrever uma nova avaliação, que é analisada à parte e também pode ser denunciada." },
-    { q: "Quanto tempo demora com a RapidRemove?", a: "Normalmente **poucos dias, por vezes até três semanas** por avaliação. Paga **179 € por avaliação removida** (229 € se tiver mais de 4 semanas) – apenas quando desaparecer." },
+    { q: "Quanto tempo demora com a RapidRemove?", a: "Normalmente **poucos dias, por vezes até três semanas** por avaliação. Paga **179 € por avaliação removida** (250 € se tiver mais de 4 semanas) – apenas quando desaparecer." },
     { q: "Responder à avaliação prejudica as minhas hipóteses?", a: "Não. Uma resposta pública curta e calma é sempre permitida e não influencia a análise. Evite apenas insultos e dados de clientes." },
   ],
   related: [

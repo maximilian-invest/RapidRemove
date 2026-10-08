@@ -40,7 +40,7 @@ const article = {
       ["Report yourself (form)", "free", "often low"],
       ["Cheap providers", "approx. $20 – 55 / review", "highly variable"],
       ["Specialist lawyers (single review)", "approx. $110 – 175 / review", "approx. 90%, slow"],
-      ["Single-review removal (RapidRemove)", "$179 / removed review (+$50 if older than 4 weeks)", "approx. 90 % (≤ 4 weeks), approx. 50 % (older) – pay only if removed"],
+      ["Single-review removal (RapidRemove)", "$179 / removed review ($250 if older than 4 weeks)", "approx. 90 % (≤ 4 weeks), approx. 50 % (older) – pay only if removed"],
       ["Profile removal (RapidRemove)", "fixed price, payable after success", "guaranteed (all reviews gone)"],
     ] },
 
@@ -67,8 +67,8 @@ const article = {
     { q: "Is there a form to have a Google review removed?", a: "Yes. Via the three-dot menu next to the review you reach “Report review” and thus the report form. Track the status via the Google tool for managing reviews." },
     { q: "Can I have a Google review removed for free?", a: "Your own reviews yes. Third-party reviews you can report for free – whether Google removes them isn't guaranteed. For reliable removal there are paid services with a success fee." },
     { q: "How do I see whether my reported review was deleted?", a: "The review disappears from the profile and the average and review count change. No explicit status is shown – a before screenshot helps with the comparison." },
-    { q: "What does it cost to delete a Google review?", a: "From free (self-report) to $20–55 (cheap services) to $110–175 per review with a lawyer. RapidRemove's single-review removal costs $179 per removed review (+$50 if older than 4 weeks, volume discount from 3 reviews); for profile removal there's a fixed price – both payable only after success." },
-    { q: "Does RapidRemove delete individual reviews?", a: "Yes: [remove a single Google review](/en/remove-single-reviews/). Reviews with text are paid only on success; star-only ratings without text are removed with a special procedure ($300 each: 50 % deposit, 50 % after removal; approx. 80 % success chance). Reviews up to 4 weeks old: approx. 90 % success chance, $179 each; older ones: approx. 50 %, +$50 each. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
+    { q: "What does it cost to delete a Google review?", a: "From free (self-report) to $20–55 (cheap services) to $110–175 per review with a lawyer. RapidRemove's single-review removal costs $179 per removed review ($250 if older than 4 weeks, volume discount from 3 reviews); for profile removal there's a fixed price – both payable only after success." },
+    { q: "Does RapidRemove delete individual reviews?", a: "Yes: [remove a single Google review](/en/remove-single-reviews/). You pay only on success; star-only ratings without text are removed with a special procedure ($300 per removed review; approx. 80 % success chance). Reviews up to 4 weeks old: approx. 90 % success chance, $179 each; older ones: approx. 50 %, $250 each. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
   ],
   related: [
     { label: "Remove Google reviews: costs & methods", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

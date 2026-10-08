@@ -37,7 +37,7 @@ const article = {
       "**Effetto conservativo** del 5% → 1.500 € al mese.",
       "**Moltiplica per la durata di visibilità:** una recensione rimane spesso visibile 12+ mesi → 18.000 € nell'arco di un anno.",
     ] },
-    { t: "p", text: "Anche con ipotesi prudenti, la perdita cumulata supera quasi sempre i costi di una soluzione professionale – per confronto, la [rimozione di una singola recensione](/it/rimuovere-una-recensione/) con RapidRemove costa 179 € (229 € se più vecchia di 4 settimane), pagabili solo se la recensione viene davvero eliminata. Proprio questo calcolo sfugge a molti, perché il danno emerge gradualmente e in modo invisibile – come mancato fatturato, non come una fattura." },
+    { t: "p", text: "Anche con ipotesi prudenti, la perdita cumulata supera quasi sempre i costi di una soluzione professionale – per confronto, la [rimozione di una singola recensione](/it/rimuovere-una-recensione/) con RapidRemove costa 179 € (250 € se più vecchia di 4 settimane), pagabili solo se la recensione viene davvero eliminata. Proprio questo calcolo sfugge a molti, perché il danno emerge gradualmente e in modo invisibile – come mancato fatturato, non come una fattura." },
 
     { t: "h2", id: "indirekt", text: "I costi indiretti – spesso più gravi della perdita diretta", toc: "Costi indiretti" },
     { t: "ul", items: [

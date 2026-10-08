@@ -40,7 +40,7 @@ const article = {
     { t: "h2", id: "machen", text: "Vad du kan göra med det", toc: "Vad du kan göra" },
     { t: "ul", items: [
       "**Håll snittet över 4,0** – hämta in bra recensioner aktivt, i stället för att bara reagera på dåliga.",
-      "**Ta bort orättvisa extremvärden:** Fejk och rättsstridiga 1-stjärnor drar ner snittet oproportionerligt. Hur det går till läser du om under [Ta bort falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) och [Ta bort 1-stjärnig recension utan text](/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/) – eller så låter du RapidRemove [ta bort just de enskilda recensionerna](/sv/ta-bort-omdome/) och betalar bara för dem som faktiskt försvinner (stjärnbetyg utan text: särskilt förfarande, 300 € – 50 % i handpenning, 50 % efter borttagning).",
+      "**Ta bort orättvisa extremvärden:** Fejk och rättsstridiga 1-stjärnor drar ner snittet oproportionerligt. Hur det går till läser du om under [Ta bort falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) och [Ta bort 1-stjärnig recension utan text](/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/) – eller så låter du RapidRemove [ta bort just de enskilda recensionerna](/sv/ta-bort-omdome/) och betalar bara för dem som faktiskt försvinner (stjärnbetyg utan text: särskilt förfarande, 300 € per borttaget betyg).",
       "**Är profilen grundläggande skadad** kan en ren nystart via [profilradering](/sv/magasin/radera-google-foretagsprofil/) vara mer meningsfullt än kampen om varje enskild stjärna.",
     ] },
 

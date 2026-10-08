@@ -63,7 +63,7 @@ const article = {
     { t: "h2", id: "grijs", text: "Grijze gebieden: sterren zonder tekst, oud-medewerkers, concurrenten, prijsklachten", toc: "Grijze gebieden" },
     { t: "p", text: "Niet elke vervelende review valt netjes in één categorie. Bij deze vier gevallen hangt het af van de details – en van wat u kunt aantonen." },
     { t: "ul", items: [
-      "**Alleen sterren, geen tekst:** er is geen tekst die tegen het beleid kan ingaan, dus Google beoordeelt vooral de reviewer zelf. Was diegene nooit klant of past de review in een golf, dan zijn de kansen goed. Meer hierover: [1-sterreview zonder tekst verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/). RapidRemove verwijdert ze met een speciale procedure (€ 300: 50 % aanbetaling, 50 % pas na verwijdering).",
+      "**Alleen sterren, geen tekst:** er is geen tekst die tegen het beleid kan ingaan, dus Google beoordeelt vooral de reviewer zelf. Was diegene nooit klant of past de review in een golf, dan zijn de kansen goed. Meer hierover: [1-sterreview zonder tekst verwijderen](/nl/magazine/1-ster-review-zonder-tekst-verwijderen/). RapidRemove verwijdert ze met een speciale procedure (€ 300 per verwijderde review).",
       "**Oud-medewerkers:** reviews van (oud-)medewerkers over hun werkgever vallen onder **belangenconflict**. Lastig is dat Google niet weet wie bij u gewerkt heeft – naam, inhoud over interne zaken en timing (vlak na een ontslag) helpen.",
       "**Concurrenten:** ook een belangenconflict, maar alleen verwijderbaar als het aannemelijk is. Typische signalen: hetzelfde account prijst een concurrent in de buurt aan, of de review noemt hun aanbod als alternatief.",
       "**Prijsklachten:** „veel te duur” van een echte klant is een **mening** en wordt niet verwijderd. Wordt er een onwaar feit genoemd („rekende € 200 voor niets”) terwijl u het tegendeel kunt bewijzen, dan kan misinformatie of een juridisch verzoek een optie zijn.",
@@ -94,9 +94,9 @@ const article = {
     { t: "p", text: "Hulp loont vooral bij **verse reviews**: tot 4 weken oud is de slagingskans ca. **90 %**, daarna ca. **50 %**. Via onze [Google review verwijderservice](/nl/review-laten-verwijderen/) betaalt u alleen voor reviews die echt verdwijnen." },
     { t: "table", rrCol: 2, head: ["Leeftijd van de review", "Slagingskans", "Prijs per verwijderde review"], rows: [
       ["Tot 4 weken", "ca. 90 %", "**€ 179**"],
-      ["Ouder dan 4 weken", "ca. 50 %", "**€ 229** (€ 179 + € 50)"],
+      ["Ouder dan 4 weken", "ca. 50 %", "**€ 250**"],
     ] },
-    { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: € 300 per stuk – 50 % aanbetaling, 50 % pas na verwijdering (ca. 80 % slagingskans). Meestal duurt het een paar dagen, soms tot 3 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
+    { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: € 300 per verwijderde review (ca. 80 % slagingskans). Meestal duurt het een paar dagen, soms tot 3 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
     { t: "cta", title: "Welke van uw reviews schenden de regels?", text: "Zoek uw profiel, vink de reviews aan en wij zeggen eerlijk welke verwijderbaar zijn. **Alleen betalen als de review echt weg is.**", btn: "Gratis laten beoordelen", href: "/nl/profiel-checken/?start=reviews", trust: ["Gratis beoordeling", "Alleen bij succes", "Alleen procedures van Google"] },
   ],
   faq: [
@@ -105,7 +105,7 @@ const article = {
     { q: "Is een 1-sterreview zonder tekst een schending?", a: "Niet automatisch. Was de reviewer nooit klant, of is de review deel van een nepgolf of een belangenconflict, dan zijn de kansen op verwijdering wel goed." },
     { q: "Hoe vaak kan ik in beroep gaan tegen „geen schending”?", a: "**Eén keer per review**, in de Reviewbeheertool van Google. Na dat beroep is de beslissing definitief; bij onwettige inhoud blijft een juridisch verzoek mogelijk." },
     { q: "Hoe lang duurt het voordat Google een gemelde review beoordeelt?", a: "Dat varieert van dagen tot weken; Google geeft geen vaste termijn. Bij ons duurt een verwijdering meestal een paar dagen, soms tot 3 weken." },
-    { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 179** per verwijderde review tot 4 weken oud, **€ 229** daarboven. U betaalt alleen als de review echt weg is – niets vooraf." },
+    { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 179** per verwijderde review tot 4 weken oud, **€ 250** daarboven. U betaalt alleen als de review echt weg is – niets vooraf." },
   ],
   related: [
     { label: "Google review laten verwijderen – prijs en bestellen", url: "/nl/review-laten-verwijderen/" },

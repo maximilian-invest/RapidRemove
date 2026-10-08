@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "Ha senso quando le recensioni sono diverse, quando una segnalazione è già stata respinta o quando semplicemente non hai tempo. RapidRemove usa solo le procedure ufficiali di Google, per conto del titolare dell'attività: niente account falsi, niente bot, niente finte diffide legali, e l'autore non viene a sapere chi ha chiesto la rimozione." },
     { t: "ul", items: [
       "**Prima la valutazione gratuita:** ti diciamo onestamente se una recensione è rimovibile. Se non lo è, non costa nulla.",
-      "**179 € per recensione rimossa**, +50 € per quelle più vecchie di 4 settimane. Paghi solo quando la recensione è sparita.",
+      "**179 € per recensione rimossa**, 250 € per quelle più vecchie di 4 settimane. Paghi solo quando la recensione è sparita.",
       "**Probabilità di successo:** circa il **90 %** per recensioni fino a 4 settimane, circa il **50 %** per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni accettate: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane.",
@@ -104,9 +104,9 @@ const article = {
     { q: "Quali recensioni Google violano le norme?", a: "Quelle non basate su un'esperienza reale, quelle scritte in conflitto di interessi (dipendenti, ex dipendenti, concorrenti) e quelle con molestie, odio, volgarità, informazioni personali, spam o contenuti fuori tema. **Le opinioni negative di clienti reali non sono violazioni.**" },
     { q: "Google rimuove una recensione solo perché è ingiusta?", a: "No. Google dice che non bisogna segnalare una recensione solo perché non si è d'accordo. Viene rimossa solo se viola una norma precisa o la legge." },
     { q: "Posso cancellare io una recensione Google come titolare?", a: "No. Solo l'autore può modificare o eliminare la propria recensione. Come titolare puoi segnalarla, presentare ricorso una volta, inviare una richiesta legale per contenuti illeciti e rispondere pubblicamente." },
-    { q: "Una valutazione a 1 stella senza testo viola le norme?", a: "Di per sé no. Diventa rimovibile quando ci sono indizi che sia falsa, per esempio nessun riscontro tra i clienti e un profilo con attività sospetta, oppure un'ondata di valutazioni simili. Con RapidRemove anche queste valutazioni si possono rimuovere con una procedura speciale: 300 € l'una, 50 % di acconto, 50 % dopo la rimozione, ca. 80 % di successo." },
+    { q: "Una valutazione a 1 stella senza testo viola le norme?", a: "Di per sé no. Diventa rimovibile quando ci sono indizi che sia falsa, per esempio nessun riscontro tra i clienti e un profilo con attività sospetta, oppure un'ondata di valutazioni simili. Con RapidRemove anche queste valutazioni si possono rimuovere con una procedura speciale: 300 € per valutazione rimossa, ca. 80 % di successo." },
     { q: "Cosa succede se Google non rileva alcuna violazione?", a: "Puoi **presentare ricorso una volta per recensione** nello strumento di gestione delle recensioni; il ricorso può essere inoltrato a un livello superiore e riceve una decisione definitiva. Per diffamazione o contenuti illeciti c'è anche la richiesta legale di rimozione." },
-    { q: "Quanto costa far rimuovere una recensione che viola le norme?", a: "Con RapidRemove, **179 € per recensione rimossa** (229 € se ha più di 4 settimane), solo quando la recensione è sparita. La valutazione iniziale è gratuita." },
+    { q: "Quanto costa far rimuovere una recensione che viola le norme?", a: "Con RapidRemove, **179 € per recensione rimossa** (250 € se ha più di 4 settimane), solo quando la recensione è sparita. La valutazione iniziale è gratuita." },
   ],
   related: [
     { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },

@@ -37,7 +37,7 @@ const article = {
       "**Efecto conservador** del 5 % → 1.500 € al mes.",
       "**Multiplicar por el tiempo de visibilidad:** una reseña suele mantenerse visible 12 meses o más → 18.000 € en un año.",
     ] },
-    { t: "p", text: "Incluso con hipótesis conservadoras, la pérdida acumulada supera con creces el coste de una solución profesional: [eliminar una reseña de Google](/es/eliminar-una-resena/) con RapidRemove cuesta 179 € por reseña eliminada (229 € si tiene más de 4 semanas), y solo se paga si desaparece. Muchos pasan por alto este cálculo porque el daño se produce de forma gradual e invisible: como ventas no realizadas, no como una factura." },
+    { t: "p", text: "Incluso con hipótesis conservadoras, la pérdida acumulada supera con creces el coste de una solución profesional: [eliminar una reseña de Google](/es/eliminar-una-resena/) con RapidRemove cuesta 179 € por reseña eliminada (250 € si tiene más de 4 semanas), y solo se paga si desaparece. Muchos pasan por alto este cálculo porque el daño se produce de forma gradual e invisible: como ventas no realizadas, no como una factura." },
 
     { t: "h2", id: "indirekt", text: "Los costes indirectos — a menudo mayores que la pérdida directa", toc: "Costes indirectos" },
     { t: "ul", items: [
