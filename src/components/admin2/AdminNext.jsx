@@ -17,7 +17,7 @@ import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
 import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf } from "./model";
 import PaidCelebration from "./Celebrate";
-import { OrdersList, OrderDetail, ReviewsScreen, keyOf } from "./OrdersScreens";
+import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoSheet } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
@@ -446,7 +446,9 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
   } else if (sheet && sheet.kind === "due" && o) {
     body = <DueSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "mailhist" && o) {
-    body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} />;
+    body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} payOpen={!!sheet.payOpen} />;
+  } else if (sheet && sheet.kind === "orderinfo" && o) {
+    body = <OrderInfoSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {

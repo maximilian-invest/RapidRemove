@@ -817,3 +817,7 @@
 .an .duein{margin-left:auto;height:36px;padding:0 10px;border-radius:10px;background:#fff;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--ink)}
 .an label.aopt{cursor:pointer}
 .an .lnkb svg{width:14px;height:14px;vertical-align:-2px;margin-right:5px}
+.an .sh-info{background:var(--g1);margin:0}
+.an .sh-info .ir+.ir{border-top-color:#e6e6e6}
+.an .sh-info .ir .ico{background:#fff}
+.an .aopt .ol small{display:block;font-size:12px}

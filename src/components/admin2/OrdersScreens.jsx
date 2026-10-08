@@ -4,11 +4,11 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
-import { usePayMails, PayActions, PayRows } from "./PayFlow";
+import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
@@ -212,12 +212,12 @@ export function OrderDetail({ ctx, id }) {
         <button type="button" className="ir" onClick={() => openSheet({ kind: "staff", forId: o.id })}>
           {s ? <img src={s.src} alt="" /> : <span className="ico"><UserPlus /></span>}
           <span className="t"><span>Betreuer</span><b>{s ? s.name : "Nicht zugewiesen"}</b></span><ChevronRight /></button>
-        <div className="ir"><span className="ico"><Mail /></span><span className="t"><span>E-Mail</span><b>{o.email || "—"}</b></span></div>
-        <SourceTag o={o} />
-        {o.phone ? <div className="ir"><span className="ico"><Phone /></span><span className="t"><span>Telefon</span><b>{o.phone}</b></span></div> : null}
-        <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
-        {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
+        <button type="button" className="ir" onClick={() => openSheet({ kind: "orderinfo", forId: o.id })}>
+          <span className="ico"><ClipboardList /></span>
+          <span className="t"><span>Bestellinfo</span><b>{[o.email, isRev ? `${items.length} Bewertungen` : (o.profile || o.company), o.source && o.source.label].filter(Boolean).join(" · ") || "—"}</b></span>
+          <ChevronRight /></button>
         {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
+        <MailRow o={o} ctx={ctx} payOpen={payOpen(o, now, ptasks)} />
       </div>
       <div className="cact">
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>
@@ -306,6 +306,28 @@ const payOpen = (x, now, ptasks) => {
   if (r) return r.unpaidN > 0; // Bewertungen: offen, sobald eine gelöschte Bewertung unbezahlt ist
   const bx = bucketsOf(x, now); return bx.includes("pay") || bx.includes("inkasso") || (x.status === "done" && x.pay !== "paid");
 };
+
+/** Sheet „Bestellinfo": Kontakt, Quelle, Leistung, Adresse, Screenshots – damit der Auftrag oben kompakt bleibt. */
+export function OrderInfoSheet({ o, ctx, close }) {
+  const isRev = o.service === "reviews";
+  const items = o.reviewItems || [];
+  const created = o.createdAt ? new Date(o.createdAt).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "";
+  const copy = (v, l) => { try { navigator.clipboard.writeText(v); ctx.toast(l + " kopiert"); } catch (e) { /* */ } };
+  return (
+    <>
+      <h3 style={{ paddingBottom: 2 }}>Bestellinfo</h3>
+      <p className="shp">{o.id}{created ? " · bestellt " + created : ""}</p>
+      <div className="info sh-info">
+        <button type="button" className="ir" onClick={() => o.email && copy(o.email, "E-Mail")}><span className="ico"><Mail /></span><span className="t"><span>E-Mail · tippen zum Kopieren</span><b>{o.email || "—"}</b></span></button>
+        {o.phone ? <button type="button" className="ir" onClick={() => copy(o.phone, "Telefon")}><span className="ico"><Phone /></span><span className="t"><span>Telefon · tippen zum Kopieren</span><b>{o.phone}</b></span></button> : null}
+        <SourceTag o={o} />
+        <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
+        {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
+        <button type="button" className="ir" onClick={() => { close(); ctx.pushReviews(o.id); }}><span className="ico">{isRev ? <StarOff /> : <Store />}</span><span className="t"><span>{isRev ? "Bewertungen & Screenshots" : "Screenshots"}</span><b>{isRev ? `${items.length} eingereicht` : "Profil ansehen"}</b></span><ChevronRight /></button>
+      </div>
+    </>
+  );
+}
 
 /** „Zahlung offen": Hauptaktion (eskaliert) + „Zahlung bereits erhalten?" – Design Okt 2026. */
 function PayBlock({ o, ctx, r, group, altHref }) {

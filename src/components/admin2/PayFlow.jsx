@@ -9,10 +9,32 @@ import React from "react";
 import { Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard } from "lucide-react";
 import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
+import { revState } from "./model";
 
 const stageOf = (t) => { const m = String(t || "").match(/Stufe\s*(\d)/i); return m ? Number(m[1]) : null; };
 const dShort = (iso) => new Date(iso).toLocaleDateString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit" });
 const dTime = (iso) => { const d = new Date(iso); return d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" }) + ", " + d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" }); };
+
+/** Nächster Schritt im Mahnverlauf. Bewertungen (nicht PayPal/Wise): Stufe 1 + 2 gehen automatisch raus
+ *  (followup.ts: 24 h nach der Löschung, Stufe 2 48 h danach, nur 8–20 Uhr Ortszeit) – danach manuell.
+ *  Profil: nur die Zahlungsziel-Mail ist automatisch. */
+export function nextStep(o, pm, ptasks) {
+  if (!pm) return null;
+  if (o.pay === "inkasso") return { label: "An Inkasso übergeben", sub: "", auto: false };
+  const isRev = o.service === "reviews";
+  const pd = o.payDue && o.payDue.at ? o.payDue : null;
+  if (!isRev && pd && !pd.sent) return { label: "Zahlungsziel-Mail", sub: dShort(pd.at), auto: true };
+  if (pm.level >= pm.stages.length) return { label: "Übergabe an Inkasso", sub: "", auto: false };
+  const label = pm.stages[pm.level][1];
+  const ppw = o.payPref === "wise" || o.payPref === "paypal" || !!o.paypal;
+  if (isRev && !ppw && pm.level < 2) {
+    const r = revState(o, (ptasks || {})[o.id]);
+    const lastMahn = pm.sent.filter((x) => x.kind === "mahn").map((x) => new Date(x.ts).getTime()).sort((a, b) => b - a)[0];
+    const at = pm.level === 0 ? (r && r.unpaidSince ? r.unpaidSince + 24 * 3600e3 : null) : lastMahn ? lastMahn + 48 * 3600e3 : null;
+    if (at) return { label, sub: at <= Date.now() ? "in Kürze (8–20 Uhr Ortszeit)" : dShort(new Date(at).toISOString()), auto: true };
+  }
+  return { label, sub: "", auto: false };
+}
 
 /** Zahlungs-Mails aus dem Verlauf des Auftrags. */
 export function payMailsOf(events, o) {
@@ -32,9 +54,22 @@ export function payMailsOf(events, o) {
     sent.push({ id: e.id, label: label + (e.auto || /automatisch/i.test(t) ? " · automatisch" : ""), ts: e.ts, hasHtml: e.hasHtml, stage, kind });
   }
   sent.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
+  // ALLE Mails an den Kunden (automatisch + von euch), damit man sieht, was überhaupt bei ihm ankommt.
+  const mails = [];
+  for (const e of events || []) {
+    const t = String(e.t || ""), d = String(e.d || "");
+    const isMail = (e.hasHtml || /gesendet|versendet|verschickt/i.test(t)) && !/nicht gesendet|fehlgeschlagen|keine mail|eingeplant|^partner|^kunde:/i.test(t);
+    if (!isMail) continue;
+    const pay = sent.find((x) => x.id === e.id);
+    let label = pay ? pay.label.replace(/ · automatisch$/, "") : t.replace(/\s*\((automatisch[^)]*)\)/i, "").replace(/ (gesendet|versendet|verschickt)\b/i, "").trim();
+    if (/^Dashboard-Update an Kunden/i.test(t) && !pay) label = "Status-Update" + (d ? ": " + d.replace(/https?:\/\/\S+/g, "Bewertung").slice(0, 60) : "");
+    const auto = !!e.auto || /automatisch|Schutzmodell|Bestellbestätigung|Zahlung erfolgreich|Zahlungsaufforderung|Erinnerung gesendet \(/i.test(t);
+    mails.push({ id: e.id, label, ts: e.ts, hasHtml: e.hasHtml, auto });
+  }
+  mails.sort((a, b) => String(b.ts).localeCompare(String(a.ts)));
   const mahn = sent.filter((x) => x.kind === "mahn" || x.kind === "due");
   const level = Math.max(0, ...mahn.map((x) => x.stage || 0)) || (mahn.length ? 1 : 0);
-  return { sent, level, linkSent: sent.some((x) => x.kind === "link") || !!o.paylinkSent, stages: ST };
+  return { sent, mails, level, linkSent: sent.some((x) => x.kind === "link") || !!o.paylinkSent, stages: ST };
 }
 
 export function usePayMails(o) {
@@ -111,9 +146,6 @@ export function PayRows({ o, ctx, pm }) {
   const isRev = o.service === "reviews";
   const pd = o.payDue && o.payDue.at ? o.payDue : null;
   const over = pd && new Date(pd.at).getTime() <= Date.now();
-  const next = !pm ? "" : o.pay === "inkasso" ? "bei Inkasso"
-    : pd && !pd.sent ? `Zahlungsziel-Mail am ${dShort(pd.at)}`
-    : pm.level < pm.stages.length ? `Nächste: ${pm.stages[pm.level][1]} · manuell` : "Nächste: Inkasso-Übergabe";
   return (
     <>
       {!isRev ? (
@@ -124,12 +156,22 @@ export function PayRows({ o, ctx, pm }) {
           <ChevronRight />
         </button>
       ) : null}
-      <button type="button" className="ir" onClick={() => ctx.openSheet({ kind: "mailhist", forId: o.id })}>
-        <span className="ico"><Mail /></span>
-        <span className="t"><span>Mail-Verlauf · {pm ? pm.sent.length : "…"} gesendet</span><b>{next || "…"}</b></span>
-        <ChevronRight />
-      </button>
     </>
+  );
+}
+
+/** Zeile „Mail-Verlauf" (jeder Auftrag): alle Mails an den Kunden; bei offener Zahlung zusätzlich der nächste Schritt. */
+export function MailRow({ o, ctx, payOpen }) {
+  const pm = usePayMails(o);
+  const ns = payOpen ? nextStep(o, pm, ctx.ptasks) : null;
+  const next = !pm ? "…" : ns ? (o.pay === "inkasso" ? "bei Inkasso" : `Nächste: ${ns.label}${ns.auto ? ` · automatisch${ns.sub ? " " + (/^\D/.test(ns.sub) ? ns.sub : "am " + ns.sub) : ""}` : " · manuell"}`)
+    : pm.mails.length ? `Zuletzt: ${pm.mails[0].label} · ${dShort(pm.mails[0].ts)}` : "Noch keine Mail";
+  return (
+    <button type="button" className="ir" onClick={() => ctx.openSheet({ kind: "mailhist", forId: o.id, payOpen })}>
+      <span className="ico"><Mail /></span>
+      <span className="t"><span>Mail-Verlauf · {pm ? pm.mails.length : "…"} {pm && pm.mails.length === 1 ? "Mail" : "Mails"}</span><b>{next}</b></span>
+      <ChevronRight />
+    </button>
   );
 }
 
@@ -175,7 +217,7 @@ export function DueSheet({ o, ctx, close }) {
 }
 
 /** Sheet „Mail-Verlauf": geplant (Zahlungsziel) bzw. nächster Schritt, dann alle gesendeten Mails (neueste zuerst, Vorschau). */
-export function MailHistSheet({ o, ctx }) {
+export function MailHistSheet({ o, ctx, payOpen }) {
   const pm = usePayMails(o);
   const [busy, setBusy] = React.useState("");
   const pd = o.payDue && o.payDue.at ? o.payDue : null;
@@ -188,24 +230,23 @@ export function MailHistSheet({ o, ctx }) {
     } catch (e) { ctx.toast("Vorschau: " + e.message); }
     setBusy("");
   };
-  const plan = !pm ? null : o.pay === "inkasso" ? ["An Inkasso übergeben", ""]
-    : pd && !pd.sent ? ["Zahlungsziel-Mail", "geplant · " + dShort(pd.at)]
-    : pm.level < pm.stages.length ? [pm.stages[pm.level][1], "als Nächstes · manuell"] : ["Übergabe an Inkasso", "als Nächstes"];
+  const ns = payOpen ? nextStep(o, pm, ctx.ptasks) : null;
+  const plan = !ns ? null : o.pay === "inkasso" ? [ns.label, ""] : [ns.label, ns.auto ? "automatisch · " + (ns.sub || "geplant") : "als Nächstes · manuell"];
   return (
     <>
       <h3 style={{ paddingBottom: 2 }}>Mail-Verlauf</h3>
-      <p className="shp">An {o.email}</p>
+      <p className="shp">Alle Mails an {o.email} – automatische und von euch gesendete.</p>
       <div className="opts">
         {!pm ? <div className="aopt"><Loader className="spin" />Lädt …</div> : (
           <>
             {plan ? <div className="aopt"><span className="ico" style={{ color: "var(--primary)" }}><Clock /></span><span className="ol">{plan[0]}</span><span className="c">{plan[1]}</span></div> : null}
-            {pm.sent.length ? pm.sent.map((x) => (
+            {pm.mails.length ? pm.mails.map((x) => (
               React.createElement(x.hasHtml ? "button" : "div", { key: x.id, type: x.hasHtml ? "button" : undefined, className: "aopt", disabled: x.hasHtml ? busy === String(x.id) : undefined, onClick: x.hasHtml ? () => show(x) : undefined },
                 <span className="ico">{busy === String(x.id) ? <Loader className="spin" /> : <Check />}</span>,
-                <span className="ol">{x.label}</span>,
+                <span className="ol">{x.label}<br /><small>{x.auto ? "automatisch" : "von euch gesendet"}</small></span>,
                 <span className="c">{Date.now() - new Date(x.ts).getTime() < 120000 ? "gerade eben" : dTime(x.ts)}</span>,
                 x.hasHtml ? <Eye className="chev" style={{ width: 16, height: 16, marginLeft: 8 }} /> : null)
-            )) : <div className="aopt"><span className="ol" style={{ color: "var(--g3)" }}>Noch keine Zahlungs-Mail gesendet.</span></div>}
+            )) : <div className="aopt"><span className="ol" style={{ color: "var(--g3)" }}>Noch keine Mail an den Kunden.</span></div>}
           </>
         )}
       </div>
