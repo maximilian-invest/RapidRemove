@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
 import { SourceTag } from "./Source";
@@ -12,7 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate, verifyDoc, verifySet } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -304,7 +304,9 @@ export const isPayOpen = payOpen;
 /** Sheet „Bestellinfo": Kontakt, Quelle, Leistung, Adresse, Screenshots – damit der Auftrag oben kompakt bleibt. */
 export function OrderInfoScreen({ ctx, id }) {
   const o = ctx.orders.find((x) => x.id === id);
+  React.useEffect(() => { if (o && ctx.loadShots) ctx.loadShots(o.id); }, [o && o.id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!o) return null;
+  const sh = ctx.shots && ctx.shots[o.id] && ctx.shots[o.id].shots ? ctx.shots[o.id].shots.find((x) => x.idx === -1 && x.status === "ok") : null;
   const close = () => {};
   const isRev = o.service === "reviews";
   const items = o.reviewItems || [];
@@ -320,7 +322,13 @@ export function OrderInfoScreen({ ctx, id }) {
         <SourceTag o={o} />
         <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
         {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
-        <button type="button" className="ir" onClick={() => { close(); ctx.pushReviews(o.id); }}><span className="ico">{isRev ? <StarOff /> : <Store />}</span><span className="t"><span>{isRev ? "Bewertungen & Screenshots" : "Screenshots"}</span><b>{isRev ? `${items.length} eingereicht` : "Profil ansehen"}</b></span><ChevronRight /></button>
+        {isRev ? <button type="button" className="ir" onClick={() => { close(); ctx.pushReviews(o.id); }}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen & Screenshots</span><b>{items.length} eingereicht</b></span><ChevronRight /></button> : (
+          <>
+            <button type="button" className="ir" onClick={() => (sh ? ctx.openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title: o.profile || o.company || "Profil", sub: "Screenshot" }) : ctx.toast("Noch kein Screenshot vorhanden"))}>
+              <span className="ico"><ImageIcon /></span><span className="t"><span>Screenshot</span><b>{sh ? "Screenshot ansehen" : "Noch kein Screenshot"}</b></span><ChevronRight /></button>
+            {sh ? <a className="ir" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span><span className="t"><span>Screenshot</span><b>Herunterladen</b></span><ChevronRight /></a> : null}
+          </>
+        )}
       </div>
     </>
   );
