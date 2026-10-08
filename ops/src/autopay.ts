@@ -29,7 +29,14 @@ import { orderProgress, ordersRunning, approvePendingPre, customerSessionInfo, l
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
 type Mode = "test" | "live";
+/** Inhaber-Test „wie ein echter Kunde": diese Adressen nutzen den LIVE-Schlüssel (echte Abbuchung!), obwohl sie Test-Konten sind.
+ *  Railway: AUTOPAY_LIVE_EMAILS=adresse1,adresse2 (leer = aus). */
+const liveTesters = () => String(process.env.AUTOPAY_LIVE_EMAILS || "").split(",").map((x) => x.trim().toLowerCase()).filter(Boolean);
 function keyFor(email: string): { key: string; mode: Mode } | null {
+  if (liveTesters().includes(String(email || "").trim().toLowerCase())) {
+    const k = process.env.STRIPE_SECRET_KEY || "";
+    return k ? { key: k, mode: "live" } : null;
+  }
   if (isTestEmail(email)) {
     const k = process.env.STRIPE_TEST_SECRET_KEY || "";
     return /^(sk|rk)_test_/.test(k) ? { key: k, mode: "test" } : null;
@@ -421,5 +428,5 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
   });
 
   // Admin: Status je Kunde (für Tests/Support).
-  app.get("/health/autopay", async () => ({ ok: true, testKey: /^(sk|rk)_test_/.test(process.env.STRIPE_TEST_SECRET_KEY || ""), live: String(process.env.AUTOPAY_LIVE || "").toLowerCase() === "on", lastError: lastErr }));
+  app.get("/health/autopay", async () => ({ ok: true, testKey: /^(sk|rk)_test_/.test(process.env.STRIPE_TEST_SECRET_KEY || ""), live: String(process.env.AUTOPAY_LIVE || "").toLowerCase() === "on", liveTesters: liveTesters().length, lastError: lastErr }));
 }
