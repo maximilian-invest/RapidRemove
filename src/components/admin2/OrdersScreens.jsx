@@ -6,7 +6,7 @@ import {
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
   CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download,
 } from "lucide-react";
-import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf } from "./model";
+import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
 import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
@@ -116,7 +116,7 @@ export function OrdersList({ ctx }) {
           <button key={o.id} type="button" className={"ord" + (selId === o.id ? " sel" : "") + (ctx.leaving && ctx.leaving[o.id] ? " paidout" : "")} style={{ "--pi": Math.min(j, 10) }} onClick={() => openOrder(o.id)}>
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
-              <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
+              <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)}{bs.includes("nopm") ? <small className="pwhy"> ({pendingWhy(o).join(", ")})</small> : null} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
                 {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
           </button>
           );

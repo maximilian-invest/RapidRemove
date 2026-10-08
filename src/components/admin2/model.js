@@ -8,7 +8,7 @@ export const CLOSED = ["deleted", "cancel"];
 export const ST = {
   new: { l: "Neu", img: "new" },
   work: { l: "In Bearbeitung", img: "work" },
-  nopm: { l: "Zahlungsart fehlt", img: "nopm" },
+  nopm: { l: "Pending", img: "nopm" }, // wartet auf den Kunden: Zahlungsart oder Inhaber-Nachweis fehlt
   pay: { l: "Zahlung offen", img: "pay" },
   inkasso: { l: "Inkasso", img: "inkasso" },
   deleted: { l: "Gelöscht" },
@@ -109,14 +109,26 @@ export function revState(o, tasks) {
   };
 }
 
+/** Worauf ein Auftrag beim Kunden wartet (leer = auf nichts). */
+export function pendingWhy(o) {
+  if (!o || o.status === "storniert") return [];
+  const out = [];
+  if (o.payGate || o.pgStale) out.push("Zahlungsart fehlt");
+  if (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")) out.push(o.verify.status === "rejected" ? "Nachweis abgelehnt" : "Nachweis fehlt");
+  return out;
+}
+/** Ganzer Auftrag steht still, bis der Kunde etwas tut. */
+const pendingWhole = (o) => o && o.status !== "storniert" && ((o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")));
+
 /** Alle Kacheln, in denen ein Auftrag steht. Bewertungen: „In Bearbeitung", solange beim Partner noch etwas offen ist,
  *  und zusätzlich „Zahlung offen", sobald eine gelöschte Bewertung noch nicht bezahlt ist. */
 export function bucketsOf(o, now = Date.now(), tasks) {
   const base = bucket(o, now);
   if (base === "cancel") return [base];
-  // Kunde hat trotz Erinnerungen keine Zahlungsart hinterlegt → eigener Reiter (Storno automatisch am pgStale.cancelAt).
-  if (o.pgStale && o.payGate && !o.payGate.keys) return ["nopm"];
-  if (o.pgStale) { const b = bucketsOf({ ...o, pgStale: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
+  // Pending = wartet auf den Kunden (Zahlungsart nicht hinterlegt oder Inhaber-Nachweis nicht hochgeladen/abgelehnt).
+  // Ganzer Auftrag blockiert → nur „Pending"; nur Nachbestellung blockiert → zusätzlich zu den übrigen Kacheln.
+  if (pendingWhole(o)) return ["nopm"];
+  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];

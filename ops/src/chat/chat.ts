@@ -19,6 +19,8 @@ import { KNOWLEDGE } from "./knowledge";
 import { quoteReviews } from "../reviewsPricing";
 import { resolveReviewLink } from "../monitor";
 import { fetchPlaceReviews, findPlaceReview, serpKey } from "../reviewsFetch";
+import { keyOf } from "../customers";
+import { hasSavedMethod, autopayAvailable } from "../autopay";
 const quoteReviewsLite = (items: { old: boolean; sw?: boolean }[], pct: number) => quoteReviews(items, "eur", undefined, "full", pct);
 
 type Msg = { role: "user" | "assistant"; text: string };
@@ -60,45 +62,137 @@ const STATUS_L: Record<string, string> = {
 const money = (v: number, cur: string) => (cur === "usd" ? "$" + v : v + " €");
 const hoursSince = (iso: unknown) => { const t = iso ? new Date(String(iso)).getTime() : 0; return t ? Math.max(0, Math.round((Date.now() - t) / 36e5)) : null; };
 
-function contextOf(d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }): string {
+/* Zusatzdaten je Kunde (alles, was der Bot über die Aufträge wissen muss): Rohdaten der Bewertungen (Sterne, Alter, Text),
+   Bestellwert, Zahlungsart, Wartestatus/Fristen, Verlauf (Mails, Zahlungen, Statuswechsel) und Doppelbestellungen. */
+type Facts = {
+  pm: boolean | null; // Zahlungsart hinterlegt? (null = automatische Abbuchung für diesen Kunden nicht aktiv)
+  raw: Map<string, Record<string, unknown>>; amount: Map<string, number>;
+  timeline: Map<string, { at: string; type: string; title: string }[]>;
+  pt: Map<string, { status: string; updated: string | null }>;
+};
+const EMPTY_FACTS: Facts = { pm: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map() };
+export async function factsOf(email: string, orders: Record<string, unknown>[]): Promise<Facts> {
+  if (!pool || !email) return EMPTY_FACTS;
+  const ids = orders.map((o) => String(o.id)).filter(Boolean).slice(0, 25);
+  const f: Facts = { pm: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map() };
+  try { f.pm = autopayAvailable(email) ? await hasSavedMethod(email) : null; } catch { f.pm = null; }
+  if (!ids.length) return f;
+  type RO = { id: string; raw: Record<string, unknown> | null; amount: unknown };
+  type EV = { order_id: string; created_at: string; type: string; title: string };
+  type PTR = { order_id: string; item_key: string; status: string; updated_at: string | null };
+  const [ro, ev, pt] = await Promise.all([
+    pool.query(`SELECT id, raw, amount FROM orders WHERE id = ANY($1::text[])`, [ids]).catch(() => ({ rows: [] as RO[] })),
+    pool.query(`SELECT order_id, created_at, type, title FROM events WHERE order_id = ANY($1::text[]) AND type IN ('mail','pay','status','order') ORDER BY created_at DESC LIMIT 200`, [ids]).catch(() => ({ rows: [] as EV[] })),
+    pool.query(`SELECT order_id, item_key, status, updated_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND item_key IS NOT NULL`, [ids]).catch(() => ({ rows: [] as PTR[] })),
+  ]);
+  for (const r of ro.rows as RO[]) { f.raw.set(r.id, r.raw || {}); f.amount.set(r.id, Number(r.amount) || 0); }
+  for (const e of ev.rows as EV[]) {
+    const a = f.timeline.get(e.order_id) || [];
+    if (a.length < 14 && !a.some((x) => x.title === clip(e.title, 140) && x.at === new Date(e.created_at).toISOString().slice(0, 10))) a.push({ at: new Date(e.created_at).toISOString().slice(0, 10), type: e.type, title: clip(e.title, 140) });
+    f.timeline.set(e.order_id, a);
+  }
+  for (const t of pt.rows as PTR[]) f.pt.set(t.order_id + "\u0001" + t.item_key, { status: t.status, updated: t.updated_at ? String(t.updated_at) : null });
+  return f;
+}
+const day = (v: unknown) => { const t = v ? new Date(String(v)).getTime() : NaN; return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : ""; };
+const ageTxt = (days: number) => (days < 1 ? "less than a day" : days < 14 ? `${days} days` : days < 60 ? `${Math.round(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${Math.round(days / 365)} years`);
+const normTxt = (s: unknown) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60);
+
+export function contextOf(d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }, f: Facts = EMPTY_FACTS): string {
   const first = String(d.name || "").trim().split(/\s+/)[0] || "";
   const o0 = d.orders[0] || {};
   const cur = String(o0.cur || "eur");
   const lines: string[] = [];
-  lines.push(`Customer first name: ${first || "(unknown)"}. Business country: ${o0.country || "unknown"}. Currency: ${cur.toUpperCase()} (set by region, the customer cannot choose it).`);
+  lines.push(`Today: ${new Date().toISOString().slice(0, 10)}. Customer first name: ${first || "(unknown)"}. Business country: ${o0.country || "unknown"}. Currency: ${cur.toUpperCase()} (set by region, the customer cannot choose it).`);
   lines.push(`Dashboard language: ${ui?.lang || d.lang || "en"} (use it only if the latest message's language is unclear). The team button below your reply is labelled "${ui?.contact || "Contact our team"}" – use exactly this label.`);
+  lines.push(f.pm === null ? "Payment method: automatic charging is not active for this customer (they pay via the payment link / Pay button)." : f.pm ? "Payment method: SAVED in the dashboard – removed reviews are charged automatically, invoice by email." : "Payment method: NOT saved yet – the customer adds one in the dashboard (Payments tab or the banner on Home); nothing is charged before a review is removed.");
   if (!d.orders.length) lines.push("The customer has no orders in this dashboard yet.");
+  // Dieselbe Bewertung in mehreren Aufträgen (gleicher Link oder gleicher Name + Text)
+  const keysOf = (it: Record<string, unknown>) => [String(it.url || ""), it.name ? normTxt(it.name) + "|" + normTxt(it.text) : ""].filter(Boolean);
+  const seen = new Map<string, Set<string>>();
+  for (const o of d.orders) if (!o.cancelled) for (const it of ((o.items as Record<string, unknown>[]) || [])) {
+    for (const k of keysOf(it)) { const s = seen.get(k) || new Set<string>(); s.add(String(o.id)); seen.set(k, s); }
+  }
+  const dupOf = (oid: string, it: Record<string, unknown>) => {
+    const other = new Set<string>();
+    for (const k of keysOf(it)) (seen.get(k) || new Set<string>()).forEach((x) => { if (x !== oid) other.add(x); });
+    return [...other];
+  };
   let due = 0;
   const PST: Record<string, string> = { new: "order received, not started yet", working: "profile removal in progress", removed: "profile removed", cancelled: "cancelled" };
-  for (const o of d.orders.slice(0, 15)) {
+  for (const o of d.orders.slice(0, 20)) {
+    const oid = String(o.id);
+    const raw = f.raw.get(oid) || {};
     const po = o.profileOrder as Record<string, unknown> | undefined;
-    if (o.kind === "profile" && po) {
-      const c = String(o.cur || cur);
-      lines.push(`Order ${o.id} · Google PROFILE removal (${po.service}) of "${clip(o.business, 80)}" · ordered ${String(o.created || "").slice(0, 10)} · status: ${PST[String(po.status)] || po.status}${po.status === "removed" ? (po.paid ? " · paid" : ` · payment open ${money(Number(po.open) || 0, c)} (payment link was sent by email)`) : ""}${po.protection ? ` · protection: ${po.protection}` : ""}.`);
-      continue;
-    }
-    const items = (o.items as Record<string, unknown>[]) || [];
     const c = String(o.cur || cur);
-    due += Number(o.toPay) || 0;
-    lines.push(`Order ${o.id} · "${clip(o.business, 80)}" · ordered ${String(o.created || "").slice(0, 10)}${o.cancelled ? " · ORDER CANCELLED" : ""}${o.pct ? ` · volume discount ${o.pct} %` : ""} · ${items.length} review(s):`);
-    for (const it of items.slice(0, 25)) {
-      const st = String(it.status);
-      const h = st === "working" ? hoursSince(it.since) : null;
-      const bits = [
-        `- ${clip(it.name, 40) || "Google review"}${it.noText ? " (stars only, no text)" : ""}: ${STATUS_L[st] || st}`,
-        h != null ? `since ${h} h` : "",
-        it.old ? "older than 4 weeks when ordered" : "",
-        `agreed price ${money(Number(it.price) || 0, c)} per removed review (fixed at checkout, binding)`,
-        it.pre ? "software case agreed at checkout" : "",
-        st === "removed" ? (it.paid ? "paid" : `to pay ${money(Number(it.price) || 0, c)}`) : "",
-        st === "software" || st === "sw_accepted" ? "removed with special software, no prepayment: charged only once removed, nothing to pay if it fails" : "",
+    const created = day(o.created);
+    const ageOrder = o.created ? Math.max(0, Math.floor((Date.now() - new Date(String(o.created)).getTime()) / 864e5)) : null;
+    const ago = ageOrder == null ? "" : ageOrder === 0 ? " (today)" : ` (${ageOrder} day${ageOrder === 1 ? "" : "s"} ago)`;
+    if (o.kind === "profile" && po) {
+      lines.push(`\nOrder ${oid} · Google PROFILE removal (${po.service}${po.express ? ", express" : ""}) of "${clip(o.business, 80)}" · ordered ${created}${ago} · price ${money(Number(po.amount) || 0, c)} · status: ${PST[String(po.status)] || po.status}${po.doneAt ? ` (done ${day(po.doneAt)})` : ""}${po.status === "removed" ? (po.paid ? " · paid" : ` · payment open ${money(Number(po.open) || 0, c)}`) : ""}${po.protection ? ` · protection: ${po.protection}` : ""}${o.payGate ? " · WAITING for a saved payment method before we start" : ""}.`);
+    } else {
+      const items = (o.items as Record<string, unknown>[]) || [];
+      due += Number(o.toPay) || 0;
+      const rawItems = (Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as Record<string, unknown>[];
+      const rawBy = new Map(rawItems.map((x) => [keyOf(x as { url?: string; name?: string; text?: string }), x]));
+      const cnt = (st: string[]) => items.filter((i) => st.includes(String(i.status))).length;
+      const paidSum = ((o.history as Record<string, unknown>[]) || []).reduce((s, h) => s + (Number(h.amount) || 0), 0);
+      const total = f.amount.get(oid) || items.reduce((s, i) => s + (Number(i.price) || 0), 0);
+      const stale = raw.pgStale as Record<string, unknown> | undefined;
+      const ver = o.verify as Record<string, unknown> | null;
+      const head = [
+        `\nOrder ${oid} · single Google reviews of "${clip(o.business, 80)}" · ordered ${created}${ago}`,
+        o.cancelled ? "ORDER CANCELLED" : "",
+        `${items.length} review(s): ${cnt(["removed"])} removed, ${cnt(["new", "working"])} being checked/in progress, ${cnt(["software", "sw_accepted"])} special software, ${cnt(["notpossible", "sw_declined"])} not removable/declined (no charge)`,
+        `order value if all are removed: ${money(Math.round(total * 100) / 100, c)}`,
+        o.pct ? `discount ${o.pct} % (already included in the prices)` : "",
+        paidSum ? `paid so far: ${money(Math.round(paidSum * 100) / 100, c)}` : "",
+        Number(o.toPay) ? `open to pay now: ${money(Number(o.toPay), c)}` : "",
+        o.payGate ? (Array.isArray(o.payGateKeys) ? `the ${(o.payGateKeys as unknown[]).length} newly added review(s) WAIT for a saved payment method (the others keep running)` : "WHOLE ORDER WAITS for a saved payment method – we don't work on it until one is saved") : "",
+        stale && stale.cancelAt ? `if no payment method is saved, the waiting review(s) are cancelled automatically on ${day(stale.cancelAt)} (no cost)` : "",
+        o.hold ? (o.holdCard ? "PAUSED: the last automatic charge failed – the customer should update the payment method" : "PAUSED until the open payment is made") : "",
+        ver ? `owner verification (proof that they own the business, needed for 4–5★ reviews): ${ver.status}${ver.uploaded ? " (document uploaded)" : " (not uploaded yet – upload in the dashboard)"}${ver.reason ? ` · reason: ${clip(ver.reason, 120)}` : ""}` : "",
+        o.payPref ? `wants to pay via ${o.payPref} (10 % off)` : "",
       ].filter(Boolean);
-      lines.push(bits.join(" · "));
+      lines.push(head.join(" · ") + ":");
+      for (const it of items.slice(0, 60)) {
+        const st = String(it.status);
+        const r = rawBy.get(String(it.key)) || {};
+        const t = f.pt.get(oid + "\u0001" + String(it.key));
+        const h = st === "working" ? hoursSince(it.since) : null;
+        const rating = Number(r.rating) || 0;
+        const days = r.days != null ? Number(r.days) : NaN;
+        const dup = dupOf(oid, it);
+        const txt = String(it.text || "");
+        const bits = [
+          `- "${clip(it.name, 80) || "Google review"}"${rating ? ` ${rating}★` : ""}${it.noText ? " (stars only, no text)" : txt ? ` – text: "${clip(txt, 160)}${txt.length > 160 ? "…" : ""}"` : ""}`,
+          Number.isFinite(days) && days >= 0 ? `review was about ${ageTxt(days)} old when ordered` : it.old ? "older than 4 weeks when ordered" : "up to 4 weeks old when ordered",
+          `status: ${STATUS_L[st] || st}`,
+          h != null ? `working on it for ${h} h` : "",
+          t && t.updated && st !== "new" ? `last status change ${day(t.updated)}` : "",
+          it.prevStatus ? `previously: ${STATUS_L[String(it.prevStatus)] || it.prevStatus}` : "",
+          st === "removed" && it.removedAt ? `removed on ${day(it.removedAt)}` : "",
+          `agreed price ${money(Number(it.price) || 0, c)} per removed review (binding)`,
+          it.pre ? "software case agreed at checkout" : "",
+          it.swDue && st === "software" ? `software slot reserved until ${String(it.swDue).slice(0, 16).replace("T", " ")} UTC` : "",
+          it.swWant ? "customer accepted software – starts as soon as a payment method is saved" : "",
+          st === "removed" ? (it.waived ? "no charge (order cancelled)" : it.paid ? "paid" : `to pay ${money(Number(it.price) || 0, c)}`) : "",
+          st === "software" || st === "sw_accepted" ? "special software, charged only once removed, nothing to pay if it fails" : "",
+          dup.length ? `SAME REVIEW ALSO IN ORDER ${dup.join(", ")} (duplicate – the team merges it so it's only charged once)` : "",
+          it.url ? `link: ${clip(it.url, 160)}` : "",
+        ].filter(Boolean);
+        lines.push(bits.join(" · "));
+      }
+      if (items.length > 60) lines.push(`(+ ${items.length - 60} more reviews, see the Orders tab)`);
+      const hist = (o.history as Record<string, unknown>[]) || [];
+      if (hist.length) lines.push(`  Payments: ${hist.slice(0, 10).map((p) => `${day(p.paid)} ${money(Number(p.amount) || 0, String(p.cur || c))}${p.n ? ` for ${p.n} review(s)` : ""}${p.auto ? " (charged automatically, invoice by email)" : ""}`).join("; ")}.`);
+      const dep = (o.deposits as Record<string, unknown>[]) || [];
+      if (dep.length) lines.push(`  Old software prepayment link(s) still open (from before 08.10.2026; new software cases are only charged once removed): ${dep.map((x) => money(Number(x.amount) || 0, String(x.cur || c))).join(", ")}. If the customer asks about it, hand over to the team.`);
     }
-    const dep = (o.deposits as Record<string, unknown>[]) || [];
-    if (dep.length) lines.push(`  Old software prepayment link(s) still open (from before 08.10.2026; new software cases are only charged once removed): ${dep.map((x) => money(Number(x.amount) || 0, String(x.cur || c))).join(", ")}. If the customer asks about it, hand over to the team.`);
+    const tl = f.timeline.get(oid) || [];
+    if (tl.length) lines.push(`  History (newest first; internal German notes – translate, never mention admin/partner): ${tl.map((e) => `${e.at} ${e.title}`).join(" | ")}`);
   }
-  lines.push(`Removed reviews not yet paid: ${money(Math.round(due * 100) / 100, cur)}. Normally a removed review is charged automatically to the payment method saved in the dashboard and the invoice comes by email. An open amount here means no payment method is saved yet or a charge failed: then the customer adds or updates the payment method in the dashboard, or taps "Pay" on the Home or Payments tab.`);
+  lines.push(`\nRemoved reviews not yet paid (all orders): ${money(Math.round(due * 100) / 100, cur)}. Normally a removed review is charged automatically to the payment method saved in the dashboard and the invoice comes by email. An open amount here means no payment method is saved yet or a charge failed: then the customer adds or updates the payment method in the dashboard, or taps "Pay" on the Home or Payments tab.`);
   return lines.join("\n");
 }
 
@@ -106,7 +200,9 @@ const SYSTEM = (ctx: string) => `You are the support assistant inside the RapidR
 
 How to answer:
 - LANGUAGE: reply in exactly the language the customer's LATEST message is written in (German message → German reply, Spanish → Spanish …), even though the order data and these instructions are in English. Switch whenever they switch. German: use "Sie" unless the customer uses "du".
-- Max 3 short sentences, about 60 words at most. Only mention the orders that matter for the question. Plain text only: no markdown, no lists, no headings. At most one emoji, and only rarely.
+- You know this customer's orders IN DETAIL (every review with reviewer name, stars, text, age, status and since when, binding price, paid/open, payments, emails we sent, deadlines). Never say you can't see their order, and never send them off to look it up themselves when the answer is in the data.
+- Length: small talk or simple questions: 1–3 short sentences. Questions about their order, a review, status, prices, payments or timing: answer completely and concretely from the data – name the review(s) (reviewer name, stars), current status and since when, the agreed price, paid or open, what happens next and roughly when. Up to about 150 words; for several reviews put each on its own line ("- Name 1★: status · price"). Only mention the orders and reviews that matter for the question. Plain text: no markdown (**, #), no headings. At most one emoji, and only rarely.
+- Never reveal internal details: partner/subcontractor, cost prices, internal notes, admin names. Say "our team" or "we".
 - Use ONLY the knowledge base and the customer's order data below. Never invent prices, timelines or promises. Never say "100 %" or "guaranteed".
 - PRICES: the "agreed price" per review in the order data is binding – it was fixed at checkout and is exactly what this customer pays per removed review, even if we use special software. Never quote a different price (e.g. the general 300 software price) for reviews already in their orders. The general price list only applies to NEW reviews. Currency comes from the region and cannot be chosen.
 - "Extra/additional charge": nothing is ever charged before a review is removed. If a customer mentions an additional charge per review, they usually mean the higher price for reviews older than 4 weeks shown at checkout (229 instead of 179) – explain that calmly; it's only charged once that review is actually removed. Only if they say money was really taken from their card, hand over to the team.
@@ -173,7 +269,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
 
 
   /** Antwort erzeugen (KI mit Kontext, sonst Fallback). */
-  async function answer(message: string, history: unknown, d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }): Promise<{ reply: string; handoff: boolean; ai: boolean; err?: string }> {
+  async function answer(message: string, history: unknown, d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }, email = ""): Promise<{ reply: string; handoff: boolean; ai: boolean; err?: string }> {
     const hist: Msg[] = (Array.isArray(history) ? history : []).slice(-8)
       .map((m) => m as Record<string, unknown>)
       .filter((m) => (m.role === "user" || m.role === "assistant") && clip(m.text, 1500))
@@ -186,7 +282,8 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
       else msgs.push({ ...m });
     }
     try {
-      const txt = await askClaude(SYSTEM(contextOf(d, ui)), msgs);
+      const facts = await factsOf(email, d.orders).catch(() => EMPTY_FACTS);
+      const txt = await askClaude(SYSTEM(contextOf(d, ui, facts)), msgs);
       const handoff = /\[\[TEAM\]\]/.test(txt);
       const reply = txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim();
       if (!reply) throw new Error("empty");
@@ -206,7 +303,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     const message = clip(b.message, 1500);
     if (!message) return reply.code(400).send({ ok: false, error: "empty" });
     const d = email ? await deps.loadOrders(email).catch(() => ({ name: "", lang: "en", orders: [] as Record<string, unknown>[] })) : { name: "", lang: "en", orders: [] as Record<string, unknown>[] };
-    const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) });
+    const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) }, email);
     return { ok: true, model: MODEL(), hasKey: !!process.env.ANTHROPIC_API_KEY, orders: d.orders.length, ...out };
   });
 
@@ -227,7 +324,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
       void save(sess.email, "assistant", r);
       return { ok: true, reply: r, handoff: true };
     }
-    const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) });
+    const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) }, sess.email);
     void save(sess.email, "assistant", out.reply);
     return { ok: true, reply: out.reply, handoff: out.handoff };
   });
