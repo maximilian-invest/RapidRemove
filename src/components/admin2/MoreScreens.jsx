@@ -9,7 +9,7 @@ import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket } fro
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
-import { monitorShotUrl } from "@/lib/admin-api";
+import { monitorShotUrl, testPurgeApi } from "@/lib/admin-api";
 import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
 import PayoutsScreen from "./Payouts";
@@ -223,6 +223,46 @@ function SettingsScreen({ ctx }) {
           </button>
         ))}
       </div>
+      <TestPurge ctx={ctx} />
+    </>
+  );
+}
+
+/* Test-Konto leeren: Aufträge + alles daran löschen (Login, Passkeys, Push bleiben). Nur Test-Adressen (Server prüft). */
+function TestPurge({ ctx }) {
+  const { toast } = ctx;
+  const [email, setEmail] = React.useState(() => { try { return localStorage.getItem("rr_test_purge_email") || "maximilian@hoelzl.investments"; } catch (e) { return "maximilian@hoelzl.investments"; } });
+  const [st, setSt] = React.useState(null); // { orders, counts } nach Prüfen
+  const [busy, setBusy] = React.useState(false);
+  const total = (c) => Object.values(c || {}).reduce((x, v) => x + (Number(v) || 0), 0);
+  const check = async () => {
+    setBusy(true); setSt(null);
+    try { const j = await testPurgeApi(email.trim(), false); setSt(j); try { localStorage.setItem("rr_test_purge_email", email.trim()); } catch (e) { /* */ } }
+    catch (e) { toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
+  const run = async () => {
+    setBusy(true);
+    try { const j = await testPurgeApi(email.trim(), true); toast(`Test-Konto geleert · ${j.orders.length} Aufträge, ${total(j.counts)} Einträge`); setSt(null); }
+    catch (e) { toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
+  return (
+    <>
+      <div className="sec3"><h2>Test-Konto leeren</h2></div>
+      <p className="sh">Löscht alle Aufträge eines Test-Kontos inkl. Partner-Aufgaben, Verlauf, Mails, Zahlungs- und Mahndaten. Login, Passkeys und Push bleiben. Funktioniert nur für Test-Adressen.</p>
+      <label className="pfld"><span>E-Mail des Test-Kontos</span><input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setSt(null); }} /></label>
+      {!st ? <button type="button" className="cta gh" disabled={busy || !email.includes("@")} onClick={check}>{busy ? "Prüfe …" : "Prüfen, was gelöscht wird"}</button> : (
+        <>
+          <div className="card" style={{ padding: 14, fontSize: 14, marginBottom: 12 }}>
+            {st.orders.length ? <><b>{st.orders.length} Auftr{st.orders.length === 1 ? "ag" : "äge"}</b> ({st.orders.slice(0, 6).join(", ")}{st.orders.length > 6 ? " …" : ""}) · {total(st.counts)} Einträge insgesamt</> : <b>Nichts zu löschen – das Konto ist schon leer.</b>}
+          </div>
+          <div className="ctas2">
+            <button type="button" className="cta gh" disabled={busy} onClick={() => setSt(null)}>Abbrechen</button>
+            <button type="button" className="cta or" disabled={busy || !total(st.counts)} onClick={run}>{busy ? "Lösche …" : "Endgültig leeren"}</button>
+          </div>
+        </>
+      )}
     </>
   );
 }

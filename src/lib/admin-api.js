@@ -745,3 +745,6 @@ export const activityFeed = (p) => adminPost("/admin/activity/feed", p);
 export const followupsList = () => adminPost("/admin/followups", {});
 /** Vorschau der automatischen Erinnerungs-Mail. kind: pay | pay2 | sw | never | news | combo */
 export const followupPreview = (kind, lang) => adminPost("/admin/followups/preview", { kind, lang });
+
+/** Admin · Test-Konto leeren (nur Test-Adressen). apply=false → nur zählen. */
+export const testPurgeApi = (email, apply) => adminPost("/admin/test-purge", { email, ...(apply ? { apply: true, confirm: "TESTKONTO-LEEREN" } : {}) });
