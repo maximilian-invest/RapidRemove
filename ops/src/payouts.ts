@@ -34,6 +34,7 @@ import { checkRemoval } from "./removalCheck";
 import { notifyTeam } from "./notify";
 import { sendMail } from "./mailer";
 import { checkVat } from "./billingCheck";
+import { partnerIdOf, firstPartnerId } from "./partnerRegistry";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 export const SB_VERSION = "2026-10-09";
@@ -144,14 +145,12 @@ function vatRule(p: { country: string | null; small_biz: boolean }): "at20" | "a
   if (String(p.country || "").toUpperCase() !== "AT") return "rc";
   return p.small_biz ? "atklein" : "at20";
 }
-/** Partner zu einer Partner-Sitzung (E-Mail) – sonst der (einzige) aktive Partner. */
-export async function partnerFor(email: string | null): Promise<PartnerRow | null> {
+/** Partner nach ID (null → bisheriger, erster aktiver Partner). */
+export async function partnerById(id: number | null): Promise<PartnerRow | null> {
   if (!pool) return null;
-  if (email) {
-    const r = await pool.query(`SELECT * FROM partners WHERE active AND lower(email)=lower($1) ORDER BY id LIMIT 1`, [email]);
-    if (r.rows[0]) return r.rows[0] as PartnerRow;
-  }
-  const r = await pool.query(`SELECT * FROM partners WHERE active ORDER BY id LIMIT 1`);
+  const pid = id ?? (await firstPartnerId());
+  if (!pid) return null;
+  const r = await pool.query(`SELECT * FROM partners WHERE id=$1`, [pid]);
   return (r.rows[0] as PartnerRow) || null;
 }
 const profileDone = (p: PartnerRow | null) => !!p && !!p.legal_name && !!p.addr1 && !!p.city && !!p.country;
@@ -437,28 +436,34 @@ function amounts(net: number, p: PartnerRow | null) {
   return { net: num(net), vat, gross: num(net + vat) };
 }
 
-/** Manuelle Auszahlung (Admin „bezahlt" bzw. Partner „Mark paid"): Sammelposten + Gutschrift (wenn vereinbart) + Mail. */
-export async function recordManualPayout(taskIds: (string | number)[], note: string | null, by: "admin" | "partner", partnerEmail: string | null = null): Promise<{ payoutId: number; amount: number; tasks: number; gs: string | null } | null> {
+/** Manuelle Auszahlung (Admin „bezahlt" bzw. Partner „Mark paid"): je Partner ein Sammelposten + Gutschrift (wenn vereinbart) + Mail. */
+export async function recordManualPayout(taskIds: (string | number)[], note: string | null, by: "admin" | "partner", partnerId: number | null = null): Promise<{ payoutId: number; amount: number; tasks: number; gs: string | null } | null> {
   if (!pool) return null;
-  const r = await pool.query(`SELECT id, code, kind, price_usd, customer, removed_at, order_id, url, name, text, rating FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test`, [taskIds.map(String)]);
-  const rows = r.rows as TaskLite[];
-  if (!rows.length) return null;
-  const p = await partnerFor(partnerEmail);
-  const a = amounts(rows.reduce((s, x) => s + Number(x.price_usd || 0), 0), p);
-  const amount = a.gross;
-  const ins = await pool.query(`INSERT INTO partner_payouts (amount_usd, net_usd, vat_usd, tasks, note, status, method, sent_at) VALUES ($1,$2,$3,$4,$5,'manual',$6, now()) RETURNING id`,
-    [a.gross, a.net, a.vat, rows.length, note, by === "partner" ? "manual (confirmed by partner)" : "manual"]);
-  const id = Number(ins.rows[0].id);
-  await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [id, rows.map((x) => x.id)]);
-  const gs = await finalize(id, p, rows);
-  if (gs) void mailGutschrift(id).catch(() => {});
+  const r = await pool.query(`SELECT id, code, kind, price_usd, customer, removed_at, order_id, url, name, text, rating, partner_id FROM partner_tasks
+     WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test ${partnerId ? "AND partner_id=$2" : ""}`, partnerId ? [taskIds.map(String), partnerId] : [taskIds.map(String)]);
+  const all = r.rows as (TaskLite & { partner_id: string | null })[];
+  if (!all.length) return null;
+  const groups = new Map<string, typeof all>();
+  for (const t of all) { const k = String(t.partner_id ?? ""); if (!groups.has(k)) groups.set(k, []); groups.get(k)!.push(t); }
+  let first = 0, total = 0, n = 0; const gsList: string[] = [];
+  for (const [k, rows] of groups) {
+    const p = await partnerById(k ? Number(k) : null);
+    const a = amounts(rows.reduce((s, x) => s + Number(x.price_usd || 0), 0), p);
+    const ins = await pool.query(`INSERT INTO partner_payouts (amount_usd, net_usd, vat_usd, tasks, note, status, method, sent_at, partner_id) VALUES ($1,$2,$3,$4,$5,'manual',$6, now(), $7) RETURNING id`,
+      [a.gross, a.net, a.vat, rows.length, note, by === "partner" ? "manual (confirmed by partner)" : "manual", p ? p.id : null]);
+    const id = Number(ins.rows[0].id);
+    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [id, rows.map((x) => x.id)]);
+    const gs = await finalize(id, p, rows);
+    if (gs) { gsList.push(gs); void mailGutschrift(id).catch(() => {}); }
+    if (!first) first = id; total += a.gross; n += rows.length;
+  }
   bumpChange();
-  return { payoutId: id, amount, tasks: rows.length, gs };
+  return { payoutId: first, amount: num(total), tasks: n, gs: gsList.join(", ") || null };
 }
 
 /* ---------------- Automatischer Lauf ---------------- */
 let running = false;
-export type RunResult = { ok: boolean; skipped?: string; payoutId?: number; amount?: number; tasks?: number; held?: string[]; error?: string; gs?: string | null };
+export type RunResult = { ok: boolean; skipped?: string; payoutId?: number; amount?: number; tasks?: number; held?: string[]; error?: string; gs?: string | null; partners?: unknown[] };
 
 /** Fällige Löschungen prüfen und auszahlen (Payoneer oder Bankkonto/Airwallex – je nach Wahl des Partners).
  *  `manual` = vom Admin ausgelöst (ignoriert Tageszeit und Automatik-Schalter, nicht die Haltefrist). */
@@ -469,8 +474,27 @@ export async function runPayouts(log: (m: string) => void = () => {}, manual = f
   try {
     const s = await payoutSettings();
     if (!manual && !s.auto) return { ok: true, skipped: "automatische Auszahlung aus" };
-    let p = await partnerFor(null);
-    if (!p) return { ok: true, skipped: "kein aktiver Partner" };
+    // Alle freigegebenen Partner (auch pausierte – erledigte Arbeit wird bezahlt).
+    const ps = (await pool.query(`SELECT * FROM partners WHERE status='active' ORDER BY id`)).rows as PartnerRow[];
+    if (!ps.length) return { ok: true, skipped: "kein aktiver Partner" };
+    const res: (RunResult & { partner: string })[] = [];
+    for (const p of ps) res.push({ partner: p.name, ...(await runFor(p, s, log, manual).catch((e) => ({ ok: false, error: (e as Error).message } as RunResult))) });
+    const paid = res.filter((r) => r.payoutId);
+    return {
+      ok: res.every((r) => r.ok), payoutId: paid[0]?.payoutId, amount: paid.length ? num(paid.reduce((x, r) => x + Number(r.amount || 0), 0)) : undefined,
+      tasks: paid.length ? paid.reduce((x, r) => x + Number(r.tasks || 0), 0) : undefined, held: res.flatMap((r) => r.held || []),
+      gs: paid.map((r) => r.gs).filter(Boolean).join(", ") || null,
+      error: res.filter((r) => r.error).map((r) => `${r.partner}: ${r.error}`).join(" · ") || undefined,
+      skipped: paid.length ? undefined : res.map((r) => `${r.partner}: ${r.skipped || r.error || "–"}`).join(" · "),
+      partners: res,
+    };
+  } finally { running = false; }
+}
+
+/** Auszahlung für EINEN Partner. */
+async function runFor(pIn: PartnerRow, s: PayoutSettings, log: (m: string) => void, manual: boolean): Promise<RunResult> {
+    if (!pool) return { ok: false, skipped: "keine Datenbank" };
+    let p = pIn;
     if (!setupDone(p)) return { ok: true, skipped: "Partner hat die Auszahlung noch nicht eingerichtet" };
     const via = p.payout_method === "bank" ? "bank" : p.payout_method === "stripe" ? "stripe" : "payoneer";
     const L = via === "bank" ? "Bank (Airwallex)" : via === "stripe" ? "Bank (Stripe)" : "Payoneer";
@@ -489,8 +513,8 @@ export async function runPayouts(log: (m: string) => void = () => {}, manual = f
     }
     const due = (await pool.query(
       `SELECT id, code, kind, price_usd, customer, removed_at, order_id, url, name, text, rating FROM partner_tasks
-        WHERE status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test AND removed_at <= now() - make_interval(days => $1::int)
-        ORDER BY removed_at, id LIMIT 400`, [s.holdDays])).rows as TaskLite[];
+        WHERE status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test AND partner_id = $2 AND removed_at <= now() - make_interval(days => $1::int)
+        ORDER BY removed_at, id LIMIT 400`, [s.holdDays, p.id])).rows as TaskLite[];
     if (!due.length) return { ok: true, skipped: "nichts fällig" };
     // Vor dem Geld: Lena prüft nochmal, ob die Bewertung wirklich noch weg ist.
     const ok: TaskLite[] = []; const held: string[] = [];
@@ -562,8 +586,8 @@ export async function runPayouts(log: (m: string) => void = () => {}, manual = f
     bumpChange();
     log(`Auszahlung ${ref} (${L}): $${amount} für ${ok.length} Löschungen (${gs || "ohne Gutschrift"})`);
     return { ok: true, payoutId: id, amount, tasks: ok.length, held, gs };
-  } finally { running = false; }
 }
+
 
 /** Status gesendeter Auszahlungen nachziehen (Payoneer „Transferred", Airwallex „PAID"/„FAILED" …). */
 async function pollSent(): Promise<void> {
@@ -725,14 +749,14 @@ function payoutView(x: PayoutRow) {
     gs: x.gs_no, created: x.created_at, sent: x.sent_at, note: x.note,
   };
 }
-async function balance(holdDays: number) {
+async function balance(holdDays: number, pid: number | null = null) {
   if (!pool) return { owedUsd: 0, owedCount: 0, dueUsd: 0, dueCount: 0, processingUsd: 0 };
   const r = await pool.query(`SELECT
       COALESCE(sum(price_usd) FILTER (WHERE payout_id IS NULL),0) AS owed, count(*) FILTER (WHERE payout_id IS NULL) AS owed_n,
       COALESCE(sum(price_usd) FILTER (WHERE payout_id IS NULL AND removed_at <= now() - make_interval(days => $1::int)),0) AS due,
       count(*) FILTER (WHERE payout_id IS NULL AND removed_at <= now() - make_interval(days => $1::int)) AS due_n,
       COALESCE(sum(price_usd) FILTER (WHERE payout_id IS NOT NULL),0) AS proc
-    FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND NOT test`, [holdDays]);
+    FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND NOT test AND ($2::bigint IS NULL OR partner_id = $2)`, [holdDays, pid]);
   const x = r.rows[0] || {};
   return { owedUsd: num(x.owed), owedCount: Number(x.owed_n || 0), dueUsd: num(x.due), dueCount: Number(x.due_n || 0), processingUsd: num(x.proc) };
 }
@@ -750,7 +774,10 @@ export function registerPayoutRoutes(
   auth: { check: (t: unknown) => Promise<boolean>; preview: (t: unknown) => Promise<boolean>; email: (t: unknown) => Promise<string | null> },
 ): void {
   const isAdmin = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;
-  const partnerOf = async (t: unknown) => partnerFor(String(t || "").startsWith("ps_") ? await auth.email(t) : null);
+  const partnerOf = async (t: unknown) => partnerById(await partnerIdOf(t));
+  /** Auszahlungen eines Partners (Altbestand ohne partner_id gehört dem ersten Partner). */
+  const payoutsOf = async (pid: number, limit: number) => (await pool!.query(
+    `SELECT * FROM partner_payouts WHERE partner_id=$1 OR (partner_id IS NULL AND $1 = (SELECT min(id) FROM partners)) ORDER BY id DESC LIMIT ${limit}`, [pid])).rows as PayoutRow[];
 
   // Partner: Auszahlungsdaten, Guthaben, Auszahlungen (mit Gutschrift). `setupDone=false` → Pflicht-Einrichtung vor den Aufträgen.
   app.post("/partner/payouts", async (req, reply) => {
@@ -762,10 +789,10 @@ export function registerPayoutRoutes(
     if (await auth.preview(b.t)) return { ok: true, preview: true, ...base, profile: null, auto: false, balance: { owedUsd: 0, owedCount: 0, dueUsd: 0, dueCount: 0, processingUsd: 0 }, payouts: [] };
     let p = await partnerOf(b.t);
     if (p) p = await refreshStripe(await refreshPayee(p), String(b.fresh || "") === "stripe");
-    const pr = await pool.query(`SELECT * FROM partner_payouts ORDER BY id DESC LIMIT 40`);
+    const prs = p ? await payoutsOf(Number(p.id), 40) : [];
     return {
       ok: true, ...base, profile: profileView(p), auto: s.auto && payReady(p),
-      balance: await balance(s.holdDays), payouts: (pr.rows as PayoutRow[]).filter((x) => x.status !== "failed" && x.status !== "pending").map(payoutView).map((x) => ({ ...x, error: null })),
+      balance: await balance(s.holdDays, p ? Number(p.id) : -1), payouts: prs.filter((x) => x.status !== "failed" && x.status !== "pending").map(payoutView).map((x) => ({ ...x, error: null })),
     };
   });
 
@@ -855,6 +882,8 @@ export function registerPayoutRoutes(
   app.post("/partner/payouts/pdf", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await auth.check(b.t)) || (await auth.preview(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    const me = await partnerOf(b.t);
+    if (!me || !(await payoutsOf(Number(me.id), 1000)).some((x) => Number(x.id) === Number(b.id))) return reply.code(404).send({ ok: false, error: "not found" });
     const pdf = await gutschriftPdf(Number(b.id));
     if (!pdf) return reply.code(404).send({ ok: false, error: "not found" });
     return reply.header("content-type", "application/pdf").header("content-disposition", `inline; filename="${pdf.name}"`).send(pdf.buf);
@@ -873,14 +902,21 @@ export function registerPayoutRoutes(
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const s = await payoutSettings();
-    let p = await partnerFor(null);
-    if (p) p = await refreshStripe(await refreshPayee(p));
+    const ps = (await pool.query(`SELECT * FROM partners WHERE status='active' ORDER BY id`)).rows as PartnerRow[];
+    const partners = [] as unknown[];
+    for (let p of ps) {
+      p = await refreshStripe(await refreshPayee(p));
+      partners.push({ ...profileView(p), email: p.email, sbIp: p.sb_ip, paused: !p.active, balance: await balance(s.holdDays, Number(p.id)) });
+    }
+    const first = ps[0] ? Number(ps[0].id) : null;
+    const names = new Map(ps.map((p) => [String(p.id), p.name]));
     const pr = await pool.query(`SELECT * FROM partner_payouts ORDER BY id DESC LIMIT 60`);
     const last = await getSetting("payout_last_result");
     const c = PY();
     return {
-      ok: true, settings: s, payoneer: { configured: payoneerConfigured(), sandbox: c.sandbox }, stripe: { configured: stripeConfigured(), test: String(process.env.STRIPE_SECRET_KEY || "").startsWith("sk_test") }, airwallex: { configured: airwallexConfigured(), sandbox: AW().sandbox }, partner: p ? { ...profileView(p), email: p.email, sbIp: p.sb_ip } : null,
-      balance: await balance(s.holdDays), next: nextRunText(s), last: last ? JSON.parse(last) : null, payouts: (pr.rows as PayoutRow[]).map(payoutView),
+      ok: true, settings: s, payoneer: { configured: payoneerConfigured(), sandbox: c.sandbox }, stripe: { configured: stripeConfigured(), test: String(process.env.STRIPE_SECRET_KEY || "").startsWith("sk_test") }, airwallex: { configured: airwallexConfigured(), sandbox: AW().sandbox }, partners, partner: partners[0] || null,
+      balance: await balance(s.holdDays), next: nextRunText(s), last: last ? JSON.parse(last) : null,
+      payouts: (pr.rows as PayoutRow[]).map((x) => ({ ...payoutView(x), partner: names.get(String(x.partner_id ?? first)) || "" })),
     };
   });
   app.post("/admin/payouts/settings", async (req, reply) => {

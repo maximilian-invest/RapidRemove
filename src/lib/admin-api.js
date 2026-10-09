@@ -700,6 +700,11 @@ export async function payoutPdfOpen(id) {
   } catch (e) { if (w) w.close(); throw e; }
 }
 export const partnerSave = (p) => adminPost("/admin/partners/save", p);
+/* Partner-Ökosystem: Freigabe, Leistungen, Einladung, Zuteilung */
+export const partnerStatusApi = (id, action, extra) => adminPost("/admin/partners/status", { id, action, ...(extra || {}) });
+export const partnerInviteApi = (p) => adminPost("/admin/partners/invite", p);
+export const partnerRoutesApi = (routes) => adminPost("/admin/partner/routes", { routes });
+export const partnerAccountsApi = () => adminPost("/admin/partner/accounts");
 /** Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen → { id, amount, currency, mailed, partner }. */
 export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);
 /** Bewertungen eines Google-Profils (SerpApi) zum Anhaken → { enabled, reviews:[{id,name,rating,text,days,link}] }. */

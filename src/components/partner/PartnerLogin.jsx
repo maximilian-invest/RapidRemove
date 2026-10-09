@@ -8,7 +8,7 @@ import "@/styles/dashboard.css";
 import { call, BASE } from "./shared";
 import { PasskeyLoginButton } from "@/components/PasskeyOffer";
 
-export default function PartnerLogin({ mode = "login", linkToken = "", account = "", onToken, onSkip }) {
+export default function PartnerLogin({ mode = "login", linkToken = "", account = "", onToken, onSkip, onJoin }) {
   const setup = mode === "setup";
   const [email, setEmail] = React.useState(account || "");
   const [pw, setPw] = React.useState("");
@@ -61,6 +61,7 @@ export default function PartnerLogin({ mode = "login", linkToken = "", account =
           {setup
             ? <button type="button" className="lnk" onClick={onSkip}>Skip for now</button>
             : <p className="lnk" style={{ height: "auto", fontSize: 14, fontWeight: 500, lineHeight: 1.45 }}>Forgot your password? Just open your personal link from RapidRemove – it always works.</p>}
+          {!setup && onJoin ? <button type="button" className="lnk" onClick={onJoin}>New partner? Register here</button> : null}
         </form>
       </div>
     </div>

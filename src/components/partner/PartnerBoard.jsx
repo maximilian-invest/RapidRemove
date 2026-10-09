@@ -13,6 +13,7 @@ import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
 import { usePayouts, PayoutSetup } from "./PartnerPayouts";
+import { PartnerJoin, PartnerPending } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -40,6 +41,8 @@ export default function PartnerBoard() {
   const tableView = isMobile === false && typeof window !== "undefined" && /[?&]view=table\b/.test(window.location.search);
   const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
+  const [join, setJoin] = React.useState(null); // { invite } → Registrierung als neuer Partner
+  const [acct, setAcct] = React.useState(null); // „pending" | „rejected" → Bewerbung (noch) nicht freigegeben
   const [cancelled, setCancelled] = React.useState([]); // von RapidRemove stornierte Aufgaben (letzte 30 Tage) – nur zur Info
   const [err, setErr] = React.useState("");
   const [tab, setTab] = React.useState("todo");
@@ -60,6 +63,9 @@ export default function PartnerBoard() {
   React.useEffect(() => {
     let t = "";
     try { t = (window.location.hash || "").replace(/^#/, ""); } catch (e) {}
+    // Registrierung: /partner?join=1 (optional #inv_… Einladung) – die Einladung ist kein Login-Token.
+    let wantJoin = false; try { wantJoin = new URLSearchParams(window.location.search).has("join"); } catch (e) {}
+    if (t.startsWith("inv_") || wantJoin) { setJoin({ invite: t.startsWith("inv_") ? t : "" }); if (t.startsWith("inv_")) t = ""; }
     const fromLink = !!t;
     const pv = isPreviewUrl() && t.startsWith("ps_");
     setPreview(pv);
@@ -90,6 +96,7 @@ export default function PartnerBoard() {
     if (!manual && (pending.current || Object.keys(noteTimers.current).length)) return; // keep unsaved local changes
     try {
       const j = await call("tasks", { t: token });
+      setAcct(j.gate || null);
       const ts = (j.tasks || []).map(norm);
       setTasks(ts.filter((t) => t.status !== "cancelled")); setCancelled(ts.filter((t) => t.status === "cancelled")); setErr("");
       if (j.preview) setPreview(true); // Test-Login / Test-Board: nur Testaufträge
@@ -327,9 +334,12 @@ export default function PartnerBoard() {
   };
   if (offerPk && token) return <PasskeyOffer role="partner" token={token} onDone={() => setOfferPk(false)} />;
   if (gate && token && !setup) return <PushGate role="partner" token={token} state={gate} onDone={(on) => { setGate(null); if (on) showToast("Notifications are on"); }} texts={{ pushSub: "Get a notification for every new order and when a customer has paid – instantly.", appIos2s: "Then open “RR Partner” from your home screen" }} />;
-  if (!token) return <PartnerLogin mode="login" onToken={onLogin} />;
+  const logout = () => { try { flush(true); } catch (e) {} call("logout", { t: token }).catch(() => {}); try { localStorage.removeItem(KEY); } catch (e) {} window.location.replace(window.location.pathname); };
+  if (join) return <PartnerJoin invite={join.invite} onLogin={() => { setJoin(null); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {} }} onToken={(t) => { setJoin(null); onLogin(t, true); setTasks(null); }} />;
+  if (!token) return <PartnerLogin mode="login" onToken={onLogin} onJoin={() => setJoin({ invite: "" })} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
+  if (acct) return <PartnerPending token={token} status={acct} onLogout={logout} />;
   if (pay && pay.ok && !pay.preview && pay.profile && !pay.profile.setupDone) {
     return (
       <div className="pra"><main className="screen" style={{ bottom: 0 }}>

@@ -20,8 +20,9 @@ const NAMES = {
   HR: "Croatia", HU: "Hungary", IE: "Ireland", IT: "Italy", LT: "Lithuania", LU: "Luxembourg", LV: "Latvia", MT: "Malta", NL: "Netherlands", PL: "Poland", PT: "Portugal",
   RO: "Romania", SE: "Sweden", SI: "Slovenia", SK: "Slovakia", IS: "Iceland", LI: "Liechtenstein", NO: "Norway", CH: "Switzerland", GB: "United Kingdom",
 };
+export { NAMES };
 const TOP = ["PK", "IN", "BD", "PH"];
-const COUNTRIES = [...TOP, ...Object.keys(NAMES).filter((c) => !TOP.includes(c)).sort((a, b) => NAMES[a].localeCompare(NAMES[b]))];
+export const COUNTRIES = [...TOP, ...Object.keys(NAMES).filter((c) => !TOP.includes(c)).sort((a, b) => NAMES[a].localeCompare(NAMES[b]))];
 const dt = (d) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
 const CUR_L = { EUR: "in EUR (SEPA)", INR: "in Indian rupees (INR)", PKR: "in Pakistani rupees (PKR)" };
 

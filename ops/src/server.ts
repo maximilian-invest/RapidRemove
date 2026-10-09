@@ -29,6 +29,7 @@ import { startPgRemindWorker } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { payoutTick } from "./payouts";
+import { initPartnerRegistry } from "./partnerRegistry";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus, payDiscountEnabled } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
@@ -2297,7 +2298,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPasskeys(); await initCustPush();
+  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"))

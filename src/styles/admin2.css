@@ -855,3 +855,9 @@
 .an .po-num:focus{outline:none;border-color:var(--ink,#111)}
 .an .po-row{align-items:flex-start}
 .an .po-acts{display:flex;gap:6px;flex:none}
+/* Konto → Partner (Partners.jsx) */
+.an .pfld{display:flex;flex-direction:column;gap:6px;margin:0 0 12px}
+.an .pfld span{font-size:12px;font-weight:600;color:var(--g3)}
+.an .pfld input,.an .pfld textarea{border:1.5px solid var(--g2,#e3e3e6);border-radius:12px;background:#fff;padding:10px 12px;font:inherit;font-size:16px}
+.an .pfld input:focus,.an .pfld textarea:focus{outline:none;border-color:var(--ink,#111)}
+.an .po-sel{height:38px;border-radius:12px;border:1.5px solid var(--g2,#e3e3e6);background:#fff;padding:0 10px;font:inherit;font-size:14px;max-width:46%}

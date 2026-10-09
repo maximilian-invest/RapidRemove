@@ -29,19 +29,24 @@ export default function PayoutsScreen({ ctx }) {
     } catch (e) { toast("Fehler: " + e.message); }
     setBusy(false);
   };
-  const s = d && d.settings, p = d && d.partner, b = (d && d.balance) || {};
-  const bankM = p && p.method === "bank";
+  const s = d && d.settings, b = (d && d.balance) || {};
   const steps = d ? [
     [d.payoneer.configured, "Payoneer-Zugang", d.payoneer.configured ? (d.payoneer.sandbox ? "Sandbox (Test)" : "Live") : "Fehlt – PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET, PAYONEER_PROGRAM_ID in Railway (kommt von Payoneer nach der Freischaltung)"],
-    [d.stripe.configured, "Stripe Connect (Bankkonto EU/UK/CH/USA/CA)", d.stripe.configured ? `${d.stripe.test ? "Testmodus" : "Live"} · im Stripe-Dashboard muss „Connect“ aktiviert sein · ~2 €/Monat je ausgezahltem Partner + 0,25 % je Auszahlung` : "STRIPE_SECRET_KEY fehlt"],
+    [d.stripe.configured, "Stripe Connect (Bankkonto EU/UK/CH/USA/CA)", d.stripe.configured ? `${d.stripe.test ? "Testmodus" : "Live"} · ~2 €/Monat je ausgezahltem Partner + 0,25 % je Auszahlung` : "STRIPE_SECRET_KEY fehlt"],
     ...(d.airwallex.configured ? [[true, "Airwallex (Bankkonto Indien/Pakistan)", d.airwallex.sandbox ? "Sandbox (Test)" : "Live"]] : []),
-    [!!(p && p.setupDone), "Partner: Auszahlungsweg + Daten", p && p.complete ? `${p.method === "bank" ? "Bankkonto Airwallex " + ((p.bank && (p.bank.ibanMasked || p.bank.accountMasked)) || "") + " (" + ((p.bank && p.bank.currency) || "") + ")" : p.method === "stripe" ? "Bankkonto über Stripe" : p.method === "payoneer" ? "Payoneer · " + p.payoutEmail : "kein Weg gewählt"} · ${p.legalName} · ${p.city}, ${p.country}${p.vatId ? " · UID " + p.vatId : ""}${p.country === "AT" ? (p.smallBiz ? " · Kleinunternehmer" : " · 20 % USt") : ""}` : "Partner wählt beim nächsten Login (Pflicht, bevor er Aufträge sieht)"],
-    [!!(p && p.sb), "Gutschrift-Vereinbarung", p && p.sb ? `angenommen ${dt(p.sb.at)} · Version ${p.sb.v}${p.sbIp ? " · IP " + p.sbIp : ""}` : "Partner stimmt bei der Einrichtung zu"],
-    [!!(p && p.ready), bankM ? "Bankkonto bei Airwallex" : p && p.method === "stripe" ? "Stripe-Konto des Partners" : "Payoneer-Konto des Partners",
-      bankM ? (p.bankError ? "Abgelehnt: " + p.bankError : p.ready ? "angelegt" : "wird angelegt, sobald der Airwallex-Zugang da ist")
-        : p && p.method === "stripe" ? (p.stripe ? ({ active: "freigeschaltet", review: "Stripe prüft die Angaben", pending: "Partner hat das Stripe-Formular noch nicht abgeschlossen" }[p.stripe.status] || p.stripe.status) : "wird angelegt")
-        : p && p.payee ? `${p.payee.id} · ${p.payee.status}` : "Partner verbindet Payoneer in der App"],
   ] : [];
+  /** Einrichtungsstand eines Partners (Weg + Daten, Gutschrift-Vereinbarung, Konto beim Anbieter). */
+  const pSteps = (p) => {
+    const bankM = p.method === "bank";
+    return [
+      [!!p.setupDone, "Auszahlungsweg + Daten", p.complete ? `${bankM ? "Bankkonto Airwallex " + ((p.bank && (p.bank.ibanMasked || p.bank.accountMasked)) || "") + " (" + ((p.bank && p.bank.currency) || "") + ")" : p.method === "stripe" ? "Bankkonto über Stripe" : p.method === "payoneer" ? "Payoneer · " + p.payoutEmail : "kein Weg gewählt"} · ${p.legalName} · ${p.city}, ${p.country}${p.vatId ? " · UID " + p.vatId : ""}${p.country === "AT" ? (p.smallBiz ? " · Kleinunternehmer" : " · 20 % USt") : ""}` : "Partner richtet es beim nächsten Login ein (Pflicht, bevor er Aufträge sieht)"],
+      [!!p.sb, "Gutschrift-Vereinbarung", p.sb ? `angenommen ${dt(p.sb.at)} · Version ${p.sb.v}${p.sbIp ? " · IP " + p.sbIp : ""}` : "Partner stimmt bei der Einrichtung zu"],
+      [!!p.ready, bankM ? "Bankkonto bei Airwallex" : p.method === "stripe" ? "Stripe-Konto" : "Payoneer-Konto",
+        bankM ? (p.bankError ? "Abgelehnt: " + p.bankError : p.ready ? "angelegt" : "wird angelegt, sobald der Airwallex-Zugang da ist")
+          : p.method === "stripe" ? (p.stripe ? ({ active: "freigeschaltet", review: "Stripe prüft die Angaben", pending: "Partner hat das Stripe-Formular noch nicht abgeschlossen" }[p.stripe.status] || p.stripe.status) : "wird angelegt")
+          : p.payee ? `${p.payee.id} · ${p.payee.status}` : "Partner verbindet Payoneer in der App"],
+    ];
+  };
   return (
     <>
       <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub("partner")}><ArrowLeft /></button></div>
@@ -57,15 +62,28 @@ export default function PayoutsScreen({ ctx }) {
             {b.processingUsd ? <div><b>{usd(b.processingUsd)}</b><span>Unterwegs</span></div> : null}
           </div>
 
-          <div className="sec3" style={{ marginTop: 18 }}><h2>Einrichtung</h2></div>
+          <div className="sec3" style={{ marginTop: 18 }}><h2>Anbieter</h2></div>
           <div className="info">
-            {steps.map(([ok, l, sub], i) => (
+            {steps.map(([ok, l, sub]) => (
               <div key={l} className="ir">
-                <span className="ico" style={ok ? { background: "var(--success)", color: "#fff" } : null}>{ok ? <CheckCircle2 /> : ([<ShieldCheck key="0" />, <Landmark key="1" />, <User key="2" />, <FileText key="3" />, <LinkIcon key="4" />][i] || <FileText />)}</span>
+                <span className="ico" style={ok ? { background: "var(--success)", color: "#fff" } : null}>{ok ? <CheckCircle2 /> : <ShieldCheck />}</span>
                 <span className="t"><b>{l}</b><span style={{ whiteSpace: "normal" }}>{sub}</span></span>
               </div>
             ))}
           </div>
+          {(d.partners || []).map((p) => (
+            <React.Fragment key={p.id}>
+              <div className="sec3"><h2>{p.name}{p.paused ? " (pausiert)" : ""}</h2><span className="px-cnt">{usd(p.balance && p.balance.owedUsd)} offen</span></div>
+              <div className="info">
+                {pSteps(p).map(([ok, l, sub], i) => (
+                  <div key={l} className="ir">
+                    <span className="ico" style={ok ? { background: "var(--success)", color: "#fff" } : null}>{ok ? <CheckCircle2 /> : [<User key="0" />, <FileText key="1" />, <LinkIcon key="2" />][i]}</span>
+                    <span className="t"><b>{l}</b><span style={{ whiteSpace: "normal" }}>{sub}</span></span>
+                  </div>
+                ))}
+              </div>
+            </React.Fragment>
+          ))}
 
           <div className="sec3"><h2>Automatik</h2></div>
           <div className="info">
@@ -93,7 +111,7 @@ export default function PayoutsScreen({ ctx }) {
                 <div key={x.id} className="ir po-row">
                   <span className="ico" style={{ color: st[1] }}>{x.status === "failed" ? <AlertTriangle /> : x.status === "sent" ? <Send /> : <FileText />}</span>
                   <span className="t"><b>{usd(x.amount)} · {x.tasks} Löschungen{x.gs ? " · " + x.gs : ""}</b>
-                    <span style={{ whiteSpace: "normal" }}><em style={{ color: st[1], fontStyle: "normal" }}>{st[0]}{x.method === "payoneer" ? " · Payoneer" : x.method === "airwallex" ? " · Bank (Airwallex)" : x.method === "stripe" ? " · Bank (Stripe)" : ""}</em> · {dt(x.sent || x.created)}{x.ref ? " · " + x.ref : ""}{x.providerStatus && x.status === "sent" ? " · " + x.providerStatus : ""}{x.error ? " · " + x.error : ""}{!x.gs && x.status !== "failed" ? " · keine Gutschrift (vor der Vereinbarung)" : ""}</span></span>
+                    <span style={{ whiteSpace: "normal" }}>{x.partner ? x.partner + " · " : ""}<em style={{ color: st[1], fontStyle: "normal" }}>{st[0]}{x.method === "payoneer" ? " · Payoneer" : x.method === "airwallex" ? " · Bank (Airwallex)" : x.method === "stripe" ? " · Bank (Stripe)" : ""}</em> · {dt(x.sent || x.created)}{x.ref ? " · " + x.ref : ""}{x.providerStatus && x.status === "sent" ? " · " + x.providerStatus : ""}{x.error ? " · " + x.error : ""}{!x.gs && x.status !== "failed" ? " · keine Gutschrift (vor der Vereinbarung)" : ""}</span></span>
                   {x.gs ? <span className="po-acts">
                     <button type="button" className="achip" onClick={() => payoutPdfOpen(x.id).catch((e) => toast("Fehler: " + e.message))}>PDF</button>
                     <button type="button" className="achip" onClick={() => payoutsRemail(x.id).then(() => toast("Gutschrift erneut gesendet")).catch((e) => toast("Fehler: " + e.message))}>Mail</button>
