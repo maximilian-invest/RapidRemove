@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1078,6 +1078,26 @@ function Confetti() {
   );
 }
 
+/* Suchanimation (Redesign 10/2026): Radar + drei Status-Zeilen (je 800 ms) + Skeleton-Karte. */
+function BpSearchAnim({ title, sub, steps }) {
+  const [k, setK] = React.useState(0);
+  React.useEffect(() => {
+    const ids = steps.map((_, i) => setTimeout(() => setK(i + 1), (i + 1) * 800));
+    return () => ids.forEach(clearTimeout);
+  }, [steps.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div className="bpr-srch">
+      <div className="bpr-radar"><span /><span /><span /><div className="core"><LMapPin /></div></div>
+      <h1 className="bpr-h1">{title}</h1>
+      <p className="bpr-sub">{sub}</p>
+      <div className="bpr-steps">
+        {steps.map((t, i) => <div key={i} className={"bpr-st" + (i < k ? " done" : i === k ? " act" : "")}><span className="ic"><LCheck /></span>{t}</div>)}
+      </div>
+      <div className="bpr-skel"><i className="a" /><div className="l"><i style={{ width: "62%", height: 16 }} /><i style={{ width: "38%", height: 12 }} /><i style={{ width: "50%", height: 12 }} /></div></div>
+    </div>
+  );
+}
+
 /* ============ WIZARD ROOT ============ */
 /* ---- Router (erste Seite) + Presse-/Einzeltreffer-Flow (aus dem Design portiert).
    de + en ausformuliert; übrige Sprachen erben EN (wie im Design). ---- */
@@ -1993,7 +2013,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
   // Echte Google-Places-Suche; Mindest-Anzeigezeit für die Karten-Animation.
   const runSearch = async (nm) => {
-    const minDelay = new Promise((r) => setTimeout(r, 900));
+    const minDelay = new Promise((r) => setTimeout(r, 2900)); // Suchanimation (3 Status-Zeilen) ~2,9 s
     let results = null;
     if (placesEnabled()) {
       try { results = await searchProfiles(nm, lang); }
@@ -2120,18 +2140,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (selected) setContact((c) => ({ ...c, company: selected.name }));
     // Schritt 3 (Bestätigen) NUR bei unklar identifiziertem Profil.
     if (selected && selected.unverified) { go(2); return; }
-    const key = selected ? (selected.placeId || selected.name) : "";
-    // Gleiches Profil wie zuletzt geprüft → ohne Animation direkt zu Schritt 4.
-    if (key && key === checkedRef.current) { go(3); return; }
-    setPhase("checking");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => {
-      checkedRef.current = key;
-      go(3);
-      setPhase("found");
-      setConfetti(true);
-      setTimeout(() => setConfetti(false), 3000);
-    }, 2400);
+    // Löschbarkeit wurde in der Suchanimation schon „geprüft" → direkt zur Leistung.
+    checkedRef.current = selected ? (selected.placeId || selected.name) : "";
+    go(3);
   };
   // „Profil ist nicht in der Liste": mit dem getippten Namen weiter zu Schritt 3 (unklar identifiziert).
   const pickNotInList = () => {
@@ -3278,7 +3289,80 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const Body = bodies[step];
   const wideStep = [0, 5].includes(step) && !processing;
   // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
-  const newStep1 = step === 0 && !processing;
+  const newStep1 = (step === 0 || step === 1) && !processing; // Schritt 1 + 2 im neuen Design
+  function StepSearchNew() {
+    const bp = bpCopy(t.code);
+    const q0 = conv.quotes[0];
+    const mp = MULTI_PROFILE[t.code] || MULTI_PROFILE.en;
+    const aside = (
+      <aside className="bpr-aside bpr-hide-sm">
+        <button type="button" className="bpr-expert" onClick={openTidioChat}>
+          <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+          <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+          <LArrowUpRight className="ar" />
+        </button>
+        <div className="bpr-quote">
+          <span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span>
+          <p>„{q0.q}"</p>
+          <div className="who"><span className="m">{q0.a.charAt(0)}</span><span><b>{q0.a}</b><small>{q0.r}</small></span></div>
+        </div>
+      </aside>
+    );
+    if (phase !== "found") {
+      const chk = phase === "checking";
+      const nm = chk ? ((selected && selected.name) || name) : name;
+      return (
+        <div className="bpr bpr-s1" ref={bodyRef} key={"srch" + phase}>
+          <main className="bpr-main">
+            <section><BpSearchAnim title={chk ? bp.checkH : bp.searchH} sub={(chk ? bp.checkSub : bp.searchSub)(<b key="n">{nm}</b>)} steps={bp.st} /></section>
+            {aside}
+          </main>
+        </div>
+      );
+    }
+    const list = multi ? candidates : candidates.filter((c) => c.primary);
+    const linksA = wantReviews && !reviewsBlocked(t.code);
+    const card = (c, i) => {
+      const sel = multi ? selectedId === c.id : true;
+      const a = c.rating != null ? ratingAssessment(c.rating, lang) : null;
+      return (
+        <button type="button" key={c.id} className={"bpr-card bpr-fade" + (sel ? " sel" : "")} style={{ animationDelay: (0.1 + i * 0.04) + "s" }} onClick={() => setSelectedId(c.id)} aria-pressed={sel}>
+          <span className="ph"><LBuilding /></span>
+          <span className="bd">
+            <span className="nm">{c.name}</span>
+            {c.cat ? <span className="cat">{c.cat}</span> : null}
+            {c.rating != null ? <span className="rate"><span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span><b>{c.rating}</b>· {c.reviews} {w.s2.reviews}</span> : null}
+            <span className="chips">
+              {a ? <span className="chip ok"><LCircleCheck />{a.label}</span> : null}
+              {c.addr ? <span className="chip n"><LMapPin />{c.addr}</span> : null}
+            </span>
+          </span>
+          <span className="selc"><LCheck /></span>
+        </button>
+      );
+    };
+    const back = <button type="button" className="bpr-back" onClick={() => go(0)}><LArrowLeft /><span>{w.back}</span></button>;
+    const goBtn = <button type="button" className="bpr-go" onClick={proceedFromSearch}>{w.s2.button}<LArrowRight /></button>;
+    return (
+      <div className="bpr bpr-s1 bpr-s2" ref={bodyRef} key="found">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{multi ? w.s2.multiH : w.s2.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".05s" }}>{multi ? w.s2.multiSub : w.s2.sub}</p>
+            <div className="bpr-cards">{list.map(card)}</div>
+            <div className="bpr-alts bpr-fade" style={{ animationDelay: ".16s" }}>
+              <button type="button" className="bpr-alt" onClick={() => go(0)}><span className="ai"><LSearch /></span><span className="tx">{wm.notMine}<small>{bp.altNotMineSub}</small></span><LArrowRight className="ar" /></button>
+              <button type="button" className="bpr-alt" onClick={linksA ? reviewsLinksOnly : pickNotInList}><span className="ai"><LLink /></span><span className="tx">{bp.altNotFound}<small>{linksA ? bp.altNotFoundA : bp.altNotFoundB}</small></span><LArrowRight className="ar" /></button>
+              <a className="bpr-alt" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)}><span className="ai"><LLayers /></span><span className="tx">{mp.t}<small>{mp.d}</small></span><LArrowRight className="ar" /></a>
+            </div>
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>{back}{goBtn}</div>
+          </section>
+          {aside}
+        </main>
+        <div className="bpr-mbar">{back}{goBtn}</div>
+      </div>
+    );
+  }
   function StepNameNew() {
     const bp = bpCopy(t.code);
     const q0 = conv.quotes[0];
@@ -3339,7 +3423,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? StepNameNew() : (
+      {newStep1 ? (step === 0 ? StepNameNew() : StepSearchNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
