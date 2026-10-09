@@ -165,6 +165,7 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
         o.pct ? `discount ${o.pct} % (already included in the prices)` : "",
         paidSum ? `paid so far: ${money(Math.round(paidSum * 100) / 100, c)}` : "",
         Number(o.toPay) ? `open to pay now: ${money(Number(o.toPay), c)}` : "",
+        o.reasons ? `${(o.reasons as { keys?: unknown[] }).keys?.length || "all"} review(s) WAIT until the customer taps in the dashboard WHY each review violates Google's policies (one tap per review, then confirm) – the order starts right after (send them to their dashboard, it takes ~2 minutes)` : "",
         o.payGate ? (Array.isArray(o.payGateKeys) ? `the ${(o.payGateKeys as unknown[]).length} newly added review(s) WAIT for a saved payment method (the others keep running)` : "WHOLE ORDER WAITS for a saved payment method – we don't work on it until one is saved") : "",
         stale && stale.cancelAt ? `if no payment method is saved, the waiting review(s) are cancelled automatically on ${day(stale.cancelAt)} (no cost)` : "",
         o.hold ? (o.holdCard ? "PAUSED: the last automatic charge failed – the customer should update the payment method" : "PAUSED until the open payment is made") : "",

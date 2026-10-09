@@ -114,6 +114,8 @@ function mapOrder(r) {
     policyConsentAdds: r.raw && Array.isArray(r.raw.policyConsentAdds) ? r.raw.policyConsentAdds : [], // Zwischenzahlung nötig (Partner pausiert)
     payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
+    reasons: r.raw && r.raw.reasons && typeof r.raw.reasons === "object" ? r.raw.reasons : null, // Gründe je Bewertung (Dashboard): pending/ok
+    reasonsLog: r.raw && Array.isArray(r.raw.reasonsLog) ? r.raw.reasonsLog : [],
     reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,
     reviewsSoftware: (r.raw && Array.isArray(r.raw.reviewsSoftware)) ? r.raw.reviewsSoftware.filter((it) => it && (it.url || it.name)) : [],
     reviewsPayments: (r.raw && Array.isArray(r.raw.reviewsPayments)) ? r.raw.reviewsPayments : [],
@@ -735,6 +737,7 @@ export const partnerOrderStatus = (orderId, status) => adminPost("/admin/partner
 export const setPayDue = (orderId, due) => adminPost("/admin/pay-due", { orderId, due });
 export const verifyDoc = (orderId) => adminPost("/admin/verify-doc", { orderId });
 export const verifySet = (orderId, action, reason) => adminPost("/admin/verify-set", { orderId, action, reason });
+export const reasonsSet = (orderId, action, note) => adminPost("/admin/reasons-set", { orderId, action, note });
 export const custImpersonate = (email, orderId) => adminPost("/admin/cust/impersonate", { email, orderId });
 /** Globaler Aktivitäten-Feed aller Kunden → { stats, seen[], items[], nextCursor }. */
 export const activityFeed = (p) => adminPost("/admin/activity/feed", p);

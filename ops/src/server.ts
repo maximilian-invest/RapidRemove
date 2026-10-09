@@ -24,6 +24,7 @@ import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf } from "./r
 import { CHAT_INTERNAL } from "./chat/chat";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
+import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker, pgNextFor } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
@@ -196,6 +197,7 @@ app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
+registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
 registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
@@ -475,6 +477,9 @@ app.post("/order", async (req, reply) => {
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
   const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
+  // Gründe je Bewertung (10/2026): Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an → erst dann Start.
+  const reasonsGate = isReviews && reviewItems.length > 0 && !!email;
+  if (reasonsGate) (b as Record<string, unknown>).reasons = reasonsGateNew();
   // Zusicherung des Kunden: „Bewertungen verstoßen nach bestem Wissen gegen die Google-Richtlinien" (Checkbox im Bestellprozess).
   // Nachweis beim Auftrag: Zeitpunkt, IP, Gerät, Sprache, Textversion. Fehlt sie (z. B. alter Browser-Stand), wird das vermerkt.
   if (isReviews) {
@@ -523,7 +528,7 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -683,10 +688,11 @@ app.post("/order", async (req, reply) => {
       // → Kunde bekommt die Zahlungsaufforderung im Dashboard → nach Zahlung „Customer paid – start now".
       const vInfo = (b as Record<string, unknown>).verify as { by?: string; from?: string; keys?: string[] } | undefined;
       if (vInfo && vInfo.by === "reuse") await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis schon vorhanden (gleiches Profil)", detail: `Freigegeben in Auftrag ${vInfo.from} – kein neuer Nachweis nötig`, auto: true }).catch(() => {});
-      if (verifyNeeded || payGate) {
+      if (reasonsGate || verifyNeeded || payGate) {
+        if (reasonsGate) await insertEvent({ orderId: id, type: "note", title: "Wartet auf Gründe je Bewertung (Dashboard)", detail: "Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an und bestätigt (AGB 3.4) – Start erst danach", auto: true }).catch(() => {});
         if (verifyNeeded) await insertEvent({ orderId: id, type: "note", title: `Inhaber-Nachweis nötig für ${vInfo?.keys?.length || 1} Bewertung(en) mit 4–5 Sternen`, detail: payGate ? "Reihenfolge: erst Zahlungsart, dann laufen die übrigen; diese erst nach dem Nachweis" : "Die übrigen gehen jetzt ans Partner-Board, diese erst nach dem Nachweis", auto: true }).catch(() => {});
         if (payGate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Auftrag startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst je Löschung", auto: true }).catch(() => {});
-        if (!payGate) await startOrderIfReady(id).catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Teilstart fehlgeschlagen"));
+        if (!payGate && !reasonsGate) await startOrderIfReady(id).catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Teilstart fehlgeschlagen"));
       } else if (isReviews && reviewItems.length && await partnerAutoEnabled("reviews").catch(() => true)) {
         await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));
@@ -790,6 +796,8 @@ app.post("/admin/orders/create", async (req, reply) => {
   const autoPay = pay === "auto" && autopayAvailable(email);
   const gate = autoPay && !(await hasSavedMethod(email).catch(() => false));
   const staff = ["max", "matthias"].includes(String(b.staff)) ? String(b.staff) : null;
+  // Gründe je Bewertung im Dashboard abfragen (Standard). Abwählbar, wenn sie schon vorliegen (z. B. per Mail).
+  const askReasons = type === "reviews" && b.askReasons !== false;
   const sendConfirm = b.sendConfirm !== false;
   const id = "RR-" + Math.floor(100000 + Math.random() * 899999);
   const service = type === "reviews" ? "reviews" : "remove";
@@ -798,6 +806,7 @@ app.post("/admin/orders/create", async (req, reply) => {
     countryChoice: ctry, mapsUri, placeId, addr, amount,
     payMethod: autoPay ? "auto" : pay === "auto" ? "link" : pay, payPref: pay === "paypal" ? "paypal" : "none",
     ...(gate ? { payGate: { status: "pending", at: new Date().toISOString() } } : {}),
+    ...(type === "reviews" && askReasons ? { reasons: reasonsGateNew() } : {}),
     ...(type === "reviews" ? { reviewItems: items } : { reason }),
   };
   try {
@@ -827,7 +836,7 @@ app.post("/admin/orders/create", async (req, reply) => {
         } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
       }
       const props = type === "reviews"
-        ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash, payGate: gate }
+        ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash, payGate: gate, reasons: askReasons }
         : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name), dash, payGate: gate };
       const html = await render(React.createElement(t.component, props as any));
       const subj = t.subject(props as any);
@@ -839,12 +848,14 @@ app.post("/admin/orders/create", async (req, reply) => {
   // Partner-Board (Auto-Weiterleitung laut Einstellungen) + Screenshots
   let partner = 0;
   try {
+    if (askReasons) await insertEvent({ orderId: id, type: "note", title: "Wartet auf Gründe je Bewertung (Dashboard)", detail: "Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an und bestätigt (AGB 3.4) – Start erst danach", auto: true }).catch(() => {});
     if (gate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Auftrag startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst bei Löschung", auto: true }).catch(() => {});
+    else if (askReasons) { /* Start erst nach den Gründen (reasons.ts) */ }
     else if (type === "reviews" && await partnerAutoEnabled("reviews").catch(() => true)) partner = await partnerAutoSend(id, company || name, items as Record<string, unknown>[]);
     else if (type === "profile" && await partnerAutoEnabled("profiles").catch(() => false)) partner = await partnerAutoSendProfile(id, company || name, mapsUri);
   } catch (e) { app.log.error({ err: e, orderId: id }, "Partner-Board (Admin-Auftrag) fehlgeschlagen"); }
   queueOrderShots(id, service, raw, (o, m) => app.log.info(o, m));
-  return { ok: true, id, amount, currency: cur, mailed, partner, payGate: gate, autoPay };
+  return { ok: true, id, amount, currency: cur, mailed, partner, payGate: gate, autoPay, reasons: askReasons };
 });
 
 // Admin (neu) · „Neuer Auftrag": Bewertungs-Link auflösen → Profil + Bewertung (Autor, Sterne, Alter).

@@ -12,7 +12,7 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks,
 } from "lucide-react";
 import { reviewQuote } from "@/lib/pricing";
 import "@/styles/dashboard.css";
@@ -86,11 +86,11 @@ const initials = (name, email) => {
 /* ---- Status (intern → Kunde) ---- */
 const ST_ = {
   new: { I: Search, ico: "in" }, working: { I: Loader, ico: "wk" }, removed: { I: CheckCircle2, ico: "ok" }, notpossible: { I: Ban, ico: "no" },
-  verify: { I: ShieldCheck, ico: "pr" }, paygate: { I: CreditCard, ico: "pr" }, software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
+  reasons: { I: ListChecks, ico: "pr" }, verify: { I: ShieldCheck, ico: "pr" }, paygate: { I: CreditCard, ico: "pr" }, software: { I: AlertCircle, ico: "pr" }, sw_accepted: { I: Cpu, ico: "wk" }, sw_declined: { I: XCircle, ico: "" }, cancelled: { I: XCircle, ico: "" },
 };
 // pre = Software-Fall, dem der Kunde schon bei der Bestellung zugestimmt hat → Partner hat bestätigt, jetzt nur noch zahlen.
 const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p = k === "software" && pre; return { ...ST_[k], l: T(p ? "st_swpay" : "st_" + k), why: T(p ? "why_swpay" : "why_" + k) }; };
-const OPEN = ["new", "verify", "paygate", "working", "software", "sw_accepted"];
+const OPEN = ["new", "reasons", "verify", "paygate", "working", "software", "sw_accepted"];
 const statusLine = (r, cur) => stOf(r.status, r.pre).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
   + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
@@ -229,7 +229,7 @@ function Countdown({ to }) {
 const vNeeds = (o) => !!(o && o.verify && o.verify.status !== "ok");
 const pgNeeds = (o) => !!(o && o.payGate); // Auftrag startet erst mit hinterlegter Zahlungsart
 // Reihenfolge für den Kunden: 1) Zahlungsart, 2) Inhaber-Nachweis. Solange die Zahlungsart fehlt, kommt der Nachweis noch nicht dran.
-const vReady = (o, autopay) => vNeeds(o) && (!pgNeeds(o) || !!autopay);
+const vReady = (o, autopay) => vNeeds(o) && (!pgNeeds(o) || !!autopay); // (alt) – seit 10/2026 läuft alles über den Start-Ablauf
 // Nur die 4–5-Sterne-Bewertungen warten auf den Nachweis (verify.keys); ohne keys (ältere Aufträge) alle.
 const vWaits = (o, key) => vNeeds(o) && (!Array.isArray(o.verify.keys) || o.verify.keys.includes(key));
 const vCount = (o) => (Array.isArray(o.verify && o.verify.keys) ? o.verify.keys.length : (o.items || []).length);
@@ -247,7 +247,8 @@ async function fileToUpload(file) {
     return { mime: "image/jpeg", data, size: Math.round(data.length * 0.75) };
   } finally { URL.revokeObjectURL(url); }
 }
-function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
+/* Inhaber-Nachweis als Schritt im Start-Ablauf (Inhalt + Fußleiste). ok/manuell → „Weiter"; sonst Upload + „Später hochladen". */
+function VerifyPane({ order, token, imp, onDone, onNext, showToast, kicker, back, runNote = true }) {
   const [up, setUp] = React.useState(false);
   const [res, setRes] = React.useState(null); // Antwort des letzten Uploads in dieser Sitzung
   const fileRef = React.useRef(null);
@@ -276,24 +277,24 @@ function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
     }
     setUp(false);
   };
-  let body = null, btn = null;
+  let body = null, btn = null, later = false;
   if (ph === "checking") body = (
     <div className="vf-chk"><Loader className="spin" /><h2>{T("vChk")}</h2><p>{T("vChkP")}</p></div>
   );
-  else if (ph === "ok") { body = (<><div className="fl-art"><img src={IMG.rocket} alt="" /></div><h2>{T("vOkH")}</h2><p>{T("vOkP")}</p></>); btn = <button className="cta" onClick={onClose}>{T("done")}</button>; }
-  else if (ph === "manual") { body = (<><div className="fl-art"><img src={IMG.shield} alt="" /></div><h2>{T("vManH")}</h2><p>{T("vManP")}</p></>); btn = <button className="cta" onClick={onClose}>{T("done")}</button>; }
+  else if (ph === "ok") { body = (<><div className="fl-art"><img src={IMG.rocket} alt="" /></div><h2>{T("vOkH")}</h2><p>{T("vOkP")}</p></>); btn = <button className="cta" onClick={onNext}>{T("vNext")}<ArrowRight /></button>; }
+  else if (ph === "manual") { body = (<><div className="fl-art"><img src={IMG.shield} alt="" /></div><h2>{T("vManH")}</h2><p>{T("vManP")}</p></>); btn = <button className="cta" onClick={onNext}>{T("vNext")}<ArrowRight /></button>; }
   else {
     body = (
       <>
-        {ph === "rejected" ? null : <div className="fl-art"><img src={IMG.shield} alt="" /></div>}
-        <div className="fl-k">{T("vK")}</div>
+        {ph === "rejected" ? null : <div className="fl-art sf-art"><img src={IMG.shield} alt="" /></div>}
+        <div className="fl-k">{kicker || T("vK")}</div>
         <h2>{ph === "rejected" ? T("vNoH") : T("vH", { biz: order ? order.business || "" : "" })}</h2>
         {ph === "rejected" ? <div className="note bad vf-why">{reason || T("vNoP")}</div> : <p>{T("vP")}</p>}
         {waitIt.length && others ? (
           <div className="vf-which">
             <div className="fl-k">{T("vFor", { n: waitIt.length })}</div>
             {waitIt.map((i) => <div key={i.key} className="vf-rv"><b>{i.name || "Google"}</b>{i.rating ? <span className="st">{"★".repeat(Math.min(5, i.rating))}</span> : null}</div>)}
-            <p className="vf-run">{T("vRun", { n: others })}</p>
+            {runNote ? <p className="vf-run">{T("vRun", { n: others })}</p> : null}
           </div>
         ) : null}
         <div className="fl-k vf-dk">{T("vDocs")}</div>
@@ -306,34 +307,241 @@ function VerifyFlow({ order, token, imp, onClose, onDone, showToast }) {
       </>
     );
     btn = <button className="cta" onClick={pick}><Upload />{ph === "rejected" ? T("vAgain") : T("vUp")}</button>;
+    later = true;
   }
   return (
-    <section className={"flow vf" + (order ? " show" : "")} aria-hidden={!order} onClick={(e) => { if (e.target === e.currentTarget && !up) onClose(); }}>
-      {order ? (
-        <div className="fl-card">
-          <div className="fl-top"><button className="x" onClick={onClose} disabled={up} aria-label="Close"><X /></button><div className="fl-bar" /></div>
-          <div className="fl-body">{body}</div>
-          {btn ? <div className="fl-foot">{btn}</div> : null}
-          <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
+    <>
+      <div className="fl-body vf">{body}</div>
+      {btn ? (
+        <div className="fl-foot sf-foot">
+          <div className="sf-row">{back}{btn}</div>
+          {later ? <button className="pg-later" disabled={up} onClick={onNext}>{T("vLater")}</button> : null}
         </div>
       ) : null}
-    </section>
+      <input ref={fileRef} type="file" accept="image/*,application/pdf" hidden onChange={onFile} />
+    </>
   );
 }
 
-/* Nachbestellung: weitere Bewertungen des eigenen Profils (1–3 ★) zum Auftrag hinzufügen. Bezahlt wird wie immer nur bei Löschung;
-   ohne hinterlegte Zahlungsart startet die neue Bewertung erst danach (Server entscheidet, Antwort gate → Zahlungsart-Schritt). */
+/* Auftrag starten (10/2026): EIN Ablauf statt einzelner Fenster – im Design des Software-Flows (Vollbild am Handy, Pop-up am Desktop).
+   1) Gründe: je Bewertung ein Bildschirm, Grund antippen (springt automatisch weiter), „Anderer Grund" mit kurzem Text
+   2) Kurzer Check aller Gründe + Bestätigung (Checkbox inkl. Freistellung AGB 3.4) → /cust/reasons
+   3) Inhaber-Nachweis (nur bei 4–5 ★)  4) Zahlungsart (Stripe; nur wenn noch keine hinterlegt) – sonst „Fertig – wir starten".
+   Die Schritte werden beim Öffnen festgelegt; jeder Schritt zeigt den Live-Stand des Auftrags. */
+const R_MAIN = ["fake", "conflict", "false", "insult", "offtopic"];
+const R_MORE = ["hate", "personal", "offensive", "impersonation"];
+const rsKeys = (o) => (o && !o.cancelled && o.reasons && Array.isArray(o.reasons.keys) ? o.reasons.keys : []);
+const rsNeeds = (o) => rsKeys(o).length > 0;
+const vOpen = (o) => vNeeds(o) && o.verify.status !== "checking" && !(o.verify.status === "pending" && o.verify.uploaded);
+const startPhases = (o, autopay) => (o && !o.cancelled ? [...(rsNeeds(o) ? ["r"] : []), ...(vOpen(o) ? ["v"] : []), ...(pgNeeds(o) && !autopay ? ["p"] : [])] : []);
+function Stars({ n }) {
+  if (!n) return null;
+  return <span className="stars" aria-label={n + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < n ? "f" : ""} />)}</span>;
+}
+function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apStart, apBusy, zero }) {
+  const [seq, setSeq] = React.useState(null); // [{ k: intro|r|sum|v|p|done, ph, item? }]
+  const [ix, setIx] = React.useState(0);
+  const [ans, setAns] = React.useState({}); // key → { r, note }
+  const [more, setMore] = React.useState(false);
+  const [pol, setPol] = React.useState(false);
+  const [polErr, setPolErr] = React.useState(false);
+  const [busy, setBusy] = React.useState(false);
+  const adv = React.useRef(0);
+  const oid = order && order.id;
+  React.useEffect(() => {
+    if (!oid) { setSeq(null); return; }
+    if (seq && seq.oid === oid) return;
+    const phs = startPhases(order, autopay);
+    const its = (order.items || []).filter((i) => rsKeys(order).includes(i.key) && !["removed", "cancelled"].includes(i.status));
+    const st = [];
+    if (its.length) { st.push({ k: "intro", ph: "" }); its.forEach((it) => st.push({ k: "r", ph: "r", item: it })); st.push({ k: "sum", ph: "r" }); }
+    if (phs.includes("v")) st.push({ k: "v", ph: "v" });
+    if (phs.includes("p")) st.push({ k: "p", ph: "p" }); else st.push({ k: "done", ph: "" });
+    const out = Object.assign(st, { oid, phs, n: its.length });
+    setSeq(out); setIx(0); setAns({}); setMore(false); setPol(false); setPolErr(false); setBusy(false);
+  }, [oid]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => () => clearTimeout(adv.current), []);
+  if (!order || !seq) return <section className="flow" aria-hidden="true" />;
+  const cur = seq[Math.min(ix, seq.length - 1)];
+  const phs = seq.phs;
+  const go = (d) => { clearTimeout(adv.current); setMore(false); setIx((x) => Math.max(0, Math.min(seq.length - 1, x + d))); };
+  const goTo = (i) => { clearTimeout(adv.current); setMore(false); setIx(i); };
+  const rIdx = seq.filter((x) => x.k === "r");
+  const ri = cur.k === "r" ? rIdx.indexOf(cur) : -1;
+  const phLabel = { r: T("phR"), v: T("phV"), p: T("phP") };
+  const kick = cur.ph ? T("stStep", { i: phs.indexOf(cur.ph) + 1, n: phs.length }) + " · " + phLabel[cur.ph] : "";
+  // Fortschritt: je Phase ein Balken, innerhalb der Gründe anteilig
+  const fill = (p) => {
+    const pi = phs.indexOf(p), ci = cur.ph ? phs.indexOf(cur.ph) : cur.k === "done" ? phs.length : -1;
+    if (ci > pi) return 100;
+    if (ci < pi) return 0;
+    if (p === "r") return cur.k === "sum" ? 92 : Math.round(((ri + 1) / (seq.n + 1)) * 100);
+    return 50;
+  };
+  const back = ix > 0 && cur.k !== "done" && !(cur.k === "v" && seq[ix - 1].k === "sum") && !(cur.k === "p" && seq[ix - 1].k === "sum")
+    ? <button className="bk" onClick={() => go(-1)} aria-label="Back"><ArrowLeft /></button> : null;
+  const pick = (key, r) => {
+    setAns((a) => ({ ...a, [key]: { r, note: r === "other" ? (a[key] && a[key].note) || "" : "" } }));
+    if (r !== "other") { clearTimeout(adv.current); adv.current = setTimeout(() => go(1), 260); }
+  };
+  const okAns = (key) => { const a = ans[key]; return !!a && (a.r !== "other" || String(a.note || "").trim().length >= 3); };
+  const submit = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!pol) { setPolErr(true); showToast(T("rPolErr"), true); return; }
+    setBusy(true);
+    try {
+      await call("reasons", { token, orderId: order.id, lang: LANG, policyConsent: true, policyV: POLICY_V, reasons: rIdx.map((x) => ({ key: x.item.key, r: ans[x.item.key].r, note: ans[x.item.key].note || "" })) });
+      track("reasons_done", `${order.id} · ${rIdx.length}`, { n: rIdx.length });
+      await reload();
+      go(1);
+    } catch (e) {
+      if (e.code === "missing") { const k = rIdx.findIndex((x) => !okAns(x.item.key)); if (k >= 0) goTo(seq.indexOf(rIdx[k])); }
+      showToast(T("genericErr"), true);
+    }
+    setBusy(false);
+  };
+
+  let body = null, foot = null;
+  if (cur.k === "intro") {
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.rocket} alt="" /></div>
+        <div className="fl-k">{T("stIntroK")}</div>
+        <h2>{T("stIntroH")}</h2>
+        <p>{T("stIntroP")}</p>
+        <div className="sf-phs">
+          {phs.map((p, i) => (
+            <div key={p} className="sf-ph"><span className="n">{i + 1}</span><span><b>{phLabel[p]}</b><span>{p === "r" ? T("phRs", { n: seq.n }) : p === "v" ? T("phVs") : T("phPs")}</span></span></div>
+          ))}
+        </div>
+      </>
+    );
+    foot = <div className="fl-foot sf-foot"><button className="cta or" onClick={() => go(1)}>{T("stIntroBtn")}<ArrowRight /></button></div>;
+  } else if (cur.k === "r") {
+    const it = cur.item, a = ans[it.key];
+    const showMore = more || (a && R_MORE.includes(a.r));
+    body = (
+      <>
+        <div className="fl-k">{kick}</div>
+        <h2 className="sf-q">{T("rQ")}</h2>
+        <div className="sf-rv">
+          <div className="sf-rv-h"><b>{it.name || T("googleReview")}</b><Stars n={it.rating} /><span className="sf-of">{T("rOf", { i: ri + 1, n: seq.n })}</span></div>
+          <div className={"sf-rv-x" + (it.text ? "" : " none")}>{it.text ? "“" + it.text + "”" : T("noText")}</div>
+        </div>
+        <div className="sf-opts" role="radiogroup" aria-label={T("rQ")}>
+          {[...R_MAIN, ...(showMore ? R_MORE : []), "other"].map((r) => (
+            <button key={r} type="button" role="radio" aria-checked={!!a && a.r === r} className={"sf-o" + (a && a.r === r ? " on" : "")} onClick={() => pick(it.key, r)}>
+              <span className="tog"><Check /></span><b>{T("r_" + r)}</b>
+            </button>
+          ))}
+          {!showMore ? <button type="button" className="sf-more" onClick={() => setMore(true)}>{T("rMore")}<ChevronRight /></button> : null}
+          {a && a.r === "other" ? (
+            <textarea className="sf-note" autoFocus rows={3} maxLength={300} placeholder={T("rOtherPh")} value={a.note || ""}
+              onChange={(e) => { const v = e.target.value; setAns((x) => ({ ...x, [it.key]: { r: "other", note: v } })); }} />
+          ) : null}
+        </div>
+      </>
+    );
+    foot = <div className="fl-foot sf-foot"><div className="sf-row">{back}<button className="cta" disabled={!okAns(it.key)} onClick={() => go(1)}>{T("rNext")}<ArrowRight /></button></div></div>;
+  } else if (cur.k === "sum") {
+    body = (
+      <>
+        <div className="fl-k">{kick}</div>
+        <h2>{T("rSumH")}</h2>
+        <p className="sf-sub">{T("rSumP")}</p>
+        <div className="sf-sum">
+          {rIdx.map((x) => {
+            const a = ans[x.item.key];
+            return (
+              <button key={x.item.key} type="button" className={"sf-s" + (okAns(x.item.key) ? "" : " miss")} onClick={() => goTo(seq.indexOf(x))}>
+                <span className="t"><span className="a"><b>{x.item.name || T("googleReview")}</b><Stars n={x.item.rating} /></span>
+                  <span className="r">{a ? T("r_" + a.r) + (a.r === "other" && a.note ? ": " + a.note : "") : "—"}</span></span>
+                <ChevronRight />
+              </button>
+            );
+          })}
+        </div>
+      </>
+    );
+    foot = (
+      <div className="fl-foot sf-foot pgf">
+        <PolicyConsent lang={LANG} checked={pol} error={polErr} className="sf-pol"
+          style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 12px", textAlign: "left", background: polErr ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
+          onChange={(v) => { setPol(v); if (v) setPolErr(false); }} />
+        <div className="sf-row">{back}<button className="cta" disabled={busy || rIdx.some((x) => !okAns(x.item.key))} onClick={submit}>{busy ? <Loader className="spin" /> : <Check />}{T("rConfirm")}</button></div>
+      </div>
+    );
+  } else if (cur.k === "v") {
+    return (
+      <section className="flow sf show" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+        <div className="fl-card">
+          <Top phs={phs} fill={fill} onClose={onClose} />
+          <VerifyPane order={order} token={token} imp={imp} showToast={showToast} onDone={reload} onNext={() => go(1)} kicker={kick} back={back} runNote={!phs.includes("p")} />
+        </div>
+      </section>
+    );
+  } else if (cur.k === "p") {
+    const prof = order.kind === "profile";
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.wallet} alt="" /></div>
+        <div className="fl-k">{kick}</div>
+        <h2>{T("pgH")}</h2>
+        <p>{T(prof ? "pgPprof" : "pgP")}</p>
+        <div className="pgs-f sf-pf">
+          <div><span className="ico"><Check /></span><b>{T("pgF1", { zero })}</b></div>
+          <div><span className="ico"><Receipt /></span><b>{T(prof ? "pgF2prof" : "pgF2")}</b></div>
+          <div><span className="ico"><FileText /></span><b>{T("pgF3")}</b></div>
+        </div>
+        <div className="secure"><Lock />{T("pgSafe")}</div>
+      </>
+    );
+    foot = (
+      <div className="fl-foot sf-foot">
+        <div className="sf-row">{back}<button className="cta or" disabled={apBusy} onClick={apStart}>{apBusy ? <Loader className="spin" /> : <CreditCard />}{T("pgAlert")}</button></div>
+        <button className="pg-later" disabled={apBusy} onClick={onClose}>{T("pgLater")}</button>
+      </div>
+    );
+  } else {
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.rocket} alt="" /></div>
+        <h2>{T("stDoneH")}</h2>
+        <p>{T("stDoneP")}</p>
+      </>
+    );
+    foot = <div className="fl-foot sf-foot"><button className="cta" onClick={onClose}>{T("done")}</button></div>;
+  }
+  return (
+    <section className="flow sf show" onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
+      <div className="fl-card" key={ix}>
+        <Top phs={phs} fill={fill} onClose={onClose} hide={cur.k === "intro" || cur.k === "done"} />
+        <div className="fl-body sf-in">{body}</div>
+        {foot}
+      </div>
+    </section>
+  );
+}
+function Top({ phs, fill, onClose, hide }) {
+  return (
+    <div className="fl-top">
+      <button className="x" onClick={onClose} aria-label="Close"><X /></button>
+      <div className="fl-bar sf-bar" style={hide ? { visibility: "hidden" } : undefined}>{phs.map((p) => <i key={p}><b style={{ width: fill(p) + "%" }} /></i>)}</div>
+    </div>
+  );
+}
+
+/* Nachbestellung: weitere Bewertungen des eigenen Profils (1–3 ★) zum Auftrag hinzufügen. Bezahlt wird wie immer nur bei Löschung.
+   Danach öffnet sich der Start-Ablauf (Grund je neuer Bewertung + Bestätigung, ggf. Zahlungsart) – die Zusicherung kommt dort. */
 function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [list, setList] = React.useState(null);
   const [err, setErr] = React.useState(false);
   const [pick, setPick] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
-  const [pol, setPol] = React.useState(false);
-  const [polErr, setPolErr] = React.useState(false);
   const oid = order && order.id;
   React.useEffect(() => {
     if (!oid) return;
-    setList(null); setErr(false); setPick([]); setPol(false); setPolErr(false);
+    setList(null); setErr(false); setPick([]);
     call("orders/reviews", { token, orderId: oid }).then((r) => setList(r.enabled ? r.reviews || [] : [])).catch(() => { setList([]); setErr(true); });
   }, [oid, token]);
   const sel = (list || []).filter((r) => pick.includes(r.id));
@@ -341,9 +549,8 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const q = reviewQuote(sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; }), LANG);
   const add = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!pol) { setPolErr(true); return; }
     setBusy(true);
-    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, policyConsent: true, policyV: POLICY_V }); showToast(T("arDone")); onDone(!!r.gate); }
+    try { const r = await call("orders/add", { token, orderId: oid, ids: pick }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
     catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
@@ -379,9 +586,6 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
           </div>
           <div className="fl-foot pgf">
             {sel.length ? <div className="ar-max">{T("arMax", { amount: money(q.total, order.cur) })}</div> : null}
-            {sel.length ? <PolicyConsent lang={LANG} checked={pol} error={polErr} className="ar-pol"
-              style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 12px", textAlign: "left", background: polErr ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
-              onChange={(v) => { setPol(v); if (v) setPolErr(false); }} /> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>
         </div>
@@ -408,38 +612,6 @@ function SetupOverlay({ onDone }) {
         <p key={step}>{T(["su1", "su2", "su3"][step])}</p>
       </div>
     </div>
-  );
-}
-
-/* Zahlungsart hinterlegen, bevor der Auftrag startet (abgebucht wird nur je gelöschter Bewertung).
-   Handy: Sheet von unten mit Griff (wegwischbar), Dashboard bleibt im Hintergrund sichtbar, passt ohne Scrollen. Desktop: Pop-up. */
-function PayGateFlow({ open, zero, busy, onClose, onGo, prof, add, step2 }) {
-  const ref = React.useRef(null);
-  useSwipeClose(ref, open && !busy, onClose);
-  return (
-    <>
-      <div className={"bg chgbg" + (open ? " show" : "")} onClick={() => { if (!busy) onClose(); }} />
-      <div ref={ref} className={"rv-sheet chg pgs" + (open ? " show" : "")} aria-hidden={!open} role="dialog" aria-modal="true">
-        {open ? (
-          <>
-            <div className="grab" />
-            <button className="pgs-x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
-            <div className="pgs-art"><img src={IMG.wallet} alt="" /></div>
-            <div className="fl-k">{T(step2 ? "pgK2" : "pgK")}</div>
-            <h3>{T(add ? "pgHadd" : "pgH")}</h3>
-            <p className="pgs-p">{T(prof ? "pgPprof" : "pgP")}</p>
-            <div className="pgs-f">
-              <div><span className="ico"><Check /></span><b>{T("pgF1", { zero })}</b></div>
-              <div><span className="ico"><Receipt /></span><b>{T(prof ? "pgF2prof" : "pgF2")}</b></div>
-              <div><span className="ico"><FileText /></span><b>{T("pgF3")}</b></div>
-            </div>
-            <div className="secure"><Lock />{T("pgSafe")}</div>
-            <button className="cta" disabled={busy} onClick={onGo}>{busy ? <Loader className="spin" /> : <CreditCard />}{T("pgAlert")}</button>
-            <button className="pg-later" disabled={busy} onClick={onClose}>{T("pgLater")}</button>
-          </>
-        ) : null}
-      </div>
-    </>
   );
 }
 
@@ -484,11 +656,9 @@ export default function CustomerDashboard() {
   const rvRef = React.useRef(null);
   useSwipeClose(rvRef, !!sheet, () => setSheet(null));
   const [flow, setFlow] = React.useState(null); // { step, items, pick:Set, mode, total, n, url }
-  const [vfId, setVfId] = React.useState(null); // Inhaber-Nachweis: offene Bestellung
-  const vfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
-  const [pgOpen, setPgOpen] = React.useState(false); // Zahlungsart hinterlegen (Auftrag startet danach)
+  const [sfId, setSfId] = React.useState(null); // Auftrag starten (Gründe → Nachweis → Zahlungsart): offene Bestellung
+  const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
-  const pgAuto = React.useRef(false);
   // Direkt nach der Bestellung (#a=… bzw. ?from=order): erst Einrichtungs-Animation, dann Dashboard, 2 Sek. später „Zahlungsart hinterlegen".
   const [postOrder, setPostOrder] = React.useState(() => { try { return /(^|[#&])a=/.test(window.location.hash || "") || new URLSearchParams(window.location.search).get("from") === "order"; } catch (e) { return false; } });
   const [setupOn, setSetupOn] = React.useState(false);
@@ -613,7 +783,7 @@ export default function CustomerDashboard() {
     apDone.current = true;
     try { const u = new URL(window.location.href); u.searchParams.delete("autopay"); u.searchParams.delete("cs"); window.history.replaceState(null, "", u.pathname + (u.search || "")); } catch (e) { /* */ }
     if (ap !== "done" || !cs) { showToast(T("apCancel"), true); return; }
-    setBusy("ap"); setPgOpen(false); pgAuto.current = true;
+    setBusy("ap"); setSfId(null); sfAuto.current = true;
     call("autopay/confirm", { token, cs })
       .then((r) => {
         // Großer Moment: Karte fliegt rein, Häkchen, Konfetti, Ton (Celebrate kind „card").
@@ -716,25 +886,18 @@ export default function CustomerDashboard() {
       if (navigator.setAppBadge) (n ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(() => {});
     } catch (e) { /* */ }
   }, [data]);
-  // Inhaber-Nachweis offen → einmal je Sitzung von selbst öffnen (wie die Software-Zahlung).
+  // Etwas fehlt noch zum Start (Gründe / Nachweis / Zahlungsart) → Start-Ablauf einmal je Sitzung von selbst öffnen.
   React.useEffect(() => {
-    if (!data || vfAuto.current || imp || data.adminView || pgOpen) return;
-    if (postOrder && (setupOn || !setupShown.current)) return; // erst die Einrichtungs-Animation
-    const o = (data.orders || []).find((x) => vReady(x, data.autopay) && x.verify.status !== "checking" && !(x.verify.status === "pending" && x.verify.uploaded));
-    if (o) { vfAuto.current = true; setVfId(o.id); }
-  }, [data, imp, pgOpen, setupOn, postOrder]);
-  // Zahlungsart fehlt → einmal je Sitzung von selbst öffnen (nach dem Inhaber-Nachweis, falls der auch fehlt).
-  React.useEffect(() => {
-    if (!data || pgAuto.current || imp || data.adminView || vfId || data.autopay || busy === "ap") return;
+    if (!data || sfAuto.current || imp || data.adminView || sfId || busy === "ap") return;
     try { if (new URLSearchParams(window.location.search).get("autopay")) return; } catch (e) { /* */ } // Rückkehr aus Stripe läuft gerade
     if (postOrder && (setupOn || !setupShown.current)) return; // erst die Einrichtungs-Animation
-    const os = data.orders || [];
-    if (os.some(pgNeeds)) { // Zahlungsart kommt immer zuerst
-      pgAuto.current = true;
-      if (postOrder) { const t = setTimeout(() => setPgOpen(true), 2000); return () => clearTimeout(t); }
-      setPgOpen(true);
+    const o = (data.orders || []).find((x) => startPhases(x, data.autopay).length);
+    if (o) {
+      sfAuto.current = true;
+      if (postOrder) { const t = setTimeout(() => setSfId(o.id), 700); return () => clearTimeout(t); }
+      setSfId(o.id);
     } else if (postOrder) setPostOrder(false);
-  }, [data, imp, vfId, busy, setupOn, postOrder]);
+  }, [data, imp, sfId, busy, setupOn, postOrder]);
   // Einrichtungs-Animation starten, sobald nach der Bestellung die Daten da sind (einmal).
   React.useEffect(() => {
     if (!postOrder || !data || setupShown.current || imp || data.adminView) return;
@@ -746,12 +909,12 @@ export default function CustomerDashboard() {
     if (!token || !data || imp || data.adminView) return;
     const sh = sheet ? (data.orders || []).find((o) => o.id === sheet.orderId) : null;
     const it = sh ? sh.items.find((i) => i.key === sheet.key) : null;
-    const name = flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
+    const name = sfId ? `Auftrag starten · ${sfId}` : flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
       : sheet ? `Bewertung ansehen${it && (it.name || it.url) ? ": " + String(it.name || it.url).slice(0, 60) : ""}`
       : detailId ? `Bestellung ${detailId}`
       : ({ home: "Übersicht", orders: "Bestellungen", pay: "Zahlungen", acc: "Konto" })[tab] || tab;
     view(name, sheet ? sheet.orderId : detailId || undefined);
-  }, [token, !!data, tab, detailId, sheet, flow && flow.step]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, !!data, tab, detailId, sheet, flow && flow.step, sfId]); // eslint-disable-line react-hooks/exhaustive-deps
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {
@@ -787,21 +950,22 @@ export default function CustomerDashboard() {
   // Auftrag wartet auf den Inhaber-Nachweis → seine Bewertungen zeigen „Wartet auf Nachweis" statt „Wird geprüft".
   // Nachbestellung mit Zahlungsart-Pflicht: nur die neuen Bewertungen (payGateKeys) warten, die übrigen laufen weiter.
   // Je Bewertung: erst „Wartet auf Zahlungsart" (falls die fehlt), danach nur die 4–5-Sterne-Bewertungen „Wartet auf Nachweis".
-  const orders = (data.orders || []).map((o) => (vNeeds(o) || pgNeeds(o) ? { ...o, items: o.items.map((i) => {
+  const orders = (data.orders || []).map((o) => (vNeeds(o) || pgNeeds(o) || rsNeeds(o) ? { ...o, items: o.items.map((i) => {
     if (i.status !== "new") return i;
+    if (rsKeys(o).includes(i.key)) return { ...i, status: "reasons" };
     if (pgNeeds(o) && !data.autopay && (!o.payGateKeys || o.payGateKeys.includes(i.key))) return { ...i, status: "paygate" };
     return vWaits(o, i.key) ? { ...i, status: "verify" } : i;
   }) } : o));
   const pgNeed = orders.filter((o) => pgNeeds(o) && !data.autopay);
   const pgZero = money(0, pgNeed[0]?.cur || orders[0]?.cur || "eur"); // „0 €" / „$0" in der Währung des Auftrags – keine Stückpreise (können je Bewertung abweichen)
-  const vNeed = orders.filter((o) => vReady(o, data.autopay));
+  const stNeed = (data.orders || []).filter((o) => startPhases(o, data.autopay).length); // Auftrag starten: es fehlt noch etwas
   // Zwischenzahlung: Auftrag pausiert, bis der offene Betrag bezahlt ist → Anzahl der pausierten Bewertungen.
   const holdCard = orders.some((o) => o.holdCard); // Pause wegen fehlgeschlagener Abbuchung → „Zahlungsart aktualisieren"
   const holdN = orders.filter((o) => o.hold && !o.holdCard).reduce((n, o) => n + o.items.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length, 0);
-  const vfOrder = vfId ? orders.find((o) => o.id === vfId) || null : null;
+  const sfOrder = sfId ? orders.find((o) => o.id === sfId) || null : null;
   const all = orders.flatMap((o) => o.items.map((r) => ({ ...r, o, id: o.id + "\u0001" + r.key })));
   const removedN = all.filter((r) => r.status === "removed").length;
-  const remaining = all.filter((r) => OPEN.includes(r.status) && r.status !== "verify" && r.status !== "paygate").length; // wartende zählen nicht als „in Bearbeitung"
+  const remaining = all.filter((r) => OPEN.includes(r.status) && !["verify", "paygate", "reasons"].includes(r.status)).length; // wartende zählen nicht als „in Bearbeitung"
   const firstName = String(data.name || "").trim().split(/\s+/)[0] || "";
   const ini = initials(data.name, data.email);
   const sw = all.filter((r) => r.status === "software");
@@ -1040,8 +1204,7 @@ export default function CustomerDashboard() {
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
-          {pgNeed.length ? <AlertBtn title={T("pgAlert")} sub={T(pgNeed.every((o) => o.kind === "profile") ? "pgF2prof" : pgNeed.some(vNeeds) ? "pgThenV" : "pgAlertS")} onClick={() => setPgOpen(true)} /> : null}
-          {vNeed.length ? <AlertBtn title={T("vAlert")} sub={vNeed[0].verify.uploaded && vNeed[0].verify.status !== "rejected" ? T("vManP") : Array.isArray(vNeed[0].verify.keys) && vCount(vNeed[0]) < vNeed[0].items.length ? T("vAlertP", { n: vCount(vNeed[0]) }) : T("vAlertS")} onClick={() => setVfId(vNeed[0].id)} /> : null}
+          {stNeed.length ? <AlertBtn title={T("stAlertT")} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + T("stAlertS", { n: startPhases(stNeed[0], data.autopay).length })} onClick={() => setSfId(stNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
@@ -1066,7 +1229,7 @@ export default function CustomerDashboard() {
                   <button key={o.id} className="oc" onClick={() => setDetailId(o.id)}>
                     <Ring r={r} n={n} />
                     <span className="n">{o.business || T("orderN", { id: o.id })}</span>
-                    <span className="m">{act ? <b>{T("actionNeeded")}</b> : o.items.some((x) => x.status === "paygate" || x.status === "verify") ? <b>{T(o.items.some((x) => x.status === "verify") ? "st_verify" : "st_paygate")}</b> : T("inProgressN", { n: o.items.filter((x) => OPEN.includes(x.status)).length })}</span>
+                    <span className="m">{act ? <b>{T("actionNeeded")}</b> : o.items.some((x) => ["paygate", "verify", "reasons"].includes(x.status)) ? <b>{T(o.items.some((x) => x.status === "reasons") ? "st_reasons" : o.items.some((x) => x.status === "verify") ? "st_verify" : "st_paygate")}</b> : T("inProgressN", { n: o.items.filter((x) => OPEN.includes(x.status)).length })}</span>
                   </button>
                 );
               })}
@@ -1272,7 +1435,7 @@ export default function CustomerDashboard() {
         <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
         <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>#{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
         <div className="bigprog"><Ring r={r} n={n} /><span><b>{T("removedOf", { r, n })}</b><span>{op ? T("stillInProgress", { n: op }) : o.cancelled ? T("cancelled") : T("completed")}</span></span></div>
-        {vReady(o, data.autopay) ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("vAlert")} sub={Array.isArray(o.verify.keys) && vCount(o) < o.items.length ? T("vAlertP", { n: vCount(o) }) : T("vAlertS")} onClick={() => setVfId(o.id)} /></div> : null}
+        {startPhases(o, data.autopay).length ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("stAlertT")} sub={T("stAlertS", { n: startPhases(o, data.autopay).length })} onClick={() => { setDetailId(null); setSfId(o.id); }} /></div> : null}
         {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
         <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {
@@ -1457,19 +1620,19 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
-      <PayGateFlow step2={pgNeed.some(vNeeds)} open={pgOpen && pgNeed.length > 0 && !vfOrder} zero={pgZero} busy={busy === "ap"} onClose={() => { setPgOpen(false); setPostOrder(false); }} onGo={apStart} prof={pgNeed.length > 0 && pgNeed.every((o) => o.kind === "profile")} add={pgNeed.length > 0 && pgNeed.every((o) => !!o.payGateKeys)} />
+      <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
+        reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
-        onDone={async (gate) => { setArId(null); await load(token); if (gate) setPgOpen(true); }} />
-      <VerifyFlow order={vfOrder} token={token} imp={!!adminView} showToast={showToast} onClose={() => { setVfId(null); load(token); }} onDone={() => load(token)} />
+        onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
 
-      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !vfOrder && !cele && !wiseOpen && !detail} items={changedNew}
+      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !sfOrder && !cele && !wiseOpen && !detail} items={changedNew}
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!vfOrder || (pgOpen && pgNeed.length > 0) || billOpen || !!arId}
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || billOpen || !!arId}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>
