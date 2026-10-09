@@ -10,6 +10,7 @@ import MetaPixel from "@/components/MetaPixel";
 import "@/styles/colors_and_type.css";
 import "@/styles/app.css";
 import "@/styles/wizard.css";
+import "@/styles/bestell.css";
 // Seiten-spezifische Stylesheets (blog/article/about/kontakt) werden NICHT mehr global
 // geladen, sondern in ihren Komponenten (Blog/Article/MagArticle/About/Kontakt) importiert,
 // damit sie nicht das Rendern der Startseite blockieren (kleinerer FCP/LCP auf Mobil).

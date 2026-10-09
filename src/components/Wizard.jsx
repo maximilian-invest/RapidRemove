@@ -16,6 +16,8 @@ import { pagePath } from "@/lib/page-routes";
 import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
+import { bpCopy } from "@/lib/bestell-copy";
+import { X, ArrowRight, ArrowLeft, ArrowUpRight, Building2, MapPin, Check, CircleCheck, Star, Search, Link, Layers, RefreshCw, ShieldCheck, Info, Sparkles, TriangleAlert, RotateCcw, Smartphone, Database, Lock, ChevronDown, MessageCircle, Phone, MessagesSquare, Mail, Plus, Pencil, Trash2 } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1692,15 +1694,188 @@ const routerCopy = (code) => ROUTER_COPY[code] || ROUTER_COPY.en;
    die Check-Seiten haben sonst im Server-HTML keinen einzigen Link). Im Wizard
    fängt onExit den Klick ab (SPA-Wechsel zur Startseite). Auch App rendert sie
    als Platzhalter, bevor der Wizard gebootet ist. */
+/* ===================== Bestellprozess-Redesign (10/2026) =====================
+   Design: design_handoff_bestellprozess. Die Wizard-Logik (State, Tracking,
+   Bestell-Payload) ist unverändert – neu sind nur Darstellung + diese Bausteine. */
+const BP_IMG = {
+  profil: "/assets/bestell/profil.webp", bewertungen: "/assets/bestell/bewertungen.webp",
+  presse: "/assets/bestell/presse.webp", unsicher: "/assets/bestell/unsicher.webp",
+  max: "/assets/bestell/expert-max.png", matthias: "/assets/bestell/expert-matthias.png",
+};
+const BP_FONT = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap";
+
+/* Demo-Modus NUR für lokale Vorschau-Builds (NEXT_PUBLIC_WIZARD_DEMO=1): Profilsuche
+   und Bewertungen kommen aus Beispieldaten. In Produktion ist die Variable nicht gesetzt. */
+const BP_DEMO = process.env.NEXT_PUBLIC_WIZARD_DEMO === "1";
+function demoSearch(q, lang) {
+  const n = String(q || "").trim() || "Muster GmbH";
+  const nm = n.charAt(0).toUpperCase() + n.slice(1);
+  const de = lang === "de";
+  const base = de
+    ? { cat: "Zahnarzt", addr: "Leopoldstraße 42, 80802 München, Deutschland", cc: "DE", rating: "4,8", reviews: 214 }
+    : { cat: "Pub", addr: "12 Baker Street, London NW1 6XE, United Kingdom", cc: "GB", rating: "3.9", reviews: 214 };
+  const list = [{ id: "p1", placeId: "demo-1", name: nm, ...base, mapsUri: "https://maps.google.com/?cid=1", businessStatus: "OPERATIONAL", primary: true }];
+  if (/mehr|multi|kette|chain/i.test(n)) {
+    list.push({ ...list[0], id: "p2", placeId: "demo-2", name: nm + (de ? " – Filiale Nord" : " – North"), rating: de ? "4,1" : "4.1", reviews: 38, primary: false });
+    list.push({ ...list[0], id: "p3", placeId: "demo-3", name: nm + " GmbH", rating: de ? "3,2" : "3.2", reviews: 9, primary: false });
+  }
+  return new Promise((r) => setTimeout(() => r(list), 300));
+}
+function demoReviews() {
+  const R = [
+    ["Brian Fleming", 1, 2555, "Awful to watch football in, terrible crowd, worst DJ ever, toilets disgusting."],
+    ["Ali Raza", 3, 14, "This place is so entertaining … but the service took forever."],
+    ["Christopher Foster", 1, 3285, "I think the worst example of this we have ever seen. It used to be a good venue, but they figured out that a captive audience would pay anything."],
+    ["Matt Wilkinson", 3, 60, ""],
+    ["Sandra Huber", 2, 9, "Unfreundliches Personal, 40 Minuten auf das Essen gewartet. Nie wieder."],
+    ["Jonas Becker", 1, 180, "Total überteuert."],
+    ["Lena Wolf", 5, 30, "Super Abend, tolles Team!"],
+    ["Tom Richter", 4, 400, "Gute Stimmung, Getränke etwas teuer."],
+  ];
+  const now = Date.now();
+  return new Promise((r) => setTimeout(() => r(R.map(([name, rating, days, text], i) => ({ id: "dr" + i, name, rating, days, text, date: new Date(now - days * 864e5).toISOString(), link: "https://maps.google.com/?review=" + i }))), 1200));
+}
+const bpSearch = BP_DEMO ? demoSearch : searchProfiles;
+const bpReviews = BP_DEMO ? demoReviews : fetchProfileReviews;
+
+function BpStars({ n = 5, cls = "bp-stars" }) {
+  const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+  return <span className={cls}>{[0, 1, 2, 3, 4].map((i) => <Star key={i} className={i < k ? "" : "e"} />)}</span>;
+}
+
+function BpProgress({ cur, labels, eta, stepOf, allDone }) {
+  const total = labels.length;
+  const [b, r] = stepOf(Math.min(cur + 1, total), total);
+  return (
+    <div className="bp-prog">
+      <div className="row"><span><b>{b}</b>{r}</span><span>{eta}</span></div>
+      <div className="bp-bars">{labels.map((_, i) => <i key={i} className={allDone || i < cur ? "on" : i === cur ? "cur" : ""} />)}</div>
+      <div className="bp-labels">{labels.map((l, i) => <span key={i} className={allDone ? (i === total - 1 ? "cur" : "on") : i < cur ? "on" : i === cur ? "cur" : ""}>{l}</span>)}</div>
+    </div>
+  );
+}
+
+/* Suchanimation: Radar + drei Status-Zeilen (je 800 ms) + Skeleton-Karte. */
+function BpSearchAnim({ title, sub, steps }) {
+  const [k, setK] = React.useState(0);
+  React.useEffect(() => {
+    const ids = steps.map((_, i) => setTimeout(() => setK(i + 1), (i + 1) * 800));
+    return () => ids.forEach(clearTimeout);
+  }, [steps.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  return (
+    <div style={{ maxWidth: 640 }}>
+      <div className="bp-radar"><span /><span /><span /><div className="core"><MapPin /></div></div>
+      <h1 className="bp-h1">{title}</h1>
+      <p className="bp-sub">{sub}</p>
+      <div className="bp-steps">
+        {steps.map((s, i) => <div key={i} className={"bp-st" + (i < k ? " done" : i === k ? " act" : "")}><div className="ic"><Check /></div>{s}</div>)}
+      </div>
+      <div className="bp-skel"><i className="a" /><div className="l"><i style={{ width: "62%", height: 16 }} /><i style={{ width: "38%", height: 12 }} /><i style={{ width: "50%", height: 12 }} /></div></div>
+    </div>
+  );
+}
+
+/* Bewertungen laden: Zähler (ease-out) + Balken + gestaffelte Skeletons. Läuft
+   mind. ~2,6 s; `done` = Daten da, danach Abschluss auf 100 % und onFinish. */
+function BpReviewsLoader({ done, actual, estimate, onFinish, title, sub, found }) {
+  const [p, setP] = React.useState(0);
+  const [rows, setRows] = React.useState(0);
+  const st = React.useRef({ t0: 0, end: 0, fin: false });
+  const doneRef = React.useRef(done); doneRef.current = done;
+  const finRef = React.useRef(onFinish); finRef.current = onFinish;
+  React.useEffect(() => {
+    st.current.t0 = performance.now();
+    const rt = [0, 1, 2, 3].map((i) => setTimeout(() => setRows(i + 1), 250 + i * 380));
+    const D = 2600;
+    const iv = setInterval(() => {
+      const s = st.current; if (s.fin) return;
+      const el = performance.now() - s.t0;
+      const x = Math.min(1, el / D), e = 1 - Math.pow(1 - x, 2);
+      if (!doneRef.current) { setP(Math.min(e, 0.92)); return; }
+      if (x < 1) { setP(e); return; }
+      setP(1); s.fin = true;
+      setTimeout(() => finRef.current && finRef.current(), 350);
+    }, 50);
+    return () => { clearInterval(iv); rt.forEach(clearTimeout); };
+  }, []);
+  const N = done ? actual : estimate;
+  const SKS = [1, 3, 1, 3], W1 = [34, 26, 42, 30], W2 = [92, 70, 84, 60], W3 = [56, 40, 64, 0];
+  return (
+    <div style={{ maxWidth: 640 }}>
+      <div className="bp-ldi"><img src={asset(BP_IMG.bewertungen)} alt="" /></div>
+      <h1 className="bp-h1">{title}</h1>
+      <p className="bp-sub">{sub}</p>
+      <div className="bp-ctr"><b>{Math.round(p * N)}</b><span>{found}</span><em>{Math.round(p * 100)} %</em></div>
+      <div className="bp-lbar"><i style={{ width: p * 100 + "%" }} /></div>
+      <div className="bp-sk">
+        {SKS.map((s, k) => (
+          <div key={k} className={"bp-skr" + (k < rows ? " in" : "")}>
+            <i className="c" />
+            <div className="l">
+              <div className="bp-skh"><i style={{ width: W1[k] + "%", height: 14 }} /><span className="st">{[1, 2, 3, 4, 5].map((j) => <svg key={j} viewBox="0 0 24 24" className={j <= s ? "f" : ""}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>)}</span></div>
+              <i style={{ width: W2[k] + "%", height: 11 }} />
+              {W3[k] ? <i style={{ width: W3[k] + "%", height: 11 }} /> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* „So kann Ihr Profil zurückkommen": drei Stationen, alle 1,8 s die nächste. */
+function BpReturnFlow({ title, nodes }) {
+  const [s, setS] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const iv = setInterval(() => setS((x) => (x + 1) % 3), 1800);
+    return () => clearInterval(iv);
+  }, []);
+  const I = [Smartphone, Database, MapPin];
+  return (
+    <div className="bp-ex">
+      <div className="eh"><span><RotateCcw />{title}</span><div className="bp-dots">{[0, 1, 2].map((i) => <i key={i} className={i === s ? "on" : ""} />)}</div></div>
+      <div className="bp-flow">
+        {nodes.map((n, i) => {
+          const Ic = I[i];
+          return (
+            <React.Fragment key={i}>
+              <div className={"bp-nd" + (i === 2 ? " last" : "") + (i === s ? " on" : "")}><div className="c"><Ic /></div><span>{n}</span></div>
+              {i < 2 ? <div className={"bp-ln" + (i < s ? " on" : "")}><i /></div> : null}
+            </React.Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* Sheet: Desktop zentriertes Pop-up, mobil Bottom-Sheet mit Ziehgriff. Esc/Overlay schließt. */
+function BpSheet({ onClose, label, sheetRef, children }) {
+  React.useEffect(() => {
+    const k = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", k);
+    return () => document.removeEventListener("keydown", k);
+  }, [onClose]);
+  return (
+    <div className="bp-ov" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bp-sh" ref={sheetRef} role="dialog" aria-modal="true" aria-label={label}>
+        <div className="grab" aria-hidden="true" />
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* Kopfleiste: Logo + „Zur Startseite" als echte Links (crawlbar). Im Wizard fängt
+   onExit den Klick ab (SPA-Wechsel). App rendert sie auch als Platzhalter. */
 export function WizardTop({ homeHref, label, onExit }) {
   const click = onExit ? (e) => { e.preventDefault(); onExit(); } : undefined;
   return (
-    <div className="wz-top">
-      <div className="wz-top-inner">
-        <a href={homeHref} onClick={click} aria-label="RapidRemove"><img className="logo" src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" /></a>
-        <a className="back" href={homeHref} onClick={click}><Icon.x size={16} /> {label}</a>
-      </div>
-    </div>
+    <header className="bp-top">
+      <a href={homeHref} onClick={click} aria-label="RapidRemove"><img src={asset("/assets/rapidremove-logo-full.png")} alt="RapidRemove" /></a>
+      <a className="bp-close" href={homeHref} onClick={click}><X /><span>{label}</span></a>
+    </header>
   );
 }
 
@@ -1789,7 +1964,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const q = pickQ.trim(); if (!q) return;
     setPickPhase("searching"); setPickPlace(null); setPickReviews([]);
     let list = [];
-    try { list = await searchProfiles(q, lang); } catch (e) { list = []; }
+    try { list = await bpSearch(q, lang); } catch (e) { list = []; }
     list = list.filter((c) => c.placeId);
     if (!list.length) { setPickPhase("error"); return; }
     if (list.length === 1) { pickLoad(list[0]); return; }
@@ -1798,7 +1973,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const pickLoad = async (c) => {
     setPickPlace(c); setPickPhase("loading");
     try {
-      const rs = await fetchProfileReviews(c.placeId, lang);
+      const rs = await bpReviews(c.placeId, lang);
       // in Frage kommende zuerst, darin die schlechtesten zuerst
       rs.sort((a, b) => (a.rating - b.rating) || (a.days - b.days)); // schlechteste zuerst, darin neueste zuerst
       setPickReviews(rs); setPickPhase("list");
@@ -1843,7 +2018,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // Ist die Seite am Handy hineingezoomt (Pinch/iOS-Auto-Zoom), sitzt ein fixes Pop-up im „großen" Layout und ragt über
     // den Rand. Dann das Pop-up genau auf den sichtbaren Bereich (visualViewport) legen.
     const vv = window.visualViewport;
-    const fit = () => document.querySelectorAll(".sw-sheet-w,.pay-ask-w").forEach((w) => {
+    const fit = () => document.querySelectorAll(".sw-sheet-w,.pay-ask-w,.bp-ov").forEach((w) => {
       if (!vv || vv.scale <= 1.01) { ["left", "top", "width", "height", "right", "bottom"].forEach((k) => { w.style[k] = ""; }); return; }
       Object.assign(w.style, { left: vv.offsetLeft + "px", top: vv.offsetTop + "px", width: vv.width + "px", height: vv.height + "px", right: "auto", bottom: "auto" });
     });
@@ -1908,7 +2083,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (q.length < 2) { setSug([]); return; }
     let alive = true;
     const id = setTimeout(() => {
-      searchProfiles(q, lang).then((r) => { if (alive) setSug(r || []); }).catch(() => { if (alive) setSug([]); });
+      bpSearch(q, lang).then((r) => { if (alive) setSug(r || []); }).catch(() => { if (alive) setSug([]); });
     }, 280);
     return () => { alive = false; clearTimeout(id); };
   }, [name, lang, step]);
@@ -1931,7 +2106,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!pid) { setPickPhase("manual"); return; } // Profil nicht gefunden → nur Links eingeben
     if (revLoadedFor.current === pid) return;
     revLoadedFor.current = pid;
-    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false);
+    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false); setRevShow(false);
     pickLoad(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, service, selected && selected.placeId]);
@@ -1985,10 +2160,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
   // Echte Google-Places-Suche; Mindest-Anzeigezeit für die Karten-Animation.
   const runSearch = async (nm) => {
-    const minDelay = new Promise((r) => setTimeout(r, 900));
+    const minDelay = new Promise((r) => setTimeout(r, 2900)); // Suchanimation (3 Status-Zeilen) läuft ~2,9 s
     let results = null;
     if (placesEnabled()) {
-      try { results = await searchProfiles(nm, lang); }
+      try { results = await bpSearch(nm, lang); }
       catch (e) { if (typeof console !== "undefined") console.warn("Places-Suche fehlgeschlagen:", e.message); }
     }
     await minDelay;
@@ -2112,18 +2287,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (selected) setContact((c) => ({ ...c, company: selected.name }));
     // Schritt 3 (Bestätigen) NUR bei unklar identifiziertem Profil.
     if (selected && selected.unverified) { go(2); return; }
-    const key = selected ? (selected.placeId || selected.name) : "";
-    // Gleiches Profil wie zuletzt geprüft → ohne Animation direkt zu Schritt 4.
-    if (key && key === checkedRef.current) { go(3); return; }
-    setPhase("checking");
-    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
-    setTimeout(() => {
-      checkedRef.current = key;
-      go(3);
-      setPhase("found");
-      setConfetti(true);
-      setTimeout(() => setConfetti(false), 3000);
-    }, 2400);
+    // Die Löschbarkeit wurde in der Suchanimation schon „geprüft" → direkt weiter
+    // (Bewertungs-Route springt per Effekt automatisch zur Bewertungsauswahl).
+    checkedRef.current = selected ? (selected.placeId || selected.name) : "";
+    go(3);
   };
   // „Profil ist nicht in der Liste": mit dem getippten Namen weiter zu Schritt 3 (unklar identifiziert).
   const pickNotInList = () => {
@@ -2158,7 +2325,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
     const minDelay = new Promise((r) => setTimeout(r, 2400));
     const lookup = (fromLink && placesEnabled())
-      ? searchProfiles(fromLink, lang).then((r) => (r && r.length ? r[0] : null)).catch(() => null)
+      ? bpSearch(fromLink, lang).then((r) => (r && r.length ? r[0] : null)).catch(() => null)
       : Promise.resolve(null);
     Promise.all([lookup, minDelay]).then(([real]) => {
       setCandidates((cs) => cs.map((c) => {
@@ -2293,992 +2460,680 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     }, 2400);
   };
 
-  /* ---------- step bodies ---------- */
-  function StepName() {
-    return (
-      <div className="wz-grid-name">
-        <div className="wz-card pad-lg">
-          <div className="wz-eyebrow"><Icon.search size={14} /> {w.s1.eyebrow}</div>
-          <h1 className="wz-h">{w.s1.h}</h1>
-          <p className="wz-sub">{w.s1.sub}</p>
-          <div className="hero-ac" ref={acRef}>
-            <div className="wz-bigfield">
-              <Icon.building size={22} />
-              <input className="wz-biginput" ref={nameRef} placeholder={w.s1.placeholder} value={name}
-                onChange={(e) => { setName(e.target.value); setAcOpen(true); }} onFocus={() => setAcOpen(true)}
-                onKeyDown={(e) => e.key === "Enter" && startSearch(name)} />
-            </div>
-            {acOpen && name.trim().length >= 2 && (
-              <div className="hero-ac-pop">
-                {sug.map((s) => (
-                  <button type="button" className="hero-ac-item" key={s.placeId || s.id} onClick={() => pickProfile(s)}>
-                    <Icon.building />
-                    <span className="ac-tx"><span className="ac-n">{s.name}</span>{s.addr ? <span className="ac-a">{s.addr}</span> : null}</span>
-                  </button>
-                ))}
-                <button type="button" className="hero-ac-item use" onClick={() => { setAcOpen(false); startSearch(name); }}>
-                  <Icon.arrowRight />
-                  <span className="ac-tx"><span className="ac-n">„{name.trim()}“</span><span className="ac-a">{wm.continueTyped}</span></span>
-                </button>
-              </div>
-            )}
-          </div>
-          <div className="wz-actions">
-            <button className="btn btn-primary lg grow" onClick={() => startSearch(name)} disabled={!name.trim()}>
-              <Icon.search size={19} /> {w.s1.button} <Icon.arrowRight size={18} />
-            </button>
-          </div>
-        </div>
-        <aside className="wz-aside">
-          <button type="button" className="wz-expert" onClick={openTidioChat}>
-            <span className="we-avas">
-              <img src={asset("/assets/maximilian-hoelzl.jpg")} alt="Maximilian" width={42} height={42} />
-              <img src={asset("/assets/matthias-lang.webp")} alt="Matthias" width={42} height={42} />
-            </span>
-            <span className="we-tx">{conv.expertCta}</span>
-            <span className="we-arrow"><Icon.arrowRight size={16} /></span>
-          </button>
-          <Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} />
-        </aside>
-      </div>
-    );
-  }
-
-  function StepSearch() {
-    const mp = MULTI_PROFILE[t.code] || MULTI_PROFILE.en;
-    return (
-      <div className="wz-card">
-        {phase === "checking" ? <CheckingAnim conv={conv} /> : (<React.Fragment>
-        <div className="wz-eyebrow"><Icon.mapPin size={14} /> {w.s2.eyebrow}</div>
-        {phase === "searching"
-          ? <div className="search-status"><span className="spin"></span> {w.s2.searching}</div>
-          : (multi
-              ? <React.Fragment><h1 className="wz-h" style={{ fontSize: 26 }}>{w.s2.multiH}</h1><p className="wz-sub" style={{ marginBottom: 18 }}>{w.s2.multiSub}</p></React.Fragment>
-              : <React.Fragment><h1 className="wz-h" style={{ fontSize: 26 }}>{w.s2.h}</h1><p className="wz-sub" style={{ marginBottom: 18 }}>{w.s2.sub}</p></React.Fragment>)
-        }
-        {phase === "found" && (
-          <div style={{ marginTop: 18, display: "flex", flexDirection: "column", gap: 12 }}>
-            {(multi ? candidates : candidates.filter((c) => c.primary)).map((c) => (
-              <ProfileCard key={c.id} c={c} selected={selectedId === c.id} onClick={() => setSelectedId(c.id)} reviewsLabel={w.s2.reviews} />
-            ))}
-            <div className="nm-group">
-            <div className="profile-card not-mine-card reveal-in" onClick={pickNotInList} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") pickNotInList(); }}>
-              <div className="profile-thumb"><Icon.help /></div>
-              <div className="profile-main"><div className="pn">{nil.tile}</div></div>
-              <span className="nm-go"><Icon.arrowRight size={18} /></span>
-            </div>
-            {wantReviews && !reviewsBlocked(t.code) ? (
-              <div className="profile-card not-mine-card reveal-in" onClick={reviewsLinksOnly} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") reviewsLinksOnly(); }}>
-                <div className="profile-thumb"><Icon.starOff /></div>
-                <div className="profile-main"><div className="pn">{pk.linksTile}</div></div>
-                <span className="nm-go"><Icon.arrowRight size={18} /></span>
-              </div>
-            ) : null}
-            <a className="profile-card not-mine-card reveal-in" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="profile-thumb"><Icon.mail /></div>
-              <div className="profile-main"><div className="pn">{mp.t}</div></div>
-              <span className="nm-go"><Icon.arrowRight size={18} /></span>
-            </a>
-            </div>
-            <div className="wz-actions" style={{ marginTop: 6 }}>
-              <button className="btn btn-secondary" onClick={() => go(0)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              <button className="btn btn-primary grow" onClick={proceedFromSearch}><span className="wz-lbl-full">{w.s2.button}</span><span className="wz-lbl-short">{conv.toCheckout}</span> <Icon.arrowRight size={18} /></button>
-            </div>
-          </div>
-        )}
-        </React.Fragment>)}
-      </div>
-    );
-  }
-
-  function StepConfirm() {
-    if (phase === "checking") return <div className="wz-card"><CheckingAnim conv={conv} /></div>;
-    const unsure = !!(selected && selected.unverified);
-    const linkOk = isGMapsLink(profileLink);
-    return (
-      <div className="wz-card">
-        <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {w.s3.eyebrow}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{unsure ? nil.h : w.s3.h}</h1>
-        <p className="wz-sub" style={{ marginBottom: 20 }}>{unsure ? nil.sub : w.s3.sub}</p>
-        <ProfileCard c={selected} selectable={false} cta={!unsure} onClick={() => { persistCheck(); go(3); }} reviewsLabel={w.s2.reviews} assessOk />
-        {unsure ? (
-          <React.Fragment>
-            <div className="fld full" style={{ marginTop: 16 }}>
-              <label>{nil.linkLabel}</label>
-              <input value={profileLink} onChange={(e) => setProfileLink(e.target.value)} placeholder="https://maps.google.com/…" inputMode="url" aria-label={nil.linkLabel} />
-            </div>
-            <div className="wz-actions" style={{ marginTop: 18 }}>
-              <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              {linkOk
-                ? <button className="btn btn-primary grow" onClick={verifyWithLink}>{nil.checkBtn} <Icon.arrowRight size={18} /></button>
-                : <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>}
-            </div>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-            <div className="profile-card not-mine-card" onClick={() => go(0)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") go(0); }}>
-              <div className="profile-thumb"><Icon.search /></div>
-              <div className="profile-main"><div className="pn">{wm.notMine}</div></div>
-              <span className="nm-go"><Icon.arrowRight size={18} /></span>
-            </div>
-            <div className="wz-actions" style={{ marginTop: 18 }}>
-              <button className="btn btn-secondary" onClick={() => go(1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-              <button className="btn btn-primary grow" onClick={() => { persistCheck(); go(3); }}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
-            </div>
-          </React.Fragment>
-        )}
-      </div>
-    );
-  }
-
-  function StepService() {
-    // Keine Vorauswahl: Tippen auf eine Leistung wählt sie und springt sofort weiter.
-    // Reset hat KEINEN Schutz → Schritt 5 (Schutz) überspringen, direkt zum Checkout.
-    const pick = (s) => {
-      setService(s);
-      if (s === "reset") { setExpress(false); setProtection(null); go(5); }
-      else if (s === "reviews") { setExpress(false); setProtection(null); go(4); } // Schritt 5 = Bewertungsauswahl statt Schutz
-      else go(4);
-    };
-    return (
-      <div className="wz-card">
-        <div className="wz-eyebrow"><Icon.trash size={14} /> {w.s4.eyebrow}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{w.s4.h}</h1>
-        <p className="wz-sub" style={{ marginBottom: 14 }}>{w.s4.sub}</p>
-        <div className="svc-ok"><Icon.checkCircle size={16} /> {conv.delOk}</div>
-
-        <div className="opt-list">
-          <div className={"opt" + (service === "remove" ? " sel" : "")} onClick={() => pick("remove")}>
-            {w.s4.opt1.badge && <span className="opt-flag">{w.s4.opt1.badge}</span>}
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.trash size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{w.s4.opt1.t}</div>
-              <div className="od">{w.s4.opt1.d}</div>
-            </div>
-            <div className="opt-price">{money(lang, p.deletion)}<small>{wm.afterSuccess}</small></div>
-          </div>
-
-          <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => pick("reset")}>
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.refresh size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{w.s4.opt2.t}</div>
-              <div className="od">{w.s4.opt2.d}</div>
-            </div>
-            <div className="opt-price">{money(lang, p.reset)}<small>{wm.afterSuccess}</small></div>
-          </div>
-
-          {/* Bewertungs-Produkt als dritte Option (nur außerhalb DACH): Wer über
-              einen Firmennamen einsteigt, überspringt die Auswahlseite und käme
-              sonst nie daran vorbei — dieser Schritt ist der einzige, den ALLE
-              im Profil-Fluss sehen. */}
-          {reviewsAllowedFor(selected, t.code) && (
-            <div className={"opt" + (service === "reviews" ? " sel" : "")} onClick={() => pick("reviews")}>
-              <div className="opt-radio"></div>
-              <div className="opt-ic"><Icon.starOff size={22} /></div>
-              <div className="opt-main">
-                <div className="ot">{rv.tileT}</div>
-                <div className="od">{rv.tileD}</div>
-              </div>
-              <div className="opt-price">{pk.fromPre ? <span className="opt-per">{pk.fromPre}</span> : null}{money(rl, p.review)}{pk.fromSuf}<small>{rv.per}</small></div>
-            </div>
-          )}
-        </div>
-
-        <div className="wz-actions" style={{ marginTop: 22 }}>
-          <button className="btn btn-secondary" onClick={() => go(selected && selected.unverified ? 2 : 1)}><Icon.arrowLeft size={17} /> {w.back}</button>
-        </div>
-      </div>
-    );
-  }
-
-  /* Schritt 5 im Profil-Fluss bei „Einzelne Bewertungen löschen": Bewertungen
-     des geprüften Profils (SerpApi) anhaken — ersetzt die Schutz-Auswahl. */
-  /* Bewertungs-Zeile in der Auswahl: alle anhakbar, mit Erfolgschance;
-     ältere als 4 Wochen ca. 50 % und mit Aufpreis. */
-  function reviewItemRow(r) {
-    const on = pickSel.some((x) => x.id === r.id);
-    const old = reviewIsOld(r);
-    const m = revMethod(r);
-    const info = <button type="button" className="rv-sw-i" aria-label={pk.swInfo} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSwInfo(true); }}><Icon.info size={14} /></button>;
-    return (
-      <label key={r.id} className={"rv-pick-item" + (on ? " on" : "")}>
-        <input type="checkbox" checked={on} onChange={() => pickToggle(r)} />
-        <span className="rv-pick-body">
-          <span className="rv-pick-top"><b>{r.name}</b> <span className="rv-pick-stars">{"★".repeat(Math.max(0, Math.min(5, r.rating)))}{"☆".repeat(Math.max(0, 5 - Math.min(5, r.rating)))}</span>{r.date ? <span className="rv-pick-date" title={new Date(r.date).toLocaleDateString(lang)}>{relAge(r.days, lang)}</span> : null}</span>
-          {m === "sw"
-            ? <span className="rv-chance sw">{pk.swChip.replace("{price}", money(rl, REVIEW_NOTEXT_PRICE))}{info}</span>
-            : <span className={"rv-chance" + (old ? " legal" : "")}>{old ? pk.ch50 : pk.ch90}{old ? " · " + pk.old + " · +" + money(rl, REVIEW_OLD_SURCHARGE) : ""}</span>}
-          {r.text ? <span className="rv-pick-text">{r.text.length > 240 ? r.text.slice(0, 240) + " …" : r.text}</span> : null}
-        </span>
-      </label>
-    );
-  }
-  // „Erfolgschance & Preis" als Button → Pop-up (mobil: Sheet von unten) mit den vier Regeln.
-  function reviewInfoBox(style) {
-    return (
-      <button type="button" className="rv-price-btn" style={style} onClick={() => setPriceInfo(true)}>
-        <span className="rv-price-ic"><Icon.info size={17} /></span>
-        <span className="rv-price-t">{pk.infoH}</span>
-        <Icon.arrowRight size={17} />
-      </button>
-    );
-  }
-  function reviewSumRows() {
-    return (
-      <React.Fragment>
-        {rq.nNew ? <div className="sum-row"><span className="sl">{rq.nNew} × {money(rl, rq.base)}{rq.nOld ? " · " + pk.rowNew : ""}</span><span className="sv">{fmtMoney(rl, rq.nNew * rq.base)}</span></div> : null}
-        {rq.nOld ? <div className="sum-row"><span className="sl">{rq.nOld} × {money(rl, rq.oldPrice)} · {pk.old}</span><span className="sv">{fmtMoney(rl, rq.nOld * rq.oldPrice)}</span></div> : null}
-        {rq.nNt ? <div className="sum-row"><span className="sl">{rq.nNt} × {money(rl, rq.ntPrice)} · {pk.rowNt} <button type="button" className="rv-sw-i" aria-label={pk.swInfo} onClick={() => setSwInfo(true)}><Icon.info size={14} /></button></span><span className="sv">{fmtMoney(rl, rq.nNt * rq.ntPrice)}</span></div> : null}
-        {rq.pct ? <div className="sum-row"><span className="sl">{pk.discLbl} −{rq.pct} %</span><span className="sv">−{fmtMoney(rl, rq.discount)}</span></div> : null}
-        {!rq.n ? <div className="sum-row"><span className="sl">{money(rl, rq.base)} {rv.per}</span><span className="sv">0 ×</span></div> : null}
-      </React.Fragment>
-    );
-  }
-
-  function StepReviews() {
-    // Suche nach Bewertername (oder Text) durchsucht ALLE geladenen Bewertungen,
-    // unabhängig vom Sterne-Filter — man sucht ja eine bestimmte Person.
-    const q = pickQ2.trim().toLowerCase();
-    const shown = (pickReviews || []).filter((r) => q
-      ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
-      : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
-    const manualOnly = pickPhase === "manual";
-    const cont = () => { if (!reviewCount) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
-    return (
-      <div className="wz-card">
-        <div className="wz-eyebrow"><Icon.starOff size={14} /> {pk.stepLbl}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{manualOnly ? pk.manualH : pk.stepH}</h1>
-        <p className="wz-sub" style={{ marginBottom: 14 }}>{manualOnly ? pk.manualNote : pk.stepSub}</p>
-
-        {reviewInfoBox({ marginTop: 0 })}
-
-        {pickPhase === "loading" ? <p className="rv-pick-note" style={{ marginTop: 16 }}>{pk.loading}</p> : null}
-
-        {pickPhase === "list" ? (
-          <React.Fragment>
-            {(pickReviews || []).length ? (
-              <div className="rv-search">
-                <Icon.search size={17} />
-                <input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />
-                {pickQ2 ? <button type="button" className="rv-search-x" onClick={() => setPickQ2("")} aria-label="×"><Icon.x size={15} /></button> : null}
-              </div>
-            ) : null}
-            {!q ? (
-              <div className="rv-filter">
-                <button type="button" className={"rv-chip" + (pickFilter === "low" ? " on" : "")} onClick={() => setPickFilter("low")}>{pk.f13}</button>
-                <button type="button" className={"rv-chip" + (pickFilter === "all" ? " on" : "")} onClick={() => setPickFilter("all")}>{pk.fAll}</button>
-              </div>
-            ) : null}
-            {shown.length ? (
-              <div className="rv-pick-list">
-                {shown.map((r) => {
-                  return reviewItemRow(r);
-                })}
-              </div>
-            ) : <p className="rv-pick-note" style={{ marginTop: 10 }}>{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : ((pickReviews || []).length ? pk.empty : pk.none)}</p>}
-            {(pickReviews || []).length ? (
-              showManual || reviewItems.some((it) => (it.url || "").trim() || (it.name || "").trim())
-                ? manualLinks()
-                : <button type="button" className="rv-more-link" onClick={() => setShowManual(true)}><Icon.edit size={15} /> {pk.notListed}</button>
-            ) : null}
-          </React.Fragment>
-        ) : null}
-
-        {manualOnly || pickPhase === "error" || (pickPhase === "list" && !(pickReviews || []).length) ? (
-          <React.Fragment>
-            {pickPhase === "error" ? <p className="rv-pick-note" style={{ marginTop: 16 }}>{pk.err}</p> : null}
-            {manualLinks()}
-          </React.Fragment>
-        ) : null}
-
-        {/* Nur die schwebende Preisleiste unten — die Aufschlüsselung kommt im Checkout (Schritt 6). */}
-        {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
-
-        <div className="svc-cta">
-          {/* Preis immer sichtbar (sticky) + Hinweis auf die nächste Rabattstufe */}
-          <div className="rv-sticky">
-            <span className="rv-sticky-l">
-              <span className="rv-sticky-n">{reviewCount} {pk.selected}{rq.pct ? ` · −${rq.pct} %` : ""}</span>
-              {discountNudge(reviewCount, pk) ? <span className="rv-nudge">{discountNudge(reviewCount, pk)}</span> : null}
-            </span>
-            <span className="rv-sticky-t">{fmtMoney(rl, servicePriceNum)}</span>
-          </div>
-          <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(manualOnly ? 1 : 3)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={cont}>{conv.toCheckout} <Icon.arrowRight size={18} /></button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function StepProtect() {
-    // Gleiche Kachel-Darstellung wie Schritt 4 (.opt) — konsistentes Wizard-Bild.
-    // „Kein Schutz" ist eine eigene Kachel; bei Auswahl erscheint Warnung + Animation.
-    return (
-      <div className="wz-card">
-        <div className="wz-eyebrow"><Icon.shieldCheck size={14} /> {conv.protStepLabel}</div>
-        <h1 className="wz-h" style={{ fontSize: 28 }}>{conv.protH}</h1>
-        <p className="wz-sub" style={{ marginBottom: 22 }}>{conv.protSub}</p>
-
-        <div className="opt-list">
-          <div className={"opt" + (protection === "monthly" ? " sel" : "")} onClick={() => setProtection("monthly")}>
-            <span className="opt-flag">{conv.mostChosen}</span>
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{conv.protMonthlyName}</div>
-              <div className="od">{wm.ptMonthlyNote}</div>
-            </div>
-            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonthly)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{conv.cancelAnytime}</small></div>
-          </div>
-
-          <div className={"opt" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{conv.protMonitorName}</div>
-              <div className="od">{wm.ptMonitorNote}</div>
-            </div>
-            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonitor)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{conv.cancelAnytime}</small></div>
-          </div>
-
-          <div className={"opt" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.shieldCheck size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{conv.protLifetimeName}</div>
-              <div className="od">{wm.ptLifetimeNote}</div>
-            </div>
-            <div className="opt-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></div>
-          </div>
-
-          <div className={"opt" + (protection === null ? " sel" : "")} onClick={() => setProtection(null)}>
-            <div className="opt-radio"></div>
-            <div className="opt-ic"><Icon.shield size={22} /></div>
-            <div className="opt-main">
-              <div className="ot">{conv.protNoneName}</div>
-              <div className="od">{conv.protNoneDesc}</div>
-            </div>
-          </div>
-        </div>
-
-        {protection === null && (
-          <React.Fragment>
-            <div className="pt-skip-warn"><Icon.alert size={22} /><span>{conv.protOffBody}</span></div>
-            <IngestionAnim lang={lang} />
-          </React.Fragment>
-        )}
-
-        <div className="svc-cta">
-          <div className="wz-actions">
-            <button className="btn btn-secondary" onClick={() => go(3)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button className="btn btn-primary grow" onClick={() => go(5)}>{protection === null ? <React.Fragment><span className="wz-lbl-full">{conv.protOffContinue}</span><span className="wz-lbl-short">{conv.toCheckout}</span></React.Fragment> : conv.toCheckout} <Icon.arrowRight size={18} /></button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function OrderSummary() {
-    return (
-      <div className="summary">
-        <h3><Icon.cart size={20} /> {w.s5.sumTitle}</h3>
-        {revFlow ? (
-          <React.Fragment>
-            {!reviewMode && selected ? <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div> : null}
-            <div className="sum-row"><span className="sl">{rv.service}</span><span className="sv">{reviewCount} ×</span></div>
-            {reviewSumRows()}
-            <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(rl, w.s5.dueNow)}</span></div>
-            <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(rl, oneTimeTotal)}</span></div>
-            {/* Statt des generischen Hinweises die konkreten Abrechnungsregeln. */}
-            <div className="sum-note"><Icon.shieldCheck /> {(rv.pay1 || "").replace("{per}", money(rl, p.review))} {rv.pay2}</div>
-          </React.Fragment>
-        ) : (
-          <React.Fragment>
-        <div className="sum-row"><span className="sl">{w.s5.sumProfile}</span><span className="sv ellip">{selected.name}</span></div>
-        <div className="sum-row"><span className="sl">{serviceName}</span><span className="sv">{fmtMoney(lang, servicePriceNum)}</span></div>
-
-        {/* Express lässt sich hier zubuchen; der Schutz wird in Schritt 5 gewählt */}
-        <div className="sum-opts">
-          <div className="sum-opt">
-            <span className="so-l"><Icon.zap size={16} /> {wm.expressTile}</span>
-            <span className="so-r">
-              <span className="so-price">+{money(lang, p.express)}</span>
-              <button type="button" className={"switch sm" + (express ? " on" : "")} aria-label={wm.expressTile} onClick={() => setExpress(!express)}></button>
-            </span>
-          </div>
-        </div>
-
-        <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(lang, w.s5.dueNow)}</span></div>
-        <div className="sum-total"><span className="sl">{w.s5.sumTotal}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
-        {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {conv.perMonthShort}</b></div>}
-        <div className="sum-note"><Icon.shieldCheck /> {w.s5.sumNote}</div>
-          </React.Fragment>
-        )}
-      </div>
-    );
-  }
-
-  function StepCheckout() {
-    const set = (k) => (e) => setContact((c) => ({ ...c, [k]: e.target.value }));
-    const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
-    const fg = FAGG_CONSENT[t.code] || FAGG_CONSENT.en;
-    if (processing) {
-      return (
-        <div className="wz-card">
-          {/* Im Bewertungs-Zweig gibt es kein geprüftes Profil zum Anzeigen. */}
-          {reviewMode ? null : (
-          <div className="del-demo removing removed">
-            <ProfileCard c={selected} selectable={false} reviewsLabel={w.s2.reviews} />
-            <div className="del-stamp"><div className="ok"><div className="ring"><Icon.check /></div></div></div>
-          </div>
-          )}
-          <div className="processing">
-            <div className="ring"></div>
-            <b>{w.s5.processing}</b>
-            <span>{w.s5.payNote}</span>
-          </div>
-        </div>
-      );
+  /* ======================= Darstellung (Redesign 10/2026) ======================= */
+  const bp = bpCopy(t.code);
+  const mp = MULTI_PROFILE[t.code] || MULTI_PROFILE.en;
+  const ch = CHECKOUT_HELP[t.code] || CHECKOUT_HELP.en;
+  const q0 = conv.quotes[0];
+  const tpN = (String(conv.reviewsN || "").match(/[\d.,]+\+?/) || ["260+"])[0];
+  const isA = service === "reviews" || (wantReviews && step < 3);
+  const nameShown = (selected && selected.name) || name;
+  const reviewsOk = reviewsAllowedFor(selected, t.code);
+  // Anzeige-Namen wie im Design (Order-Payload nutzt weiter serviceName/protLabel).
+  const svcLabel = revFlow ? rv.service : service === "reset" ? bp.svc2[0] : bp.svc1[0];
+  const protNm = { monthly: conv.protMonthlyName, monitor: conv.protMonitorName, lifetime: conv.protLifetimeName };
+  const [coHow, setCoHow] = React.useState(false);
+  const [revShow, setRevShow] = React.useState(false);
+  const [svcPick, setSvcPick] = React.useState(null);
+  const svcTimer = React.useRef(null);
+  React.useEffect(() => () => clearTimeout(svcTimer.current), []);
+  React.useEffect(() => {
+    if (!document.querySelector(`link[href="${BP_FONT}"]`)) {
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = BP_FONT; document.head.appendChild(l);
     }
-    return (
-      <div className="wz-split">
-        <div className="wz-card">
-          <div className="wz-eyebrow"><Icon.lock size={14} /> {w.s5.eyebrow}</div>
-          <h1 className="wz-h" style={{ fontSize: 26 }}>{w.s5.h}</h1>
-          <p className="wz-sub" style={{ marginBottom: 22 }}>{w.s5.sub}</p>
-          {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
-            <div role="alert" style={{ background: "#fff4e0", color: "#5c3a00", borderRadius: 16, padding: "14px 16px", margin: "0 0 18px", fontSize: 14.5, lineHeight: 1.45 }}>
-              <b style={{ display: "block", fontSize: 15.5, marginBottom: 4 }}>{D.t}</b>
-              {D.p((dupOrder.orders || []).join(", "))}{" "}
-              <a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")} style={{ fontWeight: 700, color: "#5c3a00", textDecoration: "underline" }}>{D.l}</a>
-            </div>
-          ); })() : null}
-          <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
-            <div className="form-grid">
-              <div className={"fld full" + (errors.name ? " err" : "")}>
-                <input value={contact.name} onChange={set("name")} placeholder={w.s5.f.name} aria-label={w.s5.f.name}
-                  type="text" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" />
-                {errors.name && <div className="emsg">{errors.name}</div>}
-              </div>
-              <div className={"fld full" + (errors.email ? " err" : "")}>
-                <input value={contact.email} onChange={set("email")} placeholder={w.s5.f.email} aria-label={w.s5.f.email}
-                  type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="off" spellCheck={false} enterKeyHint="next" />
-                {errors.email && <div className="emsg">{errors.email}</div>}
-              </div>
-              <div className="fld full">
-                <input value={contact.phone} onChange={set("phone")} placeholder={w.s5.f.phone} aria-label={w.s5.f.phone}
-                  type="tel" name="tel" autoComplete="tel" inputMode="tel" enterKeyHint="next" />
-              </div>
-              <div className={"fld full" + (errors.company ? " err" : "")}>
-                <input value={contact.company} onChange={set("company")} placeholder={w.s5.f.company} aria-label={w.s5.f.company}
-                  type="text" name="organization" autoComplete="organization" enterKeyHint="done" />
-                {errors.company && <div className="emsg">{errors.company}</div>}
-              </div>
-            </div>
+  }, []);
+  React.useEffect(() => { if (step !== 3) setSvcPick(null); }, [step]);
 
-            <label className={"agb-consent" + (errors.agb ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 22, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
-              <input type="checkbox" checked={agbOk}
-                onChange={(e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }}
-                style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
-              <span style={{ color: errors.agb ? "var(--danger)" : "inherit" }}>
-                {ag.pre}
-                <a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer"
-                  style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
-                  onClick={(e) => e.stopPropagation()}>{ag.agb}</a>
-                {ag.mid}
-                <a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer"
-                  style={{ color: "var(--primary)", textDecoration: "underline", fontWeight: 700 }}
-                  onClick={(e) => e.stopPropagation()}>{ag.wid}</a>
-                {ag.post}
-              </span>
-            </label>
-            {errors.agb && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.agb}</div>}
-            <label className={"agb-consent" + (errors.fagg ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 12, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
-              <input type="checkbox" checked={faggOk}
-                onChange={(e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }}
-                style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
-              <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
-            </label>
-            {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
-            <button type="submit" className="btn btn-primary btn-block lg co-submit-desktop" style={{ marginTop: 16 }}>
-              <Icon.lock size={18} /> {w.s5.button}
-            </button>
-          </form>
-          <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button type="button" className="btn btn-secondary" onClick={() => go(service === "reset" ? 3 : 4)}><Icon.arrowLeft size={17} /> {w.back}</button>
-            <button type="button" className="btn btn-primary grow co-submit-mobile" onClick={submit}><Icon.lock size={17} /> {wm.finish}</button>
-          </div>
-        </div>
-        <div className="wz-aside">
-          <OrderSummary />
-          <CheckoutHelp lang={lang} />
-          <div className="checkout-testi"><Testimonial q={conv.quotes[0]} tp={`${conv.reviewsN} · ${conv.trustpilot}`} /></div>
-        </div>
-      </div>
-    );
-  }
+  const expert = (
+    <button type="button" className="bp-expert" onClick={openTidioChat} key="ex">
+      <span className="bp-avs"><img src={asset(BP_IMG.matthias)} alt="" width={40} height={40} /><img src={asset(BP_IMG.max)} alt="" width={40} height={40} /></span>
+      <span className="t"><b>{bp.expert}</b><span><i className="bp-dot" />{bp.online}</span></span>
+      <ArrowUpRight />
+    </button>
+  );
+  const quote = (
+    <div className="bp-quote" key="qt">
+      <BpStars />
+      <p>„{q0.q}"</p>
+      <div className="bp-who"><div className="m">{q0.a.charAt(0)}</div><div><b>{q0.a}</b><span>{q0.r}</span></div></div>
+    </div>
+  );
+  const backBtn = (onClick, extra) => <button type="button" className={"bp-back" + (extra ? " " + extra : "")} onClick={onClick}><ArrowLeft /><span>{w.back}</span></button>;
+  const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
 
-  function StepDone() {
-    return (
-      <div className="wz-card pad-lg">
-        <div className="ty-hero">
-          <div className="ty-check"><div className="core"><Icon.check /></div></div>
-          <div className="wz-eyebrow" style={{ justifyContent: "center", color: "var(--success)" }}><Icon.checkCircle size={14} /> {w.s6.badge}</div>
-          <h1 className="wz-h" style={{ fontSize: 30 }}>{w.s6.h}</h1>
-          <p className="wz-sub" style={{ margin: "0 auto 0", textAlign: "center" }}>{w.s6.sub}</p>
-          <div className="ty-order">{w.s6.order} <b>#{orderId}</b></div>
-        </div>
-
-        {/* Bewertungs-Produkt: nur die Bestätigung. Fragebogen und Lösch-Pipeline
-           beschreiben das Profil-Produkt und wären hier irreführend. */}
-        {!revFlow && (
-        <div style={{ marginTop: 24 }}>
-          <OrderForm orderId={orderId} lang={t.code} />
-        </div>
-        )}
-
-        {/* Optionale Frage NACH der Bestellung (stört den Bestellweg nicht) —
-           fließt nur aggregiert in den Datenreport ein (checks.reason). */}
-        {!revFlow && (
-        <div className="wz-reason wz-reason-done" role="group" aria-label={wr.q}>
-          <div className="wz-reason-q">{wr.q} <span>({wr.opt})</span></div>
-          <div className="wz-reason-chips">
-            {Object.keys(wr.o).map((k) => (
-              <button type="button" key={k} className={"wz-reason-chip" + (reason === k ? " on" : "")} aria-pressed={reason === k}
-                onClick={() => { setReason(k); if (checkId) submitCheck({ checkId, reason: k }).catch(() => {}); }}>{wr.o[k]}</button>
-            ))}
-          </div>
-          {reason ? <div className="wz-reason-thx">✓ {wr.thx}</div> : null}
-        </div>
-        )}
-
-        {!revFlow && (
-        <div style={{ marginTop: 30 }}>
-          <h4 style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 18, margin: "0 0 6px" }}>{w.s6.pipeTitle}</h4>
-          <div className="pipeline">
-            {w.s6.pipe.map((s, i) => (
-              <div className={"pl-step" + (s.done ? " done" : s.now ? " active" : "")} key={i}>
-                {i < w.s6.pipe.length - 1 && <div className="pl-rail"></div>}
-                <div className="pl-dot">{s.done ? <Icon.check /> : s.now ? <Icon.clock /> : <span style={{ width: 8, height: 8, borderRadius: "50%", background: "currentColor", display: "block" }}></span>}</div>
-                <div className="pl-body">
-                  <h4>{s.t}</h4>
-                  <p>{s.d}</p>
-                  {s.now && <span className="tnow"><Icon.clock size={13} /> {wm.now}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-        )}
-
-        <div className="ty-next">
-          <h4>{w.s6.nextTitle}</h4>
-          <p>{w.s6.nextBody}</p>
-        </div>
-
-        {!reviewMode && (onOrm || onDeindex) && (
-          <div className="done-cross">
-            <div className="dc-head">
-              <h4>{conv.doneCrossH}</h4>
-              <p>{conv.doneCrossSub}</p>
-            </div>
-            <div className="dc-grid">
-              <button className="dc-card" onClick={() => onOrm && onOrm()}>
-                <span className="dc-ic"><Icon.eye size={22} /></span>
-                <span className="dc-main">
-                  <span className="dc-t">{conv.xsOrmTitle}</span>
-                  <span className="dc-d">{conv.xsOrmDesc}</span>
-                  <span className="dc-p">{conv.xsOrmPrice}</span>
-                </span>
-                <Icon.arrowRight className="dc-arrow" size={18} />
-              </button>
-              <button className="dc-card" onClick={() => onDeindex && onDeindex()}>
-                <span className="dc-ic"><Icon.globe size={22} /></span>
-                <span className="dc-main">
-                  <span className="dc-t">{conv.xsPressTitle}</span>
-                  <span className="dc-d">{conv.xsPressDesc}</span>
-                  <span className="dc-p">{conv.xsPressPrice}</span>
-                </span>
-                <Icon.arrowRight className="dc-arrow" size={18} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="ty-cta-row">
-          <button className="btn btn-primary lg" onClick={onExit}>{w.s6.home} <Icon.arrowRight size={18} /></button>
-        </div>
-      </div>
-    );
-  }
-
-  const Top = <WizardTop homeHref={asset(localePath(t.code))} label={w.backHome} onExit={onExit} />;
-
-  /* ---- erste Seite: Service-Router (mit den anderen Dienstleistungen) ---- */
-  function RouterScreen() {
+  /* ---- Router (Schritt 0) ---- */
+  function viewRouter() {
     const pick = (id) => {
       if (id === "delete") setRouted(true);
       else if (id === "press") setPressMode(true);
       else if (id === "reviews") startReviewsFlow();
       else setUnsureStep(1);
     };
-    // Bewertungs-Kachel nur außerhalb DACH — direkt hinter der Hauptkachel,
-    // weil sie inhaltlich am nächsten dran ist.
-    const routerTiles = reviewsBlocked(t.code)
-      ? rc.tiles
-      : [rc.tiles[0], { id: "reviews", ic: "starOff", t: rv.tileT, d: rv.tileD }, ...rc.tiles.slice(1)];
     if (unsureStep > 0) {
-      return (
-        <div className="wz-card pad-lg router">
-          <div className="wz-eyebrow"><Icon.info size={14} /> {rc.qH}</div>
-          <h1 className="wz-h" style={{ fontSize: 28 }}>{unsureStep === 1 ? rc.q1 : rc.q2}</h1>
-          <div className="router-q" style={{ marginTop: 18 }}>
-            {unsureStep === 1 ? (
-              <React.Fragment>
-                <button className="rq-opt" onClick={() => setRouted(true)}><Icon.check /> {rc.q1yes}</button>
-                <button className="rq-opt" onClick={() => setUnsureStep(2)}><Icon.arrowRight /> {rc.q1no}</button>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <button className="rq-opt" onClick={() => { setUnsureStep(0); setPressMode(true); }}><Icon.edit /> {rc.q2yes}</button>
-                <button className="rq-opt" onClick={() => setRouted(true)}><Icon.trash /> {rc.q2no}</button>
-              </React.Fragment>
-            )}
-          </div>
-          <div className="wz-actions" style={{ marginTop: 18 }}>
-            <button className="btn btn-secondary" onClick={() => setUnsureStep(unsureStep === 2 ? 1 : 0)}><Icon.arrowLeft size={17} /> {w.back}</button>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div className="wz-card pad-lg router">
-        <div className="wz-eyebrow"><Icon.search size={14} /> {rc.routerEyebrow}</div>
-        <h1 className="wz-h" style={{ fontSize: 30 }}>{rc.routerH}</h1>
-        <p className="wz-sub">{rc.routerSub}</p>
-        <div className="router-tiles">
-          {routerTiles.map((tl) => {
-            const I = Icon[tl.ic] || (tl.ic === "fileText" ? Icon.edit : Icon.trash);
-            return (
-              <button className={"router-tile" + (tl.id === "delete" ? " primary" : "")} key={tl.id} onClick={() => pick(tl.id)}>
-                {tl.badge && <span className="rt-badge">{tl.badge}</span>}
-                <span className="rt-ic"><I size={27} /></span>
-                <span className="rt-main">
-                  <span className="rt-t">{tl.t}</span>
-                  <span className="rt-d">{tl.d}</span>
-                </span>
-                <Icon.arrowRight className="rt-arrow" size={20} />
+      const opts = unsureStep === 1
+        ? [[rc.q1yes, Check, () => setRouted(true)], [rc.q1no, ArrowRight, () => setUnsureStep(2)]]
+        : [[rc.q2yes, Search, () => { setUnsureStep(0); setPressMode(true); }], [rc.q2no, Trash2, () => setRouted(true)]];
+      return {
+        cls: "r0",
+        sec: (<React.Fragment>
+          <h1 className="bp-h1 bp-fade">{unsureStep === 1 ? rc.q1 : rc.q2}</h1>
+          <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{rc.qH} · {unsureStep}/2</p>
+          <div className="bp-opts">
+            {opts.map(([lbl, Ic, fn], i) => (
+              <button type="button" key={i} className="bp-op bp-fade" style={{ animationDelay: (0.08 + i * 0.04) + "s" }} onClick={fn}>
+                <span className="ic"><Ic /></span><span><b>{lbl}</b></span><ArrowRight />
               </button>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
-
-  /* ---- Wizard fürs Löschen einzelner Treffer in der Google-Suche (Presse/Auslistung) ---- */
-  /* Bewertungs-Eingabe: Links über die Teilen-Funktion sammeln, „+" für weitere.
-     Die beiden Bedingungen stehen als Pflicht-Kasten darüber, nicht im Fußnotentext. */
-  /* Manuelle Bewertungs-Links (Teilen-Link oder Name + Text) — im eigenen
-     Bewertungs-Zweig und als Rückfall in der Bewertungsauswahl (Schritt 5). */
-  function manualLinks() {
-    const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
-    const toggleAlt = (i) => () => { const u = reviewItems.slice(); u[i] = { ...u[i], alt: !u[i].alt }; setReviewItems(u); };
-    const addUrl = () => setReviewItems([...reviewItems, { url: "", name: "", text: "", alt: false }]);
-    const rmUrl = (i) => () => setReviewItems(reviewItems.filter((_, j) => j !== i));
-    return (
-        <div className="form-grid" style={{ marginTop: 18 }}>
-          <div className="fld full">
-            <label>{rv.urlLabel} <span style={{ color: "var(--danger)" }}>*</span></label>
-            <div className="url-list">
-              {reviewItems.map((it, i) => (
-                <div key={i} style={{ marginBottom: 10 }}>
-                  <div className="url-row">
-                    <input value={it.url} onChange={setIt(i, "url")} placeholder="https://…" disabled={it.alt} style={it.alt ? { opacity: 0.45 } : undefined} />
-                    {reviewItems.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="—"><Icon.x /></button> : null}
-                  </div>
-                  {/* Alternative, wenn der Teilen-Link nicht auffindbar ist:
-                      Name + Bewertungstext identifizieren die Bewertung ebenso. */}
-                  <button type="button" onClick={toggleAlt(i)}
-                    style={{ background: "none", border: "none", padding: "4px 2px 0", cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: "var(--primary)", fontFamily: "inherit" }}>
-                    {it.alt ? "↩ " : ""}{rv.altBtn}
-                  </button>
-                  {it.alt ? (
-                    <div style={{ marginTop: 6, display: "grid", gap: 6 }}>
-                      <input value={it.name} onChange={setIt(i, "name")} placeholder={rv.altName}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600 }} />
-                      <textarea value={it.text} onChange={setIt(i, "text")} placeholder={rv.altText} rows={3}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid var(--hairline)", fontSize: 14, fontFamily: "inherit", fontWeight: 600, resize: "vertical" }} />
-                    </div>
-                  ) : null}
-                </div>
-              ))}
-              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rv.addUrl}</button>
-            </div>
+            ))}
           </div>
+          <div className="bp-acts bp-hide-md">{backBtn(() => setUnsureStep(unsureStep === 2 ? 1 : 0))}</div>
+        </React.Fragment>),
+        aside: [expert],
+        mbar: <div className="bt">{backBtn(() => setUnsureStep(unsureStep === 2 ? 1 : 0), "full")}</div>,
+      };
+    }
+    const tiles = [
+      { id: "delete", img: BP_IMG.profil, main: true, badge: bp.badgeTop },
+      ...(reviewsBlocked(t.code) ? [] : [{ id: "reviews", img: BP_IMG.bewertungen }]),
+      { id: "press", img: BP_IMG.presse },
+      { id: "unsure", img: BP_IMG.unsicher, quiet: true },
+    ];
+    return {
+      cls: "r0",
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{rc.routerH}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{bp.sub0}</p>
+        <div className="bp-opts">
+          {tiles.map((tl, i) => (
+            <button type="button" key={tl.id} className={"bp-op bp-fade" + (tl.main ? " hl" : "") + (tl.quiet ? " quiet" : "")} style={{ animationDelay: (0.08 + i * 0.04) + "s" }} onClick={() => pick(tl.id)}>
+              {tl.badge ? <span className="bp-bdg">{tl.badge}</span> : null}
+              <span className="ic"><img src={asset(tl.img)} alt="" /></span>
+              <span><b>{bp.tiles[tl.id][0]}</b><span className="d">{bp.tiles[tl.id][1]}</span></span>
+              <ArrowRight />
+            </button>
+          ))}
         </div>
-    );
-  }
-
-  function ReviewIntake() {
-    const cont = () => {
-      if (!reviewCount) { setReviewErr(rv.need); return; }
-      setContact((c) => ({ ...c, company: c.company || "" }));
-      go(5); // direkt in den Checkout — keine Profilsuche, kein Schutzschritt
+      </React.Fragment>),
+      aside: [expert, quote],
     };
-    return (
-      <div className="wz-card pad-lg">
-        <div className="wz-eyebrow"><Icon.starOff size={14} /> {rv.tileT}</div>
-        <h1 className="wz-h" style={{ fontSize: 26 }}>{rv.h}</h1>
-        <p className="wz-sub">{rv.sub}</p>
-
-        <div className="press-price">
-          <div className="pp-ic"><Icon.info /></div>
-          <div className="pp-body">
-            <b>{rv.howH}</b>
-            <p>1. {rv.how1}<br />2. {rv.how2}<br />3. {rv.how3}</p>
-          </div>
-        </div>
-
-        {/* Erfolgschance + Preisstaffel (ersetzt die früheren zwei Bedingungen). */}
-        {reviewInfoBox()}
-
-        {/* Abrechnungsregeln: nur gelöschte Bewertungen zahlen, fällig am Löschtag. */}
-        <div className="press-alt">
-          <b><Icon.shieldCheck size={15} /> {rv.payH}</b>
-          <p style={{ margin: "6px 0 0" }}>{(rv.pay1 || "").replace("{per}", money(rl, p.review))}<br />{rv.pay2}</p>
-        </div>
-
-        {pickOn ? (
-          <div className="rv-pick">
-            <b className="rv-pick-h"><Icon.search size={15} /> {pk.h}</b>
-            <p className="rv-pick-sub">{pk.sub}</p>
-            {!pickPlace ? (
-              <div className="url-row">
-                <input value={pickQ} onChange={(e) => setPickQ(e.target.value)} placeholder={pk.ph}
-                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); pickSearch(); } }} />
-                <button type="button" className="btn btn-primary" onClick={pickSearch} disabled={pickPhase === "searching"}>{pk.btn}</button>
-              </div>
-            ) : (
-              <div className="rv-pick-place">
-                <span><b>{pickPlace.name}</b>{pickPlace.addr ? " · " + pickPlace.addr : ""}</span>
-                <button type="button" className="rv-pick-link" onClick={() => { setPickPlace(null); setPickReviews([]); setPickPhase("idle"); }}>{pk.change}</button>
-              </div>
-            )}
-            {pickPhase === "searching" || pickPhase === "loading" ? <p className="rv-pick-note">{pk.loading}</p> : null}
-            {pickPhase === "error" ? <p className="rv-pick-note">{pk.err}</p> : null}
-            {pickPhase === "cands" ? (
-              <div className="rv-pick-cands">
-                <span className="rv-pick-note">{pk.pickProfile}</span>
-                {pickCands.map((c) => (
-                  <button type="button" key={c.placeId} className="rv-pick-cand" onClick={() => pickLoad(c)}>
-                    <b>{c.name}</b><span>{[c.rating ? "★ " + c.rating : "", c.addr].filter(Boolean).join(" · ")}</span>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            {pickPhase === "list" ? (
-              pickReviews.length ? (
-                <div className="rv-pick-list">
-                  {pickReviews.map((r) => {
-                    return reviewItemRow(r);
-                  })}
-                </div>
-              ) : <p className="rv-pick-note">{pk.none}</p>
-            ) : null}
-            {pickSel.length ? <p className="rv-pick-note"><b>{pickSel.length} {pk.selected}</b></p> : null}
-          </div>
-        ) : null}
-
-        {pickOn ? <div className="rv-pick-or">{pk.or}</div> : null}
-        {manualLinks()}
-
-        <div className="summary" style={{ marginTop: 18 }}>
-          {reviewSumRows()}
-          <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(rl, servicePriceNum)}</span></div>
-        </div>
-
-        {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
-
-        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} onClick={cont}>
-          <Icon.arrowRight size={18} /> {rv.btn}
-        </button>
-        <div className="wz-actions" style={{ marginTop: 16 }}>
-          <button className="btn btn-secondary" onClick={() => setReviewMode(false)}><Icon.arrowLeft size={17} /> {w.back}</button>
-        </div>
-      </div>
-    );
   }
 
-  function PressIntake() {
+  /* ---- Presse / Suchergebnisse (eigener Zweig) ---- */
+  function viewPress() {
     const set = (k) => (e) => setPressData({ ...pressData, [k]: e.target.value });
     const setUrl = (i) => (e) => { const urls = pressData.urls.slice(); urls[i] = e.target.value; setPressData({ ...pressData, urls }); };
     const addUrl = () => setPressData({ ...pressData, urls: [...pressData.urls, ""] });
     const rmUrl = (i) => () => setPressData({ ...pressData, urls: pressData.urls.filter((_, j) => j !== i) });
-    const pressUrlsOk = (pressData.urls || []).some((u) => u && u.trim());
-    const pressEmailOk = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((pressData.email || "").trim());
-    const pressCanSubmit = pressUrlsOk && pressEmailOk;
+    const ok = (pressData.urls || []).some((u) => u && u.trim()) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((pressData.email || "").trim());
     const submitPress = () => {
-      if (!pressCanSubmit) return;
+      if (!ok) return;
       const urls = (pressData.urls || []).filter((u) => u && u.trim());
-      // Landet im Admin-Panel als Bestellung „deindex" (Presse auslisten – Prüfung):
-      // Links + Beschreibung als Notiz, damit die Partnerkanzlei sie prüfen kann.
       const note = `Links:\n${urls.join("\n") || "—"}\n\nBeschreibung: ${pressData.desc || "—"}\nAlternative (Verdrängung) gewünscht: ${pressData.orm === "yes" ? "ja" : "nein"}`;
       submitOrder({ service: "deindex", email: pressData.email, profile: "Presse-Auslistung", note, company: "", amount: 0, protAmount: 0, lang, country, orderId }).catch(() => {});
       setPressDone(true);
     };
     if (pressDone) {
-      return (
-        <div className="wz-card pad-lg">
-          <div className="ty-hero">
-            <div className="ty-check"><div className="core"><Icon.check /></div></div>
-            <h1 className="wz-h" style={{ fontSize: 28 }}>{rc.pressDoneH}</h1>
-            <p className="wz-sub" style={{ margin: "0 auto", textAlign: "center" }}>{rc.pressDoneSub}</p>
-          </div>
-          <div className="ty-cta-row"><button className="btn btn-secondary lg" onClick={onExit}>{w.s6.home}</button></div>
-        </div>
-      );
+      return {
+        sec: (<div className="bp-fade">
+          <div className="bp-ok64"><Check /></div>
+          <h1 className="bp-h1">{rc.pressDoneH}</h1>
+          <p className="bp-sub">{rc.pressDoneSub}</p>
+          <div className="bp-acts" style={{ maxWidth: 360 }}><button type="button" className="bp-go" onClick={onExit}>{w.s6.home}<ArrowRight /></button></div>
+        </div>),
+        aside: [expert],
+      };
     }
-    return (
-      <div className="wz-card pad-lg">
-        <div className="wz-eyebrow"><Icon.edit size={14} /> {rc.pressIntakeH}</div>
-        <h1 className="wz-h" style={{ fontSize: 26 }}>{rc.pressIntakeH}</h1>
-        <p className="wz-sub">{rc.pressIntakeSub}</p>
-        <div className="press-price">
-          <div className="pp-ic"><Icon.info /></div>
-          <div className="pp-body"><b>{rc.pressPriceH}</b><p>{rc.pressPriceSub}</p></div>
-        </div>
-        <div className="form-grid">
-          <div className="fld full">
-            <label>{rc.pressUrl} <span style={{ color: "var(--danger)" }}>*</span></label>
-            <div className="url-list">
-              {pressData.urls.map((u, i) => (
-                <div className="url-row" key={i}>
-                  <input value={u} onChange={setUrl(i)} placeholder="https://…" />
-                  {pressData.urls.length > 1 ? <button type="button" className="url-rm" onClick={rmUrl(i)} aria-label="Entfernen"><Icon.x /></button> : null}
-                </div>
+    return {
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{rc.pressIntakeH}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{rc.pressIntakeSub}</p>
+        <div className="bp-note bp-fade" style={{ animationDelay: ".08s" }}><Info /><span><b style={{ color: "var(--ink)", fontWeight: 600 }}>{rc.pressPriceH}</b><br />{rc.pressPriceSub}</span></div>
+        <div className="bp-form" style={{ marginTop: 24 }}>
+          {pressData.urls.map((u, i) => (
+            <label className="bp-fl" key={i}>
+              <input value={u} onChange={setUrl(i)} placeholder=" " inputMode="url" style={pressData.urls.length > 1 ? { paddingRight: 56 } : undefined} />
+              <span>{rc.pressUrl}</span>
+              {pressData.urls.length > 1 ? <button type="button" className="rm" onClick={rmUrl(i)} aria-label="×"><X /></button> : null}
+            </label>
+          ))}
+          <button type="button" className="bp-add" onClick={addUrl}><Plus />{rc.pressAddUrl}</button>
+          <label className="bp-fl"><input value={pressData.email} onChange={set("email")} placeholder=" " type="email" inputMode="email" autoComplete="email" /><span>{rc.pressEmail}</span></label>
+          <label className="bp-fl"><input value={pressData.desc} onChange={set("desc")} placeholder=" " /><span>{rc.pressDesc}</span></label>
+          <div style={{ marginTop: 14 }}>
+            <b style={{ fontSize: 15, fontWeight: 600 }}>{rc.pressAltQ}</b>
+            <p style={{ fontSize: 13, color: "var(--g3)", marginTop: 4, lineHeight: 1.5 }}>{rc.pressAltHint}</p>
+            <div className="bp-ropts" style={{ marginTop: 14 }}>
+              {[["yes", rc.pressAltYes], ["no", rc.pressAltNo]].map(([k, l]) => (
+                <button type="button" key={k} className={"bp-rop" + (pressData.orm === k ? " sel" : "")} style={{ gridTemplateColumns: "24px minmax(0,1fr)" }} onClick={() => setPressData({ ...pressData, orm: k })}>
+                  <span className="bp-rd" /><span><b style={{ fontSize: 15 }}>{l}</b></span>
+                </button>
               ))}
-              <button type="button" className="url-add" onClick={addUrl}><span aria-hidden="true" style={{ fontWeight: 800, fontSize: 15, lineHeight: 1 }}>+</span> {rc.pressAddUrl}</button>
             </div>
           </div>
-          <div className="fld full"><label>{rc.pressEmail} <span style={{ color: "var(--danger)" }}>*</span></label><input value={pressData.email} onChange={set("email")} placeholder="name@firma.com" /></div>
-          <div className="fld full"><label>{rc.pressDesc}</label><input value={pressData.desc} onChange={set("desc")} placeholder="" /></div>
-        </div>
-        <div className="press-alt">
-          <b>{rc.pressAltQ}</b>
-          <p>{rc.pressAltHint}</p>
-          <div className="pa-opts">
-            <button type="button" className={"pa-opt" + (pressData.orm === "yes" ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: "yes" })}><Icon.check /> {rc.pressAltYes}</button>
-            <button type="button" className={"pa-opt" + (pressData.orm === "no" ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: "no" })}>{rc.pressAltNo}</button>
+          <div className="bp-acts bp-hide-md" style={{ marginTop: 18 }}>
+            {backBtn(() => setPressMode(false))}
+            <button type="button" className="bp-go" disabled={!ok} onClick={submitPress}><ShieldCheck />{rc.pressBtn}</button>
           </div>
         </div>
-        <button className="btn btn-primary btn-block lg" style={{ marginTop: 18 }} disabled={!pressCanSubmit} onClick={submitPress}><Icon.shieldCheck size={18} /> {rc.pressBtn}</button>
-        <div className="wz-actions" style={{ marginTop: 16 }}>
-          <button className="btn btn-secondary" onClick={() => setPressMode(false)}><Icon.arrowLeft size={17} /> {w.back}</button>
+      </React.Fragment>),
+      aside: [expert],
+      mbar: <div className="bt">{backBtn(() => setPressMode(false))}<button type="button" className="bp-go" disabled={!ok} onClick={submitPress}>{rc.pressBtn}</button></div>,
+    };
+  }
+
+  /* ---- Schritt 1 · Firmenname ---- */
+  function viewName() {
+    const can = name.trim().length >= 2;
+    return {
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{w.s1.h}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{bp.sub1}</p>
+        <div className="bp-acwrap bp-fade" style={{ animationDelay: ".08s" }} ref={acRef}>
+          <label className="bp-field">
+            <Building2 />
+            <input ref={nameRef} type="text" placeholder={w.s1.placeholder} value={name} autoComplete="organization" enterKeyHint="search"
+              onChange={(e) => { setName(e.target.value); setAcOpen(true); }} onFocus={() => setAcOpen(true)}
+              onKeyDown={(e) => { if (e.key === "Enter" && can) { setAcOpen(false); startSearch(name); } }} />
+            <button type="button" className="bp-go" disabled={!can} onClick={() => { setAcOpen(false); startSearch(name); }}>{bp.find}<ArrowRight /></button>
+          </label>
+          {acOpen && can && sug.length ? (
+            <div className="bp-ac">
+              {sug.map((s) => (
+                <button type="button" key={s.placeId || s.id} onClick={() => pickProfile(s)}>
+                  <span className="ai"><Building2 /></span><span><b>{s.name}</b>{s.addr ? <small>{s.addr}</small> : null}</span>
+                </button>
+              ))}
+              <button type="button" onClick={() => { setAcOpen(false); startSearch(name); }}>
+                <span className="ai"><ArrowRight /></span><span><b>„{name.trim()}“</b><small>{wm.continueTyped}</small></span>
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </React.Fragment>),
+      aside: [expert, quote],
+      fade: true,
+      mbar: <div className="bt"><button type="button" className="bp-go" disabled={!can} onClick={() => { setAcOpen(false); startSearch(name); }}><Search />{bp.find}</button></div>,
+    };
+  }
+
+  /* Profilkarte (Suchergebnis / Bestätigen) */
+  function profileCard(c, sel, onClick, i) {
+    const a = c.rating != null ? ratingAssessment(c.rating, lang) : null;
+    return (
+      <button type="button" key={c.id} className={"bp-card bp-fade" + (sel ? " sel" : "")} style={{ animationDelay: (0.1 + (i || 0) * 0.04) + "s" }} onClick={onClick}>
+        <span className="ph"><Building2 /></span>
+        <span className="bd">
+          <h2>{c.name}</h2>
+          {c.cat ? <span className="cat" style={{ display: "block" }}>{c.cat}</span> : null}
+          {c.rating != null ? <span className="bp-rate"><BpStars /><b>{c.rating}</b>· {c.reviews} {w.s2.reviews}</span> : null}
+          <span className="bp-chips">
+            {a ? <span className="bp-chip ok"><CircleCheck />{a.label}</span> : null}
+            {c.addr ? <span className="bp-chip n"><MapPin />{c.addr}</span> : null}
+          </span>
+        </span>
+        <span className="selc"><Check /></span>
+      </button>
+    );
+  }
+
+  /* ---- Schritt 2 · Profilsuche ---- */
+  function viewSearch() {
+    if (phase !== "found") {
+      const chk = phase === "checking";
+      return {
+        sec: <BpSearchAnim title={chk ? bp.checkH : bp.searchH} sub={(chk ? bp.checkSub : bp.searchSub)(<b key="n">{chk ? nameShown : name}</b>)} steps={bp.st} />,
+        aside: [expert, quote], asideCls: "bp-hide-sm",
+      };
+    }
+    const list = multi ? candidates : candidates.filter((c) => c.primary);
+    const linksA = wantReviews && !reviewsBlocked(t.code);
+    return {
+      sec: (<div className="bp-res">
+        <h1 className="bp-h1 bp-fade">{multi ? w.s2.multiH : w.s2.h}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".05s" }}>{multi ? w.s2.multiSub : w.s2.sub}</p>
+        <div className="bp-cards">{list.map((c, i) => profileCard(c, multi ? selectedId === c.id : true, () => setSelectedId(c.id), i))}</div>
+        <div className="bp-alts bp-fade" style={{ animationDelay: ".16s" }}>
+          <button type="button" className="bp-alt" onClick={() => go(0)}><span className="ai"><Search /></span><span>{wm.notMine}<small>{bp.altNotMineSub}</small></span><ArrowRight /></button>
+          <button type="button" className="bp-alt" onClick={linksA ? reviewsLinksOnly : pickNotInList}><span className="ai"><Link /></span><span>{bp.altNotFound}<small>{linksA ? bp.altNotFoundA : bp.altNotFoundB}</small></span><ArrowRight /></button>
+          <a className="bp-alt" href={"mailto:helpdesk@rapid-remove.com?subject=" + encodeURIComponent(mp.t)}><span className="ai"><Layers /></span><span>{mp.t}<small>{mp.d}</small></span><ArrowRight /></a>
+        </div>
+        <div className="bp-acts bp-fade bp-hide-md" style={{ animationDelay: ".22s" }}>{backBtn(() => go(0))}<button type="button" className="bp-go" onClick={proceedFromSearch}>{w.s2.button}<ArrowRight /></button></div>
+      </div>),
+      aside: [expert, quote], asideCls: "bp-hide-sm",
+      mbar: <div className="bt">{backBtn(() => go(0))}<button type="button" className="bp-go" onClick={proceedFromSearch}>{w.s2.button}<ArrowRight /></button></div>,
+      fade: true,
+    };
+  }
+
+  /* ---- Schritt 3 · Bestätigen (nur unklar identifizierte Profile) ---- */
+  function viewConfirm() {
+    if (phase === "checking") return { sec: <BpSearchAnim title={bp.checkH} sub={bp.checkSub(<b key="n">{nameShown}</b>)} steps={bp.st} />, aside: [expert], asideCls: "bp-hide-sm" };
+    const unsure = !!(selected && selected.unverified);
+    const linkOk = isGMapsLink(profileLink);
+    const cont = () => { persistCheck(); go(3); };
+    const primary = unsure && linkOk
+      ? <button type="button" className="bp-go" onClick={verifyWithLink}>{nil.checkBtn}<ArrowRight /></button>
+      : <button type="button" className="bp-go" onClick={cont}>{unsure ? nil.contBtn : conv.toCheckout}<ArrowRight /></button>;
+    return {
+      sec: (<div className="bp-res">
+        <h1 className="bp-h1 bp-fade">{unsure ? nil.h : w.s2.h}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".05s" }}>{unsure ? nil.sub : w.s2.sub}</p>
+        <div className="bp-cards">{selected ? profileCard(selected, true, unsure ? undefined : cont, 0) : null}</div>
+        {unsure ? (
+          <label className="bp-fl bp-fade" style={{ marginTop: 16, animationDelay: ".14s" }}>
+            <input value={profileLink} onChange={(e) => setProfileLink(e.target.value)} placeholder=" " inputMode="url" />
+            <span>{nil.linkLabel}</span>
+          </label>
+        ) : (
+          <div className="bp-alts"><button type="button" className="bp-alt" onClick={() => go(0)}><span className="ai"><Search /></span><span>{wm.notMine}<small>{bp.altNotMineSub}</small></span><ArrowRight /></button></div>
+        )}
+        <div className="bp-acts bp-hide-md">{backBtn(() => go(1))}{primary}</div>
+      </div>),
+      aside: [expert], asideCls: "bp-hide-sm",
+      mbar: <div className="bt">{backBtn(() => go(1))}{primary}</div>,
+    };
+  }
+
+  /* ---- Schritt 4 · Leistung (Profil-Route) ---- */
+  function viewService() {
+    if (wantReviews && !autoReviewsDone.current && reviewsOk) return viewReviewsLoading();
+    const pick = (s) => {
+      if (svcPick) return;
+      setSvcPick(s);
+      clearTimeout(svcTimer.current);
+      svcTimer.current = setTimeout(() => {
+        setService(s);
+        if (s === "reset") { setExpress(false); setProtection(null); go(5); }
+        else if (s === "reviews") { setExpress(false); setProtection(null); go(4); }
+        else { if (protection === null) setProtection("monthly"); go(4); }
+      }, 260);
+    };
+    const opt = (id, img, Ic, title, desc, bullets, price, small, badge, i, pre) => (
+      <button type="button" key={id} className={"bp-op svc bp-fade" + (svcPick === id ? " sel" : "")} style={{ animationDelay: (0.12 + i * 0.04) + "s" }} onClick={() => pick(id)}>
+        {badge ? <span className="bp-bdg">{badge}</span> : null}
+        <span className="ic">{img ? <img src={asset(img)} alt="" /> : <Ic />}</span>
+        <span>
+          <b>{title}</b><span className="d">{desc}</span>
+          {bullets ? <ul>{bullets.map((x, j) => <li key={j}><Check />{x}</li>)}</ul> : null}
+        </span>
+        <span className="bp-pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{small}</small></span>
+      </button>
+    );
+    return {
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{bp.svcH}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{bp.svcSub}</p>
+        <div className="bp-okpill bp-fade" style={{ animationDelay: ".08s" }}><CircleCheck />{bp.svcOk}</div>
+        {wantReviews && !reviewsOk ? <div className="bp-note bp-fade"><Info /><span>{bp.reviewsNA}</span></div> : null}
+        <div className="bp-opts g10">
+          {opt("remove", BP_IMG.profil, null, bp.svc1[0], bp.svc1[1], bp.svc1[2], money(lang, p.deletion), wm.afterSuccess, w.s4.opt1.badge, 0)}
+          {opt("reset", null, RefreshCw, bp.svc2[0], bp.svc2[1], bp.svc2[2], money(lang, p.reset), wm.afterSuccess, null, 1)}
+          {reviewsOk ? opt("reviews", BP_IMG.bewertungen, null, bp.tiles.reviews[0], bp.tiles.reviews[1], null, money(rl, p.review), rv.per, null, 2, (pk.fromPre || "").trim()) : null}
+        </div>
+        <div className="bp-acts bp-hide-md" style={{ marginTop: 28 }}>{backBtn(() => go(selected && selected.unverified ? 2 : 1))}</div>
+      </React.Fragment>),
+      aside: [
+        <div className="bp-pcard" key="pc"><div className="ph"><MapPin /></div><div><b>{nameShown}</b>{selected && selected.addr ? <span>{selected.addr}</span> : null}</div><button type="button" onClick={() => go(1)}>{bp.change}</button></div>,
+        <div className="bp-risk bp-hide-md" key="rk"><ShieldCheck /><b>{bp.riskT}</b><p>{bp.riskD}</p></div>,
+        expert,
+      ],
+      mbar: <div className="bt">{backBtn(() => go(selected && selected.unverified ? 2 : 1), "full")}</div>,
+    };
+  }
+
+  /* ---- Schritt 5B · Schutz ---- */
+  function viewProtect() {
+    const opts = [
+      ["monthly", conv.protMonthlyName, bp.protD.monthly, bp.cancel, bp.badgeTop],
+      ["monitor", conv.protMonitorName, bp.protD.monitor, bp.cancel],
+      ["lifetime", conv.protLifetimeName, bp.protD.lifetime, bp.once],
+    ];
+    const protName = protection ? (opts.find((o) => o[0] === protection) || [])[1] : bp.protNone;
+    const goCo = () => go(5);
+    return {
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{bp.protH}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{bp.protSub}</p>
+        <div className="bp-ropts">
+          {opts.map(([k, nm, d, sm, badge], i) => (
+            <button type="button" key={k} className={"bp-rop bp-fade" + (protection === k ? " sel" : "")} style={{ animationDelay: (0.12 + i * 0.03) + "s" }} onClick={() => setProtection(k)} aria-pressed={protection === k}>
+              {badge ? <span className="bp-bdg">{badge}</span> : null}
+              <span className="bp-rd" />
+              <span><b>{nm}</b><span className="d">{d}</span></span>
+              <span className="bp-pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{sm}</small></span>
+            </button>
+          ))}
+          <button type="button" className={"bp-rop none bp-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".21s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>
+            <span className="bp-rd" /><span><b>{bp.protNone}</b><span className="d">{bp.protNoneD}</span></span>
+          </button>
+        </div>
+        {protection === null ? (<React.Fragment>
+          <div className="bp-warn"><TriangleAlert /><span><b>{bp.warnB}</b>{bp.warnR}</span></div>
+          <BpReturnFlow title={bp.exT} nodes={bp.exN} />
+        </React.Fragment>) : null}
+        <div className="bp-acts bp-hide-md" style={{ marginTop: 28 }}>{backBtn(() => go(3))}<button type="button" className="bp-go" onClick={goCo}>{bp.toCo}<ArrowRight /></button></div>
+      </React.Fragment>),
+      asideCls: "sticky bp-hide-md",
+      aside: [
+        <div className="bp-sum sel" key="sum">
+          <div className="lb">{bp.yourSel}</div>
+          <div className="rows">
+            <div><span>{svcLabel}<small>{wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+            <div><span>{protName}<small>{bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
+          </div>
+          <div className="now"><span>{bp.today}</span><b>{money(lang, w.s5.dueNow)}</b></div>
+          <div className="note">{bp.billNote}</div>
+        </div>,
+        expert,
+      ],
+      tall: true,
+      mbar: (<React.Fragment>
+        <div className="ln2"><span>{svcLabel}{protection ? " + " + protName : ""}</span><b className="sm">{bp.todayShort(money(lang, w.s5.dueNow))}</b></div>
+        <div className="bt">{backBtn(() => go(3))}<button type="button" className="bp-go" onClick={goCo}>{bp.toCo}<ArrowRight /></button></div>
+      </React.Fragment>),
+    };
+  }
+
+  /* ---- Schritt 5A · Bewertungen ---- */
+  function viewReviewsLoading() {
+    return {
+      cls: "solo",
+      sec: <BpReviewsLoader done={pickPhase !== "loading" && pickPhase !== "idle"} actual={(pickReviews || []).length}
+        estimate={Math.max(8, Math.min(60, Number(selected && selected.reviews) || 24))}
+        onFinish={() => setRevShow(true)} title={pk.loading} sub={bp.ldSub(<b key="n">{nameShown}</b>)} found={bp.ldFound} />,
+    };
+  }
+  function manualLinksUI() {
+    const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
+    const toggleAlt = (i) => () => { const u = reviewItems.slice(); u[i] = { ...u[i], alt: !u[i].alt }; setReviewItems(u); };
+    const addUrl = () => setReviewItems([...reviewItems, { url: "", name: "", text: "", alt: false }]);
+    const rmUrl = (i) => () => setReviewItems(reviewItems.filter((_, j) => j !== i));
+    return (
+      <div className="bp-manual">
+        {reviewItems.map((it, i) => (
+          <React.Fragment key={i}>
+            {it.alt ? (<React.Fragment>
+              <label className="bp-fl"><input value={it.name} onChange={setIt(i, "name")} placeholder=" " /><span>{rv.altName}</span></label>
+              <label className="bp-fl"><textarea value={it.text} onChange={setIt(i, "text")} placeholder=" " rows={3} /><span>{rv.altText}</span></label>
+            </React.Fragment>) : (
+              <label className="bp-fl">
+                <input value={it.url} onChange={setIt(i, "url")} placeholder=" " inputMode="url" style={reviewItems.length > 1 ? { paddingRight: 56 } : undefined} />
+                <span>{rv.urlLabel}</span>
+                {reviewItems.length > 1 ? <button type="button" className="rm" onClick={rmUrl(i)} aria-label="×"><X /></button> : null}
+              </label>
+            )}
+            <button type="button" className="alt" onClick={toggleAlt(i)}>{it.alt ? "↩ " + rv.urlLabel : rv.altBtn}</button>
+          </React.Fragment>
+        ))}
+        <button type="button" className="bp-add" onClick={addUrl}><Plus />{rv.addUrl}</button>
+      </div>
+    );
+  }
+  function viewReviews() {
+    const manualOnly = pickPhase === "manual";
+    if (!manualOnly && (pickPhase === "loading" || pickPhase === "idle" || (pickPhase === "list" && !revShow))) return viewReviewsLoading();
+    const all = pickReviews || [];
+    const q = pickQ2.trim().toLowerCase();
+    const shown = all.filter((r) => q
+      ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
+      : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
+    const allSel = shown.length > 0 && shown.every((r) => pickSel.some((x) => x.id === r.id));
+    const toggleAll = () => setPickSel((sel) => allSel ? sel.filter((x) => !shown.some((r) => r.id === x.id)) : [...sel, ...shown.filter((r) => !sel.some((x) => x.id === r.id))]);
+    const n = reviewCount;
+    const next = n < 3 ? [3, 10] : n < 5 ? [5, 15] : n < 10 ? [10, 30] : null;
+    const hint = n && next ? bp.nudge(next[0] - n, next[1]) : "";
+    const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
+    const back = () => go(manualOnly || wantReviews ? 1 : 3);
+    const priceOf = (r) => { const m = revMethod(r); return m === "sw" ? REVIEW_NOTEXT_PRICE : m === "legal" ? rq.oldPrice : rq.base; };
+    const row = (r, k) => {
+      const on = pickSel.some((x) => x.id === r.id);
+      const m = revMethod(r);
+      const hasT = reviewHasText(r);
+      return (
+        <button type="button" key={r.id} className={"bp-rv" + (on ? " sel" : "")} style={{ "--i": Math.min(k, 12) }} onClick={() => pickToggle(r)} aria-pressed={on}>
+          <span className="bp-cb"><Check /></span>
+          <span style={{ minWidth: 0 }}>
+            <span className="bp-rh"><b>{r.name}</b><BpStars n={r.rating} cls="bp-rst" /><span className="ago">{relAge(r.days, lang)}</span></span>
+            <span className={"bp-rt" + (hasT ? "" : " none")}>{hasT ? r.text : bp.noText}</span>
+            <span className="bp-tags">
+              {m === "sw"
+                ? <span className="bp-tag ok i" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setSwInfo(true); }}><CircleCheck />{bp.tag.sw}<Info /></span>
+                : <span className="bp-tag ok"><CircleCheck />{bp.tag[m]}</span>}
+              <span className="bp-tag">{m === "sw" ? (hasT ? bp.cat.sw : bp.cat.nt) : bp.cat[m]}</span>
+              <span className="bp-tag pr">{money(rl, priceOf(r))}</span>
+            </span>
+          </span>
+        </button>
+      );
+    };
+    const list = manualOnly ? null : (<React.Fragment>
+      {all.length ? (<React.Fragment>
+        <div className="bp-tools">
+          <label className="bp-srch"><Search /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><X /></button> : null}</label>
+          <div className="bp-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
+        </div>
+        <div className="bp-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
+        {shown.length ? <div className="bp-list">{shown.map(row)}</div> : <div className="bp-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
+      </React.Fragment>) : <div className="bp-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
+      {all.length && !(showManual || reviewItems.some((it) => (it.url || "").trim() || (it.name || "").trim()))
+        ? <button type="button" className="bp-link" style={{ marginTop: 16 }} onClick={() => setShowManual(true)}><Pencil />{pk.notListed}</button>
+        : manualLinksUI()}
+    </React.Fragment>);
+    return {
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{manualOnly ? pk.manualH : pk.stepH}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{manualOnly ? pk.manualNote : pk.stepSub}</p>
+        <button type="button" className="bp-link bp-fade" style={{ animationDelay: ".06s" }} onClick={() => setPriceInfo(true)}><Info />{pk.infoH}</button>
+        {manualOnly ? manualLinksUI() : list}
+        {reviewErr ? <div className="bp-err">{reviewErr}</div> : null}
+      </React.Fragment>),
+      asideCls: "sticky bp-hide-md",
+      aside: [
+        <div className="bp-sum" key="sum">
+          <div className="lb">{bp.selN(n)}</div>
+          <div className="tot">{fmtMoney(rl, servicePriceNum)}</div>
+          <div className="rows">
+            {n ? (<React.Fragment>
+              <div><span>{bp.subtotal}</span><b>{fmtMoney(rl, rq.subtotal)}</b></div>
+              {rq.pct ? <div className="dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(rl, rq.discount)}</b></div> : null}
+            </React.Fragment>) : <div><span>{bp.pickOne}</span></div>}
+          </div>
+          {hint ? <div className="hint"><Sparkles /><span>{hint}</span></div> : null}
+          <button type="button" className="bp-go" disabled={!n} onClick={cont}>{bp.toCo}<ArrowRight /></button>
+          <div className="pay">{bp.payAfter}</div>
+        </div>,
+        <div key="bk">{backBtn(back)}</div>,
+      ],
+      tall: true,
+      mbar: (<React.Fragment>
+        <div className="ln2"><span>{bp.selShort(n)}{rq.pct ? " · −" + rq.pct + " %" : ""}{hint ? <span className="h">{hint}</span> : null}</span><b>{fmtMoney(rl, servicePriceNum)}</b></div>
+        <div className="bt">{backBtn(back)}<button type="button" className="bp-go" disabled={!n} onClick={cont}>{bp.toCo}<ArrowRight /></button></div>
+      </React.Fragment>),
+    };
+  }
+
+  /* ---- Schritt 6 · Kasse ---- */
+  function viewCheckout() {
+    if (processing) {
+      return { cls: "solo", sec: (<div className="bp-proc bp-fade"><div className="bp-spin" /><h1 className="bp-h1">{w.s5.processing}</h1><p className="bp-sub">{w.s5.payNote}</p></div>) };
+    }
+    const set = (k) => (e) => { setContact((c) => ({ ...c, [k]: e.target.value })); if (errors[k]) setErrors((x) => { const y = { ...x }; delete y[k]; return y; }); };
+    const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
+    const fg = FAGG_CONSENT[t.code] || FAGG_CONSENT.en;
+    const can = !!(contact.name.trim() && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contact.email) && contact.company.trim() && agbOk && faggOk);
+    const back = () => go(revFlow ? 4 : service === "reset" ? 3 : 4);
+    const cur = revFlow ? rl : lang;
+    const help = (
+      <div className="bp-help" key="hp">
+        <div className="hh"><span className="bp-avs"><img src={asset(BP_IMG.matthias)} alt="" /><img src={asset(BP_IMG.max)} alt="" /></span><div><b>{ch.title}</b><span><i className="bp-dot" />{ch.sub}</span></div></div>
+        <div className="bp-hb">
+          <a className="wa" href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}><MessageCircle />WhatsApp</a>
+          <a href={t.code === "de" ? "tel:08000900001" : "tel:+4362459305300"} onClick={() => trackContact("phone")}><Phone />{ch.phone}</a>
+          <button type="button" onClick={openTidioChat}><MessagesSquare />{ch.chat}</button>
+          <a href="mailto:helpdesk@rapid-remove.com"><Mail />{ch.email}</a>
         </div>
       </div>
     );
-  }
-
-  // Bewertungs-Zweig: eigene Eingabe, danach der reguläre Checkout (step 5/6).
-  if (reviewMode && step < 5) {
-    return (
-      <div className="wz">
-        {Top}
-        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"rev"}>{ReviewIntake()}</div></div>
+    const rev = (
+      <div className="bp-rev" key="rv">
+        <div className="tp"><BpStars /><small>{bp.verified}</small></div>
+        <p>„{q0.q}"</p>
+        <div className="bp-who"><div className="m">{q0.a.charAt(0)}</div><div><b>{q0.a}</b><span>{q0.r}</span></div></div>
+        <div className="ft"><span className="tpl"><Star /></span><span>{(() => { const [r, rest] = bp.tpFoot(conv.rating, tpN); return <React.Fragment><b>{r}</b>{rest}</React.Fragment>; })()}</span></div>
       </div>
     );
+    const ck = (checked, onChange, err, children) => (
+      <label className={"bp-ck" + (err ? " err" : "")}>
+        <input type="checkbox" checked={checked} onChange={onChange} />
+        <span className="bx"><Check /></span>
+        <span>{children}</span>
+      </label>
+    );
+    const orderBtn = (cls) => <button type="submit" form="bp-co" className={"bp-go" + (cls ? " " + cls : "")} disabled={!can}><Lock />{bp.order}</button>;
+    return {
+      cls: "co",
+      sec: (<React.Fragment>
+        <h1 className="bp-h1 bp-fade">{w.s5.h}</h1>
+        <p className="bp-sub bp-fade" style={{ animationDelay: ".04s" }}>{bp.coSub}</p>
+        {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
+          <div className="bp-alert" role="alert"><b>{D.t}</b>{D.p((dupOrder.orders || []).join(", "))}{" "}<a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")}>{D.l}</a></div>
+        ); })() : null}
+        <form id="bp-co" className="bp-form bp-fade" style={{ animationDelay: ".08s" }} onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
+          <label className={"bp-fl" + (errors.name ? " err" : "")}><input value={contact.name} onChange={set("name")} placeholder=" " type="text" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" /><span>{bp.f.name}</span>{errors.name ? <div className="emsg">{errors.name}</div> : null}</label>
+          <label className={"bp-fl" + (errors.email ? " err" : "")}><input value={contact.email} onChange={set("email")} placeholder=" " type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="off" spellCheck={false} enterKeyHint="next" /><span>{bp.f.email}</span>{errors.email ? <div className="emsg">{errors.email}</div> : null}</label>
+          <div className="bp-two">
+            <label className="bp-fl"><input value={contact.phone} onChange={set("phone")} placeholder=" " type="tel" name="tel" autoComplete="tel" inputMode="tel" enterKeyHint="next" /><span>{bp.f.phone}</span>{!contact.phone ? <em>{bp.f.optional}</em> : null}</label>
+            <label className={"bp-fl" + (errors.company ? " err" : "")}><input value={contact.company} onChange={set("company")} placeholder=" " type="text" name="organization" autoComplete="organization" enterKeyHint="done" /><span>{bp.f.company}</span>{errors.company ? <div className="emsg">{errors.company}</div> : null}</label>
+          </div>
+          <div className="bp-legal">
+            {ck(agbOk, (e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }, errors.agb, <React.Fragment>
+              {ag.pre}<a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{ag.agb}</a>{ag.mid}<a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{ag.wid}</a>{ag.post}
+            </React.Fragment>)}
+            {ck(faggOk, (e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }, errors.fagg, fg.txt)}
+          </div>
+          <div className="bp-acts bp-hide-md" style={{ marginTop: 14, maxWidth: "none" }}>{backBtn(back)}{orderBtn("")}</div>
+          <div className="bp-sec"><ShieldCheck />{bp.nothingToday}</div>
+        </form>
+        <div className="bp-side mob">{help}{rev}</div>
+      </React.Fragment>),
+      asideCls: "sticky",
+      aside: [
+        <div className="bp-cos" key="cos">
+          <div className="pf"><div className="ph"><MapPin /></div><div><b>{nameShown || contact.company}</b><span>{revFlow ? bp.delN(reviewCount) : svcLabel}</span></div></div>
+          <div className="lines">
+            {revFlow ? (<React.Fragment>
+              {rq.nNew ? <div className="ln"><span>{rq.nNew} × {pk.rowNew}<small>{bp.lineSub.std}</small></span><b>{fmtMoney(cur, rq.nNew * rq.base)}</b></div> : null}
+              {rq.nOld ? <div className="ln"><span>{rq.nOld} × {pk.old}<small>{bp.lineSub.legal}</small></span><b>{fmtMoney(cur, rq.nOld * rq.oldPrice)}</b></div> : null}
+              {rq.nNt ? <div className="ln"><span>{rq.nNt} × {bp.cat.sw}<small>{bp.lineSub.nt}</small></span><b>{fmtMoney(cur, rq.nNt * rq.ntPrice)}</b></div> : null}
+              {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
+            </React.Fragment>) : (<React.Fragment>
+              <div className="ln"><span>{svcLabel}<small>{bp.payOnSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+              <div className={"ln xo" + (express ? " on" : "")}>
+                <span>{wm.expressTile}<small>{bp.expressSub}</small></span>
+                <button type="button" className={"bp-sw" + (express ? " on" : "")} role="switch" aria-checked={express} aria-label={wm.expressTile} onClick={() => setExpress(!express)}><b>+{money(lang, p.express)}</b><i /></button>
+              </div>
+              {protection ? <div className="ln"><span>{protNm[protection]}<small>{bp.fromDel}</small></span><b>{fmtProt(protection)}</b></div> : null}
+            </React.Fragment>)}
+          </div>
+          <div className="tot"><span>{bp.total}</span><b>{fmtMoney(cur, oneTimeTotal)}</b></div>
+          <div className="now"><span><CircleCheck />{bp.today}</span><b>{money(cur, w.s5.dueNow)}</b></div>
+          <button type="button" className={"more" + (coHow ? " open" : "")} onClick={() => setCoHow(!coHow)} aria-expanded={coHow}><Info />{bp.how}<ChevronDown /></button>
+          {coHow ? <div className="bp-how">{(revFlow ? bp.howA : bp.howB).map(([b, tx], i) => <div key={i}><i>{i + 1}</i><span><b>{b}</b>{tx}</span></div>)}</div> : null}
+        </div>,
+        <div className="bp-side" key="side">{help}{rev}</div>,
+      ],
+      mbar: <div className="bt">{backBtn(back)}{orderBtn("")}</div>,
+    };
   }
 
-  if (!routed && !pressMode && !reviewMode) {
-    return (
-      <div className="wz">
-        {Top}
-        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"router" + unsureStep}>{RouterScreen()}</div></div>
-        <ActivityToast />
-      </div>
-    );
-  }
-  if (pressMode) {
-    return (
-      <div className="wz">
-        {Top}
-        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"press" + pressDone}>{PressIntake()}</div></div>
-      </div>
-    );
+  /* ---- Schritt 7 · Fertig ---- */
+  function viewDone() {
+    return {
+      sec: (<div className="bp-fade">
+        <div className="bp-ok64"><Check /></div>
+        <h1 className="bp-h1">{bp.thanksH}</h1>
+        <p className="bp-sub">{bp.thanksSub}</p>
+        <div className="bp-ordno">{w.s6.order} <b>#{orderId}</b></div>
+        <div className="bp-acts" style={{ maxWidth: 360 }}><button type="button" className="bp-go" onClick={() => { try { window.location.href = asset(pagePath("wizard", t.code)); } catch (e) { onExit && onExit(); } }}>{bp.newOrder}<ArrowRight /></button></div>
+        {!revFlow ? (
+          <div className="bp-done-extra">
+            <OrderForm orderId={orderId} lang={t.code} />
+            <div className="bp-reason" role="group" aria-label={wr.q}>
+              <div className="q">{wr.q} <span>({wr.opt})</span></div>
+              <div className="chips">
+                {Object.keys(wr.o).map((k) => (
+                  <button type="button" key={k} className={reason === k ? "on" : ""} aria-pressed={reason === k}
+                    onClick={() => { setReason(k); if (checkId) submitCheck({ checkId, reason: k }).catch(() => {}); }}>{wr.o[k]}</button>
+                ))}
+              </div>
+              {reason ? <div className="thx">✓ {wr.thx}</div> : null}
+            </div>
+          </div>
+        ) : null}
+      </div>),
+      aside: [expert],
+    };
   }
 
-  const bodies = [StepName, StepSearch, StepConfirm, StepService, service === "reviews" ? StepReviews : StepProtect, StepCheckout, StepDone];
-  const Body = bodies[step];
-  const wideStep = [0, 5].includes(step) && !processing;
+  /* ---- Zusammenbau ---- */
+  const Top = <WizardTop homeHref={asset(localePath(t.code))} label={w.backHome} onExit={onExit} />;
+  let v, prog = null, vkey;
+  if (pressMode) { v = viewPress(); vkey = "press" + pressDone; }
+  else if (!routed) { v = viewRouter(); vkey = "router" + unsureStep; }
+  else {
+    const bodies = [viewName, viewSearch, viewConfirm, viewService, service === "reviews" ? viewReviews : viewProtect, viewCheckout, viewDone];
+    v = bodies[step]();
+    vkey = "s" + step + phase + (processing ? "p" : "") + (step === 4 ? (revShow ? "r" : "l") + pickPhase.charAt(0) : "");
+    const labels = isA ? bp.labelsA : bp.labelsB;
+    const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
+    prog = <BpProgress cur={step} labels={labels} eta={eta} stepOf={bp.stepOf} allDone={step >= 6} />;
+  }
+  const hasBar = !!v.mbar;
 
   return (
-    <div className="wz">
+    <div className={"bp" + (hasBar ? " has-mbar" : "") + (v.tall ? " mbar-tall" : "")} ref={bodyRef}>
       {Top}
-      {reviewMode ? null : <Stepper step={step} onNav={canStepBack ? go : null} labels={service === "reviews" ? t.wizard.steps.map((l, i) => (i === 4 ? pk.stepLbl : l)) : null} />}
-      <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-        <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
-          {Body()}
-        </div>
-      </div>
-      <ActivityToast />
-      {confetti && <Confetti />}
+      {prog}
+      <main className={"bp-main" + (v.cls ? " " + v.cls : "")} key={vkey} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <section>{v.sec}</section>
+        {v.aside ? <aside className={"bp-aside" + (v.asideCls ? " " + v.asideCls : "")}>{v.aside}</aside> : null}
+      </main>
+      {hasBar ? <div className={"bp-mbar" + (v.fade ? " fadebg" : "")}>{v.mbar}</div> : null}
+
       {priceInfo ? (
-        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPriceInfo(false); }}>
-          <div className="sw-sheet" ref={piRef} role="dialog" aria-modal="true" aria-labelledby="pi-sheet-t">
-            <div className="grab" aria-hidden="true" />
-            <button type="button" className="pay-ask-x" onClick={() => setPriceInfo(false)} aria-label="×"><Icon.x size={18} /></button>
-            <h2 id="pi-sheet-t" style={{ marginTop: 6, paddingRight: 40 }}>{pk.infoH}</h2>
-            <ul className="pi-rows">
-              <li><span className="pi-ic g"><Icon.clock size={18} /></span><span>{pk.info1.replace("{base}", money(rl, rq.base))}</span></li>
-              <li><span className="pi-ic t"><Icon.gavel size={18} /></span><span>{pk.info2.replace("{old}", money(rl, rq.oldPrice))}</span></li>
-              <li><span className="pi-ic s"><Icon.zap size={18} /></span><span>{pk.info4.replace("{nt}", money(rl, REVIEW_NOTEXT_PRICE))} <button type="button" className="pi-more" onClick={() => { setPriceInfo(false); setSwInfo(true); }}>{pk.swInfo}</button></span></li>
-              <li><span className="pi-ic o"><Icon.sparkle size={18} /></span><span>{pk.info3}</span></li>
-            </ul>
-            <button type="button" className="sw-ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
+        <BpSheet onClose={() => setPriceInfo(false)} label={pk.infoH} sheetRef={piRef}>
+          <div className="hd"><h3>{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><X /></button></div>
+          <div className="bp-tiers">
+            <div className="bp-tier"><b>{bp.sheet.t1[0]}</b><div className="p">{money(rl, rq.base)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t1[1]}</span><span className="q"><CircleCheck />{bp.sheet.t1[2]}</span></div>
+            <div className="bp-tier"><b>{bp.sheet.t2[0]}</b><div className="p">{money(rl, rq.oldPrice)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t2[1]}</span><span className="q"><CircleCheck />{bp.sheet.t2[2]}</span></div>
+            <div className="bp-tier"><b>{bp.sheet.t3[0]}</b><div className="p">{money(rl, REVIEW_NOTEXT_PRICE)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t3[1]}</span><button type="button" className="q lk" onClick={() => { setPriceInfo(false); setSwInfo(true); }}><Info />{pk.swInfo}</button></div>
           </div>
-        </div>
+          <div className="bp-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
+          <div className="bp-srisk"><ShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>
+          <button type="button" className="ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
+        </BpSheet>
       ) : null}
       {swInfo ? (
-        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setSwInfo(false); }}>
-          <div className="sw-sheet" ref={swRef} role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
-            <div className="grab" aria-hidden="true" />
-            <button type="button" className="pay-ask-x" onClick={() => setSwInfo(false)} aria-label="×"><Icon.x size={18} /></button>
-            <div className="sw-art"><img src="/assets/app/shield.webp" alt="" /></div>
-            <div className="sw-k">{pk.swK}</div>
-            <h2 id="sw-sheet-t">{pk.swH}</h2>
-            <p>{pk.swP1}</p>
-            <p className="strong">{pk.swP2}</p>
-            <ul className="sw-f">
-              <li><Icon.checkCircle size={17} />{pk.swF1}</li>
-              <li><Icon.checkCircle size={17} />{pk.swF2}</li>
-              <li><Icon.checkCircle size={17} />{pk.swF3}</li>
-            </ul>
-            <button type="button" className="sw-ok" onClick={() => setSwInfo(false)}>{pk.swOk}</button>
-          </div>
-        </div>
+        <BpSheet onClose={() => setSwInfo(false)} label={pk.swH} sheetRef={swRef}>
+          <div className="hd"><h3>{pk.swH}</h3><button type="button" className="x" onClick={() => setSwInfo(false)} aria-label="×"><X /></button></div>
+          <p>{pk.swP1}</p>
+          <p className="strong">{pk.swP2}</p>
+          <ul className="bp-swf"><li><CircleCheck />{pk.swF1}</li><li><CircleCheck />{pk.swF2}</li><li><CircleCheck />{pk.swF3}</li></ul>
+          <button type="button" className="ok" onClick={() => setSwInfo(false)}>{pk.swOk}</button>
+        </BpSheet>
       ) : null}
       {payAsk ? (() => {
         const pa = PAY_ASK[t.code] || PAY_ASK.en;
         return (
-          <div className="pay-ask-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPayAsk(false); }}>
-            <div className="pay-ask" role="dialog" aria-modal="true" aria-labelledby="pay-ask-t">
-              <button type="button" className="pay-ask-x" onClick={() => setPayAsk(false)} aria-label="×"><Icon.x size={18} /></button>
-              <span className="pay-ask-tag">{pa.tag}</span>
-              <h2 id="pay-ask-t">{pa.t}</h2>
-              <p>{pa.d}</p>
-              <div className="pay-ask-opts">
-                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("wise")}><span className="pay-ask-logo wise">Wise</span>{pa.wise}<Icon.arrowRight size={17} /></button>
-                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("paypal")}><span className="pay-ask-logo pp">PayPal</span>{pa.pp}<Icon.arrowRight size={17} /></button>
-                <button type="button" className="pay-ask-no" onClick={() => doSubmit("none")}>{pa.no}</button>
-              </div>
-              <div className="pay-ask-after"><Icon.shieldCheck size={16} /> {revFlow ? pa.afterRev : pa.after}</div>
+          <BpSheet onClose={() => setPayAsk(false)} label={pa.t}>
+            <div className="hd"><div><span className="bp-paytag">{pa.tag}</span><h3>{pa.t}</h3></div><button type="button" className="x" onClick={() => setPayAsk(false)} aria-label="×"><X /></button></div>
+            <p>{pa.d}</p>
+            <div className="bp-payopts">
+              <button type="button" className="bp-payopt" onClick={() => doSubmit("wise")}><span className="lg wise">Wise</span>{pa.wise}<ArrowRight /></button>
+              <button type="button" className="bp-payopt" onClick={() => doSubmit("paypal")}><span className="lg pp">PayPal</span>{pa.pp}<ArrowRight /></button>
+              <button type="button" className="bp-payno" onClick={() => doSubmit("none")}>{pa.no}</button>
             </div>
-          </div>
+            <div className="bp-payafter"><ShieldCheck />{revFlow ? pa.afterRev : pa.after}</div>
+          </BpSheet>
         );
       })() : null}
     </div>
