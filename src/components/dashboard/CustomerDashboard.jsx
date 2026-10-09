@@ -347,6 +347,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
   const [pol, setPol] = React.useState(false);
   const [polErr, setPolErr] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
+  const [warn, setWarn] = React.useState(false); // „Später" bei der Zahlungsart → erst Hinweis (wir starten erst danach, null Risiko)
   const adv = React.useRef(0);
   const oid = order && order.id;
   React.useEffect(() => {
@@ -481,6 +482,22 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
         </div>
       </section>
     );
+  } else if (cur.k === "p" && warn) {
+    const prof = order.kind === "profile";
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.wallet} alt="" /></div>
+        <h2>{T("pgLaterH")}</h2>
+        <p>{T(prof ? "pgLaterPprof" : "pgLaterP")}</p>
+        <div className="secure"><ShieldCheck />{T("pgSafe")}</div>
+      </>
+    );
+    foot = (
+      <div className="fl-foot sf-foot">
+        <button className="cta or" disabled={apBusy} onClick={apStart}>{apBusy ? <Loader className="spin" /> : <CreditCard />}{T("pgLaterGo")}</button>
+        <button className="pg-later" disabled={apBusy} onClick={onClose}>{T("pgLaterOk")}</button>
+      </div>
+    );
   } else if (cur.k === "p") {
     const prof = order.kind === "profile";
     body = (
@@ -500,7 +517,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
     foot = (
       <div className="fl-foot sf-foot">
         <div className="sf-row">{back}<button className="cta or" disabled={apBusy} onClick={apStart}>{apBusy ? <Loader className="spin" /> : <CreditCard />}{T("pgAlert")}</button></div>
-        <button className="pg-later" disabled={apBusy} onClick={onClose}>{T("pgLater")}</button>
+        <button className="pg-later" disabled={apBusy} onClick={() => setWarn(true)}>{T("pgLater")}</button>
       </div>
     );
   } else {
@@ -513,10 +530,12 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
     );
     foot = <div className="fl-foot sf-foot"><button className="cta" onClick={onClose}>{T("done")}</button></div>;
   }
+  // Zahlungsart-Schritt: Schließen (X / daneben tippen) zeigt erst den Hinweis, beim zweiten Mal zu.
+  const close = cur.k === "p" && !warn ? () => setWarn(true) : onClose;
   return (
-    <section className="flow sf show" onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
-      <div className="fl-card" key={ix}>
-        <Top phs={phs} fill={fill} onClose={onClose} hide={cur.k === "intro" || cur.k === "done"} />
+    <section className="flow sf show" onClick={(e) => { if (e.target === e.currentTarget && !busy) close(); }}>
+      <div className="fl-card" key={ix + (warn ? "w" : "")}>
+        <Top phs={phs} fill={fill} onClose={close} hide={cur.k === "intro" || cur.k === "done"} />
         <div className="fl-body sf-in">{body}</div>
         {foot}
       </div>
