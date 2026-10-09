@@ -73,9 +73,10 @@ export function revState(o, tasks) {
     return o.pay === "paid";
   };
   const prepaid = (k) => (dec[k] && dec[k].d === "accepted") || pays.some((p) => (p.kind === "software" || p.kind === "deposit") && p.paid && (!(p.keys && p.keys.length) || p.keys.includes(k)));
-  // Wie im Backend (chatPctOf): PayPal/Wise → 10 %, sonst Chat-Rabatt; der höhere von Mengen- und Zusatzrabatt zählt.
-  const extraPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
-  const pct = Math.max(reviewDiscountPct(items.length), extraPct);
+  // Wie im Backend: Mengen- oder Chat-Rabatt (der höhere); PayPal/Wise −10 % kommt ZUSÄTZLICH dazu (payPct).
+  const payPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : 0;
+  const chatPct = payPct ? 0 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
+  const pct = Math.max(reviewDiscountPct(items.length), chatPct);
   const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0 };
   const unpaid = [];
   let started = o.status !== "new";
@@ -97,8 +98,9 @@ export function revState(o, tasks) {
   // Individueller Preis (cp) zählt fest, ohne Rabatt.
   const normal = unpaid.filter((u) => !u.special && !u.cp);
   const sub = normal.reduce((s, u) => s + (u.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE), 0);
-  const unpaidAmt = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special && !u.cp).length * Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100)
+  const unpaidRaw = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special && !u.cp).length * Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100)
     + unpaid.filter((u) => u.cp).reduce((s, u) => s + u.cp, 0);
+  const unpaidAmt = payPct ? Math.round((unpaidRaw * (100 - payPct)) / 100) : unpaidRaw;
   const ats = unpaid.map((u) => u.at).filter(Boolean);
   return {
     // Nenner für „x/y gelöscht": was beim Partner liegt (bzw. abgerechnet wurde) – nicht reviewsAccepted,

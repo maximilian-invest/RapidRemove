@@ -20,7 +20,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
-import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
@@ -512,8 +512,8 @@ app.post("/order", async (req, reply) => {
   const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
   // PayPal/Wise (nur außerhalb DACH): −10 % auf den Bewertungspreis; sonst ggf. Chat-Rabatt. Der höhere von Mengen-/Zahlungs-/Chat-Rabatt zählt.
   const revPayDisc = ["wise", "paypal"].includes(String(b.payPref)) && !["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase());
-  const revChatPct = revPayDisc ? 10 : req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
-  const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct);
+  const revChatPct = revPayDisc ? 0 : req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
+  const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct, revPayDisc ? 10 : 0); // PayPal/Wise −10 % zusätzlich zum Mengenrabatt
   if (isReviews) (b as Record<string, unknown>).amount = revQ.total; // Server-Preis ist maßgeblich (inkl. PayPal/Wise-Rabatt)
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
@@ -791,7 +791,7 @@ app.post("/admin/orders/create", async (req, reply) => {
   if (type === "profile" && !company && !mapsUri) return reply.code(400).send({ ok: false, error: "Profil fehlt" });
   const reason = type === "profile" ? (PROFILE_REASONS[String(b.reason)] || "") : "";
   const cur = eur ? "eur" : "usd";
-  const q = type === "reviews" ? quoteReviews(items, cur, undefined, "full", b.payment === "paypal" ? 10 : 0) : null;
+  const q = type === "reviews" ? quoteReviews(items, cur, undefined, "full", 0, b.payment === "paypal" ? 10 : 0) : null;
   // Profil: individueller Preis möglich (Admin), sonst Preisliste.
   const profAmt = Number(b.amount);
   const amount = q ? q.total : profAmt > 0 && profAmt < 100000 ? Math.round(profAmt * 100) / 100 : (eur ? 450 : 495);
@@ -1550,7 +1550,8 @@ app.post("/admin/reviews-start", async (req, reply) => {
   // Exakte Preise der Bestellung (Alter je Bewertung, Mengenrabatt) — wie Wizard/Rechnung.
   // Mengenrabatt richtet sich nach den ANGENOMMENEN Bewertungen (= items).
   const startChatPct = await chatPctForOrder(b.orderId);
-  const startQuote = quoteReviews(items, currency, undefined, "full", startChatPct);
+  const startPayPct = await payPctForOrder(b.orderId);
+  const startQuote = quoteReviews(items, currency, undefined, "full", startChatPct, startPayPct);
   const per = startQuote.per;
   // Bewertungen ohne Text / Spezial-Software: KEINE Vorauszahlung mehr (10/2026) – Button führt ins Dashboard
   // (Zahlungsart hinterlegen bzw. Software bestätigen), abgebucht wird erst bei erfolgreicher Löschung.
@@ -1559,7 +1560,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   if (startQuote.nNt > 0) prepay = { n: startQuote.nNt, amount: startQuote.ntDepositStr, url: await swDash() };
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
-    const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct);
+    const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct, startPayPct);
     const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // Betrag bei Erfolg
     software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: await swDash(), price: fmtReviewMoney(300, currency), amountNum };
   }
@@ -1733,7 +1734,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const count = removedItems.length;
   // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
   // PayPal/Wise (−10 %) steckt schon im Preis: Auftrag mit Wunsch (chatPctOf) bzw. Versand per PayPal/Wise.
-  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", b.method === "paypal" || b.method === "wise" ? 10 : await chatPctForOrder(b.orderId));
+  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? 10 : await payPctForOrder(b.orderId));
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -1835,7 +1836,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", b.method === "paypal" || b.method === "wise" ? 10 : await chatPctForOrder(b.orderId));
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", b.method === "paypal" || b.method === "wise" ? 0 : await chatPctForOrder(b.orderId), b.method === "paypal" || b.method === "wise" ? 10 : await payPctForOrder(b.orderId));
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
@@ -2289,23 +2290,29 @@ async function chatPctForOrder(orderId: unknown): Promise<number> {
   const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [id]).catch(() => ({ rows: [] as { raw: unknown }[] }));
   return chatPctOf(r.rows[0]?.raw);
 }
+async function payPctForOrder(orderId: unknown): Promise<number> {
+  const id = String(orderId || "");
+  if (!pool || !id) return 0;
+  const r = await pool.query(`SELECT raw FROM orders WHERE id=$1`, [id]).catch(() => ({ rows: [] as { raw?: unknown }[] }));
+  return payPctOf(r.rows[0]?.raw);
+}
 
 /** Einmalig (09.10.2026): Bewertungs-Aufträge mit PayPal/Wise-Wunsch hatten den vollen Preis gespeichert → −10 % nachziehen
  *  (nur nicht stornierte, noch nicht bezahlte Aufträge; Betrag = quoteReviews mit 10 %). */
 async function fixPayPrefAmounts(): Promise<void> {
   if (!pool) return;
-  const done = await pool.query(`SELECT 1 FROM partner_settings WHERE key='fix_paypct_v1'`).catch(() => ({ rowCount: 1 }));
+  const done = await pool.query(`SELECT 1 FROM partner_settings WHERE key='fix_paypct_v2'`).catch(() => ({ rowCount: 1 }));
   if (done.rowCount) return;
   const r = await pool.query(`SELECT id, country, raw FROM orders WHERE service='reviews' AND COALESCE(status,'') <> 'storniert' AND raw->>'payPref' IN ('wise','paypal')`);
   let n = 0;
   for (const o of r.rows as { id: string; country: string | null; raw: Record<string, unknown> }[]) {
     const items = (Array.isArray(o.raw?.reviewItems) ? o.raw.reviewItems : []) as PricedItem[];
     if (!items.length) continue;
-    const total = quoteReviews(items, String(o.country || "").toUpperCase() === "US" ? "usd" : "eur", undefined, "full", 10).total;
+    const total = quoteReviews(items, String(o.country || "").toUpperCase() === "US" ? "usd" : "eur", undefined, "full", 0, 10).total;
     await pool.query(`UPDATE orders SET amount=$2, raw = jsonb_set(raw, '{amount}', to_jsonb($2::numeric)) WHERE id=$1`, [o.id, total]);
     n++;
   }
-  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('fix_paypct_v1', $1) ON CONFLICT (key) DO NOTHING`, [String(n)]);
+  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('fix_paypct_v2', $1) ON CONFLICT (key) DO NOTHING`, [String(n)]);
   app.log.info({ n }, "PayPal/Wise −10 %: Auftragsbeträge nachgezogen");
 }
 

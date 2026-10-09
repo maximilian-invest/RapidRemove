@@ -42,14 +42,19 @@ export const fmtReviewMoney = (v: number, cur: string) => {
  *  Bei Einzelabrechnung pro Bewertung = Anzahl der beauftragten Bewertungen → der
  *  Rabatt wird anteilig auf jede einzeln abgerechnete Bewertung verteilt. */
 /** mode "rest": Abrechnung nach der Löschung → Bewertungen ohne Text sind schon voll bezahlt (0). */
-/** Zusatz-Rabatt eines Auftrags: PayPal/Wise gewählt → 10 %, sonst Chat-Rabatt (Website-Chat, max. 10 %).
- *  Nie zusätzlich zum Mengenrabatt: quoteReviews nimmt den höheren (minPct). */
+/** Chat-Rabatt (Website-Chat, max. 10 %) – gilt NICHT zusätzlich zu PayPal/Wise: dann zählt nur PayPal/Wise (payPctOf).
+ *  Zum Mengenrabatt: der höhere zählt (minPct in quoteReviews). */
 export function chatPctOf(raw: unknown): number {
   const r = (raw || {}) as Record<string, unknown>;
-  if (r.payPref === "wise" || r.payPref === "paypal") return 10;
+  if (r.payPref === "wise" || r.payPref === "paypal") return 0;
   return Math.max(0, Math.min(10, Math.round(Number(r.chatPct) || 0)));
 }
-export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0) {
+/** PayPal/Wise gewählt → −10 % ZUSÄTZLICH zum Mengenrabatt (09.10.2026, mit Maximilian: Rabatte addieren). */
+export function payPctOf(raw: unknown): number {
+  const r = (raw || {}) as Record<string, unknown>;
+  return r.payPref === "wise" || r.payPref === "paypal" ? 10 : 0;
+}
+export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0, payPct = 0) {
   const fmt = (v: number) => fmtReviewMoney(v, cur);
   const n = items.length;
   // Individuelle Preise (cp) zählen fest – ohne Aufschlag/Rabatt; der Rest nach Preisliste.
@@ -71,11 +76,13 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   }
   cpTotal = Math.round(cpTotal * 100) / 100;
   const subtotal = subStd + cpTotal;
-  const total = Math.round((subStd * (100 - pct)) / 100) + cpTotal;
+  const pay = Math.max(0, Math.min(10, payPct || 0)); // PayPal/Wise: auf den Betrag nach Mengen-/Chat-Rabatt
+  const total = pay ? Math.round(((Math.round((subStd * (100 - pct)) / 100) + cpTotal) * (100 - pay)) / 100) : Math.round((subStd * (100 - pct)) / 100) + cpTotal;
   // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
-  const ntDeposit = Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw;
+  const ntDeposit = Math.round(((Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw) * (100 - pay)) / 100);
   const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && (ntUnit || nNtDue) ? fmt(REVIEW_NOTEXT_PRICE) : "", ...[...cpLines.keys()].map(fmt)].filter(Boolean);
   let per = prices.length ? [...new Set(prices)].join(" / ") : fmt(REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;
-  return { n, nOld, nNew, nNt, nCp: fixed.length, cpLines: [...cpLines.entries()].map(([price, k]) => ({ price, n: k })), cpTotal, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: Math.round((subtotal - total) * 100) / 100, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: new Set(prices).size <= 1 && pct === 0 };
+  if (pay) per += ` (−${pay} %)`;
+  return { n, nOld, nNew, nNt, nCp: fixed.length, cpLines: [...cpLines.entries()].map(([price, k]) => ({ price, n: k })), cpTotal, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: Math.round((subtotal - total) * 100) / 100, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: new Set(prices).size <= 1 && pct === 0 && !pay, payPct: pay };
 }

@@ -17,7 +17,7 @@ import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
-import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf } from "./reviewsPricing";
+import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -430,8 +430,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const rem = new Set(removed.map(keyOf));
   const cur = o.country === "US" ? "usd" : "eur";
   const chatPct = chatPctOf(raw);
+  const payPct = payPctOf(raw); // PayPal/Wise −10 % zusätzlich
   const pct = Math.max(reviewDiscountPct(items.length), chatPct); // Mengen- oder Chat-Rabatt (der höhere)
-  const disc = (v: number) => Math.round((v * (100 - pct)) / 100);
+  const disc = (v: number) => Math.round((Math.round((v * (100 - pct)) / 100) * (100 - payPct)) / 100);
   // Software vorab bezahlt (Zustimmung OHNE def = nach Zahlung). Zustimmung mit def (hinterlegte Zahlungsart) = gestartet, aber erst bei Erfolg fällig.
   const swPaidFor = (k: string) => (decisions[k]?.d === "accepted" && !decisions[k]?.def) || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
   // Spezialverfahren wird voll im Voraus bezahlt (Software-Zahlung oder Vorauszahlung „ohne Text" aus der Startbestätigung).
@@ -488,7 +489,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
   const unpaidN = unpaid.filter((v) => !v.special);
-  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old, cp: v.cp })), cur, items.length, "rest", chatPct).total : 0)
+  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old, cp: v.cp })), cur, items.length, "rest", chatPct, payPct).total : 0)
     + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
@@ -888,7 +889,7 @@ export async function partnerStatusChanged(
     if (it && !it.nt && !it.sw && !cpOf(it as { cp?: unknown })) {
       const all: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
       const pct = Math.max(reviewDiscountPct(all.length), chatPctOf(raw));
-      const quoted = Math.round(((it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE) * (100 - pct)) / 100);
+      const quoted = Math.round((Math.round(((it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE) * (100 - pct)) / 100) * (100 - payPctOf(raw))) / 100);
       await setOrderRawField(orderId, "reviewItems", all.map((x) => (keyOf(x) === itemKey ? { ...x, cp: quoted } : x)));
       await insertEvent({ orderId, type: "note", title: `Software-Löschung zum bestellten Preis (${quoted})`, detail: "Bewertung war nicht als Software-Fall bestellt → Festpreis laut Bestellung bleibt", auto: true }).catch(() => {});
     }

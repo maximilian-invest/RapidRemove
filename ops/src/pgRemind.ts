@@ -17,7 +17,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, setOrderRawField, updateOrderStatus } from "./db";
 import { partnerOrderStatus } from "./partner";
 import { declineSoftwareKeys } from "./customers";
-import { quoteReviews, chatPctOf } from "./reviewsPricing";
+import { quoteReviews, chatPctOf, payPctOf } from "./reviewsPricing";
 import { sendMail } from "./mailer";
 import { loadCustomerOrders, dashLink } from "./customers";
 import { hasSavedMethod } from "./autopay";
@@ -117,7 +117,7 @@ async function cancelWaiting(w: Waiting): Promise<void> {
       const keyOf = (it: { url?: string; name?: string; text?: string }) => it.url || `${it.name || ""}|${it.text || ""}`;
       const keep = items.filter((it) => !a.gateKeys.includes(keyOf(it)));
       await setOrderRawField(a.orderId, "reviewItems", keep).catch(() => false);
-      const total = quoteReviews(keep as never[], String(r?.rows[0]?.country || "") === "US" ? "usd" : "eur", undefined, "full", chatPctOf(raw)).total;
+      const total = quoteReviews(keep as never[], String(r?.rows[0]?.country || "") === "US" ? "usd" : "eur", undefined, "full", chatPctOf(raw), payPctOf(raw)).total;
       await pool.query(`UPDATE orders SET reviews=$2, amount=$3 WHERE id=$1`, [a.orderId, keep.length, total]).catch(() => {});
       if ((raw.payGate as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "payGate", { status: "expired", at: new Date().toISOString() }).catch(() => false);
       if ((raw.reasons as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "reasons", { status: "expired", at: new Date().toISOString() }).catch(() => false);
