@@ -36,7 +36,7 @@ Alle Preise sind Endpreise (inkl. allfälliger USt, siehe AGB 6.1). EUR für DE/
 - **PayPal oder Wise:** −10 % auf alle Leistungen, auch Einzelbewertungen (spart Gebühren). **Nur außerhalb von DACH** (nicht für Unternehmen aus DE, AT, CH) – DACH-Kunden wird das nie angeboten. Kunde sagt im Chat Bescheid, das Team schickt den PayPal-Link bzw. die Wise-Daten.
 - **Mehrere Profile:** Mengenrabatt ab 2 Profilen. Richtwert aus den Chats: bei 4 Profilen ca. −20 %. ⚠️ Staffel bitte bestätigen.
 - **Agenturen/Reseller:** bis 5 Profile/Monat Normalpreis, ab 5 −10 %, ab 10 −15 % pro Profil.
-- **Einzelbewertungen, Mengenrabatt:** ab 3 Bewertungen −10 %, ab 5 −15 %, ab 10 −30 %.
+- **Einzelbewertungen, Mengenrabatt:** ab 3 Bewertungen −10 %, ab 5 −15 %, ab 10 −30 %. PayPal/Wise (−10 %) kommt **zusätzlich** dazu (z. B. 3 Bewertungen: −10 % Menge, dann nochmal −10 %).
 - Darüber hinaus verhandelt der Bot nicht. Individuelle Rabatte gibt nur das Team.
 
 ### Mehrwertsteuer
