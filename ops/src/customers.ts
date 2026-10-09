@@ -502,6 +502,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     // Gründe je Bewertung: Bewertungen (keys), für die der Kunde im Dashboard noch den Richtlinien-Verstoß angeben muss.
     reasons: !cancelled && (raw.reasons as { status?: string } | undefined)?.status === "pending" ? { keys: (() => { const g = raw.reasons as { keys?: string[] }; const all = items.map((it) => keyOf(it)); return Array.isArray(g.keys) ? g.keys.filter((k) => all.includes(k)) : all; })() } : null,
     placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
+    place: placeOf(raw, o.company || o.profile || "", o.country), // „Neuer Auftrag": eigene Profile zur Auswahl
     // keys = nur diese Bewertungen (4–5 ★) warten auf den Nachweis; ohne keys (ältere Aufträge) wartet der ganze Auftrag.
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc, keys: Array.isArray((raw.verify as Record<string, unknown>).keys) ? ((raw.verify as Record<string, unknown>).keys as string[]) : null } : null,
     pct, swPrice: swUnit, swDeposit: swUnit, toPay, // swDeposit = Vorauszahlung = voller Preis
@@ -522,6 +523,14 @@ type ProfileInfo = {
   amount: number; protAmount: number; protection: string | null; express: boolean; doneAt: string | null; addr: string | null;
 };
 type ProfileRow = OrderRow & { service: string | null; amount: number | string | null; prot_amount: number | string | null; protection: string | null; done_at: string | null };
+/** Google-Profil eines Auftrags (für „Neuer Auftrag" im Dashboard): placeId, Name, Adresse, Land, Maps-Link. */
+function placeOf(raw: Record<string, unknown>, fallbackName: string, country: string | null) {
+  const placeId = String(raw.placeId || "");
+  const name = String(raw.placeName || fallbackName || "");
+  if (!placeId && !name) return null;
+  const cc = String(raw.profileCountry || "").toUpperCase();
+  return { placeId, name, addr: String(raw.placeAddr || raw.addr || ""), cc: /^[A-Z]{2}$/.test(cc) ? cc : "", mapsUri: String(raw.mapsUri || ""), country: country || "" };
+}
 function profileView(o: ProfileRow): OrderView {
   const raw = (o.raw || {}) as Record<string, unknown>;
   const cur = o.country === "US" ? "usd" : "eur";
@@ -540,7 +549,7 @@ function profileView(o: ProfileRow): OrderView {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.profile || o.company || "", cancelled: st === "cancelled",
     pct: 0, swPrice: 0, swDeposit: 0, toPay: 0, items: [],
     history: paid && oneTime ? [{ id: "p-" + o.id, kind: "profile" as never, amount: oneTime, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
-    deposits: [], kind: "profile", profileOrder: info,
+    deposits: [], kind: "profile", profileOrder: info, place: placeOf(raw, o.profile || o.company || "", o.country),
     payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
   } as unknown as OrderView;
 }
