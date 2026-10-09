@@ -6,7 +6,7 @@ const article = {
     title: "Eliminare una recensione Trustpilot: guida completa e aspetti legali 2026",
     h1: "Eliminare una recensione Trustpilot: la guida completa (2026)",
     description:
-      "Come eliminare una recensione Trustpilot: quali recensioni sono rimovibili, la procedura di segnalazione e il ricorso legale passo per passo, tempistiche, costi – e cosa funziona davvero.",
+      "Come eliminare una recensione Trustpilot: quali recensioni si possono rimuovere, segnalazione e vie legali passo per passo, tempi e costi.",
     keywords: [],
     author: "Maximilian Hölzl",
     authorRole: "Esperto Google e reputazione online",

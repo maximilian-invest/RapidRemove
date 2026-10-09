@@ -5,7 +5,7 @@ const article = {
     title: "Google-Maps-Eintrag löschen: eigene, fremde & dauerhaft",
     h1: "Google Maps Eintrag löschen: Eigene, fremde, falsche & doppelte Einträge entfernen",
     description:
-      "Google-Maps-Eintrag löschen – eigene, fremde, falsche oder doppelte Einträge entfernen. Anleitung, warum „geschlossen“ nicht reicht und wie die Löschung wirklich gelingt.",
+      "Google-Maps-Eintrag löschen: eigene, fremde oder doppelte Einträge entfernen – warum „geschlossen“ nicht reicht und wie die Löschung wirklich klappt.",
     keywords: ["google maps eintrag löschen", "google maps eintrag löschen lassen", "google maps fremden eintrag löschen", "google maps falschen eintrag löschen", "unternehmen aus google maps entfernen", "doppelter google eintrag löschen"],
     author: "Maximilian Hölzl",
     authorRole: "Google-Experte & Gründer",

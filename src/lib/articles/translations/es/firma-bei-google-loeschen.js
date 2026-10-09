@@ -5,7 +5,7 @@ const article = {
     slug: "eliminar-empresa-de-google",
     title: "Eliminar empresa de Google: cómo borrar el perfil definitivamente",
     h1: "Eliminar empresa de Google: cómo borrar el perfil definitivamente",
-    description: "Eliminar empresa de Google no es tan sencillo como parece: marcar el negocio como «cerrado» no borra el perfil ni las reseñas. Descubra cómo eliminar el perfil de empresa de Google de forma completa y definitiva, incluyendo todas las reseñas.",
+    description: "Marcar la empresa como «cerrada» no la borra: la ficha y todas las reseñas siguen en Google. Así se elimina el perfil de empresa de forma definitiva.",
     keywords: ["eliminar empresa de google", "borrar empresa de google", "eliminar negocio de google", "quitar empresa de google maps"],
     author: "Maximilian Hölzl",
     authorRole: "Experto en Google",

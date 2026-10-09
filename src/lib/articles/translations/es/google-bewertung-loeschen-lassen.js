@@ -3,9 +3,9 @@ const article = {
   category: "Reputación",
   meta: {
     slug: "eliminar-resenas-de-google",
-    title: "Eliminar reseñas de Google: costes, métodos y qué funciona de verdad en 2026",
+    title: "Eliminar reseñas de Google: métodos, costes y qué funciona",
     h1: "Eliminar reseñas de Google: costes, métodos y qué funciona de verdad en 2026",
-    description: "Eliminar reseñas de Google de forma seria, rápida y garantizada. Comparamos todos los métodos, costes y probabilidades de éxito, y mostramos cómo desaparecen realmente las reseñas negativas.",
+    description: "Cómo eliminar reseñas negativas de Google: denuncia, abogado o servicio. Costes reales, plazos y probabilidades de éxito, comparados con honestidad.",
     keywords: ["eliminar reseñas de google", "eliminar reseña negativa google", "borrar reseña de google", "quitar reseña de google", "eliminar reseñas google coste", "borrar reseñas de google"],
     author: "Matthias Lang",
     authorRole: "Experto en Google",

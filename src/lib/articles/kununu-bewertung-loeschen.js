@@ -4,10 +4,10 @@
 const article = {
   meta: {
     slug: "kununu-bewertung-loeschen",
-    title: "Kununu-Bewertung löschen lassen: Anleitung & Recht 2026",
+    title: "Kununu-Bewertung löschen lassen: rechtswidrige entfernen",
     h1: "Kununu-Bewertung löschen lassen: Der vollständige Leitfaden für Arbeitgeber (2026)",
     description:
-      "Kununu-Bewertung löschen lassen: welche Arbeitgeber-Bewertungen entfernbar sind, das Prüf-, Abmahn- und Auskunftsverfahren Schritt für Schritt, Dauer, Kosten – und was wirklich wirkt.",
+      "Rechtswidrige oder ungerechtfertigte Kununu-Bewertung entfernen lassen: welche löschbar sind, das Prüfverfahren Schritt für Schritt, Dauer und Kosten.",
     author: "Maximilian Hölzl",
     authorRole: "Google-Experte",
     date: "2026-07-14",

@@ -3,9 +3,9 @@ const article = {
   category: "Rykte",
   meta: {
     slug: "dalig-google-recension-vad-gora",
-    title: "Dålig Google-recension – vad göra? Svara, anmäla, ta bort (2026)",
+    title: "Dålig Google-recension? Får man ta bort den – och hur",
     h1: "Dålig Google-recension – vad göra? Svara, anmäla, ta bort",
-    description: "Fått en dålig Google-recension? Så svarar du rätt, så mycket omsättning kostar negativa recensioner verkligen, och så får du orättvisa recensioner anmälda eller borttagna.",
+    description: "Får man radera dåliga recensioner? Nej – men Google tar bort de som bryter mot reglerna. Så svarar du rätt och får orättvisa recensioner borttagna.",
     keywords: ["dålig google recension", "dålig google recension vad göra", "ta bort dåliga google recensioner", "svara på dålig google recension", "anmäla dålig google recension", "negativ recension vad göra"],
     author: "Matthias Lang",
     authorRole: "Google-expert",

@@ -6,7 +6,7 @@ const article = {
     title: "Eliminar reseña de Trustpilot: guía completa y marco legal 2026",
     h1: "Eliminar una reseña de Trustpilot: la guía completa (2026)",
     description:
-      "Cómo eliminar una reseña de Trustpilot: qué reseñas son eliminables, el proceso de denuncia y la vía judicial paso a paso, plazos, costes y qué hacer cuando no es posible borrarla.",
+      "Cómo eliminar una reseña de Trustpilot: qué reseñas se pueden borrar, denuncia y vía judicial paso a paso, plazos, costes y alternativas.",
     keywords: [],
     author: "Maximilian Hölzl",
     authorRole: "Experto en Google y reputación online",

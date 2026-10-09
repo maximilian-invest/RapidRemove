@@ -3,9 +3,9 @@ const article = {
   category: "Guide",
   meta: {
     slug: "ta-bort-google-recension-guide",
-    title: "Ta bort en Google-recension: formulär, kostnad och guide (2026)",
+    title: "Ta bort Google-recension: formulär, kostnad & guide 2026",
     h1: "Ta bort en Google-recension: formulär, kostnad och guide",
-    description: "Ta bort en Google-recension – med eller utan formulär, gratis eller via en byrå? Så tar du bort egna och andras recensioner, och så ser du vilken recension som tagits bort.",
+    description: "Så tar du bort en Google-recension – via formulär, gratis eller med hjälp. Vad som går att ta bort, vad det kostar och hur du ser att den är borta.",
     keywords: ["ta bort google recension", "ta bort google recension formulär", "ta bort google recension kostnad", "ta bort egen google recension", "ta bort google recension gratis", "radera en google recension"],
     author: "Matthias Lang",
     authorRole: "Google-expert",

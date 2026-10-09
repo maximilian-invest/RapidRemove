@@ -26,7 +26,7 @@ export const rootMetadata = {
   metadataBase: new URL("https://www.rapid-remove.com"),
   title: "RapidRemove — Google-Unternehmensprofil löschen lassen",
   description:
-    "Google lässt Sie Ihr Profil nicht selbst löschen. Wir schon — dauerhaft, legal, in 24 Stunden. Inklusive aller Bewertungen. Bezahlung erst nach erfolgreicher Löschung.",
+    "Google lässt Sie Ihr Profil nicht selbst löschen – wir schon: dauerhaft, inkl. aller Bewertungen, meist in 24 h. Bezahlung erst nach der Löschung.",
   applicationName: "RapidRemove",
   verification: { google: "jDn8mNDtMGNL9qXRdvYXZJE_6Ar7c2Q-Fp-D4B5aSFM" },
   icons: { icon: `${BASE}/assets/rapidremove-icon.png`, apple: `${BASE}/assets/rapidremove-icon.png` },

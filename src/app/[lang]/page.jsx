@@ -16,7 +16,7 @@ export function generateStaticParams() {
 export function generateMetadata({ params }) {
   const { lang } = params;
   const t = I18N[lang] || I18N.en;
-  const title = `${(t.hero.h1a + " " + t.hero.h1b).replace(/–/g, "").replace(/\s+/g, " ").trim()} — RapidRemove`;
+  const title = t.seoHomeTitle || `${(t.hero.h1a + " " + t.hero.h1b).replace(/–/g, "").replace(/\s+/g, " ").trim()} — RapidRemove`;
   const desc = t.seoHomeDesc || t.hero.lead;
   return {
     title,

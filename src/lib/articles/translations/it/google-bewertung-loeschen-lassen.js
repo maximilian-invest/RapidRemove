@@ -3,9 +3,9 @@ const article = {
   category: "Reputazione",
   meta: {
     slug: "eliminare-recensioni-google",
-    title: "Eliminare recensioni Google: costi, metodi e cosa funziona davvero nel 2026",
+    title: "Cancellare recensioni Google: metodi, costi e cosa funziona",
     h1: "Eliminare recensioni Google: costi, metodi e cosa funziona davvero nel 2026",
-    description: "Far eliminare recensioni Google in modo serio, rapido e garantito. Confrontiamo tutti i metodi, i costi e le probabilità di successo e mostriamo come spariscono davvero le recensioni negative.",
+    description: "Come far eliminare recensioni negative da Google: segnalazione, avvocato o servizio. Costi reali, tempi e probabilità di successo a confronto.",
     keywords: ["eliminare recensioni google", "eliminare recensione negativa google", "rimuovere recensione google", "cancellare recensione google", "eliminare recensioni google costo", "rimuovere recensioni google"],
     author: "Matthias Lang",
     authorRole: "Esperto Google",

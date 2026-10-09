@@ -6,7 +6,7 @@ const article = {
     title: "Trustpilot-review laten verwijderen: handleiding & recht 2026",
     h1: "Trustpilot-review laten verwijderen: de complete gids (2026)",
     description:
-      "Trustpilot-review laten verwijderen: welke reviews verwijderbaar zijn, de meld- en gerechtelijke procedure stap voor stap, termijnen, kosten – en wat echt werkt.",
+      "Trustpilot-review laten verwijderen: welke reviews verwijderbaar zijn, de meld- en gerechtelijke procedure stap voor stap, termijnen en kosten.",
     keywords: [],
     author: "Maximilian Hölzl",
     authorRole: "Google- & reputatie-expert",

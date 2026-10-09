@@ -10,10 +10,10 @@
 const article = {
   meta: {
     slug: "delete-google-business-profile",
-    title: "How to Delete a Google Business Profile Permanently (2026)",
+    title: "How to Delete a Google Business Profile: 4 Options (2026)",
     h1: "How to Delete a Google Business Profile (Permanently)",
     description:
-      "How to delete a Google Business Profile (formerly Google My Business): Google's official steps, why they leave the listing and all reviews online – and how to remove it for good.",
+      "Google's steps only remove your access – the listing and all reviews stay on Maps. What each of the 4 options really does, and how to remove it for good.",
     author: "Maximilian Hölzl",
     authorRole: "Founder & reputation expert, RapidRemove",
     date: "2026-06-04",

@@ -3,10 +3,10 @@ const article = {
   category: "Droit",
   meta: {
     slug: "supprimer-avis-trustpilot",
-    title: "Supprimer un avis Trustpilot : guide complet & droits 2026",
+    title: "Avis négatif Trustpilot : le faire supprimer (guide 2026)",
     h1: "Faire supprimer un avis Trustpilot : le guide complet (2026)",
     description:
-      "Comment faire supprimer un avis Trustpilot : quels avis sont retirables, la procédure de signalement et le recours judiciaire étape par étape, délais, coûts — et ce qui fonctionne vraiment.",
+      "Un avis négatif sur Trustpilot ? Quels avis peuvent être supprimés, comment les signaler, délais, coûts et recours juridiques, étape par étape.",
     keywords: [],
     author: "Maximilian Hölzl",
     authorRole: "Expert Google & réputation en ligne",

@@ -5,7 +5,7 @@ const article = {
     slug: "bedrijf-uit-google-verwijderen",
     title: "Bedrijf uit Google verwijderen: zo verwijdert u het profiel",
     h1: "Bedrijf uit Google verwijderen – de vermelding definitief laten verdwijnen",
-    description: "Bedrijf uit Google verwijderen: waarom „als gesloten markeren” uw vermelding niet verwijdert – en hoe u uw Google-bedrijfsprofiel inclusief alle reviews definitief laat verdwijnen.",
+    description: "Bedrijf uit Google verwijderen: waarom „als gesloten markeren” niets verwijdert – en hoe uw bedrijfsprofiel met alle reviews definitief verdwijnt.",
     keywords: ["bedrijf uit google verwijderen", "google-bedrijfsprofiel verwijderen", "bedrijf van google verwijderen", "bedrijf uit google maps verwijderen"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert",
