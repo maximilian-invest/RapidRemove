@@ -168,7 +168,7 @@ export default function PartnerBoard() {
       return [];
     }
     flush(); // commit whatever was still waiting
-    if (status === "removed") { setPick({ ids }); return ids; } // erst Meldegrund wählen, dann Lenas Prüfung (Kunde wird belastet)
+    if (status === "removed") { verifyRemoved(ids); return ids; } // „Removed" nur nach Lenas Prüfung (Kunde wird belastet); Meldegrund wird nicht abgefragt (Know-how des Partners)
     const prev = ids.map((id) => { const t = ts.find((x) => x.id === id); return [id, { status: t.status, touched: t.touched, workingSince: t.workingSince }]; });
     const now = Date.now();
     patch(ids, (t) => ({ status, touched: true, workingSince: status === "working" && t.status !== "working" ? now : t.workingSince }));

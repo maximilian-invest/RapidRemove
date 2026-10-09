@@ -645,9 +645,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
     const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, partner_id, report_reason FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows
       .filter((x) => !!x.test === preview && (preview || !vcx.pid || !x.partner_id || Number(x.partner_id) === vcx.pid));
-    // Pflicht: mit welchem Grund wurde gemeldet? (Kundengrund ist im Partner-Board vorausgewählt)
-    const noReason = await saveReportReasons(rows.filter((x) => x.status === "working"), b.reasons);
-    if (noReason.length) return reply.code(400).send({ ok: false, error: "reason", ids: noReason });
+    // Meldegrund optional (Partner gibt sein Vorgehen nicht preis) – nur speichern, falls mitgeschickt.
+    if (b.reasons) await saveReportReasons(rows.filter((x) => x.status === "working"), b.reasons);
     const out: { id: number; code: string; result: string; reason: string; checkId?: number; task?: ReturnType<typeof partnerView>; error?: string }[] = [];
     const queue = [...rows];
     const worker = async () => {
