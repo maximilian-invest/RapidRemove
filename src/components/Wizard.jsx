@@ -17,6 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1711,6 +1712,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const wm = WZ_MISC[t.code] || WZ_MISC.en;
   const wr = WZ_REASON[t.code] || WZ_REASON.en;
   const [reason, setReason] = React.useState("");
+  // Geist (neues Design: Übersicht + Fortschrittsbalken) einmalig nachladen.
+  React.useEffect(() => {
+    if (!document.querySelector(`link[href="${BP_FONT}"]`)) {
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = BP_FONT; document.head.appendChild(l);
+    }
+  }, []);
   const nil = NOT_IN_LIST[t.code] || NOT_IN_LIST.en;
   const conv = convFor(t.code);
   const p = profileFor(lang);
@@ -3196,6 +3203,60 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }
 
   if (!routed && !pressMode && !reviewMode) {
+    // Übersicht „Worum geht es?" im neuen Design (Redesign 10/2026). Die Fragen hinter
+    // „Nicht sicher?" (unsureStep > 0) laufen vorerst weiter über RouterScreen().
+    if (unsureStep === 0) {
+      const bp = bpCopy(t.code);
+      const q0 = conv.quotes[0];
+      const pick = (id) => {
+        if (id === "delete") setRouted(true);
+        else if (id === "press") setPressMode(true);
+        else if (id === "reviews") startReviewsFlow();
+        else setUnsureStep(1);
+      };
+      // Bewertungs-Kachel nur außerhalb DACH (wie bisher).
+      const tiles = [
+        { id: "delete", img: "/assets/bestell/profil.webp", hl: true, badge: bp.badgeTop },
+        ...(reviewsBlocked(t.code) ? [] : [{ id: "reviews", img: "/assets/bestell/bewertungen.webp" }]),
+        { id: "press", img: "/assets/bestell/presse.webp" },
+        { id: "unsure", img: "/assets/bestell/unsicher.webp", quiet: true },
+      ];
+      return (
+        <div className="wz">
+          {Top}
+          <div className="bpr" ref={bodyRef}>
+            <main className="bpr-main">
+              <section>
+                <h1 className="bpr-h1 bpr-fade">{rc.routerH}</h1>
+                <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.sub0}</p>
+                <div className="bpr-opts">
+                  {tiles.map((tl, i) => (
+                    <button type="button" key={tl.id} className={"bpr-op bpr-fade" + (tl.hl ? " hl" : "") + (tl.quiet ? " quiet" : "")} style={{ animationDelay: (0.08 + i * 0.04) + "s" }} onClick={() => pick(tl.id)}>
+                      {tl.badge ? <span className="bpr-bdg">{tl.badge}</span> : null}
+                      <span className="ic"><img src={asset(tl.img)} alt="" width={64} height={64} /></span>
+                      <span className="tx"><b>{bp.tiles[tl.id][0]}</b><span>{bp.tiles[tl.id][1]}</span></span>
+                      <LArrowRight className="ar" />
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <aside className="bpr-aside">
+                <button type="button" className="bpr-expert" onClick={openTidioChat}>
+                  <span className="avs"><img src={asset("/assets/bestell/expert-matthias.png")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/expert-max.png")} alt="" width={40} height={40} /></span>
+                  <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+                  <LArrowUpRight className="ar" />
+                </button>
+                <div className="bpr-quote">
+                  <span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span>
+                  <p>„{q0.q}"</p>
+                  <div className="who"><span className="m">{q0.a.charAt(0)}</span><span><b>{q0.a}</b><small>{q0.r}</small></span></div>
+                </div>
+              </aside>
+            </main>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="wz">
         {Top}
