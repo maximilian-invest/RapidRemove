@@ -130,7 +130,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   // Pending = wartet auf den Kunden (Zahlungsart nicht hinterlegt oder Inhaber-Nachweis nicht hochgeladen/abgelehnt).
   // Ganzer Auftrag blockiert → nur „Pending"; nur Nachbestellung blockiert → zusätzlich zu den übrigen Kacheln.
   if (pendingWhole(o)) return ["nopm"];
-  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
+  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];
