@@ -2,12 +2,12 @@
 /* Admin · Konto → Partner → Auszahlungen: automatische Partner-Auszahlung (Payoneer) + Gutschriften.
    Ablauf: Partner „Removed" → Lena prüft → nach der Haltefrist nochmal geprüft → Payoneer → Gutschrift-PDF an den Partner. */
 import React from "react";
-import { ArrowLeft, Loader, Zap, ShieldCheck, Clock, DollarSign, FileText, Send, AlertTriangle, CheckCircle2, Link as LinkIcon, User, RefreshCw } from "lucide-react";
+import { ArrowLeft, Loader, Zap, ShieldCheck, Clock, DollarSign, FileText, Send, AlertTriangle, CheckCircle2, Link as LinkIcon, User, RefreshCw, Landmark } from "lucide-react";
 import { payoutsInfo, payoutsSettings, payoutsRun, payoutsRemail, payoutPdfOpen } from "@/lib/admin-api";
 
 const usd = (n) => "$" + Number(n || 0).toLocaleString("de-AT", { maximumFractionDigits: 2 });
 const dt = (d) => (d ? new Date(d).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
-const ST = { sent: ["Payoneer · gesendet", "var(--success)"], manual: ["Manuell", "var(--g3)"], pending: ["Läuft …", "#b26b00"], failed: ["Fehlgeschlagen", "var(--danger)"] };
+const ST = { sent: ["Gesendet", "var(--success)"], manual: ["Manuell", "var(--g3)"], pending: ["Läuft …", "#b26b00"], failed: ["Fehlgeschlagen", "var(--danger)"] };
 
 export default function PayoutsScreen({ ctx }) {
   const { setMoreSub, toast } = ctx;
@@ -30,11 +30,17 @@ export default function PayoutsScreen({ ctx }) {
     setBusy(false);
   };
   const s = d && d.settings, p = d && d.partner, b = (d && d.balance) || {};
+  const bankM = p && p.method === "bank";
   const steps = d ? [
-    [d.payoneer.configured, "Payoneer-Zugang", d.payoneer.configured ? (d.payoneer.sandbox ? "Sandbox (Test)" : "Live") : "Fehlt – PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET, PAYONEER_PROGRAM_ID in Railway setzen (kommt von Payoneer nach der Freischaltung)"],
-    [!!(p && p.complete), "Auszahlungsdaten des Partners", p && p.complete ? `${p.legalName} · ${p.city}, ${p.country}${p.taxId ? " · " + p.taxId : ""}` : "Partner trägt sie in der Partner-App unter Earnings ein"],
-    [!!(p && p.sb), "Gutschrift-Vereinbarung", p && p.sb ? `angenommen ${dt(p.sb.at)} · Version ${p.sb.v}${p.sbIp ? " · IP " + p.sbIp : ""}` : "Partner stimmt beim Eintragen der Daten zu"],
-    [!!(p && p.ready), "Payoneer-Konto des Partners", p && p.payee ? `${p.payee.id} · ${p.payee.status}` : "Partner tippt in der App auf „Connect Payoneer“"],
+    [d.payoneer.configured, "Payoneer-Zugang", d.payoneer.configured ? (d.payoneer.sandbox ? "Sandbox (Test)" : "Live") : "Fehlt – PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET, PAYONEER_PROGRAM_ID in Railway (kommt von Payoneer nach der Freischaltung)"],
+    [d.stripe.configured, "Stripe Connect (Bankkonto EU/UK/CH/USA/CA)", d.stripe.configured ? `${d.stripe.test ? "Testmodus" : "Live"} · im Stripe-Dashboard muss „Connect“ aktiviert sein · ~2 €/Monat je ausgezahltem Partner + 0,25 % je Auszahlung` : "STRIPE_SECRET_KEY fehlt"],
+    ...(d.airwallex.configured ? [[true, "Airwallex (Bankkonto Indien/Pakistan)", d.airwallex.sandbox ? "Sandbox (Test)" : "Live"]] : []),
+    [!!(p && p.setupDone), "Partner: Auszahlungsweg + Daten", p && p.complete ? `${p.method === "bank" ? "Bankkonto Airwallex " + ((p.bank && (p.bank.ibanMasked || p.bank.accountMasked)) || "") + " (" + ((p.bank && p.bank.currency) || "") + ")" : p.method === "stripe" ? "Bankkonto über Stripe" : p.method === "payoneer" ? "Payoneer · " + p.payoutEmail : "kein Weg gewählt"} · ${p.legalName} · ${p.city}, ${p.country}${p.vatId ? " · UID " + p.vatId : ""}${p.country === "AT" ? (p.smallBiz ? " · Kleinunternehmer" : " · 20 % USt") : ""}` : "Partner wählt beim nächsten Login (Pflicht, bevor er Aufträge sieht)"],
+    [!!(p && p.sb), "Gutschrift-Vereinbarung", p && p.sb ? `angenommen ${dt(p.sb.at)} · Version ${p.sb.v}${p.sbIp ? " · IP " + p.sbIp : ""}` : "Partner stimmt bei der Einrichtung zu"],
+    [!!(p && p.ready), bankM ? "Bankkonto bei Airwallex" : p && p.method === "stripe" ? "Stripe-Konto des Partners" : "Payoneer-Konto des Partners",
+      bankM ? (p.bankError ? "Abgelehnt: " + p.bankError : p.ready ? "angelegt" : "wird angelegt, sobald der Airwallex-Zugang da ist")
+        : p && p.method === "stripe" ? (p.stripe ? ({ active: "freigeschaltet", review: "Stripe prüft die Angaben", pending: "Partner hat das Stripe-Formular noch nicht abgeschlossen" }[p.stripe.status] || p.stripe.status) : "wird angelegt")
+        : p && p.payee ? `${p.payee.id} · ${p.payee.status}` : "Partner verbindet Payoneer in der App"],
   ] : [];
   return (
     <>
@@ -44,7 +50,7 @@ export default function PayoutsScreen({ ctx }) {
       {!d && !err ? <div className="aempty"><b>Lädt …</b></div> : null}
       {d ? (
         <>
-          <p className="sh">Gelöscht → von Lena geprüft → nach {s.holdDays} Tag{s.holdDays === 1 ? "" : "en"} nochmal geprüft → automatisch per Payoneer ausgezahlt → Gutschrift (PDF) an den Partner.</p>
+          <p className="sh">Gelöscht → von Lena geprüft → nach {s.holdDays} Tag{s.holdDays === 1 ? "" : "en"} nochmal geprüft → automatisch ausgezahlt (Payoneer oder Bankkonto über Stripe – der Partner wählt) → Gutschrift (PDF) an den Partner.</p>
           <div className="pst3 po-k">
             <div><b>{usd(b.owedUsd)}</b><span>Offen · {b.owedCount}</span></div>
             <div><b>{usd(b.dueUsd)}</b><span>Fällig im nächsten Lauf</span></div>
@@ -55,7 +61,7 @@ export default function PayoutsScreen({ ctx }) {
           <div className="info">
             {steps.map(([ok, l, sub], i) => (
               <div key={l} className="ir">
-                <span className="ico" style={ok ? { background: "var(--success)", color: "#fff" } : null}>{ok ? <CheckCircle2 /> : [<ShieldCheck key="0" />, <User key="1" />, <FileText key="2" />, <LinkIcon key="3" />][i]}</span>
+                <span className="ico" style={ok ? { background: "var(--success)", color: "#fff" } : null}>{ok ? <CheckCircle2 /> : ([<ShieldCheck key="0" />, <Landmark key="1" />, <User key="2" />, <FileText key="3" />, <LinkIcon key="4" />][i] || <FileText />)}</span>
                 <span className="t"><b>{l}</b><span style={{ whiteSpace: "normal" }}>{sub}</span></span>
               </div>
             ))}
@@ -76,8 +82,8 @@ export default function PayoutsScreen({ ctx }) {
             <Num icon={Clock} label="Uhrzeit (Wien)" unit="Uhr" v={s.hour} min={0} max={23} onSave={(v) => save({ hour: v })} />
           </div>
           {d.last ? <p className="sh">Letzter Lauf {dt(d.last.at)}: {d.last.payoutId ? `${usd(d.last.amount)} an ${d.last.tasks} Löschungen ausgezahlt${d.last.gs ? " · " + d.last.gs : ""}` : d.last.error ? "Fehler – " + d.last.error : d.last.skipped || "–"}{d.last.held && d.last.held.length ? ` · angehalten (wieder sichtbar): ${d.last.held.join(", ")}` : ""}</p> : null}
-          <button type="button" className="cta or" disabled={busy || !d.payoneer.configured} onClick={run} style={{ marginBottom: 6 }}>{busy ? <Loader className="spin" /> : <Send />}{busy ? "Prüft und zahlt aus …" : "Jetzt auszahlen"}</button>
-          <p className="sh">Zahlt alle fälligen Löschungen sofort (Haltefrist, Prüfung und Mindestbetrag gelten). Ohne Payoneer-Zugang: wie bisher manuell als bezahlt markieren – die Gutschrift entsteht trotzdem automatisch.</p>
+          <button type="button" className="cta or" disabled={busy || !(d.payoneer.configured || d.airwallex.configured || d.stripe.configured)} onClick={run} style={{ marginBottom: 6 }}>{busy ? <Loader className="spin" /> : <Send />}{busy ? "Prüft und zahlt aus …" : "Jetzt auszahlen"}</button>
+          <p className="sh">Zahlt alle fälligen Löschungen sofort (Haltefrist, Prüfung und Mindestbetrag gelten). Ohne Zugang beim gewählten Anbieter: wie bisher manuell als bezahlt markieren – die Gutschrift entsteht trotzdem automatisch.</p>
 
           <div className="sec3" style={{ marginTop: 18 }}><h2>Verlauf</h2><button type="button" className="lk" onClick={load}><RefreshCw />Aktualisieren</button></div>
           <div className="info">
@@ -87,7 +93,7 @@ export default function PayoutsScreen({ ctx }) {
                 <div key={x.id} className="ir po-row">
                   <span className="ico" style={{ color: st[1] }}>{x.status === "failed" ? <AlertTriangle /> : x.status === "sent" ? <Send /> : <FileText />}</span>
                   <span className="t"><b>{usd(x.amount)} · {x.tasks} Löschungen{x.gs ? " · " + x.gs : ""}</b>
-                    <span style={{ whiteSpace: "normal" }}><em style={{ color: st[1], fontStyle: "normal" }}>{st[0]}</em> · {dt(x.sent || x.created)}{x.ref ? " · " + x.ref : ""}{x.providerStatus && x.status === "sent" ? " · " + x.providerStatus : ""}{x.error ? " · " + x.error : ""}{!x.gs && x.status !== "failed" ? " · keine Gutschrift (vor der Vereinbarung)" : ""}</span></span>
+                    <span style={{ whiteSpace: "normal" }}><em style={{ color: st[1], fontStyle: "normal" }}>{st[0]}{x.method === "payoneer" ? " · Payoneer" : x.method === "airwallex" ? " · Bank (Airwallex)" : x.method === "stripe" ? " · Bank (Stripe)" : ""}</em> · {dt(x.sent || x.created)}{x.ref ? " · " + x.ref : ""}{x.providerStatus && x.status === "sent" ? " · " + x.providerStatus : ""}{x.error ? " · " + x.error : ""}{!x.gs && x.status !== "failed" ? " · keine Gutschrift (vor der Vereinbarung)" : ""}</span></span>
                   {x.gs ? <span className="po-acts">
                     <button type="button" className="achip" onClick={() => payoutPdfOpen(x.id).catch((e) => toast("Fehler: " + e.message))}>PDF</button>
                     <button type="button" className="achip" onClick={() => payoutsRemail(x.id).then(() => toast("Gutschrift erneut gesendet")).catch((e) => toast("Fehler: " + e.message))}>Mail</button>

@@ -12,6 +12,7 @@ import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared"
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
+import { usePayouts, PayoutSetup } from "./PartnerPayouts";
 import RemovalCheck from "./RemovalCheck";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -312,6 +313,9 @@ export default function PartnerBoard() {
     return () => { off = true; };
   }, [token, setup, offerPk, preview, tasks === null]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Pflicht beim ersten Login: Auszahlungsweg wählen (Payoneer / Bankkonto) + Daten + Gutschrift-Vereinbarung.
+  const [pay, reloadPay] = usePayouts(token && !setup ? token : null);
+
   if (!OPS) return <div className="prt"><div className="pmsg">Not configured.</div></div>;
   if (token === null || isMobile === null) return <div className="prt" />;
   const onLogin = (t, viaPasskey) => {
@@ -326,6 +330,14 @@ export default function PartnerBoard() {
   if (!token) return <PartnerLogin mode="login" onToken={onLogin} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
+  if (pay && pay.ok && !pay.preview && pay.profile && !pay.profile.setupDone) {
+    return (
+      <div className="pra"><main className="screen" style={{ bottom: 0 }}>
+        <PayoutSetup gate d={pay} token={token} showToast={showToast} onDone={() => { reloadPay(); load(true); }} />
+      </main>
+      <div className={"toast" + (toast ? " show" : "")}><span>{toast ? toast.msg : ""}</span></div></div>
+    );
+  }
   const api = {
     tasks, all, cancelled, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,

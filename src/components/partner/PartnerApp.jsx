@@ -10,7 +10,7 @@ import {
 import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
 import PartnerPush from "./PartnerPush";
 import ReviewShot from "./ReviewShot";
-import PartnerPayouts, { usePayouts } from "./PartnerPayouts";
+import PartnerPayouts, { usePayouts, PayoutSetup } from "./PartnerPayouts";
 
 const IMG = { wallet: `${BASE}/assets/partner/wallet.webp`, rocket: `${BASE}/assets/partner/rocket.webp` };
 const isTodo = (t) => t.status === "new" || t.status === "working";
@@ -379,7 +379,7 @@ export default function PartnerApp({ api }) {
   }
 
   function EarnV() {
-    if (poEdit) return <PartnerPayouts d={pd} reload={reloadPd} token={api.token} showToast={api.showToast} editing setEditing={setPoEdit} />;
+    if (poEdit && pd && pd.ok !== false) return <PayoutSetup d={pd} token={api.token} showToast={api.showToast} onBack={() => setPoEdit(false)} onDone={() => { setPoEdit(false); reloadPd(); }} />;
     const row = (t) => (
       <div key={t.id} className="er">
         <span className="ico">{t.paid ? <Banknote /> : <Wallet />}</span>
@@ -392,7 +392,7 @@ export default function PartnerApp({ api }) {
       <>
         <div className="ttl">Earnings</div>
         {hero()}
-        <PartnerPayouts d={pd} reload={reloadPd} token={api.token} showToast={api.showToast} editing={false} setEditing={setPoEdit} />
+        <PartnerPayouts d={pd} token={api.token} showToast={api.showToast} setEditing={setPoEdit} />
         <div className="sec"><h2>To be paid</h2><span>{due.length}</span></div>
         {due.length ? due.map(row) : <div className="ps">Nothing open – all paid.</div>}
         <div className="sec"><h2>Paid out</h2><span>{paidL.length}</span></div>
