@@ -268,7 +268,7 @@ export function OrderDetail({ ctx, id }) {
 
 /** Gründe je Bewertung (Dashboard): Kunde muss je Bewertung den Richtlinien-Verstoß angeben + bestätigen → erst dann Start.
  *  Admin kann überspringen (Gründe liegen schon vor, z. B. per Mail). */
-export const REASON_L = { fake: "Kein echter Kunde / Fake", conflict: "Mitbewerber / (Ex-)Mitarbeiter", false: "Falsche Behauptungen", insult: "Beleidigung / Belästigung", offtopic: "Themenfremd", hate: "Hassrede / Diskriminierung", personal: "Persönliche Daten", offensive: "Anstößig / illegal", impersonation: "Identitätsbetrug", other: "Anderer Grund" };
+export const REASON_L = { fake: "Kein echter Kunde / Fake", conflict: "Mitbewerber / (Ex-)Mitarbeiter", false: "Falsche Behauptungen", insult: "Beleidigung / Belästigung", offtopic: "Themenfremd", hate: "Hassrede / Diskriminierung", personal: "Persönliche Daten", offensive: "Anstößig / illegal", impersonation: "Identitätsbetrug", legal: "Rechtliche Meldung", other: "Anderer Grund" };
 function ReasonsBox({ o, ctx }) {
   const g = o.reasons || {};
   const [busy, setBusy] = React.useState(false);
@@ -478,7 +478,7 @@ export function ReviewsScreen({ ctx, id }) {
           return (
             <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>
-              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span>{r.it.reason ? <span style={{ color: "var(--g3)", fontSize: 12 }}>Grund: {REASON_L[r.it.reason] || r.it.reason}{r.it.reasonNote ? ` – „${r.it.reasonNote}“` : ""}</span> : null}</span>
+              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span>{r.it.reason ? <span style={{ color: "var(--g3)", fontSize: 12 }}>Grund: {REASON_L[r.it.reason] || r.it.reason}{r.it.reasonNote ? ` – „${r.it.reasonNote}“` : ""}</span> : null}{r.t && r.t.reportReason ? <span style={{ color: r.it.reason && r.t.reportReason !== r.it.reason ? "var(--orange-800)" : "var(--g3)", fontSize: 12 }}>Gemeldet: {REASON_L[r.t.reportReason] || r.t.reportReason}{r.t.reportNote ? ` – „${r.t.reportNote}“` : ""}{r.it.reason && r.t.reportReason !== r.it.reason ? " (anders als Kunde)" : ""}</span> : null}</span>
               {r.dec ? <span className="ac" style={{ color: r.dec === "ok" ? "var(--success)" : r.dec === "old" ? "var(--orange-800)" : "var(--g3)" }}>{r.dec === "ok" ? "Angenommen" : r.dec === "old" ? "Älter 4 Wo." : "Abgelehnt"}</span> : null}
               <ChevronRight />
             </button>

@@ -16,6 +16,7 @@ import { Loader } from "lucide-react";
 import { usePayouts, PayoutSetup } from "./PartnerPayouts";
 import { PartnerJoin, PartnerPending, PartnerTerms } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
+import ReasonPick from "./ReasonPick";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
 import { passkeySupported, passkeyOnDevice, passkeyDismissed } from "@/lib/passkey";
@@ -42,6 +43,8 @@ export default function PartnerBoard() {
   const tableView = isMobile === false && typeof window !== "undefined" && /[?&]view=table\b/.test(window.location.search);
   const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
+  const [reasonList, setReasonList] = React.useState(null); // Meldegründe (Server) – Partner wählt beim „Removed"
+  const [pick, setPick] = React.useState(null); // { ids } → Meldegrund wählen, dann Prüfung
   const [join, setJoin] = React.useState(null); // { invite } → Registrierung als neuer Partner
   const [termsView, setTermsView] = React.useState(false); // /partner?terms → Partner-Vereinbarung lesen
   const [acct, setAcct] = React.useState(null); // „pending" | „rejected" → Bewerbung (noch) nicht freigegeben
@@ -100,6 +103,7 @@ export default function PartnerBoard() {
     try {
       const j = await call("tasks", { t: token });
       setAcct(j.gate || null);
+      if (j.reasons) setReasonList(j.reasons);
       const ts = (j.tasks || []).map(norm);
       setTasks(ts.filter((t) => t.status !== "cancelled")); setCancelled(ts.filter((t) => t.status === "cancelled")); setErr("");
       if (j.preview) setPreview(true); // Test-Login / Test-Board: nur Testaufträge
@@ -164,7 +168,7 @@ export default function PartnerBoard() {
       return [];
     }
     flush(); // commit whatever was still waiting
-    if (status === "removed") { verifyRemoved(ids); return ids; } // „Removed" nur nach Lenas Prüfung (Kunde wird belastet)
+    if (status === "removed") { setPick({ ids }); return ids; } // erst Meldegrund wählen, dann Lenas Prüfung (Kunde wird belastet)
     const prev = ids.map((id) => { const t = ts.find((x) => x.id === id); return [id, { status: t.status, touched: t.touched, workingSince: t.workingSince }]; });
     const now = Date.now();
     patch(ids, (t) => ({ status, touched: true, workingSince: status === "working" && t.status !== "working" ? now : t.workingSince }));
@@ -190,12 +194,13 @@ export default function PartnerBoard() {
     const done = new Map(results.filter((r) => r.task).map((r) => [r.id, norm(r.task)]));
     if (done.size) setTasks((xs) => (xs || []).map((t) => (done.has(t.id) ? { ...t, ...done.get(t.id) } : t)));
   }, []);
-  const verifyRemoved = React.useCallback(async (ids) => {
+  const verifyRemoved = React.useCallback(async (ids, reasons) => {
     const ts = tasksRef.current || [];
     const codes = ids.map((id) => (ts.find((x) => x.id === id) || {}).code || "#" + id);
     setVer({ ids, codes, phase: "checking", results: [], run: Date.now() });
     try {
-      const j = await call("verify-removed", { t: token, ids });
+      const j = await call("verify-removed", { t: token, ids, ...(reasons ? { reasons } : {}) });
+      if (reasons) { const m = reasons; setTasks((xs) => (xs || []).map((t) => (m[t.id] ? { ...t, reportReason: m[t.id].r, reportNote: m[t.id].note || "" } : t))); }
       applyResults(j.results || []);
       setVer((v) => ({ ...(v || { ids, codes }), phase: "done", results: j.results || [] }));
     } catch (e) {
@@ -355,7 +360,7 @@ export default function PartnerBoard() {
   }
   const api = {
     tasks, all, cancelled, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
-    toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token,
+    toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token, reasonList,
   };
   const waitPop = nag && waiting.length ? (
     <div className="pwait-bg" onClick={() => setNag(false)}>
@@ -371,6 +376,7 @@ export default function PartnerBoard() {
   ) : null;
   // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
   const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}
+    <ReasonPick state={pick} tasks={tasks} list={reasonList} onCancel={() => setPick(null)} onGo={(ids, reasons) => { setPick(null); verifyRemoved(ids, reasons); }} />
     <RemovalCheck state={ver} token={token} onClose={() => { setVer(null); load(false); }} onAgain={(ids) => verifyRemoved(ids)} onConfirm={confirmRemoved} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} /></>;
   if (!preview) return app;
   return (

@@ -21,6 +21,7 @@ import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
 import { partnerNewOrder, notifyPartner } from "./partnerNotify";
+import { REPORT_REASONS, REPORT_IDS, reportDe } from "./reportReasons";
 import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
 import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, type ServiceId } from "./partnerRegistry";
 
@@ -94,6 +95,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
+  // Meldegrund des Partners beim „Removed" (reportReasons.ts).
+  for (const c of ["report_reason text", "report_note text", "report_at timestamptz"]) await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS ${c}`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS partner_payouts (
@@ -170,6 +173,7 @@ type Row = {
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
   touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
+  report_reason?: string | null; report_note?: string | null; report_at?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -181,11 +185,45 @@ function partnerView(r: Row) {
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, processing: !!r.payout_id && !r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
+    reportReason: r.report_reason || null, reportNote: r.report_note || "", // womit der Partner gemeldet hat (beim „Removed")
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && ((r.admin_note || "").includes(SW_NOTE_PAID) || (r.admin_note || "").includes(SW_NOTE_APPROVED)) ? "paid" : null),
   };
 }
 function adminView(r: Row) {
   return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test, partnerId: r.partner_id ? Number(r.partner_id) : null };
+}
+
+/** Grund des Kunden je Bewertung (orders.raw.reviewItems[].reason) → Map „orderId|itemKey" → { custReason, custNote }. */
+export async function customerReasons(orderIds: string[]): Promise<Map<string, { custReason: string; custNote: string }>> {
+  const m = new Map<string, { custReason: string; custNote: string }>();
+  if (!pool || !orderIds.length) return m;
+  const r = await pool.query(`SELECT id, raw->'reviewItems' AS items FROM orders WHERE id = ANY($1::text[])`, [orderIds]).catch(() => ({ rows: [] as { id: string; items: unknown }[] }));
+  for (const o of r.rows as { id: string; items: unknown }[]) {
+    for (const it of (Array.isArray(o.items) ? o.items : []) as Record<string, unknown>[]) {
+      if (!it.reason) continue;
+      const url = httpUrl(it.url), name = clip(it.name, 120), text = clip(it.text, 600) || (!url && !name ? clip(it.url, 600) : "");
+      const v = { custReason: String(it.reason), custNote: clip(it.reasonNote, 300) };
+      m.set(`${o.id}|${url || `${name}|${text}`}`, v);
+      if (it.url) m.set(`${o.id}|${String(it.url)}`, v);
+    }
+  }
+  return m;
+}
+
+/** Meldegründe des Partners speichern ({ [taskId]: { r, note } }). Gibt die IDs zurück, denen danach noch ein Grund fehlt. */
+async function saveReportReasons(rows: { id: string | number; report_reason?: string | null }[], given: unknown): Promise<number[]> {
+  const g = (given && typeof given === "object" ? given : {}) as Record<string, { r?: unknown; note?: unknown }>;
+  const missing: number[] = [];
+  for (const x of rows) {
+    const v = g[String(x.id)];
+    const rr = v && REPORT_IDS.includes(String(v.r)) ? String(v.r) : null;
+    const note = v ? clip(v.note, 300) : "";
+    if (rr && (rr !== "other" || note.length >= 3)) {
+      if (pool) await pool.query(`UPDATE partner_tasks SET report_reason=$2, report_note=$3, report_at=now() WHERE id=$1`, [x.id, rr, note || null]);
+      x.report_reason = rr;
+    } else if (!x.report_reason) missing.push(Number(x.id));
+  }
+  return missing;
 }
 
 async function listTasks(where = "", args: unknown[] = []): Promise<Row[]> {
@@ -473,7 +511,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const hr = await pool.query(`SELECT id FROM orders WHERE id = ANY($1::text[]) AND jsonb_typeof(raw->'payHold')='object'`, [oids]).catch(() => ({ rows: [] as { id: string }[] }));
       for (const x of hr.rows as { id: string }[]) held.add(x.id);
     }
-    return { ok: true, preview, paused: pst === "paused", tasks: rows.map((r) => ({ ...partnerView(r), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    // Grund des Kunden je Bewertung (Richtlinien-Verstoß, im Dashboard angegeben) → Partner meldet damit.
+    const custR = await customerReasons(oids as string[]);
+    return { ok: true, preview, paused: pst === "paused", reasons: REPORT_REASONS.map((x) => ({ id: x.id, label: x.en })), tasks: rows.map((r) => ({ ...partnerView(r), ...(custR.get(`${r.order_id}|${r.item_key}`) || {}), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
   // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
@@ -548,7 +588,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }
     if (changed && row.order_id) {
-      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? " (von Lena geprüft)" : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
+      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? " (von Lena geprüft)" : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
       if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(row.order_id)}`, { kind: "partner" });
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
@@ -586,6 +626,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (status && !PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
     const cx = await ctxOf(b.t);
     if (cx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
+    if (status === "removed" && b.reasons && pool) await saveReportReasons((await pool.query(`SELECT id, report_reason FROM partner_tasks WHERE id=$1 AND ($2::bigint IS NULL OR partner_id IS NULL OR partner_id=$2)`, [id, cx.pid || null])).rows, b.reasons);
     const r = await partnerApply(id, status, b.note, { preview: cx.preview, pid: cx.pid, confirmed: b.confirm === true });
     if (r.error) return reply.code(r.code || 400).send({ ok: false, error: r.error });
     return { ok: true, task: partnerView(r.row as Row) };
@@ -602,8 +643,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const preview = vcx.preview;
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
-    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, partner_id FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows
+    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, partner_id, report_reason FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows
       .filter((x) => !!x.test === preview && (preview || !vcx.pid || !x.partner_id || Number(x.partner_id) === vcx.pid));
+    // Pflicht: mit welchem Grund wurde gemeldet? (Kundengrund ist im Partner-Board vorausgewählt)
+    const noReason = await saveReportReasons(rows.filter((x) => x.status === "working"), b.reasons);
+    if (noReason.length) return reply.code(400).send({ ok: false, error: "reason", ids: noReason });
     const out: { id: number; code: string; result: string; reason: string; checkId?: number; task?: ReturnType<typeof partnerView>; error?: string }[] = [];
     const queue = [...rows];
     const worker = async () => {

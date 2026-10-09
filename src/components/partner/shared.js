@@ -65,6 +65,8 @@ export function norm(t) {
     sw: t.sw || null, // 'pending' = waiting for the customer · 'paid' = customer prepaid, start now
     hold: !!t.hold, // Auftrag pausiert: Kunde muss erst eine Zwischenzahlung leisten
     method: t.method || null, // 'sw' = Software-Fall (erst bestätigen, Kunde zahlt vorab) · 'legal' = erst rechtliche Meldung
+    custReason: t.custReason || null, custNote: t.custNote || "", // Grund des Kunden (Google-Richtlinie)
+    reportReason: t.reportReason || null, reportNote: t.reportNote || "", // womit der Partner gemeldet hat
   };
 }
 

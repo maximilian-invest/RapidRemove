@@ -10,6 +10,7 @@ import {
 import { BASE, STATUS, MARKS, canRemove, usd, since, call } from "./shared";
 import PartnerPush from "./PartnerPush";
 import ReviewShot from "./ReviewShot";
+import { CustReason } from "./ReasonPick";
 import PartnerPayouts, { usePayouts, PayoutSetup } from "./PartnerPayouts";
 
 const IMG = { wallet: `${BASE}/assets/partner/wallet.webp`, rocket: `${BASE}/assets/partner/rocket.webp` };
@@ -326,6 +327,7 @@ export default function PartnerApp({ api }) {
         ) : (t.status === "new" || t.status === "working") && t.method === "legal" ? (
           <div className="swb"><Info /><span><b>Legal notice first</b>Old review outside the USA – use legal reporting first (90 %+ success). If it stays online and software works, mark “Software” – it starts right away, no customer approval needed.</span></div>
         ) : null}
+        <CustReason t={t} list={api.reasonList} />
         {t.shot ? <ReviewShot id={t.shot} token={api.token} url={t.url} /> : null}
         {t.text || !t.shot ? <div className="quote"><b>{t.who}</b>{t.text ? `“${t.text}”` : t.url ? <span style={{ display: "block", fontSize: 14, color: "var(--g3)", fontWeight: 500 }}>Tap “Open review” to see it on Google</span> : null}</div> : null}
         {t.note ? <div className="noteb"><StickyNote />{t.note}</div> : null}

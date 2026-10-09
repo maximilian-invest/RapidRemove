@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { BASE, STATUS, MARKS, TABS, canRemove, usd, ago, pillLabel } from "./shared";
 import ReviewShot from "./ReviewShot";
+import { CustReason } from "./ReasonPick";
 
 const AUTO_KEY = "rr_partner_autonext";
 const SHORTCUTS = "↑↓ move · X select · Shift+click range · 1–4 mark · O open · C copy · / search · Esc clear";
@@ -283,6 +284,7 @@ export default function PartnerDesktop({ api }) {
                   </div>
                 </div>
                 <div className="dbody">
+                  <CustReason t={curT} list={api.reasonList} />
                   {curT.shot ? <ReviewShot id={curT.shot} token={api.token} url={curT.url} /> : null}
                   {curT.text || !curT.shot ? <div className="card quote"><b>{curT.who}</b>{curT.text ? `“${curT.text}”` : null}</div> : null}
                   <div className="openrow">
