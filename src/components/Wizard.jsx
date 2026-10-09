@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1094,6 +1094,33 @@ function BpSearchAnim({ title, sub, steps }) {
         {steps.map((t, i) => <div key={i} className={"bpr-st" + (i < k ? " done" : i === k ? " act" : "")}><span className="ic"><LCheck /></span>{t}</div>)}
       </div>
       <div className="bpr-skel"><i className="a" /><div className="l"><i style={{ width: "62%", height: 16 }} /><i style={{ width: "38%", height: 12 }} /><i style={{ width: "50%", height: 12 }} /></div></div>
+    </div>
+  );
+}
+
+/* „So kann Ihr Profil zurückkommen": 3 Stationen, die nacheinander aufleuchten (Schutz-Schritt, ohne Schutz). */
+function BprReturnFlow({ title, nodes }) {
+  const [s, setS] = React.useState(0);
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const iv = setInterval(() => setS((x) => (x + 1) % 3), 1800);
+    return () => clearInterval(iv);
+  }, []);
+  const I = [LPhone, LDb, LMapPin];
+  return (
+    <div className="bpr-ex">
+      <div className="eh"><span><LRotate />{title}</span><div className="bpr-dots">{[0, 1, 2].map((i) => <i key={i} className={i === s ? "on" : ""} />)}</div></div>
+      <div className="bpr-flow">
+        {nodes.map((n, i) => {
+          const Ic = I[i];
+          return (
+            <React.Fragment key={i}>
+              <div className={"bpr-nd" + (i === 2 ? " last" : "") + (i === s ? " on" : "")}><div className="c"><Ic /></div><span>{n}</span></div>
+              {i < 2 ? <div className={"bpr-ln" + (i < s ? " on" : "")}><i /></div> : null}
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -3292,7 +3319,73 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
   // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
   const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
-  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA; // neues Design (Schritt 1, 2, 4)
+  const protNew = step === 4 && service !== "reviews" && !processing; // Schutz im neuen Design
+  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA || protNew; // neues Design (Schritt 1, 2, 4, 5)
+  /* Schritt 5 · Schutz im neuen Design: 3 Schutz-Optionen + „Ohne Schutz" (Warnung + Rückkehr-Animation), rechts Ihre Auswahl. */
+  function StepProtectNew() {
+    const bp = bpCopy(t.code);
+    const opts = [
+      ["monthly", conv.protMonthlyName, bp.protD.monthly, bp.cancel, bp.badgeTop],
+      ["monitor", conv.protMonitorName, bp.protD.monitor, bp.cancel],
+      ["lifetime", conv.protLifetimeName, bp.protD.lifetime, bp.once],
+    ];
+    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
+    const protName = protection ? (opts.find((o) => o[0] === protection) || [])[1] : bp.protNone;
+    const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
+    const back = () => go(3);
+    const goCo = () => go(5);
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="prot">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{bp.protH}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.protSub}</p>
+            <div className="bpr-ropts">
+              {opts.map(([k, nm, d, sm, badge], i) => (
+                <button type="button" key={k} className={"bpr-rop bpr-fade" + (protection === k ? " sel" : "")} style={{ animationDelay: (0.1 + i * 0.03) + "s" }} onClick={() => setProtection(k)} aria-pressed={protection === k}>
+                  {badge ? <span className="bpr-bdg">{badge}</span> : null}
+                  <span className="rd" />
+                  <span className="tx"><b>{nm}</b><span>{d}</span></span>
+                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{sm}</small></span>
+                </button>
+              ))}
+              <button type="button" className={"bpr-rop none bpr-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".19s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>
+                <span className="rd" /><span className="tx"><b>{bp.protNone}</b><span>{bp.protNoneD}</span></span>
+              </button>
+            </div>
+            {protection === null ? (<React.Fragment>
+              <div className="bpr-warn"><LAlert /><span><b>{bp.warnB}</b>{bp.warnR}</span></div>
+              <BprReturnFlow title={bp.exT} nodes={bp.exN} />
+            </React.Fragment>) : null}
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
+              <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>
+              <button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button>
+            </div>
+          </section>
+          <aside className="bpr-aside bpr-sticky">
+            <div className="bpr-sum">
+              <div className="lb">{bp.yourSel}</div>
+              <div className="rows">
+                <div><span>{svcLabel}<small>{wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+                <div><span>{protName}<small>{bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
+              </div>
+              <div className="now"><span>{bp.today}</span><b>{money(lang, w.s5.dueNow)}</b></div>
+              <div className="note">{bp.billNote}</div>
+            </div>
+            <button type="button" className="bpr-expert" onClick={openTidioChat}>
+              <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+              <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+              <LArrowUpRight className="ar" />
+            </button>
+          </aside>
+        </main>
+        <div className="bpr-mbar bpr-mbar2">
+          <div className="ln2"><span>{svcLabel}{protection ? " + " + protName : ""}</span><b>{bp.todayShort(money(lang, w.s5.dueNow))}</b></div>
+          <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" onClick={goCo}>{bp.toCo}<LArrowRight /></button></div>
+        </div>
+      </div>
+    );
+  }
   /* Schritt 4 · Leistung im neuen Design: Profil löschen / Neustart (+ Einzelbewertungen außerhalb DACH). */
   function StepServiceNew() {
     const bp = bpCopy(t.code);
@@ -3531,7 +3624,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : StepServiceNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? StepProtectNew() : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
