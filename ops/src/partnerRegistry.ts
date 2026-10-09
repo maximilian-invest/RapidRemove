@@ -43,6 +43,13 @@ export function serviceOf(x: { kind?: unknown; method?: unknown; nt?: unknown; s
   return "std";
 }
 
+/** Registrierung: der Partner wählt nur grob (Bewertungen / Profile) – die Feinaufteilung macht der Admin bei der Freigabe. */
+const JOIN_SERVICES = [
+  { id: "reviews", label: "Remove Google reviews", expands: ["std", "old", "sw"] },
+  { id: "profile", label: "Remove whole Google Business Profiles", expands: ["profile"] },
+] as const;
+const joinIdsOf = (fine: string[]) => JOIN_SERVICES.filter((j) => j.expands.some((x) => fine.includes(x))).map((j) => j.id);
+
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const norm = (e: unknown) => String(e || "").trim().toLowerCase().slice(0, 200);
 const sha = (s: string) => crypto.createHash("sha256").update(s).digest("hex");
@@ -197,7 +204,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
   app.post("/partner/join-info", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
     const inv = await inviteRow(b.invite);
-    return { ok: true, services: SERVICES.map((s) => ({ id: s.id, label: s.en })), termsVersion: TERMS_VERSION, invite: inv ? { name: inv.name || "", email: inv.email || "", services: inv.services || [] } : null };
+    return { ok: true, services: JOIN_SERVICES.map((s) => ({ id: s.id, label: s.label })), termsVersion: TERMS_VERSION, invite: inv ? { name: inv.name || "", email: inv.email || "", services: joinIdsOf(inv.services || []) } : null };
   });
 
   // Öffentlich: Registrierung → Status „pending" + Login (Sitzung) → Partner sieht „Application under review".
@@ -214,8 +221,14 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     if (!v.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email) || !/^[A-Z]{2}$/.test(v.country)) return reply.code(400).send({ ok: false, error: "Please fill in your name, email and country." });
     if (v.pw.length < 8) return reply.code(400).send({ ok: false, error: "Password: at least 8 characters." });
     if (!/^\+?[\d\s()-]{7,}$/.test(v.whatsapp)) return reply.code(400).send({ ok: false, error: "Please enter your WhatsApp number with country code." });
-    const svc = (Array.isArray(b.services) ? b.services : []).map((x) => x as Record<string, unknown>).filter((x) => isService(x.id))
-      .map((x) => ({ id: String(x.id), price: Number.isFinite(Number(x.price)) && Number(x.price) > 0 ? Math.round(Number(x.price) * 100) / 100 : null, note: clip(x.note, 200) }));
+    // „reviews" → alle Bewertungs-Leistungen (Preisvorstellung gilt für normale Bewertungen); „profile" → Profile.
+    const svc: { id: string; price: number | null; note: string }[] = [];
+    for (const x of (Array.isArray(b.services) ? b.services : []) as Record<string, unknown>[]) {
+      const price = Number.isFinite(Number(x.price)) && Number(x.price) > 0 ? Math.round(Number(x.price) * 100) / 100 : null;
+      const j = JOIN_SERVICES.find((s) => s.id === x.id);
+      const ids: string[] = j ? [...j.expands] : isService(x.id) ? [String(x.id)] : [];
+      ids.forEach((id, i) => { if (!svc.some((y) => y.id === id)) svc.push({ id, price: i === 0 ? price : null, note: clip(x.note, 200) }); });
+    }
     if (!svc.length) return reply.code(400).send({ ok: false, error: "Please choose at least one service you offer." });
     if (b.terms !== true) return reply.code(400).send({ ok: false, error: "Please accept the partner terms." });
     const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [v.email]);

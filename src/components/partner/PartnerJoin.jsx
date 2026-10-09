@@ -73,7 +73,7 @@ export function PartnerJoin({ invite = "", onToken, onLogin }) {
                   <span className="rd" style={{ marginTop: 0 }}>{v.on ? <Check /> : null}</span>
                 </div>
                 {v.on ? (
-                  <label className="po-f" style={{ marginBottom: 0, width: "100%" }}><span>Your price per removal (USD, optional)</span>
+                  <label className="po-f" style={{ marginBottom: 0, width: "100%" }}><span>{s.id === "reviews" ? "Your price per removed review (USD, optional)" : "Your price per removed profile (USD, optional)"}</span>
                     <input type="number" min="1" step="1" inputMode="decimal" value={v.price} onChange={(e) => setSvc((m) => ({ ...m, [s.id]: { ...v, price: e.target.value } }))} /></label>
                 ) : null}
               </div>
@@ -118,7 +118,7 @@ export function PartnerPending({ token, status, onLogout }) {
       {me && me.applied && me.applied.length && !rejected ? (
         <>
           <div className="sec"><h2>Your services</h2></div>
-          {me.applied.map((s) => <div key={s.id} className="er"><span className="ico"><Check /></span><span className="t"><b>{({ std: "Google reviews (up to 4 weeks old)", old: "Google reviews (older than 4 weeks)", sw: "Rating-only / special cases (software)", profile: "Remove whole Google Business Profiles" })[s.id] || s.id}</b><span>{s.price ? `Your price: ${s.price} USD` : "Price to be confirmed"}</span></span></div>)}
+          {me.applied.filter((s) => s.id === "std" || s.id === "profile" || (s.id !== "old" && s.id !== "sw")).map((s) => <div key={s.id} className="er"><span className="ico"><Check /></span><span className="t"><b>{s.id === "profile" ? "Remove whole Google Business Profiles" : "Remove Google reviews"}</b><span>{s.price ? `Your price: ${s.price} USD` : "Price to be confirmed"}</span></span></div>)}
         </>
       ) : null}
       <div style={{ marginTop: 22 }}><button type="button" className="cta gh" onClick={onLogout}><LogOut />Log out</button></div>
