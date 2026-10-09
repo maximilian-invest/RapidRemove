@@ -2318,7 +2318,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
       if (r && r.autologin) { try { window.location.href = "/my-reviews#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       // Bestehendes Konto (Einzelbewertungen): auch ins Dashboard – eingeloggt sofort, sonst Login mit Hinweis auf den Mail-Link.
-      if (r && r.ok && revFlow && !r.duplicate) { try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
+      if (r && r.ok && revFlow && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
       setStep(6);
     }, 2400);
   };

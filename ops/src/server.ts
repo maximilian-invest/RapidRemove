@@ -524,7 +524,8 @@ app.post("/order", async (req, reply) => {
       if (acc) dash = acc.created ? { url: durl, email: email.trim().toLowerCase(), password: acc.password } : { url: durl, existing: true };
       // Direkt ins Dashboard (nur NEUES Konto): einmaliger Code, 15 Min., Sitzung nur 24 Std. – wer eine fremde E-Mail angibt,
       // kommt so höchstens in ein Konto mit seiner eigenen Bestellung und verliert den Zugang nach 24 Std. Bestehende Konten → Login/Mail-Link.
-      if (acc?.created) autologin = await createAutologin(email).catch(() => null);
+      // Test-Adressen (Inhaber, +test): immer direkt ins Dashboard – auch wenn das Konto schon besteht.
+      if (acc?.created || isTestEmail(email)) autologin = await createAutologin(email).catch(() => null);
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews

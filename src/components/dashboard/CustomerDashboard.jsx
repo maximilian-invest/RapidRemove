@@ -121,7 +121,8 @@ const removedKeys = (d) => d.orders.flatMap((o) => (isProf(o)
 
 /* ---- Login / Passwort vergessen ---- */
 function Login({ onToken, notice }) {
-  const [email, setEmail] = React.useState("");
+  // Direkt nach einer Bestellung (bestehendes Konto): E-Mail aus dem Bestellformular vorbefüllen (nur in diesem Tab gemerkt).
+  const [email, setEmail] = React.useState(() => { try { return sessionStorage.getItem("rr_login_email") || ""; } catch (e) { return ""; } });
   const [pw, setPw] = React.useState("");
   const [err, setErr] = React.useState("");
   const [info, setInfo] = React.useState("");
