@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -724,7 +724,7 @@ function makeCandidates(rawName, lang) {
    „Schritt N von 7" + Zeitangabe, 7 Balken (erledigt schwarz, aktuell orange, offen grau),
    Labels darunter (mobil ausgeblendet). Erledigte Schritte bleiben anklickbar (Zurückspringen). */
 const BP_FONT = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap";
-function Stepper({ step, onNav, labels, eta, stepOf, wide }) {
+function Stepper({ step, onNav, labels, eta, stepOf, wide, full }) {
   React.useEffect(() => {
     if (!document.querySelector(`link[href="${BP_FONT}"]`)) {
       const l = document.createElement("link"); l.rel = "stylesheet"; l.href = BP_FONT; document.head.appendChild(l);
@@ -742,8 +742,8 @@ function Stepper({ step, onNav, labels, eta, stepOf, wide }) {
   };
   const cls = (i, on, cur) => (allDone || i < step ? on : i === step ? cur : "") + (onNav && i < step && !allDone ? " bp-nav" : "");
   return (
-    <div className="bp-progress-wrap">
-      <div className={"bp-prog" + (wide ? " wide" : "")}>
+    <div className={"bp-progress-wrap" + (full ? " full" : "")}>
+      <div className={"bp-prog" + (wide ? " wide" : "") + (full ? " full" : "")}>
         <div className="row"><span><b>{b}</b>{r}</span><span>{eta}</span></div>
         <div className="bp-bars">{labels.map((l, i) => <i key={i} className={cls(i, "on", "cur")} {...navProps(i)} />)}</div>
         <div className="bp-labels">{labels.map((l, i) => <span key={i} className={allDone ? (i === total - 1 ? "cur" : "on") : cls(i, "on", "cur")} {...navProps(i)}>{l}</span>)}</div>
@@ -3242,7 +3242,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               </section>
               <aside className="bpr-aside">
                 <button type="button" className="bpr-expert" onClick={openTidioChat}>
-                  <span className="avs"><img src={asset("/assets/bestell/expert-matthias.png")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/expert-max.png")} alt="" width={40} height={40} /></span>
+                  <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
                   <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
                   <LArrowUpRight className="ar" />
                 </button>
@@ -3277,6 +3277,58 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const bodies = [StepName, StepSearch, StepConfirm, StepService, service === "reviews" ? StepReviews : StepProtect, StepCheckout, StepDone];
   const Body = bodies[step];
   const wideStep = [0, 5].includes(step) && !processing;
+  // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
+  const newStep1 = step === 0 && !processing;
+  function StepNameNew() {
+    const bp = bpCopy(t.code);
+    const q0 = conv.quotes[0];
+    const can = name.trim().length >= 2;
+    const go1 = () => { if (!can) return; setAcOpen(false); startSearch(name); };
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef}>
+        <main className="bpr-main">
+          <section>
+            <h1 className="bpr-h1 bpr-fade">{w.s1.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.sub1}</p>
+            <div className="bpr-acwrap bpr-fade" style={{ animationDelay: ".08s" }} ref={acRef}>
+              <label className="bpr-field">
+                <LBuilding className="fi" />
+                <input ref={nameRef} type="text" placeholder={w.s1.placeholder} value={name} autoComplete="organization" enterKeyHint="search"
+                  onChange={(e) => { setName(e.target.value); setAcOpen(true); }} onFocus={() => setAcOpen(true)}
+                  onKeyDown={(e) => { if (e.key === "Enter") go1(); }} aria-label={w.s1.h} />
+                <button type="button" className="bpr-go" disabled={!can} onClick={go1}>{bp.find}<LArrowRight /></button>
+              </label>
+              {acOpen && can && sug.length ? (
+                <div className="bpr-ac">
+                  {sug.map((sg) => (
+                    <button type="button" key={sg.placeId || sg.id} onClick={() => pickProfile(sg)}>
+                      <span className="ai"><LBuilding /></span><span className="tx"><b>{sg.name}</b>{sg.addr ? <small>{sg.addr}</small> : null}</span>
+                    </button>
+                  ))}
+                  <button type="button" onClick={go1}>
+                    <span className="ai"><LArrowRight /></span><span className="tx"><b>„{name.trim()}“</b><small>{wm.continueTyped}</small></span>
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </section>
+          <aside className="bpr-aside">
+            <button type="button" className="bpr-expert" onClick={openTidioChat}>
+              <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+              <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+              <LArrowUpRight className="ar" />
+            </button>
+            <div className="bpr-quote">
+              <span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span>
+              <p>„{q0.q}"</p>
+              <div className="who"><span className="m">{q0.a.charAt(0)}</span><span><b>{q0.a}</b><small>{q0.r}</small></span></div>
+            </div>
+          </aside>
+        </main>
+        <div className="bpr-mcta"><button type="button" className="bpr-go" disabled={!can} onClick={go1}><LSearch />{bp.find}</button></div>
+      </div>
+    );
+  }
 
   return (
     <div className="wz">
@@ -3285,13 +3337,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const bp = bpCopy(t.code);
         const isA = service === "reviews" || (wantReviews && step < 3);
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
-        return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} />;
+        return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
+      {newStep1 ? StepNameNew() : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
         </div>
       </div>
+      )}
       <ActivityToast />
       {confetti && <Confetti />}
       {priceInfo ? (
