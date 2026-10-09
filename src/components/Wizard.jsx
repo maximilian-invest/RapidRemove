@@ -6,7 +6,7 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
@@ -1770,6 +1770,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [errors, setErrors] = React.useState({});
   const [processing, setProcessing] = React.useState(false);
   const [payAsk, setPayAsk] = React.useState(false); // Rabatt-Pop-up (Wise/PayPal) vor dem Absenden
+  const [payDisc, setPayDisc] = React.useState({ reviews: true, profiles: true }); // Admin → Einstellungen: −10 % je Kategorie
+  React.useEffect(() => { fetchPayDiscount().then(setPayDisc).catch(() => {}); }, []);
   const [dupOrder, setDupOrder] = React.useState(null); // Bewertung(en) bereits beauftragt → { orders, items }
   const [agbOk, setAgbOk] = React.useState(false);
   const [polOk, setPolOk] = React.useState(false); // Einzelbewertungen: Bewertungen verstoßen gegen Google-Richtlinien (Zusicherung)
@@ -2234,7 +2236,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // Land des Google-Profils (nicht die Website-Sprache); unbekannt → deutschsprachig gilt als DACH.
     const bizCc = revPlace ? String(revPlace.cc || addrCountry(revPlace.addr || "") || "").toUpperCase() : "";
     const dach = bizCc ? ["DE", "AT", "CH"].includes(bizCc) : lang === "de";
-    if (!dach) { setPayAsk(true); return; }
+    if (!dach && (revFlow ? payDisc.reviews : payDisc.profiles)) { setPayAsk(true); return; }
     doSubmit("");
   };
   const validateCheckout = () => {

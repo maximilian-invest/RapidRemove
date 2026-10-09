@@ -252,6 +252,11 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
 
 /* ---- Automatische Weiterleitung (Admin → Einstellungen) ---- */
 export type AutoKind = "reviews" | "profiles";
+/** PayPal/Wise −10 % im Checkout je Bestellkategorie (Admin → Einstellungen). Standard: an. */
+export async function payDiscountEnabled(kind: AutoKind): Promise<boolean> {
+  const v = await getSetting("disc_" + kind).catch(() => null);
+  return v == null ? true : v === "1";
+}
 const AUTO_DEFAULT: Record<AutoKind, boolean> = { reviews: true, profiles: false };
 export async function partnerAutoEnabled(kind: AutoKind): Promise<boolean> {
   const v = await getSetting("auto_" + kind).catch(() => null);
@@ -390,8 +395,16 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     for (const k of ["reviews", "profiles"] as AutoKind[]) {
       const key = "auto" + k[0].toUpperCase() + k.slice(1);
       if (typeof b[key] === "boolean") await setSetting("auto_" + k, b[key] ? "1" : "0");
+      const dkey = "disc" + k[0].toUpperCase() + k.slice(1);
+      if (typeof b[dkey] === "boolean") await setSetting("disc_" + k, b[dkey] ? "1" : "0");
     }
-    return { ok: true, autoReviews: await partnerAutoEnabled("reviews"), autoProfiles: await partnerAutoEnabled("profiles") };
+    return { ok: true, autoReviews: await partnerAutoEnabled("reviews"), autoProfiles: await partnerAutoEnabled("profiles"), discReviews: await payDiscountEnabled("reviews"), discProfiles: await payDiscountEnabled("profiles") };
+  });
+
+  // Öffentlich (Website/Chat-Checkout): Ist PayPal/Wise −10 % je Kategorie gerade an?
+  app.get("/pay-discount", async (_req, reply) => {
+    reply.header("Cache-Control", "public, max-age=60");
+    return { ok: true, reviews: await payDiscountEnabled("reviews").catch(() => true), profiles: await payDiscountEnabled("profiles").catch(() => true) };
   });
 
   // Admin → Partner: Liste der Lösch-Partner (anlegen / bearbeiten).

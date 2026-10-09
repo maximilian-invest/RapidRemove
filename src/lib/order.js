@@ -15,6 +15,18 @@ export function opsEnabled() {
 }
 
 /** Übergibt die Bestellung an das ops-Backend. No-op (skipped), wenn keine URL gesetzt ist. */
+/** PayPal/Wise −10 % je Kategorie an? (Admin → Einstellungen). Standard: an; bei Fehler an (Server prüft ohnehin nach). */
+let discCache = null;
+export async function fetchPayDiscount() {
+  if (!OPS) return { reviews: true, profiles: true };
+  if (discCache) return discCache;
+  try {
+    const r = await fetch(OPS + "/pay-discount").then((x) => x.json());
+    discCache = { reviews: r.reviews !== false, profiles: r.profiles !== false };
+  } catch (e) { discCache = { reviews: true, profiles: true }; }
+  return discCache;
+}
+
 export async function submitOrder(payload) {
   if (!OPS) return { ok: false, skipped: true };
   const res = await fetch(OPS + "/order", {

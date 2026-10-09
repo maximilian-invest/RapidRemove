@@ -288,7 +288,7 @@ export default function AdminNext() {
   };
   const setAuto = async (k, v) => {
     setAutoS((a) => ({ ...a, [k]: v }));
-    try { const r = await partnerSettings({ [k]: v }); setAutoS(r); toast(`${k === "autoReviews" ? "Bewertungen" : "Profile"}: Weiterleitung ${v ? "an" : "aus"}`); }
+    try { const r = await partnerSettings({ [k]: v }); setAutoS(r); toast(k.startsWith("disc") ? `PayPal/Wise −10 % · ${k === "discReviews" ? "Bewertungen" : "Profil-Löschungen"}: ${v ? "an" : "aus"}` : `${k === "autoReviews" ? "Bewertungen" : "Profile"}: Weiterleitung ${v ? "an" : "aus"}`); }
     catch (e) { toast("Fehler: " + e.message); partnerSettings().then(setAutoS).catch(() => {}); }
   };
   const logout = () => { try { localStorage.removeItem("rr_admin_token"); sessionStorage.removeItem("rr_admin_token"); localStorage.removeItem("rr_admin_faceid"); } catch (e) {} window.location.reload(); };

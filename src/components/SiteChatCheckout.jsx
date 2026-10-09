@@ -6,6 +6,7 @@ import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
+import { fetchPayDiscount } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
@@ -72,7 +73,10 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const swOf = (r) => co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim();
   // Bewertungen: Währung nach Land des Profils (aus dem Link), sonst nach dem angegebenen Land.
   // PayPal/Wise −10 % nur außerhalb von DACH (DE/AT/CH) – dort gibt es die Auswahl gar nicht.
-  const dach = ["DE", "AT", "CH"].includes(f.country) || ["DE", "AT", "CH"].includes(co.placeCountry || "");
+  const [disc, setDisc] = React.useState({ reviews: true, profiles: true }); // Admin → Einstellungen: PayPal/Wise −10 % je Kategorie
+  React.useEffect(() => { fetchPayDiscount().then(setDisc).catch(() => {}); }, []);
+  const discOff = !(isRev ? disc.reviews : disc.profiles);
+  const dach = discOff || ["DE", "AT", "CH"].includes(f.country) || ["DE", "AT", "CH"].includes(co.placeCountry || ""); // dach = keine PayPal/Wise-Auswahl
   const payPref = dach ? "none" : f.payPref;
   const p = priceOf({ service: co.service, country: (isRev && co.placeCountry) || f.country, pct: co.pct, reviews: revs.map((r) => ({ ...r, sw: swOf(r) })), payPref });
   const legal = (k) => pagePath(k, lang);

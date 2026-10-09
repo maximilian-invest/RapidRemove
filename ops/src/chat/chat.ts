@@ -21,6 +21,14 @@ import { resolveReviewLink } from "../monitor";
 import { fetchPlaceReviews, findPlaceReview, serpKey } from "../reviewsFetch";
 import { keyOf } from "../customers";
 import { hasSavedMethod, autopayAvailable } from "../autopay";
+import { payDiscountEnabled } from "../partner";
+/** Aktuelle Einstellung PayPal/Wise −10 % (Admin → Einstellungen) als Zusatz zum System-Prompt – überschreibt alles darüber. */
+async function discLine(): Promise<string> {
+  const [p, r] = await Promise.all([payDiscountEnabled("profiles").catch(() => true), payDiscountEnabled("reviews").catch(() => true)]);
+  if (p && r) return "";
+  const off = [!p ? "profile removals (remove/reset)" : "", !r ? "single reviews" : ""].filter(Boolean).join(" and ");
+  return `\n\nCURRENT SETTING (overrides everything above): the 10 % PayPal/Wise discount is currently NOT offered for ${off}. Never mention or offer PayPal/Wise or that discount for ${off}; payment is by card/payment method as usual.`;
+}
 const quoteReviewsLite = (items: { old: boolean; sw?: boolean }[], pct: number) => quoteReviews(items, "eur", undefined, "full", pct);
 
 type Msg = { role: "user" | "assistant"; text: string };
@@ -294,7 +302,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     }
     try {
       const facts = await factsOf(email, d.orders).catch(() => EMPTY_FACTS);
-      const txt = await askClaude(SYSTEM(contextOf(d, ui, facts)), msgs);
+      const txt = await askClaude(SYSTEM(contextOf(d, ui, facts)) + await discLine(), msgs);
       const handoff = /\[\[TEAM\]\]/.test(txt);
       const reply = txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim();
       if (!reply) throw new Error("empty");
@@ -492,7 +500,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     let choices: { label: string; value: string }[] | null = null;
     try {
       if (++dayCount > cap) throw new Error("daily_cap");
-      const txt = await askClaude(SITE_SYSTEM(lang, page), msgs);
+      const txt = await askClaude(SITE_SYSTEM(lang, page) + await discLine(), msgs);
       handoff = /\[\[TEAM\]\]/.test(txt);
       const co = txt.match(/\[\[CHECKOUT:(remove|reset|reviews):?([A-Za-z]{2})?\]\]/);
       const dc = txt.match(/\[\[DISCOUNT:(\d{1,2})\]\]/);
@@ -567,7 +575,8 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     const country = clip(b.country, 2).toUpperCase() || "DE";
     const lang = clip(b.lang, 5) || "de";
     // PayPal/Wise −10 % gibt es nur außerhalb von DACH.
-    const payPref = ["wise", "paypal"].includes(String(b.payPref)) && !["DE", "AT", "CH"].includes(clip(b.country, 2).toUpperCase()) ? String(b.payPref) : "none";
+    const discOn = await payDiscountEnabled(String(b.service) === "reviews" ? "reviews" : "profiles").catch(() => true);
+    const payPref = discOn && ["wise", "paypal"].includes(String(b.payPref)) && !["DE", "AT", "CH"].includes(clip(b.country, 2).toUpperCase()) ? String(b.payPref) : "none";
     if (!service) return reply.code(400).send({ ok: false, error: "service" });
     if (name.length < 2) return reply.code(400).send({ ok: false, error: "name" });
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "email" });

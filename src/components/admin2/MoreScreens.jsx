@@ -219,6 +219,16 @@ function SettingsScreen({ ctx }) {
           </button>
         ))}
       </div>
+      <div className="sec3"><h2>PayPal / Wise −10 %</h2></div>
+      <p className="sh">Rabatt-Angebot am Ende des Checkouts (nur außerhalb DACH), im Website-Chat und vom Chatbot. Aus = Kunden zahlen normal per Karte/Zahlungsart.</p>
+      <div className="info">
+        {[["discProfiles", Store, "Profil-Löschungen"], ["discReviews", StarOff, "Bewertungen"]].map(([k, I, l]) => (
+          <button key={k} type="button" className="ir" disabled={!auto} onClick={() => setAuto(k, !auto[k])}>
+            <span className="ico"><I /></span><span className="t"><b>{l}</b><span>{!auto ? "…" : auto[k] ? "−10 % wird angeboten" : "Aus"}</span></span>
+            <span className={"tg" + (auto && auto[k] ? " on" : "")}><i /></span>
+          </button>
+        ))}
+      </div>
     </>
   );
 }
