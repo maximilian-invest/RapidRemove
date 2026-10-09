@@ -947,3 +947,25 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 }
 /* iOS zoomt bei Eingabefeldern unter 16px automatisch hinein (und bleibt gezoomt → Pop-ups ragen über den Rand) */
 @media(max-width:820px){.wz input,.wz select,.wz textarea{font-size:16px}}
+
+/* ---------- Fortschrittsbalken (Bestellprozess-Redesign 10/2026) ---------- */
+.bp-progress-wrap{position:sticky;top:64px;z-index:38;background:rgba(250,248,246,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);font-family:"Geist",system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.bp-prog{max-width:760px;margin:0 auto;padding:14px 24px 12px}
+.bp-prog.wide{max-width:920px}
+.bp-prog .row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:600;color:#6b6b6b;margin-bottom:10px}
+.bp-prog .row b{color:#111;font-weight:600}
+.bp-bars{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.bp-bars i{height:4px;border-radius:2px;background:#e8e8e8;transition:background .24s var(--ease)}
+.bp-bars i.on{background:#111}
+.bp-bars i.cur{background:var(--primary)}
+.bp-bars i.bp-nav{cursor:pointer;position:relative}
+.bp-bars i.bp-nav::after{content:"";position:absolute;left:0;right:0;top:-10px;bottom:-10px}
+.bp-labels{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:8px;font-size:11px;font-weight:500;color:#9a9a9a}
+.bp-labels span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bp-labels span.on{color:#6b6b6b}
+.bp-labels span.cur{color:#111;font-weight:600}
+.bp-labels span.bp-nav{cursor:pointer}
+.bp-labels span.bp-nav:hover{color:#111}
+.bp-bars i.bp-nav:focus-visible,.bp-labels span.bp-nav:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(max-width:620px){.bp-prog{padding:10px 14px 10px}.bp-labels{display:none}}
+@media (prefers-reduced-motion:reduce){.bp-bars i{transition:none}}

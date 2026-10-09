@@ -16,6 +16,7 @@ import { pagePath } from "@/lib/page-routes";
 import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
+import { bpCopy } from "@/lib/bestell-copy";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -718,33 +719,33 @@ function makeCandidates(rawName, lang) {
   ];
 }
 
-/* ---- Step indicator ---- */
-function Stepper({ step, onNav, labels: labelsOverride }) {
-  const { t } = useLang();
-  const labels = labelsOverride || t.wizard.steps;
+/* ---- Step indicator (Fortschrittsbalken aus dem Bestellprozess-Redesign 10/2026) ----
+   „Schritt N von 7" + Zeitangabe, 7 Balken (erledigt schwarz, aktuell orange, offen grau),
+   Labels darunter (mobil ausgeblendet). Erledigte Schritte bleiben anklickbar (Zurückspringen). */
+const BP_FONT = "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap";
+function Stepper({ step, onNav, labels, eta, stepOf, wide }) {
+  React.useEffect(() => {
+    if (!document.querySelector(`link[href="${BP_FONT}"]`)) {
+      const l = document.createElement("link"); l.rel = "stylesheet"; l.href = BP_FONT; document.head.appendChild(l);
+    }
+  }, []);
+  const total = labels.length;
+  const allDone = step >= total - 1;
+  const [b, r] = stepOf(Math.min(step + 1, total), total);
+  const navProps = (i) => {
+    if (!onNav || i >= step || allDone) return {};
+    return {
+      role: "button", tabIndex: 0, "aria-label": labels[i], onClick: () => onNav(i),
+      onKeyDown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNav(i); } },
+    };
+  };
+  const cls = (i, on, cur) => (allDone || i < step ? on : i === step ? cur : "") + (onNav && i < step && !allDone ? " bp-nav" : "");
   return (
-    <div className="stepper">
-      <div className="stepper-track">
-        {labels.map((label, i) => {
-          const clickable = !!onNav && i < step; // nur bereits erledigte Schritte sind anklickbar
-          return (
-          <React.Fragment key={i}>
-            <div
-              className={"stepper-node" + (i < step ? " done" : i === step ? " active" : "") + (clickable ? " is-nav" : "")}
-              onClick={clickable ? () => onNav(i) : undefined}
-              role={clickable ? "button" : undefined}
-              tabIndex={clickable ? 0 : undefined}
-              onKeyDown={clickable ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNav(i); } } : undefined}
-            >
-              <div className="stepper-dot">{i < step ? <Icon.check /> : i + 1}</div>
-              <div className="stepper-label">{label}</div>
-            </div>
-            {i < labels.length - 1 && (
-              <div className={"stepper-bar" + (i < step ? " filled" : "")}><div className="fill"></div></div>
-            )}
-          </React.Fragment>
-          );
-        })}
+    <div className="bp-progress-wrap">
+      <div className={"bp-prog" + (wide ? " wide" : "")}>
+        <div className="row"><span><b>{b}</b>{r}</span><span>{eta}</span></div>
+        <div className="bp-bars">{labels.map((l, i) => <i key={i} className={cls(i, "on", "cur")} {...navProps(i)} />)}</div>
+        <div className="bp-labels">{labels.map((l, i) => <span key={i} className={allDone ? (i === total - 1 ? "cur" : "on") : cls(i, "on", "cur")} {...navProps(i)}>{l}</span>)}</div>
       </div>
     </div>
   );
@@ -3219,7 +3220,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   return (
     <div className="wz">
       {Top}
-      {reviewMode ? null : <Stepper step={step} onNav={canStepBack ? go : null} labels={service === "reviews" ? t.wizard.steps.map((l, i) => (i === 4 ? pk.stepLbl : l)) : null} />}
+      {reviewMode ? null : (() => {
+        const bp = bpCopy(t.code);
+        const isA = service === "reviews" || (wantReviews && step < 3);
+        const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
+        return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} />;
+      })()}
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
