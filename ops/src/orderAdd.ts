@@ -9,7 +9,7 @@ import type { FastifyInstance } from "fastify";
 import { render } from "@react-email/render";
 import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
-import { autopayAvailable, hasSavedMethod } from "./autopay";
+import { autopayAvailable, hasSavedMethod, chargeDue } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { gatesOpen } from "./orderStart";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
@@ -253,6 +253,45 @@ async function oneOffPriceMails(): Promise<void> {
 
 export function registerPriceEditRoute(app: FastifyInstance, adminToken: string): void {
   setTimeout(() => { void oneOffPriceMails(); }, 60_000);
+  /* Abrechnung aus dem Admin – auch für Bewertungen, die NICHT beim Partner sind (selbst gelöscht).
+   *   POST /admin/reviews/bill-info { orderId }       → { savedPm }
+   *   POST /admin/reviews/bill { orderId, keys[] }     → hinterlegte Zahlungsart: als gelöscht vermerken + sofort abbuchen
+   *                                                       (Rechnung per Mail) → { mode: "autopay", charged }
+   *                                                       sonst { mode: "invoice" } → Admin sendet Löschbestätigung + Rechnung
+   *                                                       (/admin/reviews-invoice, vermerkt die Bewertungen dort). */
+  app.post("/admin/reviews/bill-info", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    const o = await loadOrder(clip(b.orderId, 40));
+    if (!o) return reply.code(404).send({ ok: false, error: "order" });
+    const savedPm = autopayAvailable(o.email) ? await hasSavedMethod(o.email).catch(() => false) : false;
+    return { ok: true, savedPm };
+  });
+  app.post("/admin/reviews/bill", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "db" });
+    const o = await loadOrder(clip(b.orderId, 40));
+    if (!o || o.service !== "reviews") return reply.code(404).send({ ok: false, error: "order" });
+    if (o.status === "storniert") return reply.code(400).send({ ok: false, error: "Auftrag ist storniert" });
+    const raw = (o.raw || {}) as Record<string, unknown>;
+    const want = new Set((Array.isArray(b.keys) ? b.keys : []).map((k) => String(k)).slice(0, 60));
+    const items = ((Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as AddItem[]).filter((it) => want.has(keyOf(it)));
+    if (!items.length) return reply.code(400).send({ ok: false, error: "keine Bewertung ausgewählt" });
+    const billedArr = [...(Array.isArray(raw.reviewsRemovedAll) ? raw.reviewsRemovedAll : []), ...(Array.isArray(raw.reviewsRemoved) ? raw.reviewsRemoved : [])] as AddItem[];
+    const billed = new Set(billedArr.map(keyOf));
+    const paid = new Set(Array.isArray(raw.reviewsPaidKeys) ? (raw.reviewsPaidKeys as string[]) : []);
+    const fresh = items.filter((it) => !billed.has(keyOf(it)) && !paid.has(keyOf(it)));
+    if (!fresh.length) return reply.code(400).send({ ok: false, error: "schon abgerechnet" });
+    const savedPm = autopayAvailable(o.email) ? await hasSavedMethod(o.email).catch(() => false) : false;
+    if (!savedPm || b.forceInvoice === true) return { ok: true, mode: "invoice", n: fresh.length };
+    const prev = (Array.isArray(raw.reviewsRemovedAll) ? raw.reviewsRemovedAll : []) as AddItem[];
+    await setOrderRawField(o.id, "reviewsRemovedAll", [...prev, ...fresh]);
+    await insertEvent({ orderId: o.id, email: o.email, type: "status", title: `${fresh.length === 1 ? "Bewertung" : fresh.length + " Bewertungen"} als gelöscht vermerkt (Admin)`, detail: fresh.map((it) => it.name || it.url || "Bewertung").join(" · ") + " · Abbuchung von der hinterlegten Zahlungsart" });
+    bumpChange();
+    const charged = await chargeDue(o.email, "Löschung (Admin)").catch(() => null);
+    return { ok: true, mode: "autopay", n: fresh.length, charged };
+  });
   app.post("/admin/orders/prices", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });

@@ -163,7 +163,7 @@ export function OrderDetail({ ctx, id }) {
     // Profil gelöscht → Zahlungslink senden (Link vorher ansehen/ändern); „ohne Link erledigt" steckt im Sheet.
     : b === "work" && !isRev ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
     // Bewertungen ohne Partner-Aufgaben (manuell bearbeitet) → wie früher abschließen.
-    : b === "work" ? doneBtn("Als erledigt markieren")
+    : b === "work" ? <button type="button" className="cta or" onClick={() => ctx.pushSub("bill", o.id)}><Receipt />Gelöschte abrechnen</button>
     : b === "cancel" ? <button type="button" className="cta" onClick={() => act.reactivate(o)}><RotateCcw />Auftrag reaktivieren</button>
     : null;
   return (
@@ -241,7 +241,8 @@ export function OrderDetail({ ctx, id }) {
       </div>
       {isRev ? (
         <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button>
-          {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}</div>
+          {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}
+          {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("bill", o.id)}><span className="ico"><Receipt /></span><span className="t"><span>Abrechnung</span><b>Gelöschte Bewertungen abrechnen</b></span><ChevronRight /></button> : null}</div>
       ) : null}
       <ActivityRow o={o} onOpen={() => ctx.pushAct(o.id)} />
       {stepIx >= 0 ? (
@@ -424,7 +425,7 @@ export function ReviewsScreen({ ctx, id }) {
         })}
         {isRev && !items.length ? <div className="aempty"><b>Keine Bewertungen</b>Am Auftrag ist nichts gespeichert.</div> : null}
       </div>
-      {isRev && removed ? <div className="stick"><a className="cta or" href={`/admin/alt?order=${encodeURIComponent(o.id)}`}><Receipt />Rechnung senden · {removed} gelöscht</a></div> : null}
+      {isRev && o.status !== "storniert" ? <div className="stick"><button type="button" className="cta or" onClick={() => ctx.pushSub("bill", o.id)}><Receipt />{removed ? `Rechnung senden · ${removed} gelöscht` : "Gelöschte abrechnen"}</button></div> : null}
     </>
   );
 }

@@ -157,7 +157,7 @@ export function PayActions({ o, ctx, r, pm, group = [], altHref }) {
   } else if (!pm) {
     cta = <button type="button" className="cta" disabled><Loader className="spin" />Lädt …</button>;
   } else if (isRev && r && r.unbilledN) {
-    cta = <a className="cta" href={altHref}><Receipt />Rechnung senden · {r.unbilledN} gelöscht</a>;
+    cta = <button type="button" className="cta" onClick={() => ctx.pushSub("bill", o.id)}><Receipt />Rechnung senden · {r.unbilledN} gelöscht</button>;
   } else if (!isRev && !pm.linkSent && pm.level === 0) {
     cta = <button type="button" className="cta" onClick={() => ctx.openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>;
   } else if (pm.level < pm.stages.length) {
