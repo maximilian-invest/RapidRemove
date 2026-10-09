@@ -487,7 +487,7 @@ app.post("/order", async (req, reply) => {
     (b as Record<string, unknown>).policyConsent = b.policyConsent === true
       ? { at: new Date().toISOString(), ip: ipC.slice(0, 60), ua: clip(req.headers["user-agent"], 240), lang: clip(b.lang, 5), v: clip(b.policyV, 20) || "2026-10-09", n: reviewItems.length, via: req.headers["x-rr-chat"] === CHAT_INTERNAL ? "chat" : "web" }
       : null;
-    if (b.policyConsent == null) app.log.warn({ orderId, email }, "Bestellung ohne Richtlinien-Bestätigung (alter Browser-Stand?)");
+    // Seit 09.10.2026 keine Checkbox im Checkout mehr: die Zusicherung gibt der Kunde im Dashboard (reasons.ts → policyConsent).
   } else delete (b as Record<string, unknown>).policyConsent;
   delete (b as Record<string, unknown>).policyV;
   if (isReviews) for (const it of reviewItems) {

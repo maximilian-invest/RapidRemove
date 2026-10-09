@@ -2,7 +2,6 @@
 /* Bestellen direkt im Website-Chat: Angebotskarte (Preis, Rabatt-Badge) + Bestellformular mit AGB/Datenschutz.
    Der Rabatt wird NUR serverseitig aus dem Chat-Angebot übernommen (/chat/site/order) – hier nur angezeigt. */
 import React from "react";
-import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
@@ -88,14 +87,13 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     if (isRev) { if (!revs.some((r) => /^https?:\/\//i.test(r.url.trim()))) b.revs = 1; if (f.country === "DE" || f.country === "AT") { setErr(c.errDach); setBad({ ...b, country: 1 }); return; } }
     else if (!/^https?:\/\//i.test(f.profileLink.trim()) && f.company.trim().length < 2) b.profileLink = 1;
     if (!f.agb) b.agb = 1;
-    if (isRev && !f.pol) b.pol = 1;
     setBad(b);
     if (Object.keys(b).length) { setErr(c.errFill); return; }
     setErr(""); setBusy(true);
     try {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
-        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, ...(isRev ? { policyConsent: true, policyV: POLICY_V } : {}), page: window.location.pathname, placeCountry: co.placeCountry || "",
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
@@ -173,8 +171,6 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
           <input type="checkbox" checked={f.agb} onChange={set("agb")} />
           <span>{c.agb1} <a href={legal("agb")} target="_blank" rel="noopener noreferrer">{c.agbL}</a> {c.agb2} <a href={legal("datenschutz")} target="_blank" rel="noopener noreferrer">{c.dsL}</a> {c.agb3}</span>
         </label>
-        {isRev ? <PolicyConsent lang={lang} checked={f.pol} error={!!bad.pol} className={"co-agb" + (bad.pol ? " bad" : "")} style={{ gap: 10, marginTop: 8 }}
-          onChange={(v) => { setF((x) => ({ ...x, pol: v })); setBad((b) => ({ ...b, pol: false })); setErr(""); }} /> : null}
         {err ? <div className="co-err">{err}</div> : null}
       </div>
       <div className="co-foot">
