@@ -109,9 +109,9 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const b = (req.body || {}) as Record<string, unknown>;
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
-    const r = await pool.query(`SELECT email, pw_enc, created_at, last_login FROM partner_accounts ORDER BY created_at`);
+    const r = await pool.query(`SELECT email, pw_enc, created_at, last_login, partner_id FROM partner_accounts ORDER BY created_at`);
     const subs = await pool.query(`SELECT count(*)::int AS n FROM partner_push_subs WHERE NOT test`).catch(() => ({ rows: [{ n: 0 }] }));
-    return { ok: true, pushDevices: subs.rows[0].n, accounts: r.rows.map((x) => ({ email: x.email, password: decPw(x.pw_enc), created: x.created_at, lastLogin: x.last_login, test: isTestEmail(x.email) })) };
+    return { ok: true, pushDevices: subs.rows[0].n, accounts: r.rows.map((x) => ({ email: x.email, password: decPw(x.pw_enc), created: x.created_at, lastLogin: x.last_login, test: isTestEmail(x.email), partnerId: x.partner_id ? Number(x.partner_id) : null })) };
   });
 
   // Admin: Login anlegen/ändern (E-Mail umbenennen, Passwort setzen oder neu erzeugen).
@@ -127,7 +127,9 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
       await pool.query(`UPDATE partner_accounts SET email=$2 WHERE email=$1`, [old, email]);
       await pool.query(`UPDATE partner_sessions SET email=$2 WHERE email=$1`, [old, email]);
     }
-    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3`, [email, hashPassword(pw), encPw(pw)]);
+    const pidIn = Number(b.partnerId);
+    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc, partner_id) VALUES ($1,$2,$3,$4) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3, partner_id=COALESCE($4, partner_accounts.partner_id)`,
+      [email, hashPassword(pw), encPw(pw), Number.isInteger(pidIn) && pidIn > 0 ? pidIn : null]);
     return { ok: true, email, password: pw };
   });
 
@@ -141,7 +143,13 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const testDev = se === "admin-preview" || isTestEmail(se);
     const sub = (b.sub || {}) as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
     if (!sub.endpoint || !sub.keys?.p256dh || !sub.keys?.auth) return reply.code(400).send({ ok: false, error: "subscription" });
-    await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } }, testDev);
+    // Gerät dem Partner zuordnen (Pushes nur zu seinen Aufträgen).
+    let pid: number | null = null;
+    if (!testDev) {
+      if (se) { const a = await pool!.query(`SELECT partner_id FROM partner_accounts WHERE email=$1`, [se]).catch(() => ({ rows: [] as { partner_id: string | null }[] })); pid = a.rows[0]?.partner_id ? Number(a.rows[0].partner_id) : null; }
+      if (!pid) { const f = await pool!.query(`SELECT id FROM partners WHERE active ORDER BY id LIMIT 1`).catch(() => ({ rows: [] as { id: string }[] })); pid = f.rows[0] ? Number(f.rows[0].id) : null; }
+    }
+    await savePartnerSub({ endpoint: String(sub.endpoint), keys: { p256dh: String(sub.keys.p256dh), auth: String(sub.keys.auth) } }, testDev, pid);
     return { ok: true };
   });
 
@@ -192,7 +200,7 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const t = String(b.t || "");
     if (await isPartnerSession(t)) return { ok: true, via: "session" };
     if (!(await isLinkToken(t))) return reply.code(401).send({ ok: false, error: "invalid link" });
-    const r = await pool!.query(`SELECT email FROM partner_accounts ORDER BY created_at LIMIT 1`);
+    const r = await pool!.query(`SELECT email FROM partner_accounts WHERE partner_id IS NULL OR partner_id = (SELECT id FROM partners WHERE active ORDER BY id LIMIT 1) ORDER BY created_at LIMIT 1`);
     return { ok: true, via: "link", account: r.rows[0]?.email || null };
   });
 
@@ -206,7 +214,8 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const pw = String(b.password || "");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "email" });
     if (pw.length < 8) return reply.code(400).send({ ok: false, error: "password" });
-    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3`, [email, hashPassword(pw), encPw(pw)]);
+    // Geheimer Link = bisheriger (erster) Partner.
+    await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc, partner_id) VALUES ($1,$2,$3,(SELECT id FROM partners WHERE active ORDER BY id LIMIT 1)) ON CONFLICT (email) DO UPDATE SET pass_hash=$2, pw_enc=$3`, [email, hashPassword(pw), encPw(pw)]);
     await pool.query(`DELETE FROM partner_sessions WHERE email=$1`, [email]);
     return { ok: true, token: await newSession(email) };
   });

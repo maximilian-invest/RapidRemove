@@ -451,3 +451,60 @@
 .rck > .rck-btn{width:100%;flex:none}
 .rck-open{margin-top:10px;width:100%;min-height:44px;border-radius:14px;border:1px solid #e5e5e5;background:#fff;color:#111;font:inherit;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
 .rck-open svg{width:17px;height:17px}
+
+/* Earnings → automatische Auszahlung (PartnerPayouts.jsx) */
+.pra .po-card{display:flex;flex-wrap:wrap;align-items:flex-start;gap:12px;width:100%;text-align:left;background:var(--g1);border-radius:20px;padding:16px;margin-bottom:10px;color:var(--ink);font-size:14px}
+.pra .po-card>svg{width:18px;height:18px;flex:none}
+.pra .po-card .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pra .po-card .t b{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.pra .po-card .t span{font-size:13.5px;color:var(--g3);line-height:1.45}
+.pra .po-card.act>svg:last-child{align-self:center;color:var(--g3)}
+.pra .po-card.ok{background:#eaf7ef}
+.pra .po-card.ok .po-ic{background:#0a7d3e;color:#fff}
+.pra .po-card .cta{flex-basis:100%}
+.pra .po-ic{width:40px;height:40px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:none}
+.pra .po-ic svg{width:20px;height:20px}
+.pra .po-mini{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font-size:13px;color:var(--g3);font-weight:600;margin:2px 2px 6px}
+.pra .po-mini span{display:inline-flex;align-items:center;gap:5px}
+.pra .po-mini svg{width:14px;height:14px}
+.pra .po-mini .lnk{margin-left:auto;font-size:13px;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;background:none}
+.pra .po-back{padding-top:4px}
+.pra .po-form{padding-bottom:30px}
+.pra .po-f{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;min-width:0}
+.pra .po-f span{font-size:13px;font-weight:700;color:var(--g3)}
+.pra .po-f input,.pra .po-f select{height:50px;border-radius:14px;border:1.5px solid var(--g2);background:#fff;padding:0 14px;font:inherit;font-size:16px;color:var(--ink);width:100%;min-width:0;-webkit-appearance:none;appearance:none}
+.pra .po-f select{background-image:linear-gradient(45deg,transparent 50%,#6b6b6b 50%),linear-gradient(135deg,#6b6b6b 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 15px) 22px;background-size:5px 5px;background-repeat:no-repeat}
+.pra .po-f input:focus,.pra .po-f select:focus{outline:none;border-color:var(--ink)}
+.pra .po-2{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.pra .po-agree{display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;background:var(--g1);border-radius:16px;padding:14px;font-size:13px;line-height:1.5;color:#333;margin-top:6px}
+.pra .po-agree .bx{flex:none;width:24px;height:24px;border-radius:7px;border:2px solid #bdbdbd;background:#fff;display:grid;place-items:center;margin-top:1px}
+.pra .po-agree.on .bx{background:var(--ink);border-color:var(--ink);color:#fff}
+.pra .po-agree .bx svg{width:16px;height:16px}
+.pra .po-sbok{display:flex;align-items:center;gap:8px;font-size:13px;color:#0a7d3e;font-weight:700;margin-top:6px}
+.pra .po-sbok svg{width:16px;height:16px}
+.pra .po-err{display:flex;gap:8px;align-items:center;color:#b42318;font-size:14px;font-weight:600;margin-top:12px}
+.pra .po-err svg{width:16px;height:16px;flex:none}
+.pra .po-top{display:flex;align-items:center;justify-content:space-between;min-height:44px;margin:4px 0 6px}
+.pra .po-dots{display:flex;gap:6px}
+.pra .po-dots i{width:22px;height:5px;border-radius:3px;background:var(--g2)}
+.pra .po-dots i.on{background:var(--ink)}
+.pra .po-hero{background:var(--ink);color:#fff;border-radius:20px;padding:16px 18px;margin:6px 0 4px;display:flex;flex-direction:column;gap:4px}
+.pra .po-hero b{font-size:18px;font-weight:800}
+.pra .po-hero span{font-size:14px;color:#cfcfcf;line-height:1.45}
+.pra .po-opts{display:flex;flex-direction:column;gap:10px}
+.pra .po-opt{display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;border:2px solid var(--g2);border-radius:18px;padding:14px;background:#fff;color:var(--ink)}
+.pra .po-opt.on{border-color:var(--ink)}
+.pra .po-opt .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pra .po-opt .t b{font-size:16px;font-weight:800}
+.pra .po-opt .t span{font-size:13.5px;color:var(--g3);line-height:1.45}
+.pra .po-opt .po-ic{background:var(--g1)}
+.pra .po-opt .rd{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid #c9c9c9;display:grid;place-items:center;margin-top:8px}
+.pra .po-opt.on .rd{background:var(--ink);border-color:var(--ink);color:#fff}
+.pra .po-opt .rd svg{width:15px;height:15px}
+.pra .po-note{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--g3);background:var(--g1);border-radius:14px;padding:12px 14px;line-height:1.45}
+.pra .po-note svg{width:16px;height:16px;flex:none;margin-top:2px}
+.pra .po-sub{display:flex;align-items:center;gap:8px;font-weight:800;font-size:15px;margin:10px 0 10px}
+.pra .po-sub svg{width:18px;height:18px}
+.pra .po-agree.sm{font-size:14px;font-weight:600;color:var(--ink);align-items:center}
+.pra .po-card.warn{background:#fff4e5}
+.pra .po-card.warn .po-ic{color:#b54708}

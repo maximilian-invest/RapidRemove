@@ -126,6 +126,8 @@ export default function AdminNext() {
     const tick = setInterval(() => setNow(Date.now()), 60000);
     // Deep-Link ?order=RR-… öffnet direkt den Auftrag
     try { const id = new URLSearchParams(window.location.search).get("order"); if (id) { setTab("orders"); setStack([{ v: "list" }, { v: "detail", id }]); } } catch (e) {}
+    // Deep-Link ?partner=ID (Push „Neue Partner-Bewerbung") öffnet den Partner
+    try { if (new URLSearchParams(window.location.search).get("partner")) { setTab("more"); setMoreSub("partner"); } } catch (e) {}
     return () => { clearInterval(iv); clearInterval(tick); mq.removeEventListener ? mq.removeEventListener("change", on) : mq.removeListener(on); };
   }, [reload]);
 
@@ -296,7 +298,7 @@ export default function AdminNext() {
   const ctx = {
     orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
-    moreSub, setMoreSub, logout, toast, tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
+    moreSub, setMoreSub, logout, toast, loadPartners: () => partnersList().then(setPartners).catch(() => {}), tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
     newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving,
   };
 

@@ -3,7 +3,7 @@
 import React from "react";
 import {
   RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
-  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle,
+  ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle, Banknote,
 } from "lucide-react";
 import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
@@ -12,6 +12,8 @@ import { GlobalActivityScreen } from "./Activity";
 import { monitorShotUrl } from "@/lib/admin-api";
 import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
+import PayoutsScreen from "./Payouts";
+import { PartnersScreen, RoutesBlock } from "./Partners";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
@@ -176,8 +178,9 @@ export { MS, fmtDT };
 export function Account({ ctx }) {
   const { moreSub, setMoreSub, logout } = ctx;
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
-  if (moreSub === "partner") return <PartnerScreen ctx={ctx} />;
+  if (moreSub === "partner") return <PartnersScreen ctx={ctx} />;
   if (moreSub === "pstats") return <PartnerStatsScreen ctx={ctx} />;
+  if (moreSub === "payouts") return <PayoutsScreen ctx={ctx} />;
   if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
   if (moreSub === "activity") return <GlobalActivityScreen ctx={ctx} />;
   if (moreSub === "chats") return <SiteChatsScreen ctx={ctx} />;
@@ -209,16 +212,7 @@ function SettingsScreen({ ctx }) {
     <>
       <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
-      <div className="sec3"><h2>Automatische Weiterleitung</h2></div>
-      <p className="sh">Neue Aufträge gehen direkt an {pn}, ohne manuelle Prüfung.</p>
-      <div className="info">
-        {[["autoReviews", StarOff, "Bewertungen"], ["autoProfiles", Store, "Profile"]].map(([k, I, l]) => (
-          <button key={k} type="button" className="ir" disabled={!auto} onClick={() => setAuto(k, !auto[k])}>
-            <span className="ico"><I /></span><span className="t"><b>{l}</b><span>{!auto ? "…" : auto[k] ? "An " + pn : "Aus"}</span></span>
-            <span className={"tg" + (auto && auto[k] ? " on" : "")}><i /></span>
-          </button>
-        ))}
-      </div>
+      <RoutesBlock ctx={ctx} />
       <div className="sec3"><h2>PayPal / Wise −10 %</h2></div>
       <p className="sh">Rabatt-Angebot am Ende des Checkouts (nur außerhalb DACH), im Website-Chat und vom Chatbot. Aus = Kunden zahlen normal per Karte/Zahlungsart.</p>
       <div className="info">
@@ -233,29 +227,4 @@ function SettingsScreen({ ctx }) {
   );
 }
 
-function PartnerScreen({ ctx }) {
-  const { setMoreSub, partners, auto, toast } = ctx;
-  const list = (partners && partners.partners || []).filter((p) => p.active);
-  const b = (partners && partners.board) || {};
-  return (
-    <>
-      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
-      <div className="ttl">Partner</div>
-      {!partners ? <div className="aempty"><b>Lädt …</b></div> : null}
-      {list.map((p) => (
-        <div key={p.id} className="apcard">
-          <div className="ph1"><span className="pav"><Handshake /></span><div><b>{p.name}</b><span>{p.email || "keine E-Mail"}</span></div><span className="pst">Aktiv</span></div>
-          <div className="pst3"><div><b>{b.open || 0}</b><span>In Arbeit</span></div><div><b>{b.removed || 0}</b><span>Gelöscht</span></div></div>
-          <button type="button" className="ir ar" onClick={() => setMoreSub("pstats")}><span className="ico"><BarChart3 /></span><span className="t"><b>Statistiken</b><span>Zeiten, Löschquoten, nicht löschbare Bewertungen, Auffälligkeiten</span></span><ChevronRight /></button>
-          <button type="button" className="ir ar" onClick={() => setMoreSub("settings")}><span className="ico"><Zap /></span><span className="t"><b>Auto-Weiterleitung</b><span>{auto ? [auto.autoReviews && "Bewertungen", auto.autoProfiles && "Profile"].filter(Boolean).join(" · ") || "Aus" : "…"}</span></span><ChevronRight /></button>
-          <div className="ctas2">
-            <a className="cta gh" href={p.email ? "mailto:" + p.email : undefined}><Mail />E-Mail</a>
-            <button type="button" className="cta gh" onClick={() => { try { navigator.clipboard.writeText(p.email || ""); toast("E-Mail kopiert"); } catch (e) {} }}><Copy />Kopieren</button>
-          </div>
-        </div>
-      ))}
-      {partners && !list.length ? <div className="aempty"><b>Keine aktiven Partner</b></div> : null}
-    </>
-  );
-}
 void money; void Check;

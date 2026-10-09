@@ -17,32 +17,54 @@ export async function initPartnerPush(): Promise<void> {
   // Geräte des Test-Logins bekommen nur Pushes zu Testaufträgen (und umgekehrt).
   await pool.query(`ALTER TABLE partner_push_subs ADD COLUMN IF NOT EXISTS test boolean NOT NULL DEFAULT false`);
 }
-export async function savePartnerSub(sub: PushSub, test = false): Promise<void> {
+export async function savePartnerSub(sub: PushSub, test = false, partnerId: number | null = null): Promise<void> {
   if (!pool) return;
+  await pool.query(`ALTER TABLE partner_push_subs ADD COLUMN IF NOT EXISTS partner_id bigint`).catch(() => {});
   await pool.query(
-    `INSERT INTO partner_push_subs (endpoint, p256dh, auth, test) VALUES ($1,$2,$3,$4) ON CONFLICT (endpoint) DO UPDATE SET p256dh=$2, auth=$3, test=$4`,
-    [sub.endpoint, sub.keys.p256dh, sub.keys.auth, test],
+    `INSERT INTO partner_push_subs (endpoint, p256dh, auth, test, partner_id) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (endpoint) DO UPDATE SET p256dh=$2, auth=$3, test=$4, partner_id=$5`,
+    [sub.endpoint, sub.keys.p256dh, sub.keys.auth, test, partnerId],
   );
 }
 
-/** Push an alle Partner-Geräte (Uber-Stil: kurzer Titel, Body „Kunde · Details"). */
-export async function notifyPartner(title: string, body: string, tag?: string, test = false): Promise<void> {
+/** Empfänger-Partner einer Meldung: aus den genannten Aufgaben (RV-…) bzw. Aufträgen (RR-…) – sonst alle Partner. */
+async function targetsOf(text: string): Promise<number[] | null> {
+  if (!pool) return null;
+  const codes = [...new Set(text.match(/RV-\d{3,}/g) || [])];
+  const orders = [...new Set(text.match(/RR-[A-Z0-9-]{3,}/g) || [])];
+  if (!codes.length && !orders.length) return null;
+  const r = await pool.query(`SELECT DISTINCT partner_id FROM partner_tasks WHERE partner_id IS NOT NULL AND (code = ANY($1::text[]) OR order_id = ANY($2::text[])
+      OR order_id IN (SELECT order_id FROM partner_tasks WHERE code = ANY($1::text[])))`, [codes, orders]).catch(() => ({ rows: [] as { partner_id: string }[] }));
+  return r.rows.length ? r.rows.map((x) => Number(x.partner_id)) : null;
+}
+
+/** Push an die Geräte des/der betroffenen Partner (Uber-Stil: kurzer Titel, Body „Kunde · Details").
+ *  partnerIds leer → aus RV-/RR-Nummern im Text ermitteln; nichts gefunden → alle Partner. Test-Geräte nur bei Tests. */
+export async function notifyPartner(title: string, body: string, tag?: string, test = false, partnerIds?: number[] | null): Promise<void> {
   try {
     if (!pool || !hasWebPush()) return;
-    const r = await pool.query(`SELECT endpoint, p256dh, auth FROM partner_push_subs WHERE test=$1`, [test]);
+    const ids = test ? null : partnerIds && partnerIds.length ? partnerIds : await targetsOf(`${title} ${body}`);
+    const r = ids
+      ? await pool.query(`SELECT endpoint, p256dh, auth, partner_id FROM partner_push_subs WHERE test=false AND partner_id = ANY($1::bigint[])`, [ids])
+      : await pool.query(`SELECT endpoint, p256dh, auth, partner_id FROM partner_push_subs WHERE test=$1`, [test]);
     if (!r.rows.length) return;
-    const subs: PushSub[] = r.rows.map((x) => ({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } }));
-    // App-Badge = offene Aufgaben (Not started + Working).
-    const b = await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE status IN ('new','working') AND test=$1`, [test]).catch(() => ({ rows: [{ n: 0 }] }));
-    const expired = await sendWebPushAll(subs, { title, body, url: "/partner", tag: tag || `rrp-${Date.now().toString(36)}`, badge: Number(b.rows[0]?.n || 0) });
-    for (const ep of expired) await pool.query(`DELETE FROM partner_push_subs WHERE endpoint=$1`, [ep]).catch(() => {});
+    // App-Badge = offene Aufgaben (Not started + Working) des jeweiligen Partners.
+    const byP = new Map<string, PushSub[]>();
+    for (const x of r.rows as { endpoint: string; p256dh: string; auth: string; partner_id: string | null }[]) {
+      const k = String(x.partner_id ?? ""); if (!byP.has(k)) byP.set(k, []);
+      byP.get(k)!.push({ endpoint: x.endpoint, keys: { p256dh: x.p256dh, auth: x.auth } });
+    }
+    for (const [pid, subs] of byP) {
+      const b = await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE status IN ('new','working') AND test=$1 ${pid && !test ? "AND partner_id=$2" : ""}`, pid && !test ? [test, pid] : [test]).catch(() => ({ rows: [{ n: 0 }] }));
+      const expired = await sendWebPushAll(subs, { title, body, url: "/partner", tag: tag || `rrp-${Date.now().toString(36)}`, badge: Number(b.rows[0]?.n || 0) });
+      for (const ep of expired) await pool.query(`DELETE FROM partner_push_subs WHERE endpoint=$1`, [ep]).catch(() => {});
+    }
   } catch { /* best effort */ }
 }
 
 const KIND: Record<string, string> = { normal: "standard", old: "older than 4 weeks", nt: "no text" };
 
 /** Neue Bewertungen auf dem Board → Push + E-Mail an den Partner. */
-export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string; price?: number }[], test = false, added = false): Promise<void> {
+export async function partnerNewOrder(customer: string, tasks: { code: string; kind: string; price?: number }[], test = false, added = false, partnerId: number | null = null): Promise<void> {
   if (!tasks.length) return;
   const n = tasks.length;
   const name = customer || "New customer";
@@ -50,10 +72,10 @@ export async function partnerNewOrder(customer: string, tasks: { code: string; k
   const rv = `review${n > 1 ? "s" : ""}`;
   // Design: Titel „New order", Text „{Kunde} · {n} reviews · {Betrag}". Nachbestellung: „Review added", „{Kunde} · +1 review …".
   const head = added ? `${n > 1 ? "Reviews" : "Review"} added` : "New order";
-  await notifyPartner(`${test ? "TEST · " : ""}${head}`, `${name} · ${added ? "+" : ""}${n} ${rv}${added ? " (existing customer)" : ""}${sum ? ` · ${sum} USD` : ""}`, `rrp-order-${tasks[0].code}`, test);
+  await notifyPartner(`${test ? "TEST · " : ""}${head}`, `${name} · ${added ? "+" : ""}${n} ${rv}${added ? " (existing customer)" : ""}${sum ? ` · ${sum} USD` : ""}`, `rrp-order-${tasks[0].code}`, test, partnerId ? [partnerId] : null);
   try {
     if (!pool) return;
-    const acc = await pool.query(`SELECT email FROM partner_accounts`);
+    const acc = test || !partnerId ? await pool.query(`SELECT email FROM partner_accounts`) : await pool.query(`SELECT email FROM partner_accounts WHERE partner_id=$1`, [partnerId]);
     const to = acc.rows.map((x) => x.email).filter((e) => e && isTestEmail(e) === test); // Test ↔ echt strikt getrennt
     if (!to.length) return;
     const url = `${SITE_URL}/partner`;
@@ -81,20 +103,20 @@ async function remindWaiting(): Promise<void> {
   const pk = Number(new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi", hour: "numeric", hour12: false })) % 24;
   if (pk >= 1 && pk < 8) return;
   const r = await pool.query(`
-    SELECT COALESCE(customer, '') AS customer, test, count(*)::int AS n, min(created_at) AS since
+    SELECT COALESCE(customer, '') AS customer, test, count(*)::int AS n, min(created_at) AS since, min(partner_id) AS pid
       FROM partner_tasks
      WHERE status IN ('new','working')
-     GROUP BY COALESCE(customer, ''), test
+     GROUP BY COALESCE(customer, ''), test, partner_id
     HAVING bool_and(status = 'new' AND working_since IS NULL AND first_working_at IS NULL)
        AND min(created_at) < now() - interval '1 hour'`);
-  for (const g of r.rows as { customer: string; test: boolean; n: number; since: string }[]) {
+  for (const g of r.rows as { customer: string; test: boolean; n: number; since: string; pid: string | null }[]) {
     const last = await pool.query(`SELECT last_at FROM partner_reminders WHERE customer = $1 AND test = $2`, [g.customer, g.test]);
     const lastAt = last.rows[0] ? new Date(last.rows[0].last_at).getTime() : 0;
     if (Date.now() - lastAt < 58 * 60_000) continue;
     const h = Math.max(1, Math.floor((Date.now() - new Date(g.since).getTime()) / 3600e3));
     await notifyPartner(`${g.test ? "TEST · " : ""}Customer waiting for order confirmation`,
       `${g.customer || "Customer"} · ${g.n} review${g.n > 1 ? "s" : ""} · waiting ${h} h – please start now`,
-      `rrp-wait-${(g.customer || "x").slice(0, 40)}`, g.test);
+      `rrp-wait-${(g.customer || "x").slice(0, 40)}`, g.test, g.pid ? [Number(g.pid)] : null);
     await pool.query(`INSERT INTO partner_reminders (customer, test, last_at, n) VALUES ($1,$2,now(),1)
       ON CONFLICT (customer, test) DO UPDATE SET last_at = now(), n = partner_reminders.n + 1`, [g.customer, g.test]);
   }

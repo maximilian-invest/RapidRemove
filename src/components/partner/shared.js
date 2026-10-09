@@ -59,7 +59,7 @@ export function norm(t) {
   return {
     id: t.id, code: t.code, cust: (t.customer || "").trim() || "Other", url: t.url || "",
     who: t.kind === "profile" ? "Google profile" : who || (text ? "Reviewer" : "Google review"), text, shot: t.shot || null,
-    price: Number(t.price || 0), old: t.kind === "old", nt: t.kind === "nt", status: toUi(t.status), paid: !!t.paid,
+    price: Number(t.price || 0), old: t.kind === "old", nt: t.kind === "nt", status: toUi(t.status), paid: !!t.paid, processing: !!t.processing,
     note: t.note || "", created: t.created ? new Date(t.created).getTime() : 0, touched: !!t.touched,
     workingSince: t.workingSince ? new Date(t.workingSince).getTime() : null,
     sw: t.sw || null, // 'pending' = waiting for the customer · 'paid' = customer prepaid, start now

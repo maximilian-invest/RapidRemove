@@ -21,6 +21,8 @@ import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
 import { partnerNewOrder, notifyPartner } from "./partnerNotify";
+import { initPayoutTables, registerPayoutRoutes, recordManualPayout } from "./payouts";
+import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, type ServiceId } from "./partnerRegistry";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
 // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -123,6 +125,7 @@ export async function initPartnerTables(): Promise<void> {
       value text NOT NULL
     )
   `);
+  await initPayoutTables(); // Auszahlungen: Partner-Auszahlungsdaten, Gutschriften, Payoneer (payouts.ts)
 }
 
 /* ---- Token (geheimer Partner-Link) — in der DB, nie im Repo ---- */
@@ -166,7 +169,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
-  touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null;
+  touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -175,14 +178,14 @@ function partnerView(r: Row) {
   return {
     id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
-    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
+    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, processing: !!r.payout_id && !r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && ((r.admin_note || "").includes(SW_NOTE_PAID) || (r.admin_note || "").includes(SW_NOTE_APPROVED)) ? "paid" : null),
   };
 }
 function adminView(r: Row) {
-  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test };
+  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test, partnerId: r.partner_id ? Number(r.partner_id) : null };
 }
 
 async function listTasks(where = "", args: unknown[] = []): Promise<Row[]> {
@@ -207,10 +210,10 @@ const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]
 const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S+$/i.test(s) ? s : ""; };
 
 /** Bewertungen als Partner-Aufgaben anlegen (idempotent je Auftrag + Bewertung). */
-async function insertPartnerTasks(orderId: string | null, customer: string | null, items: Record<string, unknown>[]): Promise<Row[]> {
+async function insertPartnerTasks(orderId: string | null, customer: string | null, items: Record<string, unknown>[], partnerIdIn: number | null = null): Promise<Row[]> {
   if (!pool) return [];
   const out: Row[] = [];
-  const fresh: { code: string; kind: string; price: number }[] = [];
+  const fresh: { code: string; kind: string; price: number; pid: number | null }[] = [];
   const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
   // Auftrag hat schon Aufgaben → Nachbestellung („Review added" statt „New order").
   const had = orderId ? Number((await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0]?.n || 0) > 0 : false;
@@ -222,31 +225,35 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     if (!url && !name && !text) continue;
     const kind: TaskKind = it.kind === "profile" ? "profile" : it.nt === true ? "nt" : it.old === true ? "old" : "normal";
     const key = url || `${name}|${text}`;
-    // Software-Fall (ohne Text bzw. alte US-Bewertung mit Text) → Software-Preis für den Partner.
-    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : it.sw === true ? PARTNER_PRICES.nt : PARTNER_PRICES[kind];
+    // Partner: vorgegeben (Admin/Zuteilung) – sonst Zuteilung der Leistung bzw. erster aktiver Partner. Preis = Partnerpreis der Leistung.
+    const svc: ServiceId = serviceOf({ kind, sw: it.sw, nt: it.nt, old: it.old });
+    const pid = partnerIdIn ?? (await defaultPartnerFor(svc));
+    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : await partnerPrice(pid, svc);
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {
       const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method, partner_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
       [orderId, key, url || null, name || null, text || null, kind, price, customer, test,
         Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null,
-        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null],
+        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null, pid],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {
       const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
       row = u.rows[0] as Row;
-      fresh.push({ code: row.code, kind: row.kind, price: num(row.price_usd) }); // neu angelegt → Partner benachrichtigen
+      fresh.push({ code: row.code, kind: row.kind, price: num(row.price_usd), pid: row.partner_id ? Number(row.partner_id) : pid }); // neu angelegt → Partner benachrichtigen
     }
     out.push(row);
   }
-  if (fresh.length) void partnerNewOrder(customer || "", fresh, test, had); // Testauftrag → nur an den Test-Login
+  // Je Partner benachrichtigen (Testauftrag → nur an den Test-Login).
+  const byPid = new Map<string, typeof fresh>(); for (const f of fresh) { const k = String(f.pid ?? ""); if (!byPid.has(k)) byPid.set(k, []); byPid.get(k)!.push(f); }
+  for (const [k, list] of byPid) void partnerNewOrder(customer || "", list, test, had, k ? Number(k) : null);
   return out;
 }
 
@@ -267,15 +274,26 @@ export async function partnerAutoEnabled(kind: AutoKind): Promise<boolean> {
 export async function partnerAutoSendProfile(orderId: string, customer: string, url: string): Promise<number> {
   if (!pool || !orderId) return 0;
   const name = clip(customer, 120);
-  const rows = await insertPartnerTasks(orderId, name || null, [{ url, name: name || "Google profile", text: "Remove the whole Google Business Profile", kind: "profile" }]);
+  const pid = await routeFor("profile"); // Zuteilung (Einstellungen) – ohne Zuteilung bleibt das Profil beim Admin
+  if (!pid) return 0;
+  const rows = await insertPartnerTasks(orderId, name || null, [{ url, name: name || "Google profile", text: "Remove the whole Google Business Profile", kind: "profile" }], pid);
   if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board (Profil)", detail: rows.map((t) => `${t.code} ($${num(t.price_usd)})`).join(" · ") }).catch(() => {});
   return rows.length;
 }
 
-/** Neue Bewertungs-Bestellung → ALLE Bewertungen automatisch aufs Partner-Board (kein Button mehr). */
+/** Neue Bewertungs-Bestellung → Bewertungen automatisch an den Partner, dem die jeweilige Leistung zugeteilt ist
+ *  (Einstellungen → Automatische Weiterleitung). Leistungen ohne Zuteilung bleiben beim Admin (manuell übergeben). */
 export async function partnerAutoSend(orderId: string, customer: string, items: Record<string, unknown>[]): Promise<number> {
   if (!pool || !orderId || !items.length) return 0;
-  const rows = await insertPartnerTasks(orderId, clip(customer, 160) || null, items);
+  const groups = new Map<number, Record<string, unknown>[]>();
+  for (const it of items) {
+    const pid = await routeFor(serviceOf({ kind: it.kind, sw: it.sw, nt: it.nt, old: it.old }));
+    if (!pid) continue;
+    if (!groups.has(pid)) groups.set(pid, []);
+    groups.get(pid)!.push(it);
+  }
+  const rows: Row[] = [];
+  for (const [pid, list] of groups) rows.push(...(await insertPartnerTasks(orderId, clip(customer, 160) || null, list, pid)));
   if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board", detail: rows.map((t) => `${t.code} (${t.kind}, $${num(t.price_usd)})`).join(" · ") }).catch(() => {});
   return rows.length;
 }
@@ -331,7 +349,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const orderId = clip(b.orderId, 40) || null;
     const customer = clip(b.customer, 160) || null;
     const items = (Array.isArray(b.items) ? b.items : []).slice(0, 60) as Record<string, unknown>[];
-    const created = (await insertPartnerTasks(orderId, customer, items)).map(adminView);
+    const pidIn = Number(b.partnerId);
+    const created = (await insertPartnerTasks(orderId, customer, items, Number.isInteger(pidIn) && pidIn > 0 ? pidIn : null)).map(adminView);
     if (orderId && created.length) {
       await insertEvent({ orderId, type: "note", title: "An Partner übergeben", detail: created.map((t) => `${t.code} (${t.kind}, $${t.price})`).join(" · ") }).catch(() => {});
     }
@@ -379,12 +398,10 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "keine Aufgaben gewählt" });
-    const r = await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL`, [ids]);
-    if (!r.rows.length) return reply.code(400).send({ ok: false, error: "keine offenen gelöschten Aufgaben unter der Auswahl" });
-    const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
-    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, clip(b.note, 200) || null]);
-    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
-    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
+    // Sammelposten + Gutschrift (wenn der Partner dem Gutschriftverfahren zugestimmt hat) → PDF per Mail an den Partner.
+    const x = await recordManualPayout(ids, clip(b.note, 200) || null, "admin");
+    if (!x) return reply.code(400).send({ ok: false, error: "keine offenen gelöschten Aufgaben unter der Auswahl" });
+    return { ok: true, payoutId: x.payoutId, amount: x.amount, tasks: x.tasks, gs: x.gs };
   });
 
   // Admin → Einstellungen: automatische Weiterleitung an den Partner (Bewertungen / Profile).
@@ -407,28 +424,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return { ok: true, reviews: await payDiscountEnabled("reviews").catch(() => true), profiles: await payDiscountEnabled("profiles").catch(() => true) };
   });
 
-  // Admin → Partner: Liste der Lösch-Partner (anlegen / bearbeiten).
-  app.post("/admin/partners", async (req, reply) => {
-    const b = (req.body || {}) as Record<string, unknown>;
-    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
-    if (!pool) return { ok: true, partners: [] };
-    const r = await pool.query(`SELECT id, name, email, phone, note, active, created_at FROM partners ORDER BY active DESC, id`);
-    const t = totals(await listTasks("WHERE status <> 'cancelled'"));
-    return { ok: true, partners: r.rows.map((x) => ({ id: Number(x.id), name: x.name, email: x.email || "", phone: x.phone || "", note: x.note || "", active: !!x.active, created: x.created_at })), board: t };
-  });
-  app.post("/admin/partners/save", async (req, reply) => {
-    const b = (req.body || {}) as Record<string, unknown>;
-    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
-    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
-    const name = clip(b.name, 120), email = clip(b.email, 160), phone = clip(b.phone, 60), note = clip(b.note, 300);
-    const active = b.active !== false;
-    if (!name) return reply.code(400).send({ ok: false, error: "Name fehlt" });
-    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "E-Mail ungültig" });
-    const id = Number(b.id);
-    if (Number.isInteger(id) && id > 0) await pool.query(`UPDATE partners SET name=$1, email=$2, phone=$3, note=$4, active=$5 WHERE id=$6`, [name, email || null, phone || null, note || null, active, id]);
-    else await pool.query(`INSERT INTO partners (name, email, phone, note, active) VALUES ($1,$2,$3,$4,$5)`, [name, email || null, phone || null, note || null, active]);
-    return { ok: true };
-  });
+  // Admin → Partner: Liste, Anlegen, Freigabe, Leistungen, Zuteilung – siehe partnerRegistry.ts.
+  registerPartnerRegistry(app, adminToken);
 
   // Admin: geheimen Partner-Link holen (oder neu erzeugen → alter Link ungültig).
   app.post("/admin/partner/link", async (req, reply) => {
@@ -453,9 +450,14 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     const preview = await isPreview(b.t);
+    // Jeder Partner sieht nur SEINE Aufgaben; Bewerbung noch offen / abgelehnt → kein Board.
+    const pid = preview ? null : await partnerIdOf(b.t);
+    const pst = preview ? "active" : await partnerStatus(pid);
+    if (pst === "pending" || pst === "rejected") return { ok: true, gate: pst, preview: false, tasks: [], totals: totals([]), payouts: [] };
     // Stornierte der letzten 30 Tage mitschicken → Partner sieht sie unter „Cancelled" (nicht mehr in der Arbeit).
-    const rows = await listTasks(preview ? "WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND test" : "WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND NOT test");
-    const p = preview ? { rows: [] as Record<string, unknown>[] } : pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 20`) : { rows: [] as Record<string, unknown>[] };
+    const rows = preview ? await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND test")
+      : await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND NOT test AND partner_id = $1", [pid]);
+    const p = preview ? { rows: [] as Record<string, unknown>[] } : pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts WHERE partner_id = $1 OR (partner_id IS NULL AND $1 = (SELECT min(id) FROM partners)) ORDER BY id DESC LIMIT 20`, [pid]) : { rows: [] as Record<string, unknown>[] };
     // Screenshot der Bewertung (automatisch bei der Bestellung aufgenommen) → Vorschau statt nur Link.
     const shots = new Map<string, number>();
     const oids = [...new Set(rows.map((r) => r.order_id).filter(Boolean))];
@@ -469,7 +471,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const hr = await pool.query(`SELECT id FROM orders WHERE id = ANY($1::text[]) AND jsonb_typeof(raw->'payHold')='object'`, [oids]).catch(() => ({ rows: [] as { id: string }[] }));
       for (const x of hr.rows as { id: string }[]) held.add(x.id);
     }
-    return { ok: true, preview, tasks: rows.map((r) => ({ ...partnerView(r), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    return { ok: true, preview, paused: pst === "paused", tasks: rows.map((r) => ({ ...partnerView(r), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
   // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
@@ -478,27 +480,37 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     const id = Number(b.id);
     if (!pool || !Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id" });
+    const spid = (await isPreview(b.t)) ? null : await partnerIdOf(b.t);
     const r = await pool.query(
       `SELECT s.mime, s.img FROM review_shots s JOIN partner_tasks t ON t.order_id = s.order_id AND t.url = s.url
-        WHERE s.id=$1 AND s.status='ok' AND t.status <> 'cancelled' LIMIT 1`, [id],
+        WHERE s.id=$1 AND s.status='ok' AND t.status <> 'cancelled' AND ($2::bigint IS NULL OR t.partner_id = $2) LIMIT 1`, [id, spid],
     ).catch(() => ({ rows: [] as Record<string, unknown>[] }));
     const row = r.rows[0] as { mime?: string; img?: Buffer } | undefined;
     if (!row || !row.img) return reply.code(404).send({ ok: false, error: "not found" });
     return reply.header("content-type", row.mime || "image/jpeg").header("cache-control", "private, max-age=86400").send(row.img);
   });
 
+  /** Partner-Kontext einer Anfrage: Vorschau (Test-Board) oder eigener Partner; Bewerber/Abgelehnte dürfen nichts ändern. */
+  const ctxOf = async (t: unknown): Promise<{ preview: boolean; pid: number | null; blocked: boolean }> => {
+    const preview = await isPreview(t);
+    if (preview) return { preview, pid: null, blocked: false };
+    const pid = await partnerIdOf(t);
+    const st = await partnerStatus(pid);
+    return { preview, pid, blocked: st === "pending" || st === "rejected" };
+  };
   const PARTNER_SETTABLE = ["new", "working", "removed", "not_possible", "software"];
   const LABEL: Record<string, string> = { new: "zurückgesetzt", working: "arbeitet dran", removed: "GELÖSCHT ✓", not_possible: "nicht möglich", software: "nur per Software" };
   // Push-Titel (Uber-Stil: kurz, was passiert ist).
   const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
-  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean; verified?: boolean; confirmed?: boolean } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean; verified?: boolean; confirmed?: boolean; pid?: number | null } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
     if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
     if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
     if (opts.preview !== undefined && !!old.test !== opts.preview) return { error: "not found", code: 404 }; // Test ↔ echt strikt getrennt
+    if (!opts.admin && !opts.preview && opts.pid && old.partner_id && Number(old.partner_id) !== opts.pid) return { error: "not found", code: 404 }; // nur eigene Aufgaben
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
     // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
     const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID) || String(old.admin_note || "").includes(SW_NOTE_APPROVED); // bezahlt ODER freigegeben (zahlt bei Erfolg)
@@ -570,7 +582,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const status = String(b.status || "");
     if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id missing" });
     if (status && !PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
-    const r = await partnerApply(id, status, b.note, { preview: await isPreview(b.t), confirmed: b.confirm === true });
+    const cx = await ctxOf(b.t);
+    if (cx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
+    const r = await partnerApply(id, status, b.note, { preview: cx.preview, pid: cx.pid, confirmed: b.confirm === true });
     if (r.error) return reply.code(r.code || 400).send({ ok: false, error: r.error });
     return { ok: true, task: partnerView(r.row as Row) };
   });
@@ -581,10 +595,13 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const b = (req.body || {}) as Record<string, unknown>;
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
-    const preview = await isPreview(b.t);
+    const vcx = await ctxOf(b.t);
+    if (vcx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
+    const preview = vcx.preview;
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 20);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
-    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows.filter((x) => !!x.test === preview);
+    const rows = (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, partner_id FROM partner_tasks WHERE id = ANY($1::bigint[])`, [ids])).rows
+      .filter((x) => !!x.test === preview && (preview || !vcx.pid || !x.partner_id || Number(x.partner_id) === vcx.pid));
     const out: { id: number; code: string; result: string; reason: string; checkId?: number; task?: ReturnType<typeof partnerView>; error?: string }[] = [];
     const queue = [...rows];
     const worker = async () => {
@@ -593,7 +610,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
         const c = await checkRemoval(x);
         const item: (typeof out)[number] = { id: Number(x.id), code: x.code, ...c };
         if (c.result === "gone") {
-          const r = await partnerApply(Number(x.id), "removed", undefined, { quiet: true, preview, verified: true });
+          const r = await partnerApply(Number(x.id), "removed", undefined, { quiet: true, preview, verified: true, pid: vcx.pid });
           if (r.row) item.task = partnerView(r.row); else item.error = r.error;
         } else if (x.order_id) {
           await insertEvent({ orderId: x.order_id, type: "note", title: `Lena-Prüfung: ${x.code} ${c.result === "visible" ? "noch sichtbar – nicht als gelöscht übernommen" : "nicht möglich – Status unverändert"}`, detail: [c.reason, (c as { why?: string }).why].filter(Boolean).join(" · "), auto: true }).catch(() => {});
@@ -629,9 +646,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
     const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = [];
-    const preview = await isPreview(b.t);
+    const bcx = await ctxOf(b.t);
+    if (bcx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
+    const preview = bcx.preview;
     for (const id of ids) {
-      const r = await partnerApply(id, status, undefined, { quiet: true, preview, confirmed: b.confirm === true });
+      const r = await partnerApply(id, status, undefined, { quiet: true, preview, pid: bcx.pid, confirmed: b.confirm === true });
       if (r.error || !r.row) { skipped.push(id); continue; }
       tasks.push(partnerView(r.row));
       if (r.changed) changedCodes.push(r.row.code);
@@ -648,16 +667,15 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     if (await isPreview(b.t)) return reply.code(400).send({ ok: false, error: "test mode" });
+    const mpid = await partnerIdOf(b.t);
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 1000);
     const r = b.all === true
-      ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND NOT test`)
-      : ids.length ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND NOT test`, [ids]) : { rows: [] as { id: string; price_usd: string }[] };
-    if (!r.rows.length) return reply.code(400).send({ ok: false, error: "nothing to mark" });
-    const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
-    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, "vom Partner als bezahlt bestätigt"]);
-    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
-    void notifyTeam(`Auszahlung bestätigt · $${amount}`, `Partner · ${r.rows.length} Löschungen`, `${SITE_URL}/admin`, { kind: "payout" });
-    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
+      ? await pool.query(`SELECT id FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test AND partner_id=$1`, [mpid])
+      : ids.length ? await pool.query(`SELECT id FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test AND partner_id=$2`, [ids, mpid]) : { rows: [] as { id: string }[] };
+    const x = r.rows.length ? await recordManualPayout(r.rows.map((y) => y.id), "vom Partner als bezahlt bestätigt", "partner", mpid) : null;
+    if (!x) return reply.code(400).send({ ok: false, error: "nothing to mark" });
+    void notifyTeam(`Auszahlung bestätigt · $${x.amount}`, `Partner · ${x.tasks} Löschungen${x.gs ? " · " + x.gs : ""}`, `${SITE_URL}/admin`, { kind: "payout" });
+    return { ok: true, payoutId: x.payoutId, amount: x.amount, tasks: x.tasks, gs: x.gs };
   });
 
   // Erste Aktion ohne Statuswechsel (Bewertung geöffnet, Link kopiert) → Kunde nicht mehr „NEW".
@@ -666,7 +684,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
-    if (ids.length) await pool.query(`UPDATE partner_tasks SET touched_at=COALESCE(touched_at, now()) WHERE id = ANY($1::bigint[])`, [ids]);
+    const tpid = (await isPreview(b.t)) ? null : await partnerIdOf(b.t);
+    if (ids.length) await pool.query(`UPDATE partner_tasks SET touched_at=COALESCE(touched_at, now()) WHERE id = ANY($1::bigint[]) AND ($2::bigint IS NULL OR partner_id = $2)`, [ids, tpid]);
     return { ok: true };
   });
+
+  // Auszahlungen (Payoneer + Gutschrift) – payouts.ts
+  registerPayoutRoutes(app, adminToken, { check: checkPartnerToken, preview: isPreview, email: partnerSessionEmail });
 }
