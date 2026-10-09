@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -3289,7 +3289,59 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const Body = bodies[step];
   const wideStep = [0, 5].includes(step) && !processing;
   // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
-  const newStep1 = (step === 0 || step === 1) && !processing; // Schritt 1 + 2 im neuen Design
+  // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
+  const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
+  const newStep1 = ((step === 0 || step === 1) && !processing) || reviewsNA; // neues Design
+  /* Bewertungen gewünscht, Profil liegt in DE/AT → Hinweis + Profil-Löschung als Alternative. */
+  function StepReviewsNA() {
+    const bp = bpCopy(t.code);
+    const cc = String((selected && selected.cc) || addrCountry((selected && selected.addr) || "") || "DE").toUpperCase();
+    let country = cc === "AT" ? "Austria" : "Germany";
+    try { country = new Intl.DisplayNames([t.code], { type: "region" }).of(cc) || country; } catch (e) { /* */ }
+    const pick = (s) => {
+      setService(s);
+      if (s === "reset") { setExpress(false); setProtection(null); go(5); }
+      else go(4);
+    };
+    const opt = (id, img, title, desc, price, badge, i) => (
+      <button type="button" key={id} className={"bpr-op bpr-svc bpr-fade" + (service === id ? " sel" : "")} style={{ animationDelay: (0.14 + i * 0.04) + "s" }} onClick={() => pick(id)}>
+        {badge ? <span className="bpr-bdg">{badge}</span> : null}
+        <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
+        <span className="tx"><b>{title}</b><span>{desc}</span></span>
+        <span className="pr"><strong>{price}</strong><small>{wm.afterSuccess}</small></span>
+      </button>
+    );
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="na">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <div className="bpr-na-ic bpr-fade"><img src={asset("/assets/bestell/bewertungen.webp")} alt="" width={80} height={80} /><span className="x" aria-hidden="true">{cc}</span></div>
+            <h1 className="bpr-h1 bpr-fade" style={{ animationDelay: ".03s" }}>{bp.naH(country)}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".06s" }}>{bp.naSub(country)}</p>
+            <div className="bpr-na-k bpr-fade" style={{ animationDelay: ".1s" }}>{bp.naOpts}</div>
+            <div className="bpr-opts" style={{ marginTop: 14 }}>
+              {opt("remove", "/assets/bestell/profil.webp", bp.svc1[0], bp.svc1[1], money(lang, p.deletion), w.s4.opt1.badge, 0)}
+              {opt("reset", null, bp.svc2[0], bp.svc2[1], money(lang, p.reset), null, 1)}
+            </div>
+            <div className="bpr-alts bpr-fade" style={{ animationDelay: ".22s" }}>
+              <button type="button" className="bpr-alt" onClick={() => go(0)}><span className="ai"><LSearch /></span><span className="tx">{bp.naWrong}<small>{(selected && selected.name) || name}{selected && selected.addr ? " · " + selected.addr : ""}</small></span><LArrowRight className="ar" /></button>
+            </div>
+            <p className="bpr-legal bpr-fade" style={{ animationDelay: ".26s" }}><LInfo />{bp.naLegal}</p>
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".26s" }}><button type="button" className="bpr-back" onClick={() => go(1)}><LArrowLeft /><span>{w.back}</span></button></div>
+          </section>
+          <aside className="bpr-aside">
+            <div className="bpr-risk"><LShieldCheck /><b>{bp.riskT}</b><p>{bp.riskD}</p></div>
+            <button type="button" className="bpr-expert" onClick={openTidioChat}>
+              <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+              <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+              <LArrowUpRight className="ar" />
+            </button>
+          </aside>
+        </main>
+        <div className="bpr-mbar"><button type="button" className="bpr-back full" onClick={() => go(1)}><LArrowLeft /><span>{w.back}</span></button></div>
+      </div>
+    );
+  }
   function StepSearchNew() {
     const bp = bpCopy(t.code);
     const q0 = conv.quotes[0];
@@ -3423,7 +3475,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : StepSearchNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : StepReviewsNA()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
