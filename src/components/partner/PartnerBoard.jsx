@@ -14,7 +14,7 @@ import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
 import { Loader } from "lucide-react";
 import { usePayouts, PayoutSetup } from "./PartnerPayouts";
-import { PartnerJoin, PartnerPending } from "./PartnerJoin";
+import { PartnerJoin, PartnerPending, PartnerTerms } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -43,6 +43,7 @@ export default function PartnerBoard() {
   const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
   const [join, setJoin] = React.useState(null); // { invite } → Registrierung als neuer Partner
+  const [termsView, setTermsView] = React.useState(false); // /partner?terms → Partner-Vereinbarung lesen
   const [acct, setAcct] = React.useState(null); // „pending" | „rejected" → Bewerbung (noch) nicht freigegeben
   const [cancelled, setCancelled] = React.useState([]); // von RapidRemove stornierte Aufgaben (letzte 30 Tage) – nur zur Info
   const [err, setErr] = React.useState("");
@@ -66,6 +67,7 @@ export default function PartnerBoard() {
     try { t = (window.location.hash || "").replace(/^#/, ""); } catch (e) {}
     // Registrierung: /partner?join=1 (optional #inv_… Einladung) – die Einladung ist kein Login-Token.
     let wantJoin = false; try { wantJoin = new URLSearchParams(window.location.search).has("join"); } catch (e) {}
+    try { if (new URLSearchParams(window.location.search).has("terms")) setTermsView(true); } catch (e) {}
     if (t.startsWith("inv_") || wantJoin) { setJoin({ invite: t.startsWith("inv_") ? t : "" }); if (t.startsWith("inv_")) t = ""; }
     const fromLink = !!t;
     const pv = isPreviewUrl() && t.startsWith("ps_");
@@ -336,6 +338,7 @@ export default function PartnerBoard() {
   if (offerPk && token) return <PasskeyOffer role="partner" token={token} onDone={() => setOfferPk(false)} />;
   if (gate && token && !setup) return <PushGate role="partner" token={token} state={gate} onDone={(on) => { setGate(null); if (on) showToast("Notifications are on"); }} texts={{ pushSub: "Get a notification for every new order and when a customer has paid – instantly.", appIos2s: "Then open “RR Partner” from your home screen" }} />;
   const logout = () => { try { flush(true); } catch (e) {} call("logout", { t: token }).catch(() => {}); try { localStorage.removeItem(KEY); } catch (e) {} window.location.replace(window.location.pathname); };
+  if (termsView) return <PartnerTerms onBack={() => { setTermsView(false); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {} }} />;
   if (join) return <PartnerJoin invite={join.invite} onLogin={() => { setJoin(null); try { window.history.replaceState(null, "", window.location.pathname); } catch (e) {} }} onToken={(t) => { setJoin(null); onLogin(t, true); setTasks(null); }} />;
   if (!token) return <PartnerLogin mode="login" onToken={onLogin} onJoin={() => setJoin({ invite: "" })} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;

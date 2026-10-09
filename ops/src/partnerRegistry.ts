@@ -21,9 +21,10 @@ import { hashPassword } from "./customers";
 import { createPartnerSession, partnerSessionEmail, isPartnerSession } from "./partnerAuth";
 import { isTestEmail } from "./testAccounts";
 import { sendMail } from "./mailer";
+import { TERMS_VERSION, PARTNER_AGREEMENT, TERMS_SUMMARY, agreementLines } from "./partnerTerms";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
-export const TERMS_VERSION = "2026-10-09";
+export { TERMS_VERSION } from "./partnerTerms";
 
 export const SERVICES = [
   { id: "std", de: "Google-Bewertungen (bis 4 Wochen)", en: "Google reviews (up to 4 weeks old)", price: 10 },
@@ -71,7 +72,7 @@ export async function initPartnerRegistry(): Promise<void> {
   for (const c of [
     "status text NOT NULL DEFAULT 'active'", "company text", "whatsapp text", "about text", "capacity integer",
     "services jsonb", "approved jsonb", "applied_at timestamptz", "approved_at timestamptz", "invite_id bigint", "pay_gate boolean",
-    "terms_at timestamptz", "terms_ip text", "terms_v text", "admin_note text",
+    "terms_at timestamptz", "terms_ip text", "terms_v text", "terms_ua text", "admin_note text",
   ]) await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS ${c}`);
   await pool.query(`ALTER TABLE partner_accounts ADD COLUMN IF NOT EXISTS partner_id bigint`);
   await pool.query(`ALTER TABLE partner_push_subs ADD COLUMN IF NOT EXISTS partner_id bigint`).catch(() => {});
@@ -214,7 +215,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
   app.post("/partner/join-info", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
     const inv = await inviteRow(b.invite);
-    return { ok: true, services: JOIN_SERVICES.map((s) => ({ id: s.id, label: s.label })), termsVersion: TERMS_VERSION, invite: inv ? { name: inv.name || "", email: inv.email || "", services: joinIdsOf(inv.services || []), rates: inviteRates(inv) } : null };
+    return { ok: true, services: JOIN_SERVICES.map((s) => ({ id: s.id, label: s.label })), termsVersion: TERMS_VERSION, terms: { ...PARTNER_AGREEMENT, version: TERMS_VERSION, summary: TERMS_SUMMARY }, invite: inv ? { name: inv.name || "", email: inv.email || "", services: joinIdsOf(inv.services || []), rates: inviteRates(inv) } : null };
   });
 
   // Öffentlich: Registrierung → Status „pending" + Login (Sitzung) → Partner sieht „Application under review".
@@ -227,10 +228,12 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
       name: clip(b.name, 120), company: clip(b.company, 160), email: norm(b.email), pw: String(b.password || ""),
       whatsapp: clip(b.whatsapp, 40), country: clip(b.country, 2).toUpperCase(), about: clip(b.about, 1500),
       capacity: Number.isFinite(Number(b.capacity)) && Number(b.capacity) > 0 ? Math.min(10000, Math.round(Number(b.capacity))) : null,
+      addr1: clip(b.addr1, 160), zip: clip(b.zip, 20), city: clip(b.city, 80),
     };
     if (!v.name || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email) || !/^[A-Z]{2}$/.test(v.country)) return reply.code(400).send({ ok: false, error: "Please fill in your name, email and country." });
     if (v.pw.length < 8) return reply.code(400).send({ ok: false, error: "Password: at least 8 characters." });
     if (!/^\+?[\d\s()-]{7,}$/.test(v.whatsapp)) return reply.code(400).send({ ok: false, error: "Please enter your WhatsApp number with country code." });
+    if (!v.addr1 || !v.city) return reply.code(400).send({ ok: false, error: "Please enter your address (street and city)." });
     // „reviews" → alle Bewertungs-Leistungen (Preisvorstellung gilt für normale Bewertungen); „profile" → Profile.
     const svc: { id: string; price: number | null; note: string }[] = [];
     for (const x of (Array.isArray(b.services) ? b.services : []) as Record<string, unknown>[]) {
@@ -240,7 +243,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
       ids.forEach((id, i) => { if (!svc.some((y) => y.id === id)) svc.push({ id, price: i === 0 ? price : null, note: clip(x.note, 200) }); });
     }
     if (!svc.length) return reply.code(400).send({ ok: false, error: "Please choose at least one service you offer." });
-    if (b.terms !== true) return reply.code(400).send({ ok: false, error: "Please accept the partner terms." });
+    if (b.terms !== true || String(b.termsVersion || "") !== TERMS_VERSION) return reply.code(400).send({ ok: false, error: "Please accept the partner agreement." });
     // Eingeladen → keine Bewerbung: sofort freigegeben mit den Leistungen + Preisen aus der Einladung
     // (Einladung ohne Leistungen → die gewählten Leistungen zum Standardpreis).
     let approved: Record<string, number> | null = null;
@@ -253,10 +256,12 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [v.email]);
     if (ex.rowCount) return reply.code(409).send({ ok: false, error: "This email is already registered – please log in." });
     const p = await pool.query(
-      `INSERT INTO partners (name, email, phone, whatsapp, company, country, about, capacity, services, status, active, applied_at, invite_id, terms_at, terms_ip, terms_v, approved, approved_at, pay_gate)
-       VALUES ($1,$2,$3,$3,$4,$5,$6,$7,$8,$12,true,now(),$9,now(),$10,$11,$13,$14,true) RETURNING id`,
+      `INSERT INTO partners (name, email, phone, whatsapp, company, country, about, capacity, services, status, active, applied_at, invite_id, terms_at, terms_ip, terms_v, approved, approved_at, pay_gate,
+         terms_ua, legal_name, addr1, zip, city)
+       VALUES ($1,$2,$3,$3,$4,$5,$6,$7,$8,$12,true,now(),$9,now(),$10,$11,$13,$14,true,$15,$16,$17,$18,$19) RETURNING id`,
       [v.name, v.email, v.whatsapp, v.company || null, v.country, v.about || null, v.capacity, JSON.stringify(svc), inv ? inv.id : null, ipOf(req), TERMS_VERSION,
-        approved ? "active" : "pending", approved ? JSON.stringify(approved) : null, approved ? new Date().toISOString() : null]);
+        approved ? "active" : "pending", approved ? JSON.stringify(approved) : null, approved ? new Date().toISOString() : null,
+        clip(req.headers["user-agent"], 300) || null, v.company || v.name, v.addr1, v.zip || null, v.city]);
     const pid = Number(p.rows[0].id);
     await pool.query(`INSERT INTO partner_accounts (email, pass_hash, partner_id) VALUES ($1,$2,$3)`, [v.email, hashPassword(v.pw), pid]);
     if (inv) await pool.query(`UPDATE partner_invites SET used_at=now(), partner_id=$2 WHERE id=$1`, [inv.id, pid]);
@@ -268,6 +273,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
         `Hi ${v.name},`, "your partner account is ready. 🎉",
         `Your services: ${al.map((x) => `${x.en} – ${approved![x.id]} USD per removal`).join("; ")}.`,
         "Open the partner app, set up your automatic payouts once (2 minutes) and you'll receive tasks right away.",
+        "For your records, here is the partner agreement you accepted:", ...agreementLines(),
       ], { href: `${SITE_URL}/partner`, label: "Open the partner app" });
       return { ok: true, token, status: "active" };
     }
@@ -276,6 +282,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     void mailPartner(v.email, "Your RapidRemove partner application", [
       `Hi ${v.name},`, "thanks for registering as a RapidRemove partner. We're reviewing your application and will get back to you shortly – usually within 1–2 working days.",
       "As soon as you're approved, you'll see your tasks in the partner app and can set up automatic payouts.",
+      "For your records, here is the partner agreement you accepted:", ...agreementLines(),
     ], { href: `${SITE_URL}/partner`, label: "Open the partner app" });
     return { ok: true, token, status: "pending" };
   });
