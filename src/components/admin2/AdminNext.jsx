@@ -30,6 +30,9 @@ import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
+import { useHistState, useHardLeave } from "./navHistory";
+
+const R = { replace: true }; // Navigations-Korrektur ohne neuen Verlaufseintrag
 
 const DESK_Q = "(min-width: 900px)";
 /* Storno-Gründe (Vorlagen aus dem Backend, wie „Auftrag stornieren“ im bisherigen Admin). */
@@ -84,9 +87,10 @@ export default function AdminNext() {
   const [now, setNow] = React.useState(() => Date.now());
   const [spin, setSpin] = React.useState(false);
 
-  const [tab, setTab] = React.useState("orders"); // Start immer: Aufträge › Neu
-  const [stack, setStack] = React.useState([{ v: "list" }]); // Aufträge: list → detail → reviews
-  const [moreSub, setMoreSub] = React.useState(null);
+  const [tab, setTab] = useHistState("tab", "orders"); // Start immer: Aufträge › Neu
+  const [stack, setStack] = useHistState("stack", [{ v: "list" }]); // Aufträge: list → detail → reviews
+  const [moreSub, setMoreSub] = useHistState("more", null);
+  useHardLeave("/admin");
   const [f, setFState] = React.useState({ scope: "open", tile: "new", type: "all", staff: "all", q: "" });
   const [sheet, setSheet] = React.useState(null);
   const [viewer, setViewer] = React.useState(null);
@@ -125,9 +129,9 @@ export default function AdminNext() {
     const iv = setInterval(() => reload(true), 90000);
     const tick = setInterval(() => setNow(Date.now()), 60000);
     // Deep-Link ?order=RR-… öffnet direkt den Auftrag
-    try { const id = new URLSearchParams(window.location.search).get("order"); if (id) { setTab("orders"); setStack([{ v: "list" }, { v: "detail", id }]); } } catch (e) {}
+    try { const id = new URLSearchParams(window.location.search).get("order"); if (id) { setTab("orders", R); setStack([{ v: "list" }, { v: "detail", id }], R); } } catch (e) {}
     // Deep-Link ?partner=ID (Push „Neue Partner-Bewerbung") öffnet den Partner
-    try { if (new URLSearchParams(window.location.search).get("partner")) { setTab("more"); setMoreSub("partner"); } } catch (e) {}
+    try { if (new URLSearchParams(window.location.search).get("partner")) { setTab("more", R); setMoreSub("partner", R); } } catch (e) {}
     return () => { clearInterval(iv); clearInterval(tick); mq.removeEventListener ? mq.removeEventListener("change", on) : mq.removeListener(on); };
   }, [reload]);
 
@@ -162,7 +166,7 @@ export default function AdminNext() {
   const goOrders = (tile) => { setTab("orders"); setStack([{ v: "list" }]); setF({ scope: "open", tile }); };
   // Desktop: Konto-Unterpunkte direkt in der Seitenleiste ("more:<sub>")
   // Desktop hat keine Konto-Kachelseite → nie „leer“ auf "more" landen
-  React.useEffect(() => { if (isDesk && tab === "more" && !moreSub) setMoreSub("checked"); }, [isDesk, tab, moreSub]);
+  React.useEffect(() => { if (isDesk && tab === "more" && !moreSub) setMoreSub("checked", R); }, [isDesk, tab, moreSub]); // eslint-disable-line react-hooks/exhaustive-deps
   const switchTab = (k) => {
     if (k.startsWith("more:")) { const sub = k.slice(5); setTab("more"); setMoreSub(sub); const p = paneRefs.current.more; if (p) p.scrollTo({ top: 0 }); return; }
     if (k === tab) {

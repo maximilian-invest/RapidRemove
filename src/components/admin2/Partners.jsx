@@ -5,6 +5,7 @@ import React from "react";
 import {
   ArrowLeft, Handshake, ChevronRight, BarChart3, Banknote, Zap, UserPlus, Check, X, Pause, Play, Copy, Loader, Mail, MessageCircle, Clock,
 } from "lucide-react";
+import { useHistState } from "./navHistory";
 import { partnerStatusApi, partnerInviteApi, partnerRoutesApi, partnerSave } from "@/lib/admin-api";
 
 const ST_L = { pending: ["Bewerbung", "#b26b00"], active: ["Aktiv", "var(--success)"], paused: ["Pausiert", "var(--g3)"], rejected: ["Abgelehnt", "var(--danger)"] };
@@ -17,7 +18,7 @@ export function svcList(partners) { return (partners && partners.services) || [{
 /* ---------------- Liste ---------------- */
 export function PartnersScreen({ ctx }) {
   const { setMoreSub, partners, toast } = ctx;
-  const [sub, setSub] = React.useState(() => {
+  const [sub, setSub] = useHistState("psub", () => {
     try { const id = new URLSearchParams(window.location.search).get("partner"); if (id) return { v: "detail", id: Number(id) }; } catch (e) {}
     return null;
   });
@@ -82,7 +83,7 @@ function PartnerDetail({ ctx, id, back }) {
       : { ...p.approved };
     setAp(base); setNote(p.adminNote || "");
   }, [p && p.id, p && p.status]); // eslint-disable-line react-hooks/exhaustive-deps
-  if (!p || !ap) return <><div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div><div className="aempty"><b>{partners ? "Partner nicht gefunden" : "Lädt …"}</b></div></>;
+  if (!p || !ap) return <><div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div><div className="aempty"><b>{partners ? "Partner nicht gefunden" : "Lädt …"}</b></div></>;
   const st = ST_L[p.status] || ST_L.active;
   const approvedOut = Object.fromEntries(Object.entries(ap).filter(([, v]) => Number(v) > 0).map(([k, v]) => [k, Number(v)]));
   const run = async (k, fn, msg) => { setBusy(k); try { await fn(); toast(msg); if (loadPartners) await loadPartners(); } catch (e) { toast("Fehler: " + e.message); } setBusy(""); };
@@ -90,7 +91,7 @@ function PartnerDetail({ ctx, id, back }) {
   const wa = (p.whatsapp || "").replace(/[^\d]/g, "");
   return (
     <>
-      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
       <div className="ttl">{p.name}</div>
       <p className="sh" style={{ marginTop: -6 }}><b style={{ color: st[1] }}>{st[0]}</b>{p.company ? " · " + p.company : ""}{p.country ? " · " + FLAG(p.country) + " " + p.country : ""}{p.invited ? " · eingeladen" : ""}{p.applied ? " · beworben " + dt(p.applied) : ""}</p>
       <div className="info">
@@ -151,7 +152,7 @@ function InviteScreen({ ctx, back }) {
   const msg = `Hi${f.name ? " " + f.name.split(" ")[0] : ""}, please register as a RapidRemove partner here: ${url}`;
   return (
     <>
-      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
       <div className="ttl">Partner einladen</div>
       <p className="sh">Der Partner registriert sich über den Link selbst (Kontakt, Leistungen, Preisvorstellung, Login). Danach gibst du ihn hier frei. Link 14 Tage gültig, einmal verwendbar.</p>
       {!url ? (

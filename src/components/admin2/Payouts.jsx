@@ -49,7 +49,7 @@ export default function PayoutsScreen({ ctx }) {
   };
   return (
     <>
-      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub("partner")}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={() => setMoreSub("partner")}><ArrowLeft /></button></div>
       <div className="ttl">Auszahlungen</div>
       {err ? <div className="aempty"><b>Fehler</b>{err}</div> : null}
       {!d && !err ? <div className="aempty"><b>Lädt …</b></div> : null}

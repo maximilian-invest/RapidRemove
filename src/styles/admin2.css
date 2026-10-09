@@ -601,8 +601,8 @@
 .an.desk .tsec{display:block;font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--g3);padding:18px 14px 6px}
 .an.desk .tb .ext{width:13px!important;height:13px!important;margin-left:auto;opacity:.45}
 .an.desk .tb.old{margin-top:auto}
-.an.desk .mbk{display:none}
-.an.desk .anav:has(> .mbk:only-child){display:none}
+.an.desk .mbk:not(.keep){display:none}
+.an.desk .anav:has(> .mbk:not(.keep):only-child){display:none}
 @media (max-width:1000px){.an.desk .tsec{font-size:0;padding:10px 0 4px;border-top:1px solid #ececef;margin-top:8px}.an.desk .tb .ext{display:none}}
 .an.desk .tabbar{overflow-y:auto;scrollbar-width:none}
 /* Rabatt-Wunsch (Wise/PayPal −10 %) */

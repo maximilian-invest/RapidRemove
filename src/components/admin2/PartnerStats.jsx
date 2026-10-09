@@ -30,7 +30,7 @@ export default function PartnerStatsScreen({ ctx }) {
   const p = list.find((x) => x.id === pid) || list[0] || null;
   return (
     <div className="pstx">
-      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub("partner")}><ArrowLeft /></button></div>
+      <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={() => setMoreSub("partner")}><ArrowLeft /></button></div>
       <div className="ttl">Statistiken</div>
       <div className="px-top">
         {list.length > 1 ? <div className="seg2">{list.map((x) => <button key={x.id} type="button" className={p && p.id === x.id ? "on" : ""} onClick={() => setPid(x.id)}>{x.name}</button>)}</div> : <span className="px-pn">{p ? p.name : ""}</span>}
