@@ -839,6 +839,7 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .sf-self{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:16px;background:#eef6ff;color:#173a63;font-size:13px;line-height:1.45}
 .rra .sf-self svg{width:18px;height:18px;flex:none;margin-top:1px;color:#1c4f9c}
 /* Neue Bestellung im Dashboard */
+.rra .no-btn{margin-bottom:26px}
 .rra .no-btn .t{flex:1;display:flex;flex-direction:column;min-width:0}
 .rra .no-btn .t b{font-weight:700}
 .rra .no-btn .t span{font-size:13px;color:var(--g3);font-weight:500}
