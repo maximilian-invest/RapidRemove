@@ -21,6 +21,8 @@ export interface AuftragsbestaetigungReviewsProps {
   chatPct?: number;
   /** Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen beauftragt) → Hinweis + Upload im Dashboard. */
   verify?: boolean;
+  /** Anzahl der Bewertungen, die auf den Nachweis warten (nur 4–5 ★); die übrigen starten ohne Nachweis. */
+  verifyN?: number;
   payGate?: boolean;
   /** Die zu löschenden Bewertungen (wie im Wizard eingereicht). */
   items?: ReviewRef[];
@@ -294,6 +296,27 @@ const VF: Record<string, [string, string]> = {
 };
 
 /** Zahlungsart hinterlegen („Automatisch bezahlen"): Auftrag startet erst danach. */
+/* Schritt-Überschriften, wenn Zahlungsart UND Nachweis fehlen: [Titel Schritt 1 (ersetzt „Letzter Schritt"), Präfix Schritt 2]. */
+const STEP: Record<string, [string, string]> = {
+  de: ["Schritt 1: Zahlungsart hinterlegen", "Schritt 2: "], en: ["Step 1: add a payment method", "Step 2: "], es: ["Paso 1: añade un método de pago", "Paso 2: "],
+  fr: ["Étape 1 : ajoute un moyen de paiement", "Étape 2 : "], it: ["Passo 1: aggiungi un metodo di pagamento", "Passo 2: "], nl: ["Stap 1: voeg een betaalmethode toe", "Stap 2: "],
+  pt: ["Passo 1: adiciona um método de pagamento", "Passo 2: "], ja: ["ステップ1：お支払い方法の登録", "ステップ2："], sv: ["Steg 1: lägg till en betalningsmetod", "Steg 2: "],
+  da: ["Trin 1: tilføj en betalingsmetode", "Trin 2: "], no: ["Steg 1: legg til en betalingsmetode", "Steg 2: "],
+};
+/* Nachweis nur für einen Teil: „Nur für k Bewertung(en) mit 4–5 Sternen – die übrigen r starten ohne Nachweis." */
+const VFP: Record<string, (k: number, r: number) => string> = {
+  de: (k, r) => `Nur für ${k === 1 ? "1 Bewertung" : k + " Bewertungen"} mit 4–5 Sternen – ${r === 1 ? "die andere startet" : "die übrigen " + r + " starten"} ohne Nachweis.`,
+  en: (k, r) => `Only for ${k === 1 ? "1 review" : k + " reviews"} with 4–5 stars – ${r === 1 ? "the other one starts" : "the other " + r + " start"} without proof.`,
+  es: (k, r) => `Solo para ${k === 1 ? "1 reseña" : k + " reseñas"} de 4–5 estrellas; ${r === 1 ? "la otra empieza" : "las otras " + r + " empiezan"} sin prueba.`,
+  fr: (k, r) => `Seulement pour ${k === 1 ? "1 avis" : k + " avis"} à 4–5 étoiles – ${r === 1 ? "l’autre démarre" : "les " + r + " autres démarrent"} sans justificatif.`,
+  it: (k, r) => `Solo per ${k === 1 ? "1 recensione" : k + " recensioni"} a 4–5 stelle: ${r === 1 ? "l’altra parte" : "le altre " + r + " partono"} senza prova.`,
+  nl: (k, r) => `Alleen voor ${k === 1 ? "1 review" : k + " reviews"} met 4–5 sterren – ${r === 1 ? "de andere start" : "de andere " + r + " starten"} zonder bewijs.`,
+  pt: (k, r) => `Só para ${k === 1 ? "1 avaliação" : k + " avaliações"} de 4–5 estrelas – ${r === 1 ? "a outra começa" : "as outras " + r + " começam"} sem prova.`,
+  ja: (k, r) => `星4〜5の口コミ${k}件のみが対象です。その他の${r}件は証明なしで開始します。`,
+  sv: (k, r) => `Bara för ${k === 1 ? "1 omdöme" : k + " omdömen"} med 4–5 stjärnor – ${r === 1 ? "det andra startar" : "de andra " + r + " startar"} utan bevis.`,
+  da: (k, r) => `Kun for ${k === 1 ? "1 anmeldelse" : k + " anmeldelser"} med 4–5 stjerner – ${r === 1 ? "den anden starter" : "de andre " + r + " starter"} uden bevis.`,
+  no: (k, r) => `Bare for ${k === 1 ? "1 omtale" : k + " omtaler"} med 4–5 stjerner – ${r === 1 ? "den andre starter" : "de andre " + r + " starter"} uten bevis.`,
+};
 const PG: Record<string, [string, string]> = {
   de: ["Letzter Schritt: Zahlungsart hinterlegen", "Bitte hinterlegen Sie in Ihrem Dashboard eine Zahlungsart (Karte, PayPal …). Abgebucht wird nur, wenn eine Bewertung tatsächlich gelöscht ist – vorher zahlen Sie nichts. Sobald die Zahlungsart hinterlegt ist, starten wir mit der Löschung."],
   en: ["Last step: add a payment method", "Please add a payment method (card, PayPal …) in your dashboard. You're only charged when a review has actually been removed – nothing before that. As soon as it's saved, we start the removal."],
@@ -351,7 +374,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
@@ -368,17 +391,19 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
       <P>{ad ? ad[2](n, orderId) : sw.length && !rest.length ? t.p1sw(n) : t.p1(n)}{orderId && !ad ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
       {/* Wichtigstes zuerst: Nachweis / Zahlungsart / Dashboard-Button – nicht erst ganz unten. */}
-      {verify ? (
+      {/* Reihenfolge: 1) Zahlungsart, 2) Inhaber-Nachweis (nur für die 4–5-Sterne-Bewertungen). */}
+      {payGate ? (
         <NoteBox>
-          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(VF[lang] || VF.en)[0]}</span><br />
-          {(VF[lang] || VF.en)[1]}
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{verify ? (STEP[lang] || STEP.en)[0] : (PG[lang] || PG.en)[0]}</span><br />
+          {(PG[lang] || PG.en)[1]}
         </NoteBox>
       ) : null}
 
-      {payGate ? (
+      {verify ? (
         <NoteBox>
-          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PG[lang] || PG.en)[0]}</span><br />
-          {(PG[lang] || PG.en)[1]}
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{payGate ? (STEP[lang] || STEP.en)[1] : ""}{(VF[lang] || VF.en)[0]}</span><br />
+          {verifyN && verifyN < n ? <><strong>{(VFP[lang] || VFP.en)(verifyN, n - verifyN)}</strong><br /></> : null}
+          {(VF[lang] || VF.en)[1]}
         </NoteBox>
       ) : null}
 

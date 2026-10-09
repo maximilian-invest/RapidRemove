@@ -22,6 +22,7 @@ import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
+import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker } from "./pgRemind";
@@ -447,8 +448,25 @@ app.post("/order", async (req, reply) => {
   // Bewertungs-Produkt: Währung + Land des Auftrags = Land des Profils (US-Profil → $, sonst €), nicht die Website-Sprache.
   if (isReviews && ruleCountry) (b as Record<string, unknown>).country = ruleCountry;
   // 4–5-Sterne-Bewertungen beauftragt → erst Inhaber-Nachweis (Dashboard-Upload, KI prüft), dann normaler Ablauf.
-  const verifyNeeded = isReviews && needsVerify(reviewItems);
-  if (verifyNeeded) (b as Record<string, unknown>).verify = { status: "pending", at: new Date().toISOString() };
+  // Nur die 4–5-Sterne-Bewertungen warten auf den Nachweis (verify.keys); die übrigen starten nach der Zahlungsart sofort.
+  // Einmal pro Profil: hat derselbe Kunde (E-Mail) für dasselbe Profil schon einen freigegebenen Nachweis, gilt der weiter.
+  let verifyNeeded = isReviews && needsVerify(reviewItems);
+  if (verifyNeeded) {
+    const vKeys = reviewItems.filter((it) => Number(it.rating) >= 4).map((it) => it.url || `${it.name || ""}|${it.text || ""}`);
+    let reuse: string | null = null;
+    if (email && dbReady() && pool) {
+      const pid = clip(b.placeId, 200), pname = clip(b.placeName, 200).toLowerCase(), prof = profile.toLowerCase();
+      const rr = await pool.query(
+        `SELECT id FROM orders WHERE lower(email)=lower($1) AND service='reviews' AND raw->'verify'->>'status'='ok'
+           AND (($2<>'' AND raw->>'placeId'=$2) OR ($3<>'' AND lower(COALESCE(raw->>'placeName',''))=$3) OR ($4<>'' AND lower(COALESCE(profile,''))=$4))
+         ORDER BY created_at DESC LIMIT 1`, [email, pid, pname, prof]).catch(() => ({ rows: [] as { id: string }[] }));
+      reuse = rr.rows[0]?.id || null;
+    }
+    (b as Record<string, unknown>).verify = reuse
+      ? { status: "ok", by: "reuse", from: reuse, keys: vKeys, at: new Date().toISOString() }
+      : { status: "pending", keys: vKeys, at: new Date().toISOString() };
+    if (reuse) verifyNeeded = false;
+  }
   // Zahlungsart hinterlegen („Automatisch bezahlen"): Auftrag startet erst, wenn sie im Dashboard hinterlegt ist.
   // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
   const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
@@ -501,7 +519,7 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, payGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 
@@ -659,9 +677,12 @@ app.post("/order", async (req, reply) => {
       // Bewertungs-Bestellung → alle Bewertungen sofort aufs Partner-Board (Kunde = Profilname).
       // Software-Fälle (sw) sind normale Aufgaben: der Partner prüft, ob Software verfügbar ist, und setzt dann „Software"
       // → Kunde bekommt die Zahlungsaufforderung im Dashboard → nach Zahlung „Customer paid – start now".
+      const vInfo = (b as Record<string, unknown>).verify as { by?: string; from?: string; keys?: string[] } | undefined;
+      if (vInfo && vInfo.by === "reuse") await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis schon vorhanden (gleiches Profil)", detail: `Freigegeben in Auftrag ${vInfo.from} – kein neuer Nachweis nötig`, auto: true }).catch(() => {});
       if (verifyNeeded || payGate) {
-        if (verifyNeeded) await insertEvent({ orderId: id, type: "note", title: "Inhaber-Nachweis nötig (Bewertung mit 4–5 Sternen)", detail: "Auftrag geht erst nach dem Nachweis aufs Partner-Board", auto: true }).catch(() => {});
+        if (verifyNeeded) await insertEvent({ orderId: id, type: "note", title: `Inhaber-Nachweis nötig für ${vInfo?.keys?.length || 1} Bewertung(en) mit 4–5 Sternen`, detail: payGate ? "Reihenfolge: erst Zahlungsart, dann laufen die übrigen; diese erst nach dem Nachweis" : "Die übrigen gehen jetzt ans Partner-Board, diese erst nach dem Nachweis", auto: true }).catch(() => {});
         if (payGate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Auftrag startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst je Löschung", auto: true }).catch(() => {});
+        if (!payGate) await startOrderIfReady(id).catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Teilstart fehlgeschlagen"));
       } else if (isReviews && reviewItems.length && await partnerAutoEnabled("reviews").catch(() => true)) {
         await partnerAutoSend(id, profile || company || name, reviewItems as Record<string, unknown>[])
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));

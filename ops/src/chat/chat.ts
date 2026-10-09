@@ -160,7 +160,7 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
         o.payGate ? (Array.isArray(o.payGateKeys) ? `the ${(o.payGateKeys as unknown[]).length} newly added review(s) WAIT for a saved payment method (the others keep running)` : "WHOLE ORDER WAITS for a saved payment method – we don't work on it until one is saved") : "",
         stale && stale.cancelAt ? `if no payment method is saved, the waiting review(s) are cancelled automatically on ${day(stale.cancelAt)} (no cost)` : "",
         o.hold ? (o.holdCard ? "PAUSED: the last automatic charge failed – the customer should update the payment method" : "PAUSED until the open payment is made") : "",
-        ver ? `owner verification (proof that they own the business, needed for 4–5★ reviews): ${ver.status}${ver.uploaded ? " (document uploaded)" : " (not uploaded yet – upload in the dashboard)"}${ver.reason ? ` · reason: ${clip(ver.reason, 120)}` : ""}` : "",
+        ver && ver.status !== "ok" ? `owner verification (proof that they own the business) needed only for the ${Array.isArray(ver.keys) ? (ver.keys as unknown[]).length : "4–5★"} review(s) with 4–5 stars – the other reviews don't wait for it (only for a saved payment method, if one is missing): ${ver.status}${ver.uploaded ? " (document uploaded)" : " (not uploaded yet – upload in the dashboard)"}${ver.reason ? ` · reason: ${clip(ver.reason, 120)}` : ""}` : ver ? "owner verification: done (valid for this business profile)" : "",
         o.payPref ? `wants to pay via ${o.payPref} (10 % off)` : "",
       ].filter(Boolean);
       lines.push(head.join(" · ") + ":");

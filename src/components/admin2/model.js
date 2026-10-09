@@ -118,7 +118,9 @@ export function pendingWhy(o) {
   return out;
 }
 /** Ganzer Auftrag steht still, bis der Kunde etwas tut. */
-const pendingWhole = (o) => o && o.status !== "storniert" && ((o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")));
+const vWhole = (o) => o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")
+  && (!Array.isArray(o.verify.keys) || (o.reviewItems || []).every((it) => o.verify.keys.includes(rvKey(it)))); // ohne keys bzw. nur 4–5 ★ bestellt → ganzer Auftrag wartet
+const pendingWhole = (o) => o && o.status !== "storniert" && ((o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
 
 /** Alle Kacheln, in denen ein Auftrag steht. Bewertungen: „In Bearbeitung", solange beim Partner noch etwas offen ist,
  *  und zusätzlich „Zahlung offen", sobald eine gelöschte Bewertung noch nicht bezahlt ist. */

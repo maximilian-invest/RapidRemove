@@ -468,7 +468,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     const price = cp || (special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
       cp,
-      key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(),
+      key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
@@ -499,7 +499,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     // Nachbestellung: nur diese Bewertungen warten auf die Zahlungsart (die übrigen laufen weiter). null = ganzer Auftrag.
     payGateKeys: !cancelled && (raw.payGate as { status?: string; keys?: string[] } | undefined)?.status === "pending" && Array.isArray((raw.payGate as { keys?: string[] }).keys) ? (raw.payGate as { keys: string[] }).keys : null,
     placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
-    verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc } : null,
+    // keys = nur diese Bewertungen (4–5 ★) warten auf den Nachweis; ohne keys (ältere Aufträge) wartet der ganze Auftrag.
+    verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc, keys: Array.isArray((raw.verify as Record<string, unknown>).keys) ? ((raw.verify as Record<string, unknown>).keys as string[]) : null } : null,
     pct, swPrice: swUnit, swDeposit: swUnit, toPay, // swDeposit = Vorauszahlung = voller Preis
     items: view.map(({ special, cp, ...v }) => v),
     // Bezahlte Zahlungen (Verlauf im Tab „Payments").

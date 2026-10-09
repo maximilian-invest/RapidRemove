@@ -273,7 +273,8 @@ function VerifyBox({ o, ctx }) {
   const [st, setSt] = React.useState(v.status);
   React.useEffect(() => setSt(v.status), [v.status]);
   const ok = st === "ok";
-  const L = { pending: v.doc ? "Hochgeladen · KI nicht erreichbar – bitte selbst prüfen" : "Wartet auf Upload des Kunden", checking: "KI prüft gerade …", rejected: "Von " + (v.by === "admin" ? "uns" : "der KI") + " abgelehnt", ok: "Freigegeben" + (v.by === "admin" ? " (Admin)" : " (KI)") };
+  const L = { pending: v.doc ? "Hochgeladen · KI nicht erreichbar – bitte selbst prüfen" : "Wartet auf Upload des Kunden", checking: "KI prüft gerade …", rejected: "Von " + (v.by === "admin" ? "uns" : "der KI") + " abgelehnt", ok: "Freigegeben" + (v.by === "admin" ? " (Admin)" : v.by === "reuse" ? ` (schon in ${v.from || "früherem Auftrag"}, gleiches Profil)` : " (KI)") };
+  const vn = Array.isArray(v.keys) ? v.keys.length : null;
   const show = async () => {
     setBusy("doc");
     const w = window.open("", "_blank");
@@ -299,7 +300,7 @@ function VerifyBox({ o, ctx }) {
       <span className="di"><ShieldCheck /></span>
       <span className="t"><b>Inhaber-Nachweis · {L[st] || st}</b>
         {v.reason ? <span>{v.reason}</span> : null}
-        {!ok ? <span>Bewertung mit 4–5 Sternen beauftragt → Auftrag startet erst nach dem Nachweis.</span> : null}
+        {!ok ? <span>{vn != null ? `Nur ${vn} Bewertung${vn === 1 ? "" : "en"} mit 4–5 Sternen warten auf den Nachweis – die übrigen laufen (nach hinterlegter Zahlungsart) schon.` : "Bewertung mit 4–5 Sternen beauftragt → Auftrag startet erst nach dem Nachweis."}</span> : null}
         <span className="vfy-b">
           {v.doc ? <button type="button" disabled={!!busy} onClick={show}>{busy === "doc" ? "Lädt …" : "Dokument ansehen"}</button> : null}
           {!ok ? <button type="button" className="go" disabled={!!busy} onClick={() => set("approve")}>{busy === "approve" ? "…" : "Freigeben"}</button> : null}

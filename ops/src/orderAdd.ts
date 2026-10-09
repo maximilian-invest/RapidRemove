@@ -11,7 +11,7 @@ import { pool, insertEvent, setOrderRawField, bumpChange } from "./db";
 import { partnerAutoSend, partnerAutoEnabled } from "./partner";
 import { autopayAvailable, hasSavedMethod, chargeDue } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf } from "./customers";
-import { gatesOpen } from "./orderStart";
+import { blockedOf } from "./orderStart";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { quoteReviews, reviewMethod, cpOf } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
@@ -121,7 +121,8 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
   // 4) Partner-Board – sofort, außer die Neuen (bzw. der Auftrag) warten noch
   let partner = 0;
   const raw2 = { ...raw, ...(gate ? { payGate: { status: "pending" } } : {}) };
-  if (!gate && gatesOpen(raw2) && await partnerAutoEnabled("reviews").catch(() => true)) {
+  const bl2 = blockedOf(raw2);
+  if (!gate && !bl2.all && !newKeys.some((k) => bl2.keys.has(k)) && await partnerAutoEnabled("reviews").catch(() => true)) {
     partner = await partnerAutoSend(orderId, o.profile || o.company || o.name || "", fresh as Record<string, unknown>[]).catch(() => 0);
   } else if (gate) {
     await insertEvent({ orderId, email, type: "note", title: "Nachbestellung wartet auf Zahlungsart", detail: "Startet automatisch, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat – laufende Bewertungen laufen weiter", auto: true }).catch(() => {});
