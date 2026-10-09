@@ -21,6 +21,7 @@ import CustApp, { injectAppManifest } from "./CustApp";
 import SupportChat from "./Chat";
 import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import PaySheet from "./PaySheet";
+import NewOrder from "./NewOrder";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -656,6 +657,10 @@ export default function CustomerDashboard() {
   const rvRef = React.useRef(null);
   useSwipeClose(rvRef, !!sheet, () => setSheet(null));
   const [flow, setFlow] = React.useState(null); // { step, items, pick:Set, mode, total, n, url }
+  const [nwOpen, setNwOpen] = React.useState(false); // „Neuer Auftrag" (wie auf der Website)
+  const [nwPreset, setNwPreset] = React.useState(null); // { place, ids } aus der Karte „neue negative Bewertung"
+  const [nwAlerts, setNwAlerts] = React.useState([]);
+  const [, setNwHidden] = React.useState(0);
   const [sfId, setSfId] = React.useState(null); // Auftrag starten (Gründe → Nachweis → Zahlungsart): offene Bestellung
   const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
@@ -888,7 +893,7 @@ export default function CustomerDashboard() {
   }, [data]);
   // Etwas fehlt noch zum Start (Gründe / Nachweis / Zahlungsart) → Start-Ablauf einmal je Sitzung von selbst öffnen.
   React.useEffect(() => {
-    if (!data || sfAuto.current || imp || data.adminView || sfId || busy === "ap") return;
+    if (!data || sfAuto.current || imp || data.adminView || sfId || nwOpen || busy === "ap") return;
     try { if (new URLSearchParams(window.location.search).get("autopay")) return; } catch (e) { /* */ } // Rückkehr aus Stripe läuft gerade
     if (postOrder && (setupOn || !setupShown.current)) return; // erst die Einrichtungs-Animation
     const o = (data.orders || []).find((x) => startPhases(x, data.autopay).length);
@@ -897,7 +902,14 @@ export default function CustomerDashboard() {
       if (postOrder) { const t = setTimeout(() => setSfId(o.id), 700); return () => clearTimeout(t); }
       setSfId(o.id);
     } else if (postOrder) setPostOrder(false);
-  }, [data, imp, sfId, busy, setupOn, postOrder]);
+  }, [data, imp, sfId, nwOpen, busy, setupOn, postOrder]);
+  // Neue negative Bewertungen auf den eigenen Profilen (≤ 30 Tage, noch nicht beauftragt) → Karte auf der Startseite.
+  const nwLoaded = React.useRef(false);
+  React.useEffect(() => {
+    if (!token || !data || nwLoaded.current) return;
+    nwLoaded.current = true;
+    call("new/alerts", { token }).then((r) => setNwAlerts(r.alerts || [])).catch(() => {});
+  }, [token, data]);
   // Einrichtungs-Animation starten, sobald nach der Bestellung die Daten da sind (einmal).
   React.useEffect(() => {
     if (!postOrder || !data || setupShown.current || imp || data.adminView) return;
@@ -909,12 +921,12 @@ export default function CustomerDashboard() {
     if (!token || !data || imp || data.adminView) return;
     const sh = sheet ? (data.orders || []).find((o) => o.id === sheet.orderId) : null;
     const it = sh ? sh.items.find((i) => i.key === sheet.key) : null;
-    const name = sfId ? `Auftrag starten · ${sfId}` : flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
+    const name = nwOpen ? "Neuer Auftrag" : sfId ? `Auftrag starten · ${sfId}` : flow ? `Spezial-Software · Schritt ${(flow.step || 0) + 1}`
       : sheet ? `Bewertung ansehen${it && (it.name || it.url) ? ": " + String(it.name || it.url).slice(0, 60) : ""}`
       : detailId ? `Bestellung ${detailId}`
       : ({ home: "Übersicht", orders: "Bestellungen", pay: "Zahlungen", acc: "Konto" })[tab] || tab;
     view(name, sheet ? sheet.orderId : detailId || undefined);
-  }, [token, !!data, tab, detailId, sheet, flow && flow.step, sfId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [token, !!data, tab, detailId, sheet, flow && flow.step, sfId, nwOpen]); // eslint-disable-line react-hooks/exhaustive-deps
   // Push aufdrängen: nach dem Öffnen, solange nicht eingeschaltet („Nicht jetzt" gilt nur für diese Sitzung).
   const hasData = !!data;
   React.useEffect(() => {
@@ -947,6 +959,7 @@ export default function CustomerDashboard() {
   }
 
   /* ---- Abgeleitete Daten ---- */
+  const adminViewEarly = imp || data.adminView;
   // Auftrag wartet auf den Inhaber-Nachweis → seine Bewertungen zeigen „Wartet auf Nachweis" statt „Wird geprüft".
   // Nachbestellung mit Zahlungsart-Pflicht: nur die neuen Bewertungen (payGateKeys) warten, die übrigen laufen weiter.
   // Je Bewertung: erst „Wartet auf Zahlungsart" (falls die fehlt), danach nur die 4–5-Sterne-Bewertungen „Wartet auf Nachweis".
@@ -963,6 +976,12 @@ export default function CustomerDashboard() {
   const holdCard = orders.some((o) => o.holdCard); // Pause wegen fehlgeschlagener Abbuchung → „Zahlungsart aktualisieren"
   const holdN = orders.filter((o) => o.hold && !o.holdCard).reduce((n, o) => n + o.items.filter((i) => ["new", "working", "sw_accepted"].includes(i.status)).length, 0);
   const sfOrder = sfId ? orders.find((o) => o.id === sfId) || null : null;
+  const NW_HIDE = "rr_nw_hide";
+  const nwHid = (() => { try { return new Set(JSON.parse(localStorage.getItem(NW_HIDE) || "[]")); } catch (e) { return new Set(); } })();
+  const nwShow = nwAlerts.map((a) => ({ ...a, reviews: a.reviews.filter((r) => !nwHid.has(r.id)) })).filter((a) => a.reviews.length);
+  const nwHide = (ids) => { try { localStorage.setItem(NW_HIDE, JSON.stringify([...nwHid, ...ids].slice(-200))); } catch (e) { /* */ } setNwHidden((x) => x + 1); };
+  const openNew = (preset) => { if (adminViewEarly) { showToast("In der Admin-Ansicht nicht möglich", true); return; } setNwPreset(preset || null); setNwOpen(true); track("new_order_open", preset ? "Karte neue Bewertung" : "Button"); };
+  const placeOfAlert = (a) => { const o = (data.orders || []).find((x) => x.place && x.place.placeId === a.placeId); return o ? o.place : { placeId: a.placeId, name: a.business, addr: "", cc: "", mapsUri: "" }; };
   const all = orders.flatMap((o) => o.items.map((r) => ({ ...r, o, id: o.id + "\u0001" + r.key })));
   const removedN = all.filter((r) => r.status === "removed").length;
   const remaining = all.filter((r) => OPEN.includes(r.status) && !["verify", "paygate", "reasons"].includes(r.status)).length; // wartende zählen nicht als „in Bearbeitung"
@@ -1205,6 +1224,17 @@ export default function CustomerDashboard() {
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {stNeed.length ? <AlertBtn title={T("stAlertT")} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + T("stAlertS", { n: startPhases(stNeed[0], data.autopay).length })} onClick={() => setSfId(stNeed[0].id)} /> : null}
+          {nwShow.slice(0, 1).map((a) => (
+            <div key={a.placeId} className="nw-al">
+              <button type="button" className="nw-al-b" onClick={() => openNew({ place: placeOfAlert(a), ids: a.reviews.map((r) => r.id) })}>
+                <span className="ai"><Star /></span>
+                <span><b>{T("nwAlertT", { n: a.reviews.length })}</b><span>{T("nwAlertS", { biz: a.business })}</span>
+                  <em>{a.reviews.slice(0, 3).map((r) => `${r.name} ${r.rating}★`).join(" · ")}</em></span>
+                <span className="ar"><ArrowRight /></span>
+              </button>
+              <button type="button" className="nw-al-x" aria-label="Hide" onClick={() => nwHide(a.reviews.map((r) => r.id))}><X /></button>
+            </div>
+          ))}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
@@ -1233,8 +1263,13 @@ export default function CustomerDashboard() {
                   </button>
                 );
               })}
+              <button className="oc nw-oc" onClick={() => openNew()}>
+                <span className="nw-plus"><Plus /></span>
+                <span className="n">{T("nwBtn")}</span>
+                <span className="m">{T("nwTileS")}</span>
+              </button>
             </div>
-          ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
+          ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}<button className="cta or nw-emp" onClick={() => openNew()}><Plus />{T("nwBtn")}</button></div>}
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -1257,7 +1292,7 @@ export default function CustomerDashboard() {
     const l = orders.filter(F[ofilter]);
     return (
       <>
-        <div className="ttl">{T("orders")}</div>
+        <div className="ttl nw-ttl">{T("orders")}<button type="button" className="pill-btn nw-tb" onClick={() => openNew()}><Plus />{T("nwBtn")}</button></div>
         <div className="chips">
           {[["all", T("f_all")], ["open", T("f_open")], ["done", T("f_done")]].map(([k, t]) => (
             <button key={k} className={"chip" + (ofilter === k ? " on" : "")} onClick={() => setOfilter(k)}>{t}</button>
@@ -1290,7 +1325,7 @@ export default function CustomerDashboard() {
               <ChevronRight />
             </button>
           );
-        }) : <div className="empty">{T("noOrdersHere")}</div>}
+        }) : <div className="empty">{T("noOrdersHere")}<button className="cta or nw-emp" onClick={() => openNew()}><Plus />{T("nwBtn")}</button></div>}
       </>
     );
   };
@@ -1590,6 +1625,7 @@ export default function CustomerDashboard() {
               <I /><span>{l}</span>{k === "home" && sw.length ? <span className="bd">{sw.length}</span> : null}
             </button>
           ))}
+          <button type="button" className="side-new" onClick={() => openNew()}><Plus />{T("nwBtn")}</button>
           <div className="side-user"><span className="av">{ini}</span><span><b>{data.name || data.email}</b><span>{data.email}</span></span></div>
         </nav>
       </div>
@@ -1620,19 +1656,22 @@ export default function CustomerDashboard() {
 
       <section className={"flow" + (flow ? " show" : "")} aria-hidden={!flow} onClick={(e) => { if (e.target === e.currentTarget) { setFlow(null); load(token); } }}>{FlowV()}</section>
 
+      <NewOrder open={nwOpen} preset={nwPreset} orders={data.orders} email={data.email} token={token} imp={!!adminView} lang={LANG} T={T} call={call} fmt={money} showToast={showToast}
+        onClose={() => setNwOpen(false)}
+        onDone={async (id, svc, ids) => { setNwOpen(false); if (ids && ids.length) nwHide(ids); call("new/alerts", { token }).then((r) => setNwAlerts(r.alerts || [])).catch(() => {}); showToast(T("nwDoneT") + " · #" + id); track("new_order_done", `${id} · ${svc}`); await load(token); setTab("home"); if (svc === "reviews") { sfAuto.current = true; setSfId(id); } else setDetailId(id); }} />
       <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
-        reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
+        reload={() => load(token)} onClose={() => { sfAuto.current = true; setSfId(null); setPostOrder(false); load(token); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
 
-      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !sfOrder && !cele && !wiseOpen && !detail} items={changedNew}
+      <ChangedSheet open={changedNew.length > 0 && !intro && !sheetData && !flow && !sfOrder && !nwOpen && !cele && !wiseOpen && !detail} items={changedNew}
         onDone={() => chgDone()} onOpen={(r) => { chgDone(); setSheet({ orderId: r.o.id, key: r.key }); }} />
       <Celebrate data={cele} onClose={() => setCele(null)} T={T} />
       <PaySheet open={wiseOpen && !!sheetG} onClose={() => setWiseOpen(false)} T={T} via={sheetG?.via === "paypal" ? "paypal" : "wise"} amountNum={sheetG ? sheetG.amount : 0} regular={sheetG ? sheetG.regular : 0}
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || billOpen || !!arId}
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || nwOpen || billOpen || !!arId}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>

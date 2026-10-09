@@ -25,6 +25,7 @@ import { CHAT_INTERNAL } from "./chat/chat";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
+import { registerCustNewOrderRoutes } from "./custNewOrder";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker, pgNextFor } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
@@ -198,6 +199,7 @@ app.register(stripeWebhook);
 registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
+registerCustNewOrderRoutes(app); // „Neuer Auftrag" im Kunden-Dashboard + Karte „neue negative Bewertung"
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
 registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
