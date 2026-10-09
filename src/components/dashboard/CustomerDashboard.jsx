@@ -463,6 +463,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
             );
           })}
         </div>
+        <div className="sf-self"><Info />{T("rSelf")}</div>
       </>
     );
     foot = (

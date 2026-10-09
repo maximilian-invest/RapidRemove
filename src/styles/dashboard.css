@@ -835,3 +835,6 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
   .rra .sf-s:hover{background:var(--g2)}
 }
 @media (max-height:700px){.rra .sf .sf-art{height:110px}}
+/* Hinweis im Start-Ablauf: Bewertungen während des Auftrags nicht selbst melden (AGB 7.4) */
+.rra .sf-self{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:16px;background:#eef6ff;color:#173a63;font-size:13px;line-height:1.45}
+.rra .sf-self svg{width:18px;height:18px;flex:none;margin-top:1px;color:#1c4f9c}

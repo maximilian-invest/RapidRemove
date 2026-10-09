@@ -123,6 +123,8 @@ Alle Preise sind Endpreise (inkl. allfälliger USt, siehe AGB 6.1). EUR für DE/
 
 **Werden Bewerter bei Einzelbewertungen informiert?** In den meisten Fällen ja, per Mail von Google. Viele sehen das aber nicht, weil sie die Mails des Google-Kontos, mit dem sie bewertet haben, kaum lesen.
 
+**Kunde sagt „Ich habe die Bewertung selbst gelöscht" und will kein Entgelt zahlen bzw. eine Rückerstattung?** AGB 7.4: Während ein Auftrag läuft, stellt der Kunde zu den beauftragten Bewertungen keine eigenen Meldungen oder Löschanträge bei Google (hat er schon vorher etwas eingeleitet, sagt er es bei der Bestellung). Wird eine beauftragte Bewertung während der Laufzeit entfernt, gilt das als Erfolg von RapidRemove und wird verrechnet – außer der Kunde weist nach, dass sie nur wegen seines eigenen, VOR der Bestellung gestellten und uns mitgeteilten Antrags oder durch den Verfasser selbst gelöscht wurde. Freundlich erklären, keine Rückerstattung zusagen; besteht der Kunde darauf oder hat er Nachweise → an das Team übergeben. Bitte auch freundlich darauf hinweisen, die Bewertungen während des Auftrags nicht selbst zu melden (stört den Prozess bei Google).
+
 **Was ist, wenn das Profil nicht gelöscht werden kann?** Dann zahlt der Kunde nichts. **RapidRemove kann die Inhaberrechte nicht zurückübertragen.** Der Kunde muss die Inhaberschaft selbst bei Google anfragen („Inhaber dieses Unternehmens?") und das Profil neu verifizieren. Das muss der Bot bei Profilen, an denen der Kunde hängt, **vor** der Bestellung sagen.
 
 **Gibt es Vorher/Nachher-Beispiele?** Schwierig, weil gelöschte Profile ja nicht mehr existieren. Verweis auf Kundenbewertungen auf der Website und die Garantie: Zahlung nur bei Erfolg.
