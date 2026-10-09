@@ -8,7 +8,7 @@
  *   Ohne Schlüssel bzw. bei Fehlern: kurze Keyword-Antworten + Verweis aufs Team.
  * - Kontext je Anfrage serverseitig aus den echten Aufträgen des Kunden (nur Vorname, keine E-Mail/Telefon im Prompt).
  * - Wunsch nach Mensch (human/team/agent/person/mitarbeiter …) → sofort Team-Button, ohne KI.
- * - Admin-Ansicht (Impersonation): keine KI, nichts gespeichert, nichts getrackt.
+ * - Admin-Ansicht (Impersonation): echte KI-Antworten zum Testen, aber nichts gespeichert, nichts getrackt, kein Ticket.
  * - Tabelle chat_messages (12 Monate), Events chat_message / chat_ticket in der Dashboard-Aktivität.
  */
 import crypto from "node:crypto";
@@ -324,9 +324,14 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     if (!sess) return reply.code(401).send({ ok: false, error: "session" });
     const message = clip(b.message, 1500);
     if (!message) return reply.code(400).send({ ok: false, error: "empty" });
-    if (sess.imp) return { ok: true, reply: "Admin-Ansicht: Der Chat ist hier deaktiviert (keine KI, nichts gespeichert).", handoff: false, adminView: true };
     if (limited(sess.email, 20)) return reply.code(429).send({ ok: false, error: "too_many" });
     const d = await deps.loadOrders(sess.email).catch(() => ({ name: "", lang: "en", orders: [] as Record<string, unknown>[] }));
+    // Admin-Ansicht (Kundendashboard aus dem Admin geöffnet): echter Bot mit allen Daten des Kunden zum Testen –
+    // aber nichts gespeichert, nichts getrackt, kein Team-Ticket (der Kunde sieht davon nichts).
+    if (sess.imp) {
+      const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) }, sess.email);
+      return { ok: true, reply: out.reply, handoff: out.handoff, adminView: true, ai: out.ai };
+    }
     void save(sess.email, "user", message);
     void logCustEvent(sess.email, "chat_message", message.slice(0, 160));
     if (HUMAN_RE.test(message)) {
