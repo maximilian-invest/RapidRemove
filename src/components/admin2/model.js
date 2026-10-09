@@ -73,7 +73,9 @@ export function revState(o, tasks) {
     return o.pay === "paid";
   };
   const prepaid = (k) => (dec[k] && dec[k].d === "accepted") || pays.some((p) => (p.kind === "software" || p.kind === "deposit") && p.paid && (!(p.keys && p.keys.length) || p.keys.includes(k)));
-  const pct = reviewDiscountPct(items.length);
+  // Wie im Backend (chatPctOf): PayPal/Wise → 10 %, sonst Chat-Rabatt; der höhere von Mengen- und Zusatzrabatt zählt.
+  const extraPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
+  const pct = Math.max(reviewDiscountPct(items.length), extraPct);
   const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0 };
   const unpaid = [];
   let started = o.status !== "new";

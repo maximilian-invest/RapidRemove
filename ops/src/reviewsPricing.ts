@@ -42,10 +42,11 @@ export const fmtReviewMoney = (v: number, cur: string) => {
  *  Bei Einzelabrechnung pro Bewertung = Anzahl der beauftragten Bewertungen → der
  *  Rabatt wird anteilig auf jede einzeln abgerechnete Bewertung verteilt. */
 /** mode "rest": Abrechnung nach der Löschung → Bewertungen ohne Text sind schon voll bezahlt (0). */
-/** Chat-Rabatt (Website-Chat, max. 10 %) – gilt NICHT zusätzlich zu PayPal/Wise (−10 %): der höhere zählt. */
+/** Zusatz-Rabatt eines Auftrags: PayPal/Wise gewählt → 10 %, sonst Chat-Rabatt (Website-Chat, max. 10 %).
+ *  Nie zusätzlich zum Mengenrabatt: quoteReviews nimmt den höheren (minPct). */
 export function chatPctOf(raw: unknown): number {
   const r = (raw || {}) as Record<string, unknown>;
-  if (r.payPref === "wise" || r.payPref === "paypal") return 0;
+  if (r.payPref === "wise" || r.payPref === "paypal") return 10;
   return Math.max(0, Math.min(10, Math.round(Number(r.chatPct) || 0)));
 }
 export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: number, mode: "full" | "rest" = "full", minPct = 0) {

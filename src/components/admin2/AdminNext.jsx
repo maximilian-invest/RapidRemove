@@ -6,7 +6,7 @@ import React from "react";
 import useLive from "@/lib/useLive";
 import {
   Inbox, LayoutGrid, Radar, User, Check, CheckCircle2, Users, UserX, Mail, Zap, ChevronRight, Image as ImageIcon, ExternalLink, Download, X,
-  RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake,
+  RefreshCw, MapPin, Pause, Play, Link as LinkIcon, Plus, Store, Ban, RotateCcw, MailX, CalendarClock, MessageSquareOff, Handshake, FlaskConical,
   Search, Settings, LogOut, Activity as ActIcon,
   MessageCircle as MsgCircle,
 } from "lucide-react";
@@ -209,7 +209,7 @@ export default function AdminNext() {
   };
   const dueOf = (o) => {
     const r = revState(o, ptasks[o.id]);
-    if (r) return payPrefOf(o) ? Math.round(r.unpaidAmt * 90) / 100 : r.unpaidAmt; // PayPal/Wise: 10 % Rabatt
+    if (r) return r.unpaidAmt; // PayPal/Wise −10 % steckt schon im Preis (revState)
     const oneTime = (Number(o.amount) || 0) + (o.express ? Number(o.expressAmount) || 0 : 0) + (o.protection === "lifetime" ? Number(o.protAmount) || 0 : 0);
     if (!payPrefOf(o)) return oneTime; // Karte: Abo läuft separat über Stripe
     // PayPal/Wise wie im Angebot (computeOffer): Einmalbetrag −10 % + Schutz-Abo als Jahr zum Preis von 10 Monaten.
@@ -321,7 +321,7 @@ export default function AdminNext() {
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
   // Desktop: keine Konto-Kachelseite – alle Punkte direkt in der Seitenleiste
   const deskTabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"],
-    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:chats", MsgCircle, "Website-Chats"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"]];
+    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:chats", MsgCircle, "Website-Chats"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"], ["more:tests", FlaskConical, "Tests"]];
   const isOn = (k) => (k.startsWith("more:") ? tab === "more" && moreSub === k.slice(5) : tab === k);
   const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin/alt"; };
   const pane = (k, body, extra = "") => (

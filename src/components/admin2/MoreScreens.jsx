@@ -2,10 +2,10 @@
 /* Neues Admin — Übersicht, Monitor, Konto (Einstellungen, Partner). Echte Daten. */
 import React from "react";
 import {
-  RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
+  RefreshCw, Euro, TrendingUp, TrendingDown, ChevronRight, FlaskConical, Plus, ExternalLink, Mail, Image as ImageIcon, Maximize2, Store,
   ArrowLeft, Search, Handshake, Settings, Users, LogOut, Zap, Copy, StarOff, Check, Activity as ActIcon, BarChart3, MessageCircle, Banknote,
 } from "lucide-react";
-import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket } from "./model";
+import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket, SERVICE_L } from "./model";
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
@@ -178,6 +178,7 @@ export { MS, fmtDT };
 export function Account({ ctx }) {
   const { moreSub, setMoreSub, logout } = ctx;
   if (moreSub === "settings") return <SettingsScreen ctx={ctx} />;
+  if (moreSub === "tests") return <TestsScreen ctx={ctx} />;
   if (moreSub === "partner") return <PartnersScreen ctx={ctx} />;
   if (moreSub === "pstats") return <PartnerStatsScreen ctx={ctx} />;
   if (moreSub === "payouts") return <PayoutsScreen ctx={ctx} />;
@@ -192,6 +193,7 @@ export function Account({ ctx }) {
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin/alt"; }],
     [Users, "Kunden", () => { try { localStorage.setItem("rr_admin_view", "customers"); } catch (e) {} window.location.href = "/admin/alt"; }],
     [Settings, "Einstellungen", () => setMoreSub("settings")],
+    [FlaskConical, "Tests", () => setMoreSub("tests")],
     [LogOut, "Abmelden", logout],
   ];
   return (
@@ -263,6 +265,43 @@ function TestPurge({ ctx }) {
           </div>
         </>
       )}
+    </>
+  );
+}
+
+/* Tests: Bestellungen und Prüfungen von Test-Adressen (Inhaber, helpdesk@, „+test") – zählen in keine Statistik
+   und stehen nicht in Aufträgen / Geprüften Profilen. Hier bleiben sie zum Testen erreichbar. */
+function TestsScreen({ ctx }) {
+  const { orders, checks, setMoreSub, openOrder } = ctx;
+  const to = (orders || []).filter((o) => o.test).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const tc = (checks || []).filter((c) => c.test).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const dt = (d) => (d ? new Date(d).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
+  return (
+    <>
+      <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
+      <div className="ttl">Tests</div>
+      <p className="sh">Bestellungen und Prüfungen von Test-Adressen (deine Adresse, helpdesk@, alle mit „+test“). Sie zählen in keine Statistik und erscheinen nicht unter Aufträge oder Geprüfte Profile.</p>
+      <div className="sec3"><h2>Testbestellungen</h2><span className="px-cnt">{to.length}</span></div>
+      {to.length ? (
+        <div className="info">
+          {to.slice(0, 100).map((o) => (
+            <button key={o.id} type="button" className="ir" onClick={() => openOrder(o.id, true)}>
+              <span className="t"><b>{o.company || o.profile || o.name || o.id}</b><span>{o.id} · {SERVICE_L[o.service] || o.service || "—"} · {o.email} · {dt(o.createdAt)}{o.status === "storniert" ? " · storniert" : ""}</span></span>
+              <ChevronRight />
+            </button>
+          ))}
+        </div>
+      ) : <div className="aempty"><b>Keine Testbestellungen</b></div>}
+      <div className="sec3"><h2>Test-Prüfungen</h2><span className="px-cnt">{tc.length}</span></div>
+      {tc.length ? (
+        <div className="info">
+          {tc.slice(0, 100).map((c) => (
+            <div key={c.id} className="ir">
+              <span className="t"><b>{c.profile || c.name || c.id}</b><span>{c.email || "—"} · {dt(c.createdAt)}{c.orderId ? " · Auftrag " + c.orderId : ""}</span></span>
+            </div>
+          ))}
+        </div>
+      ) : <div className="aempty"><b>Keine Test-Prüfungen</b></div>}
     </>
   );
 }

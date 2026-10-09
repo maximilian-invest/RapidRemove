@@ -26,7 +26,7 @@ export function ChecksScreen({ ctx }) {
   const { checks: rawChecks, orders, setMoreSub, openSheet, toast, chk, setChk } = ctx;
   // Bewertungs-Kennzeichen VOR dem Zusammenfassen ermitteln (eine Gruppe ist „Bewertungen", sobald eine Prüfung es ist)
   const checks = React.useMemo(() => {
-    const flagged = (rawChecks || []).map((c) => ({ ...c, isRev: isRevCheck(c, orders) }));
+    const flagged = (rawChecks || []).filter((c) => !c.test).map((c) => ({ ...c, isRev: isRevCheck(c, orders) })); // Tests nur unter „Tests"
     const out = dedupeChecks(flagged);
     return out.map((c) => {
       if (c.isRev || c.dupes < 2) return c;

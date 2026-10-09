@@ -20,7 +20,7 @@ import { hasWebPush, vapidPublicKey, sendWebPushAll } from "./integrations/webpu
 import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
-import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, reviewMethod, cpOf, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
@@ -510,8 +510,11 @@ app.post("/order", async (req, reply) => {
   const anrede = name ? (GREETING[tlang] || GREETING.de)(name) : undefined;
   // Bewertungs-Produkt: Stückpreis/Maximalbetrag in der Währung der Bestellung.
   const revCur = clip(b.country, 6) === "US" ? "usd" : "eur";
-  const revChatPct = req.headers["x-rr-chat"] === CHAT_INTERNAL && !["wise", "paypal"].includes(String(b.payPref)) ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
+  // PayPal/Wise (nur außerhalb DACH): −10 % auf den Bewertungspreis; sonst ggf. Chat-Rabatt. Der höhere von Mengen-/Zahlungs-/Chat-Rabatt zählt.
+  const revPayDisc = ["wise", "paypal"].includes(String(b.payPref)) && !["DE", "AT", "CH"].includes(String(b.country || "").toUpperCase());
+  const revChatPct = revPayDisc ? 10 : req.headers["x-rr-chat"] === CHAT_INTERNAL ? Math.max(0, Math.min(10, Math.round(Number(b.chatPct) || 0))) : 0;
   const revQ = quoteReviews(reviewItems, revCur, undefined, "full", revChatPct);
+  if (isReviews) (b as Record<string, unknown>).amount = revQ.total; // Server-Preis ist maßgeblich (inkl. PayPal/Wise-Rabatt)
   const revPer = revQ.per;
   const revTotal = revQ.totalStr;
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
@@ -788,7 +791,7 @@ app.post("/admin/orders/create", async (req, reply) => {
   if (type === "profile" && !company && !mapsUri) return reply.code(400).send({ ok: false, error: "Profil fehlt" });
   const reason = type === "profile" ? (PROFILE_REASONS[String(b.reason)] || "") : "";
   const cur = eur ? "eur" : "usd";
-  const q = type === "reviews" ? quoteReviews(items, cur) : null;
+  const q = type === "reviews" ? quoteReviews(items, cur, undefined, "full", b.payment === "paypal" ? 10 : 0) : null;
   // Profil: individueller Preis möglich (Admin), sonst Preisliste.
   const profAmt = Number(b.amount);
   const amount = q ? q.total : profAmt > 0 && profAmt < 100000 ? Math.round(profAmt * 100) / 100 : (eur ? 450 : 495);
@@ -1161,7 +1164,12 @@ app.post("/admin/data", async (req, reply) => {
   const [orders, checks] = await Promise.all([listOrders(200), listChecks(200)]);
   // Test-Flag (Inhaber-Adresse, „+test", TEST_EMAILS): Admin markiert diese Aufträge und lässt sie aus allen Zahlen raus.
   const flag = <T extends Record<string, unknown>>(r: T) => ({ ...r, test: isTestEmail(r.email) });
-  return { ok: true, db: dbReady(), orders: orders.map(flag), checks: checks.map(flag) };
+  const fo = orders.map(flag);
+  // Prüfung gehört zu einer Testbestellung (Prüfung ohne E-Mail, später mit Test-Adresse bestellt) → auch Test.
+  const testIds = new Set(fo.filter((o) => o.test).map((o) => String(o.id)));
+  const testChecks = new Set(fo.filter((o) => o.test).map((o) => String((o as Record<string, unknown>).checkId || (o as Record<string, unknown>).check_id || "")).filter(Boolean));
+  const fc = checks.map((c) => { const x = flag(c) as Record<string, unknown>; return { ...x, test: !!x.test || testChecks.has(String(x.id)) || testIds.has(String(x.orderId || x.order_id || "")) }; });
+  return { ok: true, db: dbReady(), orders: fo, checks: fc };
 });
 
 // Live-Go: ALLE Test-Bestelldaten löschen (orders/checks/events/upsell_jobs).
@@ -1724,7 +1732,8 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const count = removedItems.length;
   // Mengenrabatt nach der Gesamtzahl der beauftragten Bewertungen (Einzelabrechnung: anteilig).
-  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", await chatPctForOrder(b.orderId));
+  // PayPal/Wise (−10 %) steckt schon im Preis: Auftrag mit Wunsch (chatPctOf) bzw. Versand per PayPal/Wise.
+  const quote = quoteReviews(removedItems, currency, submittedCount, "rest", b.method === "paypal" || b.method === "wise" ? 10 : await chatPctForOrder(b.orderId));
   const totalNum = quote.total;
   // Kunde hat beim Absenden PayPal/Wise (−10 %) gewählt → Löschbestätigung OHNE
   // Stripe-Link: rabattierter Betrag + PayPal-Hinweis (Link folgt, „Freunde & Familie")
@@ -1733,9 +1742,9 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   const method = b.method === "paypal" || b.method === "wise" ? (b.method as "paypal" | "wise") : undefined;
   const bankLines = wiseBankFor(to); // Konto 1/2 je Kunde (Rotation) – gleiches Konto für alle Aufträge des Kunden
   if (method === "wise" && !bankLines.length) return reply.code(400).send({ ok: false, error: "Wise-Kontodaten fehlen (Railway-Variable WISE_BANK_DETAILS) — Mail nicht gesendet." });
-  const payTotal = method ? fmtReviewMoney(Math.round(totalNum * 0.9), currency === "usd" ? "usd" : "eur") : "";
+  const payTotal = method ? fmtReviewMoney(totalNum, currency === "usd" ? "usd" : "eur") : "";
   // PayPal: Button „Jetzt mit PayPal senden" (PayPal.me mit Betrag + Währung, Freunde & Familie).
-  const ppUrl = method === "paypal" ? `https://www.paypal.me/${(process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "")}/${Math.round(totalNum * 0.9)}${currency === "usd" ? "USD" : "EUR"}` : "";
+  const ppUrl = method === "paypal" ? `https://www.paypal.me/${(process.env.PAYPAL_ME || "rapidmax1").replace(/^.*paypal\.me\//i, "")}/${totalNum}${currency === "usd" ? "USD" : "EUR"}` : "";
 
   // Zahlungslink auflösen: 1) hinterlegte Stückzahl-Tabelle, 2) bei Bedarf direkt
   // in Stripe anlegen (find-or-create über metadata-Marker — kein Setup-Lauf nötig),
@@ -1826,12 +1835,12 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   const currency = (clip(b.currency, 8) || "eur").toLowerCase();
   const curSafe = currency === "usd" ? "usd" as const : "eur" as const;
   const count = removedItems.length;
-  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", await chatPctForOrder(b.orderId));
+  const quote = quoteReviews(removedItems, currency, Math.max(Number(b.submittedCount) || 0, count), "rest", b.method === "paypal" || b.method === "wise" ? 10 : await chatPctForOrder(b.orderId));
   const totalNum = quote.total;
 
   // PayPal/Wise-Kunde (10 % Rabatt): kein Stripe-Link, Mahnung verweist auf die gesendeten Zahlungsdaten.
   const method = b.method === "wise" ? "wise" : b.method === "paypal" ? "paypal" : undefined;
-  const payTotal = method ? (currency === "usd" ? `$${Math.round(totalNum * 0.9).toLocaleString("en-US")}` : `${Math.round(totalNum * 0.9).toLocaleString("de-DE")} €`) : "";
+  const payTotal = method ? (currency === "usd" ? `$${totalNum.toLocaleString("en-US")}` : `${totalNum.toLocaleString("de-DE")} €`) : "";
   // Zahlungslink wie bei der Rechnung auflösen (Stückzahl-Tabelle → Stripe anlegen → Betrag-Match).
   let url = method ? "-" : quote.simple ? reviewsLinkFor(count, currency) : "";
   const isPreview = b.preview === true;
@@ -2281,6 +2290,25 @@ async function chatPctForOrder(orderId: unknown): Promise<number> {
   return chatPctOf(r.rows[0]?.raw);
 }
 
+/** Einmalig (09.10.2026): Bewertungs-Aufträge mit PayPal/Wise-Wunsch hatten den vollen Preis gespeichert → −10 % nachziehen
+ *  (nur nicht stornierte, noch nicht bezahlte Aufträge; Betrag = quoteReviews mit 10 %). */
+async function fixPayPrefAmounts(): Promise<void> {
+  if (!pool) return;
+  const done = await pool.query(`SELECT 1 FROM partner_settings WHERE key='fix_paypct_v1'`).catch(() => ({ rowCount: 1 }));
+  if (done.rowCount) return;
+  const r = await pool.query(`SELECT id, country, raw FROM orders WHERE service='reviews' AND COALESCE(status,'') <> 'storniert' AND raw->>'payPref' IN ('wise','paypal')`);
+  let n = 0;
+  for (const o of r.rows as { id: string; country: string | null; raw: Record<string, unknown> }[]) {
+    const items = (Array.isArray(o.raw?.reviewItems) ? o.raw.reviewItems : []) as PricedItem[];
+    if (!items.length) continue;
+    const total = quoteReviews(items, String(o.country || "").toUpperCase() === "US" ? "usd" : "eur", undefined, "full", 10).total;
+    await pool.query(`UPDATE orders SET amount=$2, raw = jsonb_set(raw, '{amount}', to_jsonb($2::numeric)) WHERE id=$1`, [o.id, total]);
+    n++;
+  }
+  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('fix_paypct_v1', $1) ON CONFLICT (key) DO NOTHING`, [String(n)]);
+  app.log.info({ n }, "PayPal/Wise −10 %: Auftragsbeträge nachgezogen");
+}
+
 // Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).
 // Bleibt bestehen, bis er erneut geändert wird (z. B. Storno → „storniert“,
 // Reaktivierung → „progress“, Pipeline-Klicks).
@@ -2350,7 +2378,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await initPasskeys(); await initCustPush();
+  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await fixPayPrefAmounts().catch((e) => app.log.error({ err: e }, "PayPal/Wise-Preise nachziehen fehlgeschlagen")); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"))

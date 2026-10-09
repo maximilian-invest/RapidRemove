@@ -14,7 +14,7 @@ import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
-import { quoteReviews, reviewMethod, cpOf } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf, chatPctOf } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -101,7 +101,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
   const newKeys = fresh.map((it) => keyOf(it));
   const items = [...(Array.isArray(raw.reviewItems) ? (raw.reviewItems as AddItem[]) : []), ...fresh];
   const cur = country === "US" ? "usd" : "eur";
-  const total = quoteReviews(items, cur).total;
+  const total = quoteReviews(items, cur, undefined, "full", chatPctOf(raw)).total;
   await setOrderRawField(orderId, "reviewItems", items);
   await setOrderRawField(orderId, "amount", total);
   const adds = Array.isArray(raw.reviewsAdded) ? (raw.reviewsAdded as unknown[]) : [];
@@ -141,7 +141,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     try {
       const lang = MAIL_LANGS.includes(String(o.lang || "")) ? String(o.lang) : "en";
       const t = TEMPLATES["auftragsbestaetigung-reviews"];
-      const q = quoteReviews(fresh, cur);
+      const q = quoteReviews(fresh, cur, items.length, "full", chatPctOf(raw));
       const props = { lang, name: o.name || "", items: fresh, per: q.per, total: q.totalStr, currency: cur, orderId, payGate: gate, reasons: !!rGate, added: true, dash: { url: await dashLink(email, lang), existing: true } };
       const html = await render(React.createElement(t.component, props as never));
       const subj = t.subject(props as never);
@@ -351,7 +351,7 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
       changes.push(`${it.name || it.url || k}: ${v ? v : "Preisliste"}`);
       return v ? { ...rest, cp: v } : rest;
     });
-    const total = quoteReviews(next, cur).total;
+    const total = quoteReviews(next, cur, undefined, "full", chatPctOf(raw)).total;
     await setOrderRawField(o.id, "reviewItems", next);
     await setOrderRawField(o.id, "amount", total);
     await pool.query(`UPDATE orders SET amount=$2 WHERE id=$1`, [o.id, total]);

@@ -56,7 +56,8 @@ export function OrdersList({ ctx }) {
     const pt = (ptasks || {})[o.id]; const r = revState(o, pt); const bs = bucketsOf(o, now, pt); const b = mainBucket(bs);
     return { o, r, bs, b, m: ageOf(o, b, r, now), t: typeOf(o) };
   }), [orders, now, ptasks]);
-  const base = enriched.filter((x) => f.type === "all" || x.t === f.type).filter((x) => f.staff === "all" || (f.staff === "none" ? !x.o.assignee : x.o.assignee === f.staff));
+  // Testbestellungen (Inhaber, helpdesk@, „+test") nie in der offiziellen Liste – eigener Bereich „Tests".
+  const base = enriched.filter((x) => !x.o.test).filter((x) => f.type === "all" || x.t === f.type).filter((x) => f.staff === "all" || (f.staff === "none" ? !x.o.assignee : x.o.assignee === f.staff));
   // Offen = steht in einer offenen Kachel (Neu/In Bearbeitung/Zahlung offen/Inkasso) – gleiche Regel für Kachel-Zahl und Liste.
   // Auch bereits bezahlte Aufträge, die noch auf „Neu"/„In Bearbeitung" stehen (Vorauszahlung oder Status nie umgestellt).
   const open = (x) => isOpenB(x.bs);
@@ -66,7 +67,7 @@ export function OrdersList({ ctx }) {
     .filter((x) => !ql || `${x.o.name} ${x.o.id} ${x.o.email} ${x.o.company} ${x.o.profile}`.toLowerCase().includes(ql))
     // Zahlung offen / Inkasso: zuletzt fällig gewordene zuerst (kürzeste Wartezeit oben); sonst neueste Bestellung zuerst.
     .sort((a, b) => (f.tile === "pay" || f.tile === "inkasso" ? a.m - b.m : (new Date(b.o.createdAt || 0) - new Date(a.o.createdAt || 0))));
-  // Zähler ohne Testbestellungen (in der Liste bleiben sie sichtbar, mit „Test"-Tag).
+  // Zähler ohne Testbestellungen.
   const real = enriched.filter((x) => !x.o.test);
   const newO = real.filter((x) => x.bs.includes("new"));
   const oldest = newO.reduce((mx, x) => Math.max(mx, x.m), 0);

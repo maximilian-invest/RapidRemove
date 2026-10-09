@@ -1006,8 +1006,8 @@ export default function CustomerDashboard() {
   const viaOf = (o) => (o.payPref === "wise" && wiseBank.length ? "wise" : o.payPref === "paypal" ? "paypal" : "card");
   const payGroups = ["wise", "paypal", "card"].map((via) => {
     const os = dueOrders.filter((o) => o.cur === payCur && viaOf(o) === via);
-    const regular = os.reduce((s, o) => s + o.toPay, 0);
-    const amount = via === "card" ? regular : os.reduce((s, o) => s + Math.round(o.toPay * 0.9), 0); // wie in der Löschbestätigung je Auftrag gerundet
+    const amount = os.reduce((s, o) => s + o.toPay, 0); // PayPal/Wise −10 % steckt schon im Preis des Auftrags (Server)
+    const regular = via === "card" ? amount : os.reduce((s, o) => s + Math.round(o.toPay / 0.9), 0); // Preis ohne Rabatt (nur für „Sie sparen …")
     return { via, orders: os, regular, amount, ref: os.map((o) => o.id).join(" ") };
   }).filter((g) => g.orders.length);
   // Software-Fälle: keine Vorauszahlung mehr (10/2026) → nichts „zu zahlen"; der Hinweis oben führt zum Hinterlegen der Zahlungsart.
