@@ -276,7 +276,19 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     if (o.status === "storniert") return reply.code(400).send({ ok: false, error: "Auftrag ist storniert" });
     const raw = (o.raw || {}) as Record<string, unknown>;
     const want = new Set((Array.isArray(b.keys) ? b.keys : []).map((k) => String(k)).slice(0, 60));
-    const items = ((Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as AddItem[]).filter((it) => want.has(keyOf(it)));
+    // Ältere Aufträge kennen nur reviewUrls (teils eingefügter Text statt Link) → einmalig in reviewItems umwandeln,
+    // damit Abrechnung, Dashboard und Mahnungen damit arbeiten können. Admin schickt den alten Schlüssel (= der Eintrag selbst).
+    let all = (Array.isArray(raw.reviewItems) ? raw.reviewItems : []) as AddItem[];
+    const legacy = new Map<string, AddItem>();
+    if (!all.length && Array.isArray(raw.reviewUrls) && raw.reviewUrls.length) {
+      all = (raw.reviewUrls as unknown[]).map((u) => String(u || "").trim()).filter(Boolean).map((u) => {
+        const it: AddItem = /^https?:\/\/\S+$/i.test(u) ? { url: u } : { name: "Google review", text: u.replace(/\s+/g, " ").slice(0, 400) };
+        legacy.set(u, it); return it;
+      });
+      await setOrderRawField(o.id, "reviewItems", all);
+      raw.reviewItems = all;
+    }
+    const items = all.filter((it) => want.has(keyOf(it)) || [...legacy].some(([k, v]) => v === it && want.has(k)));
     if (!items.length) return reply.code(400).send({ ok: false, error: "keine Bewertung ausgewählt" });
     const billedArr = [...(Array.isArray(raw.reviewsRemovedAll) ? raw.reviewsRemovedAll : []), ...(Array.isArray(raw.reviewsRemoved) ? raw.reviewsRemoved : [])] as AddItem[];
     const billed = new Set(billedArr.map(keyOf));
@@ -284,7 +296,7 @@ export function registerPriceEditRoute(app: FastifyInstance, adminToken: string)
     const fresh = items.filter((it) => !billed.has(keyOf(it)) && !paid.has(keyOf(it)));
     if (!fresh.length) return reply.code(400).send({ ok: false, error: "schon abgerechnet" });
     const savedPm = autopayAvailable(o.email) ? await hasSavedMethod(o.email).catch(() => false) : false;
-    if (!savedPm || b.forceInvoice === true) return { ok: true, mode: "invoice", n: fresh.length };
+    if (!savedPm || b.forceInvoice === true) return { ok: true, mode: "invoice", n: fresh.length, items: fresh };
     const prev = (Array.isArray(raw.reviewsRemovedAll) ? raw.reviewsRemovedAll : []) as AddItem[];
     await setOrderRawField(o.id, "reviewsRemovedAll", [...prev, ...fresh]);
     await insertEvent({ orderId: o.id, email: o.email, type: "status", title: `${fresh.length === 1 ? "Bewertung" : fresh.length + " Bewertungen"} als gelöscht vermerkt (Admin)`, detail: fresh.map((it) => it.name || it.url || "Bewertung").join(" · ") + " · Abbuchung von der hinterlegten Zahlungsart" });

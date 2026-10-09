@@ -48,7 +48,7 @@ export default function Bill({ ctx, id }) {
         toast(r.charged ? `Abgebucht · ${money(r.charged.amount, c)} · Rechnung per Mail an ${o.email}` : "Als gelöscht vermerkt – Abbuchung fehlgeschlagen, Kunde wird zur Aktualisierung aufgefordert");
       } else {
         const method = pref === "Wise" ? "wise" : pref ? "paypal" : undefined;
-        const j = await sendReviewsInvoice({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: o.country === "US" ? "usd" : "eur", removedItems: chosen.map((x) => x.it), submittedCount: items.length, ...(method ? { method } : {}) });
+        const j = await sendReviewsInvoice({ orderId: o.id, email: o.email, name: o.name, lang: o.lang, currency: o.country === "US" ? "usd" : "eur", removedItems: r.items && r.items.length ? r.items : chosen.map((x) => x.it), submittedCount: items.length, ...(method ? { method } : {}) });
         await setOrderStatus({ orderId: o.id, status: "done", pay: o.pay === "paid" ? "paid" : "sent", label: "Löschbestätigung + Rechnung gesendet", noEvent: o.status === "done" }).catch(() => {});
         toast(method ? `Löschbestätigung (${pref}, ${j.payTotal}) an ${o.email} gesendet` : `Löschbestätigung + Rechnung über ${j.total} an ${o.email} gesendet`);
       }
