@@ -84,10 +84,12 @@ async function setSetting(key: string, value: string): Promise<void> {
   if (!pool) return;
   await pool.query(`INSERT INTO partner_settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=$2`, [key, value]);
 }
-export type PayoutSettings = { auto: boolean; holdDays: number; minUsd: number; hour: number; recheck: boolean };
+export type PayoutSettings = { live: boolean; auto: boolean; holdDays: number; minUsd: number; hour: number; recheck: boolean };
 export async function payoutSettings(): Promise<PayoutSettings> {
   const n = async (k: string, d: number) => { const v = Number(await getSetting(k)); return Number.isFinite(v) && (await getSetting(k)) !== null ? v : d; };
   return {
+    // Hauptschalter (Admin → Auszahlungen): erst wenn „live", sehen Partner die Auszahlungs-Einrichtung und es wird automatisch bezahlt.
+    live: (await getSetting("payouts_live")) === "1",
     auto: (await getSetting("payout_auto")) !== "0", // Standard: an (läuft aber erst mit Payoneer-Zugang)
     holdDays: Math.max(0, Math.min(30, await n("payout_hold_days", 2))),
     minUsd: Math.max(0, Math.min(5000, await n("payout_min_usd", 10))),
@@ -473,6 +475,7 @@ export async function runPayouts(log: (m: string) => void = () => {}, manual = f
   running = true;
   try {
     const s = await payoutSettings();
+    if (!s.live) return { ok: true, skipped: "Auszahlungen noch nicht live geschaltet (Admin → Auszahlungen)" };
     if (!manual && !s.auto) return { ok: true, skipped: "automatische Auszahlung aus" };
     // Alle freigegebenen Partner (auch pausierte – erledigte Arbeit wird bezahlt).
     const ps = (await pool.query(`SELECT * FROM partners WHERE status='active' ORDER BY id`)).rows as PartnerRow[];
@@ -619,7 +622,7 @@ export async function payoutTick(log: (m: string) => void): Promise<void> {
   if (!pool) return;
   await pollSent().catch(() => {});
   const s = await payoutSettings();
-  if (!s.auto || !(payoneerConfigured() || airwallexConfigured() || stripeConfigured())) return;
+  if (!s.live || !s.auto || !(payoneerConfigured() || airwallexConfigured() || stripeConfigured())) return;
   const v = viennaNow();
   if (v.hour < s.hour || (await getSetting("payout_last_day")) === v.day) return;
   await setSetting("payout_last_day", v.day);
@@ -785,13 +788,13 @@ export function registerPayoutRoutes(
     if (!(await auth.check(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     const s = await payoutSettings();
-    const base = { sbText: SB_TEXT, sbVersion: SB_VERSION, payoneer: payoneerConfigured(), bank: airwallexConfigured(), stripe: stripeConfigured(), holdDays: s.holdDays, minUsd: s.minUsd, next: nextRunText(s) };
+    const base = { live: s.live, sbText: SB_TEXT, sbVersion: SB_VERSION, payoneer: payoneerConfigured(), bank: airwallexConfigured(), stripe: stripeConfigured(), holdDays: s.holdDays, minUsd: s.minUsd, next: nextRunText(s) };
     if (await auth.preview(b.t)) return { ok: true, preview: true, ...base, profile: null, auto: false, balance: { owedUsd: 0, owedCount: 0, dueUsd: 0, dueCount: 0, processingUsd: 0 }, payouts: [] };
     let p = await partnerOf(b.t);
     if (p) p = await refreshStripe(await refreshPayee(p), String(b.fresh || "") === "stripe");
     const prs = p ? await payoutsOf(Number(p.id), 40) : [];
     return {
-      ok: true, ...base, profile: profileView(p), auto: s.auto && payReady(p),
+      ok: true, ...base, profile: profileView(p), auto: s.live && s.auto && payReady(p),
       balance: await balance(s.holdDays, p ? Number(p.id) : -1), payouts: prs.filter((x) => x.status !== "failed" && x.status !== "pending").map(payoutView).map((x) => ({ ...x, error: null })),
     };
   });
@@ -923,6 +926,7 @@ export function registerPayoutRoutes(
     const b = (req.body || {}) as Record<string, unknown>;
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     if (typeof b.auto === "boolean") await setSetting("payout_auto", b.auto ? "1" : "0");
+    if (typeof b.live === "boolean") await setSetting("payouts_live", b.live ? "1" : "0");
     if (typeof b.recheck === "boolean") await setSetting("payout_recheck", b.recheck ? "1" : "0");
     for (const [k, key, lo, hi] of [["holdDays", "payout_hold_days", 0, 30], ["minUsd", "payout_min_usd", 0, 5000], ["hour", "payout_hour", 0, 23]] as const) {
       const n = Number(b[k]);

@@ -61,7 +61,8 @@ export default function PartnerApp({ api }) {
   const [tab0, setTab0] = React.useState(() => { try { return /payoneer=/.test(window.location.search) ? "earn" : "tasks"; } catch (e) { return "tasks"; } });
   const [pd, reloadPd] = usePayouts(api.token); // Auszahlungsdaten (Payoneer, Gutschriften)
   const [poEdit, setPoEdit] = React.useState(false);
-  const autoPay = !!(pd && pd.auto); // automatische Auszahlung aktiv → kein „Mark paid" mehr
+  const payLive = !!(pd && pd.live); // Auszahlungen im Admin live geschaltet?
+  const autoPay = !!(pd && pd.live && pd.auto); // automatische Auszahlung aktiv → kein „Mark paid" mehr
   const [stacks, setStacks] = React.useState({ tasks: [{ v: "home" }], orders: [{ v: "orders" }] });
   const [ofl, setOfl] = React.useState("open");
   const [anim, setAnim] = React.useState(0);
@@ -379,7 +380,7 @@ export default function PartnerApp({ api }) {
   }
 
   function EarnV() {
-    if (poEdit && pd && pd.ok !== false) return <PayoutSetup d={pd} token={api.token} showToast={api.showToast} onBack={() => setPoEdit(false)} onDone={() => { setPoEdit(false); reloadPd(); }} />;
+    if (poEdit && payLive && pd && pd.ok !== false) return <PayoutSetup d={pd} token={api.token} showToast={api.showToast} onBack={() => setPoEdit(false)} onDone={() => { setPoEdit(false); reloadPd(); }} />;
     const row = (t) => (
       <div key={t.id} className="er">
         <span className="ico">{t.paid ? <Banknote /> : <Wallet />}</span>
@@ -392,7 +393,7 @@ export default function PartnerApp({ api }) {
       <>
         <div className="ttl">Earnings</div>
         {hero()}
-        <PartnerPayouts d={pd} token={api.token} showToast={api.showToast} setEditing={setPoEdit} />
+        {payLive ? <PartnerPayouts d={pd} token={api.token} showToast={api.showToast} setEditing={setPoEdit} /> : null}
         <div className="sec"><h2>To be paid</h2><span>{due.length}</span></div>
         {due.length ? due.map(row) : <div className="ps">Nothing open – all paid.</div>}
         <div className="sec"><h2>Paid out</h2><span>{paidL.length}</span></div>

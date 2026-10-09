@@ -55,6 +55,13 @@ export default function PayoutsScreen({ ctx }) {
       {!d && !err ? <div className="aempty"><b>Lädt …</b></div> : null}
       {d ? (
         <>
+          <div className="info">
+            <button type="button" className="ir" onClick={() => { if (s.live || window.confirm("Auszahlungen live schalten? Partner sehen dann die Auszahlungs-Einrichtung (Pflicht beim nächsten Login) und werden automatisch bezahlt, sobald ein Anbieter-Zugang da ist.")) save({ live: !s.live }); }}>
+              <span className="ico" style={s.live ? { background: "var(--success)", color: "#fff" } : null}><Zap /></span>
+              <span className="t"><b>Auszahlungen {s.live ? "live" : "noch nicht live"}</b><span>{s.live ? "Partner richten die Auszahlung ein und werden automatisch bezahlt" : "Partner sehen nichts davon · bezahlt wird wie bisher manuell"}</span></span>
+              <span className={"tg" + (s.live ? " on" : "")}><i /></span>
+            </button>
+          </div>
           <p className="sh">Gelöscht → von Lena geprüft → nach {s.holdDays} Tag{s.holdDays === 1 ? "" : "en"} nochmal geprüft → automatisch ausgezahlt (Payoneer oder Bankkonto über Stripe – der Partner wählt) → Gutschrift (PDF) an den Partner.</p>
           <div className="pst3 po-k">
             <div><b>{usd(b.owedUsd)}</b><span>Offen · {b.owedCount}</span></div>

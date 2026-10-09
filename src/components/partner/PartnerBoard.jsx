@@ -340,7 +340,7 @@ export default function PartnerBoard() {
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
   if (acct) return <PartnerPending token={token} status={acct} onLogout={logout} />;
-  if (pay && pay.ok && !pay.preview && pay.profile && !pay.profile.setupDone) {
+  if (pay && pay.ok && pay.live && !pay.preview && pay.profile && !pay.profile.setupDone) {
     return (
       <div className="pra"><main className="screen" style={{ bottom: 0 }}>
         <PayoutSetup gate d={pay} token={token} showToast={showToast} onDone={() => { reloadPay(); load(true); }} />
