@@ -29,11 +29,27 @@ import {
   verifyStripeSignature, retrieveCustomer, hasSecretKey, langFromLocale,
 } from "../integrations/stripe.js";
 import {
-  dbReady, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic,
+  dbReady, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic, pool,
 } from "../db.js";
 import { notifyPaymentReceived } from "../notify.js";
 
-type Lang = "de" | "en";
+type Lang = "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
+const MAIL_LANGS: Lang[] = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
+/** Sprache der Zahlungs-Mail: Sprache der letzten Bestellung dieser E-Mail (z. B. Italiener → it), sonst Stripe-Kundensprache,
+ *  sonst wie früher nach Währung (EUR → de, sonst en). Bis 09.10.2026 ging alles in EUR auf Deutsch raus. */
+async function mailLangFor(obj: any): Promise<Lang> {
+  const email = String(obj?.customer_email || "").trim().toLowerCase();
+  if (email && pool) {
+    try {
+      const r = await pool.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND COALESCE(lang,'')<>'' ORDER BY created_at DESC LIMIT 1`, [email]);
+      const l = String(r.rows[0]?.lang || "").slice(0, 2).toLowerCase() as Lang;
+      if (MAIL_LANGS.includes(l)) return l;
+    } catch { /* weiter mit Fallback */ }
+  }
+  const loc = String(obj?.customer_preferred_locales?.[0] || obj?.customer?.preferred_locales?.[0] || "").slice(0, 2).toLowerCase() as Lang;
+  if (MAIL_LANGS.includes(loc)) return loc;
+  return (obj?.currency || "").toLowerCase() === "eur" ? "de" : "en";
+}
 
 async function sendTemplate(
   log: FastifyInstance["log"],
@@ -121,7 +137,7 @@ async function sendInvoiceMail(
     {
       invoiceUrl: obj?.hosted_invoice_url || undefined,
       // Empfehlungslink: echte Adresse statt Platzhalter „{{email}}", Sprache wie die Mail (de → /de, sonst Startseite).
-      friendUrl: `https://www.rapid-remove.com/${lang === "de" ? "de" : ""}${obj?.customer_email ? `?friend=${encodeURIComponent(String(obj.customer_email))}` : ""}`,
+      friendUrl: `https://www.rapid-remove.com/${lang}${obj?.customer_email ? `?friend=${encodeURIComponent(String(obj.customer_email))}` : ""}`,
     },
     { bcc, attachments },
   );
@@ -180,7 +196,7 @@ async function handleEvent(app: FastifyInstance, event: any): Promise<void> {
   switch (event?.type) {
     case "invoice.paid":
     case "invoice.payment_succeeded": {
-      const lang: Lang = (obj.currency || "").toLowerCase() === "eur" ? "de" : "en";
+      const lang: Lang = await mailLangFor(obj);
       // Zahlung zuerst der Bestellung zuordnen (Übersicht: bezahlt), dann Mails.
       await autoMatchPayment(app, obj, event.type);
       await sendInvoiceMail(app.log, obj, lang);
