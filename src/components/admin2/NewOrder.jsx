@@ -7,7 +7,7 @@
 import React from "react";
 import {
   X, ArrowLeft, ArrowRight, Link as LinkIcon, Clipboard, Store, Check, Info, CheckCheck, User, Mail, Phone, Send, Wallet,
-  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe, ChevronDown, Tag,
+  FileText, Zap, ChevronRight, Plus, UserX, Copy, MapPin, MoreHorizontal, StarOff, Loader, Bell, CreditCard, Search, Globe, ChevronDown, Tag, ShieldCheck,
 } from "lucide-react";
 import { searchProfiles } from "@/lib/places";
 import { monitorLookup, placeReviews, createAdminOrder, resolveReviewLinkApi } from "@/lib/admin-api";
@@ -36,7 +36,7 @@ const isUrl = (s) => /^https?:\/\/\S+$/i.test(String(s || "").trim());
 const ago = (d) => (d < 0 ? "Datum unbekannt" : d < 1 ? "heute" : d < 7 ? `vor ${d} ${d === 1 ? "Tag" : "Tagen"}` : d < 31 ? `vor ${Math.round(d / 7)} ${Math.round(d / 7) === 1 ? "Woche" : "Wochen"}` : d < 365 ? `vor ${Math.round(d / 30)} ${Math.round(d / 30) === 1 ? "Monat" : "Monaten"}` : `vor ${Math.round(d / 365)} J.`);
 const Stars = ({ n }) => <i className="st">{"★".repeat(Math.max(0, Math.min(5, n)))}<s>{"★".repeat(Math.max(0, 5 - n))}</s></i>;
 
-const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, busy: false, done: null, cands: null, candBusy: false, cpAll: "", cpMap: {}, cpOpen: false, profAmt: "" });
+const NA0 = () => ({ step: 0, type: null, mode: "profile", url: "", biz: null, bizBusy: false, bizErr: "", revs: null, revErr: "", rsf: "neg", sel: [], rl: [], rlin: "", reason: null, name: "", email: "", phone: "", country: "AT", lang: "", ctryAuto: true, langAuto: true, pay: "auto", staff: "max", confirm: true, askReasons: true, busy: false, done: null, cands: null, candBusy: false, cpAll: "", cpMap: {}, cpOpen: false, profAmt: "" });
 
 export default function NewOrder({ ctx }) {
   const { back, auto, partners, openSheet, openOrder, toast, refresh, isDesk, scrollPush } = ctx;
@@ -159,7 +159,7 @@ export default function NewOrder({ ctx }) {
     set({ busy: true });
     try {
       const r = await createAdminOrder({
-        type: s.type, reviewItems: items, reason: s.reason, ...(s.type === "profile" && num(s.profAmt) ? { amount: num(s.profAmt) } : {}), payment: s.pay, staff: s.staff, sendConfirm: s.confirm,
+        type: s.type, reviewItems: items, reason: s.reason, ...(s.type === "profile" && num(s.profAmt) ? { amount: num(s.profAmt) } : {}), payment: s.pay, staff: s.staff, sendConfirm: s.confirm, askReasons: s.type === "reviews" ? s.askReasons : undefined,
         place: s.biz ? { name: s.biz.name, address: s.biz.address, placeId: s.biz.placeId, mapsUrl: s.biz.mapsUrl || s.url } : { mapsUrl: s.url },
         customer: { name: s.name.trim(), email: s.email.trim(), phone: s.phone.trim(), country: s.country, lang },
       });
@@ -178,7 +178,7 @@ export default function NewOrder({ ctx }) {
         <h1>Auftrag angelegt</h1>
         <p>{d.id} · {(s.biz && s.biz.name) || s.name}</p>
         <p className="m">{d.mailed ? <>Auftragsbestätigung an {s.email.trim()} gesendet.</> : s.confirm ? "Bestätigung konnte nicht gesendet werden – bitte im Auftrag prüfen." : "Keine E-Mail an den Kunden gesendet."}</p>
-        {d.payGate ? <p>Startet, sobald der Kunde im Dashboard seine Zahlungsart hinterlegt hat.</p> : d.partner ? <p>{d.partner === 1 ? "1 Aufgabe" : d.partner + " Aufgaben"} automatisch ans Partner-Board.</p> : null}
+        {d.reasons ? <p>Startet, sobald der Kunde im Dashboard die Gründe je Bewertung angegeben{d.payGate ? " und seine Zahlungsart hinterlegt" : ""} hat.</p> : d.payGate ? <p>Startet, sobald der Kunde im Dashboard seine Zahlungsart hinterlegt hat.</p> : d.partner ? <p>{d.partner === 1 ? "1 Aufgabe" : d.partner + " Aufgaben"} automatisch ans Partner-Board.</p> : null}
         <div className="ctas" style={{ width: "100%", marginTop: 28 }}>
           <button type="button" className="cta" onClick={() => openOrder(d.id)}><ArrowRight />Auftrag öffnen</button>
           <button type="button" className="cta gh" onClick={back}>Fertig</button>
@@ -359,7 +359,12 @@ export default function NewOrder({ ctx }) {
           <div className="ir"><span className="ico"><Zap /></span><span className="t"><span>Partner</span><b>{autoOn ? "Automatisch an " + pName : "Manuell zuweisen"}</b></span></div>
           <button type="button" className="ir" onClick={() => set((x) => ({ confirm: !x.confirm }))}>
             <span className="ico"><Bell /></span><span className="t"><span>Kunde</span><b>Auftragsbestätigung per E-Mail</b></span><span className={"tg" + (s.confirm ? " on" : "")}><i /></span></button>
+          {s.type === "reviews" ? (
+            <button type="button" className="ir" onClick={() => set((x) => ({ askReasons: !x.askReasons }))}>
+              <span className="ico"><ShieldCheck /></span><span className="t"><span>Kunde</span><b>Gründe je Bewertung im Dashboard abfragen</b></span><span className={"tg" + (s.askReasons ? " on" : "")}><i /></span></button>
+          ) : null}
         </div>
+        {s.type === "reviews" && !s.askReasons ? <p className="nasub" style={{ marginTop: 4, color: "var(--danger)" }}>Nur abschalten, wenn die Gründe schon schriftlich vorliegen (z. B. per Mail) – sonst fehlt die Zusicherung des Kunden.</p> : null}
         <p className="nasub" style={{ marginTop: 4 }}>{s.pay === "auto"
           ? "Der Kunde bekommt Auftragsbestätigung + Dashboard-Zugang und hinterlegt dort seine Zahlungsart. Erst dann startet der Auftrag. Abgebucht wird automatisch " + (s.type === "reviews" ? "nach jeder geprüften Löschung." : "sobald das Profil auf „gelöscht“ steht.")
           : s.type === "reviews" ? "Bezahlt werden nur gelöschte Bewertungen – der Kunde zahlt selbst („Pay“ im Dashboard bzw. Zahlungslink nach der Löschung)." : "Der Zahlungslink geht wie gewohnt nach der Löschung raus."}</p>

@@ -777,3 +777,61 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 @media (prefers-reduced-motion:reduce){.rra .setup-art{animation:none}}
 .rra .rv-sheet.pgs .pgs-art{overflow:hidden;flex:none}
 .rra .rv-sheet.pgs .pgs-art img{position:static;display:block;height:clamp(72px,13vh,120px);width:auto;max-width:100%;transform:none}
+/* Auftrag starten (10/2026): Gründe je Bewertung → Nachweis → Zahlungsart – gleiches Gerüst wie der Software-Flow */
+.rra .sf .sf-bar i{position:relative;overflow:hidden;background:var(--g2)}
+.rra .sf .sf-bar i b{position:absolute;inset:0 auto 0 0;background:var(--ink);border-radius:3px;transition:width .35s var(--ease)}
+.rra .sf .sf-in{animation:sfIn .28s var(--ease)}
+@keyframes sfIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.rra .sf .sf-in{animation:none}}
+.rra .sf .sf-art{height:150px;margin-bottom:18px}
+.rra .sf .fl-body h2{font-size:28px;letter-spacing:-.9px}
+.rra .sf .fl-body h2.sf-q{font-size:22px;letter-spacing:-.5px;line-height:1.2;margin:6px 0 12px}
+.rra .sf .fl-body p.sf-sub{font-size:15px;color:var(--g3);margin-top:-6px}
+.rra .sf-phs{display:flex;flex-direction:column;gap:12px;margin-top:18px}
+.rra .sf-ph{display:flex;gap:14px;align-items:flex-start}
+.rra .sf-ph .n{width:32px;height:32px;border-radius:50%;background:var(--ink);color:#fff;font-weight:800;font-size:15px;display:grid;place-items:center;flex:none}
+.rra .sf-ph b{display:block;font-size:16px;font-weight:700}
+.rra .sf-ph span>span{font-size:14px;color:var(--g3)}
+.rra .sf-rv{background:var(--g1);border-radius:18px;padding:14px 16px;margin-bottom:14px}
+.rra .sf-rv-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rra .sf-rv-h b{font-weight:700;font-size:15.5px}
+.rra .sf-of{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--g3)}
+.rra .sf .stars{display:inline-flex;gap:1px}
+.rra .sf .stars svg{width:13px;height:13px;color:#d0d0d0;fill:#d0d0d0}
+.rra .sf .stars svg.f{color:#f5a623;fill:#f5a623}
+.rra .sf-rv-x{font-size:14.5px;line-height:1.45;color:#444;margin-top:6px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.rra .sf-rv-x.none{font-style:italic;color:var(--g3)}
+.rra .sf-opts{display:flex;flex-direction:column;gap:8px}
+.rra .sf-o{display:flex;align-items:center;gap:12px;width:100%;min-height:52px;border-radius:16px;padding:10px 14px;background:#fff;border:2px solid var(--g2);transition:border-color .15s,background .15s}
+.rra .sf-o b{font-weight:600;font-size:15.5px;line-height:1.3}
+.rra .sf-o .tog{width:24px;height:24px}
+.rra .sf-o .tog svg{width:14px;height:14px}
+.rra .sf-o.on{border-color:var(--ink);background:var(--g1)}
+.rra .sf-o.on .tog{background:var(--ink);border-color:var(--ink);color:#fff}
+.rra .sf-more{display:flex;align-items:center;gap:4px;align-self:flex-start;font-size:14px;font-weight:700;color:var(--g3);padding:6px 2px}
+.rra .sf-more svg{width:16px;height:16px}
+.rra .sf-note{width:100%;border:2px solid var(--ink);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;resize:none;outline:none;color:var(--ink)}
+.rra .sf-sum{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.rra .sf-s{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border-radius:16px;background:var(--g1)}
+.rra .sf-s .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.rra .sf-s .a{display:flex;align-items:center;gap:8px;min-width:0}
+.rra .sf-s .a b{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rra .sf-s .r{font-size:14px;color:var(--ink);font-weight:500}
+.rra .sf-s.miss .r{color:var(--danger)}
+.rra .sf-s>svg{width:18px;height:18px;color:var(--g3)}
+.rra .sf-foot{flex-direction:column;align-items:stretch;gap:6px}
+.rra .sf-row{display:flex;gap:10px;width:100%}
+.rra .sf-row .cta{flex:1}
+.rra .sf .pg-later{align-self:center;font-size:14px;font-weight:600;color:var(--g3);padding:8px}
+.rra .sf .sf-pf{margin-top:16px;gap:10px}
+.rra .sf .sf-pf>div{display:flex;align-items:center;gap:12px;font-size:15px}
+.rra .sf .sf-pf .ico{width:36px;height:36px;border-radius:12px;background:var(--g1);display:grid;place-items:center;flex:none}
+.rra .sf .sf-pf .ico svg{width:18px;height:18px}
+.rra .sf .fl-body.vf{animation:sfIn .28s var(--ease)}
+@media (min-width:821px){
+  .rra .sf .fl-card{width:min(560px,100%)}
+  .rra .sf .sf-art{height:170px}
+  .rra .sf-o:hover:not(.on){background:var(--g1)}
+  .rra .sf-s:hover{background:var(--g2)}
+}
+@media (max-height:700px){.rra .sf .sf-art{height:110px}}

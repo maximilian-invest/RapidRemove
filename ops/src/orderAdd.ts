@@ -12,6 +12,7 @@ import { partnerAutoSend, partnerAutoEnabled } from "./partner";
 import { autopayAvailable, hasSavedMethod, chargeDue } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
+import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { quoteReviews, reviewMethod, cpOf } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
@@ -30,7 +31,7 @@ const normT = (t?: string) => String(t || "").toLowerCase().replace(/\s+/g, " ")
 export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; country: string | null; company: string | null; profile: string | null; status: string | null; service: string | null; raw: Record<string, unknown> | null };
 export type AddResult =
-  | { ok: true; added: number; skipped: string[]; gate: boolean; partner: number; mailed: boolean; keys: string[] }
+  | { ok: true; added: number; skipped: string[]; gate: boolean; reasons: boolean; partner: number; mailed: boolean; keys: string[] }
   | { ok: false; error: string; skipped?: string[] };
 
 async function loadOrder(orderId: string): Promise<OrderRow | null> {
@@ -58,7 +59,7 @@ const isSeen = (seen: { u: string; nt: string }[], it: AddItem) =>
   seen.some((x) => (it.url && x.u && x.u === normU(it.url)) || (it.name && it.text && x.nt && x.nt === normT(it.name) + "|" + normT(it.text).slice(0, 80)));
 
 /** Bewertungen anhängen. gate: "auto" = Zahlungsart nötig, wenn Abbuchung verfügbar und noch keine hinterlegt; "off" = nie. */
-export async function addReviewsToOrder(orderId: string, input: AddItem[], opts: { by: "admin" | "customer"; gate?: "auto" | "off"; mail?: boolean }): Promise<AddResult> {
+export async function addReviewsToOrder(orderId: string, input: AddItem[], opts: { by: "admin" | "customer"; gate?: "auto" | "off"; reasons?: "ask" | "off"; mail?: boolean }): Promise<AddResult> {
   if (!pool) return { ok: false, error: "db" };
   const o = await loadOrder(orderId);
   if (!o || o.service !== "reviews") return { ok: false, error: "order" };
@@ -114,16 +115,22 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     await setOrderRawField(orderId, "payGate", { status: "pending", at: new Date().toISOString(), ...(keys ? { keys } : {}) });
     await setOrderRawField(orderId, "payMethod", "auto");
   }
+  // Gründe je Bewertung: auch nachbestellte Bewertungen starten erst, wenn der Kunde im Dashboard den Grund angegeben hat.
+  const askReasons = opts.reasons !== "off";
+  const rGate = askReasons ? reasonsGateAdd(raw, newKeys) : null;
+  if (rGate) await setOrderRawField(orderId, "reasons", rGate);
   const who = opts.by === "admin" ? "Admin" : "Kunde im Dashboard";
   const list = fresh.map((it) => (it.name ? `${it.name}${it.rating ? ` (${it.rating}★)` : ""}` : it.url)).join(" · ");
-  await insertEvent({ orderId, email, type: "order", title: `${fresh.length === 1 ? "Bewertung" : fresh.length + " Bewertungen"} nachbestellt (${who})`, detail: list + (gate ? " · wartet auf Zahlungsart" : "") + (skipped.length ? ` · schon beauftragt: ${skipped.join(", ")}` : "") });
+  await insertEvent({ orderId, email, type: "order", title: `${fresh.length === 1 ? "Bewertung" : fresh.length + " Bewertungen"} nachbestellt (${who})`, detail: list + (rGate ? " · wartet auf Gründe" : "") + (gate ? " · wartet auf Zahlungsart" : "") + (skipped.length ? ` · schon beauftragt: ${skipped.join(", ")}` : "") });
 
   // 4) Partner-Board – sofort, außer die Neuen (bzw. der Auftrag) warten noch
   let partner = 0;
-  const raw2 = { ...raw, ...(gate ? { payGate: { status: "pending" } } : {}) };
+  const raw2 = { ...raw, ...(gate ? { payGate: { status: "pending" } } : {}), ...(rGate ? { reasons: rGate } : {}) };
   const bl2 = blockedOf(raw2);
-  if (!gate && !bl2.all && !newKeys.some((k) => bl2.keys.has(k)) && await partnerAutoEnabled("reviews").catch(() => true)) {
+  if (!gate && !rGate && !bl2.all && !newKeys.some((k) => bl2.keys.has(k)) && await partnerAutoEnabled("reviews").catch(() => true)) {
     partner = await partnerAutoSend(orderId, o.profile || o.company || o.name || "", fresh as Record<string, unknown>[]).catch(() => 0);
+  } else if (rGate && !gate) {
+    await insertEvent({ orderId, email, type: "note", title: "Nachbestellung wartet auf Gründe je Bewertung", detail: "Startet automatisch, sobald der Kunde im Dashboard die Gründe angegeben hat – laufende Bewertungen laufen weiter", auto: true }).catch(() => {});
   } else if (gate) {
     await insertEvent({ orderId, email, type: "note", title: "Nachbestellung wartet auf Zahlungsart", detail: "Startet automatisch, sobald der Kunde im Dashboard eine Zahlungsart hinterlegt hat – laufende Bewertungen laufen weiter", auto: true }).catch(() => {});
   }
@@ -135,7 +142,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
       const lang = MAIL_LANGS.includes(String(o.lang || "")) ? String(o.lang) : "en";
       const t = TEMPLATES["auftragsbestaetigung-reviews"];
       const q = quoteReviews(fresh, cur);
-      const props = { lang, name: o.name || "", items: fresh, per: q.per, total: q.totalStr, currency: cur, orderId, payGate: gate, added: true, dash: { url: await dashLink(email, lang), existing: true } };
+      const props = { lang, name: o.name || "", items: fresh, per: q.per, total: q.totalStr, currency: cur, orderId, payGate: gate, reasons: !!rGate, added: true, dash: { url: await dashLink(email, lang), existing: true } };
       const html = await render(React.createElement(t.component, props as never));
       const subj = t.subject(props as never);
       await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
@@ -145,10 +152,10 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
   }
   if (opts.by === "customer") {
     const test = isTestEmail(email);
-    void notifyTeam(`${test ? "TEST · " : ""}Nachbestellung · ${o.profile || o.company || o.name || orderId}`, `${fresh.length} ${fresh.length === 1 ? "Bewertung" : "Bewertungen"} selbst im Dashboard hinzugefügt${gate ? " · wartet auf Zahlungsart" : partner ? " · ans Partner-Board" : ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "order" });
+    void notifyTeam(`${test ? "TEST · " : ""}Nachbestellung · ${o.profile || o.company || o.name || orderId}`, `${fresh.length} ${fresh.length === 1 ? "Bewertung" : "Bewertungen"} selbst im Dashboard hinzugefügt${rGate ? " · wartet auf Gründe" : ""}${gate ? " · wartet auf Zahlungsart" : partner ? " · ans Partner-Board" : ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "order" });
   }
   bumpChange();
-  return { ok: true, added: fresh.length, skipped, gate, partner, mailed, keys: newKeys };
+  return { ok: true, added: fresh.length, skipped, gate, reasons: !!rGate, partner, mailed, keys: newKeys };
 }
 
 /* ---------- Kunde: Liste seines Profils + selbst hinzufügen ---------- */
@@ -186,7 +193,7 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const b = (req.body || {}) as Record<string, unknown>;
     if (!adminToken || String(b.token || "") !== adminToken) return reply.code(401).send({ ok: false, error: "unauthorized" });
     const items = Array.isArray(b.reviewItems) ? (b.reviewItems as AddItem[]) : [];
-    const r = await addReviewsToOrder(clip(b.orderId, 40), items, { by: "admin", gate: b.gate === false || b.gate === "off" ? "off" : "auto", mail: b.sendMail !== false });
+    const r = await addReviewsToOrder(clip(b.orderId, 40), items, { by: "admin", gate: b.gate === false || b.gate === "off" ? "off" : "auto", reasons: b.askReasons === false ? "off" : "ask", mail: b.sendMail !== false });
     return r.ok ? r : reply.code(r.error === "already_ordered" ? 409 : 400).send(r);
   });
 
@@ -215,8 +222,8 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const picks = (list || []).filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
     const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true });
-    if (r.ok) {
-      // Zusicherung „verstößt gegen die Google-Richtlinien" auch für Nachbestellungen festhalten (Nachweis je Nachbestellung).
+    if (r.ok && b.policyConsent === true) {
+      // (alt) Zusicherung direkt bei der Nachbestellung – seit 10/2026 kommt sie im Start-Ablauf (Gründe je Bewertung, reasons.ts).
       const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim().slice(0, 60);
       const cur = await loadOrder(c.o.id);
       const prev = (Array.isArray(cur?.raw?.policyConsentAdds) ? cur!.raw!.policyConsentAdds : []) as unknown[];
@@ -224,7 +231,7 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
         ? { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: clip(b.policyV, 20) || "2026-10-09", n: picks.length, names: picks.map((p) => clip(p.name, 60)) }
         : { at: new Date().toISOString(), missing: true, n: picks.length }].slice(-30)).catch(() => {});
     }
-    return r.ok ? { ok: true, added: r.added, gate: r.gate } : reply.code(r.error === "already_ordered" ? 409 : 400).send({ ok: false, error: r.error });
+    return r.ok ? { ok: true, added: r.added, gate: r.gate, reasons: r.reasons } : reply.code(r.error === "already_ordered" ? 409 : 400).send({ ok: false, error: r.error });
   });
 }
 

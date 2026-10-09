@@ -12,7 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate, verifyDoc, verifySet, reviewShotUrl } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -191,6 +191,7 @@ export function OrderDetail({ ctx, id }) {
             {isRev || (o.lang || "de") !== "de" ? <span>Mahnungen gehen deshalb als {payPrefOf(o)}-Text ohne Stripe-Link raus.</span> : null}</span>
         </div>
       ) : null}
+      {isRev && o.reasons && o.reasons.status === "pending" && o.status !== "storniert" ? <ReasonsBox o={o} ctx={ctx} /> : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
       {o.pgStale && o.status !== "storniert" ? (
         <div className="disc due">
@@ -262,6 +263,32 @@ export function OrderDetail({ ctx, id }) {
       {o.status !== "storniert" ? <button type="button" className="dz" onClick={() => act.storno(o)}><Ban />Auftrag stornieren</button> : null}
       <div style={{ height: 8 }} />
     </>
+  );
+}
+
+/** Gründe je Bewertung (Dashboard): Kunde muss je Bewertung den Richtlinien-Verstoß angeben + bestätigen → erst dann Start.
+ *  Admin kann überspringen (Gründe liegen schon vor, z. B. per Mail). */
+export const REASON_L = { fake: "Kein echter Kunde / Fake", conflict: "Mitbewerber / (Ex-)Mitarbeiter", false: "Falsche Behauptungen", insult: "Beleidigung / Belästigung", offtopic: "Themenfremd", hate: "Hassrede / Diskriminierung", personal: "Persönliche Daten", offensive: "Anstößig / illegal", impersonation: "Identitätsbetrug", other: "Anderer Grund" };
+function ReasonsBox({ o, ctx }) {
+  const g = o.reasons || {};
+  const [busy, setBusy] = React.useState(false);
+  const [arm, setArm] = React.useState(false);
+  const n = Array.isArray(g.keys) ? g.keys.length : (o.reviewItems || []).length;
+  const skip = async () => {
+    if (!arm) { setArm(true); setTimeout(() => setArm(false), 4000); return; }
+    setBusy(true);
+    try { const r = await reasonsSet(o.id, "skip"); if (ctx.toast) ctx.toast(r.started ? `Übersprungen – ${r.started} ans Partner-Board` : "Übersprungen – startet, sobald sonst nichts mehr fehlt"); if (ctx.refresh) ctx.refresh(); if (ctx.loadPtasks) ctx.loadPtasks(); }
+    catch (e) { if (ctx.toast) ctx.toast(e.message || "Fehler"); }
+    setBusy(false); setArm(false);
+  };
+  return (
+    <div className="disc vfy">
+      <span className="di"><ShieldCheck /></span>
+      <span className="t"><b>Gründe je Bewertung · wartet auf Kunde</b>
+        <span>{Array.isArray(g.keys) ? `${n} nachbestellte Bewertung${n === 1 ? "" : "en"} warten` : `Ganzer Auftrag wartet (${n} Bewertung${n === 1 ? "" : "en"})`} – der Kunde tippt im Dashboard je Bewertung den Grund an und bestätigt (AGB 3.4). Erinnerungen laufen automatisch.</span>
+        <span className="vfy-b"><button type="button" className={arm ? "go" : ""} disabled={busy} onClick={skip}>{busy ? "…" : arm ? "Wirklich überspringen?" : "Überspringen (Gründe liegen vor)"}</button></span>
+      </span>
+    </div>
   );
 }
 
@@ -363,11 +390,27 @@ function PolicyRow({ o }) {
   return (
     <div className="ir"><span className="ico" style={{ color: p ? "var(--success)" : "var(--g3)" }}><ShieldCheck /></span>
       <span className="t"><span>Google-Richtlinien · Zusicherung des Kunden</span>
-        <b>{p ? `Bestätigt ${fmtDT2(p.at)}${p.via === "chat" ? " · Chat" : ""}` : "Nicht bestätigt (vor 09.10.2026 oder im Admin angelegt)"}</b>
+        <b>{p ? `Bestätigt ${fmtDT2(p.at)}${p.via === "chat" ? " · Chat" : p.via === "dashboard" ? " · Dashboard" : ""}` : o.reasons && o.reasons.status === "pending" ? "Wird im Dashboard abgefragt (Gründe je Bewertung)" : "Nicht bestätigt (vor 09.10.2026 oder im Admin angelegt)"}</b>
         {p ? <span style={{ fontSize: 12, color: "var(--g3)" }}>IP {p.ip || "—"} · {ua(p.ua)} · Sprache {p.lang || "—"} · Text {p.v}</span> : null}
         {adds.length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Nachbestellung bestätigt: {adds.map((x) => fmtDT2(x.at)).join(", ")}</span> : null}
+        {(o.reasonsLog || []).length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Gründe im Dashboard bestätigt: {o.reasonsLog.map((x) => `${fmtDT2(x.at)} (${x.n})`).join(", ")}</span> : null}
+        {!o.reasons && o.status !== "storniert" && (o.reviewItems || []).some((it) => !it.reason) ? <ReasonsRequest o={o} /> : null}
       </span></div>
   );
+}
+
+/** Älterer Auftrag ohne Gründe: beim Kunden nachträglich anfordern (noch nicht gestartete Bewertungen warten so lange). */
+function ReasonsRequest({ o }) {
+  const [st, setSt] = React.useState("");
+  const go = async (e) => {
+    e.stopPropagation();
+    if (st === "") { setSt("arm"); setTimeout(() => setSt((x) => (x === "arm" ? "" : x)), 4000); return; }
+    if (st !== "arm") return;
+    setSt("busy");
+    try { await reasonsSet(o.id, "request"); setSt("done"); } catch (err) { setSt("err"); }
+  };
+  return <button type="button" onClick={go} style={{ marginTop: 6, alignSelf: "flex-start", fontSize: 12.5, fontWeight: 700, color: "var(--info, #1a56db)", textDecoration: "underline" }}>
+    {st === "arm" ? "Wirklich beim Kunden anfordern?" : st === "busy" ? "…" : st === "done" ? "Angefordert ✓ (Kunde sieht es im Dashboard)" : st === "err" ? "Fehler – nochmal?" : "Gründe beim Kunden anfordern"}</button>;
 }
 
 /** „Zahlung offen": Hauptaktion (eskaliert) + „Zahlung bereits erhalten?" – Design Okt 2026. */
@@ -435,7 +478,7 @@ export function ReviewsScreen({ ctx, id }) {
           return (
             <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>
-              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span></span>
+              <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span>{r.it.reason ? <span style={{ color: "var(--g3)", fontSize: 12 }}>Grund: {REASON_L[r.it.reason] || r.it.reason}{r.it.reasonNote ? ` – „${r.it.reasonNote}“` : ""}</span> : null}</span>
               {r.dec ? <span className="ac" style={{ color: r.dec === "ok" ? "var(--success)" : r.dec === "old" ? "var(--orange-800)" : "var(--g3)" }}>{r.dec === "ok" ? "Angenommen" : r.dec === "old" ? "Älter 4 Wo." : "Abgelehnt"}</span> : null}
               <ChevronRight />
             </button>
