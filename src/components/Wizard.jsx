@@ -1850,6 +1850,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Bewertungsauswahl geöffnet. Ob das Produkt geht, entscheidet das Profil-Land.
   const [wantReviews, setWantReviews] = React.useState(false);
   const autoReviewsDone = React.useRef(false);
+  const svcPickRef = React.useRef(false); // Leistung: Doppel-Tipp verhindern
   const startReviewsFlow = () => { setWantReviews(true); setRouted(true); };
   React.useEffect(() => {
     if (initialReviews) startReviewsFlow();
@@ -3291,7 +3292,62 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
   // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
   const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
-  const newStep1 = ((step === 0 || step === 1) && !processing) || reviewsNA; // neues Design
+  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA; // neues Design (Schritt 1, 2, 4)
+  /* Schritt 4 · Leistung im neuen Design: Profil löschen / Neustart (+ Einzelbewertungen außerhalb DACH). */
+  function StepServiceNew() {
+    const bp = bpCopy(t.code);
+    const revOk = reviewsAllowedFor(selected, t.code);
+    const pick = (s) => {
+      if (svcPickRef.current) return;
+      svcPickRef.current = true;
+      setService(s); // kurz als ausgewählt zeigen, dann weiter
+      setTimeout(() => {
+        svcPickRef.current = false;
+        if (s === "reset") { setExpress(false); setProtection(null); go(5); }
+        else if (s === "reviews") { setExpress(false); setProtection(null); go(4); } // Schritt 5 = Bewertungsauswahl
+        else go(4);
+      }, 220);
+    };
+    const opt = (id, img, title, desc, bullets, price, small, badge, i, pre) => (
+      <button type="button" key={id} className={"bpr-op bpr-svc bpr-fade" + (service === id ? " sel" : "")} style={{ animationDelay: (0.12 + i * 0.04) + "s" }} onClick={() => pick(id)}>
+        {badge ? <span className="bpr-bdg">{badge}</span> : null}
+        <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
+        <span className="tx"><b>{title}</b><span>{desc}</span>
+          {bullets ? <ul className="bpr-bl">{bullets.map((x, j) => <li key={j}><LCheck />{x}</li>)}</ul> : null}
+        </span>
+        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{small}</small></span>
+      </button>
+    );
+    const back = () => go(selected && selected.unverified ? 2 : 1);
+    const nm = (selected && selected.name) || name;
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="svc">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{bp.svcH}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.svcSub}</p>
+            <div className="bpr-okpill bpr-fade" style={{ animationDelay: ".08s" }}><LCircleCheck />{bp.svcOk}</div>
+            <div className="bpr-opts" style={{ marginTop: 22 }}>
+              {opt("remove", "/assets/bestell/profil.webp", bp.svc1[0], bp.svc1[1], bp.svc1[2], money(lang, p.deletion), wm.afterSuccess, w.s4.opt1.badge, 0)}
+              {opt("reset", null, bp.svc2[0], bp.svc2[1], bp.svc2[2], money(lang, p.reset), wm.afterSuccess, null, 1)}
+              {revOk ? opt("reviews", "/assets/bestell/bewertungen.webp", rv.tileT, rv.tileD, null, money(rl, p.review) + (pk.fromSuf || ""), rv.per, null, 2, (pk.fromPre || "").trim()) : null}
+            </div>
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
+          </section>
+          <aside className="bpr-aside">
+            <div className="bpr-pcard"><span className="ph"><LMapPin /></span><span className="t"><b>{nm}</b>{selected && selected.addr ? <small>{selected.addr}</small> : null}</span><button type="button" onClick={() => go(0)}>{bp.change}</button></div>
+            <div className="bpr-risk"><LShieldCheck /><b>{bp.riskT}</b><p>{bp.riskD}</p></div>
+            <button type="button" className="bpr-expert" onClick={openTidioChat}>
+              <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+              <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+              <LArrowUpRight className="ar" />
+            </button>
+          </aside>
+        </main>
+        <div className="bpr-mbar"><button type="button" className="bpr-back full" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
+      </div>
+    );
+  }
   /* Bewertungen gewünscht, Profil liegt in DE/AT → Hinweis + Profil-Löschung als Alternative. */
   function StepReviewsNA() {
     const bp = bpCopy(t.code);
@@ -3475,7 +3531,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : StepReviewsNA()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}

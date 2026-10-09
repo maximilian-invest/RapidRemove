@@ -1187,3 +1187,23 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
   .bpr-mbar .bpr-back.full{width:100%;padding:0 20px}
   .bpr-mbar .bpr-back.full span{display:inline}
 }
+
+/* ---------- Schritt 4 · Leistung (Redesign 10/2026) ---------- */
+.bpr-okpill{display:inline-flex;align-items:center;gap:8px;margin-top:22px;height:36px;padding:0 14px 0 10px;border-radius:18px;background:#e8f7ee;color:#16a34a;font-size:13px;font-weight:600}
+.bpr-okpill svg{width:16px;height:16px;stroke-width:2.4}
+.bpr-op .tx ul.bpr-bl{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-wrap:wrap;gap:4px 14px}
+.bpr-op .tx .bpr-bl li{display:flex;align-items:center;gap:6px;font-size:12px;color:#6b6b6b;font-weight:500;margin:0}
+.bpr-op .tx .bpr-bl li svg{width:14px;height:14px;color:#16a34a;stroke-width:2.6;flex:none}
+.bpr-op.bpr-svc .pr strong em{font-style:normal;font-size:14px;font-weight:500;color:#6b6b6b;letter-spacing:0;margin-right:3px}
+.bpr-pcard{display:flex;align-items:center;gap:14px;padding:16px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px #e8e8e8}
+.bpr-pcard .ph{width:44px;height:44px;border-radius:50%;background:#f4f4f4;display:grid;place-items:center;flex:none;color:#111}
+.bpr-pcard .ph svg{width:18px;height:18px;stroke-width:2.2}
+.bpr-pcard .t{min-width:0;flex:1}
+.bpr-pcard b{display:block;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bpr-pcard small{display:block;font-size:12px;color:#6b6b6b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.bpr-pcard button{border:0;background:none;padding:6px 2px;font:inherit;font-size:12px;font-weight:600;color:#6b6b6b;cursor:pointer;flex:none}
+.bpr-pcard button:hover{color:#111}
+@media (max-width:600px){
+  .bpr-op .tx ul.bpr-bl{display:none}
+  .bpr-okpill{margin-top:18px;font-size:13px}
+}
