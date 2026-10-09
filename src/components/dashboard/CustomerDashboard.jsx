@@ -12,8 +12,11 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin,
 } from "lucide-react";
+import { searchProfiles } from "@/lib/places";
+import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
+import { pagePath } from "@/lib/page-routes";
 import { reviewQuote } from "@/lib/pricing";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -554,6 +557,145 @@ function Top({ phs, fill, onClose, hide }) {
 
 /* Nachbestellung: weitere Bewertungen des eigenen Profils (1–3 ★) zum Auftrag hinzufügen. Bezahlt wird wie immer nur bei Löschung.
    Danach öffnet sich der Start-Ablauf (Grund je neuer Bewertung + Bestätigung, ggf. Zahlungsart) – die Zusicherung kommt dort. */
+/* Neue Bestellung im Dashboard (10/2026): Profil suchen → Bewertungen (1–3 ★) wählen → AGB/Beginn bestätigen → bestellen.
+   Danach öffnet sich der Start-Ablauf (Grund je Bewertung; Zahlungsart nur, wenn noch keine hinterlegt ist). */
+function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, presetQ }) {
+  const [step, setStep] = React.useState("search"); // search | pick | done
+  const [q, setQ] = React.useState("");
+  const [res, setRes] = React.useState(null); // Suchtreffer
+  const [busy, setBusy] = React.useState(false);
+  const [place, setPlace] = React.useState(null);
+  const [list, setList] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  const [pick, setPick] = React.useState([]);
+  const [agb, setAgb] = React.useState(false);
+  const [fagg, setFagg] = React.useState(false);
+  const [cErr, setCErr] = React.useState(false);
+  const [oid, setOid] = React.useState("");
+  React.useEffect(() => {
+    if (!open) return;
+    setStep("search"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    if (presetQ) search(presetQ);
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const search = async (qq) => {
+    const v = String(qq ?? q).trim(); if (!v) return;
+    setBusy(true); setRes(null);
+    try { setRes(await searchProfiles(v, LANG)); } catch (e) { setRes([]); }
+    setBusy(false);
+  };
+  const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
+  const choose = async (p) => {
+    if (dach(p)) return;
+    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]);
+    try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG }); setList(r.reviews || []); }
+    catch (e) { setList([]); setErr(T("arErr")); }
+  };
+  const sel = (list || []).filter((r) => pick.includes(r.id));
+  const usd = place && place.cc === "US";
+  const cur = usd ? "usd" : "eur";
+  const q2 = reviewQuote(sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; }), LANG);
+  const order = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!agb || !fagg) { setCErr(true); return; }
+    setBusy(true);
+    try {
+      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      setOid(r.orderId); setStep("done");
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
+    setBusy(false);
+  };
+  const ag = AGB_CONSENT[LANG] || AGB_CONSENT.en, fg = FAGG_CONSENT[LANG] || FAGG_CONSENT.en;
+  return (
+    <section className={"flow vf no" + (open ? " show" : "")} aria-hidden={!open} onClick={(e) => { if (e.target === e.currentTarget && !busy) onClose(); }}>
+      {open ? (
+        <div className="fl-card">
+          <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
+            <div className="fl-bar sf-bar">{["search", "pick", "done"].map((k, i) => <i key={k}><b style={{ width: ["search", "pick", "done"].indexOf(step) >= i ? "100%" : "0%" }} /></i>)}</div></div>
+          {step === "search" ? (
+            <>
+              <div className="fl-body">
+                <div className="fl-k">{T("noK")}</div>
+                <h2>{T("noH1")}</h2>
+                <p>{T("noP1")}</p>
+                <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
+                  <Search /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
+                  <button type="submit" disabled={busy || !q.trim()}>{busy ? <Loader className="spin" /> : T("noSearch")}</button>
+                </form>
+                {res && !res.length ? <div className="note">{T("noNone")}</div> : null}
+                {res && res.length ? (
+                  <div className="ar-list">
+                    {res.map((p) => (
+                      <button key={p.placeId || p.id} type="button" className={"ar-row no-pl" + (dach(p) ? " dis" : "")} disabled={dach(p)} onClick={() => choose(p)}>
+                        <span className="ico"><MapPin /></span>
+                        <span className="t">
+                          <span className="a">{p.name}{p.rating ? <span className="rt"><Star className="f" />{p.rating}{p.reviews ? <em> ({p.reviews})</em> : null}</span> : null}</span>
+                          <span className="x">{p.addr}</span>
+                          {dach(p) ? <span className="in">{T("noDach")}</span> : null}
+                        </span>
+                        {!dach(p) ? <ChevronRight className="chev" /> : null}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </>
+          ) : step === "pick" ? (
+            <>
+              <div className="fl-body">
+                <button type="button" className="no-chg" onClick={() => setStep("search")}><MapPin /><span><b>{place.name}</b><span>{place.addr}</span></span><em>{T("noChange")}</em></button>
+                <h2>{T("noH2")}</h2>
+                <p>{T("noP2")}</p>
+                {list === null ? <div className="ar-load"><Loader className="spin" /></div>
+                  : err ? <div className="note bad">{err}</div>
+                  : !list.length ? <div className="note">{T("noNoRev")}</div>
+                  : (
+                    <div className="ar-list">
+                      {list.map((r) => {
+                        const on = pick.includes(r.id);
+                        return (
+                          <button key={r.id} type="button" disabled={r.ordered || busy} className={"ar-row" + (on ? " on" : "") + (r.ordered ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
+                            <span className="cb">{on || r.ordered ? <Check /> : null}</span>
+                            <span className="t">
+                              <span className="a">{r.name}<span className="stars" aria-label={r.rating + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < r.rating ? "f" : ""} />)}</span></span>
+                              <span className={"x" + (r.text ? "" : " none")}>{r.text || T("noText")}</span>
+                              {r.ordered ? <span className="in">{T("arIn")}</span> : null}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+              </div>
+              <div className="fl-foot pgf">
+                {sel.length ? (
+                  <>
+                    <div className="ar-max">{T("noMax", { amount: money(q2.total, cur) })}</div>
+                    <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
+                      <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
+                    <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    {cErr ? <div className="no-err">{T("noAgbErr")}</div> : null}
+                    {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
+                  </>
+                ) : null}
+                <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noH2")}</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="fl-body">
+                <div className="fl-art sf-art"><img src={IMG.rocket} alt="" /></div>
+                <h2>{T("noDoneH")}</h2>
+                <p>{T("noDoneP")}</p>
+              </div>
+              <div className="fl-foot"><button className="cta" onClick={() => onDone(oid)}>{T("noDoneBtn")}<ArrowRight /></button></div>
+            </>
+          )}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [list, setList] = React.useState(null);
   const [err, setErr] = React.useState(false);
@@ -680,6 +822,9 @@ export default function CustomerDashboard() {
   const [sfId, setSfId] = React.useState(null); // Auftrag starten (Gründe → Nachweis → Zahlungsart): offene Bestellung
   const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
+  const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
+  const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
+  const [noOn, setNoOn] = React.useState(false); // Neubestellung freigeschaltet (Test-Konten / Admin-Schalter)
   // Direkt nach der Bestellung (#a=… bzw. ?from=order): erst Einrichtungs-Animation, dann Dashboard, 2 Sek. später „Zahlungsart hinterlegen".
   const [postOrder, setPostOrder] = React.useState(() => { try { return /(^|[#&])a=/.test(window.location.hash || "") || new URLSearchParams(window.location.search).get("from") === "order"; } catch (e) { return false; } });
   const [setupOn, setSetupOn] = React.useState(false);
@@ -740,6 +885,7 @@ export default function CustomerDashboard() {
     } else setToken(store.get());
   }, []);
 
+  React.useEffect(() => { if (token) call("new-order/info", { token }).then((r) => setNoOn(!!r.enabled)).catch(() => setNoOn(false)); }, [token]);
   const load = React.useCallback(async (t) => {
     if (!t) return;
     try {
@@ -1256,6 +1402,7 @@ export default function CustomerDashboard() {
               })}
             </div>
           ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
+          {noOn && !adminView ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -1279,6 +1426,7 @@ export default function CustomerDashboard() {
     return (
       <>
         <div className="ttl">{T("orders")}</div>
+        {noOn && !adminView ? <button className="ar-btn no-btn" style={{ marginTop: 0, marginBottom: 14 }} onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         <div className="chips">
           {[["all", T("f_all")], ["open", T("f_open")], ["done", T("f_done")]].map(([k, t]) => (
             <button key={k} className={"chip" + (ofilter === k ? " on" : "")} onClick={() => setOfilter(k)}>{t}</button>
@@ -1643,6 +1791,8 @@ export default function CustomerDashboard() {
 
       <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
+      <NewOrderFlow open={noOpen} presetQ={noQ} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
+        onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
 
@@ -1653,7 +1803,8 @@ export default function CustomerDashboard() {
         fmt={(v) => money(v, payCur)} rows={wiseBank.map((l) => { const i = l.indexOf(":"); return i > 0 ? [l.slice(0, i).trim(), l.slice(i + 1).trim()] : ["", l]; })}
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
-      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || billOpen || !!arId}
+      <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || billOpen || !!arId || noOpen}
+        onNewOrder={noOn && !adminView ? (q) => { setNoQ(q || ""); setNoOpen(true); } : undefined}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>

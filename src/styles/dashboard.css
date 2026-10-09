@@ -838,3 +838,36 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 /* Hinweis im Start-Ablauf: Bewertungen während des Auftrags nicht selbst melden (AGB 7.4) */
 .rra .sf-self{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:12px 14px;border-radius:16px;background:#eef6ff;color:#173a63;font-size:13px;line-height:1.45}
 .rra .sf-self svg{width:18px;height:18px;flex:none;margin-top:1px;color:#1c4f9c}
+/* Neue Bestellung im Dashboard */
+.rra .no-btn .t{flex:1;display:flex;flex-direction:column;min-width:0}
+.rra .no-btn .t b{font-weight:700}
+.rra .no-btn .t span{font-size:13px;color:var(--g3);font-weight:500}
+.rra .no-btn .ico{background:var(--primary);color:#fff}
+.rra .no-srch{display:flex;align-items:center;gap:8px;height:56px;padding:0 6px 0 16px;border-radius:18px;background:var(--g1);border:2px solid transparent;margin:6px 0 14px}
+.rra .no-srch:focus-within{border-color:var(--ink);background:#fff}
+.rra .no-srch>svg{width:20px;height:20px;color:var(--g3);flex:none}
+.rra .no-srch input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:17px;color:var(--ink);outline:none}
+.rra .no-srch button{height:44px;padding:0 16px;border-radius:14px;background:var(--ink);color:#fff;font-weight:700;font-size:14px;display:grid;place-items:center}
+.rra .no-srch button:disabled{opacity:.35}
+.rra .no-pl{align-items:center}
+.rra .no-pl .ico{width:40px;height:40px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:none}
+.rra .no-pl .ico svg{width:19px;height:19px;color:var(--primary)}
+.rra .no-pl .t{flex:1}
+.rra .no-pl .rt{display:inline-flex;align-items:center;gap:3px;font-size:13px;font-weight:600;color:var(--g3)}
+.rra .no-pl .rt svg{width:13px;height:13px;color:#f5a623;fill:#f5a623}
+.rra .no-pl .rt em{font-style:normal;font-weight:500}
+.rra .no-pl .x{-webkit-line-clamp:2}
+.rra .no-pl .chev{width:18px;height:18px;color:var(--g3);flex:none}
+.rra .no-chg{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border-radius:16px;background:var(--g1);margin-bottom:16px;color:var(--ink)}
+.rra .no-chg>svg{width:20px;height:20px;color:var(--primary);flex:none}
+.rra .no-chg>span{flex:1;min-width:0;display:flex;flex-direction:column}
+.rra .no-chg b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .no-chg span span{font-size:13px;color:var(--g3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .no-chg em{font-style:normal;font-size:13px;font-weight:700;color:var(--primary)}
+.rra .no-ck{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;line-height:1.45;color:var(--g3);margin:0 0 10px;text-align:left;cursor:pointer}
+.rra .no-ck input{width:18px;height:18px;margin:1px 0 0;flex:none;accent-color:var(--ink)}
+.rra .no-ck a{color:var(--ink);text-decoration:underline;font-weight:600}
+.rra .no-ck.bad span{color:var(--danger)}
+.rra .no-err{font-size:13px;font-weight:700;color:var(--danger);margin:-4px 0 10px}
+.rra .vf.no .fl-foot .secure{margin:0 0 12px}
+.rra .ch-no{background:var(--primary);color:#fff}

@@ -22,6 +22,7 @@ import { fetchPlaceReviews, findPlaceReview, serpKey } from "../reviewsFetch";
 import { keyOf } from "../customers";
 import { hasSavedMethod, autopayAvailable } from "../autopay";
 import { payDiscountEnabled } from "../partner";
+import { newOrderEnabled } from "../custNewOrder";
 /** Aktuelle Einstellung PayPal/Wise −10 % (Admin → Einstellungen) als Zusatz zum System-Prompt – überschreibt alles darüber. */
 async function discLine(): Promise<string> {
   const [p, r] = await Promise.all([payDiscountEnabled("profiles").catch(() => true), payDiscountEnabled("reviews").catch(() => true)]);
@@ -290,7 +291,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
 
 
   /** Antwort erzeugen (KI mit Kontext, sonst Fallback). */
-  async function answer(message: string, history: unknown, d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }, email = ""): Promise<{ reply: string; handoff: boolean; ai: boolean; err?: string }> {
+  async function answer(message: string, history: unknown, d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }, email = ""): Promise<{ reply: string; handoff: boolean; ai: boolean; err?: string; newOrder?: boolean; newOrderQ?: string }> {
     const hist: Msg[] = (Array.isArray(history) ? history : []).slice(-8)
       .map((m) => m as Record<string, unknown>)
       .filter((m) => (m.role === "user" || m.role === "assistant") && clip(m.text, 1500))
@@ -304,11 +305,14 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     }
     try {
       const facts = await factsOf(email, d.orders).catch(() => EMPTY_FACTS);
-      const txt = await askClaude(SYSTEM(contextOf(d, ui, facts)) + await discLine(), msgs);
+      const noOn = email ? await newOrderEnabled(email).catch(() => false) : false;
+      const noRule = noOn ? `\n\nNEW ORDERS: the customer can place a completely new order right here in the dashboard (reviews of another of their Google profiles/locations, or further reviews). When they want to order something new, say briefly that they can do it in a few taps here: pick the profile, tick the reviews, confirm – the price is shown before ordering, they only pay per removed review${await hasSavedMethod(email).catch(() => false) ? ", charged to their saved payment method" : ", and they add a payment method once (only charged when a review is removed)"}. Individual reviews are not possible for businesses in Germany or Austria. Then end your reply with the exact token [[NEWORDER:<business name and city if the customer mentioned one, otherwise leave empty>]]. Do not collect review links in the chat.` : "";
+      const txt = await askClaude(SYSTEM(contextOf(d, ui, facts)) + await discLine() + noRule, msgs);
       const handoff = /\[\[TEAM\]\]/.test(txt);
-      const reply = txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim();
+      const nm = txt.match(/\[\[NEWORDER:?([^\]]*)\]\]/);
+      const reply = txt.replace(/\s*\[\[TEAM\]\]\s*/g, " ").replace(/\s*\[\[NEWORDER:?[^\]]*\]\]\s*/g, " ").replace(/\*\*|__|^#+\s*/gm, "").trim();
       if (!reply) throw new Error("empty");
-      return { reply, handoff, ai: true };
+      return { reply, handoff, ai: true, ...(nm && noOn ? { newOrder: true, newOrderQ: clip(nm[1], 120) } : {}) };
     } catch (e) {
       const err = (e as Error).message;
       if (err !== "no_key") app.log.warn({ err: e }, "Chatbot: Claude-API fehlgeschlagen → Fallback");
@@ -352,7 +356,7 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     }
     const out = await answer(message, b.history, d, { lang: clip(b.lang, 5), contact: clip(b.contactLabel, 40) }, sess.email);
     void save(sess.email, "assistant", out.reply);
-    return { ok: true, reply: out.reply, handoff: out.handoff };
+    return { ok: true, reply: out.reply, handoff: out.handoff, ...(out.newOrder ? { newOrder: true, newOrderQ: out.newOrderQ || "" } : {}) };
   });
 
   app.post("/cust/chat/ticket", async (req, reply) => {

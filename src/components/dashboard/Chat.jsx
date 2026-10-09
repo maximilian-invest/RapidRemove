@@ -4,7 +4,7 @@
    Antworten: ops /cust/chat (Claude mit Kontext aus den echten Aufträgen), „Team kontaktieren" → /cust/chat/ticket.
    Verlauf bleibt für die Tab-Sitzung erhalten (sessionStorage); an den Server gehen die letzten 8 Nachrichten. */
 import React from "react";
-import { MessageCircle, ChevronDown, ArrowUp, Headphones, X } from "lucide-react";
+import { MessageCircle, ChevronDown, ArrowUp, Headphones, X, Plus } from "lucide-react";
 import { track } from "./tracker";
 import { asset } from "@/lib/base";
 
@@ -21,7 +21,7 @@ async function post(path, body) {
   return j;
 }
 
-export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {}, hidden = false }) {
+export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {}, hidden = false, onNewOrder }) {
   const [msgs, setMsgs] = React.useState(() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "[]"); } catch (e) { return []; } });
   const [busy, setBusy] = React.useState(false);
   const [txt, setTxt] = React.useState("");
@@ -43,11 +43,11 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
     const t = String(raw || "").trim();
     if (!t || busy) return;
     const history = msgs.filter((m) => m.t).slice(-8).map((m) => ({ role: m.r === "u" ? "user" : "assistant", text: m.t }));
-    setMsgs((m) => [...m.filter((x) => !x.h), { r: "u", t }]);
+    setMsgs((m) => [...m.filter((x) => !x.h && !x.no), { r: "u", t }]);
     setTxt(""); setBusy(true);
     try {
       const r = await post("chat", { token, message: t, history, lang, contactLabel: T("chContact") });
-      setMsgs((m) => [...m, { r: "b", t: String(r.reply || "").trim() }, ...(r.handoff ? [{ h: 1 }] : [])]);
+      setMsgs((m) => [...m, { r: "b", t: String(r.reply || "").trim() }, ...(r.newOrder && onNewOrder ? [{ no: 1, q: String(r.newOrderQ || "") }] : []), ...(r.handoff ? [{ h: 1 }] : [])]);
     } catch (e) {
       setMsgs((m) => [...m, { r: "b", t: T("chErr") }, { h: 1 }]);
     }
@@ -108,7 +108,9 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
           <button type="button" className="ch-x" onClick={() => setOpen(false)} aria-label={T("chClose")}><ChevronDown /></button></div>
         <div className="ch-body" ref={body}>
           {!msgs.length ? <div className="ch-hi"><AV /><b>{T("chHi")}</b><span>{T("chHiSub")}</span></div> : null}
-          {msgs.map((m, i) => (m.h
+          {msgs.map((m, i) => (m.no
+            ? <button key={i} type="button" className="ch-human ch-no" onClick={() => { setOpen(false); onNewOrder(m.q); }}><Plus />{T("noBtn")}</button>
+            : m.h
             ? <button key={i} type="button" className="ch-human" onClick={contact} disabled={sent}><Headphones />{T("chContact")}</button>
             : <div key={i} className={"msg " + (m.r === "u" ? "u" : "b")}>{m.t}</div>))}
           {busy ? <div className="msg b typ"><i /><i /><i /></div> : null}
