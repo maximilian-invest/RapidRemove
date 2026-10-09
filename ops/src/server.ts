@@ -453,6 +453,16 @@ app.post("/order", async (req, reply) => {
   // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
   const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
+  // Zusicherung des Kunden: „Bewertungen verstoßen nach bestem Wissen gegen die Google-Richtlinien" (Checkbox im Bestellprozess).
+  // Nachweis beim Auftrag: Zeitpunkt, IP, Gerät, Sprache, Textversion. Fehlt sie (z. B. alter Browser-Stand), wird das vermerkt.
+  if (isReviews) {
+    const ipC = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    (b as Record<string, unknown>).policyConsent = b.policyConsent === true
+      ? { at: new Date().toISOString(), ip: ipC.slice(0, 60), ua: clip(req.headers["user-agent"], 240), lang: clip(b.lang, 5), v: clip(b.policyV, 20) || "2026-10-09", n: reviewItems.length, via: req.headers["x-rr-chat"] === CHAT_INTERNAL ? "chat" : "web" }
+      : null;
+    if (b.policyConsent == null) app.log.warn({ orderId, email }, "Bestellung ohne Richtlinien-Bestätigung (alter Browser-Stand?)");
+  } else delete (b as Record<string, unknown>).policyConsent;
+  delete (b as Record<string, unknown>).policyV;
   if (isReviews) for (const it of reviewItems) {
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
@@ -491,7 +501,7 @@ app.post("/order", async (req, reply) => {
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, payGate }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, payGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
     : { lang: tlang, anrede };
   const html = await render(React.createElement(t.component, props as any));
 

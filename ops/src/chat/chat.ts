@@ -580,6 +580,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
     const payload: Record<string, unknown> = {
       email, name, phone, company, service, protection: "", country, lang, orderId, chatSid: sid, chatPct: pct || undefined,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(), payPref,
+      ...(b.policyConsent === true ? { policyConsent: true, policyV: clip(b.policyV, 20) } : {}),
       source: "chat", sourceFirst: "chat", landing: clip(b.page, 200), referrer: "Website-Chat (Lena)",
     };
     if (service === "reviews") {
@@ -610,7 +611,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
         note: `Bestellt im Website-Chat (Lena)${pct ? ` · Chat-Rabatt −${pct} % (statt ${base} ${usd ? "USD" : "€"})` : ""}${payPref !== "none" ? ` · will per ${payPref === "wise" ? "Wise" : "PayPal"} zahlen (−10 %)` : ""}${link ? "\nProfil-Link: " + link : ""}`,
       });
     }
-    const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-chat": CHAT_INTERNAL, "x-forwarded-for": ip } });
+    const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-chat": CHAT_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;
     if (res.statusCode < 400 && j.ok !== false && j.saved === false) return reply.code(503).send({ ok: false, error: "save" });
     if (res.statusCode >= 400 || j.ok === false) return reply.code(res.statusCode >= 400 ? res.statusCode : 400).send({ ok: false, error: String(j.error || "order"), orders: j.orders });

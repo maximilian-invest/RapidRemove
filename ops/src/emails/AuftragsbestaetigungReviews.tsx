@@ -37,6 +37,8 @@ export interface AuftragsbestaetigungReviewsProps {
   dash?: DashInfo;
   /** Nachbestellung: Bewertung(en) zu einem bestehenden Auftrag hinzugefügt. */
   added?: boolean;
+  /** Zeitpunkt der Zusicherung „Bewertungen verstoßen gegen die Google-Richtlinien" (ISO) → Bestätigungszeile in der Mail. */
+  policyAt?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -322,6 +324,26 @@ const ADD: Record<string, AddT> = {
   no: [(n, id) => `${n === 1 ? "Anmeldelse" : `${n} anmeldelser`} lagt til i bestillingen din ${id}`, "Anmeldelse lagt til ✓", (n, id) => `vi har lagt til ${n === 1 ? "anmeldelsen nedenfor" : `de ${n} anmeldelsene nedenfor`} i bestillingen din ${id}. Samme vilkår som før.`],
 };
 
+/* Bestätigungszeile: Zusicherung „Bewertungen verstoßen gegen die Google-Richtlinien" (Nachweis, Zeitpunkt in UTC). */
+const POL: Record<string, (w: string) => string> = {
+  de: (w) => `Sie haben am ${w} bestätigt, dass die beauftragten Bewertungen nach Ihrem besten Wissen gegen die Google-Richtlinien verstoßen.`,
+  en: (w) => `On ${w} you confirmed that, to the best of your knowledge, the ordered reviews violate Google's policies.`,
+  es: (w) => `El ${w} confirmaste que, según tu leal saber y entender, las reseñas encargadas infringen las políticas de Google.`,
+  fr: (w) => `Le ${w}, tu as confirmé qu'à ta connaissance, les avis commandés enfreignent les règles de Google.`,
+  it: (w) => `Il ${w} hai confermato che, per quanto a tua conoscenza, le recensioni ordinate violano le norme di Google.`,
+  nl: (w) => `Op ${w} heeft u bevestigd dat de bestelde reviews naar uw beste weten in strijd zijn met het Google-beleid.`,
+  pt: (w) => `Em ${w} confirmaste que, tanto quanto sabes, as avaliações encomendadas violam as políticas da Google.`,
+  ja: (w) => `${w}に、ご依頼の口コミがお客様の知る限りGoogleのポリシーに違反していることをご確認いただきました。`,
+  sv: (w) => `Den ${w} intygade du att de beställda omdömena såvitt du vet bryter mot Googles riktlinjer.`,
+  da: (w) => `Den ${w} bekræftede du, at de bestilte anmeldelser efter din bedste overbevisning overtræder Googles retningslinjer.`,
+  no: (w) => `${w} bekreftet du at de bestilte omtalene etter din beste overbevisning bryter med Googles retningslinjer.`,
+};
+const polWhen = (iso: string, lang: string) => {
+  const d = new Date(iso);
+  if (!Number.isFinite(d.getTime())) return "";
+  try { return new Intl.DateTimeFormat(lang === "en" ? "en-GB" : lang, { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" }).format(d) + " UTC"; } catch { return d.toISOString().slice(0, 16).replace("T", " ") + " UTC"; }
+};
+
 export function subject(p: AuftragsbestaetigungReviewsProps): string {
   const n = (p.items || []).length || (p.urls || []).length || 1;
   if (p.added) return (ADD[p.lang || "en"] || ADD.en)[0](n, p.orderId || "");
@@ -329,7 +351,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, added = false, _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, payGate = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
@@ -390,6 +412,8 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       ) : null}
 
       {rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
+
+      {policyAt ? <P><span style={{ color: brand.muted, fontSize: 13 }}>✓ {(POL[lang] || POL.en)(polWhen(policyAt, lang))}</span></P> : null}
 
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>

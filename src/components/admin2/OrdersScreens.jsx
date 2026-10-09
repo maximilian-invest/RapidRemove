@@ -340,6 +340,7 @@ export function OrderInfoScreen({ ctx, id }) {
         <SourceTag o={o} />
         <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
         {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
+        {isRev ? <PolicyRow o={o} /> : null}
         {isRev ? <button type="button" className="ir" onClick={() => { close(); ctx.pushReviews(o.id); }}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen & Screenshots</span><b>{items.length} eingereicht</b></span><ChevronRight /></button> : (
           <>
             <button type="button" className="ir" onClick={() => (sh ? ctx.openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title: o.profile || o.company || "Profil", sub: "Screenshot" }) : ctx.toast("Noch kein Screenshot vorhanden"))}>
@@ -349,6 +350,22 @@ export function OrderInfoScreen({ ctx, id }) {
         )}
       </div>
     </>
+  );
+}
+
+/** Zusicherung des Kunden „Bewertungen verstoßen gegen die Google-Richtlinien" (Nachweis: Zeit, IP, Gerät). */
+const fmtDT2 = (v) => (v ? new Date(v).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "");
+function PolicyRow({ o }) {
+  const p = o.policyConsent;
+  const adds = (o.policyConsentAdds || []).filter((x) => x && !x.missing);
+  const ua = (s) => { const v = String(s || ""); return /iPhone|iPad/.test(v) ? "iPhone/iPad" : /Android/.test(v) ? "Android" : /Mac OS X/.test(v) ? "Mac" : /Windows/.test(v) ? "Windows" : v ? "Browser" : ""; };
+  return (
+    <div className="ir"><span className="ico" style={{ color: p ? "var(--success)" : "var(--g3)" }}><ShieldCheck /></span>
+      <span className="t"><span>Google-Richtlinien · Zusicherung des Kunden</span>
+        <b>{p ? `Bestätigt ${fmtDT2(p.at)}${p.via === "chat" ? " · Chat" : ""}` : "Nicht bestätigt (vor 09.10.2026 oder im Admin angelegt)"}</b>
+        {p ? <span style={{ fontSize: 12, color: "var(--g3)" }}>IP {p.ip || "—"} · {ua(p.ua)} · Sprache {p.lang || "—"} · Text {p.v}</span> : null}
+        {adds.length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Nachbestellung bestätigt: {adds.map((x) => fmtDT2(x.at)).join(", ")}</span> : null}
+      </span></div>
   );
 }
 

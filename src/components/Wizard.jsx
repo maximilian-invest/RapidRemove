@@ -16,6 +16,7 @@ import { pagePath } from "@/lib/page-routes";
 import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
+import PolicyConsent, { policyText, POLICY_V } from "@/components/PolicyConsent";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1771,6 +1772,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [payAsk, setPayAsk] = React.useState(false); // Rabatt-Pop-up (Wise/PayPal) vor dem Absenden
   const [dupOrder, setDupOrder] = React.useState(null); // Bewertung(en) bereits beauftragt → { orders, items }
   const [agbOk, setAgbOk] = React.useState(false);
+  const [polOk, setPolOk] = React.useState(false); // Einzelbewertungen: Bewertungen verstoßen gegen Google-Richtlinien (Zusicherung)
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
@@ -2242,6 +2244,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!contact.company.trim()) er.company = w.s5.errCompany;
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
     if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
+    if (revFlow && !polOk) er.pol = policyText(t.code).err;
     setErrors(er);
     return !Object.keys(er).length;
   };
@@ -2298,6 +2301,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      ...(revFlow ? { policyConsent: true, policyV: POLICY_V } : {}),
       // Rabatt-Abfrage: "wise" | "paypal" = 10 % Rabatt gewünscht, "none" = abgelehnt.
       ...(payPref ? { payPref } : {}),
     }).catch((e) => { if (typeof console !== "undefined") console.warn("Bestellung senden fehlgeschlagen:", e.message); return null; });
@@ -2830,6 +2834,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
             </label>
             {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
+            {revFlow ? (
+              <>
+                <PolicyConsent lang={t.code} checked={polOk} error={!!errors.pol} className={"agb-consent" + (errors.pol ? " err" : "")}
+                  style={{ marginTop: 12, fontSize: 13, lineHeight: 1.5 }}
+                  onChange={(v) => { setPolOk(v); if (v) setErrors((x) => { const { pol, ...r } = x; return r; }); }} />
+                {errors.pol && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.pol}</div>}
+              </>
+            ) : null}
             <button type="submit" className="btn btn-primary btn-block lg co-submit-desktop" style={{ marginTop: 16 }}>
               <Icon.lock size={18} /> {w.s5.button}
             </button>

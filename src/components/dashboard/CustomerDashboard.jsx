@@ -19,6 +19,7 @@ import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
 import SupportChat from "./Chat";
+import PolicyConsent, { POLICY_V } from "@/components/PolicyConsent";
 import PaySheet from "./PaySheet";
 import Celebrate, { CountUp } from "./Celebrate";
 import useSwipeClose from "./useSwipeClose";
@@ -313,10 +314,12 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [err, setErr] = React.useState(false);
   const [pick, setPick] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
+  const [pol, setPol] = React.useState(false);
+  const [polErr, setPolErr] = React.useState(false);
   const oid = order && order.id;
   React.useEffect(() => {
     if (!oid) return;
-    setList(null); setErr(false); setPick([]);
+    setList(null); setErr(false); setPick([]); setPol(false); setPolErr(false);
     call("orders/reviews", { token, orderId: oid }).then((r) => setList(r.enabled ? r.reviews || [] : [])).catch(() => { setList([]); setErr(true); });
   }, [oid, token]);
   const sel = (list || []).filter((r) => pick.includes(r.id));
@@ -324,8 +327,9 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const q = reviewQuote(sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; }), LANG);
   const add = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!pol) { setPolErr(true); return; }
     setBusy(true);
-    try { const r = await call("orders/add", { token, orderId: oid, ids: pick }); showToast(T("arDone")); onDone(!!r.gate); }
+    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, policyConsent: true, policyV: POLICY_V }); showToast(T("arDone")); onDone(!!r.gate); }
     catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
@@ -361,6 +365,9 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
           </div>
           <div className="fl-foot pgf">
             {sel.length ? <div className="ar-max">{T("arMax", { amount: money(q.total, order.cur) })}</div> : null}
+            {sel.length ? <PolicyConsent lang={LANG} checked={pol} error={polErr} className="ar-pol"
+              style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 12px", textAlign: "left", background: polErr ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
+              onChange={(v) => { setPol(v); if (v) setPolErr(false); }} /> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>
         </div>

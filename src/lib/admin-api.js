@@ -109,7 +109,9 @@ function mapOrder(r) {
     // Mit der Löschbestätigung abgerechnete Bewertungen (Basis für die Mahnungen).
     // In der Startbestätigung angenommene Bewertungen (Basis für Mengenrabatt + Rechnung).
     reviewsPayReq: r.raw && r.raw.reviewsPayReq && typeof r.raw.reviewsPayReq === "object" ? r.raw.reviewsPayReq : null, // automatisch zur Zahlung aufgefordert (je Bewertung)
-    payHold: r.raw && r.raw.payHold && typeof r.raw.payHold === "object" ? r.raw.payHold : null, // Zwischenzahlung nötig (Partner pausiert)
+    payHold: r.raw && r.raw.payHold && typeof r.raw.payHold === "object" ? r.raw.payHold : null,
+    policyConsent: r.raw && r.raw.policyConsent && typeof r.raw.policyConsent === "object" ? r.raw.policyConsent : null, // Zusicherung „verstößt gegen Google-Richtlinien"
+    policyConsentAdds: r.raw && Array.isArray(r.raw.policyConsentAdds) ? r.raw.policyConsentAdds : [], // Zwischenzahlung nötig (Partner pausiert)
     payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reviewsAccepted: (r.raw && Array.isArray(r.raw.reviewsAccepted) && r.raw.reviewsAccepted.length) ? r.raw.reviewsAccepted.filter((it) => it && (it.url || (it.name && it.text))) : null,

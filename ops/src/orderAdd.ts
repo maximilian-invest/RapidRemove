@@ -214,6 +214,15 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const picks = (list || []).filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
     const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true });
+    if (r.ok) {
+      // Zusicherung „verstößt gegen die Google-Richtlinien" auch für Nachbestellungen festhalten (Nachweis je Nachbestellung).
+      const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim().slice(0, 60);
+      const cur = await loadOrder(c.o.id);
+      const prev = (Array.isArray(cur?.raw?.policyConsentAdds) ? cur!.raw!.policyConsentAdds : []) as unknown[];
+      await setOrderRawField(c.o.id, "policyConsentAdds", [...prev, b.policyConsent === true
+        ? { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: clip(b.policyV, 20) || "2026-10-09", n: picks.length, names: picks.map((p) => clip(p.name, 60)) }
+        : { at: new Date().toISOString(), missing: true, n: picks.length }].slice(-30)).catch(() => {});
+    }
     return r.ok ? { ok: true, added: r.added, gate: r.gate } : reply.code(r.error === "already_ordered" ? 409 : 400).send({ ok: false, error: r.error });
   });
 }
