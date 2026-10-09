@@ -584,6 +584,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   }, [open, step]); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     if (!open) return;
+    // offene Tastatur (z. B. aus dem Chat) schließen, damit das Blatt nicht verschoben einfährt
+    try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) { /* */ }
     setStep("search"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
     if (presetQ) search(presetQ);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -593,6 +595,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     try { setRes(await searchProfiles(v, LANG)); } catch (e) { setRes([]); }
     setBusy(false);
   };
+  // iOS schiebt beim Öffnen der Tastatur die Seite hinter dem fixen Blatt nach oben → zurücksetzen
+  const unshift = () => { [60, 320, 650].forEach((ms) => setTimeout(() => { try { if (window.scrollY) window.scrollTo(0, 0); } catch (e) { /* */ } }, ms)); };
   const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
   const choose = async (p) => {
     if (dach(p)) return;
@@ -628,7 +632,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                 <h2>{T("noH1")}</h2>
                 <p>{T("noP1")}</p>
                 <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
-                  <Search /><input ref={inRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
+                  <Search /><input ref={inRef} onFocus={unshift} value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
                   <button type="submit" disabled={busy || !q.trim()}>{busy ? <Loader className="spin" /> : T("noSearch")}</button>
                 </form>
                 {res && !res.length ? <div className="note">{T("noNone")}</div> : null}
