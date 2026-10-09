@@ -848,3 +848,10 @@
 .an .rstars.s1,.an .rstars.s2{color:#e5484d}
 .an .d-nopm{background:#b45309}
 .an .ord .pwhy{font-size:12px;font-weight:600;color:#b45309}
+/* Konto → Partner → Auszahlungen */
+.an .po-k{grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin-bottom:4px}
+.an .po-k span{font-size:12px;color:var(--g3);font-weight:600}
+.an .po-num{width:84px;height:38px;border-radius:12px;border:1.5px solid var(--g2,#e3e3e6);background:#fff;text-align:right;padding:0 10px;font:inherit;font-size:16px;font-weight:600}
+.an .po-num:focus{outline:none;border-color:var(--ink,#111)}
+.an .po-row{align-items:flex-start}
+.an .po-acts{display:flex;gap:6px;flex:none}

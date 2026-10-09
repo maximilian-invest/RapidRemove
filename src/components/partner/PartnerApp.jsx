@@ -10,6 +10,7 @@ import {
 import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
 import PartnerPush from "./PartnerPush";
 import ReviewShot from "./ReviewShot";
+import PartnerPayouts, { usePayouts } from "./PartnerPayouts";
 
 const IMG = { wallet: `${BASE}/assets/partner/wallet.webp`, rocket: `${BASE}/assets/partner/rocket.webp` };
 const isTodo = (t) => t.status === "new" || t.status === "working";
@@ -37,6 +38,7 @@ function stLabel(t) {
   if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
+  if (t.status === "removed" && t.processing) return "Removed · payout on the way";
   if (t.status === "software") return "Software · waiting for payment";
   if (t.method === "sw" && t.status === "new") return "Software case · check & confirm";
   return (STATUS[t.status] || STATUS.new).l;
@@ -56,7 +58,10 @@ function Ring({ r, n }) {
 
 export default function PartnerApp({ api }) {
   const { tasks, all, cancelled = [], err, isNewC, sel, setSel, toast, closeToast, setMany, markPaid, copyLinks, openReview, saveNote, load, flush } = api;
-  const [tab0, setTab0] = React.useState("tasks");
+  const [tab0, setTab0] = React.useState(() => { try { return /payoneer=/.test(window.location.search) ? "earn" : "tasks"; } catch (e) { return "tasks"; } });
+  const [pd, reloadPd] = usePayouts(api.token); // Auszahlungsdaten (Payoneer, Gutschriften)
+  const [poEdit, setPoEdit] = React.useState(false);
+  const autoPay = !!(pd && pd.auto); // automatische Auszahlung aktiv → kein „Mark paid" mehr
   const [stacks, setStacks] = React.useState({ tasks: [{ v: "home" }], orders: [{ v: "orders" }] });
   const [ofl, setOfl] = React.useState("open");
   const [anim, setAnim] = React.useState(0);
@@ -84,6 +89,7 @@ export default function PartnerApp({ api }) {
   const switchTab = (k) => {
     if (k === tab0 && stacks[k]) setStacks((p) => ({ ...p, [k]: p[k].slice(0, 1) })); // tap active tab → root
     setTab0(k); setSel(new Set()); bump();
+    if (k === "earn") { reloadPd(); setPoEdit(false); }
   };
 
   const custsOf = (f) => {
@@ -129,7 +135,7 @@ export default function PartnerApp({ api }) {
       <div className="s">{due.length} removed · not paid out yet</div>
       <div className="row">
         <div><b>{usd(sum(paidL))}</b><span>Paid out</span></div><div />
-        {due.length ? <button type="button" className="paybtn" onClick={() => markPaid(due.map((t) => t.id))}><Check />Mark all paid</button> : null}
+        {due.length && !autoPay ? <button type="button" className="paybtn" onClick={() => markPaid(due.map((t) => t.id))}><Check />Mark all paid</button> : null}
       </div>
     </div>
   );
@@ -373,18 +379,20 @@ export default function PartnerApp({ api }) {
   }
 
   function EarnV() {
+    if (poEdit) return <PartnerPayouts d={pd} reload={reloadPd} token={api.token} showToast={api.showToast} editing setEditing={setPoEdit} />;
     const row = (t) => (
       <div key={t.id} className="er">
         <span className="ico">{t.paid ? <Banknote /> : <Wallet />}</span>
         <span className="t"><b>{t.code}</b><span>{t.cust}</span></span>
         <span className="a">{usd(t.price)}</span>
-        {!t.paid ? <button type="button" className="mp" onClick={() => markPaid([t.id])}>Mark paid</button> : null}
+        {!t.paid && !t.processing && !autoPay ? <button type="button" className="mp" onClick={() => markPaid([t.id])}>Mark paid</button> : null}
       </div>
     );
     return (
       <>
         <div className="ttl">Earnings</div>
         {hero()}
+        <PartnerPayouts d={pd} reload={reloadPd} token={api.token} showToast={api.showToast} editing={false} setEditing={setPoEdit} />
         <div className="sec"><h2>To be paid</h2><span>{due.length}</span></div>
         {due.length ? due.map(row) : <div className="ps">Nothing open – all paid.</div>}
         <div className="sec"><h2>Paid out</h2><span>{paidL.length}</span></div>

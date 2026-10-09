@@ -28,6 +28,7 @@ import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
+import { payoutTick } from "./payouts";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus, payDiscountEnabled } from "./partner";
 import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill";
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
@@ -2380,6 +2381,8 @@ async function start() {
     setTimeout(guard, 2 * 60_000); setInterval(guard, 10 * 60_000);
     // Zwischenzahlung: pausierte Aufträge freigeben, sobald bezahlt (alle 10 Min.; Stripe/Admin lösen es meist schon direkt aus).
     setInterval(() => void payHoldSweep().catch((e) => app.log.error({ err: e }, "Zwischenzahlung-Prüfung fehlgeschlagen")), 10 * 60_000);
+    // Partner-Auszahlungen: 1× täglich (Payoneer) + Status gesendeter Auszahlungen nachziehen.
+    setInterval(() => void payoutTick((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Auszahlung fehlgeschlagen")), 10 * 60_000);
     // Datenschutz: hochgeladene Inhaber-Nachweise 30 Tage nach dem Upload automatisch löschen (Ergebnis/Vermerk bleibt im Verlauf).
     const purgeDocs = () => void pool?.query(`DELETE FROM cust_verify_docs WHERE created_at < now() - interval '30 days'`)
       .then((r) => { if (r.rowCount) app.log.info({ n: r.rowCount }, "Inhaber-Nachweise gelöscht (älter als 30 Tage)"); }).catch(() => {});

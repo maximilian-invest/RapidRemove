@@ -684,6 +684,21 @@ async function adminPost(path, body) {
   return j;
 }
 export const partnersList = () => adminPost("/admin/partners");
+/* Partner-Auszahlungen (Payoneer + Gutschriften) */
+export const payoutsInfo = () => adminPost("/admin/payouts");
+export const payoutsSettings = (p) => adminPost("/admin/payouts/settings", p);
+export const payoutsRun = () => adminPost("/admin/payouts/run");
+export const payoutsRemail = (id) => adminPost("/admin/payouts/remail", { id });
+/** Gutschrift-PDF in neuem Tab öffnen. */
+export async function payoutPdfOpen(id) {
+  const w = window.open("", "_blank");
+  try {
+    const res = await fetch(OPS + "/admin/payouts/pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ token: TOKEN, id }) });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const url = URL.createObjectURL(await res.blob());
+    if (w) w.location.href = url; else window.location.href = url;
+  } catch (e) { if (w) w.close(); throw e; }
+}
 export const partnerSave = (p) => adminPost("/admin/partners/save", p);
 /** Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen → { id, amount, currency, mailed, partner }. */
 export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);

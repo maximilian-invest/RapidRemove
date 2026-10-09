@@ -21,6 +21,7 @@ import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
 import { partnerNewOrder, notifyPartner } from "./partnerNotify";
+import { initPayoutTables, registerPayoutRoutes, recordManualPayout } from "./payouts";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
 // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -123,6 +124,7 @@ export async function initPartnerTables(): Promise<void> {
       value text NOT NULL
     )
   `);
+  await initPayoutTables(); // Auszahlungen: Partner-Auszahlungsdaten, Gutschriften, Payoneer (payouts.ts)
 }
 
 /* ---- Token (geheimer Partner-Link) — in der DB, nie im Repo ---- */
@@ -175,7 +177,7 @@ function partnerView(r: Row) {
   return {
     id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
-    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
+    created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, processing: !!r.payout_id && !r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && ((r.admin_note || "").includes(SW_NOTE_PAID) || (r.admin_note || "").includes(SW_NOTE_APPROVED)) ? "paid" : null),
@@ -379,12 +381,10 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "keine Aufgaben gewählt" });
-    const r = await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL`, [ids]);
-    if (!r.rows.length) return reply.code(400).send({ ok: false, error: "keine offenen gelöschten Aufgaben unter der Auswahl" });
-    const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
-    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, clip(b.note, 200) || null]);
-    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
-    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
+    // Sammelposten + Gutschrift (wenn der Partner dem Gutschriftverfahren zugestimmt hat) → PDF per Mail an den Partner.
+    const x = await recordManualPayout(ids, clip(b.note, 200) || null, "admin");
+    if (!x) return reply.code(400).send({ ok: false, error: "keine offenen gelöschten Aufgaben unter der Auswahl" });
+    return { ok: true, payoutId: x.payoutId, amount: x.amount, tasks: x.tasks, gs: x.gs };
   });
 
   // Admin → Einstellungen: automatische Weiterleitung an den Partner (Bewertungen / Profile).
@@ -650,14 +650,12 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (await isPreview(b.t)) return reply.code(400).send({ ok: false, error: "test mode" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 1000);
     const r = b.all === true
-      ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND NOT test`)
-      : ids.length ? await pool.query(`SELECT id, price_usd FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND NOT test`, [ids]) : { rows: [] as { id: string; price_usd: string }[] };
-    if (!r.rows.length) return reply.code(400).send({ ok: false, error: "nothing to mark" });
-    const amount = num(r.rows.reduce((s, x) => s + Number(x.price_usd || 0), 0));
-    const p = await pool.query(`INSERT INTO partner_payouts (amount_usd, tasks, note) VALUES ($1,$2,$3) RETURNING id`, [amount, r.rows.length, "vom Partner als bezahlt bestätigt"]);
-    await pool.query(`UPDATE partner_tasks SET paid_at=now(), payout_id=$1, updated_at=now() WHERE id = ANY($2::bigint[])`, [p.rows[0].id, r.rows.map((x) => x.id)]);
-    void notifyTeam(`Auszahlung bestätigt · $${amount}`, `Partner · ${r.rows.length} Löschungen`, `${SITE_URL}/admin`, { kind: "payout" });
-    return { ok: true, payoutId: Number(p.rows[0].id), amount, tasks: r.rows.length };
+      ? await pool.query(`SELECT id FROM partner_tasks WHERE status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test`)
+      : ids.length ? await pool.query(`SELECT id FROM partner_tasks WHERE id = ANY($1::bigint[]) AND status='removed' AND paid_at IS NULL AND payout_id IS NULL AND NOT test`, [ids]) : { rows: [] as { id: string }[] };
+    const x = r.rows.length ? await recordManualPayout(r.rows.map((y) => y.id), "vom Partner als bezahlt bestätigt", "partner", String(b.t || "").startsWith("ps_") ? await partnerSessionEmail(b.t) : null) : null;
+    if (!x) return reply.code(400).send({ ok: false, error: "nothing to mark" });
+    void notifyTeam(`Auszahlung bestätigt · $${x.amount}`, `Partner · ${x.tasks} Löschungen${x.gs ? " · " + x.gs : ""}`, `${SITE_URL}/admin`, { kind: "payout" });
+    return { ok: true, payoutId: x.payoutId, amount: x.amount, tasks: x.tasks, gs: x.gs };
   });
 
   // Erste Aktion ohne Statuswechsel (Bewertung geöffnet, Link kopiert) → Kunde nicht mehr „NEW".
@@ -669,4 +667,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (ids.length) await pool.query(`UPDATE partner_tasks SET touched_at=COALESCE(touched_at, now()) WHERE id = ANY($1::bigint[])`, [ids]);
     return { ok: true };
   });
+
+  // Auszahlungen (Payoneer + Gutschrift) – payouts.ts
+  registerPayoutRoutes(app, adminToken, { check: checkPartnerToken, preview: isPreview, email: partnerSessionEmail });
 }

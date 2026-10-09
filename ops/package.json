@@ -19,6 +19,7 @@
     "@simplewebauthn/server": "^14.0.3",
     "dotenv": "16.x",
     "fastify": "5.x",
+    "pdf-lib": "^1.17.1",
     "pg": "8.x",
     "react": "18.x",
     "react-dom": "18.x",
