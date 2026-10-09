@@ -587,7 +587,6 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     // offene Tastatur (z. B. aus dem Chat) schließen, damit das Blatt nicht verschoben einfährt
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) { /* */ }
     setStep("search"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
-    if (presetQ) search(presetQ);
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const search = async (qq) => {
     const v = String(qq ?? q).trim(); if (!v) return;
@@ -595,6 +594,17 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     try { setRes(await searchProfiles(v, LANG)); } catch (e) { setRes([]); }
     setBusy(false);
   };
+  // Live-Vorschläge beim Tippen (wie im Website-Wizard), entprellt
+  React.useEffect(() => {
+    if (!open || step !== "search") return;
+    const v = q.trim();
+    if (v.length < 2) { setRes(null); return; }
+    let alive = true;
+    const id = setTimeout(() => {
+      searchProfiles(v, LANG).then((r) => { if (alive) setRes(r || []); }).catch(() => { if (alive) setRes([]); });
+    }, 300);
+    return () => { alive = false; clearTimeout(id); };
+  }, [q, open, step]);
   // iOS schiebt beim Öffnen der Tastatur die Seite hinter dem fixen Blatt nach oben → zurücksetzen
   const unshift = () => { [60, 320, 650].forEach((ms) => setTimeout(() => { try { if (window.scrollY) window.scrollTo(0, 0); } catch (e) { /* */ } }, ms)); };
   const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
