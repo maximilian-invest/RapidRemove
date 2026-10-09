@@ -572,6 +572,16 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   const [fagg, setFagg] = React.useState(false);
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
+  const inRef = React.useRef(null);
+  // Kein autoFocus: am Handy öffnet sonst die Tastatur, während das Blatt noch von unten hereinfährt –
+  // iOS scrollt dann zum (noch unsichtbaren) Feld und man sieht nur eine weiße Fläche. Fokus nur am Desktop, nach der Animation.
+  React.useEffect(() => {
+    if (!open || step !== "search" || presetQ) return;
+    let fine = false; try { fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) { /* */ }
+    if (!fine) return;
+    const t = setTimeout(() => { try { inRef.current && inRef.current.focus({ preventScroll: true }); } catch (e) { /* */ } }, 380);
+    return () => clearTimeout(t);
+  }, [open, step]); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     if (!open) return;
     setStep("search"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
@@ -618,7 +628,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                 <h2>{T("noH1")}</h2>
                 <p>{T("noP1")}</p>
                 <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
-                  <Search /><input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
+                  <Search /><input ref={inRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
                   <button type="submit" disabled={busy || !q.trim()}>{busy ? <Loader className="spin" /> : T("noSearch")}</button>
                 </form>
                 {res && !res.length ? <div className="note">{T("noNone")}</div> : null}
