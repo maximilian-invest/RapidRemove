@@ -469,6 +469,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     return {
       cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
+      reason: (it as { reason?: string }).reason || null, days: Number.isFinite(Number((it as { days?: unknown }).days)) && (it as { days?: unknown }).days !== null && (it as { days?: unknown }).days !== undefined ? Number((it as { days?: unknown }).days) : null,
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
@@ -498,6 +499,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     payGate: !cancelled && (raw.payGate as { status?: string } | undefined)?.status === "pending", // wartet auf hinterlegte Zahlungsart
     // Nachbestellung: nur diese Bewertungen warten auf die Zahlungsart (die übrigen laufen weiter). null = ganzer Auftrag.
     payGateKeys: !cancelled && (raw.payGate as { status?: string; keys?: string[] } | undefined)?.status === "pending" && Array.isArray((raw.payGate as { keys?: string[] }).keys) ? (raw.payGate as { keys: string[] }).keys : null,
+    // Gründe je Bewertung: Bewertungen (keys), für die der Kunde im Dashboard noch den Richtlinien-Verstoß angeben muss.
+    reasons: !cancelled && (raw.reasons as { status?: string } | undefined)?.status === "pending" ? { keys: (() => { const g = raw.reasons as { keys?: string[] }; const all = items.map((it) => keyOf(it)); return Array.isArray(g.keys) ? g.keys.filter((k) => all.includes(k)) : all; })() } : null,
     placeOk: !!raw.placeId, // Profil bekannt → Kunde kann weitere Bewertungen selbst hinzufügen
     // keys = nur diese Bewertungen (4–5 ★) warten auf den Nachweis; ohne keys (ältere Aufträge) wartet der ganze Auftrag.
     verify: raw.verify && !cancelled ? { status: String((raw.verify as Record<string, unknown>).status || ""), reason: String((raw.verify as Record<string, unknown>).reason || ""), uploaded: !!(raw.verify as Record<string, unknown>).doc, keys: Array.isArray((raw.verify as Record<string, unknown>).keys) ? ((raw.verify as Record<string, unknown>).keys as string[]) : null } : null,
@@ -567,7 +570,7 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
 
 /** Laufen noch Aufträge (in Bearbeitung, wartend, offen zu zahlen)? → hinterlegte Zahlungsart darf nicht entfernt werden, nur getauscht. */
 export function ordersRunning(orders: OrderView[]): boolean {
-  return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate
+  return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate || !!(o as { reasons?: unknown }).reasons
     || o.items.some((i) => ["new", "working", "software", "sw_accepted"].includes(i.status))));
 }
 

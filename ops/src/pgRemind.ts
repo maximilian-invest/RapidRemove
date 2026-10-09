@@ -1,4 +1,5 @@
 /* pgRemind.ts — Erinnerungen „Zahlungsart fehlt noch" (08.10.2026, mit Maximilian abgestimmt: öfter als 1× am Tag, aber kein Spam).
+ * Seit 10/2026 auch „Gründe je Bewertung fehlen noch" (raw.reasons pending) – gleicher Takt, Texte „Auftrag im Dashboard starten" (start=true).
  *
  * Wer: Kunden mit Aufträgen, die auf die hinterlegte Zahlungsart warten – Auftrag/Nachbestellung (payGate) oder bestätigte
  *      Software-Fälle (Status „software", vorgemerkt) – und noch KEINE Zahlungsart haben.
@@ -38,7 +39,7 @@ async function init(): Promise<void> {
 }
 
 type Act = { orderId: string; whole: boolean; gateKeys: string[]; swKeys: string[] };
-type Waiting = { email: string; name: string; lang: string; country: string | null; addr: string | null; since: number; items: PgItem[]; orderIds: string[]; acts: Act[] };
+type Waiting = { email: string; name: string; lang: string; country: string | null; addr: string | null; since: number; items: PgItem[]; orderIds: string[]; acts: Act[]; start: boolean };
 const STALE_D = () => Math.max(1, Number(process.env.PG_STALE_DAYS) || 7);
 const GRACE_D = () => Math.max(3, Number(process.env.PG_GRACE_DAYS) || 14);
 
@@ -48,28 +49,40 @@ async function waitingCustomers(): Promise<Waiting[]> {
   const r = await pool.query(
     `SELECT DISTINCT lower(email) AS email FROM orders
       WHERE COALESCE(status,'') <> 'storniert' AND email IS NOT NULL
-        AND (raw->'payGate'->>'status' = 'pending' OR raw ? 'reviewsSwWant')`);
+        AND (raw->'payGate'->>'status' = 'pending' OR raw ? 'reviewsSwWant' OR raw->'reasons'->>'status' = 'pending')`);
   const out: Waiting[] = [];
   for (const { email } of r.rows as { email: string }[]) {
-    if (await hasSavedMethod(email).catch(() => true)) continue;
     const { name, lang, orders } = await loadCustomerOrders(email).catch(() => ({ name: "", lang: "en", orders: [] as never[] }));
+    // Gründe je Bewertung offen → erinnern, auch wenn schon eine Zahlungsart hinterlegt ist; sonst nur ohne Zahlungsart.
+    const anyReasons = (orders as any[]).some((o) => !o.cancelled && o.reasons);
+    if (!anyReasons && await hasSavedMethod(email).catch(() => true)) continue;
+    const saved = anyReasons ? await hasSavedMethod(email).catch(() => true) : false;
     const items: PgItem[] = []; const orderIds: string[] = []; const acts: Act[] = [];
     let since = Infinity, country: string | null = null, addr: string | null = null;
     for (const o of orders as any[]) {
       if (o.cancelled) continue;
-      const raw = await pool.query(`SELECT raw->'payGate' AS g, raw->'reviewsSwConfirmed' AS c, raw->>'addr' AS addr, created_at FROM orders WHERE id=$1`, [o.id]).then((x) => x.rows[0]).catch(() => null);
+      const raw = await pool.query(`SELECT raw->'payGate' AS g, raw->'reasons' AS rs, raw->'reviewsSwConfirmed' AS c, raw->>'addr' AS addr, created_at FROM orders WHERE id=$1`, [o.id]).then((x) => x.rows[0]).catch(() => null);
       let hit = false;
       const act: Act = { orderId: o.id, whole: false, gateKeys: [], swKeys: [] };
-      if (o.payGate) {
+      const listed = new Set<string>();
+      if (o.reasons) { // Gründe fehlen (ganzer Auftrag oder nur nachbestellte Bewertungen)
+        const rk: string[] = o.reasons.keys || [];
+        const whole = !Array.isArray(raw?.rs?.keys);
+        if (whole) act.whole = true;
+        for (const it of o.items || []) if (rk.includes(it.key) && !["removed", "cancelled", "notpossible"].includes(it.status)) { items.push({ name: it.name, text: it.text, url: it.url }); listed.add(it.key); hit = true; if (!whole) act.gateKeys.push(it.key); }
+        const at = Date.parse(raw?.rs?.at || "") || Date.parse(raw?.created_at || "") || Date.now();
+        if (hit) since = Math.min(since, at);
+      }
+      if (o.payGate && !saved) {
         const keys: string[] | null = o.payGateKeys || null;
         if (!keys) act.whole = true;
         if (o.kind === "profile") { items.push({ profile: o.business || o.id }); hit = true; }
-        else for (const it of o.items || []) if (it.status === "new" && (!keys || keys.includes(it.key))) { items.push({ name: it.name, text: it.text, url: it.url }); hit = true; if (keys) act.gateKeys.push(it.key); }
+        else for (const it of o.items || []) if (it.status === "new" && (!keys || keys.includes(it.key)) && !listed.has(it.key)) { items.push({ name: it.name, text: it.text, url: it.url }); hit = true; if (keys && !act.gateKeys.includes(it.key)) act.gateKeys.push(it.key); }
         const at = Date.parse(raw?.g?.at || "") || Date.parse(raw?.created_at || "") || Date.now();
         if (hit) since = Math.min(since, at);
       }
       for (const it of o.items || []) {
-        if (it.status === "software" && (it.swWant || it.pre)) {
+        if (it.status === "software" && (it.swWant || it.pre) && !saved) {
           items.push({ name: it.name, text: it.text, url: it.url }); hit = true; act.swKeys.push(it.key);
           const at = Date.parse((raw?.c || {})[it.key] || "") || Date.now();
           since = Math.min(since, at);
@@ -77,7 +90,7 @@ async function waitingCustomers(): Promise<Waiting[]> {
       }
       if (hit) { orderIds.push(o.id); acts.push(act); country = country || o.country || null; addr = addr || raw?.addr || null; }
     }
-    if (items.length && Number.isFinite(since)) out.push({ email, name, lang, country, addr, since, items, orderIds, acts });
+    if (items.length && Number.isFinite(since)) out.push({ email, name, lang, country, addr, since, items, orderIds, acts, start: anyReasons });
   }
   return out;
 }
@@ -91,8 +104,9 @@ async function cancelWaiting(w: Waiting): Promise<void> {
     if (a.whole) {
       await updateOrderStatus(a.orderId, "storniert").catch(() => false);
       await partnerOrderStatus(a.orderId, "storniert").catch(() => {});
-      await setOrderRawField(a.orderId, "payGate", { status: "expired", at: new Date().toISOString() }).catch(() => false);
-      await insertEvent({ orderId: a.orderId, email: w.email, type: "status", title: "Automatisch storniert – keine Zahlungsart hinterlegt", detail: `Frist abgelaufen (${GRACE_D()} Tage nach der finalen Mail) · keine Kosten`, auto: true }).catch(() => {});
+      if ((raw.payGate as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "payGate", { status: "expired", at: new Date().toISOString() }).catch(() => false);
+      if ((raw.reasons as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "reasons", { status: "expired", at: new Date().toISOString() }).catch(() => false);
+      await insertEvent({ orderId: a.orderId, email: w.email, type: "status", title: w.start ? "Automatisch storniert – Schritte im Dashboard nicht abgeschlossen" : "Automatisch storniert – keine Zahlungsart hinterlegt", detail: `Frist abgelaufen (${GRACE_D()} Tage nach der finalen Mail) · keine Kosten`, auto: true }).catch(() => {});
       continue;
     }
     if (a.gateKeys.length) {
@@ -102,7 +116,8 @@ async function cancelWaiting(w: Waiting): Promise<void> {
       await setOrderRawField(a.orderId, "reviewItems", keep).catch(() => false);
       const total = quoteReviews(keep as never[], String(r?.rows[0]?.country || "") === "US" ? "usd" : "eur").total;
       await pool.query(`UPDATE orders SET reviews=$2, amount=$3 WHERE id=$1`, [a.orderId, keep.length, total]).catch(() => {});
-      await setOrderRawField(a.orderId, "payGate", { status: "expired", at: new Date().toISOString() }).catch(() => false);
+      if ((raw.payGate as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "payGate", { status: "expired", at: new Date().toISOString() }).catch(() => false);
+      if ((raw.reasons as { status?: string } | undefined)?.status === "pending") await setOrderRawField(a.orderId, "reasons", { status: "expired", at: new Date().toISOString() }).catch(() => false);
       await insertEvent({ orderId: a.orderId, email: w.email, type: "status", title: `Nachbestellung storniert – ${a.gateKeys.length} Bewertung(en) entfernt`, detail: "Keine Zahlungsart hinterlegt · laufende Bewertungen bleiben", auto: true }).catch(() => {});
     }
     if (a.swKeys.length) await declineSoftwareKeys(a.orderId, a.swKeys, "Frist abgelaufen");
@@ -140,11 +155,11 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
     const mail = async (mode: PgMode, extra: Record<string, unknown>, title: string): Promise<boolean> => {
       try {
         const dashUrl = await dashLink(w.email, lang);
-        const props = { lang, name: w.name, dashUrl, siteUrl: SITE_URL, items: w.items, mode, ...extra };
+        const props = { lang, name: w.name, dashUrl, siteUrl: SITE_URL, items: w.items, mode, start: w.start, ...extra };
         const html = await render(React.createElement(KundenZahlungsartReviews as any, props as any));
         const subject = zahlungsartSubject(props as any);
         await sendMail({ to: w.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-        if (mode !== "cancelled") { const p = zahlungsartPush(lang); void notifyCustomer(w.email, p.title, p.body, `rrc-pg-${w.email}`, { url: "/my-reviews" }).catch(() => false); }
+        if (mode !== "cancelled") { const p = zahlungsartPush(lang, w.start); void notifyCustomer(w.email, p.title, p.body, `rrc-pg-${w.email}`, { url: "/my-reviews" }).catch(() => false); }
         for (const oid of w.orderIds) await insertEvent({ orderId: oid, email: w.email, type: "mail", title, detail: `${w.items.length} wartend · ${w.items.slice(0, 4).map((x) => x.profile || x.name || x.url).join(" · ")}`, html, subject, auto: true }).catch(() => {});
         void logCustEvent(w.email, "reminder_pg", title, { mode }, { orderId: w.orderIds[0] });
         sent++;
@@ -182,7 +197,7 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
     // Mindestabstand 4 Std. (Test: 4 Min.) – auch wenn ein Fall schon länger wartet, kommt nicht alles auf einmal.
     if (st.last_at && now - new Date(st.last_at).getTime() < 4 * unit) continue;
     if (!daytime) continue; // nur tagsüber (Ortszeit)
-    if (await mail(st.n > 0 ? "reminder" : "first", {}, `Erinnerung ${st.n + 1}/${STEPS_H.length}: Zahlungsart fehlt noch`)) {
+    if (await mail(st.n > 0 ? "reminder" : "first", {}, `Erinnerung ${st.n + 1}/${STEPS_H.length}: ${w.start ? "Gründe/Schritte im Dashboard fehlen noch" : "Zahlungsart fehlt noch"}`)) {
       await pool.query(`UPDATE pg_reminders SET n=n+1, last_at=now() WHERE email=$1`, [w.email]);
     }
   }

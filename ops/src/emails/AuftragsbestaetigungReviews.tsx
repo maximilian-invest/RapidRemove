@@ -24,6 +24,8 @@ export interface AuftragsbestaetigungReviewsProps {
   /** Anzahl der Bewertungen, die auf den Nachweis warten (nur 4–5 ★); die übrigen starten ohne Nachweis. */
   verifyN?: number;
   payGate?: boolean;
+  /** Gründe je Bewertung im Dashboard angeben (10/2026) → ein gemeinsamer „Auftrag starten"-Block statt einzelner Hinweise. */
+  reasons?: boolean;
   /** Die zu löschenden Bewertungen (wie im Wizard eingereicht). */
   items?: ReviewRef[];
   /** Veraltet: nur Links (ältere Bestellungen) — wird zu items normalisiert. */
@@ -331,6 +333,21 @@ const PG: Record<string, [string, string]> = {
   no: ["Siste steg: legg til en betalingsmetode", "Legg til en betalingsmetode (kort, PayPal …) i dashbordet. Du belastes bare når en anmeldelse faktisk er fjernet – ingenting før det. Så snart den er lagret, starter vi fjerningen."],
 };
 
+/** Auftrag im Dashboard starten (Gründe → ggf. Nachweis → ggf. Zahlungsart): [Titel, Einleitung, Gründe, Nachweis, Zahlungsart, Schluss]. */
+const START: Record<string, [string, string, string, string, string, string]> = {
+  de: ["Nächster Schritt: Auftrag im Dashboard starten", "Dauert ca. 2 Minuten – dann legen wir sofort los:", "Je Bewertung kurz antippen, warum sie gegen die Google-Richtlinien verstößt", "Kurzer Nachweis, dass das Unternehmen Ihnen gehört (nur bei 4–5 Sternen)", "Zahlungsart hinterlegen – abgebucht wird erst, wenn eine Bewertung gelöscht ist", "Solange das fehlt, können wir mit der Bearbeitung nicht beginnen."],
+  en: ["Next step: start your order in your dashboard", "Takes about 2 minutes – then we start right away:", "Tap why each review violates Google's policies", "Quick proof that the business is yours (only for 4–5 stars)", "Add a payment method – you're only charged once a review is removed", "Until this is done, we can't start working on your reviews."],
+  es: ["Siguiente paso: inicia tu pedido en tu panel", "Tarda unos 2 minutos y empezamos enseguida:", "Indica con un toque por qué cada reseña infringe las políticas de Google", "Breve prueba de que la empresa es tuya (solo con 4–5 estrellas)", "Añade un método de pago: solo se cobra cuando se elimina una reseña", "Mientras falte esto, no podemos empezar."],
+  fr: ["Prochaine étape : lance ta commande dans ton espace", "Environ 2 minutes – ensuite nous commençons tout de suite :", "Indique d’un geste pourquoi chaque avis enfreint les règles de Google", "Court justificatif que l’entreprise est bien la tienne (seulement pour 4–5 étoiles)", "Ajoute un moyen de paiement – tu n’es débité que lorsqu’un avis est supprimé", "Tant que ce n’est pas fait, nous ne pouvons pas commencer."],
+  it: ["Prossimo passo: avvia l’ordine nella tua dashboard", "Ci vogliono circa 2 minuti, poi iniziamo subito:", "Indica con un tocco perché ogni recensione viola le norme di Google", "Breve prova che l’attività è tua (solo per 4–5 stelle)", "Aggiungi un metodo di pagamento: l’addebito avviene solo quando una recensione viene rimossa", "Finché manca, non possiamo iniziare."],
+  nl: ["Volgende stap: start uw opdracht in uw dashboard", "Duurt ongeveer 2 minuten – daarna starten we meteen:", "Tik per review aan waarom die in strijd is met het Google-beleid", "Kort bewijs dat het bedrijf van u is (alleen bij 4–5 sterren)", "Voeg een betaalmethode toe – er wordt pas afgeschreven als een review is verwijderd", "Zolang dit ontbreekt, kunnen we niet beginnen."],
+  pt: ["Próximo passo: inicia a tua encomenda no painel", "Demora cerca de 2 minutos – depois começamos logo:", "Indica com um toque porque cada avaliação viola as políticas da Google", "Breve prova de que a empresa é tua (só para 4–5 estrelas)", "Adiciona um método de pagamento – só é cobrado quando uma avaliação é removida", "Enquanto isto faltar, não podemos começar."],
+  ja: ["次のステップ：ダッシュボードでご依頼を開始", "約2分で完了し、すぐに作業を開始します：", "各口コミがGoogleのポリシーに違反する理由をタップで選択", "事業者ご本人であることの簡単な証明（星4〜5の場合のみ）", "お支払い方法の登録（口コミが削除された場合のみ請求）", "これが完了するまで作業を開始できません。"],
+  sv: ["Nästa steg: starta din beställning i din dashboard", "Tar ungefär 2 minuter – sedan börjar vi direkt:", "Tryck på varför varje omdöme bryter mot Googles riktlinjer", "Kort bevis på att företaget är ditt (bara vid 4–5 stjärnor)", "Lägg till en betalningsmetod – du debiteras först när ett omdöme har tagits bort", "Tills detta är gjort kan vi inte börja."],
+  da: ["Næste trin: start din ordre i dit dashboard", "Tager ca. 2 minutter – så går vi straks i gang:", "Tryk på, hvorfor hver anmeldelse overtræder Googles retningslinjer", "Kort bevis for, at virksomheden er din (kun ved 4–5 stjerner)", "Tilføj en betalingsmetode – der trækkes først, når en anmeldelse er fjernet", "Indtil det er gjort, kan vi ikke gå i gang."],
+  no: ["Neste steg: start bestillingen i dashbordet", "Tar ca. 2 minutter – så starter vi med en gang:", "Trykk på hvorfor hver omtale bryter med Googles retningslinjer", "Kort bevis på at bedriften er din (bare ved 4–5 stjerner)", "Legg til en betalingsmetode – du belastes først når en omtale er fjernet", "Til dette er gjort, kan vi ikke starte."],
+};
+
 /** Nachbestellung: [Betreff, Titel, Einleitung] – n = Anzahl, id = Bestell-Nr. */
 type AddT = [(n: number, id: string) => string, string, (n: number, id: string) => string];
 const ADD: Record<string, AddT> = {
@@ -374,7 +391,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, reasons = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
@@ -392,14 +409,28 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       <P>{ad ? ad[2](n, orderId) : sw.length && !rest.length ? t.p1sw(n) : t.p1(n)}{orderId && !ad ? <span style={{ color: brand.muted }}> · #{orderId}</span> : null}</P>
       {/* Wichtigstes zuerst: Nachweis / Zahlungsart / Dashboard-Button – nicht erst ganz unten. */}
       {/* Reihenfolge: 1) Zahlungsart, 2) Inhaber-Nachweis (nur für die 4–5-Sterne-Bewertungen). */}
-      {payGate ? (
+      {reasons ? (() => {
+        const S = START[lang] || START.en;
+        const steps = [S[2], ...(verify ? [S[3]] : []), ...(payGate ? [S[4]] : [])];
+        return (
+          <NoteBox>
+            <span style={{ color: brand.tintText, fontWeight: 700 }}>{S[0]}</span><br />
+            {S[1]}<br />
+            {steps.map((x, i) => <React.Fragment key={i}>{i + 1}. {x}<br /></React.Fragment>)}
+            {verify && verifyN && verifyN < n ? <>{(VFP[lang] || VFP.en)(verifyN, n - verifyN)}<br /></> : null}
+            <span style={{ color: brand.muted }}>{S[5]}</span>
+          </NoteBox>
+        );
+      })() : null}
+
+      {payGate && !reasons ? (
         <NoteBox>
           <span style={{ color: brand.tintText, fontWeight: 700 }}>{verify ? (STEP[lang] || STEP.en)[0] : (PG[lang] || PG.en)[0]}</span><br />
           {(PG[lang] || PG.en)[1]}
         </NoteBox>
       ) : null}
 
-      {verify ? (
+      {verify && !reasons ? (
         <NoteBox>
           <span style={{ color: brand.tintText, fontWeight: 700 }}>{payGate ? (STEP[lang] || STEP.en)[1] : ""}{(VF[lang] || VF.en)[0]}</span><br />
           {verifyN && verifyN < n ? <><strong>{(VFP[lang] || VFP.en)(verifyN, n - verifyN)}</strong><br /></> : null}

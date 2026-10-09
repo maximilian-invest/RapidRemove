@@ -281,24 +281,95 @@ export const T: Record<string, L> = {
   },
 };
 
+/* Gründe je Bewertung fehlen (10/2026): gleicher Takt, aber Texte für „Auftrag im Dashboard starten" (Gründe, ggf. Nachweis/Zahlungsart). */
+type SK = "subject" | "subjectR" | "titleR" | "p1R" | "p2" | "btn" | "note" | "fP1" | "fP2" | "lP1" | "lP2" | "cP1" | "pushT" | "pushB";
+const S: Record<string, Record<SK, string>> = {
+  de: { subject: "Ihr Auftrag ist noch nicht gestartet – bitte im Dashboard abschließen", subjectR: "Erinnerung: Ihr Auftrag wartet noch auf Ihre Angaben", titleR: "Ihr Auftrag wartet noch auf Sie", p1R: "Ihre Angaben im Dashboard fehlen noch – deshalb liegt Folgendes weiterhin still:",
+    p2: "Bitte geben Sie in Ihrem Dashboard je Bewertung kurz an, warum sie gegen die Google-Richtlinien verstößt (ein Tipp pro Bewertung), und schließen Sie die übrigen Schritte ab. Dauert ca. 2 Minuten – dann starten wir sofort. Abgebucht wird weiterhin erst, wenn eine Bewertung tatsächlich gelöscht ist.",
+    btn: "Auftrag jetzt starten", note: "Dauert ca. 2 Minuten · abgebucht wird nur bei Erfolg",
+    fP1: "seit {days} Tagen fehlen Ihre Angaben im Dashboard – deshalb haben wir an Folgendem nicht gearbeitet:", fP2: "Ihr Auftrag bleibt bis zum {date} für Sie reserviert. Schließen Sie bis dahin die Schritte im Dashboard ab, starten wir sofort. Andernfalls wird der Auftrag am {date} automatisch storniert; es entstehen Ihnen keine Kosten.",
+    lP1: "ohne Ihre Angaben im Dashboard können wir an Folgendem nicht arbeiten:", lP2: "Am {date} wird Ihr Auftrag automatisch storniert. Möchten Sie die Löschung noch? Dann schließen Sie jetzt die Schritte im Dashboard ab – es dauert nur ca. 2 Minuten.",
+    cP1: "da die Angaben im Dashboard nicht abgeschlossen wurden, haben wir Folgendes storniert:", pushT: "Ihr Auftrag wartet auf Sie", pushB: "Noch ca. 2 Minuten im Dashboard – dann starten wir mit der Löschung." },
+  en: { subject: "Your order hasn't started yet – please finish it in your dashboard", subjectR: "Reminder: your order is still waiting for your input", titleR: "Your order is still waiting for you", p1R: "Your input in the dashboard is still missing – so the following is still on hold:",
+    p2: "Please tap in your dashboard why each review violates Google's policies (one tap per review) and finish the remaining steps. It takes about 2 minutes – then we start right away. You're still only charged once a review has actually been removed.",
+    btn: "Start my order now", note: "Takes about 2 minutes · charged only on success",
+    fP1: "your input in the dashboard has been missing for {days} days – so we haven't worked on the following:", fP2: "Your order stays reserved for you until {date}. Finish the steps in your dashboard by then and we start right away. Otherwise the order will be cancelled automatically on {date}, at no cost to you.",
+    lP1: "without your input in the dashboard we can't work on the following:", lP2: "Your order will be cancelled automatically on {date}. Still want the removal? Then finish the steps in your dashboard now – it only takes about 2 minutes.",
+    cP1: "since the steps in the dashboard weren't completed, we've cancelled the following:", pushT: "Your order is waiting for you", pushB: "About 2 more minutes in your dashboard – then we start the removal." },
+  es: { subject: "Tu pedido aún no ha empezado: termínalo en tu panel", subjectR: "Recordatorio: tu pedido sigue esperando tus datos", titleR: "Tu pedido sigue esperándote", p1R: "Aún faltan tus datos en el panel, por eso lo siguiente sigue en pausa:",
+    p2: "Indica en tu panel por qué cada reseña infringe las políticas de Google (un toque por reseña) y completa los pasos restantes. Tarda unos 2 minutos y empezamos enseguida. Solo se cobra cuando una reseña se ha eliminado de verdad.",
+    btn: "Iniciar mi pedido", note: "Unos 2 minutos · solo se cobra si hay éxito",
+    fP1: "hace {days} días que faltan tus datos en el panel, por eso no hemos trabajado en lo siguiente:", fP2: "Tu pedido queda reservado hasta el {date}. Si completas los pasos en tu panel antes, empezamos enseguida. Si no, el pedido se cancelará automáticamente el {date}, sin coste para ti.",
+    lP1: "sin tus datos en el panel no podemos trabajar en lo siguiente:", lP2: "El {date} tu pedido se cancelará automáticamente. ¿Sigues queriendo la eliminación? Completa ahora los pasos en tu panel: solo tarda unos 2 minutos.",
+    cP1: "como no se completaron los pasos en el panel, hemos cancelado lo siguiente:", pushT: "Tu pedido te está esperando", pushB: "Unos 2 minutos más en tu panel y empezamos con la eliminación." },
+  fr: { subject: "Ta commande n’a pas encore démarré – termine-la dans ton espace", subjectR: "Rappel : ta commande attend toujours tes indications", titleR: "Ta commande t’attend toujours", p1R: "Tes indications dans l’espace client manquent encore – voici ce qui reste en attente :",
+    p2: "Indique dans ton espace pourquoi chaque avis enfreint les règles de Google (un geste par avis) et termine les étapes restantes. Environ 2 minutes – ensuite nous commençons tout de suite. Tu n’es toujours débité qu’une fois un avis réellement supprimé.",
+    btn: "Lancer ma commande", note: "Environ 2 minutes · débité seulement en cas de succès",
+    fP1: "tes indications manquent depuis {days} jours – nous n’avons donc pas travaillé sur ce qui suit :", fP2: "Ta commande reste réservée jusqu’au {date}. Termine les étapes dans ton espace d’ici là et nous commençons aussitôt. Sinon, la commande sera annulée automatiquement le {date}, sans frais pour toi.",
+    lP1: "sans tes indications dans l’espace client, nous ne pouvons pas travailler sur ce qui suit :", lP2: "Le {date}, ta commande sera annulée automatiquement. Tu veux toujours la suppression ? Termine maintenant les étapes dans ton espace – cela ne prend qu’environ 2 minutes.",
+    cP1: "les étapes dans l’espace client n’ayant pas été terminées, nous avons annulé ce qui suit :", pushT: "Ta commande t’attend", pushB: "Encore environ 2 minutes dans ton espace – puis nous lançons la suppression." },
+  it: { subject: "Il tuo ordine non è ancora partito: completalo nella dashboard", subjectR: "Promemoria: il tuo ordine aspetta ancora i tuoi dati", titleR: "Il tuo ordine ti sta ancora aspettando", p1R: "Mancano ancora i tuoi dati nella dashboard, quindi quanto segue è ancora fermo:",
+    p2: "Indica nella dashboard perché ogni recensione viola le norme di Google (un tocco per recensione) e completa i passi rimanenti. Ci vogliono circa 2 minuti, poi iniziamo subito. L’addebito avviene sempre solo quando una recensione è stata davvero rimossa.",
+    btn: "Avvia il mio ordine", note: "Circa 2 minuti · addebito solo in caso di successo",
+    fP1: "da {days} giorni mancano i tuoi dati nella dashboard, quindi non abbiamo lavorato su quanto segue:", fP2: "Il tuo ordine resta riservato fino al {date}. Completa i passi nella dashboard entro quella data e iniziamo subito. Altrimenti l’ordine verrà annullato automaticamente il {date}, senza costi per te.",
+    lP1: "senza i tuoi dati nella dashboard non possiamo lavorare su quanto segue:", lP2: "Il {date} il tuo ordine verrà annullato automaticamente. Vuoi ancora la rimozione? Completa ora i passi nella dashboard: ci vogliono solo circa 2 minuti.",
+    cP1: "poiché i passi nella dashboard non sono stati completati, abbiamo annullato quanto segue:", pushT: "Il tuo ordine ti aspetta", pushB: "Ancora circa 2 minuti nella dashboard, poi iniziamo la rimozione." },
+  nl: { subject: "Uw opdracht is nog niet gestart – rond hem af in uw dashboard", subjectR: "Herinnering: uw opdracht wacht nog op uw gegevens", titleR: "Uw opdracht wacht nog op u", p1R: "Uw gegevens in het dashboard ontbreken nog – daardoor ligt het volgende nog stil:",
+    p2: "Geef in uw dashboard per review aan waarom die in strijd is met het Google-beleid (één tik per review) en rond de overige stappen af. Duurt ongeveer 2 minuten – daarna starten we meteen. Er wordt nog steeds pas afgeschreven als een review echt is verwijderd.",
+    btn: "Opdracht nu starten", note: "Ongeveer 2 minuten · alleen afgeschreven bij succes",
+    fP1: "uw gegevens in het dashboard ontbreken al {days} dagen – daarom hebben we niet aan het volgende gewerkt:", fP2: "Uw opdracht blijft tot {date} voor u gereserveerd. Rondt u de stappen in uw dashboard vóór die datum af, dan starten we meteen. Anders wordt de opdracht op {date} automatisch geannuleerd, zonder kosten voor u.",
+    lP1: "zonder uw gegevens in het dashboard kunnen we niet aan het volgende werken:", lP2: "Op {date} wordt uw opdracht automatisch geannuleerd. Wilt u de verwijdering nog? Rond dan nu de stappen in uw dashboard af – het duurt maar ongeveer 2 minuten.",
+    cP1: "omdat de stappen in het dashboard niet zijn afgerond, hebben we het volgende geannuleerd:", pushT: "Uw opdracht wacht op u", pushB: "Nog ongeveer 2 minuten in uw dashboard – dan starten we met de verwijdering." },
+  pt: { subject: "A tua encomenda ainda não começou – conclui-a no painel", subjectR: "Lembrete: a tua encomenda ainda espera pelos teus dados", titleR: "A tua encomenda ainda está à tua espera", p1R: "Ainda faltam os teus dados no painel – por isso o seguinte continua parado:",
+    p2: "Indica no painel porque cada avaliação viola as políticas da Google (um toque por avaliação) e conclui os passos restantes. Demora cerca de 2 minutos – depois começamos logo. Continua a ser cobrado apenas quando uma avaliação é realmente removida.",
+    btn: "Iniciar a encomenda", note: "Cerca de 2 minutos · só é cobrado em caso de sucesso",
+    fP1: "há {days} dias que faltam os teus dados no painel – por isso não trabalhámos no seguinte:", fP2: "A tua encomenda fica reservada até {date}. Se concluíres os passos no painel até lá, começamos logo. Caso contrário, a encomenda será cancelada automaticamente a {date}, sem custos para ti.",
+    lP1: "sem os teus dados no painel não podemos trabalhar no seguinte:", lP2: "A {date} a tua encomenda será cancelada automaticamente. Ainda queres a remoção? Conclui agora os passos no painel – demora só cerca de 2 minutos.",
+    cP1: "como os passos no painel não foram concluídos, cancelámos o seguinte:", pushT: "A tua encomenda está à tua espera", pushB: "Mais cerca de 2 minutos no painel – e começamos a remoção." },
+  ja: { subject: "ご依頼はまだ開始されていません – ダッシュボードで完了してください", subjectR: "リマインダー：ご依頼はまだ入力をお待ちしています", titleR: "ご依頼はまだお客様の入力待ちです", p1R: "ダッシュボードでの入力がまだのため、以下は保留中です：",
+    p2: "ダッシュボードで、各口コミがGoogleのポリシーに違反する理由をタップで選択し（口コミごとに1回）、残りの手順を完了してください。約2分で完了し、すぐに作業を開始します。請求は引き続き口コミが実際に削除された場合のみです。",
+    btn: "今すぐ開始する", note: "約2分 · 成功時のみ請求",
+    fP1: "ダッシュボードでの入力が{days}日間ないため、以下の作業を行っていません：", fP2: "ご依頼は{date}まで確保しています。それまでにダッシュボードの手順を完了いただければすぐに開始します。完了がない場合、{date}に自動的にキャンセルされます（費用は発生しません）。",
+    lP1: "ダッシュボードでの入力がないため、以下の作業ができません：", lP2: "{date}にご依頼は自動的にキャンセルされます。削除をご希望の場合は、今すぐダッシュボードの手順を完了してください（約2分）。",
+    cP1: "ダッシュボードの手順が完了しなかったため、以下をキャンセルしました：", pushT: "ご依頼がお待ちしています", pushB: "ダッシュボードであと約2分 – その後すぐに削除を開始します。" },
+  sv: { subject: "Din beställning har inte startat än – slutför den i din dashboard", subjectR: "Påminnelse: din beställning väntar fortfarande på dina uppgifter", titleR: "Din beställning väntar fortfarande på dig", p1R: "Dina uppgifter i dashboarden saknas fortfarande – därför ligger följande stilla:",
+    p2: "Tryck i din dashboard på varför varje omdöme bryter mot Googles riktlinjer (ett tryck per omdöme) och slutför de återstående stegen. Tar ungefär 2 minuter – sedan börjar vi direkt. Du debiteras fortfarande först när ett omdöme verkligen har tagits bort.",
+    btn: "Starta beställningen nu", note: "Ungefär 2 minuter · debiteras bara vid lyckat resultat",
+    fP1: "dina uppgifter i dashboarden har saknats i {days} dagar – därför har vi inte arbetat med följande:", fP2: "Din beställning är reserverad för dig till {date}. Slutför stegen i dashboarden innan dess så börjar vi direkt. Annars avbryts beställningen automatiskt den {date}, utan kostnad för dig.",
+    lP1: "utan dina uppgifter i dashboarden kan vi inte arbeta med följande:", lP2: "Den {date} avbryts din beställning automatiskt. Vill du fortfarande ha borttagningen? Slutför stegen i dashboarden nu – det tar bara ungefär 2 minuter.",
+    cP1: "eftersom stegen i dashboarden inte slutfördes har vi avbrutit följande:", pushT: "Din beställning väntar på dig", pushB: "Ungefär 2 minuter till i dashboarden – sedan börjar vi borttagningen." },
+  da: { subject: "Din ordre er ikke startet endnu – gør den færdig i dit dashboard", subjectR: "Påmindelse: din ordre venter stadig på dine oplysninger", titleR: "Din ordre venter stadig på dig", p1R: "Dine oplysninger i dashboardet mangler stadig – derfor ligger følgende stille:",
+    p2: "Tryk i dit dashboard på, hvorfor hver anmeldelse overtræder Googles retningslinjer (ét tryk pr. anmeldelse), og gør de resterende trin færdige. Tager ca. 2 minutter – så går vi straks i gang. Der trækkes stadig først, når en anmeldelse faktisk er fjernet.",
+    btn: "Start ordren nu", note: "Ca. 2 minutter · der trækkes kun ved succes",
+    fP1: "dine oplysninger i dashboardet har manglet i {days} dage – derfor har vi ikke arbejdet på følgende:", fP2: "Din ordre er reserveret til dig indtil {date}. Gør trinene i dashboardet færdige inden da, så går vi straks i gang. Ellers annulleres ordren automatisk den {date} uden omkostninger for dig.",
+    lP1: "uden dine oplysninger i dashboardet kan vi ikke arbejde på følgende:", lP2: "Den {date} annulleres din ordre automatisk. Vil du stadig have fjernelsen? Så gør trinene i dashboardet færdige nu – det tager kun ca. 2 minutter.",
+    cP1: "da trinene i dashboardet ikke blev gjort færdige, har vi annulleret følgende:", pushT: "Din ordre venter på dig", pushB: "Ca. 2 minutter mere i dashboardet – så starter vi fjernelsen." },
+  no: { subject: "Bestillingen din har ikke startet ennå – fullfør den i dashbordet", subjectR: "Påminnelse: bestillingen din venter fortsatt på opplysningene dine", titleR: "Bestillingen din venter fortsatt på deg", p1R: "Opplysningene dine i dashbordet mangler fortsatt – derfor står følgende stille:",
+    p2: "Trykk i dashbordet på hvorfor hver omtale bryter med Googles retningslinjer (ett trykk per omtale), og fullfør de gjenværende stegene. Tar ca. 2 minutter – så starter vi med en gang. Du belastes fortsatt først når en omtale faktisk er fjernet.",
+    btn: "Start bestillingen nå", note: "Ca. 2 minutter · belastes bare ved suksess",
+    fP1: "opplysningene dine i dashbordet har manglet i {days} dager – derfor har vi ikke jobbet med følgende:", fP2: "Bestillingen din er reservert for deg til {date}. Fullfør stegene i dashbordet før det, så starter vi med en gang. Ellers kanselleres bestillingen automatisk {date}, uten kostnad for deg.",
+    lP1: "uten opplysningene dine i dashbordet kan vi ikke jobbe med følgende:", lP2: "{date} kanselleres bestillingen din automatisk. Vil du fortsatt ha fjerningen? Fullfør stegene i dashbordet nå – det tar bare ca. 2 minutter.",
+    cP1: "siden stegene i dashbordet ikke ble fullført, har vi kansellert følgende:", pushT: "Bestillingen din venter på deg", pushB: "Ca. 2 minutter til i dashbordet – så starter vi fjerningen." },
+};
+
 /** mode: "first" (1. Mail) · "reminder" · "final" (pausiert, Frist bis date) · "last" (3 Tage vor Storno) · "cancelled" (storniert) */
 export type PgMode = "first" | "reminder" | "final" | "last" | "cancelled";
-export interface ZahlungsartProps { lang?: string; name?: string; dashUrl: string; siteUrl?: string; items: PgItem[]; reminder?: boolean; mode?: PgMode; date?: string; days?: number; _overrides?: Record<string, string> }
+export interface ZahlungsartProps { lang?: string; name?: string; dashUrl: string; siteUrl?: string; items: PgItem[]; reminder?: boolean; mode?: PgMode; date?: string; days?: number; start?: boolean; _overrides?: Record<string, string> }
 const LOC: Record<string, string> = { de: "de-AT", en: "en-GB", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "ja-JP", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
 const fmtDate = (iso: string | undefined, lang: string) => { try { return new Date(String(iso)).toLocaleDateString(LOC[lang] || "en-GB", { day: "numeric", month: "long", year: "numeric" }); } catch { return String(iso || ""); } };
 const fill = (s: string, p: ZahlungsartProps, l: string) => s.replace(/\{date\}/g, fmtDate(p.date, l)).replace(/\{days\}/g, String(p.days || 7));
-const tOf = (lang?: string) => T[lang && T[lang] ? lang : "en"];
+const tOf = (lang?: string, start?: boolean): L => { const l = lang && T[lang] ? lang : "en"; return start ? { ...T[l], ...(S[l] || S.en) } : T[l]; };
 const modeOf = (p: ZahlungsartProps): PgMode => p.mode || (p.reminder ? "reminder" : "first");
 export const zahlungsartSubject = (p: ZahlungsartProps) => {
-  const t = tOf(p.lang), m = modeOf(p), l = p.lang && T[p.lang] ? p.lang : "en";
+  const t = tOf(p.lang, p.start), m = modeOf(p), l = p.lang && T[p.lang] ? p.lang : "en";
   return m === "final" ? fill(t.fS, p, l) : m === "last" ? fill(t.lS, p, l) : m === "cancelled" ? t.cS : m === "reminder" ? t.subjectR : t.subject;
 };
-export const zahlungsartPush = (lang?: string) => ({ title: tOf(lang).pushT, body: tOf(lang).pushB });
+export const zahlungsartPush = (lang?: string, start?: boolean) => ({ title: tOf(lang, start).pushT, body: tOf(lang, start).pushB });
 
 export default function KundenZahlungsartReviews(p: ZahlungsartProps) {
   const { lang = "en", name = "", dashUrl, siteUrl = "https://rapid-remove.com", items = [] } = p;
   const l = lang && T[lang] ? lang : "en";
-  const t = T[l];
+  const t = tOf(l, p.start);
   const m = modeOf(p);
   const revs = items.filter((x) => !x.profile);
   const onlyProfile = !revs.length && items.length > 0;

@@ -8,7 +8,7 @@ export const CLOSED = ["deleted", "cancel"];
 export const ST = {
   new: { l: "Neu", img: "new" },
   work: { l: "In Bearbeitung", img: "work" },
-  nopm: { l: "Pending", img: "nopm" }, // wartet auf den Kunden: Zahlungsart oder Inhaber-Nachweis fehlt
+  nopm: { l: "Pending", img: "nopm" }, // wartet auf den Kunden: Gründe, Zahlungsart oder Inhaber-Nachweis fehlt
   pay: { l: "Zahlung offen", img: "pay" },
   inkasso: { l: "Inkasso", img: "inkasso" },
   deleted: { l: "Gelöscht" },
@@ -113,6 +113,7 @@ export function revState(o, tasks) {
 export function pendingWhy(o) {
   if (!o || o.status === "storniert") return [];
   const out = [];
+  if (o.reasons && o.reasons.status === "pending") out.push("Gründe fehlen");
   if (o.payGate || o.pgStale) out.push("Zahlungsart fehlt");
   if (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")) out.push(o.verify.status === "rejected" ? "Nachweis abgelehnt" : "Nachweis fehlt");
   return out;
@@ -120,7 +121,7 @@ export function pendingWhy(o) {
 /** Ganzer Auftrag steht still, bis der Kunde etwas tut. */
 const vWhole = (o) => o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")
   && (!Array.isArray(o.verify.keys) || (o.reviewItems || []).every((it) => o.verify.keys.includes(rvKey(it)))); // ohne keys bzw. nur 4–5 ★ bestellt → ganzer Auftrag wartet
-const pendingWhole = (o) => o && o.status !== "storniert" && ((o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
+const pendingWhole = (o) => o && o.status !== "storniert" && ((o.reasons && o.reasons.status === "pending" && !Array.isArray(o.reasons.keys)) || (o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
 
 /** Alle Kacheln, in denen ein Auftrag steht. Bewertungen: „In Bearbeitung", solange beim Partner noch etwas offen ist,
  *  und zusätzlich „Zahlung offen", sobald eine gelöschte Bewertung noch nicht bezahlt ist. */
@@ -130,7 +131,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   // Pending = wartet auf den Kunden (Zahlungsart nicht hinterlegt oder Inhaber-Nachweis nicht hochgeladen/abgelehnt).
   // Ganzer Auftrag blockiert → nur „Pending"; nur Nachbestellung blockiert → zusätzlich zu den übrigen Kacheln.
   if (pendingWhole(o)) return ["nopm"];
-  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
+  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null, reasons: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];

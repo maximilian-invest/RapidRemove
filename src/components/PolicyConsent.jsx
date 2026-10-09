@@ -1,15 +1,16 @@
 "use client";
 /* Pflicht-Bestätigung bei Einzelbewertungen (nicht bei Profil-Löschung): Kunde versichert, dass die ausgewählten Bewertungen
    nach bestem Wissen gegen die Google-Richtlinien verstoßen. „Google-Richtlinien" (blau) öffnet ein Fenster mit den typischen
-   Verstößen (Handy: von unten). Nachweis (Zeit, IP, Gerät, Sprache, Textversion) speichert der Server beim Auftrag. */
+   Verstößen (Handy: von unten). Seit 09.10.2026 (Version b) inkl. Freistellung bei unrichtigen Angaben (AGB 3.4). Nachweis (Zeit, IP, Gerät, Sprache, Textversion) speichert der Server beim Auftrag. */
 import React from "react";
 import { createPortal } from "react-dom";
 
-export const POLICY_V = "2026-10-09";
+export const POLICY_V = "2026-10-09b"; // b = + Freistellung (AGB 3.4)
 const GURL = (l) => `https://support.google.com/contributionpolicy/answer/7400114?hl=${l || "en"}`;
 
 const T = {
   de: {
+    ind: "Für unrichtige Angaben halte ich RapidRemove schad- und klaglos (AGB 3.4).",
     pre: "Ich versichere, dass die ausgewählten Bewertungen nach meinem besten Wissen gegen die ", link: "Google-Richtlinien", post: " verstoßen (z. B. kein echter Kunde, Mitbewerber, Beleidigung, falsche Tatsachenbehauptung).",
     err: "Bitte bestätigen Sie, dass die Bewertungen gegen die Google-Richtlinien verstoßen.",
     h: "Was gegen die Google-Richtlinien verstößt", intro: "Google entfernt Bewertungen, die gegen die Richtlinien für Beiträge verstoßen. Typische Fälle:",
@@ -27,6 +28,7 @@ const T = {
     src: "Offizielle Google-Richtlinien ansehen", ok: "Verstanden",
   },
   en: {
+    ind: "I will indemnify RapidRemove against claims arising from incorrect information I provide (T&C 3.4).",
     pre: "I confirm that, to the best of my knowledge, the selected reviews violate the ", link: "Google policies", post: " (e.g. not a real customer, competitor, insults, false statements of fact).",
     err: "Please confirm that the reviews violate Google's policies.",
     h: "What violates Google's policies", intro: "Google removes reviews that break its contribution policies. Typical cases:",
@@ -44,6 +46,7 @@ const T = {
     src: "View Google's official policies", ok: "Got it",
   },
   es: {
+    ind: "Mantendré indemne a RapidRemove frente a reclamaciones derivadas de datos incorrectos que yo facilite (CG 3.4).",
     pre: "Confirmo que, según mi leal saber y entender, las reseñas seleccionadas infringen las ", link: "políticas de Google", post: " (p. ej., no es un cliente real, competidor, insultos, afirmaciones falsas).",
     err: "Confirma que las reseñas infringen las políticas de Google.",
     h: "Qué infringe las políticas de Google", intro: "Google elimina las reseñas que incumplen sus políticas de contribución. Casos típicos:",
@@ -61,6 +64,7 @@ const T = {
     src: "Ver las políticas oficiales de Google", ok: "Entendido",
   },
   fr: {
+    ind: "Je garantis RapidRemove contre toute réclamation résultant d’indications inexactes de ma part (CG 3.4).",
     pre: "Je confirme qu'à ma connaissance, les avis sélectionnés enfreignent les ", link: "règles de Google", post: " (p. ex. pas un vrai client, concurrent, insultes, fausses affirmations).",
     err: "Confirme que les avis enfreignent les règles de Google.",
     h: "Ce qui enfreint les règles de Google", intro: "Google supprime les avis qui enfreignent ses règles relatives aux contributions. Cas typiques :",
@@ -78,6 +82,7 @@ const T = {
     src: "Voir les règles officielles de Google", ok: "Compris",
   },
   it: {
+    ind: "Manlevo RapidRemove da qualsiasi pretesa derivante da mie indicazioni non corrette (CG 3.4).",
     pre: "Confermo che, per quanto a mia conoscenza, le recensioni selezionate violano le ", link: "norme di Google", post: " (ad es. non un vero cliente, concorrente, insulti, affermazioni false).",
     err: "Conferma che le recensioni violano le norme di Google.",
     h: "Cosa viola le norme di Google", intro: "Google rimuove le recensioni che violano le norme sui contributi. Casi tipici:",
@@ -95,6 +100,7 @@ const T = {
     src: "Vedi le norme ufficiali di Google", ok: "Ho capito",
   },
   nl: {
+    ind: "Ik vrijwaar RapidRemove van aanspraken die voortvloeien uit onjuiste gegevens van mijn kant (AV 3.4).",
     pre: "Ik verklaar dat de geselecteerde reviews naar mijn beste weten in strijd zijn met het ", link: "Google-beleid", post: " (bijv. geen echte klant, concurrent, beledigingen, onware feitelijke beweringen).",
     err: "Bevestig dat de reviews in strijd zijn met het Google-beleid.",
     h: "Wat in strijd is met het Google-beleid", intro: "Google verwijdert reviews die het beleid voor bijdragen schenden. Typische gevallen:",
@@ -112,6 +118,7 @@ const T = {
     src: "Officieel Google-beleid bekijken", ok: "Begrepen",
   },
   pt: {
+    ind: "Isento a RapidRemove de reclamações resultantes de dados incorretos fornecidos por mim (CG 3.4).",
     pre: "Confirmo que, tanto quanto sei, as avaliações selecionadas violam as ", link: "políticas da Google", post: " (p. ex. não é um cliente real, concorrente, insultos, afirmações falsas).",
     err: "Confirma que as avaliações violam as políticas da Google.",
     h: "O que viola as políticas da Google", intro: "A Google remove avaliações que violam as políticas de contribuição. Casos típicos:",
@@ -129,6 +136,7 @@ const T = {
     src: "Ver as políticas oficiais da Google", ok: "Entendi",
   },
   ja: {
+    ind: "私が提供した不正確な情報に起因する請求について、RapidRemoveを免責します（規約3.4）。",
     pre: "選択した口コミが、私の知る限り", link: "Googleのポリシー", post: "に違反していることを確認します（例：実際の顧客ではない、競合他社、侮辱、事実と異なる主張）。",
     err: "口コミがGoogleのポリシーに違反していることを確認してください。",
     h: "Googleのポリシー違反となるもの", intro: "Googleは投稿ポリシーに違反する口コミを削除します。主な例：",
@@ -146,6 +154,7 @@ const T = {
     src: "Googleの公式ポリシーを見る", ok: "わかりました",
   },
   sv: {
+    ind: "Jag håller RapidRemove skadeslöst för anspråk som beror på felaktiga uppgifter från mig (villkor 3.4).",
     pre: "Jag intygar att de valda omdömena såvitt jag vet bryter mot ", link: "Googles riktlinjer", post: " (t.ex. ingen riktig kund, konkurrent, förolämpningar, osanna påståenden).",
     err: "Bekräfta att omdömena bryter mot Googles riktlinjer.",
     h: "Vad som bryter mot Googles riktlinjer", intro: "Google tar bort omdömen som bryter mot riktlinjerna för bidrag. Typiska fall:",
@@ -163,6 +172,7 @@ const T = {
     src: "Se Googles officiella riktlinjer", ok: "Jag förstår",
   },
   da: {
+    ind: "Jeg holder RapidRemove skadesløs for krav, der skyldes forkerte oplysninger fra mig (betingelser 3.4).",
     pre: "Jeg bekræfter, at de valgte anmeldelser efter min bedste overbevisning overtræder ", link: "Googles retningslinjer", post: " (f.eks. ingen rigtig kunde, konkurrent, fornærmelser, usande påstande).",
     err: "Bekræft, at anmeldelserne overtræder Googles retningslinjer.",
     h: "Hvad overtræder Googles retningslinjer", intro: "Google fjerner anmeldelser, der overtræder retningslinjerne for bidrag. Typiske tilfælde:",
@@ -180,6 +190,7 @@ const T = {
     src: "Se Googles officielle retningslinjer", ok: "Forstået",
   },
   no: {
+    ind: "Jeg holder RapidRemove skadesløs for krav som skyldes uriktige opplysninger fra meg (vilkår 3.4).",
     pre: "Jeg bekrefter at de valgte omtalene etter min beste overbevisning bryter med ", link: "Googles retningslinjer", post: " (f.eks. ingen ekte kunde, konkurrent, fornærmelser, usanne påstander).",
     err: "Bekreft at omtalene bryter med Googles retningslinjer.",
     h: "Hva som bryter med Googles retningslinjer", intro: "Google fjerner omtaler som bryter med retningslinjene for bidrag. Typiske tilfeller:",
@@ -276,7 +287,7 @@ export default function PolicyConsent({ lang, checked, onChange, error, classNam
         <input type="checkbox" checked={!!checked} onChange={(e) => onChange(e.target.checked)}
           style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary, #f97316)", cursor: "pointer", ...boxStyle }} />
         <span style={{ color: error ? "var(--danger, #dc2626)" : "inherit", ...textStyle }}>
-          {t.pre}<button type="button" className="pcx-lk" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}>{t.link}</button>{t.post}
+          {t.pre}<button type="button" className="pcx-lk" onClick={(e) => { e.preventDefault(); e.stopPropagation(); setOpen(true); }}>{t.link}</button>{t.post} {t.ind}
         </span>
       </label>
       {open ? <PolicySheet lang={lang} onClose={() => setOpen(false)} /> : null}

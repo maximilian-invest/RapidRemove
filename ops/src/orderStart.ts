@@ -1,18 +1,20 @@
 /* Start eines Bewertungs-Auftrags (Übergabe ans Partner-Board) erst, wenn alle Vorbedingungen erfüllt sind:
  *   verify  – Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (verify.ts)
  *   payGate – Zahlungsart hinterlegt („Automatisch bezahlen", autopay.ts)
- * Beide setzen ihren Status und rufen dann startOrderIfReady() – wer zuletzt fertig ist, startet den Auftrag. */
+ *   reasons – Gründe je Bewertung + Zusicherung im Dashboard (reasons.ts)
+ * Alle setzen ihren Status und rufen dann startOrderIfReady() – wer zuletzt fertig ist, startet den Auftrag. */
 import { pool, insertEvent } from "./db";
 import { partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled } from "./partner";
 
 type Gate = { status?: string; keys?: string[] } | null | undefined;
 const kOf = (it: Record<string, unknown>) => String(it.url || "") || `${it.name || ""}|${it.text || ""}`;
-/** Was wartet noch? Reihenfolge für den Kunden: 1) Zahlungsart (ganzer Auftrag), 2) Inhaber-Nachweis (nur die 4–5-Sterne-Bewertungen).
+/** Was wartet noch? Reihenfolge für den Kunden: 1) Gründe je Bewertung, 2) Inhaber-Nachweis (nur die 4–5-Sterne-Bewertungen), 3) Zahlungsart.
  *  all = ganzer Auftrag wartet; keys = nur diese Bewertungen warten (die übrigen dürfen schon zum Partner). */
 export function blockedOf(raw: Record<string, unknown> | null | undefined): { all: boolean; keys: Set<string>; why: string[] } {
-  const v = raw?.verify as Gate, g = raw?.payGate as Gate;
+  const v = raw?.verify as Gate, g = raw?.payGate as Gate, rs = raw?.reasons as Gate;
   const keys = new Set<string>(); const why: string[] = [];
   let all = false;
+  if (rs && rs.status === "pending") { why.push("Gründe"); if (Array.isArray(rs.keys)) rs.keys.forEach((k) => keys.add(k)); else all = true; }
   if (g && g.status === "pending") { why.push("Zahlungsart"); if (Array.isArray(g.keys)) g.keys.forEach((k) => keys.add(k)); else all = true; }
   if (v && v.status !== "ok") { why.push("Inhaber-Nachweis"); if (Array.isArray(v.keys)) v.keys.forEach((k) => keys.add(k)); else all = true; }
   return { all, keys, why };
