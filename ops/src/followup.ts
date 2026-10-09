@@ -232,6 +232,36 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
   return plan;
 }
 
+/** Nächster Zeitpunkt im Versandfenster (8–20 Uhr Ortszeit) ab `at`. */
+export function nextDaytime(at: number, tz: string): number {
+  const h = localHour(tz, new Date(at));
+  if (h >= 8 && h < 20) return at;
+  const add = h < 8 ? 8 - h : 24 - h + 8;
+  return Math.floor((at + add * H) / H) * H;
+}
+const KIND_TXT: Record<Kind, (stage: number) => string> = {
+  pay: (st) => (st >= 2 ? "Zahlungserinnerung Stufe 2" : "Zahlungserinnerung / Fortschritts-Update"),
+  sw: (st) => `Software-Erinnerung ${st}/${SW_MAX}`, never: (st) => `Erinnerung „noch nie eingeloggt“ ${st}/2`, news: () => "Erinnerung „Neuigkeiten im Dashboard“",
+};
+/** Admin (Mail-Verlauf): geplante automatische Nachfass-Mails eines Kunden inkl. Tages-/Uhrzeit-Grenzen. */
+export async function followupNextFor(email: string): Promise<{ at: string; title: string; note?: string }[]> {
+  if (!pool || MODE() === "off") return [];
+  await init();
+  const now = Date.now();
+  const p = await analyze(email.toLowerCase(), now).catch(() => null);
+  if (!p) return [];
+  const out: { at: string; title: string; note?: string }[] = [];
+  const gate = (t: number, sw: boolean) => nextDaytime(Math.max(t, sw ? 0 : p.lastAutoAt + 20 * H), p.tz);
+  for (const k of Object.keys(p.due) as Kind[]) {
+    const x = p.due[k] as { stage?: number };
+    out.push({ at: iso(gate(now, k === "sw")), title: KIND_TXT[k](x.stage || 1), note: "fällig" + (now < gate(now, k === "sw") ? " · wartet auf Versandfenster (8–20 Uhr Ortszeit / 1 Mail pro Tag)" : "") });
+  }
+  for (const u of p.upcoming) out.push({ at: iso(gate(ts(u.dueAt), u.kind === "sw")), title: KIND_TXT[u.kind](u.stage) });
+  for (const a of p.attention) out.push({ at: iso(now), title: "Manuell nötig", note: a.text });
+  if (MODE() !== "live") for (const o of out) o.note = [o.note, "Nachfassen im Testmodus – wird nicht gesendet"].filter(Boolean).join(" · ");
+  return out;
+}
+
 async function candidates(): Promise<string[]> {
   if (!pool) return [];
   const r = await pool.query(`SELECT DISTINCT lower(email) AS e FROM orders WHERE service='reviews' AND email IS NOT NULL AND email <> ''

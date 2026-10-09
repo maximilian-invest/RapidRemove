@@ -684,6 +684,8 @@ async function adminPost(path, body) {
   return j;
 }
 export const partnersList = () => adminPost("/admin/partners");
+/** Geplante automatische Mails eines Auftrags (Mail-Verlauf „Als Nächstes"). */
+export const nextMailsApi = (orderId) => adminPost("/admin/next-mails", { orderId });
 export const partnerSave = (p) => adminPost("/admin/partners/save", p);
 /** Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen → { id, amount, currency, mailed, partner }. */
 export const createAdminOrder = (p) => adminPost("/admin/orders/create", p);

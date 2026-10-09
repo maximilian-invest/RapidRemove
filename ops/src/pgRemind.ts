@@ -189,6 +189,39 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
   return sent;
 }
 
+/** Admin (Mail-Verlauf): nächste „Zahlungsart fehlt"-Mail für diesen Kunden – oder warum keine mehr kommt. */
+export async function pgNextFor(email: string): Promise<{ at?: string; title: string; note?: string; stopped?: boolean } | null> {
+  if (!pool || String(process.env.PG_REMIND || "on").toLowerCase() === "off") return null;
+  await init();
+  const e = email.toLowerCase();
+  const waits = await pool.query(`SELECT 1 FROM orders WHERE lower(email)=$1 AND COALESCE(status,'') <> 'storniert' AND (raw->'payGate'->>'status' = 'pending' OR raw ? 'reviewsSwWant') LIMIT 1`, [e]);
+  if (!waits.rowCount) return null;
+  if (await hasSavedMethod(e).catch(() => false)) return { title: "Keine Zahlungsart-Erinnerungen mehr", note: "Zahlungsart ist hinterlegt", stopped: true };
+  const w = (await waitingCustomers().catch(() => [] as Waiting[])).find((x) => x.email === e);
+  if (!w) return null;
+  const test = isTestEmail(e);
+  const unit = test ? 60_000 : 3600_000, day = test ? 0 : 24 * unit;
+  const st = (await pool.query(`SELECT started_at, n, last_at, stale_at, cancel_at, warn_at, cancelled_at FROM pg_reminders WHERE email=$1`, [e])).rows[0] as
+    { started_at: string; n: number; last_at: string | null; stale_at: string | null; cancel_at: string | null; warn_at: string | null; cancelled_at: string | null } | undefined;
+  const start = st ? new Date(st.started_at).getTime() : w.since;
+  const n = st ? st.n : 0;
+  const tz = tzOf(w.country, w.addr);
+  const day8 = (t: number) => { if (test) return t; const h = localHour(tz, new Date(t)); return h >= 8 && h < 20 ? t : t + (h < 8 ? 8 - h : 32 - h) * 3600_000; };
+  const iso = (t: number) => new Date(Math.max(t, Date.now())).toISOString();
+  const staleAfter = test ? 12 * unit : STALE_D() * day, warnBefore = test ? 3 * unit : 3 * day;
+  if (st?.cancelled_at) return { title: "Storniert – keine weiteren Mails", stopped: true };
+  if (st?.cancel_at) {
+    const cancel = new Date(st.cancel_at).getTime();
+    if (!st.warn_at) return { at: iso(day8(cancel - warnBefore)), title: "Letzte Warnung: Storno in 3 Tagen", note: `Storno am ${st.cancel_at.slice(0, 10)}` };
+    return { at: iso(cancel), title: "Automatisches Storno + Storno-Mail", note: "falls bis dahin keine Zahlungsart hinterlegt ist" };
+  }
+  if (n < STEPS_H.length) {
+    const t = Math.max(start + STEPS_H[n] * unit, st?.last_at ? new Date(st.last_at).getTime() + 4 * unit : 0);
+    if (t < start + staleAfter) return { at: iso(day8(t)), title: `Erinnerung ${n + 1}/${STEPS_H.length}: Zahlungsart fehlt noch`, note: `${w.items.length} Bewertung(en) warten` };
+  }
+  return { at: iso(day8(start + staleAfter)), title: "Finale Mail: Auftrag pausiert, Storno-Frist", note: `danach Storno nach ${GRACE_D()} Tagen` };
+}
+
 export function startPgRemindWorker(app: FastifyInstance): void {
   const run = () => void pgRemindTick((o, m) => app.log.error(o, m)).then((n) => { if (n) app.log.info({ n }, "Zahlungsart-Erinnerungen gesendet"); }).catch((e) => app.log.error({ err: e }, "pgRemind fehlgeschlagen"));
   setTimeout(run, 90_000);

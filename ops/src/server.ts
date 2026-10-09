@@ -25,7 +25,7 @@ import { CHAT_INTERNAL } from "./chat/chat";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
-import { startPgRemindWorker } from "./pgRemind";
+import { startPgRemindWorker, pgNextFor } from "./pgRemind";
 import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { initPartnerTables, registerPartnerRoutes, partnerAutoSend, partnerAutoSendProfile, partnerAutoEnabled, partnerOrderStatus, payDiscountEnabled } from "./partner";
@@ -39,7 +39,7 @@ import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
 import ZahlungErhaltenReviews, { zahlungErhaltenSubject } from "./emails/ZahlungErhaltenReviews";
 import { notifyTeam } from "./notify";
-import { startFollowupWorker, registerFollowupRoutes, quietOk, tzOf } from "./followup";
+import { startFollowupWorker, registerFollowupRoutes, quietOk, tzOf, followupNextFor, nextDaytime } from "./followup";
 import KundenUpdateReviews, { kundenUpdateSubject } from "./emails/KundenUpdateReviews";
 import KundenSoftwareReviews, { kundenSoftwareSubject } from "./emails/KundenSoftwareReviews";
 import KundenSoftwarePayReviews, { kundenSoftwarePaySubject } from "./emails/KundenSoftwarePayReviews";
@@ -2034,6 +2034,46 @@ async function payDueTick(): Promise<void> {
  * Nur Aufträge, deren Zahlungslink ab 08.10.2026 rausging (kein Nachversand an den Bestand). Abschalten: AUTO_DUNNING=off. */
 const DUN_GAP = 48 * 3600e3; // Zahlungsziel bei Profil-Löschungen: 48 h (Maximilian 08.10.2026)
 const DUN_SINCE = () => new Date(process.env.AUTO_DUNNING_SINCE || "2026-10-08T00:00:00Z").getTime();
+/** Admin (Mail-Verlauf): geplante automatische Mails eines Auftrags – Zahlungsziel, Auto-Mahnung (Profile),
+ *  „Zahlungsart fehlt" und Nachfassen (Bewertungen). Mit Zeitpunkt (Versandfenster 8–20 Uhr Ortszeit berücksichtigt). */
+app.post("/admin/next-mails", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+  const id = String(b.orderId || "").slice(0, 40);
+  const r = await pool.query(`SELECT id, email, service, status, pay, country, raw, created_at FROM orders WHERE id=$1`, [id]);
+  const o = r.rows[0] as Record<string, any> | undefined;
+  if (!o) return reply.code(404).send({ ok: false, error: "nicht gefunden" });
+  const raw = (o.raw || {}) as Record<string, any>;
+  const out: { at?: string; title: string; note?: string; stopped?: boolean }[] = [];
+  const tz = tzOf(o.country, raw.addr);
+  if (o.status === "storniert") return { ok: true, items: [], info: "Auftrag storniert – keine automatischen Mails" };
+  if (isTestEmail(o.email)) out.push({ title: "Testkonto", note: "Erinnerungen laufen im Minutentakt (Test)", stopped: true });
+  if (o.service !== "reviews") {
+    const pd = raw.payDue as { at?: string; sent?: string | null } | null;
+    if (["paid", "refunded"].includes(String(o.pay || ""))) return { ok: true, items: [], info: "Bezahlt – keine Zahlungs-Mails mehr" };
+    if (pd && pd.at && !pd.sent) out.push({ at: pd.at, title: "Zahlungsziel abgelaufen → Erinnerung mit Zahlungslink" });
+    else if (o.status === "done" && (process.env.AUTO_DUNNING || "on").toLowerCase() !== "off" && o.pay !== "inkasso") {
+      const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [id]);
+      const t = (x: { created_at: string }) => new Date(x.created_at).getTime();
+      const link = ev.rows.filter((x) => !/^Mahnung/i.test(x.title)), mahn = ev.rows.filter((x) => /^Mahnung/i.test(x.title));
+      const start = Math.min(...link.map(t), Infinity);
+      if (Number.isFinite(start) && start >= DUN_SINCE()) {
+        const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
+        const next = level + 1;
+        if (next <= 3) out.push({ at: new Date(Math.max(Date.now(), nextDaytime(Math.max(start, ...mahn.map(t)) + DUN_GAP, tz))).toISOString(), title: ["", "Zahlungserinnerung", "2. Zahlungserinnerung", "Mahnung"][next] + ` (Stufe ${next})` });
+        else out.push({ title: "Letzte Mahnung / Inkasso", note: "geht nicht automatisch – Hauptbutton im Auftrag", stopped: true });
+      } else if (Number.isFinite(start)) out.push({ title: "Keine Auto-Mahnung", note: "Zahlungslink vor dem 08.10.2026 – Mahnungen manuell", stopped: true });
+    }
+  } else {
+    const pg = await pgNextFor(String(o.email || "")).catch(() => null);
+    if (pg) out.push(pg);
+    for (const x of await followupNextFor(String(o.email || "")).catch(() => [])) out.push(x);
+  }
+  out.sort((a, b2) => (a.at ? new Date(a.at).getTime() : Infinity) - (b2.at ? new Date(b2.at).getTime() : Infinity));
+  return { ok: true, items: out, tz };
+});
+
 async function payDunTick(): Promise<void> {
   if (!pool || (process.env.AUTO_DUNNING || "on").toLowerCase() === "off") return;
   const r = await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, form, raw FROM orders

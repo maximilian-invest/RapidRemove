@@ -7,7 +7,7 @@
    läuft es ohne Zahlung ab, geht automatisch die Zahlungsziel-Mail raus. Weitere Mahnungen sendet ihr selbst. */
 import React from "react";
 import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard } from "lucide-react";
-import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus } from "@/lib/admin-api";
+import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
 
@@ -303,11 +303,22 @@ export function MailHistSheet({ o, ctx, payOpen }) {
 /** Eigener Bereich „Mail-Verlauf" (wie Dashboard-Aktivität): alle Mails an den Kunden, nach Tag gruppiert. */
 const dayLbl = (iso) => { const d = new Date(iso), t = new Date(); const n = Math.round((new Date(t.toDateString()) - new Date(d.toDateString())) / 864e5); return n === 0 ? "Heute" : n === 1 ? "Gestern" : n < 7 ? `Vor ${n} Tagen` : d.toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" }); };
 const hhmm = (iso) => new Date(iso).toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" });
+/** „heute 14:00" / „morgen 09:00" / „Mo., 12.10. 09:00" */
+const dWhen = (v) => {
+  const d = new Date(v), now = new Date();
+  const hm = d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" });
+  const day = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((day(d) - day(now)) / 86400000);
+  if (d.getTime() <= now.getTime() + 60000) return "jetzt";
+  return (diff === 0 ? "heute" : diff === 1 ? "morgen" : d.toLocaleDateString("de-AT", { weekday: "short", day: "2-digit", month: "2-digit" })) + " " + hm;
+};
 export function MailsScreen({ ctx, id, payOpen }) {
   const { orders, back, isDesk } = ctx;
   const o = orders.find((x) => x.id === id);
   const pm = usePayMails(o || { id });
   const [busy, setBusy] = React.useState("");
+  const [nx, setNx] = React.useState(null); // geplante automatische Mails (Server)
+  React.useEffect(() => { if (id) nextMailsApi(id).then(setNx).catch(() => setNx({ items: [] })); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!o) return null;
   const isOpen = payOpen ? payOpen(o) : false;
   const ns = isOpen ? nextStep(o, pm, ctx.ptasks) : null;
@@ -334,7 +345,16 @@ export function MailsScreen({ ctx, id, payOpen }) {
         <div><b>{pm ? nAuto : "–"}</b><span>Automatisch</span></div>
         <div><b style={{ fontSize: 18, lineHeight: 1.6 }}>{mails[0] ? dShort(mails[0].ts) : "—"}</b><span>Zuletzt</span></div>
       </div>
-      {ns ? (
+      <div className="lbl" style={{ marginTop: 18 }}>Nächste automatische Mail</div>
+      <div className="card atl">
+        {!nx ? <div className="ae"><span className="ad"><Loader className="spin" /></span><div className="t"><b>Lädt …</b></div></div>
+          : nx.items && nx.items.length ? nx.items.map((x, i) => (
+            <div key={i} className="ae"><span className="ad" style={{ color: x.stopped ? "var(--g3)" : "var(--primary)" }}><Clock /></span>
+              <div className="t"><b>{x.at ? dWhen(x.at) + " · " : ""}{x.title}</b>{x.note ? <span>{x.note}</span> : null}</div></div>
+          ))
+          : <div className="ae"><span className="ad" style={{ color: "var(--g3)" }}><Clock /></span><div className="t"><b>Keine geplant</b><span>{nx.info || "Für diesen Auftrag ist gerade keine automatische Mail fällig."}</span></div></div>}
+      </div>
+      {ns && !(ns.auto && nx && nx.items && nx.items.length) ? (
         <>
           <div className="lbl" style={{ marginTop: 18 }}>Als Nächstes</div>
           <div className="card atl">
