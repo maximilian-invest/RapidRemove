@@ -2561,8 +2561,6 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {rq.nNt ? <div className="sum-row"><span className="sl">{rq.nNt} × {money(rl, rq.ntPrice)} · {pk.rowNt} <button type="button" className="rv-sw-i" aria-label={pk.swInfo} onClick={() => setSwInfo(true)}><Icon.info size={14} /></button></span><span className="sv">{fmtMoney(rl, rq.nNt * rq.ntPrice)}</span></div> : null}
         {rq.pct ? <div className="sum-row"><span className="sl">{pk.discLbl} −{rq.pct} %</span><span className="sv">−{fmtMoney(rl, rq.discount)}</span></div> : null}
         {!rq.n ? <div className="sum-row"><span className="sl">{money(rl, rq.base)} {rv.per}</span><span className="sv">0 ×</span></div> : null}
-        {rq.nNt ? <p className="rv-nt-note">{pk.ntNote}</p> : null}
-        {(pickSel || []).some((r) => Number(r.rating) >= 4) ? <p className="rv-nt-note rv-vfy">{pk.vfyNote}</p> : null}
       </React.Fragment>
     );
   }
