@@ -12,6 +12,7 @@ import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared"
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
+import { Loader } from "lucide-react";
 import { usePayouts, PayoutSetup } from "./PartnerPayouts";
 import { PartnerJoin, PartnerPending } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
@@ -339,7 +340,8 @@ export default function PartnerBoard() {
   if (!token) return <PartnerLogin mode="login" onToken={onLogin} onJoin={() => setJoin({ invite: "" })} />;
   if (setup) return <PartnerLogin mode="setup" linkToken={token} account={setup.account} onToken={onLogin} onSkip={() => { try { localStorage.setItem(SKIP_KEY, "1"); } catch (e) {} setSetup(null); }} />;
 
-  if (acct) return <PartnerPending token={token} status={acct} onLogout={logout} />;
+  if (acct && acct !== "payout") return <PartnerPending token={token} status={acct} onLogout={logout} />;
+  if (acct === "payout" && !(pay && pay.ok)) return <div className="pra"><main className="screen" style={{ bottom: 0, display: "grid", placeItems: "center" }}><Loader className="spin" /></main></div>;
   if (pay && pay.ok && pay.live && !pay.preview && pay.profile && !pay.profile.setupDone) {
     return (
       <div className="pra"><main className="screen" style={{ bottom: 0 }}>

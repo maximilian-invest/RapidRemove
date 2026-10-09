@@ -7,7 +7,7 @@ import {
   Search, ArrowLeft, Check, ChevronRight, Sparkles, Loader, Copy, CheckCheck, X, StickyNote, ArrowUpRight,
   Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User,
 } from "lucide-react";
-import { BASE, STATUS, MARKS, canRemove, usd, since } from "./shared";
+import { BASE, STATUS, MARKS, canRemove, usd, since, call } from "./shared";
 import PartnerPush from "./PartnerPush";
 import ReviewShot from "./ReviewShot";
 import PartnerPayouts, { usePayouts, PayoutSetup } from "./PartnerPayouts";
@@ -61,6 +61,8 @@ export default function PartnerApp({ api }) {
   const [tab0, setTab0] = React.useState(() => { try { return /payoneer=/.test(window.location.search) ? "earn" : "tasks"; } catch (e) { return "tasks"; } });
   const [pd, reloadPd] = usePayouts(api.token); // Auszahlungsdaten (Payoneer, Gutschriften)
   const [poEdit, setPoEdit] = React.useState(false);
+  const [me, setMe] = React.useState(null); // Name in der Desktop-Seitenleiste
+  React.useEffect(() => { if (api.token) call("me", { t: api.token }).then(setMe).catch(() => {}); }, [api.token]);
   const payLive = !!(pd && pd.live); // Auszahlungen im Admin live geschaltet?
   const autoPay = !!(pd && pd.live && pd.auto); // automatische Auszahlung aktiv → kein „Mark paid" mehr
   const [stacks, setStacks] = React.useState({ tasks: [{ v: "home" }], orders: [{ v: "orders" }] });
@@ -455,11 +457,13 @@ export default function PartnerApp({ api }) {
         {body}
       </main>
       <nav className="tabbar">
+        <div className="brand"><img src={`${BASE}/assets/rapidremove-icon.png`} alt="" /><span>RapidRemove<small>Partner</small></span></div>
         {[["tasks", Home, "Home"], ["orders", List, "Orders"], ["earn", Wallet, "Earnings"], ["acc", User, "Account"]].map(([k, I, l]) => (
           <button key={k} type="button" className={"tb" + (tab0 === k ? " on" : "")} onClick={() => switchTab(k)}>
             <I /><span>{l}</span>{k === "tasks" && newN ? <span className="bd">{newN}</span> : null}
           </button>
         ))}
+        <div className="side-user"><span className="circ">RR</span><span><b>{(me && me.name) || "RapidRemove Partner"}</b><span>{newN ? `${newN} new order${newN === 1 ? "" : "s"}` : "All caught up"}</span></span></div>
       </nav>
       <div className={"bulk" + (sel.size ? " show" : "")}>
         <div className="bt"><span>Set status for <b>{sel.size}</b></span><button type="button" onClick={() => setSel(new Set())}><X />Cancel</button></div>

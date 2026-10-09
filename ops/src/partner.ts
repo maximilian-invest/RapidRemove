@@ -21,7 +21,7 @@ import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
 import { partnerNewOrder, notifyPartner } from "./partnerNotify";
-import { initPayoutTables, registerPayoutRoutes, recordManualPayout } from "./payouts";
+import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
 import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, type ServiceId } from "./partnerRegistry";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
@@ -454,6 +454,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const pid = preview ? null : await partnerIdOf(b.t);
     const pst = preview ? "active" : await partnerStatus(pid);
     if (pst === "pending" || pst === "rejected") return { ok: true, gate: pst, preview: false, tasks: [], totals: totals([]), payouts: [] };
+    // Neuer Partner (Stripe-Land): erst Auszahlung einrichten (Stripe Connect), dann Aufträge.
+    if (!preview && (await payoutSetupMissing(pid))) return { ok: true, gate: "payout", preview: false, tasks: [], totals: totals([]), payouts: [] };
     // Stornierte der letzten 30 Tage mitschicken → Partner sieht sie unter „Cancelled" (nicht mehr in der Arbeit).
     const rows = preview ? await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND test")
       : await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND NOT test AND partner_id = $1", [pid]);

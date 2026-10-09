@@ -64,7 +64,7 @@ export async function initPayoutTables(): Promise<void> {
     "payout_email text", "payee_id text", "payee_status text", "payee_checked_at timestamptz",
     "sb_at timestamptz", "sb_ip text", "sb_ua text", "sb_v text",
     "payout_method text", "bank jsonb", "vat_id text", "vat_status text", "small_biz boolean NOT NULL DEFAULT false",
-    "aw_beneficiary_id text", "aw_error text", "stripe_acct text", "stripe_status text", "stripe_checked_at timestamptz",
+    "aw_beneficiary_id text", "aw_error text", "stripe_acct text", "stripe_status text", "stripe_checked_at timestamptz", "pay_gate boolean",
   ]) await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS ${c}`);
   for (const c of [
     "partner_id bigint", "status text NOT NULL DEFAULT 'manual'", "method text", "provider_ref text", "provider_status text", "error text",
@@ -105,7 +105,7 @@ export type PartnerRow = {
   payout_email: string | null; payee_id: string | null; payee_status: string | null; payee_checked_at: string | null;
   sb_at: string | null; sb_ip: string | null; sb_ua: string | null; sb_v: string | null;
   payout_method: "payoneer" | "bank" | "stripe" | null; stripe_acct: string | null; stripe_status: string | null; stripe_checked_at: string | null; bank: Bank | null; vat_id: string | null; vat_status: string | null; small_biz: boolean;
-  aw_beneficiary_id: string | null; aw_error: string | null;
+  aw_beneficiary_id: string | null; aw_error: string | null; pay_gate?: boolean | null;
 };
 export type Bank = { holder: string; iban?: string; bic?: string; account?: string; ifsc?: string; bankName?: string; currency: string };
 
@@ -165,6 +165,18 @@ const setupDone = (p: PartnerRow | null) => profileDone(p) && sbOk(p) && vatDone
   p!.payout_method === "bank" ? bankDone(p)
     : p!.payout_method === "stripe" ? STRIPE_CC.has(String(p!.country || "")) && !!p!.stripe_acct && p!.stripe_status !== "pending" // Stripe-Formular abgeschickt
     : p!.payout_method === "payoneer" ? (!payoneerConfigured() || !!p!.payee_id) : false);
+/** Neue Partner (seit 09.10.2026 registriert/angelegt, pay_gate) in Stripe-Ländern: Auszahlung ist für sie schon live –
+    Einrichtung (Stripe Connect) ist Pflicht, bevor sie Aufträge sehen, und sie werden automatisch bezahlt, auch wenn der
+    Hauptschalter noch aus ist. Bestandspartner (Reputation Vault) bleiben unverändert. */
+export const gated = (p: PartnerRow | null) => !!p && p.pay_gate === true && STRIPE_CC.has(String(p.country || ""));
+export const liveFor = (s: PayoutSettings, p: PartnerRow | null) => s.live || gated(p);
+/** Muss der Partner erst die Auszahlung einrichten, bevor er Aufträge bekommt/sieht? */
+export async function payoutSetupMissing(pid: number | null): Promise<boolean> {
+  if (!pool || !pid) return false;
+  const s = await payoutSettings();
+  const p = await partnerById(pid);
+  return !!p && liveFor(s, p) && !setupDone(p);
+}
 /** Automatische Auszahlung möglich? */
 const payReady = (p: PartnerRow | null) => setupDone(p) && (
   p!.payout_method === "bank" ? airwallexConfigured() && !!p!.aw_beneficiary_id
@@ -475,11 +487,10 @@ export async function runPayouts(log: (m: string) => void = () => {}, manual = f
   running = true;
   try {
     const s = await payoutSettings();
-    if (!s.live) return { ok: true, skipped: "Auszahlungen noch nicht live geschaltet (Admin → Auszahlungen)" };
     if (!manual && !s.auto) return { ok: true, skipped: "automatische Auszahlung aus" };
-    // Alle freigegebenen Partner (auch pausierte – erledigte Arbeit wird bezahlt).
-    const ps = (await pool.query(`SELECT * FROM partners WHERE status='active' ORDER BY id`)).rows as PartnerRow[];
-    if (!ps.length) return { ok: true, skipped: "kein aktiver Partner" };
+    // Alle freigegebenen Partner (auch pausierte – erledigte Arbeit wird bezahlt). Hauptschalter aus → nur neue Stripe-Partner.
+    const ps = ((await pool.query(`SELECT * FROM partners WHERE status='active' ORDER BY id`)).rows as PartnerRow[]).filter((p) => liveFor(s, p));
+    if (!ps.length) return { ok: true, skipped: s.live ? "kein aktiver Partner" : "Auszahlungen noch nicht live geschaltet (Admin → Auszahlungen) – keine neuen Stripe-Partner" };
     const res: (RunResult & { partner: string })[] = [];
     for (const p of ps) res.push({ partner: p.name, ...(await runFor(p, s, log, manual).catch((e) => ({ ok: false, error: (e as Error).message } as RunResult))) });
     const paid = res.filter((r) => r.payoutId);
@@ -622,7 +633,8 @@ export async function payoutTick(log: (m: string) => void): Promise<void> {
   if (!pool) return;
   await pollSent().catch(() => {});
   const s = await payoutSettings();
-  if (!s.live || !s.auto || !(payoneerConfigured() || airwallexConfigured() || stripeConfigured())) return;
+  if (!s.auto || !(payoneerConfigured() || airwallexConfigured() || stripeConfigured())) return;
+  if (!s.live && !(await pool.query(`SELECT 1 FROM partners WHERE pay_gate AND status='active' LIMIT 1`)).rowCount) return;
   const v = viennaNow();
   if (v.hour < s.hour || (await getSetting("payout_last_day")) === v.day) return;
   await setSetting("payout_last_day", v.day);
@@ -794,7 +806,7 @@ export function registerPayoutRoutes(
     if (p) p = await refreshStripe(await refreshPayee(p), String(b.fresh || "") === "stripe");
     const prs = p ? await payoutsOf(Number(p.id), 40) : [];
     return {
-      ok: true, ...base, profile: profileView(p), auto: s.live && s.auto && payReady(p),
+      ok: true, ...base, live: liveFor(s, p), profile: profileView(p), auto: liveFor(s, p) && s.auto && payReady(p),
       balance: await balance(s.holdDays, p ? Number(p.id) : -1), payouts: prs.filter((x) => x.status !== "failed" && x.status !== "pending").map(payoutView).map((x) => ({ ...x, error: null })),
     };
   });

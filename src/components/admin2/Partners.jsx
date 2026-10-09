@@ -141,12 +141,12 @@ function PartnerDetail({ ctx, id, back }) {
 function InviteScreen({ ctx, back }) {
   const { toast, partners } = ctx;
   const svc = svcList(partners);
-  const [f, setF] = React.useState({ name: "", email: "", services: [] });
+  const [f, setF] = React.useState({ name: "", email: "", services: [], prices: {} });
   const [url, setUrl] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const create = async () => {
     setBusy(true);
-    try { const j = await partnerInviteApi(f); setUrl(j.url); } catch (e) { toast("Fehler: " + e.message); }
+    try { const j = await partnerInviteApi({ ...f, prices: Object.fromEntries(f.services.map((id) => [id, Number(f.prices[id] ?? (svc.find((x) => x.id === id) || {}).price) || null])) }); setUrl(j.url); } catch (e) { toast("Fehler: " + e.message); }
     setBusy(false);
   };
   const msg = `Hi${f.name ? " " + f.name.split(" ")[0] : ""}, please register as a RapidRemove partner here: ${url}`;
@@ -154,7 +154,7 @@ function InviteScreen({ ctx, back }) {
     <>
       <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
       <div className="ttl">Partner einladen</div>
-      <p className="sh">Der Partner registriert sich über den Link selbst (Kontakt, Leistungen, Preisvorstellung, Login). Danach gibst du ihn hier frei. Link 14 Tage gültig, einmal verwendbar.</p>
+      <p className="sh">Eingeladene Partner müssen sich nicht bewerben: Sie legen über den Link nur Kontakt + Login an und sind sofort freigegeben – mit den Leistungen und Preisen von hier (ohne Auswahl: die Leistungen, die er angibt, zum Standardpreis). Danach richtet er die Auszahlung ein (EU/UK/CH/US/CA: Stripe). Link 14 Tage gültig, einmal verwendbar.</p>
       {!url ? (
         <>
           <label className="pfld"><span>Name (optional)</span><input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
@@ -163,7 +163,12 @@ function InviteScreen({ ctx, back }) {
           <div className="info">
             {svc.map((s) => {
               const on = f.services.includes(s.id);
-              return <button key={s.id} type="button" className="ir" onClick={() => setF({ ...f, services: on ? f.services.filter((x) => x !== s.id) : [...f.services, s.id] })}><span className="t"><b>{s.label}</b></span><span className={"tg" + (on ? " on" : "")}><i /></span></button>;
+              return (
+                <React.Fragment key={s.id}>
+                  <button type="button" className="ir" onClick={() => setF({ ...f, services: on ? f.services.filter((x) => x !== s.id) : [...f.services, s.id] })}><span className="t"><b>{s.label}</b>{on ? <span>Preis je Löschung (USD)</span> : null}</span><span className={"tg" + (on ? " on" : "")}><i /></span></button>
+                  {on ? <div className="ir" style={{ paddingTop: 0 }}><span className="t" /><input className="po-sel" style={{ width: 110, textAlign: "right" }} type="number" min="1" step="1" inputMode="decimal" value={f.prices[s.id] ?? s.price} onChange={(e) => setF({ ...f, prices: { ...f.prices, [s.id]: e.target.value } })} /></div> : null}
+                </React.Fragment>
+              );
             })}
           </div>
           <button type="button" className="cta or" disabled={busy} onClick={create}>{busy ? <Loader className="spin" /> : <UserPlus />}Einladungslink erstellen</button>
@@ -176,7 +181,7 @@ function InviteScreen({ ctx, back }) {
             <a className="cta gh" href={"https://wa.me/?text=" + encodeURIComponent(msg)} target="_blank" rel="noreferrer"><MessageCircle />WhatsApp</a>
           </div>
           {f.email ? <a className="cta gh" style={{ marginTop: 10 }} href={`mailto:${f.email}?subject=${encodeURIComponent("RapidRemove partner registration")}&body=${encodeURIComponent(msg)}`}><Mail />Per E-Mail senden</a> : null}
-          <button type="button" className="cta gh" style={{ marginTop: 10 }} onClick={() => { setUrl(""); setF({ name: "", email: "", services: [] }); }}>Weitere Einladung</button>
+          <button type="button" className="cta gh" style={{ marginTop: 10 }} onClick={() => { setUrl(""); setF({ name: "", email: "", services: [], prices: {} }); }}>Weitere Einladung</button>
         </>
       )}
     </>

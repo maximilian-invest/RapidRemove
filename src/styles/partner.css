@@ -374,10 +374,46 @@
 /* 5 Kacheln: die letzte („Not possible") über die volle Breite */
 .pra .stats .stat:last-child:nth-child(odd){grid-column:1/-1}
 
-/* Desktop: App-Design als mittige Spalte (transform → Sheets/Pop-ups der App bleiben in der Spalte) */
+/* Desktop: wie das Kunden-Dashboard – Seitenleiste links (Logo + Bereiche), Inhalt breit rechts.
+   Seiten ohne Tab-Leiste (Registrierung, Prüfung, Auszahlungs-Einrichtung): mittige Formular-Spalte. */
+.pra .tabbar .brand,.pra .tabbar .side-user{display:none}
 @media (min-width:861px){
-  body:has(.pra){background:#ececec}
-  .pra{left:50%;right:auto;width:480px;margin-left:-240px;transform:translateZ(0);box-shadow:0 0 0 1px #e2e2e2,0 24px 70px rgba(0,0,0,.12)}
+  body:has(.pra){background:#fff}
+  .pra{transform:translateZ(0)}
+  .pra .tabbar{left:0;right:auto;top:0;bottom:0;width:248px;height:auto;border-top:0;border-right:1px solid var(--g2);display:flex;flex-direction:column;gap:4px;padding:22px 14px}
+  .pra .tabbar .brand{display:flex;align-items:center;gap:10px;font-size:19px;font-weight:800;letter-spacing:-.5px;padding:0 10px 22px}
+  .pra .tabbar .brand img{width:34px;height:34px;border-radius:10px}
+  .pra .tabbar .brand small{display:block;font-size:12px;font-weight:600;color:var(--g3);letter-spacing:0}
+  .pra .tb{flex-direction:row;justify-content:flex-start;gap:14px;height:52px;padding:0 14px;border-radius:14px;font-size:16px;font-weight:700;color:var(--g3);flex:none;transition:background var(--dur-fast)}
+  .pra .tb:hover{background:var(--g1);color:var(--ink)}
+  .pra .tb.on{background:var(--ink);color:#fff}
+  .pra .tb .bd{position:static;margin-left:auto;border:0}
+  .pra .tabbar .side-user{display:flex;margin-top:auto;align-items:center;gap:12px;padding:12px;border-radius:16px;background:var(--g1);min-width:0}
+  .pra .side-user .circ{background:#fff;width:40px;height:40px;font-size:13px}
+  .pra .side-user>span:last-child{min-width:0}
+  .pra .side-user b{display:block;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pra .side-user span span{font-size:12px;color:var(--g3);display:block}
+  .pra .screen{bottom:0;padding:36px 48px 80px;scrollbar-width:auto}
+  .pra .screen::-webkit-scrollbar{display:block}
+  .pra:has(> .tabbar) .screen{left:248px}
+  .pra:has(> .tabbar) .screen>*{max-width:1120px}
+  .pra:not(:has(> .tabbar)) .screen{padding:48px max(24px,calc(50% - 300px)) 80px}
+  .pra .screen.anim{animation:none}
+  .pra .ttl,.pra .hhead h1{font-size:44px;letter-spacing:-1.6px}
+  .pra .hhead{padding:0 0 22px}
+  .pra .pt{font-size:38px}
+  .pra .hero{padding:26px 28px;border-radius:28px}
+  .pra .hero .v{font-size:60px;letter-spacing:-3px}
+  .pra .hero-img{width:120px;height:120px;border-radius:28px}
+  .pra .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .pra .stats .stat:last-child:nth-child(odd){grid-column:auto}
+  .pra .stat{min-height:140px;padding:18px 20px;transition:background var(--dur-fast)}
+  .pra button.stat:hover,.pra .stat[role=button]:hover{background:var(--g2)}
+  .pra .sec h2{font-size:24px}
+  .pra .bulk{left:calc(248px + 48px);right:auto;width:560px;bottom:24px}
+  .pra .toast{left:calc(50% + 124px);right:auto;bottom:28px;width:420px;margin-left:-210px}
+  .pra .toast.up{bottom:200px}
+  .pra:not(:has(> .tabbar)) .toast{left:50%}
 }
 /* Test-Zugang: orange Leiste oben, App rutscht darunter (statt sie zu verdecken) */
 .prt-testbar{position:fixed;top:0;left:0;right:0;z-index:60;height:calc(32px + env(safe-area-inset-top,0px));padding:calc(8px + env(safe-area-inset-top,0px)) 12px 0;background:#ff8000;color:#fff;font:700 13px/1.3 Geist,system-ui,sans-serif;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}

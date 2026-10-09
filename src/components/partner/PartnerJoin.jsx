@@ -14,6 +14,8 @@ const TERMS = [
   "Payment per verified removal at the agreed price; payouts are automatic with a self-billing invoice.",
 ];
 
+const RATE_L = { std: "Reviews up to 4 weeks old", old: "Reviews older than 4 weeks", sw: "Rating-only / special cases", profile: "Whole profile" };
+
 export function PartnerJoin({ invite = "", onToken, onLogin }) {
   const [info, setInfo] = React.useState(null);
   const [f, setF] = React.useState({ name: "", company: "", email: "", whatsapp: "", country: "PK", about: "", capacity: "", password: "" });
@@ -28,11 +30,14 @@ export function PartnerJoin({ invite = "", onToken, onLogin }) {
       if (j.invite) {
         setF((x) => ({ ...x, name: j.invite.name || x.name, email: j.invite.email || x.email }));
         setSvc(Object.fromEntries((j.invite.services || []).map((id) => [id, { on: true, price: "" }])));
+        if (!(j.invite.services || []).length) setSvc({});
       }
     }).catch((e) => setErr("Could not load: " + e.message));
   }, [invite]);
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e.target.value }));
   const chosen = Object.entries(svc).filter(([, v]) => v.on);
+  const inv = info && info.invite; // eingeladen → keine Bewerbung, Leistungen + Preise stehen fest
+  const fixed = !!(inv && inv.rates && Object.keys(inv.rates).length);
   const ok = f.name.trim() && /\S+@\S+\.\S+/.test(f.email) && f.whatsapp.trim().length >= 7 && f.password.length >= 8 && chosen.length && terms;
   const submit = async (e) => {
     e.preventDefault();
@@ -51,7 +56,8 @@ export function PartnerJoin({ invite = "", onToken, onLogin }) {
     <div className="pra"><main className="screen" style={{ bottom: 0 }}>
       <form className="po-form" onSubmit={submit}>
         <div className="po-top"><img src={`${BASE}/assets/rapidremove-icon.png`} alt="" style={{ width: 40, height: 40, borderRadius: 11 }} /><span /></div>
-        <div className="po-hero"><b>Become a RapidRemove partner</b><span>Register once – after we approve you, you get tasks in this app and are paid automatically for every verified removal.</span></div>
+        {inv ? <div className="po-hero"><b>You're invited{inv.name ? ", " + inv.name.split(" ")[0] : ""}!</b><span>Create your partner account – no application needed. Right after registering you set up your payouts once and get tasks in this app, paid automatically for every verified removal.</span></div>
+          : <div className="po-hero"><b>Become a RapidRemove partner</b><span>Register once – after we approve you, you get tasks in this app and are paid automatically for every verified removal.</span></div>}
         <div className="ttl" style={{ paddingTop: 6 }}>About you</div>
         <label className="po-f"><span>Full name</span><input value={f.name} onChange={set("name")} autoComplete="name" required /></label>
         <label className="po-f"><span>Company / agency (optional)</span><input value={f.company} onChange={set("company")} autoComplete="organization" /></label>
@@ -61,9 +67,18 @@ export function PartnerJoin({ invite = "", onToken, onLogin }) {
           <label className="po-f"><span>Country</span><select value={f.country} onChange={set("country")}>{COUNTRIES.map((c) => <option key={c} value={c}>{NAMES[c]}</option>)}</select></label>
         </div>
 
-        <div className="ttl" style={{ paddingTop: 14 }}>What can you do?</div>
-        <p className="ps">Choose every service you offer. Your price per successful removal is optional – we confirm the final price when we approve you.</p>
-        <div className="po-opts">
+        <div className="ttl" style={{ paddingTop: 14 }}>{fixed ? "Your services" : "What can you do?"}</div>
+        {fixed ? (
+          <div className="po-opts">
+            {(info.services || []).filter((s) => inv.rates[s.id]).map((s) => (
+              <div key={s.id} className="po-opt on" style={{ flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                <b style={{ fontSize: 15 }}>{s.label}</b>
+                {inv.rates[s.id].map((r) => <span key={r.id} className="ps" style={{ margin: 0 }}>{RATE_L[r.id] || r.id}: <b style={{ color: "var(--ink)" }}>{r.usd} USD</b> per removal</span>)}
+              </div>
+            ))}
+          </div>
+        ) : <p className="ps">Choose every service you offer. Your price per successful removal is optional – we confirm the final price when we approve you.</p>}
+        <div className="po-opts" style={fixed ? { display: "none" } : null}>
           {(info ? info.services : []).map((s) => {
             const v = svc[s.id] || { on: false, price: "" };
             return (

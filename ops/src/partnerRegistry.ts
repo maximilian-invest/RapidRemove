@@ -70,7 +70,7 @@ export async function initPartnerRegistry(): Promise<void> {
   if (!pool) return;
   for (const c of [
     "status text NOT NULL DEFAULT 'active'", "company text", "whatsapp text", "about text", "capacity integer",
-    "services jsonb", "approved jsonb", "applied_at timestamptz", "approved_at timestamptz", "invite_id bigint",
+    "services jsonb", "approved jsonb", "applied_at timestamptz", "approved_at timestamptz", "invite_id bigint", "pay_gate boolean",
     "terms_at timestamptz", "terms_ip text", "terms_v text", "admin_note text",
   ]) await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS ${c}`);
   await pool.query(`ALTER TABLE partner_accounts ADD COLUMN IF NOT EXISTS partner_id bigint`);
@@ -78,6 +78,7 @@ export async function initPartnerRegistry(): Promise<void> {
   await pool.query(`CREATE TABLE IF NOT EXISTS partner_invites (
     id bigserial PRIMARY KEY, token_hash text UNIQUE NOT NULL, name text, email text, services jsonb, note text,
     created_at timestamptz NOT NULL DEFAULT now(), expires_at timestamptz NOT NULL, used_at timestamptz, partner_id bigint)`);
+  await pool.query(`ALTER TABLE partner_invites ADD COLUMN IF NOT EXISTS prices jsonb`);
   // Bestand: erster Partner = bisheriger Partner → für alle Leistungen zu den bisherigen Preisen freigegeben.
   const first = await firstPartnerId();
   if (first) {
@@ -185,6 +186,15 @@ async function mailPartner(to: string, subject: string, lines: string[], cta?: {
 }
 
 /* ---------------- Routen ---------------- */
+/** Preise der Einladung je Registrierungs-Leistung (für die Anzeige: „Your rate"). */
+function inviteRates(inv: { services: string[] | null; prices: Record<string, number> | null }) {
+  const ids = (inv.services || []).filter(isService);
+  const pr = (id: string) => Number((inv.prices || {})[id]) || SERVICES.find((x) => x.id === id)!.price;
+  const out: Record<string, { id: string; usd: number }[]> = {};
+  for (const j of JOIN_SERVICES) { const l = j.expands.filter((x) => ids.includes(x)).map((x) => ({ id: x as string, usd: pr(x) })); if (l.length) out[j.id] = l; }
+  return out;
+}
+
 export function registerPartnerRegistry(app: FastifyInstance, adminToken: string): void {
   const isAdmin = (b: Record<string, unknown>) => !!adminToken && String(b.token || "") === adminToken;
   const hits = new Map<string, number[]>();
@@ -197,14 +207,14 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     const s = String(tok || "");
     if (!pool || !s.startsWith("inv_")) return null;
     const r = await pool.query(`SELECT * FROM partner_invites WHERE token_hash=$1 AND used_at IS NULL AND expires_at > now()`, [sha(s)]);
-    return (r.rows[0] as { id: string; name: string | null; email: string | null; services: string[] | null; note: string | null } | undefined) || null;
+    return (r.rows[0] as { id: string; name: string | null; email: string | null; services: string[] | null; note: string | null; prices: Record<string, number> | null } | undefined) || null;
   };
 
   // Öffentlich: Leistungen (für das Registrierungsformular) + Einladung (Name/E-Mail vorbefüllen).
   app.post("/partner/join-info", async (req) => {
     const b = (req.body || {}) as Record<string, unknown>;
     const inv = await inviteRow(b.invite);
-    return { ok: true, services: JOIN_SERVICES.map((s) => ({ id: s.id, label: s.label })), termsVersion: TERMS_VERSION, invite: inv ? { name: inv.name || "", email: inv.email || "", services: joinIdsOf(inv.services || []) } : null };
+    return { ok: true, services: JOIN_SERVICES.map((s) => ({ id: s.id, label: s.label })), termsVersion: TERMS_VERSION, invite: inv ? { name: inv.name || "", email: inv.email || "", services: joinIdsOf(inv.services || []), rates: inviteRates(inv) } : null };
   });
 
   // Öffentlich: Registrierung → Status „pending" + Login (Sitzung) → Partner sieht „Application under review".
@@ -231,16 +241,36 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     }
     if (!svc.length) return reply.code(400).send({ ok: false, error: "Please choose at least one service you offer." });
     if (b.terms !== true) return reply.code(400).send({ ok: false, error: "Please accept the partner terms." });
+    // Eingeladen → keine Bewerbung: sofort freigegeben mit den Leistungen + Preisen aus der Einladung
+    // (Einladung ohne Leistungen → die gewählten Leistungen zum Standardpreis).
+    let approved: Record<string, number> | null = null;
+    if (inv) {
+      approved = {};
+      const ip = (inv.prices && typeof inv.prices === "object" ? inv.prices : {}) as Record<string, unknown>;
+      const ids = (inv.services || []).filter(isService).length ? (inv.services || []).filter(isService) : svc.map((x) => x.id).filter(isService);
+      for (const id of ids) { const n = Number(ip[id]); approved[id] = Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : SERVICES.find((x) => x.id === id)!.price; }
+    }
     const ex = await pool.query(`SELECT 1 FROM partner_accounts WHERE email=$1`, [v.email]);
     if (ex.rowCount) return reply.code(409).send({ ok: false, error: "This email is already registered – please log in." });
     const p = await pool.query(
-      `INSERT INTO partners (name, email, phone, whatsapp, company, country, about, capacity, services, status, active, applied_at, invite_id, terms_at, terms_ip, terms_v)
-       VALUES ($1,$2,$3,$3,$4,$5,$6,$7,$8,'pending',true,now(),$9,now(),$10,$11) RETURNING id`,
-      [v.name, v.email, v.whatsapp, v.company || null, v.country, v.about || null, v.capacity, JSON.stringify(svc), inv ? inv.id : null, ipOf(req), TERMS_VERSION]);
+      `INSERT INTO partners (name, email, phone, whatsapp, company, country, about, capacity, services, status, active, applied_at, invite_id, terms_at, terms_ip, terms_v, approved, approved_at, pay_gate)
+       VALUES ($1,$2,$3,$3,$4,$5,$6,$7,$8,$12,true,now(),$9,now(),$10,$11,$13,$14,true) RETURNING id`,
+      [v.name, v.email, v.whatsapp, v.company || null, v.country, v.about || null, v.capacity, JSON.stringify(svc), inv ? inv.id : null, ipOf(req), TERMS_VERSION,
+        approved ? "active" : "pending", approved ? JSON.stringify(approved) : null, approved ? new Date().toISOString() : null]);
     const pid = Number(p.rows[0].id);
     await pool.query(`INSERT INTO partner_accounts (email, pass_hash, partner_id) VALUES ($1,$2,$3)`, [v.email, hashPassword(v.pw), pid]);
     if (inv) await pool.query(`UPDATE partner_invites SET used_at=now(), partner_id=$2 WHERE id=$1`, [inv.id, pid]);
     const token = await createPartnerSession(v.email);
+    if (approved) {
+      const al = SERVICES.filter((x) => approved![x.id] != null);
+      void notifyTeam("Neuer Partner (Einladung)", `${v.name}${v.company ? " · " + v.company : ""} · ${v.country} · ${al.map((x) => `${x.de} ($${approved![x.id]})`).join(", ")}`.slice(0, 180), `${SITE_URL}/admin?partner=${pid}`, { kind: "partner" });
+      void mailPartner(v.email, "Welcome to RapidRemove", [
+        `Hi ${v.name},`, "your partner account is ready. 🎉",
+        `Your services: ${al.map((x) => `${x.en} – ${approved![x.id]} USD per removal`).join("; ")}.`,
+        "Open the partner app, set up your automatic payouts once (2 minutes) and you'll receive tasks right away.",
+      ], { href: `${SITE_URL}/partner`, label: "Open the partner app" });
+      return { ok: true, token, status: "active" };
+    }
     const sl = svc.map((s) => (SERVICES.find((x) => x.id === s.id)?.de || s.id) + (s.price ? ` ($${s.price})` : "")).join(", ");
     void notifyTeam("Neue Partner-Bewerbung", `${v.name}${v.company ? " · " + v.company : ""} · ${v.country} · ${sl}`.slice(0, 180), `${SITE_URL}/admin?partner=${pid}`, { kind: "partner" });
     void mailPartner(v.email, "Your RapidRemove partner application", [
@@ -310,7 +340,7 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
       return { ok: true, id };
     }
     // Neu (vom Admin angelegt) → gleich aktiv; Login per Einladung/Passwort separat.
-    const r = await pool.query(`INSERT INTO partners (name, email, phone, whatsapp, note, company, country, status, active, approved, approved_at) VALUES ($1,$2,$3,$3,$4,$5,$6,'active',true,$7,now()) RETURNING id`,
+    const r = await pool.query(`INSERT INTO partners (name, email, phone, whatsapp, note, company, country, status, active, approved, approved_at, pay_gate) VALUES ($1,$2,$3,$3,$4,$5,$6,'active',true,$7,now(),true) RETURNING id`,
       [name, email || null, phone || null, note || null, company || null, country || null, JSON.stringify(approved || {})]);
     return { ok: true, id: Number(r.rows[0].id) };
   });
@@ -356,8 +386,11 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
     const tok = "inv_" + crypto.randomBytes(18).toString("base64url");
     const svc = (Array.isArray(b.services) ? b.services : []).filter(isService);
-    await pool.query(`INSERT INTO partner_invites (token_hash, name, email, services, note, expires_at) VALUES ($1,$2,$3,$4,$5, now() + interval '14 days')`,
-      [sha(tok), clip(b.name, 120) || null, norm(b.email) || null, JSON.stringify(svc), clip(b.note, 300) || null]);
+    const prices: Record<string, number> = {};
+    const bp = (b.prices && typeof b.prices === "object" ? b.prices : {}) as Record<string, unknown>;
+    for (const id of svc) { const n = Number(bp[id]); prices[id] = Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : SERVICES.find((x) => x.id === id)!.price; }
+    await pool.query(`INSERT INTO partner_invites (token_hash, name, email, services, note, expires_at, prices) VALUES ($1,$2,$3,$4,$5, now() + interval '14 days', $6)`,
+      [sha(tok), clip(b.name, 120) || null, norm(b.email) || null, JSON.stringify(svc), clip(b.note, 300) || null, JSON.stringify(prices)]);
     return { ok: true, url: `${SITE_URL}/partner?join=1#${tok}` };
   });
 
