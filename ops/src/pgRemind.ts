@@ -35,6 +35,9 @@ async function init(): Promise<void> {
   if (ready || !pool) return;
   await pool.query(`CREATE TABLE IF NOT EXISTS pg_reminders (email text PRIMARY KEY, started_at timestamptz NOT NULL, n int NOT NULL DEFAULT 0, last_at timestamptz, team_at timestamptz)`);
   await pool.query(`ALTER TABLE pg_reminders ADD COLUMN IF NOT EXISTS stale_at timestamptz, ADD COLUMN IF NOT EXISTS cancel_at timestamptz, ADD COLUMN IF NOT EXISTS warn_at timestamptz, ADD COLUMN IF NOT EXISTS cancelled_at timestamptz`);
+  // Welche Aufträge gehören zum laufenden Fall? Kommt ein NEUER wartender Auftrag dazu, beginnt der Takt neu
+  // (sonst erbt eine neue Bestellung die alte Frist und bekommt sofort „on hold"/Storno).
+  await pool.query(`ALTER TABLE pg_reminders ADD COLUMN IF NOT EXISTS orders text`);
   ready = true;
 }
 
@@ -142,10 +145,20 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
   for (const w of list) {
     const test = isTestEmail(w.email);
     const unit = test ? 60_000 : 3600_000;
-    const st = (await pool.query(
-      `INSERT INTO pg_reminders (email, started_at) VALUES ($1, $2) ON CONFLICT (email) DO UPDATE SET email=EXCLUDED.email RETURNING started_at, n, last_at, stale_at, cancel_at, warn_at, cancelled_at`,
-      [w.email, new Date(w.since).toISOString()],
-    )).rows[0] as { started_at: string; n: number; last_at: string | null; stale_at: string | null; cancel_at: string | null; warn_at: string | null; cancelled_at: string | null };
+    const okey = [...new Set(w.orderIds)].sort().join(",");
+    let st = (await pool.query(
+      `INSERT INTO pg_reminders (email, started_at, orders) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET orders=COALESCE(pg_reminders.orders, EXCLUDED.orders) RETURNING started_at, n, last_at, stale_at, cancel_at, warn_at, cancelled_at, orders`,
+      [w.email, new Date(w.since).toISOString(), okey],
+    )).rows[0] as { started_at: string; n: number; last_at: string | null; stale_at: string | null; cancel_at: string | null; warn_at: string | null; cancelled_at: string | null; orders: string | null };
+    const known = new Set(String(st.orders || "").split(",").filter(Boolean));
+    if (w.orderIds.some((id) => !known.has(id))) {
+      // Neuer Auftrag wartet → neuer Fall: Takt ab dem neuen Auftrag, alte Frist/Storno-Stand verworfen.
+      st = (await pool.query(
+        `UPDATE pg_reminders SET started_at=$2, n=0, last_at=NULL, stale_at=NULL, cancel_at=NULL, warn_at=NULL, cancelled_at=NULL, orders=$3 WHERE email=$1
+         RETURNING started_at, n, last_at, stale_at, cancel_at, warn_at, cancelled_at, orders`,
+        [w.email, new Date().toISOString(), okey])).rows[0];
+      await pool.query(`UPDATE orders SET raw = raw - 'pgStale' WHERE id = ANY($1::text[]) AND raw ? 'pgStale'`, [w.orderIds]).catch(() => {});
+    }
     const start = new Date(st.started_at).getTime();
     const now = Date.now();
     const day = test ? 0 : 24 * unit;
@@ -169,8 +182,10 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
 
     // 3) Frist abgelaufen → stornieren (wartende Bewertungen bzw. ganzer Auftrag), Storno-Mail.
     if (st.cancel_at && !st.cancelled_at && now >= new Date(st.cancel_at).getTime()) {
+      // Atomar beanspruchen (zwei Instanzen beim Deploy dürfen nicht doppelt stornieren/mailen).
+      const claim = await pool.query(`UPDATE pg_reminders SET cancelled_at=now() WHERE email=$1 AND cancelled_at IS NULL RETURNING 1`, [w.email]);
+      if (!claim.rowCount) continue;
       await cancelWaiting(w);
-      await pool.query(`UPDATE pg_reminders SET cancelled_at=now() WHERE email=$1`, [w.email]);
       await mail("cancelled", {}, "Automatisch storniert – keine Zahlungsart (Storno-Mail)");
       continue;
     }
@@ -178,7 +193,9 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
     // 2b) Letzte Warnung 3 Tage vor dem Storno.
     if (st.cancel_at && !st.warn_at && now >= new Date(st.cancel_at).getTime() - warnBefore) {
       if (!daytime) continue;
-      if (await mail("last", { date: st.cancel_at }, "Letzte Warnung: Storno in 3 Tagen (Zahlungsart fehlt)")) await pool.query(`UPDATE pg_reminders SET warn_at=now() WHERE email=$1`, [w.email]);
+      const claim = await pool.query(`UPDATE pg_reminders SET warn_at=now() WHERE email=$1 AND warn_at IS NULL AND cancelled_at IS NULL RETURNING 1`, [w.email]);
+      if (!claim.rowCount) continue;
+      if (!(await mail("last", { date: st.cancel_at }, "Letzte Warnung: Storno in 3 Tagen (Zahlungsart fehlt)"))) await pool.query(`UPDATE pg_reminders SET warn_at=NULL WHERE email=$1`, [w.email]);
       continue;
     }
     if (st.stale_at) continue;
@@ -186,8 +203,9 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
     if (now >= start + staleAfter) {
       if (!daytime) continue;
       const cancelAt = new Date(now + grace).toISOString();
+      const claim = await pool.query(`UPDATE pg_reminders SET stale_at=now(), cancel_at=$2 WHERE email=$1 AND stale_at IS NULL RETURNING 1`, [w.email, cancelAt]);
+      if (!claim.rowCount) continue;
       for (const a of w.acts) await setOrderRawField(a.orderId, "pgStale", { at: new Date(now).toISOString(), cancelAt, keys: a.whole ? null : [...a.gateKeys, ...a.swKeys] }).catch(() => false);
-      await pool.query(`UPDATE pg_reminders SET stale_at=now(), cancel_at=$2 WHERE email=$1`, [w.email, cancelAt]);
       await mail("final", { date: cancelAt, days: Math.max(1, Math.round((now - start) / (24 * 3600_000))) || STALE_D() }, `Finale Mail: pausiert, Storno am ${cancelAt.slice(0, 10)} (Zahlungsart fehlt)`);
       continue;
     }
