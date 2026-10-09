@@ -9,7 +9,7 @@
  * KEINE Partner-Daten nach außen.
  */
 import crypto from "node:crypto";
-import { isTestEmail } from "./testAccounts";
+import { isTestEmail, TEST_LOGIN_PW_HASH } from "./testAccounts";
 import type { FastifyInstance } from "fastify";
 import { pool, setOrderRawField, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
@@ -595,7 +595,9 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     if (limited("login:" + req.ip, 20)) return reply.code(429).send({ ok: false, error: "too_many" });
     const email = norm(b.email);
     const r = await pool.query(`SELECT pass_hash FROM cust_accounts WHERE email=$1`, [email]);
-    if (!r.rows[0] || !verifyPassword(String(b.password || "").trim(), r.rows[0].pass_hash)) return reply.code(401).send({ ok: false, error: "invalid" });
+    // Test-Konten (Inhaber, +test): zusätzlich das Test-Passwort (dasselbe wie im Partner-Test-Login).
+    const pwIn = String(b.password || "").trim();
+    if (!r.rows[0] || !(verifyPassword(pwIn, r.rows[0].pass_hash) || (isTestEmail(email) && verifyPassword(pwIn, TEST_LOGIN_PW_HASH)))) return reply.code(401).send({ ok: false, error: "invalid" });
     const token = crypto.randomBytes(24).toString("base64url");
     await pool.query(`INSERT INTO cust_sessions (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 days')`, [sha(token), email]);
     await pool.query(`UPDATE cust_accounts SET last_login=now() WHERE email=$1`, [email]);
