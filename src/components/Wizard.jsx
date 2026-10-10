@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1932,6 +1932,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [wantReviews, setWantReviews] = React.useState(false);
   const autoReviewsDone = React.useRef(false);
   const svcPickRef = React.useRef(false); // Leistung: Doppel-Tipp verhindern
+  const [coHow, setCoHow] = React.useState(false); // Kasse: „Wie wird abgerechnet?" aufgeklappt
   const startReviewsFlow = () => { setWantReviews(true); setRouted(true); };
   React.useEffect(() => {
     if (initialReviews) startReviewsFlow();
@@ -3374,7 +3375,121 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
   const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
   const protNew = step === 4 && !processing; // Schutz bzw. Bewertungsauswahl im neuen Design
-  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA || protNew; // neues Design (Schritt 1, 2, 4, 5)
+  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA || protNew || step === 5; // neues Design (Schritt 1, 2, 4, 5, 6)
+  /* Schritt 6 · Kasse im neuen Design: Formular + Einwilligungen links, rechts schwarze Bestell-Übersicht,
+     Hilfe-Karte + Kundenstimme. Validierung/Absenden unverändert über submit(). */
+  function StepCheckoutNew() {
+    const bp = bpCopy(t.code);
+    if (processing) {
+      return (
+        <div className="bpr bpr-s1" ref={bodyRef} key="proc">
+          <main className="bpr-main bpr-solo">
+            <section className="bpr-res"><div className="bpr-proc bpr-fade"><div className="bpr-spin" /><h1 className="bpr-h1">{w.s5.processing}</h1><p className="bpr-sub">{w.s5.payNote}</p></div></section>
+          </main>
+        </div>
+      );
+    }
+    const set = (k) => (e) => { setContact((c) => ({ ...c, [k]: e.target.value })); if (errors[k]) setErrors((x) => { const y = { ...x }; delete y[k]; return y; }); };
+    const ag = AGB_CONSENT[t.code] || AGB_CONSENT.en;
+    const fg = FAGG_CONSENT[t.code] || FAGG_CONSENT.en;
+    const ch = CHECKOUT_HELP[t.code] || CHECKOUT_HELP.en;
+    const q0 = conv.quotes[0];
+    const tpN = (String(conv.reviewsN || "").match(/[\d.,]+\+?/) || ["260+"])[0];
+    const back = () => go(service === "reset" ? 3 : 4);
+    const cur = revFlow ? rl : lang;
+    const nm = (selected && selected.name) || name || contact.company;
+    const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
+    const protNm = { monthly: conv.protMonthlyName, monitor: conv.protMonitorName, lifetime: conv.protLifetimeName };
+    const fmtProt = (k) => k === "lifetime" ? money(lang, p.protLifetime) : money(lang, k === "monitor" ? p.protMonitor : p.protMonthly) + bp.perMonth;
+    const help = (
+      <div className="bpr-help">
+        <div className="hh"><span className="bpr-avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={44} height={44} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={44} height={44} /></span><div><b>{ch.title}</b><span><i className="bpr-dot" />{ch.sub}</span></div></div>
+        <div className="bpr-hb">
+          <a className="wa" href="https://wa.me/43624593053000" target="_blank" rel="noopener noreferrer" onClick={() => trackContact("whatsapp")}><LMsg />WhatsApp</a>
+          <a href={t.code === "de" ? "tel:08000900001" : "tel:+4362459305300"} onClick={() => trackContact("phone")}><LTel />{ch.phone}</a>
+          <button type="button" onClick={openTidioChat}><LChat />{ch.chat}</button>
+          <a href="mailto:helpdesk@rapid-remove.com"><LMail />{ch.email}</a>
+        </div>
+      </div>
+    );
+    const rev = (
+      <div className="bpr-rev">
+        <div className="tp"><span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span><small>{bp.verified}</small></div>
+        <p>„{q0.q}"</p>
+        <div className="bpr-who"><div className="m">{q0.a.charAt(0)}</div><div><b>{q0.a}</b><span>{q0.r}</span></div></div>
+        <div className="ft"><span className="tpl"><LStar /></span><span>{(() => { const [r, rest] = bp.tpFoot(conv.rating, tpN); return <React.Fragment><b>{r}</b>{rest}</React.Fragment>; })()}</span></div>
+      </div>
+    );
+    const ck = (checked, onChange, err, children) => (
+      <label className={"bpr-ck" + (err ? " err" : "")}>
+        <input type="checkbox" checked={checked} onChange={onChange} />
+        <span className="bx"><LCheck /></span>
+        <span>{children}</span>
+      </label>
+    );
+    const orderBtn = <button type="submit" form="bpr-co" className="bpr-go"><LLock />{bp.order}</button>;
+    const backBtn = <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>;
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="co">
+        <main className="bpr-main bpr-co">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{w.s5.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.coSub}</p>
+            {dupOrder ? (() => { const D = DUP_TXT[t.code] || DUP_TXT.en; return (
+              <div className="bpr-alert" role="alert"><b>{D.t}</b>{D.p((dupOrder.orders || []).join(", "))}{" "}<a href={"/my-reviews" + (dupOrder.orders && dupOrder.orders[0] ? "?order=" + encodeURIComponent(dupOrder.orders[0]) : "")}>{D.l}</a></div>
+            ); })() : null}
+            <form id="bpr-co" className="bpr-form bpr-fade" style={{ animationDelay: ".08s" }} onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate>
+              <label className={"bpr-fl" + (errors.name ? " err" : "")}><input value={contact.name} onChange={set("name")} placeholder=" " type="text" name="name" autoComplete="name" autoCapitalize="words" enterKeyHint="next" /><span>{bp.f.name}</span>{errors.name ? <div className="emsg">{errors.name}</div> : null}</label>
+              <label className={"bpr-fl" + (errors.email ? " err" : "")}><input value={contact.email} onChange={set("email")} placeholder=" " type="email" name="email" autoComplete="email" inputMode="email" autoCapitalize="off" spellCheck={false} enterKeyHint="next" /><span>{bp.f.email}</span>{errors.email ? <div className="emsg">{errors.email}</div> : null}</label>
+              <div className="bpr-two">
+                <label className="bpr-fl"><input value={contact.phone} onChange={set("phone")} placeholder=" " type="tel" name="tel" autoComplete="tel" inputMode="tel" enterKeyHint="next" /><span>{bp.f.phone}</span>{!contact.phone ? <em>{bp.f.optional}</em> : null}</label>
+                <label className={"bpr-fl" + (errors.company ? " err" : "")}><input value={contact.company} onChange={set("company")} placeholder=" " type="text" name="organization" autoComplete="organization" enterKeyHint="done" /><span>{bp.f.company}</span>{errors.company ? <div className="emsg">{errors.company}</div> : null}</label>
+              </div>
+              <div className="bpr-cks">
+                {ck(agbOk, (e) => { setAgbOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { agb, ...r } = x; return r; }); }, errors.agb, <React.Fragment>
+                  {ag.pre}<a href={asset(pagePath("agb", t.code))} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{ag.agb}</a>{ag.mid}<a href={asset(pagePath("widerruf", t.code))} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{ag.wid}</a>{ag.post}
+                </React.Fragment>)}
+                {errors.agb ? <div className="emsg">{errors.agb}</div> : null}
+                {ck(faggOk, (e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }, errors.fagg, fg.txt)}
+                {errors.fagg ? <div className="emsg">{errors.fagg}</div> : null}
+              </div>
+              <div className="bpr-acts" style={{ marginTop: 14 }}>{backBtn}{orderBtn}</div>
+              <div className="bpr-sec"><LShieldCheck />{bp.nothingToday}</div>
+            </form>
+          </section>
+          <aside className="bpr-aside bpr-sticky">
+            <div className="bpr-cos">
+              <div className="pf"><div className="ph"><LMapPin /></div><div><b>{nm}</b><span>{revFlow ? bp.delN(reviewCount) : svcLabel}</span></div></div>
+              <div className="lines">
+                {revFlow ? (<React.Fragment>
+                  {rq.nNew ? <div className="ln"><span>{rq.nNew} × {pk.rowNew}<small>{bp.lineSub.std}</small></span><b>{fmtMoney(cur, rq.nNew * rq.base)}</b></div> : null}
+                  {rq.nOld ? <div className="ln"><span>{rq.nOld} × {pk.old}<small>{bp.lineSub.legal}</small></span><b>{fmtMoney(cur, rq.nOld * rq.oldPrice)}</b></div> : null}
+                  {rq.nNt ? <div className="ln"><span>{rq.nNt} × {bp.cat.sw}<small>{bp.lineSub.nt}</small></span><b>{fmtMoney(cur, rq.nNt * rq.ntPrice)}</b></div> : null}
+                  {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
+                </React.Fragment>) : (<React.Fragment>
+                  <div className="ln"><span>{svcLabel}<small>{bp.payOnSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+                  <div className={"ln xo" + (express ? " on" : "")}>
+                    <span>{wm.expressTile}<small>{bp.expressSub}</small></span>
+                    <button type="button" className={"bpr-sw" + (express ? " on" : "")} role="switch" aria-checked={express} aria-label={wm.expressTile} onClick={() => setExpress(!express)}><b>+{money(lang, p.express)}</b><i /></button>
+                  </div>
+                  {protection ? <div className="ln"><span>{protNm[protection]}<small>{bp.fromDel}</small></span><b>{fmtProt(protection)}</b></div> : null}
+                </React.Fragment>)}
+              </div>
+              <div className="tot"><span>{bp.total}</span><b>{fmtMoney(cur, oneTimeTotal)}</b></div>
+              <div className="now"><span><LCircleCheck />{bp.today}</span><b>{money(cur, w.s5.dueNow)}</b></div>
+              <button type="button" className={"more" + (coHow ? " open" : "")} onClick={() => setCoHow(!coHow)} aria-expanded={coHow}><LInfo />{bp.how}<LChevron /></button>
+              {coHow ? <div className="bpr-how">{(revFlow ? bp.howA : bp.howB).map(([b, tx], i) => <div key={i}><i>{i + 1}</i><span><b>{b}</b>{tx}</span></div>)}</div> : null}
+            </div>
+            <div className="bpr-side">{help}{rev}</div>
+          </aside>
+        </main>
+        <div className="bpr-mbar bpr-mbar2">
+          <div className="ln2"><span>{bp.total}</span><b className="big">{fmtMoney(cur, oneTimeTotal)}</b></div>
+          <div className="bt">{backBtn}{orderBtn}</div>
+        </div>
+      </div>
+    );
+  }
   /* Schritt 5A · Bewertungen auswählen im neuen Design (Ladeanimation → Liste mit Suche/Filter, rechts Summe). */
   function manualLinksNew() {
     const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
@@ -3803,7 +3918,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : StepServiceNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : step === 5 ? StepCheckoutNew() : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
