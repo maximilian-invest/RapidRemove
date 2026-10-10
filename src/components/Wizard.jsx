@@ -3812,22 +3812,25 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       )}
       <ActivityToast />
       {confetti && <Confetti />}
-      {priceInfo ? (
+      {priceInfo ? (() => {
+        const bp = bpCopy(t.code);
+        return (
         <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPriceInfo(false); }}>
-          <div className="sw-sheet" ref={piRef} role="dialog" aria-modal="true" aria-labelledby="pi-sheet-t">
+          <div className="sw-sheet bpr-sheet" ref={piRef} role="dialog" aria-modal="true" aria-labelledby="pi-sheet-t">
             <div className="grab" aria-hidden="true" />
-            <button type="button" className="pay-ask-x" onClick={() => setPriceInfo(false)} aria-label="×"><Icon.x size={18} /></button>
-            <h2 id="pi-sheet-t" style={{ marginTop: 6, paddingRight: 40 }}>{pk.infoH}</h2>
-            <ul className="pi-rows">
-              <li><span className="pi-ic g"><Icon.clock size={18} /></span><span>{pk.info1.replace("{base}", money(rl, rq.base))}</span></li>
-              <li><span className="pi-ic t"><Icon.gavel size={18} /></span><span>{pk.info2.replace("{old}", money(rl, rq.oldPrice))}</span></li>
-              <li><span className="pi-ic s"><Icon.zap size={18} /></span><span>{pk.info4.replace("{nt}", money(rl, REVIEW_NOTEXT_PRICE))} <button type="button" className="pi-more" onClick={() => { setPriceInfo(false); setSwInfo(true); }}>{pk.swInfo}</button></span></li>
-              <li><span className="pi-ic o"><Icon.sparkle size={18} /></span><span>{pk.info3}</span></li>
-            </ul>
-            <button type="button" className="sw-ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
+            <div className="hd"><h3 id="pi-sheet-t">{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><LX /></button></div>
+            <div className="bpr-tiers">
+              <div className="bpr-tier"><b>{bp.sheet.t1[0]}</b><div className="p">{money(rl, rq.base)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t1[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t1[2]}</span></div>
+              {revCountry !== "US" ? <div className="bpr-tier"><b>{bp.sheet.t2[0]}</b><div className="p">{money(rl, rq.oldPrice)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t2[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t2[2]}</span></div> : null}
+              <div className="bpr-tier"><b>{bp.sheet.t3[0]}</b><div className="p">{money(rl, REVIEW_NOTEXT_PRICE)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t3[1]}</span><button type="button" className="q lk" onClick={() => { setPriceInfo(false); setSwInfo(true); }}><LInfo />{pk.swInfo}</button></div>
+            </div>
+            <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
+            <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>
+            <button type="button" className="ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
           </div>
         </div>
-      ) : null}
+        );
+      })() : null}
       {swInfo ? (
         <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setSwInfo(false); }}>
           <div className="sw-sheet" ref={swRef} role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
