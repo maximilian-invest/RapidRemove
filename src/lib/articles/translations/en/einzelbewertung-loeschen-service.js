@@ -50,7 +50,7 @@ const article = {
         ["10 or more", "**−30 %**"],
       ] },
       { t: "p", text: "**Examples:** 3 recent reviews cost $537, minus 10 % = **$483**. 2 recent and 3 older reviews cost $1,045, minus 15 % = **$888**. The discount level is set by the number of reviews **we accept after the free assessment** – star-only ratings count too – and applies to every one of them. You still only pay for reviews that are actually removed: if we accept 3 and 2 come down, you pay 2 × $179 minus 10 % = **$322.20**. Mixed order: 2 recent reviews with text plus 1 star-only rating = 3 reviews, so 10 % off – the star-only rating costs **$270**, the two others $161.10 each – each charged only after removal." },
-      { t: "p", text: "**Payment per review:** removal times can differ from review to review – usually a few days, sometimes up to three weeks. That's why payment can happen per review, each charged automatically to your stored card or PayPal once it's removed. Reviews that we're still working on don't cost you anything yet." },
+      { t: "p", text: "**Payment per review:** removal times can differ from review to review – usually 1–2 weeks, sometimes faster, occasionally a little longer. That's why payment can happen per review, each charged automatically to your stored card or PayPal once it's removed. Reviews that we're still working on don't cost you anything yet." },
       { t: "tip", title: "Order early", text: "The success chance drops from around 90 % to around 50 % once a review is older than four weeks – and the price rises to $229. A fresh fake review is the cheapest and safest one to remove. For comparison: lawyers typically charge per review **upfront**, and it often takes months ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
 
       { t: "h2", id: "bestellen", text: "How to order – in about two minutes", toc: "How to order" },
@@ -66,13 +66,13 @@ const article = {
       { t: "cta", title: "Select the reviews that should go", text: "Search your business, tick the reviews – and see the exact price instantly. **From $179 per removed review**, nothing upfront.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
 
       { t: "h2", id: "dauer", text: "How long does it take?", toc: "Duration" },
-      { t: "p", text: "Usually **a few days**, sometimes up to **three weeks**, depending on the review and the reason for removal. You don't have to do anything in the meantime – we keep you posted. What happens on Google's side in the meantime – report status, the Reviews Management Tool and appeals – is explained in [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
+      { t: "p", text: "Usually **1–2 weeks**, sometimes faster, occasionally a little longer, depending on the review and the reason for removal. You don't have to do anything in the meantime – we keep you posted. What happens on Google's side in the meantime – report status, the Reviews Management Tool and appeals – is explained in [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
 
       { t: "h2", id: "vergleich", text: "Single reviews, whole profile, lawyer or DIY – compared", toc: "Comparison" },
       { t: "table", rrCol: 1, head: ["Criterion", "Single-review removal", "Profile removal", "Lawyer", "Report yourself"], rows: [
         ["What is removed", "Selected reviews", "Whole profile + all reviews", "Single review", "Single review"],
         ["Good reviews stay", "Yes", "No", "Yes", "Yes"],
-        ["Duration", "Days to 3 weeks", "Usually 24 – 48 hours", "3 – 9 months", "Uncertain"],
+        ["Duration", "Usually 1–2 weeks", "Usually 24 – 48 hours", "3 – 9 months", "Uncertain"],
         ["Cost", "From $179, only if removed", "Fixed price, after success", "Per review, upfront", "Free"],
         ["Effort for you", "2 minutes", "Minimal", "High", "Medium"],
       ] },

@@ -91,7 +91,7 @@ export const EN = {
   feat1t: "Vetted specialist", feat1s: "A partner we’ve worked with on many cases – we stay your contact throughout.",
   feat2t: "Transparent price", feat2s: "The price mainly covers the specialist's work. It's only charged once the review is actually removed.",
   feat3t: "Very high success rate", feat3s: "And if a review can't be removed, you pay nothing.",
-  feat4t: "Usually within a few days", feat4s: "Takes a bit longer than our standard removal.",
+  feat4t: "Usually within 1–3 days", feat4s: "Our fastest removal method.",
   optSw: "Specialist removal", optSwSub: "per review · only if removed · invoice included",
   optNo: "No thanks", optNoSub: "The review stays online – no cost, no obligation",
   f2k: "Choose", f2h: "Which ones should we remove?", f2p: "You decide per review. Tap to deselect any you’d rather leave.",

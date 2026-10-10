@@ -97,7 +97,7 @@ const article = {
       "**Handl hurtigt:** anmeldelser op til 4 uger gamle har hos os ca. 90 % chance for succes, ældre ca. 50 %.",
     ] },
     { t: "p", text: "Siden 2023 har vi fjernet over **1.600 Google-virksomhedsprofiler** og lavet over **20.000 gratis profiltjek** for kunder i mere end 50 lande (Trustpilot 5,0). Ved enkelte anmeldelser bruger vi udelukkende Googles egne procedurer – ingen falske konti, ingen bots, ingen falske juridiske henvendelser – og anmelderen får ikke at vide, hvem der har bedt om fjernelsen." },
-    { t: "cta", title: "Hvilke anmeldelser kan fjernes? Se det på 2 minutter", text: "Søg din profil, sæt flueben ved anmeldelserne, og få en ærlig vurdering. Fra 3 accepterede anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Du betaler kun pr. fjernet anmeldelse.**", btn: "Start gratis vurdering", href: "/da/tjek-profil/?start=reviews", trust: ["Betaling først efter fjernelse", "Som regel klar på få dage", "Trustpilot 5,0"] },
+    { t: "cta", title: "Hvilke anmeldelser kan fjernes? Se det på 2 minutter", text: "Søg din profil, sæt flueben ved anmeldelserne, og få en ærlig vurdering. Fra 3 accepterede anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. **Du betaler kun pr. fjernet anmeldelse.**", btn: "Start gratis vurdering", href: "/da/tjek-profil/?start=reviews", trust: ["Betaling først efter fjernelse", "Som regel klar på 1–2 uger", "Trustpilot 5,0"] },
   ],
   faq: [
     { q: "Kan jeg som ejer selv slette en Google-anmeldelse?", a: "Nej. I Google-virksomhedsprofilen er der ingen knap til at slette anmeldelser. Du kan kun rapportere, klage eller svare offentligt – slette kan kun anmelderen selv eller Google." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Må jeg bede en kunde om at ændre sin anmeldelse?", a: "Ja, hvis det er en rigtig kunde, og du har løst problemet. Tilbyd **ingen rabat, gave eller anden belønning** – det bryder Googles politik." },
     { q: "Forsvinder anmeldelserne, hvis jeg markerer profilen som permanent lukket?", a: "Nej. Ved »permanent lukket« er både oplysningerne og anmeldelserne stadig synlige. Kun hvis hele virksomhedsprofilen slettes, forsvinder alle anmeldelser – også de gode." },
     { q: "Hvad koster det at få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € pr. fjernet anmeldelse**, 229 €, hvis anmeldelsen er ældre end 4 uger. Du betaler kun, hvis anmeldelsen faktisk forsvinder; kan den ikke fjernes, koster det ingenting. Også rene stjernebedømmelser uden tekst kan fjernes – komplekst tilfælde, 300 € pr. fjernet anmeldelse." },
-    { q: "Hvor lang tid går der, før en anmeldelse er væk?", a: "Som regel nogle få dage, nogle gange op til 3 uger. Google lover ikke selv en fast sagsbehandlingstid – vurderingen kan tage alt fra dage til uger." },
+    { q: "Hvor lang tid går der, før en anmeldelse er væk?", a: "Som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Google lover ikke selv en fast sagsbehandlingstid – vurderingen kan tage alt fra dage til uger." },
   ],
   related: [
     { label: "Få fjernet enkelte Google-anmeldelser", url: "/da/fjern-anmeldelse/" },

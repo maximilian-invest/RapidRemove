@@ -97,7 +97,7 @@ const article = {
       "**Agera snabbt:** recensioner upp till 4 veckor gamla har hos oss ca. 90 % chans att lyckas, äldre ca. 50 %.",
     ] },
     { t: "p", text: "Sedan 2023 har vi tagit bort över **1 600 Google-företagsprofiler** och gjort över **20 000 kostnadsfria profilkontroller**, för kunder i mer än 50 länder (Trustpilot 5,0). För enskilda recensioner använder vi uteslutande Googles egna procedurer – inga falska konton, inga bottar, inga falska juridiska anmälningar – och skribenten får inte veta vem som begärt borttagningen." },
-    { t: "cta", title: "Vilka recensioner kan tas bort? Se det på 2 minuter", text: "Sök din profil, bocka i recensionerna och få en ärlig bedömning. Från 3 accepterade recensioner −10 %, från 5 −15 %, från 10 −30 %. **Du betalar bara per borttagen recension.**", btn: "Starta gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Betalning först efter borttagning", "Oftast klart på några dagar", "Trustpilot 5,0"] },
+    { t: "cta", title: "Vilka recensioner kan tas bort? Se det på 2 minuter", text: "Sök din profil, bocka i recensionerna och få en ärlig bedömning. Från 3 accepterade recensioner −10 %, från 5 −15 %, från 10 −30 %. **Du betalar bara per borttagen recension.**", btn: "Starta gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Betalning först efter borttagning", "Oftast klart på 1–2 veckor", "Trustpilot 5,0"] },
   ],
   faq: [
     { q: "Kan jag som ägare ta bort en Google-recension själv?", a: "Nej. I Google-företagsprofilen finns ingen knapp för att ta bort recensioner. Du kan bara rapportera, överklaga eller svara offentligt – ta bort kan bara skribenten själv eller Google." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Får jag be en kund ändra sin recension?", a: "Ja, om det är en riktig kund och du har löst problemet. Erbjud **ingen rabatt, present eller annan belöning** – det bryter mot Googles policy." },
     { q: "Försvinner recensionerna om jag markerar profilen som permanent stängd?", a: "Nej. Vid ”permanent stängd” syns både uppgifterna och recensionerna kvar. Bara om hela företagsprofilen raderas försvinner alla recensioner – även de bra." },
     { q: "Vad kostar det att få en Google-recension borttagen?", a: "Hos RapidRemove **179 € per borttagen recension**, 229 € om recensionen är äldre än 4 veckor. Du betalar bara om recensionen verkligen försvinner; går den inte att ta bort kostar det ingenting. Även rena stjärnbetyg utan text tar vi bort, som komplexa fall (300 € per borttaget betyg)." },
-    { q: "Hur lång tid tar det innan en recension är borta?", a: "Oftast några dagar, ibland upp till 3 veckor. Google lovar själv ingen fast handläggningstid – granskningen kan ta allt från dagar till veckor." },
+    { q: "Hur lång tid tar det innan en recension är borta?", a: "Oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Google lovar själv ingen fast handläggningstid – granskningen kan ta allt från dagar till veckor." },
   ],
   related: [
     { label: "Ta bort enskilda Google-recensioner", url: "/sv/ta-bort-omdome/" },

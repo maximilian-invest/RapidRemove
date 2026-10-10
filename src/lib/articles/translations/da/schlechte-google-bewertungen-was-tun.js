@@ -49,7 +49,7 @@ const article = {
     { t: "p", text: "Problemet: Google gennemgår anmeldelser overvejende **automatiseret** og afviser dem ofte – selv ved klare overtrædelser. Udebliver succesen, har du tre muligheder:" },
     { t: "table", head: ["Vej", "Hvad fjernes", "Varighed", "Succes", "Pris"], rows: [
       ["Advokat", "enkelt anmeldelse", "3-9 måneder", "ca. 90 %", "pr. anmeldelse, forud"],
-      ["RapidRemove – enkelte anmeldelser", "de udvalgte anmeldelser", "få dage – 3 uger", "ca. 90 % (op til 4 uger) / ca. 50 % (ældre)", "179 € pr. fjernet anmeldelse, kun ved succes"],
+      ["RapidRemove – enkelte anmeldelser", "de udvalgte anmeldelser", "som regel 1–2 uger", "ca. 90 % (op til 4 uger) / ca. 50 % (ældre)", "179 € pr. fjernet anmeldelse, kun ved succes"],
       ["RapidRemove – profilfjernelse", "**hele profilen + alle anmeldelser**", "24-48 t", "garanteret", "fast pris efter succes"],
     ] },
     { t: "p", text: "Vigtigt at forstå: Profilfjernelsen fjerner **ikke enkelte anmeldelser, men hele Google-virksomhedsprofilen** – alle anmeldelser forsvinder med. Det er den rigtige løsning, når en profil er beskadiget som helhed, og du vil have en virkelig ny start med ren tavle. Fjernelsen arbejder inden for Googles logik, uden Streisand-risiko, og betales først **efter succes**. Den, der derimod kun vil fjerne en enkelt eller nogle få anmeldelser og beholde profilen, kan bruge RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) – du betaler kun for anmeldelser, der faktisk fjernes ([priser og succesrater](/da/magasin/fjern-google-anmeldelse-service/)). Alternativt er der anmeldelsen til Google eller advokatvejen." },

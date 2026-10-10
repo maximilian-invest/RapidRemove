@@ -97,7 +97,7 @@ const article = {
       "**Snel handelen:** reviews tot 4 weken oud hebben bij ons een slagingskans van ca. 90 %, oudere ca. 50 %; beoordelingen met alleen sterren zijn een complex geval (€ 300 per verwijderde review).",
     ] },
     { t: "p", text: "Sinds 2023 hebben wij meer dan **1.600 Google-bedrijfsprofielen** verwijderd en meer dan **20.000 profielen** gratis gecontroleerd, voor klanten in meer dan 50 landen (Trustpilot 5,0). Bij losse reviews werken we uitsluitend via Googles eigen procedures – zonder nepaccounts, bots of valse juridische meldingen, en de schrijver hoort niet wie de verwijdering heeft aangevraagd." },
-    { t: "cta", title: "Welke reviews kunnen weg? Zie het in 2 minuten", text: "Zoek uw profiel, vink de reviews aan en ontvang een eerlijke inschatting. Vanaf 3 geaccepteerde reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. **Betalen alleen per verwijderde review.**", btn: "Gratis inschatting starten", href: "/nl/profiel-checken/?start=reviews", trust: ["Betaling pas na verwijdering", "Meestal binnen enkele dagen", "Trustpilot 5,0"] },
+    { t: "cta", title: "Welke reviews kunnen weg? Zie het in 2 minuten", text: "Zoek uw profiel, vink de reviews aan en ontvang een eerlijke inschatting. Vanaf 3 geaccepteerde reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. **Betalen alleen per verwijderde review.**", btn: "Gratis inschatting starten", href: "/nl/profiel-checken/?start=reviews", trust: ["Betaling pas na verwijdering", "Meestal binnen 1–2 weken", "Trustpilot 5,0"] },
   ],
   faq: [
     { q: "Kan ik als eigenaar een Google-review zelf verwijderen?", a: "Nee. In het Google-bedrijfsprofiel is er geen verwijderknop voor reviews. U kunt een review alleen melden, beroep aantekenen of openbaar reageren – verwijderen kan alleen de schrijver zelf of Google." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Mag ik een klant vragen zijn review aan te passen?", a: "Ja, als het een echte klant is en u het probleem heeft opgelost. Bied daarvoor **geen korting, cadeau of andere beloning** aan – dat schendt Googles beleid." },
     { q: "Verdwijnen reviews als ik mijn profiel op „permanent gesloten” zet?", a: "Nee. Bij „permanent gesloten” blijven vermelding en reviews zichtbaar. Alleen als het volledige bedrijfsprofiel wordt verwijderd, verdwijnen alle reviews – ook de goede." },
     { q: "Wat kost het om een Google-review te laten verwijderen?", a: "Bij RapidRemove **€ 179 per verwijderde review**, € 229 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is; is hij niet verwijderbaar, dan kost het niets. Beoordelingen met alleen sterren, zonder tekst: € 300 per verwijderde review." },
-    { q: "Hoe lang duurt het voordat een review weg is?", a: "Meestal enkele dagen, soms tot 3 weken. Google geeft zelf geen gegarandeerde termijn – de beoordeling kan dagen tot weken duren." },
+    { q: "Hoe lang duurt het voordat een review weg is?", a: "Meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Google geeft zelf geen gegarandeerde termijn – de beoordeling kan dagen tot weken duren." },
   ],
   related: [
     { label: "Losse Google-reviews laten verwijderen", url: "/nl/review-laten-verwijderen/" },

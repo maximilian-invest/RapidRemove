@@ -49,7 +49,7 @@ const article = {
     { t: "p", text: "The problem: Google checks reports largely **automatically** and often rejects them – even for clear violations. If that fails, you have three options:" },
     { t: "table", head: ["Route", "What is removed", "Duration", "Success", "Cost"], rows: [
       ["Lawyer", "single review", "3 – 9 months", "approx. 90%", "per review, upfront"],
-      ["RapidRemove single-review removal", "**selected reviews**", "a few days – 3 weeks", "approx. 90 % (≤ 4 weeks old), approx. 50 % (older)", "$179 per removed review ($229 if older)"],
+      ["RapidRemove single-review removal", "**selected reviews**", "usually 1–2 weeks", "approx. 90 % (≤ 4 weeks old), approx. 50 % (older)", "$179 per removed review ($229 if older)"],
       ["RapidRemove profile removal", "**whole profile + all reviews**", "24 – 48 h", "guaranteed", "fixed price after success"],
     ] },
     { t: "p", text: "Important to understand: profile removal doesn't go review by review – it deletes the **entire Google Business Profile**, and all reviews disappear with it ([full guide: delete a Google Business Profile](/en/magazine/delete-google-business-profile/)). That's the right solution when a profile is damaged overall and you want a genuine fresh start with a clean slate. The removal works within Google's logic, without Streisand risk, and is only paid **after success**. Anyone who only wants to remove one or a few reviews and keep the profile can use RapidRemove's [removal of individual reviews](/en/remove-single-reviews/) instead: you pick the reviews, see the price instantly and pay only for reviews actually removed – from 3 reviews with a volume discount ([prices & process](/en/magazine/google-review-removal-service/))." },

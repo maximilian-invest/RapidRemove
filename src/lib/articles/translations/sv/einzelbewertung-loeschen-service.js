@@ -49,7 +49,7 @@ const article = {
         ["10 eller fler", "**−30 %**"],
       ] },
       { t: "p", text: "**Exempel:** 3 färska recensioner kostar 537 €, minus 10 % = **483 €**. 2 färska och 3 äldre recensioner kostar 1 045 €, minus 15 % = **888 €**. Rabattnivån avgörs av hur många recensioner **vi accepterar efter den kostnadsfria bedömningen**, och den gäller för varje sådan recension som tas bort. Du betalar fortfarande bara för recensioner som faktiskt försvinner: accepterar vi 3 och 2 tas bort, betalar du 2 × 179 € minus 10 % = **322,20 €**. Stjärnbetyg utan text räknas in i antalet och får samma rabatt. Exempel: 2 betyg utan text och 1 färsk recension med text = 3 recensioner, alltså −10 %. Betygen utan text kostar då **270 €** styck (300 € minus 10 %) och recensionen med text **161,10 €** – allt dras automatiskt först när respektive recension är borta." },
-      { t: "p", text: "**Betalning per recension:** hur lång tid borttagningen tar kan variera från recension till recension – oftast några dagar, ibland upp till tre veckor. Därför dras betalningen per recension, automatiskt när respektive recension har tagits bort. Recensioner som vi fortfarande arbetar med kostar dig ingenting än." },
+      { t: "p", text: "**Betalning per recension:** hur lång tid borttagningen tar kan variera från recension till recension – oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Därför dras betalningen per recension, automatiskt när respektive recension har tagits bort. Recensioner som vi fortfarande arbetar med kostar dig ingenting än." },
       { t: "tip", title: "Beställ tidigt", text: "Chansen att lyckas sjunker från ca. 90 % till ca. 50 % när en recension är äldre än fyra veckor – och priset stiger till 229 €. En färsk falsk recension är alltså den billigaste och säkraste att ta bort. Som jämförelse: advokater tar oftast betalt per recension **i förskott**, och det tar ofta månader ([advokat eller teknisk borttagning?](/sv/magasin/negativ-google-recension-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Så beställer du – på ungefär två minuter", toc: "Så beställer du" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Välj de recensioner som ska bort", text: "Sök ditt företag, bocka i recensionerna – och se det exakta priset direkt. **Från 179 € per borttagen recension**, inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
       { t: "h2", id: "dauer", text: "Hur lång tid tar det?", toc: "Tidsåtgång" },
-      { t: "p", text: "Oftast **några dagar**, ibland upp till **tre veckor**, beroende på recensionen och skälet till borttagningen. Du behöver inte göra något under tiden – vi håller dig uppdaterad. Vad som händer hos Google under tiden – anmälans status, verktyget för hantering av recensioner och överklagande – förklarar vi i [hur lång tid det tar för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
+      { t: "p", text: "Oftast **1–2 veckor**, ibland snabbare, i enstaka fall något längre, beroende på recensionen och skälet till borttagningen. Du behöver inte göra något under tiden – vi håller dig uppdaterad. Vad som händer hos Google under tiden – anmälans status, verktyget för hantering av recensioner och överklagande – förklarar vi i [hur lång tid det tar för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
 
       { t: "h2", id: "vergleich", text: "Enskilda recensioner, hela profilen, advokat eller själv – en jämförelse", toc: "Jämförelse" },
       { t: "table", rrCol: 1, head: ["Kriterium", "Borttagning av enskilda recensioner", "Profilborttagning", "Advokat", "Anmäla själv"], rows: [
         ["Vad tas bort", "Utvalda recensioner", "Hela profilen + alla recensioner", "Enskild recension", "Enskild recension"],
         ["Bra recensioner blir kvar", "Ja", "Nej", "Ja", "Ja"],
-        ["Tidsåtgång", "Dagar till 3 veckor", "Oftast 24 – 48 timmar", "3 – 9 månader", "Osäkert"],
+        ["Tidsåtgång", "Oftast 1–2 veckor", "Oftast 24 – 48 timmar", "3 – 9 månader", "Osäkert"],
         ["Kostnad", "Från 179 €, bara om den tas bort (betyg utan text: 300 €)", "Fast pris, efter framgång", "Per recension, i förskott", "Gratis"],
         ["Din insats", "2 minuter", "Minimal", "Hög", "Medel"],
       ] },

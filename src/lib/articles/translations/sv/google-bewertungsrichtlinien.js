@@ -96,7 +96,7 @@ const article = {
       ["Upp till 4 veckor", "ca. 90 %", "**179 €**"],
       ["Äldre än 4 veckor", "ca. 50 %", "**229 €**"],
     ] },
-    { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. Oftast tar det några dagar, ibland upp till 3 veckor. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
+    { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. Oftast tar det 1–2 veckor, ibland snabbare, i enstaka fall något längre. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
     { t: "cta", title: "Vilka av dina recensioner bryter mot reglerna?", text: "Sök din profil, bocka i recensionerna så säger vi ärligt vilka som kan tas bort. **Du betalar bara när recensionen faktiskt är borta.**", btn: "Få gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Gratis bedömning", "Bara vid framgång", "Bara Googles procedurer"] },
   ],
   faq: [
@@ -104,7 +104,7 @@ const article = {
     { q: "Tar Google bort en recension om jag inte håller med?", a: "Nej. Att du inte håller med är **ingen överträdelse**. Ärlig kritik från riktiga kunder ligger kvar; då är ett vänligt offentligt svar bästa steget." },
     { q: "Är en 1-stjärnig recension utan text en överträdelse?", a: "Inte automatiskt. Har recensenten aldrig varit kund, eller ingår betyget i en falsk våg eller en intressekonflikt, är chanserna att få bort den däremot goda." },
     { q: "Hur många gånger kan jag överklaga ”ingen överträdelse”?", a: "**En gång per recension**, i Googles verktyg för hantering av recensioner. Därefter är beslutet slutgiltigt; vid olagligt innehåll kan du fortfarande skicka en juridisk begäran." },
-    { q: "Hur lång tid tar det innan Google granskar en anmäld recension?", a: "Allt från dagar till veckor; Google lovar ingen tidsram. Hos oss tar en borttagning oftast några dagar, ibland upp till 3 veckor." },
+    { q: "Hur lång tid tar det innan Google granskar en anmäld recension?", a: "Allt från dagar till veckor; Google lovar ingen tidsram. Hos oss tar en borttagning oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre." },
     { q: "Vad kostar det att få en recension borttagen?", a: "**179 €** per borttagen recension upp till 4 veckor gammal, **229 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 300 € per borttaget betyg (komplext fall)." },
   ],
   related: [

@@ -3,7 +3,7 @@ export const RVW_SEO_A = {
   es: {
     h1: "Eliminar una reseña de Google – pagas solo si desaparece.",
     faq: [
-      { q: "¿Cuánto tarda?", a: "Normalmente unos días, a veces hasta tres semanas. Te mantenemos informado." },
+      { q: "¿Cuánto tarda?", a: "Normalmente 1–2 semanas; a veces más rápido y en casos puntuales algo más. Reseñas solo con estrellas mediante nuestro software especial: aprox. 1–3 días. Te mantenemos informado." },
       { q: "¿Y si no se puede eliminar?", a: "Entonces no pagas nada. Si vemos pocas posibilidades, te lo decimos desde el principio." },
       { q: "¿Sabrá el autor que fui yo?", a: "No. Al autor no se le comunica quién solicitó la eliminación." },
       { q: "Tengo varias reseñas.", a: "El precio es por reseña: selecciona tantas como quieras. A partir de 3 reseñas aceptadas tienes un 10 % de descuento, desde 5 un 15 % y desde 10 un 30 %, aplicado a cada reseña que eliminemos. Solo pagas las que realmente se eliminan." },
@@ -34,7 +34,7 @@ export const RVW_SEO_A = {
     compareRows: [
       ["Coste", "Gratis", "Honorarios por hora, a menudo por adelantado", "Desde 179 € por reseña eliminada"],
       ["Pago solo si hay éxito", "–", "No", "Sí"],
-      ["Duración habitual", "De días a semanas, a menudo rechazada", "De semanas a meses", "De unos días a 3 semanas"],
+      ["Duración habitual", "De días a semanas, a menudo rechazada", "De semanas a meses", "Normalmente 1–2 semanas"],
       ["Tu esfuerzo", "Alto: políticas, pruebas, apelaciones", "Reuniones y documentos", "Pegar el enlace, y listo"],
       ["Vías utilizadas", "Una denuncia", "Solo la vía legal", "Denuncia, apelación y solicitud legal"],
     ],
@@ -56,7 +56,7 @@ export const RVW_SEO_A = {
   fr: {
     h1: "Supprimer un avis Google – vous ne payez que s'il disparaît.",
     faq: [
-      { q: "Combien de temps cela prend-il ?", a: "En général quelques jours, parfois jusqu'à trois semaines. Nous vous tenons informé." },
+      { q: "Combien de temps cela prend-il ?", a: "En général 1 à 2 semaines, parfois moins, dans certains cas un peu plus. Avis sans texte via notre logiciel spécial : env. 1 à 3 jours. Nous vous tenons informé." },
       { q: "Et si l'avis ne peut pas être supprimé ?", a: "Alors vous ne payez rien. Si les chances nous semblent faibles, nous vous le disons d'emblée." },
       { q: "L'auteur saura-t-il que c'est moi ?", a: "Non. L'auteur n'est pas informé de qui a demandé la suppression." },
       { q: "J'ai plusieurs avis.", a: "Le prix est par avis — sélectionnez-en autant que vous voulez. Dès 3 avis acceptés, vous bénéficiez de −10 %, dès 5 de −15 % et dès 10 de −30 %, appliqués à chaque avis supprimé. Vous ne payez que ceux réellement supprimés." },
@@ -87,7 +87,7 @@ export const RVW_SEO_A = {
     compareRows: [
       ["Coût", "Gratuit", "Honoraires horaires, souvent payés d'avance", "À partir de 179 € par avis supprimé"],
       ["Paiement au résultat uniquement", "–", "Non", "Oui"],
-      ["Durée habituelle", "De quelques jours à plusieurs semaines – souvent refusé", "Des semaines, voire des mois", "Quelques jours à 3 semaines"],
+      ["Durée habituelle", "De quelques jours à plusieurs semaines – souvent refusé", "Des semaines, voire des mois", "En général 1 à 2 semaines"],
       ["Votre effort", "Élevé : règles, preuves, recours", "Rendez-vous et documents", "Coller le lien – c'est tout"],
       ["Voies utilisées", "Un signalement", "Uniquement la voie juridique", "Signalement, recours et demande juridique"],
     ],
@@ -109,7 +109,7 @@ export const RVW_SEO_A = {
   it: {
     h1: "Eliminare una recensione Google – paghi solo se sparisce.",
     faq: [
-      { q: "Quanto ci vuole?", a: "Di solito qualche giorno, a volte fino a tre settimane. Ti teniamo aggiornato." },
+      { q: "Quanto ci vuole?", a: "Di solito 1–2 settimane, a volte meno, in singoli casi un po' di più. Recensioni solo stelle con il nostro software speciale: ca. 1–3 giorni. Ti teniamo aggiornato." },
       { q: "E se non si può eliminare?", a: "Allora non paghi nulla. Se le probabilità ci sembrano basse, te lo diciamo subito." },
       { q: "L'autore saprà che sono stato io?", a: "No. All'autore non viene comunicato chi ha chiesto la rimozione." },
       { q: "Ho più recensioni.", a: "Il prezzo è per recensione: selezionane quante vuoi. Da 3 recensioni accettate hai il 10 % di sconto, da 5 il 15 % e da 10 il 30 %, applicato a ogni recensione rimossa. Paghi solo quelle davvero rimosse." },
@@ -140,7 +140,7 @@ export const RVW_SEO_A = {
     compareRows: [
       ["Costo", "Gratis", "Tariffe orarie, spesso pagate in anticipo", "Da 179 € per recensione rimossa"],
       ["Paghi solo a risultato ottenuto", "–", "No", "Sì"],
-      ["Durata tipica", "Da giorni a settimane – spesso respinta", "Da settimane a mesi", "Da pochi giorni a 3 settimane"],
+      ["Durata tipica", "Da giorni a settimane – spesso respinta", "Da settimane a mesi", "Di solito 1–2 settimane"],
       ["Il tuo impegno", "Alto: norme, prove, ricorsi", "Incontri e documenti", "Incolli il link – fatto"],
       ["Strade utilizzate", "Una segnalazione", "Solo la via legale", "Segnalazione, ricorso e richiesta legale"],
     ],
@@ -162,7 +162,7 @@ export const RVW_SEO_A = {
   pt: {
     h1: "Remover uma avaliação do Google – só paga se desaparecer.",
     faq: [
-      { q: "Quanto tempo demora?", a: "Normalmente alguns dias, às vezes até três semanas. Vamos mantendo-o informado." },
+      { q: "Quanto tempo demora?", a: "Normalmente 1–2 semanas, por vezes menos, em casos pontuais um pouco mais. Avaliações só com estrelas através do nosso software especial: cerca de 1–3 dias. Vamos mantendo-o informado." },
       { q: "E se não for possível remover?", a: "Então não paga nada. Se as hipóteses nos parecerem baixas, dizemos logo no início." },
       { q: "O autor saberá que fui eu?", a: "Não. O autor não é informado de quem pediu a remoção." },
       { q: "Tenho várias avaliações.", a: "O preço é por avaliação — selecione quantas quiser. A partir de 3 avaliações aceites tem 10 % de desconto, a partir de 5 15 % e a partir de 10 30 %, aplicado a cada avaliação removida. Só paga as que forem mesmo removidas." },
@@ -193,7 +193,7 @@ export const RVW_SEO_A = {
     compareRows: [
       ["Custo", "Grátis", "Honorários à hora, muitas vezes pagos adiantados", "A partir de 179 € por avaliação removida"],
       ["Só paga com sucesso", "–", "Não", "Sim"],
-      ["Duração típica", "Dias a semanas – muitas vezes recusada", "Semanas a meses", "Alguns dias a 3 semanas"],
+      ["Duração típica", "Dias a semanas – muitas vezes recusada", "Semanas a meses", "Normalmente 1–2 semanas"],
       ["O seu esforço", "Elevado: políticas, provas, recursos", "Reuniões e documentos", "Colar o link – e pronto"],
       ["Vias utilizadas", "Uma denúncia", "Só a via legal", "Denúncia, recurso e pedido legal"],
     ],
@@ -215,7 +215,7 @@ export const RVW_SEO_A = {
   nl: {
     h1: "Google-review laten verwijderen – u betaalt pas als hij weg is.",
     faq: [
-      { q: "Hoe lang duurt het?", a: "Meestal een paar dagen, soms tot drie weken. We houden u op de hoogte." },
+      { q: "Hoe lang duurt het?", a: "Meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Reviews met alleen sterren via onze speciale software: ca. 1–3 dagen. We houden u op de hoogte." },
       { q: "En als de review niet weg kan?", a: "Dan betaalt u niets. Schatten we de kans laag in, dan zeggen we dat vooraf." },
       { q: "Weet de schrijver dat ik het was?", a: "Nee. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
       { q: "Ik heb meerdere reviews.", a: "De prijs geldt per review — selecteer er zoveel als u wilt. Vanaf 3 geaccepteerde reviews krijgt u 10 % korting, vanaf 5 15 % en vanaf 10 30 % – op elke review die we verwijderen. U betaalt alleen voor wat echt verwijderd is." },
@@ -246,7 +246,7 @@ export const RVW_SEO_A = {
     compareRows: [
       ["Kosten", "Gratis", "Uurtarief, vaak vooraf te betalen", "Vanaf € 179 per verwijderde review"],
       ["Alleen betalen bij succes", "–", "Nee", "Ja"],
-      ["Gebruikelijke duur", "Dagen tot weken – vaak afgewezen", "Weken tot maanden", "Een paar dagen tot 3 weken"],
+      ["Gebruikelijke duur", "Dagen tot weken – vaak afgewezen", "Weken tot maanden", "Meestal 1–2 weken"],
       ["Uw inspanning", "Hoog: richtlijnen, bewijs, bezwaar", "Overleg en documenten", "Link plakken – klaar"],
       ["Gebruikte routes", "Eén melding", "Alleen de juridische route", "Melding, bezwaar en juridisch verzoek"],
     ],

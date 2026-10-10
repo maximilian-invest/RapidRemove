@@ -49,7 +49,7 @@ const article = {
     { t: "p", text: "Problemet: Google granskar anmälningar mestadels **automatiserat** och avvisar dem ofta – även vid klara brott. Uteblir framgången har du tre alternativ:" },
     { t: "table", head: ["Väg", "Vad tas bort", "Tid", "Framgång", "Kostnad"], rows: [
       ["Advokat", "enskild recension", "3–9 månader", "ca 90 %", "per recension, förskott"],
-      ["RapidRemove (enskilda recensioner)", "utvalda recensioner", "några dagar till 3 veckor", "ca. 90 % (upp till 4 veckor), ca. 50 % (äldre)", "från 179 € per borttagen recension, endast vid framgång"],
+      ["RapidRemove (enskilda recensioner)", "utvalda recensioner", "oftast 1–2 veckor", "ca. 90 % (upp till 4 veckor), ca. 50 % (äldre)", "från 179 € per borttagen recension, endast vid framgång"],
       ["RapidRemove (profilborttagning)", "**hela profilen + alla recensioner**", "24–48 tim", "garanterat", "fast pris efter framgång"],
     ] },
     { t: "p", text: "Viktigt att förstå: **profilborttagningen** tar inte bort recension för recension, utan hela Google-företagsprofilen – alla recensioner försvinner med. Det är rätt lösning när en profil är skadad som helhet och du vill ha en verklig nystart med rent blad. Borttagningen arbetar inom Googles logik, utan Streisandrisk, och betalas först **efter framgång**. Den som däremot bara vill bli av med en eller några orättvisa recensioner och behålla profilen väljer RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/): du markerar recensionerna, ser priset direkt och betalar bara för dem som faktiskt tas bort – från 3 recensioner med mängdrabatt." },

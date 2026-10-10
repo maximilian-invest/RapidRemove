@@ -49,7 +49,7 @@ const article = {
       ] },
       { t: "p", text: "**Rekenvoorbeelden:** 3 recente reviews kosten € 537, min 10 % = **€ 483**. 2 recente en 3 oudere reviews kosten € 1.045, min 15 % = **€ 888**. De kortingstrap hangt af van het aantal reviews **dat wij na de gratis beoordeling accepteren**, en geldt voor elke review daarvan die verwijderd wordt. U betaalt nog steeds alleen voor reviews die echt weg zijn: accepteren we er 3 en verdwijnen er 2, dan betaalt u 2 × € 179 min 10 % = **€ 322,20**." },
       { t: "p", text: "**Beoordelingen met alleen sterren, zonder tekst:** dat zijn **complexe gevallen**, die een uitgebreidere procedure vereisen. Prijs: **€ 300 per verwijderde review**, zonder toeslag voor oudere reviews. Zoals bij alle reviews legt u bij het bestellen een kaart of PayPal vast; er wordt pas automatisch afgeschreven nadat de review verwijderd is. De staffelkorting geldt ook hier en telt mee met alle geaccepteerde reviews van de bestelling. Voorbeeld: 2 beoordelingen met alleen sterren + 1 recente review met tekst = 3 geaccepteerde reviews, −10 %: na de verwijdering wordt automatisch € 270 afgeschreven per beoordeling met alleen sterren (€ 300 − 10 %) en € 161,10 (€ 179 − 10 %) voor de review met tekst – telkens alleen voor wat echt verwijderd is." },
-      { t: "p", text: "**Betalen per review:** de doorlooptijd kan per review verschillen – meestal een paar dagen, soms tot drie weken. Daarom wordt er per review afgeschreven, automatisch nadat die review verwijderd is. Reviews waar we nog mee bezig zijn, kosten u op dat moment nog niets." },
+      { t: "p", text: "**Betalen per review:** de doorlooptijd kan per review verschillen – meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Daarom wordt er per review afgeschreven, automatisch nadat die review verwijderd is. Reviews waar we nog mee bezig zijn, kosten u op dat moment nog niets." },
       { t: "tip", title: "Wacht niet te lang", text: "De slagingskans daalt van zo'n 90 % naar zo'n 50 % zodra een review ouder is dan vier weken – en de prijs stijgt naar € 229. Een verse nepreview is dus het goedkoopst en het zekerst te verwijderen. Ter vergelijking: advocaten rekenen meestal per review **vooraf** af, en het duurt vaak maanden ([advocaat of technische verwijdering?](/nl/magazine/negatieve-google-review-verwijderen-advocaat/))." },
 
       { t: "h2", id: "bestellen", text: "Zo bestelt u – in ongeveer twee minuten", toc: "Bestellen" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Selecteer de reviews die weg moeten", text: "Zoek uw bedrijf, vink de reviews aan – en zie direct de exacte prijs. **Reviews met tekst vanaf € 179 per verwijderde review**, niets vooraf.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
 
       { t: "h2", id: "dauer", text: "Hoe lang duurt het?", toc: "Duur" },
-      { t: "p", text: "Meestal **een paar dagen**, soms tot **drie weken** – afhankelijk van de review en de reden voor verwijdering. U hoeft in de tussentijd niets te doen; wij houden u op de hoogte. Wat er intussen aan de kant van Google gebeurt – de status van de melding, de tool voor reviewbeheer en bezwaar maken – leest u in [hoe lang het duurt voordat Google een review verwijdert](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
+      { t: "p", text: "Meestal **1–2 weken**, soms sneller, in enkele gevallen iets langer – afhankelijk van de review en de reden voor verwijdering. U hoeft in de tussentijd niets te doen; wij houden u op de hoogte. Wat er intussen aan de kant van Google gebeurt – de status van de melding, de tool voor reviewbeheer en bezwaar maken – leest u in [hoe lang het duurt voordat Google een review verwijdert](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
 
       { t: "h2", id: "vergleich", text: "Losse reviews, heel profiel, advocaat of zelf melden – vergeleken", toc: "Vergelijking" },
       { t: "table", rrCol: 1, head: ["Criterium", "Losse reviews verwijderen", "Profielverwijdering", "Advocaat", "Zelf melden"], rows: [
         ["Wat wordt verwijderd", "Geselecteerde reviews (ook alleen sterren)", "Heel profiel + alle reviews", "Losse review", "Losse review"],
         ["Goede reviews blijven", "Ja", "Nee", "Ja", "Ja"],
-        ["Duur", "Dagen tot 3 weken", "Meestal 24 – 48 uur", "3 – 9 maanden", "Onzeker"],
+        ["Duur", "Meestal 1–2 weken", "Meestal 24 – 48 uur", "3 – 9 maanden", "Onzeker"],
         ["Kosten", "Vanaf € 179, alleen bij succes (alleen sterren: € 300)", "Vaste prijs, na succes", "Per review, vooraf", "Gratis"],
         ["Inspanning voor u", "2 minuten", "Minimaal", "Hoog", "Gemiddeld"],
       ] },

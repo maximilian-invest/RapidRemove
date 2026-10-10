@@ -95,7 +95,7 @@ const article = {
       "**179 € por reseña eliminada**, 229 € si tiene más de 4 semanas. Solo pagas cuando la reseña ha desaparecido.",
       "**Probabilidad de éxito:** aprox. **90 %** en reseñas de hasta 4 semanas, aprox. **50 %** en las más antiguas.",
       "**Descuento por volumen** en las reseñas aceptadas: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Plazo:** normalmente unos días, a veces hasta 3 semanas.",
+      "**Plazo:** normalmente 1–2 semanas, a veces más rápido, en casos puntuales algo más.",
     ] },
     { t: "p", text: "Desde 2023 hemos eliminado más de 1.600 Perfiles de Empresa de Google y realizado más de 20.000 comprobaciones gratuitas para clientes de más de 50 países. Precios y proceso de pedido: [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/)." },
     { t: "cta", title: "Elige las reseñas que infringen las normas", text: "Carga tus últimas reseñas de Google, marca las que quieres eliminar y ve el precio exacto. Son unos 2 minutos y solo pagas por las reseñas que realmente se eliminan.", btn: "Revisar mis reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Pago solo si hay éxito", "Solo procedimientos de Google", "Valoración gratuita"] },

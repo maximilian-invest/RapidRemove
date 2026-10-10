@@ -49,7 +49,7 @@ const article = {
         ["10 o più", "**−30 %**"],
       ] },
       { t: "p", text: "**Esempi:** 3 recensioni recenti costano 537 €, meno il 10 % = **483 €**. 2 recensioni recenti e 3 più vecchie costano 1.045 €, meno il 15 % = **888 €**. Il livello di sconto dipende dal numero di recensioni **che accettiamo dopo la valutazione gratuita** e si applica a ognuna di esse che viene rimossa. Paghi comunque solo le recensioni effettivamente rimosse: se ne accettiamo 3 e ne spariscono 2, paghi 2 × 179 € meno il 10 % = **322,20 €**. Le valutazioni senza testo contano per lo sconto insieme a tutte le altre recensioni accettate: 1 recensione recente + 2 valutazioni senza testo = 3 recensioni, quindi −10 % – le due valutazioni costano **270 €** l'una e la recensione con testo 161,10 €, ciascuna addebitata solo dopo la rimozione." },
-      { t: "p", text: "**Pagamento per singola recensione:** i tempi di rimozione possono variare da una recensione all'altra – di solito pochi giorni, a volte fino a tre settimane. Per questo il pagamento può avvenire recensione per recensione, ciascuna addebitata automaticamente sulla carta o PayPal salvati appena viene rimossa. Le recensioni su cui stiamo ancora lavorando per ora non ti costano nulla." },
+      { t: "p", text: "**Pagamento per singola recensione:** i tempi di rimozione possono variare da una recensione all'altra – di solito 1–2 settimane, a volte prima, in singoli casi un po' di più. Per questo il pagamento può avvenire recensione per recensione, ciascuna addebitata automaticamente sulla carta o PayPal salvati appena viene rimossa. Le recensioni su cui stiamo ancora lavorando per ora non ti costano nulla." },
       { t: "tip", title: "Ordina presto", text: "La probabilità di successo scende da circa il 90 % a circa il 50 % quando una recensione supera le quattro settimane – e il prezzo sale a 229 €. Una recensione falsa appena pubblicata è la più economica e la più sicura da rimuovere. Per confronto: gli avvocati di solito fatturano per recensione **in anticipo**, e spesso servono mesi ([avvocato o rimozione tecnica?](/it/rivista/eliminare-recensione-negativa-google-avvocato-o-tecnica/))." },
 
       { t: "h2", id: "bestellen", text: "Come ordinare – in circa due minuti", toc: "Come ordinare" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Seleziona le recensioni da eliminare", text: "Cerca la tua attività, spunta le recensioni – e vedi subito il prezzo esatto. **Da 179 € per recensione rimossa**, nulla in anticipo.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi per recensione rimossa", "Prima una valutazione onesta"] },
 
       { t: "h2", id: "dauer", text: "Quanto tempo ci vuole?", toc: "Tempi" },
-      { t: "p", text: "Di solito **pochi giorni**, a volte fino a **tre settimane**, a seconda della recensione e del motivo della rimozione. Nel frattempo non devi fare nulla – ti teniamo aggiornato. Cosa succede nel frattempo dal lato di Google – stato della segnalazione, strumento di gestione delle recensioni e ricorso – lo spieghiamo in [quanto tempo impiega Google a rimuovere una recensione](/it/rivista/quanto-tempo-google-rimuovere-recensione/)." },
+      { t: "p", text: "Di solito **1–2 settimane**, a volte prima, in singoli casi un po' di più, a seconda della recensione e del motivo della rimozione. Nel frattempo non devi fare nulla – ti teniamo aggiornato. Cosa succede nel frattempo dal lato di Google – stato della segnalazione, strumento di gestione delle recensioni e ricorso – lo spieghiamo in [quanto tempo impiega Google a rimuovere una recensione](/it/rivista/quanto-tempo-google-rimuovere-recensione/)." },
 
       { t: "h2", id: "vergleich", text: "Singole recensioni, intero profilo, avvocato o fai da te: il confronto", toc: "Confronto" },
       { t: "table", rrCol: 1, head: ["Criterio", "Rimozione di singole recensioni", "Rimozione del profilo", "Avvocato", "Segnalare da soli"], rows: [
         ["Cosa viene rimosso", "Recensioni selezionate (anche valutazioni senza testo)", "Intero profilo + tutte le recensioni", "Singola recensione", "Singola recensione"],
         ["Le recensioni positive restano", "Sì", "No", "Sì", "Sì"],
-        ["Tempi", "Da pochi giorni a 3 settimane", "Di norma 24 – 48 ore", "3 – 9 mesi", "Incerti"],
+        ["Tempi", "Di solito 1–2 settimane", "Di norma 24 – 48 ore", "3 – 9 mesi", "Incerti"],
         ["Costo", "Da 179 €, solo se rimossa (senza testo: 300 €)", "Prezzo fisso, dopo il successo", "Per recensione, in anticipo", "Gratis"],
         ["Impegno per te", "2 minuti", "Minimo", "Alto", "Medio"],
       ] },

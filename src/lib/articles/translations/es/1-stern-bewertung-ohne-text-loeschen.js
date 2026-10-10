@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Vía", "Qué se elimina", "Duración", "Éxito", "Coste"], rows: [
       ["Denunciar tú mismo", "reseña individual", "incierto", "bajo", "gratis"],
       ["Abogado", "reseña individual", "3 – 9 meses", "aprox. 90 %", "por reseña, por adelantado"],
-      ["RapidRemove (reseñas individuales)", "**reseñas seleccionadas, también solo de estrellas**", "unos días – 3 semanas", "decide Google", "300 € por valoración eliminada"],
+      ["RapidRemove (reseñas individuales)", "**reseñas seleccionadas, también solo de estrellas**", "normalmente 1–2 semanas (solo estrellas: aprox. 1–3 días)", "decide Google", "300 € por valoración eliminada"],
       ["RapidRemove (perfil)", "**todo el perfil + todas las reseñas**", "24 – 48 h", "pago solo si hay éxito", "precio fijo tras el éxito"],
     ] },
     { t: "p", text: "Con la eliminación del perfil solo pagas **tras el éxito** y, gracias a la garantía, un perfil que reaparezca se elimina gratis." },

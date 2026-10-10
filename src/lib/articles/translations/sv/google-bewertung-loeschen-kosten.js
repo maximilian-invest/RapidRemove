@@ -36,7 +36,7 @@ const article = {
       ["Kostnadsmodell", "Gratis", "Timarvode, ofta förskott", "Per försök eller fast belopp i förväg", "**179 € per borttagen recension** (229 € om äldre än 4 veckor); betyg utan text 300 € per borttaget betyg"],
       ["Betalar du om recensionen blir kvar?", "–", "Ja", "Ofta ja", "**Nej**"],
       ["Risk för dig", "Förlorad tid, avvisas ofta", "Hög: kostnad oavsett utfall", "Hög: pengarna redan betalda", "**Ingen**: bara vid resultat"],
-      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast några dagar, ibland upp till 3 veckor"],
+      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast 1–2 veckor (betyg utan text: ca 1–3 dagar)"],
       ["Insats för dig", "Medel (anmäla, följa upp, överklaga)", "Hög (underlag, möten)", "Varierar", "Ca 2 minuter"],
     ] },
     { t: "p", text: "Hur lång tid Google själv tar och hur överklagandet fungerar läser du i [hur lång tid tar det för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
@@ -79,7 +79,7 @@ const article = {
       "**Vi sätter igång** via Googles egna procedurer, för din räkning som ägare.",
       "**Recensionen borta?** Då dras beloppet automatiskt – **per recension**, så att du bara betalar för det som redan är borta.",
     ] },
-    { t: "p", text: "Oftast tar det **några dagar**, ibland upp till **tre veckor**. Skribenten får inte veta vem som begärt borttagningen." },
+    { t: "p", text: "Oftast tar det **1–2 veckor**, ibland snabbare, i enstaka fall något längre. Skribenten får inte veta vem som begärt borttagningen." },
 
     { t: "h2", id: "varningssignaler", text: "Varningssignaler hos leverantörer", toc: "Varningssignaler" },
     { t: "p", text: "Ett lågt pris är värdelöst om metoden inte håller. Håll utkik efter de här signalerna:" },

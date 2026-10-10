@@ -95,7 +95,7 @@ const article = {
       "**179 € per recensione rimossa**, 229 € per quelle più vecchie di 4 settimane. Paghi solo quando la recensione è sparita.",
       "**Probabilità di successo:** circa il **90 %** per recensioni fino a 4 settimane, circa il **50 %** per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni accettate: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane.",
+      "**Tempi:** di solito 1–2 settimane, a volte prima, in singoli casi un po' di più.",
     ] },
     { t: "p", text: "Dal 2023 abbiamo rimosso oltre 1.600 Profili dell'attività Google ed eseguito oltre 20.000 verifiche gratuite per clienti in più di 50 paesi. Prezzi e ordine: [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/)." },
     { t: "cta", title: "Scegli le recensioni che violano le norme", text: "Carica le tue ultime recensioni Google, spunta quelle da rimuovere e vedi il prezzo esatto. Bastano circa 2 minuti e paghi solo le recensioni davvero rimosse.", btn: "Controlla le mie recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Paghi solo a successo", "Solo procedure Google", "Valutazione gratuita"] },

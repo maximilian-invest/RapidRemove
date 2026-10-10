@@ -3,7 +3,7 @@ export const RVW_SEO_B = {
   ja: {
     h1: "Googleの口コミを削除——消えたときだけお支払い。",
     faq: [
-      { q: "どのくらいかかりますか？", a: "通常は数日、長い場合で3週間ほどです。進捗は随時ご連絡します。" },
+      { q: "どのくらいかかりますか？", a: "通常は1〜2週間です（早まることも、まれに少し長くなることもあります）。星のみの口コミは専用ソフトウェアで約1〜3日です。進捗は随時ご連絡します。" },
       { q: "削除できなかったら？", a: "その場合、お支払いはありません。見込みが低いと判断したときは、最初にそうお伝えします。" },
       { q: "投稿者に依頼者が知られますか？", a: "いいえ。誰が削除を依頼したかが投稿者に伝わることはありません。" },
       { q: "口コミが複数あります。", a: "料金は1件ごとです。何件でも選択できます。無料診断のうえ対応をお引き受けした口コミが3件以上なら−10%、5件以上で−15%、10件以上で−30%。割引は削除できたすべての口コミに適用され、お支払いは実際に削除できた分だけです。" },
@@ -34,7 +34,7 @@ export const RVW_SEO_B = {
     compareRows: [
       ["費用", "無料", "時間制の報酬、着手金が必要なことも多い", "削除1件あたり$179から"],
       ["成功報酬", "–", "いいえ", "はい"],
-      ["期間の目安", "数日〜数週間、却下されることも多い", "数週間〜数か月", "数日〜3週間"],
+      ["期間の目安", "数日〜数週間、却下されることも多い", "数週間〜数か月", "通常1〜2週間"],
       ["あなたの手間", "大きい：ポリシー確認、証拠、再審査請求", "打ち合わせと書類準備", "リンクを貼るだけ"],
       ["使う手段", "報告1回", "法的手段のみ", "報告・再審査請求・法的リクエスト"],
     ],
@@ -56,7 +56,7 @@ export const RVW_SEO_B = {
   sv: {
     h1: "Ta bort en Google-recension – betala bara om den försvinner.",
     faq: [
-      { q: "Hur lång tid tar det?", a: "Oftast några dagar, ibland upp till tre veckor. Vi håller dig uppdaterad." },
+      { q: "Hur lång tid tar det?", a: "Oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Betyg utan text via vår specialprogramvara: ca 1–3 dagar. Vi håller dig uppdaterad." },
       { q: "Och om omdömet inte kan tas bort?", a: "Då betalar du ingenting. Bedömer vi chanserna som små säger vi det från början." },
       { q: "Får recensenten veta att det var jag?", a: "Nej. Recensenten får inte veta vem som begärde borttagningen." },
       { q: "Jag har flera omdömen.", a: "Priset gäller per omdöme — välj så många du vill. Tar vi oss an 3 omdömen eller fler efter den kostnadsfria bedömningen får du −10 %, från 5 −15 % och från 10 −30 % – på varje omdöme som tas bort. Du betalar bara för dem som faktiskt tas bort." },
@@ -87,7 +87,7 @@ export const RVW_SEO_B = {
     compareRows: [
       ["Kostnad", "Gratis", "Timarvode, ofta i förskott", "Från 179 € per borttagen recension"],
       ["Betala bara vid framgång", "–", "Nej", "Ja"],
-      ["Typisk tid", "Dagar till veckor – ofta avslag", "Veckor till månader", "Några dagar till 3 veckor"],
+      ["Typisk tid", "Dagar till veckor – ofta avslag", "Veckor till månader", "Oftast 1–2 veckor"],
       ["Din insats", "Hög: regler, bevis, överklaganden", "Genomgångar och dokument", "Klistra in länken – klart"],
       ["Vägar som används", "En anmälan", "Bara den juridiska vägen", "Anmälan, överklagande och juridisk begäran"],
     ],
@@ -109,7 +109,7 @@ export const RVW_SEO_B = {
   da: {
     h1: "Fjern en Google-anmeldelse – betal kun, hvis den forsvinder.",
     faq: [
-      { q: "Hvor lang tid tager det?", a: "Som regel få dage, nogle gange op til tre uger. Vi holder dig opdateret." },
+      { q: "Hvor lang tid tager det?", a: "Som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Anmeldelser uden tekst via vores specialsoftware: ca. 1–3 dage. Vi holder dig opdateret." },
       { q: "Hvad hvis anmeldelsen ikke kan fjernes?", a: "Så betaler du ingenting. Vurderer vi chancerne som små, siger vi det fra starten." },
       { q: "Finder anmelderen ud af, det var mig?", a: "Nej. Anmelderen får ikke at vide, hvem der bad om fjernelsen." },
       { q: "Jeg har flere anmeldelser.", a: "Prisen gælder pr. anmeldelse — vælg så mange du vil. Tager vi 3 anmeldelser eller flere på os efter den gratis vurdering, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse, der fjernes. Du betaler kun for dem, der faktisk fjernes." },
@@ -140,7 +140,7 @@ export const RVW_SEO_B = {
     compareRows: [
       ["Pris", "Gratis", "Timehonorar, ofte betalt på forhånd", "Fra 179 € pr. fjernet anmeldelse"],
       ["Betal kun ved succes", "–", "Nej", "Ja"],
-      ["Typisk varighed", "Dage til uger – ofte afvist", "Uger til måneder", "Få dage til 3 uger"],
+      ["Typisk varighed", "Dage til uger – ofte afvist", "Uger til måneder", "Som regel 1–2 uger"],
       ["Din indsats", "Høj: regler, beviser, klager", "Møder og dokumenter", "Indsæt linket – færdig"],
       ["Anvendte veje", "Én indberetning", "Kun den juridiske vej", "Indberetning, klage og juridisk anmodning"],
     ],
@@ -162,7 +162,7 @@ export const RVW_SEO_B = {
   no: {
     h1: "Fjern en Google-anmeldelse – betal bare hvis den forsvinner.",
     faq: [
-      { q: "Hvor lang tid tar det?", a: "Vanligvis noen dager, av og til opptil tre uker. Vi holder deg oppdatert." },
+      { q: "Hvor lang tid tar det?", a: "Vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Anmeldelser uten tekst via vår spesialprogramvare: ca. 1–3 dager. Vi holder deg oppdatert." },
       { q: "Hva om omtalen ikke kan fjernes?", a: "Da betaler du ingenting. Vurderer vi sjansene som små, sier vi det med en gang." },
       { q: "Får anmelderen vite at det var meg?", a: "Nei. Anmelderen får ikke vite hvem som ba om fjerningen." },
       { q: "Jeg har flere omtaler.", a: "Prisen gjelder per omtale — velg så mange du vil. Tar vi på oss 3 anmeldelser eller flere etter den gratis vurderingen, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse som fjernes. Du betaler bare for dem som faktisk fjernes." },
@@ -193,7 +193,7 @@ export const RVW_SEO_B = {
     compareRows: [
       ["Pris", "Gratis", "Timepris, ofte forskuddsbetalt", "Fra 179 € per fjernet anmeldelse"],
       ["Betal kun ved suksess", "–", "Nei", "Ja"],
-      ["Typisk varighet", "Dager til uker – ofte avvist", "Uker til måneder", "Noen dager til 3 uker"],
+      ["Typisk varighet", "Dager til uker – ofte avvist", "Uker til måneder", "Vanligvis 1–2 uker"],
       ["Din innsats", "Høy: regler, bevis, klager", "Møter og dokumenter", "Lim inn lenken – ferdig"],
       ["Veier som brukes", "Én rapport", "Bare den juridiske veien", "Rapport, klage og juridisk forespørsel"],
     ],

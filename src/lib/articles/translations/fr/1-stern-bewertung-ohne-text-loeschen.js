@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Voie", "Ce qui est supprimé", "Durée", "Succès", "Coût"], rows: [
       ["Signaler soi-même", "avis isolé", "incertain", "faible", "gratuit"],
       ["Avocat", "avis isolé", "3 – 9 mois", "env. 90 %", "par avis, à l'avance"],
-      ["RapidRemove (avis isolés)", "**les avis sélectionnés, y compris notes sans texte**", "quelques jours – 3 semaines", "Google décide", "300 € par note supprimée"],
+      ["RapidRemove (avis isolés)", "**les avis sélectionnés, y compris notes sans texte**", "en général 1 à 2 semaines (notes sans texte : env. 1 à 3 jours)", "Google décide", "300 € par note supprimée"],
       ["RapidRemove (suppression de fiche)", "**toute la fiche + tous les avis**", "24 – 48 h", "paiement en cas de succès", "prix fixe après succès"],
     ] },
     { t: "p", text: "Avec la suppression de la fiche, vous ne payez qu'**après succès**, et grâce à la garantie une fiche qui réapparaît est supprimée gratuitement." },
@@ -61,7 +61,7 @@ const article = {
     { q: "Comment signaler une note en étoiles sans commentaire ?", a: "Via le menu à trois points à côté de l'avis, cliquez sur « Signaler l'avis » et indiquez comme motif l'absence de lien avec la prestation. Vous suivez le statut via l'outil Google de gestion des avis." },
     { q: "Que faire si Google ne supprime pas l'avis ?", a: "Pour une note isolée sans texte, il reste le recours dans l'outil Google de gestion des avis, une contestation motivée par un avocat ou la [suppression d'avis isolés de RapidRemove](/fr/supprimer-un-avis/) – pour les notes sans texte par procédure plus approfondie (300 € par note supprimée). Si votre fiche est endommagée dans son ensemble et que vous voulez repartir à neuf, la suppression de la fiche via RapidRemove est la plus fiable : tous les avis disparaissent avec la fiche." },
     { q: "RapidRemove supprime-t-il l'avis 1 étoile isolé ?", a: "Oui, même sans texte. Avec notre [suppression d'avis isolés](/fr/supprimer-un-avis/), vous sélectionnez la note dans le formulaire de commande ; nous la traitons par une procédure plus approfondie (cas complexe). Prix : **300 € par note**, sans supplément pour les notes anciennes ; la remise sur quantité s'applique. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. Si la fiche est endommagée dans son ensemble, la suppression complète de la fiche avec tous ses avis reste une option." },
-    { q: "En combien de temps les avis disparaissent-ils ?", a: "Via la suppression de la fiche, souvent en 24 à 48 heures ; via la suppression d'avis isolés, en général en quelques jours, parfois jusqu'à trois semaines. Un signalement à Google prend de quelques jours à plusieurs semaines, sans garantie de résultat ; la voie juridique pour un avis isolé prend souvent plusieurs mois." },
+    { q: "En combien de temps les avis disparaissent-ils ?", a: "Via la suppression de la fiche, souvent en 24 à 48 heures ; via la suppression d'avis isolés, en général en 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus (notes sans texte : env. 1 à 3 jours). Un signalement à Google prend de quelques jours à plusieurs semaines, sans garantie de résultat ; la voie juridique pour un avis isolé prend souvent plusieurs mois." },
   ],
   related: [
     { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

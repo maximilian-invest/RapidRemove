@@ -49,7 +49,7 @@ const article = {
       ] },
       { t: "p", text: "**Exemplos:** 3 avaliações recentes custam 537 €, menos 10 % = **483 €**. 2 avaliações recentes e 3 mais antigas custam 1.045 €, menos 15 % = **888 €**. O escalão de desconto depende do número de avaliações **que aceitamos após a análise gratuita** e aplica-se a cada uma delas que for removida. Continua a pagar só pelas avaliações efetivamente removidas: se aceitarmos 3 e desaparecerem 2, paga 2 × 179 € menos 10 % = **322,20 €**." },
       { t: "p", text: "**Classificações só com estrelas, sem texto:** são **casos complexos**, que exigem um procedimento mais extenso. Preço: **300 € por avaliação removida**, sem acréscimo para as mais antigas. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. O desconto por quantidade também se aplica e conta em conjunto com todas as avaliações aceites da encomenda. Exemplo: 2 classificações só com estrelas + 1 avaliação recente com texto = 3 avaliações aceites, −10 %: após a remoção são cobrados automaticamente 270 € por cada classificação só com estrelas (300 € − 10 %) e 161,10 € (179 € − 10 %) pela avaliação com texto – sempre só pelo que foi realmente removido." },
-      { t: "p", text: "**Pagamento por avaliação:** o prazo de remoção pode variar de avaliação para avaliação – normalmente alguns dias, por vezes até três semanas. Por isso, a cobrança é feita avaliação a avaliação, automaticamente depois de cada remoção. As avaliações em que ainda estamos a trabalhar não lhe custam nada por enquanto." },
+      { t: "p", text: "**Pagamento por avaliação:** o prazo de remoção pode variar de avaliação para avaliação – normalmente 1–2 semanas, por vezes mais rápido, em casos pontuais um pouco mais. Por isso, a cobrança é feita avaliação a avaliação, automaticamente depois de cada remoção. As avaliações em que ainda estamos a trabalhar não lhe custam nada por enquanto." },
       { t: "tip", title: "Encomende cedo", text: "A probabilidade de sucesso desce de cerca de 90 % para cerca de 50 % quando a avaliação tem mais de quatro semanas – e o preço sobe para 229 €. Uma avaliação falsa recente é a mais barata e a mais segura de remover. Para comparação: os advogados cobram normalmente por avaliação e **adiantado**, e o processo demora muitas vezes meses ([advogado ou remoção técnica?](/pt/revista/avaliacao-negativa-google-advogado/))." },
 
       { t: "h2", id: "bestellen", text: "Como encomendar – em cerca de dois minutos", toc: "Como encomendar" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Selecione as avaliações que devem sair", text: "Pesquise a sua empresa, marque as avaliações – e veja de imediato o preço exato. **Avaliações com texto desde 179 € por avaliação removida**, nada adiantado.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Pagamento por avaliação removida", "Primeiro uma opinião honesta"] },
 
       { t: "h2", id: "dauer", text: "Quanto tempo demora?", toc: "Duração" },
-      { t: "p", text: "Normalmente **alguns dias**, por vezes até **três semanas**, consoante a avaliação e o motivo da remoção. Entretanto não tem de fazer nada – mantemo-lo informado. O que acontece entretanto do lado do Google – estado da denúncia, a ferramenta de gestão de avaliações e o recurso – explicamos em [quanto tempo demora o Google a remover uma avaliação](/pt/revista/quanto-tempo-google-remover-avaliacao/)." },
+      { t: "p", text: "Normalmente **1–2 semanas**, por vezes mais rápido, em casos pontuais um pouco mais, consoante a avaliação e o motivo da remoção. Entretanto não tem de fazer nada – mantemo-lo informado. O que acontece entretanto do lado do Google – estado da denúncia, a ferramenta de gestão de avaliações e o recurso – explicamos em [quanto tempo demora o Google a remover uma avaliação](/pt/revista/quanto-tempo-google-remover-avaliacao/)." },
 
       { t: "h2", id: "vergleich", text: "Avaliações individuais, perfil completo, advogado ou por conta própria – comparação", toc: "Comparação" },
       { t: "table", rrCol: 1, head: ["Critério", "Remoção de avaliações individuais", "Remoção do perfil", "Advogado", "Denunciar por si mesmo"], rows: [
         ["O que é removido", "Avaliações selecionadas (também só com estrelas)", "Perfil inteiro + todas as avaliações", "Avaliação isolada", "Avaliação isolada"],
         ["As avaliações boas mantêm-se", "Sim", "Não", "Sim", "Sim"],
-        ["Duração", "Dias a 3 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incerta"],
+        ["Duração", "Normalmente 1–2 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incerta"],
         ["Custo", "Desde 179 €, só se for removida (só estrelas: 300 €)", "Preço fixo, após sucesso", "Por avaliação, adiantado", "Gratuito"],
         ["O seu esforço", "2 minutos", "Mínimo", "Elevado", "Médio"],
       ] },

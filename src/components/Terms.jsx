@@ -93,7 +93,7 @@ TERMS.de = {
         "4.2. Verzögert sich die Leistungserbringung, weil der Kunde erforderliche Mitwirkungen nicht erbringt, verlängern sich genannte Bearbeitungszeiten entsprechend.",
       ] },
       { h: "5. Bearbeitungszeit", ps: [
-        "5.1. Die Entfernung erfolgt in der Regel innerhalb von **24 bis 48 Stunden** ab Vorliegen aller Mitwirkungen gemäß Punkt 4. Hierbei handelt es sich um eine Zirka-Angabe, nicht um einen Fixtermin. Verzögerungen durch Google-interne Prozesse haben wir nicht zu vertreten. Bei Leistungen gemäß 2.5 richtet sich die Dauer nach der Prüfung durch Google; sie beträgt in der Regel einige Tage, in Einzelfällen bis zu etwa drei Wochen.",
+        "5.1. Die Entfernung erfolgt in der Regel innerhalb von **24 bis 48 Stunden** ab Vorliegen aller Mitwirkungen gemäß Punkt 4. Hierbei handelt es sich um eine Zirka-Angabe, nicht um einen Fixtermin. Verzögerungen durch Google-interne Prozesse haben wir nicht zu vertreten. Bei Leistungen gemäß 2.5 richtet sich die Dauer nach der Prüfung durch Google; sie beträgt in der Regel ein bis zwei Wochen, manchmal weniger, in Einzelfällen etwas länger. Software-Löschungen dauern in der Regel ca. ein bis drei Tage.",
       ] },
       { h: "6. Preise und Zahlung", ps: [
         "6.1. Es gelten die zum Zeitpunkt der Beauftragung auf der Website bzw. im Angebot ausgewiesenen Festpreise. Sämtliche ausgewiesenen Preise sind Endpreise und verstehen sich inklusive allfälliger gesetzlicher Umsatzsteuer. Je nach Region des Kunden erfolgt die Abrechnung in EUR oder USD.",
@@ -193,7 +193,7 @@ TERMS.en = {
         "4.2. If performance is delayed because the customer fails to provide required cooperation, the stated processing times are extended accordingly.",
       ] },
       { h: "5. Processing time", ps: [
-        "5.1. Removal is generally carried out within **24 to 48 hours** from receipt of all cooperation pursuant to clause 4. This is an approximate figure, not a fixed deadline. We are not responsible for delays caused by Google-internal processes. For services pursuant to 2.5, the duration depends on Google's review; it is generally a few days, in individual cases up to about three weeks.",
+        "5.1. Removal is generally carried out within **24 to 48 hours** from receipt of all cooperation pursuant to clause 4. This is an approximate figure, not a fixed deadline. We are not responsible for delays caused by Google-internal processes. For services pursuant to 2.5, the duration depends on Google's review; it is generally one to two weeks, sometimes less, in individual cases somewhat longer. Software removals generally take approx. one to three days.",
       ] },
       { h: "6. Prices and payment", ps: [
         "6.1. The fixed prices shown on the website or in the offer at the time of the engagement apply. All prices shown are final prices and include any applicable statutory VAT. Depending on the customer's region, billing is in EUR or USD.",
@@ -293,7 +293,7 @@ TERMS.es = {
         "4.2. Si la prestación se retrasa porque el cliente no aporta la colaboración necesaria, los plazos de tramitación indicados se prolongarán en consecuencia.",
       ] },
       { h: "5. Plazo de tramitación", ps: [
-        "5.1. La eliminación se realiza por lo general en un plazo de **24 a 48 horas** desde que se dispone de toda la colaboración según el punto 4. Se trata de una indicación aproximada, no de una fecha fija. No respondemos de los retrasos debidos a procesos internos de Google. Para los servicios según 2.5, la duración depende de la revisión de Google; por lo general son unos días, en casos concretos hasta unas tres semanas.",
+        "5.1. La eliminación se realiza por lo general en un plazo de **24 a 48 horas** desde que se dispone de toda la colaboración según el punto 4. Se trata de una indicación aproximada, no de una fecha fija. No respondemos de los retrasos debidos a procesos internos de Google. Para los servicios según 2.5, la duración depende de la revisión de Google; por lo general son una o dos semanas, a veces menos, en casos concretos algo más. Las eliminaciones mediante software suelen tardar aprox. de uno a tres días.",
       ] },
       { h: "6. Precios y pago", ps: [
         "6.1. Se aplican los precios fijos indicados en la web o en la oferta en el momento del encargo. Todos los precios indicados son precios finales e incluyen, en su caso, el IVA legal. Según la región del cliente, la facturación se realiza en EUR o USD.",
@@ -393,7 +393,7 @@ TERMS.fr = {
         "4.2. Si l'exécution est retardée parce que le client ne fournit pas la coopération requise, les délais de traitement indiqués sont prolongés en conséquence.",
       ] },
       { h: "5. Délai de traitement", ps: [
-        "5.1. La suppression intervient en règle générale dans un délai de **24 à 48 heures** à compter de la réception de toutes les coopérations selon le point 4. Il s'agit d'une indication approximative et non d'une échéance ferme. Nous ne répondons pas des retards dus aux processus internes de Google. Pour les prestations selon 2.5, la durée dépend de l'examen par Google ; elle est en général de quelques jours, dans certains cas jusqu'à environ trois semaines.",
+        "5.1. La suppression intervient en règle générale dans un délai de **24 à 48 heures** à compter de la réception de toutes les coopérations selon le point 4. Il s'agit d'une indication approximative et non d'une échéance ferme. Nous ne répondons pas des retards dus aux processus internes de Google. Pour les prestations selon 2.5, la durée dépend de l'examen par Google ; elle est en général d'une à deux semaines, parfois moins, dans certains cas un peu plus. Les suppressions par logiciel prennent en général env. un à trois jours.",
       ] },
       { h: "6. Prix et paiement", ps: [
         "6.1. Les prix fixes indiqués sur le site ou dans l'offre au moment de la commande s'appliquent. Tous les prix indiqués sont des prix définitifs et s'entendent TVA légale éventuelle incluse. Selon la région du client, la facturation s'effectue en EUR ou en USD.",
@@ -493,7 +493,7 @@ TERMS.it = {
         "4.2. Se l'esecuzione subisce ritardi perché il cliente non fornisce la collaborazione necessaria, i tempi di lavorazione indicati si prolungano di conseguenza.",
       ] },
       { h: "5. Tempi di lavorazione", ps: [
-        "5.1. La rimozione avviene di regola entro **24–48 ore** dalla disponibilità di tutte le collaborazioni di cui al punto 4. Si tratta di un'indicazione approssimativa, non di una scadenza fissa. Non rispondiamo dei ritardi dovuti a processi interni di Google. Per i servizi di cui a 2.5 la durata dipende dalla verifica di Google; di regola si tratta di alcuni giorni, in singoli casi fino a circa tre settimane.",
+        "5.1. La rimozione avviene di regola entro **24–48 ore** dalla disponibilità di tutte le collaborazioni di cui al punto 4. Si tratta di un'indicazione approssimativa, non di una scadenza fissa. Non rispondiamo dei ritardi dovuti a processi interni di Google. Per i servizi di cui a 2.5 la durata dipende dalla verifica di Google; di regola si tratta di una o due settimane, a volte meno, in singoli casi un po' di più. Le rimozioni tramite software richiedono di regola ca. da uno a tre giorni.",
       ] },
       { h: "6. Prezzi e pagamento", ps: [
         "6.1. Si applicano i prezzi fissi indicati sul sito o nell'offerta al momento dell'incarico. Tutti i prezzi indicati sono prezzi finali e si intendono comprensivi dell'eventuale IVA di legge. A seconda della regione del cliente, la fatturazione avviene in EUR o USD.",
@@ -593,7 +593,7 @@ TERMS.nl = {
         "4.2. Loopt de dienstverlening vertraging op doordat de klant vereiste medewerking niet verleent, dan worden genoemde verwerkingstijden dienovereenkomstig verlengd.",
       ] },
       { h: "5. Verwerkingstijd", ps: [
-        "5.1. De verwijdering vindt in de regel plaats binnen **24 tot 48 uur** nadat alle medewerking volgens punt 4 voorligt. Het betreft een circa-indicatie, geen fatale termijn. Vertragingen door Google-interne processen komen niet voor onze rekening. Bij diensten volgens 2.5 hangt de duur af van de beoordeling door Google; die bedraagt in de regel enkele dagen, in individuele gevallen tot ongeveer drie weken.",
+        "5.1. De verwijdering vindt in de regel plaats binnen **24 tot 48 uur** nadat alle medewerking volgens punt 4 voorligt. Het betreft een circa-indicatie, geen fatale termijn. Vertragingen door Google-interne processen komen niet voor onze rekening. Bij diensten volgens 2.5 hangt de duur af van de beoordeling door Google; die bedraagt in de regel één tot twee weken, soms minder, in individuele gevallen iets langer. Verwijderingen via software duren in de regel ca. één tot drie dagen.",
       ] },
       { h: "6. Prijzen en betaling", ps: [
         "6.1. De op het moment van de opdracht op de website resp. in de offerte vermelde vaste prijzen gelden. Alle vermelde prijzen zijn eindprijzen en zijn inclusief eventuele wettelijke btw. Afhankelijk van de regio van de klant wordt gefactureerd in EUR of USD.",
@@ -693,7 +693,7 @@ TERMS.pt = {
         "4.2. Se a prestação se atrasar porque o cliente não presta a colaboração necessária, os prazos de processamento indicados prolongam-se em conformidade.",
       ] },
       { h: "5. Prazo de processamento", ps: [
-        "5.1. A remoção é efetuada, em regra, no prazo de **24 a 48 horas** a contar da disponibilidade de toda a colaboração nos termos do ponto 4. Trata-se de uma indicação aproximada, não de um prazo fixo. Não respondemos por atrasos devidos a processos internos da Google. Nos serviços nos termos de 2.5, a duração depende da análise da Google; em regra são alguns dias, em casos pontuais até cerca de três semanas.",
+        "5.1. A remoção é efetuada, em regra, no prazo de **24 a 48 horas** a contar da disponibilidade de toda a colaboração nos termos do ponto 4. Trata-se de uma indicação aproximada, não de um prazo fixo. Não respondemos por atrasos devidos a processos internos da Google. Nos serviços nos termos de 2.5, a duração depende da análise da Google; em regra são uma a duas semanas, por vezes menos, em casos pontuais um pouco mais. As remoções por software demoram em regra cerca de um a três dias.",
       ] },
       { h: "6. Preços e pagamento", ps: [
         "6.1. Aplicam-se os preços fixos indicados no site ou na proposta no momento da adjudicação. Todos os preços indicados são preços finais e incluem o IVA legal eventualmente aplicável. Consoante a região do cliente, a faturação é feita em EUR ou USD.",
@@ -793,7 +793,7 @@ TERMS.ja = {
         "4.2. 顧客が必要な協力を行わないことによりサービス提供が遅延する場合、記載の処理期間はそれに応じて延長されます。",
       ] },
       { h: "5. 処理期間", ps: [
-        "5.1. 削除は通常、第4条によるすべての協力が揃ってから**24〜48時間以内**に行われます。これは目安であり、確定期日ではありません。Google内部のプロセスによる遅延について当社は責任を負いません。 2.5のサービスの所要期間はGoogleの審査によって異なり、通常は数日、場合によっては約3週間かかります。",
+        "5.1. 削除は通常、第4条によるすべての協力が揃ってから**24〜48時間以内**に行われます。これは目安であり、確定期日ではありません。Google内部のプロセスによる遅延について当社は責任を負いません。 2.5のサービスの所要期間はGoogleの審査によって異なり、通常は1〜2週間で、早まる場合もあり、個別のケースではやや長くかかることがあります。ソフトウェアによる削除は通常約1〜3日です。",
       ] },
       { h: "6. 価格と支払い", ps: [
         "6.1. 依頼時点でウェブサイトまたは見積りに表示された固定価格が適用されます。表示価格はすべて最終価格であり、適用される法定VATを含みます。顧客の地域に応じて、EURまたはUSDで請求されます。",
@@ -893,7 +893,7 @@ TERMS.sv = {
         "4.2. Om utförandet försenas på grund av att kunden inte tillhandahåller nödvändig medverkan förlängs angivna handläggningstider i motsvarande mån.",
       ] },
       { h: "5. Handläggningstid", ps: [
-        "5.1. Borttagningen sker i regel inom **24 till 48 timmar** från det att all medverkan enligt punkt 4 föreligger. Det rör sig om en cirkauppgift, inte en fast tidpunkt. Förseningar på grund av Googles interna processer ansvarar vi inte för. För tjänster enligt 2.5 beror tiden på Googles granskning; den är i regel några dagar, i enskilda fall upp till ungefär tre veckor.",
+        "5.1. Borttagningen sker i regel inom **24 till 48 timmar** från det att all medverkan enligt punkt 4 föreligger. Det rör sig om en cirkauppgift, inte en fast tidpunkt. Förseningar på grund av Googles interna processer ansvarar vi inte för. För tjänster enligt 2.5 beror tiden på Googles granskning; den är i regel en till två veckor, ibland kortare, i enskilda fall något längre. Borttagning via programvara tar i regel ca en till tre dagar.",
       ] },
       { h: "6. Priser och betalning", ps: [
         "6.1. De fasta priser som anges på webbplatsen respektive i offerten vid tidpunkten för uppdraget gäller. Samtliga angivna priser är slutpriser och inkluderar eventuell lagstadgad moms. Beroende på kundens region faktureras i EUR eller USD.",
@@ -993,7 +993,7 @@ TERMS.da = {
         "4.2. Forsinkes udførelsen, fordi kunden ikke yder den nødvendige medvirken, forlænges de angivne behandlingstider tilsvarende.",
       ] },
       { h: "5. Behandlingstid", ps: [
-        "5.1. Fjernelsen sker som regel inden for **24 til 48 timer**, fra al medvirken i henhold til punkt 4 foreligger. Der er tale om en cirka-angivelse, ikke en fast frist. Forsinkelser som følge af Googles interne processer er vi ikke ansvarlige for. For ydelser i henhold til 2.5 afhænger varigheden af Googles vurdering; den er som regel nogle dage, i enkelte tilfælde op til ca. tre uger.",
+        "5.1. Fjernelsen sker som regel inden for **24 til 48 timer**, fra al medvirken i henhold til punkt 4 foreligger. Der er tale om en cirka-angivelse, ikke en fast frist. Forsinkelser som følge af Googles interne processer er vi ikke ansvarlige for. For ydelser i henhold til 2.5 afhænger varigheden af Googles vurdering; den er som regel en til to uger, nogle gange kortere, i enkelte tilfælde lidt længere. Fjernelse via software tager som regel ca. en til tre dage.",
       ] },
       { h: "6. Priser og betaling", ps: [
         "6.1. De faste priser, der er angivet på hjemmesiden hhv. i tilbuddet på bestillingstidspunktet, gælder. Alle angivne priser er slutpriser og er inklusive eventuel lovpligtig moms. Afhængigt af kundens region faktureres i EUR eller USD.",
@@ -1093,7 +1093,7 @@ TERMS.no = {
         "4.2. Forsinkes utførelsen fordi kunden ikke yter nødvendig medvirkning, forlenges de angitte behandlingstidene tilsvarende.",
       ] },
       { h: "5. Behandlingstid", ps: [
-        "5.1. Fjerningen skjer som regel innen **24 til 48 timer** fra all medvirkning etter punkt 4 foreligger. Dette er en cirka-angivelse, ikke en fast frist. Forsinkelser som følge av Googles interne prosesser er vi ikke ansvarlige for. For tjenester etter 2.5 avhenger varigheten av Googles vurdering; den er som regel noen dager, i enkelte tilfeller opptil ca. tre uker.",
+        "5.1. Fjerningen skjer som regel innen **24 til 48 timer** fra all medvirkning etter punkt 4 foreligger. Dette er en cirka-angivelse, ikke en fast frist. Forsinkelser som følge av Googles interne prosesser er vi ikke ansvarlige for. For tjenester etter 2.5 avhenger varigheten av Googles vurdering; den er som regel én til to uker, noen ganger kortere, i enkelte tilfeller litt lenger. Fjerning via programvare tar som regel ca. én til tre dager.",
       ] },
       { h: "6. Priser og betaling", ps: [
         "6.1. De faste prisene som er angitt på nettstedet hhv. i tilbudet på bestillingstidspunktet, gjelder. Alle angitte priser er sluttpriser og inkluderer eventuell lovpålagt mva. Avhengig av kundens region faktureres det i EUR eller USD.",
