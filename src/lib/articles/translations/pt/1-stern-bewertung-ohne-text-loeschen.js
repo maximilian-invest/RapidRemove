@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Caminho", "O que é removido", "Duração", "Sucesso", "Custo"], rows: [
       ["Denunciar por si mesmo", "avaliação isolada", "incerto", "baixo", "gratuito"],
       ["Advogado", "avaliação isolada", "3 – 9 meses", "cerca de 90 %", "por avaliação, adiantado"],
-      ["RapidRemove (avaliações individuais)", "**avaliações selecionadas, incl. só com estrelas**", "alguns dias – 3 semanas", "decide o Google", "300 € por avaliação removida"],
+      ["RapidRemove (avaliações individuais)", "**avaliações selecionadas, incl. só com estrelas**", "normalmente 1–2 semanas (só estrelas: aprox. 1–3 dias)", "decide o Google", "300 € por avaliação removida"],
       ["RapidRemove (remoção do perfil)", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "pagamento em caso de êxito", "preço fixo após sucesso"],
     ] },
     { t: "p", text: "Na remoção do perfil só paga **após o sucesso** e, graças à garantia, um perfil que reapareça é removido gratuitamente." },
@@ -61,7 +61,7 @@ const article = {
     { q: "Como denuncio uma classificação por estrelas sem comentário?", a: "Pelo menu de três pontos junto à avaliação, prima «Denunciar avaliação» e indique como motivo a falta de relação com o serviço. Acompanhe o estado com a ferramenta do Google para gestão de avaliações." },
     { q: "O que faço se o Google não remover a avaliação?", a: "Para uma avaliação isolada sem texto ajudam o procedimento mais extenso da RapidRemove (300 € por avaliação removida) ou uma contestação concretamente fundamentada por um advogado. Se o seu perfil está globalmente danificado e quer recomeçar, a remoção do perfil com a RapidRemove é a mais fiável: todas as avaliações desaparecem com o perfil." },
     { q: "A RapidRemove remove a avaliação de 1 estrela isolada?", a: "Sim. Com a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) pode selecionar também classificações só com estrelas, sem texto; são casos complexos, que exigem um procedimento mais extenso. Preço: **300 € por avaliação removida**, sem acréscimo para as mais antigas. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. Se a avaliação ficar, não paga nada. O desconto por quantidade a partir de 3 avaliações aplica-se da mesma forma. (Avaliações com texto: 179 €, 229 € se mais antigas, só em caso de sucesso.) Se o perfil está danificado no seu conjunto, a remoção do perfil completo com todas as avaliações continua a ser o caminho mais completo." },
-    { q: "Com que rapidez nos livramos das avaliações?", a: "Pela remoção do perfil, muitas vezes em 24 a 48 horas; uma avaliação individual demora normalmente alguns dias, por vezes até três semanas – bastante mais rápido do que a via jurídica de vários meses para uma avaliação isolada." },
+    { q: "Com que rapidez nos livramos das avaliações?", a: "Pela remoção do perfil, muitas vezes em 24 a 48 horas; uma avaliação individual demora normalmente 1–2 semanas, por vezes mais rápido, em casos pontuais um pouco mais (só estrelas: aprox. 1–3 dias) – bastante mais rápido do que a via jurídica de vários meses para uma avaliação isolada." },
   ],
   related: [
     { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

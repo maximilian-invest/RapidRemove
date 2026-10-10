@@ -80,7 +80,7 @@ const article = {
       "**Paghi solo a risultato per le recensioni con testo:** 179 € per recensione rimossa (fino a 4 settimane), 229 € se più vecchia. Nulla in anticipo, nessun costo per i tentativi.",
       "**Sconto quantità:** un'ondata estorsiva di solito significa molte recensioni. Su quelle che accettiamo, valutazioni senza testo comprese: 3+ −10 %, 5+ −15 %, 10+ −30 %. Esempio: 10 recensioni estorsive recenti costano 1.790 €, meno il 30 % = **1.253 €**, e solo per quelle effettivamente rimosse.",
       "**Buone probabilità:** le recensioni recenti hanno circa il **90 % di probabilità di successo**, e quelle estorsive sono tra le recensioni che Google rimuove con più affidabilità.",
-      "**Di solito pochi giorni**, a volte fino a tre settimane. Le recensioni possono sparire in momenti diversi, quindi puoi pagare recensione per recensione.",
+      "**Di solito 1–2 settimane**, a volte prima, in singoli casi un po' di più. Le recensioni possono sparire in momenti diversi, quindi puoi pagare recensione per recensione.",
       "**Solo metodi puliti:** niente account falsi, niente bot, niente finte diffide legali. Gli autori non sanno chi ha chiesto la rimozione.",
     ] },
     { t: "cta", title: "Sei vittima di estorsione? Mandaci le recensioni", text: "Cerca la tua attività, spunta le recensioni estorsive o incolla i loro link – e vedi subito il prezzo. **179 € per recensione rimossa**, nulla in anticipo.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi per recensione rimossa", "Prima una valutazione onesta"] },

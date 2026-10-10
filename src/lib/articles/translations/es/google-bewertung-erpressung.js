@@ -80,7 +80,7 @@ const article = {
       "**Reseñas con texto, solo pagas si funciona:** 179 € por reseña eliminada (hasta 4 semanas), 229 € si es más antigua. Nada por adelantado, nada por intentarlo.",
       "**Descuento por volumen:** una oleada de extorsión suele ser de muchas reseñas. Sobre todas las que aceptamos, también las solo de estrellas: 3+ −10 %, 5+ −15 %, 10+ −30 %. Ejemplo: 10 reseñas de extorsión recientes con texto cuestan 1.790 €; menos un 30 %, **1.253 €**, y solo por las que realmente se eliminan. 10 valoraciones solo de estrellas: 3.000 € menos un 30 % = **2.100 €**, también solo por las que realmente se eliminan.",
       "**Buenas opciones:** las reseñas recientes con texto tienen aprox. un **90 % de probabilidad de éxito**, y las de extorsión están entre las que Google elimina con más fiabilidad.",
-      "**Normalmente unos días**, a veces hasta tres semanas. Las reseñas pueden caer en momentos distintos, así que puedes pagar por reseña.",
+      "**Normalmente 1–2 semanas**, a veces más rápido, en casos puntuales algo más. Las reseñas pueden caer en momentos distintos, así que puedes pagar por reseña.",
       "**Solo métodos limpios:** sin cuentas falsas, sin bots, sin falsos avisos legales. Los autores no saben quién pidió la eliminación.",
     ] },
     { t: "cta", title: "¿Te están extorsionando? Envíanos las reseñas", text: "Busca tu empresa, marca las reseñas de extorsión o pega sus enlaces y ve el precio al instante. **179 € por reseña eliminada** con texto; valoraciones solo de estrellas, 300 €, que se cobran solo tras la eliminación.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Pago solo si hay éxito", "También solo estrellas", "Valoración honesta antes"] },

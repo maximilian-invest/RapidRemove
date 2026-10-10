@@ -29,7 +29,7 @@ const article = {
       ["Modelo de coste", "Gratis", "Por horas, normalmente por adelantado", "Por intento o por adelantado; precios a menudo ocultos", "**179 € por reseña eliminada** (229 € si tiene más de 4 semanas); solo estrellas: 300 € por valoración eliminada"],
       ["Si la reseña se queda", "Has perdido tiempo", "Pagas igualmente", "El dinero suele estar perdido", "**No pagas nada**"],
       ["Riesgo", "Coste bajo, pocas probabilidades", "Coste alto, resultado incierto", "Pagar por nada", "**Ninguno en el coste**"],
-      ["Duración habitual", "De días a semanas, sin plazo fijo", "A menudo meses", "Variable", "Unos días, hasta 3 semanas"],
+      ["Duración habitual", "De días a semanas, sin plazo fijo", "A menudo meses", "Variable", "Normalmente 1–2 semanas (solo estrellas: aprox. 1–3 días)"],
       ["Esfuerzo para ti", "Medio (denunciar, seguir, apelar)", "Alto (explicar el caso, documentos, seguimiento)", "Medio", "Unos 2 minutos"],
     ] },
     { t: "p", text: "**Denunciarla tú mismo** es el primer paso lógico si tienes tiempo y la infracción es clara. Denuncias la reseña en Google Maps o desde tu Perfil de Empresa y sigues el estado en la [herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796) de Google, donde puedes **apelar una sola vez** si Google decide que no hay infracción. Paso a paso: [cómo eliminar una reseña de Google tú mismo](/es/revista/como-eliminar-una-resena-de-google/)." },
@@ -73,7 +73,7 @@ const article = {
     { t: "p", text: "Pagas **después** de que la reseña se haya eliminado, nunca antes. En cuanto desaparece, esa reseña se **cobra automáticamente** en la tarjeta o PayPal que guardaste al hacer el pedido." },
     { t: "ul", items: [
       "**También las valoraciones solo de estrellas:** 300 € por valoración, que se cobran solo cuando se ha eliminado.",
-      "**Cada reseña cae en un momento distinto.** La eliminación suele tardar unos días, a veces hasta tres semanas ([cuánto tarda Google](/es/revista/cuanto-tarda-google-eliminar-resena/)).",
+      "**Cada reseña cae en un momento distinto.** La eliminación suele tardar 1–2 semanas, a veces más rápido, en casos puntuales algo más ([cuánto tarda Google](/es/revista/cuanto-tarda-google-eliminar-resena/)).",
       "Por eso cada reseña se **cobra por separado** en cuanto se elimina, no todo el lote de golpe.",
       "Tu **descuento por volumen ya está incluido** en cada cobro.",
       "Puedes guardar una **tarjeta o PayPal**.",

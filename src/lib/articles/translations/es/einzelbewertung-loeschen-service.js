@@ -50,7 +50,7 @@ const article = {
         ["10 o más", "**−30 %**"],
       ] },
       { t: "p", text: "**Ejemplos:** 3 reseñas recientes cuestan 537 €; menos un 10 %, **483 €**. 2 reseñas recientes y 3 más antiguas cuestan 1.045 €; menos un 15 %, **888 €**. El nivel de descuento depende del número de reseñas **que aceptamos tras la valoración gratuita** (las valoraciones solo de estrellas también cuentan) y se aplica a cada una de ellas. Aun así, solo pagas las reseñas que realmente se eliminan: si aceptamos 3 y desaparecen 2, pagas 2 × 179 € menos un 10 % = **322,20 €**. Pedido mixto: 2 reseñas recientes con texto y 1 valoración solo de estrellas son 3 reseñas, es decir, un 10 % de descuento: la valoración sin texto cuesta **270 €** y las otras dos 161,10 € cada una; cada una se cobra solo tras la eliminación." },
-      { t: "p", text: "**Pago por reseña:** el plazo de eliminación puede variar de una reseña a otra; normalmente son unos días y, a veces, hasta tres semanas. Por eso el pago puede hacerse reseña a reseña, y cada una se cobra automáticamente en tu tarjeta o PayPal guardados en cuanto se elimina. Las reseñas en las que aún estamos trabajando no te cuestan nada todavía." },
+      { t: "p", text: "**Pago por reseña:** el plazo de eliminación puede variar de una reseña a otra; normalmente son 1–2 semanas, a veces más rápido, en casos puntuales algo más. Por eso el pago puede hacerse reseña a reseña, y cada una se cobra automáticamente en tu tarjeta o PayPal guardados en cuanto se elimina. Las reseñas en las que aún estamos trabajando no te cuestan nada todavía." },
       { t: "tip", title: "Encárgalo pronto", text: "La probabilidad de éxito baja de aprox. un 90 % a aprox. un 50 % en cuanto una reseña supera las cuatro semanas, y el precio sube a 229 €. Una reseña falsa reciente es la más barata y la más segura de eliminar. Para comparar: los abogados suelen cobrar por reseña **por adelantado**, y el proceso dura a menudo meses ([¿abogado o eliminación técnica?](/es/revista/eliminar-resena-negativa-de-google-abogado/))." },
 
       { t: "h2", id: "bestellen", text: "Cómo encargarlo, en unos dos minutos", toc: "Cómo encargarlo" },
@@ -66,13 +66,13 @@ const article = {
       { t: "cta", title: "Elige las reseñas que deben desaparecer", text: "Busca tu empresa, marca las reseñas y ve el precio exacto al instante. **Desde 179 € por reseña eliminada**, nada por adelantado.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago por reseña eliminada", "Valoración honesta antes"] },
 
       { t: "h2", id: "dauer", text: "¿Cuánto tarda?", toc: "Plazo" },
-      { t: "p", text: "Normalmente **unos días**, a veces hasta **tres semanas**, según la reseña y el motivo de la eliminación. Mientras tanto no tienes que hacer nada: te mantenemos al tanto. Qué ocurre mientras tanto en Google (estado de la denuncia, la herramienta de gestión de reseñas y la apelación) lo explicamos en [cuánto tarda Google en eliminar una reseña](/es/revista/cuanto-tarda-google-eliminar-resena/)." },
+      { t: "p", text: "Normalmente **1–2 semanas**, a veces más rápido, en casos puntuales algo más, según la reseña y el motivo de la eliminación. Mientras tanto no tienes que hacer nada: te mantenemos al tanto. Qué ocurre mientras tanto en Google (estado de la denuncia, la herramienta de gestión de reseñas y la apelación) lo explicamos en [cuánto tarda Google en eliminar una reseña](/es/revista/cuanto-tarda-google-eliminar-resena/)." },
 
       { t: "h2", id: "vergleich", text: "Reseñas sueltas, perfil completo, abogado o hacerlo tú mismo: comparativa", toc: "Comparativa" },
       { t: "table", rrCol: 1, head: ["Criterio", "Eliminación de reseñas individuales", "Eliminación del perfil", "Abogado", "Denunciar tú mismo"], rows: [
         ["Qué se elimina", "Las reseñas que elijas", "Todo el perfil + todas las reseñas", "Reseña individual", "Reseña individual"],
         ["Las reseñas buenas se quedan", "Sí", "No", "Sí", "Sí"],
-        ["Plazo", "De unos días a 3 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incierto"],
+        ["Plazo", "Normalmente 1–2 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incierto"],
         ["Coste", "Desde 179 €, solo si se elimina", "Precio fijo, tras el éxito", "Por reseña, por adelantado", "Gratis"],
         ["Esfuerzo para ti", "2 minutos", "Mínimo", "Alto", "Medio"],
       ] },

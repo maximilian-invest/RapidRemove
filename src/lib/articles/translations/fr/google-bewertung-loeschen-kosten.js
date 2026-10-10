@@ -29,7 +29,7 @@ const article = {
       ["Mode de facturation", "Gratuit", "À l'heure, le plus souvent d'avance", "Par tentative ou d'avance ; prix souvent cachés", "**179 € par avis supprimé** (229 € au-delà de 4 semaines)"],
       ["Si l'avis reste", "Du temps perdu", "Vous payez quand même", "L'argent est généralement perdu", "**Vous ne payez rien**"],
       ["Risque", "Coût faible, peu de succès", "Coût élevé, issue incertaine", "Payer pour rien", "**Aucun sur le coût**"],
-      ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "Quelques jours, jusqu'à 3 semaines"],
+      ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "En général 1 à 2 semaines"],
       ["Effort pour vous", "Moyen (signalement, suivi, recours)", "Élevé (briefing, pièces, relances)", "Moyen", "Environ 2 minutes"],
     ] },
     { t: "p", text: "**Signaler l'avis vous-même** est la bonne première étape si vous avez du temps et une infraction évidente. Vous signalez l'avis dans Google Maps ou depuis votre fiche d'établissement, puis suivez son statut dans l'[outil de gestion des avis](https://support.google.com/business/workflow/9945796) de Google, où vous pouvez **faire appel une seule fois** si Google estime qu'il n'y a pas d'infraction. Pas à pas : [comment supprimer un avis Google vous-même](/fr/magazine/comment-supprimer-un-avis-google/)." },
@@ -70,7 +70,7 @@ const article = {
     { t: "h2", id: "paiement", text: "Comment se passe le paiement : avis par avis", toc: "Paiement" },
     { t: "p", text: "Vous payez **après** la suppression, jamais avant. Dès qu'un avis a disparu, il est **prélevé automatiquement** sur la carte ou le compte PayPal enregistré lors de la commande." },
     { t: "ul", items: [
-      "**Chaque avis tombe à un moment différent.** La suppression prend généralement quelques jours, parfois jusqu'à trois semaines ([délai de suppression chez Google](/fr/magazine/delai-suppression-avis-google/)).",
+      "**Chaque avis tombe à un moment différent.** La suppression prend généralement 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus ([délai de suppression chez Google](/fr/magazine/delai-suppression-avis-google/)).",
       "Chaque avis est donc **prélevé séparément** dès qu'il est supprimé, pas tout le lot d'un coup.",
       "Votre **remise sur volume est déjà incluse** dans chaque prélèvement.",
       "Vous pouvez enregistrer une **carte ou PayPal**.",

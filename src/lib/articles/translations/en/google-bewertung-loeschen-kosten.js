@@ -29,7 +29,7 @@ const article = {
       ["Cost model", "Free", "Hourly, usually upfront", "Per attempt or in advance; prices often hidden", "**$179 per removed review** ($229 if older than 4 weeks); star-only ratings $300 per removed review"],
       ["If the review stays", "You've lost time", "You still pay", "Money is usually gone", "**You pay nothing**"],
       ["Risk", "Low cost, low success rate", "High cost, uncertain outcome", "Paying for nothing", "**None on cost**"],
-      ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "A few days, up to 3 weeks"],
+      ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "Usually 1–2 weeks (star-only: approx. 1–3 days)"],
       ["Effort for you", "Medium (reporting, tracking, appeal)", "High (briefing, documents, follow-up)", "Medium", "About 2 minutes"],
     ] },
     { t: "p", text: "**Reporting yourself** is the right first step if you have time and a clear policy violation. You report the review in Google Maps or your Business Profile, then track the status in Google's [Reviews Management Tool](https://support.google.com/business/workflow/9945796), where you can **appeal once** if Google decides there's no violation. Step by step: [how to delete a Google review yourself](/en/magazine/how-to-delete-a-google-review/)." },
@@ -73,7 +73,7 @@ const article = {
     { t: "p", text: "You pay **after** a review has been removed, never before. Once it's gone, that review is **charged automatically** to the card or PayPal you stored when ordering." },
     { t: "ul", items: [
       "**Star-only ratings too:** $300 per rating, charged only after it has been removed.",
-      "**Different reviews come down at different times.** Removal usually takes a few days, sometimes up to three weeks ([how long Google takes](/en/magazine/how-long-does-google-take-to-remove-a-review/)).",
+      "**Different reviews come down at different times.** Removal usually takes 1–2 weeks, sometimes faster, occasionally a little longer ([how long Google takes](/en/magazine/how-long-does-google-take-to-remove-a-review/)).",
       "That's why each review is **charged separately** as soon as it's removed, not the whole batch at once.",
       "Your **volume discount is already included** in every charge.",
       "You can store a **card or PayPal**.",

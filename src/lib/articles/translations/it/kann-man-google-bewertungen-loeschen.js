@@ -52,7 +52,7 @@ const article = {
       ["Costo", "Gratis", "Gratis", "Gratis (avvocato a parte)", "Gratis", "**179 € per recensione rimossa**"],
       ["La recensione sparisce?", "Se Google è d'accordo", "Se Google è d'accordo", "Se giustificato legalmente", "Solo se l'autore agisce", "Paghi solo se sì"],
       ["Impegno per te", "Basso", "Medio", "Alto", "Basso", "Circa 2 minuti"],
-      ["Durata tipica", "Giorni o settimane", "Giorni o settimane", "Settimane o più", "Incerta", "Pochi giorni, fino a 3 settimane"],
+      ["Durata tipica", "Giorni o settimane", "Giorni o settimane", "Settimane o più", "Incerta", "Di solito 1–2 settimane"],
     ] },
     { t: "cta", title: "Seleziona le recensioni da eliminare", text: "Cerca la tua attività, spunta le recensioni e vedi subito il prezzo esatto. **179 € per recensione rimossa**, nulla in anticipo, valutazione gratuita prima.", btn: "Seleziona le recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Nulla in anticipo", "Paghi solo a successo", "Prima una valutazione onesta"] },
 
@@ -84,7 +84,7 @@ const article = {
       "**Prezzo:** 179 € per recensione rimossa; le recensioni con più di 4 settimane costano 229 €. Anche le valutazioni senza testo – procedura più approfondita, 300 € per valutazione rimossa. Come per tutte le recensioni, al momento dell'ordine salvi una carta e l'addebito avviene automaticamente solo dopo che la recensione è stata rimossa.",
       "**Probabilità di successo:** circa 90 % per le recensioni fino a 4 settimane, circa 50 % per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni che accettiamo: da 3, −10 %; da 5, −15 %; da 10, −30 %.",
-      "**Tempi:** di solito pochi giorni, a volte fino a 3 settimane. Ogni recensione viene addebitata automaticamente sulla carta o PayPal salvati quando è sparita.",
+      "**Tempi:** di solito 1–2 settimane, a volte prima, in singoli casi un po' di più. Ogni recensione viene addebitata automaticamente sulla carta o PayPal salvati quando è sparita.",
     ] },
     { t: "p", text: "Dal 2023 abbiamo rimosso oltre 1.600 Profili dell'attività su Google, eseguito più di 20.000 controlli gratuiti e lavorato per clienti in oltre 50 paesi. Con le recensioni false conviene muoversi in fretta: [come riconoscere ed eliminare le recensioni false su Google](/it/rivista/eliminare-recensioni-false-google/)." },
     { t: "cta", title: "Scopri quali recensioni possono sparire", text: "Cerca il tuo profilo, spunta le recensioni: il prezzo compare subito. **Paghi solo le recensioni effettivamente rimosse.**", btn: "Verifica le mie recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Valutazione gratuita", "Da 179 € a recensione", "Massima discrezione"] },

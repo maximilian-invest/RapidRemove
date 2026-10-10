@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Weg", "Wat wordt verwijderd", "Duur", "Succes", "Kosten"], rows: [
       ["Zelf rapporteren", "losse review", "onzeker", "gering", "gratis"],
       ["Advocaat", "losse review", "3 – 9 maanden", "ca. 90 %", "per review, vooraf"],
-      ["RapidRemove (losse reviews)", "**geselecteerde reviews, incl. alleen sterren**", "een paar dagen tot 3 weken", "Google beslist", "€ 300 per verwijderde review"],
+      ["RapidRemove (losse reviews)", "**geselecteerde reviews, incl. alleen sterren**", "meestal 1–2 weken (alleen sterren: ca. 1–3 dagen)", "Google beslist", "€ 300 per verwijderde review"],
       ["RapidRemove (profielverwijdering)", "**heel profiel + alle reviews**", "24 – 48 uur", "betaling alleen bij succes", "vaste prijs na succes"],
     ] },
     { t: "p", text: "Bij de profielverwijdering betaalt u pas **na succes**, en dankzij de garantie wordt een opnieuw opduikend profiel gratis verwijderd." },
@@ -61,7 +61,7 @@ const article = {
     { q: "Hoe rapporteer ik een sterbeoordeling zonder commentaar?", a: "Klik via het menu met drie puntjes naast de review op Review rapporteren en geef als reden het ontbrekende verband met de dienst op. De status volgt u via de Google-tool voor het beheer van reviews." },
     { q: "Wat te doen als Google de review niet verwijdert?", a: "Voor een losse review zonder tekst helpen de uitgebreidere procedure van RapidRemove ([losse reviews verwijderen](/nl/review-laten-verwijderen/), € 300 per verwijderde review) of een concreet onderbouwde betwisting door een advocaat. Is uw profiel in zijn geheel beschadigd en wilt u een nieuwe start, dan is profielverwijdering via RapidRemove de betrouwbaarste weg – daarbij verdwijnen alle reviews met het profiel." },
     { q: "Verwijdert RapidRemove die ene 1-sterreview?", a: "Ja. Bij [losse reviews verwijderen](/nl/review-laten-verwijderen/) kunt u ook beoordelingen met alleen sterren en geen tekst selecteren; dat zijn complexe gevallen, die een uitgebreidere procedure vereisen. Prijs: **€ 300 per verwijderde review**, zonder toeslag voor oudere reviews. Zoals bij alle reviews legt u bij het bestellen een kaart of PayPal vast; er wordt pas automatisch afgeschreven nadat de review verwijderd is. Blijft de review staan, dan betaalt u niets. De staffelkorting vanaf 3 reviews geldt op dezelfde manier. (Reviews met tekst: € 179, ouder € 229, alleen bij succes.) Is uw profiel als geheel beschadigd, dan blijft profielverwijdering de grondigste weg. Hoe u bestelt en wat meerdere reviews kosten, leest u in ons artikel over de [Google-review-verwijderservice](/nl/magazine/google-review-verwijderen-service/)." },
-    { q: "Hoe snel ben je de reviews kwijt?", a: "Via profielverwijdering vaak binnen 24 tot 48 uur, een losse review via RapidRemove meestal binnen een paar dagen, soms tot drie weken – aanzienlijk sneller dan de juridische weg van meerdere maanden." },
+    { q: "Hoe snel ben je de reviews kwijt?", a: "Via profielverwijdering vaak binnen 24 tot 48 uur, een losse review via RapidRemove meestal binnen 1–2 weken, soms sneller, in enkele gevallen iets langer (alleen sterren: ca. 1–3 dagen) – aanzienlijk sneller dan de juridische weg van meerdere maanden." },
   ],
   related: [
     { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

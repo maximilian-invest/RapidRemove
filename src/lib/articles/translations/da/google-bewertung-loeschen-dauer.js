@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-ekspert og grundlægger",
     date: "2026-10-05",
   },
-  dek: "**Google oplyser ingen fast frist.** En tydelig overtrædelse kan forsvinde inden for få timer eller dage, mens et grænsetilfælde eller en klage kan tage **flere uger**. Når vi fjerner en anmeldelse for dig, tager det **som regel et par dage, nogle gange op til 3 uger**. Her ser du alle trin, hvordan du tjekker status i Reviews Management Tool, og hvad der rent faktisk gør processen hurtigere.",
+  dek: "**Google oplyser ingen fast frist.** En tydelig overtrædelse kan forsvinde inden for få timer eller dage, mens et grænsetilfælde eller en klage kan tage **flere uger**. Når vi fjerner en anmeldelse for dig, tager det **som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere**. Her ser du alle trin, hvordan du tjekker status i Reviews Management Tool, og hvad der rent faktisk gør processen hurtigere.",
   blocks: [
     { t: "h2", id: "short-answer", text: "Det korte svar: ingen fast frist, men et tydeligt mønster", toc: "Kort svar" },
     { t: "p", text: "Google garanterer ingen behandlingstid for rapporterede anmeldelser. Rapporterede anmeldelser bliver gennemgået af både automatiske systemer og mennesker, og tiden svinger fra dage til uger." },
@@ -20,7 +20,7 @@ const article = {
       "**Grænsetilfælde** (en person, der måske aldrig har været kunde, vage beskyldninger): snarere **dage til uger**, ofte med et afslag og derefter en klage.",
       "**Ulovligt indhold** via en juridisk anmodning (fx injurier): som regel den længste vej, ofte **flere uger**.",
     ] },
-    { t: "p", text: "Med vores [service til at fjerne Google-anmeldelser](/da/fjern-anmeldelse/) er en anmeldelse **som regel væk inden for et par dage, nogle gange tager det op til 3 uger**. Du skal ikke gøre noget imens – og du betaler først, når anmeldelsen faktisk er væk." },
+    { t: "p", text: "Med vores [service til at fjerne Google-anmeldelser](/da/fjern-anmeldelse/) er en anmeldelse **som regel væk inden for 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere**. Du skal ikke gøre noget imens – og du betaler først, når anmeldelsen faktisk er væk." },
 
     { t: "h2", id: "timeline", text: "Tidslinje: alle trin fra rapport til endelig afgørelse", toc: "Tidslinje" },
     { t: "p", text: "Fjernelse af en anmeldelse foregår i faste trin. Tiderne nedenfor er **typiske værdier fra praksis, ikke en garanti** – Google kan være hurtigere eller langsommere i hvert trin." },
@@ -58,7 +58,7 @@ const article = {
       "**Endelig afgørelse** – efter klagen er vejen i værktøjet slut. Kun ved ulovligt indhold er der stadig en [juridisk anmodning om fjernelse](https://support.google.com/legal/answer/3110420).",
     ] },
 
-    { t: "cta", title: "Ingen lyst til at vente i ugevis og håbe?", text: "Vælg de anmeldelser, der skal væk, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, som regel klaret på et par dage – og du betaler først, når anmeldelsen faktisk er væk.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
+    { t: "cta", title: "Ingen lyst til at vente i ugevis og håbe?", text: "Vælg de anmeldelser, der skal væk, og se prisen med det samme. **179 € pr. fjernet anmeldelse**, som regel klaret på 1–2 uger – og du betaler først, når anmeldelsen faktisk er væk.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
 
     { t: "h2", id: "rejected", text: "Hvorfor Google afviser rapporter", toc: "Hvorfor afslag?" },
     { t: "p", text: "De fleste afslag har én af tre årsager. Alle kan undgås – undtagen den sidste." },
@@ -94,7 +94,7 @@ const article = {
     { t: "p", text: "Overvejer du, om en advokat er hurtigere? I vores sammenligning [advokat eller teknisk fjernelse](/da/magasin/negativ-google-anmeldelse-advokat/) kan du se, hvorfor den juridiske vej som regel tager måneder." },
   ],
   faq: [
-    { q: "Hvor lang tid går der, før Google fjerner en rapporteret anmeldelse?", a: "Der er ingen fast frist. Tydelige overtrædelser forsvinder ofte inden for timer eller dage, mens grænsetilfælde og klager kan tage **flere uger**. Via RapidRemove tager det som regel et par dage, nogle gange op til 3 uger." },
+    { q: "Hvor lang tid går der, før Google fjerner en rapporteret anmeldelse?", a: "Der er ingen fast frist. Tydelige overtrædelser forsvinder ofte inden for timer eller dage, mens grænsetilfælde og klager kan tage **flere uger**. Via RapidRemove tager det som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere." },
     { q: "Kan jeg klage mere end én gang?", a: "Nej. I Reviews Management Tool kan du klage **én gang pr. anmeldelse**. Efter den endelige afgørelse er der kun en juridisk anmodning om fjernelse tilbage, og den gælder kun ulovligt indhold." },
     { q: "Hvorfor har min rapport stået på ”Decision pending” i flere uger?", a: "Nogle rapporter gennemgås manuelt, og det kan tage længere tid; Google oplyser ingen frist. Tjek, at du har valgt den rigtige kategori – en stærk og korrekt rapport er den bedste måde at sætte tempoet op på." },
     { q: "Får anmelderen at vide, hvem der rapporterede anmeldelsen?", a: "Nej. Når vi anmoder om en fjernelse, får anmelderen ikke at vide, hvem der bad om den." },

@@ -52,7 +52,7 @@ const article = {
       ["Cost", "Free", "Free", "Free (lawyer extra)", "Free", "**$179 per removed review**"],
       ["Review disappears?", "If Google agrees", "If Google agrees", "If legally justified", "Only if reviewer acts", "Only charged if yes"],
       ["Your effort", "Low", "Medium", "High", "Low", "About 2 minutes"],
-      ["Typical duration", "Days to weeks", "Days to weeks", "Weeks or longer", "Uncertain", "A few days, up to 3 weeks"],
+      ["Typical duration", "Days to weeks", "Days to weeks", "Weeks or longer", "Uncertain", "Usually 1–2 weeks"],
     ] },
     { t: "cta", title: "Pick the reviews that should go", text: "Search your business, tick the reviews and see the exact price instantly. **$179 per removed review**, nothing upfront – free assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay only on success", "Honest assessment first"] },
 
@@ -84,7 +84,7 @@ const article = {
       "**Price:** $179 per removed review; reviews older than 4 weeks cost $229. Complex cases cost $300: ratings without text, and reviews older than 4 weeks from the USA, because they require a more extensive procedure. In individual cases an older review that is still online after the standard procedure can become a complex case – we only continue with your consent. Star-only ratings without text: $300 per removed review as complex cases. As with all reviews, you store a card when ordering and it is charged automatically only after the review has been removed.",
       "**Success chance:** approx. 90 % for reviews up to 4 weeks old, approx. 50 % for older ones.",
       "**Volume discount** on the reviews we accept: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Duration:** usually a few days, sometimes up to 3 weeks. Each review is charged automatically to your stored card or PayPal once it's gone.",
+      "**Duration:** usually 1–2 weeks, sometimes faster, occasionally a little longer. Each review is charged automatically to your stored card or PayPal once it's gone.",
     ] },
     { t: "p", text: "Since 2023 we've removed more than 1,600 Google Business Profiles, run over 20,000 free profile checks and worked for clients in 50+ countries. Fake reviews in particular are worth acting on fast: [how to spot and remove fake Google reviews](/en/magazine/remove-fake-google-reviews/)." },
     { t: "cta", title: "Find out which reviews can go", text: "Search your profile, tick the reviews – the price appears instantly. **You pay only for reviews that are actually removed.**", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Free assessment", "From $179 per review", "Discreet"] },

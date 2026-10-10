@@ -95,7 +95,7 @@ const article = {
       "**179 € por avaliação removida**, 229 € para avaliações com mais de 4 semanas. Só paga quando a avaliação desaparecer. Classificações só com estrelas: 300 € por avaliação removida.",
       "**Probabilidade de sucesso:** cerca de **90 %** em avaliações até 4 semanas, cerca de **50 %** nas mais antigas.",
       "**Desconto de volume** nas avaliações aceites: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Prazo:** normalmente alguns dias, por vezes até 3 semanas.",
+      "**Prazo:** normalmente 1–2 semanas, por vezes mais rápido, em casos pontuais um pouco mais.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis de Empresa no Google e fizemos mais de 20.000 verificações gratuitas para clientes em mais de 50 países. Preços e encomenda: [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/)." },
     { t: "cta", title: "Escolha as avaliações que violam as regras", text: "Carregue as suas avaliações mais recentes do Google, marque as que quer remover e veja o preço exato. Demora cerca de 2 minutos e só paga as avaliações realmente removidas.", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só paga com sucesso", "Só procedimentos do Google", "Análise gratuita"] },

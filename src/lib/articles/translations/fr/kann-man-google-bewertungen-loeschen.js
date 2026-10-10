@@ -52,7 +52,7 @@ const article = {
       ["Coût", "Gratuit", "Gratuit", "Gratuit (avocat en plus)", "Gratuit", "**179 € par avis supprimé**"],
       ["L'avis disparaît ?", "Si Google l'accepte", "Si Google l'accepte", "Si c'est juridiquement fondé", "Seulement si l'auteur agit", "Facturé seulement si oui"],
       ["Effort pour vous", "Faible", "Moyen", "Élevé", "Faible", "Environ 2 minutes"],
-      ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "Quelques jours, jusqu'à 3 semaines"],
+      ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "En général 1 à 2 semaines"],
     ] },
     { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis et voyez immédiatement le prix exact. **179 € par avis supprimé**, rien d'avance, évaluation gratuite d'abord.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "D'abord un avis honnête"] },
 
@@ -84,7 +84,7 @@ const article = {
       "**Prix :** 179 € par avis supprimé ; les avis de plus de 4 semaines coûtent 229 €. Les notes sans texte aussi – procédure plus approfondie, 300 € par note supprimée. Comme pour tous les avis, vous enregistrez une carte lors de la commande, et elle n'est débitée automatiquement qu'après la suppression de l'avis.",
       "**Chances de succès :** env. 90 % pour les avis de moins de 4 semaines, env. 50 % pour les plus anciens.",
       "**Remise sur volume** pour les avis que nous acceptons : dès 3, −10 % ; dès 5, −15 % ; dès 10, −30 %.",
-      "**Durée :** en général quelques jours, parfois jusqu'à 3 semaines. Chaque avis est prélevé automatiquement sur votre carte ou PayPal enregistrés une fois supprimé.",
+      "**Durée :** en général 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus. Chaque avis est prélevé automatiquement sur votre carte ou PayPal enregistrés une fois supprimé.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google, réalisé plus de 20 000 vérifications gratuites et accompagné des clients dans plus de 50 pays. Pour les faux avis, mieux vaut agir vite : [repérer et supprimer les faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
     { t: "cta", title: "Découvrez quels avis peuvent disparaître", text: "Recherchez votre fiche, cochez les avis : le prix s'affiche aussitôt. **Vous ne payez que les avis réellement supprimés.**", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Évaluation gratuite", "Dès 179 € par avis", "Discret"] },

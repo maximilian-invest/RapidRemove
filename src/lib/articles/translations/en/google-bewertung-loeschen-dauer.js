@@ -20,7 +20,7 @@ const article = {
     authorRole: "Founder",
     date: "2026-10-05",
   },
-  dek: "**Google gives no fixed timeline.** A clear policy violation can disappear within hours or a few days; borderline cases, appeals and escalations can take **several weeks**. With RapidRemove, removal usually takes **a few days, sometimes up to three weeks** – and you only pay once the review is actually gone. Below: every stage with typical durations, how to read your status in the Reviews Management Tool, how the appeal works and what really speeds things up.",
+  dek: "**Google gives no fixed timeline.** A clear policy violation can disappear within hours or a few days; borderline cases, appeals and escalations can take **several weeks**. With RapidRemove, removal usually takes **1–2 weeks, sometimes faster, occasionally a little longer** – and you only pay once the review is actually gone. Below: every stage with typical durations, how to read your status in the Reviews Management Tool, how the appeal works and what really speeds things up.",
   blocks: [
     { t: "h2", id: "short-answer", text: "The short answer: no fixed timeline, but typical ranges", toc: "Short answer" },
     { t: "p", text: "**Google does not promise any processing time for reported reviews.** Reports are checked by automated systems and by people, and depending on the case that takes anywhere from hours to several weeks." },
@@ -28,7 +28,7 @@ const article = {
       "**Obvious violations** (spam, insults, clearly fake engagement): often within hours to a few days.",
       "**Borderline cases** that need a human look: often one to a few weeks.",
       "**Appeals and escalations**: add more time on top – sometimes several weeks.",
-      "**With us**: usually a few days, sometimes up to three weeks per review. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **$179 per removed review**, nothing upfront.",
+      "**With us**: usually 1–2 weeks per review, sometimes faster, occasionally a little longer. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **$179 per removed review**, nothing upfront.",
     ] },
     { t: "warn", title: "Typical, not guaranteed", text: "All durations in this article are typical ranges from practice, not Google commitments. Google's processing time varies, and nobody can promise a date – or a removal." },
 
@@ -101,7 +101,7 @@ const article = {
     { t: "h2", id: "different-times", text: "Why several reviews come down at different times", toc: "Different times" },
     { t: "p", text: "**Every review is checked on its own, so if you report five, they rarely disappear on the same day.** One may be gone after two days, another needs an appeal, a third is still pending after two weeks." },
     { t: "p", text: "That's why we **bill per review**: you pay for each review once it's actually removed – each one is charged separately to your stored card or PayPal. Reviews we're still working on cost you nothing, and with 3, 5 or 10 accepted reviews the volume discount (−10 %, −15 %, −30 %) applies to every one that comes down. All prices and comparisons are in [Google review removal cost](/en/magazine/google-review-removal-cost/), and the order process is on our [service page for removing a single Google review](/en/remove-single-reviews/)." },
-    { t: "cta", title: "Check which reviews have a real chance", text: "Free assessment first: we tell you honestly whether a review is removable. Ordering takes about two minutes – usually done in a few days, sometimes up to three weeks.", btn: "Start free check", href: "/en/check-profile/?start=reviews", trust: ["Only Google's own procedures", "Reviewer isn't told who asked", "1,600+ profiles removed since 2023"] },
+    { t: "cta", title: "Check which reviews have a real chance", text: "Free assessment first: we tell you honestly whether a review is removable. Ordering takes about two minutes – usually done in 1–2 weeks, sometimes faster, occasionally a little longer.", btn: "Start free check", href: "/en/check-profile/?start=reviews", trust: ["Only Google's own procedures", "Reviewer isn't told who asked", "1,600+ profiles removed since 2023"] },
   ],
   faq: [
     { q: "How long does Google take to remove a reported review?", a: "Google doesn't publish a fixed timeline. Clear violations can go within hours or a few days; borderline cases and appeals often take **one to several weeks**." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Can I appeal more than once?", a: "No. In the Reviews Management Tool you get **one appeal per review**. After the final decision, the only other official route is a legal removal request – and only if the content is unlawful." },
     { q: "Does Google notify the reviewer?", a: "The reviewer is **not told who reported the review or requested its removal** – neither with your own report nor when we handle it. They may simply notice that their review is no longer visible." },
     { q: "Can a removed review come back?", a: "A review Google removes for a policy violation normally stays removed. The same person can write a new review, though – that one is checked separately and can be reported again." },
-    { q: "How fast is it with RapidRemove?", a: "Usually **a few days, sometimes up to three weeks** per review. You pay **$179 per removed review** ($229 if older than 4 weeks) – only once it's gone." },
+    { q: "How fast is it with RapidRemove?", a: "Usually **1–2 weeks** per review, sometimes faster, occasionally a little longer. You pay **$179 per removed review** ($229 if older than 4 weeks) – only once it's gone." },
     { q: "Does a reply to the review hurt my chances?", a: "No. A short, calm public reply is always allowed and doesn't affect the check. Just avoid insults and customer data." },
   ],
   related: [

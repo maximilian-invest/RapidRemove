@@ -80,7 +80,7 @@ const article = {
       "**Paiement au résultat pour les avis avec texte :** 179 € par avis supprimé (jusqu'à 4 semaines), 229 € s'il est plus ancien. Rien d'avance, aucun frais pour les tentatives.",
       "**Remise sur volume :** une vague de chantage, c'est souvent beaucoup d'avis. Sur les avis que nous acceptons, notes sans texte comprises : 3+ −10 %, 5+ −15 %, 10+ −30 %. Exemple : 10 avis de chantage récents coûtent 1 790 €, moins 30 % = **1 253 €**, et uniquement pour ceux réellement supprimés.",
       "**De bonnes chances :** les avis récents ont env. **90 % de chances de succès**, et les avis liés à un chantage font partie de ceux que Google supprime le plus sûrement.",
-      "**En général quelques jours**, parfois jusqu'à trois semaines. Les avis peuvent tomber à des moments différents : vous pouvez payer avis par avis.",
+      "**En général 1 à 2 semaines**, parfois plus vite, dans certains cas un peu plus. Les avis peuvent tomber à des moments différents : vous pouvez payer avis par avis.",
       "**Uniquement des méthodes propres :** pas de faux comptes, pas de bots, pas de fausses mises en demeure. Les auteurs ne savent pas qui a demandé la suppression.",
     ] },
     { t: "cta", title: "Victime de chantage ? Envoyez-nous les avis", text: "Recherchez votre entreprise, cochez les avis de chantage ou collez leurs liens – et voyez le prix immédiatement. **179 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },

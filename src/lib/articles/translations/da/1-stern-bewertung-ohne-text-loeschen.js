@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Vej", "Hvad fjernes", "Varighed", "Succes", "Pris"], rows: [
       ["Rapportér selv", "enkelt anmeldelse", "usikkert", "lav", "gratis"],
       ["Advokat", "enkelt anmeldelse", "3-9 måneder", "ca. 90 %", "pr. anmeldelse, forud"],
-      ["RapidRemove – enkelt anmeldelse", "udvalgte anmeldelser inkl. rene stjernebedømmelser", "få dage – 3 uger", "Google afgør", "300 € pr. fjernet anmeldelse"],
+      ["RapidRemove – enkelt anmeldelse", "udvalgte anmeldelser inkl. rene stjernebedømmelser", "som regel 1–2 uger (uden tekst: ca. 1–3 dage)", "Google afgør", "300 € pr. fjernet anmeldelse"],
       ["RapidRemove – profilfjernelse", "**hele profilen + alle anmeldelser**", "24-48 t", "betaling kun ved succes", "fast pris efter succes"],
     ] },
     { t: "p", text: "Ved profilfjernelsen betaler du først **efter succes**, og takket være garantien fjernes en profil, der dukker op igen, uden beregning." },
@@ -61,7 +61,7 @@ const article = {
     { q: "Hvordan anmelder jeg en stjernebedømmelse uden kommentar?", a: "Via tre-prikker-menuen ved siden af anmeldelsen, klik på Rapportér anmeldelse og angiv som begrundelse den manglende sammenhæng med ydelsen. Status følger du via Googles værktøj til håndtering af anmeldelser." },
     { q: "Hvad gør jeg, hvis Google ikke fjerner anmeldelsen?", a: "For en enkelt anmeldelse kan en konkret begrundet indsigelse fra en advokat hjælpe – eller RapidRemoves fjernelse af enkelte anmeldelser: rene stjernebedømmelser uden tekst som komplekst tilfælde (300 €) og anmeldelser med tekst – begge betaler du kun ved succes. Er din profil beskadiget som helhed, og vil du have en ny start, er profilfjernelse via RapidRemove den mest pålidelige vej – så forsvinder alle anmeldelser med profilen." },
     { q: "Fjerner RapidRemove den enkelte 1-stjernede anmeldelse?", a: "Ja. [Fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) dækker også rene 1-stjernede bedømmelser uden tekst – med en mere omfattende procedure. De kan vælges i bestillingsformularen og vises med deres egen prislinje: **300 € pr. fjernet anmeldelse**, uden tillæg for ældre bedømmelser; mængderabatten gælder sammen med ordrens øvrige anmeldelser. Som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen, og **der trækkes automatisk først efter fjernelsen**. Anmeldelser med tekst: op til 4 uger gammel ca. 90 % og 179 € pr. fjernet anmeldelse, ældre ca. 50 % og 229 € – her betaler du kun ved succes. Er profilen skadet som helhed, fjerner profilfjernelsen alle anmeldelser på én gang. Mere om priser: [Få fjernet en Google-anmeldelse](/da/magasin/fjern-google-anmeldelse-service/)." },
-    { q: "Hvor hurtigt slipper man af med anmeldelserne?", a: "Ved fjernelse af enkelte anmeldelser (også uden tekst) som regel på få dage (højst ca. tre uger), via profilfjernelse ofte inden for 24 til 48 timer – begge dele betydeligt hurtigere end den flere måneder lange retlige vej." },
+    { q: "Hvor hurtigt slipper man af med anmeldelserne?", a: "Ved fjernelse af enkelte anmeldelser som regel på 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere (rene stjernebedømmelser uden tekst: ca. 1–3 dage), via profilfjernelse ofte inden for 24 til 48 timer – begge dele betydeligt hurtigere end den flere måneder lange retlige vej." },
   ],
   related: [
     { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

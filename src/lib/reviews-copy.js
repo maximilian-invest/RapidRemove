@@ -32,7 +32,7 @@ export const RVW = {
     how: { eyebrow: "Where do I find the link?", h: "Copying the review link takes ten seconds.", steps: ["Find the review on your Google profile and tap it to open it.", "Tap the share icon below the review.", "Copy the link and paste it into the form — one per review, as many as you like."], alt: "No share option there? Then simply enter the reviewer's name and the review text instead — that identifies the review just as well.", copyHint: "Click to copy the link", shareT: "Share review", copied: "Copied" },
     faqEyebrow: "Questions", faqH: "Good to know.",
     faq: [
-      { q: "How long does it take?", a: "Usually a few days, sometimes up to three weeks. We keep you posted." },
+      { q: "How long does it take?", a: "Usually 1–2 weeks – sometimes faster, occasionally a little longer. Star-only reviews via our special software: approx. 1–3 days. We keep you posted." },
       { q: "What if the review can't be removed?", a: "Then you pay nothing. We tell you at the start if we think the chances are poor." },
       { q: "Will the reviewer find out it was me?", a: "No. The reviewer is not told who requested the removal." },
       { q: "I have several reviews.", a: "The price is per review — select as many as you like. From 3 accepted reviews you get 10 % off, from 5 15 % and from 10 30 % – applied to every review we remove. You only pay for the ones actually removed." },
@@ -68,7 +68,7 @@ export const RVW = {
     compareRows: [
       ["Cost", "Free", "Hourly fees, often paid upfront", "From $179 per removed review"],
       ["Pay only on success", "–", "No", "Yes"],
-      ["Typical duration", "Days to weeks – often rejected", "Weeks to months", "A few days to 3 weeks"],
+      ["Typical duration", "Days to weeks – often rejected", "Weeks to months", "Usually 1–2 weeks"],
       ["Your effort", "High: policies, evidence, appeals", "Briefings and documents", "Paste the link – that's it"],
       ["Routes used", "One report", "Legal route only", "Report, appeal and legal request"],
     ],
@@ -111,7 +111,7 @@ export const RVW = {
     how: { eyebrow: "¿Dónde está el enlace?", h: "Copiar el enlace de la reseña lleva diez segundos.", steps: ["Busca la reseña en tu perfil de Google y tócala para abrirla.", "Toca el icono de compartir debajo de la reseña.", "Copia el enlace y pégalo en el formulario — uno por reseña, tantas como quieras."], alt: "¿No aparece la opción de compartir? Entonces indica el nombre del autor y el texto de la reseña — la identifica igual de bien.", copyHint: "Haz clic para copiar el enlace", shareT: "Compartir reseña", copied: "Copiado" },
     faqEyebrow: "Preguntas", faqH: "Bueno saberlo.",
     faq: [
-      { q: "¿Cuánto tarda?", a: "Normalmente unos días, a veces hasta tres semanas. Te mantenemos informado." },
+      { q: "¿Cuánto tarda?", a: "Normalmente 1–2 semanas; a veces más rápido y en casos puntuales algo más. Reseñas solo con estrellas mediante nuestro software especial: aprox. 1–3 días. Te mantenemos informado." },
       { q: "¿Y si no se puede eliminar?", a: "Entonces no pagas nada. Si vemos pocas posibilidades, te lo decimos desde el principio." },
       { q: "¿Sabrá el autor que fui yo?", a: "No. Al autor no se le comunica quién solicitó la eliminación." },
       { q: "Tengo varias reseñas.", a: "El precio es por reseña: selecciona tantas como quieras. Desde 3 reseñas −10 %, desde 5 −15 % y desde 10 −30 %. Solo pagas las que realmente se eliminan." },
@@ -145,7 +145,7 @@ export const RVW = {
     how: { eyebrow: "Où trouver le lien ?", h: "Copier le lien de l'avis prend dix secondes.", steps: ["Trouvez l'avis sur votre fiche Google et touchez-le pour l'ouvrir.", "Touchez l'icône de partage sous l'avis.", "Copiez le lien et collez-le dans le formulaire — un par avis, autant que vous voulez."], alt: "Pas d'option de partage ? Indiquez alors le nom de l'auteur et le texte de l'avis — cela l'identifie tout aussi bien.", copyHint: "Cliquez pour copier le lien", shareT: "Partager l'avis", copied: "Copié" },
     faqEyebrow: "Questions", faqH: "Bon à savoir.",
     faq: [
-      { q: "Combien de temps cela prend-il ?", a: "En général quelques jours, parfois jusqu'à trois semaines. Nous vous tenons informé." },
+      { q: "Combien de temps cela prend-il ?", a: "En général 1 à 2 semaines, parfois moins, dans certains cas un peu plus. Avis sans texte via notre logiciel spécial : env. 1 à 3 jours. Nous vous tenons informé." },
       { q: "Et si l'avis ne peut pas être supprimé ?", a: "Alors vous ne payez rien. Si les chances nous semblent faibles, nous vous le disons d'emblée." },
       { q: "L'auteur saura-t-il que c'est moi ?", a: "Non. L'auteur n'est pas informé de qui a demandé la suppression." },
       { q: "J'ai plusieurs avis.", a: "Le prix est par avis — sélectionnez-en autant que vous voulez. Dès 3 avis −10 %, dès 5 −15 % et dès 10 −30 %. Vous ne payez que ceux réellement supprimés." },
@@ -179,7 +179,7 @@ export const RVW = {
     how: { eyebrow: "Dove trovo il link?", h: "Copiare il link della recensione richiede dieci secondi.", steps: ["Trova la recensione sul tuo profilo Google e toccala per aprirla.", "Tocca l'icona di condivisione sotto la recensione.", "Copia il link e incollalo nel modulo — uno per recensione, quante vuoi."], alt: "Non c'è l'opzione di condivisione? Inserisci allora il nome dell'autore e il testo della recensione — la identifica altrettanto bene.", copyHint: "Clicca per copiare il link", shareT: "Condividi recensione", copied: "Copiato" },
     faqEyebrow: "Domande", faqH: "Da sapere.",
     faq: [
-      { q: "Quanto ci vuole?", a: "Di solito qualche giorno, a volte fino a tre settimane. Ti teniamo aggiornato." },
+      { q: "Quanto ci vuole?", a: "Di solito 1–2 settimane, a volte meno, in singoli casi un po' di più. Recensioni solo stelle con il nostro software speciale: ca. 1–3 giorni. Ti teniamo aggiornato." },
       { q: "E se non si può eliminare?", a: "Allora non paghi nulla. Se le probabilità ci sembrano basse, te lo diciamo subito." },
       { q: "L'autore saprà che sono stato io?", a: "No. All'autore non viene comunicato chi ha chiesto la rimozione." },
       { q: "Ho più recensioni.", a: "Il prezzo è per recensione: selezionane quante vuoi. Da 3 recensioni −10 %, da 5 −15 % e da 10 −30 %. Paghi solo quelle davvero rimosse." },
@@ -213,7 +213,7 @@ export const RVW = {
     how: { eyebrow: "Waar vind ik de link?", h: "De link kopiëren duurt tien seconden.", steps: ["Zoek de review op uw Google-profiel en tik erop om hem te openen.", "Tik op het deelicoon onder de review.", "Kopieer de link en plak hem in het formulier — één per review, zoveel u wilt."], alt: "Geen deeloptie? Vul dan de naam van de schrijver en de tekst van de review in — dat identificeert hem net zo goed.", copyHint: "Klik om de link te kopiëren", shareT: "Review delen", copied: "Gekopieerd" },
     faqEyebrow: "Vragen", faqH: "Goed om te weten.",
     faq: [
-      { q: "Hoe lang duurt het?", a: "Meestal een paar dagen, soms tot drie weken. We houden u op de hoogte." },
+      { q: "Hoe lang duurt het?", a: "Meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Reviews met alleen sterren via onze speciale software: ca. 1–3 dagen. We houden u op de hoogte." },
       { q: "En als de review niet weg kan?", a: "Dan betaalt u niets. Schatten we de kans laag in, dan zeggen we dat vooraf." },
       { q: "Weet de schrijver dat ik het was?", a: "Nee. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
       { q: "Ik heb meerdere reviews.", a: "De prijs geldt per review — selecteer er zoveel als u wilt. Vanaf 3 reviews −10 %, vanaf 5 −15 % en vanaf 10 −30 %. U betaalt alleen voor wat echt verwijderd is." },
@@ -247,7 +247,7 @@ export const RVW = {
     how: { eyebrow: "Onde encontro o link?", h: "Copiar o link da avaliação leva dez segundos.", steps: ["Encontre a avaliação no seu perfil do Google e toque nela para a abrir.", "Toque no ícone de partilha por baixo da avaliação.", "Copie o link e cole-o no formulário — um por avaliação, quantas quiser."], alt: "Não há opção de partilha? Então indique o nome do autor e o texto da avaliação — identifica-a igualmente bem.", copyHint: "Clique para copiar o link", shareT: "Partilhar avaliação", copied: "Copiado" },
     faqEyebrow: "Perguntas", faqH: "Bom saber.",
     faq: [
-      { q: "Quanto tempo demora?", a: "Normalmente alguns dias, às vezes até três semanas. Vamos mantendo-o informado." },
+      { q: "Quanto tempo demora?", a: "Normalmente 1–2 semanas, por vezes menos, em casos pontuais um pouco mais. Avaliações só com estrelas através do nosso software especial: cerca de 1–3 dias. Vamos mantendo-o informado." },
       { q: "E se não for possível remover?", a: "Então não paga nada. Se as hipóteses nos parecerem baixas, dizemos logo no início." },
       { q: "O autor saberá que fui eu?", a: "Não. O autor não é informado de quem pediu a remoção." },
       { q: "Tenho várias avaliações.", a: "O preço é por avaliação — selecione quantas quiser. A partir de 3 avaliações −10 %, de 5 −15 % e de 10 −30 %. Só paga as que forem mesmo removidas." },
@@ -281,7 +281,7 @@ export const RVW = {
     how: { eyebrow: "リンクはどこに？", h: "口コミのリンクコピーは10秒で終わります。", steps: ["Googleプロフィールで口コミを見つけて、タップして開きます。", "口コミの下にある共有アイコンをタップします。", "リンクをコピーしてフォームに貼り付けます。1件につき1リンク、何件でも。"], alt: "共有ボタンが見つからない場合は、投稿者名と口コミ本文を入力してください。それでも同じように特定できます。", copyHint: "クリックしてリンクをコピー", shareT: "クチコミを共有", copied: "コピーしました" },
     faqEyebrow: "よくある質問", faqH: "知っておきたいこと。",
     faq: [
-      { q: "どのくらいかかりますか？", a: "通常は数日、長い場合で3週間ほどです。進捗は随時ご連絡します。" },
+      { q: "どのくらいかかりますか？", a: "通常は1〜2週間です（早まることも、まれに少し長くなることもあります）。星のみの口コミは専用ソフトウェアで約1〜3日です。進捗は随時ご連絡します。" },
       { q: "削除できなかったら？", a: "その場合、お支払いはありません。見込みが低いと判断したときは、最初にそうお伝えします。" },
       { q: "投稿者に依頼者が知られますか？", a: "いいえ。誰が削除を依頼したかが投稿者に伝わることはありません。" },
       { q: "口コミが複数あります。", a: "料金は1件ごとです。何件でも選択でき、3件以上で−10%、5件以上で−15%、10件以上で−30%。実際に削除できた分だけのお支払いです。" },
@@ -315,7 +315,7 @@ export const RVW = {
     how: { eyebrow: "Var hittar jag länken?", h: "Att kopiera länken tar tio sekunder.", steps: ["Hitta omdömet på din Google-profil och tryck på det för att öppna det.", "Tryck på delningsikonen under omdömet.", "Kopiera länken och klistra in den i formuläret — en per omdöme, så många du vill."], alt: "Ingen delningsknapp? Ange då recensentens namn och omdömets text — det identifierar omdömet lika bra.", copyHint: "Klicka för att kopiera länken", shareT: "Dela omdöme", copied: "Kopierad" },
     faqEyebrow: "Frågor", faqH: "Bra att veta.",
     faq: [
-      { q: "Hur lång tid tar det?", a: "Oftast några dagar, ibland upp till tre veckor. Vi håller dig uppdaterad." },
+      { q: "Hur lång tid tar det?", a: "Oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Betyg utan text via vår specialprogramvara: ca 1–3 dagar. Vi håller dig uppdaterad." },
       { q: "Och om omdömet inte kan tas bort?", a: "Då betalar du ingenting. Bedömer vi chanserna som små säger vi det från början." },
       { q: "Får recensenten veta att det var jag?", a: "Nej. Recensenten får inte veta vem som begärde borttagningen." },
       { q: "Jag har flera omdömen.", a: "Priset gäller per omdöme — välj så många du vill. Från 3 omdömen −10 %, från 5 −15 % och från 10 −30 %. Du betalar bara för dem som faktiskt tas bort." },
@@ -349,7 +349,7 @@ export const RVW = {
     how: { eyebrow: "Hvor finder jeg linket?", h: "At kopiere linket tager ti sekunder.", steps: ["Find anmeldelsen på din Google-profil, og tryk på den for at åbne den.", "Tryk på deleikonet under anmeldelsen.", "Kopiér linket og indsæt det i formularen — ét pr. anmeldelse, så mange du vil."], alt: "Ingen delemulighed? Angiv i stedet anmelderens navn og anmeldelsens tekst — det identificerer den lige så godt.", copyHint: "Klik for at kopiere linket", shareT: "Del anmeldelse", copied: "Kopieret" },
     faqEyebrow: "Spørgsmål", faqH: "Godt at vide.",
     faq: [
-      { q: "Hvor lang tid tager det?", a: "Som regel få dage, nogle gange op til tre uger. Vi holder dig opdateret." },
+      { q: "Hvor lang tid tager det?", a: "Som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Anmeldelser uden tekst via vores specialsoftware: ca. 1–3 dage. Vi holder dig opdateret." },
       { q: "Hvad hvis anmeldelsen ikke kan fjernes?", a: "Så betaler du ingenting. Vurderer vi chancerne som små, siger vi det fra starten." },
       { q: "Finder anmelderen ud af, det var mig?", a: "Nej. Anmelderen får ikke at vide, hvem der bad om fjernelsen." },
       { q: "Jeg har flere anmeldelser.", a: "Prisen gælder pr. anmeldelse — vælg så mange du vil. Fra 3 anmeldelser −10 %, fra 5 −15 % og fra 10 −30 %. Du betaler kun for dem, der faktisk fjernes." },
@@ -383,7 +383,7 @@ export const RVW = {
     how: { eyebrow: "Hvor finner jeg lenken?", h: "Å kopiere lenken tar ti sekunder.", steps: ["Finn omtalen på Google-profilen din og trykk på den for å åpne den.", "Trykk på deleikonet under omtalen.", "Kopier lenken og lim den inn i skjemaet — én per omtale, så mange du vil."], alt: "Ingen delemulighet? Oppgi da anmelderens navn og omtalens tekst — det identifiserer den like godt.", copyHint: "Klikk for å kopiere lenken", shareT: "Del omtale", copied: "Kopiert" },
     faqEyebrow: "Spørsmål", faqH: "Godt å vite.",
     faq: [
-      { q: "Hvor lang tid tar det?", a: "Vanligvis noen dager, av og til opptil tre uker. Vi holder deg oppdatert." },
+      { q: "Hvor lang tid tar det?", a: "Vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Anmeldelser uten tekst via vår spesialprogramvare: ca. 1–3 dager. Vi holder deg oppdatert." },
       { q: "Hva om omtalen ikke kan fjernes?", a: "Da betaler du ingenting. Vurderer vi sjansene som små, sier vi det med en gang." },
       { q: "Får anmelderen vite at det var meg?", a: "Nei. Anmelderen får ikke vite hvem som ba om fjerningen." },
       { q: "Jeg har flere omtaler.", a: "Prisen gjelder per omtale — velg så mange du vil. Fra 3 anmeldelser −10 %, fra 5 −15 % og fra 10 −30 %. Du betaler bare for dem som faktisk fjernes." },

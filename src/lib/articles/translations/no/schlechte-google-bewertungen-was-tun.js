@@ -49,7 +49,7 @@ const article = {
     { t: "p", text: "Problemet: Google gjennomgår rapporter overveiende **automatisert** og avviser dem ofte – selv ved klare brudd. Uteblir suksessen, har du tre muligheter:" },
     { t: "table", head: ["Vei", "Hva fjernes", "Varighet", "Suksess", "Pris"], rows: [
       ["Advokat", "enkeltanmeldelse", "3-9 måneder", "ca. 90 %", "per anmeldelse, forskudd"],
-      ["RapidRemove (enkeltanmeldelser)", "valgte anmeldelser – profilen blir stående", "noen dager – 3 uker", "ca. 90 % (opptil 4 uker) / ca. 50 % (eldre)", "fra 179 € per fjernet anmeldelse, kun ved suksess"],
+      ["RapidRemove (enkeltanmeldelser)", "valgte anmeldelser – profilen blir stående", "som regel 1–2 uker", "ca. 90 % (opptil 4 uker) / ca. 50 % (eldre)", "fra 179 € per fjernet anmeldelse, kun ved suksess"],
       ["RapidRemove (profilfjerning)", "**hele profilen + alle anmeldelser**", "24-48 t", "garantert", "fast pris etter suksess"],
     ] },
     { t: "p", text: "Viktig å forstå: ved **profilfjerning** fjerner RapidRemove ikke enkeltanmeldelser, men **hele Google-bedriftsprofilen** – alle anmeldelser forsvinner med. Det er den riktige løsningen når en profil er skadet som helhet, og du vil ha en virkelig ny start med ren tavle. Fjerningen arbeider innenfor Googles logikk, uten Streisand-risiko, og betales først **etter suksess**. Den som derimot bare vil fjerne én eller noen få anmeldelser og beholde profilen, kan bruke RapidRemoves [fjerning av enkeltanmeldelser](/no/fjern-omtale/) – fra 179 € per fjernet anmeldelse, ingenting på forskudd, du betaler bare ved suksess. Priser, sjanser og mengderabatt er forklart i [guiden om å fjerne Google-anmeldelser som tjeneste](/no/magasin/fjern-google-anmeldelse-tjeneste/)." },

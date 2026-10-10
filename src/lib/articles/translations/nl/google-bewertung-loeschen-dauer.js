@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert en oprichter",
     date: "2026-10-05",
   },
-  dek: "**Google noemt geen vaste termijn.** Een duidelijke schending kan binnen uren of enkele dagen verdwijnen, een twijfelgeval of een bezwaar kan **meerdere weken** duren. Wanneer wij een review laten verwijderen, duurt het meestal **een paar dagen, soms tot 3 weken**. Hieronder ziet u welke stappen er zijn, hoe u de status in de Reviews Management Tool controleert en wat het proces echt versnelt.",
+  dek: "**Google noemt geen vaste termijn.** Een duidelijke schending kan binnen uren of enkele dagen verdwijnen, een twijfelgeval of een bezwaar kan **meerdere weken** duren. Wanneer wij een review laten verwijderen, duurt het meestal **1–2 weken, soms sneller, in enkele gevallen iets langer**. Hieronder ziet u welke stappen er zijn, hoe u de status in de Reviews Management Tool controleert en wat het proces echt versnelt.",
   blocks: [
     { t: "h2", id: "short-answer", text: "Het korte antwoord: geen vaste termijn, wel een duidelijk patroon", toc: "Kort antwoord" },
     { t: "p", text: "Google garandeert geen verwerkingstijd voor gemelde reviews. Gemelde reviews worden door geautomatiseerde systemen én door mensen beoordeeld, en de duur varieert van dagen tot weken." },
@@ -20,7 +20,7 @@ const article = {
       "**Twijfelgevallen** (iemand die misschien nooit klant was, vage beschuldigingen): eerder **dagen tot weken**, vaak met een afwijzing en daarna een bezwaar.",
       "**Onrechtmatige inhoud** via een juridisch verzoek (bijv. smaad): meestal de langste route, vaak **meerdere weken**.",
     ] },
-    { t: "p", text: "Met onze [Google review verwijderen service](/nl/review-laten-verwijderen/) is een review **meestal binnen een paar dagen weg, soms duurt het tot 3 weken**. U hoeft in die tijd niets te doen – en u betaalt pas als de review echt verdwenen is." },
+    { t: "p", text: "Met onze [Google review verwijderen service](/nl/review-laten-verwijderen/) is een review **meestal binnen 1–2 weken weg, soms sneller, in enkele gevallen iets langer**. U hoeft in die tijd niets te doen – en u betaalt pas als de review echt verdwenen is." },
 
     { t: "h2", id: "timeline", text: "Tijdlijn: alle stappen van melding tot definitieve beslissing", toc: "Tijdlijn" },
     { t: "p", text: "Het verwijderen van een review verloopt in vaste stappen. De tijden hieronder zijn **typische waarden uit de praktijk, geen garantie** – Google kan in elke stap sneller of trager zijn." },
@@ -58,7 +58,7 @@ const article = {
       "**Definitieve beslissing** – na het bezwaar is de route in de tool afgerond. Alleen bij onrechtmatige inhoud blijft het [juridische verwijderingsverzoek](https://support.google.com/legal/answer/3110420) over.",
     ] },
 
-    { t: "cta", title: "Geen zin om weken te wachten en te gokken?", text: "Selecteer de reviews die weg moeten en zie direct de prijs. **€ 179 per verwijderde review**, meestal binnen een paar dagen – en u betaalt pas als de review echt weg is.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
+    { t: "cta", title: "Geen zin om weken te wachten en te gokken?", text: "Selecteer de reviews die weg moeten en zie direct de prijs. **€ 179 per verwijderde review**, meestal binnen 1–2 weken – en u betaalt pas als de review echt weg is.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
 
     { t: "h2", id: "rejected", text: "Waarom Google meldingen afwijst", toc: "Waarom afgewezen?" },
     { t: "p", text: "De meeste afwijzingen hebben één van drie oorzaken. Ze zijn allemaal te voorkomen – behalve de laatste." },
@@ -94,7 +94,7 @@ const article = {
     { t: "p", text: "Twijfelt u of een advocaat sneller is? In onze vergelijking [advocaat of technische verwijdering](/nl/magazine/negatieve-google-review-verwijderen-advocaat/) ziet u waarom de juridische route meestal maanden duurt." },
   ],
   faq: [
-    { q: "Hoe lang duurt het voordat Google een gemelde review verwijdert?", a: "Daar is geen vaste termijn voor. Duidelijke schendingen verdwijnen vaak binnen uren of dagen, twijfelgevallen en bezwaren kunnen **meerdere weken** duren. Via RapidRemove is het meestal een paar dagen, soms tot 3 weken." },
+    { q: "Hoe lang duurt het voordat Google een gemelde review verwijdert?", a: "Daar is geen vaste termijn voor. Duidelijke schendingen verdwijnen vaak binnen uren of dagen, twijfelgevallen en bezwaren kunnen **meerdere weken** duren. Via RapidRemove is het meestal 1–2 weken, soms sneller, in enkele gevallen iets langer." },
     { q: "Kan ik meer dan één keer bezwaar maken?", a: "Nee. In de Reviews Management Tool kunt u **per review één keer** bezwaar maken. Na de definitieve beslissing blijft alleen een juridisch verwijderingsverzoek over, en dat alleen bij onrechtmatige inhoud." },
     { q: "Waarom staat mijn melding al weken op “Decision pending”?", a: "Sommige meldingen worden handmatig beoordeeld en dat kan langer duren; Google geeft geen termijn. Controleer of u de juiste categorie heeft gekozen – een sterke, correcte melding is de beste versneller." },
     { q: "Hoort de schrijver wie de review heeft gemeld?", a: "Nee. Wanneer wij een verwijdering aanvragen, krijgt de schrijver niet te horen wie daarom heeft gevraagd." },

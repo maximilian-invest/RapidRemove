@@ -52,7 +52,7 @@ const article = {
       ["Coste", "Gratis", "Gratis", "Gratis (abogado aparte)", "Gratis", "**179 € por reseña eliminada**"],
       ["¿Desaparece la reseña?", "Si Google lo acepta", "Si Google lo acepta", "Si está justificado legalmente", "Solo si el autor actúa", "Solo pagas si sí"],
       ["Esfuerzo para ti", "Bajo", "Medio", "Alto", "Bajo", "Unos 2 minutos"],
-      ["Duración habitual", "Días a semanas", "Días a semanas", "Semanas o más", "Incierta", "Unos días, hasta 3 semanas"],
+      ["Duración habitual", "Días a semanas", "Días a semanas", "Semanas o más", "Incierta", "Normalmente 1–2 semanas"],
     ] },
     { t: "cta", title: "Elige las reseñas que deben desaparecer", text: "Busca tu empresa, marca las reseñas y ve el precio exacto al instante. **179 € por reseña eliminada**, nada por adelantado y valoración gratuita antes.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago solo con éxito", "Valoración honesta antes"] },
 
@@ -84,7 +84,7 @@ const article = {
       "**Precio:** 179 € por reseña eliminada; las reseñas con más de 4 semanas cuestan 229 €. Valoraciones solo de estrellas, sin texto: 300 € por valoración eliminada con un procedimiento más exhaustivo. Como en todas las reseñas, al hacer el pedido guardas una tarjeta y el cargo se hace automáticamente solo cuando la reseña se ha eliminado.",
       "**Probabilidad de éxito:** aprox. 90 % en reseñas de hasta 4 semanas, aprox. 50 % en las más antiguas.",
       "**Descuento por volumen** sobre las reseñas que aceptamos: desde 3, −10 %; desde 5, −15 %; desde 10, −30 %.",
-      "**Duración:** normalmente unos días, a veces hasta 3 semanas. Cada reseña se cobra automáticamente en tu tarjeta o PayPal guardados cuando ya no está.",
+      "**Duración:** normalmente 1–2 semanas, a veces más rápido, en casos puntuales algo más. Cada reseña se cobra automáticamente en tu tarjeta o PayPal guardados cuando ya no está.",
     ] },
     { t: "p", text: "Desde 2023 hemos eliminado más de 1.600 Perfiles de Empresa de Google, hecho más de 20.000 comprobaciones gratuitas y trabajado para clientes en más de 50 países. Con las reseñas falsas compensa actuar rápido: [cómo detectar y eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
     { t: "cta", title: "Descubre qué reseñas se pueden quitar", text: "Busca tu perfil, marca las reseñas y el precio aparece al instante. **Solo pagas por las reseñas que se eliminan de verdad.**", btn: "Comprobar mis reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Valoración gratuita", "Desde 179 € por reseña", "Discreción total"] },

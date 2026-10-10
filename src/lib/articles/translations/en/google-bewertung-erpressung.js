@@ -80,7 +80,7 @@ const article = {
       "**Reviews with text – pay only on success:** $179 per removed review (up to 4 weeks old), $229 for older ones. Nothing upfront, no fee for attempts.",
       "**Volume discount:** extortion waves usually mean many reviews. On all reviews we accept, star-only ratings included: 3+ −10 %, 5+ −15 %, 10+ −30 %. Example: 10 fresh extortion reviews with text cost $1,790, minus 30 % = **$1,253**, and only for the ones actually removed. 10 star-only ratings: $3,000 minus 30 % = **$2,100**, again only for the ratings actually removed.",
       "**Strong chances:** fresh reviews with text have an approx. **90 % success chance**, and extortion reviews are among the ones Google removes most reliably.",
-      "**Usually a few days**, sometimes up to three weeks. Reviews can come down at different times, so you can pay per review.",
+      "**Usually 1–2 weeks**, sometimes faster, occasionally a little longer. Reviews can come down at different times, so you can pay per review.",
       "**Clean methods only:** no fake accounts, no bots, no fake legal notices. The reviewers are not told who requested the removal.",
     ] },
     { t: "cta", title: "Being extorted? Send us the reviews", text: "Search your business, tick the extortion reviews or paste their links, and see the price instantly. **$179 per removed review** with text, star-only ratings $300, charged only after removal.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Star-only too", "Honest assessment first"] },

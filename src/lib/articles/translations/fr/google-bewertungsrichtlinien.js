@@ -95,7 +95,7 @@ const article = {
       "**179 € par avis supprimé**, 229 € pour les avis de plus de 4 semaines. Vous payez seulement une fois l'avis disparu.",
       "**Chances de succès :** environ **90 %** pour les avis de moins de 4 semaines, environ **50 %** pour les plus anciens.",
       "**Remise sur volume** pour les avis acceptés : 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Délai :** généralement quelques jours, parfois jusqu'à 3 semaines.",
+      "**Délai :** généralement 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google et réalisé plus de 20 000 vérifications gratuites pour des clients dans plus de 50 pays. Prix et commande : [service de suppression d'avis Google](/fr/supprimer-un-avis/)." },
     { t: "cta", title: "Choisissez les avis qui enfreignent le règlement", text: "Chargez vos derniers avis Google, cochez ceux à supprimer et voyez le prix exact. Environ 2 minutes, et vous ne payez que les avis réellement supprimés.", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Paiement au succès", "Procédures Google uniquement", "Évaluation gratuite"] },

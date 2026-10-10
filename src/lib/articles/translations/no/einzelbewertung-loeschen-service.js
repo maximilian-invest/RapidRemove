@@ -50,7 +50,7 @@ const article = {
         ["10 eller flere", "**−30 %**"],
       ] },
       { t: "p", text: "**Eksempler:** 3 ferske anmeldelser koster 537 €, minus 10 % = **483 €**. 2 ferske og 3 eldre anmeldelser koster 1 045 €, minus 15 % = **888 €**. Rabattrinnet avhenger av hvor mange anmeldelser **vi godtar etter den gratis vurderingen**, og rabatten gjelder for hver av dem som blir fjernet. Du betaler fortsatt bare for anmeldelser som faktisk forsvinner: godtar vi 3 og 2 blir fjernet, betaler du 2 × 179 € minus 10 % = **322,20 €**. Vurderinger uten tekst teller med i rabattrinnet: 2 ferske anmeldelser med tekst + 1 uten tekst = 3 anmeldelser, altså −10 % – stjernevurderingen koster **270 €**, anmeldelsene med tekst 161,10 € hver; hvert beløp trekkes først når anmeldelsen er fjernet." },
-      { t: "p", text: "**Betaling per anmeldelse:** hvor lang tid fjerningen tar, kan variere fra anmeldelse til anmeldelse – vanligvis noen dager, av og til opptil tre uker. Derfor trekkes betalingen per anmeldelse: hver anmeldelse trekkes automatisk fra det lagrede kortet eller PayPal så snart den er fjernet. Anmeldelser som vi fortsatt jobber med, koster deg ingenting ennå." },
+      { t: "p", text: "**Betaling per anmeldelse:** hvor lang tid fjerningen tar, kan variere fra anmeldelse til anmeldelse – vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Derfor trekkes betalingen per anmeldelse: hver anmeldelse trekkes automatisk fra det lagrede kortet eller PayPal så snart den er fjernet. Anmeldelser som vi fortsatt jobber med, koster deg ingenting ennå." },
       { t: "tip", title: "Bestill tidlig", text: "Sjansen for å lykkes faller fra rundt 90 % til rundt 50 % når en anmeldelse er eldre enn fire uker – og prisen øker fra 179 € til 229 €. En fersk falsk anmeldelse er den billigste og sikreste å fjerne. Til sammenligning: advokater tar som regel betalt per anmeldelse **på forskudd**, og det tar ofte måneder ([advokat eller teknisk fjerning?](/no/magasin/negativ-google-anmeldelse-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Slik bestiller du – på rundt to minutter", toc: "Slik bestiller du" },
@@ -66,13 +66,13 @@ const article = {
       { t: "cta", title: "Velg anmeldelsene som skal bort", text: "Søk etter bedriften din, kryss av for anmeldelsene – og se nøyaktig pris med en gang. **Fra 179 € per fjernet anmeldelse**, ingenting på forskudd.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Først en ærlig vurdering"] },
 
       { t: "h2", id: "dauer", text: "Hvor lang tid tar det?", toc: "Varighet" },
-      { t: "p", text: "Vanligvis **noen dager**, av og til opptil **tre uker**, avhengig av anmeldelsen og grunnlaget for fjerningen. Du trenger ikke gjøre noe i mellomtiden – vi holder deg oppdatert. Hva som skjer hos Google i mellomtiden – status på rapporten, verktøyet for administrasjon av anmeldelser og muligheten til å klage – forklarer vi i [hvor lang tid Google bruker på å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
+      { t: "p", text: "Vanligvis **1–2 uker**, noen ganger raskere, i enkelte tilfeller litt lenger, avhengig av anmeldelsen og grunnlaget for fjerningen. Du trenger ikke gjøre noe i mellomtiden – vi holder deg oppdatert. Hva som skjer hos Google i mellomtiden – status på rapporten, verktøyet for administrasjon av anmeldelser og muligheten til å klage – forklarer vi i [hvor lang tid Google bruker på å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
 
       { t: "h2", id: "vergleich", text: "Enkeltanmeldelser, hele profilen, advokat eller selv – sammenlignet", toc: "Sammenligning" },
       { t: "table", rrCol: 1, head: ["Kriterium", "Fjerning av enkeltanmeldelser", "Profilfjerning", "Advokat", "Rapportere selv"], rows: [
         ["Hva fjernes", "Valgte anmeldelser", "Hele profilen + alle anmeldelser", "Enkeltanmeldelse", "Enkeltanmeldelse"],
         ["Gode anmeldelser blir stående", "Ja", "Nei", "Ja", "Ja"],
-        ["Varighet", "Noen dager til 3 uker", "Som regel 24–48 timer", "3–9 måneder", "Usikkert"],
+        ["Varighet", "Som regel 1–2 uker", "Som regel 24–48 timer", "3–9 måneder", "Usikkert"],
         ["Pris", "Fra 179 €, bare ved fjerning (uten tekst: 300 €)", "Fast pris, etter suksess", "Per anmeldelse, på forskudd", "Gratis"],
         ["Innsats for deg", "2 minutter", "Minimal", "Høy", "Middels"],
       ] },

@@ -20,7 +20,7 @@ const article = {
     authorRole: "Esperto Google e fondatore",
     date: "2026-10-05",
   },
-  dek: "**Google non indica alcun tempo fisso.** Una violazione evidente può sparire in poche ore o pochi giorni; i casi dubbi, i ricorsi e le escalation possono richiedere **diverse settimane**. Con RapidRemove la rimozione richiede di solito **pochi giorni, a volte fino a tre settimane** – e paghi solo quando la recensione è davvero sparita. Qui trovi ogni fase con i tempi tipici, come leggere lo stato nello strumento di gestione delle recensioni, come funziona il ricorso e cosa accelera davvero le cose.",
+  dek: "**Google non indica alcun tempo fisso.** Una violazione evidente può sparire in poche ore o pochi giorni; i casi dubbi, i ricorsi e le escalation possono richiedere **diverse settimane**. Con RapidRemove la rimozione richiede di solito **1–2 settimane, a volte prima, in singoli casi un po' di più** – e paghi solo quando la recensione è davvero sparita. Qui trovi ogni fase con i tempi tipici, come leggere lo stato nello strumento di gestione delle recensioni, come funziona il ricorso e cosa accelera davvero le cose.",
   blocks: [
     { t: "h2", id: "short-answer", text: "La risposta breve: nessun tempo fisso, ma intervalli tipici", toc: "Risposta breve" },
     { t: "p", text: "**Google non promette alcun tempo di gestione per le recensioni segnalate.** Le segnalazioni vengono controllate da sistemi automatici e da persone e, a seconda del caso, servono da poche ore a diverse settimane." },
@@ -28,7 +28,7 @@ const article = {
       "**Violazioni evidenti** (spam, insulti, falso coinvolgimento palese): spesso da poche ore a pochi giorni.",
       "**Casi dubbi** che richiedono un controllo umano: spesso da una a qualche settimana.",
       "**Ricorsi ed escalation**: aggiungono tempo, a volte diverse settimane.",
-      "**Con noi**: di solito pochi giorni, a volte fino a tre settimane per recensione. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura più approfondita, 300 € per valutazione rimossa.",
+      "**Con noi**: di solito 1–2 settimane per recensione, a volte prima, in singoli casi un po' di più. Se preferisci affidare il lavoro, il nostro [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/) usa solo le procedure ufficiali di Google e costa **179 € per recensione rimossa**, nulla in anticipo. Anche le valutazioni senza testo – procedura più approfondita, 300 € per valutazione rimossa.",
     ] },
     { t: "warn", title: "Tempi tipici, non garantiti", text: "Tutte le durate in questo articolo sono intervalli osservati nella pratica, non impegni di Google. I tempi di gestione variano e nessuno può promettere una data – né una rimozione." },
 
@@ -101,7 +101,7 @@ const article = {
     { t: "h2", id: "different-times", text: "Perché più recensioni spariscono in momenti diversi", toc: "Momenti diversi" },
     { t: "p", text: "**Ogni recensione viene esaminata singolarmente, quindi se ne segnali cinque raramente spariscono lo stesso giorno.** Una può andarsene in due giorni, un'altra richiede un ricorso, una terza è ancora in sospeso dopo due settimane." },
     { t: "p", text: "Per questo **fatturiamo per recensione**: paghi ciascuna quando è stata davvero rimossa – ciascuna viene addebitata separatamente sulla carta o PayPal salvati. Quelle su cui stiamo ancora lavorando non ti costano nulla, e con 3, 5 o 10 recensioni accettate lo sconto quantità (−10 %, −15 %, −30 %) vale per ognuna che viene rimossa. Tutti i prezzi e i confronti sono in [costo della rimozione di una recensione Google](/it/rivista/costo-rimozione-recensione-google/), e l'ordine si fa dalla nostra pagina per [rimuovere una singola recensione Google](/it/rimuovere-una-recensione/)." },
-    { t: "cta", title: "Scopri quali recensioni hanno davvero una possibilità", text: "Prima una valutazione gratuita: ti diciamo onestamente se una recensione è rimovibile. L'ordine richiede circa due minuti – di solito risolto in pochi giorni, a volte fino a tre settimane.", btn: "Avvia la verifica gratuita", href: "/it/verifica-profilo/?start=reviews", trust: ["Solo procedure ufficiali di Google", "L'autore non sa chi l'ha richiesto", "Oltre 1.600 profili rimossi dal 2023"] },
+    { t: "cta", title: "Scopri quali recensioni hanno davvero una possibilità", text: "Prima una valutazione gratuita: ti diciamo onestamente se una recensione è rimovibile. L'ordine richiede circa due minuti – di solito risolto in 1–2 settimane, a volte prima, in singoli casi un po' di più.", btn: "Avvia la verifica gratuita", href: "/it/verifica-profilo/?start=reviews", trust: ["Solo procedure ufficiali di Google", "L'autore non sa chi l'ha richiesto", "Oltre 1.600 profili rimossi dal 2023"] },
   ],
   faq: [
     { q: "Quanto tempo ci mette Google a rimuovere una recensione segnalata?", a: "Google non pubblica tempi fissi. Le violazioni chiare possono sparire in poche ore o pochi giorni; i casi dubbi e i ricorsi richiedono spesso **da una a diverse settimane**." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Posso fare ricorso più di una volta?", a: "No. Nello strumento di gestione delle recensioni hai **un solo ricorso per recensione**. Dopo la decisione finale l'unica altra via ufficiale è una richiesta di rimozione per motivi legali – e solo se il contenuto è illecito." },
     { q: "Google avvisa l'autore della recensione?", a: "All'autore **non viene detto chi ha segnalato la recensione né chi ne ha chiesto la rimozione** – né quando segnali tu, né quando ce ne occupiamo noi. Al massimo si accorgerà che la sua recensione non è più visibile." },
     { q: "Una recensione rimossa può ricomparire?", a: "Una recensione rimossa da Google per violazione delle norme di solito resta rimossa. La stessa persona però può scriverne una nuova, che viene esaminata separatamente e può essere segnalata di nuovo." },
-    { q: "Quanto ci vuole con RapidRemove?", a: "Di solito **pochi giorni, a volte fino a tre settimane** per recensione. Paghi **179 € per recensione rimossa** (229 € se ha più di 4 settimane) – solo quando è sparita." },
+    { q: "Quanto ci vuole con RapidRemove?", a: "Di solito **1–2 settimane** per recensione, a volte prima, in singoli casi un po' di più. Paghi **179 € per recensione rimossa** (229 € se ha più di 4 settimane) – solo quando è sparita." },
     { q: "Rispondere alla recensione peggiora le mie probabilità?", a: "No. Una risposta pubblica breve e calma è sempre consentita e non influisce sul controllo. Evita solo insulti e dati dei clienti." },
   ],
   related: [
