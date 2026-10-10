@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1125,6 +1125,58 @@ function BprReturnFlow({ title, nodes }) {
   );
 }
 
+/* Ladeanimation „Bewertungen werden geladen" (Schritt 5A): Zähler + Balken + Skeleton-Zeilen.
+   Läuft mind. ~2,6 s; erst wenn die Daten da sind (done) läuft er auf 100 % und ruft onFinish. */
+function BprReviewsLoader({ done, actual, estimate, onFinish, title, sub, found }) {
+  const [p, setP] = React.useState(0);
+  const [rows, setRows] = React.useState(0);
+  const st = React.useRef({ t0: 0, fin: false });
+  const doneRef = React.useRef(done); doneRef.current = done;
+  const finRef = React.useRef(onFinish); finRef.current = onFinish;
+  React.useEffect(() => {
+    st.current.t0 = performance.now();
+    const rt = [0, 1, 2, 3].map((i) => setTimeout(() => setRows(i + 1), 250 + i * 380));
+    const D = 2600;
+    const iv = setInterval(() => {
+      const s = st.current; if (s.fin) return;
+      const el = performance.now() - s.t0;
+      const x = Math.min(1, el / D), e = 1 - Math.pow(1 - x, 2);
+      if (!doneRef.current) { setP(Math.min(e, 0.92)); return; }
+      if (x < 1) { setP(e); return; }
+      setP(1); s.fin = true;
+      setTimeout(() => finRef.current && finRef.current(), 350);
+    }, 50);
+    return () => { clearInterval(iv); rt.forEach(clearTimeout); };
+  }, []);
+  const N = done ? actual : estimate;
+  const SKS = [1, 3, 1, 3], W1 = [34, 26, 42, 30], W2 = [92, 70, 84, 60], W3 = [56, 40, 64, 0];
+  return (
+    <div className="bpr-ld">
+      <div className="bpr-ldi"><img src={asset("/assets/bestell/bewertungen.webp")} alt="" width={80} height={80} /></div>
+      <h1 className="bpr-h1">{title}</h1>
+      <p className="bpr-sub">{sub}</p>
+      <div className="bpr-ctr"><b>{Math.round(p * N)}</b><span>{found}</span><em>{Math.round(p * 100)} %</em></div>
+      <div className="bpr-lbar"><i style={{ width: p * 100 + "%" }} /></div>
+      <div className="bpr-sk">
+        {SKS.map((sv, k) => (
+          <div key={k} className={"bpr-skr" + (k < rows ? " in" : "")}>
+            <i className="c" />
+            <div className="l">
+              <div className="bpr-skh"><i style={{ width: W1[k] + "%", height: 14 }} /><span className="st">{[1, 2, 3, 4, 5].map((j) => <svg key={j} viewBox="0 0 24 24" className={j <= sv ? "f" : ""}><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>)}</span></div>
+              <i style={{ width: W2[k] + "%", height: 11 }} />
+              {W3[k] ? <i style={{ width: W3[k] + "%", height: 11 }} /> : null}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function BprStars({ n = 5 }) {
+  const k = Math.max(0, Math.min(5, Math.round(Number(n) || 0)));
+  return <span className="bpr-rst">{[0, 1, 2, 3, 4].map((i) => <LStar key={i} className={i < k ? "" : "e"} />)}</span>;
+}
+
 /* ============ WIZARD ROOT ============ */
 /* ---- Router (erste Seite) + Presse-/Einzeltreffer-Flow (aus dem Design portiert).
    de + en ausformuliert; übrige Sprachen erben EN (wie im Design). ---- */
@@ -1829,6 +1881,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [pickCands, setPickCands] = React.useState([]);
   const [pickPlace, setPickPlace] = React.useState(null);
   const [pickReviews, setPickReviews] = React.useState([]);
+  const [revShow, setRevShow] = React.useState(false); // Ladeanimation der Bewertungen fertig → Liste zeigen
+  React.useEffect(() => { if (pickPhase === "loading" || pickPhase === "idle") setRevShow(false); }, [pickPhase]);
   const [pickSel, setPickSel] = React.useState([]); // ausgewählte Bewertungen (Objekte)
   const [pickFilter, setPickFilter] = React.useState("low"); // low = 1–3 Sterne | all
   const [pickQ2, setPickQ2] = React.useState(""); // Suche nach Bewertername in der Auswahl
@@ -3319,8 +3373,133 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Schritt 1 (Firmenname) im neuen Design (Redesign 10/2026); übrige Schritte noch alt.
   // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
   const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
-  const protNew = step === 4 && service !== "reviews" && !processing; // Schutz im neuen Design
+  const protNew = step === 4 && !processing; // Schutz bzw. Bewertungsauswahl im neuen Design
   const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA || protNew; // neues Design (Schritt 1, 2, 4, 5)
+  /* Schritt 5A · Bewertungen auswählen im neuen Design (Ladeanimation → Liste mit Suche/Filter, rechts Summe). */
+  function manualLinksNew() {
+    const setIt = (i, k) => (e) => { const u = reviewItems.slice(); u[i] = { ...u[i], [k]: e.target.value }; setReviewItems(u); setReviewErr(""); };
+    const toggleAlt = (i) => () => { const u = reviewItems.slice(); u[i] = { ...u[i], alt: !u[i].alt }; setReviewItems(u); };
+    const addUrl = () => setReviewItems([...reviewItems, { url: "", name: "", text: "", alt: false }]);
+    const rmUrl = (i) => () => setReviewItems(reviewItems.filter((_, j) => j !== i));
+    return (
+      <div className="bpr-manual">
+        {reviewItems.map((it, i) => (
+          <React.Fragment key={i}>
+            {it.alt ? (<React.Fragment>
+              <label className="bpr-fl"><input value={it.name || ""} onChange={setIt(i, "name")} placeholder=" " /><span>{rv.altName}</span></label>
+              <label className="bpr-fl"><textarea value={it.text || ""} onChange={setIt(i, "text")} placeholder=" " rows={3} /><span>{rv.altText}</span></label>
+            </React.Fragment>) : (
+              <label className="bpr-fl">
+                <input value={it.url || ""} onChange={setIt(i, "url")} placeholder=" " inputMode="url" style={reviewItems.length > 1 ? { paddingRight: 56 } : undefined} />
+                <span>{rv.urlLabel}</span>
+                {reviewItems.length > 1 ? <button type="button" className="rm" onClick={rmUrl(i)} aria-label="×"><LX /></button> : null}
+              </label>
+            )}
+            <button type="button" className="alt" onClick={toggleAlt(i)}>{it.alt ? "↩ " + rv.urlLabel : rv.altBtn}</button>
+          </React.Fragment>
+        ))}
+        <button type="button" className="bpr-add" onClick={addUrl}><LPlus />{rv.addUrl}</button>
+      </div>
+    );
+  }
+  function StepReviewsNew() {
+    const bp = bpCopy(t.code);
+    const manualOnly = pickPhase === "manual";
+    const nameShown = (selected && selected.name) || name;
+    if (!manualOnly && (pickPhase === "loading" || pickPhase === "idle" || (pickPhase === "list" && !revShow))) {
+      return (
+        <div className="bpr bpr-s1" ref={bodyRef} key="rvl">
+          <main className="bpr-main bpr-solo">
+            <section className="bpr-res">
+              <BprReviewsLoader done={pickPhase === "list"} actual={(pickReviews || []).length}
+                estimate={Math.max(8, Math.min(60, Number(selected && selected.reviews) || 24))}
+                onFinish={() => setRevShow(true)} title={pk.loading} sub={bp.ldSub(<b key="n">{nameShown}</b>)} found={bp.ldFound} />
+            </section>
+          </main>
+        </div>
+      );
+    }
+    const all = pickReviews || [];
+    const q = pickQ2.trim().toLowerCase();
+    const shown = all.filter((r) => q
+      ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
+      : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
+    const allSel = shown.length > 0 && shown.every((r) => pickSel.some((x) => x.id === r.id));
+    const toggleAll = () => setPickSel((sel) => allSel ? sel.filter((x) => !shown.some((r) => r.id === x.id)) : [...sel, ...shown.filter((r) => !sel.some((x) => x.id === r.id))]);
+    const n = reviewCount;
+    const hint = discountNudge(n, pk);
+    const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
+    const back = () => go(manualOnly ? 1 : 3);
+    const priceOf = (r) => { const m = revMethod(r); return m === "sw" ? REVIEW_NOTEXT_PRICE : m === "legal" ? rq.oldPrice : rq.base; };
+    const row = (r, k) => {
+      const on = pickSel.some((x) => x.id === r.id);
+      const m = revMethod(r);
+      const hasT = reviewHasText(r);
+      return (
+        <button type="button" key={r.id} className={"bpr-rv" + (on ? " sel" : "")} style={{ "--i": Math.min(k, 12) }} onClick={() => pickToggle(r)} aria-pressed={on}>
+          <span className="bpr-cb"><LCheck /></span>
+          <span className="bd">
+            <span className="bpr-rh"><b>{r.name}</b><BprStars n={r.rating} />{r.date ? <span className="ago">{relAge(r.days, lang)}</span> : null}</span>
+            <span className={"bpr-rt" + (hasT ? "" : " none")}>{hasT ? r.text : bp.noText}</span>
+            <span className="bpr-tags">
+              {m === "sw"
+                ? <span className="bpr-tag ok i" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setSwInfo(true); }}><LCircleCheck />{bp.tag.sw}<LInfo /></span>
+                : <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span>}
+              <span className="bpr-tag">{m === "sw" ? (hasT ? bp.cat.sw : bp.cat.nt) : bp.cat[m]}</span>
+              <span className="bpr-tag pr">{money(rl, priceOf(r))}</span>
+            </span>
+          </span>
+        </button>
+      );
+    };
+    const hasManual = showManual || reviewItems.some((it) => (it.url || "").trim() || (it.name || "").trim());
+    const list = manualOnly ? null : (<React.Fragment>
+      {all.length ? (<React.Fragment>
+        <div className="bpr-tools">
+          <label className="bpr-srch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
+          <div className="bpr-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
+        </div>
+        <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
+        {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
+      </React.Fragment>) : <div className="bpr-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
+      {all.length && !hasManual
+        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setShowManual(true)}><LPencil />{pk.notListed}</button>
+        : manualLinksNew()}
+    </React.Fragment>);
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="rv">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{manualOnly ? pk.manualH : pk.stepH}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{manualOnly ? pk.manualNote : pk.stepSub}</p>
+            <button type="button" className="bpr-link bpr-fade" style={{ animationDelay: ".06s" }} onClick={() => setPriceInfo(true)}><LInfo />{pk.infoH}</button>
+            {manualOnly ? manualLinksNew() : list}
+            {reviewErr ? <div className="bpr-err">{reviewErr}</div> : null}
+          </section>
+          <aside className="bpr-aside bpr-sticky">
+            <div className="bpr-sum">
+              <div className="lb">{bp.selN(n)}</div>
+              <div className="tot">{fmtMoney(rl, servicePriceNum)}</div>
+              <div className="rows rv">
+                {n ? (<React.Fragment>
+                  <div><span>{bp.subtotal}</span><b>{fmtMoney(rl, rq.subtotal)}</b></div>
+                  {rq.pct ? <div className="dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(rl, rq.discount)}</b></div> : null}
+                </React.Fragment>) : <div><span>{bp.pickOne}</span></div>}
+              </div>
+              {hint ? <div className="hint"><LSparkles /><span>{hint}</span></div> : null}
+              <button type="button" className="bpr-go" disabled={!n} onClick={cont}>{bp.toCo}<LArrowRight /></button>
+              <div className="pay">{bp.payAfter}</div>
+            </div>
+            <div className="bpr-bkw"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
+          </aside>
+        </main>
+        <div className="bpr-mbar bpr-mbar2">
+          <div className="ln2"><span>{bp.selShort(n)}{rq.pct ? " · −" + rq.pct + " %" : ""}{hint ? <span className="h">{hint}</span> : null}</span><b className="big">{fmtMoney(rl, servicePriceNum)}</b></div>
+          <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" disabled={!n} onClick={cont}>{bp.toCo}<LArrowRight /></button></div>
+        </div>
+      </div>
+    );
+  }
   /* Schritt 5 · Schutz im neuen Design: 3 Schutz-Optionen + „Ohne Schutz" (Warnung + Rückkehr-Animation), rechts Ihre Auswahl. */
   function StepProtectNew() {
     const bp = bpCopy(t.code);
@@ -3624,7 +3803,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? StepProtectNew() : StepServiceNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
