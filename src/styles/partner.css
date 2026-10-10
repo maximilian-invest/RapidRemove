@@ -566,3 +566,33 @@
 .rp-o.on .rd{background:#111;border-color:#111;color:#fff}.rp-o .rd svg{width:14px;height:14px}
 .rp-sel,.rp-note{width:100%;height:48px;border-radius:14px;border:1.5px solid #e2e2e2;padding:0 12px;font:inherit;font-size:15px;background:#fff;color:#111}
 .prt .rp-cust{margin:0 0 12px}
+
+/* Fristen (10/2026): bis 4 Wochen alt 3 Tage, älter 5 Tage */
+.pra .due{display:inline-flex;align-items:center;gap:4px;font-style:normal;font-size:12px;font-weight:700;line-height:1;padding:4px 8px;border-radius:999px;background:var(--g1);color:var(--g3);margin-right:6px;white-space:nowrap;vertical-align:1px}
+.pra .due svg{width:12px;height:12px;flex:none}
+.pra .due.soon{background:var(--warning-soft);color:var(--orange-800)}
+.pra .due.late{background:var(--danger-soft);color:var(--danger)}
+.pra .lrow .t>.due{align-self:flex-start;margin-top:6px}
+.pra .duebar{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border-radius:22px;padding:14px 16px;margin-bottom:14px;background:var(--danger-soft);color:var(--ink)}
+.pra .duebar .di{width:44px;height:44px;border-radius:14px;background:var(--danger);color:#fff;display:grid;place-items:center;flex:none}
+.pra .duebar .di svg{width:22px;height:22px}
+.pra .duebar .t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pra .duebar .t b{font-size:16px;font-weight:800;letter-spacing:-.2px;color:var(--danger)}
+.pra .duebar .t span{font-size:13px;color:#5a3a3a}
+.pra .duebar>svg{width:18px;height:18px;color:var(--danger);flex:none}
+.pra .duebar.soon{background:var(--warning-soft)}
+.pra .duebar.soon .di{background:var(--primary)}
+.pra .duebar.soon .t b,.pra .duebar.soon>svg{color:var(--orange-800)}
+.pra .duebar.soon .t span{color:#5a4a3a}
+.pra .dueb{border-radius:18px;padding:14px 16px;margin-bottom:12px;background:var(--g1);font-size:13px;color:var(--g3)}
+.pra .dueb .h{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:var(--ink)}
+.pra .dueb .h svg{width:18px;height:18px}
+.pra .dueb .h b{font-size:16px;font-weight:800}
+.pra .dueb .bar{height:6px;border-radius:99px;background:rgba(0,0,0,.08);overflow:hidden;margin-bottom:8px}
+.pra .dueb .bar i{display:block;height:100%;border-radius:99px;background:var(--ink)}
+.pra .dueb.soon{background:var(--warning-soft)}
+.pra .dueb.soon .h,.pra .dueb.soon .h b{color:var(--orange-800)}
+.pra .dueb.soon .bar i{background:var(--primary)}
+.pra .dueb.late{background:var(--danger-soft)}
+.pra .dueb.late .h,.pra .dueb.late .h b{color:var(--danger)}
+.pra .dueb.late .bar i{background:var(--danger)}

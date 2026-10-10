@@ -5,9 +5,9 @@
 import React from "react";
 import {
   Search, ArrowLeft, Check, ChevronRight, Sparkles, Loader, Copy, CheckCheck, X, StickyNote, ArrowUpRight,
-  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User,
+  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User, AlarmClock,
 } from "lucide-react";
-import { BASE, STATUS, MARKS, canRemove, usd, since, call } from "./shared";
+import { BASE, STATUS, MARKS, canRemove, usd, since, call, dueOf, dueText, dueDate, span } from "./shared";
 import PartnerPush from "./PartnerPush";
 import ReviewShot from "./ReviewShot";
 import { CustReason } from "./ReasonPick";
@@ -22,10 +22,12 @@ const F = {
   sw: (t) => t.status === "software",
   nw: (t) => t.status === "new",
   wk: (t) => t.status === "working",
+  late: (t) => { const d = dueOf(t); return !!d && d.state === "late"; },
+  soon: (t) => { const d = dueOf(t); return !!d && d.state === "soon"; },
   all: () => true,
 };
-const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", all: "All tasks", pending: "Pending · waiting for customer" };
-const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw" };
+const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", late: "Overdue", soon: "Due within 24 h", all: "All tasks", pending: "Pending · waiting for customer" };
+const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw", late: "open", soon: "open" };
 /** Fortschritt eines Kunden – überall gleich formuliert („2 of 9 done · 1 waiting for customer"). */
 const progressOf = (l) => {
   const todo = l.filter(isTodo).length, sw = l.filter(F.sw).length;
@@ -33,6 +35,20 @@ const progressOf = (l) => {
 };
 const sum = (a) => a.reduce((s, t) => s + t.price, 0);
 const byCreated = (a, b) => (a.created - b.created) || (a.id - b.id);
+/* Offene zuerst nach Frist (überfällig ganz oben), Rest nach Eingang */
+const byDue = (a, b) => { const x = dueOf(a), y = dueOf(b); return ((x ? x.due : Infinity) - (y ? y.due : Infinity)) || byCreated(a, b); };
+/** Frist-Chip („Due in 2 d", „Overdue 1 d 4 h") – nur bei offenen Bewertungen mit Frist */
+function DueChip({ t }) {
+  const d = dueOf(t);
+  if (!d) return null;
+  return <em className={"due " + d.state}><AlarmClock />{dueText(d)}</em>;
+}
+/** „1 overdue" / „2 due today" je Kunde */
+function custDue(l) {
+  const late = l.filter((t) => { const d = dueOf(t); return d && d.state === "late"; }).length;
+  const soon = l.filter((t) => { const d = dueOf(t); return d && d.state === "soon"; }).length;
+  return late ? <em className="due late"><AlarmClock />{late} overdue</em> : soon ? <em className="due soon"><AlarmClock />{soon} due today</em> : null;
+}
 
 function stLabel(t) {
   if (t.hold && (t.status === "new" || t.status === "working")) return "On hold · waiting for customer payment";
@@ -143,6 +159,16 @@ export default function PartnerApp({ api }) {
       </div>
     </div>
   );
+  // Frist-Leiste oben: überfällig (rot) bzw. heute fällig (orange)
+  const lateN = all.filter(F.late).length, soonN = all.filter(F.soon).length;
+  const dueBar = () => (lateN || soonN ? (
+    <button type="button" className={"duebar " + (lateN ? "late" : "soon")} onClick={() => go({ v: "list", k: lateN ? "late" : "soon" })}>
+      <span className="di"><AlarmClock /></span>
+      <span className="t"><b>{lateN ? `${lateN} review${lateN > 1 ? "s" : ""} overdue` : `${soonN} review${soonN > 1 ? "s" : ""} due within 24 h`}</b>
+        <span>{lateN ? "Customers are waiting – please finish these first." : "Please finish these today."}{lateN && soonN ? ` · ${soonN} more due today` : ""}</span></span>
+      <ChevronRight />
+    </button>
+  ) : null);
   const nav = (right) => (
     <div className="nav"><button type="button" className="circ" aria-label="Back" onClick={back}><ArrowLeft /></button>{right || null}</div>
   );
@@ -159,6 +185,7 @@ export default function PartnerApp({ api }) {
     return (
       <>
         <div className="hhead"><h1>Tasks</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
+        {dueBar()}
         {hero()}
         <div className="stats">
           {tiles.map(([k, l, c]) => { const I = icon[k]; return (
@@ -173,7 +200,7 @@ export default function PartnerApp({ api }) {
           return (
             <button key={c} type="button" className={"big" + (nw ? " new" : "")} onClick={() => go({ v: "cust", c, cf: "open" })}>
               <span className="bi">{nw ? <Sparkles /> : <Loader />}</span>
-              <span className="t"><b>{c}</b><span>{nw ? `Customer waiting for order confirmation · ${l.length} review${l.length > 1 ? "s" : ""}` : progressOf(allT)}</span></span>
+              <span className="t"><b>{c}</b><span>{custDue(allT)}{nw ? `Customer waiting for order confirmation · ${l.length} review${l.length > 1 ? "s" : ""}` : progressOf(allT)}</span></span>
               <span className="n">{l.length}</span><ChevronRight />
             </button>
           );
@@ -195,7 +222,7 @@ export default function PartnerApp({ api }) {
         {cs.map((x) => (
           <button key={x.c} type="button" className="lrow" onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
             <Ring r={x.rem} n={x.l.length} />
-            <span className="t"><b>{x.c}</b><span>{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open || x.sw ? progressOf(x.l) : "Completed"}</span></span>
+            <span className="t"><b>{x.c}</b><span>{custDue(x.l)}{isNewC(x.c) ? <em className="newin">New · </em> : null}{x.open || x.sw ? progressOf(x.l) : "Completed"}</span></span>
             <ChevronRight />
           </button>
         ))}
@@ -233,7 +260,7 @@ export default function PartnerApp({ api }) {
         <div className="ps">{all.filter(FX[k]).length} reviews · {cs.length} customers</div>
         {cs.map(([c, l]) => (
           <button key={c} type="button" className="lrow" onClick={() => go({ v: "cust", c, cf: CF_OF[k] })}>
-            <span className="t"><b>{c}</b><span>{k === "pending" ? progressOf(all.filter((t) => t.cust === c)) : usd(sum(l))}{isNewC(c) ? <> · <em className="newin">New</em></> : null}</span></span>
+            <span className="t"><b>{c}</b><span>{custDue(l)}{k === "pending" ? progressOf(all.filter((t) => t.cust === c)) : usd(sum(l))}{isNewC(c) ? <> · <em className="newin">New</em></> : null}</span></span>
             <span className="n">{l.length}</span><ChevronRight />
           </button>
         ))}
@@ -244,7 +271,7 @@ export default function PartnerApp({ api }) {
 
   function CustV({ c, cf = "open" }) {
     const allT = all.filter((t) => t.cust === c);
-    const l = allT.filter(F[cf]).sort(byCreated);
+    const l = allT.filter(F[cf]).sort(cf === "open" ? byDue : byCreated);
     const allSel = l.length > 0 && l.every((t) => sel.has(t.id));
     const dueC = allT.filter((t) => t.status === "removed" && !t.paid);
     const nw = isNewC(c);
@@ -279,6 +306,7 @@ export default function PartnerApp({ api }) {
               <span className="t">
                 <b>{t.code} · {t.who}</b>
                 <span className={"c-" + t.status} style={{ fontWeight: 700 }}>{stLabel(t)}{t.old ? <em className="old4"> · 4+ weeks</em> : null}{t.nt ? <em className="old4"> · no text</em> : null}</span>
+                <DueChip t={t} />
               </span>
               {t.note ? <span className="noteic"><StickyNote /></span> : null}
               <ChevronRight />
@@ -294,7 +322,7 @@ export default function PartnerApp({ api }) {
     const t = byId(id);
     if (!t) return <>{nav()}{empty("Not found", "This review is no longer on your board.")}</>;
     const f = F[k] || isTodo;
-    const l = all.filter((x) => x.cust === c && f(x)).sort(byCreated);
+    const l = all.filter((x) => x.cust === c && f(x)).sort(k === "open" || k === "todo" ? byDue : byCreated);
     const i = l.findIndex((x) => x.id === id);
     // Software-Fall (alte US-Bewertung / ohne Text): erst Software bestätigen → Kunde zahlt → „Customer paid" → dann Working/Removed.
     const swGate = t.method === "sw" && t.sw !== "paid";
@@ -314,6 +342,13 @@ export default function PartnerApp({ api }) {
         <div className="ps" style={{ margin: "8px 0 0" }}>{t.cust}</div>
         <div className="rvh"><b>{t.code}</b><span>{usd(t.price)}</span></div>
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
+        {dueOf(t) ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / (d.days * 864e5)) * 100)); return (
+          <div className={"dueb " + d.state}>
+            <div className="h"><AlarmClock /><b>{d.state === "late" ? `Overdue by ${span(d.left)}` : `Deadline in ${span(d.left)}`}</b></div>
+            <div className="bar"><i style={{ width: pct + "%" }} /></div>
+            <span>{d.days} days for reviews {t.old ? "older than 4 weeks" : "up to 4 weeks old"} · due {dueDate(d.due)}</span>
+          </div>
+        ); })() : null}
         {t.hold ? (
           <div className="swb"><Hourglass /><span><b>On hold – customer payment pending</b>The customer has to make an interim payment first. Don’t start new work on this order until you see “Customer paid”.</span></div>
         ) : t.status === "software" && t.sw === "declined" ? (

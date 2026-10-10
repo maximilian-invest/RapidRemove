@@ -44,6 +44,26 @@ export const since = (ms) => {
   const d = Math.floor(hh / 24);
   return d + " d " + (hh % 24) + " h";
 };
+/* Frist je Bewertung (ab Eingang beim Partner): bis 4 Wochen alt → 3 Tage, älter → 5 Tage.
+   Keine Frist für Software-Fälle, Bewertungen ohne Text, pausierte Aufträge und Erledigtes. */
+export const DUE_DAYS = { std: 3, old: 5 };
+const DAY = 864e5;
+export function dueOf(t, now = Date.now()) {
+  if (!t || !(t.status === "new" || t.status === "working") || t.hold || t.nt || t.method === "sw" || t.sw || !t.created) return null;
+  const days = t.old ? DUE_DAYS.old : DUE_DAYS.std;
+  const due = t.created + days * DAY, left = due - now;
+  return { days, due, left, state: left < 0 ? "late" : left < DAY ? "soon" : "ok" };
+}
+/** „2 d 4 h", „9 h", „35 min" */
+export const span = (ms) => {
+  const m = Math.max(1, Math.floor(Math.abs(ms) / 60000));
+  if (m < 60) return m + " min";
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + " h";
+  return Math.floor(h / 24) + " d" + (h % 24 ? " " + (h % 24) + " h" : "");
+};
+export const dueText = (d) => (!d ? "" : d.state === "late" ? "Overdue " + span(d.left) : "Due in " + span(d.left));
+export const dueDate = (ms) => new Date(ms).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 export const pillLabel = (t) => {
   if (t.status === "removed" && t.paid) return "Paid";
   if (t.status === "software" && t.sw === "declined") return "Software · Customer declined deletion";
