@@ -3456,7 +3456,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const list = manualOnly ? null : (<React.Fragment>
       {all.length ? (<React.Fragment>
         <div className="bpr-tools">
-          <label className="bpr-srch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
+          <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
           <div className="bpr-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
         </div>
         <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>

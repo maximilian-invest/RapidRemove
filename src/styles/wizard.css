@@ -1308,14 +1308,14 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-link:hover{color:#111;text-decoration-color:currentColor}
 .bpr-link svg{width:14px;height:14px}
 .bpr-tools{display:flex;gap:10px;margin:28px -8px 0;position:sticky;top:142px;background:#fff;padding:10px 8px;z-index:5}
-.bpr-srch{flex:1;min-width:0;display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border-radius:28px;background:#f4f4f4;transition:box-shadow 120ms,background 120ms;cursor:text}
-.bpr-srch:focus-within{background:#fff;box-shadow:0 0 0 2px #111}
-.bpr-srch svg{width:20px;height:20px;color:#6b6b6b;flex:none}
-.bpr-srch input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;padding:0;color:#111;-webkit-appearance:none;appearance:none;box-shadow:none;height:auto}
-.bpr-srch input::placeholder{color:#9a9a9a}
-.bpr-srch input::-webkit-search-cancel-button{display:none}
-.bpr-srch button{width:28px;height:28px;border:0;border-radius:50%;background:none;display:grid;place-items:center;color:#6b6b6b;cursor:pointer;padding:0}
-.bpr-srch button svg{width:15px;height:15px}
+.bpr-rsrch{flex:1;min-width:0;display:flex;align-items:center;gap:12px;height:56px;padding:0 20px;border-radius:28px;background:#f4f4f4;transition:box-shadow 120ms,background 120ms;cursor:text}
+.bpr-rsrch:focus-within{background:#fff;box-shadow:0 0 0 2px #111}
+.bpr-rsrch svg{width:20px;height:20px;color:#6b6b6b;flex:none}
+.bpr-rsrch input{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;padding:0;color:#111;-webkit-appearance:none;appearance:none;box-shadow:none;height:auto}
+.bpr-rsrch input::placeholder{color:#9a9a9a}
+.bpr-rsrch input::-webkit-search-cancel-button{display:none}
+.bpr-rsrch button{width:28px;height:28px;border:0;border-radius:50%;background:none;display:grid;place-items:center;color:#6b6b6b;cursor:pointer;padding:0}
+.bpr-rsrch button svg{width:15px;height:15px}
 .bpr-seg{display:flex;align-items:center;align-self:center;padding:3px;border-radius:18px;background:#f4f4f4;flex:none}
 .bpr-seg button{height:30px;padding:0 10px;border:0;border-radius:15px;background:none;font:inherit;font-size:12px;font-weight:600;color:#6b6b6b;white-space:nowrap;cursor:pointer;transition:all 120ms}
 .bpr-seg button.on{background:#fff;color:#111;box-shadow:0 1px 3px rgba(0,0,0,.1)}
@@ -1375,7 +1375,7 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 
 @media (max-width:600px){
   .bpr-tools{gap:8px;margin-top:20px;top:114px}
-  .bpr-srch{padding:0 16px}
+  .bpr-rsrch{padding:0 16px}
   .bpr-seg button{padding:0 8px}
   .bpr-rv{padding:16px;gap:12px}
   .bpr-rh .ago{margin-left:0;width:100%;margin-top:-6px}
