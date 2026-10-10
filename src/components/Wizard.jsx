@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron, Eye as LEye, Globe as LGlobe, Clock as LClock, Trash2 as LTrash, FileText as LFile } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -3354,8 +3354,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     return (
       <div className="wz">
         {Top}
-        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"router" + unsureStep}>{RouterScreen()}</div></div>
-        <ActivityToast />
+        {UnsureNew()}
       </div>
     );
   }
@@ -3363,7 +3362,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     return (
       <div className="wz">
         {Top}
-        <div className="wz-body" ref={bodyRef}><div className="step-panel" key={"press" + pressDone}>{PressIntake()}</div></div>
+        {PressNew()}
       </div>
     );
   }
@@ -3375,7 +3374,241 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Bewertungs-Wunsch + Profil in DE/AT: eigener Hinweis-Schritt statt der alten Leistungsauswahl.
   const reviewsNA = step === 3 && wantReviews && !reviewsAllowedFor(selected, t.code) && !processing;
   const protNew = step === 4 && !processing; // Schutz bzw. Bewertungsauswahl im neuen Design
-  const newStep1 = ((step === 0 || step === 1 || step === 3) && !processing) || reviewsNA || protNew || step === 5; // neues Design (Schritt 1, 2, 4, 5, 6)
+  const newStep1 = ((step === 0 || step === 1 || step === 2 || step === 3) && !processing) || reviewsNA || protNew || step === 5 || step === 6; // neues Design (Schritt 1–7)
+  /* Gemeinsame Bausteine für die Nebenwege im neuen Design. */
+  function bprExpert() {
+    const bp = bpCopy(t.code);
+    return (
+      <button type="button" className="bpr-expert" onClick={openTidioChat}>
+        <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+        <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+        <LArrowUpRight className="ar" />
+      </button>
+    );
+  }
+  /* Schritt 3 · Bestätigen (unklares Profil / Prüf-Animation) im neuen Design. */
+  function StepConfirmNew() {
+    const bp = bpCopy(t.code);
+    const nm = (selected && selected.name) || name;
+    if (phase === "checking") {
+      return (
+        <div className="bpr bpr-s1" ref={bodyRef} key="cfchk">
+          <main className="bpr-main">
+            <section><BpSearchAnim title={bp.checkH} sub={bp.checkSub(<b key="n">{nm}</b>)} steps={bp.st} /></section>
+            <aside className="bpr-aside bpr-hide-sm">{bprExpert()}</aside>
+          </main>
+        </div>
+      );
+    }
+    const unsure = !!(selected && selected.unverified);
+    const linkOk = isGMapsLink(profileLink);
+    const cont = () => { persistCheck(); go(3); };
+    const c = selected;
+    const a = c && c.rating != null ? ratingAssessment(c.rating, lang) : null;
+    const back = <button type="button" className="bpr-back" onClick={() => go(1)}><LArrowLeft /><span>{w.back}</span></button>;
+    const primary = unsure && linkOk
+      ? <button type="button" className="bpr-go" onClick={verifyWithLink}>{nil.checkBtn}<LArrowRight /></button>
+      : <button type="button" className="bpr-go" onClick={cont}>{conv.toCheckout}<LArrowRight /></button>;
+    return (
+      <div className="bpr bpr-s1 bpr-s2" ref={bodyRef} key="cf">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{unsure ? nil.h : w.s3.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".05s" }}>{unsure ? nil.sub : w.s3.sub}</p>
+            {c ? (
+              <div className="bpr-cards">
+                <div className="bpr-card sel bpr-fade" style={{ animationDelay: ".1s", cursor: "default" }}>
+                  <span className="ph"><LBuilding /></span>
+                  <span className="bd">
+                    <span className="nm">{c.name}</span>
+                    {c.cat ? <span className="cat">{c.cat}</span> : null}
+                    {c.rating != null ? <span className="rate"><span className="st">{[0, 1, 2, 3, 4].map((k) => <LStar key={k} />)}</span><b>{c.rating}</b>· {c.reviews} {w.s2.reviews}</span> : null}
+                    <span className="chips">
+                      {a ? <span className="chip ok"><LCircleCheck />{a.label}</span> : null}
+                      {c.addr ? <span className="chip n"><LMapPin />{c.addr}</span> : null}
+                    </span>
+                  </span>
+                  <span className="selc"><LCheck /></span>
+                </div>
+              </div>
+            ) : null}
+            {unsure ? (
+              <label className="bpr-fl bpr-fade" style={{ marginTop: 16, animationDelay: ".14s" }}>
+                <input value={profileLink} onChange={(e) => setProfileLink(e.target.value)} placeholder=" " inputMode="url" aria-label={nil.linkLabel} />
+                <span>{nil.linkLabel}</span>
+              </label>
+            ) : (
+              <div className="bpr-alts bpr-fade" style={{ animationDelay: ".16s" }}>
+                <button type="button" className="bpr-alt" onClick={() => go(0)}><span className="ai"><LSearch /></span><span className="tx">{wm.notMine}<small>{bp.altNotMineSub}</small></span><LArrowRight className="ar" /></button>
+              </div>
+            )}
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>{back}{primary}</div>
+          </section>
+          <aside className="bpr-aside bpr-hide-sm">{bprExpert()}</aside>
+        </main>
+        <div className="bpr-mbar">{back}{primary}</div>
+      </div>
+    );
+  }
+  /* „Nicht sicher?" – zwei Fragen im neuen Design. */
+  function UnsureNew() {
+    const opts = unsureStep === 1
+      ? [[rc.q1yes, LCheck, () => setRouted(true)], [rc.q1no, LArrowRight, () => setUnsureStep(2)]]
+      : [[rc.q2yes, LFile, () => { setUnsureStep(0); setPressMode(true); }], [rc.q2no, LTrash, () => setRouted(true)]];
+    const backFn = () => setUnsureStep(unsureStep === 2 ? 1 : 0);
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key={"uq" + unsureStep}>
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <div className="bpr-qk bpr-fade">{rc.qH} · {unsureStep}/2</div>
+            <h1 className="bpr-h1 bpr-fade" style={{ animationDelay: ".03s" }}>{unsureStep === 1 ? rc.q1 : rc.q2}</h1>
+            <div className="bpr-opts" style={{ marginTop: 28 }}>
+              {opts.map(([lbl, Ic, fn], i) => (
+                <button type="button" key={i} className="bpr-op bpr-iop bpr-fade" style={{ animationDelay: (0.08 + i * 0.04) + "s" }} onClick={fn}>
+                  <span className="ic"><Ic className="icn" /></span><span className="tx"><b>{lbl}</b></span><LArrowRight className="ar" />
+                </button>
+              ))}
+            </div>
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".18s" }}><button type="button" className="bpr-back" onClick={backFn}><LArrowLeft /><span>{w.back}</span></button></div>
+          </section>
+          <aside className="bpr-aside bpr-hide-sm">{bprExpert()}</aside>
+        </main>
+        <div className="bpr-mbar"><button type="button" className="bpr-back full" onClick={backFn}><LArrowLeft /><span>{w.back}</span></button></div>
+      </div>
+    );
+  }
+  /* Presse / Suchergebnisse – Anfrage-Formular im neuen Design (Absenden unverändert). */
+  function PressNew() {
+    const set = (k) => (e) => setPressData({ ...pressData, [k]: e.target.value });
+    const setUrl = (i) => (e) => { const urls = pressData.urls.slice(); urls[i] = e.target.value; setPressData({ ...pressData, urls }); };
+    const addUrl = () => setPressData({ ...pressData, urls: [...pressData.urls, ""] });
+    const rmUrl = (i) => () => setPressData({ ...pressData, urls: pressData.urls.filter((_, j) => j !== i) });
+    const ok = (pressData.urls || []).some((u) => u && u.trim()) && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test((pressData.email || "").trim());
+    const submitPress = () => {
+      if (!ok) return;
+      const urls = (pressData.urls || []).filter((u) => u && u.trim());
+      // Landet im Admin-Panel als Bestellung „deindex" (Presse auslisten – Prüfung).
+      const note = `Links:\n${urls.join("\n") || "—"}\n\nBeschreibung: ${pressData.desc || "—"}\nAlternative (Verdrängung) gewünscht: ${pressData.orm === "yes" ? "ja" : "nein"}`;
+      submitOrder({ service: "deindex", email: pressData.email, profile: "Presse-Auslistung", note, company: "", amount: 0, protAmount: 0, lang, country, orderId }).catch(() => {});
+      setPressDone(true);
+    };
+    if (pressDone) {
+      return (
+        <div className="bpr bpr-s1" ref={bodyRef} key="pd">
+          <main className="bpr-main">
+            <section className="bpr-res">
+              <div className="bpr-ok64 bpr-fade"><LCheck /></div>
+              <h1 className="bpr-h1 bpr-fade" style={{ animationDelay: ".03s" }}>{rc.pressDoneH}</h1>
+              <p className="bpr-sub bpr-fade" style={{ animationDelay: ".06s" }}>{rc.pressDoneSub}</p>
+              <div className="bpr-acts" style={{ display: "flex", maxWidth: 360 }}><button type="button" className="bpr-go dark" onClick={onExit}>{w.s6.home}<LArrowRight /></button></div>
+            </section>
+            <aside className="bpr-aside">{bprExpert()}</aside>
+          </main>
+        </div>
+      );
+    }
+    const back = <button type="button" className="bpr-back" onClick={() => setPressMode(false)}><LArrowLeft /><span>{w.back}</span></button>;
+    const goBtn = <button type="button" className="bpr-go" disabled={!ok} onClick={submitPress}><LShieldCheck />{rc.pressBtn}</button>;
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="pr">
+        <main className="bpr-main bpr-co">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{rc.pressIntakeH}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{rc.pressIntakeSub}</p>
+            <div className="bpr-note bpr-fade" style={{ animationDelay: ".08s" }}><LInfo /><span><b>{rc.pressPriceH}</b>{rc.pressPriceSub}</span></div>
+            <div className="bpr-form bpr-fade" style={{ marginTop: 24, animationDelay: ".1s" }}>
+              {pressData.urls.map((u, i) => (
+                <label className="bpr-fl" key={i}>
+                  <input value={u} onChange={setUrl(i)} placeholder=" " inputMode="url" style={pressData.urls.length > 1 ? { paddingRight: 56 } : undefined} />
+                  <span>{rc.pressUrl}</span>
+                  {pressData.urls.length > 1 ? <button type="button" className="rm" onClick={rmUrl(i)} aria-label="×"><LX /></button> : null}
+                </label>
+              ))}
+              <button type="button" className="bpr-add" onClick={addUrl}><LPlus />{rc.pressAddUrl}</button>
+              <label className="bpr-fl"><input value={pressData.email} onChange={set("email")} placeholder=" " type="email" inputMode="email" autoComplete="email" /><span>{rc.pressEmail}</span></label>
+              <label className="bpr-fl"><input value={pressData.desc} onChange={set("desc")} placeholder=" " /><span>{rc.pressDesc}</span></label>
+              <div className="bpr-palt">
+                <b>{rc.pressAltQ}</b>
+                <p>{rc.pressAltHint}</p>
+                <div className="bpr-ropts" style={{ marginTop: 14 }}>
+                  {[["yes", rc.pressAltYes], ["no", rc.pressAltNo]].map(([k, l]) => (
+                    <button type="button" key={k} className={"bpr-rop two" + (pressData.orm === k ? " sel" : "")} onClick={() => setPressData({ ...pressData, orm: k })} aria-pressed={pressData.orm === k}>
+                      <span className="rd" /><span className="tx"><b>{l}</b></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="bpr-acts" style={{ marginTop: 18 }}>{back}{goBtn}</div>
+            </div>
+          </section>
+          <aside className="bpr-aside bpr-hide-sm">{bprExpert()}</aside>
+        </main>
+        <div className="bpr-mbar">{back}{goBtn}</div>
+      </div>
+    );
+  }
+  /* Schritt 7 · Danke-Seite im neuen Design (Inhalte wie bisher: Fragebogen, „Warum soll das Profil weg?",
+     Ablauf, nächste Schritte, weitere Leistungen, zur Startseite). */
+  function StepDoneNew() {
+    const bp = bpCopy(t.code);
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="done">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <div className="bpr-ok64 bpr-fade"><LCheck /></div>
+            <div className="bpr-okk bpr-fade"><LCircleCheck />{w.s6.badge}</div>
+            <h1 className="bpr-h1 bpr-fade" style={{ animationDelay: ".03s" }}>{w.s6.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".06s" }}>{w.s6.sub}</p>
+            <div className="bpr-ordno bpr-fade" style={{ animationDelay: ".08s" }}>{w.s6.order} <b>#{orderId}</b></div>
+            <div className="bpr-done bpr-fade" style={{ animationDelay: ".12s" }}>
+              {!revFlow ? <OrderForm orderId={orderId} lang={t.code} look="bp" /> : null}
+              {!revFlow ? (
+                <div className="bpr-reason" role="group" aria-label={wr.q}>
+                  <div className="q">{wr.q} <span>({wr.opt})</span></div>
+                  <div className="chs">
+                    {Object.keys(wr.o).map((k) => (
+                      <button type="button" key={k} className={reason === k ? "on" : ""} aria-pressed={reason === k}
+                        onClick={() => { setReason(k); if (checkId) submitCheck({ checkId, reason: k }).catch(() => {}); }}>{wr.o[k]}</button>
+                    ))}
+                  </div>
+                  {reason ? <div className="thx">✓ {wr.thx}</div> : null}
+                </div>
+              ) : null}
+              {!revFlow ? (
+                <div className="bpr-pipe">
+                  <h4>{w.s6.pipeTitle}</h4>
+                  {w.s6.pipe.map((st, i) => (
+                    <div className={"st" + (st.done ? " done" : st.now ? " now" : "")} key={i}>
+                      <span className="dt">{st.done ? <LCheck /> : st.now ? <LClock /> : <i />}</span>
+                      <span className="bd"><b>{st.t}</b><span>{st.d}</span>{st.now ? <em>{wm.now}</em> : null}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              <div className="bpr-next"><b>{w.s6.nextTitle}</b><p>{w.s6.nextBody}</p></div>
+              {!reviewMode && (onOrm || onDeindex) ? (
+                <div className="bpr-xs">
+                  <b>{conv.doneCrossH}</b><p>{conv.doneCrossSub}</p>
+                  <div className="g">
+                    <button type="button" className="bpr-op quiet" onClick={() => onOrm && onOrm()}><span className="ic"><LEye className="icn" /></span><span className="tx"><b>{conv.xsOrmTitle}</b><span>{conv.xsOrmDesc} · {conv.xsOrmPrice}</span></span><LArrowRight className="ar" /></button>
+                    <button type="button" className="bpr-op quiet" onClick={() => onDeindex && onDeindex()}><span className="ic"><LGlobe className="icn" /></span><span className="tx"><b>{conv.xsPressTitle}</b><span>{conv.xsPressDesc} · {conv.xsPressPrice}</span></span><LArrowRight className="ar" /></button>
+                  </div>
+                </div>
+              ) : null}
+              <div className="bpr-acts" style={{ display: "flex" }}><button type="button" className="bpr-go dark" onClick={onExit}>{w.s6.home}<LArrowRight /></button></div>
+            </div>
+          </section>
+          <aside className="bpr-aside bpr-sticky">
+            <button type="button" className="bpr-expert" onClick={openTidioChat}>
+              <span className="avs"><img src={asset("/assets/bestell/avatar-matthias.webp")} alt="" width={40} height={40} /><img src={asset("/assets/bestell/avatar-max.webp")} alt="" width={40} height={40} /></span>
+              <span className="t"><b>{bp.expert}</b><span><i />{bp.online}</span></span>
+              <LArrowUpRight className="ar" />
+            </button>
+          </aside>
+        </main>
+      </div>
+    );
+  }
   /* Schritt 6 · Kasse im neuen Design: Formular + Einwilligungen links, rechts schwarze Bestell-Übersicht,
      Hilfe-Karte + Kundenstimme. Validierung/Absenden unverändert über submit(). */
   function StepCheckoutNew() {
@@ -3918,7 +4151,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : step === 5 ? StepCheckoutNew() : StepServiceNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : step === 2 ? StepConfirmNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : step === 5 ? StepCheckoutNew() : step === 6 ? StepDoneNew() : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
@@ -3948,38 +4181,30 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       })() : null}
       {swInfo ? (
         <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setSwInfo(false); }}>
-          <div className="sw-sheet" ref={swRef} role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
+          <div className="sw-sheet bpr-sheet" ref={swRef} role="dialog" aria-modal="true" aria-labelledby="sw-sheet-t">
             <div className="grab" aria-hidden="true" />
-            <button type="button" className="pay-ask-x" onClick={() => setSwInfo(false)} aria-label="×"><Icon.x size={18} /></button>
-            <div className="sw-art"><img src="/assets/app/shield.webp" alt="" /></div>
-            <div className="sw-k">{pk.swK}</div>
-            <h2 id="sw-sheet-t">{pk.swH}</h2>
+            <div className="hd"><div><span className="bpr-paytag">{pk.swK}</span><h3 id="sw-sheet-t">{pk.swH}</h3></div><button type="button" className="x" onClick={() => setSwInfo(false)} aria-label="×"><LX /></button></div>
             <p>{pk.swP1}</p>
             <p className="strong">{pk.swP2}</p>
-            <ul className="sw-f">
-              <li><Icon.checkCircle size={17} />{pk.swF1}</li>
-              <li><Icon.checkCircle size={17} />{pk.swF2}</li>
-              <li><Icon.checkCircle size={17} />{pk.swF3}</li>
-            </ul>
-            <button type="button" className="sw-ok" onClick={() => setSwInfo(false)}>{pk.swOk}</button>
+            <ul className="bpr-swf"><li><LCircleCheck />{pk.swF1}</li><li><LCircleCheck />{pk.swF2}</li><li><LCircleCheck />{pk.swF3}</li></ul>
+            <button type="button" className="ok" onClick={() => setSwInfo(false)}>{pk.swOk}</button>
           </div>
         </div>
       ) : null}
       {payAsk ? (() => {
         const pa = PAY_ASK[t.code] || PAY_ASK.en;
         return (
-          <div className="pay-ask-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPayAsk(false); }}>
-            <div className="pay-ask" role="dialog" aria-modal="true" aria-labelledby="pay-ask-t">
-              <button type="button" className="pay-ask-x" onClick={() => setPayAsk(false)} aria-label="×"><Icon.x size={18} /></button>
-              <span className="pay-ask-tag">{pa.tag}</span>
-              <h2 id="pay-ask-t">{pa.t}</h2>
+          <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setPayAsk(false); }}>
+            <div className="sw-sheet bpr-sheet" role="dialog" aria-modal="true" aria-labelledby="pay-ask-t">
+              <div className="grab" aria-hidden="true" />
+              <div className="hd"><div><span className="bpr-paytag">{pa.tag}</span><h3 id="pay-ask-t">{pa.t}</h3></div><button type="button" className="x" onClick={() => setPayAsk(false)} aria-label="×"><LX /></button></div>
               <p>{pa.d}</p>
-              <div className="pay-ask-opts">
-                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("wise")}><span className="pay-ask-logo wise">Wise</span>{pa.wise}<Icon.arrowRight size={17} /></button>
-                <button type="button" className="pay-ask-opt" onClick={() => doSubmit("paypal")}><span className="pay-ask-logo pp">PayPal</span>{pa.pp}<Icon.arrowRight size={17} /></button>
-                <button type="button" className="pay-ask-no" onClick={() => doSubmit("none")}>{pa.no}</button>
+              <div className="bpr-payopts">
+                <button type="button" className="bpr-payopt" onClick={() => doSubmit("wise")}><span className="lg wise">Wise</span>{pa.wise}<LArrowRight /></button>
+                <button type="button" className="bpr-payopt" onClick={() => doSubmit("paypal")}><span className="lg pp">PayPal</span>{pa.pp}<LArrowRight /></button>
+                <button type="button" className="bpr-payno" onClick={() => doSubmit("none")}>{pa.no}</button>
               </div>
-              <div className="pay-ask-after"><Icon.shieldCheck size={16} /> {revFlow ? pa.afterRev : pa.after}</div>
+              <div className="bpr-payafter"><LShieldCheck />{revFlow ? pa.afterRev : pa.after}</div>
             </div>
           </div>
         );

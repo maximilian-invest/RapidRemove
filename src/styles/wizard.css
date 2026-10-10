@@ -1521,3 +1521,81 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
   .bpr-cos{padding:20px}
   .bpr-cos .tot b{font-size:34px}
 }
+
+/* ---------- Pop-ups „Warum Software?" + Wise/PayPal (Redesign 10/2026) ---------- */
+.bpr-sheet p{margin:10px 0 0;font-size:14px;color:#6b6b6b;font-weight:400;line-height:1.55;text-wrap:pretty}
+.bpr-sheet p.strong{color:#111;font-weight:500}
+.bpr-paytag{display:inline-flex;height:26px;padding:0 10px;border-radius:13px;background:var(--orange-50,#fff4e8);color:var(--orange-800,#a34f00);font-size:12px;font-weight:600;align-items:center;margin-bottom:12px}
+.bpr-swf{list-style:none;padding:0;margin:16px 0 0;display:flex;flex-direction:column;gap:8px}
+.bpr-swf li{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;color:#111}
+.bpr-swf svg{width:17px;height:17px;color:#16a34a;flex:none}
+.bpr-payopts{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.bpr-payopt{display:flex;align-items:center;gap:12px;min-height:56px;padding:10px 16px;border:0;border-radius:20px;background:#fff;box-shadow:0 0 0 1px #e8e8e8;font:inherit;font-size:15px;font-weight:600;color:#111;width:100%;text-align:left;cursor:pointer;transition:box-shadow 120ms}
+.bpr-payopt:hover{box-shadow:0 0 0 2px #111}
+.bpr-payopt>svg{margin-left:auto;width:17px;height:17px;flex:none}
+.bpr-payopt .lg{height:28px;padding:0 10px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff;flex:none}
+.bpr-payopt .lg.wise{background:#9fe870;color:#163300}
+.bpr-payopt .lg.pp{background:#003087}
+.bpr-payno{margin-top:6px;height:44px;border:0;border-radius:22px;background:none;font:inherit;font-size:13px;font-weight:600;color:#6b6b6b;width:100%;text-align:center;cursor:pointer}
+.bpr-payno:hover{color:#111;background:#f4f4f4}
+.bpr-payafter{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:#6b6b6b}
+.bpr-payafter svg{width:15px;height:15px;color:#16a34a;flex:none}
+
+/* ---------- Schritt 7 · Danke-Seite (Redesign 10/2026) ---------- */
+.bpr-ok64{width:64px;height:64px;border-radius:50%;background:#e8f7ee;color:#16a34a;display:grid;place-items:center;margin-bottom:22px}
+.bpr-ok64 svg{width:28px;height:28px;stroke-width:2.6}
+.bpr-okk{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#16a34a;margin-bottom:10px}
+.bpr-okk svg{width:15px;height:15px}
+.bpr-ordno{margin-top:14px;font-size:13px;color:#6b6b6b}
+.bpr-ordno b{color:#111;font-weight:600}
+.bpr-done{margin-top:32px;display:flex;flex-direction:column;gap:16px;max-width:640px}
+.bpr-reason{border-radius:24px;background:#f4f4f4;padding:18px 20px}
+.bpr-reason .q{font-size:14px;font-weight:600}
+.bpr-reason .q span{font-weight:400;color:#6b6b6b}
+.bpr-reason .chs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.bpr-reason .chs button{height:36px;padding:0 14px;border:0;border-radius:18px;background:#fff;font:inherit;font-size:13px;font-weight:600;color:#111;cursor:pointer;transition:box-shadow 120ms}
+.bpr-reason .chs button:hover{box-shadow:0 0 0 1px #111}
+.bpr-reason .chs button.on{background:#111;color:#fff}
+.bpr-reason .thx{margin-top:10px;font-size:12px;font-weight:600;color:#16a34a}
+.bpr-pipe{border-radius:24px;box-shadow:0 0 0 1px #e8e8e8;padding:20px}
+.bpr-pipe h4{margin:0 0 6px;font-family:inherit;font-size:16px;font-weight:600;letter-spacing:-.3px;color:#111}
+.bpr-pipe .st{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);gap:14px;padding:12px 0}
+.bpr-pipe .st:not(:last-child)::before{content:"";position:absolute;left:13px;top:40px;bottom:-12px;width:2px;background:#e8e8e8}
+.bpr-pipe .st.done:not(:last-child)::before{background:#111}
+.bpr-pipe .dt{width:28px;height:28px;border-radius:50%;background:#f4f4f4;color:#9a9a9a;display:grid;place-items:center;position:relative;z-index:1}
+.bpr-pipe .dt svg{width:14px;height:14px;stroke-width:2.6}
+.bpr-pipe .dt i{width:8px;height:8px;border-radius:50%;background:currentColor;display:block}
+.bpr-pipe .st.done .dt{background:#111;color:#fff}
+.bpr-pipe .st.now .dt{background:var(--primary);color:#fff}
+.bpr-pipe .bd{min-width:0}
+.bpr-pipe .bd b{display:block;font-size:14px;font-weight:600;color:#111;margin-top:4px}
+.bpr-pipe .bd>span{display:block;font-size:13px;color:#6b6b6b;line-height:1.5;margin-top:2px;text-wrap:pretty}
+.bpr-pipe .bd em{display:inline-flex;margin-top:6px;height:22px;padding:0 9px;border-radius:11px;background:var(--orange-50,#fff4e8);color:var(--orange-800,#a34f00);font-style:normal;font-size:11px;font-weight:600;align-items:center}
+.bpr-pipe .st:not(.done):not(.now) .bd b{color:#6b6b6b}
+.bpr-next{border-radius:24px;background:#111;color:#fff;padding:20px}
+.bpr-next b{display:block;font-size:16px;font-weight:600;letter-spacing:-.3px}
+.bpr-next p{margin:6px 0 0;font-size:13px;color:#bdbdbd;line-height:1.55;text-wrap:pretty}
+.bpr-xs{margin-top:8px}
+.bpr-xs>b{display:block;font-size:16px;font-weight:600;letter-spacing:-.3px}
+.bpr-xs>p{margin:4px 0 12px;font-size:13px;color:#6b6b6b}
+.bpr-xs .g{display:flex;flex-direction:column;gap:8px}
+.bpr-xs .bpr-op .ic{display:grid;place-items:center}
+.bpr-xs .bpr-op .icn{width:20px;height:20px;stroke-width:2;color:#111}
+.bpr-go.dark{background:#111}
+.bpr-go.dark:hover{background:#2a2a2a}
+.bpr-done .bpr-acts{margin-top:8px}
+@media (max-width:600px){.bpr-done .bpr-acts{display:flex!important}.bpr-done .bpr-acts .bpr-go{flex:1}}
+
+/* ---------- Nebenwege: Bestätigen, „Nicht sicher?", Presse (Redesign 10/2026) ---------- */
+.bpr-qk{font-size:12px;font-weight:600;color:#6b6b6b;margin-bottom:10px}
+.bpr-iop{grid-template-columns:56px minmax(0,1fr) 20px}
+.bpr-iop .ic{width:56px;height:56px;display:grid;place-items:center}
+.bpr-iop .icn{width:22px;height:22px;stroke-width:2;color:#111}
+.bpr-note{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;margin-top:24px;padding:16px 18px;border-radius:20px;background:#f4f4f4;font-size:13px;color:#6b6b6b;line-height:1.5;text-wrap:pretty}
+.bpr-note svg{width:18px;height:18px;color:#111;margin-top:1px}
+.bpr-note b{display:block;color:#111;font-weight:600;margin-bottom:2px}
+.bpr-palt{margin-top:14px}
+.bpr-palt>b{display:block;font-size:15px;font-weight:600}
+.bpr-palt>p{margin:4px 0 0;font-size:13px;color:#6b6b6b;line-height:1.5}
+.bpr-rop.two{grid-template-columns:24px minmax(0,1fr)}
+.bpr-rop.two .tx b{font-size:15px}

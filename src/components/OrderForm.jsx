@@ -17,8 +17,9 @@ const TXT = {
   no: { eyebrow: "Valgfritt · hjelper oss", title: "Kort spørreskjema", sub: "Trykk bare på Ja eller Nei – hvert svar gjør slettingen din raskere.", ja: "Ja", nein: "Nei", doneT: "Tusen takk!", doneS: "Svarene dine er lagret – det hjelper oss mye.", errMsg: "Kunne ikke lagres. Prøv igjen.", ppTitle: "Betal med PayPal og spar 10 %", ppSub: "Skriv inn PayPal-e-posten din – vi sender deg en betalingsforespørsel med 10 % rabatt.", ppPlaceholder: "Din PayPal-e-post (valgfritt)" },
 };
 
-export default function OrderForm({ orderId, lang = "de", initial = null, onDone }) {
+export default function OrderForm({ orderId, lang = "de", initial = null, onDone, look }) {
   const tx = TXT[lang] || TXT.en || TXT.de;
+  const S = look === "bp" ? SB : SD; // „bp" = neues Bestellprozess-Design (Danke-Seite im Wizard)
   const initAns = () => {
     const o = {};
     FORM_QUESTIONS.forEach((q) => { o[q.key] = (initial && (initial[q.key] === "ja" || initial[q.key] === "nein")) ? initial[q.key] : null; });
@@ -80,15 +81,15 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
         <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
           <div style={S.ok}><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg></div>
           <div>
-            <div style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 }}>{tx.doneT}</div>
-            <div style={{ fontSize: 14, color: "var(--fg-muted, #6b6259)", fontWeight: 600, marginTop: 2, lineHeight: 1.45 }}>{tx.doneS}</div>
+            <div style={S.doneT}>{tx.doneT}</div>
+            <div style={S.doneS}>{tx.doneS}</div>
           </div>
         </div>
       ) : (
         <React.Fragment>
           <span style={S.eyebrow}>{tx.eyebrow}</span>
-          <h3 style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 21, margin: "10px 0 4px", color: "var(--fg, #1c1916)" }}>{tx.title}</h3>
-          <p style={{ fontSize: 14, color: "var(--fg-muted, #6b6259)", fontWeight: 600, margin: "0 0 12px", lineHeight: 1.5 }}>{tx.sub}</p>
+          <h3 style={S.title}>{tx.title}</h3>
+          <p style={S.sub}>{tx.sub}</p>
           <div style={S.track}><div style={{ ...S.fill, width: (answeredCount / total * 100) + "%" }} /></div>
           <div style={{ display: "flex", flexDirection: "column" }}>
             {remaining.map((q) => {
@@ -98,7 +99,7 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
                   <div style={S.row}>
                     <div style={{ display: "flex", gap: 10, flex: "1 1 220px", minWidth: 0, alignItems: "flex-start" }}>
                       <span style={S.dot} />
-                      <span style={{ fontSize: 14, fontWeight: 600, color: "var(--fg, #1c1916)", lineHeight: 1.4 }}>{q.t[lang] || q.t.en || q.t.de}</span>
+                      <span style={S.q}>{q.t[lang] || q.t.en || q.t.de}</span>
                     </div>
                     <div style={{ display: "flex", gap: 6, flex: "none" }}>
                       {[["ja", tx.ja], ["nein", tx.nein]].map(([v, lab]) => (
@@ -117,7 +118,7 @@ export default function OrderForm({ orderId, lang = "de", initial = null, onDone
   );
 }
 
-const S = {
+const SD = {
   card: { background: "#fff", border: "1px solid var(--hairline, #ece7e1)", borderTop: "4px solid var(--primary, #ff8000)", borderRadius: 18, padding: "22px 22px 20px", boxShadow: "0 10px 30px rgba(28,25,22,.06)" },
   eyebrow: { display: "inline-flex", fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: "var(--primary, #ff8000)", background: "var(--orange-50, #fff4e8)", padding: "4px 10px", borderRadius: 999 },
   track: { height: 5, borderRadius: 999, background: "var(--orange-50, #fff4e8)", overflow: "hidden", marginBottom: 4 },
@@ -127,8 +128,31 @@ const S = {
   dot: { flex: "none", width: 7, height: 7, borderRadius: "50%", background: "var(--primary, #ff8000)", marginTop: 7 },
   seg: (on, v) => ({ minWidth: 62, padding: "9px 16px", borderRadius: 10, fontWeight: 800, fontSize: 14, cursor: "pointer", transition: "all .12s", border: "1.5px solid " + (on ? (v === "ja" ? "var(--success, #16a34a)" : "var(--primary, #ff8000)") : "var(--hairline-strong, #e2dcd5)"), background: on ? (v === "ja" ? "var(--success, #16a34a)" : "var(--primary, #ff8000)") : "#fff", color: on ? "#fff" : "var(--fg-2, #4b4540)" }),
   ok: { width: 42, height: 42, borderRadius: "50%", background: "var(--success, #16a34a)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" },
+  title: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 21, margin: "10px 0 4px", color: "var(--fg, #1c1916)" },
+  sub: { fontSize: 14, color: "var(--fg-muted, #6b6259)", fontWeight: 600, margin: "0 0 12px", lineHeight: 1.5 },
+  q: { fontSize: 14, fontWeight: 600, color: "var(--fg, #1c1916)", lineHeight: 1.4 },
+  doneT: { fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 18 },
+  doneS: { fontSize: 14, color: "var(--fg-muted, #6b6259)", fontWeight: 600, marginTop: 2, lineHeight: 1.45 },
   ppWrap: { border: "1px solid var(--hairline, #ece7e1)", background: "var(--orange-50, #fff7ef)", borderRadius: 14, padding: "14px 15px" },
   ppHead: { display: "flex", alignItems: "center", gap: 8, fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15, color: "var(--fg, #1c1916)" },
   ppSub: { fontSize: 12.5, color: "var(--fg-muted, #6b6259)", fontWeight: 600, margin: "5px 0 10px", lineHeight: 1.45 },
   ppInput: { width: "100%", boxSizing: "border-box", padding: "11px 13px", borderRadius: 10, border: "1.5px solid var(--hairline-strong, #e2dcd5)", fontSize: 14.5, fontWeight: 600, color: "var(--fg, #1c1916)", background: "#fff", outline: "none" },
+};
+
+/* Neues Bestellprozess-Design (Geist, schwarz/weiß, orange nur als Akzent). */
+const SB = {
+  ...SD,
+  card: { background: "#f4f4f4", borderRadius: 24, padding: "20px 20px 14px", fontFamily: "inherit", color: "#111" },
+  eyebrow: { display: "inline-flex", fontSize: 12, fontWeight: 600, color: "var(--orange-800, #a34f00)", background: "var(--orange-50, #fff4e8)", padding: "4px 10px", borderRadius: 13 },
+  title: { fontFamily: "inherit", fontWeight: 600, fontSize: 20, letterSpacing: "-.5px", margin: "12px 0 4px", color: "#111" },
+  sub: { fontSize: 14, color: "#6b6b6b", fontWeight: 400, margin: "0 0 14px", lineHeight: 1.5 },
+  track: { height: 6, borderRadius: 3, background: "#e8e8e8", overflow: "hidden", marginBottom: 6 },
+  fill: { height: "100%", borderRadius: 3, background: "var(--primary, #ff8000)", transition: "width .3s ease" },
+  row: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "12px 0", borderTop: "1px solid #e8e8e8" },
+  dot: { flex: "none", width: 6, height: 6, borderRadius: "50%", background: "#111", marginTop: 8 },
+  q: { fontSize: 14, fontWeight: 500, color: "#111", lineHeight: 1.45 },
+  seg: (on, v) => ({ minWidth: 64, height: 36, padding: "0 16px", borderRadius: 18, fontWeight: 600, fontSize: 13, fontFamily: "inherit", cursor: "pointer", transition: "all .12s", border: 0, boxShadow: on ? "none" : "0 0 0 1px #e8e8e8", background: on ? (v === "ja" ? "#16a34a" : "#111") : "#fff", color: on ? "#fff" : "#111" }),
+  ok: { width: 40, height: 40, borderRadius: "50%", background: "#e8f7ee", color: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", flex: "none" },
+  doneT: { fontFamily: "inherit", fontWeight: 600, fontSize: 17 },
+  doneS: { fontSize: 14, color: "#6b6b6b", fontWeight: 400, marginTop: 2, lineHeight: 1.45 },
 };
