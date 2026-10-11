@@ -3807,12 +3807,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
           <div className="bpr-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
         </div>
+        {/* „Bewertung nicht in der Liste?" direkt unter der Suche – Link-Felder klappen hier auf */}
+        {hasManual ? <div className="bpr-mtop">{manualLinksNew()}</div>
+          : <button type="button" className="bpr-nl" onClick={() => setShowManual(true)}><LLink /><span>{pk.notListed}</span><LPlus className="pl" /></button>}
         <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
         {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
       </React.Fragment>) : <div className="bpr-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
-      {all.length && !hasManual
-        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setShowManual(true)}><LPencil />{pk.notListed}</button>
-        : manualLinksNew()}
+      {!all.length ? manualLinksNew() : null}
     </React.Fragment>);
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="rv">
