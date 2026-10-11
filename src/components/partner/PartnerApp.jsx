@@ -43,6 +43,15 @@ function DueChip({ t }) {
   if (!d) return null;
   return <em className={"due " + d.state}><AlarmClock />{dueText(d)}</em>;
 }
+/** Laufzeit-Uhr: tickt jede Sekunde („4d 06:12:45"), ohne die ganze App neu zu zeichnen. */
+function RunClock({ since: t0 }) {
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
+  const s = Math.max(0, Math.floor((now - t0) / 1000));
+  const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  const p2 = (n) => String(n).padStart(2, "0");
+  return <span className="clk">{d ? <b>{d}<small>d</small></b> : null}<span>{p2(h)}:{p2(m)}<i>:{p2(sec)}</i></span></span>;
+}
 /** „1 overdue" / „2 due today" je Kunde */
 function custDue(l) {
   const late = l.filter((t) => { const d = dueOf(t); return d && d.state === "late"; }).length;
@@ -169,6 +178,39 @@ export default function PartnerApp({ api }) {
       <ChevronRight />
     </button>
   ) : null);
+  // Aktive Aufträge: Kunden mit offenen Bewertungen, am längsten laufend zuerst – mit Laufzeit-Uhr
+  const activeV = () => {
+    const m = new Map();
+    all.filter(isTodo).forEach((t) => { if (!m.has(t.cust)) m.set(t.cust, []); m.get(t.cust).push(t); });
+    const rows = [...m].map(([c, l]) => {
+      const since = Math.min(...l.map((t) => t.created || Date.now()));
+      const ds = l.map((t) => dueOf(t)).filter(Boolean);
+      const worst = ds.sort((a, b) => a.left - b.left)[0] || null;
+      return { c, l, since, worst, wk: l.filter((t) => t.status === "working").length, hold: l.every((t) => t.hold) };
+    }).sort((a, b) => a.since - b.since);
+    if (!rows.length) return null;
+    return (
+      <>
+        <div className="sec" style={{ marginTop: 0 }}><h2>Active orders</h2><span>longest running first</span></div>
+        <div className="actl">
+          {rows.slice(0, 8).map((x) => {
+            const st = x.hold ? "hold" : x.worst ? x.worst.state : "ok";
+            return (
+              <button key={x.c} type="button" className={"actr " + st} onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
+                <span className="tm"><RunClock since={x.since} /><em>running</em></span>
+                <span className="t">
+                  <b>{x.c}</b>
+                  <span>{x.l.length} open{x.wk ? ` · ${x.wk} working` : ""}</span>
+                  {x.hold ? <em className="due">On hold · customer payment</em> : x.worst ? <em className={"due " + x.worst.state}><AlarmClock />{x.worst.state === "late" ? "Overdue " + span(x.worst.left) : "Next deadline in " + span(x.worst.left)}</em> : null}
+                </span>
+                <ChevronRight />
+              </button>
+            );
+          })}
+        </div>
+      </>
+    );
+  };
   const nav = (right) => (
     <div className="nav"><button type="button" className="circ" aria-label="Back" onClick={back}><ArrowLeft /></button>{right || null}</div>
   );
@@ -186,6 +228,7 @@ export default function PartnerApp({ api }) {
       <>
         <div className="hhead"><h1>Tasks</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
         {dueBar()}
+        {activeV()}
         {hero()}
         <div className="stats">
           {tiles.map(([k, l, c]) => { const I = icon[k]; return (
