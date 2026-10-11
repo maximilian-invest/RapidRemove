@@ -26,7 +26,7 @@ const F = {
   soon: (t) => { const d = dueOf(t); return !!d && d.state === "soon"; },
   all: () => true,
 };
-const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", late: "Overdue", soon: "Due within 24 h", all: "All tasks", pending: "Pending · waiting for customer" };
+const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", late: "Priority", soon: "Due within 24 h", all: "All tasks", pending: "Pending · waiting for customer" };
 const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw", late: "open", soon: "open" };
 /** Fortschritt eines Kunden – überall gleich formuliert („2 of 9 done · 1 waiting for customer"). */
 const progressOf = (l) => {
@@ -37,7 +37,7 @@ const sum = (a) => a.reduce((s, t) => s + t.price, 0);
 const byCreated = (a, b) => (a.created - b.created) || (a.id - b.id);
 /* Offene zuerst nach Frist (überfällig ganz oben), Rest nach Eingang */
 const byDue = (a, b) => { const x = dueOf(a), y = dueOf(b); return ((x ? x.due : Infinity) - (y ? y.due : Infinity)) || byCreated(a, b); };
-/** Frist-Chip („Due in 2 d", „Overdue 1 d 4 h") – nur bei offenen Bewertungen mit Frist */
+/** Frist-Chip („Due in 2 d", „Priority") – nur bei offenen Bewertungen mit Frist */
 function DueChip({ t }) {
   const d = dueOf(t);
   if (!d) return null;
@@ -52,11 +52,11 @@ function RunClock({ since: t0 }) {
   const p2 = (n) => String(n).padStart(2, "0");
   return <span className="clk">{d ? <b>{d}<small>d</small></b> : null}<span>{p2(h)}:{p2(m)}<i>:{p2(sec)}</i></span></span>;
 }
-/** „1 overdue" / „2 due today" je Kunde */
+/** „1 priority" / „2 due today" je Kunde */
 function custDue(l) {
   const late = l.filter((t) => { const d = dueOf(t); return d && d.state === "late"; }).length;
   const soon = l.filter((t) => { const d = dueOf(t); return d && d.state === "soon"; }).length;
-  return late ? <em className="due late"><AlarmClock />{late} overdue</em> : soon ? <em className="due soon"><AlarmClock />{soon} due today</em> : null;
+  return late ? <em className="due late"><AlarmClock />{late} priority</em> : soon ? <em className="due soon"><AlarmClock />{soon} due today</em> : null;
 }
 
 function stLabel(t) {
@@ -174,8 +174,8 @@ export default function PartnerApp({ api }) {
   const dueBar = () => (lateN || soonN ? (
     <button type="button" className={"duebar " + (lateN ? "late" : "soon")} onClick={() => go({ v: "list", k: lateN ? "late" : "soon" })}>
       <span className="di"><AlarmClock /></span>
-      <span className="t"><b>{lateN ? `${lateN} review${lateN > 1 ? "s" : ""} overdue` : `${soonN} review${soonN > 1 ? "s" : ""} due within 24 h`}</b>
-        <span>{lateN ? "Customers are waiting – please finish these first." : "Please finish these today."}{lateN && soonN ? ` · ${soonN} more due today` : ""}</span></span>
+      <span className="t"><b>{lateN ? `${lateN} review${lateN > 1 ? "s" : ""} to prioritise` : `${soonN} review${soonN > 1 ? "s" : ""} due within 24 h`}</b>
+        <span>{lateN ? "These have been running the longest – best to start with them." : "Please finish these today."}{lateN && soonN ? ` · ${soonN} more due today` : ""}</span></span>
       <ChevronRight />
     </button>
   ) : null);
@@ -200,7 +200,7 @@ export default function PartnerApp({ api }) {
             <span className="t">
               <b>{x.c}</b>
               <span>{x.wk} working{x.l.length > x.wk ? ` · ${x.l.length - x.wk} not started` : ""}</span>
-              {x.hold ? <em className="due">On hold · customer payment</em> : x.worst ? <em className={"due " + x.worst.state}><AlarmClock />{x.worst.state === "late" ? "Overdue " + span(x.worst.left) : "Next deadline in " + span(x.worst.left)}</em> : null}
+              {x.hold ? <em className="due">On hold · customer payment</em> : x.worst ? <em className={"due " + x.worst.state}><AlarmClock />{x.worst.state === "late" ? "Priority" : "Next deadline in " + span(x.worst.left)}</em> : null}
             </span>
             <ChevronRight />
           </button>
@@ -393,7 +393,7 @@ export default function PartnerApp({ api }) {
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
         {dueOf(t) ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / (d.days * 864e5)) * 100)); return (
           <div className={"dueb " + d.state}>
-            <div className="h"><AlarmClock /><b>{d.state === "late" ? `Overdue by ${span(d.left)}` : `Deadline in ${span(d.left)}`}</b></div>
+            <div className="h"><AlarmClock /><b>{d.state === "late" ? "Priority" : `Deadline in ${span(d.left)}`}</b></div>
             <div className="bar"><i style={{ width: pct + "%" }} /></div>
             <span>{d.days} days for reviews {t.old ? "older than 4 weeks" : "up to 4 weeks old"} · due {dueDate(d.due)}</span>
           </div>

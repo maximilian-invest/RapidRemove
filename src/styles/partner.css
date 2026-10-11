@@ -626,3 +626,16 @@
 .pra .htabs button.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .pra .htabs button.on span{background:var(--ink);color:#fff}
 .pra .htsub{font-size:13px;font-weight:600;color:var(--g3);margin:0 2px 10px}
+/* Ruhiger Ton (kein Rot): „Priority" in Orange statt Rot */
+.pra .due.late{background:var(--primary);color:#fff}
+.pra .duebar.late{background:var(--warning-soft)}
+.pra .duebar.late .di{background:var(--primary)}
+.pra .duebar.late .t b,.pra .duebar.late>svg{color:var(--orange-800)}
+.pra .duebar.late .t span{color:#5a4a3a}
+.pra .dueb.late{background:var(--warning-soft)}
+.pra .dueb.late .h,.pra .dueb.late .h b{color:var(--orange-800)}
+.pra .dueb.late .bar i{background:var(--primary)}
+.pra .actr.late{background:var(--g1)}
+.pra .actr.late .tm{background:var(--primary)}
+.pra .actr.soon .tm{background:#ffa64d}
+.pra .actr .due.late{background:var(--primary);color:#fff}

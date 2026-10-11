@@ -62,7 +62,7 @@ export const span = (ms) => {
   if (h < 24) return h + " h";
   return Math.floor(h / 24) + " d" + (h % 24 ? " " + (h % 24) + " h" : "");
 };
-export const dueText = (d) => (!d ? "" : d.state === "late" ? "Overdue " + span(d.left) : "Due in " + span(d.left));
+export const dueText = (d) => (!d ? "" : d.state === "late" ? "Priority" : "Due in " + span(d.left));
 export const dueDate = (ms) => new Date(ms).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 export const pillLabel = (t) => {
   if (t.status === "removed" && t.paid) return "Paid";
