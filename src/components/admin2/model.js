@@ -166,7 +166,20 @@ export function money(n, c = "€") {
   const d = Number.isInteger(v) ? 0 : 2; // 809.1 → 809.10
   return c === "$" ? "$" + v.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: 2 }) : v.toLocaleString("de-DE", { minimumFractionDigits: d, maximumFractionDigits: 2 }) + " €";
 }
-export const orderMoney = (o) => (o.amount ? money(o.amount, cur(o)) : "—");
+/** Was der Kunde bei Profil-Aufträgen insgesamt (einmalig) zahlt: Löschung + Express + Lebenslanger Schutz.
+ *  Monatliche Abos laufen separat (Abo-Hinweis). Bewertungen: Bestellwert wie gehabt. */
+export function orderParts(o) {
+  const c = cur(o);
+  const parts = [];
+  if (o.amount) parts.push([o.service === "reviews" ? "Bewertungen" : "Löschung", Number(o.amount) || 0]);
+  if (o.service !== "reviews") {
+    if (o.express && Number(o.expressAmount)) parts.push(["Express", Number(o.expressAmount)]);
+    if (o.protection === "lifetime" && Number(o.protAmount)) parts.push(["Lifetime", Number(o.protAmount)]);
+  }
+  return { parts, total: parts.reduce((s, x) => s + x[1], 0), c };
+}
+export const orderTotal = (o) => orderParts(o).total;
+export const orderMoney = (o) => { const t = orderTotal(o); return t ? money(t, cur(o)) : "—"; };
 
 const COLORS = ["#7c3aed", "#db2777", "#16a34a", "#c2410c", "#0891b2", "#be123c", "#9333ea", "#ca8a04"];
 export function avatarOf(o) {
