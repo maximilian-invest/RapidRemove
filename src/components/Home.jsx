@@ -2,6 +2,7 @@
 import React from "react";
 import { asset } from "@/lib/base";
 import { pagePath } from "@/lib/page-routes";
+import { HUB_PATH } from "@/lib/articles/hubs";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor } from "@/lib/pricing";
@@ -519,6 +520,21 @@ function Pricing({ id, onStart }) {
 }
 
 /* ============ FAQ ============ */
+// Link von der Startseite auf den Hub-Artikel der Sprache („selbst löschen"-Anleitung).
+// Trennt die Rollen: Startseite = löschen lassen (Service), Hub = selbst löschen (Anleitung).
+const HUB_LINK_LABEL = {
+  de: "Lieber selbst versuchen? Anleitung: Google-Unternehmensprofil löschen – Schritt für Schritt →",
+  en: "Want to try it yourself first? How to delete a Google Business Profile, step by step →",
+  es: "¿Prefieres intentarlo tú mismo? Cómo eliminar un perfil de empresa de Google, paso a paso →",
+  pt: "Preferes tentar sozinho? Como eliminar o perfil de empresa do Google, passo a passo →",
+  it: "Preferisci provarci da solo? Come eliminare il profilo dell'attività su Google, passo dopo passo →",
+  fr: "Vous préférez essayer vous-même ? Supprimer une fiche d'établissement Google, étape par étape →",
+  ja: "まずは自分で試したい方へ：Googleビジネスプロフィールを削除する方法 →",
+  no: "Vil du prøve selv først? Slik sletter du en Google-bedriftsprofil, steg for steg →",
+  sv: "Vill du testa själv först? Så raderar du en Google-företagsprofil, steg för steg →",
+  da: "Vil du selv prøve først? Sådan sletter du en Google-virksomhedsprofil, trin for trin →",
+  nl: "Liever eerst zelf proberen? Zo verwijdert u een Google-bedrijfsprofiel, stap voor stap →",
+};
 export function FAQ({ id }) {
   const { t, lang } = useLang();
   const [open, setOpen] = React.useState(0);
@@ -539,6 +555,10 @@ export function FAQ({ id }) {
             </div>
           )}
         </div>
+        {HUB_PATH[lang] && HUB_LINK_LABEL[lang] ?
+        <p className="reveal" style={{ textAlign: "center", marginTop: 22, fontSize: 15.5 }}>
+            <a href={asset(HUB_PATH[lang])} style={{ color: "var(--primary)", fontWeight: 700 }}>{HUB_LINK_LABEL[lang]}</a>
+          </p> : null}
       </div>
     </section>);
 

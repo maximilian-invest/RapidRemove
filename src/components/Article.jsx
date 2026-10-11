@@ -356,7 +356,8 @@ function ArticleBody() {
           </p>
           <p>
             Klingt der Preis hoch? Rechnen Sie gegen: Eine einzige sichtbare Fake-Bewertung kann die Klickrate deutlich
-            senken und kostet Sie über Monate ein Vielfaches. Mehr Details finden Sie auf unserer{" "}
+            senken und kostet Sie über Monate ein Vielfaches. Alle Details zum Service:{" "}
+            <a href={asset("/")}>Google-Unternehmensprofil löschen lassen</a> – inklusive{" "}
             <a href={asset("/#pricing")}>Preis-Übersicht</a>.
           </p>
 
