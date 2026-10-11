@@ -15,6 +15,17 @@ const article = {
   blocks: [
     { t: "note", title: "Aviso importante", text: "Este artículo ofrece una visión general de las opciones prácticas y no constituye asesoramiento jurídico. Para cuestiones legales concretas, acude a un abogado de confianza." },
 
+    { t: "tip", title: "Respuesta corta", text: "Como empresa **no puedes borrar tú mismo una reseña de Google**: solo su autor puede eliminarla. Lo que sí puedes hacer es **denunciarla** si infringe las políticas de Google (reseña falsa, conflicto de intereses, insultos, datos personales, spam…), y **Google decide** si la quita. Si no quieres hacerlo tú, RapidRemove se encarga a través de los procedimientos oficiales de Google y solo pagas por las reseñas que realmente desaparecen: **179 €** por reseña con texto de hasta 4 semanas, **229 €** si es más antigua y **300 €** en casos complejos (valoraciones sin texto)." },
+
+    { t: "h2", id: "se-pueden", text: "¿Se pueden eliminar reseñas de Google?", toc: "¿Se pueden eliminar?" },
+    { t: "p", text: "Sí, pero no como mucha gente imagina. Hay tres caminos, y solo uno está en tus manos:" },
+    { t: "ul", items: [
+      "**El autor la borra:** quien escribió la reseña puede eliminarla o editarla en cualquier momento. A veces basta con una respuesta educada y una solución al problema.",
+      "**Google la retira tras una denuncia:** si la reseña infringe las políticas de contenido de Google, puedes denunciarla y Google la revisa. Es la vía para reseñas falsas, de competidores, de exempleados, con insultos o sin relación con tu negocio.",
+      "**Desaparece con el perfil:** si se elimina el perfil de empresa completo, desaparecen todas sus reseñas a la vez.",
+    ] },
+    { t: "p", text: "Lo que **no existe** es un botón para que el propietario borre o quite opiniones de Google por su cuenta. Las reseñas negativas auténticas y objetivas suelen quedarse: forman parte de la libertad de expresión." },
+
     { t: "h2", id: "gefahr", text: "Por qué las reseñas negativas de Google son tan peligrosas", toc: "Por qué peligrosas" },
     { t: "p", text: "El 98 % de los consumidores lee reseñas online antes de elegir una empresa, según un estudio de BrightLocal, y el 87 % de ellos usa Google. Tu valoración con estrellas se ha convertido en un escaparate digital: decide si un cliente potencial hace clic o se va a la competencia." },
     { t: "p", text: "Lo delicado es el llamado **sesgo de negatividad**: las personas dan más peso a la información negativa que a la positiva. Una sola reseña demoledora puede anular el efecto de una docena de buenas. Los análisis del sector muestran que los negocios con una nota por debajo de 4,0 soportan, de media, un coste por cliente nuevo entre un 30 y un 50 % más alto que los que superan las 4,5 estrellas." },
@@ -36,12 +47,13 @@ const article = {
     { t: "h2", id: "m1", text: "Método 1: denunciar la reseña tú mismo en Google", toc: "Método 1: denunciar" },
     { t: "p", text: "La vía gratuita es la función de denuncia. Así se hace:" },
     { t: "ol", items: [
-      "Abre tu perfil de empresa de Google y busca la reseña en cuestión.",
-      "Haz clic en el menú de tres puntos junto a la reseña.",
-      "Elige **«Denunciar reseña»** e indica la infracción correspondiente.",
-      "Envía la denuncia y espera a la revisión.",
+      "Abre la reseña en Google Maps, en la Búsqueda de Google o en tu perfil de empresa (sección **Reseñas**).",
+      "Haz clic en el menú de tres puntos (⋮) junto a la reseña y elige **«Denunciar reseña»**.",
+      "Selecciona la infracción que de verdad encaja (por ejemplo **interacción falsa**, **conflicto de intereses**, **contenido ofensivo** o **información personal**). La categoría correcta importa: Google revisa la reseña frente a esa regla.",
+      "Envía la denuncia y sigue el estado en la **[herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796)** de Google.",
+      "Si Google la rechaza, puedes **apelar una vez** desde esa misma herramienta, idealmente con pruebas (por ejemplo, que el autor nunca fue cliente).",
     ] },
-    { t: "p", text: "**La realidad:** Google revisa las denuncias de forma automatizada y a menudo las rechaza con textos estándar. Sin una justificación sólida, el intento suele quedar en nada, y no tienes forma de insistir. Para spam evidente a veces funciona; para casos persistentes, rara vez." },
+    { t: "p", text: "**La realidad:** Google revisa las denuncias de forma automatizada y a menudo las rechaza con textos estándar. Sin una justificación sólida, el intento suele quedar en nada, y la apelación es única. Para spam evidente a veces funciona; para casos persistentes, rara vez. Más detalles sobre reseñas falsas: [eliminar reseñas falsas de Google](/es/revista/eliminar-resenas-falsas-de-google/)." },
 
     { t: "h2", id: "m2", text: "Método 2: recurrir a un abogado", toc: "Método 2: abogado" },
     { t: "p", text: "La vía legal clásica se basa en confrontar a Google con un requerimiento de eliminación jurídicamente fundamentado. Los abogados especializados alcanzan tasas de éxito en torno al 90 % con reseñas claramente ilícitas." },
@@ -60,6 +72,19 @@ const article = {
       "**Nuevo comienzo opcional:** tras la eliminación se puede crear un perfil nuevo y limpio",
     ] },
     { t: "warn", title: "Importante", text: "Esta vía elimina el **perfil completo**, no una reseña individual. Si solo quieres eliminar una reseña y conservar tu perfil, tienes la denuncia, la vía del abogado o, como tercera opción, la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove: 179 € por reseña eliminada (229 € si tiene más de 4 semanas), solo tras el éxito." },
+
+    { t: "h2", id: "opciones", text: "Borrar, quitar, denunciar o responder: qué hace cada opción", toc: "Todas las opciones" },
+    { t: "p", text: "Se busca «borrar reseñas», «quitar opiniones de Google» o «denunciar reseña», pero en Google son acciones muy distintas. Esto es lo que consigue cada una:" },
+    { t: "table", head: ["Opción", "Quién", "Resultado", "Coste"], rows: [
+      ["Borrar la reseña", "Solo el autor", "Desaparece al instante", "Gratis, pero no depende de ti"],
+      ["Denunciar la reseña", "Cualquiera, también el propietario", "Google decide; a menudo se rechaza", "Gratis"],
+      ["Apelar el rechazo", "Propietario del perfil", "Una segunda revisión", "Gratis"],
+      ["Responder públicamente", "Propietario del perfil", "La reseña se queda, pero matizas", "Gratis"],
+      ["Vía judicial (abogado)", "Abogado en tu nombre", "Posible para contenido ilícito; lento", "Honorarios, a menudo por adelantado"],
+      ["Eliminación de reseñas individuales (RapidRemove)", "RapidRemove en tu nombre", "Procedimientos oficiales de Google", "179 € / 229 € / 300 € por reseña eliminada, solo si desaparece"],
+      ["Eliminar el perfil completo (RapidRemove)", "RapidRemove en tu nombre", "Desaparecen todas las reseñas", "Precio fijo, solo tras el éxito"],
+    ] },
+    { t: "p", text: "Si solo quieres saber qué hacer con una reseña concreta paso a paso, consulta también [cómo eliminar una reseña de Google](/es/revista/como-eliminar-una-resena-de-google/)." },
 
     { t: "h2", id: "kosten", text: "¿Cuánto cuesta eliminar una reseña de Google?", toc: "Cuánto cuesta" },
     { t: "p", text: "Los precios varían mucho según el tipo de proveedor:" },
@@ -84,6 +109,11 @@ const article = {
     ] },
   ],
   faq: [
+    { q: "¿Se pueden eliminar reseñas de Google?", a: "Sí, pero solo el autor puede borrar su reseña. Como empresa puedes denunciar las reseñas que infringen las políticas de Google, y Google decide si las retira. Las reseñas auténticas y objetivas normalmente se quedan." },
+    { q: "¿Cómo denuncio una reseña falsa en Google?", a: "Abre la reseña en Google Maps, en la Búsqueda o en tu perfil de empresa, pulsa los tres puntos (⋮) → «Denunciar reseña» y elige la infracción que encaje, por ejemplo interacción falsa o conflicto de intereses. El estado lo ves en la herramienta de gestión de reseñas de Google." },
+    { q: "¿Qué hago si Google rechaza mi denuncia?", a: "Puedes apelar una vez desde la herramienta de gestión de reseñas, mejor con pruebas. Si tampoco funciona, quedan la vía judicial para contenido ilícito o un servicio que trabaje con los procedimientos oficiales de Google." },
+    { q: "¿Se pueden quitar opiniones de Google sin texto (solo estrellas)?", a: "Es más difícil, porque no hay contenido que denunciar. RapidRemove las trata como caso complejo con un procedimiento más exhaustivo: 300 € por valoración eliminada, cargados solo si desaparece." },
+    { q: "¿Se entera el autor de quién pidió eliminar su reseña?", a: "No. Google no informa al autor de quién denunció la reseña." },
     { q: "¿RapidRemove elimina reseñas individuales?", a: "Sí. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) eliges exactamente las reseñas que deben desaparecer, también valoraciones solo de estrellas, sin texto (procedimiento más exhaustivo: 300 € por valoración eliminada). Reseñas de hasta 4 semanas: aprox. 90 % de éxito, 179 € por reseña eliminada; más antiguas: aprox. 50 %, 229 € cada una. Descuento por volumen: desde 3 reseñas −10 %, desde 5 −15 %, desde 10 −30 %. Nada por adelantado: pagas solo por las que realmente desaparecen. Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas sigue siendo la vía más completa." },
     { q: "¿Puedo eliminar yo mismo una reseña de Google?", a: "Como empresa solo puedes denunciar una reseña ajena, no eliminarla tú mismo. Que Google la quite lo decide la compañía, a menudo de forma negativa. Tus propias reseñas sí puedes borrarlas en cualquier momento." },
     { q: "¿Cuánto tarda en eliminarse una reseña de Google?", a: "Por la función de denuncia, de días a semanas con resultado incierto; por un abogado, a menudo varios meses; con la eliminación de reseñas individuales de RapidRemove, normalmente 1–2 semanas (a veces más rápido, en casos puntuales algo más); con la eliminación del perfil, normalmente 24 a 48 horas." },

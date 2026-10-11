@@ -97,7 +97,7 @@ const article = {
       "**Volume discount** on accepted reviews: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Duration:** usually 1–2 weeks, sometimes faster, occasionally a little longer.",
     ] },
-    { t: "p", text: "Since 2023 we have removed 1,600+ Google Business Profiles and run 20,000+ free profile checks for clients in 50+ countries. More on prices and the order flow: [Google review removal service](/en/remove-single-reviews/)." },
+    { t: "p", text: "Since 2023 we have removed 1,600+ Google Business Profiles ([how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/)) and run 20,000+ free profile checks for clients in 50+ countries. More on prices and the order flow: [Google review removal service](/en/remove-single-reviews/)." },
     { t: "cta", title: "Pick the reviews that break the rules", text: "Load your latest Google reviews, tick the ones to remove and see the exact price. Takes about 2 minutes, and you pay only for reviews that are actually removed.", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Only Google's own procedures", "Free assessment"] },
   ],
   faq: [

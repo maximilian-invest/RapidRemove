@@ -70,7 +70,7 @@ const article = {
   related: [
     { label: "Online Reputation Management for Businesses — The Complete Guide", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Remove or Suppress Negative Google Search Results", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
-    { label: "How to Delete a Google Business Profile", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
+    { label: "How to Delete a Google Business Profile", url: "/en/magazine/delete-google-business-profile/" },
   ],
 };
 export default article;

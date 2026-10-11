@@ -105,6 +105,7 @@ const article = {
     { q: "Am I allowed to ask customers for Trustpilot reviews?", a: "Yes, actively soliciting genuine reviews is permitted and advisable — buying or fabricating reviews is not." },
   ],
   related: [
+    { label: "How to delete a Google Business Profile", url: "/en/magazine/delete-google-business-profile/" },
     { label: "Negative Review: Ignore, Respond, or Remove?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "What Does a Bad Google Review Actually Cost?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online Reputation Management — The Complete Guide", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

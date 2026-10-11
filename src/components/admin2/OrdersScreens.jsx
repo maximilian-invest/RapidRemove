@@ -6,7 +6,7 @@ import {
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
   CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download,
 } from "lucide-react";
-import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, pendingWhy } from "./model";
+import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
 import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
@@ -171,8 +171,9 @@ export function OrderDetail({ ctx, id }) {
     <>
       <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin/alt?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
       <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
-      <div className="amt"><div className="k">Bestellwert</div><div className="v">{orderMoney(o)}</div>
-        {aboOf(o) ? <div className={"abo" + (aboOf(o).recurring ? "" : " lt")}><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).price ? <span>+ {aboOf(o).price}</span> : null}</div> : null}
+      <div className="amt"><div className="k">{orderParts(o).parts.length > 1 ? "Gesamt" : "Bestellwert"}</div><div className="v">{orderMoney(o)}</div>
+        {orderParts(o).parts.length > 1 ? <div className="amtp">{orderParts(o).parts.map(([l, v]) => `${l} ${money(v, cur(o))}`).join(" + ")}</div> : null}
+        {aboOf(o) && aboOf(o).recurring ? <div className="abo"><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).price ? <span>+ {aboOf(o).price}</span> : null}</div> : null}
         <div className="r">{bs.map((x) => <span key={x} className="st"><span className={"dt d-" + x} />{ST[x].l}</span>)}<span className={"tm" + (late ? " late" : "")}>{late ? <AlarmClock /> : <Clock />}seit {fmtAge(m)}</span></div>
         {r ? (
           <div className="rvst">
