@@ -11,7 +11,8 @@ import type { FastifyInstance } from "fastify";
 import crypto from "node:crypto";
 import { pool } from "./db";
 import { customerSessionInfo, loadCustomerOrders, keyOf } from "./customers";
-import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
+import { fetchPlaceReviews, fetchLowestReviews, findPlaceReview, serpKey, type FetchedReview } from "./reviewsFetch";
+import { resolveReviewLink } from "./monitor";
 import { isTestEmail } from "./testAccounts";
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
@@ -40,13 +41,30 @@ async function orderedKeys(email: string): Promise<Set<string>> {
 const hits = new Map<string, number[]>();
 const limited = (k: string, n: number) => { const now = Date.now(); const a = (hits.get(k) || []).filter((x) => now - x < 3600_000); if (a.length >= n) { hits.set(k, a); return true; } a.push(now); hits.set(k, a); return false; };
 
-async function listFor(placeId: string, lang: string, email: string) {
-  const list = await fetchPlaceReviews(placeId, lang);
+/* Per Link gefundene Bewertungen (je Kunde + Profil, 6 h) – dürfen mitbestellt werden, auch wenn sie nicht in der Liste stehen. */
+const found = new Map<string, { ts: number; list: FetchedReview[] }>();
+const foundOf = (email: string, placeId: string) => { const f = found.get(email + "|" + placeId); return f && Date.now() - f.ts < 6 * 3600_000 ? f.list : []; };
+const addFound = (email: string, placeId: string, r: FetchedReview) => {
+  const k = email + "|" + placeId, l = foundOf(email, placeId).filter((x) => x.id !== r.id);
+  found.set(k, { ts: Date.now(), list: [r, ...l].slice(0, 30) });
+  if (found.size > 2000) found.delete(found.keys().next().value as string);
+};
+
+function shape(r: FetchedReview, seen: Set<string>) {
+  const key = r.link || `${r.name}|${r.text || ""}`;
+  return { id: r.id, name: r.name, photo: r.photo, rating: r.rating, days: r.days, text: (r.text || "").slice(0, 400), link: r.link, ordered: seen.has(key) || seen.has(`${r.name}|${r.text || ""}`) };
+}
+
+/** Bewertungen 1–3 ★: neueste Seiten; bei großen Profilen (> 100 Bewertungen) zusätzlich „schlechteste zuerst" (+1 Abruf).
+ *  Per Link gefundene stehen ganz oben. */
+async function listFor(placeId: string, lang: string, email: string, big = false) {
+  const [newest, lowest] = await Promise.all([fetchPlaceReviews(placeId, lang), big ? fetchLowestReviews(placeId, lang).catch(() => [] as FetchedReview[]) : Promise.resolve([] as FetchedReview[])]);
   const seen = await orderedKeys(email);
-  return list.filter((r) => r.rating >= 1 && r.rating <= 3).map((r) => {
-    const key = r.link || `${r.name}|${r.text || ""}`;
-    return { id: r.id, name: r.name, photo: r.photo, rating: r.rating, days: r.days, text: (r.text || "").slice(0, 400), link: r.link, ordered: seen.has(key) || seen.has(`${r.name}|${r.text || ""}`) };
-  });
+  const ids = new Set<string>(), out: ReturnType<typeof shape>[] = [];
+  const push = (r: FetchedReview) => { if (r.rating < 1 || r.rating > 3 || ids.has(r.id)) return; ids.add(r.id); out.push(shape(r, seen)); };
+  foundOf(email, placeId).forEach(push);
+  [...newest, ...lowest].sort((a, b) => (a.days < 0 ? 1e9 : a.days) - (b.days < 0 ? 1e9 : b.days)).forEach(push);
+  return out;
 }
 
 export function registerCustNewOrder(app: FastifyInstance): void {
@@ -69,8 +87,33 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, error: "place" });
     if (limited("l:" + email, 40)) return reply.code(429).send({ ok: false, error: "rate" });
     const lang = LANGS.includes(clip(b.lang, 5)) ? clip(b.lang, 5) : "en";
-    try { return { ok: true, reviews: await listFor(placeId, lang, email) }; }
+    try { return { ok: true, reviews: await listFor(placeId, lang, email, b.big === true) }; }
     catch (e) { app.log.error({ err: e }, "Dashboard-Neubestellung: Bewertungen laden fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
+  });
+
+  // „Bewertung nicht in der Liste?" → Teilen-Link der Bewertung auflösen und gezielt suchen (auch ältere, bis ~14 Abrufe).
+  app.post("/cust/new-order/find", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    const s = await customerSessionInfo(b.token);
+    if (!s) return reply.code(401).send({ ok: false, error: "session" });
+    const email = s.email.toLowerCase();
+    if (!(await newOrderEnabled(email))) return reply.code(403).send({ ok: false, error: "disabled" });
+    const placeId = clip(b.placeId, 200);
+    if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, error: "place" });
+    const link = clip(b.link, 600);
+    if (!/^https?:\/\/\S+$/i.test(link)) return reply.code(400).send({ ok: false, error: "link" });
+    if (limited("f:" + email, 15)) return reply.code(429).send({ ok: false, error: "rate" });
+    const lang = LANGS.includes(clip(b.lang, 5)) ? clip(b.lang, 5) : "en";
+    try {
+      const { place, reviewId } = await resolveReviewLink(link);
+      if (!reviewId) return reply.code(404).send({ ok: false, error: "not_review" });
+      if (place && place.placeId && place.placeId !== placeId) return reply.code(409).send({ ok: false, error: "other_profile", profile: place.name || "" });
+      const r = await findPlaceReview(placeId, reviewId, lang);
+      if (!r) return reply.code(404).send({ ok: false, error: "not_found" });
+      if (r.rating > 3) return reply.code(422).send({ ok: false, error: "rating" });
+      addFound(email, placeId, r);
+      return { ok: true, review: shape(r, await orderedKeys(email)) };
+    } catch (e) { app.log.error({ err: e }, "Dashboard-Neubestellung: Link auflösen fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
   });
 
   // Auftrag anlegen (über POST /order – gleiche Logik wie die Website).
@@ -93,7 +136,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const lang = LANGS.includes(clip(b.lang, 5)) ? clip(b.lang, 5) : "en";
     // Nur Bewertungen aus der Server-Liste des Profils (nicht vom Browser), 1–3 ★, noch nicht beauftragt.
     let list: Awaited<ReturnType<typeof listFor>>;
-    try { list = await listFor(placeId, lang, email); } catch { return reply.code(502).send({ ok: false, error: "fetch" }); }
+    try { list = await listFor(placeId, lang, email, b.big === true); } catch { return reply.code(502).send({ ok: false, error: "fetch" }); }
     const picks = list.filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
     // Kundendaten aus dem Konto (letzter Auftrag).

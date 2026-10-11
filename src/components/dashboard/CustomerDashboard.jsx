@@ -12,7 +12,7 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link2,
 } from "lucide-react";
 import { searchProfiles } from "@/lib/places";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
@@ -572,6 +572,10 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   const [fagg, setFagg] = React.useState(false);
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
+  const [lkOpen, setLkOpen] = React.useState(false); // „Bewertung nicht in der Liste?" – Link einfügen
+  const [lk, setLk] = React.useState("");
+  const [lkBusy, setLkBusy] = React.useState(false);
+  const [lkMsg, setLkMsg] = React.useState("");
   const inRef = React.useRef(null);
   // Kein autoFocus: am Handy öffnet sonst die Tastatur, während das Blatt noch von unten hereinfährt –
   // iOS scrollt dann zum (noch unsichtbaren) Feld und man sieht nur eine weiße Fläche. Fokus nur am Desktop, nach der Animation.
@@ -608,10 +612,28 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   // iOS schiebt beim Öffnen der Tastatur die Seite hinter dem fixen Blatt nach oben → zurücksetzen
   const unshift = () => { [60, 320, 650].forEach((ms) => setTimeout(() => { try { if (window.scrollY) window.scrollTo(0, 0); } catch (e) { /* */ } }, ms)); };
   const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
+  // Große Profile (> 100 Bewertungen): wir zeigen nur neueste + schlechteste → Link-Feld prominent oben
+  const bigOf = (p) => Number((p && p.reviews) || 0) > 100;
+  const findLink = async () => {
+    const v = lk.trim();
+    if (!/^https?:\/\//i.test(v)) { setLkMsg(T("noLkBad")); return; }
+    setLkBusy(true); setLkMsg("");
+    try {
+      const r = await call("new-order/find", { token, placeId: place.placeId, link: v, lang: LANG });
+      const rv = r.review;
+      setList((l) => [rv, ...(l || []).filter((x) => x.id !== rv.id)]);
+      if (!rv.ordered) setPick((x) => (x.includes(rv.id) ? x : [...x, rv.id]));
+      setLk(""); setLkOpen(false);
+      showToast(rv.ordered ? T("arIn") : T("noLkOk"));
+    } catch (e) {
+      setLkMsg(e.code === "other_profile" ? T("noLkOther") : e.code === "rating" ? T("noLkRating") : e.code === "not_review" ? T("noLkBad") : e.code === "rate" ? T("noLkRate") : T("noLkNone"));
+    }
+    setLkBusy(false);
+  };
   const choose = async (p) => {
     if (dach(p)) return;
-    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]);
-    try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG }); setList(r.reviews || []); }
+    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]); setLkOpen(false); setLk(""); setLkMsg("");
+    try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG, big: bigOf(p) }); setList(r.reviews || []); }
     catch (e) { setList([]); setErr(T("arErr")); }
   };
   const sel = (list || []).filter((r) => pick.includes(r.id));
@@ -623,7 +645,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     if (!agb || !fagg) { setCErr(true); return; }
     setBusy(true);
     try {
-      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      const r = await call("new-order", { token, lang: LANG, agb: true, big: bigOf(place), ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
       setOid(r.orderId); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -669,6 +691,16 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                 <button type="button" className="no-chg" onClick={() => setStep("search")}><MapPin /><span><b>{place.name}</b><span>{place.addr}</span></span><em>{T("noChange")}</em></button>
                 <h2>{T("noH2")}</h2>
                 <p>{T("noP2")}</p>
+                {list !== null && (bigOf(place) || lkOpen) ? (
+                  <div className={"no-lk" + (bigOf(place) ? " big" : "")}>
+                    {bigOf(place) ? <><b>{T("noLkBigH", { n: Number(place.reviews).toLocaleString(LANG === "de" ? "de-DE" : "en-US") })}</b><span>{T("noLkBigP")}</span></> : <b>{T("noLkH")}</b>}
+                    <form className="no-lkf" onSubmit={(e) => { e.preventDefault(); findLink(); }}>
+                      <Link2 /><input value={lk} onChange={(e) => { setLk(e.target.value); setLkMsg(""); }} placeholder={T("noLkPh")} inputMode="url" autoComplete="off" />
+                      <button type="submit" disabled={lkBusy || !lk.trim()}>{lkBusy ? <Loader className="spin" /> : T("noLkBtn")}</button>
+                    </form>
+                    {lkMsg ? <div className="no-err">{lkMsg}</div> : lkBusy ? <div className="no-lkh">{T("noLkWait")}</div> : <div className="no-lkh">{T("noLkHow")}</div>}
+                  </div>
+                ) : null}
                 {list === null ? <div className="ar-load"><Loader className="spin" /></div>
                   : err ? <div className="note bad">{err}</div>
                   : !list.length ? <div className="note">{T("noNoRev")}</div>
@@ -689,6 +721,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                       })}
                     </div>
                   )}
+                {list !== null && !bigOf(place) && !lkOpen ? <button type="button" className="no-lkx" onClick={() => setLkOpen(true)}><Link2 />{T("noLkH")}</button> : null}
               </div>
               <div className="fl-foot pgf">
                 {sel.length ? (
@@ -701,7 +734,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </>
                 ) : null}
-                <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noH2")}</button>
+                <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noPickCta")}</button>
               </div>
             </>
           ) : (
