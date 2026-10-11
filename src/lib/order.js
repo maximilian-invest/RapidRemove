@@ -115,3 +115,12 @@ export async function findReviewByLink(placeId, link, lang) {
   if (!res.ok || !d || !d.ok) throw Object.assign(new Error((d && d.error) || "HTTP " + res.status), { code: (d && d.error) || "fetch" });
   return d.review;
 }
+
+/** Wort-Suche in allen Bewertungen eines Profils (große Profile). */
+export async function searchProfileReviews(placeId, q, lang) {
+  if (!OPS) throw Object.assign(new Error("no ops"), { code: "fetch" });
+  const res = await fetch(OPS + "/reviews/search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ placeId, q, lang: lang || "en" }) });
+  const d = await res.json().catch(() => null);
+  if (!res.ok || !d || !d.ok) throw Object.assign(new Error((d && d.error) || "HTTP " + res.status), { code: (d && d.error) || "fetch" });
+  return Array.isArray(d.reviews) ? d.reviews : [];
+}

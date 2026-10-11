@@ -125,6 +125,30 @@ export async function fetchLowestReviews(placeId: string, lang: string, pages = 
   return out;
 }
 
+/** Text-Suche in ALLEN Bewertungen eines Profils (SerpApi „query"), z. B. ein Wort aus der Bewertung. 1 Abruf, 6 h Cache. */
+const qCache = new Map<string, { ts: number; data: FetchedReview[] }>();
+export async function searchPlaceReviews(placeId: string, q: string, lang: string): Promise<FetchedReview[]> {
+  const key = serpKey();
+  if (!key) throw new Error("SERPAPI_KEY fehlt");
+  const query = q.trim().slice(0, 80);
+  if (query.length < 2) return [];
+  const ck = placeId + "|" + lang + "|" + query.toLowerCase();
+  const hit = qCache.get(ck);
+  if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data;
+  const params = new URLSearchParams({ engine: "google_maps_reviews", place_id: placeId, query, hl: lang, api_key: key });
+  countCall();
+  const res = await fetch((process.env.SERPAPI_BASE || "https://serpapi.com") + "/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) });
+  const data: any = await res.json().catch(() => null);
+  if (!res.ok || !data || data.error) {
+    if (data && /hasn't returned any results/i.test(String(data.error || ""))) { qCache.set(ck, { ts: Date.now(), data: [] }); return []; }
+    throw new Error("SerpApi " + res.status + ": " + String(data?.error || "").slice(0, 200));
+  }
+  const out = (Array.isArray(data.reviews) ? data.reviews : []).map(mapR);
+  qCache.set(ck, { ts: Date.now(), data: out });
+  if (qCache.size > 500) qCache.delete(qCache.keys().next().value as string);
+  return out;
+}
+
 export async function findPlaceReview(placeId: string, reviewId: string, lang: string): Promise<FetchedReview | null> {
   const key = serpKey();
   if (!key || !placeId || !reviewId) return null;

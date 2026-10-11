@@ -51,7 +51,7 @@ import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker, scheduleProtectionUpsell } from "./upsell";
-import { serpKey, fetchPlaceReviews, fetchLowestReviews, findPlaceReview, serpUsage } from "./reviewsFetch";
+import { serpKey, fetchPlaceReviews, fetchLowestReviews, findPlaceReview, searchPlaceReviews, serpUsage } from "./reviewsFetch";
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
@@ -1050,6 +1050,20 @@ app.post("/reviews/find", async (req, reply) => {
     if (!r) return reply.code(404).send({ ok: false, error: "not_found" });
     return { ok: true, review: r };
   } catch (e) { app.log.error({ err: e }, "Bewertungs-Link auflösen fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
+});
+
+// Bewertungs-Wizard: in ALLEN Bewertungen eines Profils nach einem Wort suchen (große Profile). Gedrosselt je IP.
+const searchHits = new Map<string, number[]>();
+app.post("/reviews/search", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!serpKey()) return reply.code(503).send({ ok: false, error: "disabled" });
+  const placeId = clip(b.placeId, 200);
+  if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, error: "place" });
+  const q = clip(b.q, 80);
+  if (q.length < 2) return reply.code(400).send({ ok: false, error: "query" });
+  if (!throttle(searchHits, req.ip, 12)) return reply.code(429).send({ ok: false, error: "rate" });
+  try { return { ok: true, reviews: await searchPlaceReviews(placeId, q, mailLang(b.lang)) }; }
+  catch (e) { app.log.error({ err: e }, "Bewertungs-Suche fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)

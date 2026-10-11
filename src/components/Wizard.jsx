@@ -6,7 +6,7 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, searchProfileReviews, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
@@ -17,7 +17,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron, Eye as LEye, Globe as LGlobe, Clock as LClock, Trash2 as LTrash, FileText as LFile } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron, Eye as LEye, Globe as LGlobe, Clock as LClock, Trash2 as LTrash, FileText as LFile, ClipboardPaste as LClip } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -1768,8 +1768,8 @@ const pickCopy = (code) => PICK_COPY[code] || PICK_COPY.en;
    Der Link wird aufgelöst und die Bewertung gezielt im Profil gesucht; klappt das nicht, wird er als manueller Link übernommen. */
 const BIG_PROFILE = 100;
 const LK_COPY = {
-  de: { bigH: "{n} Bewertungen – ist Ihre nicht dabei?", bigP: "Bei großen Profilen können wir nur die neuesten und die schlechtesten Bewertungen laden. Fügen Sie einfach den Link zur Bewertung ein – wir suchen sie für Sie.", h: "Link zur Bewertung einfügen", ph: "Link zur Bewertung einfügen", btn: "Hinzufügen", how: "So geht’s: Bewertung in Google Maps öffnen → Teilen → Link kopieren.", wait: "Wir durchsuchen das Profil – das kann bis zu einer Minute dauern …", ok: "Gefunden und ausgewählt", other: "Dieser Link gehört zu einem anderen Google-Profil.", bad: "Das ist kein Link zu einer Bewertung – bitte bei der Bewertung auf Teilen → Link kopieren.", manual: "Wir konnten die Bewertung nicht automatisch finden – der Link ist trotzdem übernommen, wir prüfen ihn nach der Bestellung.", rate: "Zu viele Suchen – bitte in ein paar Minuten noch einmal." },
-  en: { bigH: "{n} reviews – yours isn’t listed?", bigP: "On large profiles we can only load the newest and the lowest-rated reviews. Just paste the link to the review – we’ll find it for you.", h: "Paste the link to the review", ph: "Paste review link", btn: "Add", how: "How: open the review in Google Maps → Share → Copy link.", wait: "Searching the profile – this can take up to a minute …", ok: "Found and selected", other: "This link belongs to a different Google profile.", bad: "That isn’t a link to a review – use Share → Copy link on the review.", manual: "We couldn’t find the review automatically – the link has been added anyway and we’ll check it after you order.", rate: "Too many searches – please try again in a few minutes." },
+  de: { bigT: "{n} Bewertungen.", bigP: "Wir zeigen die neuesten und die schlechtesten. Ihre fehlt? Suchen Sie oben nach einem Wort aus der Bewertung – oder ", bigL: "fügen Sie den Link ein", qPh: "Name oder Wort aus der Bewertung …", srv: "In allen {n} Bewertungen nach „{q}“ suchen", srvBusy: "Suche in allen {n} Bewertungen …", srvHit: "{k} Treffer in allen Bewertungen", srvNone: "Keine weiteren Treffer für „{q}“.", srvNoneL: "Link einfügen", srvErr: "Die Suche hat nicht geklappt – bitte noch einmal.", add: "Bewertung fehlt? Per Link hinzufügen", shH: "Bewertungen per Link hinzufügen", s1: "Bewertung in Google Maps öffnen", s2: "Auf „Teilen“ tippen", s3: "„Link kopieren“ – hier einfügen", paste: "Link aus Zwischenablage einfügen", ph: "… oder hier einfügen (auch mehrere)", busy: "Wird gesucht …", found: "Gefunden", manual: "Prüfen wir nach der Bestellung", other: "Gehört zu einem anderen Profil", bad: "Kein Bewertungs-Link", rate: "Zu viele Suchen – gleich noch einmal", done: "Fertig", doneN: "Fertig · {n} hinzugefügt", none: "Noch kein Link eingefügt.", linkRow: "Bewertung per Link", linkSub: "Prüfen wir nach der Bestellung" },
+  en: { bigT: "{n} reviews.", bigP: "We show the newest and the lowest-rated. Yours is missing? Search above for a word from the review – or ", bigL: "paste its link", qPh: "Name or a word from the review …", srv: "Search all {n} reviews for “{q}”", srvBusy: "Searching all {n} reviews …", srvHit: "{k} matches across all reviews", srvNone: "No further matches for “{q}”.", srvNoneL: "Paste the link", srvErr: "The search didn’t work – please try again.", add: "Review missing? Add it by link", shH: "Add reviews by link", s1: "Open the review in Google Maps", s2: "Tap “Share”", s3: "“Copy link” – paste it here", paste: "Paste link from clipboard", ph: "… or paste here (several work too)", busy: "Searching …", found: "Found", manual: "We’ll check it after you order", other: "Belongs to a different profile", bad: "Not a review link", rate: "Too many searches – try again shortly", done: "Done", doneN: "Done · {n} added", none: "No link added yet.", linkRow: "Review by link", linkSub: "We’ll check it after you order" },
 };
 const lkCopy = (code) => LK_COPY[code] || LK_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
@@ -1895,10 +1895,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [pickFilter, setPickFilter] = React.useState("low"); // low = 1–3 Sterne | all
   const [pickQ2, setPickQ2] = React.useState(""); // Suche nach Bewertername in der Auswahl
   const [showManual, setShowManual] = React.useState(false); // „Bewertung nicht in der Liste?"
-  const [lkVal, setLkVal] = React.useState(""); // Link-Suche (große Profile prominent)
-  const [lkBusy, setLkBusy] = React.useState(false);
-  const [lkMsg, setLkMsg] = React.useState(null); // { t, ok }
-  const [lkOpen, setLkOpen] = React.useState(false); // kleine Profile: Link-Feld erst auf Klick
+  const [srv, setSrv] = React.useState({ q: "", busy: false, ids: [], err: false, done: false }); // Wort-Suche in allen Bewertungen
+  const [lkSheet, setLkSheet] = React.useState(false); // Sheet „Bewertungen per Link hinzufügen"
+  const [lkRows, setLkRows] = React.useState([]); // { k, url, st: busy|ok|manual|err, r?, msg? }
+  const [lkIn, setLkIn] = React.useState("");
   React.useEffect(() => {
     if (!reviewMode || pickOn || !placesEnabled()) return;
     let alive = true;
@@ -1931,28 +1931,47 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const swRef = React.useRef(null), piRef = React.useRef(null);
   useSwipeClose(swRef, swInfo, () => setSwInfo(false));
   useSwipeClose(piRef, priceInfo, () => setPriceInfo(false));
-  // Link auflösen → Bewertung oben in die Liste + auswählen; sonst als manueller Link übernehmen
-  const lkFind = async (pid) => {
-    const lk = lkCopy(t.code), v = lkVal.trim();
-    if (!/^https?:\/\/\S+$/i.test(v)) { setLkMsg({ t: lk.bad }); return; }
-    setLkBusy(true); setLkMsg(null);
+  // „Per Link hinzufügen": alle Links aus dem eingefügten Text auflösen (parallel). Gefunden → oben in die Liste + ausgewählt;
+  // nicht gefunden → als Link übernommen (prüfen wir nach der Bestellung). Der Kunde bleibt nie hängen.
+  const urlsIn = (txt) => (String(txt || "").match(/https?:\/\/[^\s<>"']+/gi) || []).map((u) => u.replace(/[),.;]+$/, ""));
+  const addLinks = (txt, pid) => {
+    const lk = lkCopy(t.code);
+    const urls = [...new Set(urlsIn(txt))].filter((u) => !lkRows.some((x) => x.url === u));
+    if (!urls.length) return false;
+    urls.forEach((url) => {
+      const k = Math.random().toString(36).slice(2);
+      setLkRows((rows) => [...rows, { k, url, st: "busy" }]);
+      findReviewByLink(pid, url, lang).then((r) => {
+        setLkRows((rows) => rows.map((x) => (x.k === k ? { ...x, st: "ok", r } : x)));
+        setPickReviews((l) => [r, ...(l || []).filter((x) => x.id !== r.id)]);
+        setPickSel((sel) => (sel.some((x) => x.id === r.id) ? sel : [...sel, r]));
+        setReviewErr("");
+      }).catch((e) => {
+        const c = e && e.code;
+        if (c === "other_profile" || c === "not_review" || c === "rate") {
+          setLkRows((rows) => rows.map((x) => (x.k === k ? { ...x, st: "err", msg: c === "other_profile" ? lk.other : c === "rate" ? lk.rate : lk.bad } : x)));
+        } else {
+          setLkRows((rows) => rows.map((x) => (x.k === k ? { ...x, st: "manual" } : x)));
+          setReviewItems((items) => [...items.filter((it) => (it.url || "").trim() || (it.name || "").trim()), { url, name: "", text: "", alt: false }]);
+          setReviewErr("");
+        }
+      });
+    });
+    return true;
+  };
+  const rmLink = (row) => {
+    setLkRows((rows) => rows.filter((x) => x.k !== row.k && x.url !== row.url));
+    if (row.st === "ok" && row.r) setPickSel((sel) => sel.filter((x) => x.id !== row.r.id));
+    if (row.st === "manual") setReviewItems((items) => items.filter((it) => (it.url || "").trim() !== row.url));
+  };
+  const srvSearch = async (pid, qq) => {
+    const v = String(qq || "").trim(); if (v.length < 2) return;
+    setSrv({ q: v, busy: true, ids: [], err: false, done: false });
     try {
-      const r = await findReviewByLink(pid, v, lang);
-      setPickReviews((l) => [r, ...(l || []).filter((x) => x.id !== r.id)]);
-      setPickSel((sel) => (sel.some((x) => x.id === r.id) ? sel : [...sel, r]));
-      setPickFilter("all"); setPickQ2(""); setReviewErr("");
-      setLkVal(""); setLkMsg({ t: lk.ok, ok: true });
-    } catch (e) {
-      const c = e && e.code;
-      if (c === "other_profile") setLkMsg({ t: lk.other });
-      else if (c === "not_review") setLkMsg({ t: lk.bad });
-      else if (c === "rate") setLkMsg({ t: lk.rate });
-      else { // nicht gefunden / Fehler → als manuellen Link übernehmen, damit der Kunde nie hängen bleibt
-        setReviewItems((items) => [...items.filter((it) => (it.url || "").trim() || (it.name || "").trim()), { url: v, name: "", text: "", alt: false }]);
-        setShowManual(true); setLkVal(""); setLkMsg({ t: lk.manual, ok: true }); setReviewErr("");
-      }
-    }
-    setLkBusy(false);
+      const rs = await searchProfileReviews(pid, v, lang);
+      setPickReviews((l) => { const have = new Set((l || []).map((x) => x.id)); return [...(l || []), ...rs.filter((r) => !have.has(r.id))]; });
+      setSrv({ q: v, busy: false, ids: rs.map((r) => r.id), err: false, done: true });
+    } catch (e) { setSrv({ q: v, busy: false, ids: [], err: true, done: true }); }
   };
   const pickToggle = (r) => {
     setReviewErr("");
@@ -2077,7 +2096,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!pid) { setPickPhase("manual"); return; } // Profil nicht gefunden → nur Links eingeben
     if (revLoadedFor.current === pid) return;
     revLoadedFor.current = pid;
-    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false); setLkVal(""); setLkMsg(null); setLkOpen(false);
+    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false); setLkRows([]); setLkIn(""); setSrv({ q: "", busy: false, ids: [], err: false, done: false });
     pickLoad(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, service, selected && selected.placeId]);
@@ -2679,7 +2698,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     // unabhängig vom Sterne-Filter — man sucht ja eine bestimmte Person.
     const q = pickQ2.trim().toLowerCase();
     const shown = (pickReviews || []).filter((r) => q
-      ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q))
+      ? (String(r.name || "").toLowerCase().includes(q) || String(r.text || "").toLowerCase().includes(q) || (srv.q.toLowerCase() === q && srv.ids.includes(r.id)))
       : (pickFilter === "all" || (r.rating >= 1 && r.rating <= 3)));
     const manualOnly = pickPhase === "manual";
     const cont = () => { if (!reviewCount) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
@@ -3839,30 +3858,29 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const lk = lkCopy(t.code);
     const revN = Number((selected && selected.reviews) || 0);
     const big = revN > BIG_PROFILE;
-    const lkBox = (
-      <div className={"bpr-lk" + (big ? " big" : "")}>
-        {big ? <><b>{lk.bigH.replace("{n}", revN.toLocaleString(lang === "de" ? "de-DE" : "en-US"))}</b><span>{lk.bigP}</span></> : <b>{lk.h}</b>}
-        <form className="bpr-lkf" onSubmit={(e) => { e.preventDefault(); lkFind(selected.placeId); }}>
-          <LLink /><input value={lkVal} onChange={(e) => { setLkVal(e.target.value); setLkMsg(null); }} placeholder={lk.ph} inputMode="url" autoComplete="off" aria-label={lk.ph} />
-          <button type="submit" disabled={lkBusy || !lkVal.trim()}>{lkBusy ? <span className="bpr-lks" /> : lk.btn}</button>
-        </form>
-        <div className={"bpr-lkm" + (lkMsg ? (lkMsg.ok ? " ok" : " bad") : "")}>{lkMsg ? lkMsg.t : lkBusy ? lk.wait : lk.how}</div>
-      </div>
-    );
+    const nFmt = revN.toLocaleString(lang === "de" ? "de-DE" : "en-US");
+    const pid = selected && selected.placeId;
+    const linkRows = (reviewItems || []).filter((it) => (it.url || "").trim());
+    const canSrv = big && pid && q.length >= 2;
     const list = manualOnly ? null : (<React.Fragment>
-      {big && selected && selected.placeId ? lkBox : null}
       {all.length ? (<React.Fragment>
         <div className="bpr-tools">
-          <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
+          <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && canSrv) { e.preventDefault(); srvSearch(pid, pickQ2); } }} placeholder={big ? lk.qPh : pk.qPh} aria-label={big ? lk.qPh : pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
           <div className="bpr-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
         </div>
+        {big && !q ? <div className="bpr-bigh"><LInfo /><span><b>{lk.bigT.replace("{n}", nFmt)}</b> {lk.bigP}<button type="button" onClick={() => setLkSheet(true)}>{lk.bigL}</button>.</span></div> : null}
+        {canSrv ? (srv.busy && srv.q === pickQ2.trim() ? <div className="bpr-srv busy"><span className="bpr-lks dk" />{lk.srvBusy.replace("{n}", nFmt)}</div>
+          : srv.done && srv.q === pickQ2.trim() ? <div className={"bpr-srv res" + (srv.ids.length ? " ok" : "")}><LSearch />{srv.err ? lk.srvErr : srv.ids.length ? lk.srvHit.replace("{k}", srv.ids.length) : <span>{lk.srvNone.replace("{q}", srv.q)} <button type="button" onClick={() => setLkSheet(true)}>{lk.srvNoneL}</button></span>}</div>
+          : <button type="button" className="bpr-srv" onClick={() => srvSearch(pid, pickQ2)}><LSearch />{lk.srv.replace("{n}", nFmt).replace("{q}", pickQ2.trim())}<LArrowRight className="ar" /></button>) : null}
+        {linkRows.length ? <div className="bpr-list" style={{ marginTop: 14 }}>{linkRows.map((it) => (
+          <div key={it.url} className="bpr-rv sel bpr-lrow"><span className="bpr-cb"><LCheck /></span><span className="bd"><span className="bpr-rh"><b>{lk.linkRow}</b></span><span className="bpr-rt">{it.url.replace(/^https?:\/\//, "").slice(0, 60)}</span><span className="bpr-tags"><span className="bpr-tag">{lk.linkSub}</span></span></span>
+            <button type="button" className="x" aria-label="×" onClick={() => rmLink({ k: "", url: it.url, st: "manual" })}><LX /></button></div>
+        ))}</div> : null}
         <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
-        {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
+        {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : canSrv ? null : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
       </React.Fragment>) : <div className="bpr-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
-      {!big && all.length && !hasManual && !lkOpen
-        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setLkOpen(true)}><LPencil />{pk.notListed}</button>
-        : !big && lkOpen && !hasManual && selected && selected.placeId ? <div style={{ marginTop: 16 }}>{lkBox}</div>
-        : hasManual || !all.length ? manualLinksNew() : null}
+      {all.length && pid ? <button type="button" className="bpr-addlk" onClick={() => setLkSheet(true)}><LLink />{lk.add}</button>
+        : !all.length || !pid ? manualLinksNew() : null}
     </React.Fragment>);
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="rv">
@@ -4210,6 +4228,40 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       )}
       <ActivityToast />
       {confetti && <Confetti />}
+      {lkSheet ? (() => {
+        const lk = lkCopy(t.code), pid = selected && selected.placeId;
+        const nOk = lkRows.filter((x) => x.st === "ok" || x.st === "manual").length;
+        const canClip = typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.readText;
+        const take = (txt) => { if (addLinks(txt, pid)) setLkIn(""); };
+        return (
+        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setLkSheet(false); }}>
+          <div className="sw-sheet bpr-sheet bpr-lksh" role="dialog" aria-modal="true" aria-labelledby="lk-sheet-t">
+            <div className="grab" aria-hidden="true" />
+            <div className="hd"><h3 id="lk-sheet-t">{lk.shH}</h3><button type="button" className="x" onClick={() => setLkSheet(false)} aria-label="×"><LX /></button></div>
+            <ol className="bpr-3s"><li><span>1</span>{lk.s1}</li><li><span>2</span>{lk.s2}</li><li><span>3</span>{lk.s3}</li></ol>
+            {canClip ? <button type="button" className="bpr-paste" onClick={() => navigator.clipboard.readText().then(take).catch(() => {})}><LClip />{lk.paste}</button> : null}
+            <label className="bpr-lkin"><LLink /><input value={lkIn} placeholder={lk.ph} inputMode="url" autoComplete="off" aria-label={lk.ph}
+              onPaste={(e) => { const txt = (e.clipboardData && e.clipboardData.getData("text")) || ""; if (urlsIn(txt).length) { e.preventDefault(); take(txt); } }}
+              onChange={(e) => { const v = e.target.value; if (/\s/.test(v.trim()) && urlsIn(v).length) take(v); else setLkIn(v); }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); take(lkIn); } }} /></label>
+            <div className="bpr-lkl">
+              {lkRows.length ? lkRows.map((x) => (
+                <div key={x.k} className={"bpr-lkr " + x.st}>
+                  <span className="av">{x.st === "busy" ? <span className="bpr-lks dk" /> : x.st === "ok" ? (x.r.name || "?").slice(0, 1).toUpperCase() : x.st === "manual" ? <LLink /> : <LX />}</span>
+                  <span className="bd">
+                    {x.st === "ok" ? <><span className="nm"><b>{x.r.name}</b><BprStars n={x.r.rating} /></span><span className="tx">{reviewHasText(x.r) ? x.r.text : bpCopy(t.code).noText}</span></>
+                      : <><span className="nm"><b>{x.url.replace(/^https?:\/\//, "").slice(0, 42)}</b></span><span className="tx">{x.st === "busy" ? lk.busy : x.st === "manual" ? lk.manual : x.msg}</span></>}
+                  </span>
+                  {x.st === "ok" ? <span className="ok"><LCheck /></span> : null}
+                  {x.st !== "busy" ? <button type="button" className="rm" aria-label="×" onClick={() => rmLink(x)}><LX /></button> : null}
+                </div>
+              )) : <div className="bpr-lke">{lk.none}</div>}
+            </div>
+            <button type="button" className="ok" onClick={() => { if (lkIn.trim()) take(lkIn); setLkSheet(false); }}>{nOk ? lk.doneN.replace("{n}", nOk) : lk.done}</button>
+          </div>
+        </div>
+        );
+      })() : null}
       {priceInfo ? (() => {
         const bp = bpCopy(t.code);
         return (
