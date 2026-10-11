@@ -1764,6 +1764,12 @@ const PICK_COPY = {
   no: { vfyNote: "For anmeldelser med 4 eller 5 stjerner ber vi etter bestillingen om et kort eierbevis (f.eks. firmaattest) – slik at ingen kan få et annet firmas gode anmeldelser fjernet. Last opp i dashbordet; kontrollen tar sekunder.", swChip: "Sjanse for fjerning 99 % · {price} bare ved suksess", qPh: "Søk på anmelderens navn …", noMatch: "Ingen innlastet anmeldelse passer til «{q}».", notListed: "Er anmeldelsen ikke i listen? Legg til lenken", manualH: "Finner du ikke profilen? Ikke noe problem.", manualNote: "Lim inn lenkene til anmeldelsene som skal fjernes. Vi sjekker dem og svarer deg på e-post.", linksTile: "Finner du ikke profilen? Skriv inn lenker til anmeldelsene", nudge1: "Én til for {pct} % rabatt!", nudgeN: "{n} til for {pct} % rabatt!", ch90: "Sjanse for fjerning ca. 90 %", ch50: "Sjanse for fjerning over 90 %", rowNew: "opptil 4 uker", infoH: "Sjanse for å lykkes & pris", info1: "Anmeldelser opptil 4 uker gamle: ca. 90 % sjanse — {base} per anmeldelse.", info2: "Eldre anmeldelser (utenfor USA): først juridisk varsel, over 90 % sjanse — {old} per anmeldelse.", info3: "Mengderabatt: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %.", discLbl: "Mengderabatt", fromPre: "fra ", fromSuf: "", f13: "1–3 stjerner", fAll: "Alle", stepLbl: "Anmeldelser", stepH: "Hvilke anmeldelser skal bort?", stepSub: "Velg anmeldelsene som skal fjernes. Du betaler bare for dem som faktisk slettes.", empty: "Ingen anmeldelser i dette filteret.", h: "Finn anmeldelsene dine automatisk", sub: "Søk etter bedriften din – vi henter de nyeste Google-anmeldelsene. Kryss av for dem som skal bort.", ph: "Bedriftens navn", btn: "Søk", loading: "Henter anmeldelser …", none: "Fant ingen passende anmeldelser. Lim inn lenkene manuelt nedenfor.", err: "Anmeldelsene kunne ikke hentes – lim inn lenkene nedenfor.", old: "eldre enn 4 uker", noText: "uten tekst", ntLbl: "Programvare · 99 % · {price} (bare ved suksess)", info4: "Eldre anmeldelser fra USA og anmeldelser uten tekst: bare med spesialprogramvare — {nt} per anmeldelse. Vi sjekker først om fjerning er mulig. Du belastes først når anmeldelsen er fjernet. Lykkes det ikke, betaler du ingenting.", rowNt: "programvare · bare ved suksess", ntNote: "Også programvaresaker betaler du først etter fjerning. Vi sjekker først om fjerning er mulig for anmeldelsen din. Så snart en betalingsmåte er lagret i dashbordet ditt, setter vi i gang. Du belastes først når anmeldelsen er fjernet – lykkes det ikke, betaler du ingenting.", or: "Eller lim inn lenker manuelt", change: "Annen profil", pickProfile: "Hvilken profil er din?", selected: "valgt", swInfo: "Hvorfor programvare?", swK: "Hvorfor programvare?", swH: "Google fjerner ikke denne anmeldelsen manuelt", swP1: "Eldre anmeldelser fra USA og vurderinger med bare stjerner uten tekst fjerner Google som regel ikke manuelt. For eldre anmeldelser fra andre land sender vi først juridiske varsler, som fjerner over 90 %. Det som blir igjen, kan bare fjernes med spesialprogramvare.", swP2: "Du betaler ingenting nå. Vi sjekker først om fjerning med programvare er mulig for anmeldelsen din. Først når anmeldelsen er fjernet, belastes betalingsmåten du har lagret i dashbordet.", swF1: "99 % suksessrate", swF2: "Belastning først etter fjerning", swF3: "Ikke fjernet? Du betaler ingenting", swOk: "Forstått" },
 };
 const pickCopy = (code) => PICK_COPY[code] || PICK_COPY.en;
+/* Sheet „Bewertung nicht in der Liste?" (aus der Leiste „Weiter zur Kasse") */
+const LKB_COPY = {
+  de: { h: "Bewertung per Link hinzufügen", p: "Bewertung in Google Maps öffnen → „Teilen“ → „Link kopieren“ und hier einfügen.", done: "Fertig", one: "1 Bewertung per Link hinzugefügt", many: "{n} Bewertungen per Link hinzugefügt", edit: "Bearbeiten" },
+  en: { h: "Add a review by link", p: "Open the review in Google Maps → “Share” → “Copy link” and paste it here.", done: "Done", one: "1 review added by link", many: "{n} reviews added by link", edit: "Edit" },
+};
+const LKB = (code) => LKB_COPY[code] || LKB_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
 const reviewIsOld = (r) => !!r && r.days > REVIEW_OLD_DAYS;
 /** „vor 14 Tagen" / „2 weeks ago" — eindeutiger als ein Datum im US-Format. */
@@ -1887,6 +1893,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [pickFilter, setPickFilter] = React.useState("low"); // low = 1–3 Sterne | all
   const [pickQ2, setPickQ2] = React.useState(""); // Suche nach Bewertername in der Auswahl
   const [showManual, setShowManual] = React.useState(false); // „Bewertung nicht in der Liste?"
+  const [lkSheet, setLkSheet] = React.useState(false); // Link-Felder als Sheet (aus der Leiste „Weiter zur Kasse")
   React.useEffect(() => {
     if (!reviewMode || pickOn || !placesEnabled()) return;
     let alive = true;
@@ -3800,19 +3807,20 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         </button>
       );
     };
-    const hasManual = showManual || reviewItems.some((it) => (it.url || "").trim() || (it.name || "").trim());
+    const manN = (reviewItems || []).filter((it) => (it.url || "").trim() || ((it.name || "").trim() && (it.text || "").trim())).length;
+    const openLk = () => { if (!reviewItems.length) setReviewItems([{ url: "", name: "", text: "", alt: false }]); setLkSheet(true); };
+    const lkOn = !manualOnly && all.length > 0;
     const list = manualOnly ? null : (<React.Fragment>
       {all.length ? (<React.Fragment>
         <div className="bpr-tools">
           <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
           <div className="bpr-seg"><button type="button" className={pickFilter === "low" && !q ? "on" : ""} onClick={() => { setPickFilter("low"); setPickQ2(""); }}>{pk.f13}</button><button type="button" className={pickFilter === "all" && !q ? "on" : ""} onClick={() => { setPickFilter("all"); setPickQ2(""); }}>{pk.fAll}</button></div>
         </div>
+        {manN ? <button type="button" className="bpr-mansum" onClick={openLk}><LLink /><span>{manN === 1 ? LKB(t.code).one : LKB(t.code).many.replace("{n}", manN)}</span><em>{LKB(t.code).edit}</em></button> : null}
         <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
         {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
       </React.Fragment>) : <div className="bpr-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
-      {all.length && !hasManual
-        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setShowManual(true)}><LPencil />{pk.notListed}</button>
-        : manualLinksNew()}
+      {!all.length ? manualLinksNew() : null}
     </React.Fragment>);
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="rv">
@@ -3837,11 +3845,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               {hint ? <div className="hint"><LSparkles /><span>{hint}</span></div> : null}
               <button type="button" className="bpr-go" disabled={!n} onClick={cont}>{bp.toCo}<LArrowRight /></button>
               <div className="pay">{bp.payAfter}</div>
+              {lkOn ? <button type="button" className="bpr-sumlk" onClick={openLk}><LLink />{pk.notListed}</button> : null}
             </div>
             <div className="bpr-bkw"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
           </aside>
         </main>
         <div className="bpr-mbar bpr-mbar2">
+          {lkOn ? <button type="button" className="bpr-mlk" onClick={openLk}><LLink />{pk.notListed}</button> : null}
           <div className="ln2"><span>{bp.selShort(n)}{rq.pct ? " · −" + rq.pct + " %" : ""}{hint ? <span className="h">{hint}</span> : null}</span><b className="big">{fmtMoney(rl, servicePriceNum)}</b></div>
           <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" disabled={!n} onClick={cont}>{bp.toCo}<LArrowRight /></button></div>
         </div>
@@ -4160,6 +4170,17 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       )}
       <ActivityToast />
       {confetti && <Confetti />}
+      {lkSheet ? (
+        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setLkSheet(false); }}>
+          <div className="sw-sheet bpr-sheet bpr-lkb" role="dialog" aria-modal="true" aria-labelledby="lkb-t">
+            <div className="grab" aria-hidden="true" />
+            <div className="hd"><h3 id="lkb-t">{LKB(t.code).h}</h3><button type="button" className="x" onClick={() => setLkSheet(false)} aria-label="×"><LX /></button></div>
+            <p className="bpr-lkbp">{LKB(t.code).p}</p>
+            {manualLinksNew()}
+            <button type="button" className="ok" onClick={() => setLkSheet(false)}>{LKB(t.code).done}</button>
+          </div>
+        </div>
+      ) : null}
       {priceInfo ? (() => {
         const bp = bpCopy(t.code);
         return (

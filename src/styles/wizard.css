@@ -1599,3 +1599,15 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-palt>p{margin:4px 0 0;font-size:13px;color:#6b6b6b;line-height:1.5}
 .bpr-rop.two{grid-template-columns:24px minmax(0,1fr)}
 .bpr-rop.two .tx b{font-size:15px}
+/* „Bewertung nicht in der Liste? Link einfügen" in der Leiste „Weiter zur Kasse" (Desktop-Karte + Handy-Leiste) */
+.bpr-sumlk{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;padding:12px 0 0;border:0;border-top:1px solid rgba(255,255,255,.12);background:none;font:inherit;font-size:13px;font-weight:600;color:#fff;text-decoration:underline;text-decoration-color:rgba(255,255,255,.35);text-underline-offset:3px;cursor:pointer}
+.bpr-sumlk svg{width:15px;height:15px;flex:none}
+.bpr-mlk{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;margin:0 0 10px;padding:0;border:0;background:none;font:inherit;font-size:13px;font-weight:600;color:#111;text-decoration:underline;text-decoration-color:#cfcfcf;text-underline-offset:3px;cursor:pointer}
+.bpr-mlk svg{width:14px;height:14px;flex:none}
+.bpr-mansum{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:12px 14px;border:0;border-radius:14px;background:#eef8f2;font:inherit;font-size:14px;font-weight:600;color:#1a7f45;text-align:left;cursor:pointer}
+.bpr-mansum svg{width:16px;height:16px;flex:none}
+.bpr-mansum span{flex:1}
+.bpr-mansum em{font-style:normal;text-decoration:underline;text-underline-offset:3px;color:#111}
+.bpr-lkb .bpr-lkbp{margin:0 0 4px;font-size:14px;line-height:1.5;color:#666}
+.bpr-lkb .bpr-manual{margin-top:12px}
+.bpr-lkb .ok{margin-top:18px}
