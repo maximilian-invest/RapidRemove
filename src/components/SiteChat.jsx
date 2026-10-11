@@ -30,7 +30,7 @@ const TX = {
   no: { fail: "Livechatten laster ikke akkurat nå. Skriv til helpdesk@rapid-remove.com eller på WhatsApp – vi svarer raskt.", sub: "RapidRemove Support", ai: "Lena er vår AI-assistent · teamet er ett klikk unna", tT: "Hei! 👋", tS: "Spørsmål om fjerning? Jeg hjelper deg med en gang.", hi: "Bare skriv i vei.", hiS: "", ph: "Skriv en melding …", team: "Chat med teamet", teamGo: "Max eller Matthias tar over her i chatten.", q: ["Hva koster det?", "Hvor lang tid tar det?", "Fjern en omtale", "Er dette lovlig?"], err: "Noe gikk galt – jeg kobler deg til teamet.", close: "Lukk", send: "Send", open: "Åpne chat" },
 };
 
-const AV = () => <span className="sc-av"><img src={asset("/assets/app/rocket-mark.png")} alt="" /></span>;
+const AV = () => <span className="sc-av"><img src={asset("/assets/app/rocket-mark.png")} alt="RapidRemove" /></span>;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /** Lange Antwort an einer Satzgrenze in 2 Nachrichten teilen. */
 function splitReply(txt) {

@@ -81,6 +81,7 @@ const article = {
       "**Volume discount:** extortion waves usually mean many reviews. On all reviews we accept, star-only ratings included: 3+ −10 %, 5+ −15 %, 10+ −30 %. Example: 10 fresh extortion reviews with text cost $1,790, minus 30 % = **$1,253**, and only for the ones actually removed. 10 star-only ratings: $3,000 minus 30 % = **$2,100**, again only for the ratings actually removed.",
       "**Strong chances:** fresh reviews with text have an approx. **90 % success chance**, and extortion reviews are among the ones Google removes most reliably.",
       "**Usually 1–2 weeks**, sometimes faster, occasionally a little longer. Reviews can come down at different times, so you can pay per review.",
+      "**If the attack has buried your profile:** with dozens of fake reviews, removing the [entire Google Business Profile](/en/magazine/delete-google-business-profile/) and starting fresh can be faster than fighting every review – you decide.",
       "**Clean methods only:** no fake accounts, no bots, no fake legal notices. The reviewers are not told who requested the removal.",
     ] },
     { t: "cta", title: "Being extorted? Send us the reviews", text: "Search your business, tick the extortion reviews or paste their links, and see the price instantly. **$179 per removed review** with text, star-only ratings $300, charged only after removal.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Star-only too", "Honest assessment first"] },
@@ -108,6 +109,7 @@ const article = {
   ],
   related: [
     { label: "Google review removal service", url: "/en/remove-single-reviews/" },
+    { label: "How to delete a Google Business Profile", url: "/en/magazine/delete-google-business-profile/" },
     { label: "Spot, report and remove fake Google reviews", url: "/en/magazine/remove-fake-google-reviews/" },
     { label: "Remove a 1-star review without text", url: "/en/magazine/remove-1-star-review-without-text/" },
     { label: "How long does Google take to remove a review?", url: "/en/magazine/how-long-does-google-take-to-remove-a-review/" },

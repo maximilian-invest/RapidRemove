@@ -99,7 +99,7 @@ const article = {
       "**Try the free route first:** if you have time and the violation is obvious, report it yourself and use the appeal.",
       "**Not a removal case:** honest criticism from real customers. Reply publicly and politely instead ([ignore, reply or remove?](/en/magazine/negative-review-ignore-respond-remove/)).",
     ] },
-    { t: "p", text: "To weigh $179 against what the review is doing to your business, see [what a bad Google review really costs](/en/magazine/what-does-a-bad-google-review-cost/). Since 2023 our team has removed over **1,600 Google Business Profiles** for clients in more than 50 countries, and we apply the same approach to single reviews through our [service for removing individual Google reviews](/en/remove-single-reviews/)." },
+    { t: "p", text: "To weigh $179 against what the review is doing to your business, see [what a bad Google review really costs](/en/magazine/what-does-a-bad-google-review-cost/). Since 2023 our team has removed over **1,600 Google Business Profiles** ([how profile removal works](/en/magazine/delete-google-business-profile/)) for clients in more than 50 countries, and we apply the same approach to single reviews through our [service for removing individual Google reviews](/en/remove-single-reviews/)." },
   ],
   faq: [
     { q: "Is it free to remove a Google review?", a: "Reporting a review to Google yourself is free, and you can appeal once in the Reviews Management Tool. Google often rejects reports, though. With RapidRemove you pay **$179 per review, only if it's removed**." },

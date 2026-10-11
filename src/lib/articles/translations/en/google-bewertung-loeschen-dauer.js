@@ -28,7 +28,7 @@ const article = {
       "**Obvious violations** (spam, insults, clearly fake engagement): often within hours to a few days.",
       "**Borderline cases** that need a human look: often one to a few weeks.",
       "**Appeals and escalations**: add more time on top – sometimes several weeks.",
-      "**With us**: usually 1–2 weeks per review, sometimes faster, occasionally a little longer. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **$179 per removed review**, nothing upfront.",
+      "**With us**: usually 1–2 weeks per review, sometimes faster, occasionally a little longer. If you'd rather hand it over, our [Google review removal service](/en/remove-single-reviews/) works only through Google's own procedures and charges **$179 per removed review**, nothing upfront. If you want the whole listing gone instead, see [how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/).",
     ] },
     { t: "warn", title: "Typical, not guaranteed", text: "All durations in this article are typical ranges from practice, not Google commitments. Google's processing time varies, and nobody can promise a date – or a removal." },
 
@@ -115,6 +115,7 @@ const article = {
   related: [
     { label: "Google review removal service", url: "/en/remove-single-reviews/" },
     { label: "Google review removal cost", url: "/en/magazine/google-review-removal-cost/" },
+    { label: "How to delete a Google Business Profile", url: "/en/magazine/delete-google-business-profile/" },
     { label: "Google review policy violations", url: "/en/magazine/google-review-policy-violations/" },
     { label: "How to remove fake Google reviews", url: "/en/magazine/remove-fake-google-reviews/" },
   ],
