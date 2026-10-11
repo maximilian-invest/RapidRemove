@@ -2059,6 +2059,17 @@ async function payDueTick(): Promise<void> {
  * Nur Aufträge, deren Zahlungslink ab 08.10.2026 rausging (kein Nachversand an den Bestand). Abschalten: AUTO_DUNNING=off. */
 const DUN_GAP = 48 * 3600e3; // Zahlungsziel bei Profil-Löschungen: 48 h (Maximilian 08.10.2026)
 const DUN_SINCE = () => new Date(process.env.AUTO_DUNNING_SINCE || "2026-10-08T00:00:00Z").getTime();
+/** Mahn-Stand eines Profil-Auftrags aus den Events. Start = Zahlungslink (oder, falls keiner protokolliert ist, die erste Mahnung).
+ *  Aktiv = Zahlungslink ODER letzte Mahnung ab DUN_SINCE (11.10.2026: auch Fälle, die vorher per Hand angefangen wurden,
+ *  laufen ab der letzten Mahnung automatisch weiter – Maximilian: „Mahnungen!!! Wieso ist das nicht eingeschalten?"). */
+function dunState(rows: { title: string; created_at: string }[]) {
+  const ts = (x: { created_at: string }) => new Date(x.created_at).getTime();
+  const link = rows.filter((x) => !/^Mahnung/i.test(x.title)), mahn = rows.filter((x) => /^Mahnung/i.test(x.title));
+  const start = Math.min(...link.map(ts), ...mahn.map(ts), Infinity);
+  const last = Math.max(start, ...mahn.map(ts));
+  const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
+  return { start, last, level, next: level + 1, active: Number.isFinite(start) && last >= DUN_SINCE() };
+}
 /** Admin (Mail-Verlauf): geplante automatische Mails eines Auftrags – Zahlungsziel, Auto-Mahnung (Profile),
  *  „Zahlungsart fehlt" und Nachfassen (Bewertungen). Mit Zeitpunkt (Versandfenster 8–20 Uhr Ortszeit berücksichtigt). */
 app.post("/admin/next-mails", async (req, reply) => {
@@ -2080,15 +2091,14 @@ app.post("/admin/next-mails", async (req, reply) => {
     if (pd && pd.at && !pd.sent) out.push({ at: pd.at, title: "Zahlungsziel abgelaufen → Erinnerung mit Zahlungslink" });
     else if (o.status === "done" && (process.env.AUTO_DUNNING || "on").toLowerCase() !== "off" && o.pay !== "inkasso") {
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [id]);
-      const t = (x: { created_at: string }) => new Date(x.created_at).getTime();
-      const link = ev.rows.filter((x) => !/^Mahnung/i.test(x.title)), mahn = ev.rows.filter((x) => /^Mahnung/i.test(x.title));
-      const start = Math.min(...link.map(t), Infinity);
-      if (Number.isFinite(start) && start >= DUN_SINCE()) {
-        const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
-        const next = level + 1;
-        if (next <= 3) out.push({ at: new Date(Math.max(Date.now(), nextDaytime(Math.max(start, ...mahn.map(t)) + DUN_GAP, tz))).toISOString(), title: ["", "Zahlungserinnerung", "2. Zahlungserinnerung", "Mahnung"][next] + ` (Stufe ${next})` });
+      const d = dunState(ev.rows);
+      if (d.active) {
+        if (d.next <= 3) out.push({ at: new Date(Math.max(Date.now(), nextDaytime(d.last + DUN_GAP, tz))).toISOString(), title: ["", "Zahlungserinnerung", "2. Zahlungserinnerung", "Mahnung"][d.next] + ` (Stufe ${d.next})` });
         else out.push({ title: "Letzte Mahnung / Inkasso", note: "geht nicht automatisch – Hauptbutton im Auftrag", stopped: true });
-      } else if (Number.isFinite(start)) out.push({ title: "Keine Auto-Mahnung", note: "Zahlungslink vor dem 08.10.2026 – Mahnungen manuell", stopped: true });
+      } else if (Number.isFinite(d.start)) out.push({ title: "Keine Auto-Mahnung", note: "letzter Zahlungslink/Mahnung vor dem 08.10.2026 – Mahnungen manuell", stopped: true });
+      else out.push({ title: "Keine Auto-Mahnung", note: "noch kein Zahlungslink protokolliert – zuerst Löschbestätigung/Zahlungslink senden", stopped: true });
+    } else if (o.status !== "done") {
+      out.push({ title: "Keine Auto-Mahnung", note: "Auftrag noch nicht auf „Erledigt“ – Mahnungen starten erst nach der Löschung", stopped: true });
     }
   } else {
     const pg = await pgNextFor(String(o.email || "")).catch(() => null);
@@ -2109,18 +2119,13 @@ async function payDunTick(): Promise<void> {
       if (isTestEmail(o.email)) continue;
       const raw = (o.raw || {}) as Record<string, any>;
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [o.id]);
-      const ts = (x: { created_at: string }) => new Date(x.created_at).getTime();
-      const link = ev.rows.filter((x) => !/^Mahnung/i.test(x.title));
-      const mahn = ev.rows.filter((x) => /^Mahnung/i.test(x.title));
-      const start = Math.min(...link.map(ts), Infinity);
-      if (!Number.isFinite(start) || start < DUN_SINCE()) continue;           // kein Zahlungslink oder Altbestand
+      const d = dunState(ev.rows);
+      if (!d.active) continue;                                                // kein Zahlungslink/keine Mahnung oder Altbestand
       const pd = raw.payDue as { at?: string; sent?: string | null } | null;
       if (pd && pd.at && !pd.sent) continue;                                  // Zahlungsziel läuft noch → dessen Mail zuerst
-      const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
-      const next = level + 1;
+      const next = d.next;
       if (next > 3) continue;                                                 // Stufe 4 + Inkasso: Team
-      const last = Math.max(start, ...mahn.map(ts));
-      if (Date.now() < last + DUN_GAP) continue;
+      if (Date.now() < d.last + DUN_GAP) continue;
       if (!quietOk(tzOf(o.country, raw.addr))) continue;
       const lang = mailLang(o.lang);
       const usd = o.country === "US";
