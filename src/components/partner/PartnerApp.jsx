@@ -87,6 +87,7 @@ export default function PartnerApp({ api }) {
   const [tab0, setTab0] = React.useState(() => { try { return /payoneer=/.test(window.location.search) ? "earn" : "tasks"; } catch (e) { return "tasks"; } });
   const [pd, reloadPd] = usePayouts(api.token); // Auszahlungsdaten (Payoneer, Gutschriften)
   const [poEdit, setPoEdit] = React.useState(false);
+  const [homeTab, setHomeTab] = React.useState(null); // null = automatisch (New, wenn neue Bestellungen da sind, sonst Working)
   const [me, setMe] = React.useState(null); // Name in der Desktop-Seitenleiste
   React.useEffect(() => { if (api.token) call("me", { t: api.token }).then(setMe).catch(() => {}); }, [api.token]);
   const payLive = !!(pd && pd.live); // Auszahlungen im Admin live geschaltet?
@@ -178,39 +179,39 @@ export default function PartnerApp({ api }) {
       <ChevronRight />
     </button>
   ) : null);
-  // Aktive Aufträge: Kunden mit offenen Bewertungen, am längsten laufend zuerst – mit Laufzeit-Uhr
-  const activeV = () => {
+  // Working: Kunden mit Bewertungen in Arbeit, am längsten laufend zuerst – mit Laufzeit-Uhr (ab Eingang beim Partner)
+  const workingRows = () => {
     const m = new Map();
-    all.filter(isTodo).forEach((t) => { if (!m.has(t.cust)) m.set(t.cust, []); m.get(t.cust).push(t); });
-    const rows = [...m].map(([c, l]) => {
+    all.filter((t) => t.status === "working").forEach((t) => { if (!m.has(t.cust)) m.set(t.cust, []); m.get(t.cust).push(t); });
+    return [...m].map(([c, wl]) => {
+      const l = all.filter((t) => t.cust === c && isTodo(t));
       const since = Math.min(...l.map((t) => t.created || Date.now()));
-      const ds = l.map((t) => dueOf(t)).filter(Boolean);
-      const worst = ds.sort((a, b) => a.left - b.left)[0] || null;
-      return { c, l, since, worst, wk: l.filter((t) => t.status === "working").length, hold: l.every((t) => t.hold) };
+      const worst = l.map((t) => dueOf(t)).filter(Boolean).sort((a, b) => a.left - b.left)[0] || null;
+      return { c, l, since, worst, wk: wl.length, hold: l.every((t) => t.hold) };
     }).sort((a, b) => a.since - b.since);
-    if (!rows.length) return null;
-    return (
-      <>
-        <div className="sec" style={{ marginTop: 0 }}><h2>Active orders</h2><span>longest running first</span></div>
-        <div className="actl">
-          {rows.slice(0, 8).map((x) => {
-            const st = x.hold ? "hold" : x.worst ? x.worst.state : "ok";
-            return (
-              <button key={x.c} type="button" className={"actr " + st} onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
-                <span className="tm"><RunClock since={x.since} /><em>running</em></span>
-                <span className="t">
-                  <b>{x.c}</b>
-                  <span>{x.l.length} open{x.wk ? ` · ${x.wk} working` : ""}</span>
-                  {x.hold ? <em className="due">On hold · customer payment</em> : x.worst ? <em className={"due " + x.worst.state}><AlarmClock />{x.worst.state === "late" ? "Overdue " + span(x.worst.left) : "Next deadline in " + span(x.worst.left)}</em> : null}
-                </span>
-                <ChevronRight />
-              </button>
-            );
-          })}
-        </div>
-      </>
-    );
   };
+  const workingV = (rows) => (
+    <div className="actl">
+      {rows.map((x) => {
+        const st = x.hold ? "hold" : x.worst ? x.worst.state : "ok";
+        return (
+          <button key={x.c} type="button" className={"actr " + st} onClick={() => go({ v: "cust", c: x.c, cf: "open" })}>
+            <span className="tm"><RunClock since={x.since} /><em>running</em></span>
+            <span className="t">
+              <b>{x.c}</b>
+              <span>{x.wk} working{x.l.length > x.wk ? ` · ${x.l.length - x.wk} not started` : ""}</span>
+              {x.hold ? <em className="due">On hold · customer payment</em> : x.worst ? <em className={"due " + x.worst.state}><AlarmClock />{x.worst.state === "late" ? "Overdue " + span(x.worst.left) : "Next deadline in " + span(x.worst.left)}</em> : null}
+            </span>
+            <ChevronRight />
+          </button>
+        );
+      })}
+    </div>
+  );
+  const newCusts = () => custsOf(F.nw).filter(([c]) => !all.some((t) => t.cust === c && t.status === "working"));
+  // Neue Bestellung eingegangen → Tab springt automatisch auf „New orders"
+  const nNew = newCusts().length, prevNew = React.useRef(nNew);
+  React.useEffect(() => { if (nNew > prevNew.current) setHomeTab(null); prevNew.current = nNew; }, [nNew]);
   const nav = (right) => (
     <div className="nav"><button type="button" className="circ" aria-label="Back" onClick={back}><ArrowLeft /></button>{right || null}</div>
   );
@@ -221,14 +222,15 @@ export default function PartnerApp({ api }) {
   /* ---------- screens ---------- */
   function HomeV() {
     // „New orders" = Kunden mit Bewertungen, die der Partner noch nicht angefangen hat (Status new). Laufende stehen unter Working/Orders.
-    const nc = custsOf(F.nw);
+    const nc = newCusts(); // nur Kunden, bei denen noch nichts angefangen ist – angefangene stehen unter „Working"
+    const wRows = workingRows();
+    const hk = homeTab || (nc.length ? "new" : "wk");
     const tiles = [["nw", "New", "c-new"], ["wk", "Working", "c-working"], ["removed", "Removed", "c-removed"], ["pending", "Pending", "c-software"], ["closed", "Not possible", "c-notpossible"], ["cx", "Cancelled", "c-cancelled"]];
     const icon = { nw: STATUS.new.I, wk: STATUS.working.I, removed: STATUS.removed.I, pending: Hourglass, closed: STATUS.notpossible.I, cx: XCircle };
     return (
       <>
         <div className="hhead"><h1>Tasks</h1><button type="button" className="circ" aria-label="Search" onClick={() => go({ v: "search", q: "" })}><Search /></button></div>
         {dueBar()}
-        {activeV()}
         {hero()}
         <div className="stats">
           {tiles.map(([k, l, c]) => { const I = icon[k]; return (
@@ -237,8 +239,12 @@ export default function PartnerApp({ api }) {
             </button>
           ); })}
         </div>
-        <div className="sec" style={{ marginTop: 0 }}><h2>New orders</h2><span>{nc.length}</span></div>
-        {nc.map(([c, l]) => {
+        <div className="htabs" role="tablist">
+          <button type="button" role="tab" aria-selected={hk === "new"} className={hk === "new" ? "on" : ""} onClick={() => setHomeTab("new")}>New orders<span>{nc.length}</span></button>
+          <button type="button" role="tab" aria-selected={hk === "wk"} className={hk === "wk" ? "on" : ""} onClick={() => setHomeTab("wk")}>Working<span>{wRows.length}</span></button>
+        </div>
+        {hk === "wk" ? (wRows.length ? <><div className="htsub">Longest running first</div>{workingV(wRows)}</> : empty("Nothing in progress", "Start a new order – it shows up here with its timer.")) : null}
+        {hk === "new" ? nc.map(([c, l]) => {
           const allT = all.filter((t) => t.cust === c), nw = isNewC(c);
           return (
             <button key={c} type="button" className={"big" + (nw ? " new" : "")} onClick={() => go({ v: "cust", c, cf: "open" })}>
@@ -247,8 +253,8 @@ export default function PartnerApp({ api }) {
               <span className="n">{l.length}</span><ChevronRight />
             </button>
           );
-        })}
-        {!nc.length ? empty("All caught up", "No new orders – everything has been started.") : null}
+        }) : null}
+        {hk === "new" && !nc.length ? empty("All caught up", "No new orders – everything has been started.") : null}
       </>
     );
   }
