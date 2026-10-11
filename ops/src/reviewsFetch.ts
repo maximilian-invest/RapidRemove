@@ -97,6 +97,34 @@ const mapR = (r: any, i: number): FetchedReview => ({
   rating: Math.round(Number(r.rating) || 0), text: String(r.extracted_snippet?.original || r.snippet || "").slice(0, 2000),
   date: String(r.iso_date || ""), days: daysSince(r.iso_date), link: String(r.link || ""),
 });
+/** Schlechteste zuerst (sort_by=ratingLow), für große Profile: so stehen 1–2-Sterne-Bewertungen oben, egal wie alt.
+ *  Standard 1 Seite (~20 Bewertungen) = 1 Abruf; 6 h im Cache. */
+const lowCache = new Map<string, { ts: number; data: FetchedReview[] }>();
+export async function fetchLowestReviews(placeId: string, lang: string, pages = 1): Promise<FetchedReview[]> {
+  const key = serpKey();
+  if (!key) throw new Error("SERPAPI_KEY fehlt");
+  const ck = placeId + "|" + lang + "|" + pages;
+  const hit = lowCache.get(ck);
+  if (hit && Date.now() - hit.ts < CACHE_MS) return hit.data;
+  const out: FetchedReview[] = [];
+  let token: string | null = null;
+  for (let page = 0; page < Math.min(3, Math.max(1, pages)); page++) {
+    const params = new URLSearchParams({ engine: "google_maps_reviews", place_id: placeId, sort_by: "ratingLow", hl: lang, api_key: key });
+    if (token) { params.set("next_page_token", token); params.set("num", "20"); }
+    countCall();
+    const res = await fetch((process.env.SERPAPI_BASE || "https://serpapi.com") + "/search.json?" + params.toString(), { signal: AbortSignal.timeout(30_000) }).catch(() => null);
+    const data: any = res ? await res.json().catch(() => null) : null;
+    if (!res || !res.ok || !data || data.error) break;
+    const list: any[] = Array.isArray(data.reviews) ? data.reviews : [];
+    list.forEach((r, i) => out.push(mapR(r, out.length + i)));
+    token = data.serpapi_pagination?.next_page_token || null;
+    if (!token || !list.length) break;
+  }
+  lowCache.set(ck, { ts: Date.now(), data: out });
+  if (lowCache.size > 500) lowCache.delete(lowCache.keys().next().value as string);
+  return out;
+}
+
 export async function findPlaceReview(placeId: string, reviewId: string, lang: string): Promise<FetchedReview | null> {
   const key = serpKey();
   if (!key || !placeId || !reviewId) return null;

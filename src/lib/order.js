@@ -99,10 +99,19 @@ export async function reviewsPickerEnabled() {
 }
 
 /** Lädt die neuesten Google-Bewertungen eines Profils (über ops → SerpApi). */
-export async function fetchProfileReviews(placeId, lang) {
+export async function fetchProfileReviews(placeId, lang, big) {
   if (!OPS) throw new Error("no ops");
-  const res = await fetch(OPS + "/reviews?placeId=" + encodeURIComponent(placeId) + "&lang=" + encodeURIComponent(lang || "en"));
+  const res = await fetch(OPS + "/reviews?placeId=" + encodeURIComponent(placeId) + "&lang=" + encodeURIComponent(lang || "en") + (big ? "&big=1" : ""));
   const d = await res.json().catch(() => null);
   if (!res.ok || !d || !d.ok) throw new Error("reviews " + res.status);
   return Array.isArray(d.reviews) ? d.reviews : [];
+}
+
+/** „Bewertung nicht in der Liste?" – Teilen-Link der Bewertung auflösen (sucht gezielt im Profil). Wirft Error mit .code. */
+export async function findReviewByLink(placeId, link, lang) {
+  if (!OPS) throw Object.assign(new Error("no ops"), { code: "fetch" });
+  const res = await fetch(OPS + "/reviews/find", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ placeId, link, lang: lang || "en" }) });
+  const d = await res.json().catch(() => null);
+  if (!res.ok || !d || !d.ok) throw Object.assign(new Error((d && d.error) || "HTTP " + res.status), { code: (d && d.error) || "fetch" });
+  return d.review;
 }

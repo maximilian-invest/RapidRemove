@@ -6,7 +6,7 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, fetchPayDiscount } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
@@ -1764,6 +1764,14 @@ const PICK_COPY = {
   no: { vfyNote: "For anmeldelser med 4 eller 5 stjerner ber vi etter bestillingen om et kort eierbevis (f.eks. firmaattest) – slik at ingen kan få et annet firmas gode anmeldelser fjernet. Last opp i dashbordet; kontrollen tar sekunder.", swChip: "Sjanse for fjerning 99 % · {price} bare ved suksess", qPh: "Søk på anmelderens navn …", noMatch: "Ingen innlastet anmeldelse passer til «{q}».", notListed: "Er anmeldelsen ikke i listen? Legg til lenken", manualH: "Finner du ikke profilen? Ikke noe problem.", manualNote: "Lim inn lenkene til anmeldelsene som skal fjernes. Vi sjekker dem og svarer deg på e-post.", linksTile: "Finner du ikke profilen? Skriv inn lenker til anmeldelsene", nudge1: "Én til for {pct} % rabatt!", nudgeN: "{n} til for {pct} % rabatt!", ch90: "Sjanse for fjerning ca. 90 %", ch50: "Sjanse for fjerning over 90 %", rowNew: "opptil 4 uker", infoH: "Sjanse for å lykkes & pris", info1: "Anmeldelser opptil 4 uker gamle: ca. 90 % sjanse — {base} per anmeldelse.", info2: "Eldre anmeldelser (utenfor USA): først juridisk varsel, over 90 % sjanse — {old} per anmeldelse.", info3: "Mengderabatt: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %.", discLbl: "Mengderabatt", fromPre: "fra ", fromSuf: "", f13: "1–3 stjerner", fAll: "Alle", stepLbl: "Anmeldelser", stepH: "Hvilke anmeldelser skal bort?", stepSub: "Velg anmeldelsene som skal fjernes. Du betaler bare for dem som faktisk slettes.", empty: "Ingen anmeldelser i dette filteret.", h: "Finn anmeldelsene dine automatisk", sub: "Søk etter bedriften din – vi henter de nyeste Google-anmeldelsene. Kryss av for dem som skal bort.", ph: "Bedriftens navn", btn: "Søk", loading: "Henter anmeldelser …", none: "Fant ingen passende anmeldelser. Lim inn lenkene manuelt nedenfor.", err: "Anmeldelsene kunne ikke hentes – lim inn lenkene nedenfor.", old: "eldre enn 4 uker", noText: "uten tekst", ntLbl: "Programvare · 99 % · {price} (bare ved suksess)", info4: "Eldre anmeldelser fra USA og anmeldelser uten tekst: bare med spesialprogramvare — {nt} per anmeldelse. Vi sjekker først om fjerning er mulig. Du belastes først når anmeldelsen er fjernet. Lykkes det ikke, betaler du ingenting.", rowNt: "programvare · bare ved suksess", ntNote: "Også programvaresaker betaler du først etter fjerning. Vi sjekker først om fjerning er mulig for anmeldelsen din. Så snart en betalingsmåte er lagret i dashbordet ditt, setter vi i gang. Du belastes først når anmeldelsen er fjernet – lykkes det ikke, betaler du ingenting.", or: "Eller lim inn lenker manuelt", change: "Annen profil", pickProfile: "Hvilken profil er din?", selected: "valgt", swInfo: "Hvorfor programvare?", swK: "Hvorfor programvare?", swH: "Google fjerner ikke denne anmeldelsen manuelt", swP1: "Eldre anmeldelser fra USA og vurderinger med bare stjerner uten tekst fjerner Google som regel ikke manuelt. For eldre anmeldelser fra andre land sender vi først juridiske varsler, som fjerner over 90 %. Det som blir igjen, kan bare fjernes med spesialprogramvare.", swP2: "Du betaler ingenting nå. Vi sjekker først om fjerning med programvare er mulig for anmeldelsen din. Først når anmeldelsen er fjernet, belastes betalingsmåten du har lagret i dashbordet.", swF1: "99 % suksessrate", swF2: "Belastning først etter fjerning", swF3: "Ikke fjernet? Du betaler ingenting", swOk: "Forstått" },
 };
 const pickCopy = (code) => PICK_COPY[code] || PICK_COPY.en;
+/* „Bewertung nicht in der Liste? Link einfügen" – bei großen Profilen (> 100 Bewertungen) prominent über der Liste.
+   Der Link wird aufgelöst und die Bewertung gezielt im Profil gesucht; klappt das nicht, wird er als manueller Link übernommen. */
+const BIG_PROFILE = 100;
+const LK_COPY = {
+  de: { bigH: "{n} Bewertungen – ist Ihre nicht dabei?", bigP: "Bei großen Profilen können wir nur die neuesten und die schlechtesten Bewertungen laden. Fügen Sie einfach den Link zur Bewertung ein – wir suchen sie für Sie.", h: "Link zur Bewertung einfügen", ph: "Link zur Bewertung einfügen", btn: "Hinzufügen", how: "So geht’s: Bewertung in Google Maps öffnen → Teilen → Link kopieren.", wait: "Wir durchsuchen das Profil – das kann bis zu einer Minute dauern …", ok: "Gefunden und ausgewählt", other: "Dieser Link gehört zu einem anderen Google-Profil.", bad: "Das ist kein Link zu einer Bewertung – bitte bei der Bewertung auf Teilen → Link kopieren.", manual: "Wir konnten die Bewertung nicht automatisch finden – der Link ist trotzdem übernommen, wir prüfen ihn nach der Bestellung.", rate: "Zu viele Suchen – bitte in ein paar Minuten noch einmal." },
+  en: { bigH: "{n} reviews – yours isn’t listed?", bigP: "On large profiles we can only load the newest and the lowest-rated reviews. Just paste the link to the review – we’ll find it for you.", h: "Paste the link to the review", ph: "Paste review link", btn: "Add", how: "How: open the review in Google Maps → Share → Copy link.", wait: "Searching the profile – this can take up to a minute …", ok: "Found and selected", other: "This link belongs to a different Google profile.", bad: "That isn’t a link to a review – use Share → Copy link on the review.", manual: "We couldn’t find the review automatically – the link has been added anyway and we’ll check it after you order.", rate: "Too many searches – please try again in a few minutes." },
+};
+const lkCopy = (code) => LK_COPY[code] || LK_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
 const reviewIsOld = (r) => !!r && r.days > REVIEW_OLD_DAYS;
 /** „vor 14 Tagen" / „2 weeks ago" — eindeutiger als ein Datum im US-Format. */
@@ -1887,6 +1895,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [pickFilter, setPickFilter] = React.useState("low"); // low = 1–3 Sterne | all
   const [pickQ2, setPickQ2] = React.useState(""); // Suche nach Bewertername in der Auswahl
   const [showManual, setShowManual] = React.useState(false); // „Bewertung nicht in der Liste?"
+  const [lkVal, setLkVal] = React.useState(""); // Link-Suche (große Profile prominent)
+  const [lkBusy, setLkBusy] = React.useState(false);
+  const [lkMsg, setLkMsg] = React.useState(null); // { t, ok }
+  const [lkOpen, setLkOpen] = React.useState(false); // kleine Profile: Link-Feld erst auf Klick
   React.useEffect(() => {
     if (!reviewMode || pickOn || !placesEnabled()) return;
     let alive = true;
@@ -1907,7 +1919,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const pickLoad = async (c) => {
     setPickPlace(c); setPickPhase("loading");
     try {
-      const rs = await fetchProfileReviews(c.placeId, lang);
+      const rs = await fetchProfileReviews(c.placeId, lang, Number(c.reviews || 0) > BIG_PROFILE);
       // in Frage kommende zuerst, darin die schlechtesten zuerst
       rs.sort((a, b) => (a.rating - b.rating) || (a.days - b.days)); // schlechteste zuerst, darin neueste zuerst
       setPickReviews(rs); setPickPhase("list");
@@ -1919,6 +1931,29 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const swRef = React.useRef(null), piRef = React.useRef(null);
   useSwipeClose(swRef, swInfo, () => setSwInfo(false));
   useSwipeClose(piRef, priceInfo, () => setPriceInfo(false));
+  // Link auflösen → Bewertung oben in die Liste + auswählen; sonst als manueller Link übernehmen
+  const lkFind = async (pid) => {
+    const lk = lkCopy(t.code), v = lkVal.trim();
+    if (!/^https?:\/\/\S+$/i.test(v)) { setLkMsg({ t: lk.bad }); return; }
+    setLkBusy(true); setLkMsg(null);
+    try {
+      const r = await findReviewByLink(pid, v, lang);
+      setPickReviews((l) => [r, ...(l || []).filter((x) => x.id !== r.id)]);
+      setPickSel((sel) => (sel.some((x) => x.id === r.id) ? sel : [...sel, r]));
+      setPickFilter("all"); setPickQ2(""); setReviewErr("");
+      setLkVal(""); setLkMsg({ t: lk.ok, ok: true });
+    } catch (e) {
+      const c = e && e.code;
+      if (c === "other_profile") setLkMsg({ t: lk.other });
+      else if (c === "not_review") setLkMsg({ t: lk.bad });
+      else if (c === "rate") setLkMsg({ t: lk.rate });
+      else { // nicht gefunden / Fehler → als manuellen Link übernehmen, damit der Kunde nie hängen bleibt
+        setReviewItems((items) => [...items.filter((it) => (it.url || "").trim() || (it.name || "").trim()), { url: v, name: "", text: "", alt: false }]);
+        setShowManual(true); setLkVal(""); setLkMsg({ t: lk.manual, ok: true }); setReviewErr("");
+      }
+    }
+    setLkBusy(false);
+  };
   const pickToggle = (r) => {
     setReviewErr("");
     setPickSel((sel) => sel.some((x) => x.id === r.id) ? sel.filter((x) => x.id !== r.id) : [...sel, r]);
@@ -2042,7 +2077,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!pid) { setPickPhase("manual"); return; } // Profil nicht gefunden → nur Links eingeben
     if (revLoadedFor.current === pid) return;
     revLoadedFor.current = pid;
-    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false);
+    setPickSel([]); setPickFilter("low"); setPickQ2(""); setShowManual(false); setLkVal(""); setLkMsg(null); setLkOpen(false);
     pickLoad(selected);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step, service, selected && selected.placeId]);
@@ -3801,7 +3836,21 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       );
     };
     const hasManual = showManual || reviewItems.some((it) => (it.url || "").trim() || (it.name || "").trim());
+    const lk = lkCopy(t.code);
+    const revN = Number((selected && selected.reviews) || 0);
+    const big = revN > BIG_PROFILE;
+    const lkBox = (
+      <div className={"bpr-lk" + (big ? " big" : "")}>
+        {big ? <><b>{lk.bigH.replace("{n}", revN.toLocaleString(lang === "de" ? "de-DE" : "en-US"))}</b><span>{lk.bigP}</span></> : <b>{lk.h}</b>}
+        <form className="bpr-lkf" onSubmit={(e) => { e.preventDefault(); lkFind(selected.placeId); }}>
+          <LLink /><input value={lkVal} onChange={(e) => { setLkVal(e.target.value); setLkMsg(null); }} placeholder={lk.ph} inputMode="url" autoComplete="off" aria-label={lk.ph} />
+          <button type="submit" disabled={lkBusy || !lkVal.trim()}>{lkBusy ? <span className="bpr-lks" /> : lk.btn}</button>
+        </form>
+        <div className={"bpr-lkm" + (lkMsg ? (lkMsg.ok ? " ok" : " bad") : "")}>{lkMsg ? lkMsg.t : lkBusy ? lk.wait : lk.how}</div>
+      </div>
+    );
     const list = manualOnly ? null : (<React.Fragment>
+      {big && selected && selected.placeId ? lkBox : null}
       {all.length ? (<React.Fragment>
         <div className="bpr-tools">
           <label className="bpr-rsrch"><LSearch /><input type="search" value={pickQ2} onChange={(e) => setPickQ2(e.target.value)} placeholder={pk.qPh} aria-label={pk.qPh} enterKeyHint="search" />{pickQ2 ? <button type="button" onClick={() => setPickQ2("")} aria-label="×"><LX /></button> : null}</label>
@@ -3810,9 +3859,10 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <div className="bpr-meta"><span>{bp.nRev(shown.length)}</span>{shown.length ? <button type="button" onClick={toggleAll}>{allSel ? bp.selNone : bp.selAll}</button> : null}</div>
         {shown.length ? <div className="bpr-list">{shown.map(row)}</div> : <div className="bpr-empty">{q ? pk.noMatch.replace("{q}", pickQ2.trim()) : pk.empty}</div>}
       </React.Fragment>) : <div className="bpr-empty" style={{ marginTop: 24 }}>{pickPhase === "error" ? pk.err : pk.none}</div>}
-      {all.length && !hasManual
-        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setShowManual(true)}><LPencil />{pk.notListed}</button>
-        : manualLinksNew()}
+      {!big && all.length && !hasManual && !lkOpen
+        ? <button type="button" className="bpr-link" style={{ marginTop: 16 }} onClick={() => setLkOpen(true)}><LPencil />{pk.notListed}</button>
+        : !big && lkOpen && !hasManual && selected && selected.placeId ? <div style={{ marginTop: 16 }}>{lkBox}</div>
+        : hasManual || !all.length ? manualLinksNew() : null}
     </React.Fragment>);
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="rv">

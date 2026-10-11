@@ -51,7 +51,7 @@ import { initCustPush, registerCustPushRoutes } from "./custPush";
 import { resetLinkMail } from "./emails/ResetLinkMail";
 import DashInvite, { dashInviteSubject } from "./emails/DashInvite";
 import { startUpsellWorker, scheduleProtectionUpsell } from "./upsell";
-import { serpKey, fetchPlaceReviews, findPlaceReview, serpUsage } from "./reviewsFetch";
+import { serpKey, fetchPlaceReviews, fetchLowestReviews, findPlaceReview, serpUsage } from "./reviewsFetch";
 import { initPartnerStats, registerPartnerStats } from "./partnerStats";
 import { registerMonitor, startMonitorScheduler, monitorKeys, resolveReviewLink } from "./monitor";
 import { registerCustTrack } from "./custTrack";
@@ -1020,12 +1020,36 @@ app.get("/reviews", async (req, reply) => {
   if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, enabled: true, error: "bad placeId" });
   if (!throttle(reviewHits, req.ip, 6)) return reply.code(429).send({ ok: false, enabled: true, error: "rate limited" });
   try {
-    const reviews = await fetchPlaceReviews(placeId, mailLang(q.lang));
+    // Große Profile (> 100 Bewertungen): zusätzlich „schlechteste zuerst" (+1 Abruf), damit alte 1–2-Sterne-Bewertungen dabei sind
+    const [newest, lowest] = await Promise.all([fetchPlaceReviews(placeId, mailLang(q.lang)), q.big === "1" ? fetchLowestReviews(placeId, mailLang(q.lang)).catch(() => []) : Promise.resolve([])]);
+    const seen = new Set<string>();
+    const reviews = [...newest, ...lowest].filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)));
     return { ok: true, enabled: true, reviews };
   } catch (e) {
     app.log.error({ err: e, placeId }, "SerpApi-Bewertungen fehlgeschlagen");
     return reply.code(502).send({ ok: false, enabled: true, error: "fetch failed" });
   }
+});
+
+// Bewertungs-Wizard: „Bewertung nicht in der Liste?" → Teilen-Link auflösen und die Bewertung gezielt im Profil suchen
+// (auch ältere; schlechteste zuerst, bis ~14 SerpApi-Abrufe, 6 h Cache). Gedrosselt je IP.
+const findHits = new Map<string, number[]>();
+app.post("/reviews/find", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!serpKey()) return reply.code(503).send({ ok: false, error: "disabled" });
+  const placeId = clip(b.placeId, 200);
+  if (!/^[A-Za-z0-9_-]{10,200}$/.test(placeId)) return reply.code(400).send({ ok: false, error: "place" });
+  const link = httpUrl(b.link, 600);
+  if (!link) return reply.code(400).send({ ok: false, error: "not_review" });
+  if (!throttle(findHits, req.ip, 8)) return reply.code(429).send({ ok: false, error: "rate" });
+  try {
+    const { place, reviewId } = await resolveReviewLink(link);
+    if (!reviewId) return reply.code(404).send({ ok: false, error: "not_review" });
+    if (place && place.placeId && place.placeId !== placeId) return reply.code(409).send({ ok: false, error: "other_profile", profile: place.name || "" });
+    const r = await findPlaceReview(placeId, reviewId, mailLang(b.lang));
+    if (!r) return reply.code(404).send({ ok: false, error: "not_found" });
+    return { ok: true, review: r };
+  } catch (e) { app.log.error({ err: e }, "Bewertungs-Link auflösen fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)
