@@ -68,14 +68,22 @@ async function sapi<T = any>(method: "GET" | "POST", pathName: string, params?: 
    (optional, nicht jede Firma hat eine), nach der Zahlung schickt Stripe eine nummerierte Rechnung (PDF).
    name_collection bei Payment Links gibt es erst ab API-Version 2025-10-29.clover. */
 const PL_VERSION = "2025-10-29.clover";
+/* Unsere UID gehört auf jede Rechnung (§ 11 UStG) – Link-Rechnungen bekommen sie über die Fußzeile (12.10.2026). */
+const OUR_UID = (process.env.COMPANY_UID || "ATU72401536").trim();
+const UID_FOOTER = `UID Leistender / Supplier VAT ID: ${OUR_UID}`;
+const hasUid = (pl: any) => String(pl?.invoice_creation?.invoice_data?.footer || "").includes(OUR_UID);
+const invoiceWithUid = (pl?: any) => {
+  const f = String(pl?.invoice_creation?.invoice_data?.footer || "").trim();
+  return { enabled: true, invoice_data: { footer: f && !f.includes(OUR_UID) ? `${f} · ${UID_FOOTER}` : f || UID_FOOTER } };
+};
 const LINK_EXTRAS = {
   name_collection: { business: { enabled: true, optional: false } },
   billing_address_collection: "required",
   tax_id_collection: { enabled: true },
-  invoice_creation: { enabled: true },
+  invoice_creation: invoiceWithUid(),
 };
 const createLink = (params: Record<string, any>) => sapi<{ url: string }>("POST", "payment_links", { ...params, ...LINK_EXTRAS }, PL_VERSION);
-const linkOk = (pl: any) => !!(pl?.invoice_creation?.enabled && pl?.name_collection?.business?.enabled && pl.name_collection.business.optional === false
+const linkOk = (pl: any) => !!(pl?.invoice_creation?.enabled && hasUid(pl) && pl?.name_collection?.business?.enabled && pl.name_collection.business.optional === false
   && pl?.billing_address_collection === "required" && pl?.tax_id_collection?.enabled);
 
 /** Bestehende Bewertungs-Zahlungslinks (schon verschickte Links bleiben gültig) auf Rechnung + Firmendaten umstellen. Idempotent. */
@@ -93,7 +101,7 @@ export async function upgradeReviewLinks(log: (s: string) => void = () => {}): P
   for (const pl of links) {
     if (!pl.metadata || !pl.metadata[MARK]) continue;
     if (linkOk(pl)) { res.ok++; continue; }
-    try { await sapi("POST", `payment_links/${pl.id}`, LINK_EXTRAS, PL_VERSION); res.updated++; }
+    try { await sapi("POST", `payment_links/${pl.id}`, { ...LINK_EXTRAS, invoice_creation: invoiceWithUid(pl) }, PL_VERSION); res.updated++; }
     catch (e) { res.failed++; const m = (e as Error).message; log(`Zahlungslink ${pl.id}: ${m}`); linkUpgrade = { ...res, error: m.slice(0, 200) }; }
   }
   linkUpgrade = { ...res, ...(linkUpgrade?.error ? { error: linkUpgrade.error } : {}) };
@@ -115,8 +123,8 @@ export async function enableInvoicesAllLinks(log: (s: string) => void = () => {}
     last = page.data[page.data.length - 1].id;
   }
   for (const pl of links) {
-    if (pl?.invoice_creation?.enabled) { res.ok++; continue; }
-    try { await sapi("POST", `payment_links/${pl.id}`, { invoice_creation: { enabled: true } }, PL_VERSION); res.enabled++; }
+    if (pl?.invoice_creation?.enabled && hasUid(pl)) { res.ok++; continue; }
+    try { await sapi("POST", `payment_links/${pl.id}`, { invoice_creation: invoiceWithUid(pl) }, PL_VERSION); res.enabled++; }
     catch (e) {
       const m = (e as Error).message;
       if (/subscription|recurring/i.test(m)) { res.abo++; continue; }
