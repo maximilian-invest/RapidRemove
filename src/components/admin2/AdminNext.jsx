@@ -31,6 +31,7 @@ import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 import { useHistState, useHardLeave } from "./navHistory";
+import { openGoogleLink, needsSafari } from "@/lib/open-google";
 
 const R = { replace: true }; // Navigations-Korrektur ohne neuen Verlaufseintrag
 
@@ -376,7 +377,7 @@ export default function AdminNext() {
             <div className="vt"><button type="button" className="circ" aria-label="Schließen" onClick={() => setViewer(null)}><X /></button><div><b>{viewer.title}</b><span>{viewer.sub}</span></div>
               {viewer.dl ? <a className="circ" href={viewer.dl} aria-label="Herunterladen"><Download /></a> : <span />}</div>
             <div className={"vi" + (viewer.html ? " mail" : "")}>{viewer.html ? <iframe title="E-Mail" srcDoc={viewer.html} sandbox="allow-popups allow-popups-to-escape-sandbox" /> : <img src={viewer.src} alt="" />}</div>
-            {viewer.open ? <div className="va"><a className="cta gh" href={viewer.open} target="_blank" rel="noopener noreferrer"><ExternalLink />Bewertung öffnen</a></div> : null}
+            {viewer.open ? <div className="va"><a className="cta gh" href={viewer.open} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (needsSafari(viewer.open)) { e.preventDefault(); openGoogleLink(viewer.open, () => toast("Link kopiert – in Safari einfügen")); } }}><ExternalLink />Bewertung öffnen</a></div> : null}
           </>
         ) : null}
       </div>
@@ -552,7 +553,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         {it && it.text ? <p className="shq">„{it.text}“</p> : null}
         <div className="opts" style={{ marginTop: 12 }}>
           <Opt onClick={() => (sh ? openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title, sub: "Screenshot", open: it && it.url }) : toast("Noch kein Screenshot vorhanden"))} right={<ChevronRight className="chev" />}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
-          {it && it.url ? <a className="aopt" href={it.url} target="_blank" rel="noopener noreferrer"><span className="ico"><ExternalLink /></span>Bewertung öffnen<ChevronRight className="chev" /></a> : null}
+          {it && it.url ? <a className="aopt" href={it.url} target="_blank" rel="noopener noreferrer" onClick={(e) => { if (needsSafari(it.url)) { e.preventDefault(); openGoogleLink(it.url, () => toast("Link kopiert – in Safari einfügen")); } }}><span className="ico"><ExternalLink /></span>Bewertung öffnen<ChevronRight className="chev" /></a> : null}
           {!it && (o.mapsUri) ? <a className="aopt" href={o.mapsUri} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span>In Google Maps öffnen<ChevronRight className="chev" /></a> : null}
           {sh ? <a className="aopt" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span>Herunterladen<ChevronRight className="chev" /></a> : null}
         </div>

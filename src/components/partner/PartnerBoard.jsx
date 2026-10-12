@@ -9,6 +9,7 @@ import useLive from "@/lib/useLive";
 import useAutoUpdate from "@/lib/useAutoUpdate";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
+import { openGoogleLink } from "@/lib/open-google";
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
@@ -246,9 +247,10 @@ export default function PartnerBoard() {
 
   const openReview = React.useCallback((t) => {
     if (!t) return;
-    if (t.url) window.open(t.url, "_blank", "noopener,noreferrer");
+    // iPhone: Bewertungslinks in Safari statt in der Maps-App (die zeigt „Nicht unterstützter Link")
+    if (t.url) openGoogleLink(t.url, () => showToast("Link copied – paste it into Safari to open the review"));
     touch([t.id]); // nur ansehen – Status ändert sich ausschließlich per Status-Button
-  }, [touch]);
+  }, [touch, showToast]);
 
   /** Desktop: autosave while typing. */
   const setNoteLive = React.useCallback((t, val) => {
