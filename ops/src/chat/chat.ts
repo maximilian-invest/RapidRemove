@@ -612,9 +612,11 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
       // Land des Profils (aus dem Link) → alte US-Bewertungen mit Text = Software (300, nach Prüfung durch den Partner, abgebucht erst bei Erfolg).
       const pc = clip(b.placeCountry, 2).toUpperCase();
       if (/^[A-Z]{2}$/.test(pc)) payload.profileCountry = pc;
-      const q = quoteReviewsLite(items.map((x) => ({ ...x, sw: x.old && !!x.text && pc === "US" })), pct);
+      // Ohne Text (Bewertung aufgelöst: Sterne bekannt, Text leer) = immer Software (300) – schon bei der Bestellung, nicht erst später.
+      const ntOf = (x: { text: string; rating: number }) => !x.text && x.rating >= 1 && x.rating <= 5;
+      const q = quoteReviewsLite(items.map((x) => ({ ...x, sw: ntOf(x) || (x.old && !!x.text && pc === "US") })), pct);
       Object.assign(payload, {
-        reviewItems: items.map((x) => ({ url: x.url, ...(x.name ? { name: x.name } : {}), ...(x.text ? { text: x.text } : {}), ...(x.old ? { old: true } : {}), ...(x.rating >= 1 && x.rating <= 5 ? { rating: x.rating } : {}), ...(Number.isFinite(x.days) && x.days >= 0 ? { days: x.days } : {}) })), reviewUrls: items.map((x) => x.url), reviewCount: items.length,
+        reviewItems: items.map((x) => ({ url: x.url, ...(x.name ? { name: x.name } : {}), ...(x.text ? { text: x.text } : {}), ...(ntOf(x) ? { nt: true } : x.old ? { old: true } : {}), ...(x.rating >= 1 && x.rating <= 5 ? { rating: x.rating } : {}), ...(Number.isFinite(x.days) && x.days >= 0 ? { days: x.days } : {}) })), reviewUrls: items.map((x) => x.url), reviewCount: items.length,
         profile: company || "Google-Bewertungen", amount: q.total, saleTotal: q.total,
         note: `Bestellt im Website-Chat (Lena)${pct ? ` · Chat-Rabatt −${pct} %` : ""}${payPref !== "none" ? ` · will per ${payPref === "wise" ? "Wise" : "PayPal"} zahlen (−10 %)` : ""}\n${items.map((x) => x.url + (x.old ? "  [älter als 4 Wochen]" : "")).join("\n")}`,
       });

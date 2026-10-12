@@ -65,7 +65,7 @@ function stLabel(t) {
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
   if (t.status === "removed" && t.processing) return "Removed · payout on the way";
-  if (t.status === "software") return "Software · waiting for payment";
+  if (t.status === "software") return "Software · waiting for customer";
   if (t.method === "sw" && t.status === "new") return "Software case · check & confirm";
   return (STATUS[t.status] || STATUS.new).l;
 }
@@ -403,13 +403,13 @@ export default function PartnerApp({ api }) {
         ) : t.status === "software" && t.sw === "declined" ? (
           <div className="swb"><XCircle /><span><b>Customer declined deletion</b>The customer decided to keep this review online. Nothing to do.</span></div>
         ) : t.status === "software" ? (
-          <div className="swb"><Hourglass /><span><b>Waiting for the customer’s payment method</b>No customer approval needed any more – the customer only has to save a payment method (charged only on success). This switches to Working automatically; you get a push, then start right away.</span></div>
+          <div className="swb"><Hourglass /><span><b>Waiting for the customer</b>The customer confirms in their dashboard (approval and/or payment method – charged only on success). This switches to Working automatically; you get a push, then start right away.</span></div>
         ) : t.sw === "paid" ? (
           <div className="swb ok"><CheckCircle2 /><span><b>Approved</b>Start the software removal now.</span></div>
         ) : (t.status === "new" || t.status === "working") && t.method === "sw" ? (
           <div className="swb"><Info /><span><b>Software case – check first</b>Old review from the USA or rating without text – Google usually won’t remove it manually. If software works, mark “Software” – it starts right away, no customer approval needed.</span></div>
         ) : (t.status === "new" || t.status === "working") && t.method === "legal" ? (
-          <div className="swb"><Info /><span><b>Legal notice first</b>Old review outside the USA – use legal reporting first (90 %+ success). If it stays online and software works, mark “Software” – it starts right away, no customer approval needed.</span></div>
+          <div className="swb"><Info /><span><b>Legal notice first</b>Old review outside the USA – use legal reporting first (90 %+ success). If it stays online and software works, mark “Software” – the customer approves first, you get a push when you can start.</span></div>
         ) : null}
         <CustReason t={t} list={api.reasonList} />
         {t.shot ? <ReviewShot id={t.shot} token={api.token} url={t.url} /> : null}

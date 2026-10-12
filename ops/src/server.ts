@@ -37,7 +37,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { createAutologin, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { createAutologin, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -2322,6 +2322,16 @@ async function fixPayPrefAmounts(): Promise<void> {
   app.log.info({ n }, "PayPal/Wise −10 %: Auftragsbeträge nachgezogen");
 }
 
+/** Einmalig (12.10.2026, Maximilian): RR-333985 – Software ohne Zustimmung gestartet → zurück auf „wartet auf Zustimmung", Preis 300. */
+async function fixSwRR333985(): Promise<void> {
+  if (!pool) return;
+  const done = await pool.query(`SELECT 1 FROM partner_settings WHERE key='fix_sw_rr333985'`).catch(() => ({ rowCount: 1 }));
+  if (done.rowCount) return;
+  const n = await revertUnapprovedSoftware("RR-333985");
+  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('fix_sw_rr333985', $1) ON CONFLICT (key) DO NOTHING`, [String(n)]);
+  app.log.info({ n }, "RR-333985: Software-Freigabe zurückgenommen");
+}
+
 // Admin-Dashboard: Bestell-Status dauerhaft setzen (+ Aktivitäts-Eintrag).
 // Bleibt bestehen, bis er erneut geändert wird (z. B. Storno → „storniert“,
 // Reaktivierung → „progress“, Pipeline-Klicks).
@@ -2391,7 +2401,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await fixPayPrefAmounts().catch((e) => app.log.error({ err: e }, "PayPal/Wise-Preise nachziehen fehlgeschlagen")); await initPasskeys(); await initCustPush();
+  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await fixPayPrefAmounts().catch((e) => app.log.error({ err: e }, "PayPal/Wise-Preise nachziehen fehlgeschlagen")); await fixSwRR333985().catch((e) => app.log.error({ err: e }, "Software-Freigabe RR-333985 zurücknehmen fehlgeschlagen")); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"))

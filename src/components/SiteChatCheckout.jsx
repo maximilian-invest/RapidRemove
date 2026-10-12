@@ -69,7 +69,8 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
   const set = (k) => (e) => { const v = e && e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e; setF((x) => ({ ...x, [k]: v })); setBad((b) => ({ ...b, [k]: false })); setErr(""); };
   const isRev = co.service === "reviews";
   // Alte Bewertungen mit Text aus einem US-Profil → Software (Partner-Regel); Land kommt aus dem Profil-Link.
-  const swOf = (r) => co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim();
+  // Ohne Text (aufgelöste Bewertung mit Sternen, aber leerem Text) = immer Software (300).
+  const swOf = (r) => (r.fixed && Number(r.rating) >= 1 && !String(r.text || "").trim()) || (co.placeCountry === "US" && r.age === "old" && !!String(r.text || "").trim());
   // Bewertungen: Währung nach Land des Profils (aus dem Link), sonst nach dem angegebenen Land.
   // PayPal/Wise −10 % nur außerhalb von DACH (DE/AT/CH) – dort gibt es die Auswahl gar nicht.
   const [disc, setDisc] = React.useState({ reviews: true, profiles: true }); // Admin → Einstellungen: PayPal/Wise −10 % je Kategorie

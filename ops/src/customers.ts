@@ -297,6 +297,28 @@ export async function approveSoftwareDeferred(groups: Map<string, string[]>, why
   }
   return n;
 }
+/** Einmal-Korrektur (12.10.2026): Software wurde ohne Zustimmung gestartet, obwohl die Bewertung als normale Bewertung (179/229)
+ *  bestellt war. → zurück auf „Software · wartet auf den Kunden", Festpreis (cp) entfernen (Software = 300), Entscheidung löschen,
+ *  Kunde bekommt die Zustimmungs-Mail, Partner wird gebeten zu pausieren. Nur nicht gelöschte, nicht bezahlte Aufgaben. */
+export async function revertUnapprovedSoftware(orderId: string): Promise<number> {
+  if (!pool) return 0;
+  const raw = await rawOf(orderId);
+  if (!raw) return 0;
+  const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
+  const t = await pool.query(`SELECT item_key, code FROM partner_tasks WHERE order_id=$1 AND status='working' AND removed_at IS NULL AND paid_at IS NULL AND COALESCE(admin_note,'') LIKE $2`, [orderId, "%" + SW_NOTE_APPROVED + "%"]).catch(() => ({ rows: [] as { item_key: string; code: string }[] }));
+  const rows = (t.rows as { item_key: string; code: string }[]).filter((x) => { const it = items.find((i) => keyOf(i) === x.item_key); return it && !it.nt && !it.sw; });
+  if (!rows.length) return 0;
+  const keys = rows.map((x) => x.item_key);
+  await setOrderRawField(orderId, "reviewItems", items.map((x) => { if (!keys.includes(keyOf(x))) return x; const { cp: _cp, ...rest } = x as Item & { cp?: unknown }; return rest as Item; }));
+  const dec = { ...((raw.reviewsSwDecision as Record<string, Decision>) || {}) };
+  for (const k of keys) delete dec[k];
+  await setOrderRawField(orderId, "reviewsSwDecision", dec);
+  await pool.query(`UPDATE partner_tasks SET status='software', working_since=NULL, updated_at=now() WHERE order_id=$1 AND item_key = ANY($2::text[])`, [orderId, keys]).catch(() => {});
+  await insertEvent({ orderId, type: "note", title: "Software-Freigabe zurückgenommen – Kunde muss zustimmen", detail: `${keys.length} Bewertung(en) · war als normale Bewertung bestellt → Software 300 nur mit Zustimmung`, auto: true }).catch(() => {});
+  for (const k of keys) await partnerStatusChanged(orderId, k, "software", { prev: "working" });
+  void notifyPartner("Please pause", `${rows.map((x) => x.code).filter(Boolean).join(", ")} · Waiting for the customer's approval for software – don't start yet. You get a push when approved.`, undefined, false);
+  return keys.length;
+}
 /** Software-Fälle ohne Zahlungsart nach Ablauf der Frist zurückziehen (pgRemind): wie „abgelehnt" – Partner sieht „Customer declined". */
 export async function declineSoftwareKeys(orderId: string, keys: string[], why: string): Promise<void> {
   if (!pool || !keys.length) return;
@@ -881,20 +903,18 @@ export async function partnerStatusChanged(
     const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
     const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
-    // Seit 08.10.2026: Partner bestätigt „Software möglich" → es geht SOFORT los, keine Zustimmung des Kunden mehr nötig
-    // (Abbuchung erst bei Erfolg). Einzige Voraussetzung: hinterlegte Zahlungsart. Fehlt sie → vormerken (startet automatisch,
-    // sobald sie hinterlegt ist), 5-Std.-Platz + Aufforderung „Zahlungsart hinterlegen" gehen gleich (1 Min.) raus.
-    // Festpreis (AGB 6.1): wurde die Bewertung NICHT als Software-Fall bestellt (z. B. 179/229), bleibt es beim bestellten Preis –
-    // auch wenn wir per Software löschen. Der bestellte Preis wird als individueller Preis (cp) am Auftrag festgeschrieben.
-    if (it && !it.nt && !it.sw && !cpOf(it as { cp?: unknown })) {
-      const all: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
-      const pct = Math.max(reviewDiscountPct(all.length), chatPctOf(raw));
-      const quoted = Math.round((Math.round(((it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE) * (100 - pct)) / 100) * (100 - payPctOf(raw))) / 100);
-      await setOrderRawField(orderId, "reviewItems", all.map((x) => (keyOf(x) === itemKey ? { ...x, cp: quoted } : x)));
-      await insertEvent({ orderId, type: "note", title: `Software-Löschung zum bestellten Preis (${quoted})`, detail: "Bewertung war nicht als Software-Fall bestellt → Festpreis laut Bestellung bleibt", auto: true }).catch(() => {});
+    // Software-Fall laut Bestellung (ohne Text / ältere US-Bewertung, 300 schon bei der Bestellung angezeigt und angenommen):
+    // keine weitere Zustimmung → startet sofort, sobald eine Zahlungsart hinterlegt ist (Abbuchung erst bei Erfolg).
+    // Als normale Bewertung bestellt (179/229) und der Partner sagt „nur per Software" (12.10.2026, Maximilian): Preis 300 und
+    // der Kunde MUSS im Dashboard zustimmen – wir verlangen nicht einfach mehr. Bis dahin wartet die Bewertung unter „Software".
+    const pre = !!(it && (it.nt || it.sw));
+    if (!pre) {
+      await insertEvent({ orderId, type: "note", title: "Partner: nur per Software möglich – wartet auf Zustimmung des Kunden", detail: "Als normale Bewertung bestellt → Software-Löschung 300 nur mit Zustimmung im Dashboard (abgebucht erst bei Erfolg)", auto: true }).catch(() => {});
+      fast = true; // Kunde bekommt die Entscheidung gleich (1 Min.) per Mail
     }
-    const savedPm = autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
-    if (savedPm) {
+    const savedPm = pre && autopayHooks.saved ? await autopayHooks.saved(String(r.rows[0].email || "")).catch(() => false) : false;
+    if (!pre) { /* Entscheidung des Kunden abwarten (Dashboard: zustimmen → startet, ablehnen → bleibt online) */ }
+    else if (savedPm) {
       await approveSoftwareDeferred(new Map([[orderId, [itemKey]]]), "Partner bestätigt + Zahlungsart hinterlegt");
     } else {
       const now = new Date().toISOString();
