@@ -442,11 +442,24 @@ export function RStars({ n }) {
   return <span className={"rstars s" + n} aria-label={n + " Sterne"}>{"★".repeat(n)}<s>{"★".repeat(5 - n)}</s></span>;
 }
 
-export function ReviewsScreen({ ctx, id }) {
+export function ReviewsScreen({ ctx, id, focus }) {
   const { orders, back, ptasks, shots, loadShots, openSheet, isDesk } = ctx;
   const o = orders.find((x) => x.id === id);
   const [rf, setRf] = React.useState("all");
   React.useEffect(() => { if (o) loadShots(o.id); }, [o && o.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Aus dem Partner-Push (?review=RV-…): Bewertung markieren; genau eine → gleich öffnen, mehrere → zur ersten scrollen.
+  const fCodes = React.useMemo(() => String(focus || "").split(",").map((x) => x.trim().toUpperCase()).filter(Boolean), [focus]);
+  const fDone = React.useRef(false);
+  const fTasks = o ? ptasks[o.id] : null;
+  React.useEffect(() => {
+    if (fDone.current || !o || !fCodes.length || !fTasks) return;
+    const its = o.reviewItems || [];
+    const hit = its.map((it, i) => ({ i, t: fTasks.find((t) => t.itemKey === keyOf(it)) })).filter((x) => x.t && fCodes.includes(String(x.t.code).toUpperCase()));
+    if (!hit.length) return;
+    fDone.current = true;
+    if (hit.length === 1) openSheet({ kind: "rv", forId: o.id, idx: hit[0].i });
+    else requestAnimationFrame(() => { const el = document.querySelector(".an .rvr.hl"); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); });
+  }, [o, fTasks, fCodes]); // eslint-disable-line react-hooks/exhaustive-deps
   if (!o) return <Nav back={back} isDesk={isDesk} />;
   const items = o.reviewItems || [];
   const acc = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
@@ -478,7 +491,7 @@ export function ReviewsScreen({ ctx, id }) {
         {rows.filter(F2[rf]).map((r) => {
           const ps = r.t ? PS[r.t.status] || PS.new : ["Nicht beim Partner", "var(--g3)"];
           return (
-            <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
+            <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "") + (r.t && fCodes.includes(String(r.t.code).toUpperCase()) ? " hl" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>
               <span className="t"><b>{r.t ? r.t.code + " · " : "#" + (r.i + 1) + " · "}{r.it.name || (r.it.url ? "Bewertung" : "—")} <RStars n={rvStars(r.it, r.t)} /></b><span style={{ color: ps[1] }}>{ps[0]}{Number(r.it.cp) > 0 ? ` · ${money(Number(r.it.cp), cur(o))}` : ""}</span>{r.it.reason ? <span style={{ color: "var(--g3)", fontSize: 12 }}>Grund: {REASON_L[r.it.reason] || r.it.reason}{r.it.reasonNote ? ` – „${r.it.reasonNote}“` : ""}</span> : null}{r.t && r.t.reportReason ? <span style={{ color: r.it.reason && r.t.reportReason !== r.it.reason ? "var(--orange-800)" : "var(--g3)", fontSize: 12 }}>Gemeldet: {REASON_L[r.t.reportReason] || r.t.reportReason}{r.t.reportNote ? ` – „${r.t.reportNote}“` : ""}{r.it.reason && r.t.reportReason !== r.it.reason ? " (anders als Kunde)" : ""}</span> : null}</span>
               {r.dec ? <span className="ac" style={{ color: r.dec === "ok" ? "var(--success)" : r.dec === "old" ? "var(--orange-800)" : "var(--g3)" }}>{r.dec === "ok" ? "Angenommen" : r.dec === "old" ? "Älter 4 Wo." : "Abgelehnt"}</span> : null}

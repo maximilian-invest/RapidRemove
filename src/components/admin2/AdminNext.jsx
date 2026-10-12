@@ -129,7 +129,9 @@ export default function AdminNext() {
     const iv = setInterval(() => reload(true), 90000);
     const tick = setInterval(() => setNow(Date.now()), 60000);
     // Deep-Link ?order=RR-… öffnet direkt den Auftrag
-    try { const id = new URLSearchParams(window.location.search).get("order"); if (id) { setTab("orders", R); setStack([{ v: "list" }, { v: "detail", id }], R); } } catch (e) {}
+    // ?order=RR-…&review=RV-0040[,RV-0041] (Partner-Push) → direkt in „Bewertungen", die Bewertung offen bzw. markiert
+    try { const q = new URLSearchParams(window.location.search); const id = q.get("order"); const rv = q.get("review");
+      if (id) { setTab("orders", R); setStack(rv ? [{ v: "list" }, { v: "detail", id }, { v: "reviews", id, focus: rv }] : [{ v: "list" }, { v: "detail", id }], R); } } catch (e) {}
     // Deep-Link ?partner=ID (Push „Neue Partner-Bewerbung") öffnet den Partner
     try { if (new URLSearchParams(window.location.search).get("partner")) { setTab("more", R); setMoreSub("partner", R); } } catch (e) {}
     return () => { clearInterval(iv); clearInterval(tick); mq.removeEventListener ? mq.removeEventListener("change", on) : mq.removeListener(on); };
@@ -307,7 +309,7 @@ export default function AdminNext() {
   };
 
   const top = stack[stack.length - 1];
-  const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} />
+  const pushBody = top.v === "detail" ? <OrderDetail ctx={ctx} id={top.id} /> : top.v === "reviews" ? <ReviewsScreen ctx={{ ...ctx, back }} id={top.id} focus={top.focus} />
     : top.v === "act" ? <ActivityScreen ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "mails" ? <MailsScreen ctx={{ ...ctx, back }} id={top.id} payOpen={(x) => isPayOpen(x, now, ptasks)} />
     : top.v === "info" ? <OrderInfoScreen ctx={{ ...ctx, back }} id={top.id} />

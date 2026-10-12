@@ -170,6 +170,7 @@
 .an .rvr{display:flex;align-items:center;gap:18px;width:100%;padding:12px 0;min-height:67px}
 .an .rvr+.rvr{border-top:1px solid var(--g1)}
 .an .rvr.off{opacity:.42}
+.an .rvr.hl{background:var(--orange-50,#fff4e8);box-shadow:inset 3px 0 0 var(--orange-800,#e8730c);border-radius:12px;padding-left:12px;padding-right:8px;margin:2px 0}
 .an .rvr .th{width:39px;height:39px;border-radius:50%;background:var(--g1);flex:none;display:grid;place-items:center}
 .an .rvr .th svg{width:17px;height:17px}
 .an .rvr .t{flex:1;min-width:0;display:block}

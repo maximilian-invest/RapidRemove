@@ -32,6 +32,13 @@ export const PARTNER_STATUSES = ["new", "working", "removed", "not_possible", "s
 export type TaskStatus = (typeof PARTNER_STATUSES)[number];
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
+/** Push-Link direkt zur Bewertung im Admin (Auftrag → Bewertungen, Bewertung geöffnet/markiert). Mehrere Aufträge → der erste. */
+function rvLink(pairs: { order_id?: string | null; code?: string | null }[]): string {
+  const first = pairs.find((p) => p.order_id);
+  if (!first) return `${SITE_URL}/admin`;
+  const codes = pairs.filter((p) => p.order_id === first.order_id && p.code).map((p) => p.code).slice(0, 30);
+  return `${SITE_URL}/admin?order=${encodeURIComponent(String(first.order_id))}${codes.length ? "&review=" + encodeURIComponent(codes.join(",")) : ""}`;
+}
 
 /** Verfahren (sw/legal/std) für alte, noch nicht begonnene Aufgaben nachtragen – nur status 'new', nur einmal (method danach gesetzt). */
 async function backfillMethods(): Promise<void> {
@@ -589,11 +596,11 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     if (changed && row.order_id) {
       await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? " (von Lena geprüft)" : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
-      if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(row.order_id)}`, { kind: "partner" });
+      if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, rvLink([row]), { kind: "partner" });
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
     if (changed && !opts.quiet) {
-      void notifyTeam(`${row.test ? "TEST · " : ""}${PT[status] || status} · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · "), `${SITE_URL}/admin${row.order_id ? "?order=" + encodeURIComponent(row.order_id) : ""}`, { kind: "partner" });
+      void notifyTeam(`${row.test ? "TEST · " : ""}${PT[status] || status} · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : "", note || ""].filter(Boolean).join(" · "), rvLink([row]), { kind: "partner" });
     }
     return { row, changed };
   }
@@ -659,7 +666,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
           if (r.row) item.task = partnerView(r.row); else item.error = r.error;
         } else if (x.order_id) {
           await insertEvent({ orderId: x.order_id, type: "note", title: `Lena-Prüfung: ${x.code} ${c.result === "visible" ? "noch sichtbar – nicht als gelöscht übernommen" : "nicht möglich – Status unverändert"}`, detail: [c.reason, (c as { why?: string }).why].filter(Boolean).join(" · "), auto: true }).catch(() => {});
-          if (c.result === "unknown") void notifyTeam(`${preview ? "TEST · " : ""}Lena-Prüfung nicht möglich · ${x.code}`, String((c as { why?: string }).why || c.reason).slice(0, 180), `${SITE_URL}/admin?order=${encodeURIComponent(x.order_id)}`, { kind: "partner" });
+          if (c.result === "unknown") void notifyTeam(`${preview ? "TEST · " : ""}Lena-Prüfung nicht möglich · ${x.code}`, String((c as { why?: string }).why || c.reason).slice(0, 180), rvLink([x]), { kind: "partner" });
         }
         delete (item as { why?: string }).why; // interner Grund nicht an den Partner
         out.push(item);
@@ -667,7 +674,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     };
     await Promise.all([worker(), worker(), worker()]);
     const gone = out.filter((x) => x.result === "gone");
-    if (gone.length) void notifyTeam(`${preview ? "TEST · " : ""}Gelöscht ✓ (geprüft) · ${gone.length}`, "Partner · " + gone.map((x) => x.code).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
+    if (gone.length) void notifyTeam(`${preview ? "TEST · " : ""}Gelöscht ✓ (geprüft) · ${gone.length}`, "Partner · " + gone.map((x) => x.code).join(", "), rvLink(gone.map((g) => ({ code: g.code, order_id: (rows.find((x) => Number(x.id) === g.id) || {}).order_id }))), { kind: "partner" });
     return { ok: true, results: out };
   });
 
@@ -690,7 +697,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!PARTNER_SETTABLE.includes(status)) return reply.code(400).send({ ok: false, error: "invalid status" });
     const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
     if (!ids.length) return reply.code(400).send({ ok: false, error: "no tasks" });
-    const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = [];
+    const tasks: ReturnType<typeof partnerView>[] = []; const skipped: number[] = []; const changedCodes: string[] = []; const changedPairs: { order_id?: string | null; code?: string | null }[] = [];
     const bcx = await ctxOf(b.t);
     if (bcx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
     const preview = bcx.preview;
@@ -698,10 +705,10 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       const r = await partnerApply(id, status, undefined, { quiet: true, preview, pid: bcx.pid, confirmed: b.confirm === true });
       if (r.error || !r.row) { skipped.push(id); continue; }
       tasks.push(partnerView(r.row));
-      if (r.changed) changedCodes.push(r.row.code);
+      if (r.changed) { changedCodes.push(r.row.code); changedPairs.push({ order_id: r.row.order_id, code: r.row.code }); }
     }
     if (changedCodes.length) {
-      void notifyTeam(`${preview ? "TEST · " : ""}${PT[status] || status} · ${changedCodes.length} Bewertungen`, "Partner · " + changedCodes.slice(0, 30).join(", "), `${SITE_URL}/admin`, { kind: "partner" });
+      void notifyTeam(`${preview ? "TEST · " : ""}${PT[status] || status} · ${changedCodes.length} Bewertungen`, "Partner · " + changedCodes.slice(0, 30).join(", "), rvLink(changedPairs), { kind: "partner" });
     }
     return { ok: true, tasks, skipped };
   });
