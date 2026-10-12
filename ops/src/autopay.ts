@@ -145,8 +145,27 @@ async function billingOf(email: string): Promise<Billing> {
   const o = (await pool.query(`SELECT name, company, country FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email.toLowerCase()])).rows[0];
   return { ...emptyBilling, name: o?.name || "", company: o?.company || "", country: /^[A-Z]{2}$/.test(String(o?.country || "")) ? o.country : "" };
 }
-/** Rechnungsdetails an den Stripe-Kunden übertragen (Name/Firma + Adresse). */
-async function pushBillingToStripe(email: string, key: string, customer: string): Promise<void> {
+/** Keine Rechnungsdetails gespeichert → aus der hinterlegten Zahlungsart übernehmen (Rechnungsadresse aus Stripe Checkout),
+ *  damit keine Rechnung ohne Empfänger-Adresse/Land rausgeht. Kunde kann sie im Dashboard jederzeit ändern (UID → Reverse Charge). */
+async function ensureBilling(email: string, key: string, pmOrId: any): Promise<void> {
+  if (!pool || !pmOrId) return;
+  const cur = await billingOf(email);
+  if (cur.saved) return;
+  const pm = typeof pmOrId === "string" ? await sx(key, "GET", `payment_methods/${pmOrId}`).catch(() => null) : pmOrId;
+  const bd = (pm && pm.billing_details) || {};
+  const a = bd.address || {};
+  const cc = String(a.country || "").toUpperCase();
+  const country = /^[A-Z]{2}$/.test(cc) ? cc : cur.country;
+  const c = (v: unknown, n: number) => String(v ?? "").replace(/[\r\n<>]/g, " ").trim().slice(0, n);
+  const name = c(cur.name || bd.name, 120);
+  if (!country || (!name && !cur.company)) return;
+  const line1 = c([a.line1, a.line2].filter(Boolean).join(", "), 160);
+  await pool.query(`INSERT INTO cust_billing (email, company, name, line1, postal, city, country, addr_checked) VALUES ($1,$2,$3,$4,$5,$6,$7,false) ON CONFLICT (email) DO NOTHING`,
+    [email.toLowerCase(), c(cur.company, 120), name, line1, c(a.postal_code, 20), c(a.city, 80), country]);
+}
+/** Rechnungsdetails an den Stripe-Kunden übertragen (Name/Firma + Adresse). Mit pm: fehlende Details vorher aus der Zahlungsart übernehmen. */
+async function pushBillingToStripe(email: string, key: string, customer: string, pm?: any): Promise<void> {
+  if (pm) await ensureBilling(email, key, pm).catch(() => {});
   const b = await billingOf(email);
   if (!b.saved) return;
   await sx(key, "POST", `customers/${customer}`, {
@@ -192,7 +211,7 @@ async function taxFor(email: string, key: string, customer: string): Promise<{ m
     }
   }
   const mode = taxModeFor(b.country, b.vatStatus || "");
-  await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : mode === "export" ? "exempt" : "none" }).catch(() => {});
+  await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : "none" /* Drittland: kein „steuerbefreit" – nicht steuerbar steht in der Fußzeile */ }).catch(() => {});
   if (b.vat && (mode === "rc" || mode === "export")) {
     const type = b.country === "GB" ? "gb_vat" : b.country === "CH" ? "ch_vat" : EU_TAX.has(b.country) ? "eu_vat" : "";
     if (type) {
@@ -284,7 +303,7 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
   const desc = `Google-Profil gelöscht · ${orderId}`;
   let inv: any = null;
   try {
-    await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
+    await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});
     const bill = await billingOf(email).catch(() => emptyBilling);
     const tax = await taxFor(email, k.key, row.customer);
     inv = await sx(k.key, "POST", "invoices", {
@@ -341,7 +360,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       const desc = `Entfernte Google-Bewertungen · ${picks.length} × · ${[...new Set(use.map((o) => o.id))].join(", ")}`;
       let inv: any = null;
       try {
-        await pushBillingToStripe(email, k.key, row.customer).catch(() => {});
+        await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});
         const bill = await billingOf(email).catch(() => emptyBilling);
         const tax = await taxFor(email, k.key, row.customer);
         inv = await sx(k.key, "POST", "invoices", {
@@ -430,17 +449,23 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       const base = String(b.returnUrl || "").startsWith(SITE_URL) || /^http:\/\/localhost:\d+\//.test(String(b.returnUrl || "")) ? String(b.returnUrl).split("?")[0] : DASH_URL;
       const params: Record<string, unknown> = {
         mode: "setup", customer: row!.customer, currency: cur, locale: "auto",
+        billing_address_collection: "required", // vollständige Rechnungsadresse → landet auf jeder Abbuchungs-Rechnung
         success_url: `${base}?autopay=done&cs={CHECKOUT_SESSION_ID}`, cancel_url: `${base}?autopay=cancel`,
         setup_intent_data: { metadata: { rr_email: si.email } }, metadata: { rr_email: si.email },
         custom_text: { submit: { message: (NO_CHARGE[String(lang || "en").slice(0, 2)] || NO_CHARGE.en).replace("{z}", cur === "usd" ? "$0" : "0 €") } },
       };
       let ses: any;
+      // Sicherheitsnetz: lehnt Stripe die Adressabfrage im Setup-Modus je ab, ohne sie weiter (ensureBilling holt dann, was da ist).
+      const mk = async (p: Record<string, unknown>) => {
+        try { return await sx(k.key, "POST", "checkout/sessions", p); }
+        catch (e) { if (!/billing_address_collection/i.test(String((e as Error)?.message))) throw e; app.log.warn({ err: e }, "Setup-Checkout: Adressabfrage nicht erlaubt – ohne"); const { billing_address_collection: _b, ...p2 } = p; return sx(k.key, "POST", "checkout/sessions", p2); }
+      };
       // Nur Zahlungsarten, die sofort und sicher abbuchen: Karte (inkl. Apple/Google Pay), PayPal, Link.
       // KEINE Lastschrift/Bankkonto (US-Bankkonto, SEPA): Abbuchung dauert Tage und kann noch platzen.
       for (const types of [["card", "paypal", "link"], ["card", "link"], ["card"]]) {
-        try { ses = await sx(k.key, "POST", "checkout/sessions", { ...params, payment_method_types: types }); break; }
+        try { ses = await mk({ ...params, payment_method_types: types }); break; }
         catch (e) { if (!/custom_text/i.test(String((e as Error)?.message))) { if (types.length === 1) throw e; continue; } app.log.warn({ err: e }, "Setup-Checkout: Hinweistext nicht erlaubt – ohne"); }
-        try { const { custom_text: _ct, ...p2 } = params; ses = await sx(k.key, "POST", "checkout/sessions", { ...p2, payment_method_types: types }); break; }
+        try { const { custom_text: _ct, ...p2 } = params; ses = await mk({ ...p2, payment_method_types: types }); break; }
         catch (e) { app.log.warn({ err: e, types }, "Setup-Checkout: Zahlungsarten nicht verfügbar – nächster Versuch"); if (types.length === 1) throw e; }
       }
       void logCustEvent(si.email, "autopay_open", "Zahlungsart hinterlegen geöffnet", { mode: k.mode });
@@ -472,7 +497,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
       if (row.pm === pm.id) { await releasePayGates(si.email, label).catch(() => 0); return { ok: true, label, charged: null }; } // schon gespeichert (Neuladen)
       if (row.pm && row.pm !== pm.id) void sx(k.key, "POST", `payment_methods/${row.pm}/detach`, {}).catch(() => {});
       await sx(k.key, "POST", `customers/${row.customer}`, { invoice_settings: { default_payment_method: pm.id } }).catch(() => {});
-      await pushBillingToStripe(si.email, k.key, row.customer).catch(() => {});
+      await pushBillingToStripe(si.email, k.key, row.customer, pm).catch(() => {});
       await pool.query(`UPDATE cust_autopay SET pm=$2, label=$3, pm_type=$4, last_error=NULL, updated_at=now() WHERE email=$1`, [si.email, pm.id, label, pm.type || null]);
       const { orders } = await loadCustomerOrders(si.email);
       for (const o of orders.filter((x) => !x.cancelled).slice(0, 5)) {
