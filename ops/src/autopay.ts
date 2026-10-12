@@ -176,31 +176,40 @@ async function pushBillingToStripe(email: string, key: string, customer: string,
 }
 
 /* ---- Umsatzsteuer auf unseren Rechnungen (Simple Solution OG, Österreich, UID ATU72401536) ----
- * Preise sind Endpreise inkl. allfälliger USt (AGB 6.1). Je Kunde (Rechnungsland + geprüfte UID):
- *   "at"     Österreich – oder EU ohne gültige UID (privat/nicht nachgewiesen): 20 % österr. USt, im Preis enthalten
+ * Seit 12.10.2026 genau wie die Profil-/Abo-Zahlungslinks: alle Preise NETTO, USt kommt obendrauf,
+ * Leistung = elektronisch erbrachte Dienstleistung (Stripe-Steuercode txcd_10000000). Je Kunde (Rechnungsland + geprüfte UID):
+ *   "std"    Österreich (immer 20 %) und EU ohne gültige UID → Stripe Tax: Satz des Kundenlandes (OSS)
  *   "rc"     EU-Ausland mit gültiger UID (VIES geprüft): Reverse Charge, keine USt, beide UIDs + Hinweis auf der Rechnung
- *   "export" Drittland (z. B. USA, Schweiz, UK): Leistungsort beim Empfänger (§ 3a Abs. 6 UStG) → in Österreich nicht steuerbar
- * Ohne gültige UID gibt es KEIN Reverse Charge (z. B. DE-Kunde muss seine USt-IdNr. in den Rechnungsdetails angeben). */
+ *   "export" Drittland (z. B. USA, Schweiz, UK): Leistungsort beim Empfänger → in Österreich nicht steuerbar, 0 %
+ * Steuerbefreiung (Reverse Charge) also NUR mit gültiger UID. Kann Stripe Tax den Standort nicht bestimmen (kein Land),
+ * wird ersatzweise mit 20 % österreichischer USt (obendrauf) abgerechnet. */
 const OUR_UID = (process.env.COMPANY_UID || "ATU72401536").trim();
 const EU_TAX = new Set(["BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "EL", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"]);
-export type TaxMode = "at" | "rc" | "export";
+export type TaxMode = "std" | "rc" | "export";
 export function taxModeFor(country: string, vatStatus: string): TaxMode {
   const c = String(country || "").toUpperCase();
-  if (!c || c === "AT") return "at";
-  if (EU_TAX.has(c)) return vatStatus === "valid" ? "rc" : "at";
+  if (!c || c === "AT") return "std";
+  if (EU_TAX.has(c)) return vatStatus === "valid" ? "rc" : "std";
   return "export";
 }
+type Tax = { mode: TaxMode; auto: boolean; rates: string[]; footer: string };
 const taxRateIds = new Map<string, string>();
+/** Ersatz-Steuersatz 20 % AT, NETTO (obendrauf) – nur wenn Stripe Tax den Kundenstandort nicht kennt. */
 async function atTaxRate(key: string): Promise<string> {
   if (taxRateIds.has(key)) return taxRateIds.get(key)!;
   const list = await sx(key, "GET", "tax_rates", { active: "true", limit: 100 }).catch(() => ({ data: [] as any[] }));
-  let tr = ((list as { data?: any[] }).data || []).find((x: any) => x.metadata?.rr === "at20" && x.inclusive && Number(x.percentage) === 20);
-  if (!tr) tr = await sx(key, "POST", "tax_rates", { display_name: "USt", description: "Umsatzsteuer Österreich 20 %", percentage: 20, inclusive: true, country: "AT", jurisdiction: "AT", tax_type: "vat", metadata: { rr: "at20" } }, "rr-taxrate-at20");
+  let tr = ((list as { data?: any[] }).data || []).find((x: any) => x.metadata?.rr === "at20x" && !x.inclusive && Number(x.percentage) === 20);
+  if (!tr) tr = await sx(key, "POST", "tax_rates", { display_name: "USt", description: "Umsatzsteuer Österreich 20 %", percentage: 20, inclusive: false, country: "AT", jurisdiction: "AT", tax_type: "vat", metadata: { rr: "at20x" } }, "rr-taxrate-at20x");
   taxRateIds.set(key, tr.id);
   return tr.id;
 }
-/** Steuer für die nächste Rechnung festlegen: Stripe-Kunde (tax_exempt + UID) aktualisieren, Steuersatz/Fußzeile zurückgeben. */
-async function taxFor(email: string, key: string, customer: string): Promise<{ mode: TaxMode; rates: string[]; footer: string }> {
+const FOOTER_STD = `UID Leistender / Supplier VAT ID: ${OUR_UID}`;
+/** Ersatz ohne Stripe Tax: 20 % AT obendrauf. */
+async function taxFallback(key: string): Promise<Tax> {
+  return { mode: "std", auto: false, rates: [await atTaxRate(key)], footer: `zzgl. 20 % USt. ${FOOTER_STD}` };
+}
+/** Steuer für die nächste Rechnung festlegen: Stripe-Kunde (tax_exempt + UID) aktualisieren, Modus/Fußzeile zurückgeben. */
+async function taxFor(email: string, key: string, customer: string): Promise<Tax> {
   let b = await billingOf(email).catch(() => emptyBilling);
   // UID gespeichert, aber (VIES war down) noch nicht bestätigt → jetzt nochmal prüfen.
   if (b.vat && b.vatStatus !== "valid" && b.vatStatus !== "invalid" && b.country) {
@@ -211,7 +220,7 @@ async function taxFor(email: string, key: string, customer: string): Promise<{ m
     }
   }
   const mode = taxModeFor(b.country, b.vatStatus || "");
-  await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : "none" /* Drittland: kein „steuerbefreit" – nicht steuerbar steht in der Fußzeile */ }).catch(() => {});
+  const cus = await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : "none", expand: ["tax"] }).catch(() => null);
   if (b.vat && (mode === "rc" || mode === "export")) {
     const type = b.country === "GB" ? "gb_vat" : b.country === "CH" ? "ch_vat" : EU_TAX.has(b.country) ? "eu_vat" : "";
     if (type) {
@@ -222,12 +231,29 @@ async function taxFor(email: string, key: string, customer: string): Promise<{ m
       }
     }
   }
-  const footer = mode === "rc"
-    ? `Reverse Charge – Steuerschuldnerschaft des Leistungsempfängers (Art. 196 MwSt-Richtlinie) / VAT reverse charge. UID Leistungsempfänger: ${b.vat} · UID Leistender: ${OUR_UID}`
-    : mode === "export"
-      ? `Leistungsort beim Leistungsempfänger – in Österreich nicht steuerbar (§ 3a Abs. 6 UStG) / Place of supply: recipient's country, not subject to Austrian VAT.${b.vat ? ` VAT ID recipient: ${b.vat} ·` : ""} UID: ${OUR_UID}`
-      : `Preis inkl. 20 % USt. UID: ${OUR_UID}`;
-  return { mode, rates: mode === "at" ? [await atTaxRate(key)] : [], footer };
+  if (mode === "rc") return { mode, auto: false, rates: [], footer: `Reverse Charge – Steuerschuldnerschaft des Leistungsempfängers (Art. 196 MwSt-Richtlinie) / VAT reverse charge. UID Leistungsempfänger: ${b.vat} · UID Leistender: ${OUR_UID}` };
+  if (mode === "export") return { mode, auto: false, rates: [], footer: `Leistungsort beim Leistungsempfänger – in Österreich nicht steuerbar (§ 3a Abs. 6 UStG) / Place of supply: recipient's country, not subject to Austrian VAT.${b.vat ? ` VAT ID recipient: ${b.vat} ·` : ""} UID: ${OUR_UID}` };
+  // AT / EU ohne gültige UID → Stripe Tax, sofern Stripe den Standort des Kunden kennt.
+  const loc = String(cus?.tax?.automatic_tax || "");
+  if (loc === "supported") return { mode, auto: true, rates: [], footer: FOOTER_STD };
+  return taxFallback(key);
+}
+/** Tatsächlich bezahlter Betrag (brutto, inkl. USt) einer Stripe-Rechnung in Währungseinheiten. */
+const grossOf = (inv: any, fallback: number) => { const c = Number(inv?.amount_paid ?? inv?.total); return c > 0 ? Math.round(c) / 100 : fallback; };
+/** Rechnung samt Posten anlegen (Netto-Betrag, USt obendrauf). Lehnt Stripe Tax ab (z. B. im Testmodus nicht aktiv), Ersatz mit 20 % AT. */
+async function buildInvoice(key: string, base: Record<string, unknown>, tax: Tax, item: { customer: string; amount: number; currency: string; description: string }, idem: string): Promise<{ inv: any; tax: Tax }> {
+  let t = tax;
+  let inv: any;
+  try {
+    inv = await sx(key, "POST", "invoices", { ...base, footer: t.footer, automatic_tax: { enabled: t.auto }, metadata: { ...(base.metadata as object), rr_tax: t.mode } }, `rr-inv-${idem}`);
+  } catch (e) {
+    if (!t.auto) throw e;
+    console.warn("Stripe Tax nicht verfügbar – Ersatz 20 % AT", (e as Error).message);
+    t = await taxFallback(key);
+    inv = await sx(key, "POST", "invoices", { ...base, footer: t.footer, automatic_tax: { enabled: false }, metadata: { ...(base.metadata as object), rr_tax: t.mode } }, `rr-inv-${idem}-m`);
+  }
+  await sx(key, "POST", "invoiceitems", { ...item, invoice: inv.id, ...(t.auto ? { tax_behavior: "exclusive" } : t.rates.length ? { tax_rates: t.rates } : {}) }, `rr-ii-${idem}${t === tax ? "" : "-m"}`);
+  return { inv, tax: t };
 }
 
 /* ---- Fehlgeschlagene Abbuchung → Auftrag sofort pausieren ----
@@ -306,13 +332,12 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
     await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});
     const bill = await billingOf(email).catch(() => emptyBilling);
     const tax = await taxFor(email, k.key, row.customer);
-    inv = await sx(k.key, "POST", "invoices", {
+    ({ inv } = await buildInvoice(k.key, {
       ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
       customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
-      default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc, footer: tax.footer,
-      metadata: { rr_pay: id, rr_email: email, rr_orders: orderId, rr_tax: tax.mode },
-    }, `rr-inv-${id}`);
-    await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc, ...(tax.rates.length ? { tax_rates: tax.rates } : {}) }, `rr-ii-${id}`);
+      default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
+      metadata: { rr_pay: id, rr_email: email, rr_orders: orderId },
+    }, tax, { customer: row.customer, amount: Math.round(amount * 100), currency: cur, description: desc }, id));
     inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
     inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
     if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);
@@ -330,7 +355,7 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
   await insertEvent({ orderId, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${row.label || ""} · Stripe-Rechnung ${inv.number || inv.id} · Profil gelöscht`, auto: true }).catch(() => {});
   void logCustEvent(email, "payment_success", `Automatisch abgebucht (Profil) · ${amount} ${cur.toUpperCase()}`, { amount, cur, auto: true }, { orderId });
   void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt (Profil) · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
-  await sendInvoiceMail(email, inv, amount, cur, row.label || "", 1, [orderId]).catch((e) => console.error("Rechnungs-Mail (Profil) fehlgeschlagen", e));
+  await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, row.label || "", 1, [orderId]).catch((e) => console.error("Rechnungs-Mail (Profil) fehlgeschlagen", e));
   return { ok: true, amount, cur };
 }
 
@@ -363,13 +388,12 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
         await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});
         const bill = await billingOf(email).catch(() => emptyBilling);
         const tax = await taxFor(email, k.key, row.customer);
-        inv = await sx(k.key, "POST", "invoices", {
+        ({ inv } = await buildInvoice(k.key, {
           ...(bill.vat ? { custom_fields: [{ name: "UID / VAT", value: bill.vat.slice(0, 30) }] } : {}),
           customer: row.customer, collection_method: "charge_automatically", auto_advance: false, currency: cur,
-          default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc, footer: tax.footer,
-          metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(","), rr_tax: tax.mode },
-        }, `rr-inv-${id}`);
-        await sx(k.key, "POST", "invoiceitems", { customer: row.customer, invoice: inv.id, amount: Math.round(amount * 100), currency: cur, description: desc, ...(tax.rates.length ? { tax_rates: tax.rates } : {}) }, `rr-ii-${id}`);
+          default_payment_method: row.pm, pending_invoice_items_behavior: "exclude", description: desc,
+          metadata: { rr_pay: id, rr_email: email, rr_orders: [...new Set(use.map((o) => o.id))].join(",") },
+        }, tax, { customer: row.customer, amount: Math.round(amount * 100), currency: cur, description: desc }, id));
         inv = await sx(k.key, "POST", `invoices/${inv.id}/finalize`, {}, `rr-fin-${id}`);
         inv = await sx(k.key, "POST", `invoices/${inv.id}/pay`, { payment_method: row.pm, off_session: true }, `rr-pay-${id}`);
         if (inv.status !== "paid") throw new StripeErr(`Rechnung ${inv.status}`);
@@ -391,7 +415,7 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
         await insertEvent({ orderId: oid, email, type: "pay", title: `Bezahlt: automatisch abgebucht · ${amount} ${cur.toUpperCase()}${k.mode === "test" ? " (TEST)" : ""}`, detail: `${row.label || ""} · ${picks.length} Bewertung(en) · Stripe-Rechnung ${inv.number || inv.id} · Anlass: ${why}`, auto: true }).catch(() => {});
       }
       // Rechnung an den Kunden (PDF im Anhang) – nach JEDER Abbuchung, wie bei den Zahlungslinks.
-      await sendInvoiceMail(email, inv, amount, cur, row.label || "", picks.length, [...new Set(use.map((o) => o.id))]).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
+      await sendInvoiceMail(email, inv, grossOf(inv, amount), cur, row.label || "", picks.length, [...new Set(use.map((o) => o.id))]).catch((e) => console.error("Rechnungs-Mail (Autopay) fehlgeschlagen", e));
       void logCustEvent(email, "payment_success", `Automatisch abgebucht · ${amount} ${cur.toUpperCase()}`, { amount, cur, kind: "invoice", auto: true }, { orderId: primary });
       void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Automatisch bezahlt · ${amount} ${cur.toUpperCase()}`, `${email} · ${row.label || ""} · ${picks.length} gelöschte Bewertung(en)`, `${SITE_URL}/admin?order=${encodeURIComponent(primary)}`, { kind: "pay" });
       res = { amount: ((res as AutoCharged | null)?.amount || 0) + amount, cur, label: row.label || "", invoiceUrl: url };

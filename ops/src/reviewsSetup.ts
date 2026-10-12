@@ -76,14 +76,17 @@ const invoiceWithUid = (pl?: any) => {
   const f = String(pl?.invoice_creation?.invoice_data?.footer || "").trim();
   return { enabled: true, invoice_data: { footer: f && !f.includes(OUR_UID) ? `${f} · ${UID_FOOTER}` : f || UID_FOOTER } };
 };
+/* Steuer wie bei den Profil-Links (12.10.2026): Stripe Tax, alle Preise NETTO (USt obendrauf).
+   AT 20 %, EU ohne UID Satz des Kundenlandes (OSS), EU-Firma mit UID Reverse Charge, Drittland 0 %. */
 const LINK_EXTRAS = {
+  automatic_tax: { enabled: true },
   name_collection: { business: { enabled: true, optional: false } },
   billing_address_collection: "required",
   tax_id_collection: { enabled: true },
   invoice_creation: invoiceWithUid(),
 };
 const createLink = (params: Record<string, any>) => sapi<{ url: string }>("POST", "payment_links", { ...params, ...LINK_EXTRAS }, PL_VERSION);
-const linkOk = (pl: any) => !!(pl?.invoice_creation?.enabled && hasUid(pl) && pl?.name_collection?.business?.enabled && pl.name_collection.business.optional === false
+const linkOk = (pl: any) => !!(pl?.automatic_tax?.enabled && pl?.invoice_creation?.enabled && hasUid(pl) && pl?.name_collection?.business?.enabled && pl.name_collection.business.optional === false
   && pl?.billing_address_collection === "required" && pl?.tax_id_collection?.enabled);
 
 /** Bestehende Bewertungs-Zahlungslinks (schon verschickte Links bleiben gültig) auf Rechnung + Firmendaten umstellen. Idempotent. */
@@ -101,7 +104,14 @@ export async function upgradeReviewLinks(log: (s: string) => void = () => {}): P
   for (const pl of links) {
     if (!pl.metadata || !pl.metadata[MARK]) continue;
     if (linkOk(pl)) { res.ok++; continue; }
-    try { await sapi("POST", `payment_links/${pl.id}`, { ...LINK_EXTRAS, invoice_creation: invoiceWithUid(pl) }, PL_VERSION); res.updated++; }
+    try {
+      const li = await sapi<{ data: any[] }>("GET", `payment_links/${pl.id}/line_items?limit=20`, undefined, PL_VERSION);
+      for (const it of li.data || []) {
+        const pr = it.price;
+        if (pr?.id && (!pr.tax_behavior || pr.tax_behavior === "unspecified")) await sapi("POST", `prices/${pr.id}`, { tax_behavior: "exclusive" });
+      }
+      await sapi("POST", `payment_links/${pl.id}`, { ...LINK_EXTRAS, invoice_creation: invoiceWithUid(pl) }, PL_VERSION); res.updated++;
+    }
     catch (e) { res.failed++; const m = (e as Error).message; log(`Zahlungslink ${pl.id}: ${m}`); linkUpgrade = { ...res, error: m.slice(0, 200) }; }
   }
   linkUpgrade = { ...res, ...(linkUpgrade?.error ? { error: linkUpgrade.error } : {}) };
@@ -165,7 +175,7 @@ async function findOrCreatePrice(productId: string, cur: Cur): Promise<string> {
     !p.recurring && p.metadata && p.metadata[MARK] === `price|${cur}`);
   if (existing) return existing.id;
   const created = await sapi<{ id: string }>("POST", "prices", {
-    currency: cur, unit_amount: cents(PRICE_MAJOR[cur]),
+    currency: cur, unit_amount: cents(PRICE_MAJOR[cur]), tax_behavior: "exclusive",
     nickname: `${PRODUCT_NAME} (${cur.toUpperCase()})`,
     product: productId,
     metadata: { [MARK]: `price|${cur}` },
@@ -269,7 +279,7 @@ export async function ensureReviewsAmountLink(totalMajor: number, cur: ReviewsCu
   if (found) { linkCache.set(combo, found.url); return found.url; }
   const productId = await findOrCreateProduct();
   const price = await sapi<{ id: string }>("POST", "prices", {
-    currency: cur, unit_amount: amount,
+    currency: cur, unit_amount: amount, tax_behavior: "exclusive",
     nickname: `${PRODUCT_NAME} – ${totalMajor} ${cur.toUpperCase()}`,
     product: productId,
     metadata: { [MARK]: `amt|${amount}|${cur}` },

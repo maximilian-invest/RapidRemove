@@ -387,7 +387,7 @@ export async function pollReviewPayments(log: (o: unknown, m: string) => void = 
     }
   }
   if (!open.size) return 0;
-  const sessions = await stripeList<{ client_reference_id?: string | null; payment_status?: string; amount_total?: number; currency?: string; customer_details?: { email?: string } | null; customer_email?: string | null }>(
+  const sessions = await stripeList<{ client_reference_id?: string | null; payment_status?: string; amount_total?: number; amount_subtotal?: number; currency?: string; customer_details?: { email?: string } | null; customer_email?: string | null }>(
     `checkout/sessions?limit=100&created%5Bgte%5D=${Math.floor(since / 1000) - 120}`, 5);
   let n = 0;
   for (const ses of sessions) {
@@ -395,7 +395,7 @@ export async function pollReviewPayments(log: (o: unknown, m: string) => void = 
     if (!m || !open.has(m[1]) || (ses.payment_status !== "paid" && ses.payment_status !== "no_payment_required")) continue;
     const email = ses.customer_details?.email || ses.customer_email || "";
     const amt = Number(ses.amount_total || 0) / 100;
-    const hit = await markReviewPaymentPaid(email, amt, ses.client_reference_id);
+    const hit = await markReviewPaymentPaid(email, Number(ses.amount_subtotal ?? ses.amount_total ?? 0) / 100, ses.client_reference_id); // netto (USt obendrauf)
     if (!hit) continue;
     n++;
     const lbl: Record<string, string> = { deposit: "Anzahlung (ohne Text)", software: "Software-Vorauszahlung", invoice: "Rechnung" };
