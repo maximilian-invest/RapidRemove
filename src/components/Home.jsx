@@ -5,7 +5,7 @@ import { pagePath } from "@/lib/page-routes";
 import { HUB_PATH } from "@/lib/articles/hubs";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor } from "@/lib/pricing";
+import { money, profileFor, vatNote } from "@/lib/pricing";
 import { useReveal, CountUp, Nav, Footer, StickyCTA, openChat } from "@/components/Chrome";
 import { searchProfiles } from "@/lib/places";
 import { getResumeProfile } from "@/lib/resume";
@@ -170,8 +170,8 @@ function Hero({ onStart }) {
             <Icon.shieldCheck size={15} />
             <span>
               {lang === "ja"
-                ? <><b>{money(lang, profileFor(lang).deletion)}</b>から</>
-                : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b></>}
+                ? <><b>{money(lang, profileFor(lang).deletion)}</b>から<span className="vat-n">{vatNote(lang)}</span></>
+                : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>}
               <span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}
             </span>
           </div>
@@ -496,7 +496,7 @@ function Pricing({ id, onStart }) {
           <div className="va-arrow"><Icon.arrowRight size={22} /></div>
           <div className="va-side va-new">
             <div className="lbl">{t.pricing.anchorNewLabel}</div>
-            <div className="amt">{t.pricing.anchorNewAmt}</div>
+            <div className="amt">{t.pricing.anchorNewAmt}<span className="vat-n">{vatNote(lang)}</span></div>
           </div>
         </div>
         <div className="pgrid">
@@ -505,7 +505,7 @@ function Pricing({ id, onStart }) {
               {c.feat && <span className="tag">{c.tag}</span>}
               <div className="pname">{c.name}</div>
               <div className="pdesc">{c.desc}</div>
-              <div className="price">{money(lang, c.price)}</div>
+              <div className="price">{money(lang, c.price)} <small>{vatNote(lang)}</small></div>
               <ul>
                 {c.feats.map((f, j) => <li key={j}><Icon.check /> {f}</li>)}
               </ul>

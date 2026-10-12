@@ -17,7 +17,7 @@ import {
 import { searchProfiles } from "@/lib/places";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
-import { reviewQuote } from "@/lib/pricing";
+import { reviewQuote, vatNote } from "@/lib/pricing";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
@@ -34,6 +34,8 @@ const LANG_KEY = "rr_cust_lang";
 /* Aktive Sprache (Modul-weit, wird pro Render gesetzt) → Format-Helfer ohne Prop-Drilling. */
 let T = makeT("en"), LOC = "en-US", LANG = "en";
 const setLang = (l) => { T = makeT(l); LOC = localeOf(l); LANG = l; };
+/** Preise sind netto (AGB 6.1): Betrag + „zzgl. USt“/„excl. VAT“ in der Dashboard-Sprache. */
+const net = (s) => s + " " + vatNote(LANG);
 const SEEN_KEY = "rr_cust_seen";
 const seenGet = () => { try { return JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"); } catch (e) { return []; } };
 const seenAdd = (ids) => { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...new Set([...seenGet(), ...ids])].slice(-300))); } catch (e) { /* */ } };
@@ -96,7 +98,7 @@ const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p 
 const OPEN = ["new", "reasons", "verify", "paygate", "working", "software", "sw_accepted"];
 const statusLine = (r, cur) => stOf(r.status, r.pre).l
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
-  + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: money(r.price, cur) })) : "");
+  + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: net(money(r.price, cur)) })) : "");
 
 function Ring({ r, n }) {
   const R = 24, p = n ? r / n : 0;
@@ -693,7 +695,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
               <div className="fl-foot pgf">
                 {sel.length ? (
                   <>
-                    <div className="ar-max">{T("noMax", { amount: money(q2.total, cur) })}</div>
+                    <div className="ar-max">{T("noMax", { amount: net(money(q2.total, cur)) })}</div>
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
@@ -772,7 +774,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
               )}
           </div>
           <div className="fl-foot pgf">
-            {sel.length ? <div className="ar-max">{T("arMax", { amount: money(q.total, order.cur) })}</div> : null}
+            {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total, order.cur)) })}</div> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>
         </div>
@@ -1301,7 +1303,7 @@ export default function CustomerDashboard() {
       <span className="hero-img"><img src={IMG.wallet} alt="" /></span>
       <div className="k">{T("toPay")}</div>
       <div className="v"><CountUp id={"hero-" + payCur} value={multiPay ? payTotal : swOnly ? g0.amount : viaWise || viaPaypal ? wiseAmount : toPay} fmt={(v) => money(v, payCur)} /></div>
-      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : swOnly ? T("st_swpay") : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}</div>
+      <div className="s">{multiPay ? T("payN", { n: payGroups.length }) : swOnly ? T("st_swpay") : viaWise || viaPaypal ? `${T(viaWise ? "wDisc" : "ppDisc")} · ${T("wInstead", { amount: money(toPay, payCur) })}` : payments || prices.length !== 1 ? T("removedCount", { n: due.length }) : T("removedEach", { n: due.length, price: money(prices[0], payCur) })}{" · " + vatNote(LANG)}</div>
       {multiPay ? (
         <div className="pgrps">
           {payGroups.map((g) => (
@@ -1410,7 +1412,7 @@ export default function CustomerDashboard() {
                     <button key={o.id} className="oc" onClick={() => setDetailId(o.id)}>
                       <ProfRing st={p.status} />
                       <span className="n">{o.business || T("orderN", { id: o.id })}</span>
-                      <span className="m">{p.open > 0 ? <b>{T("pOpen", { amount: money(p.open, o.cur) })}</b> : T("pst_" + p.status)}</span>
+                      <span className="m">{p.open > 0 ? <b>{T("pOpen", { amount: net(money(p.open, o.cur)) })}</b> : T("pst_" + p.status)}</span>
                     </button>
                   );
                 }
@@ -1465,7 +1467,7 @@ export default function CustomerDashboard() {
                 <span className="t">
                   <b>{o.business || T("orderN", { id: o.id })}</b>
                   <span>{T("svc_" + p.service) !== "svc_" + p.service ? T("svc_" + p.service) : T("pTag")} · #{o.id} · {shortDate(o.created)}</span>
-                  {p.open > 0 ? <><br /><span className="tag pr"><AlertCircle />{T("pOpen", { amount: money(p.open, o.cur) })}</span></> : null}
+                  {p.open > 0 ? <><br /><span className="tag pr"><AlertCircle />{T("pOpen", { amount: net(money(p.open, o.cur)) })}</span></> : null}
                 </span>
                 <ChevronRight />
               </button>
@@ -1607,8 +1609,8 @@ export default function CustomerDashboard() {
         <>
           <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
           <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>{svc} · #{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
-          <div className="bigprog"><ProfRing st={p.status} /><span><b>{T("pst_" + p.status)}</b><span>{p.paid ? T("pPaid") : p.open > 0 ? T("pOpen", { amount: money(p.open, o.cur) }) : p.addr || ""}</span></span></div>
-          {p.open > 0 ? <div className="paycard due pwrap" style={{ marginBottom: 18 }}><span className="ico pr"><Wallet /></span><span><b>{T("pOpen", { amount: money(p.open, o.cur) })}</b><span>{T("pPayNote")}</span></span></div> : null}
+          <div className="bigprog"><ProfRing st={p.status} /><span><b>{T("pst_" + p.status)}</b><span>{p.paid ? T("pPaid") : p.open > 0 ? T("pOpen", { amount: net(money(p.open, o.cur)) }) : p.addr || ""}</span></span></div>
+          {p.open > 0 ? <div className="paycard due pwrap" style={{ marginBottom: 18 }}><span className="ico pr"><Wallet /></span><span><b>{T("pOpen", { amount: net(money(p.open, o.cur)) })}</b><span>{T("pPayNote")}</span></span></div> : null}
           {rank >= 0 ? (
             <div className="psteps">
               {[T("pStep1"), T("pStep2"), T("pStep3"), T("pStep4")].map((lb, i) => (
@@ -1685,7 +1687,7 @@ export default function CustomerDashboard() {
           <div className="ff"><span className="ico"><Timer /></span><span><b>{T("feat4t")}</b><span>{T("feat4s")}</span></span></div>
         </div>
         <div className="optc">
-          <div className="oc2 hl"><div className="h"><b>{T("optSw")}</b><span className="p">{money(unit, cur)}</span></div><span>{T("optSwSub")}</span></div>
+          <div className="oc2 hl"><div className="h"><b>{T("optSw")}</b><span className="p">{net(money(unit, cur))}</span></div><span>{T("optSwSub")}</span></div>
           <div className="oc2"><div className="h"><b>{T("optNo")}</b><span className="p">{money(0, cur)}</span></div><span>{T("optNoSub")}</span></div>
         </div>
       </>
@@ -1705,7 +1707,7 @@ export default function CustomerDashboard() {
               </button>
             ))}
           </div>
-          <div className="totl"><span>{T("total")}</span><b>{money(full, cur)}</b></div>
+          <div className="totl"><span>{T("total")} · {vatNote(LANG)}</span><b>{money(full, cur)}</b></div>
           
         </>
       );
@@ -1719,7 +1721,7 @@ export default function CustomerDashboard() {
           <h2>{T("dfH")}</h2>
           <p>{T("dfP", { pm: ap.label })}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
           <div className="sw-items">{sel.map((i) => <div key={i.id} className="sw-it"><span><b>{i.name}</b><span>{i.business}</span></span><b>{money(i.price, cur)}</b></div>)}</div>
-          <div className="totl"><span>{T("dfTot")}</span><b>{money(full, cur)}</b></div>
+          <div className="totl"><span>{T("dfTot")} · {vatNote(LANG)}</span><b>{money(full, cur)}</b></div>
           <div className="secure"><CreditCard />{ap.label}</div>
         </>
       );
@@ -1734,7 +1736,7 @@ export default function CustomerDashboard() {
           <p>{T("swPmP")}{it.length - n ? " · " + T("declinedN", { n: it.length - n }) : ""}</p>
           {Number.isFinite(dl) ? <Countdown to={dl} /> : null}
           <div className="sw-items">{sel.map((i) => <div key={i.id} className="sw-it"><span><b>{i.name}</b><span>{i.business}</span></span><b>{money(i.price, cur)}</b></div>)}</div>
-          <div className="totl"><span>{T("dfTot")}</span><b>{money(full, cur)}</b></div>
+          <div className="totl"><span>{T("dfTot")} · {vatNote(LANG)}</span><b>{money(full, cur)}</b></div>
           <div className="secure"><Lock />{T("pgSafe")}</div>
         </>
       );

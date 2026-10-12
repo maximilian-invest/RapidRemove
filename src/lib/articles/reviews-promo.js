@@ -6,6 +6,7 @@
    Link führt auf die Landingpage der jeweiligen Sprache. */
 import { RVW } from "@/lib/reviews-copy";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
+import { vatNote } from "@/lib/pricing";
 
 /* Deutsche Quell-Slugs der Artikel, in denen der Hinweis erscheint. Bewusst
    NICHT dabei: Jameda/Kununu/Trustpilot (keine Google-Bewertungen). Bewertungen
@@ -27,7 +28,7 @@ export function withReviewsPromo(deSlug, lang, blocks) {
   const block = {
     t: "cta",
     title: `${r.eyebrow}: ${r.h1}`,
-    text: `${r.price} ${r.per}. ${r.priceNote} ${r.condNote}`,
+    text: `${r.price} ${r.per} (${vatNote(lang)}). ${r.priceNote} ${r.condNote}`,
     btn: r.cta,
     href: pagePath("reviews", lang),
     trust: r.assure,

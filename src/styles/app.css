@@ -587,6 +587,7 @@ a.tb-item:hover{color:var(--primary);}
 .foot-brand p{font-size:14px;line-height:1.6;color:rgba(255,255,255,.6);max-width:300px;margin:0 0 18px;}
 .foot-brand .addr{font-size:13px;line-height:1.6;color:rgba(255,255,255,.5);}
 .foot-brand .addr strong{color:rgba(255,255,255,.72);font-weight:700;}
+.foot-brand .foot-vat{font-size:12.5px;line-height:1.5;color:rgba(255,255,255,.5);margin-top:10px;max-width:300px;}
 .foot-col h4{font-family:var(--font-display);font-weight:600;color:#fff;font-size:15px;margin:0 0 16px;}
 .foot-col a{display:block;color:rgba(255,255,255,.66);font-size:14px;padding:6px 0;cursor:pointer;transition:color var(--dur);}
 .foot-col a:hover{color:var(--orange-400);}
@@ -708,3 +709,8 @@ a.tb-item:hover{color:var(--primary);}
 .xv-poster:focus-visible{outline:3px solid var(--primary,#ff8000);outline-offset:3px;}
 .xv-note{text-align:center;margin-top:12px;font-size:13.5px;color:var(--fg-muted);font-weight:600;}
 @media(max-width:600px){.xv-frame{border-radius:16px;}.xv-play{padding:10px 16px 10px 14px;font-size:14px;gap:8px;bottom:6%;}.xv-tri{border-left-width:10px;border-top-width:7px;border-bottom-width:7px;}.xv-dur{font-size:12.5px;padding-left:8px;}}
+
+/* Netto-Hinweis beim Preis (AGB 6.1: alle Preise zzgl. USt) */
+.vat-n{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--fg-muted);letter-spacing:0;white-space:nowrap;text-decoration:none;}
+.hero-pricetag .vat-n{margin-left:5px;}
+.value-anchor .va-new .vat-n{display:block;margin-top:2px;}

@@ -31,6 +31,29 @@ export function money(lang, amount) {
   return p.suffix ? `${amount} ${p.sym}` : `${p.sym}${amount}`;
 }
 
+/* Alle Preise sind NETTO (AGB 6.1: zzgl. allfälliger USt). Nur Wording – an der
+   Abrechnung (Stripe/autopay) ändert das nichts.
+   VAT_NOTE = Kurzhinweis direkt beim Preis, VAT_LINE = ganzer Satz (Footer, Preis-Erklärungen). */
+export const VAT_NOTE = {
+  de: "zzgl. USt", en: "excl. VAT", es: "+ IVA", fr: "HT", it: "+ IVA", nl: "excl. btw",
+  pt: "+ IVA", ja: "税別", sv: "exkl. moms", da: "ekskl. moms", no: "eks. mva.",
+};
+export const vatNote = (lang) => VAT_NOTE[lang] || VAT_NOTE.en;
+export const VAT_LINE = {
+  de: "Alle Preise verstehen sich netto zzgl. allfälliger gesetzlicher USt.",
+  en: "All prices are net, excl. any applicable VAT.",
+  es: "Todos los precios son netos, IVA aplicable no incluido.",
+  fr: "Tous les prix sont indiqués HT, TVA applicable en sus.",
+  it: "Tutti i prezzi sono netti, IVA di legge esclusa.",
+  nl: "Alle prijzen zijn netto, excl. eventuele btw.",
+  pt: "Todos os preços são líquidos; acresce o IVA aplicável.",
+  ja: "表示価格はすべて税別です（該当する場合、法定の付加価値税が別途かかります）。",
+  sv: "Alla priser är nettopriser exkl. eventuell moms.",
+  da: "Alle priser er nettopriser ekskl. eventuel moms.",
+  no: "Alle priser er nettopriser eks. eventuell mva.",
+};
+export const vatLine = (lang) => VAT_LINE[lang] || VAT_LINE.en;
+
 // Language registry (native names) — drives the language menu.
 export const LANGS = [
   { code: "de", native: "Deutsch",    region: "DACH" },
@@ -57,7 +80,7 @@ export function reviewDiscountPct(n) {
 /** Reine Sternebewertungen ohne Text: Spezialverfahren, Festpreis (€ und $), abgebucht erst nach Löschung, kein Altersaufschlag. */
 export const REVIEW_NOTEXT_PRICE = 300;
 /** items: [{ old?: boolean, nt?: boolean }] → { n, nOld, nNew, nNt, base, oldPrice, ntPrice, subtotal, pct, discount, total, ntTotal } */
-/** cp = individueller Endpreis je Bewertung (Admin): ohne Altersaufschlag und Mengenrabatt – synchron mit ops/src/reviewsPricing.ts. */
+/** cp = individueller Nettopreis je Bewertung (Admin): ohne Altersaufschlag und Mengenrabatt – synchron mit ops/src/reviewsPricing.ts. */
 export const cpOf = (it) => { const v = Number(it && it.cp); return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : 0; };
 export function reviewQuote(items, lang) {
   const base = Number(String(profileFor(lang).review).replace(",", ".")) || 179;

@@ -5,6 +5,7 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
+import { vatNote } from "@/lib/pricing";
 import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
@@ -45,8 +46,8 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
       <div className="so-h"><span className="so-ic"><Icon /></span><b>{c.svc[co.service]}</b></div>
       <div className="so-p">
         {co.service === "reviews"
-          ? <><s className={co.pct ? "" : "hide"}>{fmt(179, p.usd)}</s><b>{fmt(Math.round(179 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev}</span></>
-          : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b></>}
+          ? <><s className={co.pct ? "" : "hide"}>{fmt(179, p.usd)}</s><b>{fmt(Math.round(179 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
+          : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b><span>{vatNote(lang)}</span></>}
       </div>
       <div className="so-f"><ShieldCheck />{c.after}</div>
       {ordered
@@ -139,7 +140,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
           {isRev && p.nSw ? <div className="cs-sw">{p.nSw} × {fmt(300, p.usd)} · {c.sw}</div> : null}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
-          <div className="cs-t"><span>{isRev ? c.maxTotal : c.total}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
+          <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
           <div className="cs-n"><ShieldCheck />{c.note}</div>
         </div>
 

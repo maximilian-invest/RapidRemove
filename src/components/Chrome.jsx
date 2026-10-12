@@ -4,7 +4,7 @@ import Script from "next/script";
 import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import { useLang } from "@/lib/lang-context";
-import { LANGS } from "@/lib/pricing";
+import { LANGS, vatLine } from "@/lib/pricing";
 import { SVC, SVC_NAV_LABEL } from "@/lib/services-copy";
 import { localePath, magazinePath, LOCALES } from "@/lib/locales-meta";
 import { I18N } from "@/lib/i18n";
@@ -497,6 +497,7 @@ function Footer({ onStart, onBlog, onAbout }) {
             <img className="foot-logo" src={asset("/assets/rapidremove-logo-weiss.png")} alt="RapidRemove" loading="lazy" decoding="async" />
             <p>{t.footer.tagline}</p>
             <div className="addr"><strong>{ftCo}</strong><br />{ftMid.join(" · ")}{ftUid ? <><br />{ftUid}</> : null}</div>
+            <div className="foot-vat">{vatLine(lang)}</div>
           </div>
           {cols.map((c, i) => (
             <div className="foot-col" key={i}>

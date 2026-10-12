@@ -107,7 +107,8 @@ export default function Page({ params }) {
           provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
           areaServed: "Worldwide (outside Germany and Austria)",
           offers: { "@type": "Offer", price: "179", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
-            description: "Per removed review; charged only after successful removal" } },
+            priceSpecification: { "@type": "PriceSpecification", price: "179", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
+            description: "Per removed review, excl. VAT; charged only after successful removal" } },
         { "@type": "FAQPage", mainEntity: [...(r.faq || []), ...(r.faqMore || [])].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
         { "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },

@@ -16,7 +16,7 @@ export const KNOWLEDGE = `## 2. Firma & Kontakt
 
 ## 3. Leistungen & Preise
 
-Alle Preise sind Endpreise (inkl. allfälliger USt, siehe AGB 6.1). EUR für DE/AT/EU, USD international.
+Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für DE/AT/EU, USD international. Nennt der Bot einen Preis, sagt er „zzgl. USt“ bzw. auf Englisch „excl. VAT“ dazu.
 
 | Leistung | Preis | Hinweise |
 |---|---|---|
@@ -40,8 +40,8 @@ Alle Preise sind Endpreise (inkl. allfälliger USt, siehe AGB 6.1). EUR für DE/
 - Darüber hinaus verhandelt der Bot nicht. Individuelle Rabatte gibt nur das Team.
 
 ### Mehrwertsteuer
-- Preise sind Endpreise (inkl. allfälliger USt). RapidRemove ist eine österreichische Firma (UID ATU72401536).
-- Österreich sowie EU-Kunden ohne gültige USt-ID: 20 % österreichische USt sind im Preis enthalten (kein Aufschlag).
+- Preise sind Nettopreise (zzgl. allfälliger USt, AGB 6.1). RapidRemove ist eine österreichische Firma (UID ATU72401536).
+- Österreich: zzgl. 20 % USt. EU-Kunden ohne gültige USt-ID: zzgl. USt des Kundenlandes (z. B. DE 19 %), wird bei der Abrechnung automatisch berechnet.
 - EU-Unternehmen außerhalb Österreichs mit gültiger USt-ID: Reverse Charge, Rechnung ohne USt. Dafür die USt-ID im Dashboard unter „Rechnungsdetails" eintragen (wird automatisch geprüft) bzw. im Checkout angeben. Ohne gültige USt-ID kein Reverse Charge.
 - Kunden außerhalb der EU (UK, CH, US, AU …): keine USt.
 - Die Rechnung kommt automatisch nach der Zahlung vom Zahlungsanbieter. Firmendaten im Checkout eintragen. Rechnung ist i. d. R. betrieblich absetzbar.

@@ -22,6 +22,9 @@ const L: Record<string, Labels> = {
   no: { cpL: "avtalt pris", ntL: "fjerning med programvare – kun ved suksess", subA: "Betales etter fjerning (maks.)", subS: "Programvare – kun ved suksess", h: "Dine priser", newL: "opptil 4 uker", oldL: "eldre enn 4 uker", disc: "Mengderabatt", total: "Totalt hvis alle fjernes", note: "Mengderabatten gjelder for hver enkelt omtale – fakturerer vi omtalene én om gangen, belastes hver til rabattert pris." },
 };
 
+/** Alle Preise sind netto (AGB 6.1) – Hinweis beim Gesamtbetrag. Synchron mit VAT_NOTE in src/lib/pricing.js. */
+const VAT_NOTE: Record<string, string> = { de: "zzgl. USt", en: "excl. VAT", es: "+ IVA", fr: "HT", it: "+ IVA", nl: "excl. btw", pt: "+ IVA", ja: "税別", sv: "exkl. moms", da: "ekskl. moms", no: "eks. mva." };
+
 /** Währung: explizit ("usd"/"eur") oder aus dem formatierten Stückpreis abgeleitet. */
 export const reviewCurrency = (currency?: string, per?: string) =>
   currency ? (currency.toLowerCase() === "usd" ? "usd" : "eur") : ((per || "").includes("$") ? "usd" : "eur");
@@ -45,7 +48,7 @@ export function ReviewPriceLines({ lang = "en", items, currency, minPct = 0 }: {
       {q.pct ? <span style={row}>{l.disc} −{q.pct} %: −{f(q.discount)}</span> : null}
       {mixed ? <span style={row}>{l.subA}: {f(q.total - swSub)}</span> : null}
       {mixed ? <span style={row}>{l.subS}: {f(swSub)}</span> : null}
-      <span style={row}><strong>{l.total}: {f(q.total)}</strong></span>
+      <span style={row}><strong>{l.total}: {f(q.total)}</strong> <span style={{ color: brand.muted, fontSize: 12.5 }}>({VAT_NOTE[lang] || VAT_NOTE.en})</span></span>
       {q.pct ? <span style={{ ...row, color: brand.muted, fontSize: 12.5, marginTop: 4 }}>{l.note}</span> : null}
     </React.Fragment>
   );

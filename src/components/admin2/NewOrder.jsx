@@ -348,7 +348,7 @@ export default function NewOrder({ ctx }) {
             ))}
           </div>
         ) : null}
-        {q && q.nCp ? <p className="nasub" style={{ marginTop: 6 }}>Individueller Preis: genau dieser Betrag wird bei Löschung abgebucht und auf der Rechnung ausgewiesen (Endpreis, kein Mengenrabatt).</p> : null}
+        {q && q.nCp ? <p className="nasub" style={{ marginTop: 6 }}>Individueller Preis: genau dieser Nettobetrag wird bei Löschung abgerechnet, allfällige USt kommt obendrauf (kein Mengenrabatt).</p> : null}
         <div className="sec3" style={{ marginTop: 20 }}><h2>Zahlung</h2></div>
         <div className="naopts">
           {PAYS.map(([k, l, I]) => <button key={k} type="button" className={"aopt" + (s.pay === k ? " sel" : "")} onClick={() => set({ pay: k })}><span className="ico"><I /></span>{l}{s.pay === k ? <span className="ck"><Check /></span> : null}</button>)}

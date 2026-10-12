@@ -17,6 +17,7 @@ import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { RVW } from "@/lib/reviews-copy";
+import { vatNote, vatLine } from "@/lib/pricing";
 
 /* Seitentexte: src/lib/reviews-copy.js (plain-Modul — auch Server-Code liest
    sie dort für JSON-LD und die Artikel-Promo-Blöcke). */
@@ -88,11 +89,11 @@ export function ReviewsServicePage({ onStart, onGoHome, onBlog, onAbout, onOrm, 
             <span className="eyebrow reveal"><Icon.star size={15} /> {r.eyebrow}</span>
             <h1 className="reveal d1">{r.h1}</h1>
             <p className="lp-lead reveal d2">{r.lead}</p>
-            <div className="rvw-price reveal d2"><span className="amt">{r.price}</span><span className="per">{r.per}</span></div>
+            <div className="rvw-price reveal d2"><span className="amt">{r.price}</span><span className="per">{r.per} · {vatNote(t.code)}</span></div>
             <p className="rvw-price-note reveal d2">{r.priceNote}</p>
             {/* Pflicht-Hinweis (beschlossen): max. 4 Wochen alt + muss Text enthalten —
                jeder Kunde sieht ihn hier VOR dem Einstieg in den Wizard. */}
-            <p className="rvw-cond reveal d2"><Icon.info size={15} /> <span>{r.condNote}</span></p>
+            <p className="rvw-cond reveal d2"><Icon.info size={15} /> <span>{r.condNote} {vatLine(t.code)}</span></p>
             <div className="lp-cta-row reveal d2">
               <button className="btn btn-primary lg" onClick={() => onStart()}><Icon.search size={18} /> {r.cta} <Icon.arrowRight size={17} /></button>
             </div>

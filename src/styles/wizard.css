@@ -1604,3 +1604,7 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-mres.ok{color:#1a7f45}
 .bpr-mres.ok b{color:#111;font-weight:700}
 .bpr-mres.bad{color:#d93636;font-weight:600}
+
+/* Netto-Hinweis (zzgl. USt) neben großen Summen */
+.bpr-sum .tot .vat-n{margin-left:8px;}
+.sum-total .sl .vat-n{margin-left:2px;}

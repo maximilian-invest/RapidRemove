@@ -11,8 +11,8 @@ export const reviewDiscountPct = (n: number) => (n >= 10 ? 30 : n >= 5 ? 15 : n 
 export const REVIEW_NOTEXT_PRICE = 300;
 export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur noch für Bestandsfälle
 
-/** cp = individueller Endpreis je Bewertung (im Admin festgelegt): ersetzt Grundpreis, Altersaufschlag und Mengenrabatt.
- *  Genau dieser Betrag wird bei Löschung abgebucht und in Rechnung gestellt (Endpreis inkl. allfälliger USt). */
+/** cp = individueller Nettopreis je Bewertung (im Admin festgelegt): ersetzt Grundpreis, Altersaufschlag und Mengenrabatt.
+ *  Genau dieser Betrag wird bei Löschung in Rechnung gestellt (netto, allfällige USt obendrauf – AGB 6.1). */
 /** due = Software-Fall NICHT vorab bezahlt (seit 10/2026 Standard: Abbuchung erst bei Erfolg) → zählt auch in „rest" voll. */
 export type PricedItem = { old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean };
 export const cpOf = (it: { cp?: unknown } | null | undefined): number => { const v = Number(it?.cp); return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : 0; };

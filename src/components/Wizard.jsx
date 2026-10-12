@@ -4,7 +4,7 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -2583,7 +2583,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="ot">{w.s4.opt1.t}</div>
               <div className="od">{w.s4.opt1.d}</div>
             </div>
-            <div className="opt-price">{money(lang, p.deletion)}<small>{wm.afterSuccess}</small></div>
+            <div className="opt-price">{money(lang, p.deletion)}<small>{vatNote(lang)} · {wm.afterSuccess}</small></div>
           </div>
 
           <div className={"opt" + (service === "reset" ? " sel" : "")} onClick={() => pick("reset")}>
@@ -2593,7 +2593,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="ot">{w.s4.opt2.t}</div>
               <div className="od">{w.s4.opt2.d}</div>
             </div>
-            <div className="opt-price">{money(lang, p.reset)}<small>{wm.afterSuccess}</small></div>
+            <div className="opt-price">{money(lang, p.reset)}<small>{vatNote(lang)} · {wm.afterSuccess}</small></div>
           </div>
 
           {/* Bewertungs-Produkt als dritte Option (nur außerhalb DACH): Wer über
@@ -2608,7 +2608,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 <div className="ot">{rv.tileT}</div>
                 <div className="od">{rv.tileD}</div>
               </div>
-              <div className="opt-price">{pk.fromPre ? <span className="opt-per">{pk.fromPre}</span> : null}{money(rl, p.review)}{pk.fromSuf}<small>{rv.per}</small></div>
+              <div className="opt-price">{pk.fromPre ? <span className="opt-per">{pk.fromPre}</span> : null}{money(rl, p.review)}{pk.fromSuf}<small>{rv.per} · {vatNote(lang)}</small></div>
             </div>
           )}
         </div>
@@ -2759,7 +2759,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="ot">{conv.protMonthlyName}</div>
               <div className="od">{wm.ptMonthlyNote}</div>
             </div>
-            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonthly)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{conv.cancelAnytime}</small></div>
+            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonthly)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{vatNote(lang)} · {conv.cancelAnytime}</small></div>
           </div>
 
           <div className={"opt" + (protection === "monitor" ? " sel" : "")} onClick={() => setProtection("monitor")}>
@@ -2769,7 +2769,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="ot">{conv.protMonitorName}</div>
               <div className="od">{wm.ptMonitorNote}</div>
             </div>
-            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonitor)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{conv.cancelAnytime}</small></div>
+            <div className="opt-price">{conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix} </span>}{money(lang, p.protMonitor)}{!conv.perMonthPre && <span className="opt-per">{conv.perMonthAffix}</span>}<small>{vatNote(lang)} · {conv.cancelAnytime}</small></div>
           </div>
 
           <div className={"opt" + (protection === "lifetime" ? " sel" : "")} onClick={() => setProtection("lifetime")}>
@@ -2779,7 +2779,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="ot">{conv.protLifetimeName}</div>
               <div className="od">{wm.ptLifetimeNote}</div>
             </div>
-            <div className="opt-price">{money(lang, p.protLifetime)}<small>{conv.onceShort}</small></div>
+            <div className="opt-price">{money(lang, p.protLifetime)}<small>{vatNote(lang)} · {conv.onceShort}</small></div>
           </div>
 
           <div className={"opt" + (protection === null ? " sel" : "")} onClick={() => setProtection(null)}>
@@ -2819,9 +2819,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="sum-row"><span className="sl">{rv.service}</span><span className="sv">{reviewCount} ×</span></div>
             {reviewSumRows()}
             <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(rl, w.s5.dueNow)}</span></div>
-            <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(rl, oneTimeTotal)}</span></div>
+            <div className="sum-total"><span className="sl">{rv.total} <span className="vat-n">{vatNote(lang)}</span></span><span className="sv">{fmtMoney(rl, oneTimeTotal)}</span></div>
             {/* Statt des generischen Hinweises die konkreten Abrechnungsregeln. */}
-            <div className="sum-note"><Icon.shieldCheck /> {(rv.pay1 || "").replace("{per}", money(rl, p.review))} {rv.pay2}</div>
+            <div className="sum-note"><Icon.shieldCheck /> {(rv.pay1 || "").replace("{per}", money(rl, p.review) + " (" + vatNote(lang) + ")")} {rv.pay2}</div>
           </React.Fragment>
         ) : (
           <React.Fragment>
@@ -2840,7 +2840,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         </div>
 
         <div className="sum-row muted"><span className="sl">{w.s5.sumDueNow}</span><span className="sv">{money(lang, w.s5.dueNow)}</span></div>
-        <div className="sum-total"><span className="sl">{w.s5.sumTotal}</span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
+        <div className="sum-total"><span className="sl">{w.s5.sumTotal} <span className="vat-n">{vatNote(lang)}</span></span><span className="sv">{fmtMoney(lang, oneTimeTotal)}</span></div>
         {recurringNum > 0 && <div className="sum-recurring">{conv.sumAfter} <b>{money(lang, protPriceVal)} {conv.perMonthShort}</b></div>}
         <div className="sum-note"><Icon.shieldCheck /> {w.s5.sumNote}</div>
           </React.Fragment>
@@ -3177,7 +3177,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {/* Abrechnungsregeln: nur gelöschte Bewertungen zahlen, fällig am Löschtag. */}
         <div className="press-alt">
           <b><Icon.shieldCheck size={15} /> {rv.payH}</b>
-          <p style={{ margin: "6px 0 0" }}>{(rv.pay1 || "").replace("{per}", money(rl, p.review))}<br />{rv.pay2}</p>
+          <p style={{ margin: "6px 0 0" }}>{(rv.pay1 || "").replace("{per}", money(rl, p.review) + " (" + vatNote(lang) + ")")}<br />{rv.pay2}</p>
         </div>
 
         {pickOn ? (
@@ -3226,7 +3226,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
 
         <div className="summary" style={{ marginTop: 18 }}>
           {reviewSumRows()}
-          <div className="sum-total"><span className="sl">{rv.total}</span><span className="sv">{fmtMoney(rl, servicePriceNum)}</span></div>
+          <div className="sum-total"><span className="sl">{rv.total} <span className="vat-n">{vatNote(lang)}</span></span><span className="sv">{fmtMoney(rl, servicePriceNum)}</span></div>
         </div>
 
         {reviewErr ? <div className="fld-err" style={{ marginTop: 10, color: "var(--danger)", fontWeight: 700 }}>{reviewErr}</div> : null}
@@ -3725,15 +3725,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                   {rq.nNt ? <div className="ln"><span>{rq.nNt} × {bp.cat.sw}<small>{bp.lineSub.nt}</small></span><b>{fmtMoney(cur, rq.nNt * rq.ntPrice)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
                 </React.Fragment>) : (<React.Fragment>
-                  <div className="ln"><span>{svcLabel}<small>{bp.payOnSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+                  <div className="ln"><span>{svcLabel}<small>{vatNote(lang)} · {bp.payOnSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
                   <div className={"ln xo" + (express ? " on" : "")}>
                     <span>{wm.expressTile}<small>{bp.expressSub}</small></span>
                     <button type="button" className={"bpr-sw" + (express ? " on" : "")} role="switch" aria-checked={express} aria-label={wm.expressTile} onClick={() => setExpress(!express)}><b>+{money(lang, p.express)}</b><i /></button>
                   </div>
-                  {protection ? <div className="ln"><span>{protNm[protection]}<small>{bp.fromDel}</small></span><b>{fmtProt(protection)}</b></div> : null}
+                  {protection ? <div className="ln"><span>{protNm[protection]}<small>{vatNote(lang)} · {bp.fromDel}</small></span><b>{fmtProt(protection)}</b></div> : null}
                 </React.Fragment>)}
               </div>
-              <div className="tot"><span>{bp.total}</span><b>{fmtMoney(cur, oneTimeTotal)}</b></div>
+              <div className="tot"><span>{bp.total} · {vatNote(lang)}</span><b>{fmtMoney(cur, oneTimeTotal)}</b></div>
               <div className="now"><span><LCircleCheck />{bp.today}</span><b>{money(cur, w.s5.dueNow)}</b></div>
               <button type="button" className={"more" + (coHow ? " open" : "")} onClick={() => setCoHow(!coHow)} aria-expanded={coHow}><LInfo />{bp.how}<LChevron /></button>
               {coHow ? <div className="bpr-how">{(revFlow ? bp.howA : bp.howB).map(([b, tx], i) => <div key={i}><i>{i + 1}</i><span><b>{b}</b>{tx}</span></div>)}</div> : null}
@@ -3822,7 +3822,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 ? <span className="bpr-tag ok i" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setSwInfo(true); }}><LCircleCheck />{bp.tag.sw}<LInfo /></span>
                 : <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span>}
               <span className="bpr-tag">{m === "sw" ? (hasT ? bp.cat.sw : bp.cat.nt) : bp.cat[m]}</span>
-              <span className="bpr-tag pr">{money(rl, priceOf(r))}</span>
+              <span className="bpr-tag pr">{money(rl, priceOf(r))} {vatNote(lang)}</span>
             </span>
           </span>
         </button>
@@ -3855,7 +3855,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
           <aside className="bpr-aside bpr-sticky">
             <div className="bpr-sum">
               <div className="lb">{bp.selN(n)}</div>
-              <div className="tot">{fmtMoney(rl, servicePriceNum)}</div>
+              <div className="tot">{fmtMoney(rl, servicePriceNum)}<span className="vat-n">{vatNote(lang)}</span></div>
               <div className="rows rv">
                 {n ? (<React.Fragment>
                   <div><span>{bp.subtotal}</span><b>{fmtMoney(rl, rq.subtotal)}</b></div>
@@ -3901,7 +3901,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                   {badge ? <span className="bpr-bdg">{badge}</span> : null}
                   <span className="rd" />
                   <span className="tx"><b>{nm}</b><span>{d}</span></span>
-                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{sm}</small></span>
+                  <span className="pr"><strong>{k === "lifetime" ? money(lang, p.protLifetime) : <React.Fragment>{money(lang, k === "monitor" ? p.protMonitor : p.protMonthly)}<em>{bp.perMonth}</em></React.Fragment>}</strong><small>{vatNote(lang)} · {sm}</small></span>
                 </button>
               ))}
               <button type="button" className={"bpr-rop none bpr-fade" + (protection === null ? " sel" : "")} style={{ animationDelay: ".19s" }} onClick={() => setProtection(null)} aria-pressed={protection === null}>
@@ -3921,8 +3921,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="bpr-sum">
               <div className="lb">{bp.yourSel}</div>
               <div className="rows">
-                <div><span>{svcLabel}<small>{wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
-                <div><span>{protName}<small>{bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
+                <div><span>{svcLabel}<small>{vatNote(lang)} · {wm.afterSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
+                <div><span>{protName}<small>{vatNote(lang)} · {bp.fromDel}</small></span><b>{protection ? fmtProt(protection) : "—"}</b></div>
               </div>
               <div className="now"><span>{bp.today}</span><b>{money(lang, w.s5.dueNow)}</b></div>
               <div className="note">{bp.billNote}</div>
@@ -3963,7 +3963,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         <span className="tx"><b>{title}</b><span>{desc}</span>
           {bullets ? <ul className="bpr-bl">{bullets.map((x, j) => <li key={j}><LCheck />{x}</li>)}</ul> : null}
         </span>
-        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{small}</small></span>
+        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small></span>
       </button>
     );
     const back = () => go(selected && selected.unverified ? 2 : 1);
@@ -4012,7 +4012,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         {badge ? <span className="bpr-bdg">{badge}</span> : null}
         <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
         <span className="tx"><b>{title}</b><span>{desc}</span></span>
-        <span className="pr"><strong>{price}</strong><small>{wm.afterSuccess}</small></span>
+        <span className="pr"><strong>{price}</strong><small>{vatNote(lang)} · {wm.afterSuccess}</small></span>
       </button>
     );
     return (
@@ -4196,9 +4196,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="grab" aria-hidden="true" />
             <div className="hd"><h3 id="pi-sheet-t">{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><LX /></button></div>
             <div className="bpr-tiers">
-              <div className="bpr-tier"><b>{bp.sheet.t1[0]}</b><div className="p">{money(rl, rq.base)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t1[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t1[2]}</span></div>
-              {revCountry !== "US" ? <div className="bpr-tier"><b>{bp.sheet.t2[0]}</b><div className="p">{money(rl, rq.oldPrice)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t2[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t2[2]}</span></div> : null}
-              <div className="bpr-tier"><b>{bp.sheet.t3[0]}</b><div className="p">{money(rl, REVIEW_NOTEXT_PRICE)}<small>{bp.sheet.per}</small></div><span>{bp.sheet.t3[1]}</span><button type="button" className="q lk" onClick={() => { setPriceInfo(false); setSwInfo(true); }}><LInfo />{pk.swInfo}</button></div>
+              <div className="bpr-tier"><b>{bp.sheet.t1[0]}</b><div className="p">{money(rl, rq.base)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t1[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t1[2]}</span></div>
+              {revCountry !== "US" ? <div className="bpr-tier"><b>{bp.sheet.t2[0]}</b><div className="p">{money(rl, rq.oldPrice)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t2[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t2[2]}</span></div> : null}
+              <div className="bpr-tier"><b>{bp.sheet.t3[0]}</b><div className="p">{money(rl, REVIEW_NOTEXT_PRICE)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t3[1]}</span><button type="button" className="q lk" onClick={() => { setPriceInfo(false); setSwInfo(true); }}><LInfo />{pk.swInfo}</button></div>
             </div>
             <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
             <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>

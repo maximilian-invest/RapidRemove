@@ -12,6 +12,7 @@ import { asset } from "@/lib/base";
 import { localePath } from "@/lib/locales-meta";
 import { pagePath, pageHasLocale } from "@/lib/page-routes";
 import { SVC, ORM, DEIDX, SEO } from "@/lib/services-copy";
+import { vatNote } from "@/lib/pricing";
 import { PressSerpDemo } from "@/components/SerpDemo";
 
 /* the design references a few icon names that map onto our set */
@@ -80,7 +81,7 @@ function SerpBA({ before, after, left, right }) {
 
 /* ---- ORM landing page ("Reputation verdrängen") ---- */
 export function OrmPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const o = ORM[t.code] || ORM.en;
   useReveal();
   React.useEffect(() => { window.scrollTo({ top: 0 }); }, []);
@@ -151,7 +152,7 @@ export function OrmPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, 
               <div className={"orm-card reveal d" + (i + 1) + (pk.feat ? " feat" : "")} key={i}>
                 {pk.feat && <span className="tag">{pk.tag}</span>}
                 <div className="on">{pk.name}</div>
-                <div className="op">{pk.price} <small>{pk.per}</small></div>
+                <div className="op">{pk.price} <small>{pk.per} · {vatNote(lang)}</small></div>
                 <div className="od">{pk.desc}</div>
                 <ul>{pk.feats.map((f, j) => <li key={j}><Icon.check /> {f}</li>)}</ul>
                 <button className={"btn " + (pk.feat ? "btn-primary" : "btn-secondary")} onClick={() => onStart()}>{pk.cta} <Icon.arrowRight size={16} /></button>
@@ -355,7 +356,7 @@ function SeoRankClimb({ seo }) {
 }
 
 export function SeoPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, onSeo, onAnalyse }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const s = SEO[t.code] || SEO.en;
   const [open, setOpen] = React.useState(0);
   useReveal();
@@ -462,7 +463,7 @@ export function SeoPage({ onStart, onGoHome, onBlog, onAbout, onOrm, onDeindex, 
                 </div>
                 {s.rows.map((r, i) => <div className="seo-pcell" key={i}><span className="m-lab">{r.label}</span><span className="v">{r.vals[c]}</span></div>)}
                 <div className="seo-pcell price">
-                  <span className="pp">{s.prices[c]}</span><span className="pper">{s.pricePer}</span>
+                  <span className="pp">{s.prices[c]}</span><span className="pper">{s.pricePer} · {vatNote(lang)}</span>
                 </div>
               </div>
             ))}
