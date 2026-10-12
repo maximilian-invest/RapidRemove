@@ -76,7 +76,7 @@ export async function sendMail(args: SendArgs): Promise<SendResult> {
   const from = args.from || process.env.MAIL_FROM || "info@rapid-remove.com";
   const message: Record<string, unknown> = {
     subject: args.subject,
-    body: { contentType: "HTML", content: withOpenPixel(args.html, args.to, args.subject) }, // Zählpixel → Dashboard-Aktivität „E-Mail geöffnet"
+    body: { contentType: "HTML", content: withOpenPixel(String(args.html || "").replace(/\u0000/g, ""), args.to, args.subject) }, // Zählpixel → Dashboard-Aktivität „E-Mail geöffnet"
     toRecipients: (Array.isArray(args.to) ? args.to : [args.to]).map(addr),
   };
   if (args.cc?.length) message.ccRecipients = args.cc.map(addr);

@@ -2086,12 +2086,15 @@ const DUN_SINCE = () => new Date(process.env.AUTO_DUNNING_SINCE || "2026-10-08T0
 /** Mahn-Stand eines Profil-Auftrags aus den Events. Start = Zahlungslink (oder, falls keiner protokolliert ist, die erste Mahnung).
  *  Aktiv = Zahlungslink ODER letzte Mahnung ab DUN_SINCE (11.10.2026: auch Fälle, die vorher per Hand angefangen wurden,
  *  laufen ab der letzten Mahnung automatisch weiter – Maximilian: „Mahnungen!!! Wieso ist das nicht eingeschalten?"). */
-function dunState(rows: { title: string; created_at: string }[]) {
+function dunState(rows: { title: string; created_at: string }[], autoDun?: { stage?: number; at?: string } | null) {
   const ts = (x: { created_at: string }) => new Date(x.created_at).getTime();
   const link = rows.filter((x) => !/^Mahnung/i.test(x.title)), mahn = rows.filter((x) => /^Mahnung/i.test(x.title));
   const start = Math.min(...link.map(ts), ...mahn.map(ts), Infinity);
-  const last = Math.max(start, ...mahn.map(ts));
-  const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0))) || (mahn.length ? 1 : 0);
+  // Zweite, vom Protokoll unabhängige Sperre: raw.autoDun = zuletzt automatisch versandte Stufe + Zeitpunkt
+  // (12.10.2026: Protokoll-Eintrag scheiterte still → Stufe 3 ging alle 15 Min. erneut raus).
+  const ad = autoDun && autoDun.at ? new Date(autoDun.at).getTime() : NaN;
+  const last = Math.max(start, ...mahn.map(ts), Number.isFinite(ad) ? ad : -Infinity);
+  const level = Math.max(0, ...mahn.map((x) => Number((String(x.title).match(/Stufe\s*(\d)/) || [])[1] || 0)), Number(autoDun?.stage) || 0) || (mahn.length ? 1 : 0);
   return { start, last, level, next: level + 1, active: Number.isFinite(start) && last >= DUN_SINCE() };
 }
 /** Admin (Mail-Verlauf): geplante automatische Mails eines Auftrags – Zahlungsziel, Auto-Mahnung (Profile),
@@ -2115,7 +2118,7 @@ app.post("/admin/next-mails", async (req, reply) => {
     if (pd && pd.at && !pd.sent) out.push({ at: pd.at, title: "Zahlungsziel abgelaufen → Erinnerung mit Zahlungslink" });
     else if (o.status === "done" && (process.env.AUTO_DUNNING || "on").toLowerCase() !== "off" && o.pay !== "inkasso") {
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [id]);
-      const d = dunState(ev.rows);
+      const d = dunState(ev.rows, raw.autoDun);
       if (d.active) {
         if (d.next <= 3) out.push({ at: new Date(Math.max(Date.now(), nextDaytime(d.last + DUN_GAP, tz))).toISOString(), title: ["", "Zahlungserinnerung", "2. Zahlungserinnerung", "Mahnung"][d.next] + ` (Stufe ${d.next})` });
         else out.push({ title: "Letzte Mahnung / Inkasso", note: "geht nicht automatisch – Hauptbutton im Auftrag", stopped: true });
@@ -2143,7 +2146,7 @@ async function payDunTick(): Promise<void> {
       if (isTestEmail(o.email)) continue;
       const raw = (o.raw || {}) as Record<string, any>;
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [o.id]);
-      const d = dunState(ev.rows);
+      const d = dunState(ev.rows, raw.autoDun);
       if (!d.active) continue;                                                // kein Zahlungslink/keine Mahnung oder Altbestand
       const pd = raw.payDue as { at?: string; sent?: string | null } | null;
       if (pd && pd.at && !pd.sent) continue;                                  // Zahlungsziel läuft noch → dessen Mail zuerst
@@ -2163,9 +2166,15 @@ async function payDunTick(): Promise<void> {
             serviceAmount: amount, protAmount: prot, protType: prot ? o.protection : "", total: amount + prot, express,
             expressLabel: express ? `Express-Bearbeitung (≤6 h)${raw.expressAmount ? " · +" + raw.expressAmount + " " + (usd ? "$" : "€") : ""}` : undefined,
             lang, template: "mahnung", stage: next, auto: true } };
+      // Sperre VOR dem Versand setzen: selbst wenn danach etwas scheitert, geht dieselbe Stufe frühestens in 48 h erneut raus.
+      const lock = { stage: next, at: new Date().toISOString() };
+      if (!(await setOrderRawField(o.id, "autoDun", lock))) throw new Error("Sperre (raw.autoDun) nicht gesetzt – kein Versand");
       const res = await app.inject({ method: "POST", url: payload.url, payload: payload.body, headers: { "content-type": "application/json" } });
       const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as { ok?: boolean; error?: string };
       if (res.statusCode >= 400 || !j.ok) throw new Error(j.error || "HTTP " + res.statusCode);
+      // Protokoll-Kontrolle: fehlt der Eintrag der Stufe, selbst (ohne HTML) nachtragen.
+      const chk = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE $2 AND created_at > now() - interval '10 minutes' LIMIT 1`, [o.id, `Mahnung gesendet · Stufe ${next}%`]);
+      if (!chk.rowCount) await insertEvent({ orderId: o.id, email: o.email, type: "pay", title: `Mahnung gesendet · Stufe ${next} · automatisch`, detail: "an " + o.email });
       await pool.query(`UPDATE orders SET pay='mahnung' WHERE id=$1 AND COALESCE(pay,'') NOT IN ('paid','refunded','inkasso')`, [o.id]);
       app.log.info({ orderId: o.id, stage: next }, "Auto-Mahnung gesendet");
       if (next === 3) void notifyTeam(`Auto-Mahnung Stufe 3 · ${o.name || o.email}`, `Auftrag ${o.id} · als Nächstes: Letzte Mahnung (von euch)`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "pay" });
@@ -2346,6 +2355,18 @@ async function fixPayPrefAmounts(): Promise<void> {
   app.log.info({ n }, "PayPal/Wise −10 %: Auftragsbeträge nachgezogen");
 }
 
+/** Einmalig (12.10.2026): RR-800339 – Stufe 3 ging wegen fehlendem Protokoll-Eintrag mehrfach raus → als versendet
+ *  markieren, damit nichts mehr automatisch kommt (nächste Stufe 4 = Team). */
+async function fixDunRR800339(): Promise<void> {
+  if (!pool) return;
+  const done = await pool.query(`SELECT 1 FROM partner_settings WHERE key='fix_dun_rr800339'`).catch(() => ({ rowCount: 1 }));
+  if (done.rowCount) return;
+  await setOrderRawField("RR-800339", "autoDun", { stage: 3, at: new Date().toISOString() });
+  await insertEvent({ orderId: "RR-800339", type: "pay", title: "Mahnung gesendet · Stufe 3 (Mahnung) · automatisch", detail: "12.10.2026: durch einen Fehler mehrfach versendet – als versendet markiert, keine weitere Auto-Mahnung" });
+  await pool.query(`INSERT INTO partner_settings (key, value) VALUES ('fix_dun_rr800339', '1') ON CONFLICT (key) DO NOTHING`);
+  app.log.info("RR-800339: Auto-Mahnung Stufe 3 als versendet markiert");
+}
+
 /** Einmalig (12.10.2026, Maximilian): RR-333985 – Software ohne Zustimmung gestartet → zurück auf „wartet auf Zustimmung", Preis 300. */
 async function fixSwRR333985(): Promise<void> {
   if (!pool) return;
@@ -2425,7 +2446,7 @@ registerMonitor(app, (t) => !!ADMIN_TOKEN && String(t || "") === ADMIN_TOKEN);
 
 const port = Number(process.env.PORT) || 3000;
 async function start() {
-  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await fixPayPrefAmounts().catch((e) => app.log.error({ err: e }, "PayPal/Wise-Preise nachziehen fehlgeschlagen")); await fixSwRR333985().catch((e) => app.log.error({ err: e }, "Software-Freigabe RR-333985 zurücknehmen fehlgeschlagen")); await initPasskeys(); await initCustPush();
+  try { await initDb(); await initPartnerTables(); await initPartnerStats().catch((e) => app.log.error({ err: e }, "Partner-Statistik: Init fehlgeschlagen")); await initCustomerTables(); await initPartnerAuth(); await initPartnerPush(); await initPartnerRegistry().catch((e) => app.log.error({ err: e }, "Partner-Registrierung: Init fehlgeschlagen")); await fixPayPrefAmounts().catch((e) => app.log.error({ err: e }, "PayPal/Wise-Preise nachziehen fehlgeschlagen")); await fixSwRR333985().catch((e) => app.log.error({ err: e }, "Software-Freigabe RR-333985 zurücknehmen fehlgeschlagen")); await fixDunRR800339().catch((e) => app.log.error({ err: e }, "RR-800339 Mahn-Sperre fehlgeschlagen")); await initPasskeys(); await initCustPush();
     if (dbReady()) void seedPartnerAccount((m) => app.log.info(m)).catch((e) => app.log.error({ err: e }, "Partner-Login anlegen fehlgeschlagen"));
     // Bestehende Zahlungslinks: Rechnung + Firmenname/Adresse/UID (idempotent, im Hintergrund).
     void upgradeReviewLinks((m) => app.log.warn(m)).then((r) => app.log.info(r, "Zahlungslinks: Rechnung + Firmendaten")).catch((e) => app.log.error({ err: e }, "Zahlungslinks umstellen fehlgeschlagen"))

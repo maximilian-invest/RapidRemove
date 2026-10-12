@@ -773,11 +773,14 @@ export async function insertEvent(e: { orderId?: string; email?: string; type?: 
     let orderId = e.orderId || null;
     if (!orderId && e.email) orderId = await latestOrderId(e.email);
     if (!orderId && !e.email) return; // nichts, woran sich der Eintrag hängen ließe
+    // NUL-Zeichen (\u0000) lehnt Postgres in TEXT ab – der React-Email-Renderer erzeugt sie gelegentlich im Vorschau-
+    // Füllraum. Vorher scheiterte dadurch der Eintrag still (12.10.2026: Auto-Mahnung ohne Protokoll → Endlosschleife).
+    const s = (v: string | null | undefined) => (v == null ? v : String(v).replace(/\u0000/g, ""));
     await pool.query(
       `INSERT INTO events (order_id, email, type, title, detail, auto, html, subject) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-      [orderId, e.email || null, e.type || "info", e.title || "", e.detail || "", e.auto === true, e.html || null, e.subject || null],
+      [orderId, e.email || null, e.type || "info", s(e.title) || "", s(e.detail) || "", e.auto === true, s(e.html) || null, s(e.subject) || null],
     );
-  } catch { /* Logging darf den Hauptablauf nie stören */ }
+  } catch (err) { console.error("insertEvent fehlgeschlagen", e.orderId || e.email, e.title, err); /* Logging darf den Hauptablauf nie stören */ }
 }
 
 /** Aktivitäts-Verlauf einer Bestellung (neueste zuerst). */
