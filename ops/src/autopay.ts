@@ -192,6 +192,15 @@ export function taxModeFor(country: string, vatStatus: string): TaxMode {
   if (EU_TAX.has(c)) return vatStatus === "valid" ? "rc" : "std";
   return "export";
 }
+/** Rechnungssprache für Stripe (PDF + Rechnungsseite): Sprache der letzten Bestellung, sonst Englisch (12.10.2026 –
+ *  ohne preferred_locales nahm Stripe die Kontosprache Deutsch, z. B. Kumori/London bekam eine deutsche Rechnung). */
+const STRIPE_LOCALES: Record<string, string> = { de: "de", en: "en", es: "es", fr: "fr", it: "it", nl: "nl", pt: "pt", ja: "ja", sv: "sv", da: "da", no: "nb", nb: "nb", fi: "fi", pl: "pl", cs: "cs" };
+export const stripeLocale = (lang?: string | null) => STRIPE_LOCALES[String(lang || "").slice(0, 2).toLowerCase()] || "en";
+async function localeOf(email: string): Promise<string> {
+  if (!pool) return "en";
+  const r = await pool.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND lang IS NOT NULL ORDER BY created_at DESC LIMIT 1`, [email.toLowerCase()]).catch(() => ({ rows: [] as { lang?: string }[] }));
+  return stripeLocale(r.rows[0]?.lang);
+}
 type Tax = { mode: TaxMode; auto: boolean; rates: string[]; footer: string };
 const taxRateIds = new Map<string, string>();
 /** Ersatz-Steuersatz 20 % AT, NETTO (obendrauf) – nur wenn Stripe Tax den Kundenstandort nicht kennt. */
@@ -220,7 +229,7 @@ async function taxFor(email: string, key: string, customer: string): Promise<Tax
     }
   }
   const mode = taxModeFor(b.country, b.vatStatus || "");
-  const cus = await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : "none", expand: ["tax"] }).catch(() => null);
+  const cus = await sx(key, "POST", `customers/${customer}`, { tax_exempt: mode === "rc" ? "reverse" : "none", preferred_locales: [await localeOf(email)], expand: ["tax"] }).catch(() => null);
   if (b.vat && (mode === "rc" || mode === "export")) {
     const type = b.country === "GB" ? "gb_vat" : b.country === "CH" ? "ch_vat" : EU_TAX.has(b.country) ? "eu_vat" : "";
     if (type) {
@@ -465,7 +474,7 @@ export function registerAutopayRoutes(app: FastifyInstance): void {
     let row = await rowOf(si.email);
     try {
       if (!row || row.mode !== k.mode) {
-        const c = await sx(k.key, "POST", "customers", { email: si.email, name: name || undefined, metadata: { rr_email: si.email } }, `rr-cus-${k.mode}-${si.email}`);
+        const c = await sx(k.key, "POST", "customers", { email: si.email, name: name || undefined, preferred_locales: [stripeLocale(lang)], metadata: { rr_email: si.email } }, `rr-cus-${k.mode}-${si.email}`);
         await pool.query(`INSERT INTO cust_autopay (email, mode, customer) VALUES ($1,$2,$3)
           ON CONFLICT (email) DO UPDATE SET mode=EXCLUDED.mode, customer=EXCLUDED.customer, pm=NULL, label=NULL, pm_type=NULL, last_error=NULL, updated_at=now()`, [si.email, k.mode, c.id]);
         row = await rowOf(si.email);
