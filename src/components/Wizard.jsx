@@ -6,7 +6,7 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
-import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, fetchPayDiscount } from "@/lib/order";
+import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
 import { saveWizardSnapshot, clearResumeProfile } from "@/lib/resume";
 import { TrustpilotLive, PressBand } from "@/components/Proof";
@@ -1764,6 +1764,12 @@ const PICK_COPY = {
   no: { vfyNote: "For anmeldelser med 4 eller 5 stjerner ber vi etter bestillingen om et kort eierbevis (f.eks. firmaattest) – slik at ingen kan få et annet firmas gode anmeldelser fjernet. Last opp i dashbordet; kontrollen tar sekunder.", swChip: "Sjanse for fjerning 99 % · {price} bare ved suksess", qPh: "Søk på anmelderens navn …", noMatch: "Ingen innlastet anmeldelse passer til «{q}».", notListed: "Er anmeldelsen ikke i listen? Legg til lenken", manualH: "Finner du ikke profilen? Ikke noe problem.", manualNote: "Lim inn lenkene til anmeldelsene som skal fjernes. Vi sjekker dem og svarer deg på e-post.", linksTile: "Finner du ikke profilen? Skriv inn lenker til anmeldelsene", nudge1: "Én til for {pct} % rabatt!", nudgeN: "{n} til for {pct} % rabatt!", ch90: "Sjanse for fjerning ca. 90 %", ch50: "Sjanse for fjerning over 90 %", rowNew: "opptil 4 uker", infoH: "Sjanse for å lykkes & pris", info1: "Anmeldelser opptil 4 uker gamle: ca. 90 % sjanse — {base} per anmeldelse.", info2: "Eldre anmeldelser (utenfor USA): først juridisk varsel, over 90 % sjanse — {old} per anmeldelse.", info3: "Mengderabatt: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %.", discLbl: "Mengderabatt", fromPre: "fra ", fromSuf: "", f13: "1–3 stjerner", fAll: "Alle", stepLbl: "Anmeldelser", stepH: "Hvilke anmeldelser skal bort?", stepSub: "Velg anmeldelsene som skal fjernes. Du betaler bare for dem som faktisk slettes.", empty: "Ingen anmeldelser i dette filteret.", h: "Finn anmeldelsene dine automatisk", sub: "Søk etter bedriften din – vi henter de nyeste Google-anmeldelsene. Kryss av for dem som skal bort.", ph: "Bedriftens navn", btn: "Søk", loading: "Henter anmeldelser …", none: "Fant ingen passende anmeldelser. Lim inn lenkene manuelt nedenfor.", err: "Anmeldelsene kunne ikke hentes – lim inn lenkene nedenfor.", old: "eldre enn 4 uker", noText: "uten tekst", ntLbl: "Programvare · 99 % · {price} (bare ved suksess)", info4: "Eldre anmeldelser fra USA og anmeldelser uten tekst: bare med spesialprogramvare — {nt} per anmeldelse. Vi sjekker først om fjerning er mulig. Du belastes først når anmeldelsen er fjernet. Lykkes det ikke, betaler du ingenting.", rowNt: "programvare · bare ved suksess", ntNote: "Også programvaresaker betaler du først etter fjerning. Vi sjekker først om fjerning er mulig for anmeldelsen din. Så snart en betalingsmåte er lagret i dashbordet ditt, setter vi i gang. Du belastes først når anmeldelsen er fjernet – lykkes det ikke, betaler du ingenting.", or: "Eller lim inn lenker manuelt", change: "Annen profil", pickProfile: "Hvilken profil er din?", selected: "valgt", swInfo: "Hvorfor programvare?", swK: "Hvorfor programvare?", swH: "Google fjerner ikke denne anmeldelsen manuelt", swP1: "Eldre anmeldelser fra USA og vurderinger med bare stjerner uten tekst fjerner Google som regel ikke manuelt. For eldre anmeldelser fra andre land sender vi først juridiske varsler, som fjerner over 90 %. Det som blir igjen, kan bare fjernes med spesialprogramvare.", swP2: "Du betaler ingenting nå. Vi sjekker først om fjerning med programvare er mulig for anmeldelsen din. Først når anmeldelsen er fjernet, belastes betalingsmåten du har lagret i dashbordet.", swF1: "99 % suksessrate", swF2: "Belastning først etter fjerning", swF3: "Ikke fjernet? Du betaler ingenting", swOk: "Forstått" },
 };
 const pickCopy = (code) => PICK_COPY[code] || PICK_COPY.en;
+/* Status unter einem per Hand eingefügten Bewertungs-Link */
+const LKR_COPY = {
+  de: { busy: "Bewertung wird geprüft …", nt: "ohne Text · Spezial-Software", old: "älter als 4 Wochen", recent: "bis 4 Wochen alt", other: "Dieser Link gehört zu einem anderen Google-Profil.", later: "Konnten wir nicht automatisch prüfen – wir prüfen den Link nach der Bestellung." },
+  en: { busy: "Checking the review …", nt: "no text · special software", old: "older than 4 weeks", recent: "up to 4 weeks old", other: "This link belongs to a different Google profile.", later: "We couldn't check it automatically – we'll check the link after you order." },
+};
+const LKR = (code) => LKR_COPY[code] || LKR_COPY.en;
 /** Älter als 4 Wochen → ca. 50 % Erfolgschance und Aufpreis (siehe reviewQuote). */
 const reviewIsOld = (r) => !!r && r.days > REVIEW_OLD_DAYS;
 /** „vor 14 Tagen" / „2 weeks ago" — eindeutiger als ein Datum im US-Format. */
@@ -1919,6 +1925,19 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const swRef = React.useRef(null), piRef = React.useRef(null);
   useSwipeClose(swRef, swInfo, () => setSwInfo(false));
   useSwipeClose(piRef, priceInfo, () => setPriceInfo(false));
+  // Per Hand eingefügte Bewertungs-Links auflösen (Sterne, Text, Alter) → Preis stimmt schon vor der Kasse
+  const resKey = (reviewItems || []).map((it) => (it.alt ? "" : String(it.url || "").trim())).join("|");
+  React.useEffect(() => {
+    const pid = (selected && selected.placeId) || "";
+    (reviewItems || []).forEach((it) => {
+      const u = String(it.url || "").trim();
+      if (it.alt || !/^https?:\/\/\S{8,}$/i.test(u) || (it.res && it.res.u === u)) return;
+      setReviewItems((items) => items.map((x) => (String(x.url || "").trim() === u ? { ...x, res: { u, busy: true } } : x)));
+      findReviewByLink(pid, u, lang)
+        .then((rv) => setReviewItems((items) => items.map((x) => (String(x.url || "").trim() === u ? { ...x, res: { u, ok: true, name: rv.name || "", text: rv.text || "", rating: rv.rating || 0, days: rv.days } } : x))))
+        .catch((e) => setReviewItems((items) => items.map((x) => (String(x.url || "").trim() === u ? { ...x, res: { u, fail: (e && e.code) || "fetch" } } : x))));
+    });
+  }, [resKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const pickToggle = (r) => {
     setReviewErr("");
     setPickSel((sel) => sel.some((x) => x.id === r.id) ? sel.filter((x) => x.id !== r.id) : [...sel, r]);
@@ -2142,7 +2161,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const revFlow = reviewMode || service === "reviews";
   const reviewList = [
     ...(pickSel || []).map((r) => ({ url: (r.link || "").trim(), name: (r.name || "").trim(), text: (r.text || "").trim(), ...(!reviewHasText(r) ? { nt: true } : reviewIsOld(r) ? (revMethod(r) === "sw" ? { old: true, sw: true } : { old: true }) : {}), ...(r.rating ? { rating: r.rating } : {}), ...(r.days >= 0 ? { days: r.days } : {}) })),
-    ...(reviewItems || []).map((it) => ({ url: (it.url || "").trim(), name: (it.name || "").trim(), text: (it.text || "").trim() })),
+    ...(reviewItems || []).map((it) => {
+      // Per Hand eingefügter Link, aufgelöst (Sterne/Text/Alter bekannt) → gleicher Preis wie aus der Liste: ohne Text = Software 300
+      const r = !it.alt && it.res && it.res.ok ? it.res : null;
+      const base = { url: (it.url || "").trim(), name: (it.name || (r && r.name) || "").trim(), text: (it.text || (r && r.text) || "").trim() };
+      if (!r) return base;
+      return { ...base, ...(!reviewHasText(r) ? { nt: true } : reviewIsOld(r) ? (revMethod(r) === "sw" ? { old: true, sw: true } : { old: true }) : {}), ...(r.rating ? { rating: r.rating } : {}), ...(r.days >= 0 ? { days: r.days } : {}) };
+    }),
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;
   const rq = reviewQuote(reviewList, lang);
@@ -3743,6 +3768,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 {reviewItems.length > 1 ? <button type="button" className="rm" onClick={rmUrl(i)} aria-label="×"><LX /></button> : null}
               </label>
             )}
+            {!it.alt && it.res ? (it.res.busy ? <div className="bpr-mres">{LKR(t.code).busy}</div>
+              : it.res.ok ? <div className="bpr-mres ok"><b>{it.res.name || "Google"}</b><BprStars n={it.res.rating} /><span>{reviewHasText(it.res) ? (reviewIsOld(it.res) ? LKR(t.code).old : LKR(t.code).recent) : LKR(t.code).nt}</span></div>
+              : <div className={"bpr-mres" + (it.res.fail === "other_profile" ? " bad" : "")}>{it.res.fail === "other_profile" ? LKR(t.code).other : LKR(t.code).later}</div>) : null}
             <button type="button" className="alt" onClick={toggleAlt(i)}>{it.alt ? "↩ " + rv.urlLabel : rv.altBtn}</button>
           </React.Fragment>
         ))}

@@ -5,7 +5,7 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { fetchPayDiscount } from "@/lib/order";
+import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
@@ -63,6 +63,17 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     ? co.items.map((r) => ({ url: r.link || r.url || "", age: r.days > 28 ? "old" : "new", name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days, fixed: true }))
     : [{ url: "", age: "new" }]));
   const [bad, setBad] = React.useState({});
+  // Per Hand eingefügte Links auflösen → Sterne/Text/Alter bekannt → richtiger Preis (ohne Text = Software 300) schon vor dem Bestellen
+  React.useEffect(() => {
+    revs.forEach((r, i) => {
+      const u = String(r.url || "").trim();
+      if (r.fixed || r.chk === u || !/^https?:\/\/\S{8,}$/i.test(u)) return;
+      setRevs((l) => l.map((x, k) => (k === i ? { ...x, chk: u, busy: true } : x)));
+      findReviewByLink("", u, lang).then((rv) => {
+        setRevs((l) => l.map((x) => (String(x.url || "").trim() === u && !x.fixed ? { ...x, busy: false, fixed: true, name: rv.name || "", text: rv.text || "", rating: rv.rating || 0, days: rv.days, age: rv.days > 28 ? "old" : "new" } : x)));
+      }).catch(() => setRevs((l) => l.map((x) => (String(x.url || "").trim() === u ? { ...x, busy: false } : x))));
+    });
+  }, [revs.map((r) => (r.fixed ? "" : String(r.url || "").trim())).join("|")]); // eslint-disable-line react-hooks/exhaustive-deps
   const [err, setErr] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [ok, setOk] = React.useState(null);
@@ -138,6 +149,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
             {revs.map((r, i) => (
               <div key={i} className="co-rev">
                 {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) ? <i className="co-swt">{c.sw}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
+                {!r.fixed && r.busy ? <div className="co-busy"><Loader2 className="spin" />{lang === "de" ? "Bewertung wird geprüft …" : "Checking the review …"}</div> : null}
                 <div className="co-age">
                   {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}
                   {revs.length > 1 ? <button type="button" className="rm" aria-label="−" onClick={() => setRevs((x) => x.filter((_, n) => n !== i))}><Trash2 /></button> : null}

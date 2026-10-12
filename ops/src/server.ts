@@ -492,6 +492,8 @@ app.post("/order", async (req, reply) => {
   } else delete (b as Record<string, unknown>).policyConsent;
   delete (b as Record<string, unknown>).policyV;
   if (isReviews) for (const it of reviewItems) {
+    // Bewertung bekannt (Sterne aus der Google-Suche/Link-Auflösung), aber ohne Text → immer Software (300), auch wenn der Browser es nicht markiert hat
+    if (!it.nt && !it.text && it.rating && it.rating >= 1 && it.rating <= 5) { it.nt = true; delete it.old; }
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
@@ -1026,6 +1028,28 @@ app.get("/reviews", async (req, reply) => {
     app.log.error({ err: e, placeId }, "SerpApi-Bewertungen fehlgeschlagen");
     return reply.code(502).send({ ok: false, enabled: true, error: "fetch failed" });
   }
+});
+
+// Bewertungs-Link auflösen (Website-Bestellung + Chat-Checkout): Text, Sterne, Alter der Bewertung → richtiger Preis schon beim
+// Bestellen (ohne Text = immer Software 300). placeId optional – sonst das Profil aus dem Link. Gedrosselt je IP.
+const findHits = new Map<string, number[]>();
+app.post("/reviews/find", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!serpKey()) return reply.code(503).send({ ok: false, error: "disabled" });
+  const link = httpUrl(b.link, 600);
+  if (!link) return reply.code(400).send({ ok: false, error: "not_review" });
+  if (!throttle(findHits, req.ip, 20)) return reply.code(429).send({ ok: false, error: "rate" });
+  try {
+    const { place, reviewId } = await resolveReviewLink(link);
+    if (!reviewId) return reply.code(404).send({ ok: false, error: "not_review" });
+    const want = clip(b.placeId, 200);
+    if (want && place && place.placeId && place.placeId !== want) return reply.code(409).send({ ok: false, error: "other_profile", profile: place.name || "" });
+    const pid = want || (place && place.placeId) || "";
+    if (!pid) return reply.code(404).send({ ok: false, error: "not_found" });
+    const r = await findPlaceReview(pid, reviewId, mailLang(b.lang));
+    if (!r) return reply.code(404).send({ ok: false, error: "not_found" });
+    return { ok: true, review: { ...r, link: r.link || link }, cc: (place as { cc?: string } | null)?.cc || "" };
+  } catch (e) { app.log.error({ err: e }, "Bewertungs-Link auflösen fehlgeschlagen"); return reply.code(502).send({ ok: false, error: "fetch" }); }
 });
 
 // Admin-Dashboard: Login-Prüfung (gegen ADMIN_TOKEN)

@@ -106,3 +106,12 @@ export async function fetchProfileReviews(placeId, lang) {
   if (!res.ok || !d || !d.ok) throw new Error("reviews " + res.status);
   return Array.isArray(d.reviews) ? d.reviews : [];
 }
+
+/** Bewertungs-Link auflösen (Text, Sterne, Alter) → richtiger Preis schon beim Bestellen. placeId optional. Wirft Error mit .code. */
+export async function findReviewByLink(placeId, link, lang) {
+  if (!OPS) throw Object.assign(new Error("no ops"), { code: "fetch" });
+  const res = await fetch(OPS + "/reviews/find", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ placeId: placeId || "", link, lang: lang || "en" }) });
+  const d = await res.json().catch(() => null);
+  if (!res.ok || !d || !d.ok) throw Object.assign(new Error((d && d.error) || "HTTP " + res.status), { code: (d && d.error) || "fetch" });
+  return d.review;
+}
