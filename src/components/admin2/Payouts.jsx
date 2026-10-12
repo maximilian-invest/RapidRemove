@@ -2,11 +2,13 @@
 /* Admin · Konto → Partner → Auszahlungen: automatische Partner-Auszahlung (Payoneer) + Gutschriften.
    Ablauf: Partner „Removed" → Lena prüft → nach der Haltefrist nochmal geprüft → Payoneer → Gutschrift-PDF an den Partner. */
 import React from "react";
-import { ArrowLeft, Loader, Zap, ShieldCheck, Clock, DollarSign, FileText, Send, AlertTriangle, CheckCircle2, Link as LinkIcon, User, RefreshCw, Landmark } from "lucide-react";
-import { payoutsInfo, payoutsSettings, payoutsRun, payoutsRemail, payoutPdfOpen } from "@/lib/admin-api";
+import { ArrowLeft, Loader, Zap, ShieldCheck, Clock, DollarSign, FileText, Send, AlertTriangle, CheckCircle2, Link as LinkIcon, User, RefreshCw, Landmark, FlaskConical, Repeat } from "lucide-react";
+import { payoutsInfo, payoutsSettings, payoutsRun, payoutsRemail, payoutPdfOpen, payoutsPartner, payoutsAwTest, payoutsAwSim } from "@/lib/admin-api";
 
 const usd = (n) => "$" + Number(n || 0).toLocaleString("de-AT", { maximumFractionDigits: 2 });
 const dt = (d) => (d ? new Date(d).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "");
+const EVERY = { daily: "täglich", weekly: "wöchentlich", monthly: "monatlich" };
+const AW_CC = ["IN", "PK"];
 const ST = { sent: ["Gesendet", "var(--success)"], manual: ["Manuell", "var(--g3)"], pending: ["Läuft …", "#b26b00"], failed: ["Fehlgeschlagen", "var(--danger)"] };
 
 export default function PayoutsScreen({ ctx }) {
@@ -33,13 +35,15 @@ export default function PayoutsScreen({ ctx }) {
   const steps = d ? [
     [d.payoneer.configured, "Payoneer-Zugang", d.payoneer.configured ? (d.payoneer.sandbox ? "Sandbox (Test)" : "Live") : "Fehlt – PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET, PAYONEER_PROGRAM_ID in Railway (kommt von Payoneer nach der Freischaltung)"],
     [d.stripe.configured, "Stripe Connect (Bankkonto EU/UK/CH/USA/CA)", d.stripe.configured ? `${d.stripe.test ? "Testmodus" : "Live"} · ~2 €/Monat je ausgezahltem Partner + 0,25 % je Auszahlung` : "STRIPE_SECRET_KEY fehlt"],
-    ...(d.airwallex.configured ? [[true, "Airwallex (Bankkonto Indien/Pakistan)", d.airwallex.sandbox ? "Sandbox (Test)" : "Live"]] : []),
+    [d.airwallex.configured, "Airwallex (Bankkonto Indien/Pakistan · optional)", d.airwallex.configured
+      ? `${d.airwallex.sandbox ? "Sandbox (Test) – echte Löschungen werden darüber nicht ausgezahlt, nur Testüberweisungen" : "Live · 19 €/Monat (gratis ab 10.000 € Einzahlung/Guthaben)"} · nur für Partner, die du unten freischaltest${d.airwallex.balances ? " · Guthaben " + d.airwallex.balances.map((x) => `${x.currency} ${Number(x.available).toLocaleString("de-AT")}`).join(", ") : d.airwallex.balanceError ? " · Guthaben nicht abrufbar: " + d.airwallex.balanceError : ""}`
+      : "Nicht verbunden – zum Testen: AIRWALLEX_CLIENT_ID, AIRWALLEX_API_KEY und AIRWALLEX_ENV=sandbox in Railway (Service „ops“)"],
   ] : [];
   /** Einrichtungsstand eines Partners (Weg + Daten, Gutschrift-Vereinbarung, Konto beim Anbieter). */
   const pSteps = (p) => {
     const bankM = p.method === "bank";
     return [
-      [!!p.setupDone, "Auszahlungsweg + Daten", p.complete ? `${bankM ? "Bankkonto Airwallex " + ((p.bank && (p.bank.ibanMasked || p.bank.accountMasked)) || "") + " (" + ((p.bank && p.bank.currency) || "") + ")" : p.method === "stripe" ? "Bankkonto über Stripe" : p.method === "payoneer" ? "Payoneer · " + p.payoutEmail : "kein Weg gewählt"} · ${p.legalName} · ${p.city}, ${p.country}${p.vatId ? " · UID " + p.vatId : ""}${p.country === "AT" ? (p.smallBiz ? " · Kleinunternehmer" : " · 20 % USt") : ""}` : "Partner richtet es beim nächsten Login ein (Pflicht, bevor er Aufträge sieht)"],
+      [!!p.setupDone, "Auszahlungsweg + Daten", p.complete ? `${bankM ? "Bankkonto Airwallex " + ((p.bank && (p.bank.ibanMasked || p.bank.accountMasked)) || "") + " (" + ((p.bank && p.bank.currency) || "") + (p.bank && p.bank.entity === "COMPANY" ? ", Firma" : "") + (p.bank && p.bank.via === "SWIFT" ? ", SWIFT" : "") + ")" : p.method === "stripe" ? "Bankkonto über Stripe" : p.method === "payoneer" ? "Payoneer · " + p.payoutEmail : "kein Weg gewählt"} · ${p.legalName} · ${p.city}, ${p.country}${p.vatId ? " · UID " + p.vatId : ""}${p.country === "AT" ? (p.smallBiz ? " · Kleinunternehmer" : " · 20 % USt") : ""}` : "Partner richtet es beim nächsten Login ein (Pflicht, bevor er Aufträge sieht)"],
       [!!p.sb, "Gutschrift-Vereinbarung", p.sb ? `angenommen ${dt(p.sb.at)} · Version ${p.sb.v}${p.sbIp ? " · IP " + p.sbIp : ""}` : "Partner stimmt bei der Einrichtung zu"],
       [!!p.ready, bankM ? "Bankkonto bei Airwallex" : p.method === "stripe" ? "Stripe-Konto" : "Payoneer-Konto",
         bankM ? (p.bankError ? "Abgelehnt: " + p.bankError : p.ready ? "angelegt" : "wird angelegt, sobald der Airwallex-Zugang da ist")
@@ -88,6 +92,7 @@ export default function PayoutsScreen({ ctx }) {
                     <span className="t"><b>{l}</b><span style={{ whiteSpace: "normal" }}>{sub}</span></span>
                   </div>
                 ))}
+                <AwPartner p={p} d={d} toast={toast} reload={load} />
               </div>
             </React.Fragment>
           ))}
@@ -144,5 +149,60 @@ function Num({ icon: I, label, unit, v, min, max, onSave }) {
       <span className="ico"><I /></span><span className="t"><b>{label}</b><span>{unit}</span></span>
       <input className="po-num" type="number" inputMode="numeric" min={min} max={max} value={x} onChange={(e) => setX(e.target.value)} onBlur={commit} onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
     </label>
+  );
+}
+
+/** Je Partner: Airwallex freischalten (nur Indien/Pakistan), Rhythmus + Mindestbetrag, Sandbox-Testüberweisung.
+    Bestandspartner bleiben unverändert, solange hier nichts umgestellt wird. */
+function AwPartner({ p, d, toast, reload }) {
+  const [busy, setBusy] = React.useState("");
+  const [minX, setMinX] = React.useState(p.payMinUsd == null ? "" : String(p.payMinUsd));
+  React.useEffect(() => { setMinX(p.payMinUsd == null ? "" : String(p.payMinUsd)); }, [p.payMinUsd]);
+  const cc = String(p.country || "").toUpperCase();
+  const custom = p.awEnabled || (p.payEvery && p.payEvery !== "daily") || p.payMinUsd != null;
+  if (!AW_CC.includes(cc) && !custom) return null;
+  const go = async (k, fn, msg) => { setBusy(k); try { const j = await fn(); if (msg) toast(typeof msg === "function" ? msg(j) : msg); await reload(); } catch (e) { toast("Fehler: " + e.message); } setBusy(""); };
+  const t = p.awTest;
+  return (
+    <>
+      {AW_CC.includes(cc) || p.awEnabled ? (
+        <button type="button" className="ir" disabled={!!busy} onClick={() => {
+          if (!p.awEnabled && !window.confirm(`Airwallex für ${p.name} freischalten?\n\nDer Partner muss dann beim nächsten Login die Auszahlung einrichten (Pflicht, bevor er Aufträge sieht) und kann sein Bankkonto wählen. ${d.airwallex.sandbox ? "Sandbox: es fließt kein echtes Geld, echte Löschungen werden darüber nicht ausgezahlt." : "LIVE: er wird automatisch über Airwallex ausgezahlt."}`)) return;
+          go("aw", () => payoutsPartner(p.id, { awEnabled: !p.awEnabled }), p.awEnabled ? "Airwallex für " + p.name + " aus" : "Airwallex für " + p.name + " freigeschaltet");
+        }}>
+          <span className="ico" style={p.awEnabled ? { background: "var(--success)", color: "#fff" } : null}><Landmark /></span>
+          <span className="t"><b>Airwallex (Bankkonto {cc === "IN" ? "Indien" : cc === "PK" ? "Pakistan" : cc})</b><span style={{ whiteSpace: "normal" }}>{p.awEnabled ? (d.airwallex.configured ? (d.airwallex.sandbox ? "Freigeschaltet · Sandbox" : "Freigeschaltet · Live") : "Freigeschaltet – wirkt erst mit Airwallex-Zugang") : "Aus – Partner sieht nur Payoneer, wie bisher"}</span></span>
+          <span className={"tg" + (p.awEnabled ? " on" : "")}><i /></span>
+        </button>
+      ) : null}
+      {custom ? (
+        <>
+          <label className="ir">
+            <span className="ico"><Repeat /></span><span className="t"><b>Auszahlungsrhythmus</b><span style={{ whiteSpace: "normal" }}>{p.bank && p.bank.via === "SWIFT" ? "SWIFT kostet 10–20 € je Überweisung – monatlich empfohlen" : "automatischer Lauf · „Jetzt auszahlen“ ignoriert den Rhythmus"}</span></span>
+            <select className="po-sel" value={p.payEvery || "daily"} disabled={!!busy} onChange={(e) => go("ev", () => payoutsPartner(p.id, { payEvery: e.target.value }), "Rhythmus: " + EVERY[e.target.value])}>
+              {Object.entries(EVERY).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+            </select>
+          </label>
+          <label className="ir">
+            <span className="ico"><DollarSign /></span><span className="t"><b>Mindestbetrag (dieser Partner)</b><span>leer = allgemeiner Wert ({usd(d.settings.minUsd)})</span></span>
+            <input className="po-num" type="number" inputMode="numeric" min={0} max={5000} placeholder={String(d.settings.minUsd)} value={minX} onChange={(e) => setMinX(e.target.value)}
+              onBlur={() => { const v = minX.trim() === "" ? null : Number(minX); if (v === p.payMinUsd || (v != null && !Number.isFinite(v))) return; go("min", () => payoutsPartner(p.id, { payMinUsd: v }), v == null ? "Mindestbetrag: allgemein" : "Mindestbetrag: " + usd(v)); }}
+              onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); }} />
+          </label>
+        </>
+      ) : null}
+      {p.awEnabled && d.airwallex.configured && d.airwallex.sandbox ? (
+        <div className="ir" style={{ flexWrap: "wrap" }}>
+          <span className="ico"><FlaskConical /></span>
+          <span className="t"><b>Sandbox-Test</b><span style={{ whiteSpace: "normal" }}>{t ? `Letzte Testüberweisung ${dt(t.at)} · ${usd(t.usd)} → ${t.currency} per ${t.via} · Status ${t.status || "–"}` : p.method === "bank" ? "Schickt 10 $ Spielgeld an das eingetragene Bankkonto – ohne Aufgaben, ohne Gutschrift" : "Zuerst in der Partner-App ein Bankkonto eintragen"}</span></span>
+          <span className="po-acts" style={{ flexWrap: "wrap", flex: "1 1 100%", marginTop: 8, paddingLeft: 52 }}>
+            <button type="button" className="achip" disabled={!!busy || p.method !== "bank"} onClick={() => go("t", () => payoutsAwTest(p.id, 10), (j) => `Testüberweisung angelegt · ${j.transfer.status || "ok"}`)}>{busy === "t" ? <Loader className="spin" /> : null}Testüberweisung</button>
+            {t ? <button type="button" className="achip" disabled={!!busy} onClick={() => go("s", () => payoutsAwSim(p.id), (j) => "Status: " + j.status + (j.trail && j.trail.length ? " (" + j.trail.join(", ") + ")" : ""))}>Als bezahlt simulieren</button> : null}
+            {t ? <button type="button" className="achip" disabled={!!busy} onClick={() => go("f", () => payoutsAwSim(p.id, { fail: true }), (j) => "Status: " + j.status)}>Fehlschlag</button> : null}
+            {t ? <button type="button" className="achip" disabled={!!busy} onClick={() => go("c", () => payoutsAwSim(p.id, { check: true }), (j) => "Status: " + j.status)}>Status</button> : null}
+          </span>
+        </div>
+      ) : null}
+    </>
   );
 }

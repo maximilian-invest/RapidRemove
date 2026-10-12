@@ -24,7 +24,10 @@ export { NAMES };
 const TOP = ["PK", "IN", "BD", "PH"];
 export const COUNTRIES = [...TOP, ...Object.keys(NAMES).filter((c) => !TOP.includes(c)).sort((a, b) => NAMES[a].localeCompare(NAMES[b]))];
 const dt = (d) => (d ? new Date(d).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "");
-const CUR_L = { EUR: "in EUR (SEPA)", INR: "in Indian rupees (INR)", PKR: "in Pakistani rupees (PKR)" };
+const CUR_L = { EUR: "in EUR (SEPA)", INR: "in Indian rupees (INR)", PKR: "in Pakistani rupees (PKR)", USD: "in US dollars (USD)" };
+/** Erlaubte Kontowährungen (Airwallex): Pakistan-Firma per SWIFT in USD oder PKR. */
+const bankCurs = (cc, entity) => (cc === "IN" ? ["INR"] : cc === "PK" ? (entity === "COMPANY" ? ["USD", "PKR"] : ["PKR"]) : []);
+const EVERY_L = { daily: "every day", weekly: "once a week", monthly: "once a month" };
 
 /** Auszahlungsdaten laden. */
 export function usePayouts(token) {
@@ -52,15 +55,18 @@ export function PayoutSetup({ d, token, onDone, onBack, showToast, gate }) {
     country: p.country || "PK", method: p.method || "", legalName: p.legalName || "", addr1: p.addr1 || "", addr2: p.addr2 || "", city: p.city || "", zip: p.zip || "",
     payoutEmail: p.payoutEmail || "", taxId: p.taxId || "", vatId: p.vatId || "", smallBiz: !!p.smallBiz,
     holder: (p.bank && p.bank.holder) || "", iban: "", bic: (p.bank && p.bank.bic) || "", account: "", ifsc: (p.bank && p.bank.ifsc) || "", bankName: (p.bank && p.bank.bankName) || "",
+    entity: (p.bank && p.bank.entity) || "PERSONAL", bankCur: (p.bank && p.bank.currency) || "",
   });
   const needAgree = !p.sb || p.sb.v !== d.sbVersion;
   const [agree, setAgree] = React.useState(!needAgree);
   const [busy, setBusy] = React.useState(false);
   const [err, setErr] = React.useState("");
   const set = (k) => (e) => setF((x) => ({ ...x, [k]: e && e.target ? (e.target.type === "checkbox" ? e.target.checked : e.target.value) : e }));
-  const cur = d.bank ? bankCur(f.country) : null; // Airwallex nur, wenn freigeschaltet
+  const curs = d.bank ? bankCurs(f.country, f.entity) : []; // Airwallex nur, wenn für diesen Partner freigeschaltet
+  const cur = curs.length ? (curs.includes(f.bankCur) ? f.bankCur : curs[0]) : null;
+  const swift = f.country === "PK" && f.entity === "COMPANY"; // Firmen in Pakistan: internationale Überweisung (SWIFT)
   const viaStripe = d.stripe && STRIPE_CC.has(f.country);
-  const keepBank = p.bank && p.bank.currency === cur; // gespeichertes Konto weiterverwenden (nur maskiert sichtbar)
+  const keepBank = p.bank && (p.bank.entity || "PERSONAL") === f.entity && curs.includes(p.bank.currency) && (p.bank.ifsc ? cur === "INR" : cur !== "INR"); // gespeichertes Konto weiterverwenden (nur maskiert sichtbar)
   const isEU = EU.includes(f.country), isAT = f.country === "AT";
   const steps = ["country", "method", "details", ...((f.method === "payoneer" && d.payoneer) || f.method === "stripe" ? ["connect"] : [])];
   const idx = Math.max(0, steps.indexOf(step));
@@ -76,7 +82,7 @@ export function PayoutSetup({ d, token, onDone, onBack, showToast, gate }) {
       const j = await call("payouts/profile", {
         t: token, country: f.country, method: f.method, legalName: f.legalName, addr1: f.addr1, addr2: f.addr2, city: f.city, zip: f.zip,
         payoutEmail: f.payoutEmail, taxId: f.taxId, vatId: isEU ? f.vatId : "", smallBiz: isAT && f.smallBiz, agree: needAgree ? agree : undefined,
-        bank: f.method === "bank" ? (cur === "INR" ? { holder: f.holder, account: f.account, ifsc: f.ifsc, bankName: f.bankName } : { holder: f.holder, iban: f.iban, bic: f.bic, bankName: f.bankName }) : undefined,
+        bank: f.method === "bank" ? { entity: f.entity, currency: cur, ...(cur === "INR" ? { holder: f.holder, account: f.account, ifsc: f.ifsc, bankName: f.bankName } : { holder: f.holder, iban: f.iban, bic: f.bic, bankName: f.bankName }) } : undefined,
       });
       if (f.method === "payoneer" && d.payoneer && !(j.profile && j.profile.payee)) { setStep("connect"); setBusy(false); return; }
       if (f.method === "stripe" && !(j.profile && j.profile.setupDone)) { setStep("connect"); setBusy(false); return; }
@@ -131,7 +137,7 @@ export function PayoutSetup({ d, token, onDone, onBack, showToast, gate }) {
             ) : cur ? (
               <button type="button" className={"po-opt" + (f.method === "bank" ? " on" : "")} onClick={() => setF((x) => ({ ...x, method: "bank" }))}>
                 <span className="po-ic"><Landmark /></span>
-                <span className="t"><b>Bank account</b><span>Paid directly to your bank account {CUR_L[cur]}. No extra account needed.</span></span>
+                <span className="t"><b>Bank account</b><span>Paid directly to your {f.country === "PK" ? "personal or company" : ""} bank account{f.country === "PK" ? "" : " " + CUR_L[cur]}. No extra account needed.</span></span>
                 <span className="rd">{f.method === "bank" ? <Check /> : null}</span>
               </button>
             ) : <p className="po-note"><Globe />Direct bank payouts are not available in {NAMES[f.country]} yet – Payoneer works there and pays out to your local bank.</p>}
@@ -160,7 +166,21 @@ export function PayoutSetup({ d, token, onDone, onBack, showToast, gate }) {
           ) : (
             <>
               <div className="po-sub"><Landmark />Bank account {CUR_L[cur]}</div>
-              <label className="po-f"><span>Account holder</span><input value={f.holder} onChange={set("holder")} placeholder={f.legalName || "Name on the account"} /></label>
+              <div className="po-2">
+                <label className="po-f"><span>Account type</span>
+                  <select value={f.entity} onChange={(e) => setF((x) => ({ ...x, entity: e.target.value, bankCur: "" }))}>
+                    <option value="PERSONAL">Personal account</option>
+                    <option value="COMPANY">Company account</option>
+                  </select></label>
+                {curs.length > 1 ? (
+                  <label className="po-f"><span>Account currency</span>
+                    <select value={cur} onChange={(e) => setF((x) => ({ ...x, bankCur: e.target.value }))}>
+                      {curs.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select></label>
+                ) : <span />}
+              </div>
+              {swift ? <p className="po-note"><Globe />Company accounts in Pakistan are paid by international bank transfer (SWIFT), once a month. Your bank may charge a small fee for receiving it.</p> : null}
+              <label className="po-f"><span>{f.entity === "COMPANY" ? "Company name (as on the bank account)" : "Account holder"}</span><input value={f.holder} onChange={set("holder")} placeholder={f.legalName || "Name on the account"} /></label>
               {keepBank ? <p className="po-sbok"><Check />Saved: {p.bank.ibanMasked || p.bank.accountMasked}{p.bank.ifsc ? " · " + p.bank.ifsc : ""} – leave empty to keep it</p> : null}
               {cur === "INR" ? (
                 <>
@@ -256,7 +276,7 @@ export default function PartnerPayouts({ d, token, showToast, setEditing }) {
     <div className="po-card ok">
       <span className="po-ic"><Check /></span>
       <span className="t"><b>Automatic payouts are on</b>
-        <span>{p.method === "bank" ? `To your bank account ${p.bank && (p.bank.ibanMasked || p.bank.accountMasked)}` : p.method === "stripe" ? "To your bank account (via Stripe)" : "To your Payoneer account"} · every day for removals verified at least {d.holdDays} day{d.holdDays === 1 ? "" : "s"} ago{d.minUsd ? ` (from ${usd(d.minUsd)})` : ""}. Next run: {d.next}.</span></span>
+        <span>{p.method === "bank" ? `To your bank account ${p.bank && (p.bank.ibanMasked || p.bank.accountMasked)}` : p.method === "stripe" ? "To your bank account (via Stripe)" : "To your Payoneer account"} · {EVERY_L[p.payEvery] || EVERY_L.daily} for removals verified at least {d.holdDays} day{d.holdDays === 1 ? "" : "s"} ago{d.minUsd ? ` (from ${usd(d.minUsd)})` : ""}.{!p.payEvery || p.payEvery === "daily" ? ` Next run: ${d.next}.` : ""}</span></span>
     </div>
   );
   else card = (

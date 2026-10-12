@@ -15,10 +15,16 @@
  *  - Payoneer (alle Länder)
  *  - Bankkonto über Stripe Connect (EWR, UK, CH, USA, Kanada) – bezahlt aus dem Stripe-Guthaben, in EUR (Kurs EZB);
  *    Stripe sammelt Identität + Bankdaten (Express-Konto), braucht nur „Connect" im Stripe-Dashboard.
- *  - Bankkonto über Airwallex (Indien INR, Pakistan PKR) – nur angeboten, wenn AIRWALLEX_* gesetzt ist (19 €/Monat Fixkosten).
+ *  - Bankkonto über Airwallex (Indien INR, Pakistan) – NUR für Partner, die der Admin einzeln freischaltet (partners.aw_enabled)
+ *    und nur, wenn AIRWALLEX_* gesetzt ist (19 €/Monat Fixkosten). Bestandspartner sind davon nicht betroffen.
+ *    Privatpersonen: lokal (INR über IFSC, PKR über IBAN). Firmen in Pakistan: SWIFT (USD oder PKR) – 10–20 € je Überweisung,
+ *    deshalb bekommen sie automatisch den Rhythmus „monatlich“ (je Partner im Admin änderbar).
  *
  * Airwallex: AIRWALLEX_CLIENT_ID, AIRWALLEX_API_KEY, optional AIRWALLEX_ENV=sandbox, AIRWALLEX_SOURCE_CURRENCY (Standard USD),
- *   AIRWALLEX_REASON (Standard professional_business_services).
+ *   AIRWALLEX_REASON (Standard professional_business_services; lokale PKR-Auszahlungen nutzen immer other_services).
+ *   Sandbox (kostenlos, ohne Plan): www.sandbox.airwallex.com → Account → Developer → API keys. Im Sandbox-Modus zahlt der
+ *   automatische Lauf NICHT über Airwallex aus (kein Spielgeld für echte Löschungen, keine Gutschrift-Nummern) – getestet wird
+ *   über „Testüberweisung“ im Admin (Konto → Partner → Auszahlungen).
  * Payoneer: Zugangsdaten nur als Railway-Variablen (nie im Repo):
  *   PAYONEER_CLIENT_ID, PAYONEER_CLIENT_SECRET, PAYONEER_PROGRAM_ID, optional PAYONEER_ENV=sandbox
  *   (bzw. PAYONEER_API_BASE / PAYONEER_TOKEN_URL, falls Payoneer andere Adressen nennt).
@@ -65,6 +71,7 @@ export async function initPayoutTables(): Promise<void> {
     "sb_at timestamptz", "sb_ip text", "sb_ua text", "sb_v text",
     "payout_method text", "bank jsonb", "vat_id text", "vat_status text", "small_biz boolean NOT NULL DEFAULT false",
     "aw_beneficiary_id text", "aw_error text", "stripe_acct text", "stripe_status text", "stripe_checked_at timestamptz", "pay_gate boolean",
+    "aw_enabled boolean NOT NULL DEFAULT false", "pay_every text", "pay_min_usd numeric",
   ]) await pool.query(`ALTER TABLE partners ADD COLUMN IF NOT EXISTS ${c}`);
   for (const c of [
     "partner_id bigint", "status text NOT NULL DEFAULT 'manual'", "method text", "provider_ref text", "provider_status text", "error text",
@@ -106,16 +113,30 @@ export type PartnerRow = {
   sb_at: string | null; sb_ip: string | null; sb_ua: string | null; sb_v: string | null;
   payout_method: "payoneer" | "bank" | "stripe" | null; stripe_acct: string | null; stripe_status: string | null; stripe_checked_at: string | null; bank: Bank | null; vat_id: string | null; vat_status: string | null; small_biz: boolean;
   aw_beneficiary_id: string | null; aw_error: string | null; pay_gate?: boolean | null;
+  aw_enabled?: boolean | null; pay_every?: string | null; pay_min_usd?: string | number | null;
 };
-export type Bank = { holder: string; iban?: string; bic?: string; account?: string; ifsc?: string; bankName?: string; currency: string };
+/** entity: Privatkonto (PERSONAL) oder Firmenkonto (COMPANY). Fehlt bei Altdaten → PERSONAL. */
+export type Bank = { holder: string; iban?: string; bic?: string; account?: string; ifsc?: string; bankName?: string; currency: string; entity?: "PERSONAL" | "COMPANY" };
 
 /* ---------------- Länder ---------------- */
 const EU = new Set(["AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "GR", "ES", "FI", "FR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"]);
 /** Stripe Connect (grenzüberschreitend ab Österreich): EWR, UK, Schweiz, USA, Kanada. */
 export const STRIPE_CC = new Set([...EU, "IS", "LI", "NO", "GB", "CH", "US", "CA"]);
 const EEA = new Set([...EU, "IS", "LI", "NO"]);
-/** Bankkonto über Airwallex (nur Länder ohne Stripe): Währung; sonst null. */
+/** Bankkonto über Airwallex (nur Länder ohne Stripe): Standardwährung; sonst null. */
 export function bankCurrency(cc: string): string | null { return cc === "IN" ? "INR" : cc === "PK" ? "PKR" : null; }
+/** Erlaubte Kontowährungen je Land + Kontoart (Pakistan-Firma: SWIFT in USD oder PKR). */
+function bankCurrencies(cc: string, entity: "PERSONAL" | "COMPANY"): string[] {
+  if (cc === "IN") return ["INR"];
+  if (cc === "PK") return entity === "COMPANY" ? ["USD", "PKR"] : ["PKR"];
+  return [];
+}
+/** Gespeichertes Konto passt (noch) zum Land? */
+const bankFits = (cc: string, b: Bank | null | undefined) => !!b && bankCurrencies(cc, b.entity === "COMPANY" ? "COMPANY" : "PERSONAL").includes(b.currency);
+/** Überweisungsweg bei Airwallex: Pakistan-Firma → SWIFT (lokal PKR geht nur an Privatpersonen), sonst lokal. */
+export function awMethod(cc: string, b: Bank | null | undefined): "LOCAL" | "SWIFT" {
+  return String(cc).toUpperCase() === "PK" && b?.entity === "COMPANY" ? "SWIFT" : "LOCAL";
+}
 const ibanOk = (v: string) => {
   const s = v.replace(/\s+/g, "").toUpperCase();
   if (!/^[A-Z]{2}\d{2}[A-Z0-9]{10,30}$/.test(s)) return false;
@@ -126,21 +147,23 @@ const ibanOk = (v: string) => {
 const mask = (v?: string) => (v ? v.replace(/\s+/g, "").replace(/^(.{4}).*(.{4})$/, "$1 •••• $2") : "");
 /** Bankdaten prüfen + normalisieren (Fehlertext englisch für den Partner). */
 function bankFrom(cc: string, b: Record<string, unknown>, fallbackHolder: string): { bank?: Bank; error?: string } {
-  const cur = bankCurrency(cc);
-  if (!cur) return { error: "Bank payouts are not available in your country – please choose Payoneer." };
+  if (!bankCurrency(cc)) return { error: "Bank payouts are not available in your country – please choose Payoneer." };
+  const entity: "PERSONAL" | "COMPANY" = b.entity === "COMPANY" ? "COMPANY" : "PERSONAL";
+  const allowed = bankCurrencies(cc, entity);
+  const cur = allowed.includes(String(b.currency || "").toUpperCase()) ? String(b.currency).toUpperCase() : allowed[0];
   const holder = clip(b.holder, 120) || fallbackHolder;
-  if (!holder) return { error: "Please enter the account holder name." };
+  if (!holder) return { error: entity === "COMPANY" ? "Please enter the company name as on the bank account." : "Please enter the account holder name." };
   if (cur === "INR") {
     const account = clip(b.account, 34).replace(/\s+/g, ""), ifsc = clip(b.ifsc, 11).toUpperCase().replace(/\s+/g, "");
     if (!/^\d{6,18}$/.test(account)) return { error: "Please check the account number (6–18 digits)." };
     if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) return { error: "Please check the IFSC code (e.g. HDFC0001234)." };
-    return { bank: { holder, account, ifsc, bankName: clip(b.bankName, 80) || undefined, currency: cur } };
+    return { bank: { holder, account, ifsc, bankName: clip(b.bankName, 80) || undefined, currency: cur, entity } };
   }
   const iban = clip(b.iban, 42).replace(/\s+/g, "").toUpperCase(), bic = clip(b.bic, 11).replace(/\s+/g, "").toUpperCase();
   if (!ibanOk(iban)) return { error: "Please check the IBAN." };
-  if (cur === "PKR" && !iban.startsWith("PK")) return { error: "Please enter a Pakistani IBAN (starts with PK)." };
+  if (cc === "PK" && !iban.startsWith("PK")) return { error: "Please enter a Pakistani IBAN (starts with PK)." };
   if (bic && !/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(bic)) return { error: "Please check the BIC / SWIFT code." };
-  return { bank: { holder, iban, bic: bic || undefined, bankName: clip(b.bankName, 80) || undefined, currency: cur } };
+  return { bank: { holder, iban, bic: bic || undefined, bankName: clip(b.bankName, 80) || undefined, currency: cur, entity } };
 }
 /** USt-Behandlung der Gutschrift: AT ohne Kleinunternehmer → 20 % USt; EU/Drittland → Reverse Charge. */
 function vatRule(p: { country: string | null; small_biz: boolean }): "at20" | "atklein" | "rc" {
@@ -158,7 +181,13 @@ export async function partnerById(id: number | null): Promise<PartnerRow | null>
 const profileDone = (p: PartnerRow | null) => !!p && !!p.legal_name && !!p.addr1 && !!p.city && !!p.country;
 const sbOk = (p: PartnerRow | null) => !!p && !!p.sb_at;
 const payeeActive = (p: PartnerRow | null) => !!p && !!p.payee_id && /^(active|approved)$/i.test(String(p.payee_status || ""));
-const bankDone = (p: PartnerRow | null) => !!p && p.payout_method === "bank" && !!p.bank && bankCurrency(String(p.country || "")) === p.bank.currency && !p.aw_error; // von der Bank abgelehnt → nochmal eingeben
+const bankDone = (p: PartnerRow | null) => !!p && p.payout_method === "bank" && bankFits(String(p.country || ""), p.bank) && !p.aw_error; // von der Bank abgelehnt → nochmal eingeben
+/** Airwallex nur für einzeln freigeschaltete Partner (Admin) – Bestandspartner bleiben unberührt. */
+export const awOn = (p: PartnerRow | null) => !!p && p.aw_enabled === true && airwallexConfigured();
+/** Auszahlungsrhythmus je Partner (null = täglich, globale Einstellung). */
+const EVERY_DAYS: Record<string, number> = { daily: 0, weekly: 7, monthly: 30 };
+const everyOf = (p: PartnerRow | null) => (p && p.pay_every && p.pay_every in EVERY_DAYS ? p.pay_every : "daily");
+const minOf = (s: PayoutSettings, p: PartnerRow | null) => (p && p.pay_min_usd != null && Number.isFinite(Number(p.pay_min_usd)) ? Number(p.pay_min_usd) : s.minUsd);
 const vatDone = (p: PartnerRow | null) => !!p && (vatRule(p) !== "at20" || !!p.vat_id);
 /** Pflicht-Einrichtung beim ersten Login erledigt? (Payoneer: Verknüpfung gestartet, sobald Payoneer freigeschaltet ist.) */
 const setupDone = (p: PartnerRow | null) => profileDone(p) && sbOk(p) && vatDone(p) && (
@@ -168,7 +197,10 @@ const setupDone = (p: PartnerRow | null) => profileDone(p) && sbOk(p) && vatDone
 /** Neue Partner (seit 09.10.2026 registriert/angelegt, pay_gate) in Stripe-Ländern: Auszahlung ist für sie schon live –
     Einrichtung (Stripe Connect) ist Pflicht, bevor sie Aufträge sehen, und sie werden automatisch bezahlt, auch wenn der
     Hauptschalter noch aus ist. Bestandspartner (Reputation Vault) bleiben unverändert. */
-export const gated = (p: PartnerRow | null) => !!p && p.pay_gate === true && STRIPE_CC.has(String(p.country || ""));
+export const gated = (p: PartnerRow | null) => !!p && (
+  (p.pay_gate === true && STRIPE_CC.has(String(p.country || "")))
+  // Vom Admin für Airwallex freigeschaltet (Indien/Pakistan): für diesen Partner ist die Auszahlung live.
+  || (p.aw_enabled === true && airwallexConfigured() && !!bankCurrency(String(p.country || "").toUpperCase())));
 export const liveFor = (s: PayoutSettings, p: PartnerRow | null) => s.live || gated(p);
 /** Muss der Partner erst die Auszahlung einrichten, bevor er Aufträge bekommt/sieht? */
 export async function payoutSetupMissing(pid: number | null): Promise<boolean> {
@@ -179,7 +211,7 @@ export async function payoutSetupMissing(pid: number | null): Promise<boolean> {
 }
 /** Automatische Auszahlung möglich? */
 const payReady = (p: PartnerRow | null) => setupDone(p) && (
-  p!.payout_method === "bank" ? airwallexConfigured() && !!p!.aw_beneficiary_id
+  p!.payout_method === "bank" ? awOn(p) && !!p!.aw_beneficiary_id
     : p!.payout_method === "stripe" ? p!.stripe_status === "active"
     : payoneerConfigured() && payeeActive(p));
 
@@ -191,8 +223,9 @@ export function profileView(p: PartnerRow | null) {
     payee: p.payee_id ? { id: p.payee_id, status: p.payee_status || "pending", checked: p.payee_checked_at } : null,
     sb: p.sb_at ? { at: p.sb_at, v: p.sb_v } : null,
     method: p.payout_method || null, vatId: p.vat_id || "", vatStatus: p.vat_status || null, smallBiz: !!p.small_biz,
-    bank: p.bank ? { holder: p.bank.holder, currency: p.bank.currency, bankName: p.bank.bankName || "", ibanMasked: mask(p.bank.iban), accountMasked: mask(p.bank.account), ifsc: p.bank.ifsc || "", bic: p.bank.bic || "" } : null,
+    bank: p.bank ? { holder: p.bank.holder, currency: p.bank.currency, entity: p.bank.entity || "PERSONAL", via: awMethod(String(p.country || ""), p.bank), bankName: p.bank.bankName || "", ibanMasked: mask(p.bank.iban), accountMasked: mask(p.bank.account), ifsc: p.bank.ifsc || "", bic: p.bank.bic || "" } : null,
     bankError: p.payout_method === "bank" ? p.aw_error || null : null,
+    awEnabled: p.aw_enabled === true, payEvery: everyOf(p), payMinUsd: p.pay_min_usd != null ? Number(p.pay_min_usd) : null,
     stripe: p.stripe_acct ? { status: p.stripe_status || "pending" } : null,
     complete: profileDone(p), setupDone: setupDone(p), ready: payReady(p),
   };
@@ -285,10 +318,10 @@ async function refreshPayee(p: PartnerRow, force = false): Promise<PartnerRow> {
 
 /* ---------------- Airwallex (Bankkonto: SEPA / INR / PKR) ---------------- */
 const AW = () => {
-  const sandbox = String(process.env.AIRWALLEX_ENV || "").toLowerCase() === "sandbox";
+  const sandbox = /^(sandbox|demo|test)$/i.test(String(process.env.AIRWALLEX_ENV || "").trim());
   return {
-    id: process.env.AIRWALLEX_CLIENT_ID || "", key: process.env.AIRWALLEX_API_KEY || "",
-    api: (process.env.AIRWALLEX_API_BASE || (sandbox ? "https://api-demo.airwallex.com" : "https://api.airwallex.com")).replace(/\/+$/, ""),
+    id: (process.env.AIRWALLEX_CLIENT_ID || "").trim(), key: (process.env.AIRWALLEX_API_KEY || "").trim(),
+    api: (process.env.AIRWALLEX_API_BASE || (sandbox ? "https://api.sandbox.airwallex.com" : "https://api.airwallex.com")).replace(/\/+$/, ""),
     source: (process.env.AIRWALLEX_SOURCE_CURRENCY || "USD").toUpperCase(), reason: process.env.AIRWALLEX_REASON || "professional_business_services", sandbox,
   };
 };
@@ -303,10 +336,10 @@ async function awToken(): Promise<string> {
   awTok = { v: j.token, exp: j.expires_at ? new Date(j.expires_at).getTime() : Date.now() + 25 * 60_000 };
   return awTok.v;
 }
-async function aw(method: "GET" | "POST", path: string, body?: unknown): Promise<{ status: number; json: Record<string, unknown> }> {
+async function aw(method: "GET" | "POST", path: string, body?: unknown, headers: Record<string, string> = {}): Promise<{ status: number; json: Record<string, unknown> }> {
   const res = await fetch(`${AW().api}${path}`, {
-    method, headers: { Authorization: `Bearer ${await awToken()}`, Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}) },
-    body: body ? JSON.stringify(body) : undefined,
+    method, headers: { Authorization: `Bearer ${await awToken()}`, Accept: "application/json", ...(body ? { "Content-Type": "application/json" } : {}), ...headers },
+    body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(20_000),
   });
   return { status: res.status, json: (await res.json().catch(() => ({}))) as Record<string, unknown> };
 }
@@ -317,25 +350,43 @@ function awErr(j: Record<string, unknown>): string {
   const errs = Array.isArray(j.errors) ? (j.errors as Record<string, unknown>[]).map((d) => [d.source || d.field, d.message || d.code].filter(Boolean).join(": ")) : [];
   return [j.message, ...det, ...errs].filter(Boolean).join(" · ").slice(0, 300) || JSON.stringify(j).slice(0, 300);
 }
-function awBeneficiary(p: PartnerRow) {
+/** Zahlungszweck: lokale PKR-Auszahlung erlaubt nur bestimmte Zwecke (Freelancer → other_services). */
+const awReason = (cc: string, via: "LOCAL" | "SWIFT") => (String(cc).toUpperCase() === "PK" && via === "LOCAL" ? "other_services" : AW().reason);
+export function awBeneficiary(p: PartnerRow) {
   const b = p.bank!;
   const cc = String(p.country || "").toUpperCase();
+  const via = awMethod(cc, b);
+  const company = b.entity === "COMPANY";
   const [first, ...rest] = String(b.holder).trim().split(/\s+/);
-  const bank_details: Record<string, unknown> = { account_currency: b.currency, account_name: b.holder, bank_country_code: b.currency === "EUR" ? (b.iban || "").slice(0, 2) || cc : cc, ...(b.bankName ? { bank_name: b.bankName } : {}) };
-  if (b.currency === "INR") Object.assign(bank_details, { account_number: b.account, account_routing_type1: "ifsc", account_routing_value1: b.ifsc });
+  const bank_details: Record<string, unknown> = { account_currency: b.currency, account_name: b.holder, bank_country_code: cc, ...(b.bankName ? { bank_name: b.bankName } : {}) };
+  // Indien: IFSC als bank_code (laut Airwallex-Doku „bank_code only“).
+  if (b.ifsc) Object.assign(bank_details, { account_number: b.account, account_routing_type1: "bank_code", account_routing_value1: b.ifsc });
   else Object.assign(bank_details, { iban: b.iban, ...(b.bic ? { swift_code: b.bic } : {}) });
+  const mail = p.payout_email || p.email;
   return {
-    nickname: `RapidRemove partner ${p.id}`, payer_entity_type: "COMPANY", payment_methods: ["LOCAL"],
+    nickname: `RapidRemove partner ${p.id}`, payer_entity_type: "COMPANY", transfer_methods: [via],
     beneficiary: {
-      entity_type: "PERSONAL", first_name: first, last_name: rest.join(" ") || first, bank_details,
+      entity_type: company ? "COMPANY" : "PERSONAL",
+      ...(company ? { company_name: b.holder } : { first_name: first, last_name: rest.join(" ") || first }),
+      bank_details,
       address: { street_address: [p.addr1, p.addr2].filter(Boolean).join(", "), city: p.city, postcode: p.zip || undefined, country_code: cc },
-      additional_info: p.payout_email || p.email ? { personal_email: p.payout_email || p.email } : undefined,
+      additional_info: mail && !company ? { personal_email: mail } : undefined,
     },
+  };
+}
+/** Überweisung an den gespeicherten Empfänger (USD vom Airwallex-Guthaben, Umrechnung bei Airwallex). */
+export function awTransferBody(p: PartnerRow, usdAmount: number, ref: string) {
+  const b = p.bank!, cc = String(p.country || "").toUpperCase(), via = awMethod(cc, b), src = AW().source;
+  return {
+    request_id: ref, beneficiary_id: p.aw_beneficiary_id, transfer_method: via, source_currency: src, transfer_currency: b.currency,
+    ...(src === b.currency ? { transfer_amount: usdAmount.toFixed(2) } : { source_amount: usdAmount.toFixed(2) }),
+    reason: awReason(cc, via), reference: `RapidRemove ${ref}`.slice(0, 35),
+    ...(via === "SWIFT" ? { swift_charge_option: "SHARED" } : { fee_paid_by: "PAYER" }),
   };
 }
 /** Empfänger bei Airwallex anlegen (bei geänderten Bankdaten neu). Fehler → aw_error (Partner sieht ihn in der App). */
 async function ensureBeneficiary(p: PartnerRow, force = false): Promise<PartnerRow> {
-  if (!pool || !airwallexConfigured() || p.payout_method !== "bank" || !p.bank) return p;
+  if (!pool || !awOn(p) || p.payout_method !== "bank" || !p.bank) return p;
   if (p.aw_beneficiary_id && !force) return p;
   const r = await aw("POST", "/api/v1/beneficiaries/create", awBeneficiary(p)).catch((e) => ({ status: 0, json: { message: (e as Error).message } as Record<string, unknown> }));
   const id = String(r.json.beneficiary_id || r.json.id || "");
@@ -522,8 +573,19 @@ async function runFor(pIn: PartnerRow, s: PayoutSettings, log: (m: string) => vo
       if (!payeeActive(p)) return { ok: true, skipped: `Payoneer-Konto des Partners nicht verbunden (${p.payee_status || "nicht verknüpft"})` };
     } else {
       if (!airwallexConfigured()) return { ok: true, skipped: "Airwallex-Zugang fehlt (Railway-Variablen)" };
+      if (!awOn(p)) return { ok: true, skipped: "Airwallex für diesen Partner nicht freigeschaltet" };
+      // Sandbox: kein Spielgeld für echte Löschungen (Aufgaben würden als bezahlt markiert + Gutschrift-Nummer verbraucht).
+      if (AW().sandbox) return { ok: true, skipped: "Airwallex im Sandbox-Modus – nur Testüberweisungen (Admin → Auszahlungen)" };
       p = await ensureBeneficiary(p);
       if (!p.aw_beneficiary_id) return { ok: true, skipped: `Bankdaten bei Airwallex abgelehnt: ${p.aw_error || "unbekannt"}` };
+    }
+    // Rhythmus je Partner (z. B. monatlich bei SWIFT-Firmen): automatisch erst, wenn die letzte Auszahlung lange genug her ist.
+    const every = everyOf(p);
+    if (!manual && EVERY_DAYS[every] > 0) {
+      const last = await pool.query(`SELECT max(COALESCE(sent_at, created_at)) AS at FROM partner_payouts WHERE partner_id=$1 AND status IN ('sent','manual')`, [p.id]);
+      const at = last.rows[0]?.at ? new Date(last.rows[0].at).getTime() : 0;
+      const nextAt = at + EVERY_DAYS[every] * 86_400_000 - 3 * 3_600_000; // 3 h Puffer, damit die Tageszeit nicht wandert
+      if (at && Date.now() < nextAt) return { ok: true, skipped: `${every === "weekly" ? "wöchentlich" : "monatlich"} – nächste Auszahlung ab ${new Date(nextAt).toLocaleDateString("de-AT", { timeZone: "Europe/Vienna" })}` };
     }
     const due = (await pool.query(
       `SELECT id, code, kind, price_usd, customer, removed_at, order_id, url, name, text, rating FROM partner_tasks
@@ -548,7 +610,8 @@ async function runFor(pIn: PartnerRow, s: PayoutSettings, log: (m: string) => vo
     if (!ok.length) return { ok: true, skipped: "alle fälligen wieder sichtbar", held };
     const a = amounts(ok.reduce((x, t) => x + Number(t.price_usd || 0), 0), p);
     const amount = a.gross;
-    if (a.net < s.minUsd) return { ok: true, skipped: `Summe $${a.net} unter Mindestbetrag $${s.minUsd}`, held };
+    const minUsd = minOf(s, p);
+    if (a.net < minUsd) return { ok: true, skipped: `Summe $${a.net} unter Mindestbetrag $${minUsd}`, held };
 
     // Reservieren (payout_id gesetzt, paid_at erst nach Annahme durch den Anbieter) → kein doppeltes Auszahlen.
     const ins = await pool.query(`INSERT INTO partner_payouts (amount_usd, net_usd, vat_usd, tasks, note, status, method, partner_id) VALUES ($1,$2,$3,$4,$5,'pending',$6,$7) RETURNING id`,
@@ -576,11 +639,7 @@ async function runFor(pIn: PartnerRow, s: PayoutSettings, log: (m: string) => vo
         }, `rr-${ref}`);
       } else r = via === "payoneer"
         ? await py("POST", "/masspayouts", { Payments: [{ client_reference_id: ref, payee_id: p.payee_id, description: desc, currency: "USD", amount: amount.toFixed(2) }] })
-        : await aw("POST", "/api/v1/transfers/create", {
-          request_id: ref, beneficiary_id: p.aw_beneficiary_id, transfer_method: "LOCAL", source_currency: AW().source, transfer_currency: p.bank!.currency,
-          ...(AW().source === p.bank!.currency ? { transfer_amount: amount.toFixed(2) } : { source_amount: amount.toFixed(2) }),
-          reason: AW().reason, reference: `RapidRemove ${ref}`.slice(0, 35), fee_paid_by: "PAYER",
-        });
+        : await aw("POST", "/api/v1/transfers/create", awTransferBody(p, amount, ref));
     } catch (e) { r = { status: 0, json: { error: (e as Error).message, message: (e as Error).message } }; }
     if (r.status < 200 || r.status >= 300) {
       const err = (via === "payoneer" ? pyErr(r.json) : via === "stripe" ? stErr(r.json) : awErr(r.json)) || `HTTP ${r.status}`;
@@ -634,7 +693,7 @@ export async function payoutTick(log: (m: string) => void): Promise<void> {
   await pollSent().catch(() => {});
   const s = await payoutSettings();
   if (!s.auto || !(payoneerConfigured() || airwallexConfigured() || stripeConfigured())) return;
-  if (!s.live && !(await pool.query(`SELECT 1 FROM partners WHERE pay_gate AND status='active' LIMIT 1`)).rowCount) return;
+  if (!s.live && !(await pool.query(`SELECT 1 FROM partners WHERE (pay_gate OR aw_enabled) AND status='active' LIMIT 1`)).rowCount) return;
   const v = viennaNow();
   if (v.hour < s.hour || (await getSetting("payout_last_day")) === v.day) return;
   await setSetting("payout_last_day", v.day);
@@ -742,7 +801,7 @@ export async function mailGutschrift(id: number): Promise<void> {
   const pdf = await gutschriftPdf(id);
   if (!pdf) return;
   const amt = num(x.amount_usd).toFixed(2);
-  const how = x.method === "payoneer" ? "has been sent to your Payoneer account" : "has been recorded as paid";
+  const how = x.method === "payoneer" ? "has been sent to your Payoneer account" : x.method === "airwallex" ? "has been sent to your bank account" : "has been recorded as paid";
   await sendMail({
     to, subject: `RapidRemove payout USD ${amt} · ${x.gs_no}`,
     html: `<div style="font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.5;color:#111;max-width:560px">
@@ -800,13 +859,13 @@ export function registerPayoutRoutes(
     if (!(await auth.check(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
     if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
     const s = await payoutSettings();
-    const base = { live: s.live, sbText: SB_TEXT, sbVersion: SB_VERSION, payoneer: payoneerConfigured(), bank: airwallexConfigured(), stripe: stripeConfigured(), holdDays: s.holdDays, minUsd: s.minUsd, next: nextRunText(s) };
+    const base = { live: s.live, sbText: SB_TEXT, sbVersion: SB_VERSION, payoneer: payoneerConfigured(), bank: false, stripe: stripeConfigured(), holdDays: s.holdDays, minUsd: s.minUsd, next: nextRunText(s) };
     if (await auth.preview(b.t)) return { ok: true, preview: true, ...base, profile: null, auto: false, balance: { owedUsd: 0, owedCount: 0, dueUsd: 0, dueCount: 0, processingUsd: 0 }, payouts: [] };
     let p = await partnerOf(b.t);
     if (p) p = await refreshStripe(await refreshPayee(p), String(b.fresh || "") === "stripe");
     const prs = p ? await payoutsOf(Number(p.id), 40) : [];
     return {
-      ok: true, ...base, live: liveFor(s, p), profile: profileView(p), auto: liveFor(s, p) && s.auto && payReady(p),
+      ok: true, ...base, bank: awOn(p), minUsd: minOf(s, p), live: liveFor(s, p), profile: profileView(p), auto: liveFor(s, p) && s.auto && payReady(p),
       balance: await balance(s.holdDays, p ? Number(p.id) : -1), payouts: prs.filter((x) => x.status !== "failed" && x.status !== "pending").map(payoutView).map((x) => ({ ...x, error: null })),
     };
   });
@@ -832,10 +891,13 @@ export function registerPayoutRoutes(
     // Bankkonto: neue Daten prüfen – oder die gespeicherten behalten (Formular zeigt sie nur maskiert).
     let bank: Bank | null = null;
     if (v.method === "bank") {
+      if (!awOn(p)) return reply.code(400).send({ ok: false, error: "Bank payouts are not available for your account yet – please choose Payoneer." });
       const nb = (b.bank || {}) as Record<string, unknown>;
       const fresh = !!clip(nb.iban, 42) || !!clip(nb.account, 34);
+      const entity = nb.entity === "COMPANY" ? "COMPANY" : "PERSONAL";
+      const kept: Bank | null = p.bank ? { ...p.bank, holder: clip(nb.holder, 120) || p.bank.holder } : null;
       if (fresh) { const x = bankFrom(v.country, nb, v.legal); if (x.error) return reply.code(400).send({ ok: false, error: x.error }); bank = x.bank!; }
-      else if (p.bank && p.bank.currency === bankCurrency(v.country)) bank = { ...p.bank, holder: clip(nb.holder, 120) || p.bank.holder };
+      else if (kept && (kept.entity || "PERSONAL") === entity && bankFits(v.country, { ...kept, currency: String(nb.currency || kept.currency).toUpperCase() })) bank = { ...kept, currency: String(nb.currency || kept.currency).toUpperCase() };
       else return reply.code(400).send({ ok: false, error: bankCurrency(v.country) ? "Please enter your bank account." : "Bank payouts are not available in your country – please choose Payoneer." });
     }
     // Steuer: EU → UID (freiwillig, wird geprüft); Österreich ohne Kleinunternehmer → UID Pflicht.
@@ -858,8 +920,11 @@ export function registerPayoutRoutes(
         vatId, vatStatus, v.country === "AT" && v.small, ...(agree ? [ipOf(req), clip(req.headers["user-agent"], 300), SB_VERSION] : [])],
     );
     let row = u.rows[0] as PartnerRow;
+    // SWIFT (Firma in Pakistan) kostet je Überweisung → Standard „monatlich“, solange der Admin nichts anderes eingestellt hat.
+    if (row.payout_method === "bank" && awMethod(v.country, bank) === "SWIFT" && !row.pay_every)
+      row = (await pool.query(`UPDATE partners SET pay_every='monthly' WHERE id=$1 RETURNING *`, [p.id])).rows[0] as PartnerRow;
     // Bankkonto sofort bei Airwallex anlegen → Fehler (z. B. falsche Kontonummer) sieht der Partner direkt.
-    if (row.payout_method === "bank" && airwallexConfigured() && !row.aw_beneficiary_id) {
+    if (row.payout_method === "bank" && awOn(row) && !row.aw_beneficiary_id) {
       row = await ensureBeneficiary(row, true);
       if (!row.aw_beneficiary_id && row.aw_error) return reply.code(400).send({ ok: false, error: `Your bank rejected these details: ${row.aw_error}`, profile: profileView(row) });
     }
@@ -921,7 +986,16 @@ export function registerPayoutRoutes(
     const partners = [] as unknown[];
     for (let p of ps) {
       p = await refreshStripe(await refreshPayee(p));
-      partners.push({ ...profileView(p), email: p.email, sbIp: p.sb_ip, paused: !p.active, balance: await balance(s.holdDays, Number(p.id)) });
+      const t = await getSetting(`aw_test_${p.id}`);
+      partners.push({ ...profileView(p), email: p.email, sbIp: p.sb_ip, paused: !p.active, balance: await balance(s.holdDays, Number(p.id)), awTest: t ? JSON.parse(t) : null });
+    }
+    // Airwallex-Guthaben (Sandbox: von Airwallex vorab befüllt) – nur Anzeige.
+    let awBal: { currency: string; available: number }[] | null = null, awBalErr: string | null = null;
+    if (airwallexConfigured()) {
+      const r = await aw("GET", "/api/v1/balances/current").catch((e) => ({ status: 0, json: { message: (e as Error).message } as Record<string, unknown> }));
+      const rows = Array.isArray(r.json) ? r.json : Array.isArray((r.json as { items?: unknown }).items) ? (r.json as { items: unknown[] }).items : null;
+      if (r.status >= 200 && r.status < 300 && rows) awBal = (rows as { currency: string; available_amount: number }[]).filter((x) => Number(x.available_amount) > 0 || ["USD", "PKR", "INR"].includes(x.currency)).map((x) => ({ currency: x.currency, available: num(x.available_amount) }));
+      else awBalErr = awErr(r.json as Record<string, unknown>) || `HTTP ${r.status}`;
     }
     const first = ps[0] ? Number(ps[0].id) : null;
     const names = new Map(ps.map((p) => [String(p.id), p.name]));
@@ -929,7 +1003,7 @@ export function registerPayoutRoutes(
     const last = await getSetting("payout_last_result");
     const c = PY();
     return {
-      ok: true, settings: s, payoneer: { configured: payoneerConfigured(), sandbox: c.sandbox }, stripe: { configured: stripeConfigured(), test: String(process.env.STRIPE_SECRET_KEY || "").startsWith("sk_test") }, airwallex: { configured: airwallexConfigured(), sandbox: AW().sandbox }, partners, partner: partners[0] || null,
+      ok: true, settings: s, payoneer: { configured: payoneerConfigured(), sandbox: c.sandbox }, stripe: { configured: stripeConfigured(), test: String(process.env.STRIPE_SECRET_KEY || "").startsWith("sk_test") }, airwallex: { configured: airwallexConfigured(), sandbox: AW().sandbox, balances: awBal, balanceError: awBalErr }, partners, partner: partners[0] || null,
       balance: await balance(s.holdDays), next: nextRunText(s), last: last ? JSON.parse(last) : null,
       payouts: (pr.rows as PayoutRow[]).map((x) => ({ ...payoutView(x), partner: names.get(String(x.partner_id ?? first)) || "" })),
     };
@@ -957,5 +1031,85 @@ export function registerPayoutRoutes(
     const b = (req.body || {}) as Record<string, unknown>;
     if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
     try { await mailGutschrift(Number(b.id)); return { ok: true }; } catch (e) { return reply.code(502).send({ ok: false, error: (e as Error).message }); }
+  });
+
+  // Admin: je Partner – Airwallex freischalten, Auszahlungsrhythmus, Mindestbetrag. Nur gesetzte Felder werden geändert.
+  app.post("/admin/payouts/partner", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const p = await partnerById(Number(b.id) || -1);
+    if (!p || Number(p.id) !== Number(b.id)) return reply.code(404).send({ ok: false, error: "Partner nicht gefunden" });
+    const sets: string[] = [], vals: unknown[] = [p.id];
+    if (typeof b.awEnabled === "boolean") {
+      if (b.awEnabled && !bankCurrency(String(p.country || "").toUpperCase())) return reply.code(400).send({ ok: false, error: "Airwallex gibt es hier nur für Partner in Indien oder Pakistan (Land im Partnerprofil)." });
+      vals.push(b.awEnabled); sets.push(`aw_enabled=$${vals.length}`);
+    }
+    if (b.payEvery !== undefined) {
+      const e = b.payEvery === null || b.payEvery === "daily" ? null : String(b.payEvery);
+      if (e && !(e in EVERY_DAYS)) return reply.code(400).send({ ok: false, error: "Rhythmus unbekannt" });
+      vals.push(e); sets.push(`pay_every=$${vals.length}`);
+    }
+    if (b.payMinUsd !== undefined) {
+      const n = b.payMinUsd === null || b.payMinUsd === "" ? null : Math.max(0, Math.min(5000, Math.round(Number(b.payMinUsd))));
+      if (n !== null && !Number.isFinite(n)) return reply.code(400).send({ ok: false, error: "Mindestbetrag ungültig" });
+      vals.push(n); sets.push(`pay_min_usd=$${vals.length}`);
+    }
+    if (!sets.length) return { ok: true, partner: profileView(p) };
+    const u = await pool.query(`UPDATE partners SET ${sets.join(", ")} WHERE id=$1 RETURNING *`, vals);
+    bumpChange();
+    return { ok: true, partner: profileView(u.rows[0] as PartnerRow) };
+  });
+
+  // Admin (nur Airwallex-Sandbox): Testüberweisung an einen freigeschalteten Partner – ohne Aufgaben, ohne Gutschrift.
+  app.post("/admin/payouts/aw-test", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    if (!airwallexConfigured()) return reply.code(409).send({ ok: false, error: "Airwallex-Zugang fehlt (AIRWALLEX_CLIENT_ID / AIRWALLEX_API_KEY in Railway, Service „ops“)" });
+    if (!AW().sandbox) return reply.code(409).send({ ok: false, error: "Testüberweisungen gibt es nur im Sandbox-Modus (AIRWALLEX_ENV=sandbox)" });
+    let p = await partnerById(Number(b.id) || -1);
+    if (!p || Number(p.id) !== Number(b.id)) return reply.code(404).send({ ok: false, error: "Partner nicht gefunden" });
+    if (!awOn(p)) return reply.code(400).send({ ok: false, error: "Airwallex ist für diesen Partner nicht freigeschaltet" });
+    if (p.payout_method !== "bank" || !p.bank) return reply.code(400).send({ ok: false, error: "Der Partner hat noch kein Bankkonto eingetragen (Partner-App → Earnings → Set up automatic payouts)" });
+    p = await ensureBeneficiary(p, !p.aw_beneficiary_id);
+    if (!p.aw_beneficiary_id) return reply.code(400).send({ ok: false, error: `Bankdaten abgelehnt: ${p.aw_error || "unbekannt"}` });
+    const usdAmt = Math.max(1, Math.min(1000, Number(b.usd) || 10));
+    const ref = `RRT-${p.id}-${Date.now().toString(36)}`;
+    const body = awTransferBody(p, usdAmt, ref);
+    const r = await aw("POST", "/api/v1/transfers/create", body).catch((e) => ({ status: 0, json: { message: (e as Error).message } as Record<string, unknown> }));
+    if (r.status < 200 || r.status >= 300) return reply.code(502).send({ ok: false, error: awErr(r.json) || `HTTP ${r.status}`, request: body });
+    const t = { at: new Date().toISOString(), id: String(r.json.id || r.json.transfer_id || ""), ref, usd: usdAmt, status: String(r.json.status || ""), via: body.transfer_method, currency: body.transfer_currency, amount: r.json.transfer_amount ?? null, fee: r.json.fee_amount ?? null };
+    await setSetting(`aw_test_${p.id}`, JSON.stringify(t));
+    return { ok: true, transfer: t };
+  });
+
+  // Admin (nur Sandbox): Status der letzten Testüberweisung abfragen bzw. bis „PAID“ (oder „FAILED“) weiterschalten.
+  app.post("/admin/payouts/aw-sim", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!airwallexConfigured() || !AW().sandbox) return reply.code(409).send({ ok: false, error: "nur im Airwallex-Sandbox-Modus" });
+    const raw = await getSetting(`aw_test_${Number(b.id)}`);
+    if (!raw) return reply.code(404).send({ ok: false, error: "keine Testüberweisung" });
+    const t = JSON.parse(raw) as { id: string; status: string };
+    const fail = b.fail === true;
+    const NEXT: Record<string, string> = { SCHEDULED: "PROCESSING", OVERDUE: "PROCESSING", PROCESSING: "SENT", SENT: fail ? "FAILED" : "PAID" };
+    const trail: string[] = [];
+    let status = t.status, err: string | null = null;
+    for (let i = 0; i < 5; i++) {
+      const g = await aw("GET", `/api/v1/transfers/${encodeURIComponent(t.id)}`).catch(() => null);
+      if (g && g.status < 300) status = String(g.json.status || status);
+      if (b.check === true) break;
+      const next = fail && (status === "SCHEDULED" || status === "PROCESSING") ? "FAILED" : NEXT[status];
+      if (!next) break;
+      const s = await aw("POST", `/api/v1/simulation/transfers/${encodeURIComponent(t.id)}/transition`, { next_status: next, ...(next === "FAILED" ? { failure_type: "INVALID_ACCOUNT_NAME_OR_NUMBER" } : {}) }, { "x-api-version": "2024-04-30" })
+        .catch((e) => ({ status: 0, json: { message: (e as Error).message } as Record<string, unknown> }));
+      if (s.status < 200 || s.status >= 300) { err = awErr(s.json) || `HTTP ${s.status}`; break; }
+      trail.push(`${status} → ${next}`);
+      status = String(s.json.status || next);
+      if (next === "PAID" || next === "FAILED") break;
+    }
+    await setSetting(`aw_test_${Number(b.id)}`, JSON.stringify({ ...t, status }));
+    return err ? reply.code(502).send({ ok: false, error: err, status, trail }) : { ok: true, status, trail };
   });
 }

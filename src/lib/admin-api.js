@@ -693,6 +693,9 @@ export const payoutsInfo = () => adminPost("/admin/payouts");
 export const payoutsSettings = (p) => adminPost("/admin/payouts/settings", p);
 export const payoutsRun = () => adminPost("/admin/payouts/run");
 export const payoutsRemail = (id) => adminPost("/admin/payouts/remail", { id });
+export const payoutsPartner = (id, patch) => adminPost("/admin/payouts/partner", { id, ...patch });
+export const payoutsAwTest = (id, usd) => adminPost("/admin/payouts/aw-test", { id, usd });
+export const payoutsAwSim = (id, opts = {}) => adminPost("/admin/payouts/aw-sim", { id, ...opts });
 /** Gutschrift-PDF in neuem Tab öffnen. */
 export async function payoutPdfOpen(id) {
   const w = window.open("", "_blank");
