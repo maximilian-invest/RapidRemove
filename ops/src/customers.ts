@@ -578,6 +578,7 @@ function profileView(o: ProfileRow): OrderView {
     payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
     // „Keine Rechte" (10/2026): Kunde entscheidet im Dashboard – fortfahren (+Aufpreis bei Erfolg, Zahlungsart hinterlegen) oder stornieren.
     rights: rightsOf(raw, st === "cancelled", cur),
+    autoPay: raw.payMethod === "auto", // wird bei „Löschung abgeschlossen" automatisch abgebucht
   } as unknown as OrderView;
 }
 
@@ -608,6 +609,8 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
 export function ordersRunning(orders: OrderView[]): boolean {
   return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate || !!(o as { reasons?: unknown }).reasons
     || (o as { rights?: { status?: string } | null }).rights?.status === "pending"
+    // Profil-Löschung mit automatischer Abbuchung, noch nicht bezahlt → Zahlungsart muss bleiben (tauschen geht).
+    || (o.kind === "profile" && !!(o as { autoPay?: boolean }).autoPay && !(o as { profileOrder?: ProfileInfo }).profileOrder?.paid)
     || o.items.some((i) => ["new", "working", "software", "sw_accepted"].includes(i.status))));
 }
 

@@ -16,7 +16,7 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf, orderParts, money } from "./model";
 import PaidCelebration from "./Celebrate";
 import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoScreen, isPayOpen, RStars, rvStars } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
@@ -507,6 +507,25 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
   } else if (sheet && sheet.kind === "mailhist" && o) {
     body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} payOpen={!!sheet.payOpen} />;
 
+  } else if (sheet && sheet.kind === "autodone" && o) {
+    const pp = orderParts(o);
+    const sub = (o.protection === "monthly" || o.protection === "monitor") && Number(o.protAmount) > 0;
+    const run = async () => {
+      setBusy(true);
+      try {
+        await doStatus(o, "done", { label: "Profil gelöscht" });
+        toast("Löschung abgeschlossen · Abbuchung läuft");
+        setTimeout(() => { reload(true); }, 6000); // Abbuchung (Stripe) läuft im Hintergrund → Zahlstatus nachladen
+        close(); closeDrawer();
+      } catch (e) { toast("Fehler: " + e.message); }
+      setBusy(false);
+    };
+    body = (
+      <><h3>Löschung abgeschlossen?</h3>
+        <p className="shp">Profil von <b>{o.name || o.email}</b> gelöscht. Wir buchen <b>{money(pp.total, pp.c)}</b> (netto, zzgl. Steuer laut Rechnung) automatisch von der hinterlegten Zahlungsart ab{sub ? <> und starten das Abo <b>{money(o.protAmount, pp.c)}/Monat</b> ({o.protection === "monitor" ? "Schutz + Monitoring" : "Schutz"})</> : null}. Der Kunde bekommt die Rechnung automatisch per Mail.</p>
+        <p className="shp" style={{ fontSize: 13, color: "var(--g3)" }}>Klappt die Abbuchung nicht, bekommst du eine Push – dann wie gewohnt den Zahlungslink senden.</p>
+        <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Abschließen & abbuchen"}</button></div></>
+    );
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "chk" && sheet.c) {

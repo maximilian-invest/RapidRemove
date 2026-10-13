@@ -478,6 +478,16 @@ app.post("/order", async (req, reply) => {
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
   const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
+  // Profil-Löschung (10/2026): nicht deutschsprachige Kunden + alle Schweizer → gleicher Ablauf wie Einzelbewertungen:
+  // Konto + Dashboard (direkt nach der Bestellung), Zahlungsart hinterlegen, abgebucht wird erst bei „Löschung abgeschlossen"
+  // (inkl. Schutz-Abo als echtes Abo). Wise/PayPal-Zahler (−10 %) zahlen weiter separat. Deutschsprachige DE/AT: unverändert.
+  const isProfileOrder = !isReviews && !isPress;
+  const profCH = ruleCountry === "CH" || /(schweiz|switzerland|suisse|svizzera)\s*$/i.test(String(b.addr || ""));
+  const profDash = isProfileOrder && !!email && (tlang !== "de" || profCH);
+  const profAuto = profDash && !["wise", "paypal"].includes(String(b.payPref || "")) && autopayAvailable(email);
+  const profGate = profAuto ? !(await hasSavedMethod(email).catch(() => false)) : false;
+  if (profAuto) (b as Record<string, unknown>).payMethod = "auto";
+  if (profGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   // Gründe je Bewertung (10/2026): Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an → erst dann Start.
   const reasonsGate = isReviews && reviewItems.length > 0 && !!email;
   if (reasonsGate) (b as Record<string, unknown>).reasons = reasonsGateNew();
@@ -523,7 +533,7 @@ app.post("/order", async (req, reply) => {
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
   let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
   let autologin: string | null = null;
-  if (isReviews && dbReady() && email) {
+  if ((isReviews || profDash) && dbReady() && email) {
     try {
       const acc = await ensureCustomerAccount(email);
       const durl = await dashLink(email, lang);
@@ -543,7 +553,7 @@ app.post("/order", async (req, reply) => {
   }
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
-    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}) };
+    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
@@ -712,7 +722,9 @@ app.post("/order", async (req, reply) => {
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: automatische Übergabe fehlgeschlagen"));
       }
       // Profil-Bestellung (Löschung / Neustart / Express) → Profil als Partner-Aufgabe, falls in den Einstellungen aktiv.
-      if (["remove", "reset", "express"].includes(service) && await partnerAutoEnabled("profiles").catch(() => false)) {
+      if (profGate) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart nötig – Profil-Löschung startet nach dem Hinterlegen", detail: "Kunde hinterlegt im Dashboard Karte/PayPal; abgebucht wird erst bei „Löschung abgeschlossen\" (Schutz-Abo als Abo)", auto: true }).catch(() => {});
+      else if (profAuto) await insertEvent({ orderId: id, type: "note", title: "Zahlungsart schon hinterlegt – wird bei „Löschung abgeschlossen\" automatisch abgebucht", detail: "Kunde hat bereits eine Zahlungsart im Dashboard", auto: true }).catch(() => {});
+      if (["remove", "reset", "express"].includes(service) && !profGate && await partnerAutoEnabled("profiles").catch(() => false)) {
         const purl = (typeof b.mapsUri === "string" && b.mapsUri) || (/^https?:\/\//i.test(profile) ? profile : "");
         await partnerAutoSendProfile(id, profile || company || name, purl)
           .catch((e) => app.log.error({ err: e, orderId: id }, "Partner-Board: Profil-Weiterleitung fehlgeschlagen"));
@@ -748,7 +760,8 @@ app.post("/order", async (req, reply) => {
     result.saveError = String((e as Error)?.message || e).slice(0, 200);
   }
 
-  return autologin ? { ...result, autologin } : result;
+  const out = { ...result, ...(isReviews || profDash ? { dash: true } : {}), ...(profGate ? { payGate: true } : {}) };
+  return autologin ? { ...out, autologin } : out;
 });
 
 // Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen (Telefon/WhatsApp-Kunden).

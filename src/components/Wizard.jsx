@@ -2388,7 +2388,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       amount: leistungTotal, protAmount: protPriceVal ? num(protPriceVal) : 0,
       country, checkId, saleTotal: oneTimeTotal, fprTid, fprRef,
       placeName: revFlow && revPlace ? String(revPlace.name || "").slice(0, 200) : "", placeAddr: revFlow && revPlace ? String(revPlace.addr || "").slice(0, 300) : "", // Inhaber-Nachweis: Abgleich mit dem Google-Profil
-      profileCountry: revFlow ? revCountry : "", // Verfahren je Bewertung (Software-Regel) – der Server rechnet nach
+      profileCountry: revFlow ? revCountry : selected ? String(selected.cc || addrCountry(selected.addr || "") || "").toUpperCase() : "", // Bewertungen: Software-Regel; Profil: Schweiz → Dashboard-Ablauf
       // Herkunft → Admin „Quelle". `attribution` ist der Last-Touch (die Quelle,
       // die zählt); der First-Touch geht daneben als zweite Perspektive mit.
       attribution: readLastTouch(), attributionFirst: readAttribution(),
@@ -2415,7 +2415,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
       if (r && r.autologin) { try { window.location.href = "/my-reviews#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       // Bestehendes Konto (Einzelbewertungen): auch ins Dashboard – eingeloggt sofort, sonst Login mit Hinweis auf den Mail-Link.
-      if (r && r.ok && revFlow && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
+      if (r && r.ok && (revFlow || r.dash) && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
       setStep(6);
     }, 2400);
   };

@@ -597,8 +597,8 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
     body = (
       <>
         <div className="fl-art sf-art"><img src={IMG.rocket} alt="" /></div>
-        <h2>{T("stDoneH")}</h2>
-        <p>{T("stDoneP")}</p>
+        <h2>{T(order.kind === "profile" ? "stDoneHprof" : "stDoneH")}</h2>
+        <p>{T(order.kind === "profile" ? "stDonePprof" : "stDoneP")}</p>
       </>
     );
     foot = <div className="fl-foot sf-foot"><button className="cta" onClick={onClose}>{T("done")}</button></div>;
@@ -851,7 +851,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
 }
 
 /* Direkt nach der Bestellung: kurz „Ihr Dashboard wird eingerichtet" (Ladebalken ~3 Sek.), dann das Dashboard. */
-function SetupOverlay({ onDone }) {
+function SetupOverlay({ onDone, prof }) {
   const [step, setStep] = React.useState(0);
   const [out, setOut] = React.useState(false);
   React.useEffect(() => {
@@ -865,7 +865,7 @@ function SetupOverlay({ onDone }) {
         <div className="setup-art"><img src={IMG.rocket} alt="" /></div>
         <h2>{T("suH")}</h2>
         <div className="setup-bar"><i /></div>
-        <p key={step}>{T(["su1", "su2", "su3"][step])}</p>
+        <p key={step}>{T(["su1", prof ? "su2prof" : "su2", "su3"][step])}</p>
       </div>
     </div>
   );
@@ -1195,7 +1195,7 @@ export default function CustomerDashboard() {
     let fromOrder = false; try { fromOrder = new URLSearchParams(window.location.search).get("from") === "order"; } catch (e) { /* */ }
     return <div className="rra"><Login onToken={onToken} notice={magicErr ? T("magicExpired") : fromOrder ? T("orderLogin") : ""} /></div>;
   }
-  if (setupOn) return <div className="rra"><SetupOverlay onDone={() => setSetupOn(false)} /></div>;
+  if (setupOn) return <div className="rra"><SetupOverlay prof={!!(data && data.orders && data.orders[0] && data.orders[0].kind === "profile")} onDone={() => setSetupOn(false)} /></div>;
   if (offerPk && !postOrder) return <PasskeyOffer role="customer" token={token} onDone={(on) => { setOfferPk(false); if (on) showToast(T("pkIsOn", { name: pkName() })); }} T={T} />;
   if (gate && data && !postOrder) return <PushGate role="customer" token={token} state={gate} T={T} onDone={(on) => { setGate(null); if (on) showToast(T("pushOn")); }} />;
   if (!data) {

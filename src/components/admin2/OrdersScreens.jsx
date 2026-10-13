@@ -162,6 +162,10 @@ export function OrderDetail({ ctx, id }) {
     : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
     : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
     : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
+    // Zahlungsart im Dashboard hinterlegt → kein Zahlungslink: „Löschung abgeschlossen" bucht automatisch ab (Schutz als Abo).
+    : b === "work" && !isRev && o.autoPay && !o.payGate && o.pay !== "paid" ? <button type="button" className="cta ok" onClick={() => openSheet({ kind: "autodone", forId: o.id })}><CheckCircle2 />Löschung abgeschlossen · wird abgebucht</button>
+    // Zahlungsart fehlt noch (Dashboard) → warten, nichts senden.
+    : b === "work" && !isRev && o.autoPay && o.payGate ? <button type="button" className="cta gh" disabled><CreditCard />Wartet auf Zahlungsart des Kunden</button>
     // Profil gelöscht → Zahlungslink senden (Link vorher ansehen/ändern); „ohne Link erledigt" steckt im Sheet.
     : b === "work" && !isRev ? <button type="button" className="cta or" onClick={() => openSheet({ kind: "paylink", forId: o.id })}><CreditCard />Zahlungslink senden</button>
     // Bewertungen ohne Partner-Aufgaben (manuell bearbeitet) → wie früher abschließen.

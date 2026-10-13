@@ -136,6 +136,8 @@ function mapOrder(r) {
     affiliate: (r.raw && (r.raw.affiliate || r.raw.fprRef)) || "",
     pgStale: (r.raw && r.raw.pgStale && r.raw.pgStale.at) ? r.raw.pgStale : null, // Zahlungsdaten fehlen (Erinnerungen ausgeschöpft) → Storno am cancelAt
     payGate: (r.raw && r.raw.payGate && r.raw.payGate.status === "pending") ? { keys: Array.isArray(r.raw.payGate.keys) ? r.raw.payGate.keys : null, at: r.raw.payGate.at || null } : null,
+    // Automatische Abbuchung (Zahlungsart im Dashboard): Profil-Löschung → „Löschung abgeschlossen" bucht ab (Schutz als Abo)
+    autoPay: !!(r.raw && r.raw.payMethod === "auto"), autoSub: (r.raw && r.raw.autoSub) || null,
     // „Keine Rechte": Entscheidung des Kunden im Dashboard (pending | accepted | declined)
     rights: (r.raw && r.raw.rightsOffer && r.raw.rightsOffer.status) ? { status: r.raw.rightsOffer.status, extra: Number(r.raw.rightsOffer.extra) || 290, at: r.raw.rightsOffer.at || null, decidedAt: r.raw.rightsOffer.decidedAt || null, prevAmount: r.raw.rightsOffer.prevAmount ?? null } : null,
     assignee: r.assignee || null,
