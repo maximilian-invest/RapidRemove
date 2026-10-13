@@ -118,7 +118,8 @@ export function OrdersList({ ctx }) {
             <Avatar o={o} />
             <span className="t"><span className="l1"><b>{o.name || o.company || o.email || o.id}</b><span className="p">{dueView ? <>{money(r.unpaidAmt, cur(o))}<small className="pof"> offen</small></> : orderMoney(o)}</span></span>
               <span className="l2"><KTag o={o} />{o.pay === "paid" && (b === "new" || b === "work") ? <span className="ktag kpaid" title="Bereits bezahlt – Status prüfen">Bezahlt</span> : null}{payPrefOf(o) ? <span className="ktag kd" title={"Will per " + payPrefOf(o) + " zahlen"}>−10 %</span> : null}{aboOf(o) ? <span className="ktag kabo" title={aboOf(o).label + (aboOf(o).price ? " · " + aboOf(o).price : "")}><ShieldCheck />{aboOf(o).short}</span> : null}{bs.map((x) => <span key={x} className={"dt d-" + x} />)}{bsLabel(bs)}{bs.includes("nopm") ? <small className="pwhy"> ({pendingWhy(o).join(", ")})</small> : null} · <span className={isLate(b, m) ? "late" : ""}>{fmtAge(m)}</span>
-                {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span></span>
+                {r ? <> · <b className="rvp">{r.removed}/{r.total} gelöscht</b>{r.unpaidN && !dueView ? <> · <b className="rvo">{money(r.unpaidAmt, cur(o))} offen</b></> : null}</> : o.service === "reviews" ? <> · {(o.reviewItems || []).length} Bew.</> : null}</span>
+              {o.addr ? <span className="l3">{profLoc(o)}</span> : null}</span>
           </button>
           );
         })}
@@ -170,7 +171,7 @@ export function OrderDetail({ ctx, id }) {
   return (
     <>
       <Nav back={back} isDesk={isDesk} right={<a className="circ" href={`/admin/alt?order=${encodeURIComponent(o.id)}`} aria-label="Im alten Admin öffnen" title="Im alten Admin öffnen"><MoreHorizontal /></a>} />
-      <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p></div></div>
+      <div className="dh"><Avatar o={o} big /><div><h1>{o.name || o.company || o.email}</h1><p>{o.id} · {SERVICE_L[o.service] || o.service}</p>{o.addr ? <p className="ploc">{profLoc(o)}</p> : null}</div></div>
       <div className="amt"><div className="k">{orderParts(o).parts.length > 1 ? "Gesamt" : "Bestellwert"}</div><div className="v">{orderMoney(o)}</div>
         {orderParts(o).parts.length > 1 ? <div className="amtp">{orderParts(o).parts.map(([l, v]) => `${l} ${money(v, cur(o))}`).join(" + ")}</div> : null}
         {aboOf(o) && aboOf(o).recurring ? <div className="abo"><ShieldCheck /><b>{aboOf(o).label}</b>{aboOf(o).price ? <span>+ {aboOf(o).price}</span> : null}</div> : null}
@@ -434,6 +435,11 @@ const PS = {
   new: ["Beim Partner · noch nicht gestartet", "var(--g3)"], working: ["Partner arbeitet", "var(--orange-800)"], removed: ["Gelöscht", "var(--success)"],
   not_possible: ["Partner: nicht möglich", "var(--danger)"], software: ["Software · wartet auf Kunde", "var(--info)"], cancelled: ["Storniert", "var(--g3)"],
 };
+/** Profil + Kurzadresse („Dr. Jordan Drucker, DPM · 184 E 70th St, New York") – unterscheidet mehrere Standorte gleichen Namens. */
+export const profLoc = (o) => {
+  const a = String((o && o.addr) || "").split(",").map((x) => x.trim()).filter(Boolean).slice(0, 2).join(", ");
+  return [(o && (o.profile || o.company)) || "", a].filter(Boolean).join(" · ");
+};
 const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
 /** Sterne einer Bewertung (aus der Bestellung bzw. der Partner-Aufgabe). */
 export const rvStars = (it, t) => { const n = Math.round(Number((it && it.rating) || (t && t.rating)) || 0); return n >= 1 && n <= 5 ? n : 0; };
@@ -479,7 +485,7 @@ export function ReviewsScreen({ ctx, id, focus }) {
   return (
     <>
       <Nav back={back} isDesk={false} right={sh && sh.shots && sh.shots.length ? <span className="pos">{sh.shots.length} Screenshots</span> : null} />
-      <div className="dh"><div><h1>{isRev ? "Bewertungen" : "Screenshots"}</h1><p>{o.id} · {o.name}</p></div></div>
+      <div className="dh"><div><h1>{isRev ? "Bewertungen" : "Screenshots"}</h1><p>{o.id} · {o.name}</p>{o.addr ? <p className="ploc">{profLoc(o)}</p> : null}</div></div>
       {isRev ? (
         <>
           <div className="rsum"><div><b>{acc ? accN : items.length}</b><span>{acc ? "Angenommen" : "Eingereicht"}</span></div><div><b>{working}</b><span>In Arbeit</span></div><div><b>{removed}</b><span>Gelöscht</span></div></div>
