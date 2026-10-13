@@ -28,7 +28,7 @@ async function ai(before: { buf: Buffer; mime: string } | null, after: { buf: Bu
   if (!key) return null;
   const system = `You check whether ONE specific Google review has been deleted. A removal partner claims it is gone; the customer is charged only if that is true, so be strict.
 You get ${before ? "two screenshots: BEFORE (taken when the order was placed – shows the review) and AFTER (taken just now by opening the same review link)" : "one screenshot AFTER (taken just now by opening the review link)"}.
-When a Google review is deleted, its link usually opens the business page / Google Maps without that review, a generic Maps view, or a "not available" notice.
+When a Google review is deleted, its link usually opens the business page / Google Maps without that review, a generic Maps view, or a "not available" notice. A review page that shows only the business card (name/address) with NO reviewer name, NO stars and NO review text (e.g. just "0 points" or an empty area) means the review is gone.
 IMPORTANT: a Google Maps notice "Unsupported link" / "Link not supported" / "Nicht unterstützter Link" / "Link wird nicht unterstützt" (or the same in any language) on a review link means the review no longer exists → visible: false with high confidence (0.9).
 If AFTER still shows the same review (same reviewer name and same text/stars), it is still visible.
 If AFTER is a consent page, a blank/loading page, an error that is not about the review, or otherwise does not allow a decision, answer visible: null.
@@ -79,7 +79,8 @@ async function serpCheck(t: Task, rating: number | null, placeId: string | null)
   const high = rating != null && rating >= 4;
   let token: string | null = null;
   for (let page = 0; page < 10; page++) {
-    const p = new URLSearchParams({ engine: "google_maps_reviews", sort_by: high ? "ratingHigh" : "ratingLow", hl: "en", api_key: key });
+    // no_cache: SerpApi liefert sonst bis zu 1 h alte Ergebnisse – „Check again" sähe nie eine frische Liste
+    const p = new URLSearchParams({ engine: "google_maps_reviews", sort_by: high ? "ratingHigh" : "ratingLow", hl: "en", no_cache: "true", api_key: key });
     if (dataId) p.set("data_id", dataId); else p.set("place_id", placeId!);
     if (token) { p.set("next_page_token", token); p.set("num", "20"); }
     let data: any = null;
@@ -123,6 +124,20 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   // Kein Profil aus der Bestellung (z. B. manuelle Aufgabe) → über die CID im Link
   if (!placeId) placeId = (await resolveReviewLink(longUrl).catch(() => null))?.place?.placeId || null;
   const sc = await serpCheck({ ...t, url: longUrl }, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
+  // Liste sagt „noch da" → zusätzlich den Link selbst öffnen (Screenshot + KI). Die Liste hinkt Google teils hinterher
+  // (13.10.2026 RV-0100: Liste „sichtbar", Link zeigt nur noch das Profil). Widerspruch → „unknown" + Team prüft.
+  if (sc.result === "visible" && shotKey() && process.env.ANTHROPIC_API_KEY) {
+    try {
+      const s = await captureShot(longUrl);
+      const v = await ai(null, { buf: s.buf, mime: s.mime }, t);
+      const conflict = !!v && v.visible === false && v.confidence >= 0.6;
+      const result: RemovalResult["result"] = conflict ? "unknown" : "visible";
+      const reason = conflict ? "Google's review list still shows it, but the review link no longer does – RapidRemove will double-check." : sc.reason;
+      const r = await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+        [Number(t.id), t.order_id, result, reason + ` (list: visible · link: ${v ? (v.visible === false ? "gone" : v.visible ? "visible" : "unclear") + " – " + v.reason : "no AI answer"})`, v?.confidence ?? null, s.mime, s.buf]).catch(() => ({ rows: [] as { id: number }[] }));
+      return { result, reason, checkId: r.rows[0]?.id, ...(conflict ? { why: `Liste: noch sichtbar · Link: ${v!.reason}` } : {}) };
+    } catch (e) { console.error("Löschprüfung: Gegenprüfung per Screenshot fehlgeschlagen", e); /* → Ergebnis der Liste */ }
+  }
   if (sc.result !== "unknown") {
     await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence) VALUES ($1,$2,$3,$4,$5)`,
       [Number(t.id), t.order_id, sc.result, sc.reason + " (Google review list)", 0.95]).catch(() => {});
