@@ -13,6 +13,8 @@ export interface AuftragsbestaetigungProps {
   dash?: DashInfo;
   /** Zahlungsart muss erst hinterlegt werden (Auftrag startet danach) */
   payGate?: boolean;
+  /** Profil-Löschung (Text der Dashboard-Box ohne „jede Bewertung") */
+  profile?: boolean;
 }
 
 /** Profil-Löschung mit automatischer Abbuchung: Zahlungsart hinterlegen, dann starten wir. */
@@ -169,7 +171,7 @@ export function subject(p: AuftragsbestaetigungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate }: AuftragsbestaetigungProps = {}) {
+export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate, profile }: AuftragsbestaetigungProps = {}) {
   const t = T[lang] || T.de;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
@@ -181,7 +183,7 @@ export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGat
           {(PGP[lang] || PGP.en)[1]}
         </NoteBox>
       ) : null}
-      {dash ? <DashBox lang={lang} dash={dash} /> : null}
+      {dash ? <DashBox lang={lang} dash={dash} profile={profile} /> : null}
       <NoteBox>
         <strong>{t.noteBold}</strong>{t.note}
       </NoteBox>

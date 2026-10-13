@@ -550,6 +550,12 @@ type ProfileInfo = {
   amount: number; protAmount: number; protection: string | null; express: boolean; doneAt: string | null; addr: string | null;
 };
 type ProfileRow = OrderRow & { service: string | null; amount: number | string | null; prot_amount: number | string | null; protection: string | null; done_at: string | null };
+/** „Keine Rechte"-Angebot eines Profil-Auftrags für das Dashboard (nur offene/angenommene). */
+function rightsOf(raw: Record<string, unknown>, cancelled: boolean, cur: string): { status: string; extra: number; cur: string; pay?: boolean } | null {
+  const r = raw.rightsOffer as { status?: string; extra?: number } | undefined;
+  if (!r || cancelled || !["pending", "accepted"].includes(String(r.status))) return null;
+  return { status: String(r.status), extra: Number(r.extra) || 290, cur };
+}
 function profileView(o: ProfileRow): OrderView {
   const raw = (o.raw || {}) as Record<string, unknown>;
   const cur = o.country === "US" ? "usd" : "eur";
@@ -570,6 +576,8 @@ function profileView(o: ProfileRow): OrderView {
     history: paid && oneTime ? [{ id: "p-" + o.id, kind: "profile" as never, amount: oneTime, cur, paid: (o.done_at || o.created_at) as string, n: null as unknown as number, names: [] as string[] }] : [],
     deposits: [], kind: "profile", profileOrder: info,
     payGate: st !== "cancelled" && (raw.payGate as { status?: string } | undefined)?.status === "pending",
+    // „Keine Rechte" (10/2026): Kunde entscheidet im Dashboard – fortfahren (+Aufpreis bei Erfolg, Zahlungsart hinterlegen) oder stornieren.
+    rights: rightsOf(raw, st === "cancelled", cur),
   } as unknown as OrderView;
 }
 
@@ -599,6 +607,7 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
 /** Laufen noch Aufträge (in Bearbeitung, wartend, offen zu zahlen)? → hinterlegte Zahlungsart darf nicht entfernt werden, nur getauscht. */
 export function ordersRunning(orders: OrderView[]): boolean {
   return orders.some((o) => !o.cancelled && ((Number(o.toPay) || 0) > 0 || !!(o as { payGate?: boolean }).payGate || !!(o as { reasons?: unknown }).reasons
+    || (o as { rights?: { status?: string } | null }).rights?.status === "pending"
     || o.items.some((i) => ["new", "working", "software", "sw_accepted"].includes(i.status))));
 }
 
@@ -696,6 +705,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const hasWise = d.orders.some((o) => (o as { payPref?: string | null }).payPref === "wise");
     const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
     const ap = autopayHooks.info ? await autopayHooks.info(email).catch(() => null) : null;
+    for (const o of d.orders as (OrderView & { rights?: { status: string; pay?: boolean } | null })[]) if (o.rights && o.rights.status === "pending") o.rights.pay = !!ap?.available && !ap?.saved;
     return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
   });
 

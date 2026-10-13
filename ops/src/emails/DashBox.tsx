@@ -21,11 +21,25 @@ export const DASH_L: Record<string, L> = {
   no: { h: "Ditt personlige dashbord", p: "Følg hver omtale live – status, fjerninger og betalinger – i dashbordet ditt. Vi sender deg også e-post så snart noe endrer seg.", login: "Innlogging", pw: "Passord", existing: "Logg inn med passordet du allerede har (glemt det? Du kan be om et nytt på innloggingssiden).", btn: "Åpne dashbordet mitt", resetSubj: "Ditt nye passord til RapidRemove-dashbordet", resetTitle: "Nytt passord", resetP: "her er det nye passordet ditt til RapidRemove-dashbordet:", hi: "Hei," },
 };
 const lOf = (lang?: string) => DASH_L[lang || "en"] || DASH_L.en;
+/** Profil-Löschung: Erklärtext der Box (statt „jede Bewertung"). */
+const P_PROF: Record<string, string> = {
+  de: "Verfolgen Sie Ihren Auftrag live – Status, Löschung und Zahlung – in Ihrem Dashboard, zusammen mit all Ihren weiteren Aufträgen. Zusätzlich informieren wir Sie per E-Mail, sobald sich etwas ändert.",
+  en: "Follow your order live – status, removal and payment – in your dashboard, together with all your other orders. We'll also email you whenever something changes.",
+  es: "Sigue tu pedido en directo –estado, eliminación y pago– en tu panel, junto con todos tus demás pedidos. Además te avisamos por correo cuando cambie algo.",
+  fr: "Suis ta commande en direct – statut, suppression et paiement – dans ton tableau de bord, avec toutes tes autres commandes. Nous t'écrivons aussi dès que quelque chose change.",
+  it: "Segui il tuo ordine in tempo reale – stato, rimozione e pagamento – nella tua dashboard, insieme a tutti i tuoi altri ordini. Ti avvisiamo anche via e-mail quando cambia qualcosa.",
+  nl: "Volg uw bestelling live – status, verwijdering en betaling – in uw dashboard, samen met al uw andere bestellingen. We mailen u ook zodra er iets verandert.",
+  pt: "Acompanha a tua encomenda em tempo real – estado, remoção e pagamento – no teu painel, junto com todas as tuas outras encomendas. Também te avisamos por e-mail sempre que algo mudar.",
+  ja: "ご注文の状況・削除・お支払いを、他のすべてのご注文と一緒にダッシュボードでいつでも確認できます。変更があった場合はメールでもお知らせします。",
+  sv: "Följ din beställning live – status, borttagning och betalning – i din dashboard, tillsammans med alla dina andra beställningar. Vi mejlar dig också så fort något ändras.",
+  da: "Følg din bestilling live – status, fjernelse og betaling – i dit dashboard sammen med alle dine andre bestillinger. Vi mailer dig også, så snart noget ændrer sig.",
+  no: "Følg bestillingen din live – status, fjerning og betaling – i dashbordet ditt, sammen med alle de andre bestillingene dine. Vi sender deg også e-post så snart noe endrer seg.",
+};
 
 /** Box mit Zugangsdaten (beim Anlegen) bzw. Hinweis aufs bestehende Konto + Button. */
-export function DashBox({ lang, dash }: { lang?: string; dash?: DashInfo }) {
+export function DashBox({ lang, dash, profile }: { lang?: string; dash?: DashInfo; profile?: boolean }) {
   if (!dash || !dash.url) return null;
-  const l = lOf(lang);
+  const l = profile ? { ...lOf(lang), p: P_PROF[lang || "en"] || P_PROF.en } : lOf(lang);
   return (
     <NoteBox>
       <span style={{ color: brand.tintText, fontWeight: 700 }}>{l.h}</span><br />

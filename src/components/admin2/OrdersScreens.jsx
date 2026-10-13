@@ -196,6 +196,14 @@ export function OrderDetail({ ctx, id }) {
       ) : null}
       {isRev && o.reasons && o.reasons.status === "pending" && o.status !== "storniert" ? <ReasonsBox o={o} ctx={ctx} /> : null}
       {isRev && o.verify && o.status !== "storniert" ? <VerifyBox o={o} ctx={ctx} /> : null}
+      {o.rights && o.status !== "storniert" && o.rights.status !== "declined" ? (
+        <div className={"disc" + (o.rights.status === "pending" ? " due" : "")}>
+          <span className="di"><KeyRound /></span>
+          <span className="t">{o.rights.status === "pending"
+            ? <><b>Keine Rechte · wartet auf Entscheidung des Kunden</b><span>Mail mit Dashboard-Link ist raus{o.rights.at ? " (" + new Date(o.rights.at).toLocaleString("de-AT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) + ")" : ""}. Kunde wählt im Dashboard: fortfahren (+{money(o.rights.extra, cur(o))} bei Erfolg, Zahlungsart hinterlegen) oder stornieren.</span></>
+            : <><b>Keine Rechte · Kunde hat zugestimmt (+{money(o.rights.extra, cur(o))})</b><span>{o.rights.prevAmount != null ? `Preis ${money(o.rights.prevAmount, cur(o))} → ${money(o.amount, cur(o))}. ` : ""}{o.payGate ? "Zahlungsart fehlt noch – danach weitermachen." : "Jetzt Zugriff über Google beantragen und Profil verifizieren (bis zu 5 Tage)."}</span></>}</span>
+        </div>
+      ) : null}
       {o.pgStale && o.status !== "storniert" ? (
         <div className="disc due">
           <span className="di"><CalendarClock /></span>
@@ -231,7 +239,7 @@ export function OrderDetail({ ctx, id }) {
         {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
         <MailRow o={o} ctx={ctx} payOpen={payOpen(o, now, ptasks)} />
         {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("prices", o.id)}><span className="ico"><Percent /></span><span className="t"><span>Preis</span><b>{orderMoney(o)} · anpassen</b></span><ChevronRight /></button> : null}
-        {!isRev && o.status !== "storniert" ? <button type="button" className="ir" disabled={!o.email} onClick={() => openSheet({ kind: "tplsend", forId: o.id, key: "keine-rechte", label: "Keine Rechte" })}><span className="ico"><KeyRound /></span><span className="t"><span>Keine Rechte</span><b>Mail senden · +{cur(o) === "$" ? "$290" : "290 €"} bei Erfolg, Kunde stimmt zu</b></span><ChevronRight /></button> : null}
+        {!isRev && o.status !== "storniert" && !(o.rights && o.rights.status === "accepted") ? <button type="button" className="ir" disabled={!o.email} onClick={() => openSheet({ kind: "tplsend", forId: o.id, key: "keine-rechte", label: "Keine Rechte" })}><span className="ico"><KeyRound /></span><span className="t"><span>Keine Rechte</span><b>{o.rights && o.rights.status === "pending" ? "Gesendet · wartet auf Entscheidung im Dashboard · erneut senden" : `Mail senden · +${cur(o) === "$" ? "$290" : "290 €"} bei Erfolg, ${(o.lang || "de") === "de" ? "Kunde antwortet per Mail" : "Kunde entscheidet im Dashboard"}`}</b></span><ChevronRight /></button> : null}
       </div>
       <div className="cact">
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>

@@ -3,7 +3,8 @@
    beantragen + Profil verifizieren → bis zu 5 Tage länger, bei Erfolg Aufpreis (Standard 290 €).
    Der Kunde entscheidet per Antwort auf die Mail, ob wir diesen Weg gehen. Ton: sehr professionell, freundlich. */
 import * as React from "react";
-import { EmailShell, P, NoteBox, Support } from "./components";
+import { EmailShell, P, NoteBox, Support, CtaButton } from "./components";
+import { DASH_L, type DashInfo } from "./DashBox";
 
 type Lang = "de" | "en" | "es" | "fr" | "it" | "nl" | "pt" | "ja" | "sv" | "da" | "no";
 
@@ -15,7 +16,24 @@ export interface KeineRechteProps {
   extra?: string;
   /** true → Netto-Hinweis anhängen (EU-Preise; bei USD-Aufträgen ohne) */
   net?: boolean;
+  /** Dashboard-Variante (nicht deutschsprachig): Entscheidung + Zahlungsart im Dashboard statt Antwort per Mail */
+  dash?: DashInfo;
 }
+
+/** Dashboard-Variante: Entscheidung im Dashboard (fortfahren + Zahlungsart hinterlegen / stornieren). */
+const D: Record<Lang, { ask: string; btn: string }> = {
+  de: { ask: " Bitte treffen Sie Ihre Entscheidung in Ihrem persönlichen Dashboard: mit der Löschung fortfahren oder den Auftrag stornieren. Wenn Sie fortfahren, hinterlegen Sie dort bitte auch eine Zahlungsart – belastet wird sie erst, wenn die Löschung erfolgreich abgeschlossen ist.", btn: "Im Dashboard entscheiden" },
+  en: { ask: " Please make your choice in your personal dashboard: continue with the removal or cancel the order. If you continue, please also add a payment method there – it will only be charged once the removal has been completed successfully.", btn: "Decide in your dashboard" },
+  es: { ask: " Tome su decisión en su panel personal: continuar con la eliminación o cancelar el pedido. Si decide continuar, añada allí también un método de pago; solo se cargará cuando la eliminación se haya completado con éxito.", btn: "Decidir en el panel" },
+  fr: { ask: " Merci de faire votre choix dans votre tableau de bord personnel : poursuivre la suppression ou annuler la commande. Si vous poursuivez, veuillez également y ajouter un moyen de paiement – il ne sera débité qu'une fois la suppression menée à bien.", btn: "Décider dans le tableau de bord" },
+  it: { ask: " Vi preghiamo di indicare la vostra scelta nella vostra dashboard personale: proseguire con la rimozione oppure annullare l'ordine. Se proseguite, aggiungete lì anche un metodo di pagamento: l'addebito avverrà solo a rimozione completata con successo.", btn: "Decidi nella dashboard" },
+  nl: { ask: " Maak uw keuze in uw persoonlijke dashboard: doorgaan met de verwijdering of de bestelling annuleren. Gaat u door, voeg daar dan ook een betaalmethode toe – deze wordt pas belast wanneer de verwijdering succesvol is afgerond.", btn: "Beslissen in het dashboard" },
+  pt: { ask: " Faça a sua escolha no seu painel pessoal: continuar com a eliminação ou cancelar a encomenda. Se continuar, adicione lá também um método de pagamento – só será cobrado quando a eliminação estiver concluída com sucesso.", btn: "Decidir no painel" },
+  ja: { ask: "お客様専用ダッシュボードにて、削除作業を続行するか、ご注文をキャンセルするかをお選びください。続行される場合は、併せてお支払い方法をご登録ください。お支払いは削除が正常に完了した時点でのみ発生いたします。", btn: "ダッシュボードで選択する" },
+  sv: { ask: " Gör ditt val i din personliga dashboard: fortsätt med borttagningen eller avbryt beställningen. Om du fortsätter, lägg också till en betalningsmetod där – den debiteras först när borttagningen har slutförts.", btn: "Bestäm i din dashboard" },
+  da: { ask: " Træf dit valg i dit personlige dashboard: fortsæt med fjernelsen, eller annullér bestillingen. Hvis du fortsætter, så tilføj også en betalingsmetode dér – den belastes først, når fjernelsen er gennemført.", btn: "Beslut i dit dashboard" },
+  no: { ask: " Ta valget ditt i ditt personlige dashbord: fortsett med fjerningen eller avbestill. Hvis du fortsetter, legg også til en betalingsmetode der – den belastes først når fjerningen er fullført.", btn: "Bestem i dashbordet" },
+};
 
 interface Copy {
   title: string; preview: string; greeting: string; hello: (n: string) => string;
@@ -227,15 +245,29 @@ const T: Record<Lang, Copy> = {
   },
 };
 
-export default function KeineRechte({ lang = "de", name, extra = "290 €", net = true }: KeineRechteProps = {}) {
+export default function KeineRechte({ lang = "de", name, extra = "290 €", net = true, dash }: KeineRechteProps = {}) {
   const t = T[lang] || T.de;
+  const d = D[lang] || D.en;
+  const l = DASH_L[lang] || DASH_L.en;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{name ? t.hello(name) : t.greeting}</strong></P>
       <P>{t.intro}</P>
       <NoteBox><strong>{t.wayBold}</strong>{t.way}<strong>{t.delayBold}</strong>{t.delayRest}</NoteBox>
       <P>{t.costA}<strong>{extra}{net ? t.netLabel : ""}</strong>{t.costB}</P>
-      <P><strong>{t.askBold}</strong>{t.ask}</P>
+      {dash && dash.url ? (
+        <>
+          <P><strong>{t.askBold}</strong>{d.ask}</P>
+          <NoteBox>
+            {dash.password ? (
+              <>{l.login}: <strong>{dash.email}</strong><br />{l.pw}: <strong style={{ fontFamily: "monospace", fontSize: 15 }}>{dash.password}</strong><br /></>
+            ) : null}
+            <span style={{ display: "block", textAlign: "center", marginTop: dash.password ? 12 : 0 }}><CtaButton href={dash.url}>{d.btn}</CtaButton></span>
+          </NoteBox>
+        </>
+      ) : (
+        <P><strong>{t.askBold}</strong>{t.ask}</P>
+      )}
       <P muted>{t.outro}</P>
       <Support lang={lang} phone />
     </EmailShell>

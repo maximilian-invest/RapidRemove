@@ -339,7 +339,13 @@ const R_MORE = ["hate", "personal", "offensive", "impersonation"];
 const rsKeys = (o) => (o && !o.cancelled && o.reasons && Array.isArray(o.reasons.keys) ? o.reasons.keys : []);
 const rsNeeds = (o) => rsKeys(o).length > 0;
 const vOpen = (o) => vNeeds(o) && o.verify.status !== "checking" && !(o.verify.status === "pending" && o.verify.uploaded);
-const startPhases = (o, autopay) => (o && !o.cancelled ? [...(rsNeeds(o) ? ["r"] : []), ...(vOpen(o) ? ["v"] : []), ...(pgNeeds(o) && !autopay ? ["p"] : [])] : []);
+/* „Keine Rechte" (Profil-Auftrag): Kunde entscheidet – fortfahren (+Aufpreis bei Erfolg, danach ggf. Zahlungsart) oder stornieren. */
+const kNeeds = (o) => !!(o && !o.cancelled && o.kind === "profile" && o.rights && o.rights.status === "pending");
+const startPhases = (o, autopay) => (o && !o.cancelled
+  ? (kNeeds(o) ? ["k", ...(o.rights.pay && !autopay ? ["p"] : [])]
+    : [...(rsNeeds(o) ? ["r"] : []), ...(vOpen(o) ? ["v"] : []), ...(pgNeeds(o) && !autopay ? ["p"] : [])])
+  : []);
+const stAlert = (o, autopay) => (kNeeds(o) ? { t: T("kAlertT"), s: T("kAlertS") } : { t: T("stAlertT"), s: T("stAlertS", { n: startPhases(o, autopay).length }) });
 function Stars({ n }) {
   if (!n) return null;
   return <span className="stars" aria-label={n + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < n ? "f" : ""} />)}</span>;
@@ -353,6 +359,8 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
   const [polErr, setPolErr] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [warn, setWarn] = React.useState(false); // „Später" bei der Zahlungsart → erst Hinweis (wir starten erst danach, null Risiko)
+  const [kNo, setKNo] = React.useState(false); // „Keine Rechte": Storno-Rückfrage
+  const [kRes, setKRes] = React.useState(""); // „Keine Rechte": Ergebnis (accepted | declined) → Abschluss-Screen
   const adv = React.useRef(0);
   const oid = order && order.id;
   React.useEffect(() => {
@@ -362,10 +370,11 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
     const its = (order.items || []).filter((i) => rsKeys(order).includes(i.key) && !["removed", "cancelled"].includes(i.status));
     const st = [];
     if (its.length) { st.push({ k: "intro", ph: "" }); its.forEach((it) => st.push({ k: "r", ph: "r", item: it })); st.push({ k: "sum", ph: "r" }); }
+    if (phs.includes("k")) st.push({ k: "k", ph: "k" });
     if (phs.includes("v")) st.push({ k: "v", ph: "v" });
     if (phs.includes("p")) st.push({ k: "p", ph: "p" }); else st.push({ k: "done", ph: "" });
     const out = Object.assign(st, { oid, phs, n: its.length });
-    setSeq(out); setIx(0); setAns({}); setMore(false); setPol(false); setPolErr(false); setBusy(false);
+    setSeq(out); setIx(0); setAns({}); setMore(false); setPol(false); setPolErr(false); setBusy(false); setKNo(false); setKRes("");
   }, [oid]); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => () => clearTimeout(adv.current), []);
   if (!order || !seq) return <section className="flow" aria-hidden="true" />;
@@ -375,7 +384,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
   const goTo = (i) => { clearTimeout(adv.current); setMore(false); setIx(i); };
   const rIdx = seq.filter((x) => x.k === "r");
   const ri = cur.k === "r" ? rIdx.indexOf(cur) : -1;
-  const phLabel = { r: T("phR"), v: T("phV"), p: T("phP") };
+  const phLabel = { r: T("phR"), v: T("phV"), p: T("phP"), k: T("phK") };
   const kick = cur.ph ? T("stStep", { i: phs.indexOf(cur.ph) + 1, n: phs.length }) + " · " + phLabel[cur.ph] : "";
   // Fortschritt: je Phase ein Balken, innerhalb der Gründe anteilig
   const fill = (p) => {
@@ -408,6 +417,19 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
     setBusy(false);
   };
 
+  const kDecide = async (decision) => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy(true);
+    try {
+      const r = await call("rights", { token, orderId: order.id, decision });
+      track(decision === "accept" ? "rights_accept" : "rights_decline", order.id);
+      await reload();
+      if (decision === "decline") setKRes("declined");
+      else if (r.needMethod && seq.some((x) => x.k === "p")) go(1); // weiter zur Zahlungsart
+      else setKRes("accepted");
+    } catch (e) { showToast(e.code === "not_pending" ? T("genericErr") : T("genericErr"), true); if (e.code === "not_pending") { await reload(); onClose(); } }
+    setBusy(false);
+  };
   let body = null, foot = null;
   if (cur.k === "intro") {
     body = (
@@ -418,7 +440,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
         <p>{T("stIntroP")}</p>
         <div className="sf-phs">
           {phs.map((p, i) => (
-            <div key={p} className="sf-ph"><span className="n">{i + 1}</span><span><b>{phLabel[p]}</b><span>{p === "r" ? T("phRs", { n: seq.n }) : p === "v" ? T("phVs") : T("phPs")}</span></span></div>
+            <div key={p} className="sf-ph"><span className="n">{i + 1}</span><span><b>{phLabel[p]}</b><span>{p === "r" ? T("phRs", { n: seq.n }) : p === "v" ? T("phVs") : p === "k" ? T("phKs") : T("phPs")}</span></span></div>
           ))}
         </div>
       </>
@@ -477,6 +499,51 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
           style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 12px", textAlign: "left", background: polErr ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
           onChange={(v) => { setPol(v); if (v) setPolErr(false); }} />
         <div className="sf-row">{back}<button className="cta" disabled={busy || rIdx.some((x) => !okAns(x.item.key))} onClick={submit}>{busy ? <Loader className="spin" /> : <Check />}{T("rConfirm")}</button></div>
+      </div>
+    );
+  } else if (kRes) {
+    const ok = kRes === "accepted";
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={ok ? IMG.rocket : IMG.shield} alt="" /></div>
+        <h2>{T(ok ? "kOkH" : "kCxH")}</h2>
+        <p>{T(ok ? "kOkP" : "kCxP")}</p>
+      </>
+    );
+    foot = <div className="fl-foot sf-foot"><button className="cta" onClick={onClose}>{T("done")}</button></div>;
+  } else if (cur.k === "k" && kNo) {
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.shield} alt="" /></div>
+        <h2>{T("kNoH")}</h2>
+        <p>{T("kNoP", { biz: order.business || "#" + order.id })}</p>
+      </>
+    );
+    foot = (
+      <div className="fl-foot sf-foot">
+        <button className="cta red" disabled={busy} onClick={() => kDecide("decline")}>{busy ? <Loader className="spin" /> : <Ban />}{T("kNoBtn")}</button>
+        <button className="pg-later" disabled={busy} onClick={() => setKNo(false)}>{T("kNoBack")}</button>
+      </div>
+    );
+  } else if (cur.k === "k") {
+    const rt = order.rights || {};
+    body = (
+      <>
+        <div className="fl-art sf-art"><img src={IMG.shield} alt="" /></div>
+        <div className="fl-k">{phs.length > 1 ? kick : T("kK")}</div>
+        <h2>{T("kH")}</h2>
+        <p>{T("kP")}</p>
+        <div className="pgs-f sf-pf">
+          <div><span className="ico"><Timer /></span><b>{T("kF1")}</b></div>
+          <div><span className="ico"><Receipt /></span><b>{T("kF2", { amount: order.cur === "usd" ? money(rt.extra || 290, "usd") : net(money(rt.extra || 290, "eur")) })}</b></div>
+          <div><span className="ico"><ShieldCheck /></span><b>{T("kF3")}</b></div>
+        </div>
+      </>
+    );
+    foot = (
+      <div className="fl-foot sf-foot">
+        <button className="cta or" disabled={busy} onClick={() => kDecide("accept")}>{busy ? <Loader className="spin" /> : <Check />}{T("kYes")}</button>
+        <button className="pg-later" disabled={busy} onClick={() => setKNo(true)}>{T("kNo")}</button>
       </div>
     );
   } else if (cur.k === "v") {
@@ -1397,7 +1464,7 @@ export default function CustomerDashboard() {
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
-          {stNeed.length ? <AlertBtn title={T("stAlertT")} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + T("stAlertS", { n: startPhases(stNeed[0], data.autopay).length })} onClick={() => setSfId(stNeed[0].id)} /> : null}
+          {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
           <CustApp token={token} lang={LANG} T={T} showToast={showToast} />
           {all.length ? <Hero /> : null}
@@ -1609,6 +1676,7 @@ export default function CustomerDashboard() {
         <>
           <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
           <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>{svc} · #{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
+          {kNeeds(o) ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("kAlertT")} sub={T("kAlertS")} onClick={() => { setDetailId(null); setSfId(o.id); }} /></div> : null}
           <div className="bigprog"><ProfRing st={p.status} /><span><b>{T("pst_" + p.status)}</b><span>{p.paid ? T("pPaid") : p.open > 0 ? T("pOpen", { amount: net(money(p.open, o.cur)) }) : p.addr || ""}</span></span></div>
           {p.open > 0 ? <div className="paycard due pwrap" style={{ marginBottom: 18 }}><span className="ico pr"><Wallet /></span><span><b>{T("pOpen", { amount: net(money(p.open, o.cur)) })}</b><span>{T("pPayNote")}</span></span></div> : null}
           {rank >= 0 ? (
@@ -1630,7 +1698,7 @@ export default function CustomerDashboard() {
         <button className="back" onClick={() => setDetailId(null)} aria-label="Close"><ArrowLeft className="li" /><X className="xi" /></button>
         <div className="dh"><h1>{o.business || T("orderN", { id: o.id })}</h1><p>#{o.id} · {T("ordered", { date: shortDate(o.created) })}</p></div>
         <div className="bigprog"><Ring r={r} n={n} /><span><b>{T("removedOf", { r, n })}</b><span>{op ? T("stillInProgress", { n: op }) : o.cancelled ? T("cancelled") : T("completed")}</span></span></div>
-        {startPhases(o, data.autopay).length ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("stAlertT")} sub={T("stAlertS", { n: startPhases(o, data.autopay).length })} onClick={() => { setDetailId(null); setSfId(o.id); }} /></div> : null}
+        {startPhases(o, data.autopay).length ? <div style={{ marginBottom: 18 }}><AlertBtn title={stAlert(o, data.autopay).t} sub={stAlert(o, data.autopay).s} onClick={() => { setDetailId(null); setSfId(o.id); }} /></div> : null}
         {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
         <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {

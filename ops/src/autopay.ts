@@ -59,9 +59,15 @@ export async function payGateNeeded(email: string): Promise<boolean> {
 /** Zahlungsart ist da → wartende Aufträge freigeben und (falls sonst nichts fehlt) starten. */
 async function releasePayGates(email: string, label: string): Promise<number> {
   if (!pool) return 0;
-  const r = await pool.query(`SELECT id FROM orders WHERE lower(email)=$1 AND raw->'payGate'->>'status'='pending' AND COALESCE(status,'') <> 'storniert'`, [email.toLowerCase()]);
-  for (const o of r.rows as { id: string }[]) {
-    await setOrderRawField(o.id, "payGate", { status: "ok", at: new Date().toISOString(), label });
+  const r = await pool.query(`SELECT id, raw->'payGate'->>'rights' AS rg FROM orders WHERE lower(email)=$1 AND raw->'payGate'->>'status'='pending' AND COALESCE(status,'') <> 'storniert'`, [email.toLowerCase()]);
+  for (const o of r.rows as { id: string; rg: string | null }[]) {
+    await setOrderRawField(o.id, "payGate", { status: "ok", at: new Date().toISOString(), label, ...(o.rg ? { rights: true } : {}) });
+    if (o.rg) {
+      // „Keine Rechte": Auftrag läuft schon (Partner/Team) – nicht neu starten, nur Bescheid geben: jetzt Zugriff beantragen + verifizieren.
+      await insertEvent({ orderId: o.id, email, type: "note", title: "Zahlungsart hinterlegt – Keine Rechte: weitermachen (Zugriff beantragen + verifizieren)", detail: label, auto: true }).catch(() => {});
+      void notifyTeam(`${isTestEmail(email) ? "TEST · " : ""}Keine Rechte: Zahlungsart hinterlegt`, `${email} · ${o.id} · Zugriff beantragen + Profil verifizieren`, `${SITE_URL}/admin?order=${encodeURIComponent(o.id)}`, { kind: "customer" });
+      continue;
+    }
     await insertEvent({ orderId: o.id, email, type: "note", title: "Zahlungsart hinterlegt – Auftrag kann starten", detail: label, auto: true }).catch(() => {});
     await startOrderIfReady(o.id).catch(() => 0);
   }

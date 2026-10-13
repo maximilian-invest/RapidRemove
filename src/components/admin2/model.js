@@ -119,13 +119,14 @@ export function pendingWhy(o) {
   const out = [];
   if (o.reasons && o.reasons.status === "pending") out.push("Gründe fehlen");
   if (o.payGate || o.pgStale) out.push("Zahlungsart fehlt");
+  if (o.rights && o.rights.status === "pending") out.push("Entscheidung Keine Rechte offen");
   if (o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")) out.push(o.verify.status === "rejected" ? "Nachweis abgelehnt" : "Nachweis fehlt");
   return out;
 }
 /** Ganzer Auftrag steht still, bis der Kunde etwas tut. */
 const vWhole = (o) => o.verify && (o.verify.status === "pending" || o.verify.status === "rejected")
   && (!Array.isArray(o.verify.keys) || (o.reviewItems || []).every((it) => o.verify.keys.includes(rvKey(it)))); // ohne keys bzw. nur 4–5 ★ bestellt → ganzer Auftrag wartet
-const pendingWhole = (o) => o && o.status !== "storniert" && ((o.reasons && o.reasons.status === "pending" && !Array.isArray(o.reasons.keys)) || (o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
+const pendingWhole = (o) => o && o.status !== "storniert" && ((o.rights && o.rights.status === "pending") || (o.reasons && o.reasons.status === "pending" && !Array.isArray(o.reasons.keys)) || (o.payGate && !o.payGate.keys) || (o.pgStale && !o.pgStale.keys) || vWhole(o));
 
 /** Alle Kacheln, in denen ein Auftrag steht. Bewertungen: „In Bearbeitung", solange beim Partner noch etwas offen ist,
  *  und zusätzlich „Zahlung offen", sobald eine gelöschte Bewertung noch nicht bezahlt ist. */
@@ -135,7 +136,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   // Pending = wartet auf den Kunden (Zahlungsart nicht hinterlegt oder Inhaber-Nachweis nicht hochgeladen/abgelehnt).
   // Ganzer Auftrag blockiert → nur „Pending"; nur Nachbestellung blockiert → zusätzlich zu den übrigen Kacheln.
   if (pendingWhole(o)) return ["nopm"];
-  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null, reasons: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
+  if (pendingWhy(o).length) { const b = bucketsOf({ ...o, pgStale: null, payGate: null, verify: null, reasons: null, rights: null }, now, tasks); return b.includes("nopm") ? b : [...b, "nopm"]; }
   const r = revState(o, tasks);
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];

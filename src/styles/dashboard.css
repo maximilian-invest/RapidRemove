@@ -140,6 +140,7 @@ min-height:100vh;background:#fff;color:var(--ink);font-family:var(--font-body);f
 .rra .cta:active{transform:scale(.99)}
 .rra .cta.or{background:var(--primary)}
 .rra .cta.gh{background:var(--g1);color:var(--ink)}
+.rra .cta.red{background:#d92d20;color:#fff}
 .rra .cta svg{width:20px;height:20px}
 
 /* Bewertungs-Sheet (mobil: unten) */

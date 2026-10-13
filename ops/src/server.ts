@@ -533,10 +533,17 @@ app.post("/order", async (req, reply) => {
       // Test-Adressen (Inhaber, +test): immer direkt ins Dashboard – auch wenn das Konto schon besteht.
       if (acc?.created || isTestEmail(email)) autologin = await createAutologin(email).catch(() => null);
     } catch (e) { app.log.error({ err: e }, "Kundenkonto anlegen fehlgeschlagen"); }
+  } else if (!isPress && dbReady() && email && pool) {
+    // Profil-Löschung von Bestandskunden (Konto existiert schon, z. B. aus Bewertungs-Aufträgen): gleiches Dashboard –
+    // der Auftrag erscheint dort automatisch, die Bestätigung verlinkt es.
+    try {
+      const ex = await pool.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [email.trim().toLowerCase()]);
+      if (ex.rowCount) dash = { url: await dashLink(email, lang), existing: true };
+    } catch (e) { app.log.error({ err: e }, "Dashboard-Link (Profil, Bestandskunde) fehlgeschlagen"); }
   }
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
-    : { lang: tlang, anrede };
+    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
@@ -844,7 +851,7 @@ app.post("/admin/orders/create", async (req, reply) => {
       }
       const props = type === "reviews"
         ? { lang: tlang, name, items, per: q!.per, total: q!.totalStr, currency: cur, orderId: id, dash, payGate: gate, reasons: askReasons }
-        : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name), dash, payGate: gate };
+        : { lang: tlang, anrede: (GREETING[tlang] || GREETING.de)(name), dash, payGate: gate, profile: true };
       const html = await render(React.createElement(t.component, props as any));
       const subj = t.subject(props as any);
       await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO });
@@ -2197,6 +2204,61 @@ app.post("/admin/gamification", async (req, reply) => {
   }
 });
 
+/** „Keine Rechte": Aufpreis bei Erfolg (in Auftragswährung: 290 € bzw. $290). */
+const RIGHTS_EXTRA = 290;
+
+// Kunden-Dashboard: „Keine Rechte"-Entscheidung – fortfahren (+290 bei Erfolg, Zahlungsart hinterlegen) oder stornieren.
+app.post("/cust/rights", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  const s = await customerSessionInfo(b.token).catch(() => null);
+  if (!s || !pool) return reply.code(401).send({ ok: false, error: "session" });
+  if (s.imp) return reply.code(403).send({ ok: false, error: "admin_view" });
+  const decision = b.decision === "accept" ? "accept" : b.decision === "decline" ? "decline" : "";
+  if (!decision) return reply.code(400).send({ ok: false, error: "decision" });
+  const id = clip(b.orderId, 40);
+  const o = (await pool.query(`SELECT id, email, name, lang, country, status, service, amount, raw FROM orders WHERE id=$1`, [id]).catch(() => ({ rows: [] }))).rows[0];
+  const email = String(o?.email || "").trim().toLowerCase();
+  if (!o || email !== s.email.toLowerCase()) return reply.code(404).send({ ok: false, error: "order" });
+  const raw = (o.raw || {}) as Record<string, unknown>;
+  const ro = raw.rightsOffer as { status?: string; extra?: number } | undefined;
+  if (o.service === "reviews" || o.status === "storniert" || !ro || ro.status !== "pending") return reply.code(409).send({ ok: false, error: "not_pending" });
+  const cur = String(o.country || "").toUpperCase() === "US" ? "usd" : "eur";
+  const CUR = cur.toUpperCase();
+  const extra = Number(ro.extra) || RIGHTS_EXTRA;
+  const at = new Date().toISOString();
+  const test = isTestEmail(email);
+  const who = o.name || email;
+  if (decision === "decline") {
+    await setOrderRawField(id, "rightsOffer", { ...ro, status: "declined", decidedAt: at });
+    await updateOrderStatus(id, "storniert");
+    void partnerOrderStatus(id, "storniert").catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
+    await insertEvent({ orderId: id, email, type: "status", title: "Status → Storniert (Kunde: Keine Rechte – Mehraufwand abgelehnt)", detail: `Im Dashboard abgelehnt · +${extra} ${CUR} nicht gewünscht` }).catch(() => {});
+    try {
+      const { html, subject } = await renderTemplate("kundenstorno", { ...(TEMPLATES.kundenstorno.sample as object), lang: mailLang(o.lang) } as any);
+      await sendMail({ to: email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
+      await insertEvent({ orderId: id, email, type: "mail", title: "Kundenstorno (auf Wunsch) gesendet", detail: "an " + email, html, subject }).catch(() => {});
+    } catch (e) { app.log.error({ err: e, orderId: id }, "Storno-Mail (Keine Rechte) fehlgeschlagen"); }
+    void notifyTeam(`${test ? "TEST · " : ""}Keine Rechte abgelehnt → storniert`, `${who} · ${id}`, `${SITE_URL}/admin?order=${encodeURIComponent(id)}`, { kind: "customer" });
+    return { ok: true, cancelled: true };
+  }
+  const prev = Number(o.amount) || 0;
+  const amount = Math.round((prev + extra) * 100) / 100;
+  await pool.query(`UPDATE orders SET amount=$2 WHERE id=$1`, [id, amount]);
+  await setOrderRawField(id, "amount", amount);
+  await setOrderRawField(id, "rightsOffer", { ...ro, status: "accepted", decidedAt: at, prevAmount: prev });
+  // Zahlungsart: wenn freigeschaltet → ab jetzt automatisch bei Erfolg abbuchen; fehlt sie noch, wartet der Auftrag darauf (payGate).
+  let needMethod = false;
+  const ap = autopayAvailable(email);
+  if (ap) {
+    await setOrderRawField(id, "payMethod", "auto");
+    if (!(await hasSavedMethod(email).catch(() => false))) { await setOrderRawField(id, "payGate", { status: "pending", at, rights: true }); needMethod = true; }
+  }
+  const how = needMethod ? "Zahlungsart wird hinterlegt – danach weitermachen" : ap ? "Zahlungsart vorhanden · Abbuchung automatisch bei Erfolg" : "Zahlung per Link nach der Löschung";
+  await insertEvent({ orderId: id, email, type: "note", title: `Kunde: Keine Rechte – Mehraufwand +${extra} ${CUR} zugestimmt (Dashboard)`, detail: `Preis ${prev} → ${amount} ${CUR} · ${how} · Zugriff beantragen + Profil verifizieren` }).catch(() => {});
+  void notifyTeam(`${test ? "TEST · " : ""}Keine Rechte zugestimmt · +${extra} ${CUR}`, `${who} · ${id} · ${needMethod ? "Zahlungsart folgt" : "weitermachen"}`, `${SITE_URL}/admin?order=${encodeURIComponent(id)}`, { kind: "customer" });
+  return { ok: true, accepted: true, needMethod, amount, cur };
+});
+
 // Admin-Dashboard: eine echte (gebrandete) Vorlage an den Kunden senden
 app.post("/admin/send-template", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
@@ -2216,6 +2278,15 @@ app.post("/admin/send-template", async (req, reply) => {
     // Mahnstufe 1–4 (nur PayPal-Mahnung). Default 1 (freundliche Zahlungserinnerung).
     const isPayMahnung = key === "paypal-mahnung" || key === "wise-mahnung";
     const stage = isPayMahnung ? ([1, 2, 3, 4].includes(Number(b.stage)) ? Number(b.stage) : 1) : undefined;
+    // „Keine Rechte": nicht deutschsprachige Kunden entscheiden im Dashboard (fortfahren + Zahlungsart / stornieren);
+    // Deutsch bleibt bei „Antworten Sie auf diese E-Mail".
+    const isKR = key === "keine-rechte";
+    let krDash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
+    if (isKR && tlang !== "de" && orderId && dbReady()) {
+      const acc = await ensureCustomerAccount(to).catch(() => null);
+      const durl = await dashLink(to, tlang);
+      krDash = acc?.created ? { url: durl, email: to.toLowerCase(), password: acc.password } : { url: durl, existing: true };
+    }
     const props = {
       ...(t.sample as object), lang: tlang,
       name: clip(b.name, 120) || undefined,            // persönliche Anrede (z. B. „Hallo Alex,")
@@ -2228,7 +2299,7 @@ app.post("/admin/send-template", async (req, reply) => {
       dueDate: isPayMahnung ? clip(b.dueDate, 40) || undefined : undefined, // Zahlungsziel abgelaufen (automatisch)
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
       // „Keine Rechte": Aufpreis bei Erfolg (vom Admin formatiert, z. B. „290 €" / „$290") + Netto-Hinweis
-      ...(key === "keine-rechte" ? { extra: clip(b.extra, 40) || "290 €", net: b.net !== false } : {}),
+      ...(isKR ? { extra: clip(b.extra, 40) || "290 €", net: b.net !== false, dash: krDash } : {}),
     };
     const { html, subject } = await renderTemplate(key, props as any);
     if (b.preview === true) return { ok: true, preview: true, html, subject };
@@ -2246,6 +2317,11 @@ app.post("/admin/send-template", async (req, reply) => {
     // Rückgewinnung an einen Prüfungs-Lead: Sende-Zeitpunkt am Check vermerken, damit im
     // Admin dauerhaft „Angebot gesandt am …" erscheint (überlebt Reload/Neu-Laden).
     if (key === "rueckgewinnung") { const cid = clip(b.checkId, 40); if (cid) await markCheckRueckgewinnung(cid); }
+    // „Keine Rechte" (Dashboard-Variante): Angebot am Auftrag vormerken → Dashboard zeigt die Entscheidung, Admin „wartet auf Kunde".
+    if (isKR && krDash && orderId) {
+      const cur0 = (await pool?.query(`SELECT raw->'rightsOffer'->>'status' AS s FROM orders WHERE id=$1`, [orderId]).catch(() => null))?.rows[0]?.s;
+      if (cur0 !== "accepted") await setOrderRawField(orderId, "rightsOffer", { status: "pending", extra: RIGHTS_EXTRA, at: new Date().toISOString() });
+    }
     // PayPal-Angebot ist der „Profil gelöscht + Zahlung angestoßen"-Schritt (außerhalb DACH)
     // → dieselbe Team-Hype-Push wie beim Zahlungslink-Versand.
     if (key === "paypal-angebot") await fireDeletionHypePush(orderId, clip(b.name, 120), to);
