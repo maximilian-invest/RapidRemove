@@ -91,11 +91,13 @@ export function reviewQuote(items, lang) {
   const nOld = std.filter((it) => it && it.old && !it.nt && !it.sw).length;
   const nNew = std.length - nOld - nNt;
   const cpTotal = Math.round(fixed.reduce((s, it) => s + cpOf(it), 0) * 100) / 100;
-  const subStd = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE) + nNt * REVIEW_NOTEXT_PRICE;
-  const pct = std.length ? reviewDiscountPct(n) : 0;
-  const total = Math.round(subStd * (100 - pct) / 100) + cpTotal;
+  // Software-Fälle: Fixpreis 300, kein Rabatt (13.10.2026) – Mengenrabatt nur auf normale Bewertungen (synchron mit ops).
+  const subNorm = nNew * base + nOld * (base + REVIEW_OLD_SURCHARGE);
+  const subStd = subNorm + nNt * REVIEW_NOTEXT_PRICE;
+  const pct = nNew + nOld ? reviewDiscountPct(n) : 0;
+  const total = Math.round(subNorm * (100 - pct) / 100) + nNt * REVIEW_NOTEXT_PRICE + cpTotal;
   const subtotal = subStd + cpTotal;
-  const ntTotal = Math.round(nNt * REVIEW_NOTEXT_PRICE * (100 - pct) / 100) + fixed.filter((it) => it.nt || it.sw).reduce((s, it) => s + cpOf(it), 0);
+  const ntTotal = nNt * REVIEW_NOTEXT_PRICE + fixed.filter((it) => it.nt || it.sw).reduce((s, it) => s + cpOf(it), 0);
   return { n, nOld, nNew, nNt, nCp: fixed.length, cpTotal, base, oldPrice: base + REVIEW_OLD_SURCHARGE, ntPrice: REVIEW_NOTEXT_PRICE, subtotal, pct, discount: subtotal - total, total, ntTotal };
 }
 

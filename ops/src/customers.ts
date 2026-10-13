@@ -488,7 +488,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else status = "new";
     const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
     const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
-    const price = cp || (special ? disc(REVIEW_NOTEXT_PRICE) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
+    const price = cp || (special ? REVIEW_NOTEXT_PRICE : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
       cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
@@ -506,7 +506,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   });
   // Software-Preis je Bewertung: individueller Preis, falls alle Software-Fälle denselben haben, sonst Preisliste.
   const swCps = [...new Set(view.filter((v) => v.special).map((v) => v.cp))];
-  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : disc(REVIEW_NOTEXT_PRICE);
+  // Software-Löschung = Fixpreis 300, ohne Mengen-/Chat-/PayPal-Rabatt (Maximilian 13.10.2026: „300 USD kostet eine Software-Löschung").
+  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : REVIEW_NOTEXT_PRICE;
   // Ganz stornierter Auftrag → keine offenen Zahlungen mehr (auch nicht für vorher gelöschte Bewertungen).
   const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
