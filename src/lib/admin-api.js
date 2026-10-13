@@ -644,6 +644,8 @@ async function partnerPost(path, body) {
 }
 export const partnerSend = (orderId, items, customer) => partnerPost("send", { orderId, items, customer: customer || "" });
 export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderId } : {});
+/** Admin: Bewertung als gelöscht bestätigen (übersteuert Lenas Prüfung). */
+export const partnerConfirmRemoved = (id) => partnerPost("confirm-removed", { id });
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
 export const siteChats = (days) => adminPost("/admin/chat/site", { days: days || 60 });

@@ -93,8 +93,13 @@ async function serpCheck(t: Task, rating: number | null, placeId: string | null)
       const sameLink = !!url && link === url;
       const txt = nm(String(r.extracted_snippet?.original || r.snippet || ""));
       const samePerson = !!wantName && nm(String(r.user?.name || "")) === wantName && (!wantText || txt.startsWith(wantText.slice(0, 30)) || txt.includes(wantText.slice(0, 30)));
-      if (sameId || sameLink || samePerson) return { result: "visible", reason: `The review by ${t.name || "the reviewer"} is still listed on Google.` };
       const rr = Math.round(Number(r.rating) || 0);
+      if (sameId || sameLink || samePerson) {
+        // Bewertung noch da, aber jetzt positiv (Verfasser hat auf 4–5 Sterne geändert) → die negative Bewertung ist weg.
+        if (rating != null && rating <= 3 && rr >= 4) return { result: "gone", reason: `${t.name || "The reviewer"} changed the review to ${rr} stars – the negative review is gone.` };
+        const when = String(r.date || "").slice(0, 40), snip = String(r.extracted_snippet?.original || r.snippet || "").replace(/\s+/g, " ").slice(0, 80);
+        return { result: "visible", reason: `The review by ${t.name || "the reviewer"} is still listed on Google${rr ? ` (${rr}★${when ? ", " + when : ""})` : ""}${snip ? `: „${snip}${snip.length >= 80 ? "…" : ""}“` : "."}` };
+      }
       // Sterne-Band verlassen (sortiert) → alle Bewertungen mit diesen Sternen geprüft, nicht dabei → gelöscht
       if (rating != null && rr && (high ? rr < rating : rr > rating)) return { result: "gone", reason: `All ${rating}-star reviews checked – ${t.name || "the review"} is no longer listed.` };
     }

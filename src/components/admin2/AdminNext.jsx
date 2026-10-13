@@ -11,7 +11,7 @@ import {
   MessageCircle as MsgCircle,
 } from "lucide-react";
 import {
-  fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerSettings, partnersList,
+  fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerConfirmRemoved, partnerSettings, partnersList,
   fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
@@ -303,7 +303,7 @@ export default function AdminNext() {
   const logout = () => { try { localStorage.removeItem("rr_admin_token"); sessionStorage.removeItem("rr_admin_token"); localStorage.removeItem("rr_admin_faceid"); } catch (e) {} window.location.reload(); };
 
   const ctx = {
-    orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
+    loadPtasks, orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, loadPartners: () => partnersList().then(setPartners).catch(() => {}), tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
     newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving,
@@ -388,6 +388,23 @@ export default function AdminNext() {
 }
 
 /* ---------------- Bottom-Sheets / Modals ---------------- */
+/** „Als gelöscht bestätigen" (Team hat auf Google kontrolliert) – 2× tippen. Kunde wird wie bei Lenas Prüfung abgerechnet. */
+function ConfirmRemoved({ t, toast, done }) {
+  const [arm, setArm] = React.useState(false), [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { if (!arm) return undefined; const x = setTimeout(() => setArm(false), 4000); return () => clearTimeout(x); }, [arm]);
+  const go = async () => {
+    if (!arm) { setArm(true); return; }
+    setBusy(true);
+    try { await partnerConfirmRemoved(t.id); toast(`${t.code} als gelöscht bestätigt`); done(); }
+    catch (e) { toast("Fehler: " + e.message); setBusy(false); setArm(false); }
+  };
+  return (
+    <div className="ctas" style={{ marginTop: 12 }}>
+      <button type="button" className={"cta" + (arm ? "" : " gh")} disabled={busy} onClick={go}><Check />{busy ? "Wird gespeichert …" : arm ? "Nochmal tippen: Kunde wird abgerechnet" : "Als gelöscht bestätigen"}</button>
+    </div>
+  );
+}
+
 function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
   const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now } = ctx;
   const [cat, setCat] = React.useState(null);
@@ -557,6 +574,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
           {!it && (o.mapsUri) ? <a className="aopt" href={o.mapsUri} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span>In Google Maps öffnen<ChevronRight className="chev" /></a> : null}
           {sh ? <a className="aopt" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span>Herunterladen<ChevronRight className="chev" /></a> : null}
         </div>
+        {t && ["new", "working", "not_possible"].includes(t.status) ? <ConfirmRemoved t={t} toast={toast} done={() => { ctx.loadPtasks && ctx.loadPtasks(); close(); }} /> : null}
         {it ? <p className="shp" style={{ marginTop: 12 }}>Annehmen / Ablehnen und Abrechnung laufen vorerst noch im bisherigen Admin.</p> : null}</>
     );
   } else if (sheet && sheet.kind === "mon") {

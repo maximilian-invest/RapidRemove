@@ -595,7 +595,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }
     if (changed && row.order_id) {
-      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? " (von Lena geprüft)" : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
+      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? (opts.admin ? " (vom Team bestätigt)" : " (von Lena geprüft)") : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
       if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, rvLink([row]), { kind: "partner" });
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
@@ -604,6 +604,24 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     return { row, changed };
   }
+
+  // Admin: Bewertung als gelöscht bestätigen (übersteuert Lenas Prüfung, z. B. Liste hinkt Google hinterher).
+  // Läuft wie beim Partner (Kunden-Dashboard, Abrechnung, Verlauf) – nur ohne Prüf-Pflicht.
+  app.post("/admin/partner/confirm-removed", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const id = Number(b.id);
+    if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id fehlt" });
+    const cur = (await pool.query(`SELECT status FROM partner_tasks WHERE id=$1`, [id])).rows[0] as { status?: string } | undefined;
+    if (!cur || cur.status === "cancelled") return reply.code(404).send({ ok: false, error: "nicht gefunden" });
+    if (cur.status === "removed") return { ok: true, already: true };
+    if (cur.status !== "working") { const w = await partnerApply(id, "working", null, { quiet: true, admin: true }); if (w.error) return reply.code(w.code || 400).send({ ok: false, error: w.error }); }
+    const r = await partnerApply(id, "removed", null, { quiet: true, admin: true, verified: true });
+    if (r.error || !r.row) return reply.code(r.code || 400).send({ ok: false, error: r.error || "fehlgeschlagen" });
+    if (r.row.order_id) await insertEvent({ orderId: r.row.order_id, type: "note", title: `Admin: ${r.row.code} als gelöscht bestätigt`, detail: "Lena-Prüfung übersteuert – vom Team auf Google kontrolliert" }).catch(() => {});
+    return { ok: true, task: adminView(r.row) };
+  });
 
   // Admin (neu): Status ALLER offenen Bewertungen eines Auftrags setzen — wie der Partner selbst
   // (Kunden-Dashboard, Kunden-Mail/Push, Software-Zahlungslink, Verlauf). „removed“ bleibt dem Partner vorbehalten.
