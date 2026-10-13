@@ -136,11 +136,14 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
       const s = await captureShot(longUrl);
       const v = await ai(null, { buf: s.buf, mime: s.mime }, t);
       const conflict = !!v && v.visible === false && v.confidence >= 0.6;
-      const result: RemovalResult["result"] = conflict ? "unknown" : "visible";
-      const reason = conflict ? "Google's review list still shows it, but the review link no longer does – RapidRemove will double-check." : sc.reason;
+      // 13.10.2026 (RV-0100): Liste hinkt hinterher, der Link zeigt die Bewertung nicht mehr → gilt als gelöscht.
+      // Nur bei hoher Sicherheit; sonst „unknown" → Team prüft (Admin: „Als gelöscht bestätigen").
+      const sure = conflict && v!.confidence >= 0.8;
+      const result: RemovalResult["result"] = sure ? "gone" : conflict ? "unknown" : "visible";
+      const reason = sure ? "The review link no longer shows the review – removed (Google's list is still catching up)." : conflict ? "Google's review list still shows it, but the review link no longer does – RapidRemove will double-check." : sc.reason;
       const r = await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
         [Number(t.id), t.order_id, result, reason + ` (list: visible · link: ${v ? (v.visible === false ? "gone" : v.visible ? "visible" : "unclear") + " – " + v.reason : "no AI answer"})`, v?.confidence ?? null, s.mime, s.buf]).catch(() => ({ rows: [] as { id: number }[] }));
-      return { result, reason, checkId: r.rows[0]?.id, ...(conflict ? { why: `Liste: noch sichtbar · Link: ${v!.reason}` } : {}) };
+      return { result, reason, checkId: r.rows[0]?.id, ...(conflict && !sure ? { why: `Liste: noch sichtbar · Link: ${v!.reason}` } : {}) };
     } catch (e) { console.error("Löschprüfung: Gegenprüfung per Screenshot fehlgeschlagen", e); /* → Ergebnis der Liste */ }
   }
   if (sc.result !== "unknown") {
