@@ -12,6 +12,9 @@ let active = 0;
 async function getBrowser(): Promise<any> {
   if (!browserP) {
     browserP = (async () => {
+      // Railway-Image hat die Chromium-Bibliotheken (libnspr4, libnss3 …) nicht → die im Paket mitgelieferten
+      // (Amazon Linux 2023) entpacken lassen: das Paket macht das nur, wenn es eine AL2023-Umgebung erkennt.
+      if (process.env.LINK_PROBE_LIBS !== "system") process.env.CODEBUILD_BUILD_IMAGE ||= "nodejs22";
       const mod = (await import("@sparticuz/chromium")) as any;
       const chromium = mod.default;
       const puppeteer = (await import("puppeteer-core")).default as any;
@@ -25,9 +28,10 @@ async function getBrowser(): Promise<any> {
       catch (e) {
         // Server-Image ohne Chromium-Bibliotheken (libnss3 …): die mitgelieferten Amazon-Linux-Bibliotheken entpacken und nutzen.
         console.warn("Link-Browser: Start ohne Zusatz-Bibliotheken fehlgeschlagen – versuche mitgelieferte", String((e as Error)?.message || e).slice(0, 200));
-        const { tmpdir } = await import("node:os"); const { join } = await import("node:path");
+        const { tmpdir } = await import("node:os"); const { join } = await import("node:path"); const fs = await import("node:fs");
         process.env.CODEBUILD_BUILD_IMAGE ||= "nodejs22";
         (mod.setupLambdaEnvironment || chromium.setupLambdaEnvironment)?.(join(tmpdir(), "al2023", "lib"));
+        try { fs.rmSync(join(tmpdir(), "chromium"), { force: true }); } catch { /* */ } // sonst entpackt das Paket nichts neu
         return await launch();
       }
     })().catch((e) => { browserP = null; throw e; });
