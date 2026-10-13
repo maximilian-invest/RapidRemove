@@ -706,6 +706,23 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     return reply.send(s.img);
   });
 
+  // Admin: Prüfprotokoll einer Aufgabe (Lena) + Screenshot je Prüfung – Nachweis/Fehlersuche.
+  app.post("/admin/partner/removal-checks", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false });
+    const r = await pool.query(`SELECT id, result, reason, confidence, created_at, (img IS NOT NULL) AS has_img, length(img) AS bytes FROM removal_checks WHERE task_id=$1 ORDER BY id DESC LIMIT 30`, [Number(b.taskId)]).catch(() => ({ rows: [] }));
+    return { ok: true, checks: r.rows };
+  });
+  app.post("/admin/partner/removal-shot", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false });
+    const s = await removalShot(Number(b.id));
+    if (!s) return reply.code(404).send({ ok: false });
+    reply.header("Content-Type", s.mime).header("Cache-Control", "private, max-age=3600");
+    return reply.send(s.img);
+  });
+
   // Sammel-Update (Mehrfachauswahl): ein Status für viele Aufgaben, EINE Team-Benachrichtigung.
   app.post("/partner/bulk", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;
