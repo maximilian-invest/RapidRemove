@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
@@ -231,6 +231,7 @@ export function OrderDetail({ ctx, id }) {
         {payOpen(o, now, ptasks) ? <PayInfoRows o={o} ctx={ctx} /> : null}
         <MailRow o={o} ctx={ctx} payOpen={payOpen(o, now, ptasks)} />
         {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("prices", o.id)}><span className="ico"><Percent /></span><span className="t"><span>Preis</span><b>{orderMoney(o)} · anpassen</b></span><ChevronRight /></button> : null}
+        {!isRev && o.status !== "storniert" ? <button type="button" className="ir" disabled={!o.email} onClick={() => openSheet({ kind: "tplsend", forId: o.id, key: "keine-rechte", label: "Keine Rechte" })}><span className="ico"><KeyRound /></span><span className="t"><span>Keine Rechte</span><b>Mail senden · +{cur(o) === "$" ? "$290" : "290 €"} bei Erfolg, Kunde stimmt zu</b></span><ChevronRight /></button> : null}
       </div>
       <div className="cact">
         <a href={o.email ? `mailto:${o.email}` : undefined}><span><Mail /></span>E-Mail</a>

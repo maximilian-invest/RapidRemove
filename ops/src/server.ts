@@ -2227,6 +2227,8 @@ app.post("/admin/send-template", async (req, reply) => {
       stage,                                            // PayPal-Mahnstufe (1–4)
       dueDate: isPayMahnung ? clip(b.dueDate, 40) || undefined : undefined, // Zahlungsziel abgelaufen (automatisch)
       formUrl: orderId ? SITE_URL + "/auftrag/" + orderId : undefined,
+      // „Keine Rechte": Aufpreis bei Erfolg (vom Admin formatiert, z. B. „290 €" / „$290") + Netto-Hinweis
+      ...(key === "keine-rechte" ? { extra: clip(b.extra, 40) || "290 €", net: b.net !== false } : {}),
     };
     const { html, subject } = await renderTemplate(key, props as any);
     if (b.preview === true) return { ok: true, preview: true, html, subject };

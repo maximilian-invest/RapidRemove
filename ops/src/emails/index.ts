@@ -12,6 +12,7 @@ import NachweiseBenoetigt, { subject as nachweiseSubject } from "./NachweiseBeno
 import Storno, { subject as stornoSubject } from "./Storno";
 import Kundenstorno, { subject as kundenstornoSubject } from "./Kundenstorno";
 import Rechtestorno, { subject as rechtestornoSubject } from "./Rechtestorno";
+import KeineRechte, { subject as keineRechteSubject } from "./KeineRechte";
 import Scamstorno, { subject as scamstornoSubject } from "./Scamstorno";
 import Reset, { subject as resetSubject } from "./Reset";
 import NichtGefunden, { subject as nichtGefundenSubject } from "./NichtGefunden";
@@ -213,6 +214,13 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     component: RechteBenoetigt,
     subject: rechteSubject,
     sample: de,
+  },
+  "keine-rechte": {
+    label: "Keine Rechte (Mehraufwand +290 €, Zustimmung)",
+    group: "Mitwirkung",
+    component: KeineRechte,
+    subject: keineRechteSubject,
+    sample: { lang: "de", extra: "290 €", net: true },
   },
   adresse: {
     label: "Adresse hinterlegen",

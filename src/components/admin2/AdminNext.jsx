@@ -286,7 +286,9 @@ export default function AdminNext() {
   };
   const sendTpl = async (o, key, label) => {
     try {
-      await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o) });
+      // „Keine Rechte": Aufpreis 290 in Auftragswährung ($ bei US, sonst €); netto-Hinweis nur bei €.
+      const kr = key === "keine-rechte" ? { extra: cur(o) === "$" ? "$290" : "290 €", net: cur(o) !== "$" } : {};
+      await sendTemplate({ key, to: o.email, orderId: o.id, lang: o.lang || "de", name: o.name || "", service: o.service, hasSub: o.protection === "monthly" || o.protection === "monitor", hasProtection: !!(o.protection && o.protection !== "none"), offer: computeOffer(o), ...kr });
       bumpTplUsage(key);
       let note = "";
       if (STORNO_KEYS.includes(key)) { await doStatus(o, "storniert", { label: "Storniert" }); note = " · storniert"; closeDrawer(); }
