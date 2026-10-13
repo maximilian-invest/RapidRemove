@@ -64,11 +64,8 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   const nNew = std.length - nOld - nNt;
   const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
   const nNtDue = mode === "rest" ? std.filter((it) => isSwItem(it) && it.due).length : 0; // nicht vorab bezahlt → jetzt fällig
-  // Software-Fälle: Fixpreis 300 – kein Mengen-, Chat- oder PayPal-Rabatt (13.10.2026). Rabatte nur auf normale Bewertungen.
-  const subNorm = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE);
-  const subSw = nNt * ntUnit + nNtDue * REVIEW_NOTEXT_PRICE;
-  const subStd = subNorm + subSw;
-  const pct = nNew + nOld ? Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))) : 0; // Mengen- oder Chat-Rabatt, der höhere
+  const subStd = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit + nNtDue * REVIEW_NOTEXT_PRICE;
+  const pct = std.length ? Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))) : 0; // Mengen- oder Chat-Rabatt, der höhere
   // Software-Fälle mit eigenem Preis sind (wie alle Software-Fälle) vorab bezahlt → in „rest" 0.
   const cpLines = new Map<number, number>();
   let cpTotal = 0, cpSw = 0;
@@ -79,10 +76,10 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   }
   cpTotal = Math.round(cpTotal * 100) / 100;
   const subtotal = subStd + cpTotal;
-  const pay = nNew + nOld || fixed.length ? Math.max(0, Math.min(10, payPct || 0)) : 0; // nur Software → kein PayPal-Rabatt // PayPal/Wise: auf den Betrag nach Mengen-/Chat-Rabatt
-  const total = (pay ? Math.round(((Math.round((subNorm * (100 - pct)) / 100) + cpTotal) * (100 - pay)) / 100) : Math.round((subNorm * (100 - pct)) / 100) + cpTotal) + subSw;
-  // Vorauszahlung (voller Betrag) für Bewertungen ohne Text – Fixpreis, ohne Rabatt. (Name „Deposit“ historisch.)
-  const ntDeposit = nNt * REVIEW_NOTEXT_PRICE + cpSw;
+  const pay = Math.max(0, Math.min(10, payPct || 0)); // PayPal/Wise: auf den Betrag nach Mengen-/Chat-Rabatt
+  const total = pay ? Math.round(((Math.round((subStd * (100 - pct)) / 100) + cpTotal) * (100 - pay)) / 100) : Math.round((subStd * (100 - pct)) / 100) + cpTotal;
+  // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
+  const ntDeposit = Math.round(((Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw) * (100 - pay)) / 100);
   const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && (ntUnit || nNtDue) ? fmt(REVIEW_NOTEXT_PRICE) : "", ...[...cpLines.keys()].map(fmt)].filter(Boolean);
   let per = prices.length ? [...new Set(prices)].join(" / ") : fmt(REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;

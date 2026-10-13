@@ -455,6 +455,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const payPct = payPctOf(raw); // PayPal/Wise −10 % zusätzlich
   const pct = Math.max(reviewDiscountPct(items.length), chatPct); // Mengen- oder Chat-Rabatt (der höhere)
   const disc = (v: number) => Math.round((Math.round((v * (100 - pct)) / 100) * (100 - payPct)) / 100);
+  // Software-Preis (Maximilian 13.10.2026): schon bei der Bestellung als Software klar (ohne Text / als Software bestellt)
+  // → Rabatte wie bei der Bestellung angezeigt. Erst später vom Partner festgestellt → fix 300, nur mit Freigabe des Kunden.
+  const swPriceOf = (it: Item) => (it.nt || it.sw ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE);
   // Software vorab bezahlt (Zustimmung OHNE def = nach Zahlung). Zustimmung mit def (hinterlegte Zahlungsart) = gestartet, aber erst bei Erfolg fällig.
   const swPaidFor = (k: string) => (decisions[k]?.d === "accepted" && !decisions[k]?.def) || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
   // Spezialverfahren wird voll im Voraus bezahlt (Software-Zahlung oder Vorauszahlung „ohne Text" aus der Startbestätigung).
@@ -488,7 +491,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else status = "new";
     const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
     const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
-    const price = cp || (special ? REVIEW_NOTEXT_PRICE : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
+    const price = cp || (special ? swPriceOf(it) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
       cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
@@ -506,8 +509,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   });
   // Software-Preis je Bewertung: individueller Preis, falls alle Software-Fälle denselben haben, sonst Preisliste.
   const swCps = [...new Set(view.filter((v) => v.special).map((v) => v.cp))];
-  // Software-Löschung = Fixpreis 300, ohne Mengen-/Chat-/PayPal-Rabatt (Maximilian 13.10.2026: „300 USD kostet eine Software-Löschung").
-  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : REVIEW_NOTEXT_PRICE;
+  // Freigabe-Preis (Dashboard/Zahlung): später festgestellte Software-Fälle fix 300; nur bei der Bestellung bekannte → rabattiert.
+  const swPend = items.filter((it) => { const v = view.find((x) => x.key === keyOf(it)); return v && v.special && v.status !== "removed"; });
+  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : swPend.length && swPend.every((it) => it.nt || it.sw) ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE;
   // Ganz stornierter Auftrag → keine offenen Zahlungen mehr (auch nicht für vorher gelöschte Bewertungen).
   const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.

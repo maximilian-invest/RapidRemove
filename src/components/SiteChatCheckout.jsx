@@ -20,16 +20,13 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     const n = Math.max(1, reviews.length);
     const nSw = reviews.filter((r) => r.sw).length; // Software-Fälle: 300, nach Prüfung durch den Partner – abgebucht erst bei erfolgreicher Löschung
     const nOld = reviews.filter((r) => r.age === "old" && !r.sw).length;
-    // Software-Fälle: Fixpreis 300 ohne Rabatt (13.10.2026) – Mengen-/Chat-/PayPal-Rabatt nur auf normale Bewertungen.
-    const subNorm = (n - nOld - nSw) * 179 + nOld * 229, subSw = nSw * 300;
-    const sub = subNorm + subSw;
-    const vp = subNorm ? volPct(n) : 0, cp = pp || !subNorm ? 0 : pct;
+    const sub = (n - nOld - nSw) * 179 + nOld * 229 + nSw * 300;
+    const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
-    let norm = Math.round((subNorm * (100 - d)) / 100);
-    const payD = pp ? Math.round(norm * 0.1) : 0;
-    norm -= payD;
-    const total = norm + subSw;
-    return { usd, sub, subNorm, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229, nSw };
+    let total = Math.round((sub * (100 - d)) / 100);
+    const payD = pp ? Math.round(total * 0.1) : 0;
+    total -= payD;
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229, nSw };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -141,7 +138,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
           {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old" && !swOf(r)) ? ` / ${fmt(229, p.usd)}` : ""}{p.nSw ? ` / ${fmt(300, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {isRev && p.nSw ? <div className="cs-sw">{p.nSw} × {fmt(300, p.usd)} · {c.sw}</div> : null}
-          {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(isRev ? p.subNorm - Math.round((p.subNorm * (100 - p.d)) / 100) : p.sub - Math.round(p.sub * (100 - p.d)) / 100, p.usd)}</span></div> : null}
+          {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
           <div className="cs-n"><ShieldCheck />{c.note}</div>
