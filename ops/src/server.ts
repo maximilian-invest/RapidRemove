@@ -366,6 +366,8 @@ app.get("/tp-count", async () => {
 
 // Bestellung aus dem Wizard: bestehende Auftragsbestätigung an den Kunden
 // + interne Benachrichtigung an das Postfach. Kein Stripe nötig.
+/** Länder, in denen Profil-Löschungen über Dashboard + hinterlegte Zahlungsart laufen (Railway: PROFILE_AUTOPAY_COUNTRIES=US,CA …). */
+const PROFILE_AUTOPAY_COUNTRIES = () => String(process.env.PROFILE_AUTOPAY_COUNTRIES ?? "US").split(",").map((x) => x.trim().toUpperCase()).filter(Boolean);
 app.post("/order", async (req, reply) => {
   const b = (req.body || {}) as Record<string, unknown>;
   const email = String(b.email ?? "").trim();
@@ -476,7 +478,12 @@ app.post("/order", async (req, reply) => {
   // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
   // PayPal/Wise −10 % in den Einstellungen für diese Kategorie aus → Wunsch ignorieren (normale Zahlung).
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
-  const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
+  // Profil-Löschung außerhalb der EU (13.10.2026, zuerst nur USA): wie bei Einzelbewertungen Dashboard + Zahlungsart hinterlegen;
+  // abgebucht wird automatisch bei „Profil gelöscht" (chargeProfileOrder). PayPal/Wise-Zahler bleiben beim bisherigen Weg.
+  const profCountry = String(b.country || ruleCountry || "").toUpperCase();
+  const profAuto = !isReviews && !isPress && PROFILE_AUTOPAY_COUNTRIES().includes(profCountry) && !["wise", "paypal"].includes(String(b.payPref || "")) && !!email && autopayAvailable(email);
+  if (profAuto) (b as Record<string, unknown>).payMethod = "auto";
+  const payGate = (isReviews || profAuto) && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   // Gründe je Bewertung (10/2026): Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an → erst dann Start.
   const reasonsGate = isReviews && reviewItems.length > 0 && !!email;
@@ -523,7 +530,7 @@ app.post("/order", async (req, reply) => {
   // Kunden-Dashboard: Konto anlegen (Zugangsdaten nur beim ersten Mal in der Mail).
   let dash: { url: string; email?: string; password?: string; existing?: boolean } | undefined;
   let autologin: string | null = null;
-  if (isReviews && dbReady() && email) {
+  if ((isReviews || profAuto) && dbReady() && email) {
     try {
       const acc = await ensureCustomerAccount(email);
       const durl = await dashLink(email, lang);
@@ -536,7 +543,7 @@ app.post("/order", async (req, reply) => {
   }
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
-    : { lang: tlang, anrede };
+    : { lang: tlang, anrede, ...(profAuto ? { dash, payGate } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
@@ -741,7 +748,7 @@ app.post("/order", async (req, reply) => {
     result.saveError = String((e as Error)?.message || e).slice(0, 200);
   }
 
-  return autologin ? { ...result, autologin } : result;
+  return { ...result, ...(autologin ? { autologin } : {}), ...(profAuto ? { profAuto: true, payGate } : {}) };
 });
 
 // Admin (neu) · „Neuer Auftrag": Auftrag manuell anlegen (Telefon/WhatsApp-Kunden).

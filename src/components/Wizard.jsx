@@ -47,6 +47,12 @@ function fmtMoney(lang, n) {
   return p.suffix ? `${s} ${p.sym}` : `${p.sym}${s}`;
 }
 
+/* US-Profil-Löschung: Zahlungsart hinterlegen (13.10.2026, Entwurf) */
+const PROFPAY = {
+  en: { k: "Step 1 of 2 · required to start", h: "Save your payment method", p: "We start removing your profile as soon as a payment method is saved. You're charged {amount} automatically – only after your Google profile has been removed, never before.", f: ["Charged only after the removal", "Invoice by email", "Card, Apple Pay or Google Pay"], btn: "Save payment method", note: "Takes 30 seconds · secured by Stripe · you'll also see live progress in your dashboard", okT: "Payment method saved", okS: "{amount} will be charged automatically once your profile has been removed.", dash: "Open my dashboard" },
+  de: { k: "Schritt 1 von 2 · nötig für den Start", h: "Zahlungsart hinterlegen", p: "Wir starten mit der Löschung, sobald eine Zahlungsart hinterlegt ist. {amount} werden automatisch abgebucht – erst nachdem Ihr Google-Profil gelöscht ist, nie vorher.", f: ["Abbuchung erst nach der Löschung", "Rechnung per E-Mail", "Karte, Apple Pay oder Google Pay"], btn: "Zahlungsart hinterlegen", note: "Dauert 30 Sekunden · gesichert über Stripe · im Dashboard sehen Sie den Fortschritt live", okT: "Zahlungsart hinterlegt", okS: "{amount} werden automatisch abgebucht, sobald Ihr Profil gelöscht ist.", dash: "Zum Dashboard" },
+};
+
 /* ---- conversion copy (de + en, fallback en). Self-contained so locale files stay untouched ---- */
 const CONV = {
   de: {
@@ -1861,6 +1867,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [agbOk, setAgbOk] = React.useState(false);
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
+  const [profPay, setProfPay] = React.useState(null); // US-Profil: { a: Autologin-Code | null, gate } → Danke-Seite zeigt „Zahlungsart hinterlegen"
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   // EINE Ereignis-ID für den Gratis-Check, geteilt zwischen Browser-Pixel und
   // dem serverseitigen Lead der Conversions API. Ohne identische ID zählt Meta
@@ -2413,6 +2420,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       setProcessing(false);
       if (r && r.error === "already_ordered") { setDupOrder(r); return; }
       // Neues Konto → direkt ins Dashboard (einmaliger Code im #-Teil der Adresse, geht nicht an Server-Logs).
+      // US-Profil (Zahlungsart hinterlegen): Danke-Seite mit Fragebogen bleibt, dazu der Schritt „Zahlungsart hinterlegen" → Dashboard.
+      if (r && r.profAuto) { setProfPay({ a: r.autologin || null, gate: !!r.payGate }); setStep(6); return; }
       if (r && r.autologin) { try { window.location.href = "/my-reviews#a=" + encodeURIComponent(r.autologin); return; } catch (e) { /* Danke-Seite */ } }
       // Bestehendes Konto (Einzelbewertungen): auch ins Dashboard – eingeloggt sofort, sonst Login mit Hinweis auf den Mail-Link.
       if (r && r.ok && revFlow && !r.duplicate) { try { sessionStorage.setItem("rr_login_email", String(contact.email || "").trim()); } catch (e) { /* */ } try { window.location.href = "/my-reviews?from=order&order=" + encodeURIComponent(orderId); return; } catch (e) { /* Danke-Seite */ } }
@@ -3574,6 +3583,27 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   }
   /* Schritt 7 · Danke-Seite im neuen Design (Inhalte wie bisher: Fragebogen, „Warum soll das Profil weg?",
      Ablauf, nächste Schritte, weitere Leistungen, zur Startseite). */
+  /* US-Profil: Zahlungsart hinterlegen (abgebucht erst nach der Löschung) – führt ins Dashboard. */
+  function ProfPayCard() {
+    const c = PROFPAY[t.code] || PROFPAY.en;
+    const href = profPay && profPay.a ? "/my-reviews#a=" + encodeURIComponent(profPay.a) : "/my-reviews?from=order&order=" + encodeURIComponent(orderId);
+    const amt = fmtMoney(t.code, oneTimeTotal);
+    if (profPay && !profPay.gate) return (
+      <div className="bpr-ppay ok"><div className="hd"><span className="ic"><LCheck /></span><span><b>{c.okT}</b><span>{c.okS.replace("{amount}", amt)}</span></span></div>
+        <a className="bpr-go dark" href={href}>{c.dash}<LArrowRight /></a></div>
+    );
+    return (
+      <div className="bpr-ppay">
+        <div className="k">{c.k}</div>
+        <h3>{c.h}</h3>
+        <p>{c.p.replace("{amount}", amt)}</p>
+        <ul>{c.f.map((x, i) => <li key={i}><LCheck />{x}</li>)}</ul>
+        <a className="bpr-go" href={href}>{c.btn}<LArrowRight /></a>
+        <small>{c.note}</small>
+      </div>
+    );
+  }
+
   function StepDoneNew() {
     const bp = bpCopy(t.code);
     return (
@@ -3586,6 +3616,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".06s" }}>{w.s6.sub}</p>
             <div className="bpr-ordno bpr-fade" style={{ animationDelay: ".08s" }}>{w.s6.order} <b>#{orderId}</b></div>
             <div className="bpr-done bpr-fade" style={{ animationDelay: ".12s" }}>
+              {!revFlow && profPay ? <ProfPayCard /> : null}
               {!revFlow ? <OrderForm orderId={orderId} lang={t.code} look="bp" /> : null}
               {!revFlow ? (
                 <div className="bpr-reason" role="group" aria-label={wr.q}>
