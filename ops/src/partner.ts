@@ -12,6 +12,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, bumpChange } from "./db";
 import { checkRemoval, removalShot } from "./removalCheck";
+import { probeReviewLink } from "./linkProbe";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
@@ -713,6 +714,14 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!pool) return reply.code(503).send({ ok: false });
     const r = await pool.query(`SELECT id, result, reason, confidence, created_at, (img IS NOT NULL) AS has_img, length(img) AS bytes FROM removal_checks WHERE task_id=$1 ORDER BY id DESC LIMIT 30`, [Number(b.taskId)]).catch(() => ({ rows: [] }));
     return { ok: true, checks: r.rows };
+  });
+  // Admin-Test: Link im eigenen Browser öffnen (nur lesen, ändert nichts).
+  app.post("/admin/partner/link-probe", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false });
+    const url = String(b.url || "");
+    if (!/^https:\/\/(www\.)?google\.[a-z.]+\/maps\//i.test(url)) return reply.code(400).send({ ok: false, error: "nur Google-Maps-Links" });
+    return { ok: true, probe: await probeReviewLink(url, String(b.name || "") || null) };
   });
   app.post("/admin/partner/removal-shot", async (req, reply) => {
     const b = (req.body || {}) as Record<string, unknown>;

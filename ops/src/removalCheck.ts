@@ -8,6 +8,7 @@
 import { pool } from "./db";
 import { captureShot, shotKey } from "./reviewShots";
 import { expandShortLink, resolveReviewLink } from "./monitor";
+import { probeReviewLink } from "./linkProbe";
 
 const MODEL = () => process.env.REMOVAL_MODEL || process.env.VERIFY_MODEL || process.env.CHAT_MODEL || "claude-sonnet-5-5";
 export type RemovalResult = { result: "gone" | "visible" | "unknown"; reason: string; checkId?: number };
@@ -131,6 +132,12 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   // 13.10.2026: ZUERST den Link selbst öffnen (Screenshot + KI). Er ist das direkte Zeichen – Google zeigt bei gelöschten
   // Bewertungen „This review is no longer available". Die Bewertungsliste (SerpApi) führt gelöschte Bewertungen teils
   // noch tagelang (RV-0100: Liste „3★, 7 years ago", Link „no longer available") → nur noch Rückfallebene.
+  const save0 = async (result: string, reason: string) => { await pool!.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence) VALUES ($1,$2,$3,$4,$5)`, [Number(t.id), t.order_id, result, reason, 0.99]).catch(() => {}); };
+  // Schritt 1: eigener Browser liest die Seite – „This review is no longer available" = gelöscht (eindeutig, ohne Kontingent).
+  const pr = await probeReviewLink(longUrl, t.name).catch(() => null);
+  if (pr && pr.state === "gone") { await save0("gone", `Google: „This review is no longer available" (browser, ${pr.ms} ms)`); return { result: "gone", reason: "Google says: “This review is no longer available.”" }; }
+  if (pr && pr.state === "visible") { await save0("visible", `Bewertung von ${t.name} auf dem Link sichtbar (browser) · ${pr.text.slice(0, 160)}`); return { result: "visible", reason: `The review by ${t.name || "the reviewer"} is still shown on Google.` }; }
+  const probeWhy = pr ? `Browser: ${pr.error || "unklar"}` : "Browser: Fehler";
   const ready = !!shotKey() && !!process.env.ANTHROPIC_API_KEY;
   let link: { result: RemovalResult["result"]; reason: string; conf: number; shot: { buf: Buffer; mime: string } } | null = null;
   if (ready) {
@@ -143,18 +150,25 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   const save = async (result: string, reason: string, conf: number | null, shot?: { buf: Buffer; mime: string }) =>
     (await pool!.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
       [Number(t.id), t.order_id, result, reason, conf, shot?.mime || null, shot?.buf || null]).catch(() => ({ rows: [] as { id: number }[] }))).rows[0]?.id as number | undefined;
+  const sid = (id: number | undefined, shot?: { buf: Buffer; mime: string }) => (shot ? id : undefined); // ohne Bild keine (graue) Screenshot-Box beim Partner
   if (link && link.result !== "unknown") {
-    const checkId = await save(link.result, `${link.reason} (review link)`, link.conf, link.shot);
+    const checkId = sid(await save(link.result, `${link.reason} (review link)`, link.conf, link.shot), link.shot);
     return { result: link.result, reason: link.reason || (link.result === "gone" ? "The review is no longer available on Google." : "The review is still visible on Google."), checkId };
   }
   // Rückfall: Bewertungsliste des Profils
   const sc = await serpCheck({ ...t, url: longUrl }, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
+  // Liste sagt „noch da", aber der Link selbst konnte nicht geprüft werden → NICHT „Still visible" (Liste führt gelöschte
+  // Bewertungen teils tagelang weiter, RV-0100). Stattdessen prüft das Team (Push + „Als gelöscht bestätigen").
+  if (sc.result === "visible" && !link) {
+    await save("unknown", sc.reason + ` (Google review list · link not checkable – ${probeWhy})`, null);
+    return { result: "unknown", reason: "Google's review list still shows it, but the review page could not be checked right now – RapidRemove will double-check.", why: `Liste: noch sichtbar · ${probeWhy} · Screenshot nicht verfügbar` };
+  }
   if (sc.result !== "unknown") {
-    const checkId = await save(sc.result, sc.reason + ` (Google review list${link ? " · link unclear: " + link.reason : ""})`, 0.9, link?.shot);
+    const checkId = sid(await save(sc.result, sc.reason + ` (Google review list${link ? " · link unclear: " + link.reason : ""})`, 0.9, link?.shot), link?.shot);
     return { result: sc.result, reason: sc.reason, checkId };
   }
   if (link) {
-    const checkId = await save("unknown", link.reason || "The check was not conclusive.", link.conf, link.shot);
+    const checkId = sid(await save("unknown", link.reason || "The check was not conclusive.", link.conf, link.shot), link.shot);
     return { result: "unknown", reason: link.reason || "The check was not conclusive.", checkId, why: `Link unklar · Liste: ${sc.why}` };
   }
   // Methode 2: Screenshot jetzt + KI-Vergleich mit dem Screenshot von der Bestellung
