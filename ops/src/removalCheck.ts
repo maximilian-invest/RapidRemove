@@ -29,7 +29,7 @@ async function ai(before: { buf: Buffer; mime: string } | null, after: { buf: Bu
   const system = `You check whether ONE specific Google review has been deleted. A removal partner claims it is gone; the customer is charged only if that is true, so be strict.
 You get ${before ? "two screenshots: BEFORE (taken when the order was placed – shows the review) and AFTER (taken just now by opening the same review link)" : "one screenshot AFTER (taken just now by opening the review link)"}.
 When a Google review is deleted, its link usually opens the business page / Google Maps without that review, a generic Maps view, or a "not available" notice. A review page that shows only the business card (name/address) with NO reviewer name, NO stars and NO review text (e.g. just "0 points" or an empty area) means the review is gone.
-IMPORTANT: a Google Maps notice "Unsupported link" / "Link not supported" / "Nicht unterstützter Link" / "Link wird nicht unterstützt" (or the same in any language) on a review link means the review no longer exists → visible: false with high confidence (0.9).
+IMPORTANT: the text "This review is no longer available" / "Diese Rezension ist nicht mehr verfügbar" (or the same in any language) means the review is deleted → visible: false, confidence 0.95.\nA Google Maps notice "Unsupported link" / "Link not supported" / "Nicht unterstützter Link" / "Link wird nicht unterstützt" (or the same in any language) on a review link means the review no longer exists → visible: false with high confidence (0.9).
 If AFTER still shows the same review (same reviewer name and same text/stars), it is still visible.
 If AFTER is a consent page, a blank/loading page, an error that is not about the review, or otherwise does not allow a decision, answer visible: null.
 Answer ONLY with JSON: {"visible": true|false|null, "confidence": 0.0-1.0, "reason": "one short sentence in English for the partner"}`;
@@ -128,28 +128,34 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   if (rating == null && Number(t.rating) >= 1 && Number(t.rating) <= 5) rating = Math.round(Number(t.rating));
   // Kein Profil aus der Bestellung (z. B. manuelle Aufgabe) → über die CID im Link
   if (!placeId) placeId = (await resolveReviewLink(longUrl).catch(() => null))?.place?.placeId || null;
-  const sc = await serpCheck({ ...t, url: longUrl }, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
-  // Liste sagt „noch da" → zusätzlich den Link selbst öffnen (Screenshot + KI). Die Liste hinkt Google teils hinterher
-  // (13.10.2026 RV-0100: Liste „sichtbar", Link zeigt nur noch das Profil). Widerspruch → „unknown" + Team prüft.
-  if (sc.result === "visible" && shotKey() && process.env.ANTHROPIC_API_KEY) {
+  // 13.10.2026: ZUERST den Link selbst öffnen (Screenshot + KI). Er ist das direkte Zeichen – Google zeigt bei gelöschten
+  // Bewertungen „This review is no longer available". Die Bewertungsliste (SerpApi) führt gelöschte Bewertungen teils
+  // noch tagelang (RV-0100: Liste „3★, 7 years ago", Link „no longer available") → nur noch Rückfallebene.
+  const ready = !!shotKey() && !!process.env.ANTHROPIC_API_KEY;
+  let link: { result: RemovalResult["result"]; reason: string; conf: number; shot: { buf: Buffer; mime: string } } | null = null;
+  if (ready) {
     try {
       const s = await captureShot(longUrl);
       const v = await ai(null, { buf: s.buf, mime: s.mime }, t);
-      const conflict = !!v && v.visible === false && v.confidence >= 0.6;
-      // 13.10.2026 (RV-0100): Liste hinkt hinterher, der Link zeigt die Bewertung nicht mehr → gilt als gelöscht.
-      // Nur bei hoher Sicherheit; sonst „unknown" → Team prüft (Admin: „Als gelöscht bestätigen").
-      const sure = conflict && v!.confidence >= 0.8;
-      const result: RemovalResult["result"] = sure ? "gone" : conflict ? "unknown" : "visible";
-      const reason = sure ? "The review link no longer shows the review – removed (Google's list is still catching up)." : conflict ? "Google's review list still shows it, but the review link no longer does – RapidRemove will double-check." : sc.reason;
-      const r = await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
-        [Number(t.id), t.order_id, result, reason + ` (list: visible · link: ${v ? (v.visible === false ? "gone" : v.visible ? "visible" : "unclear") + " – " + v.reason : "no AI answer"})`, v?.confidence ?? null, s.mime, s.buf]).catch(() => ({ rows: [] as { id: number }[] }));
-      return { result, reason, checkId: r.rows[0]?.id, ...(conflict && !sure ? { why: `Liste: noch sichtbar · Link: ${v!.reason}` } : {}) };
-    } catch (e) { console.error("Löschprüfung: Gegenprüfung per Screenshot fehlgeschlagen", e); /* → Ergebnis der Liste */ }
+      link = { result: !v ? "unknown" : v.visible === false && v.confidence >= 0.8 ? "gone" : v.visible === true && v.confidence >= 0.7 ? "visible" : "unknown", reason: v?.reason || "", conf: v?.confidence ?? 0, shot: { buf: s.buf, mime: s.mime } };
+    } catch (e) { console.error("Löschprüfung: Link-Screenshot fehlgeschlagen", e); }
   }
+  const save = async (result: string, reason: string, conf: number | null, shot?: { buf: Buffer; mime: string }) =>
+    (await pool!.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence, mime, img) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+      [Number(t.id), t.order_id, result, reason, conf, shot?.mime || null, shot?.buf || null]).catch(() => ({ rows: [] as { id: number }[] }))).rows[0]?.id as number | undefined;
+  if (link && link.result !== "unknown") {
+    const checkId = await save(link.result, `${link.reason} (review link)`, link.conf, link.shot);
+    return { result: link.result, reason: link.reason || (link.result === "gone" ? "The review is no longer available on Google." : "The review is still visible on Google."), checkId };
+  }
+  // Rückfall: Bewertungsliste des Profils
+  const sc = await serpCheck({ ...t, url: longUrl }, rating, placeId).catch((e) => ({ result: "unknown" as const, why: String((e as Error)?.message || e) }));
   if (sc.result !== "unknown") {
-    await pool.query(`INSERT INTO removal_checks (task_id, order_id, result, reason, confidence) VALUES ($1,$2,$3,$4,$5)`,
-      [Number(t.id), t.order_id, sc.result, sc.reason + " (Google review list)", 0.95]).catch(() => {});
-    return { result: sc.result, reason: sc.reason };
+    const checkId = await save(sc.result, sc.reason + ` (Google review list${link ? " · link unclear: " + link.reason : ""})`, 0.9, link?.shot);
+    return { result: sc.result, reason: sc.reason, checkId };
+  }
+  if (link) {
+    const checkId = await save("unknown", link.reason || "The check was not conclusive.", link.conf, link.shot);
+    return { result: "unknown", reason: link.reason || "The check was not conclusive.", checkId, why: `Link unklar · Liste: ${sc.why}` };
   }
   // Methode 2: Screenshot jetzt + KI-Vergleich mit dem Screenshot von der Bestellung
   if (!shotKey() || !process.env.ANTHROPIC_API_KEY) return { result: "unknown", reason: "The check isn't possible right now.", why: `Liste: ${sc.why} · Screenshot/KI nicht eingerichtet` };
