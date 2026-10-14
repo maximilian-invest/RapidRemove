@@ -16,6 +16,8 @@
 import { pool } from "./db";
 import { expandShortLink, resolveReviewLink } from "./monitor";
 import { probeReviewLink } from "./linkProbe";
+import { captureHtml, shotKey } from "./reviewShots";
+import { classify, snapFromHtml, norm as normName } from "./reviewPage";
 
 export type ScanTask = { id: string | number; order_id: string | null; url: string | null; name: string | null; text: string | null; rating?: number | null; status: string };
 export type LinkSignal = "gone" | "visible" | "unknown";
@@ -126,8 +128,16 @@ export async function checkRemovalStrict(t: ScanTask): Promise<ScanDecision> {
   }
   if (rating == null && Number(t.rating) >= 1 && Number(t.rating) <= 5) rating = Math.round(Number(t.rating));
 
-  // Quelle 1: Google-Link
-  const link = await probeWithRetry(longUrl, t.name);
+  // Quelle 1: Google-Link – eigener Browser, dazu ScreenshotOne (fertiges HTML, zweiter unabhängiger Browser, keine KI).
+  // „sichtbar" von EINEM der beiden reicht zum Stoppen; „gelöscht" nur, wenn keiner „sichtbar" sagt.
+  const own = await probeWithRetry(longUrl, t.name);
+  let shot: { state: LinkSignal; note: string } = { state: "unknown", note: "nicht genutzt" };
+  if (own.state !== "visible" && shotKey()) {
+    try { shot = { state: classify(snapFromHtml(await captureHtml(longUrl)), normName(String(t.name || "").trim()), reviewId), note: "ScreenshotOne" }; }
+    catch (e) { shot = { state: "unknown", note: "ScreenshotOne: " + String((e as Error)?.message || e).replace(/https?:\S+/g, "").slice(0, 100) }; }
+  }
+  const link = { state: (own.state === "visible" || shot.state === "visible" ? "visible" : own.state === "gone" || shot.state === "gone" ? "gone" : "unknown") as LinkSignal,
+    note: `Browser: ${own.state} (${own.note}) · ${shot.note}: ${shot.state}` };
   if (link.state === "visible") { const d = decide("visible", { state: "unknown", detail: "nicht nötig" }, true, t.name || ""); d.why += ` (${link.note})`; await save(d); return d; }
   if (link.state !== "gone") { const d = decide("unknown", { state: "unknown", detail: "nicht geprüft" }, true, t.name || ""); d.why += ` (${link.note})`; await save(d); return d; }
 
