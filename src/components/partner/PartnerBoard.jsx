@@ -9,7 +9,7 @@ import useLive from "@/lib/useLive";
 import useAutoUpdate from "@/lib/useAutoUpdate";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
-import { openGoogleLink } from "@/lib/open-google";
+import { openGoogleLink, isIOS } from "@/lib/open-google";
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
@@ -238,6 +238,18 @@ export default function PartnerBoard() {
     setScan((s) => (s ? { ...s, phase: "done" } : s));
   }, [token, flush, showToast, applyResults]);
 
+  /* „Open all": jede Bewertung in einem eigenen Tab zum schnellen Durchchecken.
+     iPhone kann nur einen Link auf einmal (Safari-Umweg) → dort alle Links kopieren. Blockiert der Browser Pop-ups → Hinweis. */
+  const openAll = React.useCallback((ids) => {
+    const urls = ids.map((id) => (tasksRef.current || []).find((x) => x.id === id)).filter((t) => t && t.url).map((t) => String(t.url).replace(/^http:/i, "https:"));
+    if (!urls.length) return;
+    if (isIOS()) { try { navigator.clipboard.writeText(urls.join("\n")); } catch (e) { /* */ } showToast(`${urls.length} links copied – iPhone opens only one at a time`, null, 5000); return; }
+    let blocked = 0;
+    for (const u of urls) { const w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) { /* */ } } else blocked++; }
+    touch(ids);
+    if (blocked) showToast(`${blocked} of ${urls.length} tabs were blocked – allow pop-ups for rapid-remove.com`, null, 6000);
+  }, [showToast, touch]);
+
   /** Partner confirms a payout (per review or all). Committed after the undo window like status changes. */
   const markPaid = React.useCallback((idsIn) => {
     const ts = tasksRef.current || [];
@@ -402,7 +414,7 @@ export default function PartnerBoard() {
   // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
   const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}
     <ReasonPick state={pick} tasks={tasks} list={reasonList} onCancel={() => setPick(null)} onGo={(ids, reasons) => { setPick(null); verifyRemoved(ids, reasons); }} />
-    <OrderScan state={scan} onClose={() => { if (scan && scan.phase === "checking") return; setScan(null); load(false); }} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} />
+    <OrderScan state={scan} onClose={() => { if (scan && scan.phase === "checking") return; setScan(null); load(false); }} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} onOpenAll={openAll} />
     <RemovalCheck state={ver} token={token} onClose={() => { setVer(null); load(false); }} onAgain={(ids) => verifyRemoved(ids)} onConfirm={confirmRemoved} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} /></>;
   if (!preview) return app;
   return (

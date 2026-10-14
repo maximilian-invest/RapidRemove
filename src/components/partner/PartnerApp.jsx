@@ -336,7 +336,7 @@ export default function PartnerApp({ api }) {
           <div><b>{usd(sum(dueC))}</b><span>To be paid</span></div>
         </div>
         {allT.some(isTodo) ? (
-          <button type="button" className="cta scanbtn" disabled={api.scanning} onClick={() => api.scanOrder(c)}><ScanSearch />Scan all reviews<span className="scan-sub">Removed ones are marked automatically</span></button>
+          <button type="button" className="cta scanbtn" disabled={api.scanning} onClick={() => api.scanOrder(c)}><ScanSearch />Scan for deleted reviews<span className="scan-sub">Deleted ones are marked automatically</span></button>
         ) : null}
         <div className="acts2">
           <button type="button" className="cta" disabled={!l.length} onClick={() => copyLinks(l.map((t) => t.id), c)}><Copy />Copy all links</button>
