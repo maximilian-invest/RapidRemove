@@ -1687,7 +1687,10 @@ export default function CustomerDashboard() {
             </div>
           ) : null}
           <div className="sec" style={{ marginTop: 18 }}><h2>{T("pAmount")}</h2></div>
-          <div className="paycard"><span className="ico"><Receipt /></span><span><b>{svc}</b><span>{p.protection ? T("pProt_" + p.protection) : "#" + o.id}</span></span><span className="amt">{money(p.amount, o.cur)}</span></div>
+          <div className="paycard"><span className="ico"><Receipt /></span><span><b>{svc}</b><span>{p.protection === "lifetime" ? T("pProt_lifetime") : T("pOneS")}</span></span><span className="amt">{money(p.amount, o.cur)}</span></div>
+          {(p.protection === "monthly" || p.protection === "monitor") && p.protAmount > 0 ? (
+            <div className="paycard" style={{ marginTop: 10 }}><span className="ico"><ShieldCheck /></span><span><b>{T("pSubT_" + p.protection)}</b><span>{T("pSubS")}</span></span><span className="amt">{T("pSubAmt", { amount: money(p.protAmount, o.cur) })}</span></div>
+          ) : null}
         </>
       );
     }
