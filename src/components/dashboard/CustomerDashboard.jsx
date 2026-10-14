@@ -14,7 +14,6 @@ import {
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
   BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin,
 } from "lucide-react";
-import { searchProfiles } from "@/lib/places";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
 import { reviewQuote, vatNote } from "@/lib/pricing";
@@ -630,17 +629,17 @@ function Top({ phs, fill, onClose, hide }) {
    Danach öffnet sich der Start-Ablauf (Grund je Bewertung; Zahlungsart nur, wenn noch keine hinterlegt ist). */
 /* Preisstaffel (Bulk): alle Stufen, die passende hervorgehoben – der Kunde sieht transparent, in welche Stufe er fällt. */
 function TierTable({ pricing, tier }) {
-  let from = 1;
   const nf = (v) => Number(v).toLocaleString(LOC);
+  const tiers = tiersFrom(pricing.tiers);
   return (
     <div className="bu-tiers">
       <div className="bu-th"><b>{T("buTiersH")}</b><span>{pricing.custom ? T("buCustom") : T("buReviews")}</span></div>
-      {pricing.tiers.map((t, i) => {
-        const f = from; if (t.upTo) from = t.upTo + 1;
+      {tiers.length && tiers[0].from > 1 ? <div className="bu-tr below"><span>{T("buBelow", { n: nf(tiers[0].from) })}</span><b>{T("buStd")}</b></div> : null}
+      {tiers.map((t, i) => {
         const on = !!tier && tier.idx === i;
         return (
           <div key={i} className={"bu-tr" + (on ? " on" : "")}>
-            <span>{on ? <Check /> : null}{t.upTo ? T("buUpTo", { to: nf(t.upTo) }) : T("buFrom", { from: nf(f) })}</span>
+            <span>{on ? <Check /> : null}{T("buFrom", { from: nf(t.from) })}</span>
             <b>{money(t.price, pricing.cur)}</b>
           </div>
         );
@@ -649,25 +648,26 @@ function TierTable({ pricing, tier }) {
     </div>
   );
 }
-const tierPrice = (tiers, n) => { for (const t of tiers) if (t.upTo == null || n <= t.upTo) return t.price; return tiers[tiers.length - 1].price; };
+/* Stufen „ab N" (Altformat { upTo } umgerechnet). tierPrice: null unter der ersten Stufe → normale Preise. */
+const tiersFrom = (tiers) => (!tiers || !tiers.length ? [] : tiers[0].from != null ? tiers : tiers.map((t, i, a) => ({ from: i === 0 ? 1 : a[i - 1].upTo + 1, price: t.price })));
+const tierPrice = (tiers, n) => { let p = null; for (const t of tiersFrom(tiers)) if (n >= t.from) p = t.price; return p; };
+const tierIdx = (tiers, n) => { let k = -1; tiersFrom(tiers).forEach((t, i) => { if (n >= t.from) k = i; }); return k; };
 const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || "").split(",")[1] || ""); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
 
-function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, presetQ, modes }) {
+function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes }) {
   const both = !!(modes && modes.hand && modes.bulk);
-  const first = () => (presetQ ? "search" : both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "search");
-  const [step, setStep] = React.useState("search"); // mode | search | pick | bulk | bpre | done
-  const [q, setQ] = React.useState("");
-  const [res, setRes] = React.useState(null); // Suchtreffer
+  const first = () => (both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "links");
+  const [step, setStep] = React.useState("links"); // mode | links | bulk | bpre | done
   const [busy, setBusy] = React.useState(false);
-  const [place, setPlace] = React.useState(null);
-  const [list, setList] = React.useState(null);
-  const [err, setErr] = React.useState("");
-  const [pick, setPick] = React.useState([]);
   const [agb, setAgb] = React.useState(false);
   const [fagg, setFagg] = React.useState(false);
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
-  const inRef = React.useRef(null);
+  // Von Hand (14.10.2026): Bewertungs-Links einzeln einfügen, jeder wird geprüft → Preis sofort.
+  const rowSeq = React.useRef(0);
+  const newRow = (url = "") => ({ id: ++rowSeq.current, url, st: "idle", r: null, err: "" }); // st: idle | scan | ok | err
+  const [rows, setRows] = React.useState([]);
+  const inRefs = React.useRef({});
   // Bulk-Upload
   const [files, setFiles] = React.useState([]);
   const [paste, setPaste] = React.useState("");
@@ -679,23 +679,22 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   const [doneN, setDoneN] = React.useState(0);
   const fileRef = React.useRef(null);
   const consRef = React.useRef(null);
-  // Kein autoFocus: am Handy öffnet sonst die Tastatur, während das Blatt noch von unten hereinfährt –
-  // iOS scrollt dann zum (noch unsichtbaren) Feld und man sieht nur eine weiße Fläche. Fokus nur am Desktop, nach der Animation.
-  React.useEffect(() => {
-    if (!open || step !== "search" || presetQ) return;
+  // Kein autoFocus am Handy (Tastatur + einfahrendes Blatt → weiße Fläche). Fokus nur am Desktop, nach der Animation.
+  const focusRow = (id, ms = 60) => {
     let fine = false; try { fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) { /* */ }
     if (!fine) return;
-    const t = setTimeout(() => { try { inRef.current && inRef.current.focus({ preventScroll: true }); } catch (e) { /* */ } }, 380);
-    return () => clearTimeout(t);
-  }, [open, step]); // eslint-disable-line react-hooks/exhaustive-deps
+    setTimeout(() => { try { const el = inRefs.current[id]; if (el) el.focus({ preventScroll: true }); } catch (e) { /* */ } }, ms);
+  };
   React.useEffect(() => {
     if (!open) return;
     // offene Tastatur (z. B. aus dem Chat) schließen, damit das Blatt nicht verschoben einfährt
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) { /* */ }
     const f0 = first();
-    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    const r0 = newRow();
+    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows([r0]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
     setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0);
-    if (modes && modes.bulk) call("bulk/info", { token }).then(setBinfo).catch(() => setBinfo(null));
+    if (f0 === "links") focusRow(r0.id, 380);
+    if (modes && (modes.bulk || modes.hand)) call("bulk/info", { token }).then(setBinfo).catch(() => setBinfo(null));
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (list) => { const a = Array.from(list || []); if (a.length) setFiles((x) => [...x, ...a].slice(0, 10)); };
   const bCheck = async () => {
@@ -717,52 +716,59 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
   };
-  const search = async (qq) => {
-    const v = String(qq ?? q).trim(); if (!v) return;
-    setBusy(true); setRes(null);
-    try { setRes(await searchProfiles(v, LANG)); } catch (e) { setRes([]); }
-    setBusy(false);
+  // ---- Links von Hand ----
+  const LN_ERR = { not_review: "lnNotReview", profile_link: "lnProfile", reviews_dach: "lnDach", rate: "lnRate" };
+  const scanRow = async (id, url) => {
+    const u = String(url || "").trim(); if (!u) return;
+    setRows((x) => x.map((r) => (r.id === id ? { ...r, url: u, st: "scan", r: null, err: "" } : r)));
+    try {
+      const r = await call("new-order/scan", { token, link: u, lang: LANG });
+      setRows((x) => x.map((row) => (row.id === id && row.url === u ? { ...row, st: r.ordered ? "err" : "ok", r, err: r.ordered ? "lnOrdered" : "" } : row)));
+    } catch (e) {
+      setRows((x) => x.map((row) => (row.id === id && row.url === u ? { ...row, st: "err", err: LN_ERR[e.code] || "lnErr" } : row)));
+    }
   };
-  // Live-Vorschläge beim Tippen (wie im Website-Wizard), entprellt
-  React.useEffect(() => {
-    if (!open || step !== "search") return;
-    const v = q.trim();
-    if (v.length < 2) { setRes(null); return; }
-    let alive = true;
-    const id = setTimeout(() => {
-      searchProfiles(v, LANG).then((r) => { if (alive) setRes(r || []); }).catch(() => { if (alive) setRes([]); });
-    }, 300);
-    return () => { alive = false; clearTimeout(id); };
-  }, [q, open, step]);
-  // iOS schiebt beim Öffnen der Tastatur die Seite hinter dem fixen Blatt nach oben → zurücksetzen
-  const unshift = () => { [60, 320, 650].forEach((ms) => setTimeout(() => { try { if (window.scrollY) window.scrollTo(0, 0); } catch (e) { /* */ } }, ms)); };
-  const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
-  const choose = async (p) => {
-    if (dach(p)) return;
-    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]);
-    try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG }); setList(r.reviews || []); }
-    catch (e) { setList([]); setErr(T("arErr")); }
+  const addRow = () => { const r = newRow(); setRows((x) => (x.length >= 50 ? x : [...x, r])); focusRow(r.id); };
+  const delRow = (id) => setRows((x) => { const y = x.filter((r) => r.id !== id); return y.length ? y : [newRow()]; });
+  const setUrl = (id, v) => setRows((x) => x.map((r) => (r.id === id ? (r.url === v ? r : { ...r, url: v, st: "idle", r: null, err: "" }) : r)));
+  // Eingefügter Text: ein Link → prüfen; mehrere Links (z. B. eine Liste) → je Link ein Feld.
+  const pasteInto = (id, text) => {
+    const parts = String(text).split(/[\s,;]+/).map((p) => p.trim()).filter((p) => /^(https?:\/\/|www\.|maps\.app\.goo\.gl|share\.google|goo\.gl|g\.co)/i.test(p));
+    if (!parts.length) { setUrl(id, String(text).trim()); return; }
+    const extra = parts.slice(1).map((p) => newRow(p));
+    setRows((x) => { const i = x.findIndex((r) => r.id === id); const y = [...x]; if (i >= 0) y[i] = { ...y[i], url: parts[0] }; y.splice(i + 1, 0, ...extra); return y.slice(0, 50); });
+    scanRow(id, parts[0]); extra.forEach((r) => scanRow(r.id, r.url));
   };
-  const sel = (list || []).filter((r) => pick.includes(r.id));
-  const usd = place && place.cc === "US";
-  const cur = usd ? "usd" : "eur";
-  const selQ = sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; });
+  const okRows = rows.filter((r) => r.st === "ok");
+  const scanning = rows.some((r) => r.st === "scan");
+  const cc0 = ((okRows.find((r) => r.r.place && r.r.place.cc) || {}).r || {}).place;
+  const usd = !!cc0 && cc0.cc === "US";
+  const selQ = okRows.map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw }));
   const q2 = reviewQuote(selQ, LANG);
   // Eigene Preise des Kunden (Admin → Kunden & Preise) gelten auch von Hand: Staffel nach Anzahl + Software-Preis.
   const own = binfo && binfo.pricing && binfo.pricing.custom && binfo.pricing.tiers && binfo.pricing.tiers.length ? binfo.pricing : null;
-  const handCur = own ? own.cur : usd ? "usd" : "eur";
-  const handMax = own && selQ.length ? (() => {
+  const handCur = own && selQ.length && tierIdx(own.tiers, selQ.length) >= 0 ? own.cur : usd ? "usd" : "eur";
+  // Eigene Staffel greift erst ab ihrer ersten Stufe („ab 50"); darunter normale Preise.
+  const ownIdx = own && selQ.length ? tierIdx(own.tiers, selQ.length) : -1;
+  const flatP = ownIdx >= 0 ? tierPrice(own.tiers, selQ.length) : null;
+  const unitOf = (x) => {
+    const list = reviewQuote([{ old: !!x.old, nt: !!x.nt, sw: !!x.sw }], LANG).total;
+    if (flatP != null) return x.sw ? own.sw || list : flatP;
+    return Math.round((list * (100 - (q2.pct || 0))) / 100);
+  };
+  const handMax = flatP != null && selQ.length ? (() => {
     const swN = selQ.filter((x) => x.sw), flat = selQ.length - swN.length;
-    return flat * tierPrice(own.tiers, selQ.length) + (swN.length ? (own.sw ? swN.length * own.sw : reviewQuote(swN, LANG).total) : 0);
+    return flat * flatP + (swN.length ? (own.sw ? swN.length * own.sw : reviewQuote(swN, LANG).total) : 0);
   })() : q2.total;
-  const order = async () => {
+  const lOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg) { setCErr(true); return; }
+    if (scanning || !okRows.length) return;
     setBusy(true);
     try {
-      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
-      setOid(r.orderId); setStep("done");
-    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
+      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, links: okRows.map((x) => x.url) });
+      setOid(r.orderId); setDoneN(r.n); setStep("done");
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : T("noErr"), true); }
     setBusy(false);
   };
   const ag = AGB_CONSENT[LANG] || AGB_CONSENT.en, fg = FAGG_CONSENT[LANG] || FAGG_CONSENT.en;
@@ -771,14 +777,14 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
       {open ? (
         <div className="fl-card">
           <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
-            {(() => { const seq = [...(both ? ["mode"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : ["search", "pick"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
+            {(() => { const seq = [...(both ? ["mode"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : ["links"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
           {step === "mode" ? (
             <div className="fl-body">
               <div className="fl-k">{T("noK")}</div>
               <h2>{T("noModeH")}</h2>
               <p>{T("noModeP")}</p>
               <div className="ar-list bu-modes">
-                <button type="button" className="ar-row no-pl" onClick={() => { setKind("hand"); setStep("search"); }}>
+                <button type="button" className="ar-row no-pl" onClick={() => { setKind("hand"); setStep("links"); const r = rows[0]; if (r) focusRow(r.id, 120); }}>
                   <span className="ico"><ListChecks /></span><span className="t"><span className="a">{T("noHand")}</span><span className="x">{T("noHandS")}</span></span><ChevronRight className="chev" />
                 </button>
                 <button type="button" className="ar-row no-pl" onClick={() => { setKind("bulk"); setStep("bulk"); }}>
@@ -831,6 +837,11 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                     <div className="bu-your"><b>{T("buYourTier", { range: prev.tier.to ? `${prev.tier.from.toLocaleString(LOC)}–${prev.tier.to.toLocaleString(LOC)}` : `${prev.tier.from.toLocaleString(LOC)}+` })}</b><span>{net(T("buPer", { price: money(prev.tier.price, prev.pricing.cur) }))}</span></div>
                     <TierTable pricing={prev.pricing} tier={prev.tier} />
                   </>
+                ) : prev.n && prev.pricing ? (
+                  <>
+                    <div className="note">{T("buBelowNote", { n: (tiersFrom(prev.pricing.tiers)[0] || { from: 0 }).from.toLocaleString(LOC) })}</div>
+                    <TierTable pricing={prev.pricing} />
+                  </>
                 ) : prev.n ? <div className="note">{T("buListPrice")}</div> : null}
                 {prev.n ? (
                   <div className="bu-list">
@@ -861,63 +872,49 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                 <button className="cta" disabled={!prev.n || busy} onClick={prev.n ? bOrder : () => setStep("bulk")}>{busy ? <Loader className="spin" /> : prev.n ? <Check /> : <ArrowLeft />}{prev.n ? T("buOrder", { n: prev.n.toLocaleString(LOC) }) : T("buBack")}</button>
               </div>
             </>
-          ) : step === "search" ? (
+          ) : step === "links" ? (
             <>
               <div className="fl-body">
                 {both ? <button type="button" className="bu-back" onClick={() => setStep("mode")}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
-                <h2>{T("noH1")}</h2>
-                <p>{T("noP1")}</p>
-                <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
-                  <Search /><input ref={inRef} onFocus={unshift} value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
-                  <button type="submit" disabled={busy || !q.trim()}>{busy ? <Loader className="spin" /> : T("noSearch")}</button>
-                </form>
-                {res && !res.length ? <div className="note">{T("noNone")}</div> : null}
-                {res && res.length ? (
-                  <div className="ar-list">
-                    {res.map((p) => (
-                      <button key={p.placeId || p.id} type="button" className={"ar-row no-pl" + (dach(p) ? " dis" : "")} disabled={dach(p)} onClick={() => choose(p)}>
-                        <span className="ico"><MapPin /></span>
-                        <span className="t">
-                          <span className="a">{p.name}{p.rating ? <span className="rt"><Star className="f" />{p.rating}{p.reviews ? <em> ({p.reviews})</em> : null}</span> : null}</span>
-                          <span className="x">{p.addr}</span>
-                          {dach(p) ? <span className="in">{T("noDach")}</span> : null}
-                        </span>
-                        {!dach(p) ? <ChevronRight className="chev" /> : null}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-            </>
-          ) : step === "pick" ? (
-            <>
-              <div className="fl-body">
-                <button type="button" className="no-chg" onClick={() => setStep("search")}><MapPin /><span><b>{place.name}</b><span>{place.addr}</span></span><em>{T("noChange")}</em></button>
-                <h2>{T("noH2")}</h2>
-                <p>{T("noP2")}</p>
-                {list === null ? <div className="ar-load"><Loader className="spin" /></div>
-                  : err ? <div className="note bad">{err}</div>
-                  : !list.length ? <div className="note">{T("noNoRev")}</div>
-                  : (
-                    <div className="ar-list">
-                      {list.map((r) => {
-                        const on = pick.includes(r.id);
-                        return (
-                          <button key={r.id} type="button" disabled={r.ordered || busy} className={"ar-row" + (on ? " on" : "") + (r.ordered ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
-                            <span className="cb">{on || r.ordered ? <Check /> : null}</span>
-                            <span className="t">
-                              <span className="a">{r.name}<span className="stars" aria-label={r.rating + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < r.rating ? "f" : ""} />)}</span></span>
-                              <span className={"x" + (r.text ? "" : " none")}>{r.text || T("noText")}</span>
-                              {r.ordered ? <span className="in">{T("arIn")}</span> : null}
-                            </span>
-                          </button>
-                        );
-                      })}
+                <h2>{T("lnH1")}</h2>
+                <p>{T("lnP1")}</p>
+                <div className="ln-list">
+                  {rows.map((row, i) => (
+                    <div key={row.id} className={"ln-row " + row.st}>
+                      <div className="ln-in">
+                        <span className="ln-n">{i + 1}</span>
+                        <input ref={(el) => { inRefs.current[row.id] = el; }} value={row.url} placeholder={T("lnPh")} inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint="next"
+                          onChange={(e) => setUrl(row.id, e.target.value)}
+                          onPaste={(e) => { const t = (e.clipboardData && e.clipboardData.getData("text")) || ""; if (t.trim()) { e.preventDefault(); pasteInto(row.id, t); } }}
+                          onBlur={() => { if (row.st === "idle" && row.url.trim()) scanRow(row.id, row.url); }}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); if (row.st === "idle" && row.url.trim()) scanRow(row.id, row.url); if (i === rows.length - 1 && row.url.trim()) addRow(); } }} />
+                        {rows.length > 1 || row.url ? <button type="button" className="ln-x" aria-label="Remove" onClick={() => delRow(row.id)}><X /></button> : null}
+                      </div>
+                      {row.st === "scan" ? <div className="ln-st"><Loader className="spin" />{T("lnScan")}</div> : null}
+                      {row.st === "err" ? <div className="ln-st bad">{T(row.err)}</div> : null}
+                      {row.st === "ok" ? (
+                        <div className="ln-card">
+                          <div className="t">
+                            {row.r.review ? (
+                              <>
+                                <span className="a">{row.r.review.name}<span className="stars" aria-label={row.r.review.rating + " stars"}>{Array.from({ length: 5 }, (_, k) => <Star key={k} className={k < row.r.review.rating ? "f" : ""} />)}</span></span>
+                                <span className={"x" + (row.r.review.text ? "" : " none")}>{row.r.review.text || T("noText")}</span>
+                              </>
+                            ) : <><span className="a">{T("lnUnread")}</span><span className="x">{T("lnUnreadS")}</span></>}
+                            {row.r.place ? <span className="pl"><MapPin />{row.r.place.name}</span> : null}
+                            {row.r.sw ? <span className="tg">{T("lnSw")}</span> : row.r.old ? <span className="tg">{T("lnOld")}</span> : null}
+                          </div>
+                          <b className="pr">{money(unitOf(row.r), handCur)}</b>
+                        </div>
+                      ) : null}
                     </div>
-                  )}
+                  ))}
+                </div>
+                {rows.length < 50 ? <button type="button" className="ln-add" onClick={addRow}><Plus />{T("lnAdd")}</button> : null}
+                {own ? <TierTable pricing={own} tier={ownIdx >= 0 ? { idx: ownIdx } : null} /> : null}
               </div>
               <div className="fl-foot pgf">
-                {sel.length ? (
+                {okRows.length ? (
                   <>
                     <div className="ar-max">{T("noMax", { amount: net(money(handMax, handCur)) })}</div>
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
@@ -927,7 +924,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </>
                 ) : null}
-                <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noH2")}</button>
+                <button className="cta" disabled={!okRows.length || busy || scanning} onClick={lOrder}>{busy || scanning ? <Loader className="spin" /> : <Check />}{okRows.length === 1 ? T("noOrder1") : okRows.length ? T("noOrderN", { n: okRows.length }) : T("lnH1")}</button>
               </div>
             </>
           ) : (
@@ -2046,7 +2043,7 @@ export default function CustomerDashboard() {
 
       <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
-      <NewOrderFlow open={noOpen} presetQ={noQ} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
+      <NewOrderFlow open={noOpen} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
         onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />

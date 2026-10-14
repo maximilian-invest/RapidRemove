@@ -12,7 +12,8 @@
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
 
-export type Tier = { upTo: number | null; price: number };
+/** Stufe „ab N Bewertungen → Preis" (14.10.2026: Ab-Preise). Unter der ersten Stufe gilt keine Pauschale → normale Preise. */
+export type Tier = { from: number; price: number };
 /** sw = Preis je Software-Fall (ohne Text / alte US-Bewertungen) in derselben Währung – null = normale Software-Preise. */
 export type Pricing = { cur: "usd" | "eur"; tiers: Tier[]; sw?: number | null };
 /** Partner: Staffel in USD nach derselben Anzahl wie beim Kunden + eigener Software-Preis. Der Kunde sieht davon nie etwas. */
@@ -24,30 +25,37 @@ export type CustSetup = { email: string; name: string; company: string; lang: st
 
 const num = (v: unknown) => { const n = Number(String(v ?? "").replace(",", ".")); return Number.isFinite(n) ? n : NaN; };
 
-/** Staffel prüfen + sortieren: aufsteigende Grenzen, letzte Stufe ohne Grenze („darüber"), Preise > 0. */
+/** Staffel prüfen + sortieren: „ab"-Grenzen aufsteigend und eindeutig, Preise > 0.
+ *  Altformat { upTo } (bis 14.10.2026) wird umgerechnet: erste Stufe ab 1, jede weitere ab vorheriger Grenze + 1. */
 export function normTiers(input: unknown): Tier[] | null {
   if (!Array.isArray(input) || !input.length || input.length > 12) return null;
-  const t = (input as Record<string, unknown>[]).map((x) => ({ upTo: x.upTo === null || x.upTo === "" || x.upTo === undefined ? null : Math.round(num(x.upTo)), price: Math.round(num(x.price) * 100) / 100 }));
-  if (t.some((x) => !(x.price > 0 && x.price < 100000) || (x.upTo !== null && !(x.upTo >= 1 && x.upTo < 10_000_000)))) return null;
-  const fixed = t.filter((x) => x.upTo !== null).sort((a, b) => (a.upTo as number) - (b.upTo as number));
-  if (new Set(fixed.map((x) => x.upTo)).size !== fixed.length) return null;
-  const open = t.filter((x) => x.upTo === null);
-  if (open.length > 1) return null;
-  const last = open[0] || { upTo: null, price: fixed[fixed.length - 1].price };
-  return [...fixed, last];
+  const raw = input as Record<string, unknown>[];
+  let t: Tier[];
+  if (raw.some((x) => x && x.from !== undefined && x.from !== null && x.from !== "")) {
+    t = raw.map((x) => ({ from: Math.round(num(x.from)), price: Math.round(num(x.price) * 100) / 100 }));
+  } else {
+    const legacy = raw.map((x) => ({ upTo: x.upTo === null || x.upTo === "" || x.upTo === undefined ? null : Math.round(num(x.upTo)), price: Math.round(num(x.price) * 100) / 100 }));
+    if (legacy.some((x) => x.upTo !== null && !(x.upTo >= 1))) return null;
+    const fixed = legacy.filter((x) => x.upTo !== null).sort((a, b) => (a.upTo as number) - (b.upTo as number));
+    const open = legacy.filter((x) => x.upTo === null);
+    if (open.length > 1) return null;
+    const all = [...fixed, ...open];
+    t = all.map((x, i) => ({ from: i === 0 ? 1 : (all[i - 1].upTo as number) + 1, price: x.price }));
+  }
+  if (t.some((x) => !(x.price > 0 && x.price < 100000) || !(x.from >= 1 && x.from < 10_000_000))) return null;
+  t.sort((a, b) => a.from - b.from);
+  if (new Set(t.map((x) => x.from)).size !== t.length) return null;
+  return t;
 }
 export const normCur = (v: unknown): "usd" | "eur" | null => (v === "usd" || v === "eur" ? v : null);
 
-/** Stufe für n Bewertungen. */
-export function tierFor(tiers: Tier[], n: number): { idx: number; price: number; from: number; to: number | null } {
-  let from = 1;
-  for (let i = 0; i < tiers.length; i++) {
-    const t = tiers[i];
-    if (t.upTo === null || n <= t.upTo) return { idx: i, price: t.price, from, to: t.upTo };
-    from = t.upTo + 1;
-  }
-  const l = tiers[tiers.length - 1];
-  return { idx: tiers.length - 1, price: l.price, from, to: null };
+/** Stufe für n Bewertungen – null, wenn n unter der ersten Stufe liegt (dann normale Preise). */
+export function tierFor(tiers: Tier[], n: number): { idx: number; price: number; from: number; to: number | null } | null {
+  let idx = -1;
+  for (let i = 0; i < tiers.length; i++) if (n >= tiers[i].from) idx = i;
+  if (idx < 0) return null;
+  const next = tiers[idx + 1];
+  return { idx, price: tiers[idx].price, from: tiers[idx].from, to: next ? next.from - 1 : null };
 }
 
 const price = (v: unknown): number | null => { if (v === null || v === undefined || v === "") return null; const n = Math.round(num(v) * 100) / 100; return n > 0 && n < 100000 ? n : NaN; };
@@ -88,7 +96,7 @@ export async function defaultPricing(): Promise<DefaultPricing | null> {
 function partnerOf(r: Record<string, unknown>): PartnerPricing {
   let tiers = normTiers(r.partner_tiers);
   const pu = Number(r.partner_usd);
-  if (!tiers && Number.isFinite(pu) && pu > 0) tiers = [{ upTo: null, price: pu }];
+  if (!tiers && Number.isFinite(pu) && pu > 0) tiers = [{ from: 1, price: pu }];
   const sw = Number(r.partner_sw);
   return { tiers, sw: Number.isFinite(sw) && sw > 0 ? sw : null };
 }
@@ -107,7 +115,7 @@ export async function pricingFor(email: string): Promise<CustPricing> {
   if (r) {
     const tiers = normTiers(r.tiers), cur = normCur(r.cur), sw = Number(r.sw_price);
     const partner = partnerOf(r), partnerId = r.partner_id ? Number(r.partner_id) : null, note = String(r.note || "");
-    const partnerUsd = partner.tiers && partner.tiers.length === 1 ? partner.tiers[0].price : null;
+    const partnerUsd = partner.tiers && partner.tiers.length === 1 && partner.tiers[0].from === 1 ? partner.tiers[0].price : null;
     if (tiers && cur) return { cur, tiers, sw: Number.isFinite(sw) && sw > 0 ? sw : null, source: "custom", partner, partnerId, partnerUsd, note };
     // Standard-Staffel → auch Standard-Partner-Staffel, außer der Kunde hat eigene Partner-Konditionen.
     if (d) return { ...d, source: "default", partner: { tiers: partner.tiers || d.partner.tiers, sw: partner.sw || d.partner.sw }, partnerId, partnerUsd, note };
@@ -131,13 +139,15 @@ export type OrderPricing = { cur?: "usd" | "eur"; price?: number; sw?: number; p
   tierIdx?: number; from?: number; to?: number | null; n: number; source: CustPricing["source"]; tiers?: Tier[] };
 export function orderPricing(p: CustPricing, n: number, opts: { flat: boolean }): OrderPricing | null {
   const o: OrderPricing = { n, source: p.source };
-  if (opts.flat && p.source !== "list" && p.tiers.length) {
-    const t = tierFor(p.tiers, n);
+  const t = opts.flat && p.source !== "list" && p.tiers.length ? tierFor(p.tiers, n) : null;
+  if (t) {
     Object.assign(o, { cur: p.cur, price: t.price, tierIdx: t.idx, from: t.from, to: t.to, tiers: p.tiers });
     if (p.sw) o.sw = p.sw;
   }
-  if (p.partner.tiers && p.partner.tiers.length) o.partnerUsd = tierFor(p.partner.tiers, n).price;
-  if (p.partner.sw) o.partnerSw = p.partner.sw;
+  // Partner: Staffel greift erst ab ihrer ersten Stufe; darunter normaler Partnerpreis (auch für Software).
+  const pt = p.partner.tiers && p.partner.tiers.length ? tierFor(p.partner.tiers, n) : null;
+  if (pt) o.partnerUsd = pt.price;
+  if (p.partner.sw && (pt || !(p.partner.tiers && p.partner.tiers.length))) o.partnerSw = p.partner.sw;
   return o.price || o.partnerUsd || o.partnerSw ? o : null;
 }
 

@@ -911,3 +911,4 @@
   .an .pr-card .pr-lab{gap:6px}
   .an .pr-card .ctas2{grid-template-columns:1fr}
 }
+.an .pr-below .pr-lab,.an .pr-norm{color:var(--g3);font-weight:500;font-size:14px}
