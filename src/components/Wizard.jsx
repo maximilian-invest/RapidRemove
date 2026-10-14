@@ -2182,7 +2182,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     : servicePriceNum + (express ? num(p.express) : 0) + (protection === "lifetime" ? num(p.protLifetime) : 0);
   const leistungTotal = revFlow ? servicePriceNum : servicePriceNum + (express ? num(p.express) : 0);
 
-  const country = lang === "en" ? "US" : "DE";
+  const country = lang === "en" || lang === "ja" ? "US" : "DE"; // Währung wie die angezeigten Preise (profileFor: EN + JA → USD) – intern „US" = USD
   // Funnel-Insights: Headline-Preis (z. B. 450/850 €) + Herkunft der Prüfung.
   const checkAmt = num(service === "reset" ? p.reset : p.deletion) || 0;
   // Herkunft: Last-Touch ist die Quelle, die zählt; First-Touch geht als zweite
