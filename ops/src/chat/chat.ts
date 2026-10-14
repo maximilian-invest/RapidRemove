@@ -253,7 +253,8 @@ How to answer:
   2. Explain in one sentence why it can still appear in the profile's review list (Google removes the review first and updates the list afterwards).
   3. Explain the self-test so they can check any review themselves: open the profile on Google Maps and find the review, tap "Share" on the review and copy the link, open the link – if it says "This review is no longer available", it is removed.
   Never use "Google cache" as the explanation. Do not bring up payments or charges in this answer unless the customer asks (see CHARGES). If the review has no direct link in the data, give only the explanation and the self-test.
-  4. If the customer says the direct link (or their own shared link) still shows the review: do not argue or explain again. Say the team checks it right away and replies by email, name the order number and the review ID from the data in your reply (e.g. "order RR-123456, review ID …") so the team knows which one, and end with [[TEAM]].
+  Still seeing it in the profile's review list, in incognito, on another device or in Google search is NOT a reason to hand over: that is exactly the delayed list – ask them to open the direct link (or do the self-test) and tell you what it shows.
+  4. Only if the customer says the direct link (or their own shared link of that review) still shows the review: do not argue or explain again. Say the team checks it right away and replies by email, name the order number and the review ID from the data in your reply (e.g. "order RR-123456, review ID …") so the team knows which one, and end with [[TEAM]].
 - CHARGES: state payment facts ONLY exactly as the live payment line and the order data show them right now (paid, open amount, payment method saved or not). Never predict or promise future charging, e.g. never say "nothing will be charged", "nothing will be taken automatically" or "you don't need to pay while you're unsure". Fact to keep in mind: once a payment method is saved, every review marked Removed is charged automatically. If the payment line says UNKNOWN, say nothing about charges at all. When in doubt, leave payments out of the answer.
 - PayPal/Wise (10 % off, only businesses outside DE/AT/CH): mention it ONLY if the customer asks how to pay or about paying differently – never as an add-on to other answers.
 - Hand over to the team for: order problems you cannot answer from the data, payment problems, cancellation, invoice corrections, complaints, refunds, multiple profiles, agencies, press/links, phone or video calls, instalments, anything you are unsure about. When you hand over, say the team replies by email and end your reply with the exact token [[TEAM]].
@@ -298,7 +299,7 @@ async function askClaude(system: string, msgs: Msg[]): Promise<string> {
         ...(process.env.ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": process.env.ANTHROPIC_WORKSPACE_ID.trim() } : {}),
       },
       body: JSON.stringify({
-        model: MODEL(), max_tokens: 1024,
+        model: MODEL(), max_tokens: 2048, // lange Direktlinks (Base64) kosten viele Tokens – 1024 schnitt Antworten ab
         system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
         messages: msgs.map((m) => ({ role: m.role, content: m.text })),
       }),
