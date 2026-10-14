@@ -48,15 +48,14 @@ function targetUrl(u: string): string {
   } catch { return u; }
 }
 
-function apiUrl(target: string, withTitle = false): string {
+function apiUrl(target: string, withTitle = false, html = false, lang: "de" | "en" = "de"): string {
   const p = new URLSearchParams({
     access_key: shotKey(),
     url: targetUrl(target),
     viewport_width: "1280",
     viewport_height: "900",
     device_scale_factor: "1",
-    format: "jpg",
-    image_quality: "82",
+    format: html ? "html" : "jpg",
     delay: String(Math.min(30, Math.max(0, Number(process.env.SCREENSHOT_DELAY) || 8))),
     timeout: "90",
     navigation_timeout: "30",
@@ -64,9 +63,10 @@ function apiUrl(target: string, withTitle = false): string {
     block_ads: "true",
     cache: "false",
   });
+  if (!html) p.set("image_quality", "82");
   // Google-Einwilligung vorab setzen, sonst landet die Aufnahme auf „Bevor Sie fortfahren".
   if (withTitle) p.set("metadata_page_title", "true"); // Seitentitel → Header x-screenshotone-page-title
-  p.append("headers", "Accept-Language:de-DE,de;q=0.9");
+  p.append("headers", lang === "en" ? "Accept-Language:en-US,en;q=0.9" : "Accept-Language:de-DE,de;q=0.9");
   p.append("cookies", "CONSENT=YES+; Domain=.google.com; Path=/");
   p.append("cookies", "SOCS=CAESEwgDEgk0ODE3Nzk3MjQaAmRlIAEaBgiA_LyaBg; Domain=.google.com; Path=/");
   const qs = p.toString();
@@ -89,6 +89,19 @@ export async function captureShot(url: string): Promise<{ buf: Buffer; mime: str
   let title = res.headers.get("x-screenshotone-page-title") || "";
   try { title = decodeURIComponent(title); } catch { /* roh lassen */ }
   return { buf: Buffer.from(await res.arrayBuffer()), mime: type.split(";")[0], title };
+}
+
+/** Fertig geladene Seite als HTML (ScreenshotOne format=html) – für die Lösch-Erkennung ohne KI (reviewPage.ts).
+ *  Englische Oberfläche wie beim eigenen Browser. Wirft bei Fehlern. */
+export async function captureHtml(url: string): Promise<string> {
+  if (!shotKey()) throw new Error("SCREENSHOTONE_KEY fehlt");
+  let u = url;
+  try { const x = new URL(url); if (/(^|\.)google\.[a-z.]+$/.test(x.hostname)) x.searchParams.set("hl", "en"); u = x.toString(); } catch { /* */ }
+  const res = await fetch(apiUrl(u, false, true, "en"), { signal: AbortSignal.timeout(100_000) });
+  const t = await res.text().catch(() => "");
+  if (!res.ok) throw new Error("HTTP " + res.status + " " + t.slice(0, 200));
+  if (/^\s*\{/.test(t) && /"error/.test(t)) throw new Error(t.slice(0, 200));
+  return t;
 }
 
 async function takeOne(orderId: string, idx: number, url: string): Promise<void> {

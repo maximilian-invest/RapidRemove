@@ -5,7 +5,7 @@
 import React from "react";
 import {
   Search, ArrowLeft, Check, ChevronRight, Sparkles, Loader, Copy, CheckCheck, X, StickyNote, ArrowUpRight,
-  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User, AlarmClock,
+  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User, AlarmClock, ScanSearch,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, canRemove, usd, since, call, dueOf, dueText, dueDate, span } from "./shared";
 import PartnerPush from "./PartnerPush";
@@ -335,6 +335,9 @@ export default function PartnerApp({ api }) {
           <div><b>{allT.filter(F.removed).length}</b><span>Removed</span></div>
           <div><b>{usd(sum(dueC))}</b><span>To be paid</span></div>
         </div>
+        {allT.some(isTodo) ? (
+          <button type="button" className="cta scanbtn" disabled={api.scanning} onClick={() => api.scanOrder(c)}><ScanSearch />Scan for deleted reviews<span className="scan-sub">Deleted ones are marked automatically</span></button>
+        ) : null}
         <div className="acts2">
           <button type="button" className="cta" disabled={!l.length} onClick={() => copyLinks(l.map((t) => t.id), c)}><Copy />Copy all links</button>
           <button type="button" className="cta gh" disabled={!l.length} onClick={() => setSel((s) => { const n = new Set(s); l.forEach((t) => (allSel ? n.delete(t.id) : n.add(t.id))); return n; })}>{allSel ? <X /> : <CheckCheck />}{allSel ? "Clear" : "Select all"}</button>

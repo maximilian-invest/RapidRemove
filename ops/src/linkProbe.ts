@@ -48,9 +48,7 @@ function scheduleClose(): void {
   }, 120_000);
 }
 
-const GONE = /(this review is no longer available|review is no longer available|diese rezension ist nicht mehr verfügbar|rezension ist nicht mehr verfügbar|unsupported link|link not supported)/i;
-
-const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+import { GONE, norm, PAGE_SNAPSHOT, reviewIdOf, classify, type Snap } from "./reviewPage";
 
 /** Bewertungslink öffnen; „gone" bei „no longer available", „visible" wenn der Verfasser auf der Seite steht. */
 export async function probeReviewLink(url: string, reviewer?: string | null, timeoutMs = 25_000): Promise<Probe> {
@@ -72,12 +70,13 @@ export async function probeReviewLink(url: string, reviewer?: string | null, tim
     u.searchParams.set("hl", "en");
     await page.goto(u.toString(), { waitUntil: "domcontentloaded", timeout: timeoutMs });
     const name = norm(String(reviewer || "").trim());
+    const wantId = reviewIdOf(url);
     let text = "";
     while (Date.now() - t0 < timeoutMs) {
-      text = String(await page.evaluate(() => document.body ? document.body.innerText : "").catch(() => "")) || "";
-      if (GONE.test(text)) return { state: "gone", text: text.replace(/\s+/g, " ").slice(0, 400), ms: Date.now() - t0 };
-      // Bewertung angezeigt: Verfassername steht auf der Seite (neben dem Profilnamen)
-      if (name.length >= 3 && norm(text).includes(name)) return { state: "visible", text: text.replace(/\s+/g, " ").slice(0, 400), ms: Date.now() - t0 };
+      const snap = (await page.evaluate(PAGE_SNAPSHOT).catch(() => null)) as Snap | null;
+      text = snap?.text || "";
+      const st = classify(snap, name, wantId);
+      if (st !== "unknown") return { state: st, text: text.replace(/\s+/g, " ").slice(0, 400), ms: Date.now() - t0 };
       await new Promise((r) => setTimeout(r, 1000));
     }
     return { state: "unknown", text: text.replace(/\s+/g, " ").slice(0, 400), ms: Date.now() - t0, error: "kein eindeutiger Text" };

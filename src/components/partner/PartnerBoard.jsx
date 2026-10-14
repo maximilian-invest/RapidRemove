@@ -9,7 +9,7 @@ import useLive from "@/lib/useLive";
 import useAutoUpdate from "@/lib/useAutoUpdate";
 import "@/styles/partner.css";
 import { OPS, BASE, TABS, STATUS, canRemove, toApi, norm, call } from "./shared";
-import { openGoogleLink } from "@/lib/open-google";
+import { openGoogleLink, isIOS } from "@/lib/open-google";
 import PartnerDesktop from "./PartnerDesktop";
 import PartnerApp from "./PartnerApp";
 import PartnerLogin from "./PartnerLogin";
@@ -17,6 +17,7 @@ import { Loader } from "lucide-react";
 import { usePayouts, PayoutSetup } from "./PartnerPayouts";
 import { PartnerJoin, PartnerPending, PartnerTerms } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
+import OrderScan from "./OrderScan";
 import ReasonPick from "./ReasonPick";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -216,6 +217,39 @@ export default function PartnerBoard() {
     setVer((v) => (v ? { ...v, results: v.results.map((r) => (ids.includes(r.id) ? { ...r, result: "gone" } : r)) } : v));
   }, [token, applyResults, showToast]);
 
+  /* ---- Auto-Scan einer Bestellung: alle offenen Bewertungen streng prüfen (Google-Link + Bewertungsliste) ----
+     Kleine Pakete nacheinander (Server-Browser schafft wenige gleichzeitig) → Fortschritt „4 / 12". */
+  const [scan, setScan] = React.useState(null); // { cust, total, done, results, phase }
+  const scanOrder = React.useCallback(async (cust) => {
+    const ts = (tasksRef.current || []).filter((t) => t.cust === cust && (t.status === "new" || t.status === "working") && !t.paid);
+    if (!ts.length) { showToast("No open reviews to scan"); return; }
+    flush();
+    const run = Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const ids = ts.map((t) => t.id);
+    setScan({ cust, total: ids.length, done: 0, results: [], phase: "checking" });
+    for (let i = 0; i < ids.length; i += 2) {
+      const chunk = ids.slice(i, i + 2);
+      let res;
+      try { res = (await call("scan-order", { t: token, ids: chunk, run, last: i + 2 >= ids.length })).results || []; }
+      catch (e) { res = chunk.map((id) => ({ id, code: (ts.find((x) => x.id === id) || {}).code || "#" + id, result: "unknown", reason: "The check failed – nothing was changed." })); }
+      applyResults(res);
+      setScan((s) => (s ? { ...s, done: Math.min(s.total, s.done + chunk.length), results: [...s.results, ...res] } : s));
+    }
+    setScan((s) => (s ? { ...s, phase: "done" } : s));
+  }, [token, flush, showToast, applyResults]);
+
+  /* „Open all": jede Bewertung in einem eigenen Tab zum schnellen Durchchecken.
+     iPhone kann nur einen Link auf einmal (Safari-Umweg) → dort alle Links kopieren. Blockiert der Browser Pop-ups → Hinweis. */
+  const openAll = React.useCallback((ids) => {
+    const urls = ids.map((id) => (tasksRef.current || []).find((x) => x.id === id)).filter((t) => t && t.url).map((t) => String(t.url).replace(/^http:/i, "https:"));
+    if (!urls.length) return;
+    if (isIOS()) { try { navigator.clipboard.writeText(urls.join("\n")); } catch (e) { /* */ } showToast(`${urls.length} links copied – iPhone opens only one at a time`, null, 5000); return; }
+    let blocked = 0;
+    for (const u of urls) { const w = window.open(u, "_blank"); if (w) { try { w.opener = null; } catch (e) { /* */ } } else blocked++; }
+    touch(ids);
+    if (blocked) showToast(`${blocked} of ${urls.length} tabs were blocked – allow pop-ups for rapid-remove.com`, null, 6000);
+  }, [showToast, touch]);
+
   /** Partner confirms a payout (per review or all). Committed after the undo window like status changes. */
   const markPaid = React.useCallback((idsIn) => {
     const ts = tasksRef.current || [];
@@ -363,6 +397,7 @@ export default function PartnerBoard() {
   const api = {
     tasks, all, cancelled, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token, reasonList,
+    scanOrder, scanning: !!(scan && scan.phase === "checking"),
   };
   const waitPop = nag && waiting.length ? (
     <div className="pwait-bg" onClick={() => setNag(false)}>
@@ -379,6 +414,7 @@ export default function PartnerBoard() {
   // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
   const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}
     <ReasonPick state={pick} tasks={tasks} list={reasonList} onCancel={() => setPick(null)} onGo={(ids, reasons) => { setPick(null); verifyRemoved(ids, reasons); }} />
+    <OrderScan state={scan} onClose={() => { if (scan && scan.phase === "checking") return; setScan(null); load(false); }} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} onOpenAll={openAll} />
     <RemovalCheck state={ver} token={token} onClose={() => { setVer(null); load(false); }} onAgain={(ids) => verifyRemoved(ids)} onConfirm={confirmRemoved} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} /></>;
   if (!preview) return app;
   return (
