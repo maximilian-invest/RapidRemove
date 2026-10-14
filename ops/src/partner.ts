@@ -268,7 +268,9 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   const test = orderId ? isTestEmail(ord?.email) : false;
   // Kunden-Dashboard (Admin → Kunden & Preise): fester Partner + Partner-Staffel/Software-Preis dieses Kunden.
   const cs: CustSetup | null = ord?.email ? await custSetup(ord.email).catch(() => null) : null;
-  const csTier = cs?.partner.tiers?.length ? tierFor(cs.partner.tiers, Math.max(Number(ord?.n) || 0, items.length)).price : 0;
+  const csT = cs?.partner.tiers?.length ? tierFor(cs.partner.tiers, Math.max(Number(ord?.n) || 0, items.length)) : null;
+  const csTier = csT ? csT.price : 0; // unter der ersten Stufe: normaler Partnerpreis
+  const csSw = Number(cs?.partner.sw) > 0 && (csT || !cs?.partner.tiers?.length) ? Number(cs!.partner.sw) : 0;
   // Auftrag hat schon Aufgaben → Nachbestellung („Review added" statt „New order").
   const had = orderId ? Number((await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0]?.n || 0) > 0 : false;
   for (const it of items.slice(0, 5000)) { // Bulk-Uploads: bis zu 5.000 Bewertungen je Auftrag
@@ -284,10 +286,10 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     const pid = partnerIdIn ?? (await partnerIfApproved(cs?.partnerId, svc)) ?? (await defaultPartnerFor(svc));
     // Partnerpreis: bei der Bestellung festgeschrieben (pUsd) > vorgegeben (Admin, price) > Kunden-Konditionen > Preis der Leistung beim Partner.
     const swCase = svc === "sw";
-    const csPrice = kind === "profile" ? 0 : swCase ? Number(cs?.partner.sw) || 0 : csTier;
+    const csPrice = kind === "profile" ? 0 : swCase ? csSw : csTier;
     const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : csPrice > 0 ? csPrice : await partnerPrice(pid, svc);
     // Wird eine normale Bewertung später zum Software-Fall, bekommt der Partner dafür diesen Preis (null = wie bisher).
-    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : Number(cs?.partner.sw) > 0 ? Number(cs!.partner.sw) : null;
+    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : csSw > 0 ? csSw : null;
     const cust = clip(it.business, 160) || customer; // Bulk (gemischte Profile): Partner-Board gruppiert nach Profilname der Bewertung
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {

@@ -11,33 +11,36 @@ import { pricingInfo, pricingDefault, pricingCustomer, pricingNewOrder, pricingI
 const sym = (cur) => (cur === "usd" ? "$" : "€");
 const LANGS = [["de", "Deutsch"], ["en", "Englisch"], ["es", "Spanisch"], ["fr", "Französisch"], ["it", "Italienisch"], ["nl", "Niederländisch"], ["pt", "Portugiesisch"], ["sv", "Schwedisch"], ["da", "Dänisch"], ["no", "Norwegisch"], ["ja", "Japanisch"]];
 const SVC = { std: "neu", old: "alt", sw: "Software", profile: "Profile" };
-const toRows = (tiers) => (tiers && tiers.length ? tiers.map((t) => ({ upTo: t.upTo == null ? "" : String(t.upTo), price: String(t.price) })) : [{ upTo: "50", price: "" }, { upTo: "", price: "" }]);
-const fromRows = (rows) => rows.map((r, i) => ({ upTo: i === rows.length - 1 ? null : r.upTo, price: r.price }));
+/* Stufen „ab N Bewertungen → Preis" (14.10.2026). Unter der ersten Stufe: normale Preise. Altformat { upTo } wird umgerechnet. */
+const asFrom = (tiers) => {
+  if (!tiers || !tiers.length) return [];
+  if (tiers[0].from != null) return tiers;
+  return tiers.map((t, i, a) => ({ from: i === 0 ? 1 : a[i - 1].upTo + 1, price: t.price }));
+};
+const toRows = (tiers) => (tiers && tiers.length ? asFrom(tiers).map((t) => ({ from: String(t.from), price: String(t.price) })) : [{ from: "50", price: "" }, { from: "100", price: "" }]);
+const fromRows = (rows) => rows.map((r) => ({ from: r.from, price: r.price }));
 const nOf = (v) => { const n = Number(String(v ?? "").replace(",", ".")); return Number.isFinite(n) ? n : NaN; };
-const tierAt = (tiers, n) => { for (const t of tiers) if (t.upTo == null || n <= t.upTo) return t.price; return tiers[tiers.length - 1].price; };
-const rowsTiers = (rows) => { try { const t = fromRows(rows).map((x) => ({ upTo: x.upTo === null || x.upTo === "" ? null : nOf(x.upTo), price: nOf(x.price) })); return t.every((x) => x.price > 0) ? t : null; } catch (e) { return null; } };
+const tierAt = (tiers, n) => { let p = null; for (const t of asFrom(tiers)) if (n >= t.from) p = t.price; return p; };
+const rowsTiers = (rows) => { const t = rows.map((x) => ({ from: nOf(x.from), price: nOf(x.price) })); return t.length && t.every((x) => x.price > 0 && x.from >= 1) ? [...t].sort((a, b) => a.from - b.from) : null; };
 const range = (tiers, cur) => { const ps = (tiers || []).map((t) => t.price); return ps.length ? (Math.max(...ps) === Math.min(...ps) ? `${sym(cur)}${ps[0]}` : `${sym(cur)}${Math.max(...ps)}–${Math.min(...ps)}`) : ""; };
-export const tierSummary = (tiers, cur) => (tiers || []).map((t, i, a) => `${t.upTo == null ? `ab ${(a[i - 1] ? a[i - 1].upTo + 1 : 1)}` : `bis ${t.upTo}`}: ${sym(cur)}${t.price}`).join(" · ");
+export const tierSummary = (tiers, cur) => asFrom(tiers).map((t) => `ab ${t.from}: ${sym(cur)}${t.price}`).join(" · ");
 const dt = (v) => (v ? new Date(v).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "2-digit" }) : "");
 
-/* Staffel-Editor: Zeilen „bis N Bewertungen → Preis", letzte Zeile = „darüber". */
+/* Staffel-Editor: Zeilen „ab N Bewertungen → Preis". Unter der ersten Stufe gelten die normalen Preise. */
 function TierEditor({ rows, setRows, cur }) {
   const set = (i, k, v) => setRows((x) => x.map((r, j) => (j === i ? { ...r, [k]: v } : r)));
+  const first = Math.min(...rows.map((r) => nOf(r.from)).filter((n) => n >= 1));
   return (
     <div className="pr-tiers">
-      {rows.map((r, i) => {
-        const last = i === rows.length - 1;
-        const prevTo = i > 0 ? Number(rows[i - 1].upTo) : 0;
-        return (
-          <div key={i} className="pr-row">
-            {last ? <span className="pr-lab">{rows.length > 1 ? `ab ${Number.isFinite(prevTo) && prevTo ? prevTo + 1 : "…"}` : "alle Mengen"}</span>
-              : <span className="pr-lab">bis <input className="po-num" inputMode="numeric" value={r.upTo} onChange={(e) => set(i, "upTo", e.target.value.replace(/[^\d]/g, ""))} /></span>}
-            <span className="pr-p">{sym(cur)} <input className="po-num" inputMode="decimal" placeholder="Preis" value={r.price} onChange={(e) => set(i, "price", e.target.value.replace(/[^\d.,]/g, ""))} /></span>
-            {!last && rows.length > 2 ? <button type="button" className="circ" aria-label="Stufe entfernen" onClick={() => setRows((x) => x.filter((_, j) => j !== i))}><Trash2 /></button> : <span className="pr-sp" />}
-          </div>
-        );
-      })}
-      {rows.length < 10 ? <button type="button" className="pr-add" onClick={() => setRows((x) => [...x.slice(0, -1), { upTo: "", price: "" }, x[x.length - 1]])}><Plus />Stufe hinzufügen</button> : null}
+      {Number.isFinite(first) && first > 1 ? <div className="pr-row pr-below"><span className="pr-lab">unter {first}</span><span className="pr-p pr-norm">normale Preise</span><span className="pr-sp" /></div> : null}
+      {rows.map((r, i) => (
+        <div key={i} className="pr-row">
+          <span className="pr-lab">ab <input className="po-num" inputMode="numeric" value={r.from} onChange={(e) => set(i, "from", e.target.value.replace(/[^\d]/g, ""))} /></span>
+          <span className="pr-p">{sym(cur)} <input className="po-num" inputMode="decimal" placeholder="Preis" value={r.price} onChange={(e) => set(i, "price", e.target.value.replace(/[^\d.,]/g, ""))} /></span>
+          {rows.length > 1 ? <button type="button" className="circ" aria-label="Stufe entfernen" onClick={() => setRows((x) => x.filter((_, j) => j !== i))}><Trash2 /></button> : <span className="pr-sp" />}
+        </div>
+      ))}
+      {rows.length < 10 ? <button type="button" className="pr-add" onClick={() => setRows((x) => [...x, { from: "", price: "" }])}><Plus />Stufe hinzufügen</button> : null}
     </div>
   );
 }
@@ -65,14 +68,15 @@ function Toggle({ on, set, title, sub }) {
 /* Marge je Stufe (nur wenn Kunde in USD und beide Staffeln gesetzt) – nur für dich im Admin. */
 function Margin({ ct, pt, csw, psw }) {
   if (!ct || !pt) return null;
-  const pts = [...new Set([...ct.map((t) => t.upTo), ...pt.map((t) => t.upTo)].filter((x) => x != null))].sort((a, b) => a - b);
-  const ns = [...pts, (pts[pts.length - 1] || 0) + 1];
-  const rows = []; let from = 1;
-  for (const n of ns) { const isLast = n === ns[ns.length - 1]; rows.push({ label: isLast ? `ab ${from}` : `${from}–${n}`, c: tierAt(ct, n), p: tierAt(pt, n) }); from = n + 1; }
+  const pts = [...new Set([...ct.map((t) => t.from), ...pt.map((t) => t.from)])].sort((a, b) => a - b);
+  const rows = [];
+  if (pts[0] > 1) rows.push({ label: `unter ${pts[0]}`, c: null, p: null });
+  pts.forEach((f, i) => { const nx = pts[i + 1]; rows.push({ label: nx ? `${f}–${nx - 1}` : `ab ${f}`, c: tierAt(ct, f), p: tierAt(pt, f) }); });
+  const m = (v) => (v == null ? "normal" : "$" + v);
   return (
     <div className="pr-mg">
       <div className="pr-mh"><span>Menge</span><span>Kunde</span><span>Partner</span><span>Marge</span></div>
-      {rows.map((r, i) => <div key={i} className="pr-mr"><span>{r.label}</span><span>${r.c}</span><span>${r.p}</span><b>${Math.round((r.c - r.p) * 100) / 100}</b></div>)}
+      {rows.map((r, i) => <div key={i} className="pr-mr"><span>{r.label}</span><span>{m(r.c)}</span><span>{m(r.p)}</span><b>{r.c != null && r.p != null ? "$" + Math.round((r.c - r.p) * 100) / 100 : "–"}</b></div>)}
       {csw > 0 && psw > 0 ? <div className="pr-mr"><span>Software</span><span>${csw}</span><span>${psw}</span><b>${Math.round((csw - psw) * 100) / 100}</b></div> : null}
     </div>
   );

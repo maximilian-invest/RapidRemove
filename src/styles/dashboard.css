@@ -919,3 +919,33 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .bu-cons .secure{margin-top:4px}
 
 .rra .bu-tr.sw{border-top-style:dashed}
+/* Neue Bestellung von Hand: Bewertungs-Links einzeln (14.10.2026) */
+.rra .ln-list{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.rra .ln-row{border-radius:18px;background:var(--g1);border:2px solid transparent;padding:6px;transition:border-color .15s,background .15s}
+.rra .ln-row:focus-within{border-color:var(--ink);background:#fff}
+.rra .ln-row.ok{background:#fff;border-color:var(--g2)}
+.rra .ln-row.err{border-color:var(--danger-soft)}
+.rra .ln-in{display:flex;align-items:center;gap:8px;min-height:44px}
+.rra .ln-n{width:26px;height:26px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;color:var(--g3);flex:none;margin-left:4px}
+.rra .ln-row.ok .ln-n{background:var(--ink);color:#fff}
+.rra .ln-in input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:16px;color:var(--ink);outline:none;padding:8px 0;text-overflow:ellipsis}
+.rra .ln-x{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--g3);flex:none}
+.rra .ln-x svg{width:16px;height:16px}
+.rra .ln-st{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--g3);padding:2px 10px 8px 42px}
+.rra .ln-st svg{width:15px;height:15px}
+.rra .ln-st.bad{color:var(--danger)}
+.rra .ln-card{display:flex;gap:12px;align-items:flex-start;padding:4px 10px 10px 42px}
+.rra .ln-card .t{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.rra .ln-card .a{font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px}
+.rra .ln-card .stars{display:inline-flex;gap:1px}
+.rra .ln-card .stars svg{width:13px;height:13px;color:#d0d0d0;fill:#d0d0d0}
+.rra .ln-card .stars svg.f{color:#f5a623;fill:#f5a623}
+.rra .ln-card .x{font-size:14px;color:var(--g3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rra .ln-card .x.none{font-style:italic}
+.rra .ln-card .pl{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--g3)}
+.rra .ln-card .pl svg{width:13px;height:13px}
+.rra .ln-card .tg{align-self:flex-start;font-size:11.5px;font-weight:700;border-radius:99px;padding:3px 9px;background:var(--warning-soft);color:#b45309}
+.rra .ln-card .pr{font-size:16px;white-space:nowrap}
+.rra .ln-add{display:inline-flex;align-items:center;gap:6px;margin:12px 0 4px;height:42px;padding:0 16px;border-radius:99px;background:var(--g1);font-weight:700;font-size:14px;color:var(--ink)}
+.rra .ln-add svg{width:16px;height:16px}
+.rra .bu-tr.below span,.rra .bu-tr.below b{color:var(--g3);font-weight:500}

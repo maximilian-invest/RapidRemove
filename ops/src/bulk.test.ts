@@ -62,37 +62,44 @@ const LONG = `https://www.google.com/maps/reviews/@40.76,-73.96,614m/data=!3m2!1
 
   // ---- Staffeln ----
   const T = normTiers([{ upTo: 200, price: 79 }, { upTo: 50, price: 99 }, { upTo: null, price: 59 }])!;
-  await ok("Staffel wird sortiert, letzte Stufe offen", () => assert.deepEqual(T, [{ upTo: 50, price: 99 }, { upTo: 200, price: 79 }, { upTo: null, price: 59 }]));
-  await ok("Stufen: 1→99, 50→99, 51→79, 200→79, 201→59, 5000→59", () => {
-    assert.deepEqual([1, 50, 51, 200, 201, 5000].map((k) => tierFor(T, k).price), [99, 99, 79, 79, 59, 59]);
+  await ok("Altformat bis → ab umgerechnet", () => assert.deepEqual(T, [{ from: 1, price: 99 }, { from: 51, price: 79 }, { from: 201, price: 59 }]));
+  await ok("Stufen (Altformat): 1→99, 50→99, 51→79, 200→79, 201→59, 5000→59", () => {
+    assert.deepEqual([1, 50, 51, 200, 201, 5000].map((k) => tierFor(T, k)!.price), [99, 99, 79, 79, 59, 59]);
     assert.deepEqual(tierFor(T, 51), { idx: 1, price: 79, from: 51, to: 200 });
   });
-  await ok("ohne offene Stufe: letzte Grenze gilt darüber weiter", () => { const t = normTiers([{ upTo: 100, price: 50 }])!; assert.equal(tierFor(t, 1000).price, 50); assert.equal(t[1].upTo, null); });
+  const A = normTiers([{ from: 100, price: 40 }, { from: 50, price: 45 }, { from: 1000, price: 30 }, { from: 500, price: 35 }])!;
+  await ok("Ab-Preise: unter 50 keine Pauschale, ab 50 → 45, ab 100 → 40, ab 500 → 35, ab 1000 → 30", () => {
+    assert.equal(tierFor(A, 1), null); assert.equal(tierFor(A, 49), null);
+    assert.deepEqual([50, 99, 100, 499, 500, 999, 1000, 5000].map((k) => tierFor(A, k)!.price), [45, 45, 40, 40, 35, 35, 30, 30]);
+    assert.deepEqual(tierFor(A, 120), { idx: 1, price: 40, from: 100, to: 499 }); assert.equal(tierFor(A, 2000)!.to, null);
+  });
   await ok("ungültige Staffeln abgelehnt", () => {
     assert.equal(normTiers([]), null);
     assert.equal(normTiers([{ upTo: 50, price: 0 }]), null);
-    assert.equal(normTiers([{ upTo: 50, price: 10 }, { upTo: 50, price: 9 }]), null);
+    assert.equal(normTiers([{ from: 50, price: 10 }, { from: 50, price: 9 }]), null);
+    assert.equal(normTiers([{ from: 0, price: 10 }]), null);
     assert.equal(normTiers([{ upTo: null, price: 10 }, { upTo: null, price: 9 }]), null);
     assert.equal(normTiers([{ upTo: -1, price: 10 }]), null);
   });
   await ok("Komma-Preise (99,50) werden verstanden", () => assert.equal(normTiers([{ upTo: null, price: "99,50" }])![0].price, 99.5));
 
   // ---- Kunden- + Partner-Konditionen (Beispiel Rumaan Robe) ----
-  const C = normTiers([{ upTo: 50, price: 45 }, { upTo: 100, price: 40 }, { upTo: 500, price: 35 }, { upTo: null, price: 30 }])!;
-  const P = normTiers([{ upTo: 50, price: 30 }, { upTo: 100, price: 25 }, { upTo: 500, price: 20 }, { upTo: null, price: 15 }])!;
+  const C = normTiers([{ from: 50, price: 45 }, { from: 100, price: 40 }, { from: 500, price: 35 }, { from: 1000, price: 30 }])!;
+  const P = normTiers([{ from: 50, price: 30 }, { from: 100, price: 25 }, { from: 500, price: 20 }, { from: 1000, price: 15 }])!;
   const cp: CustPricing = { cur: "usd", tiers: C, sw: 250, source: "custom", partner: { tiers: P, sw: 150 }, partnerId: 2, partnerUsd: null };
-  await ok("Bestellung: Kunde + Partner nach derselben Anzahl, Software-Preise mit", () => {
-    assert.deepEqual([30, 50, 51, 100, 101, 500, 501, 4000].map((n) => { const o = orderPricing(cp, n, { flat: true })!; return [o.price, o.partnerUsd]; }),
+  await ok("Bestellung: Kunde + Partner nach derselben Anzahl (Ab-Preise), Software-Preise mit", () => {
+    assert.deepEqual([50, 99, 100, 499, 500, 999, 1000, 4000].map((n) => { const o = orderPricing(cp, n, { flat: true })!; return [o.price, o.partnerUsd]; }),
       [[45, 30], [45, 30], [40, 25], [40, 25], [35, 20], [35, 20], [30, 15], [30, 15]]);
     const o = orderPricing(cp, 60, { flat: true })!; assert.equal(o.sw, 250); assert.equal(o.partnerSw, 150); assert.equal(o.cur, "usd");
   });
+  await ok("unter 50: normale Preise für Kunde UND Partner (auch Software)", () => assert.equal(orderPricing(cp, 49, { flat: true }), null));
   await ok("ohne Pauschale (Hand, Standard-Staffel): nur Partner-Konditionen", () => {
-    const o = orderPricing({ ...cp, source: "default" }, 10, { flat: false })!;
+    const o = orderPricing({ ...cp, source: "default" }, 60, { flat: false })!;
     assert.equal(o.price, undefined); assert.equal(o.sw, undefined); assert.equal(o.partnerUsd, 30); assert.equal(o.partnerSw, 150);
   });
   await ok("Standard-Staffel: Partner-Standard greift, eigene Partner-Konditionen gehen vor", () => {
     const d: CustPricing = { cur: "usd", tiers: C, sw: 250, source: "default", partner: { tiers: P, sw: 150 }, partnerId: null, partnerUsd: null };
-    const o = orderPricing(d, 120, { flat: true })!; assert.deepEqual([o.price, o.partnerUsd, o.sw, o.partnerSw], [35, 20, 250, 150]);
+    const o = orderPricing(d, 120, { flat: true })!; assert.deepEqual([o.price, o.partnerUsd, o.sw, o.partnerSw], [40, 25, 250, 150]);
   });
   await ok("nichts Eigenes → null", () => assert.equal(orderPricing({ cur: "usd", tiers: [], source: "list", partner: { tiers: null, sw: null }, partnerId: null, partnerUsd: null }, 10, { flat: true }), null));
 
