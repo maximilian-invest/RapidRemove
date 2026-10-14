@@ -441,10 +441,10 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       <DashBox lang={lang} dash={dash} />
 
       <P><strong>{t.listH}</strong></P>
-      <Bullets items={list.map((it, i) => it.url
+      <Bullets items={[...list.slice(0, 25).map((it, i) => it.url
         ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
         : <span key={i}><strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
-      )} />
+      ), ...(list.length > 25 ? [<span key="more">… +{list.length - 25}</span>] : [])]} />
 
       {rest.length || !sw.length ? (
         <NoteBox>

@@ -13,6 +13,8 @@ import { pool } from "./db";
 import { customerSessionInfo, loadCustomerOrders, keyOf } from "./customers";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { isTestEmail } from "./testAccounts";
+import { dashNewOrderOn, pricingFor, tierFor } from "./bulkPricing";
+import { bulkEnabled, BULK_INTERNAL } from "./custBulk";
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
 const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
@@ -24,8 +26,9 @@ async function setting(key: string): Promise<string | null> {
 }
 /** Darf dieser Kunde im Dashboard neu bestellen? */
 export async function newOrderEnabled(email: string): Promise<boolean> {
+  // 14.10.2026: für alle Kunden an (Admin → Preise & Bulk kann es ausschalten). Profil-Suche braucht SerpApi.
   if (!serpKey()) return false;
-  return isTestEmail(email) || (await setting("dash_new_order")) === "1";
+  return isTestEmail(email) || (await dashNewOrderOn());
 }
 
 /** Schon beauftragte Bewertungen dieses Kunden (alle Aufträge) – Schlüssel wie im Auftrag. */
@@ -55,7 +58,9 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const b = (req.body || {}) as Record<string, unknown>;
     const s = await customerSessionInfo(b.token);
     if (!s) return reply.code(401).send({ ok: false, error: "session" });
-    return { ok: true, enabled: await newOrderEnabled(s.email.toLowerCase()) };
+    const em = s.email.toLowerCase();
+    const hand = await newOrderEnabled(em), bulk = await bulkEnabled(em);
+    return { ok: true, enabled: hand || bulk, hand, bulk };
   });
 
   // Bewertungen eines Profils zum Anhaken.
@@ -116,8 +121,12 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard", landing: "/my-reviews",
     };
+    // Eigene Preisstaffel des Kunden (Admin → Preise) gilt auch für Bestellungen von Hand; Partnerpreis je Kunde ebenso.
+    const pr = await pricingFor(email).catch(() => null);
+    if (pr && pr.source === "custom" && pr.tiers.length) { const t = tierFor(pr.tiers, items.length); payload.pricing = { cur: pr.cur, price: t.price, partnerUsd: pr.partnerUsd, tierIdx: t.idx, from: t.from, to: t.to, n: items.length, source: pr.source, tiers: pr.tiers }; }
+    else if (pr && pr.partnerUsd) payload.pricing = { partnerUsd: pr.partnerUsd };
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
-    const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
+    const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-bulk": BULK_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;
     if (res.statusCode >= 400 || j.ok === false) return reply.code(res.statusCode >= 400 ? res.statusCode : 400).send({ ok: false, error: String(j.error || "order") });
     if (j.saved === false) return reply.code(503).send({ ok: false, error: "save" });

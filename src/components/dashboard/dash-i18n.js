@@ -8,6 +8,7 @@ import PROFILE from "./dash-i18n-profile";
 import START from "./dash-i18n-start";
 import RIGHTS from "./dash-i18n-rights";
 import PROFFLOW from "./dash-i18n-profflow";
+import BULK from "./dash-i18n-bulk";
 
 export const EN = {
   // Zeit
@@ -132,10 +133,10 @@ export function pickLang(...cands) {
 
 /** t(key, vars) für eine Sprache. */
 export function makeT(lang) {
-  const D = { ...EN, ...APP.en, ...CHAT.en, ...PROFILE.en, ...START.en, ...RIGHTS.en, ...PROFFLOW.en, ...(LANGS[lang] || {}), ...(APP[lang] || {}), ...(CHAT[lang] || {}), ...(PROFILE[lang] || {}), ...(START[lang] || {}), ...(RIGHTS[lang] || {}), ...(PROFFLOW[lang] || {}) };
+  const D = { ...EN, ...APP.en, ...CHAT.en, ...PROFILE.en, ...START.en, ...RIGHTS.en, ...PROFFLOW.en, ...BULK.en, ...(LANGS[lang] || {}), ...(APP[lang] || {}), ...(CHAT[lang] || {}), ...(PROFILE[lang] || {}), ...(START[lang] || {}), ...(RIGHTS[lang] || {}), ...(PROFFLOW[lang] || {}), ...(BULK[lang] || {}) };
   const pr = new Intl.PluralRules(localeOf(lang));
   return (key, vars = {}) => {
-    let v = D[key] ?? EN[key] ?? APP.en[key] ?? CHAT.en[key] ?? PROFILE.en[key] ?? START.en[key] ?? RIGHTS.en[key] ?? PROFFLOW.en[key] ?? key;
+    let v = D[key] ?? EN[key] ?? APP.en[key] ?? CHAT.en[key] ?? PROFILE.en[key] ?? START.en[key] ?? RIGHTS.en[key] ?? PROFFLOW.en[key] ?? BULK.en[key] ?? key;
     if (v && typeof v === "object") v = v[pr.select(Number(vars.n ?? 0))] ?? v.other ?? v.one;
     return String(v).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
   };
