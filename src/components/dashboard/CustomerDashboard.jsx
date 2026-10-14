@@ -535,7 +535,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
         <p>{T("kP")}</p>
         <div className="pgs-f sf-pf">
           <div><span className="ico"><Timer /></span><b>{T("kF1")}</b></div>
-          <div><span className="ico"><Receipt /></span><b>{T("kF2", { amount: order.cur === "usd" ? money(rt.extra || 290, "usd") : net(money(rt.extra || 290, "eur")) })}</b></div>
+          <div><span className="ico"><Receipt /></span><b>{T("kF2", { amount: order.cur === "usd" ? money(rt.extra || 290, "usd") : net(money(rt.extra || 290, "eur")), base: order.profileOrder && order.profileOrder.amount ? money(order.profileOrder.amount, order.cur) : "—" })}</b></div>
           <div><span className="ico"><ShieldCheck /></span><b>{T("kF3")}</b></div>
         </div>
       </>
