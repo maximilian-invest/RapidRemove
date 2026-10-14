@@ -1921,6 +1921,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   };
   const [swInfo, setSwInfo] = React.useState(false); // Info-Sheet „Warum Software?"
   const [priceInfo, setPriceInfo] = React.useState(false); // Pop-up „Erfolgschance & Preis"
+  const [fpInfo, setFpInfo] = React.useState(false); // Pop-up „Wann gilt der Festpreis?" (Profil-Löschung nur mit Inhaberzugang)
   // Am Handy: Sheets am Griff (oder ganz oben) nach unten wegwischen.
   const swRef = React.useRef(null), piRef = React.useRef(null);
   useSwipeClose(swRef, swInfo, () => setSwInfo(false));
@@ -1965,7 +1966,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const bodyRef = React.useRef(null);
   // Info-Sheet / Rabatt-Pop-up offen → Hintergrund (Wizard-Body + Seite) nicht mehr scrollbar, Position bleibt erhalten.
   React.useEffect(() => {
-    if (!swInfo && !payAsk && !priceInfo) return;
+    if (!swInfo && !payAsk && !priceInfo && !fpInfo) return;
     const el = bodyRef.current, html = document.documentElement, body = document.body;
     const prev = [el && el.style.overflow, html.style.overflow, body.style.overflow, body.style.overscrollBehavior];
     if (el) el.style.overflow = "hidden";
@@ -1983,7 +1984,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       cancelAnimationFrame(raf); if (vv) { vv.removeEventListener("resize", fit); vv.removeEventListener("scroll", fit); }
       if (el) el.style.overflow = prev[0] || ""; html.style.overflow = prev[1] || ""; body.style.overflow = prev[2] || ""; body.style.overscrollBehavior = prev[3] || "";
     };
-  }, [swInfo, payAsk, priceInfo]);
+  }, [swInfo, payAsk, priceInfo, fpInfo]);
   // Live-Suche in Schritt 1 (wie in der Kopfzeile): tippen schlägt echte Profile vor.
   const [sug, setSug] = React.useState([]);
   const [acOpen, setAcOpen] = React.useState(false);
@@ -3734,6 +3735,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 </React.Fragment>)}
               </div>
               <div className="tot"><span>{bp.total} · {vatNote(lang)}</span><b>{fmtMoney(cur, oneTimeTotal)}</b></div>
+              {!revFlow ? <p className="bpr-fpn"><LInfo /><span>{bp.fpCo} <button type="button" onClick={() => setFpInfo(true)}>{bp.fpMore}</button></span></p> : null}
               <div className="now"><span><LCircleCheck />{bp.today}</span><b>{money(cur, w.s5.dueNow)}</b></div>
               <button type="button" className={"more" + (coHow ? " open" : "")} onClick={() => setCoHow(!coHow)} aria-expanded={coHow}><LInfo />{bp.how}<LChevron /></button>
               {coHow ? <div className="bpr-how">{(revFlow ? bp.howA : bp.howB).map(([b, tx], i) => <div key={i}><i>{i + 1}</i><span><b>{b}</b>{tx}</span></div>)}</div> : null}
@@ -3956,14 +3958,14 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         else go(4);
       }, 220);
     };
-    const opt = (id, img, title, desc, bullets, price, small, badge, i, pre) => (
+    const opt = (id, img, title, desc, bullets, price, small, badge, i, pre, fp) => (
       <button type="button" key={id} className={"bpr-op bpr-svc bpr-fade" + (service === id ? " sel" : "")} style={{ animationDelay: (0.12 + i * 0.04) + "s" }} onClick={() => pick(id)}>
         {badge ? <span className="bpr-bdg">{badge}</span> : null}
         <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
         <span className="tx"><b>{title}</b><span>{desc}</span>
           {bullets ? <ul className="bpr-bl">{bullets.map((x, j) => <li key={j}><LCheck />{x}</li>)}</ul> : null}
         </span>
-        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small></span>
+        <span className="pr"><strong>{pre ? <em>{pre}</em> : null}{price}</strong><small>{vatNote(lang)} · {small}</small>{fp ? <span className="bpr-fp" role="button" tabIndex={0} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFpInfo(true); }} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setFpInfo(true); } }}>{bp.fpLine}<LInfo /></span> : null}</span>
       </button>
     );
     const back = () => go(selected && selected.unverified ? 2 : 1);
@@ -3976,8 +3978,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{bp.svcSub}</p>
             <div className="bpr-okpill bpr-fade" style={{ animationDelay: ".08s" }}><LCircleCheck />{bp.svcOk}</div>
             <div className="bpr-opts" style={{ marginTop: 22 }}>
-              {opt("remove", "/assets/bestell/profil.webp", bp.svc1[0], bp.svc1[1], bp.svc1[2], money(lang, p.deletion), wm.afterSuccess, w.s4.opt1.badge, 0)}
-              {opt("reset", null, bp.svc2[0], bp.svc2[1], bp.svc2[2], money(lang, p.reset), wm.afterSuccess, null, 1)}
+              {opt("remove", "/assets/bestell/profil.webp", bp.svc1[0], bp.svc1[1], bp.svc1[2], money(lang, p.deletion), wm.afterSuccess, w.s4.opt1.badge, 0, null, true)}
+              {opt("reset", null, bp.svc2[0], bp.svc2[1], bp.svc2[2], money(lang, p.reset), wm.afterSuccess, null, 1, null, true)}
               {revOk ? opt("reviews", "/assets/bestell/bewertungen.webp", rv.tileT, rv.tileD, null, money(rl, p.review) + (pk.fromSuf || ""), rv.per, null, 2, (pk.fromPre || "").trim()) : null}
             </div>
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button></div>
@@ -4007,12 +4009,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       if (s === "reset") { setExpress(false); setProtection(null); go(5); }
       else go(4);
     };
-    const opt = (id, img, title, desc, price, badge, i) => (
+    const opt = (id, img, title, desc, price, badge, i, fp = true) => (
       <button type="button" key={id} className={"bpr-op bpr-svc bpr-fade" + (service === id ? " sel" : "")} style={{ animationDelay: (0.14 + i * 0.04) + "s" }} onClick={() => pick(id)}>
         {badge ? <span className="bpr-bdg">{badge}</span> : null}
         <span className="ic">{img ? <img src={asset(img)} alt="" width={64} height={64} /> : <LRefresh className="icn" />}</span>
         <span className="tx"><b>{title}</b><span>{desc}</span></span>
-        <span className="pr"><strong>{price}</strong><small>{vatNote(lang)} · {wm.afterSuccess}</small></span>
+        <span className="pr"><strong>{price}</strong><small>{vatNote(lang)} · {wm.afterSuccess}</small>{fp ? <span className="bpr-fp" role="button" tabIndex={0} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setFpInfo(true); }} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setFpInfo(true); } }}>{bp.fpLine}<LInfo /></span> : null}</span>
       </button>
     );
     return (
@@ -4203,6 +4205,22 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
             <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>
             <button type="button" className="ok" onClick={() => setPriceInfo(false)}>{pk.swOk}</button>
+          </div>
+        </div>
+        );
+      })() : null}
+      {fpInfo ? (() => {
+        const bp = bpCopy(t.code);
+        const [nb, nt] = bp.fpNo(money(lang, "290").replace(" ", "\u00a0"));
+        return (
+        <div className="sw-sheet-w" onMouseDown={(e) => { if (e.target === e.currentTarget) setFpInfo(false); }}>
+          <div className="sw-sheet bpr-sheet" role="dialog" aria-modal="true" aria-labelledby="fp-sheet-t">
+            <div className="grab" aria-hidden="true" />
+            <div className="hd"><h3 id="fp-sheet-t">{bp.fpH}</h3><button type="button" className="x" onClick={() => setFpInfo(false)} aria-label="×"><LX /></button></div>
+            <ul className="bpr-fpl">{bp.fpReq.map((x, i) => <li key={i}><LCheck />{x}</li>)}</ul>
+            <div className="bpr-fpx"><b>{nb}</b>{nt}</div>
+            <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.fpChk[0]}</b>{bp.fpChk[1]}</span></div>
+            <button type="button" className="ok" onClick={() => setFpInfo(false)}>{pk.swOk}</button>
           </div>
         </div>
         );
