@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import { pool } from "./db";
 import { customerSessionInfo } from "./customers";
 import { parseBulk, classifyLink, cleanUrl, MAX_ITEMS, MAX_FILE_BYTES, type BulkItem } from "./bulkParse";
-import { pricingFor, tierFor, dashNewOrderOn } from "./bulkPricing";
+import { pricingFor, tierFor, dashNewOrderOn, orderPricing, custSetup, type CustPricing } from "./bulkPricing";
 import { isTestEmail } from "./testAccounts";
 
 /** Geheim-Header für interne Aufrufe von /order (Bulk + feste Kundenpreise) – wird nie an den Browser gegeben. */
@@ -22,6 +22,9 @@ const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]
 const LANGS = ["de", "en", "es", "fr", "it", "nl", "pt", "ja", "sv", "da", "no"];
 const hits = new Map<string, number[]>();
 const limited = (k: string, n: number) => { const now = Date.now(); const a = (hits.get(k) || []).filter((x) => now - x < 3600_000); if (a.length >= n) { hits.set(k, a); return true; } a.push(now); hits.set(k, a); return false; };
+
+/** Was der Kunde sehen darf: seine Staffel + Software-Preis. NIE die Partner-Konditionen. */
+const custView = (p: CustPricing) => (p.source === "list" ? null : { cur: p.cur, tiers: p.tiers, sw: p.sw || null, custom: p.source === "custom" });
 
 export async function bulkEnabled(email: string): Promise<boolean> { return isTestEmail(email) || (await dashNewOrderOn()); }
 
@@ -72,7 +75,7 @@ export function registerCustBulk(app: FastifyInstance): void {
     const email = s.email.toLowerCase();
     const p = await pricingFor(email);
     return { ok: true, enabled: await bulkEnabled(email), maxItems: MAX_ITEMS, maxFileMb: Math.round(MAX_FILE_BYTES / 1048576),
-      pricing: p.source === "list" ? null : { cur: p.cur, tiers: p.tiers, custom: p.source === "custom" } };
+      pricing: custView(p) };
   });
 
   // Dateien lesen → Vorschau. Speichert nichts.
@@ -101,7 +104,7 @@ export function registerCustBulk(app: FastifyInstance): void {
       ok: true, items: fresh.map(({ key: _k, ...x }) => x), n: fresh.length, already, dupInFile: r.dupInFile,
       notReview: r.notReview, notReviewN: r.notReviewN, noLinkRows: r.noLinkRows, truncated: r.truncated, files: r.files,
       shortN: fresh.filter((x) => x.url && classifyLink(x.url).kind === "short").length,
-      pricing: p.source === "list" ? null : { cur: p.cur, tiers: p.tiers, custom: p.source === "custom" }, tier,
+      pricing: custView(p), tier,
     };
   });
 
@@ -121,15 +124,17 @@ export function registerCustBulk(app: FastifyInstance): void {
     const lang = LANGS.includes(clip(b.lang, 5)) ? clip(b.lang, 5) : "en";
     const p = await pricingFor(email);
     const tier = p.source !== "list" ? tierFor(p.tiers, items.length) : null;
+    const op = orderPricing(p, items.length, { flat: true });
+    const setup = await custSetup(email); // vom Admin angelegt: Name/Firma/Sprache für Kunden ohne frühere Bestellung
     const last = pool ? (await pool.query(`SELECT name, phone, company, country, raw->>'payPref' AS pp FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]).catch(() => ({ rows: [] as Record<string, string | null>[] }))).rows[0] || {} : {};
     const orderId = "RR-" + (100000 + crypto.randomInt(900000));
     const label = `Bulk upload · ${items.length} review${items.length === 1 ? "" : "s"}`;
     const payload: Record<string, unknown> = {
-      email, name: last.name || "", phone: last.phone || "", company: last.company || "",
+      email, name: last.name || setup?.name || "", phone: last.phone || "", company: last.company || setup?.company || "",
       service: "reviews", protection: "", orderId, lang, country: last.country && last.country !== "XX" ? last.country : "XX",
       profile: label, placeName: label,
       bulk: true,
-      ...(tier ? { pricing: { cur: p.cur, price: tier.price, partnerUsd: p.partnerUsd, tierIdx: tier.idx, from: tier.from, to: tier.to, n: items.length, source: p.source, tiers: p.tiers } } : p.partnerUsd ? { pricing: { partnerUsd: p.partnerUsd } } : {}),
+      ...(op ? { pricing: op } : {}),
       reviewItems: items.map(({ key: _k, ...x }) => x), reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
       note: `Bulk-Upload im Kunden-Dashboard: ${items.length} Bewertung(en)${tier ? ` · Stufe ${tier.from}${tier.to ? "–" + tier.to : "+"} → ${tier.price} ${p.cur.toUpperCase()} je gelöschter Bewertung (${p.source === "custom" ? "eigene Staffel" : "Standard-Staffel"})` : ""}`,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(), policyConsent: true, policyV: clip(b.policyV, 20) || "bulk-2026-10-14",

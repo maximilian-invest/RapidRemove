@@ -143,6 +143,14 @@ export async function routeFor(service: ServiceId): Promise<number | null> {
   const p = r.rows[0] as { id: string; approved: Record<string, number> | null } | undefined;
   return p && p.approved && p.approved[service] != null ? Number(p.id) : null;
 }
+/** Fester Partner eines Kunden (Admin → Kunden & Preise): nur wenn aktiv und für die Leistung freigegeben, sonst null
+ *  (dann greift die normale Zuteilung – z. B. Software-Fälle, wenn der Partner keine Software macht). */
+export async function partnerIfApproved(partnerId: number | null | undefined, service: ServiceId): Promise<number | null> {
+  if (!pool || !partnerId) return null;
+  const r = await pool.query(`SELECT id, approved FROM partners WHERE id=$1 AND status='active' AND active`, [partnerId]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+  const p = r.rows[0] as { id: string; approved: Record<string, number> | null } | undefined;
+  return p && p.approved && p.approved[service] != null ? Number(p.id) : null;
+}
 /** Partnerpreis (USD) je Leistung – aus der Freigabe des Partners, sonst Standardpreis. */
 export async function partnerPrice(partnerId: number | null, service: ServiceId): Promise<number> {
   const def = SERVICES.find((s) => s.id === service)!.price;

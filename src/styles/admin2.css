@@ -885,3 +885,29 @@
 .an .pr-add{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--primary);padding:6px 0;align-self:flex-start}
 .an .pr-add svg{width:15px;height:15px}
 .an .pr-tg{padding:12px 0 !important;margin-bottom:8px}
+
+/* Kunden & Preise: Kunden-Dashboard anlegen */
+.an .pr-sec{margin:18px 0 10px;font-size:12px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:var(--ink);display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.an .pr-sec em{font-style:normal;text-transform:none;letter-spacing:0;font-weight:500;color:var(--g3)}
+.an .pr-st{font-size:12px;color:var(--g3);margin:-6px 0 4px}
+.an .pr-two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:520px){.an .pr-two{grid-template-columns:1fr;gap:0}}
+.an .pr-sel{border:1.5px solid var(--g2,#e3e3e6);border-radius:12px;background:#fff;padding:10px 12px;font:inherit;font-size:16px;color:var(--ink);appearance:auto}
+.an .pr-swr{margin-top:8px;padding-top:10px;border-top:1px dashed var(--g2)}
+.an .pr-mg{margin-top:12px;border-radius:14px;background:var(--g1);padding:8px 12px;font-size:13px}
+.an .pr-mh,.an .pr-mr{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:6px;padding:5px 0}
+.an .pr-mh{color:var(--g3);font-size:11.5px;font-weight:600}
+.an .pr-mr+.pr-mr{border-top:1px solid var(--g2)}
+.an .pr-mr b{color:var(--success)}
+.an .ctas2 .cta svg{width:16px;height:16px;margin-right:6px}
+.an .pr-card{min-width:0;overflow:hidden}
+.an .pr-card .pfld input,.an .pr-card .pr-sel{width:100%;min-width:0;box-sizing:border-box}
+.an .pr-card .pr-row{min-width:0}
+.an .sec3 .lk{white-space:nowrap}
+@media (max-width:520px){
+  .an .pr-card{padding:12px}
+  .an .pr-card .pr-row{gap:6px}
+  .an .pr-card .po-num{width:68px;padding:0 8px}
+  .an .pr-card .pr-lab{gap:6px}
+  .an .pr-card .ctas2{grid-template-columns:1fr}
+}

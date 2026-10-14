@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { zipSync, strToU8 } from "fflate";
 import { classifyLink, linksIn, parseBulk, parseCsv } from "./bulkParse";
-import { normTiers, tierFor } from "./bulkPricing";
+import { normTiers, tierFor, orderPricing, type CustPricing } from "./bulkPricing";
 
 let n = 0;
 const ok = async (name: string, fn: () => unknown) => { await fn(); n++; console.log("✓", name); };
@@ -76,6 +76,21 @@ const LONG = `https://www.google.com/maps/reviews/@40.76,-73.96,614m/data=!3m2!1
     assert.equal(normTiers([{ upTo: -1, price: 10 }]), null);
   });
   await ok("Komma-Preise (99,50) werden verstanden", () => assert.equal(normTiers([{ upTo: null, price: "99,50" }])![0].price, 99.5));
+
+  // ---- Kunden- + Partner-Konditionen (Beispiel Rumaan Robe) ----
+  const C = normTiers([{ upTo: 50, price: 45 }, { upTo: 100, price: 40 }, { upTo: 500, price: 35 }, { upTo: null, price: 30 }])!;
+  const P = normTiers([{ upTo: 50, price: 30 }, { upTo: 100, price: 25 }, { upTo: 500, price: 20 }, { upTo: null, price: 15 }])!;
+  const cp: CustPricing = { cur: "usd", tiers: C, sw: 250, source: "custom", partner: { tiers: P, sw: 150 }, partnerId: 2, partnerUsd: null };
+  await ok("Bestellung: Kunde + Partner nach derselben Anzahl, Software-Preise mit", () => {
+    assert.deepEqual([30, 50, 51, 100, 101, 500, 501, 4000].map((n) => { const o = orderPricing(cp, n, { flat: true })!; return [o.price, o.partnerUsd]; }),
+      [[45, 30], [45, 30], [40, 25], [40, 25], [35, 20], [35, 20], [30, 15], [30, 15]]);
+    const o = orderPricing(cp, 60, { flat: true })!; assert.equal(o.sw, 250); assert.equal(o.partnerSw, 150); assert.equal(o.cur, "usd");
+  });
+  await ok("ohne Pauschale (Hand, Standard-Staffel): nur Partner-Konditionen", () => {
+    const o = orderPricing({ ...cp, source: "default" }, 10, { flat: false })!;
+    assert.equal(o.price, undefined); assert.equal(o.sw, undefined); assert.equal(o.partnerUsd, 30); assert.equal(o.partnerSw, 150);
+  });
+  await ok("nichts Eigenes → null", () => assert.equal(orderPricing({ cur: "usd", tiers: [], source: "list", partner: { tiers: null, sw: null }, partnerId: null, partnerUsd: null }, 10, { flat: true }), null));
 
   console.log(`\n${n} Tests bestanden`);
   process.exit(0);
