@@ -90,6 +90,10 @@ const LONG = `https://www.google.com/maps/reviews/@40.76,-73.96,614m/data=!3m2!1
     const o = orderPricing({ ...cp, source: "default" }, 10, { flat: false })!;
     assert.equal(o.price, undefined); assert.equal(o.sw, undefined); assert.equal(o.partnerUsd, 30); assert.equal(o.partnerSw, 150);
   });
+  await ok("Standard-Staffel: Partner-Standard greift, eigene Partner-Konditionen gehen vor", () => {
+    const d: CustPricing = { cur: "usd", tiers: C, sw: 250, source: "default", partner: { tiers: P, sw: 150 }, partnerId: null, partnerUsd: null };
+    const o = orderPricing(d, 120, { flat: true })!; assert.deepEqual([o.price, o.partnerUsd, o.sw, o.partnerSw], [35, 20, 250, 150]);
+  });
   await ok("nichts Eigenes → null", () => assert.equal(orderPricing({ cur: "usd", tiers: [], source: "list", partner: { tiers: null, sw: null }, partnerId: null, partnerUsd: null }, 10, { flat: true }), null));
 
   console.log(`\n${n} Tests bestanden`);

@@ -72,10 +72,16 @@ async function putSetting(key: string, value: string): Promise<void> {
   await pool!.query(`INSERT INTO partner_settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, [key, value]);
 }
 
-export async function defaultPricing(): Promise<Pricing | null> {
+/** Standard-Staffel (Kunde) + Standard-Partner-Staffel (USD) für alle Kunden ohne eigene Preise. */
+export type DefaultPricing = Pricing & { partner: PartnerPricing };
+export async function defaultPricing(): Promise<DefaultPricing | null> {
   const v = await getSetting("pricing_default");
   if (!v) return null;
-  try { const o = JSON.parse(v); const tiers = normTiers(o.tiers), cur = normCur(o.cur); const sw = price(o.sw); return tiers && cur ? { cur, tiers, sw: Number.isFinite(sw) ? sw : null } : null; } catch { return null; }
+  try {
+    const o = JSON.parse(v); const tiers = normTiers(o.tiers), cur = normCur(o.cur); const sw = price(o.sw);
+    const pt = normTiers(o.partnerTiers), psw = price(o.partnerSw);
+    return tiers && cur ? { cur, tiers, sw: Number.isFinite(sw) ? sw : null, partner: { tiers: pt, sw: Number.isFinite(psw) ? psw : null } } : null;
+  } catch { return null; }
 }
 
 /** Partner-Konditionen aus einer cust_pricing-Zeile (Altdaten: partner_usd = eine Stufe für alle Mengen). */
@@ -103,11 +109,12 @@ export async function pricingFor(email: string): Promise<CustPricing> {
     const partner = partnerOf(r), partnerId = r.partner_id ? Number(r.partner_id) : null, note = String(r.note || "");
     const partnerUsd = partner.tiers && partner.tiers.length === 1 ? partner.tiers[0].price : null;
     if (tiers && cur) return { cur, tiers, sw: Number.isFinite(sw) && sw > 0 ? sw : null, source: "custom", partner, partnerId, partnerUsd, note };
-    if (d) return { ...d, source: "default", partner, partnerId, partnerUsd, note };
+    // Standard-Staffel → auch Standard-Partner-Staffel, außer der Kunde hat eigene Partner-Konditionen.
+    if (d) return { ...d, source: "default", partner: { tiers: partner.tiers || d.partner.tiers, sw: partner.sw || d.partner.sw }, partnerId, partnerUsd, note };
     return { cur: "usd", tiers: [], sw: null, source: "list", partner, partnerId, partnerUsd, note };
   }
   const none = { partner: { tiers: null, sw: null }, partnerId: null, partnerUsd: null };
-  return d ? { ...d, source: "default", ...none } : { cur: "usd", tiers: [], sw: null, source: "list", ...none };
+  return d ? { ...d, source: "default", partnerId: null, partnerUsd: null } : { cur: "usd", tiers: [], sw: null, source: "list", ...none };
 }
 
 /** Stammdaten + Partner des Kunden (für Bestellungen ohne Vorgeschichte und fürs Partner-Board). */
@@ -173,8 +180,11 @@ export function registerPricingRoutes(app: FastifyInstance, adminToken: string, 
     const tiers = normTiers(b.tiers), cur = normCur(b.cur), sw = price(b.sw);
     if (!tiers || !cur) return reply.code(400).send({ ok: false, error: "Staffel ungültig (Grenzen aufsteigend, Preise > 0)" });
     if (Number.isNaN(sw)) return reply.code(400).send({ ok: false, error: "Software-Preis ungültig" });
-    await putSetting("pricing_default", JSON.stringify({ cur, tiers, sw }));
-    return { ok: true, def: { cur, tiers, sw } };
+    const pt = b.partnerTiers == null ? null : normTiers(b.partnerTiers), psw = price(b.partnerSw);
+    if (b.partnerTiers != null && !pt) return reply.code(400).send({ ok: false, error: "Partner-Staffel ungültig (Grenzen aufsteigend, Preise > 0)" });
+    if (Number.isNaN(psw)) return reply.code(400).send({ ok: false, error: "Partner-Software-Preis ungültig" });
+    await putSetting("pricing_default", JSON.stringify({ cur, tiers, sw, partnerTiers: pt, partnerSw: psw }));
+    return { ok: true, def: await defaultPricing() };
   });
 
   // Admin: Kunden-Dashboard anlegen/ändern.

@@ -756,7 +756,7 @@ export const followupPreview = (kind, lang) => adminPost("/admin/followups/previ
 export const testPurgeApi = (email, apply) => adminPost("/admin/test-purge", { email, ...(apply ? { apply: true, confirm: "TESTKONTO-LEEREN" } : {}) });
 /* Preise & Bulk (bulkPricing.ts): Standard-Staffel, eigene Preise je Kunde, Partnerpreis je Kunde, „Neue Bestellung" an/aus */
 export const pricingInfo = () => adminPost("/admin/pricing");
-export const pricingDefault = (cur, tiers, sw) => adminPost("/admin/pricing/default", { cur, tiers, sw });
+export const pricingDefault = (cur, tiers, sw, partnerTiers, partnerSw) => adminPost("/admin/pricing/default", { cur, tiers, sw, partnerTiers, partnerSw });
 export const pricingInvite = (email) => adminPost("/admin/pricing/invite", { email });
 export const pricingCustomer = (p) => adminPost("/admin/pricing/customer", p);
 export const pricingNewOrder = (on) => adminPost("/admin/pricing/new-order", { on });
