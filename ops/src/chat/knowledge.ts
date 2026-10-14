@@ -1,4 +1,4 @@
-/* Wissensbasis für den Support-Chatbot im Kunden-Dashboard (Stand 08.10.2026, Quelle: claude/chatbot-wissensbasis.md).
+/* Wissensbasis für den Support-Chatbot im Kunden-Dashboard (Stand 14.10.2026, Quelle: claude/chatbot-wissensbasis.md).
    Abschnitte 2–8; Statistik und offene Punkte bewusst weggelassen. Bei Änderungen hier aktualisieren. */
 export const KNOWLEDGE = `## 2. Firma & Kontakt
 
@@ -125,6 +125,8 @@ Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für D
 
 **Kunde sagt „Ich habe die Bewertung selbst gelöscht" und will kein Entgelt zahlen bzw. eine Rückerstattung?** AGB 7.4: Während ein Auftrag läuft, stellt der Kunde zu den beauftragten Bewertungen keine eigenen Meldungen oder Löschanträge bei Google (hat er schon vorher etwas eingeleitet, sagt er es bei der Bestellung). Wird eine beauftragte Bewertung während der Laufzeit entfernt, gilt das als Erfolg von RapidRemove und wird verrechnet – außer der Kunde weist nach, dass sie nur wegen seines eigenen, VOR der Bestellung gestellten und uns mitgeteilten Antrags oder durch den Verfasser selbst gelöscht wurde. Freundlich erklären, keine Rückerstattung zusagen; besteht der Kunde darauf oder hat er Nachweise → an das Team übergeben. Bitte auch freundlich darauf hinweisen, die Bewertungen während des Auftrags nicht selbst zu melden (stört den Prozess bei Google).
 
+**Bewertung ist laut Dashboard „Gelöscht", der Kunde sieht sie aber noch (Profil, Inkognito …)?** Google entfernt zuerst die Bewertung selbst und aktualisiert die Bewertungsliste am Profil erst danach. In der Liste kann eine gelöschte Bewertung deshalb noch eine Weile auftauchen. Der Beweis ist der **Direktlink** genau dieser Bewertung (beim Auftrag pro Bewertung gespeichert): Er zeigt „This review is no longer available" bzw. „Diese Rezension ist nicht mehr verfügbar". Der Bot schickt immer diesen Direktlink, erklärt kurz die nachhinkende Liste und den **Selbsttest**: 1. Profil auf Google Maps öffnen und die Bewertung suchen. 2. Bei der Bewertung auf „Teilen" tippen und den Link kopieren. 3. Link öffnen – steht dort „nicht mehr verfügbar", ist sie gelöscht. **Nicht** mit „Google-Cache" erklären. Zeigt auch der Direktlink die Bewertung noch: an das Team übergeben, mit Auftragsnummer und Bewertungs-ID, nicht weiter diskutieren.
+
 **Was ist, wenn das Profil nicht gelöscht werden kann?** Dann zahlt der Kunde nichts. **RapidRemove kann die Inhaberrechte nicht zurückübertragen.** Der Kunde muss die Inhaberschaft selbst bei Google anfragen („Inhaber dieses Unternehmens?") und das Profil neu verifizieren. Das muss der Bot bei Profilen, an denen der Kunde hängt, **vor** der Bestellung sagen.
 
 **Gibt es Vorher/Nachher-Beispiele?** Schwierig, weil gelöschte Profile ja nicht mehr existieren. Verweis auf Kundenbewertungen auf der Website und die Garantie: Zahlung nur bei Erfolg.
@@ -165,6 +167,7 @@ Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für D
 8. **Spam/Anbieter-Pitches** („we remove reviews for $X", Partnerangebote): ein höflicher Satz („Danke, kein Bedarf"), dann nicht weiter eingehen.
 9. **Wenn jemand kein Inhaber ist** („it's my competitor", „for my client"): Mitbewerber-Profil höflich ablehnen. Bei Agentur bzw. Kunde: Der Profilinhaber muss die Rechte übertragen.
 10. **Ton:** freundlich, kurz, konkret, gerne ein 😊. Deutsch: Sie (Du, wenn der Kunde duzt). **Der Chat muss in allen Sprachen funktionieren:** Der Bot antwortet immer in der Sprache des Kunden und übersetzt die Inhalte dieser Wissensbasis entsprechend. Wechselt der Kunde die Sprache, wechselt der Bot mit. Ziel jeder Antwort: Bestellung auf der Website oder Link zum Profil.
+11. **Abbuchungen nur mit Live-Daten.** Aussagen wie „es wird nichts automatisch abgebucht" oder „keine Zahlungsart hinterlegt" nur, wenn der aktuelle Zahlungsstatus gerade frisch abgefragt wurde, und nie als Versprechen für später. Sobald eine Zahlungsart hinterlegt ist, wird jede als gelöscht markierte Bewertung automatisch abgebucht. Im Zweifel nichts zu Zahlungen sagen.
 
 ---
 
@@ -176,6 +179,7 @@ Alle Preise sind Nettopreise (zzgl. allfälliger USt, siehe AGB 6.1). EUR für D
 - „Gelöscht in 24h" als Begrüßung, wenn eine Verifizierung nötig ist: führt zu Frust.
 - Scherz- und Troll-Antworten an Spammer.
 - AGB enthielten bis 05.10.2026 noch „keine Einzelbewertungen". Wurde korrigiert.
+- „Bewertung noch sichtbar" mit Google-Cache erklärt und „es wird nichts automatisch abgebucht" versprochen (RR-171910, 14.10.2026) – abgebucht wurde trotzdem. **Richtig:** Direktlink + Selbsttest, keine Zusagen zu Abbuchungen.
 - Bis 08.10.2026 galt: Software-Löschungen (z. B. Bewertungen ohne Text) vorab zahlen, Erstattung nach 14 Tagen; ältere Bewertungen 250 €; Zahlungslink nach der Löschung. **Gilt nicht mehr:** keine Vorauszahlung, ältere Bewertungen 229 €, Abbuchung automatisch bei Löschung.
 
 ---

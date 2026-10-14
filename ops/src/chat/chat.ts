@@ -7,7 +7,7 @@
  * - Antwort per Claude API (ANTHROPIC_API_KEY; Modell CHAT_MODEL, Standard claude-sonnet-5-5).
  *   Ohne Schlüssel bzw. bei Fehlern: kurze Keyword-Antworten + Verweis aufs Team.
  * - Kontext je Anfrage serverseitig aus den echten Aufträgen des Kunden (nur Vorname, keine E-Mail/Telefon im Prompt).
- * - Wunsch nach Mensch (human/team/agent/person/mitarbeiter …) → sofort Team-Button, ohne KI.
+ * - Echter Wunsch nach einem Menschen (SITE_HUMAN_RE, kurze Nachricht) → sofort Team-Button, ohne KI.
  * - Admin-Ansicht (Impersonation): echte KI-Antworten zum Testen, aber nichts gespeichert, nichts getrackt, kein Ticket.
  * - Tabelle chat_messages (12 Monate), Events chat_message / chat_ticket in der Dashboard-Aktivität.
  */
@@ -42,7 +42,6 @@ type Deps = {
 
 const MODEL = () => process.env.CHAT_MODEL || "claude-sonnet-5-5";
 const SUPPORT_TO = () => process.env.SUPPORT_TO || "helpdesk@rapid-remove.com";
-const HUMAN_RE = /\b(human|team|agent|person|mitarbeiter|mensch|support[- ]?team|humano|persona|humain|operat(or|ore)|medewerker|mennesk|människa)\b/i;
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u0008\u000b-\u001f]/g, " ").trim().slice(0, n);
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" } as Record<string, string>)[c]);
 
@@ -74,25 +73,35 @@ const hoursSince = (iso: unknown) => { const t = iso ? new Date(String(iso)).get
 /* Zusatzdaten je Kunde (alles, was der Bot über die Aufträge wissen muss): Rohdaten der Bewertungen (Sterne, Alter, Text),
    Bestellwert, Zahlungsart, Wartestatus/Fristen, Verlauf (Mails, Zahlungen, Statuswechsel) und Doppelbestellungen. */
 type Facts = {
-  pm: boolean | null; // Zahlungsart hinterlegt? (null = automatische Abbuchung für diesen Kunden nicht aktiv)
+  /** Zahlungsart hinterlegt? true/false = gerade live abgefragt · null = automatische Abbuchung für diesen Kunden nicht aktiv
+   *  · "unknown" = Abfrage fehlgeschlagen → der Bot darf dann NICHTS über Abbuchungen/Zahlungsarten sagen. */
+  pm: boolean | null | "unknown";
+  pmAt: string | null; // Zeitpunkt der Live-Abfrage (UTC)
   raw: Map<string, Record<string, unknown>>; amount: Map<string, number>;
   timeline: Map<string, { at: string; type: string; title: string }[]>;
-  pt: Map<string, { status: string; updated: string | null }>;
+  pt: Map<string, { status: string; updated: string | null; code: string | null }>;
+  /** Letzte automatische Löschprüfung je Bewertung (Direktlink geöffnet): gone/visible/unknown + Zeitpunkt. */
+  rc: Map<string, { result: string; at: string }>;
 };
-const EMPTY_FACTS: Facts = { pm: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map() };
+const EMPTY_FACTS: Facts = { pm: "unknown", pmAt: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map(), rc: new Map() };
 export async function factsOf(email: string, orders: Record<string, unknown>[]): Promise<Facts> {
   if (!pool || !email) return EMPTY_FACTS;
   const ids = orders.map((o) => String(o.id)).filter(Boolean).slice(0, 25);
-  const f: Facts = { pm: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map() };
-  try { f.pm = autopayAvailable(email) ? await hasSavedMethod(email) : null; } catch { f.pm = null; }
+  const f: Facts = { pm: "unknown", pmAt: null, raw: new Map(), amount: new Map(), timeline: new Map(), pt: new Map(), rc: new Map() };
+  try { f.pm = autopayAvailable(email) ? await hasSavedMethod(email) : null; f.pmAt = new Date().toISOString().slice(11, 16); } catch { f.pm = "unknown"; }
   if (!ids.length) return f;
   type RO = { id: string; raw: Record<string, unknown> | null; amount: unknown };
   type EV = { order_id: string; created_at: string; type: string; title: string };
-  type PTR = { order_id: string; item_key: string; status: string; updated_at: string | null };
-  const [ro, ev, pt] = await Promise.all([
+  type PTR = { order_id: string; item_key: string; status: string; updated_at: string | null; code: string | null };
+  type RCR = { order_id: string; item_key: string; result: string; created_at: string };
+  const [ro, ev, pt, rc] = await Promise.all([
     pool.query(`SELECT id, raw, amount FROM orders WHERE id = ANY($1::text[])`, [ids]).catch(() => ({ rows: [] as RO[] })),
     pool.query(`SELECT order_id, created_at, type, title FROM events WHERE order_id = ANY($1::text[]) AND type IN ('mail','pay','status','order') ORDER BY created_at DESC LIMIT 200`, [ids]).catch(() => ({ rows: [] as EV[] })),
-    pool.query(`SELECT order_id, item_key, status, updated_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND item_key IS NOT NULL`, [ids]).catch(() => ({ rows: [] as PTR[] })),
+    pool.query(`SELECT order_id, item_key, status, updated_at, code FROM partner_tasks WHERE order_id = ANY($1::text[]) AND item_key IS NOT NULL`, [ids]).catch(() => ({ rows: [] as PTR[] })),
+    pool.query(`SELECT DISTINCT ON (t.order_id, t.item_key) t.order_id, t.item_key, c.result, c.created_at
+                  FROM removal_checks c JOIN partner_tasks t ON t.id = c.task_id
+                 WHERE t.order_id = ANY($1::text[]) AND t.item_key IS NOT NULL
+                 ORDER BY t.order_id, t.item_key, c.created_at DESC`, [ids]).catch(() => ({ rows: [] as RCR[] })),
   ]);
   for (const r of ro.rows as RO[]) { f.raw.set(r.id, r.raw || {}); f.amount.set(r.id, Number(r.amount) || 0); }
   for (const e of ev.rows as EV[]) {
@@ -100,11 +109,14 @@ export async function factsOf(email: string, orders: Record<string, unknown>[]):
     if (a.length < 14 && !a.some((x) => x.title === clip(e.title, 140) && x.at === new Date(e.created_at).toISOString().slice(0, 10))) a.push({ at: new Date(e.created_at).toISOString().slice(0, 10), type: e.type, title: clip(e.title, 140) });
     f.timeline.set(e.order_id, a);
   }
-  for (const t of pt.rows as PTR[]) f.pt.set(t.order_id + "\u0001" + t.item_key, { status: t.status, updated: t.updated_at ? String(t.updated_at) : null });
+  for (const t of pt.rows as PTR[]) f.pt.set(t.order_id + "\u0001" + t.item_key, { status: t.status, updated: t.updated_at ? String(t.updated_at) : null, code: t.code || null });
+  for (const c of rc.rows as RCR[]) f.rc.set(c.order_id + "\u0001" + c.item_key, { result: String(c.result), at: new Date(c.created_at).toISOString().slice(0, 10) });
   return f;
 }
 const day = (v: unknown) => { const t = v ? new Date(String(v)).getTime() : NaN; return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : ""; };
 const ageTxt = (days: number) => (days < 1 ? "less than a day" : days < 14 ? `${days} days` : days < 60 ? `${Math.round(days / 7)} weeks` : days < 730 ? `${Math.round(days / 30)} months` : `${Math.round(days / 365)} years`);
+/** Google-Review-ID aus dem gespeicherten Bewertungs-Link (…!1sCh…/Ci…), sonst leer. */
+const reviewIdOf = (u: unknown) => { const raw = String(u || ""); let d = raw; try { d = decodeURIComponent(raw); } catch { /* */ } return (d.match(/!1s(C[A-Za-z0-9_-]{16,})/) || [])[1] || ""; };
 const normTxt = (s: unknown) => String(s || "").toLowerCase().replace(/\s+/g, " ").trim().slice(0, 60);
 
 export function contextOf(d: { name: string; lang: string; orders: Record<string, unknown>[] }, ui?: { lang?: string; contact?: string }, f: Facts = EMPTY_FACTS): string {
@@ -114,7 +126,11 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
   const lines: string[] = [];
   lines.push(`Today: ${new Date().toISOString().slice(0, 10)}. Customer first name: ${first || "(unknown)"}. Business country: ${o0.country || "unknown"}. Currency: ${cur.toUpperCase()} (set by region, the customer cannot choose it).`);
   lines.push(`Dashboard language: ${ui?.lang || d.lang || "en"} (use it only if the latest message's language is unclear). The team button below your reply is labelled "${ui?.contact || "Contact our team"}" – use exactly this label.`);
-  lines.push(f.pm === null ? "Payment method: automatic charging is not active for this customer (they pay via the payment link / Pay button)." : f.pm ? "Payment method: SAVED in the dashboard – removed reviews are charged automatically, invoice by email." : "Payment method: NOT saved yet – the customer adds one in the dashboard (Payments tab or the banner on Home); nothing is charged before a review is removed.");
+  lines.push(f.pm === "unknown"
+    ? "Payment method: UNKNOWN right now (live check failed). Say NOTHING about charges, automatic payments or saved payment methods – if asked, the team clarifies it ([[TEAM]])."
+    : f.pm === null ? `Payment method (checked live ${f.pmAt} UTC): automatic charging is not active for this customer (they pay via the payment link / Pay button).`
+    : f.pm ? `Payment method (checked live ${f.pmAt} UTC): SAVED in the dashboard – every review marked Removed is charged automatically, invoice by email.`
+    : `Payment method (checked live ${f.pmAt} UTC): NOT saved at this moment. As soon as the customer saves one, every review already marked Removed is charged automatically.`);
   if (!d.orders.length) lines.push("The customer has no orders in this dashboard yet.");
   // Dieselbe Bewertung in mehreren Aufträgen (gleicher Link oder gleicher Name + Text)
   // Doppelt = dieselbe Bewertung auf DEMSELBEN Unternehmensprofil (gleicher Link, oder gleicher Name + Text beim selben Profil).
@@ -200,7 +216,9 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
           st === "software" || st === "sw_accepted" ? "special software, charged only once removed, nothing to pay if it fails" : "",
           dup.length ? `SAME REVIEW ON THE SAME BUSINESS PROFILE ALSO IN ORDER ${dup.join(", ")} (real duplicate – the team merges it so it's only charged once)` : "",
           twin.length ? `same reviewer and text also in order ${twin.join(", ")}, but on a DIFFERENT business profile – that is a separate review: both are removed and each is charged only if removed` : "",
-          it.url ? `link: ${clip(it.url, 160)}` : "",
+          (() => { const rid = reviewIdOf(it.url); const code = t?.code; return rid || code ? `review ID: ${rid || code}${rid && code ? ` (ref ${code})` : ""}` : ""; })(),
+          (() => { const c = f.rc.get(oid + "\u0001" + String(it.key)); return st === "removed" && c && c.result === "gone" ? `removal verified ${c.at}: our system opened the direct link and Google shows the review as no longer available` : ""; })(),
+          it.url ? `direct link: ${clip(it.url, 700)}` : "",
         ].filter(Boolean);
         lines.push(bits.join(" · "));
       }
@@ -213,7 +231,7 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
     const tl = f.timeline.get(oid) || [];
     if (tl.length) lines.push(`  History (newest first; internal German notes – translate, never mention admin/partner): ${tl.map((e) => `${e.at} ${e.title}`).join(" | ")}`);
   }
-  lines.push(`\nRemoved reviews not yet paid (all orders): ${money(Math.round(due * 100) / 100, cur)}. Normally a removed review is charged automatically to the payment method saved in the dashboard and the invoice comes by email. An open amount here means no payment method is saved yet or a charge failed: then the customer adds or updates the payment method in the dashboard, or taps "Pay" on the Home or Payments tab.`);
+  if (f.pm !== "unknown") lines.push(`\nRemoved reviews not yet paid (all orders): ${money(Math.round(due * 100) / 100, cur)}. Normally a removed review is charged automatically to the payment method saved in the dashboard and the invoice comes by email. An open amount here means no payment method is saved yet or a charge failed: then the customer adds or updates the payment method in the dashboard, or taps "Pay" on the Home or Payments tab.`);
   return lines.join("\n");
 }
 
@@ -230,6 +248,13 @@ How to answer:
 - SUCCESS & TIMING: single reviews usually take 1–2 weeks, sometimes faster, occasionally a little longer – never promise a fixed date. The "over 90 %" only applies to reviews up to 4 weeks old; for older reviews don't quote a percentage. Special-software removals (stars-only reviews, older US reviews) are the fastest: approx. 1–3 days. Check the order data (age, country) before answering.
 - Duplicates: only a review marked "SAME REVIEW ON THE SAME BUSINESS PROFILE" is a real duplicate – then say the team merges it so it's only charged once ([[TEAM]]). The same reviewer/text on a DIFFERENT business profile (another location/listing) is a separate review: never call it a duplicate; both get removed and each is charged only once it is removed. Always check the business name of each order before answering.
 - Status meanings in the dashboard: Being checked = we check if it can be removed. In progress = removal running. Removed = gone from Google, billed per removed review: charged automatically to the payment method saved once in the dashboard, invoice by email. Not removable = no charge. Needs your decision = can only be removed with special software (our partner has checked it is possible for that review); the customer can accept or decline per review, declining costs nothing. Accepting (or having agreed at checkout) needs a saved payment method, then we start right away; the confirmed slot is reserved for 5 hours (countdown in the dashboard). No prepayment, also not for software: charged only once the review is removed, nothing to pay if it fails. Why software: Google usually doesn't remove older reviews from the USA or star-only ratings without text by hand; for older reviews from other countries we first file legal notices (removes 90 %+), the rest can only be removed with software. Say "special software", never "outsourced".
+- REVIEW MARKED "Removed" BUT THE CUSTOMER STILL SEES IT (on the profile, in incognito, anywhere): Google removes the review itself first and updates the review list on the business profile only afterwards, so a removed review can stay visible in the list for a while. The direct link of that review is the proof. Answer like this, every time:
+  1. Say the review has been removed by Google and give the customer the "direct link" of exactly this review from the order data (the full URL, unchanged). Tell them to open it: it shows "This review is no longer available" (in their language Google may show the same message translated).
+  2. Explain in one sentence why it can still appear in the profile's review list (Google removes the review first and updates the list afterwards).
+  3. Explain the self-test so they can check any review themselves: open the profile on Google Maps and find the review, tap "Share" on the review and copy the link, open the link – if it says "This review is no longer available", it is removed.
+  Never use "Google cache" as the explanation. Do not bring up payments or charges in this answer unless the customer asks (see CHARGES). If the review has no direct link in the data, give only the explanation and the self-test.
+  4. If the customer says the direct link (or their own shared link) still shows the review: do not argue or explain again. Say the team checks it right away and replies by email, name the order number and the review ID from the data in your reply (e.g. "order RR-123456, review ID …") so the team knows which one, and end with [[TEAM]].
+- CHARGES: state payment facts ONLY exactly as the live payment line and the order data show them right now (paid, open amount, payment method saved or not). Never predict or promise future charging, e.g. never say "nothing will be charged", "nothing will be taken automatically" or "you don't need to pay while you're unsure". Fact to keep in mind: once a payment method is saved, every review marked Removed is charged automatically. If the payment line says UNKNOWN, say nothing about charges at all. When in doubt, leave payments out of the answer.
 - PayPal/Wise (10 % off, only businesses outside DE/AT/CH): mention it ONLY if the customer asks how to pay or about paying differently – never as an add-on to other answers.
 - Hand over to the team for: order problems you cannot answer from the data, payment problems, cancellation, invoice corrections, complaints, refunds, multiple profiles, agencies, press/links, phone or video calls, instalments, anything you are unsure about. When you hand over, say the team replies by email and end your reply with the exact token [[TEAM]].
 - "I removed it myself" / refund because it disappeared: our terms (AGB 7.4) say the customer must not file their own reports or removal requests with Google while an order is running (and must tell us at ordering if they had already started one). A review that is removed while the order runs is presumed removed by our work, and the fee is due – unless the customer proves the removal came solely from their own request started BEFORE the order (and told to us) or the reviewer deleted it themselves. Explain this calmly and politely, never promise a refund, and if the customer insists or sends proof, hand over to the team ([[TEAM]]). Also ask them kindly not to report the reviews themselves while we work on them, because parallel reports can disturb the process at Google.
@@ -252,6 +277,7 @@ function fallback(msg: string, lang: string, d: { orders: Record<string, unknown
   const de = lang === "de" || /\b(wie|wann|warum|bestellung|zahlen|bewertung|danke|hallo)\b/.test(k);
   const items = d.orders.flatMap((o) => ((o.items as Record<string, unknown>[]) || []));
   const open = items.filter((i) => ["new", "working", "software", "sw_accepted"].includes(String(i.status))).length;
+  if (/still (there|visible|show)|still on google|noch (da|sichtbar|zu sehen|online)|sichtbar|incognito|inkognito|visible/.test(k)) return { reply: de ? "Gelöschte Bewertungen können in der Bewertungsliste Ihres Profils noch eine Weile auftauchen: Google entfernt zuerst die Bewertung und aktualisiert die Liste erst danach. So prüfen Sie es selbst: Profil auf Google Maps öffnen, bei der Bewertung auf „Teilen“ tippen, Link kopieren und öffnen. Steht dort „Diese Rezension ist nicht mehr verfügbar“, ist sie gelöscht. Zeigt der Link sie noch, tippen Sie unten auf das Team, wir prüfen das sofort." : "A removed review can stay visible in your profile's review list for a while: Google removes the review first and updates the list afterwards. You can check it yourself: open your profile on Google Maps, tap \"Share\" on the review, copy the link and open it. If it says \"This review is no longer available\", it's removed. If the link still shows it, tap the team button below and we'll check right away.", handoff: false };
   if (/software|spezial/.test(k)) return { reply: de ? "Manche Bewertungen lassen sich nur mit Spezialsoftware löschen. Auch das zahlen Sie erst, wenn die Bewertung gelöscht ist – abgebucht wird automatisch von Ihrer hinterlegten Zahlungsart. Ablehnen kostet nichts." : "Some reviews can only be removed with special software. You only pay for that once the review is removed – it's charged automatically to your saved payment method. Declining costs nothing.", handoff: false };
   if (/pay|zahl|bill|invoice|rechnung/.test(k)) return { reply: de ? "Sie zahlen nur für tatsächlich gelöschte Bewertungen: abgebucht wird automatisch von der Zahlungsart in Ihrem Dashboard, die Rechnung kommt per E-Mail. Ist trotzdem etwas offen, tippen Sie auf „Zahlen“ auf der Startseite oder unter Zahlungen." : "You only pay for reviews that were actually removed: it's charged automatically to the payment method in your dashboard and the invoice arrives by email. If something is still open, tap “Pay” on Home or in Payments.", handoff: false };
   if (/long|dauer|lange|when|wann/.test(k)) return { reply: de ? "Eine Löschung dauert meist 1–2 Wochen, manchmal geht es schneller, in Einzelfällen etwas länger. Software-Löschungen gehen am schnellsten (ca. 1–3 Tage). Jeden Schritt sehen Sie live unter Bestellungen." : "Removals usually take 1–2 weeks – sometimes faster, occasionally a little longer. Software removals are the fastest (approx. 1–3 days). You can follow every step live in Orders.", handoff: false };
@@ -348,7 +374,9 @@ export function registerCustChat(app: FastifyInstance, deps: Deps): void {
     }
     void save(sess.email, "user", message);
     void logCustEvent(sess.email, "chat_message", message.slice(0, 160));
-    if (HUMAN_RE.test(message)) {
+    // Nur echter Wunsch nach einem Menschen (wie im Website-Chat) – nicht jede Nachricht mit „team“/„person“/„Mitarbeiter“
+    // (z. B. „your team marked it removed but it's still there“ muss eine Antwort bekommen, kein Ticket).
+    if (SITE_HUMAN_RE.test(message) && message.length < 160) {
       const de = d.lang === "de" || /mitarbeiter|mensch/i.test(message);
       const r = de ? "Gerne. Tippen Sie unten auf „Team kontaktieren“, wir antworten per E-Mail, werktags meist innerhalb weniger Stunden." : "Of course. Tap “Contact our team” below and we'll reply by email, usually within a few hours on weekdays.";
       void save(sess.email, "assistant", r);

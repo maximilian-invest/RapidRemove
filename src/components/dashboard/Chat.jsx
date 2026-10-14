@@ -21,6 +21,16 @@ async function post(path, body) {
   return j;
 }
 
+
+/** Links in Bot-Antworten anklickbar machen (z. B. Direktlink zur Bewertung) – kurz angezeigt, voller Link im href. */
+const URL_RE = /(https?:\/\/[^\s<>"')\]]*[^\s<>"')\].,;:!?])/g;
+function linkify(t) {
+  const parts = String(t || "").split(URL_RE);
+  return parts.map((p, i) => (i % 2 === 1
+    ? <a key={i} href={p} target="_blank" rel="noopener noreferrer" style={{ wordBreak: "break-all", textDecoration: "underline" }}>{p.replace(/^https?:\/\/(www\.)?/, "").slice(0, 38) + (p.replace(/^https?:\/\/(www\.)?/, "").length > 38 ? "…" : "")}</a>
+    : p));
+}
+
 export default function SupportChat({ token, T, lang, imp, showToast, open, setOpen, sit = {}, hidden = false, onNewOrder }) {
   const [msgs, setMsgs] = React.useState(() => { try { return JSON.parse(sessionStorage.getItem(KEY) || "[]"); } catch (e) { return []; } });
   const [busy, setBusy] = React.useState(false);
@@ -112,7 +122,7 @@ export default function SupportChat({ token, T, lang, imp, showToast, open, setO
             ? <button key={i} type="button" className="ch-human ch-no" onClick={() => { setOpen(false); onNewOrder(m.q); }}><Plus />{T("noBtn")}</button>
             : m.h
             ? <button key={i} type="button" className="ch-human" onClick={contact} disabled={sent}><Headphones />{T("chContact")}</button>
-            : <div key={i} className={"msg " + (m.r === "u" ? "u" : "b")}>{m.t}</div>))}
+            : <div key={i} className={"msg " + (m.r === "u" ? "u" : "b")}>{m.r === "u" ? m.t : linkify(m.t)}</div>))}
           {busy ? <div className="msg b typ"><i /><i /><i /></div> : null}
         </div>
         {msgs.length <= 6 ? <div className="ch-qs">{QS.map((q) => <button key={q} type="button" onClick={() => send(q)} disabled={busy}>{q}</button>)}</div> : null}
