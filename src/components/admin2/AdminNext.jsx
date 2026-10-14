@@ -28,7 +28,7 @@ import { MahnSheet } from "./Mahnung";
 import { DueSheet, MailHistSheet, MailsScreen } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
-import { AlertTriangle, Loader as LoaderIcon } from "lucide-react";
+import { AlertTriangle, Loader as LoaderIcon, Banknote } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 import { useHistState, useHardLeave } from "./navHistory";
 import { openGoogleLink, needsSafari } from "@/lib/open-google";
@@ -326,7 +326,7 @@ export default function AdminNext() {
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];
   // Desktop: keine Konto-Kachelseite – alle Punkte direkt in der Seitenleiste
   const deskTabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"],
-    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:chats", MsgCircle, "Website-Chats"], ["more:partner", Handshake, "Partner"], ["more:settings", Settings, "Einstellungen"], ["more:tests", FlaskConical, "Tests"]];
+    ["more:checked", Search, "Geprüfte Profile"], ["more:activity", ActIcon, "Aktivitäten"], ["more:chats", MsgCircle, "Website-Chats"], ["more:partner", Handshake, "Partner"], ["more:pricing", Banknote, "Kunden & Preise"], ["more:settings", Settings, "Einstellungen"], ["more:tests", FlaskConical, "Tests"]];
   const isOn = (k) => (k.startsWith("more:") ? tab === "more" && moreSub === k.slice(5) : tab === k);
   const toOld = (view) => { try { localStorage.setItem("rr_admin_view", view); } catch (e) { /* */ } window.location.href = "/admin/alt"; };
   const pane = (k, body, extra = "") => (
