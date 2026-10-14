@@ -151,7 +151,7 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
       {own ? <><CurSeg cur={cur} setCur={setCur} /><TierEditor rows={rows} setRows={setRows} cur={cur} /><SwRow value={sw} set={setSw} cur={cur} label="Spezialfall (Software)" /></> : null}
 
       <div className="pr-sec">4 · Preise Partner <em>sieht nur der Partner, nie der Kunde</em></div>
-      <Toggle on={pOwn} set={setPOwn} title="Eigene Partner-Staffel (USD)" sub={pOwn ? "Je gelöschter Bewertung – Stufe nach derselben Anzahl wie beim Kunden" : "Aus – normaler Partnerpreis je Leistung"} />
+      <Toggle on={pOwn} set={setPOwn} title="Eigene Partner-Staffel (USD)" sub={pOwn ? "Je gelöschter Bewertung – Stufe nach derselben Anzahl wie beim Kunden" : own ? "Aus – normaler Partnerpreis je Leistung" : "Aus – es gilt die Standard-Partner-Staffel"} />
       {pOwn ? <TierEditor rows={pRows} setRows={setPRows} cur="usd" /> : null}
       <SwRow value={pSw} set={setPSw} cur="usd" label="Spezialfall (Software)" />
       {ct && pOwn ? <Margin ct={ct} pt={rowsTiers(pRows)} csw={nOf(sw)} psw={nOf(pSw)} /> : null}
@@ -178,14 +178,17 @@ export default function PricingScreen({ ctx }) {
   const [cur, setCur] = React.useState("usd");
   const [rows, setRows] = React.useState(toRows(null));
   const [sw, setSw] = React.useState("");
+  const [pRows, setPRows] = React.useState(toRows(null));
+  const [pSw, setPSw] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [edit, setEdit] = React.useState(null); // null | "new" | customer
   const [q, setQ] = React.useState("");
-  const load = React.useCallback(() => pricingInfo().then((j) => { setD(j); if (j.def) { setCur(j.def.cur); setRows(toRows(j.def.tiers)); setSw(j.def.sw ? String(j.def.sw) : ""); } }).catch((e) => toast("Fehler: " + e.message)), [toast]);
+  const load = React.useCallback(() => pricingInfo().then((j) => { setD(j); if (j.def) { setCur(j.def.cur); setRows(toRows(j.def.tiers)); setSw(j.def.sw ? String(j.def.sw) : ""); setPRows(toRows(j.def.partner && j.def.partner.tiers)); setPSw(j.def.partner && j.def.partner.sw ? String(j.def.partner.sw) : ""); } }).catch((e) => toast("Fehler: " + e.message)), [toast]);
   React.useEffect(() => { load(); }, [load]);
   const saveDef = async () => {
     setBusy(true);
-    try { await pricingDefault(cur, fromRows(rows), sw.trim() || null); toast("Standard-Staffel gespeichert"); load(); }
+    try { const pt = pRows.some((r) => String(r.price).trim()) ? fromRows(pRows) : null;
+      await pricingDefault(cur, fromRows(rows), sw.trim() || null, pt, pSw.trim() || null); toast("Standard-Staffel gespeichert"); load(); }
     catch (e) { toast("Fehler: " + e.message); }
     setBusy(false);
   };
@@ -218,11 +221,15 @@ export default function PricingScreen({ ctx }) {
           ) : edit !== "new" ? <div className="aempty"><b>Noch keine Kunden-Dashboards angelegt</b></div> : null}
 
           <div className="sec3"><h2>Standard-Staffel</h2></div>
-          <p className="sh">Gilt für Bulk-Uploads aller Kunden ohne eigene Preise. Preis je gelöschter Bewertung – die Stufe richtet sich nach der Anzahl im Upload. Der Kunde sieht die Staffel und seine Stufe beim Hochladen.{!d.def ? " Noch nicht festgelegt – bis dahin gelten die normalen Preise." : ""}</p>
+          <p className="sh">Gilt für Bulk-Uploads aller Kunden ohne eigene Preise – Kunde und Partner. Preis je gelöschter Bewertung – die Stufe richtet sich nach der Anzahl im Upload. Der Kunde sieht die Staffel und seine Stufe beim Hochladen.{!d.def ? " Noch nicht festgelegt – bis dahin gelten die normalen Preise." : ""}</p>
           <div className="card pr-card">
             <CurSeg cur={cur} setCur={setCur} />
             <TierEditor rows={rows} setRows={setRows} cur={cur} />
             <SwRow value={sw} set={setSw} cur={cur} label="Spezialfall (Software)" />
+            <div className="pr-sec">Partner (USD) <em>sieht nur der Partner – leer = normaler Partnerpreis</em></div>
+            <TierEditor rows={pRows} setRows={setPRows} cur="usd" />
+            <SwRow value={pSw} set={setPSw} cur="usd" label="Spezialfall (Software)" />
+            {cur === "usd" ? <Margin ct={rowsTiers(rows)} pt={rowsTiers(pRows)} csw={nOf(sw)} psw={nOf(pSw)} /> : null}
             <button type="button" className="cta" style={{ marginTop: 12 }} disabled={busy} onClick={saveDef}>{busy ? "Speichere …" : "Standard-Staffel speichern"}</button>
           </div>
 
