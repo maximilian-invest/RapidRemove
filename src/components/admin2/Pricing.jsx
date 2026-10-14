@@ -184,15 +184,16 @@ export default function PricingScreen({ ctx }) {
   const [sw, setSw] = React.useState("");
   const [pRows, setPRows] = React.useState(toRows(null));
   const [pSw, setPSw] = React.useState("");
+  const [tol, setTol] = React.useState("10");
   const [busy, setBusy] = React.useState(false);
   const [edit, setEdit] = React.useState(null); // null | "new" | customer
   const [q, setQ] = React.useState("");
-  const load = React.useCallback(() => pricingInfo().then((j) => { setD(j); if (j.def) { setCur(j.def.cur); setRows(toRows(j.def.tiers)); setSw(j.def.sw ? String(j.def.sw) : ""); setPRows(toRows(j.def.partner && j.def.partner.tiers)); setPSw(j.def.partner && j.def.partner.sw ? String(j.def.partner.sw) : ""); } }).catch((e) => toast("Fehler: " + e.message)), [toast]);
+  const load = React.useCallback(() => pricingInfo().then((j) => { setD(j); if (j.def) { setCur(j.def.cur); setRows(toRows(j.def.tiers)); setSw(j.def.sw ? String(j.def.sw) : ""); setPRows(toRows(j.def.partner && j.def.partner.tiers)); setPSw(j.def.partner && j.def.partner.sw ? String(j.def.partner.sw) : ""); setTol(j.def.tol != null ? String(j.def.tol) : "10"); } }).catch((e) => toast("Fehler: " + e.message)), [toast]);
   React.useEffect(() => { load(); }, [load]);
   const saveDef = async () => {
     setBusy(true);
     try { const pt = pRows.some((r) => String(r.price).trim()) ? fromRows(pRows) : null;
-      await pricingDefault(cur, fromRows(rows), sw.trim() || null, pt, pSw.trim() || null); toast("Standard-Staffel gespeichert"); load(); }
+      await pricingDefault(cur, fromRows(rows), sw.trim() || null, pt, pSw.trim() || null, tol.trim() || "10"); toast("Standard-Staffel gespeichert"); load(); }
     catch (e) { toast("Fehler: " + e.message); }
     setBusy(false);
   };
@@ -234,6 +235,12 @@ export default function PricingScreen({ ctx }) {
             <TierEditor rows={pRows} setRows={setPRows} cur="usd" />
             <SwRow value={pSw} set={setPSw} cur="usd" label="Spezialfall (Software)" />
             {cur === "usd" ? <Margin ct={rowsTiers(rows)} pt={rowsTiers(pRows)} csw={nOf(sw)} psw={nOf(pSw)} /> : null}
+            <div className="pr-row pr-swr">
+              <span className="pr-lab">Toleranz bei Stornos (Bulk)</span>
+              <span className="pr-p"><input className="po-num" inputMode="numeric" value={tol} onChange={(e) => setTol(e.target.value.replace(/[^\d]/g, "").slice(0, 2))} /> %</span>
+              <span className="pr-sp" />
+            </div>
+            <p className="sh" style={{ margin: "4px 0 0" }}>Fällt ein Bulk-Auftrag durch Stornos (z. B. Software-Fälle) unter seine Stufe, bleibt der Preis bis {tol || 10} % unter der Grenze gleich (z. B. ab 100 → bis {Math.ceil(100 * (1 - (Number(tol) || 10) / 100))} bleibt es bei der Stufe). Darunter muss der Kunde den neuen Preis bestätigen – bis dahin ist der Auftrag pausiert. Gilt für alle Kunden.</p>
             <button type="button" className="cta" style={{ marginTop: 12 }} disabled={busy} onClick={saveDef}>{busy ? "Speichere …" : "Standard-Staffel speichern"}</button>
           </div>
 

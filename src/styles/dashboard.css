@@ -949,3 +949,8 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .ln-add{display:inline-flex;align-items:center;gap:6px;margin:12px 0 4px;height:42px;padding:0 16px;border-radius:99px;background:var(--g1);font-weight:700;font-size:14px;color:var(--ink)}
 .rra .ln-add svg{width:16px;height:16px}
 .rra .bu-tr.below span,.rra .bu-tr.below b{color:var(--g3);font-weight:500}
+/* Bulk: Preisänderung bestätigen */
+.rra .ph-card{display:flex;flex-direction:column;gap:6px;border-radius:20px;padding:16px;margin-bottom:18px;background:var(--warning-soft);border:2px solid #f5c26b}
+.rra .ph-card b{font-size:16px}
+.rra .ph-card span{font-size:14px;font-weight:600}
+.rra .ph-card p{font-size:13.5px;color:#5a4a2a;margin:2px 0 8px;line-height:1.45}

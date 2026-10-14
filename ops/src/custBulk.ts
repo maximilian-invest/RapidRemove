@@ -12,7 +12,7 @@ import crypto from "node:crypto";
 import { pool } from "./db";
 import { customerSessionInfo } from "./customers";
 import { parseBulk, classifyLink, cleanUrl, MAX_ITEMS, MAX_FILE_BYTES, type BulkItem } from "./bulkParse";
-import { pricingFor, tierFor, dashNewOrderOn, orderPricing, custSetup, type CustPricing } from "./bulkPricing";
+import { pricingFor, tierFor, dashNewOrderOn, orderPricing, custSetup, tolerancePct, type CustPricing } from "./bulkPricing";
 import { isTestEmail } from "./testAccounts";
 
 /** Geheim-Header für interne Aufrufe von /order (Bulk + feste Kundenpreise) – wird nie an den Browser gegeben. */
@@ -74,7 +74,7 @@ export function registerCustBulk(app: FastifyInstance): void {
     if (!s) return reply.code(401).send({ ok: false, error: "session" });
     const email = s.email.toLowerCase();
     const p = await pricingFor(email);
-    return { ok: true, enabled: await bulkEnabled(email), maxItems: MAX_ITEMS, maxFileMb: Math.round(MAX_FILE_BYTES / 1048576),
+    return { ok: true, enabled: await bulkEnabled(email), maxItems: MAX_ITEMS, maxFileMb: Math.round(MAX_FILE_BYTES / 1048576), tol: await tolerancePct(),
       pricing: custView(p) };
   });
 
@@ -116,7 +116,8 @@ export function registerCustBulk(app: FastifyInstance): void {
     if (s.imp) return reply.code(403).send({ ok: false, error: "imp" });
     const email = s.email.toLowerCase();
     if (!(await bulkEnabled(email))) return reply.code(403).send({ ok: false, error: "disabled" });
-    if (b.agb !== true || b.fagg !== true || b.policy !== true) return reply.code(400).send({ ok: false, error: "agb" });
+    // tierAck: Kunde bestätigt, dass sich die Stufe (und damit der Preis) ändern kann, wenn sich die Anzahl ändert (14.10.2026).
+    if (b.agb !== true || b.fagg !== true || b.policy !== true || b.tierAck !== true) return reply.code(400).send({ ok: false, error: "agb" });
     if (limited("bo:" + email, 10)) return reply.code(429).send({ ok: false, error: "rate" });
     const seen = await orderedSet(email);
     const items = sanitize(b.items).filter((it) => !isOrdered(seen, it));
@@ -125,6 +126,8 @@ export function registerCustBulk(app: FastifyInstance): void {
     const p = await pricingFor(email);
     const tier = p.source !== "list" ? tierFor(p.tiers, items.length) : null;
     const op = orderPricing(p, items.length, { flat: true });
+    const tol = await tolerancePct();
+    if (op) op.tol = tol;
     const setup = await custSetup(email); // vom Admin angelegt: Name/Firma/Sprache für Kunden ohne frühere Bestellung
     const last = pool ? (await pool.query(`SELECT name, phone, company, country, raw->>'payPref' AS pp FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]).catch(() => ({ rows: [] as Record<string, string | null>[] }))).rows[0] || {} : {};
     const orderId = "RR-" + (100000 + crypto.randomInt(900000));
@@ -138,7 +141,7 @@ export function registerCustBulk(app: FastifyInstance): void {
       reviewItems: items.map(({ key: _k, ...x }) => x), reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
       note: `Bulk-Upload im Kunden-Dashboard: ${items.length} Bewertung(en)${tier ? ` · Stufe ${tier.from}${tier.to ? "–" + tier.to : "+"} → ${tier.price} ${p.cur.toUpperCase()} je gelöschter Bewertung (${p.source === "custom" ? "eigene Staffel" : "Standard-Staffel"})` : ""}`,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(), policyConsent: true, policyV: clip(b.policyV, 20) || "bulk-2026-10-14",
-      ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
+      tierAck: { at: new Date().toISOString(), v: "2026-10-14", tol }, // Bulk: immer Zahlungsart (kein PayPal/Wise-Wunsch übernehmen)
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard (Bulk)", landing: "/my-reviews",
     };
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
