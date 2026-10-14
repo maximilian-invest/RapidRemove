@@ -639,3 +639,10 @@
 .pra .actr.late .tm{background:var(--primary)}
 .pra .actr.soon .tm{background:#ffa64d}
 .pra .actr .due.late{background:var(--primary);color:#fff}
+
+/* Auto-Scan einer Bestellung (14.10.2026) */
+.pra .cta.scanbtn{flex-direction:column;gap:2px;height:auto;min-height:64px;padding:10px 14px;margin-bottom:8px;background:#16a34a}
+.pra .cta.scanbtn svg{display:none}
+.pra .cta.scanbtn .scan-sub{font-size:12px;font-weight:500;opacity:.85}
+.osc-bar{height:8px;border-radius:99px;background:#eee;overflow:hidden;margin:10px 0 4px}
+.osc-bar span{display:block;height:100%;background:#16a34a;border-radius:99px;transition:width .4s ease}

@@ -12,6 +12,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool, insertEvent, bumpChange } from "./db";
 import { checkRemoval, removalShot } from "./removalCheck";
+import { checkRemovalStrict } from "./removalScan";
 import { probeReviewLink } from "./linkProbe";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
@@ -554,7 +555,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
   const PT: Record<string, string> = { new: "Zurückgesetzt", working: "In Arbeit", removed: "Gelöscht ✓", not_possible: "Nicht möglich", software: "Nur per Software" };
 
   /** Status/Notiz einer Aufgabe durch den Partner setzen (gemeinsam für Einzel- und Sammel-Update). */
-  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean; verified?: boolean; confirmed?: boolean; pid?: number | null } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
+  async function partnerApply(id: number, status: string, noteIn: unknown, opts: { quiet?: boolean; preview?: boolean; admin?: boolean; verified?: boolean; confirmed?: boolean; pid?: number | null; via?: string } = {}): Promise<{ row?: Row; changed?: boolean; error?: string; code?: number }> {
     if (!pool) return { error: "unavailable", code: 503 };
     const prev = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]);
     const old = prev.rows[0] as Row | undefined;
@@ -580,9 +581,12 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       `UPDATE partner_tasks SET status=$1, partner_note=$2, updated_at=now(), touched_at=COALESCE(touched_at, now()),
          working_since = CASE WHEN $1='working' AND status<>'working' THEN now() ELSE working_since END,
          removed_at = CASE WHEN $1='removed' THEN COALESCE(removed_at, now()) ELSE NULL END
-       WHERE id=$3 RETURNING *`,
-      [st, note || null, id],
+       WHERE id=$3 AND status=$4 RETURNING *`,
+      [st, note || null, id, old.status],
     );
+    // 14.10.2026: nur ändern, wenn der Status seit dem Lesen gleich geblieben ist – zwei gleichzeitige „Removed"
+    // (Scan + Klick, Doppelklick) dürfen den Kunden nie doppelt auslösen.
+    if (!r.rows.length) return { error: "changed meanwhile – reload", code: 409 };
     const row = r.rows[0] as Row;
     const changed = !!status && status !== old.status;
     bumpChange(); // Live-Aktualisierung (Admin/Kunde/Partner)
@@ -596,7 +600,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       }).catch((e) => app.log.error({ err: e }, "Kunden-Dashboard-Update fehlgeschlagen"));
     }
     if (changed && row.order_id) {
-      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? (opts.admin ? " (vom Team bestätigt)" : " (von Lena geprüft)") : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
+      await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} ${LABEL[status] || status}${status === "removed" && opts.verified ? (opts.via ? ` (${opts.via})` : opts.admin ? " (vom Team bestätigt)" : " (von Lena geprüft)") : status === "removed" && opts.confirmed ? " (OHNE Prüfung bestätigt)" : ""}`, detail: [row.url || row.name, status === "removed" && row.report_reason ? `Meldegrund: ${reportDe(row.report_reason)}${row.report_note ? ` („${row.report_note}")` : ""}` : "", note].filter(Boolean).join(" · ") }).catch(() => {});
       if (status === "removed" && opts.confirmed && !opts.verified) void notifyTeam(`${row.test ? "TEST · " : ""}Gelöscht ohne Prüfung · ${row.code}`, `Partner hat bestätigt, Lena konnte nicht prüfen · bitte kurz kontrollieren · ${row.customer || ""}`, rvLink([row]), { kind: "partner" });
     }
     // Push bei JEDER Statusänderung des Partners (Working, Software, Removed, Impossible, zurückgesetzt).
@@ -694,6 +698,69 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     await Promise.all([worker(), worker(), worker()]);
     const gone = out.filter((x) => x.result === "gone");
     if (gone.length) void notifyTeam(`${preview ? "TEST · " : ""}Gelöscht ✓ (geprüft) · ${gone.length}`, "Partner · " + gone.map((x) => x.code).join(", "), rvLink(gone.map((g) => ({ code: g.code, order_id: (rows.find((x) => Number(x.id) === g.id) || {}).order_id }))), { kind: "partner" });
+    return { ok: true, results: out };
+  });
+
+  // Auto-Scan einer Bestellung (Partner-Dashboard, Button „Scan all reviews"): jede offene Bewertung wird STRENG geprüft
+  // (removalScan.ts – Google-Link UND Bewertungsliste müssen „gelöscht" sagen, plus Nachweis „war online").
+  // Nur dann → „removed" (= Kunde wird automatisch belastet). Alles andere bleibt unverändert.
+  // Der Browser schafft wenige Prüfungen gleichzeitig → die Seite schickt kleine Pakete nacheinander (Fortschritt).
+  const scanBusy = new Set<number>(); // Aufgaben, die gerade gescannt werden (Doppelklick / zwei Geräte)
+  const scanRuns = new Map<string, { at: number; pid: number | null; preview: boolean; cust: string; gone: string[]; unk: string[]; vis: string[]; order_id: string | null }>();
+  app.post("/partner/scan-order", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!(await checkPartnerToken(b.t))) return reply.code(401).send({ ok: false, error: "invalid link" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "unavailable" });
+    const cx = await ctxOf(b.t);
+    if (cx.blocked) return reply.code(403).send({ ok: false, error: "account not approved yet" });
+    const preview = cx.preview;
+    const ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 3);
+    const runId = clip(b.run, 40);
+    const rows = ids.length ? (await pool.query(`SELECT id, order_id, url, name, text, rating, status, test, code, customer, partner_id, paid_at FROM partner_tasks WHERE id = ANY($1::bigint[]) ORDER BY id`, [ids])).rows
+      .filter((x) => !!x.test === preview && (preview || !cx.pid || !x.partner_id || Number(x.partner_id) === cx.pid)) : [];
+    const run = runId ? (scanRuns.get(runId) || { at: Date.now(), pid: cx.pid, preview, cust: String(rows[0]?.customer || ""), gone: [], unk: [], vis: [], order_id: (rows[0]?.order_id as string) || null }) : null;
+    if (run && runId) scanRuns.set(runId, run);
+    for (const [k, v] of scanRuns) if (Date.now() - v.at > 3600_000) scanRuns.delete(k);
+    type Out = { id: number; code: string; result: string; reason: string; task?: ReturnType<typeof partnerView> };
+    const out: Out[] = [];
+    const queue = [...rows];
+    const worker = async () => {
+      for (let x = queue.shift(); x; x = queue.shift()) {
+        const id = Number(x.id);
+        if (x.paid_at || !["new", "working"].includes(String(x.status))) { out.push({ id, code: x.code, result: "skipped", reason: x.status === "removed" ? "Already removed." : "Not open." }); continue; }
+        if (scanBusy.has(id)) { out.push({ id, code: x.code, result: "skipped", reason: "Already being checked." }); continue; }
+        scanBusy.add(id);
+        try {
+          const d = await checkRemovalStrict(x as Parameters<typeof checkRemovalStrict>[0]);
+          const item: Out = { id, code: x.code, result: d.result, reason: d.reason };
+          if (d.result === "gone") {
+            // „Removed" geht nur aus „Working" → bei „Not started" erst auf Working (blockiert bei Pause/Software ohne Freigabe).
+            let err = "";
+            if (x.status === "new") { const w = await partnerApply(id, "working", undefined, { quiet: true, preview, pid: cx.pid }); if (w.error) err = w.error; }
+            if (!err) {
+              const r = await partnerApply(id, "removed", undefined, { quiet: true, preview, verified: true, pid: cx.pid, via: "Auto-Scan · Google-Link + Bewertungsliste" });
+              if (r.row) item.task = partnerView(r.row); else err = r.error || "failed";
+            }
+            if (err) { item.result = "unknown"; item.reason = err.includes("hold") ? "The order is paused until the customer pays – nothing was changed." : err.includes("software") ? "Software case – waiting for the customer, nothing was changed." : "Could not be saved – nothing was changed."; }
+          }
+          if (item.result !== "gone" && x.order_id) await insertEvent({ orderId: x.order_id, type: "note", title: `Auto-Scan: ${x.code} ${item.result === "visible" ? "noch sichtbar" : "nicht eindeutig – unverändert"}`, detail: d.why, auto: true }).catch(() => {});
+          if (run) (item.result === "gone" ? run.gone : item.result === "visible" ? run.vis : run.unk).push(x.code);
+          out.push(item);
+        } catch (e) {
+          out.push({ id, code: x.code, result: "unknown", reason: "The check failed – nothing was changed." });
+          if (run) run.unk.push(x.code);
+          app.log.error({ err: e, task: id }, "Auto-Scan fehlgeschlagen");
+        } finally { scanBusy.delete(id); }
+      }
+    };
+    await Promise.all([worker(), worker()]);
+    // Am Ende EINE Team-Nachricht für den ganzen Scan.
+    if (run && runId && b.last === true) {
+      scanRuns.delete(runId);
+      const parts = [run.gone.length ? `${run.gone.length} gelöscht ✓ (verrechnet)` : "", run.vis.length ? `${run.vis.length} noch online` : "", run.unk.length ? `${run.unk.length} unklar – bitte prüfen` : ""].filter(Boolean);
+      if (parts.length) void notifyTeam(`${preview ? "TEST · " : ""}Auto-Scan · ${run.cust || "Bestellung"}`, parts.join(" · ") + (run.unk.length ? ` · ${run.unk.slice(0, 10).join(", ")}` : ""), rvLink([...run.gone, ...run.unk].map((code) => ({ code, order_id: run.order_id }))), { kind: "partner" });
+    }
+    out.sort((a, c) => a.id - c.id);
     return { ok: true, results: out };
   });
 
