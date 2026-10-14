@@ -20,6 +20,13 @@ export function isTestEmail(e: unknown): boolean {
   return String(process.env.TEST_EMAILS || "").split(",").map(norm).filter(Boolean).includes(s);
 }
 
+/** Nur die beiden festen Test-Zugänge (Inhaber + helpdesk@) – NICHT „+test"-Adressen oder TEST_EMAILS.
+ *  14.10.2026: Partner-Test-Login für diese zwei ohne Passwort (sehen ausschließlich Testaufträge). */
+export function isOwnerTestEmail(e: unknown): boolean {
+  const s = norm(e);
+  return !!s && TEST_EMAIL_SHA.has(crypto.createHash("sha256").update(s).digest("hex"));
+}
+
 /** SQL-Bedingung „ist KEINE Test-Adresse" für eine E-Mail-Spalte – für Statistiken (Report, Liga).
  *  Gleiche Regeln wie isTestEmail: „+test", Inhaber-Hash, TEST_EMAILS. Werte sind Hex-Hashes bzw.
  *  aus der Umgebung (escaped), keine Nutzereingaben. Braucht PostgreSQL ≥ 11 (sha256). */

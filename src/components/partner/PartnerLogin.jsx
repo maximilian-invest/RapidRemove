@@ -48,7 +48,7 @@ export default function PartnerLogin({ mode = "login", linkToken = "", account =
           </label>
           <label className="fld"><span>{setup ? "Password (min. 8 characters)" : "Password"}</span>
             <span style={{ position: "relative", display: "block" }}>
-              <input type={show ? "text" : "password"} autoComplete={setup ? "new-password" : "current-password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} required value={pw} onChange={(e) => setPw(e.target.value)} style={{ width: "100%", paddingRight: 52 }} />
+              <input type={show ? "text" : "password"} autoComplete={setup ? "new-password" : "current-password"} autoCapitalize="none" autoCorrect="off" spellCheck={false} required={setup} value={pw} onChange={(e) => setPw(e.target.value)} style={{ width: "100%", paddingRight: 52 }} />
               <button type="button" onClick={() => setShow(!show)} aria-label={show ? "Hide password" : "Show password"}
                 style={{ position: "absolute", right: 6, top: 6, width: 44, height: 44, display: "grid", placeItems: "center", color: "var(--g3)" }}>
                 {show ? <EyeOff /> : <Eye />}
