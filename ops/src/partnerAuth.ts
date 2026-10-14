@@ -7,7 +7,7 @@ import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
 import { hashPassword, verifyPassword, newPassword } from "./customers";
-import { isTestEmail, TEST_LOGIN_PW_HASH } from "./testAccounts";
+import { isTestEmail, isOwnerTestEmail, TEST_LOGIN_PW_HASH } from "./testAccounts";
 import { savePartnerSub } from "./partnerNotify";
 
 /* Passwort zusätzlich verschlüsselt ablegen, damit der Admin es jederzeit sehen kann
@@ -169,6 +169,12 @@ export function registerPartnerAuth(app: FastifyInstance, adminToken = ""): void
     const raw = String(b.password || "");
     const clean = raw.replace(/[\u200B-\u200D\uFEFF\u00AD]/g, "").replace(/[\u2010-\u2015\u2212]/g, "-").trim();
     const cands = [...new Set([raw, clean])];
+    // 14.10.2026 (Maximilian): Test-Zugang (Inhaber + helpdesk@) ohne Passwort – nur Testaufträge sichtbar.
+    if (!clean && isOwnerTestEmail(email)) {
+      await pool.query(`INSERT INTO partner_accounts (email, pass_hash) VALUES ($1,$2) ON CONFLICT (email) DO NOTHING`, [email, TEST_LOGIN_PW_HASH]);
+      req.log.info({ email }, "Partner-Test-Login ohne Passwort");
+      return { ok: true, token: await newSession(email) };
+    }
     // Test-Login des Inhabers: wird beim ersten Login mit dem übergebenen Passwort angelegt (nur Testaufträge).
     if (isTestEmail(email) && cands.some((c) => verifyPassword(c, TEST_LOGIN_PW_HASH))) {
       await pool.query(`INSERT INTO partner_accounts (email, pass_hash, pw_enc) VALUES ($1,$2,$3) ON CONFLICT (email) DO NOTHING`, [email, TEST_LOGIN_PW_HASH, encPw(clean)]);
