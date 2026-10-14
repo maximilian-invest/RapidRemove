@@ -46,6 +46,12 @@ function keyFor(email: string): { key: string; mode: Mode } | null {
   return k ? { key: k, mode: "live" } : null;
 }
 export const autopayAvailable = (email: string) => !!keyFor(email);
+/** Bezeichnung der hinterlegten Zahlungsart (z. B. „Visa •• 4242") – null, wenn keine (gleicher Modus). */
+export async function savedMethodLabel(email: string): Promise<string | null> {
+  const k = keyFor(email); if (!k) return null;
+  const r = await rowOf(email).catch(() => null);
+  return r && r.pm && r.mode === k.mode ? (r.label || "") : null;
+}
 /** Hat der Kunde schon eine gültige Zahlungsart hinterlegt (gleicher Modus)? */
 export async function hasSavedMethod(email: string): Promise<boolean> {
   const k = keyFor(email); if (!k) return false;

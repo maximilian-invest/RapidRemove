@@ -15,7 +15,38 @@ export interface AuftragsbestaetigungProps {
   payGate?: boolean;
   /** Profil-Löschung (Text der Dashboard-Box ohne „jede Bewertung") */
   profile?: boolean;
+  /** Zahlungsart schon hinterlegt (Bezeichnung, z. B. „Visa •• 4242", oder "" ohne Bezeichnung) → Hinweis auf automatische Abbuchung */
+  savedPm?: string;
 }
+
+/** Einleitung, wenn erst die Zahlungsart fehlt: NICHT „wir beginnen umgehend" (14.10.2026). [vor, fett, nach] */
+const GATE_INTRO: Record<string, [string, string, string]> = {
+  de: ["vielen Dank für Ihren Auftrag. ", "Wir starten, sobald Sie in Ihrem Dashboard eine Zahlungsart hinterlegt haben", "."],
+  en: ["thank you for your order. ", "We start as soon as you've added a payment method in your dashboard", "."],
+  es: ["gracias por tu pedido. ", "Empezamos en cuanto añadas un método de pago en tu panel", "."],
+  fr: ["merci pour ta commande. ", "Nous commençons dès que tu as ajouté un moyen de paiement dans ton espace client", "."],
+  it: ["grazie per il tuo ordine. ", "Iniziamo non appena aggiungi un metodo di pagamento nella dashboard", "."],
+  nl: ["bedankt voor uw opdracht. ", "We starten zodra u in uw dashboard een betaalmethode heeft toegevoegd", "."],
+  pt: ["obrigado pela tua encomenda. ", "Começamos assim que adicionares um método de pagamento no teu painel", "."],
+  ja: ["ご注文ありがとうございます。", "ダッシュボードでお支払い方法をご登録いただき次第、作業を開始します", "。"],
+  sv: ["tack för din beställning. ", "Vi börjar så snart du har lagt till en betalningsmetod i din översikt", "."],
+  da: ["tak for din ordre. ", "Vi går i gang, så snart du har tilføjet en betalingsmetode i dit dashboard", "."],
+  no: ["takk for bestillingen. ", "Vi starter så snart du har lagt til en betalingsmetode i dashbordet ditt", "."],
+};
+/** Zahlungsart schon hinterlegt: [Titel, Text mit {pm}] */
+const SAVED_PM: Record<string, [string, string]> = {
+  de: ["Zahlungsart hinterlegt", "Ihre hinterlegte Zahlungsart{pm} wird automatisch belastet – erst wenn Ihr Profil tatsächlich gelöscht ist. Vorher zahlen Sie nichts."],
+  en: ["Payment method on file", "Your saved payment method{pm} is charged automatically – only once your profile has actually been removed. Nothing before that."],
+  es: ["Método de pago guardado", "Tu método de pago guardado{pm} se cobra automáticamente, solo cuando tu perfil se haya eliminado de verdad. Antes no pagas nada."],
+  fr: ["Moyen de paiement enregistré", "Ton moyen de paiement enregistré{pm} est débité automatiquement – uniquement une fois ton profil réellement supprimé. Rien avant."],
+  it: ["Metodo di pagamento salvato", "Il metodo di pagamento salvato{pm} viene addebitato automaticamente – solo quando il profilo è stato davvero rimosso. Prima non paghi nulla."],
+  nl: ["Betaalmethode opgeslagen", "Uw opgeslagen betaalmethode{pm} wordt automatisch belast – pas als uw profiel echt is verwijderd. Daarvoor betaalt u niets."],
+  pt: ["Método de pagamento guardado", "O teu método de pagamento guardado{pm} é cobrado automaticamente – só quando o teu perfil for realmente removido. Antes disso não pagas nada."],
+  ja: ["お支払い方法は登録済みです", "登録済みのお支払い方法{pm}には、プロフィールが実際に削除された後に自動で請求されます。それまでは一切かかりません。"],
+  sv: ["Betalningsmetod sparad", "Din sparade betalningsmetod{pm} debiteras automatiskt – först när din profil faktiskt har tagits bort. Inget innan dess."],
+  da: ["Betalingsmetode gemt", "Din gemte betalingsmetode{pm} trækkes automatisk – først når din profil faktisk er fjernet. Intet før."],
+  no: ["Betalingsmetode lagret", "Den lagrede betalingsmetoden din{pm} belastes automatisk – først når profilen faktisk er fjernet. Ingenting før det."],
+};
 
 /** Profil-Löschung mit automatischer Abbuchung: Zahlungsart hinterlegen, dann starten wir. */
 const PGP: Record<string, [string, string]> = {
@@ -171,12 +202,20 @@ export function subject(p: AuftragsbestaetigungProps = {}): string {
   return (T[p.lang || "de"] || T.de).subject;
 }
 
-export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate, profile }: AuftragsbestaetigungProps = {}) {
+export default function Auftragsbestaetigung({ lang = "de", anrede, dash, payGate, profile, savedPm }: AuftragsbestaetigungProps = {}) {
   const t = T[lang] || T.de;
   return (
-    <EmailShell preview={t.preview} title={t.title} lang={lang}>
+    <EmailShell preview={payGate ? (GATE_INTRO[lang] || GATE_INTRO.en)[1] + "." : t.preview} title={t.title} lang={lang}>
       <P><strong>{anrede || t.greeting}</strong></P>
-      <P>{t.intro}<strong>{t.introBold}</strong>{t.introRest}</P>
+      {payGate
+        ? <P>{(GATE_INTRO[lang] || GATE_INTRO.en)[0]}<strong>{(GATE_INTRO[lang] || GATE_INTRO.en)[1]}</strong>{(GATE_INTRO[lang] || GATE_INTRO.en)[2]}</P>
+        : <P>{t.intro}<strong>{t.introBold}</strong>{t.introRest}</P>}
+      {!payGate && savedPm !== undefined ? (
+        <NoteBox>
+          <span style={{ color: brand.tintText, fontWeight: 700 }}>{(SAVED_PM[lang] || SAVED_PM.en)[0]}</span><br />
+          {(SAVED_PM[lang] || SAVED_PM.en)[1].replace("{pm}", savedPm ? ` (${savedPm})` : "")}
+        </NoteBox>
+      ) : null}
       {payGate ? (
         <NoteBox>
           <span style={{ color: brand.tintText, fontWeight: 700 }}>{(PGP[lang] || PGP.en)[0]}</span><br />

@@ -28,7 +28,7 @@ import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
 import { registerOrderAddRoutes, registerPriceEditRoute } from "./orderAdd";
 import { startPgRemindWorker, pgNextFor } from "./pgRemind";
-import { registerAutopayRoutes, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
+import { registerAutopayRoutes, savedMethodLabel, payGateNeeded, retryTick, autopayAvailable, hasSavedMethod, chargeProfileOrder } from "./autopay";
 import { dueDateText } from "./emails/dueText";
 import { payoutTick } from "./payouts";
 import { initPartnerRegistry } from "./partnerRegistry";
@@ -488,6 +488,8 @@ app.post("/order", async (req, reply) => {
   const profGate = profAuto ? !(await hasSavedMethod(email).catch(() => false)) : false;
   if (profAuto) (b as Record<string, unknown>).payMethod = "auto";
   if (profGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
+  // Zahlungsart schon hinterlegt → in der Bestätigung nennen („wird nach der Löschung automatisch abgebucht").
+  const profPm = profAuto && !profGate ? await savedMethodLabel(email).catch(() => null) : null;
   // Gründe je Bewertung (10/2026): Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an → erst dann Start.
   const reasonsGate = isReviews && reviewItems.length > 0 && !!email;
   if (reasonsGate) (b as Record<string, unknown>).reasons = reasonsGateNew();
@@ -553,7 +555,7 @@ app.post("/order", async (req, reply) => {
   }
   const props = isReviews
     ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
-    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}) };
+    : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}), ...(profAuto && !profGate ? { savedPm: profPm || "" } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 
   const result = { ok: true, customer: false, notify: false, saved: false, saveError: "" };
