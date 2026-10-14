@@ -14,6 +14,7 @@ import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
 import PayoutsScreen from "./Payouts";
 import { PartnersScreen, RoutesBlock } from "./Partners";
+import PricingScreen from "./Pricing";
 
 /* ---------------- Übersicht ---------------- */
 export function Overview({ ctx }) {
@@ -185,9 +186,11 @@ export function Account({ ctx }) {
   if (moreSub === "checked") return <ChecksScreen ctx={ctx} />;
   if (moreSub === "activity") return <GlobalActivityScreen ctx={ctx} />;
   if (moreSub === "chats") return <SiteChatsScreen ctx={ctx} />;
+  if (moreSub === "pricing") return <PricingScreen ctx={ctx} />;
   const tiles = [
     [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
+    [Banknote, "Preise & Bulk", () => setMoreSub("pricing")],
     [ActIcon, "Aktivitäten", () => setMoreSub("activity")],
     [MessageCircle, "Website-Chats", () => setMoreSub("chats")],
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin/alt"; }],

@@ -264,7 +264,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
   // Auftrag hat schon Aufgaben → Nachbestellung („Review added" statt „New order").
   const had = orderId ? Number((await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0]?.n || 0) > 0 : false;
-  for (const it of items.slice(0, 60)) {
+  for (const it of items.slice(0, 5000)) { // Bulk-Uploads: bis zu 5.000 Bewertungen je Auftrag
     const url = httpUrl(it.url);
     const name = clip(it.name, 120);
     // Kunde hat statt eines Links den Bewertungstext ins Link-Feld kopiert → als Text übernehmen.
@@ -275,7 +275,9 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     // Partner: vorgegeben (Admin/Zuteilung) – sonst Zuteilung der Leistung bzw. erster aktiver Partner. Preis = Partnerpreis der Leistung.
     const svc: ServiceId = serviceOf({ kind, sw: it.sw, nt: it.nt, old: it.old });
     const pid = partnerIdIn ?? (await defaultPartnerFor(svc));
-    const price = Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : await partnerPrice(pid, svc);
+    // Partnerpreis: fest je Kunde (pUsd, Admin → Preise) > vorgegeben (price) > Preis der Leistung beim Partner.
+    const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : await partnerPrice(pid, svc);
+    const cust = clip(it.business, 160) || customer; // Bulk (gemischte Profile): Partner-Board gruppiert nach Profilname der Bewertung
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {
       const ex = await pool.query(`SELECT * FROM partner_tasks WHERE order_id IS NULL AND item_key=$1 LIMIT 1`, [key]);
@@ -286,7 +288,7 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
-      [orderId, key, url || null, name || null, text || null, kind, price, customer, test,
+      [orderId, key, url || null, name || null, text || null, kind, price, cust, test,
         Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null,
         it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null, pid],
     );
@@ -341,7 +343,7 @@ export async function partnerAutoSend(orderId: string, customer: string, items: 
   }
   const rows: Row[] = [];
   for (const [pid, list] of groups) rows.push(...(await insertPartnerTasks(orderId, clip(customer, 160) || null, list, pid)));
-  if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board", detail: rows.map((t) => `${t.code} (${t.kind}, $${num(t.price_usd)})`).join(" · ") }).catch(() => {});
+  if (rows.length) await insertEvent({ orderId, type: "note", title: "Automatisch ans Partner-Board", detail: rows.slice(0, 40).map((t) => `${t.code} (${t.kind}, $${num(t.price_usd)})`).join(" · ") + (rows.length > 40 ? ` · … +${rows.length - 40} weitere` : "") }).catch(() => {});
   return rows.length;
 }
 

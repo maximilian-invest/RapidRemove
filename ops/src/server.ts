@@ -23,6 +23,8 @@ import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeRev
 import { registerCustNewOrder } from "./custNewOrder";
 import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
+import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
+import { registerPricingRoutes } from "./bulkPricing";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
@@ -200,7 +202,7 @@ registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
-registerCustNewOrder(app); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
+registerCustNewOrder(app); registerCustBulk(app); registerPricingRoutes(app, ADMIN_TOKEN); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
@@ -366,7 +368,7 @@ app.get("/tp-count", async () => {
 
 // Bestellung aus dem Wizard: bestehende Auftragsbestätigung an den Kunden
 // + interne Benachrichtigung an das Postfach. Kein Stripe nötig.
-app.post("/order", async (req, reply) => {
+app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // groß: Bulk-Uploads (bis 5.000 Bewertungen, nur intern)
   const b = (req.body || {}) as Record<string, unknown>;
   const email = String(b.email ?? "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return reply.code(400).send({ ok: false, error: "invalid email" });
@@ -391,11 +393,16 @@ app.post("/order", async (req, reply) => {
   // DACH). Bekommt eine EIGENE Auftragsbestätigung, weil die die Abrechnungs-
   // regeln festhält (nur gelöschte Bewertungen zahlen, fällig am Löschtag).
   const isReviews = service === "reviews";
+  // Bulk-Upload / Kundenpreise (custBulk.ts, custNewOrder.ts): nur interne Aufrufe mit Geheim-Header – nie vom Browser.
+  const internal = req.headers["x-rr-bulk"] === BULK_INTERNAL;
+  const bulk = internal && b.bulk === true;
+  const pricing = internal && b.pricing && typeof b.pricing === "object" ? (b.pricing as { cur?: string; price?: number; partnerUsd?: number | null }) : null;
+  if (!internal) { delete (b as Record<string, unknown>).bulk; delete (b as Record<string, unknown>).pricing; }
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number; business?: string; cp?: number; pUsd?: number };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
-    ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
+    ? (b.reviewItems as unknown[]).slice(0, bulk ? 5000 : 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
         const url = httpUrl(o.url, 400);
         const nm = clip(o.name, 80);
@@ -405,6 +412,8 @@ app.post("/order", async (req, reply) => {
         // Für die Partner-Statistik: Sterne + Alter (aus der Google-Suche im Wizard, sonst leer)
         const rt = Math.round(Number(o.rating)); const dy = Math.round(Number(o.days));
         Object.assign(flags, rt >= 1 && rt <= 5 ? { rating: rt } : {}, Number.isFinite(dy) && dy >= 0 && dy < 20000 ? { days: dy } : {});
+        const bz = bulk ? clip(o.business, 200) : ""; // Bulk: Profilname je Bewertung (gemischte Profile) → Partner-Board gruppiert danach
+        if (bz) Object.assign(flags, { business: bz });
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as ReviewItem;
         if (nm && tx) return { name: nm, text: tx, ...flags } as ReviewItem;
         return null;
@@ -434,7 +443,9 @@ app.post("/order", async (req, reply) => {
       for (const r of prev.rows) for (const it of (Array.isArray(r.items) ? r.items : []) as ReviewItem[]) {
         seen.push({ u: normU(it.url), nt: it.name && it.text ? normT(it.name) + "|" + normT(it.text).slice(0, 80) : "", oid: r.id });
       }
-      const hitOf = (it: ReviewItem) => seen.find((x) => (it.url && x.u && x.u === normU(it.url)) || (it.name && it.text && x.nt && x.nt === normT(it.name) + "|" + normT(it.text).slice(0, 80)));
+      const byU = new Map<string, string>(), byNt = new Map<string, string>();
+      for (const x of seen) { if (x.u && !byU.has(x.u)) byU.set(x.u, x.oid); if (x.nt && !byNt.has(x.nt)) byNt.set(x.nt, x.oid); }
+      const hitOf = (it: ReviewItem) => { const o = (it.url && byU.get(normU(it.url))) || (it.name && it.text && byNt.get(normT(it.name) + "|" + normT(it.text).slice(0, 80))); return o ? { oid: o } : undefined; };
       const keep: ReviewItem[] = [];
       for (const it of reviewItems) { const h = hitOf(it); if (h) dupSkipped.push({ name: it.name || it.url || "", orderId: h.oid }); else keep.push(it); }
       if (dupSkipped.length && !keep.length) {
@@ -455,7 +466,7 @@ app.post("/order", async (req, reply) => {
   // 4–5-Sterne-Bewertungen beauftragt → erst Inhaber-Nachweis (Dashboard-Upload, KI prüft), dann normaler Ablauf.
   // Nur die 4–5-Sterne-Bewertungen warten auf den Nachweis (verify.keys); die übrigen starten nach der Zahlungsart sofort.
   // Einmal pro Profil: hat derselbe Kunde (E-Mail) für dasselbe Profil schon einen freigegebenen Nachweis, gilt der weiter.
-  let verifyNeeded = isReviews && needsVerify(reviewItems);
+  let verifyNeeded = isReviews && !bulk && needsVerify(reviewItems); // Bulk: kein Inhaber-Nachweis je Profil (Reseller, gemischte Profile)
   if (verifyNeeded) {
     const vKeys = reviewItems.filter((it) => Number(it.rating) >= 4).map((it) => it.url || `${it.name || ""}|${it.text || ""}`);
     let reuse: string | null = null;
@@ -491,7 +502,7 @@ app.post("/order", async (req, reply) => {
   // Zahlungsart schon hinterlegt → in der Bestätigung nennen („wird nach der Löschung automatisch abgebucht").
   const profPm = profAuto && !profGate ? await savedMethodLabel(email).catch(() => null) : null;
   // Gründe je Bewertung (10/2026): Kunde gibt im Dashboard je Bewertung den Richtlinien-Verstoß an → erst dann Start.
-  const reasonsGate = isReviews && reviewItems.length > 0 && !!email;
+  const reasonsGate = isReviews && !bulk && reviewItems.length > 0 && !!email; // Bulk: keine Gründe je Bewertung (Zusicherung per Häkchen beim Upload)
   if (reasonsGate) (b as Record<string, unknown>).reasons = reasonsGateNew();
   // Zusicherung des Kunden: „Bewertungen verstoßen nach bestem Wissen gegen die Google-Richtlinien" (Checkbox im Bestellprozess).
   // Nachweis beim Auftrag: Zeitpunkt, IP, Gerät, Sprache, Textversion. Fehlt sie (z. B. alter Browser-Stand), wird das vermerkt.
@@ -507,6 +518,18 @@ app.post("/order", async (req, reply) => {
     // Bewertung bekannt (Sterne aus der Google-Suche/Link-Auflösung), aber ohne Text → immer Software (300), auch wenn der Browser es nicht markiert hat
     if (!it.nt && !it.text && it.rating && it.rating >= 1 && it.rating <= 5) { it.nt = true; delete it.old; }
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
+  }
+  // Pauschalpreis (Staffel): fester Preis je Bewertung (cp) – Software-Fälle ausgenommen (Spezialpreis wie bisher).
+  // Partnerpreis je Kunde (pUsd) → Partner-Board rechnet damit ab. Währung = Währung der Staffel (intern „US" = USD).
+  if (isReviews && pricing) {
+    const price = Math.round(Number(pricing.price) * 100) / 100, pu = Number(pricing.partnerUsd);
+    for (const it of reviewItems) {
+      if (it.nt || it.sw) continue;
+      if (price > 0 && price < 100000) it.cp = price;
+      if (Number.isFinite(pu) && pu > 0) it.pUsd = Math.round(pu * 100) / 100;
+    }
+    if (pricing.cur === "usd") (b as Record<string, unknown>).country = "US";
+    else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
   }
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
@@ -734,7 +757,7 @@ app.post("/order", async (req, reply) => {
       // Automatische Screenshots (Hintergrund, blockiert die Antwort nicht) → Admin:
       // Bewertungs-Bestellung = jede Bewertung + Google-Profil; Profil-Bestellung =
       // Google-Profil (Zustand vor der Löschung); Presse = nichts.
-      queueOrderShots(id, service, b, (o, m) => app.log.info(o, m));
+      if (!bulk) queueOrderShots(id, service, b, (o, m) => app.log.info(o, m)); // Bulk: keine Screenshots (hunderte Bilder, Kontingent)
       // Serverseitiges InitiateCheckout: Auftrag erteilt, Profil freigegeben.
       if (capiEnabled() && b.consentMarketing === true && await claimCapiSend("orders", "capi_checkout_at", id)) {
         const r = await capiSend({

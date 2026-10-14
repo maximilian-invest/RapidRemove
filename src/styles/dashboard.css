@@ -873,3 +873,47 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .no-err{font-size:13px;font-weight:700;color:var(--danger);margin:-4px 0 10px}
 .rra .vf.no .fl-foot .secure{margin:0 0 12px}
 .rra .ch-no{background:var(--primary);color:#fff}
+
+/* Neue Bestellung: Auswahl von Hand / Bulk-Upload + Bulk-Upload (10/2026) */
+.rra .bu-modes{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.rra .bu-modes .ar-row{padding:16px 14px}
+.rra .bu-modes .chev{width:18px;height:18px;color:var(--g3);flex:none}
+.rra .bu-back{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--g3);margin:0 0 6px;padding:0;background:none}
+.rra .bu-back svg{width:15px;height:15px}
+.rra .bu-drop{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:22px 16px;border:2px dashed #d4d4d4;border-radius:18px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s;margin-top:4px}
+.rra .bu-drop:hover,.rra .bu-drop.on{border-color:var(--primary);background:var(--orange-50)}
+.rra .bu-drop .ico{width:44px;height:44px;border-radius:14px;background:var(--orange-50);display:grid;place-items:center;margin-bottom:4px}
+.rra .bu-drop .ico svg{width:21px;height:21px;color:var(--primary)}
+.rra .bu-drop b{font-size:15px}
+.rra .bu-drop span{font-size:12.5px;color:var(--g3)}
+.rra .bu-files{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.rra .bu-f{display:inline-flex;align-items:center;gap:6px;max-width:100%;padding:6px 6px 6px 10px;border-radius:12px;background:var(--g1);font-size:13px;font-weight:600}
+.rra .bu-f svg{width:15px;height:15px;color:var(--g3);flex:none}
+.rra .bu-f em{font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.rra .bu-f button{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;background:none;flex:none}
+.rra .bu-lbl{font-size:13px;font-weight:700;margin:16px 0 6px}
+.rra .bu-ta{width:100%;box-sizing:border-box;border:2px solid var(--g2);border-radius:14px;padding:10px 12px;font:inherit;font-size:14px;resize:vertical;min-height:84px;background:#fff;color:var(--ink)}
+.rra .bu-ta:focus{outline:none;border-color:var(--ink)}
+.rra .bu-tiers{margin-top:16px;border-radius:16px;background:var(--g1);padding:6px 14px 8px}
+.rra .bu-th{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0 6px;font-size:13px}
+.rra .bu-th span{color:var(--g3);font-size:12px;text-align:right}
+.rra .bu-tr{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--g2);font-size:14px}
+.rra .bu-tr span{display:inline-flex;align-items:center;gap:6px;color:var(--g3)}
+.rra .bu-tr svg{width:15px;height:15px}
+.rra .bu-tr.on{margin:0 -10px;padding:9px 10px;border-radius:12px;background:#fff;border-top-color:transparent;box-shadow:0 0 0 2px var(--ink)}
+.rra .bu-tr.on span{color:var(--ink);font-weight:700}
+.rra .bu-notes{display:flex;flex-direction:column;gap:4px;margin:-6px 0 12px;font-size:13px;color:var(--g3)}
+.rra .bu-notes .bad{color:var(--danger)}
+.rra .bu-your{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:16px;background:var(--orange-50);color:var(--orange-800)}
+.rra .bu-your b{font-size:15px}
+.rra .bu-your span{font-size:14px;font-weight:600}
+.rra .bu-list{margin-top:14px;border-radius:16px;border:1px solid var(--g2);overflow:hidden}
+.rra .bu-it{padding:10px 14px;border-top:1px solid var(--g2)}
+.rra .bu-it:first-child{border-top:0}
+.rra .bu-it .t{display:flex;flex-direction:column;min-width:0}
+.rra .bu-it b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .bu-it span{font-size:12px;color:var(--g3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rra .bu-more{padding:9px 14px;border-top:1px solid var(--g2);font-size:13px;font-weight:600;color:var(--g3)}
+.rra .bu-soft{font-size:12px;line-height:1.4;color:var(--g3);margin:0 0 10px;text-align:left;width:100%}
+.rra .bu-cons{margin-top:18px;padding-top:14px;border-top:1px solid var(--g2)}
+.rra .bu-cons .secure{margin-top:4px}

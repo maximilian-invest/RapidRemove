@@ -628,8 +628,32 @@ function Top({ phs, fill, onClose, hide }) {
    Danach öffnet sich der Start-Ablauf (Grund je neuer Bewertung + Bestätigung, ggf. Zahlungsart) – die Zusicherung kommt dort. */
 /* Neue Bestellung im Dashboard (10/2026): Profil suchen → Bewertungen (1–3 ★) wählen → AGB/Beginn bestätigen → bestellen.
    Danach öffnet sich der Start-Ablauf (Grund je Bewertung; Zahlungsart nur, wenn noch keine hinterlegt ist). */
-function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, presetQ }) {
-  const [step, setStep] = React.useState("search"); // search | pick | done
+/* Preisstaffel (Bulk): alle Stufen, die passende hervorgehoben – der Kunde sieht transparent, in welche Stufe er fällt. */
+function TierTable({ pricing, tier }) {
+  let from = 1;
+  const nf = (v) => Number(v).toLocaleString(LOC);
+  return (
+    <div className="bu-tiers">
+      <div className="bu-th"><b>{T("buTiersH")}</b><span>{pricing.custom ? T("buCustom") : T("buReviews")}</span></div>
+      {pricing.tiers.map((t, i) => {
+        const f = from; if (t.upTo) from = t.upTo + 1;
+        const on = !!tier && tier.idx === i;
+        return (
+          <div key={i} className={"bu-tr" + (on ? " on" : "")}>
+            <span>{on ? <Check /> : null}{t.upTo ? T("buUpTo", { to: nf(t.upTo) }) : T("buFrom", { from: nf(f) })}</span>
+            <b>{money(t.price, pricing.cur)}</b>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || "").split(",")[1] || ""); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
+
+function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, presetQ, modes }) {
+  const both = !!(modes && modes.hand && modes.bulk);
+  const first = () => (presetQ ? "search" : both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "search");
+  const [step, setStep] = React.useState("search"); // mode | search | pick | bulk | bpre | done
   const [q, setQ] = React.useState("");
   const [res, setRes] = React.useState(null); // Suchtreffer
   const [busy, setBusy] = React.useState(false);
@@ -642,6 +666,17 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
   const inRef = React.useRef(null);
+  // Bulk-Upload
+  const [files, setFiles] = React.useState([]);
+  const [paste, setPaste] = React.useState("");
+  const [binfo, setBinfo] = React.useState(null); // { pricing, maxFileMb, maxItems }
+  const [prev, setPrev] = React.useState(null);   // Vorschau vom Server
+  const [pol, setPol] = React.useState(false);
+  const [drag, setDrag] = React.useState(false);
+  const [kind, setKind] = React.useState("hand"); // hand | bulk (für Fortschrittsbalken + Abschluss)
+  const [doneN, setDoneN] = React.useState(0);
+  const fileRef = React.useRef(null);
+  const consRef = React.useRef(null);
   // Kein autoFocus: am Handy öffnet sonst die Tastatur, während das Blatt noch von unten hereinfährt –
   // iOS scrollt dann zum (noch unsichtbaren) Feld und man sieht nur eine weiße Fläche. Fokus nur am Desktop, nach der Animation.
   React.useEffect(() => {
@@ -655,8 +690,31 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
     if (!open) return;
     // offene Tastatur (z. B. aus dem Chat) schließen, damit das Blatt nicht verschoben einfährt
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) { /* */ }
-    setStep("search"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    const f0 = first();
+    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setQ(presetQ || ""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0);
+    if (modes && modes.bulk) call("bulk/info", { token }).then(setBinfo).catch(() => setBinfo(null));
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  const addFiles = (list) => { const a = Array.from(list || []); if (a.length) setFiles((x) => [...x, ...a].slice(0, 10)); };
+  const bCheck = async () => {
+    setBusy(true);
+    try {
+      const fs = await Promise.all(files.map(async (f) => ({ name: f.name, b64: await fileB64(f) })));
+      const r = await call("bulk/parse", { token, files: fs, text: paste });
+      setPrev(r); setAgb(false); setFagg(false); setPol(false); setCErr(false); setStep("bpre");
+    } catch (e) { showToast(e.code === "disabled" ? T("noErr") : T("buErr"), true); }
+    setBusy(false);
+  };
+  const bOrder = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!agb || !fagg || !pol) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
+    setBusy(true);
+    try {
+      const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, policyV: POLICY_V, items: prev.items });
+      setOid(r.orderId); setDoneN(r.n); setStep("done");
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
+    setBusy(false);
+  };
   const search = async (qq) => {
     const v = String(qq ?? q).trim(); if (!v) return;
     setBusy(true); setRes(null);
@@ -703,11 +761,100 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
       {open ? (
         <div className="fl-card">
           <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
-            <div className="fl-bar sf-bar">{["search", "pick", "done"].map((k, i) => <i key={k}><b style={{ width: ["search", "pick", "done"].indexOf(step) >= i ? "100%" : "0%" }} /></i>)}</div></div>
-          {step === "search" ? (
+            {(() => { const seq = [...(both ? ["mode"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : ["search", "pick"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
+          {step === "mode" ? (
+            <div className="fl-body">
+              <div className="fl-k">{T("noK")}</div>
+              <h2>{T("noModeH")}</h2>
+              <p>{T("noModeP")}</p>
+              <div className="ar-list bu-modes">
+                <button type="button" className="ar-row no-pl" onClick={() => { setKind("hand"); setStep("search"); }}>
+                  <span className="ico"><ListChecks /></span><span className="t"><span className="a">{T("noHand")}</span><span className="x">{T("noHandS")}</span></span><ChevronRight className="chev" />
+                </button>
+                <button type="button" className="ar-row no-pl" onClick={() => { setKind("bulk"); setStep("bulk"); }}>
+                  <span className="ico"><Upload /></span><span className="t"><span className="a">{T("noBulk")}</span><span className="x">{T("noBulkS")}</span></span><ChevronRight className="chev" />
+                </button>
+              </div>
+            </div>
+          ) : step === "bulk" ? (
             <>
               <div className="fl-body">
-                <div className="fl-k">{T("noK")}</div>
+                {both ? <button type="button" className="bu-back" onClick={() => setStep("mode")}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
+                <h2>{T("buH1")}</h2>
+                <p>{T("buP1")}</p>
+                <label className={"bu-drop" + (drag ? " on" : "")} onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={(e) => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer && e.dataTransfer.files); }}>
+                  <input ref={fileRef} type="file" multiple hidden accept=".csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods,.numbers,.docx,.doc,.odt,.pages,.rtf,.pdf,.pptx,.html,.htm,.json,.md,text/*" onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }} />
+                  <span className="ico"><Upload /></span>
+                  <b>{T("buDrop")}</b>
+                  <span>{T("buDropS", { mb: (binfo && binfo.maxFileMb) || 25 })}</span>
+                </label>
+                {files.length ? (
+                  <div className="bu-files">
+                    {files.map((f, i) => <span key={i} className="bu-f"><FileText /><em>{f.name}</em><button type="button" aria-label="Remove" onClick={() => setFiles((x) => x.filter((_, j) => j !== i))}><X /></button></span>)}
+                  </div>
+                ) : null}
+                <div className="bu-lbl">{T("buPaste")}</div>
+                <textarea className="bu-ta" rows={4} value={paste} onChange={(e) => setPaste(e.target.value)} placeholder={T("buPastePh")} />
+                {binfo && binfo.pricing ? <TierTable pricing={binfo.pricing} /> : null}
+              </div>
+              <div className="fl-foot pgf">
+                <button className="cta" disabled={busy || (!files.length && !paste.trim())} onClick={bCheck}>{busy ? <><Loader className="spin" />{T("buReading")}</> : <><Search />{T("buCheck")}</>}</button>
+              </div>
+            </>
+          ) : step === "bpre" && prev ? (
+            <>
+              <div className="fl-body">
+                <button type="button" className="no-chg" onClick={() => setStep("bulk")}><Upload /><span><b>{files.map((f) => f.name).join(", ") || T("buPasted")}</b><span>{prev.n ? T("buFoundS") : T("buNone")}</span></span><em>{T("buBack")}</em></button>
+                <h2>{prev.n ? T("buFound", { n: prev.n }) : T("buFound", { n: 0 })}</h2>
+                <div className="bu-notes">
+                  {prev.already ? <span>{T("buAlready", { n: prev.already })}</span> : null}
+                  {prev.dupInFile ? <span>{T("buDup", { n: prev.dupInFile })}</span> : null}
+                  {prev.notReviewN ? <span>{T("buNotRev", { n: prev.notReviewN })}</span> : null}
+                  {prev.noLinkRows ? <span>{T("buNoLink", { n: prev.noLinkRows })}</span> : null}
+                  {prev.shortN ? <span>{T("buShort", { n: prev.shortN })}</span> : null}
+                  {(prev.files || []).filter((f) => f.error).map((f, i) => <span key={i} className="bad">{T(f.error === "image" ? "buFileImg" : f.error === "too_big" ? "buFileBig" : "buFileErr", { name: f.name, mb: (binfo && binfo.maxFileMb) || 25 })}</span>)}
+                  {prev.truncated ? <span className="bad">{T("buTrunc", { max: ((binfo && binfo.maxItems) || 5000).toLocaleString(LOC) })}</span> : null}
+                </div>
+                {!prev.n ? <div className="note">{T("buNone")}</div> : null}
+                {prev.n && prev.pricing && prev.tier ? (
+                  <>
+                    <div className="bu-your"><b>{T("buYourTier", { range: prev.tier.to ? `${prev.tier.from.toLocaleString(LOC)}–${prev.tier.to.toLocaleString(LOC)}` : `${prev.tier.from.toLocaleString(LOC)}+` })}</b><span>{net(T("buPer", { price: money(prev.tier.price, prev.pricing.cur) }))}</span></div>
+                    <TierTable pricing={prev.pricing} tier={prev.tier} />
+                  </>
+                ) : prev.n ? <div className="note">{T("buListPrice")}</div> : null}
+                {prev.n ? (
+                  <div className="bu-list">
+                    {prev.items.slice(0, 8).map((it, i) => (
+                      <div key={i} className="bu-it">
+                        <span className="t"><b>{it.business || it.name || (it.url ? it.url.replace(/^https?:\/\/(www\.)?/, "").split(/[/?]/)[0] : "")}</b><span>{it.url ? it.url.replace(/^https?:\/\/(www\.)?/, "") : `${it.name} — “${it.text}”`}</span></span>
+                      </div>
+                    ))}
+                    {prev.n > 8 ? <div className="bu-more">{T("buMore", { n: (prev.n - 8).toLocaleString(LOC) })}</div> : null}
+                  </div>
+                ) : null}
+                {prev.n ? (
+                  <div className="bu-cons" ref={consRef}>
+                    <div className="bu-soft">{T("buSoft")}</div>
+                    <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
+                      <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
+                    <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    <PolicyConsent lang={LANG} checked={pol} error={cErr && !pol} className="no-pol"
+                      style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 10px", textAlign: "left", background: cErr && !pol ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
+                      onChange={(v) => { setPol(v); setCErr(false); }} />
+                    {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
+                  </div>
+                ) : null}
+              </div>
+              <div className="fl-foot pgf">
+                {prev.n && prev.tier && prev.pricing ? <div className="ar-max">{T("buMax", { amount: net(money(prev.tier.price * prev.n, prev.pricing.cur)), n: prev.n.toLocaleString(LOC) })}</div> : null}
+                {cErr ? <div className="no-err">{T("buConsErr")}</div> : null}
+                <button className="cta" disabled={!prev.n || busy} onClick={prev.n ? bOrder : () => setStep("bulk")}>{busy ? <Loader className="spin" /> : prev.n ? <Check /> : <ArrowLeft />}{prev.n ? T("buOrder", { n: prev.n.toLocaleString(LOC) }) : T("buBack")}</button>
+              </div>
+            </>
+          ) : step === "search" ? (
+            <>
+              <div className="fl-body">
+                {both ? <button type="button" className="bu-back" onClick={() => setStep("mode")}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
                 <h2>{T("noH1")}</h2>
                 <p>{T("noP1")}</p>
                 <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
@@ -777,8 +924,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
             <>
               <div className="fl-body">
                 <div className="fl-art sf-art"><img src={IMG.rocket} alt="" /></div>
-                <h2>{T("noDoneH")}</h2>
-                <p>{T("noDoneP")}</p>
+                <h2>{T(kind === "bulk" ? "buDoneH" : "noDoneH")}</h2>
+                <p>{kind === "bulk" ? T("buDoneP", { n: Number(doneN || 0).toLocaleString(LOC) }) : T("noDoneP")}</p>
               </div>
               <div className="fl-foot"><button className="cta" onClick={() => onDone(oid)}>{T("noDoneBtn")}<ArrowRight /></button></div>
             </>
@@ -918,6 +1065,7 @@ export default function CustomerDashboard() {
   const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
   const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
   const [noOn, setNoOn] = React.useState(false); // Neubestellung freigeschaltet (Test-Konten / Admin-Schalter)
+  const [noModes, setNoModes] = React.useState({ hand: false, bulk: false }); // von Hand (Profil-Suche) / Bulk-Upload
   // Direkt nach der Bestellung (#a=… bzw. ?from=order): erst Einrichtungs-Animation, dann Dashboard, 2 Sek. später „Zahlungsart hinterlegen".
   const [postOrder, setPostOrder] = React.useState(() => { try { return /(^|[#&])a=/.test(window.location.hash || "") || new URLSearchParams(window.location.search).get("from") === "order"; } catch (e) { return false; } });
   const [setupOn, setSetupOn] = React.useState(false);
@@ -978,7 +1126,7 @@ export default function CustomerDashboard() {
     } else setToken(store.get());
   }, []);
 
-  React.useEffect(() => { if (token) call("new-order/info", { token }).then((r) => setNoOn(!!r.enabled)).catch(() => setNoOn(false)); }, [token]);
+  React.useEffect(() => { if (token) call("new-order/info", { token }).then((r) => { setNoOn(!!r.enabled); setNoModes({ hand: !!r.hand, bulk: !!r.bulk }); }).catch(() => setNoOn(false)); }, [token]);
   const load = React.useCallback(async (t) => {
     if (!t) return;
     try {
@@ -1495,7 +1643,7 @@ export default function CustomerDashboard() {
               })}
             </div>
           ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
-          {noOn && !adminView ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+          {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -1519,7 +1667,7 @@ export default function CustomerDashboard() {
     return (
       <>
         <div className="ttl">{T("orders")}</div>
-        {noOn && !adminView ? <button className="ar-btn no-btn" style={{ marginTop: 0, marginBottom: 14 }} onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+        {noOn ? <button className="ar-btn no-btn" style={{ marginTop: 0, marginBottom: 14 }} onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         <div className="chips">
           {[["all", T("f_all")], ["open", T("f_open")], ["done", T("f_done")]].map(([k, t]) => (
             <button key={k} className={"chip" + (ofilter === k ? " on" : "")} onClick={() => setOfilter(k)}>{t}</button>
@@ -1888,7 +2036,7 @@ export default function CustomerDashboard() {
 
       <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
-      <NewOrderFlow open={noOpen} presetQ={noQ} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
+      <NewOrderFlow open={noOpen} presetQ={noQ} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
         onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
