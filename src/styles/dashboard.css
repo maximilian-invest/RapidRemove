@@ -917,3 +917,5 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .bu-soft{font-size:12px;line-height:1.4;color:var(--g3);margin:0 0 10px;text-align:left;width:100%}
 .rra .bu-cons{margin-top:18px;padding-top:14px;border-top:1px solid var(--g2)}
 .rra .bu-cons .secure{margin-top:4px}
+
+.rra .bu-tr.sw{border-top-style:dashed}

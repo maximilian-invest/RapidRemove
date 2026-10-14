@@ -8,6 +8,7 @@
  * schreiben (reviewsAccepted, reviewsSoftware, reviewsRemovedAll, reviewsPayments).
  * KEINE Partner-Daten nach außen.
  */
+import { custSetup } from "./bulkPricing";
 import crypto from "node:crypto";
 import { isTestEmail, TEST_LOGIN_PW_HASH } from "./testAccounts";
 import type { FastifyInstance } from "fastify";
@@ -491,9 +492,11 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else status = "new";
     const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
     const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
-    const price = cp || (special ? swPriceOf(it) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
+    // Kunden-Konditionen (Admin → Kunden & Preise): fester Software-Preis, auch wenn der Partner erst später „Software" feststellt.
+    const swp = cpOf({ cp: (it as { swp?: unknown }).swp });
+    const price = special && swp ? swp : cp || (special ? swPriceOf(it) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
-      cp,
+      cp: special && swp ? swp : cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
       reason: (it as { reason?: string }).reason || null, days: Number.isFinite(Number((it as { days?: unknown }).days)) && (it as { days?: unknown }).days !== null && (it as { days?: unknown }).days !== undefined ? Number((it as { days?: unknown }).days) : null,
       status, since: ps === "working" ? pt?.since || null : null,
@@ -709,7 +712,9 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const wiseBank = hasWise ? wiseBankFor(email) : []; // gleiches Konto wie in der Löschbestätigung (Rotation je Kunde)
     const ap = autopayHooks.info ? await autopayHooks.info(email).catch(() => null) : null;
     for (const o of d.orders as (OrderView & { rights?: { status: string; pay?: boolean } | null })[]) if (o.rights && o.rights.status === "pending") o.rights.pay = !!ap?.available && !ap?.saved;
-    return { ok: true, email, name: d.name, lang: d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
+    // Vom Admin angelegtes Dashboard ohne Auftrag: Name/Sprache aus den Stammdaten (Admin → Kunden & Preise).
+    const setup = !d.orders.length ? await custSetup(email).catch(() => null) : null;
+    return { ok: true, email, name: d.name || setup?.name || "", lang: d.orders.length ? d.lang : setup?.lang || d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */

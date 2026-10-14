@@ -13,7 +13,7 @@ import { pool } from "./db";
 import { customerSessionInfo, loadCustomerOrders, keyOf } from "./customers";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { isTestEmail } from "./testAccounts";
-import { dashNewOrderOn, pricingFor, tierFor } from "./bulkPricing";
+import { dashNewOrderOn, pricingFor, orderPricing, custSetup } from "./bulkPricing";
 import { bulkEnabled, BULK_INTERNAL } from "./custBulk";
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
@@ -104,6 +104,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     // Kundendaten aus dem Konto (letzter Auftrag).
     const cust = await loadCustomerOrders(email).catch(() => ({ name: "", lang, orders: [] as never[] }));
     const last = pool ? (await pool.query(`SELECT name, phone, company, country, raw->>'payPref' AS pp FROM orders WHERE lower(email)=$1 ORDER BY created_at DESC LIMIT 1`, [email]).catch(() => ({ rows: [] as Record<string, string | null>[] }))).rows[0] || {} : {};
+    const setup = await custSetup(email).catch(() => null); // vom Admin angelegtes Dashboard: Name für den ersten Auftrag
     const items = picks.map((r) => {
       const nt = !String(r.text || "").trim(), old = r.days > 28;
       return { ...(r.link ? { url: r.link } : {}), name: r.name, ...(r.text ? { text: r.text } : {}), ...(nt ? { nt: true } : old ? { old: true } : {}), rating: r.rating, ...(r.days >= 0 ? { days: r.days } : {}) };
@@ -111,7 +112,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const orderId = "RR-" + (100000 + crypto.randomInt(900000));
     const name = clip(p.name, 200);
     const payload: Record<string, unknown> = {
-      email, name: cust.name || last.name || "", phone: last.phone || "", company: name || last.company || "",
+      email, name: cust.name || last.name || setup?.name || "", phone: last.phone || "", company: name || last.company || "",
       service: "reviews", protection: "", orderId, lang, country: cc || last.country || "XX",
       profile: name, addr: clip(p.addr, 300), mapsUri: clip(p.mapsUri, 500), placeId, placeName: name, placeAddr: clip(p.addr, 300), profileCountry: cc,
       reviewItems: items, reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
@@ -121,10 +122,11 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard", landing: "/my-reviews",
     };
-    // Eigene Preisstaffel des Kunden (Admin → Preise) gilt auch für Bestellungen von Hand; Partnerpreis je Kunde ebenso.
+    // Eigene Staffel des Kunden (Admin → Kunden & Preise) gilt auch für Bestellungen von Hand (Standard-Staffel nur für Bulk);
+    // Partner-Konditionen des Kunden gelten immer.
     const pr = await pricingFor(email).catch(() => null);
-    if (pr && pr.source === "custom" && pr.tiers.length) { const t = tierFor(pr.tiers, items.length); payload.pricing = { cur: pr.cur, price: t.price, partnerUsd: pr.partnerUsd, tierIdx: t.idx, from: t.from, to: t.to, n: items.length, source: pr.source, tiers: pr.tiers }; }
-    else if (pr && pr.partnerUsd) payload.pricing = { partnerUsd: pr.partnerUsd };
+    const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;
+    if (op) payload.pricing = op;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
     const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-bulk": BULK_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;

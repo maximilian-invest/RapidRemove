@@ -190,7 +190,7 @@ export function Account({ ctx }) {
   const tiles = [
     [Search, "Geprüfte Profile", () => setMoreSub("checked")],
     [Handshake, "Partner", () => setMoreSub("partner")],
-    [Banknote, "Preise & Bulk", () => setMoreSub("pricing")],
+    [Banknote, "Kunden & Preise", () => setMoreSub("pricing")],
     [ActIcon, "Aktivitäten", () => setMoreSub("activity")],
     [MessageCircle, "Website-Chats", () => setMoreSub("chats")],
     [Mail, "Vorlagen", () => { try { localStorage.setItem("rr_admin_view", "templates"); } catch (e) {} window.location.href = "/admin/alt"; }],

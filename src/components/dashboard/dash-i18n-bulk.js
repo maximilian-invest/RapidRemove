@@ -19,7 +19,7 @@ const BULK = {
     buListPrice: "Our standard prices apply – you're only charged per removed review.", buSoft: "Reviews that can only be removed with special software (e.g. star-only ratings) are not part of the flat price – we ask you first.",
     buOrder: { one: "Order 1 review", other: "Order {n} reviews" }, buBack: "Change", buDoneH: "Bulk order received",
     buDoneP: "{n} reviews are on their way to our team. You'll see the progress of every single review in your dashboard.",
-    buErr: "Couldn't read the files – please try another format.", buMore: "+ {n} more", buConsErr: "Please confirm all three boxes above.",
+    buErr: "Couldn't read the files – please try another format.", buMore: "+ {n} more", buConsErr: "Please confirm all three boxes above.", buSwRow: "Special cases (software)", buSoftP: "Reviews that can only be removed with special software (e.g. star-only ratings): {price} per removed review.",
   },
   de: {
     noModeH: "Wie möchten Sie Bewertungen hinzufügen?", noModeP: "Bewertungen eines Google-Profils auswählen – oder eine ganze Liste hochladen, auch tausende auf einmal.",
@@ -39,7 +39,7 @@ const BULK = {
     buListPrice: "Es gelten unsere Standardpreise – abgebucht wird nur je gelöschter Bewertung.", buSoft: "Bewertungen, die nur per Spezial-Software löschbar sind (z. B. reine Sternebewertungen), sind nicht in der Pauschale – wir fragen Sie vorher.",
     buOrder: { one: "1 Bewertung bestellen", other: "{n} Bewertungen bestellen" }, buBack: "Ändern", buDoneH: "Bulk-Bestellung eingegangen",
     buDoneP: "{n} Bewertungen sind unterwegs zu unserem Team. Den Fortschritt jeder einzelnen Bewertung sehen Sie im Dashboard.",
-    buErr: "Die Dateien konnten nicht gelesen werden – bitte ein anderes Format versuchen.", buMore: "+ {n} weitere", buConsErr: "Bitte alle drei Kästchen oben bestätigen.",
+    buErr: "Die Dateien konnten nicht gelesen werden – bitte ein anderes Format versuchen.", buMore: "+ {n} weitere", buConsErr: "Bitte alle drei Kästchen oben bestätigen.", buSwRow: "Spezialfälle (Software)", buSoftP: "Bewertungen, die nur per Spezial-Software löschbar sind (z. B. reine Sternebewertungen): {price} je gelöschter Bewertung.",
   },
 };
 export default BULK;

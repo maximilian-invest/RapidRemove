@@ -202,7 +202,10 @@ registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
-registerCustNewOrder(app); registerCustBulk(app); registerPricingRoutes(app, ADMIN_TOKEN); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
+registerCustNewOrder(app); registerCustBulk(app); registerPricingRoutes(app, ADMIN_TOKEN, { // Admin → Kunden & Preise: Kunden-Dashboard anlegen + Login-Link
+  ensureAccount: (email) => ensureCustomerAccount(email),
+  sendInvite: async (email, name, lang) => { await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url: await dashLink(email, lang) })), replyTo: process.env.MAIL_REPLY_TO }); },
+}); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
 registerPartnerBackfill(app, ADMIN_TOKEN); // einmalig: 60 USD (WhatsApp, vor dem Board) nachtragen
 registerPasskeyRoutes(app); // Face ID / Touch ID (Passkeys) für Kunden + Partner
@@ -396,11 +399,11 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Bulk-Upload / Kundenpreise (custBulk.ts, custNewOrder.ts): nur interne Aufrufe mit Geheim-Header – nie vom Browser.
   const internal = req.headers["x-rr-bulk"] === BULK_INTERNAL;
   const bulk = internal && b.bulk === true;
-  const pricing = internal && b.pricing && typeof b.pricing === "object" ? (b.pricing as { cur?: string; price?: number; partnerUsd?: number | null }) : null;
+  const pricing = internal && b.pricing && typeof b.pricing === "object" ? (b.pricing as { cur?: string; price?: number; sw?: number; partnerUsd?: number | null; partnerSw?: number | null }) : null;
   if (!internal) { delete (b as Record<string, unknown>).bulk; delete (b as Record<string, unknown>).pricing; }
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number; business?: string; cp?: number; pUsd?: number };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number; business?: string; cp?: number; pUsd?: number; swp?: number; pSw?: number };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, bulk ? 5000 : 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
@@ -519,17 +522,28 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     if (!it.nt && !it.text && it.rating && it.rating >= 1 && it.rating <= 5) { it.nt = true; delete it.old; }
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
   }
-  // Pauschalpreis (Staffel): fester Preis je Bewertung (cp) – Software-Fälle ausgenommen (Spezialpreis wie bisher).
-  // Partnerpreis je Kunde (pUsd) → Partner-Board rechnet damit ab. Währung = Währung der Staffel (intern „US" = USD).
+  // Kunden-Konditionen (Admin → Kunden & Preise), je Bewertung festgeschrieben:
+  //   cp  = Preis je gelöschter Bewertung (Staffel)        swp = Kundenpreis, falls sie (jetzt oder später) Software braucht
+  //   pUsd = Partnerpreis (Partner-Staffel, USD)           pSw = Partnerpreis für Software-Fälle (USD)
+  // Schon bei der Bestellung klare Software-Fälle (ohne Text / alte US) kosten direkt den Software-Preis.
   if (isReviews && pricing) {
-    const price = Math.round(Number(pricing.price) * 100) / 100, pu = Number(pricing.partnerUsd);
+    const r2 = (v: unknown) => { const n = Math.round(Number(v) * 100) / 100; return n > 0 && n < 100000 ? n : 0; };
+    const price = r2(pricing.price), sw = r2(pricing.sw), pu = r2(pricing.partnerUsd), psw = r2(pricing.partnerSw);
     for (const it of reviewItems) {
-      if (it.nt || it.sw) continue;
-      if (price > 0 && price < 100000) it.cp = price;
-      if (Number.isFinite(pu) && pu > 0) it.pUsd = Math.round(pu * 100) / 100;
+      if (it.nt || it.sw) {
+        if (sw) { it.cp = sw; it.swp = sw; }
+        if (psw) { it.pUsd = psw; it.pSw = psw; }
+        continue;
+      }
+      if (price) it.cp = price;
+      if (sw) it.swp = sw;
+      if (pu) it.pUsd = pu;
+      if (psw) it.pSw = psw;
     }
-    if (pricing.cur === "usd") (b as Record<string, unknown>).country = "US";
-    else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
+    if (price || sw) {
+      if (pricing.cur === "usd") (b as Record<string, unknown>).country = "US";
+      else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
+    }
   }
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.

@@ -25,7 +25,8 @@ import { customerPush } from "./pushTexts";
 import { partnerNewOrder, notifyPartner } from "./partnerNotify";
 import { REPORT_REASONS, REPORT_IDS, reportDe } from "./reportReasons";
 import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
-import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, type ServiceId } from "./partnerRegistry";
+import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, partnerIfApproved, type ServiceId } from "./partnerRegistry";
+import { custSetup, tierFor, type CustSetup } from "./bulkPricing";
 
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
 // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
@@ -101,7 +102,9 @@ export async function initPartnerTables(): Promise<void> {
   // Einmalig: noch nicht begonnene Aufgaben aus Bestellungen VOR der Regel einordnen (Land aus Profil-Adresse bzw. Bestellung).
   await backfillMethods().catch((e) => console.error("Partner: Verfahren nachtragen fehlgeschlagen", e));
   // Software-Fälle bekommt der Partner mit dem Software-Preis bezahlt (offene, noch nicht ausgezahlte Aufgaben).
-  await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
+  // Kunden mit eigenem Partner-Software-Preis (sw_price_usd, Admin → Kunden & Preise) ausgenommen.
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS sw_price_usd numeric`);
+  await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND sw_price_usd IS NULL AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   // Meldegrund des Partners beim „Removed" (reportReasons.ts).
@@ -261,7 +264,11 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
   if (!pool) return [];
   const out: Row[] = [];
   const fresh: { code: string; kind: string; price: number; pid: number | null }[] = [];
-  const test = orderId ? isTestEmail((await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email) : false;
+  const ord = orderId ? (await pool.query(`SELECT email, COALESCE(jsonb_array_length(CASE WHEN jsonb_typeof(raw->'reviewItems')='array' THEN raw->'reviewItems' END), 0) AS n FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string; n?: number }[] }))).rows[0] : undefined;
+  const test = orderId ? isTestEmail(ord?.email) : false;
+  // Kunden-Dashboard (Admin → Kunden & Preise): fester Partner + Partner-Staffel/Software-Preis dieses Kunden.
+  const cs: CustSetup | null = ord?.email ? await custSetup(ord.email).catch(() => null) : null;
+  const csTier = cs?.partner.tiers?.length ? tierFor(cs.partner.tiers, Math.max(Number(ord?.n) || 0, items.length)).price : 0;
   // Auftrag hat schon Aufgaben → Nachbestellung („Review added" statt „New order").
   const had = orderId ? Number((await pool.query(`SELECT count(*)::int AS n FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [{ n: 0 }] }))).rows[0]?.n || 0) > 0 : false;
   for (const it of items.slice(0, 5000)) { // Bulk-Uploads: bis zu 5.000 Bewertungen je Auftrag
@@ -274,9 +281,13 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     const key = url || `${name}|${text}`;
     // Partner: vorgegeben (Admin/Zuteilung) – sonst Zuteilung der Leistung bzw. erster aktiver Partner. Preis = Partnerpreis der Leistung.
     const svc: ServiceId = serviceOf({ kind, sw: it.sw, nt: it.nt, old: it.old });
-    const pid = partnerIdIn ?? (await defaultPartnerFor(svc));
-    // Partnerpreis: fest je Kunde (pUsd, Admin → Preise) > vorgegeben (price) > Preis der Leistung beim Partner.
-    const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : await partnerPrice(pid, svc);
+    const pid = partnerIdIn ?? (await partnerIfApproved(cs?.partnerId, svc)) ?? (await defaultPartnerFor(svc));
+    // Partnerpreis: bei der Bestellung festgeschrieben (pUsd) > vorgegeben (Admin, price) > Kunden-Konditionen > Preis der Leistung beim Partner.
+    const swCase = svc === "sw";
+    const csPrice = kind === "profile" ? 0 : swCase ? Number(cs?.partner.sw) || 0 : csTier;
+    const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : csPrice > 0 ? csPrice : await partnerPrice(pid, svc);
+    // Wird eine normale Bewertung später zum Software-Fall, bekommt der Partner dafür diesen Preis (null = wie bisher).
+    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : Number(cs?.partner.sw) > 0 ? Number(cs!.partner.sw) : null;
     const cust = clip(it.business, 160) || customer; // Bulk (gemischte Profile): Partner-Board gruppiert nach Profilname der Bewertung
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {
@@ -284,13 +295,13 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method, partner_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method, partner_id, sw_price_usd)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
       [orderId, key, url || null, name || null, text || null, kind, price, cust, test,
         Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null,
-        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null, pid],
+        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null, pid, swPrice],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {
@@ -335,8 +346,12 @@ export async function partnerAutoSendProfile(orderId: string, customer: string, 
 export async function partnerAutoSend(orderId: string, customer: string, items: Record<string, unknown>[]): Promise<number> {
   if (!pool || !orderId || !items.length) return 0;
   const groups = new Map<number, Record<string, unknown>[]>();
+  // Fester Partner des Kunden (Admin → Kunden & Preise) – für jede Leistung, die dieser Partner macht; sonst normale Zuteilung.
+  const em = (await pool.query(`SELECT email FROM orders WHERE id=$1`, [orderId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email;
+  const fixedPid = em ? (await custSetup(em).catch(() => null))?.partnerId ?? null : null;
   for (const it of items) {
-    const pid = await routeFor(serviceOf({ kind: it.kind, sw: it.sw, nt: it.nt, old: it.old }));
+    const svc = serviceOf({ kind: it.kind, sw: it.sw, nt: it.nt, old: it.old });
+    const pid = (await partnerIfApproved(fixedPid, svc)) ?? (await routeFor(svc));
     if (!pid) continue;
     if (!groups.has(pid)) groups.set(pid, []);
     groups.get(pid)!.push(it);
@@ -589,8 +604,13 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // 14.10.2026: nur ändern, wenn der Status seit dem Lesen gleich geblieben ist – zwei gleichzeitige „Removed"
     // (Scan + Klick, Doppelklick) dürfen den Kunden nie doppelt auslösen.
     if (!r.rows.length) return { error: "changed meanwhile – reload", code: 409 };
-    const row = r.rows[0] as Row;
+    let row = r.rows[0] as Row;
     const changed = !!status && status !== old.status;
+    // Normale Bewertung wird zum Software-Fall → Partner-Software-Preis des Kunden (Admin → Kunden & Preise), falls festgelegt.
+    if (changed && status === "software" && !row.paid_at && Number((row as Record<string, unknown>).sw_price_usd) > Number(row.price_usd || 0)) {
+      const u = await pool.query(`UPDATE partner_tasks SET price_usd=sw_price_usd WHERE id=$1 AND paid_at IS NULL RETURNING *`, [id]).catch(() => ({ rows: [] as Row[] }));
+      if (u.rows[0]) row = u.rows[0] as Row;
+    }
     bumpChange(); // Live-Aktualisierung (Admin/Kunde/Partner)
     // Kunde: Push SOFORT bei jeder Änderung (Mail kommt gebündelt später, nur bei Wichtigem).
     if (changed && row.order_id) void pushCustomerNow(row, old.status, status).catch(() => {});

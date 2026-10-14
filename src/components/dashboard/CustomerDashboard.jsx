@@ -645,9 +645,11 @@ function TierTable({ pricing, tier }) {
           </div>
         );
       })}
+      {pricing.sw ? <div className="bu-tr sw"><span>{T("buSwRow")}</span><b>{money(pricing.sw, pricing.cur)}</b></div> : null}
     </div>
   );
 }
+const tierPrice = (tiers, n) => { for (const t of tiers) if (t.upTo == null || n <= t.upTo) return t.price; return tiers[tiers.length - 1].price; };
 const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || "").split(",")[1] || ""); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
 
 function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, presetQ, modes }) {
@@ -744,7 +746,15 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
   const sel = (list || []).filter((r) => pick.includes(r.id));
   const usd = place && place.cc === "US";
   const cur = usd ? "usd" : "eur";
-  const q2 = reviewQuote(sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; }), LANG);
+  const selQ = sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; });
+  const q2 = reviewQuote(selQ, LANG);
+  // Eigene Preise des Kunden (Admin → Kunden & Preise) gelten auch von Hand: Staffel nach Anzahl + Software-Preis.
+  const own = binfo && binfo.pricing && binfo.pricing.custom && binfo.pricing.tiers && binfo.pricing.tiers.length ? binfo.pricing : null;
+  const handCur = own ? own.cur : usd ? "usd" : "eur";
+  const handMax = own && selQ.length ? (() => {
+    const swN = selQ.filter((x) => x.sw), flat = selQ.length - swN.length;
+    return flat * tierPrice(own.tiers, selQ.length) + (swN.length ? (own.sw ? swN.length * own.sw : reviewQuote(swN, LANG).total) : 0);
+  })() : q2.total;
   const order = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg) { setCErr(true); return; }
@@ -834,7 +844,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
                 ) : null}
                 {prev.n ? (
                   <div className="bu-cons" ref={consRef}>
-                    <div className="bu-soft">{T("buSoft")}</div>
+                    <div className="bu-soft">{prev.pricing && prev.pricing.sw ? T("buSoftP", { price: net(money(prev.pricing.sw, prev.pricing.cur)) }) : T("buSoft")}</div>
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
@@ -909,7 +919,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, p
               <div className="fl-foot pgf">
                 {sel.length ? (
                   <>
-                    <div className="ar-max">{T("noMax", { amount: net(money(q2.total, cur)) })}</div>
+                    <div className="ar-max">{T("noMax", { amount: net(money(handMax, handCur)) })}</div>
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
