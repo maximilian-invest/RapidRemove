@@ -355,7 +355,6 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
   const [ans, setAns] = React.useState({}); // key → { r, note }
   const [more, setMore] = React.useState(false);
   const [pol, setPol] = React.useState(false);
-  const [tack, setTack] = React.useState(false); // Bulk: Stufe kann sich ändern (Häkchen)
   const [polErr, setPolErr] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [warn, setWarn] = React.useState(false); // „Später" bei der Zahlungsart → erst Hinweis (wir starten erst danach, null Risiko)
@@ -675,6 +674,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const [binfo, setBinfo] = React.useState(null); // { pricing, maxFileMb, maxItems }
   const [prev, setPrev] = React.useState(null);   // Vorschau vom Server
   const [pol, setPol] = React.useState(false);
+  const [tack, setTack] = React.useState(false); // Bulk: Stufe kann sich ändern (Häkchen)
   const [drag, setDrag] = React.useState(false);
   const [kind, setKind] = React.useState("hand"); // hand | bulk (für Fortschrittsbalken + Abschluss)
   const [doneN, setDoneN] = React.useState(0);
