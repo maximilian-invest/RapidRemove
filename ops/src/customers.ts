@@ -474,14 +474,16 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     return o.pay === "paid";
   };
   const cancelled = o.status === "storniert";
+  const bulkSw = ((raw.bulkSw as Record<string, unknown>) || {});
   const view = items.map((it) => {
     const k = keyOf(it);
     const pt = partner.get(k);
     const ps = pt?.status;
     const dec = decisions[k]?.d;
     let status: ItemStatus;
+    const swBulk = !!bulkSw[k]; // Bulk: braucht Software → aus der Bulk-Bestellung storniert, einzeln beauftragen
     if (rem.has(k) || ps === "removed") status = "removed";
-    else if (cancelled) status = "cancelled";
+    else if (cancelled || swBulk) status = "cancelled";
     else if (dec === "declined") status = "sw_declined";
     else if (swPaidFor(k) || decisions[k]?.d === "accepted") status = "sw_accepted";
     else if (ps === "software" || sw.has(k)) status = "software";
@@ -504,6 +506,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
       swWant: status === "software" && !!swWant[k],
+      swBulk: !!bulkSw[k],
       pre: !!it.nt || !!it.sw, // Software-Fall laut Partner-Regel: Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
       // Bestätigter Software-Fall (bei Bestellung zugestimmt): Platz 5 Std. reserviert → Frist fürs Dashboard (Countdown).
       swDue: status === "software" && (it.nt || it.sw || swWant[k]) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,
@@ -526,6 +529,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     payPref: raw.payPref === "wise" || raw.payPref === "paypal" ? (raw.payPref as string) : null, // Rabatt-Wunsch −10 %
     // Inhaber-Nachweis (4–5-Sterne-Bewertungen): pending/checking/rejected → Dashboard fordert den Upload an.
     hold: !!raw.payHold && !cancelled, // Zwischenzahlung nötig (Partner pausiert)
+    bulk: raw.bulk === true,
+    // Bulk: Stufe hat sich durch Stornos geändert → Kunde muss zustimmen (Auftrag pausiert). Nur die Kundenpreise, nie Partner.
+    priceHold: raw.priceHold && !cancelled ? (({ nOrig, nNow, cur, fromPrice, toPrice, toFrom }) => ({ nOrig, nNow, cur, fromPrice, toPrice, toFrom }))(raw.priceHold as { nOrig: number; nNow: number; cur: string; fromPrice: number; toPrice: number | null; toFrom: number | null }) : null,
     holdCard: !!raw.payHold && !cancelled && (raw.payHold as { reason?: string }).reason === "autopay", // Pause wegen fehlgeschlagener Abbuchung
     payGate: !cancelled && (raw.payGate as { status?: string } | undefined)?.status === "pending", // wartet auf hinterlegte Zahlungsart
     // Nachbestellung: nur diese Bewertungen warten auf die Zahlungsart (die übrigen laufen weiter). null = ganzer Auftrag.

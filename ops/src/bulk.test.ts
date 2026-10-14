@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { zipSync, strToU8 } from "fflate";
 import { classifyLink, linksIn, parseBulk, parseCsv } from "./bulkParse";
 import { normTiers, tierFor, orderPricing, type CustPricing } from "./bulkPricing";
+import { retierDecision } from "./bulkRules";
 
 let n = 0;
 const ok = async (name: string, fn: () => unknown) => { await fn(); n++; console.log("✓", name); };
@@ -83,6 +84,15 @@ const LONG = `https://www.google.com/maps/reviews/@40.76,-73.96,614m/data=!3m2!1
   });
   await ok("Komma-Preise (99,50) werden verstanden", () => assert.equal(normTiers([{ upTo: null, price: "99,50" }])![0].price, 99.5));
 
+  // ---- Stornos in Bulk-Bestellungen: Stufe + Toleranz ----
+  await ok("Toleranz 10 %: 105 → 95 bleibt bei ab 100 ($40)", () => assert.deepEqual(retierDecision(A, 100, 40, 95, 10), { change: false }));
+  await ok("Toleranz: 90 bleibt noch, 89 → ab 50 ($45)", () => {
+    assert.deepEqual(retierDecision(A, 100, 40, 90, 10), { change: false });
+    assert.deepEqual(retierDecision(A, 100, 40, 89, 10), { change: true, price: 45, from: 50, to: 99 });
+  });
+  await ok("unter die erste Stufe → normale Preise (price null)", () => assert.deepEqual(retierDecision(A, 50, 45, 44, 10), { change: true, price: null, from: null, to: null }));
+  await ok("45 bei ab 50 und 10 % → noch Toleranz", () => assert.deepEqual(retierDecision(A, 50, 45, 45, 10), { change: false }));
+  await ok("Toleranz 0 %: jede Unterschreitung ändert den Preis", () => assert.equal(retierDecision(A, 100, 40, 99, 0).change, true));
   // ---- Kunden- + Partner-Konditionen (Beispiel Rumaan Robe) ----
   const C = normTiers([{ from: 50, price: 45 }, { from: 100, price: 40 }, { from: 500, price: 35 }, { from: 1000, price: 30 }])!;
   const P = normTiers([{ from: 50, price: 30 }, { from: 100, price: 25 }, { from: 500, price: 20 }, { from: 1000, price: 15 }])!;

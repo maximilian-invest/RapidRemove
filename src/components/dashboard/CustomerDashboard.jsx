@@ -95,7 +95,7 @@ const ST_ = {
 // pre = Software-Fall, dem der Kunde schon bei der Bestellung zugestimmt hat → Partner hat bestätigt, jetzt nur noch zahlen.
 const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p = k === "software" && pre; return { ...ST_[k], l: T(p ? "st_swpay" : "st_" + k), why: T(p ? "why_swpay" : "why_" + k) }; };
 const OPEN = ["new", "reasons", "verify", "paygate", "working", "software", "sw_accepted"];
-const statusLine = (r, cur) => stOf(r.status, r.pre).l
+const statusLine = (r, cur) => (r.swBulk ? T("st_swBulk") : stOf(r.status, r.pre).l)
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
   + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: net(money(r.price, cur)) })) : "");
 
@@ -355,6 +355,7 @@ function StartFlow({ order, autopay, token, imp, showToast, onClose, reload, apS
   const [ans, setAns] = React.useState({}); // key → { r, note }
   const [more, setMore] = React.useState(false);
   const [pol, setPol] = React.useState(false);
+  const [tack, setTack] = React.useState(false); // Bulk: Stufe kann sich ändern (Häkchen)
   const [polErr, setPolErr] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [warn, setWarn] = React.useState(false); // „Später" bei der Zahlungsart → erst Hinweis (wir starten erst danach, null Risiko)
@@ -654,9 +655,9 @@ const tierPrice = (tiers, n) => { let p = null; for (const t of tiersFrom(tiers)
 const tierIdx = (tiers, n) => { let k = -1; tiersFrom(tiers).forEach((t, i) => { if (n >= t.from) k = i; }); return k; };
 const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || "").split(",")[1] || ""); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
 
-function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes }) {
+function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
   const both = !!(modes && modes.hand && modes.bulk);
-  const first = () => (both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "links");
+  const first = () => (presetLinks && presetLinks.length ? "links" : both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "links");
   const [step, setStep] = React.useState("links"); // mode | links | bulk | bpre | done
   const [busy, setBusy] = React.useState(false);
   const [agb, setAgb] = React.useState(false);
@@ -690,10 +691,12 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     // offene Tastatur (z. B. aus dem Chat) schließen, damit das Blatt nicht verschoben einfährt
     try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) { /* */ }
     const f0 = first();
-    const r0 = newRow();
-    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows([r0]); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    const pre = (presetLinks || []).filter(Boolean).slice(0, 50).map((u) => newRow(u));
+    const r0 = pre[0] || newRow();
+    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows(pre.length ? pre : [r0]); setTack(false); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
     setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0);
-    if (f0 === "links") focusRow(r0.id, 380);
+    if (pre.length) setTimeout(() => pre.forEach((r) => scanRow(r.id, r.url)), 50);
+    else if (f0 === "links") focusRow(r0.id, 380);
     if (modes && (modes.bulk || modes.hand)) call("bulk/info", { token }).then(setBinfo).catch(() => setBinfo(null));
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (list) => { const a = Array.from(list || []); if (a.length) setFiles((x) => [...x, ...a].slice(0, 10)); };
@@ -702,16 +705,16 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     try {
       const fs = await Promise.all(files.map(async (f) => ({ name: f.name, b64: await fileB64(f) })));
       const r = await call("bulk/parse", { token, files: fs, text: paste });
-      setPrev(r); setAgb(false); setFagg(false); setPol(false); setCErr(false); setStep("bpre");
+      setPrev(r); setAgb(false); setFagg(false); setPol(false); setTack(false); setCErr(false); setStep("bpre");
     } catch (e) { showToast(e.code === "disabled" ? T("noErr") : T("buErr"), true); }
     setBusy(false);
   };
   const bOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!agb || !fagg || !pol) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
+    if (!agb || !fagg || !pol || !tack) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
     setBusy(true);
     try {
-      const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, policyV: POLICY_V, items: prev.items });
+      const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, tierAck: true, policyV: POLICY_V, items: prev.items });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -862,6 +865,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                     <PolicyConsent lang={LANG} checked={pol} error={cErr && !pol} className="no-pol"
                       style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 10px", textAlign: "left", background: cErr && !pol ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
                       onChange={(v) => { setPol(v); setCErr(false); }} />
+                    <label className={"no-ck" + (cErr && !tack ? " bad" : "")}><input type="checkbox" checked={tack} onChange={(e) => { setTack(e.target.checked); setCErr(false); }} /><span>{T("buTierAck", { tol: (binfo && binfo.tol != null ? binfo.tol : 10) })}</span></label>
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </div>
                 ) : null}
@@ -1070,6 +1074,7 @@ export default function CustomerDashboard() {
   const sfAuto = React.useRef(false); // einmal je Sitzung automatisch öffnen
   const [arId, setArId] = React.useState(null); // Nachbestellung: weitere Bewertung zu diesem Auftrag
   const [noOpen, setNoOpen] = React.useState(false); // Neue Bestellung (anderes/neues Profil)
+  const [noLinks, setNoLinks] = React.useState(null); // Bulk-Software-Storno → „Einzeln beauftragen" mit vorbefülltem Link
   const [noQ, setNoQ] = React.useState(""); // vom Chatbot vorbefüllter Suchbegriff
   const [noOn, setNoOn] = React.useState(false); // Neubestellung freigeschaltet (Test-Konten / Admin-Schalter)
   const [noModes, setNoModes] = React.useState({ hand: false, bulk: false }); // von Hand (Profil-Suche) / Bulk-Upload
@@ -1509,6 +1514,17 @@ export default function CustomerDashboard() {
     setFlow({ ...f, step: f.step + 1 });
   };
 
+  // Bulk: Preisänderung durch Stornos bestätigen (Auftrag pausiert bis dahin).
+  const phTxt = (h) => T("phS", { nNow: Number(h.nNow).toLocaleString(LOC), nOrig: Number(h.nOrig).toLocaleString(LOC), from: net(money(h.fromPrice, h.cur)), to: h.toPrice != null ? net(money(h.toPrice, h.cur)) : T("phStd") });
+  const acceptPrice = async (o) => {
+    if (adminView) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    setBusy("ph");
+    try { await call("price-change/accept", { token, orderId: o.id }); showToast(T("phOk")); }
+    catch (e) { showToast(T("genericErr"), true); }
+    setBusy(""); load(token);
+  };
+  const orderOne = (url) => { setSheet(null); setNoLinks(url ? [url] : null); setNoOpen(true); };
+
   /* ---- Bausteine ---- */
   const AlertBtn = ({ title, sub, onClick }) => (
     <button className="alert" onClick={onClick || openFlow}>
@@ -1618,6 +1634,7 @@ export default function CustomerDashboard() {
       <div className="hg">
         <div className="hl">
           {holdCard ? <AlertBtn title={T("apFailT")} sub={T("apFailS")} onClick={apStart} /> : null}
+          {orders.filter((o) => o.priceHold).map((o) => <AlertBtn key={"ph" + o.id} title={T("phT")} sub={(orders.length > 1 ? (o.business || "#" + o.id) + " · " : "") + phTxt(o.priceHold)} onClick={() => setDetailId(o.id)} />)}
           {holdN ? <div className="holdn"><span className="ai"><Timer /></span><span><b>{T("holdT")}</b><span>{T("holdS", { n: holdN })}</span></span></div> : null}
           {stNeed.length ? <AlertBtn title={stAlert(stNeed[0], data.autopay).t} sub={(stNeed.length > 1 || orders.length > 1 ? (stNeed[0].business || "#" + stNeed[0].id) + " · " : "") + stAlert(stNeed[0], data.autopay).s} onClick={() => setSfId(stNeed[0].id)} /> : null}
           {sw.length ? (sw.every((r) => r.pre) ? <AlertBtn title={T("st_swpay")} sub={T("why_swpay")} /> : <AlertBtn title={T("problemOrders", { n: swOrders })} sub={T("needDecision", { n: sw.length })} />) : null}
@@ -1650,7 +1667,7 @@ export default function CustomerDashboard() {
               })}
             </div>
           ) : <div className="empty"><img src={IMG.rocket} alt="" />{T("noOrders")}</div>}
-          {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+          {noOn ? <button className="ar-btn no-btn" onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         </div>
         <aside className="hr">
           <div className="sec"><h2>{T("activity")}</h2></div>
@@ -1674,7 +1691,7 @@ export default function CustomerDashboard() {
     return (
       <>
         <div className="ttl">{T("orders")}</div>
-        {noOn ? <button className="ar-btn no-btn" style={{ marginTop: 0, marginBottom: 14 }} onClick={() => { setNoQ(""); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
+        {noOn ? <button className="ar-btn no-btn" style={{ marginTop: 0, marginBottom: 14 }} onClick={() => { setNoQ(""); setNoLinks(null); setNoOpen(true); }}><span className="ico"><Plus /></span><span className="t"><b>{T("noBtn")}</b><span>{T("noBtnS")}</span></span><ChevronRight /></button> : null}
         <div className="chips">
           {[["all", T("f_all")], ["open", T("f_open")], ["done", T("f_done")]].map(([k, t]) => (
             <button key={k} className={"chip" + (ofilter === k ? " on" : "")} onClick={() => setOfilter(k)}>{t}</button>
@@ -1858,6 +1875,14 @@ export default function CustomerDashboard() {
         <div className="bigprog"><Ring r={r} n={n} /><span><b>{T("removedOf", { r, n })}</b><span>{op ? T("stillInProgress", { n: op }) : o.cancelled ? T("cancelled") : T("completed")}</span></span></div>
         {startPhases(o, data.autopay).length ? <div style={{ marginBottom: 18 }}><AlertBtn title={stAlert(o, data.autopay).t} sub={stAlert(o, data.autopay).s} onClick={() => { setDetailId(null); setSfId(o.id); }} /></div> : null}
         {s ? <div style={{ marginBottom: 18 }}><AlertBtn title={T("needYou", { n: s })} sub={T("tapToSee")} /></div> : null}
+        {o.priceHold ? (
+          <div className="ph-card">
+            <b>{T("phT")}</b>
+            <span>{phTxt(o.priceHold)}</span>
+            <p>{T("phP")}</p>
+            <button className="cta" disabled={busy === "ph" || !!adminView} onClick={() => acceptPrice(o)}>{busy === "ph" ? <Loader className="spin" /> : <Check />}{T("phBtn")}</button>
+          </div>
+        ) : null}
         <div className="sec"><h2>{T("reviews")}</h2></div>
         {o.items.map((x) => {
           const st = stOf(x.status, x.pre);
@@ -2030,7 +2055,8 @@ export default function CustomerDashboard() {
               <h3>{r.name || T("googleReview")}</h3>
               <div className="meta">{o.business} · #{o.id}</div>
               <div className="q">{r.text ? "“" + r.text + "”" : <i>{T("noText")}</i>}</div>
-              <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{st.why}</span></span></div>
+              <div className="why"><span className={"ico " + st.ico}><st.I /></span><span><b>{statusLine(r, o.cur)}</b><span>{r.swBulk ? T("why_swBulk") : st.why}</span></span></div>
+              {r.swBulk && noOn && !adminView && r.url ? <button className="cta or" onClick={() => orderOne(r.url)}>{T("swBulkBtn")}<ArrowRight /></button> : null}
               {isSw ? <button className="cta or" onClick={openFlow}>{T(r.pre ? "payNow" : "showProblem")}<ArrowRight /></button> : null}
               {r.url ? <a className={"cta" + (isSw ? " gh" : "")} href={r.url} target="_blank" rel="noopener noreferrer"><ExternalLink />{T("openGoogle")}</a>
                 : <button className={"cta" + (isSw ? " gh" : "")} onClick={() => setSheet(null)}>{T("close")}</button>}
@@ -2043,7 +2069,7 @@ export default function CustomerDashboard() {
 
       <StartFlow order={sfOrder} autopay={data.autopay} token={token} imp={!!adminView} showToast={showToast} zero={pgZero} apStart={apStart} apBusy={busy === "ap"}
         reload={() => load(token)} onClose={() => { setSfId(null); setPostOrder(false); load(token); }} />
-      <NewOrderFlow open={noOpen} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
+      <NewOrderFlow open={noOpen} presetLinks={noLinks} modes={noModes} token={token} imp={!!adminView} autopay={data.autopay} showToast={showToast} onClose={() => setNoOpen(false)}
         onDone={async (id) => { setNoOpen(false); await load(token); if (id) setSfId(id); }} />
       <AddRevFlow order={arId ? orders.find((o) => o.id === arId) || null : null} token={token} imp={!!adminView} showToast={showToast} onClose={() => setArId(null)}
         onDone={async (start) => { const id = arId; setArId(null); await load(token); if (start) setSfId(id); }} />
@@ -2056,7 +2082,7 @@ export default function CustomerDashboard() {
         ppUrl={ppUrlOf(sheetG)} ppHandle={PAYPAL_ME} wiseRef={sheetG ? sheetG.ref : ""} showToast={showToast} />
 
       <SupportChat token={token} T={T} lang={LANG} imp={!!adminView} showToast={showToast} open={chatOpen} setOpen={setChatOpen} hidden={wiseOpen || !!sheetData || !!flow || !!sfOrder || billOpen || !!arId || noOpen}
-        onNewOrder={noOn && !adminView ? (q) => { setNoQ(q || ""); setNoOpen(true); } : undefined}
+        onNewOrder={noOn && !adminView ? (q) => { setNoQ(q || ""); setNoLinks(null); setNoOpen(true); } : undefined}
         sit={{ orders: orders.length, open: all.filter((r) => ["new", "working", "sw_accepted"].includes(r.status)).length, sw: sw.length, due: due.length, deposit: deposits.length, notpossible: all.some((r) => r.status === "notpossible") }} />
 
       <div className={"toast" + (toast ? " show" : "") + (toast && toast.bad ? " bad" : "")} role="status">{toast && toast.bad ? <AlertCircle /> : <CheckCircle2 />}{toast ? toast.m : ""}</div>

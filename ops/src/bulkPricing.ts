@@ -81,14 +81,17 @@ async function putSetting(key: string, value: string): Promise<void> {
 }
 
 /** Standard-Staffel (Kunde) + Standard-Partner-Staffel (USD) für alle Kunden ohne eigene Preise. */
-export type DefaultPricing = Pricing & { partner: PartnerPricing };
+export type DefaultPricing = Pricing & { partner: PartnerPricing; tol: number };
+/** Toleranz (Prozent unter der Stufengrenze), bevor eine Stornierung den Preis ändert – Standard 10 % (105 → 95 bleibt in „ab 100"). */
+export const DEFAULT_TOL = 10;
+const normTol = (v: unknown) => { const n = Math.round(num(v)); return Number.isFinite(n) && n >= 0 && n <= 50 ? n : DEFAULT_TOL; };
 export async function defaultPricing(): Promise<DefaultPricing | null> {
   const v = await getSetting("pricing_default");
   if (!v) return null;
   try {
     const o = JSON.parse(v); const tiers = normTiers(o.tiers), cur = normCur(o.cur); const sw = price(o.sw);
     const pt = normTiers(o.partnerTiers), psw = price(o.partnerSw);
-    return tiers && cur ? { cur, tiers, sw: Number.isFinite(sw) ? sw : null, partner: { tiers: pt, sw: Number.isFinite(psw) ? psw : null } } : null;
+    return tiers && cur ? { cur, tiers, sw: Number.isFinite(sw) ? sw : null, partner: { tiers: pt, sw: Number.isFinite(psw) ? psw : null }, tol: normTol(o.tol) } : null;
   } catch { return null; }
 }
 
@@ -136,7 +139,8 @@ export async function custSetup(email: string): Promise<CustSetup | null> {
 /** Konditionen für eine Bestellung mit n Bewertungen – genau das wird je Bewertung festgeschrieben (cp/swp beim Kunden,
  *  pUsd/pSw beim Partner). Felder fehlen, wenn nichts Eigenes gilt. */
 export type OrderPricing = { cur?: "usd" | "eur"; price?: number; sw?: number; partnerUsd?: number; partnerSw?: number;
-  tierIdx?: number; from?: number; to?: number | null; n: number; source: CustPricing["source"]; tiers?: Tier[] };
+  tierIdx?: number; from?: number; to?: number | null; n: number; source: CustPricing["source"]; tiers?: Tier[];
+  /** für spätere Neuberechnung (Bulk-Stornos): Partner-Staffel + Toleranz zum Bestellzeitpunkt */ partnerTiers?: Tier[]; tol?: number };
 export function orderPricing(p: CustPricing, n: number, opts: { flat: boolean }): OrderPricing | null {
   const o: OrderPricing = { n, source: p.source };
   const t = opts.flat && p.source !== "list" && p.tiers.length ? tierFor(p.tiers, n) : null;
@@ -147,8 +151,15 @@ export function orderPricing(p: CustPricing, n: number, opts: { flat: boolean })
   // Partner: Staffel greift erst ab ihrer ersten Stufe; darunter normaler Partnerpreis (auch für Software).
   const pt = p.partner.tiers && p.partner.tiers.length ? tierFor(p.partner.tiers, n) : null;
   if (pt) o.partnerUsd = pt.price;
+  if (p.partner.tiers && p.partner.tiers.length) o.partnerTiers = p.partner.tiers;
   if (p.partner.sw && (pt || !(p.partner.tiers && p.partner.tiers.length))) o.partnerSw = p.partner.sw;
   return o.price || o.partnerUsd || o.partnerSw ? o : null;
+}
+
+/** Aktuelle Toleranz (auch ohne Standard-Staffel). */
+export async function tolerancePct(): Promise<number> {
+  const v = await getSetting("pricing_default");
+  try { return v ? normTol(JSON.parse(v).tol) : DEFAULT_TOL; } catch { return DEFAULT_TOL; }
 }
 
 /** Neue Bestellung im Dashboard für alle Kunden an? (Standard: an; Admin kann ausschalten.) */
@@ -193,7 +204,7 @@ export function registerPricingRoutes(app: FastifyInstance, adminToken: string, 
     const pt = b.partnerTiers == null ? null : normTiers(b.partnerTiers), psw = price(b.partnerSw);
     if (b.partnerTiers != null && !pt) return reply.code(400).send({ ok: false, error: "Partner-Staffel ungültig (Grenzen aufsteigend, Preise > 0)" });
     if (Number.isNaN(psw)) return reply.code(400).send({ ok: false, error: "Partner-Software-Preis ungültig" });
-    await putSetting("pricing_default", JSON.stringify({ cur, tiers, sw, partnerTiers: pt, partnerSw: psw }));
+    await putSetting("pricing_default", JSON.stringify({ cur, tiers, sw, partnerTiers: pt, partnerSw: psw, tol: normTol(b.tol) }));
     return { ok: true, def: await defaultPricing() };
   });
 

@@ -27,7 +27,10 @@ import { REPORT_REASONS, REPORT_IDS, reportDe } from "./reportReasons";
 import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
 import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, partnerIfApproved, type ServiceId } from "./partnerRegistry";
 import { custSetup, tierFor, type CustSetup } from "./bulkPricing";
+import { isBulkOrder, bulkSoftwareCancelled } from "./bulkRules";
 
+/** Vermerk an der Aufgabe: Bulk-Bewertung braucht Software → aus der Bulk-Bestellung storniert. */
+export const BULK_SW_NOTE = "Bulk: nur per Software → storniert (Kunde beauftragt einzeln)";
 export const PARTNER_PRICES = { normal: 10, old: 40, nt: 150, profile: 50 } as const; // profile = ganzes Google-Profil (Platzhalter, im Admin je Aufgabe änderbar)
 // USD, Stand 5.10.2026 (Rechnung RVA-001: $10/Link; alt $40; ohne Text $150)
 export type TaskKind = keyof typeof PARTNER_PRICES;
@@ -536,7 +539,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // Pausierte Aufträge (Zwischenzahlung offen) → Partner sieht „On hold".
     const held = new Set<string>();
     if (pool && oids.length) {
-      const hr = await pool.query(`SELECT id FROM orders WHERE id = ANY($1::text[]) AND jsonb_typeof(raw->'payHold')='object'`, [oids]).catch(() => ({ rows: [] as { id: string }[] }));
+      const hr = await pool.query(`SELECT id FROM orders WHERE id = ANY($1::text[]) AND (jsonb_typeof(raw->'payHold')='object' OR jsonb_typeof(raw->'priceHold')='object')`, [oids]).catch(() => ({ rows: [] as { id: string }[] }));
       for (const x of hr.rows as { id: string }[]) held.add(x.id);
     }
     // Grund des Kunden je Bewertung (Richtlinien-Verstoß, im Dashboard angegeben) → Partner meldet damit.
@@ -587,15 +590,19 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
     // Zwischenzahlung offen (Auftrag pausiert): nichts Neues starten, bis der Kunde bezahlt hat.
     if (!opts.admin && status === "working" && old.status === "new" && old.order_id) {
-      const h = await pool.query(`SELECT jsonb_typeof(raw->'payHold')='object' AS h FROM orders WHERE id=$1`, [old.order_id]).catch(() => ({ rows: [] as { h: boolean }[] }));
+      const h = await pool.query(`SELECT jsonb_typeof(raw->'payHold')='object' AS h, jsonb_typeof(raw->'priceHold')='object' AS ph FROM orders WHERE id=$1`, [old.order_id]).catch(() => ({ rows: [] as { h: boolean; ph: boolean }[] }));
       if (h.rows[0]?.h) return { error: "order on hold – wait until “Customer paid”", code: 400 };
+      if (h.rows[0]?.ph) return { error: "order on hold – customer has to confirm a price change first", code: 400 };
     }
     // „Removed" nur aus „Working" (Partner muss die Bewertung erst als in Arbeit markieren).
     if (status === "removed" && old.status !== "removed" && old.status !== "working") return { error: "set to Working first", code: 400 };
     // „Removed" belastet den Kunden → nur nach Lenas Prüfung (verified) oder ausdrücklicher Bestätigung, wenn keine Prüfung möglich war.
     if (!opts.admin && status === "removed" && old.status !== "removed" && !opts.verified) return { error: "verify", code: 409 }; // ohne Prüfung KEIN „removed" (auch nicht mit Bestätigung)
     const note = noteIn != null ? clip(noteIn, 500) : old.partner_note;
-    const st = status || old.status;
+    // Bulk-Upload (14.10.2026): Software-Fall ist nicht Teil der Pauschale → sofort aus der Bulk-Bestellung storniert,
+    // Kunde soll sie einzeln (regulärer Preis) beauftragen. Nur für Bulk – sonst normales Software-Verfahren.
+    const bulkSw = status === "software" && old.status !== "software" && !old.paid_at && await isBulkOrder(old.order_id as string | null);
+    const st = bulkSw ? "cancelled" : status || old.status;
     const r = await pool.query(
       `UPDATE partner_tasks SET status=$1, partner_note=$2, updated_at=now(), touched_at=COALESCE(touched_at, now()),
          working_since = CASE WHEN $1='working' AND status<>'working' THEN now() ELSE working_since END,
@@ -608,6 +615,14 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!r.rows.length) return { error: "changed meanwhile – reload", code: 409 };
     let row = r.rows[0] as Row;
     const changed = !!status && status !== old.status;
+    if (bulkSw) {
+      const u = await pool.query(`UPDATE partner_tasks SET admin_note = trim(COALESCE(admin_note,'') || ' ' || $2) WHERE id=$1 RETURNING *`, [id, BULK_SW_NOTE]).catch(() => ({ rows: [] as Row[] }));
+      if (u.rows[0]) row = u.rows[0] as Row;
+      bumpChange();
+      if (row.order_id) await bulkSoftwareCancelled(row.order_id, row.item_key as string, row.code, (row.name as string) || (row.url as string) || null).catch((e) => app.log.error({ err: e }, "Bulk: Software-Storno fehlgeschlagen"));
+      if (row.order_id) await insertEvent({ orderId: row.order_id, type: "note", title: `Partner: ${row.code} nur per Software → storniert (Bulk)`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
+      return { row, changed: true };
+    }
     // Normale Bewertung wird zum Software-Fall → Partner-Software-Preis des Kunden (Admin → Kunden & Preise), falls festgelegt.
     if (changed && status === "software" && !row.paid_at && Number((row as Record<string, unknown>).sw_price_usd) > Number(row.price_usd || 0)) {
       const u = await pool.query(`UPDATE partner_tasks SET price_usd=sw_price_usd WHERE id=$1 AND paid_at IS NULL RETURNING *`, [id]).catch(() => ({ rows: [] as Row[] }));

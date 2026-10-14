@@ -25,6 +25,7 @@ import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, 
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
+import { registerBulkRules } from "./bulkRules";
 import { startOrderIfReady } from "./orderStart";
 import { registerVerifyRoutes, needsVerify } from "./verify";
 import { registerReasonsRoutes, reasonsGateNew } from "./reasons";
@@ -202,7 +203,7 @@ registerPartnerRoutes(app, ADMIN_TOKEN);
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
-registerCustNewOrder(app); registerCustBulk(app); registerPricingRoutes(app, ADMIN_TOKEN, { // Admin → Kunden & Preise: Kunden-Dashboard anlegen + Login-Link
+registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, customerSessionInfo); registerPricingRoutes(app, ADMIN_TOKEN, { // Admin → Kunden & Preise: Kunden-Dashboard anlegen + Login-Link
   ensureAccount: (email) => ensureCustomerAccount(email),
   sendInvite: async (email, name, lang) => { await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url: await dashLink(email, lang) })), replyTo: process.env.MAIL_REPLY_TO }); },
 }); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
@@ -490,7 +491,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Nur wo freigeschaltet (Test-Konten / AUTOPAY_LIVE=on), nicht bei Wise-/PayPal-Zahlern, nicht wenn schon hinterlegt.
   // PayPal/Wise −10 % in den Einstellungen für diese Kategorie aus → Wunsch ignorieren (normale Zahlung).
   if (["wise", "paypal"].includes(String(b.payPref || "")) && !(await payDiscountEnabled(isReviews ? "reviews" : "profiles").catch(() => true))) (b as Record<string, unknown>).payPref = "none";
-  const payGate = isReviews && !["wise", "paypal"].includes(String(b.payPref || "")) && email ? await payGateNeeded(email).catch(() => false) : false;
+  // Bulk-Upload: geht IMMER erst nach hinterlegter Zahlungsart zum Partner (auch bei PayPal/Wise-Wunsch).
+  const payGate = isReviews && (bulk || !["wise", "paypal"].includes(String(b.payPref || ""))) && email ? await payGateNeeded(email).catch(() => false) : false;
   if (payGate) (b as Record<string, unknown>).payGate = { status: "pending", at: new Date().toISOString() };
   // Profil-Löschung (10/2026): nicht deutschsprachige Kunden + alle Schweizer → gleicher Ablauf wie Einzelbewertungen:
   // Konto + Dashboard (direkt nach der Bestellung), Zahlungsart hinterlegen, abgebucht wird erst bei „Löschung abgeschlossen"
@@ -517,7 +519,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     // Seit 09.10.2026 keine Checkbox im Checkout mehr: die Zusicherung gibt der Kunde im Dashboard (reasons.ts → policyConsent).
   } else delete (b as Record<string, unknown>).policyConsent;
   delete (b as Record<string, unknown>).policyV;
-  if (isReviews) for (const it of reviewItems) {
+  // Bulk: Software-Fälle stellt der Partner fest (→ Storno aus der Bulk-Bestellung, bulkRules.ts) – hier nichts vorab markieren.
+  if (isReviews && !bulk) for (const it of reviewItems) {
     // Bewertung bekannt (Sterne aus der Google-Suche/Link-Auflösung), aber ohne Text → immer Software (300), auch wenn der Browser es nicht markiert hat
     if (!it.nt && !it.text && it.rating && it.rating >= 1 && it.rating <= 5) { it.nt = true; delete it.old; }
     if (!it.nt && reviewMethod(it, ruleCountry) === "sw") { it.sw = true; it.old = true; }
