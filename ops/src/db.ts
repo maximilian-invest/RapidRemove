@@ -481,6 +481,8 @@ export async function updateOrderStatus(id: string, status: string, pay?: string
 
 /**
  * Markiert die jüngste noch OFFENE Bestellung zu einer E-Mail als bezahlt
+ * – nie Bewertungs-Aufträge (die werden je Bewertung über reviewsPayments abgerechnet)
+ *   und nie stornierte Aufträge.
  * (für die automatische Zahlungszuordnung aus dem Stripe-Webhook).
  * Trifft genau eine Bestellung (die neueste mit pay≠'paid') und gibt deren ID
  * zurück – oder null, wenn keine offene Bestellung zu dieser E-Mail existiert.
@@ -494,6 +496,7 @@ export async function markOrderPaidByEmail(email: string): Promise<string | null
        WHERE id = (
          SELECT id FROM orders
           WHERE lower(email) = lower($1) AND pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE
+            AND COALESCE(service,'') <> 'reviews' AND COALESCE(status,'') <> 'storniert'
           ORDER BY created_at DESC LIMIT 1
        )
      RETURNING id`,
@@ -620,7 +623,8 @@ export async function reconcileOrderForPayment(email: string, name: string, crea
     `UPDATE orders SET pay='paid'
        WHERE id = (
          SELECT id FROM orders
-          WHERE pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE AND COALESCE(status,'') <> 'storniert' AND ${cond} AND ${timeCond}
+          WHERE pay IS DISTINCT FROM 'paid' AND pay_locked IS NOT TRUE AND COALESCE(status,'') <> 'storniert'
+            AND COALESCE(service,'') <> 'reviews' AND ${cond} AND ${timeCond}
           ORDER BY created_at DESC LIMIT 1
        )
      RETURNING id, name`,
@@ -639,6 +643,28 @@ export async function isPaymentReconciled(invoiceId: string): Promise<boolean> {
   const r = await pool.query(`SELECT 1 FROM reconciled_payments WHERE invoice_id=$1`, [invoiceId]);
   return !!r.rows[0];
 }
+/** Reserviert eine Stripe-Zahlung atomar für genau EINE Zuordnung (true = dieser Aufruf hat sie).
+ *  Grund (14.10.2026, Amanda Ashburn): invoice.paid + invoice.payment_succeeded derselben Rechnung kamen beide
+ *  an, der Webhook hat sie NICHT vorgemerkt → zwei verschiedene Profil-Aufträge wurden als „bezahlt" markiert. */
+export async function claimPayment(paymentId: string): Promise<boolean> {
+  if (!pool || !paymentId) return true;
+  const r = await pool.query(
+    `INSERT INTO reconciled_payments (invoice_id, order_id) VALUES ($1, NULL) ON CONFLICT (invoice_id) DO NOTHING RETURNING invoice_id`,
+    [paymentId],
+  );
+  return !!r.rows[0];
+}
+/** Reservierung wieder freigeben (kein Auftrag gefunden → Name-Abgleich des Reconcilers darf es später versuchen). */
+export async function releasePayment(paymentId: string): Promise<void> {
+  if (!pool || !paymentId) return;
+  await pool.query(`DELETE FROM reconciled_payments WHERE invoice_id=$1 AND order_id IS NULL`, [paymentId]);
+}
+/** Zuordnung zu einer reservierten Zahlung nachtragen. */
+export async function setPaymentOrder(paymentId: string, orderId: string): Promise<void> {
+  if (!pool || !paymentId || !orderId) return;
+  await pool.query(`UPDATE reconciled_payments SET order_id=$2 WHERE invoice_id=$1`, [paymentId, orderId]);
+}
+
 /** Merkt eine Stripe-Zahlung als verarbeitet vor (einmalig, idempotent). */
 export async function recordReconciledPayment(invoiceId: string, orderId: string | null): Promise<void> {
   if (!pool || !invoiceId) return;

@@ -281,7 +281,9 @@ export async function getStripeMetrics(): Promise<StripeDashboard> {
   return buildStripeDashboard({ subs, invoices, customers, monthStart });
 }
 
-export interface DeletionPayment { id: string; name: string; email: string; amount: number; cur: string; created: number; desc: string; }
+export interface DeletionPayment { id: string; name: string; email: string; amount: number; cur: string; created: number; desc: string;
+  /** Eigene Rechnung (automatische Abbuchung, metadata.rr_pay/rr_orders) – im Code schon exakt zugeordnet. */
+  own?: boolean; }
 
 /** Bezahlte EINMAL-Zahlungen (Löschung/Reset/Express) aus Stripe — Abos ausgenommen.
  *  Eine bezahlte Rechnung zählt, wenn sie mindestens eine einmalige Position hat
@@ -304,6 +306,7 @@ export async function listDeletionPayments(months = 12): Promise<DeletionPayment
       cur: (inv.currency || "eur").toUpperCase(),
       created: inv.created || 0,
       desc: oneTime[0]?.description || oneTime[0]?.price?.nickname || "",
+      own: !!(inv.metadata?.rr_pay || inv.metadata?.rr_orders),
     });
   }
   out.sort((a, b) => b.created - a.created);

@@ -30,6 +30,7 @@ import {
 } from "../integrations/stripe.js";
 import {
   dbReady, cancelUpsellForEmail, insertEvent, markOrderPaidByEmail, getOrderBasic, pool,
+  claimPayment, releasePayment, setPaymentOrder,
 } from "../db.js";
 import { notifyPaymentReceived } from "../notify.js";
 
@@ -172,8 +173,27 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
       await insertEvent({ orderId: hit.orderId, type: "pay", title: `Bezahlt: ${lbl[hit.kind] || hit.kind}`, detail: `${amt} ${String(obj?.currency || "").toUpperCase()} via Stripe (${email})`, auto: true });
     }
   } catch (e) { app.log.error(`Webhook: Dashboard-Zahlung zuordnen fehlgeschlagen: ${(e as Error).message}`); }
+  // Eigene Zahlungen (automatische Abbuchung mit metadata.rr_pay/rr_orders, Dashboard-Links mit client_reference_id rr_…)
+  // sind im Code bereits exakt ihrem Auftrag zugeordnet → NIE zusätzlich per E-Mail einen Auftrag „bezahlt" setzen.
+  // Grund (14.10.2026, RR-223743/RR-872179): Abbuchung für Bewertungen (RR-530679) hat per E-Mail-Abgleich zwei
+  // offene Profil-Aufträge desselben Kunden auf „bezahlt" gesetzt → Admin zeigte sie als „Gelöscht".
+  const meta = (obj?.metadata || {}) as Record<string, unknown>;
+  const invoiceId: string = obj?.object === "invoice" ? String(obj?.id || "") : String(obj?.invoice || "");
+  const payKey: string = invoiceId || String(obj?.payment_intent || obj?.id || "");
+  if (meta.rr_pay || meta.rr_orders || /^rr_/.test(String(obj?.client_reference_id || ""))) {
+    if (payKey) await claimPayment(payKey).catch(() => false); // auch der Reconciler soll sie nicht mehr anfassen
+    app.log.info(`Webhook: eigene Zahlung (${meta.rr_orders || obj?.client_reference_id || payKey}) – keine E-Mail-Zuordnung (${source})`);
+    return;
+  }
+  // Eine Zahlung darf höchstens EINEN Auftrag bezahlt markieren (invoice.paid + invoice.payment_succeeded,
+  // checkout.session.completed + invoice.paid derselben Zahlung, Reconciler).
+  if (payKey && !(await claimPayment(payKey).catch(() => true))) {
+    app.log.info(`Webhook: Zahlung ${payKey} schon zugeordnet – übersprungen (${source})`);
+    return;
+  }
   try {
     const oid = await markOrderPaidByEmail(email);
+    if (payKey) await (oid ? setPaymentOrder(payKey, oid) : releasePayment(payKey)).catch(() => {});
     if (oid) {
       app.log.info(`Webhook: Bestellung ${oid} automatisch als bezahlt markiert (${email}, ${source})`);
       void scheduleProtectionUpsell(oid, app.log).catch(() => {}); // Profil-Löschung bezahlt → Schutz-Hinweis in 2 Tagen
@@ -190,6 +210,7 @@ async function autoMatchPayment(app: FastifyInstance, obj: any, source: string):
     }
   } catch (e) {
     app.log.error(`Webhook: automatische Zahlungszuordnung fehlgeschlagen: ${(e as Error).message}`);
+    if (payKey) await releasePayment(payKey).catch(() => {}); // Reconciler darf es später nochmal versuchen
   }
 }
 

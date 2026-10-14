@@ -13,7 +13,7 @@
  */
 import type { FastifyInstance } from "fastify";
 import { hasSecretKey, listDeletionPayments } from "./integrations/stripe";
-import { dbReady, reconcileOrderForPayment, insertEvent, isPaymentReconciled, recordReconciledPayment } from "./db";
+import { dbReady, reconcileOrderForPayment, insertEvent, claimPayment, releasePayment, setPaymentOrder } from "./db";
 import { notifyPaymentReceived } from "./notify";
 import { sendPurchaseForOrder } from "./integrations/metaCapi";
 import { scheduleProtectionUpsell } from "./upsell";
@@ -40,22 +40,28 @@ export async function reconcilePaymentsOnce(log?: FastifyInstance["log"]): Promi
       // Jede Stripe-Rechnung NUR EINMAL verarbeiten – sonst wird dieselbe echte Zahlung bei
       // jedem Lauf erneut der neuesten offenen Treffer-Bestellung gutgeschrieben (= falsche
       // „bezahlt"-Markierung + Push für Kunden, die NICHT gezahlt haben).
-      if (await isPaymentReconciled(p.id)) { alreadyAssigned++; continue; }
-      const r = await reconcileOrderForPayment(p.email, p.name, p.created);
+      // Atomar reservieren (Webhook kann parallel laufen) – wer die Zahlung hat, ordnet sie zu.
+      if (!(await claimPayment(p.id))) { alreadyAssigned++; continue; }
+      // Eigene Rechnungen (automatische Abbuchung) sind im Code schon ihrem Auftrag zugeordnet → nie per E-Mail/Name
+      // einen weiteren Auftrag „bezahlt" setzen (14.10.2026: Bewertungs-Abbuchung hat Profil-Aufträge mitgenommen).
+      if (p.own) { alreadyAssigned++; continue; }
+      let r: Awaited<ReturnType<typeof reconcileOrderForPayment>>;
+      try { r = await reconcileOrderForPayment(p.email, p.name, p.created); }
+      catch (e) { await releasePayment(p.id).catch(() => {}); throw e; }
       if (r.status === "marked") {
         matched.push({ name: label, orderId: r.id! });
-        await recordReconciledPayment(p.id, r.id || null);     // einmalig „verbraucht"
+        if (r.id) await setPaymentOrder(p.id, r.id);           // einmalig „verbraucht"
         if (r.id) void scheduleProtectionUpsell(r.id).catch(() => {}); // Profil-Löschung bezahlt → Schutz-Hinweis in 2 Tagen
         void sendPurchaseForOrder(r.id || "", log); // bezahlt + gelöscht → Meta melden
         await insertEvent({ orderId: r.id, type: "pay", title: "Zahlung eingegangen", detail: `Stripe-Abgleich: ${label}${p.amount ? ` · ${p.amount} ${p.cur}` : ""}`, auto: true });
         // 💰 Team-Push „Zahlung eingegangen" für neu zugeordnete Zahlungen.
         await notifyPaymentReceived({ who: label, amount: p.amount, cur: p.cur, orderId: r.id }).catch(() => {});
       } else if (r.status === "already") {
-        // Treffer existiert & ist bereits bezahlt → Zahlung vormerken, damit sie nicht später
+        // Treffer existiert & ist bereits bezahlt → Zahlung bleibt vorgemerkt, damit sie nicht später
         // eine neu eingehende Bestellung fälschlich markiert.
-        await recordReconciledPayment(p.id, null);
         alreadyAssigned++;
       } else {
+        await releasePayment(p.id).catch(() => {}); // kein Treffer → beim nächsten Lauf erneut versuchen (wie bisher)
         unmatched.push(label);
       }
     } catch (e) { log?.error?.(`Reconcile: ${p.id} fehlgeschlagen: ${(e as Error).message}`); }
