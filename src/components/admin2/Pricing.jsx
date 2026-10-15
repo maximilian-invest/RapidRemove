@@ -153,13 +153,14 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
       <label className="pfld"><span>Sprache (Dashboard + Mails)</span><select className="pr-sel" value={lang} onChange={(e) => setLang(e.target.value)}>{LANGS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
 
       <div className="pr-sec">2 · Partner</div>
-      <label className="pfld"><span>Aufträge dieses Kunden gehen an</span>
+      <label className="pfld"><span>Bewertungen dieses Kunden gehen an</span>
         <select className="pr-sel" value={pid} onChange={(e) => setPid(e.target.value)}>
           <option value="">Normale Zuteilung (Mehr → Partner)</option>
           {partners.map((x) => <option key={x.id} value={x.id}>{x.name}{x.active ? "" : " (inaktiv)"}</option>)}
         </select>
       </label>
-      {p ? <p className="sh">{p.name} macht: {p.services.map((k) => SVC[k] || k).join(", ") || "noch nichts freigegeben"}. Was {p.name} nicht macht, geht an die normale Zuteilung.{p.active ? "" : " Achtung: Partner ist gerade inaktiv – solange gilt die normale Zuteilung."}</p> : null}
+      {p ? <p className="sh">{p.name} macht bei Bewertungen: {["std", "old", "sw"].filter((k) => p.services.includes(k)).map((k) => SVC[k]).join(", ") || "noch nichts freigegeben"}. Was {p.name} nicht macht, geht an die normale Zuteilung.{p.active ? "" : " Achtung: Partner ist gerade inaktiv – solange gilt die normale Zuteilung."}</p> : null}
+      <p className="sh">Profil-Löschungen gehen nie über diesen Partner – die laufen wie bisher über Einstellungen → „Ganze Google-Profile löschen“.</p>
 
       <div className="pr-sec">3 · Preise Kunde <em>sieht der Kunde</em></div>
       <Toggle on={own} set={setOwn} title="Eigene Staffel" sub={own ? "Gilt für Bulk-Uploads und Bestellungen von Hand" : "Aus – es gilt die Standard-Staffel (nur Bulk)"} />
