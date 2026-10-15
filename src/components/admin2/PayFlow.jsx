@@ -84,6 +84,8 @@ export function payMailsOf(events, o) {
   const sent = [];
   for (const e of events || []) {
     const t = String(e.t || "");
+    // Verlauf wird per E-Mail geladen (alle Aufträge des Kunden) → Zahlungs-Mails ANDERER Aufträge zählen hier nicht (15.10.2026).
+    if (e.oid && e.oid !== o.id) continue;
     let label = null, stage = null, kind = "mail";
     if (/zahlungsziel .* abgelaufen/i.test(t)) { label = "Zahlungsziel abgelaufen"; kind = "due"; }
     else if (/^mahnung/i.test(t)) { stage = stageOf(t); label = stage && ST[stage - 1] ? ST[stage - 1][1] : "Mahnung"; kind = "mahn"; }
