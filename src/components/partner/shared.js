@@ -87,6 +87,7 @@ export function norm(t) {
     method: t.method || null, // 'sw' = Software-Fall (erst bestätigen, Kunde zahlt vorab) · 'legal' = erst rechtliche Meldung
     custReason: t.custReason || null, custNote: t.custNote || "", // Grund des Kunden (Google-Richtlinie)
     reportReason: t.reportReason || null, reportNote: t.reportNote || "", // womit der Partner gemeldet hat
+    profile: t.profile || "", bulk: t.bulk || null, // Bulk-Bestellung: Google-Profil der Bewertung + Bestell-Referenz
   };
 }
 

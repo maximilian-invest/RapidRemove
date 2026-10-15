@@ -18,6 +18,7 @@ import { usePayouts, PayoutSetup } from "./PartnerPayouts";
 import { PartnerJoin, PartnerPending, PartnerTerms } from "./PartnerJoin";
 import RemovalCheck from "./RemovalCheck";
 import OrderScan from "./OrderScan";
+import PriceTable from "./PriceTable";
 import ReasonPick from "./ReasonPick";
 import PasskeyOffer from "@/components/PasskeyOffer";
 import PushGate, { pushState, enablePush } from "@/components/PushGate";
@@ -45,6 +46,8 @@ export default function PartnerBoard() {
   const tableView = isMobile === false && typeof window !== "undefined" && /[?&]view=table\b/.test(window.location.search);
   const appUi = !tableView;
   const [tasks, setTasks] = React.useState(null);
+  const [bulks, setBulks] = React.useState({}); // Bulk-Bestellungen: Preistabelle je Bestellung (Gruppenname → Stufen)
+  const [priceInfo, setPriceInfo] = React.useState(null);
   const [reasonList, setReasonList] = React.useState(null); // Meldegründe (Server) – Partner wählt beim „Removed"
   const [pick, setPick] = React.useState(null); // { ids } → Meldegrund wählen, dann Prüfung
   const [join, setJoin] = React.useState(null); // { invite } → Registrierung als neuer Partner
@@ -107,6 +110,7 @@ export default function PartnerBoard() {
       setAcct(j.gate || null);
       if (j.reasons) setReasonList(j.reasons);
       const ts = (j.tasks || []).map(norm);
+      setBulks(j.bulks || {});
       setTasks(ts.filter((t) => t.status !== "cancelled")); setCancelled(ts.filter((t) => t.status === "cancelled")); setErr("");
       if (j.preview) setPreview(true); // Test-Login / Test-Board: nur Testaufträge
     } catch (e) {
@@ -194,7 +198,8 @@ export default function PartnerBoard() {
   const [ver, setVer] = React.useState(null); // { ids, codes, phase: "checking"|"done", results, run }
   const applyResults = React.useCallback((results) => {
     const done = new Map(results.filter((r) => r.task).map((r) => [r.id, norm(r.task)]));
-    if (done.size) setTasks((xs) => (xs || []).map((t) => (done.has(t.id) ? { ...t, ...done.get(t.id) } : t)));
+    // Bulk: Gruppenname (Bestellung) + Profil bleiben – die Server-Antwort kennt nur das Profil.
+    if (done.size) setTasks((xs) => (xs || []).map((t) => (done.has(t.id) ? { ...t, ...done.get(t.id), cust: t.cust, profile: t.profile, bulk: t.bulk } : t)));
   }, []);
   const verifyRemoved = React.useCallback(async (ids, reasons) => {
     const ts = tasksRef.current || [];
@@ -398,6 +403,7 @@ export default function PartnerBoard() {
     tasks, all, cancelled, err, visible, groups, isNewC, waiting, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, markPaid, copyLinks, openReview, setNoteLive, saveNote, touch, load, flush, token, reasonList,
     scanOrder, scanning: !!(scan && scan.phase === "checking"),
+    bulks, openPrices: (c) => setPriceInfo(bulks[c] || null),
   };
   const waitPop = nag && waiting.length ? (
     <div className="pwait-bg" onClick={() => setNag(false)}>
@@ -414,6 +420,7 @@ export default function PartnerBoard() {
   // Aktuelles Design = App-Ansicht, auch am Desktop (dort mittig als schmale Spalte). Alte Tabellen-Ansicht nur noch per ?view=table.
   const app = <>{tableView ? <PartnerDesktop api={api} /> : <PartnerApp api={api} />}{waitPop}
     <ReasonPick state={pick} tasks={tasks} list={reasonList} onCancel={() => setPick(null)} onGo={(ids, reasons) => { setPick(null); verifyRemoved(ids, reasons); }} />
+    <PriceTable info={priceInfo} onClose={() => setPriceInfo(null)} />
     <OrderScan state={scan} onClose={() => { if (scan && scan.phase === "checking") return; setScan(null); load(false); }} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} onOpenAll={openAll} />
     <RemovalCheck state={ver} token={token} onClose={() => { setVer(null); load(false); }} onAgain={(ids) => verifyRemoved(ids)} onConfirm={confirmRemoved} onOpen={(id) => openReview((tasksRef.current || []).find((x) => x.id === id))} /></>;
   if (!preview) return app;

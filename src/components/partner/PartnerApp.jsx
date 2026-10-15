@@ -329,6 +329,11 @@ export default function PartnerApp({ api }) {
         {nav(<button type="button" className="circ" aria-label="Copy all links" onClick={() => copyLinks(l.map((t) => t.id), c)}><Copy /></button>)}
         <div className="pt">{c}</div>
         <div className="ps">{allT.length} reviews · {nw ? <b className="newin">New order · customer waiting for confirmation</b> : "In progress"}</div>
+        {api.bulks && api.bulks[c] ? (
+          <button type="button" className="ptab-btn" onClick={() => api.openPrices(c)}>
+            <span><b>View price table</b><span>{api.bulks[c].price != null ? `This order: $${api.bulks[c].price} per removed review` : "Standard prices"}</span></span><ChevronRight />
+          </button>
+        ) : null}
         <div className="cstats">
           <div><b>{allT.filter(isTodo).length}</b><span>Open</span></div>
           <div><b>{allT.filter(F.wk).length}</b><span>Working</span></div>
@@ -357,6 +362,7 @@ export default function PartnerApp({ api }) {
               <span className={"tog" + (on ? " on" : "")} onClick={(e) => { e.stopPropagation(); toggle(t.id); }}><Check /></span>
               <span className="t">
                 <b>{t.code} · {t.who}</b>
+                {t.bulk && t.profile && !/^Bulk upload/.test(t.profile) ? <span className="tprof">{t.profile}</span> : null}
                 <span className={"c-" + t.status} style={{ fontWeight: 700 }}>{stLabel(t)}{t.old ? <em className="old4"> · 4+ weeks</em> : null}{t.nt ? <em className="old4"> · no text</em> : null}</span>
                 <DueChip t={t} />
               </span>

@@ -250,6 +250,7 @@ export default function PartnerDesktop({ api }) {
                       {isNew ? <span className="gnew" data-tip="Not started yet – set the reviews to Working">New · customer waiting for confirmation</span> : null}
                       <span className="gm">{list.length} {tab === "todo" ? "open" : "review" + (list.length === 1 ? "" : "s")} · {removed} removed · {usd(list.reduce((s, t) => s + t.price, 0))}</span>
                     </button>
+                    {api.bulks && api.bulks[c] ? <button type="button" className="sort" onClick={() => api.openPrices(c)}>Price table</button> : null}
                   </div>
                   {col ? null : list.map((t) => (
                     <Row key={t.id} t={t} isCur={cur === t.id} isSel={sel.has(t.id)} onRow={onRow} onCheck={toggleSel} onSet={onSetOne} onOpen={openReview} />

@@ -656,3 +656,40 @@
 .osc-open{flex:none;height:36px;padding:0 12px;border-radius:12px;border:1px solid #e5e5e5;background:#fff;color:#111;font:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;gap:5px;cursor:pointer}
 .osc-open svg{width:15px;height:15px}
 .osc-vis{margin-top:12px !important;color:#444}.osc-vis svg{color:#ea580c}
+/* Bulk-Bestellung: Preistabelle (Bottom-Sheet mit Griff + X, Desktop mittig) – 15.10.2026 */
+.ptab{position:fixed;inset:0;z-index:400;pointer-events:none;font-family:"Geist",system-ui,sans-serif}
+.ptab .bg{position:absolute;inset:0;background:rgba(17,17,17,.45);opacity:0;transition:opacity .25s ease}
+.ptab-sheet{position:absolute;left:0;right:0;bottom:0;max-height:88vh;overflow-y:auto;background:#fff;border-radius:28px 28px 0 0;padding:10px 20px calc(24px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .32s cubic-bezier(.22,1,.36,1);font-family:inherit;color:#111;box-shadow:0 -10px 40px rgba(0,0,0,.12)}
+.ptab.show{pointer-events:auto}
+.ptab.show .bg{opacity:1}
+.ptab.show .ptab-sheet{transform:none}
+.ptab-sheet .grab{width:40px;height:5px;border-radius:99px;background:#d4d4d8;margin:0 auto 12px}
+.pra .ptab-x,.prt .ptab-x,.ptab-x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:#f4f4f5;border:0;display:grid;place-items:center;cursor:pointer;color:#111}
+.ptab-x svg{width:18px;height:18px}
+.ptab-sheet h3{font-size:24px;letter-spacing:-.5px;margin:6px 0 2px}
+.ptab-sub{font-size:14px;color:#6b6b6b;margin:0 0 14px}
+.ptab-now{display:flex;flex-direction:column;gap:2px;background:#111;color:#fff;border-radius:18px;padding:14px 16px;margin-bottom:12px}
+.ptab-now span{font-size:12px;opacity:.7;font-weight:600}
+.ptab-now b{font-size:16px}
+.ptab-list{border-radius:18px;background:#f4f4f5;padding:4px 14px}
+.ptab-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;font-size:15px;border-top:1px solid rgba(0,0,0,.06)}
+.ptab-row:first-child{border-top:0}
+.ptab-row span{display:inline-flex;align-items:center;gap:6px;color:#52525b}
+.ptab-row svg{width:16px;height:16px}
+.ptab-row.on{margin:0 -8px;padding:12px 8px;border-radius:12px;background:#fff;box-shadow:0 0 0 2px #111;border-top-color:transparent}
+.ptab-row.on span{color:#111;font-weight:700}
+.ptab-row.on+.ptab-row{border-top-color:transparent}
+.ptab-row.muted span,.ptab-row.muted b{color:#8a8a8a;font-weight:500}
+.ptab-row.sw{border-top-style:dashed}
+.ptab-note{font-size:13px;color:#6b6b6b;line-height:1.45;margin:12px 2px 0}
+@media (min-width:821px){
+  .ptab-sheet{left:50%;right:auto;bottom:auto;top:50%;width:440px;border-radius:24px;transform:translate(-50%,-46%);opacity:0;transition:transform .25s ease,opacity .2s ease}
+  .ptab.show .ptab-sheet{transform:translate(-50%,-50%);opacity:1}
+  .ptab-sheet .grab{display:none}
+}
+.prt .ptab-btn,.pra .ptab-btn,.ptab-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;cursor:pointer;background:#fff4e6;border-radius:18px;padding:12px 14px;margin:6px 0 12px;font:inherit;color:#111}
+.ptab-btn>span{flex:1;display:flex;flex-direction:column;gap:2px}
+.ptab-btn b{font-size:15px}
+.ptab-btn>span>span{font-size:13px;color:#7a4b10;font-weight:600}
+.ptab-btn svg{width:18px;height:18px;color:#7a4b10}
+.tprof{display:block;font-size:12px;color:#6b6b6b;font-weight:600;margin:1px 0 2px}
