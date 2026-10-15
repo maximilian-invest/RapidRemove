@@ -352,24 +352,85 @@ const S: Record<string, Record<SK, string>> = {
     cP1: "siden stegene i dashbordet ikke ble fullført, har vi kansellert følgende:", pushT: "Bestillingen din venter på deg", pushB: "Ca. 2 minutter til i dashbordet – så starter vi fjerningen." },
 };
 
+
+/** Nur Profil-Löschung (kein Bewertungsauftrag): Texte ohne „Bewertungen" (15.10.2026). */
+const PR: Record<string, Partial<L>> = {
+  de: { subject: "Ihre Profil-Löschung startet noch nicht – bitte Zahlungsart hinterlegen", subjectR: "Erinnerung: Zahlungsart noch nicht hinterlegt – Ihre Profil-Löschung wartet",
+    p2: "Bitte hinterlegen Sie schnellstmöglich Ihre Zahlungsart in Ihrem Dashboard. Keine Sorge: Dabei wird nichts abgebucht – erst wenn Ihr Profil tatsächlich gelöscht ist. Ohne hinterlegte Zahlungsart können wir aber nicht mit der Löschung beginnen.",
+    lP2: "Am {date} wird Ihr Auftrag automatisch storniert. Möchten Sie die Löschung noch? Dann hinterlegen Sie jetzt Ihre Zahlungsart – abgebucht wird nichts, bevor Ihr Profil tatsächlich gelöscht ist.",
+    cP2: "Es entstehen Ihnen keine Kosten. Möchten Sie Ihr Profil doch noch löschen lassen? Sie können jederzeit neu beauftragen – oder antworten Sie einfach auf diese E-Mail, dann reaktivieren wir Ihren Auftrag.",
+    pushB: "Ihre Profil-Löschung startet noch nicht – bitte hinterlegen (es wird nichts abgebucht)." },
+  en: { subject: "Your profile removal hasn't started yet – please add a payment method", subjectR: "Reminder: payment method still missing – your profile removal is waiting",
+    p2: "Please add your payment method in your dashboard as soon as possible. Don't worry: nothing is charged – only once your profile has actually been removed. But without a saved payment method we can't start the removal.",
+    lP2: "Your order will be cancelled automatically on {date}. Still want the removal? Then add your payment method now – nothing is charged before your profile has actually been removed.",
+    cP2: "There's no cost to you. Still want your profile removed? You can order again anytime – or simply reply to this email and we'll reactivate your order.",
+    pushB: "Your profile removal hasn't started yet – please add one (nothing is charged)." },
+  es: { subject: "La eliminación de tu perfil aún no ha empezado: añade un método de pago", subjectR: "Recordatorio: sigue faltando el método de pago – la eliminación de tu perfil espera",
+    p2: "Añade tu método de pago en tu panel lo antes posible. Tranquilo: no se cobra nada hasta que tu perfil se haya eliminado de verdad. Pero sin un método de pago guardado no podemos empezar la eliminación.",
+    lP2: "El {date} tu pedido se cancelará automáticamente. ¿Sigues queriendo la eliminación? Añade ahora tu método de pago: no se cobra nada antes de que tu perfil se haya eliminado de verdad.",
+    cP2: "No tienes ningún coste. ¿Sigues queriendo eliminar tu perfil? Puedes volver a pedirlo cuando quieras, o responde a este correo y reactivamos tu pedido.",
+    pushB: "La eliminación de tu perfil aún no ha empezado: añade un método de pago (no se cobra nada)." },
+  fr: { subject: "La suppression de ta fiche n’a pas encore commencé – ajoute un moyen de paiement", subjectR: "Rappel : moyen de paiement toujours manquant – la suppression de ta fiche attend",
+    p2: "Ajoute ton moyen de paiement dans ton espace client dès que possible. Pas d’inquiétude : rien n’est débité avant que ta fiche soit réellement supprimée. Mais sans moyen de paiement enregistré, nous ne pouvons pas lancer la suppression.",
+    lP2: "Le {date}, ta commande sera annulée automatiquement. Tu veux toujours la suppression ? Ajoute maintenant ton moyen de paiement – rien n’est débité avant que ta fiche soit réellement supprimée.",
+    cP2: "Cela ne te coûte rien. Tu veux quand même faire supprimer ta fiche ? Tu peux recommander à tout moment – ou réponds simplement à cet e-mail et nous réactivons ta commande.",
+    pushB: "La suppression de ta fiche n’a pas encore commencé – ajoute un moyen de paiement (rien n’est débité)." },
+  it: { subject: "La rimozione del tuo profilo non è ancora iniziata: aggiungi un metodo di pagamento", subjectR: "Promemoria: manca ancora il metodo di pagamento – la rimozione del profilo è in attesa",
+    p2: "Aggiungi al più presto il tuo metodo di pagamento nella dashboard. Tranquillo: non viene addebitato nulla finché il profilo non è stato davvero rimosso. Ma senza un metodo di pagamento salvato non possiamo iniziare la rimozione.",
+    lP2: "Il {date} il tuo ordine verrà annullato automaticamente. Vuoi ancora la rimozione? Aggiungi ora il metodo di pagamento: nulla viene addebitato prima che il profilo sia stato davvero rimosso.",
+    cP2: "Non hai alcun costo. Vuoi comunque rimuovere il profilo? Puoi ordinare di nuovo quando vuoi, oppure rispondi a questa e-mail e riattiviamo il tuo ordine.",
+    pushB: "La rimozione del profilo non è ancora iniziata: aggiungi un metodo di pagamento (nessun addebito)." },
+  nl: { subject: "De verwijdering van uw profiel is nog niet gestart – voeg een betaalmethode toe", subjectR: "Herinnering: betaalmethode ontbreekt nog – uw profielverwijdering wacht",
+    p2: "Voeg zo snel mogelijk uw betaalmethode toe in uw dashboard. Geen zorgen: er wordt niets afgeschreven totdat uw profiel echt is verwijderd. Maar zonder opgeslagen betaalmethode kunnen we niet met de verwijdering beginnen.",
+    lP2: "Op {date} wordt uw opdracht automatisch geannuleerd. Wilt u de verwijdering nog? Voeg dan nu uw betaalmethode toe – er wordt niets afgeschreven voordat uw profiel echt is verwijderd.",
+    cP2: "Er zijn geen kosten voor u. Wilt u uw profiel toch laten verwijderen? U kunt altijd opnieuw bestellen – of beantwoord gewoon deze e-mail, dan activeren we uw opdracht weer.",
+    pushB: "Uw profielverwijdering is nog niet gestart – voeg een betaalmethode toe (er wordt niets afgeschreven)." },
+  pt: { subject: "A remoção do teu perfil ainda não começou – adiciona um método de pagamento", subjectR: "Lembrete: continua a faltar o método de pagamento – a remoção do perfil está à espera",
+    p2: "Adiciona o teu método de pagamento no painel o mais depressa possível. Não te preocupes: nada é cobrado até o teu perfil ser realmente removido. Mas sem um método de pagamento guardado não podemos começar a remoção.",
+    lP2: "A {date} a tua encomenda será cancelada automaticamente. Ainda queres a remoção? Adiciona agora o método de pagamento – nada é cobrado antes de o teu perfil ser realmente removido.",
+    cP2: "Não tens qualquer custo. Ainda queres remover o teu perfil? Podes encomendar de novo quando quiseres – ou responde a este e-mail e reativamos a encomenda.",
+    pushB: "A remoção do perfil ainda não começou – adiciona um método de pagamento (nada é cobrado)." },
+  ja: { subject: "プロフィール削除はまだ開始されていません – お支払い方法をご登録ください", subjectR: "リマインダー：お支払い方法が未登録です – プロフィール削除をお待ちしています",
+    p2: "できるだけ早くダッシュボードでお支払い方法をご登録ください。ご安心ください：プロフィールが実際に削除されるまで請求は一切ありません。ただし、お支払い方法が登録されていないと削除を開始できません。",
+    lP2: "{date}にご依頼は自動的にキャンセルされます。削除をご希望の場合は、今すぐお支払い方法をご登録ください（プロフィールが実際に削除されるまで請求はありません）。",
+    cP2: "費用は一切かかりません。プロフィールの削除をご希望の場合は、いつでも再度ご依頼いただくか、このメールにご返信いただければご依頼を再開します。",
+    pushB: "プロフィール削除はまだ開始されていません – お支払い方法をご登録ください（請求はありません）。" },
+  sv: { subject: "Borttagningen av din profil har inte startat än – lägg till en betalningsmetod", subjectR: "Påminnelse: betalningsmetod saknas fortfarande – din profilborttagning väntar",
+    p2: "Lägg till din betalningsmetod i din översikt så snart som möjligt. Oroa dig inte: inget debiteras förrän din profil faktiskt har tagits bort. Men utan sparad betalningsmetod kan vi inte påbörja borttagningen.",
+    lP2: "Den {date} avbryts din beställning automatiskt. Vill du fortfarande ha borttagningen? Lägg då till din betalningsmetod nu – inget debiteras innan din profil faktiskt har tagits bort.",
+    cP2: "Det kostar dig ingenting. Vill du ändå få din profil borttagen? Du kan beställa igen när som helst – eller svara på det här mejlet så aktiverar vi din beställning igen.",
+    pushB: "Din profilborttagning har inte startat än – lägg till en betalningsmetod (inget debiteras)." },
+  da: { subject: "Fjernelsen af din profil er ikke startet endnu – tilføj en betalingsmetode", subjectR: "Påmindelse: betalingsmetode mangler stadig – fjernelsen af din profil venter",
+    p2: "Tilføj din betalingsmetode i dit dashboard hurtigst muligt. Bare rolig: der trækkes intet, før din profil faktisk er fjernet. Men uden en gemt betalingsmetode kan vi ikke starte fjernelsen.",
+    lP2: "Den {date} annulleres din ordre automatisk. Vil du stadig have fjernelsen? Så tilføj din betalingsmetode nu – der trækkes intet, før din profil faktisk er fjernet.",
+    cP2: "Det koster dig intet. Vil du alligevel have din profil fjernet? Du kan bestille igen når som helst – eller svar blot på denne e-mail, så genaktiverer vi din ordre.",
+    pushB: "Fjernelsen af din profil er ikke startet – tilføj en betalingsmetode (der trækkes intet)." },
+  no: { subject: "Fjerningen av profilen din har ikke startet ennå – legg til en betalingsmetode", subjectR: "Påminnelse: betalingsmetode mangler fortsatt – fjerningen av profilen venter",
+    p2: "Legg til betalingsmetoden din i dashbordet så snart som mulig. Ikke bekymre deg: ingenting belastes før profilen faktisk er fjernet. Men uten lagret betalingsmetode kan vi ikke starte fjerningen.",
+    lP2: "{date} kanselleres bestillingen din automatisk. Vil du fortsatt ha fjerningen? Legg til betalingsmetoden din nå – ingenting belastes før profilen faktisk er fjernet.",
+    cP2: "Det koster deg ingenting. Vil du likevel få profilen fjernet? Du kan bestille på nytt når som helst – eller bare svar på denne e-posten, så aktiverer vi bestillingen igjen.",
+    pushB: "Fjerningen av profilen din har ikke startet – legg til en betalingsmetode (ingenting belastes)." },
+};
+
 /** mode: "first" (1. Mail) · "reminder" · "final" (pausiert, Frist bis date) · "last" (3 Tage vor Storno) · "cancelled" (storniert) */
 export type PgMode = "first" | "reminder" | "final" | "last" | "cancelled";
 export interface ZahlungsartProps { lang?: string; name?: string; dashUrl: string; siteUrl?: string; items: PgItem[]; reminder?: boolean; mode?: PgMode; date?: string; days?: number; start?: boolean; _overrides?: Record<string, string> }
 const LOC: Record<string, string> = { de: "de-AT", en: "en-GB", es: "es-ES", fr: "fr-FR", it: "it-IT", nl: "nl-NL", pt: "pt-PT", ja: "ja-JP", sv: "sv-SE", da: "da-DK", no: "nb-NO" };
 const fmtDate = (iso: string | undefined, lang: string) => { try { return new Date(String(iso)).toLocaleDateString(LOC[lang] || "en-GB", { day: "numeric", month: "long", year: "numeric" }); } catch { return String(iso || ""); } };
 const fill = (s: string, p: ZahlungsartProps, l: string) => s.replace(/\{date\}/g, fmtDate(p.date, l)).replace(/\{days\}/g, String(p.days || 7));
-const tOf = (lang?: string, start?: boolean): L => { const l = lang && T[lang] ? lang : "en"; return start ? { ...T[l], ...(S[l] || S.en) } : T[l]; };
+const tOf = (lang?: string, start?: boolean, prof?: boolean): L => { const l = lang && T[lang] ? lang : "en"; const b = start ? { ...T[l], ...(S[l] || S.en) } : T[l]; return prof && !start ? { ...b, ...(PR[l] || PR.en) } : b; };
+const onlyProf = (items?: PgItem[]) => !!items && items.length > 0 && items.every((x) => !!x.profile);
 const modeOf = (p: ZahlungsartProps): PgMode => p.mode || (p.reminder ? "reminder" : "first");
 export const zahlungsartSubject = (p: ZahlungsartProps) => {
-  const t = tOf(p.lang, p.start), m = modeOf(p), l = p.lang && T[p.lang] ? p.lang : "en";
+  const t = tOf(p.lang, p.start, onlyProf(p.items)), m = modeOf(p), l = p.lang && T[p.lang] ? p.lang : "en";
   return m === "final" ? fill(t.fS, p, l) : m === "last" ? fill(t.lS, p, l) : m === "cancelled" ? t.cS : m === "reminder" ? t.subjectR : t.subject;
 };
-export const zahlungsartPush = (lang?: string, start?: boolean) => ({ title: tOf(lang, start).pushT, body: tOf(lang, start).pushB });
+export const zahlungsartPush = (lang?: string, start?: boolean, items?: PgItem[]) => ({ title: tOf(lang, start, onlyProf(items)).pushT, body: tOf(lang, start, onlyProf(items)).pushB });
 
 export default function KundenZahlungsartReviews(p: ZahlungsartProps) {
   const { lang = "en", name = "", dashUrl, siteUrl = "https://rapid-remove.com", items = [] } = p;
   const l = lang && T[lang] ? lang : "en";
-  const t = tOf(l, p.start);
+  const t = tOf(l, p.start, onlyProf(items));
   const m = modeOf(p);
   const revs = items.filter((x) => !x.profile);
   const onlyProfile = !revs.length && items.length > 0;

@@ -172,7 +172,7 @@ export async function pgRemindTick(log: (o: unknown, m: string) => void = () => 
         const html = await render(React.createElement(KundenZahlungsartReviews as any, props as any));
         const subject = zahlungsartSubject(props as any);
         await sendMail({ to: w.email, subject, html, replyTo: process.env.MAIL_REPLY_TO });
-        if (mode !== "cancelled") { const p = zahlungsartPush(lang, w.start); void notifyCustomer(w.email, p.title, p.body, `rrc-pg-${w.email}`, { url: "/my-reviews" }).catch(() => false); }
+        if (mode !== "cancelled") { const p = zahlungsartPush(lang, w.start, w.items); void notifyCustomer(w.email, p.title, p.body, `rrc-pg-${w.email}`, { url: "/my-reviews" }).catch(() => false); }
         for (const oid of w.orderIds) await insertEvent({ orderId: oid, email: w.email, type: "mail", title, detail: `${w.items.length} wartend · ${w.items.slice(0, 4).map((x) => x.profile || x.name || x.url).join(" · ")}`, html, subject, auto: true }).catch(() => {});
         void logCustEvent(w.email, "reminder_pg", title, { mode }, { orderId: w.orderIds[0] });
         sent++;
