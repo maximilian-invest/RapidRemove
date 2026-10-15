@@ -308,7 +308,7 @@ export default function AdminNext() {
     loadPtasks, orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, loadPartners: () => partnersList().then(setPartners).catch(() => {}), tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving, reload, closeDrawer,
   };
 
   const top = stack[stack.length - 1];
@@ -408,7 +408,7 @@ function ConfirmRemoved({ t, toast, done }) {
 }
 
 function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
-  const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now } = ctx;
+  const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now, doStatus, reload, closeDrawer } = ctx; // doStatus/reload/closeDrawer: „Löschung abgeschlossen & abbuchen"
   const [cat, setCat] = React.useState(null);
   const [confirm, setConfirm] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
