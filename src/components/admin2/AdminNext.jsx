@@ -524,7 +524,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       <><h3>Löschung abgeschlossen?</h3>
         <p className="shp">Profil von <b>{o.name || o.email}</b> gelöscht. Wir buchen <b>{money(pp.total, pp.c)}</b> (netto, zzgl. Steuer laut Rechnung) automatisch von der hinterlegten Zahlungsart ab{sub ? <> und starten das Abo <b>{money(o.protAmount, pp.c)}/Monat</b> ({o.protection === "monitor" ? "Schutz + Monitoring" : "Schutz"})</> : null}. Der Kunde bekommt die Rechnung automatisch per Mail.</p>
         <p className="shp" style={{ fontSize: 13, color: "var(--g3)" }}>Klappt die Abbuchung nicht, bekommst du eine Push – dann wie gewohnt den Zahlungslink senden.</p>
-        <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Abschließen & abbuchen"}</button></div></>
+        <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Jetzt abbuchen"}</button></div></>
     );
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;

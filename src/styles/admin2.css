@@ -900,6 +900,9 @@
 .an .pr-mr+.pr-mr{border-top:1px solid var(--g2)}
 .an .pr-mr b{color:var(--success)}
 .an .ctas2 .cta svg{width:16px;height:16px;margin-right:6px}
+/* Zwei Buttons nebeneinander: längere Beschriftung bricht sauber um statt über den Rand zu laufen */
+.an .ctas2 .cta{height:auto;min-height:49px;padding:8px 12px;line-height:1.2}
+.an .ctas2 .cta svg{flex:none}
 .an .pr-card{min-width:0;overflow:hidden}
 .an .pr-card .pfld input,.an .pr-card .pr-sel{width:100%;min-width:0;box-sizing:border-box}
 .an .pr-card .pr-row{min-width:0}
