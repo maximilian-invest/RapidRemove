@@ -26,7 +26,7 @@ import { partnerNewOrder, notifyPartner } from "./partnerNotify";
 import { REPORT_REASONS, REPORT_IDS, reportDe } from "./reportReasons";
 import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
 import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, partnerIfApproved, type ServiceId } from "./partnerRegistry";
-import { custSetup, tierFor, type CustSetup } from "./bulkPricing";
+import { custSetup, tierFor, normTiers, type CustSetup } from "./bulkPricing";
 import { isBulkOrder, bulkSoftwareCancelled } from "./bulkRules";
 
 /** Vermerk an der Aufgabe: Bulk-Bewertung braucht Software → aus der Bulk-Bestellung storniert. */
@@ -544,7 +544,23 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     }
     // Grund des Kunden je Bewertung (Richtlinien-Verstoß, im Dashboard angegeben) → Partner meldet damit.
     const custR = await customerReasons(oids as string[]);
-    return { ok: true, preview, paused: pst === "paused", reasons: REPORT_REASONS.map((x) => ({ id: x.id, label: x.en })), tasks: rows.map((r) => ({ ...partnerView(r), ...(custR.get(`${r.order_id}|${r.item_key}`) || {}), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
+    // 15.10.2026: Bulk-Bestellungen als EINE Bestellung am Board + Preistabelle des Partners (welche Stufe gilt).
+    const bulk = new Map<string, { label: string; ref: string; n: number; tiers: { from: number; price: number }[] | null; sw: number | null; idx: number; price: number | null }>();
+    if (pool && oids.length) {
+      const br = await pool.query(`SELECT id, raw->'pricing' AS pr, jsonb_array_length(CASE WHEN jsonb_typeof(raw->'reviewItems')='array' THEN raw->'reviewItems' ELSE '[]'::jsonb END) AS n,
+          (SELECT count(*) FROM jsonb_object_keys(CASE WHEN jsonb_typeof(raw->'bulkSw')='object' THEN raw->'bulkSw' ELSE '{}'::jsonb END))::int AS gone
+        FROM orders WHERE id = ANY($1::text[]) AND (raw->>'bulk')='true'`, [oids]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+      for (const x of br.rows as { id: string; pr: Record<string, unknown> | null; n: number; gone: number }[]) {
+        const pr = x.pr || {};
+        const n = Math.max(0, Number(x.n || 0) - Number(x.gone || 0));
+        const tiers = normTiers(pr.partnerTiers);
+        const t = tiers ? tierFor(tiers, n) : null;
+        const ref = "B-" + String(x.id).replace(/^RR-/, "");
+        bulk.set(x.id, { label: `Bulk order ${ref} · ${Number(x.n || 0)} reviews`, ref, n, tiers, sw: Number(pr.partnerSw) > 0 ? Number(pr.partnerSw) : null, idx: t ? t.idx : -1, price: t ? t.price : null });
+      }
+    }
+    return { ok: true, preview, paused: pst === "paused", reasons: REPORT_REASONS.map((x) => ({ id: x.id, label: x.en })), bulks: Object.fromEntries([...bulk.values()].map((v) => [v.label, v])),
+      tasks: rows.map((r) => ({ ...partnerView(r), ...(r.order_id && bulk.has(r.order_id as string) ? { customer: bulk.get(r.order_id as string)!.label, profile: r.customer || "", bulk: bulk.get(r.order_id as string)!.ref } : {}), ...(custR.get(`${r.order_id}|${r.item_key}`) || {}), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });
 
   // Screenshot einer Bewertung für den Partner (nur wenn er zu einer Aufgabe am Board gehört).
