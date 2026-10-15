@@ -2494,6 +2494,35 @@ async function fixPayPrefAmounts(): Promise<void> {
   app.log.info({ n }, "PayPal/Wise −10 %: Auftragsbeträge nachgezogen");
 }
 
+
+/** Automatische Abbuchung (Profil) abgelehnt/blockiert (z. B. Stripe Radar) → Kunde bekommt sofort den normalen Zahlungslink
+ *  (zahlt dann selbst online – wird deutlich seltener blockiert); danach läuft die Auto-Mahnung wie gewohnt (15.10.2026). */
+async function sendPaylinkAfterAutoFail(orderId: string, why: string): Promise<void> {
+  if (!pool) return;
+  const o = (await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, pay, status, raw FROM orders WHERE id=$1`, [orderId])).rows[0] as Record<string, any> | undefined;
+  if (!o || !o.email || o.pay === "paid" || o.status === "storniert") return;
+  // Schon kürzlich ein Zahlungslink raus (z. B. zweiter Versuch)? → nicht doppelt
+  const recent = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Zahlungslink gesendet%' AND created_at > now() - interval '12 hours' LIMIT 1`, [orderId]);
+  if (recent.rowCount) return;
+  const raw = (o.raw || {}) as Record<string, any>;
+  const usd = o.country === "US";
+  const amount = Number(o.amount) || 0, prot = o.protection && o.protection !== "none" ? Number(o.prot_amount) || 0 : 0;
+  const express = raw.express === true || raw.express === "true";
+  const body = { token: ADMIN_TOKEN, email: o.email, name: o.name, orderId: o.id, currency: usd ? "usd" : "eur", service: o.service, protection: o.protection || "none",
+    serviceAmount: amount, protAmount: prot, protType: prot ? o.protection : "", total: amount + prot, express,
+    expressLabel: express ? `Express-Bearbeitung (≤6 h)${raw.expressAmount ? " · +" + raw.expressAmount + " " + (usd ? "$" : "€") : ""}` : undefined,
+    lang: mailLang(o.lang), template: "zahlungslink", celebrate: false };
+  const res = await app.inject({ method: "POST", url: "/admin/paylink", payload: body, headers: { "content-type": "application/json" } });
+  const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as { ok?: boolean; error?: string };
+  if (res.statusCode >= 400 || !j.ok) {
+    await insertEvent({ orderId, email: o.email, type: "pay", title: "Zahlungslink nach fehlgeschlagener Abbuchung NICHT gesendet", detail: String(j.error || res.statusCode).slice(0, 200) + " → bitte manuell senden", auto: true }).catch(() => {});
+    void notifyTeam(`Zahlungslink fehlgeschlagen · ${o.name || o.email}`, `Auftrag ${orderId}: Abbuchung abgelehnt und Zahlungslink ging nicht raus – bitte manuell senden`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+    return;
+  }
+  await pool.query(`UPDATE orders SET pay='pending' WHERE id=$1 AND COALESCE(pay,'') NOT IN ('paid','refunded','inkasso','mahnung')`, [orderId]).catch(() => {});
+  await insertEvent({ orderId, email: o.email, type: "pay", title: "Abbuchung abgelehnt → Zahlungslink automatisch gesendet", detail: `${why.slice(0, 160)} · Kunde zahlt selbst online; Auto-Mahnung läuft danach wie gewohnt`, auto: true }).catch(() => {});
+}
+
 /** Einmalig (12.10.2026): RR-800339 – Stufe 3 ging wegen fehlendem Protokoll-Eintrag mehrfach raus → als versendet
  *  markieren, damit nichts mehr automatisch kommt (nächste Stufe 4 = Team). */
 async function fixDunRR800339(): Promise<void> {
@@ -2533,7 +2562,10 @@ app.post("/admin/order-status", async (req, reply) => {
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
   // Profil gelöscht + Kunde zahlt automatisch → sofort von der hinterlegten Zahlungsart abbuchen (Rechnung per Mail).
-  if (status === "done" && pay !== "paid") void chargeProfileOrder(id).then((r) => { if (r?.ok) { void sendPurchaseForOrder(id, app.log); void scheduleProtectionUpsell(id, app.log).catch(() => {}); } }).catch((e) => app.log.error({ err: e }, "Profil-Abbuchung fehlgeschlagen"));
+  if (status === "done" && pay !== "paid") void chargeProfileOrder(id).then(async (r) => {
+    if (r?.ok) { void sendPurchaseForOrder(id, app.log); void scheduleProtectionUpsell(id, app.log).catch(() => {}); }
+    else if (r && !r.ok) await sendPaylinkAfterAutoFail(id, r.error || "").catch((e) => app.log.error({ err: e, orderId: id }, "Zahlungslink nach fehlgeschlagener Abbuchung nicht gesendet"));
+  }).catch((e) => app.log.error({ err: e }, "Profil-Abbuchung fehlgeschlagen"));
   // Wise-/PayPal-Zahler (Einzelbewertungen): Zahlungsbestätigung automatisch, sobald „bezahlt" gesetzt wird (je Auftrag nur 1×).
   // Mehrere Aufträge desselben Kunden, die kurz hintereinander auf bezahlt gehen (eine Sammelüberweisung) → EINE Mail.
   if (pay === "paid") queuePaidConfirm(id);

@@ -433,8 +433,8 @@ export async function chargeProfileOrder(orderId: string): Promise<{ ok: boolean
     const msg = `${err.message}${err.decline ? ` (${err.decline})` : ""}`.slice(0, 300);
     if (inv?.id && !subId) void sx(k.key, "POST", `invoices/${inv.id}/void`, {}).catch(() => {});
     await pool.query(`UPDATE cust_autopay SET last_error=$2, updated_at=now() WHERE email=$1`, [email, msg]).catch(() => {});
-    await insertEvent({ orderId, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}${protMonthly ? ` + Abo ${protMonthly}/Monat` : ""}`, detail: `${row.label || ""} · ${msg} → bitte Zahlungslink senden`, auto: true }).catch(() => {});
-    void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen (Profil) · ${amount} ${cur.toUpperCase()}`, `${email} · ${msg}`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
+    await insertEvent({ orderId, email, type: "pay", title: `Automatische Abbuchung fehlgeschlagen · ${amount} ${cur.toUpperCase()}${protMonthly ? ` + Abo ${protMonthly}/Monat` : ""}`, detail: `${row.label || ""} · ${msg} → Zahlungslink geht automatisch an den Kunden`, auto: true }).catch(() => {});
+    void notifyTeam(`${k.mode === "test" ? "TEST · " : ""}Abbuchung fehlgeschlagen (Profil) · ${amount} ${cur.toUpperCase()}`, `${email} · ${msg} · Zahlungslink geht automatisch raus`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
     return { ok: false, error: msg };
   }
   await pool.query(`UPDATE orders SET pay='paid' WHERE id=$1`, [orderId]);
