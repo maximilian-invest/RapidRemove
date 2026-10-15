@@ -12,11 +12,12 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin,
+  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon,
 } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
 import { reviewQuote, vatNote } from "@/lib/pricing";
+import { searchProfiles } from "@/lib/places";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
 import CustApp, { injectAppManifest } from "./CustApp";
@@ -656,8 +657,17 @@ const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r
 
 function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
   const both = !!(modes && modes.hand && modes.bulk);
-  const first = () => (presetLinks && presetLinks.length ? "links" : both ? "mode" : modes && modes.bulk && !modes.hand ? "bulk" : "links");
-  const [step, setStep] = React.useState("links"); // mode | links | bulk | bpre | done
+  // 15.10.2026: Start = Google-Profil suchen → Bewertungen anhaken. Darunter: „Links einfügen" und „Bulk-Upload".
+  const hasHand = !!(modes && modes.hand);
+  const first = () => (presetLinks && presetLinks.length ? "links" : hasHand ? "search" : "bulk");
+  const [step, setStep] = React.useState("search"); // search | pick | links | bulk | bpre | done
+  const [q, setQ] = React.useState("");
+  const [res, setRes] = React.useState(null); // Suchtreffer
+  const [place, setPlace] = React.useState(null);
+  const [list, setList] = React.useState(null);
+  const [err, setErr] = React.useState("");
+  const [pick, setPick] = React.useState([]);
+  const inRef = React.useRef(null);
   const [busy, setBusy] = React.useState(false);
   const [agb, setAgb] = React.useState(false);
   const [fagg, setFagg] = React.useState(false);
@@ -693,10 +703,12 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     const f0 = first();
     const pre = (presetLinks || []).filter(Boolean).slice(0, 50).map((u) => newRow(u));
     const r0 = pre[0] || newRow();
+    setQ(""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]);
     setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows(pre.length ? pre : [r0]); setTack(false); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
     setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0);
     if (pre.length) setTimeout(() => pre.forEach((r) => scanRow(r.id, r.url)), 50);
     else if (f0 === "links") focusRow(r0.id, 380);
+    else if (f0 === "search") { let fine = false; try { fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) { /* */ } if (fine) setTimeout(() => { try { inRef.current && inRef.current.focus({ preventScroll: true }); } catch (e) { /* */ } }, 380); }
     if (modes && (modes.bulk || modes.hand)) call("bulk/info", { token }).then(setBinfo).catch(() => setBinfo(null));
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
   const addFiles = (list) => { const a = Array.from(list || []); if (a.length) setFiles((x) => [...x, ...a].slice(0, 10)); };
@@ -711,7 +723,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   };
   const bOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!agb || !fagg || !pol || !tack) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
+    if (!agb || !fagg || !pol) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
     setBusy(true);
     try {
       const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, tierAck: true, policyV: POLICY_V, items: prev.items });
@@ -742,11 +754,52 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     setRows((x) => { const i = x.findIndex((r) => r.id === id); const y = [...x]; if (i >= 0) y[i] = { ...y[i], url: parts[0] }; y.splice(i + 1, 0, ...extra); return y.slice(0, 50); });
     scanRow(id, parts[0]); extra.forEach((r) => scanRow(r.id, r.url));
   };
+  // ---- Profil suchen → Bewertungen anhaken ----
+  const search = async (qq) => {
+    const v = String(qq ?? q).trim(); if (!v) return;
+    setBusy(true); setRes(null);
+    try { setRes(await searchProfiles(v, LANG)); } catch (e) { setRes([]); }
+    setBusy(false);
+  };
+  // Live-Vorschläge beim Tippen (wie im Website-Wizard), entprellt
+  React.useEffect(() => {
+    if (!open || step !== "search") return;
+    const v = q.trim();
+    if (v.length < 2) { setRes(null); return; }
+    let alive = true;
+    const id = setTimeout(() => {
+      searchProfiles(v, LANG).then((r) => { if (alive) setRes(r || []); }).catch(() => { if (alive) setRes([]); });
+    }, 300);
+    return () => { alive = false; clearTimeout(id); };
+  }, [q, open, step]);
+  // iOS schiebt beim Öffnen der Tastatur die Seite hinter dem fixen Blatt nach oben → zurücksetzen
+  const unshift = () => { [60, 320, 650].forEach((ms) => setTimeout(() => { try { if (window.scrollY) window.scrollTo(0, 0); } catch (e) { /* */ } }, ms)); };
+  const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
+  const choose = async (p) => {
+    if (dach(p)) return;
+    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false);
+    try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG }); setList(r.reviews || []); }
+    catch (e) { setList([]); setErr(T("arErr")); }
+  };
+  const sel = (list || []).filter((r) => pick.includes(r.id));
+  const order = async () => {
+    if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!agb || !fagg) { setCErr(true); return; }
+    setBusy(true);
+    try {
+      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      setOid(r.orderId); setDoneN(pick.length); setStep("done");
+    } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
+    setBusy(false);
+  };
   const okRows = rows.filter((r) => r.st === "ok");
   const scanning = rows.some((r) => r.st === "scan");
   const cc0 = ((okRows.find((r) => r.r.place && r.r.place.cc) || {}).r || {}).place;
-  const usd = !!cc0 && cc0.cc === "US";
-  const selQ = okRows.map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw }));
+  const isPick = step === "pick";
+  const usd = isPick ? !!place && place.cc === "US" : !!cc0 && cc0.cc === "US";
+  const selQ = isPick
+    ? sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; })
+    : okRows.map((r) => ({ old: !!r.r.old, nt: !!r.r.nt, sw: !!r.r.sw }));
   const q2 = reviewQuote(selQ, LANG);
   // Eigene Preise des Kunden (Admin → Kunden & Preise) gelten auch von Hand: Staffel nach Anzahl + Software-Preis.
   const own = binfo && binfo.pricing && binfo.pricing.custom && binfo.pricing.tiers && binfo.pricing.tiers.length ? binfo.pricing : null;
@@ -780,25 +833,48 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
       {open ? (
         <div className="fl-card">
           <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
-            {(() => { const seq = [...(both ? ["mode"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : ["links"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
-          {step === "mode" ? (
+            {(() => { const seq = [...(hasHand ? ["search"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : step === "links" ? ["links"] : ["pick"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
+          {step === "search" ? (
             <div className="fl-body">
               <div className="fl-k">{T("noK")}</div>
-              <h2>{T("noModeH")}</h2>
-              <p>{T("noModeP")}</p>
+              <h2>{T("noH1")}</h2>
+              <p>{T("noP1")}</p>
+              <form className="no-srch" onSubmit={(e) => { e.preventDefault(); search(); }}>
+                <Search /><input ref={inRef} onFocus={unshift} value={q} onChange={(e) => setQ(e.target.value)} placeholder={T("noPh")} enterKeyHint="search" />
+                <button type="submit" disabled={busy || !q.trim()}>{busy ? <Loader className="spin" /> : T("noSearch")}</button>
+              </form>
+              {res && !res.length ? <div className="note">{T("noNone")}</div> : null}
+              {res && res.length ? (
+                <div className="ar-list">
+                  {res.map((p) => (
+                    <button key={p.placeId || p.id} type="button" className={"ar-row no-pl" + (dach(p) ? " dis" : "")} disabled={dach(p)} onClick={() => choose(p)}>
+                      <span className="ico"><MapPin /></span>
+                      <span className="t">
+                        <span className="a">{p.name}{p.rating ? <span className="rt"><Star className="f" />{p.rating}{p.reviews ? <em> ({p.reviews})</em> : null}</span> : null}</span>
+                        <span className="x">{p.addr}</span>
+                        {dach(p) ? <span className="in">{T("noDach")}</span> : null}
+                      </span>
+                      {!dach(p) ? <ChevronRight className="chev" /> : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <div className="no-or"><span>{T("noOr")}</span></div>
               <div className="ar-list bu-modes">
                 <button type="button" className="ar-row no-pl" onClick={() => { setKind("hand"); setStep("links"); const r = rows[0]; if (r) focusRow(r.id, 120); }}>
-                  <span className="ico"><ListChecks /></span><span className="t"><span className="a">{T("noHand")}</span><span className="x">{T("noHandS")}</span></span><ChevronRight className="chev" />
+                  <span className="ico"><LinkIcon /></span><span className="t"><span className="a">{T("noHand")}</span><span className="x">{T("noHandS")}</span></span><ChevronRight className="chev" />
                 </button>
-                <button type="button" className="ar-row no-pl" onClick={() => { setKind("bulk"); setStep("bulk"); }}>
-                  <span className="ico"><Upload /></span><span className="t"><span className="a">{T("noBulk")}</span><span className="x">{T("noBulkS")}</span></span><ChevronRight className="chev" />
-                </button>
+                {modes && modes.bulk ? (
+                  <button type="button" className="ar-row no-pl" onClick={() => { setKind("bulk"); setStep("bulk"); }}>
+                    <span className="ico"><Upload /></span><span className="t"><span className="a">{T("noBulk")}</span><span className="x">{T("noBulkS")}</span></span><ChevronRight className="chev" />
+                  </button>
+                ) : null}
               </div>
             </div>
           ) : step === "bulk" ? (
             <>
               <div className="fl-body">
-                {both ? <button type="button" className="bu-back" onClick={() => setStep("mode")}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
+                {hasHand ? <button type="button" className="bu-back" onClick={() => { setKind("hand"); setStep("search"); }}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
                 <h2>{T("buH1")}</h2>
                 <p>{T("buP1")}</p>
                 <label className={"bu-drop" + (drag ? " on" : "")} onDragOver={(e) => { e.preventDefault(); setDrag(true); }} onDragLeave={() => setDrag(false)} onDrop={(e) => { e.preventDefault(); setDrag(false); addFiles(e.dataTransfer && e.dataTransfer.files); }}>
@@ -860,12 +936,11 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                   <div className="bu-cons" ref={consRef}>
                     <div className="bu-soft">{prev.pricing && prev.pricing.sw ? T("buSoftP", { price: net(money(prev.pricing.sw, prev.pricing.cur)) }) : T("buSoft")}</div>
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
-                      <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
+                      <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post} {T("buTierAck", { tol: (binfo && binfo.tol != null ? binfo.tol : 10) })}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
                     <PolicyConsent lang={LANG} checked={pol} error={cErr && !pol} className="no-pol"
                       style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 10px", textAlign: "left", background: cErr && !pol ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
                       onChange={(v) => { setPol(v); setCErr(false); }} />
-                    <label className={"no-ck" + (cErr && !tack ? " bad" : "")}><input type="checkbox" checked={tack} onChange={(e) => { setTack(e.target.checked); setCErr(false); }} /><span>{T("buTierAck", { tol: (binfo && binfo.tol != null ? binfo.tol : 10) })}</span></label>
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </div>
                 ) : null}
@@ -876,10 +951,51 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                 <button className="cta" disabled={!prev.n || busy} onClick={prev.n ? bOrder : () => setStep("bulk")}>{busy ? <Loader className="spin" /> : prev.n ? <Check /> : <ArrowLeft />}{prev.n ? T("buOrder", { n: prev.n.toLocaleString(LOC) }) : T("buBack")}</button>
               </div>
             </>
+          ) : step === "pick" ? (
+            <>
+              <div className="fl-body">
+                <button type="button" className="no-chg" onClick={() => setStep("search")}><MapPin /><span><b>{place.name}</b><span>{place.addr}</span></span><em>{T("noChange")}</em></button>
+                <h2>{T("noH2")}</h2>
+                <p>{T("noP2")}</p>
+                {list === null ? <div className="ar-load"><Loader className="spin" /></div>
+                  : err ? <div className="note bad">{err}</div>
+                  : !list.length ? <div className="note">{T("noNoRev")}</div>
+                  : (
+                    <div className="ar-list">
+                      {list.map((r) => {
+                        const on = pick.includes(r.id);
+                        return (
+                          <button key={r.id} type="button" disabled={r.ordered || busy} className={"ar-row" + (on ? " on" : "") + (r.ordered ? " dis" : "")} onClick={() => setPick((x) => (on ? x.filter((y) => y !== r.id) : [...x, r.id]))}>
+                            <span className="cb">{on || r.ordered ? <Check /> : null}</span>
+                            <span className="t">
+                              <span className="a">{r.name}<span className="stars" aria-label={r.rating + " stars"}>{Array.from({ length: 5 }, (_, i) => <Star key={i} className={i < r.rating ? "f" : ""} />)}</span></span>
+                              <span className={"x" + (r.text ? "" : " none")}>{r.text || T("noText")}</span>
+                              {r.ordered ? <span className="in">{T("arIn")}</span> : null}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+              </div>
+              <div className="fl-foot pgf">
+                {sel.length ? (
+                  <>
+                    <div className="ar-max">{T("noMax", { amount: net(money(handMax, handCur)) })}</div>
+                    <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
+                      <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
+                    <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    {cErr ? <div className="no-err">{T("noAgbErr")}</div> : null}
+                    {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
+                  </>
+                ) : null}
+                <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noH2")}</button>
+              </div>
+            </>
           ) : step === "links" ? (
             <>
               <div className="fl-body">
-                {both ? <button type="button" className="bu-back" onClick={() => setStep("mode")}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
+                {hasHand ? <button type="button" className="bu-back" onClick={() => { setKind("hand"); setStep("search"); }}><ArrowLeft />{T("noK")}</button> : <div className="fl-k">{T("noK")}</div>}
                 <h2>{T("lnH1")}</h2>
                 <p>{T("lnP1")}</p>
                 <div className="ln-list">
@@ -1759,9 +1875,9 @@ export default function CustomerDashboard() {
             try { await passkeyRegister("customer", token); showToast(T("pkIsOn", { name: pkName() })); } catch (e) { const m = passkeyError(e, T); if (m) showToast(m, true); }
           }}><span className="ico"><ScanFace /></span><span className="t"><b>{T("pkLogin", { name: pkName() })}</b><span>{passkeyOnDevice("customer") ? T("pkOn") : T("pkOff")}</span></span><ChevronRight /></button>
         ) : null}
-        <button className="ai-row" onClick={async () => {
+        {!data.pwLocked ? <button className="ai-row" onClick={async () => {
           try { await call("password-link", { token, lang: LANG }); showToast(T("linkSent")); } catch (e) { showToast(e.code === "too_many" ? T("tooMany") : T("genericErr"), true); }
-        }}><span className="ico"><KeyRound /></span><span className="t"><b>{T("changePw")}</b><span>{T("changePwSub")}</span></span><ChevronRight /></button>
+        }}><span className="ico"><KeyRound /></span><span className="t"><b>{T("changePw")}</b><span>{T("changePwSub")}</span></span><ChevronRight /></button> : null}
         <button className="ai-row" onClick={() => setChatOpen(true)}><span className="ico"><MessageCircle /></span><span className="t"><b>{T("help")}</b><span>{T("helpSub")}</span></span><ChevronRight /></button>
         <button className="ai-row" onClick={() => { setBill(null); setBillOpen(true); }}><span className="ico"><CreditCard /></span><span className="t"><b>{T("billT")}</b><span>{ap ? ap.label : T("billSub")}</span></span><ChevronRight /></button>
         <button className="ai-row" onClick={() => goTab("pay")}><span className="ico"><FileText /></span><span className="t"><b>{T("invoices")}</b><span>{T("invoicesSub")}</span></span><ChevronRight /></button>

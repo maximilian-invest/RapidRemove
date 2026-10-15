@@ -97,6 +97,10 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
   const [pRows, setPRows] = React.useState(toRows(init && init.partner && init.partner.tiers));
   const [pSw, setPSw] = React.useState(init && init.partner && init.partner.sw ? String(init.partner.sw) : "");
   const [note, setNote] = React.useState((init && init.note) || "");
+  const [pw, setPw] = React.useState((init && init.password) || "");
+  const [pwLock, setPwLock] = React.useState(init ? !!init.pwLocked : true);
+  const genPw = () => { const a = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789"; const r = new Uint32Array(12); (window.crypto || {}).getRandomValues ? window.crypto.getRandomValues(r) : r.forEach((_, i) => { r[i] = Math.floor(Math.random() * 1e9); }); setPw(Array.from(r, (x) => a[x % a.length]).join("")); };
+  const pwChanged = pw.trim() !== ((init && init.password) || "");
   const [invite, setInvite] = React.useState(true);
   const [busy, setBusy] = React.useState(false);
   const p = partners.find((x) => String(x.id) === pid);
@@ -105,7 +109,8 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
     try {
       const j = await pricingCustomer({ email: email.trim(), name, company, lang, partnerId: pid || null,
         tiers: own ? fromRows(rows) : null, cur: own ? cur : null, sw: own && sw.trim() ? sw.trim() : null,
-        partnerTiers: pOwn ? fromRows(pRows) : null, partnerSw: pSw.trim() ? pSw.trim() : null, note, ...extra });
+        partnerTiers: pOwn ? fromRows(pRows) : null, partnerSw: pSw.trim() ? pSw.trim() : null, note,
+        ...(pwChanged && pw.trim() ? { password: pw.trim() } : {}), ...(pw.trim() || (init && init.password) ? { pwLocked: pwLock } : {}), ...extra });
       toast(j.invited ? "Dashboard angelegt · Login-Link an " + email.trim() + " gesendet" : j.account ? "Dashboard angelegt" : "Gespeichert");
       onSaved();
     } catch (e) { toast("Fehler: " + e.message); }
@@ -139,6 +144,12 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
         <label className="pfld"><span>Name</span><input value={name} onChange={(e) => setName(e.target.value)} placeholder="z. B. Rumaan Robe" /></label>
         <label className="pfld"><span>Firma</span><input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="optional" /></label>
       </div>
+      <div className="pr-two">
+        <label className="pfld"><span>Passwort {init && !init.password ? "(noch keins festgelegt – Kunde hat ein eigenes)" : ""}</span><input value={pw} onChange={(e) => setPw(e.target.value)} placeholder="mind. 8 Zeichen" autoComplete="off" spellCheck={false} /></label>
+        <div className="pfld"><span>&nbsp;</span><button type="button" className="cta gh" style={{ height: 46 }} onClick={genPw}>Passwort erzeugen</button></div>
+      </div>
+      {pw.trim() || (init && init.password) ? <Toggle on={pwLock} set={setPwLock} title="Kunde darf Passwort nicht ändern" sub={pwLock ? "Nur du legst es fest – „Passwort vergessen“ schickt dem Kunden einen Login-Link statt eines neuen Passworts" : "Kunde kann es selbst ändern (dann siehst du es hier nicht mehr)"} /> : null}
+      {pw.trim() && pw.trim().length < 8 ? <p className="sh" style={{ color: "var(--danger)" }}>Mindestens 8 Zeichen.</p> : null}
       <label className="pfld"><span>Sprache (Dashboard + Mails)</span><select className="pr-sel" value={lang} onChange={(e) => setLang(e.target.value)}>{LANGS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
 
       <div className="pr-sec">2 · Partner</div>
@@ -164,7 +175,7 @@ function CustomerEdit({ init, def, partners, onClose, onSaved, toast }) {
       {isNew ? <button type="button" className="ir pr-tg" onClick={() => setInvite(!invite)}><span className="t"><b>Login-Link gleich per Mail senden</b><span>{invite ? "Kunde bekommt „Ihr persönliches Dashboard ist da“ mit Ein-Klick-Login" : "Aus – du schickst den Link später"}</span></span><span className={"tg" + (invite ? " on" : "")}><i /></span></button> : null}
       <div className="ctas2">
         {init ? <button type="button" className="cta gh" disabled={busy} onClick={remove}>Entfernen</button> : <button type="button" className="cta gh" disabled={busy} onClick={onClose}>Abbrechen</button>}
-        <button type="button" className="cta" disabled={busy || !email.includes("@")} onClick={() => save(isNew ? { create: true, invite } : {})}>{busy ? "Speichere …" : isNew ? <><UserPlus />Dashboard anlegen</> : <><Check />Speichern</>}</button>
+        <button type="button" className="cta" disabled={busy || !email.includes("@") || (pw.trim() && pw.trim().length < 8)} onClick={() => save(isNew ? { create: true, invite } : {})}>{busy ? "Speichere …" : isNew ? <><UserPlus />Dashboard anlegen</> : <><Check />Speichern</>}</button>
       </div>
       {init ? (
         <div className="ctas2" style={{ marginTop: 8 }}>

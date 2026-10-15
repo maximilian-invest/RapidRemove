@@ -84,7 +84,8 @@ async function putSetting(key: string, value: string): Promise<void> {
 export type DefaultPricing = Pricing & { partner: PartnerPricing; tol: number };
 /** Toleranz (Prozent unter der Stufengrenze), bevor eine Stornierung den Preis ändert – Standard 10 % (105 → 95 bleibt in „ab 100"). */
 export const DEFAULT_TOL = 10;
-const normTol = (v: unknown) => { const n = Math.round(num(v)); return Number.isFinite(n) && n >= 0 && n <= 50 ? n : DEFAULT_TOL; };
+// Fehlt der Wert (alte Speicherung ohne Toleranz) → Standard 10 % (vorher: leer → 0 %).
+const normTol = (v: unknown) => { if (v === undefined || v === null || v === "") return DEFAULT_TOL; const n = Math.round(num(v)); return Number.isFinite(n) && n >= 0 && n <= 50 ? n : DEFAULT_TOL; };
 export async function defaultPricing(): Promise<DefaultPricing | null> {
   const v = await getSetting("pricing_default");
   if (!v) return null;
@@ -167,6 +168,9 @@ export async function dashNewOrderOn(): Promise<boolean> { return (await getSett
 
 type Hooks = {
   ensureAccount: (email: string) => Promise<unknown>;
+  /** Passwort vom Admin (null = unverändert) + Sperre „Kunde kann es nicht ändern". */
+  setPassword: (email: string, pw: string | null, locked: boolean) => Promise<unknown>;
+  pwInfo: (emails: string[]) => Promise<Map<string, { password: string | null; locked: boolean }>>;
   sendInvite: (email: string, name: string, lang: string) => Promise<void>;
 };
 
@@ -185,12 +189,13 @@ export function registerPricingRoutes(app: FastifyInstance, adminToken: string, 
     const partners = (await pool.query(`SELECT id, name, company, status, active, approved FROM partners ORDER BY active DESC, id`).catch(() => ({ rows: [] as Record<string, unknown>[] }))).rows
       .map((x) => ({ id: Number(x.id), name: String(x.company || x.name || "Partner " + x.id), active: x.status === "active" && x.active !== false, services: Object.keys((x.approved as Record<string, number>) || {}) }));
     return { ok: true, def: await defaultPricing(), newOrder: await dashNewOrderOn(), partners,
-      customers: rows.map((r) => {
+      customers: await (async () => { const pw = await hooks.pwInfo(rows.map((r) => String(r.email))); return rows.map((r) => {
         const sw = Number(r.sw_price);
         return { email: r.email, name: r.name || "", company: r.company || "", lang: r.lang || "", cur: normCur(r.cur), tiers: normTiers(r.tiers), sw: Number.isFinite(sw) && sw > 0 ? sw : null,
           partnerId: r.partner_id ? Number(r.partner_id) : null, partner: partnerOf(r), note: r.note || "", updated: r.updated_at,
-          account: !!r.acc_at, lastLogin: r.last_login || null, invitedAt: r.invited_at || null, orders: Number(r.orders || 0) };
-      }) };
+          account: !!r.acc_at, lastLogin: r.last_login || null, invitedAt: r.invited_at || null, orders: Number(r.orders || 0),
+          password: pw.get(String(r.email))?.password ?? null, pwLocked: !!pw.get(String(r.email))?.locked };
+      }); })() };
   });
 
   // Admin: Standard-Staffel speichern (+ optional Software-Preis).
@@ -243,6 +248,10 @@ export function registerPricingRoutes(app: FastifyInstance, adminToken: string, 
       [email, cur, tiers ? JSON.stringify(tiers) : null, sw, pt ? JSON.stringify(pt) : null, psw, pid, clip(b.name, 120) || null, clip(b.company, 160) || null, lang, clip(b.note, 300)]);
     let account = false, invited = false;
     if (b.create === true || b.invite === true) { await hooks.ensureAccount(email); account = true; }
+    // Passwort vom Admin festlegen (mind. 8 Zeichen) + Sperre. Leer = unverändert.
+    const pw = typeof b.password === "string" ? b.password.trim() : "";
+    if (pw && (pw.length < 8 || pw.length > 200)) return reply.code(400).send({ ok: false, error: "Passwort: mindestens 8 Zeichen" });
+    if (pw || typeof b.pwLocked === "boolean") { await hooks.setPassword(email, pw || null, b.pwLocked === true); account = true; }
     if (b.invite === true) {
       try { await hooks.sendInvite(email, clip(b.name, 120), lang || "en"); invited = true; await pool.query(`UPDATE cust_pricing SET invited_at=now() WHERE email=$1`, [email]); }
       catch (e) { return reply.code(502).send({ ok: false, error: "Gespeichert + Konto angelegt, aber Mail fehlgeschlagen: " + String((e as Error)?.message || e).slice(0, 120) }); }

@@ -40,7 +40,7 @@ import { registerPartnerBackfill, runRv60BackfillOnce } from "./partnerBackfill"
 import { initPartnerAuth, registerPartnerAuth, seedPartnerAccount } from "./partnerAuth";
 import { initPartnerPush, startPartnerReminders } from "./partnerNotify";
 import { initPasskeys, registerPasskeyRoutes } from "./passkeys";
-import { createAutologin, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
+import { createAutologin, revertUnapprovedSoftware, customerSessionInfo, initCustomerTables, registerCustomerRoutes, registerCustomerAdminRoutes, ensureCustomerAccount, setCustomerPasswordAdmin, customerPwInfo, addOrderPayment, DASH_URL, takeDueNotifications, requeueNotify, markPayRequested, payRequestGuard, pollReviewPayments, payHoldSweep, dashLink, newPayId, withRef, keyOf, markOrderReviewsPaidManual, loadCustomerOrders } from "./customers";
 import { registerCustChat, registerSiteChat, linkSiteChat } from "./chat/chat";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
 import { isTestEmail } from "./testAccounts";
@@ -205,6 +205,8 @@ registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung i
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
 registerCustNewOrder(app); registerCustBulk(app); registerBulkRules(app, customerSessionInfo); registerPricingRoutes(app, ADMIN_TOKEN, { // Admin → Kunden & Preise: Kunden-Dashboard anlegen + Login-Link
   ensureAccount: (email) => ensureCustomerAccount(email),
+  setPassword: (email, pw, locked) => setCustomerPasswordAdmin(email, pw, locked),
+  pwInfo: (emails) => customerPwInfo(emails),
   sendInvite: async (email, name, lang) => { await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name, url: await dashLink(email, lang) })), replyTo: process.env.MAIL_REPLY_TO }); },
 }); registerOrderAddRoutes(app, ADMIN_TOKEN); registerPriceEditRoute(app, ADMIN_TOKEN); // Preise eines Auftrags nachträglich anpassen // Nachbestellung: Bewertungen zu bestehendem Auftrag (Admin + Kunde im Dashboard)
 registerPartnerStats(app, (b) => !!ADMIN_TOKEN && String(b.token || "") === ADMIN_TOKEN);
@@ -219,6 +221,10 @@ registerCustomerAdminRoutes(app, ADMIN_TOKEN, {
   },
 });
 registerCustomerRoutes(app, {
+  // Passwort vom Admin festgelegt + gesperrt: „Passwort vergessen" schickt einen Ein-Klick-Login (Dashboard-Einladung).
+  sendLoginLink: async (email, url, lang) => {
+    await sendMail({ to: email, subject: dashInviteSubject(lang), html: await render(React.createElement(DashInvite, { lang, name: "", url })), replyTo: process.env.MAIL_REPLY_TO });
+  },
   sendResetLink: async (email, url, lang) => {
     const m = resetLinkMail(lang, url);
     await sendMail({ to: email, subject: m.subject, html: await render(m.el), replyTo: process.env.MAIL_REPLY_TO });

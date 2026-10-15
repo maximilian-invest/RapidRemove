@@ -9,6 +9,7 @@
  * KEINE Partner-Daten nach außen.
  */
 import { custSetup } from "./bulkPricing";
+import { encPwScoped, decPwScoped } from "./pwCrypt";
 import crypto from "node:crypto";
 import { isTestEmail, TEST_LOGIN_PW_HASH } from "./testAccounts";
 import type { FastifyInstance } from "fastify";
@@ -34,6 +35,9 @@ export async function initCustomerTables(): Promise<void> {
       last_login timestamptz
     )
   `);
+  // 15.10.2026: Passwort vom Admin festgelegt (verschlüsselt sichtbar im Admin) + optional gesperrt (Kunde kann es nicht ändern).
+  await pool.query(`ALTER TABLE cust_accounts ADD COLUMN IF NOT EXISTS pw_enc text`).catch(() => {});
+  await pool.query(`ALTER TABLE cust_accounts ADD COLUMN IF NOT EXISTS pw_locked boolean NOT NULL DEFAULT false`).catch(() => {});
   // Vorheriger Partner-Status je Bewertung (Kunde sieht „In Bearbeitung → …" in Mail + Dashboard).
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS prev_status text`).catch(() => {});
   // Sammel-Benachrichtigung: 5 Minuten nach der LETZTEN Partner-Änderung eines Auftrags eine Mail.
@@ -111,6 +115,26 @@ export async function ensureCustomerAccount(email: string): Promise<{ created: b
   const r = await pool.query(`INSERT INTO cust_accounts (email, pass_hash) VALUES ($1,$2) ON CONFLICT (email) DO NOTHING RETURNING email`, [e, hashPassword(pw)]);
   return r.rowCount ? { created: true, password: pw } : { created: false };
 }
+/** Admin legt das Passwort fest (Konto wird bei Bedarf angelegt). locked = Kunde kann es nicht ändern. Sitzungen bleiben. */
+export async function setCustomerPasswordAdmin(email: string, pw: string | null, locked: boolean): Promise<boolean> {
+  if (!pool) return false;
+  const e = norm(email);
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return false;
+  await ensureCustomerAccount(e);
+  if (pw) await pool.query(`UPDATE cust_accounts SET pass_hash=$2, pw_enc=$3 WHERE email=$1`, [e, hashPassword(pw), encPwScoped("cust-pw", pw)]);
+  await pool.query(`UPDATE cust_accounts SET pw_locked=$2 WHERE email=$1`, [e, !!locked]);
+  return true;
+}
+/** Für den Admin: festgelegtes Passwort (falls vom Admin gesetzt) + Sperre. */
+export async function customerPwInfo(emails: string[]): Promise<Map<string, { password: string | null; locked: boolean }>> {
+  const out = new Map<string, { password: string | null; locked: boolean }>();
+  if (!pool || !emails.length) return out;
+  const r = await pool.query(`SELECT email, pw_enc, pw_locked FROM cust_accounts WHERE email = ANY($1::text[])`, [emails.map(norm)]).catch(() => ({ rows: [] as Record<string, unknown>[] }));
+  for (const x of r.rows as { email: string; pw_enc: string | null; pw_locked: boolean }[]) out.set(x.email, { password: decPwScoped("cust-pw", x.pw_enc), locked: !!x.pw_locked });
+  return out;
+}
+const pwLocked = async (email: string) => !!pool && !!(await pool.query(`SELECT pw_locked FROM cust_accounts WHERE email=$1`, [norm(email)]).catch(() => ({ rows: [] as { pw_locked: boolean }[] }))).rows[0]?.pw_locked;
+
 /** Neues Passwort setzen (Passwort vergessen). */
 export async function resetCustomerPassword(email: string): Promise<string | null> {
   if (!pool) return null;
@@ -624,7 +648,7 @@ export function ordersRunning(orders: OrderView[]): boolean {
 }
 
 /* ---- Routen ---- */
-export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetLink: (email: string, url: string, lang: string) => Promise<void> }): void {
+export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetLink: (email: string, url: string, lang: string) => Promise<void>; sendLoginLink?: (email: string, url: string, lang: string) => Promise<void> }): void {
   const hits = new Map<string, number[]>();
   const hourHits = new Map<string, number[]>();
   const limitedHour = (k: string, n: number) => {
@@ -720,7 +744,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     for (const o of d.orders as (OrderView & { rights?: { status: string; pay?: boolean } | null })[]) if (o.rights && o.rights.status === "pending") o.rights.pay = !!ap?.available && !ap?.saved;
     // Vom Admin angelegtes Dashboard ohne Auftrag: Name/Sprache aus den Stammdaten (Admin → Kunden & Preise).
     const setup = !d.orders.length ? await custSetup(email).catch(() => null) : null;
-    return { ok: true, email, name: d.name || setup?.name || "", lang: d.orders.length ? d.lang : setup?.lang || d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
+    const locked = await pwLocked(email);
+    return { ok: true, pwLocked: locked, email, name: d.name || setup?.name || "", lang: d.orders.length ? d.lang : setup?.lang || d.lang, orders: d.orders, adminView: imp, wiseBank, autopay: ap?.saved || null, autopayAvailable: !!ap?.available, autopayTest: !!ap?.test, autopayLocked: ordersRunning(d.orders), billing: ap?.billing || null };
   });
 
   /** Offene Zahlung wiederverwenden (gleiche Bewertungen + Betrag), sonst neuen Stripe-Link mit Referenz anlegen. */
@@ -854,8 +879,14 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
         // Bestandskunde ohne Konto (Link bekommen, aber nie Zugangsdaten) → Konto jetzt anlegen.
         const has = await pool!.query(`SELECT lang FROM orders WHERE lower(email)=$1 AND COALESCE(service,'') <> 'deindex' ORDER BY created_at DESC LIMIT 1`, [email]);
         if (has.rowCount) await ensureCustomerAccount(email);
-        const acc = await pool!.query(`SELECT 1 FROM cust_accounts WHERE email=$1`, [email]);
+        const acc = await pool!.query(`SELECT pw_locked FROM cust_accounts WHERE email=$1`, [email]);
         if (!acc.rowCount) return;
+        // Passwort vom Admin festgelegt + gesperrt → kein neues Passwort, sondern ein Ein-Klick-Login-Link (Dashboard-Einladung).
+        if (acc.rows[0].pw_locked) {
+          const l0 = String(has.rows[0]?.lang || lang || "en");
+          if (hooks.sendLoginLink) await hooks.sendLoginLink(email, await dashLink(email, l0), l0);
+          return;
+        }
         const k = crypto.randomBytes(32).toString("base64url");
         await pool!.query(`INSERT INTO cust_reset (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 minutes')`, [sha(k), email]);
         const l = String(has.rows[0]?.lang || lang || "en");
@@ -887,7 +918,8 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     );
     const email = r.rows[0]?.email;
     if (!email) return reply.code(400).send({ ok: false, error: "invalid" });
-    await pool.query(`UPDATE cust_accounts SET pass_hash=$2 WHERE email=$1`, [email, hashPassword(pw)]);
+    if (await pwLocked(email)) return reply.code(403).send({ ok: false, error: "locked" });
+    await pool.query(`UPDATE cust_accounts SET pass_hash=$2, pw_enc=NULL WHERE email=$1`, [email, hashPassword(pw)]);
     await pool.query(`DELETE FROM cust_sessions WHERE email=$1`, [email]);
     await pool.query(`UPDATE cust_reset SET used_at=now() WHERE email=$1 AND used_at IS NULL`, [email]);
     await pool.query(`DELETE FROM cust_magic WHERE email=$1`, [email]); // alte Login-Links aus Mails ebenfalls ungültig
@@ -900,6 +932,7 @@ export function registerCustomerRoutes(app: FastifyInstance, hooks: { sendResetL
     const b = (req.body || {}) as Record<string, unknown>;
     const email = await sessionEmail(b.token);
     if (!email || !pool) return reply.code(401).send({ ok: false, error: "session" });
+    if (await pwLocked(email)) return reply.code(403).send({ ok: false, error: "locked" });
     if (limitedHour("reset-mail:" + email, 3)) return reply.code(429).send({ ok: false, error: "too_many" });
     const k = crypto.randomBytes(32).toString("base64url");
     await pool.query(`INSERT INTO cust_reset (token_hash, email, expires_at) VALUES ($1,$2, now() + interval '60 minutes')`, [sha(k), email]);
