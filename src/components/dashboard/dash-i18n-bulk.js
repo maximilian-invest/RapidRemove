@@ -3,9 +3,9 @@
 const BULK = {
   en: {
     noModeH: "How do you want to add reviews?", noModeP: "Paste review links one by one – or upload a whole list, even thousands at once.",
-    noHand: "Pick reviews by hand", noHandS: "Paste review links one by one – we check each one and show the price",
+    noHand: "Paste review links", noHandS: "Have the links already? Paste them one by one – we check each and show the price", noOr: "or",
     noBulk: "Bulk upload", noBulkS: "Upload a file or paste links – Excel, CSV, Word, PDF and more",
-    buTierAck: "I understand that my price tier depends on the number of reviews in this order. If it changes (e.g. reviews that need special software are cancelled), the tier and the price per review can change. Up to {tol} % below the tier limit nothing changes; beyond that, I'll be asked to confirm the new price before the order continues.",
+    buTierAck: "My price tier depends on the number of reviews – if it drops more than {tol} % below the tier (e.g. because special-software cases are cancelled), I'll be asked to confirm the new price.",
     st_swBulk: "Cancelled – special software needed", why_swBulk: "This review can only be removed with special software, which isn't part of the bulk flat price. It was cancelled from your bulk order – you won't be charged. Order it as an individual review at the regular price if you like.",
     swBulkBtn: "Order individually",
     phT: "Please confirm the new price", phS: "{nNow} instead of {nOrig} reviews · {from} → {to} per removed review", phStd: "standard prices",
@@ -35,9 +35,9 @@ const BULK = {
   },
   de: {
     noModeH: "Wie möchten Sie Bewertungen hinzufügen?", noModeP: "Bewertungs-Links einzeln einfügen – oder eine ganze Liste hochladen, auch tausende auf einmal.",
-    noHand: "Bewertungen von Hand auswählen", noHandS: "Bewertungs-Links einzeln einfügen – wir prüfen jeden und zeigen den Preis",
+    noHand: "Bewertungs-Links einfügen", noHandS: "Links schon zur Hand? Einzeln einfügen – wir prüfen jeden und zeigen den Preis", noOr: "oder",
     noBulk: "Bulk-Upload", noBulkS: "Datei hochladen oder Links einfügen – Excel, CSV, Word, PDF und mehr",
-    buTierAck: "Mir ist bewusst, dass meine Preisstufe von der Anzahl der Bewertungen in diesem Auftrag abhängt. Ändert sich die Anzahl (z. B. weil Bewertungen, die Spezial-Software brauchen, storniert werden), können sich Stufe und Preis je Bewertung ändern. Bis {tol} % unter der Stufengrenze ändert sich nichts; darüber hinaus bestätige ich den neuen Preis, bevor es weitergeht.",
+    buTierAck: "Meine Preisstufe hängt von der Anzahl der Bewertungen ab – fällt sie um mehr als {tol} % unter die Stufe (z. B. weil Software-Fälle storniert werden), bestätige ich den neuen Preis.",
     st_swBulk: "Storniert – Spezial-Software nötig", why_swBulk: "Diese Bewertung ist nur per Spezial-Software löschbar – das ist nicht Teil der Bulk-Pauschale. Sie wurde aus Ihrer Bulk-Bestellung storniert, es wird nichts verrechnet. Wenn Sie möchten, beauftragen Sie sie als Einzelbewertung zum regulären Preis.",
     swBulkBtn: "Einzeln beauftragen",
     phT: "Bitte neuen Preis bestätigen", phS: "{nNow} statt {nOrig} Bewertungen · {from} → {to} je gelöschter Bewertung", phStd: "Standardpreise",
