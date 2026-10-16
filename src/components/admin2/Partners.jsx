@@ -6,6 +6,7 @@ import {
   ArrowLeft, Handshake, ChevronRight, BarChart3, Banknote, Zap, UserPlus, Check, X, Pause, Play, Copy, Loader, Mail, MessageCircle, Clock,
 } from "lucide-react";
 import { useHistState } from "./navHistory";
+import { StepPage, Choice, SumRow, useFlowMode } from "./Steps";
 import { partnerStatusApi, partnerInviteApi, partnerRoutesApi, partnerSave } from "@/lib/admin-api";
 
 const ST_L = { pending: ["Bewerbung", "#b26b00"], active: ["Aktiv", "var(--success)"], paused: ["Pausiert", "var(--g3)"], rejected: ["Abgelehnt", "var(--danger)"] };
@@ -137,54 +138,93 @@ function PartnerDetail({ ctx, id, back }) {
   );
 }
 
-/* ---------------- Einladen ---------------- */
+/* ---------------- Einladen (Schritt für Schritt, 16.10.2026) ---------------- */
+const INV_KEYS = (n) => ["who", "svc", ...(n ? ["price"] : []), "sum"];
 function InviteScreen({ ctx, back }) {
+  useFlowMode(ctx);
   const { toast, partners } = ctx;
   const svc = svcList(partners);
   const [f, setF] = React.useState({ name: "", email: "", services: [], prices: {} });
+  const [step, setStep] = useHistState("pinv", "who");
   const [url, setUrl] = React.useState("");
   const [busy, setBusy] = React.useState(false);
+  const set = (p) => setF((x) => ({ ...x, ...p }));
+  const keys = INV_KEYS(f.services.length);
+  const k = step === "done" && url ? "done" : keys.includes(step) ? step : "who";
+  const i = keys.indexOf(k);
+  const go = (s, opt) => setStep(s, opt);
+  const priceOf = (id) => f.prices[id] ?? (svc.find((x) => x.id === id) || {}).price;
+  const emailOk = !f.email.trim() || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email.trim());
+  const pricesOk = f.services.every((id) => Number(String(priceOf(id)).replace(",", ".")) > 0);
   const create = async () => {
     setBusy(true);
-    try { const j = await partnerInviteApi({ ...f, prices: Object.fromEntries(f.services.map((id) => [id, Number(f.prices[id] ?? (svc.find((x) => x.id === id) || {}).price) || null])) }); setUrl(j.url); } catch (e) { toast("Fehler: " + e.message); }
+    try {
+      const j = await partnerInviteApi({ ...f, prices: Object.fromEntries(f.services.map((id) => [id, Number(String(priceOf(id)).replace(",", ".")) || null])) });
+      setUrl(j.url); go("done", { replace: true });
+    } catch (e) { toast("Fehler: " + e.message); }
     setBusy(false);
   };
-  const msg = `Hi${f.name ? " " + f.name.split(" ")[0] : ""}, please register as a RapidRemove partner here: ${url}`;
-  return (
-    <>
-      <div className="anav"><button type="button" className="circ mbk keep" aria-label="Zurück" onClick={back}><ArrowLeft /></button></div>
-      <div className="ttl">Partner einladen</div>
-      <p className="sh">Eingeladene Partner müssen sich nicht bewerben: Sie legen über den Link nur Kontakt + Login an und sind sofort freigegeben – mit den Leistungen und Preisen von hier (ohne Auswahl: die Leistungen, die er angibt, zum Standardpreis). Danach richtet er die Auszahlung ein (EU/UK/CH/US/CA: Stripe). Link 14 Tage gültig, einmal verwendbar.</p>
-      {!url ? (
-        <>
-          <label className="pfld"><span>Name (optional)</span><input value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></label>
-          <label className="pfld"><span>E-Mail (optional)</span><input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></label>
-          <div className="sec3"><h2>Leistungen vorauswählen</h2></div>
-          <div className="info">
-            {svc.map((s) => {
-              const on = f.services.includes(s.id);
-              return (
-                <React.Fragment key={s.id}>
-                  <button type="button" className="ir" onClick={() => setF({ ...f, services: on ? f.services.filter((x) => x !== s.id) : [...f.services, s.id] })}><span className="t"><b>{s.label}</b>{on ? <span>Preis je Löschung (USD)</span> : null}</span><span className={"tg" + (on ? " on" : "")}><i /></span></button>
-                  {on ? <div className="ir" style={{ paddingTop: 0 }}><span className="t" /><input className="po-sel" style={{ width: 110, textAlign: "right" }} type="number" min="1" step="1" inputMode="decimal" value={f.prices[s.id] ?? s.price} onChange={(e) => setF({ ...f, prices: { ...f.prices, [s.id]: e.target.value } })} /></div> : null}
-                </React.Fragment>
-              );
-            })}
-          </div>
-          <button type="button" className="cta or" disabled={busy} onClick={create}>{busy ? <Loader className="spin" /> : <UserPlus />}Einladungslink erstellen</button>
-        </>
-      ) : (
-        <>
-          <div className="card" style={{ padding: 14, fontSize: 13, wordBreak: "break-all", marginBottom: 12 }}>{url}</div>
-          <div className="ctas2">
-            <button type="button" className="cta" onClick={() => { try { navigator.clipboard.writeText(url); toast("Link kopiert"); } catch (e) {} }}><Copy />Kopieren</button>
+  const first = f.name.trim().split(/\s+/)[0];
+  const msg = `Hi${first ? " " + first : ""}, please register as a RapidRemove partner here: ${url}`;
+
+  if (k === "done") {
+    return (
+      <div className="naflow aw">
+        <div className="nadone aw-done"><span className="okc"><Check /></span><h1>Einladung ist fertig</h1><p>Schick {first || "dem Partner"} diesen Link – 14 Tage gültig, einmal verwendbar.</p></div>
+        <div className="card aw-link">{url}</div>
+        <div className="nastick">
+          <div className="ctas2" style={{ marginBottom: 10 }}>
+            <button type="button" className="cta gh" onClick={() => { try { navigator.clipboard.writeText(url); toast("Link kopiert"); } catch (e) { toast("Kopieren nicht möglich"); } }}><Copy />Kopieren</button>
             <a className="cta gh" href={"https://wa.me/?text=" + encodeURIComponent(msg)} target="_blank" rel="noreferrer"><MessageCircle />WhatsApp</a>
           </div>
-          {f.email ? <a className="cta gh" style={{ marginTop: 10 }} href={`mailto:${f.email}?subject=${encodeURIComponent("RapidRemove partner registration")}&body=${encodeURIComponent(msg)}`}><Mail />Per E-Mail senden</a> : null}
-          <button type="button" className="cta gh" style={{ marginTop: 10 }} onClick={() => { setUrl(""); setF({ name: "", email: "", services: [], prices: {} }); }}>Weitere Einladung</button>
-        </>
-      )}
-    </>
+          {f.email.trim() ? <a className="cta gh" style={{ marginBottom: 10 }} href={`mailto:${f.email.trim()}?subject=${encodeURIComponent("RapidRemove partner registration")}&body=${encodeURIComponent(msg)}`}><Mail />Per E-Mail senden</a> : null}
+          <button type="button" className="cta" onClick={back}>Fertig</button>
+        </div>
+      </div>
+    );
+  }
+  const pages = {
+    who: { title: "Wen lädst du ein?", sub: "Beides optional – hilft dir nur beim Wiederfinden und Verschicken.", ok: emailOk,
+      body: <div className="awf">
+        <label className="pfld"><span>Name <em>optional</em></span><input value={f.name} onChange={(e) => set({ name: e.target.value })} placeholder="z. B. Ahmed Khan" /></label>
+        <label className="pfld"><span>E-Mail <em>optional</em></span><input type="email" value={f.email} onChange={(e) => set({ email: e.target.value })} placeholder="partner@firma.com" autoCapitalize="none" autoCorrect="off" spellCheck={false} inputMode="email" /></label>
+        {!emailOk ? <p className="aw-warn">Die E-Mail sieht nicht richtig aus.</p> : null}
+      </div> },
+    svc: { title: "Was soll er löschen?", sub: "Mehrere möglich. Keine Auswahl = er gibt selbst an, was er macht (zum Standardpreis).", ok: true,
+      body: <div className="awo">{svc.map((s) => {
+        const on = f.services.includes(s.id);
+        return <Choice key={s.id} multi on={on} title={s.label} sub={`Standard $${s.price} je Löschung`} onClick={() => set({ services: on ? f.services.filter((x) => x !== s.id) : [...f.services, s.id] })} />;
+      })}</div> },
+    price: { title: "Was zahlst du ihm?", sub: "In USD je gelöschter Bewertung bzw. je gelöschtem Profil.", ok: pricesOk,
+      body: <div className="info">{f.services.map((id) => {
+        const s = svc.find((x) => x.id === id) || { id, label: id };
+        return (
+          <label key={id} className="ir">
+            <span className="t"><b style={{ whiteSpace: "normal" }}>{s.label}</b><span>Standard ${s.price}</span></span>
+            <span className="pr-p">$ <input className="po-num" inputMode="decimal" aria-label={"Preis " + s.label} value={priceOf(id)} onChange={(e) => set({ prices: { ...f.prices, [id]: e.target.value.replace(/[^\d.,]/g, "") } })} /></span>
+          </label>
+        );
+      })}</div> },
+  };
+  if (k === "sum") {
+    return (
+      <StepPage i={i} n={keys.length} onBack={() => go(keys[i - 1])} title="Alles korrekt?" sub="Tippe auf einen Punkt, um ihn zu ändern."
+        next={create} nextLabel={busy ? "Wird erstellt …" : "Einladungslink erstellen"} final busy={busy}>
+        <div className="nasum aw-sum">
+          <SumRow label="Partner" value={<><b>{f.name.trim() || "ohne Namen"}</b>{f.email.trim() ? <em>{f.email.trim()}</em> : null}</>} onClick={() => go("who")} />
+          <SumRow label="Leistungen" value={f.services.length
+            ? <span className="aw-tl">{f.services.map((id) => <i key={id}>{(svc.find((x) => x.id === id) || {}).label || id}: <b>${priceOf(id)}</b></i>)}</span>
+            : <b>wählt er selbst (Standardpreis)</b>} onClick={() => go(f.services.length ? "price" : "svc")} />
+        </div>
+        <p className="aw-hint">Eingeladene Partner müssen sich nicht bewerben: Sie legen über den Link nur Kontakt + Login an und sind sofort freigegeben. Danach richten sie die Auszahlung ein.</p>
+      </StepPage>
+    );
+  }
+  const pg = pages[k];
+  return (
+    <StepPage i={i} n={keys.length} closeIcon={i === 0} onBack={() => (i === 0 ? back() : go(keys[i - 1]))} title={pg.title} sub={pg.sub} ok={pg.ok} next={() => go(keys[i + 1])}>
+      {pg.body}
+    </StepPage>
   );
 }
 

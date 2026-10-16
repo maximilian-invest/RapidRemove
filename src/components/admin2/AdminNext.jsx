@@ -91,6 +91,7 @@ export default function AdminNext() {
   const [tab, setTab] = useHistState("tab", "orders"); // Start immer: Aufträge › Neu
   const [stack, setStack] = useHistState("stack", [{ v: "list" }]); // Aufträge: list → detail → reviews
   const [moreSub, setMoreSub] = useHistState("more", null);
+  const [moreFlow, setMoreFlow] = React.useState(false); // Schritt-Abläufe unter Konto (Kunde anlegen, Partner einladen) → Tab-Leiste weg
   useHardLeave("/admin");
   const [f, setFState] = React.useState({ scope: "open", tile: "new", type: "all", staff: "all", q: "" });
   const [sheet, setSheet] = React.useState(null);
@@ -308,7 +309,7 @@ export default function AdminNext() {
     loadPtasks, orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, loadPartners: () => partnersList().then(setPartners).catch(() => {}), tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving, reload, closeDrawer,
+    setMoreFlow, newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving, reload, closeDrawer,
   };
 
   const top = stack[stack.length - 1];
@@ -320,7 +321,7 @@ export default function AdminNext() {
     : top.v === "prices" ? <PriceEdit ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "bill" ? <Bill ctx={{ ...ctx, back }} id={top.id} />
     : top.v === "new" ? <NewOrder key={top.id} ctx={{ ...ctx, back: isDesk ? closeDrawer : back }} /> : null;
-  const inFlow = tab === "orders" && (top.v === "new" || top.v === "addrev" || top.v === "prices" || top.v === "bill");
+  const inFlow = (tab === "orders" && (top.v === "new" || top.v === "addrev" || top.v === "prices" || top.v === "bill")) || (tab === "more" && moreFlow);
   const nNew = orders.filter((o) => !o.test && bucketsOf(o, now, ptasks[o.id]).includes("new")).length; // wie die Kachel „Neu", ohne Tests
   const nFound = mon ? (mon.profiles || []).filter((p) => p.status === "found").length : 0;
   const tabs = [["orders", Inbox, "Aufträge", nNew, ""], ["home", LayoutGrid, "Übersicht"], ["monitor", Radar, "Monitor", nFound, "red"], ["more", User, "Konto"]];

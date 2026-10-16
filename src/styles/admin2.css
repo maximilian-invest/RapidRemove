@@ -915,3 +915,79 @@
   .an .pr-card .ctas2{grid-template-columns:1fr}
 }
 .an .pr-below .pr-lab,.an .pr-norm{color:var(--g3);font-weight:500;font-size:14px}
+
+/* Schritt-für-Schritt-Abläufe (Steps.jsx): Kunden-Dashboard anlegen, Partner einladen, Standard-Staffel (16.10.2026) */
+.an.desk .scr.col>.naflow.aw{max-width:620px!important;margin-left:auto;margin-right:auto;width:100%}
+.an.flow .scr.col{padding-bottom:0}
+.an .aw .nah h1{margin-bottom:8px}
+.an .aw .nasub{margin:0 0 20px;font-size:15px}
+.an .aw-b{animation:an-fu .35s var(--ease) both}
+.an .awf .pfld input,.an .awf .pfld textarea{height:54px;font-size:17px;border-radius:14px;padding:0 16px}
+.an .awf .pfld textarea{height:auto;padding:14px 16px;line-height:1.45}
+.an .pfld span em,.an .awf .pfld span em{font-style:normal;font-weight:500;color:#9a9a9a}
+.an .awf .pfld>span{font-size:13px}
+.an .aw-hint{font-size:13px;color:var(--g3);line-height:1.45;margin:10px 2px 0}
+.an .aw-warn{font-size:13px;color:var(--danger);line-height:1.45;margin:-4px 2px 12px;font-weight:500}
+.an .aw-lab{font-size:13px;font-weight:600;color:var(--g3);margin:18px 4px 8px}
+/* Auswahl-Karten */
+.an .awo{display:flex;flex-direction:column;gap:10px}
+.an .awg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.an .awc{display:flex;align-items:center;gap:14px;width:100%;min-height:68px;background:#fff;border-radius:20px;padding:14px 16px;text-align:left;box-shadow:inset 0 0 0 2px transparent;transition:box-shadow .2s var(--ease),transform .15s}
+.an .awc:active{transform:scale(.985)}
+.an .awc.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.an .awc:disabled{opacity:.45}
+.an .awc .ic{width:40px;height:40px;border-radius:50%;background:var(--g1);display:grid;place-items:center;flex:none}
+.an .awc .ic svg{width:18px;height:18px}
+.an .awc .ic .fl{font-size:20px;line-height:1}
+.an .awc .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.an .awc b{font-size:16px;font-weight:600;line-height:1.25}
+.an .awc .t>span{font-size:13px;color:var(--g3);margin-top:2px;line-height:1.35}
+.an .awc .rd{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 2px #d4d4d8;display:grid;place-items:center;flex:none;color:transparent;transition:all .2s var(--ease)}
+.an .awc .rd svg{width:15px;height:15px;stroke-width:3}
+.an .awc.on .rd{background:var(--ink);box-shadow:none;color:#fff}
+.an .awc.sq .rd{border-radius:8px}
+.an .awg .awc{min-height:58px;padding:10px 12px;gap:10px;border-radius:16px}
+.an .awg .awc .ic{width:34px;height:34px;background:none}
+.an .awg .awc b{font-size:14px}
+.an .awg .awc .rd{width:22px;height:22px}
+/* Staffel kurz */
+.an .aw-tl{display:flex!important;flex-wrap:wrap;gap:4px 12px;margin-top:6px!important;font-size:13px;color:var(--g3)}
+.an .aw-tl i{font-style:normal;white-space:nowrap;font-size:13px;color:var(--g3);font-weight:500}
+.an .aw-tl b,.an .aw-er .aw-v .aw-tl b{color:var(--ink);font-weight:600;font-size:13px}
+.an .aw-th .pr-lab,.an .aw-th .pr-p{font-size:11.5px;font-weight:600;color:var(--g3)}
+.an .aw-th{margin-bottom:-2px}
+/* Passwort */
+.an .awpw{background:#fff;border-radius:22px;padding:14px;margin-bottom:14px}
+.an .awpw input{width:100%;height:58px;border:1.5px solid var(--g2);border-radius:14px;padding:0 16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:20px;font-weight:600;letter-spacing:.06em;text-align:center;margin-bottom:12px;color:var(--ink);background:#fff}
+.an .awpw input:focus{outline:none;border-color:var(--ink)}
+.an .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.03em}
+/* Zusammenfassung */
+.an .aw-sum{padding:4px 16px}
+.an .aws{display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:start;gap:10px;width:100%;padding:14px 0;text-align:left}
+.an .aws+.aws{border-top:1px solid var(--g1)}
+.an .aws .l{font-size:13px;color:var(--g3);padding-top:1px}
+.an .aws .v{min-width:0;display:flex;flex-direction:column;font-size:14px}
+.an .aws .v b{font-weight:600;overflow-wrap:anywhere}
+.an .aws .v em{font-style:normal;font-size:13px;color:var(--g3);overflow-wrap:anywhere;margin-top:1px}
+.an .aws .v .aw-tl{margin-top:0!important}
+.an .aws .e{font-size:13px;font-weight:600;color:var(--primary);padding-top:1px}
+.an .aws.st{grid-template-columns:80px minmax(0,1fr)}
+.an .mute{color:var(--g3)!important;font-weight:500!important}
+/* Bearbeiten-Übersicht */
+.an .aw-er{align-items:flex-start}
+.an .aw-er .ico{margin-top:2px}
+.an .aw-er>svg{align-self:center}
+.an .aw-er .t>span:first-child{font-size:12px;color:var(--g3);font-weight:600}
+.an .aw-er .aw-v{display:flex;flex-direction:column;font-size:14px!important;color:var(--ink)!important;margin-top:2px}
+.an .aw-er .aw-v b{font-size:14px;font-weight:600;white-space:normal;overflow-wrap:anywhere}
+.an .aw-er .aw-v em{font-style:normal;font-size:13px;color:var(--g3);font-weight:500;overflow-wrap:anywhere}
+/* Fertig */
+.an .aw-done{padding-top:40px}
+.an .aw-done p{max-width:340px}
+.an .aw-link{padding:16px;font-size:13px;word-break:break-all;margin-top:24px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.an .aw .nastick .ctas2 .cta svg{margin-right:0}
+.an .awg .awc b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.an .aw .nastick .cta.gh{background:#fff}
+.an .awg .awc .rd{display:none}
+.an .awg .awc{padding:10px 14px}
+.an .aws .v .aw-tl i,.an .aw-er .aw-v .aw-tl i{white-space:normal}
