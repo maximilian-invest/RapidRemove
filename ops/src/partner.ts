@@ -286,7 +286,8 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     const key = url || `${name}|${text}`;
     // Partner: vorgegeben (Admin/Zuteilung) – sonst Zuteilung der Leistung bzw. erster aktiver Partner. Preis = Partnerpreis der Leistung.
     const svc: ServiceId = serviceOf({ kind, sw: it.sw, nt: it.nt, old: it.old });
-    const pid = partnerIdIn ?? (await partnerIfApproved(cs?.partnerId, svc)) ?? (await defaultPartnerFor(svc));
+    // Fester Partner des Kunden gilt nur für Bewertungen – Profil-Löschungen nie (macht das Team selbst bzw. Einstellungen).
+    const pid = partnerIdIn ?? (svc === "profile" ? null : await partnerIfApproved(cs?.partnerId, svc)) ?? (await defaultPartnerFor(svc));
     // Partnerpreis: bei der Bestellung festgeschrieben (pUsd) > vorgegeben (Admin, price) > Kunden-Konditionen > Preis der Leistung beim Partner.
     const swCase = svc === "sw";
     const csPrice = kind === "profile" ? 0 : swCase ? csSw : csTier;
