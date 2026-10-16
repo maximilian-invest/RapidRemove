@@ -2534,6 +2534,10 @@ async function sendPaylinkAfterAutoFail(orderId: string, why: string): Promise<v
   if (!pool) return;
   const o = (await pool.query(`SELECT id, email, name, lang, country, service, amount, prot_amount, protection, pay, status, raw FROM orders WHERE id=$1`, [orderId])).rows[0] as Record<string, any> | undefined;
   if (!o || !o.email || o.pay === "paid" || o.status === "storniert") return;
+  // Mahnverlauf läuft schon → keine „Order Completed“-Mail mehr dazwischen (16.10.2026).
+  if (["mahnung", "inkasso", "refunded"].includes(String(o.pay || ""))) return;
+  const dun = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Mahnung%' LIMIT 1`, [orderId]);
+  if (dun.rowCount) return;
   // Schon kürzlich ein Zahlungslink raus (z. B. zweiter Versuch)? → nicht doppelt
   const recent = await pool.query(`SELECT 1 FROM events WHERE order_id=$1 AND title LIKE 'Zahlungslink gesendet%' AND created_at > now() - interval '12 hours' LIMIT 1`, [orderId]);
   if (recent.rowCount) return;
@@ -2589,13 +2593,16 @@ app.post("/admin/order-status", async (req, reply) => {
   const pay = clip(b.pay, 20) || undefined;
   if (!id || !status) return reply.code(400).send({ ok: false, error: "orderId und status erforderlich" });
   if (!dbReady()) return reply.code(503).send({ ok: false, error: "keine DB verbunden" });
+  const prev = pool ? ((await pool.query(`SELECT status FROM orders WHERE id=$1`, [id]).catch(() => ({ rows: [] as any[] }))).rows[0]?.status as string | undefined) : undefined;
   const ok = await updateOrderStatus(id, status, pay);
   if (!ok) return reply.code(404).send({ ok: false, error: "Bestellung nicht gefunden" });
   void sendPurchaseForOrder(id, app.log); // Löschung bestätigt + bezahlt → Meta melden
   void partnerOrderStatus(id, status).catch((e) => app.log.error({ err: e }, "Partner-Board: Storno-Abgleich fehlgeschlagen"));
   if (pay === "paid") void markOrderReviewsPaidManual(id).catch(() => {});
   // Profil gelöscht + Kunde zahlt automatisch → sofort von der hinterlegten Zahlungsart abbuchen (Rechnung per Mail).
-  if (status === "done" && pay !== "paid") void chargeProfileOrder(id).then(async (r) => {
+  // NUR beim echten Wechsel auf „done“ – nicht, wenn Mahnung/Zahlungslink den (schon erledigten) Auftrag erneut auf „done“
+  // setzen. Sonst: neuer Abbuchungsversuch → abgelehnt → „Order Completed“-Mail direkt nach der Mahnung (16.10.2026).
+  if (status === "done" && prev !== "done" && pay !== "paid" && pay !== "mahnung") void chargeProfileOrder(id).then(async (r) => {
     if (r?.ok) { void sendPurchaseForOrder(id, app.log); void scheduleProtectionUpsell(id, app.log).catch(() => {}); }
     else if (r && !r.ok) await sendPaylinkAfterAutoFail(id, r.error || "").catch((e) => app.log.error({ err: e, orderId: id }, "Zahlungslink nach fehlgeschlagener Abbuchung nicht gesendet"));
   }).catch((e) => app.log.error({ err: e }, "Profil-Abbuchung fehlgeschlagen"));
