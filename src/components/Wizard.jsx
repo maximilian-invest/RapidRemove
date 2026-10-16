@@ -4,7 +4,8 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE } from "@/lib/pricing";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS } from "@/lib/pricing";
+import { xpCopy } from "@/lib/express-copy";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -17,7 +18,7 @@ import { localePath } from "@/lib/locales-meta";
 import { track, trackContact, newEventId, readFbp, fbcFrom, hasMarketingConsent } from "@/lib/metaPixel";
 import { reviewsBlocked, reviewsAllowedFor } from "@/lib/reviews-product";
 import { bpCopy } from "@/lib/bestell-copy";
-import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron, Eye as LEye, Globe as LGlobe, Clock as LClock, Trash2 as LTrash, FileText as LFile } from "lucide-react";
+import { ArrowRight as LArrowRight, ArrowUpRight as LArrowUpRight, Star as LStar, Building2 as LBuilding, Search as LSearch, MapPin as LMapPin, Check as LCheck, CircleCheck as LCircleCheck, Link as LLink, Layers as LLayers, ArrowLeft as LArrowLeft, RefreshCw as LRefresh, ShieldCheck as LShieldCheck, Info as LInfo, TriangleAlert as LAlert, RotateCcw as LRotate, Smartphone as LPhone, Database as LDb, Plus as LPlus, Pencil as LPencil, Sparkles as LSparkles, X as LX, Lock as LLock, MessageCircle as LMsg, Phone as LTel, MessagesSquare as LChat, Mail as LMail, ChevronDown as LChevron, Eye as LEye, Globe as LGlobe, Clock as LClock, Trash2 as LTrash, FileText as LFile, Zap as LZap } from "lucide-react";
 
 /* ---- mandatory privacy / terms consent label, per locale ---- */
 /* Checkbox 1: AGB + Widerrufsbelehrung gelesen & akzeptiert (zwei Links: /agb + /widerruf).
@@ -745,8 +746,8 @@ function Stepper({ step, onNav, labels, eta, stepOf, wide, full }) {
     <div className={"bp-progress-wrap" + (full ? " full" : "")}>
       <div className={"bp-prog" + (wide ? " wide" : "") + (full ? " full" : "")}>
         <div className="row"><span><b>{b}</b>{r}</span><span>{eta}</span></div>
-        <div className="bp-bars">{labels.map((l, i) => <i key={i} className={cls(i, "on", "cur")} {...navProps(i)} />)}</div>
-        <div className="bp-labels">{labels.map((l, i) => <span key={i} className={allDone ? (i === total - 1 ? "cur" : "on") : cls(i, "on", "cur")} {...navProps(i)}>{l}</span>)}</div>
+        <div className="bp-bars" style={{ gridTemplateColumns: `repeat(${total},1fr)` }}>{labels.map((l, i) => <i key={i} className={cls(i, "on", "cur")} {...navProps(i)} />)}</div>
+        <div className="bp-labels" style={{ gridTemplateColumns: `repeat(${total},1fr)` }}>{labels.map((l, i) => <span key={i} className={allDone ? (i === total - 1 ? "cur" : "on") : cls(i, "on", "cur")} {...navProps(i)}>{l}</span>)}</div>
       </div>
     </div>
   );
@@ -1842,6 +1843,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [selectedId, setSelectedId] = React.useState(R ? (R.selectedId || "p1") : "p1");
   const [service, setService] = React.useState(R ? (R.service ?? null) : null);
   const [express, setExpress] = React.useState(R ? !!R.express : false);
+  // Preismodell 2: Express für die 250er-Bewertungen (eigener Schritt „Wie schnell?" zwischen Bewertungen und Kasse).
+  const [rvx, setRvx] = React.useState(R ? !!R.rvx : false);
+  const [tempoOn, setTempoOn] = React.useState(false);
   const [protection, setProtection] = React.useState(R ? (R.protection ?? null) : "monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
@@ -2171,7 +2175,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     }),
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;
-  const rq = reviewQuote(reviewList, lang);
+  const rq = reviewQuote(reviewList, lang, { express: rvx });
+  const hasX = rq.n250 > 0; // Express nur, wenn mindestens eine 250er-Bewertung im Warenkorb ist
   const servicePriceNum = revFlow
     ? rq.total
     : num(service === "remove" ? p.deletion : p.reset);
@@ -2374,7 +2379,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Die Links landen als Notiz am Auftrag — damit hat die Bearbeitung genau
       // die Bewertungen vor sich, die der Kunde bezahlt hat.
       ...(revFlow ? {
-        note: `${rv.service} (${rq.nNew} × ${money(rl, rq.base)}${rq.nOld ? ` + ${rq.nOld} × ${money(rl, rq.oldPrice)} (>4 Wo.)` : ""}${rq.pct ? `, −${rq.pct} % Mengenrabatt` : ""} = ${fmtMoney(rl, rq.total)}):\n${reviewList.map((it) => (it.url || `${it.name} — "${it.text}"`) + (it.old ? "  [älter als 4 Wochen]" : "")).join("\n")}`,
+        note: `${rv.service} (${[rq.n99 ? `${rq.n99} × ${money(rl, PRICE_V2_FRESH)}` : "", rq.n250 ? `${rq.n250} × ${money(rl, PRICE_V2_OTHER)}` : ""].filter(Boolean).join(" + ")}${rq.pct ? `, −${rq.pct} % Mengenrabatt` : ""}${rq.nX ? `, EXPRESS ${rq.nX} × ${money(rl, EXPRESS_FEE)}` : ""} = ${fmtMoney(rl, rq.total)}):\n${reviewList.map((it) => (it.url || `${it.name} — "${it.text}"`) + (listPriceV2(it) === PRICE_V2_OTHER ? `  [${money(rl, PRICE_V2_OTHER)}${rq.nX ? " · EXPRESS" : ""}]` : "")).join("\n")}`,
+        reviewExpress: !!(rvx && hasX), // Server setzt Express nur auf die 250er
         reviewItems: reviewList,
         reviewUrls: reviewList.map((it) => it.url).filter(Boolean),
         reviewCount,
@@ -2565,7 +2571,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const pick = (s) => {
       setService(s);
       if (s === "reset") { setExpress(false); setProtection(null); go(5); }
-      else if (s === "reviews") { setExpress(false); setProtection(null); go(4); } // Schritt 5 = Bewertungsauswahl statt Schutz
+      else if (s === "reviews") { setExpress(false); setRvx(false); setProtection(null); go(4); } // Schritt 5 = Bewertungsauswahl statt Schutz
       else go(4);
     };
     return (
@@ -3654,8 +3660,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const ch = CHECKOUT_HELP[t.code] || CHECKOUT_HELP.en;
     const q0 = conv.quotes[0];
     const tpN = (String(conv.reviewsN || "").match(/[\d.,]+\+?/) || ["260+"])[0];
-    const back = () => go(service === "reset" ? 3 : 4);
+    const back = () => { if (revFlow && hasX) { setTempoOn(true); return; } go(service === "reset" ? 3 : 4); };
     const cur = revFlow ? rl : lang;
+    const xp = xpCopy(t.code);
     const nm = (selected && selected.name) || name || contact.company;
     const svcLabel = service === "reset" ? bp.svc2[0] : bp.svc1[0];
     const protNm = { monthly: conv.protMonthlyName, monitor: conv.protMonitorName, lifetime: conv.protLifetimeName };
@@ -3721,10 +3728,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="pf"><div className="ph"><LMapPin /></div><div><b>{nm}</b><span>{revFlow ? bp.delN(reviewCount) : svcLabel}</span></div></div>
               <div className="lines">
                 {revFlow ? (<React.Fragment>
-                  {rq.nNew ? <div className="ln"><span>{rq.nNew} × {pk.rowNew}<small>{bp.lineSub.std}</small></span><b>{fmtMoney(cur, rq.nNew * rq.base)}</b></div> : null}
-                  {rq.nOld ? <div className="ln"><span>{rq.nOld} × {pk.old}<small>{bp.lineSub.legal}</small></span><b>{fmtMoney(cur, rq.nOld * rq.oldPrice)}</b></div> : null}
-                  {rq.nNt ? <div className="ln"><span>{rq.nNt} × {bp.cat.sw}<small>{bp.lineSub.nt}</small></span><b>{fmtMoney(cur, rq.nNt * rq.ntPrice)}</b></div> : null}
+                  {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, PRICE_V2_FRESH)}<small>{xp.fresh}</small></span><b>{fmtMoney(cur, rq.n99 * PRICE_V2_FRESH)}</b></div> : null}
+                  {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
+                  {hasX ? (
+                    <div className={"ln xo" + (rvx ? " on" : "")}>
+                      <span><LZap className="bpx-z" />{xp.row}<small>{(() => { const sub = xp.rowSub(money(cur, EXPRESS_FEE), EXPRESS_HOURS); const pt = sub.split(" · "); return rvx ? `${rq.n250} × ${money(cur, EXPRESS_FEE)} · ${pt.length > 1 ? pt.slice(1).join(" · ") : sub}` : sub; })()}</small></span>
+                      <button type="button" className={"bpr-sw" + (rvx ? " on" : "")} role="switch" aria-checked={rvx} aria-label={xp.row} onClick={() => setRvx(!rvx)}><b>+{fmtMoney(cur, rq.n250 * EXPRESS_FEE)}</b><i /></button>
+                    </div>
+                  ) : null}
                 </React.Fragment>) : (<React.Fragment>
                   <div className="ln"><span>{svcLabel}<small>{vatNote(lang)} · {bp.payOnSuccess}</small></span><b>{fmtMoney(lang, servicePriceNum)}</b></div>
                   <div className={"ln xo" + (express ? " on" : "")}>
@@ -3780,6 +3792,71 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       </div>
     );
   }
+  /* Preismodell 2 · Schritt „Wie schnell?" (nur wenn 250er-Bewertungen gewählt sind): Standard oder Express (+100 je 250er,
+     Ziel gelöscht in 30 Std., sonst entfällt der Aufpreis automatisch). Danach Kasse; dort bleibt Express als Schalter. */
+  function StepTempoNew() {
+    const bp = bpCopy(t.code);
+    const xp = xpCopy(t.code);
+    const back = () => { setTempoOn(false); go(4); };
+    const goCo = () => setTempoOn(false);
+    const f = money(rl, EXPRESS_FEE);
+    return (
+      <div className="bpr bpr-s1" ref={bodyRef} key="tempo">
+        <main className="bpr-main">
+          <section className="bpr-res">
+            <h1 className="bpr-h1 bpr-fade">{xp.h}</h1>
+            <p className="bpr-sub bpr-fade" style={{ animationDelay: ".04s" }}>{xp.sub}</p>
+            <div className="bpr-ropts">
+              <button type="button" className={"bpr-rop bpr-fade" + (!rvx ? " sel" : "")} style={{ animationDelay: ".1s" }} onClick={() => setRvx(false)} aria-pressed={!rvx}>
+                <span className="rd" />
+                <span className="tx"><b>{xp.stdT}</b><span>{xp.stdD}</span></span>
+                <span className="pr"><strong>{xp.stdP}</strong><small>{xp.stdS}</small></span>
+              </button>
+              <button type="button" className={"bpr-rop bpx-xop bpr-fade" + (rvx ? " sel" : "")} style={{ animationDelay: ".13s" }} onClick={() => setRvx(true)} aria-pressed={rvx}>
+                <span className="bpr-bdg bpx-bdg"><LZap />{xp.xBadge}</span>
+                <span className="rd" />
+                <span className="tx"><b>{xp.xT}</b><span>{xp.xD(EXPRESS_HOURS)}</span></span>
+                <span className="pr"><strong>+{f}</strong><small>{xp.xS}</small></span>
+              </button>
+            </div>
+            {rvx ? (
+              <ul className="bpr-swf bpx-g bpr-fade">
+                <li><LCircleCheck />{xp.g1}</li>
+                <li><LCircleCheck />{xp.g2}</li>
+                <li><LCircleCheck />{xp.g3(EXPRESS_HOURS)}</li>
+              </ul>
+            ) : null}
+            <div className="bpx-cmp bpr-fade" style={{ animationDelay: ".16s" }}>
+              <div className="h"><LClock />{xp.cmpH}</div>
+              <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}</span><div className="bar"><i style={{ width: "100%" }} /></div><b>{xp.cmpStdV}</b></div>
+              <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xp.cmpXV(EXPRESS_HOURS)}</b></div>
+            </div>
+            <p className="bpr-fpn bpx-swn"><LInfo /><span>{xp.startNote}{rq.n99 ? " " + xp.only(rq.n99) : ""}</span></p>
+            <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
+              <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>
+              <button type="button" className="bpr-go" onClick={goCo}>{xp.toCo}<LArrowRight /></button>
+            </div>
+          </section>
+          <aside className="bpr-aside bpr-sticky">
+            <div className="bpr-sum">
+              <div className="lb">{bp.yourSel}</div>
+              <div className="tot">{fmtMoney(rl, servicePriceNum)}<span className="vat-n">{vatNote(lang)}</span></div>
+              <div className="rows rv">
+                <div><span>{bp.selN(reviewCount)}</span><b>{fmtMoney(rl, servicePriceNum - rq.xTotal)}</b></div>
+                <div className={rvx ? "xo" : ""}><span>{rvx ? xp.line(rq.nX, f) : xp.stdT}</span><b>{rvx ? "+" + fmtMoney(rl, rq.xTotal) : xp.stdP}</b></div>
+              </div>
+              <button type="button" className="bpr-go" onClick={goCo}>{xp.toCo}<LArrowRight /></button>
+              <div className="pay">{bp.payAfter}</div>
+            </div>
+          </aside>
+        </main>
+        <div className="bpr-mbar bpr-mbar2">
+          <div className="ln2"><span>{rvx ? xp.xT + " · " + xp.appliesTo(rq.nX) : xp.stdT + " · " + xp.cmpStdV}</span><b className="big">{fmtMoney(rl, servicePriceNum)}</b></div>
+          <div className="bt"><button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button><button type="button" className="bpr-go" onClick={goCo}>{xp.toCo}<LArrowRight /></button></div>
+        </div>
+      </div>
+    );
+  }
   function StepReviewsNew() {
     const bp = bpCopy(t.code);
     const manualOnly = pickPhase === "manual";
@@ -3806,9 +3883,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const toggleAll = () => setPickSel((sel) => allSel ? sel.filter((x) => !shown.some((r) => r.id === x.id)) : [...sel, ...shown.filter((r) => !sel.some((x) => x.id === r.id))]);
     const n = reviewCount;
     const hint = discountNudge(n, pk);
-    const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); go(5); };
+    const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); setTempoOn(hasX); go(5); };
     const back = () => go(manualOnly ? 1 : 3);
-    const priceOf = (r) => { const m = revMethod(r); return m === "sw" ? REVIEW_NOTEXT_PRICE : m === "legal" ? rq.oldPrice : rq.base; };
+    const priceOf = (r) => listPriceV2({ nt: !reviewHasText(r), days: r.days }); // Preismodell 2: 99 / 250
     const row = (r, k) => {
       const on = pickSel.some((x) => x.id === r.id);
       const m = revMethod(r);
@@ -3820,10 +3897,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <span className="bpr-rh"><b>{r.name}</b><BprStars n={r.rating} />{r.date ? <span className="ago">{relAge(r.days, lang)}</span> : null}</span>
             <span className={"bpr-rt" + (hasT ? "" : " none")}>{hasT ? r.text : bp.noText}</span>
             <span className="bpr-tags">
-              {m === "sw"
-                ? <span className="bpr-tag ok i" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setSwInfo(true); }}><LCircleCheck />{bp.tag.sw}<LInfo /></span>
-                : <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span>}
-              <span className="bpr-tag">{m === "sw" ? (hasT ? bp.cat.sw : bp.cat.nt) : bp.cat[m]}</span>
+              {/* Preismodell 2: kein Software-Hinweis mehr für den Kunden – nur Kategorie + Preis. */}
+              {m !== "sw" ? <span className="bpr-tag ok"><LCircleCheck />{bp.tag[m]}</span> : null}
+              <span className="bpr-tag">{!hasT ? bp.cat.nt : reviewIsOld(r) ? bp.cat.legal : bp.cat.std}</span>
               <span className="bpr-tag pr">{money(rl, priceOf(r))} {vatNote(lang)}</span>
             </span>
           </span>
@@ -3862,6 +3938,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 {n ? (<React.Fragment>
                   <div><span>{bp.subtotal}</span><b>{fmtMoney(rl, rq.subtotal)}</b></div>
                   {rq.pct ? <div className="dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(rl, rq.discount)}</b></div> : null}
+                  {rq.nX ? <div className="xo"><span>{xpCopy(t.code).line(rq.nX, money(rl, EXPRESS_FEE))}</span><b>+{fmtMoney(rl, rq.xTotal)}</b></div> : null}
                 </React.Fragment>) : <div><span>{bp.pickOne}</span></div>}
               </div>
               {hint ? <div className="hint"><LSparkles /><span>{hint}</span></div> : null}
@@ -4179,9 +4256,15 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
         const bp = bpCopy(t.code);
         const isA = service === "reviews" || (wantReviews && step < 3);
         const eta = step <= 2 ? bp.eta2 : step <= 4 ? bp.eta1 : step === 5 ? bp.almost : bp.doneLbl;
+        // Preismodell 2: mit 250er-Bewertungen kommt der Schritt „Wie schnell?" dazu (8 statt 7 Schritte).
+        if (service === "reviews" && hasX && step >= 4) {
+          const lb = [...bp.labelsA.slice(0, 5), xpCopy(t.code).label, ...bp.labelsA.slice(5)];
+          const vs = step <= 4 ? step : step === 5 ? (tempoOn ? 5 : 6) : 7;
+          return <Stepper step={vs} onNav={null} labels={lb} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
+        }
         return <Stepper step={step} onNav={canStepBack ? go : null} labels={isA ? bp.labelsA : bp.labelsB} eta={eta} stepOf={bp.stepOf} wide={wideStep} full={newStep1} />;
       })()}
-      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : step === 2 ? StepConfirmNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : step === 5 ? StepCheckoutNew() : step === 6 ? StepDoneNew() : StepServiceNew()) : (
+      {newStep1 ? (step === 0 ? StepNameNew() : step === 1 ? StepSearchNew() : step === 2 ? StepConfirmNew() : reviewsNA ? StepReviewsNA() : step === 4 ? (service === "reviews" ? StepReviewsNew() : StepProtectNew()) : step === 5 ? (revFlow && hasX && tempoOn ? StepTempoNew() : StepCheckoutNew()) : step === 6 ? StepDoneNew() : StepServiceNew()) : (
       <div className={"wz-body" + (wideStep ? " wide" : "")} ref={bodyRef} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         <div className="step-panel" key={step + (processing ? "p" : "") + phase}>
           {Body()}
@@ -4198,9 +4281,11 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="grab" aria-hidden="true" />
             <div className="hd"><h3 id="pi-sheet-t">{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><LX /></button></div>
             <div className="bpr-tiers">
-              <div className="bpr-tier"><b>{bp.sheet.t1[0]}</b><div className="p">{money(rl, rq.base)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t1[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t1[2]}</span></div>
-              {revCountry !== "US" ? <div className="bpr-tier"><b>{bp.sheet.t2[0]}</b><div className="p">{money(rl, rq.oldPrice)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t2[1]}</span><span className="q"><LCircleCheck />{bp.sheet.t2[2]}</span></div> : null}
-              <div className="bpr-tier"><b>{bp.sheet.t3[0]}</b><div className="p">{money(rl, REVIEW_NOTEXT_PRICE)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{bp.sheet.t3[1]}</span><button type="button" className="q lk" onClick={() => { setPriceInfo(false); setSwInfo(true); }}><LInfo />{pk.swInfo}</button></div>
+              {(() => { const xp = xpCopy(t.code); return (<React.Fragment>
+                <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{money(rl, PRICE_V2_FRESH)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span></div>
+                <div className="bpr-tier"><b>{xp.t2[0]}</b><div className="p">{money(rl, PRICE_V2_OTHER)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t2[1]}</span></div>
+                <div className="bpr-tier"><b><LZap className="bpx-z" />{xp.t3[0]}</b><div className="p">+{money(rl, EXPRESS_FEE)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t3[1](EXPRESS_HOURS, money(rl, PRICE_V2_OTHER))}</span></div>
+              </React.Fragment>); })()}
             </div>
             <div className="bpr-disc"><b>{pk.discLbl}</b><div className="dg">{[[3, 10], [5, 15], [10, 30]].map(([k, pc]) => <div key={k}><strong>−{pc} %</strong>{bp.sheet.from(k)}</div>)}</div></div>
             <div className="bpr-srisk"><LShieldCheck /><span><b>{bp.riskT}</b>{bp.sheet.riskR}</span></div>

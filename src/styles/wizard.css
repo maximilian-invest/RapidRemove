@@ -1622,3 +1622,25 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpr-fpn svg{width:14px;height:14px;flex:none;margin-top:2px}
 .bpr-fpn button{border:0;background:none;padding:0;font:inherit;color:#d6d6d6;text-decoration:underline;text-decoration-color:rgba(255,255,255,.3);text-underline-offset:3px;cursor:pointer}
 .bpr-fpn button:hover{color:#fff}
+
+/* ===== Preismodell 2 · Express für Einzelbewertungen (bpx-) ===== */
+.bpr-sum .rows .xo b,.bpr-sum .rows .xo span{color:var(--orange-300)}
+.bpx-z{width:14px;height:14px;color:var(--orange-300);vertical-align:-2px;margin-right:6px}
+.bpr-tier .bpx-z{color:var(--primary)}
+.bpx-bdg{background:var(--primary);gap:4px}
+.bpx-bdg svg{width:11px;height:11px}
+.bpx-xop.sel{box-shadow:0 0 0 2px var(--primary),0 12px 32px rgba(255,122,0,.12)}
+.bpx-xop.sel .rd{background:var(--primary)}
+.bpx-g{margin:18px 0 0 4px}
+.bpx-cmp{margin-top:24px;padding:18px 20px;border-radius:20px;background:#f6f6f6}
+.bpx-cmp .h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#6b6b6b;margin-bottom:12px}
+.bpx-cmp .h svg{width:15px;height:15px}
+.bpx-cmp .r{display:grid;grid-template-columns:72px minmax(0,1fr) 80px;align-items:center;gap:12px;font-size:13px;color:#8a8a8a;padding:5px 0}
+.bpx-cmp .r b{font-weight:600;text-align:right;color:#8a8a8a;font-variant-numeric:tabular-nums}
+.bpx-cmp .bar{height:8px;border-radius:4px;background:#e6e6e6;overflow:hidden}
+.bpx-cmp .bar i{display:block;height:100%;border-radius:4px;background:#bdbdbd}
+.bpx-cmp .r.on{color:#111}.bpx-cmp .r.on b{color:#111}
+.bpx-cmp .r.on .bar i{background:#111}
+.bpx-cmp .r.x.on .bar i{background:var(--primary)}
+.bpx-swn{margin-top:16px}
+@media (max-width:600px){.bpx-cmp .r{grid-template-columns:62px minmax(0,1fr) 70px}}

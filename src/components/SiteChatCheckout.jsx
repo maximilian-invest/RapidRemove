@@ -12,21 +12,23 @@ const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.isInteger(n) ? String(n) : n.toFixed(2); return usd ? "$" + s : s.replace(".", ",") + " €"; };
 
-/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen: 179/229, Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
+/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – Preismodell 2: 99 bis 4 Wochen mit Text / 250 alle anderen,
+ *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
 export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none" }) {
   const usd = country === "US";
   const pp = payPref === "wise" || payPref === "paypal";
   if (service === "reviews") {
     const n = Math.max(1, reviews.length);
-    const nSw = reviews.filter((r) => r.sw).length; // Software-Fälle: 300, nach Prüfung durch den Partner – abgebucht erst bei erfolgreicher Löschung
-    const nOld = reviews.filter((r) => r.age === "old" && !r.sw).length;
-    const sub = (n - nOld - nSw) * 179 + nOld * 229 + nSw * 300;
+    const n250 = reviews.filter((r) => r.sw || r.age === "old").length; // älter als 4 Wochen oder ohne Text (Software inklusive)
+    const nSw = 0; // kein eigener Software-Preis mehr
+    const nOld = n250;
+    const sub = (n - n250) * 99 + n250 * 250;
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
     const payD = pp ? Math.round(total * 0.1) : 0;
     total -= payD;
-    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 179, unitOld: 229, nSw };
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 99, unitOld: 250, nSw, n250 };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -46,7 +48,7 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
       <div className="so-h"><span className="so-ic"><Icon /></span><b>{c.svc[co.service]}</b></div>
       <div className="so-p">
         {co.service === "reviews"
-          ? <><s className={co.pct ? "" : "hide"}>{fmt(179, p.usd)}</s><b>{fmt(Math.round(179 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
+          ? <><s className={co.pct ? "" : "hide"}>{fmt(99, p.usd)}</s><b>{fmt(Math.round(99 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
           : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b><span>{vatNote(lang)}</span></>}
       </div>
       <div className="so-f"><ShieldCheck />{c.after}</div>
@@ -136,8 +138,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-body">
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
-          {isRev ? <div className="cs-r"><span>{revs.length} × {fmt(179, p.usd)}{revs.some((r) => r.age === "old" && !swOf(r)) ? ` / ${fmt(229, p.usd)}` : ""}{p.nSw ? ` / ${fmt(300, p.usd)}` : ""}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
-          {isRev && p.nSw ? <div className="cs-sw">{p.nSw} × {fmt(300, p.usd)} · {c.sw}</div> : null}
+          {isRev ? <div className="cs-r"><span>{[revs.length - p.n250 ? `${revs.length - p.n250} × ${fmt(99, p.usd)}` : "", p.n250 ? `${p.n250} × ${fmt(250, p.usd)}` : ""].filter(Boolean).join(" + ")}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>
@@ -149,7 +150,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
             <span className="co-l">{c.reviews}</span>
             {revs.map((r, i) => (
               <div key={i} className="co-rev">
-                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) ? <i className="co-swt">{c.sw}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
+                {r.fixed ? <div className="co-rv"><b>{r.name || "Google"}</b><Stars n={r.rating} />{swOf(r) || r.age === "old" ? <i className="co-swt">{fmt(250, p.usd)}</i> : null}{r.text ? <span>„{r.text.slice(0, 90)}{r.text.length > 90 ? "…" : ""}“</span> : null}</div> : <input value={r.url} placeholder={c.phReview} inputMode="url" onChange={(e) => { const v = e.target.value; setRevs((l) => l.map((x, k) => (k === i ? { ...x, url: v } : x))); setBad((b) => ({ ...b, revs: false })); }} />}
                 {!r.fixed && r.busy ? <div className="co-busy"><Loader2 className="spin" />{lang === "de" ? "Bewertung wird geprüft …" : "Checking the review …"}</div> : null}
                 <div className="co-age">
                   {[["new", c.ageNew], ["old", c.ageOld]].map(([k, l]) => <button key={k} type="button" className={r.age === k ? "on" : ""} onClick={() => setRevs((x) => x.map((y, n) => (n === i ? { ...y, age: k } : y)))}>{l}</button>)}

@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "what", text: "What is Google review extortion?", toc: "What it is" },
     { t: "p", text: "Review extortion is when someone floods your Google Business Profile with negative reviews and then demands money, gift cards or free services to remove them. The reviews are the threat; the message afterwards is the ransom note." },
     { t: "p", text: "The reviewers are almost never real customers. They are usually fresh or bought accounts run by organised groups that target many businesses at once: restaurants, dentists, hotels, tradespeople, agencies. Google treats this as a clear violation of its rules, which is why it has set up a [dedicated reporting form for review extortion](https://support.google.com/business/answer/16404809)." },
-    { t: "p", text: "If you'd rather not deal with the process yourself, our [Google review removal service](/en/remove-single-reviews/) handles the extortion reviews through Google's own procedures: you only pay for reviews that are actually removed; star-only ratings are handled as complex cases ($300 per removed rating)." },
+    { t: "p", text: "If you'd rather not deal with the process yourself, our [Google review removal service](/en/remove-single-reviews/) handles the extortion reviews through Google's own procedures: you only pay for reviews that are actually removed; star-only ratings are handled with a more extensive procedure ($250 per removed rating)." },
 
     { t: "h2", id: "how", text: "How the scam typically runs", toc: "How it runs" },
     { t: "p", text: "Most cases follow the same script. Knowing it helps you stay calm, because nothing the extortionist does is personal or random." },
@@ -76,15 +76,15 @@ const article = {
     { t: "p", text: "Send us the reviews – with or without text – and we take over the removal through Google's own procedures, on your behalf. You don't need to argue with Google support, chase reports or track every case yourself." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly which reviews have good chances.",
-      "**Ratings without text:** star-only waves can be handed to us too. We remove them with a more extensive procedure (complex case): **$300 per removed rating**. As with all reviews, you store a card when ordering and it is charged automatically only after the rating has been removed. In parallel, report the case yourself as the profile owner via [Google's review extortion form](https://support.google.com/business/answer/16404809) – we still recommend that.",
-      "**Reviews with text – pay only on success:** $179 per removed review (up to 4 weeks old), $229 for older ones. Nothing upfront, no fee for attempts.",
+      "**Ratings without text:** star-only waves can be handed to us too. We remove them with a more extensive procedure: **$250 per removed rating**. As with all reviews, you store a card when ordering and it is charged automatically only after the rating has been removed. In parallel, report the case yourself as the profile owner via [Google's review extortion form](https://support.google.com/business/answer/16404809) – we still recommend that.",
+      "**Reviews with text – pay only on success:** $99 per removed review (up to 4 weeks old), $250 for older ones. Nothing upfront, no fee for attempts.",
       "**Volume discount:** extortion waves usually mean many reviews. On all reviews we accept, star-only ratings included: 3+ −10 %, 5+ −15 %, 10+ −30 %. Example: 10 fresh extortion reviews with text cost $1,790, minus 30 % = **$1,253**, and only for the ones actually removed. 10 star-only ratings: $3,000 minus 30 % = **$2,100**, again only for the ratings actually removed.",
       "**Strong chances:** fresh reviews with text have an approx. **90 % success chance**, and extortion reviews are among the ones Google removes most reliably.",
       "**Usually 1–2 weeks**, sometimes faster, occasionally a little longer. Reviews can come down at different times, so you can pay per review.",
       "**If the attack has buried your profile:** with dozens of fake reviews, removing the [entire Google Business Profile](/en/magazine/delete-google-business-profile/) and starting fresh can be faster than fighting every review – you decide.",
       "**Clean methods only:** no fake accounts, no bots, no fake legal notices. The reviewers are not told who requested the removal.",
     ] },
-    { t: "cta", title: "Being extorted? Send us the reviews", text: "Search your business, tick the extortion reviews or paste their links, and see the price instantly. **$179 per removed review** with text, star-only ratings $300, charged only after removal.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Star-only too", "Honest assessment first"] },
+    { t: "cta", title: "Being extorted? Send us the reviews", text: "Search your business, tick the extortion reviews or paste their links, and see the price instantly. **From $99 per removed review** with text, star-only ratings $250, charged only after removal.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Star-only too", "Honest assessment first"] },
     { t: "p", text: "Prices, discounts and the full process are explained in detail on our [Google review removal service](/en/remove-single-reviews/) page." },
 
     { t: "h2", id: "protect", text: "How to protect your profile afterwards", toc: "Protect your profile" },
@@ -104,7 +104,7 @@ const article = {
     { q: "Can I report review extortion to the police?", a: "Yes. Demanding money under threat is a criminal offence in most countries. Bring screenshots of the messages, the review links and a timeline; the case number also supports your report to Google." },
     { q: "What if they come back with more reviews?", a: "Don't respond, add the new messages and reviews to your evidence and report them the same way. Fresh reviews are the easiest to remove, so act within days." },
     { q: "Can I delete the reviews myself?", a: "No. Business owners can't delete Google reviews; only the reviewer can delete their own review. You can report them, reply publicly or have them removed through Google's procedures." },
-    { q: "What does it cost to have extortion reviews removed?", a: "With RapidRemove **$179 per removed review** up to 4 weeks old, $229 for older ones, with a volume discount of up to 30 % from 10 reviews. You pay nothing for reviews that stay. Star-only ratings cost $300 per removed rating as a complex case, charged only after removal; the volume discount applies to them too. Keep reporting the case via Google's extortion form in parallel." },
+    { q: "What does it cost to have extortion reviews removed?", a: "With RapidRemove **$99 per removed review** with text up to 4 weeks old, $250 for older ones, with a volume discount of up to 30 % from 10 reviews. You pay nothing for reviews that stay. Star-only ratings cost $250 per removed rating, charged only after removal; the volume discount applies to them too. Keep reporting the case via Google's extortion form in parallel." },
     { q: "Will the extortionist know I had the reviews removed?", a: "Not from us. The reviewer is not told who requested the removal." },
   ],
   related: [

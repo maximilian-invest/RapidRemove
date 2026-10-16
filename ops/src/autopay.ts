@@ -471,7 +471,9 @@ export async function chargeDue(email0: string, why = "Löschung"): Promise<Auto
       if (!picks.length || !(amount > 0)) continue;
       const id = newPayId();
       const primary = picks[0].o;
-      const desc = `Entfernte Google-Bewertungen · ${picks.length} × · ${[...new Set(use.map((o) => o.id))].join(", ")}`;
+      // Preismodell 2: Express-Aufschlag nur für rechtzeitig gelöschte Bewertungen (xOk) – auf der Rechnung ausgewiesen.
+      const nXok = use.reduce((s2, o) => s2 + o.items.filter((it) => it.status === "removed" && !it.paid && (it as { xOk?: boolean }).xOk).length, 0);
+      const desc = `Entfernte Google-Bewertungen · ${picks.length} ×${nXok ? ` · inkl. Express-Löschung ${nXok} ×` : ""} · ${[...new Set(use.map((o) => o.id))].join(", ")}`;
       let inv: any = null;
       try {
         await pushBillingToStripe(email, k.key, row.customer, row.pm).catch(() => {});

@@ -14,7 +14,7 @@ import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
-import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2 } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -28,7 +28,7 @@ const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S
 const normU = (u?: string) => String(u || "").trim().toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");
 const normT = (t?: string) => String(t || "").toLowerCase().replace(/\s+/g, " ").trim();
 
-export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number };
+export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; lp?: number };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; country: string | null; company: string | null; profile: string | null; status: string | null; service: string | null; raw: Record<string, unknown> | null };
 export type AddResult =
   | { ok: true; added: number; skipped: string[]; gate: boolean; reasons: boolean; partner: number; mailed: boolean; keys: string[] }
@@ -81,6 +81,8 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (x.nt === true) it.nt = true;
     if (opts.by === "admin" && cpOf(x as { cp?: unknown })) it.cp = cpOf(x as { cp?: unknown }); // individueller Preis nur vom Admin
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
+    // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 99 (frisch) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
+    if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
     clean.push(it);
   }
   if (!clean.length) return { ok: false, error: "empty" };

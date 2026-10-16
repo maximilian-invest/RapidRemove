@@ -10,13 +10,17 @@ import * as React from "react";
 import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, CtaButton, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
-import { fmtReviewMoney, REVIEW_NOTEXT_PRICE } from "../reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, lpOf, PRICE_V2_FRESH, PRICE_V2_OTHER } from "../reviewsPricing";
 
-/** Spezial-Software (ausgelagert) für nicht annehmbare Bewertungen: Preis je Bewertung, abgebucht erst bei Erfolg. */
+/** Spezial-Software (ausgelagert) für nicht annehmbare Bewertungen: Preis je Bewertung, abgebucht erst bei Erfolg.
+ *  Nur Preismodell 1 (Bestandsaufträge ohne lp). Preismodell 2: kein eigener Software-Preis – 250er enthalten das
+ *  Spezialverfahren, 99er kosten mit Zustimmung des Kunden PRICE_V2_OTHER (250). */
 export const SPECIAL_REVIEW_PRICE = REVIEW_NOTEXT_PRICE;
 
 /** Eine Bewertung: Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative). */
-export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean }
+export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number;
+  /** Preismodell 2: Listenpreis 99/250 (fehlt bei Bestandsaufträgen) · x = Express gebucht. */
+  lp?: number; x?: boolean }
 
 export interface BearbeitungGestartetReviewsProps {
   lang?: MailLang;
@@ -339,6 +343,17 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
   const n = list.length || 1;
+  const cur = reviewCurrency(currency, per);
+  // Preismodell 2 (Bewertungen mit lp): keine Vorauszahlung/kein eigener Software-Preis. Ohne Text = normaler 250er.
+  const v2 = list.some((it) => lpOf(it) > 0);
+  const pre = prepay && prepay.n > 0 && !v2 ? prepay : undefined;
+  // Software-Angebot für abgelehnte Bewertungen: 250er haben das Spezialverfahren schon im Preis (nicht anbieten);
+  // 99er kosten mit Zustimmung 250 (ohne Rabatt, wie customers.ts swPriceOf). Bestandsaufträge: Preis vom Server.
+  const swV2 = !!software && software.items.length > 0 && software.items.every((it) => lpOf(it) > 0);
+  const swList = software ? (swV2 ? software.items.filter((it) => lpOf(it) === PRICE_V2_FRESH) : software.items) : [];
+  const sw = software && swList.length
+    ? (swV2 ? { ...software, items: swList, price: fmtReviewMoney(PRICE_V2_OTHER, cur), amount: fmtReviewMoney(swList.length * PRICE_V2_OTHER, cur) } : software)
+    : undefined;
   return (
     <EmailShell preview={t.preview} title={t.title} lang={lang}>
       <P><strong>{t.greeting((name || "").trim())}</strong></P>
@@ -355,21 +370,21 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
       ) : null}
 
       {declined > 0 && t.declined ? <P>{t.declined(declined)}</P> : null}
-      {software && software.items.length && t.sw ? (
+      {sw && t.sw ? (
         <React.Fragment>
-          <P>{t.sw(software.items.length).replace("{price}", software.price)}</P>
-          <Bullets items={software.items.map((it, i) => it.url
+          <P>{t.sw(sw.items.length).replace("{price}", sw.price)}</P>
+          <Bullets items={sw.items.map((it, i) => it.url
             ? <a key={i} href={it.url} style={{ color: brand.accent, wordBreak: "break-all" }}>{it.url}</a>
             : <span key={i}><strong>{it.name}</strong>{it.text ? <> — “{it.text}”</> : null}</span>
           )} />
-          {software.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={software.url}>{t.swBtn} · {software.amount}</CtaButton></div> : null}
+          {sw.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={sw.url}>{t.swBtn} · {sw.amount}</CtaButton></div> : null}
         </React.Fragment>
       ) : null}
 
-      {prepay && prepay.n > 0 && t.prepay ? (
+      {pre && t.prepay ? (
         <React.Fragment>
-          <P><strong>{t.prepayH}</strong><br />{t.prepay(prepay.n, prepay.amount)}</P>
-          {prepay.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={prepay.url}>{t.prepayBtn} · {prepay.amount}</CtaButton></div> : null}
+          <P><strong>{t.prepayH}</strong><br />{t.prepay(pre.n, pre.amount)}</P>
+          {pre.url ? <div style={{ textAlign: "center", margin: "6px 0 18px" }}><CtaButton variant="pay" href={pre.url}>{t.prepayBtn} · {pre.amount}</CtaButton></div> : null}
         </React.Fragment>
       ) : null}
 
@@ -377,9 +392,9 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
         <span style={{ color: brand.tintText, fontWeight: 700 }}>{t.nextH}</span><br />
         1. {t.next1}<br />
         2. {t.next2}<br />
-        3. {prepay && prepay.n > 0 && t.next3nt ? t.next3nt : fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
+        3. {pre && t.next3nt ? t.next3nt : fill(t.next3, per)}{!list.length && per && !t.next3.includes("{per}") ? ` (${per})` : ""}
         {n > 1 && t.next4 ? <React.Fragment><br />4. {t.next4}</React.Fragment> : null}
-        <ReviewPriceLines lang={lang} items={list} currency={reviewCurrency(currency, per)} />
+        <ReviewPriceLines lang={lang} items={list} currency={cur} />
       </NoteBox>
 
       <P muted>{t.calm}</P>

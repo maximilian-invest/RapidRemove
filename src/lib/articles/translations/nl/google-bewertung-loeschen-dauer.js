@@ -5,7 +5,7 @@ const article = {
     slug: "hoe-lang-duurt-google-review-verwijderen",
     title: "Hoe lang duurt het om een Google review te verwijderen? (2026)",
     h1: "Hoe lang duurt het voordat Google een review verwijdert?",
-    description: "Hoe lang duurt het verwijderen van een Google review? Van uren tot weken. Tijdlijn, status, bezwaar maken – en bij ons € 179, pas betalen als hij weg is.",
+    description: "Hoe lang duurt het verwijderen van een Google review? Van uren tot weken. Tijdlijn, status, bezwaar maken – en bij ons vanaf € 99, pas betalen als hij weg is.",
     keywords: ["hoe lang duurt google review verwijderen", "google review gemeld hoe lang", "google review verwijderen duur", "reviews management tool google", "bezwaar google review", "google review gemeld niets gebeurd", "status gemelde review google"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert en oprichter",
@@ -58,7 +58,7 @@ const article = {
       "**Definitieve beslissing** – na het bezwaar is de route in de tool afgerond. Alleen bij onrechtmatige inhoud blijft het [juridische verwijderingsverzoek](https://support.google.com/legal/answer/3110420) over.",
     ] },
 
-    { t: "cta", title: "Geen zin om weken te wachten en te gokken?", text: "Selecteer de reviews die weg moeten en zie direct de prijs. **€ 179 per verwijderde review**, meestal binnen 1–2 weken – en u betaalt pas als de review echt weg is.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
+    { t: "cta", title: "Geen zin om weken te wachten en te gokken?", text: "Selecteer de reviews die weg moeten en zie direct de prijs. **Vanaf € 99 per verwijderde review**, meestal binnen 1–2 weken – en u betaalt pas als de review echt weg is.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
 
     { t: "h2", id: "rejected", text: "Waarom Google meldingen afwijst", toc: "Waarom afgewezen?" },
     { t: "p", text: "De meeste afwijzingen hebben één van drie oorzaken. Ze zijn allemaal te voorkomen – behalve de laatste." },
@@ -76,7 +76,7 @@ const article = {
       "**Bewijs en context:** wat ontbreekt er in uw administratie, wat valt op aan het profiel van de schrijver, welke zinnen zijn beledigend of onwaar.",
       "**Snel handelen:** verse reviews zijn veel makkelijker te verwijderen. Bij ons is de slagingskans **ca. 90 % bij reviews tot 4 weken oud** en **ca. 50 % bij oudere reviews**.",
     ] },
-    { t: "p", text: "Daarom kost een review ouder dan 4 weken bij ons **€ 229** in plaats van € 179 – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
+    { t: "p", text: "Daarom kost een review ouder dan 4 weken bij ons **€ 250** in plaats van € 99 – het werk is groter en de kans kleiner. Bij een golf van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/) loont het dus om binnen dagen te reageren, niet binnen maanden." },
 
     { t: "h2", id: "waiting", text: "Wat u kunt doen terwijl u wacht", toc: "Tijdens het wachten" },
     { t: "p", text: "Wachten betekent niet stilzitten. Zo beperkt u de schade terwijl Google beslist:" },
@@ -99,7 +99,7 @@ const article = {
     { q: "Waarom staat mijn melding al weken op “Decision pending”?", a: "Sommige meldingen worden handmatig beoordeeld en dat kan langer duren; Google geeft geen termijn. Controleer of u de juiste categorie heeft gekozen – een sterke, correcte melding is de beste versneller." },
     { q: "Hoort de schrijver wie de review heeft gemeld?", a: "Nee. Wanneer wij een verwijdering aanvragen, krijgt de schrijver niet te horen wie daarom heeft gevraagd." },
     { q: "Kan een verwijderde review terugkomen?", a: "Een review die wegens een schending is verwijderd, komt normaal gesproken niet terug. De persoon kan wel een nieuwe review schrijven; die wordt dan opnieuw op zichzelf beoordeeld en kan, als hij weer de regels schendt, opnieuw gemeld worden." },
-    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 179 per verwijderde review** (€ 229 bij reviews ouder dan 4 weken), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
+    { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 99 per verwijderde review** (€ 250 bij reviews ouder dan 4 weken of zonder tekst), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
   ],
   related: [
     { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },

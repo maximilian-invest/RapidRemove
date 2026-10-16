@@ -29,7 +29,7 @@ import { sendMail } from "./mailer";
 import { loadCustomerOrders, dashLink } from "./customers";
 import { logCustEvent } from "./custTrack";
 import { notifyCustomer } from "./custPush";
-import { fmtReviewMoney } from "./reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, PRICE_V2_OTHER } from "./reviewsPricing";
 import type { Progress } from "./emails/progressText";
 import KundenErinnerungReviews, { erinnerungSubject, erinnerungTitle, type ErinnerungProps } from "./emails/KundenErinnerungReviews";
 
@@ -193,7 +193,10 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
     const lastT = s.reduce((mx, r) => Math.max(mx, ts(r.sent_at)), 0);
     const o = sw[0].o;
     if (first >= since) {
-      const price = fmtReviewMoney(Number(o.swPrice) || 300, String(o.cur || "eur"));
+      // swPrice kommt aus orderView (customers.ts): Preismodell 2 (lp) → 250, Bestandsaufträge → 300 bzw. individuell.
+      // Fallback nur, falls er fehlt: nach Preismodell der offenen Software-Fälle.
+      const swFallback = sw.every((i) => Number((i as { lp?: unknown }).lp) > 0) ? PRICE_V2_OTHER : REVIEW_NOTEXT_PRICE;
+      const price = fmtReviewMoney(Number(o.swPrice) || swFallback, String(o.cur || "eur"));
       // Schneller als die anderen Fälle: es hängt eine Vorauszahlung dran (+6 h, dann +24 h, ab Tag 3 Admin).
       // Alle 2 h „Wir warten auf Ihre Bestätigung", höchstens SW_MAX-mal – danach ruft das Team an.
       if (st < SW_MAX) {
@@ -379,7 +382,8 @@ export function registerFollowupRoutes(app: FastifyInstance, adminOk: (t: unknow
     const props: ErinnerungProps = {
       lang, name: String(b.name || "Maria Muster"), dashUrl: "https://www.rapid-remove.com/my-reviews",
       pay: kind === "pay" || kind === "pay2" ? { stage: kind === "pay2" ? 2 : 1, amount: fmtReviewMoney(358, "eur"), n: 2 } : null,
-      sw: kind === "sw" || kind === "combo" ? { n: 1, price: fmtReviewMoney(300, "eur") } : null,
+      // Vorschau: Software-Preis wie bei neuen Aufträgen (Preismodell 2: 250); optional b.swPrice (z. B. 300 für Bestandsaufträge).
+      sw: kind === "sw" || kind === "combo" ? { n: 1, price: fmtReviewMoney(Number(b.swPrice) > 0 ? Number(b.swPrice) : PRICE_V2_OTHER, "eur") } : null,
       never: kind === "never", news: kind === "news" || kind === "combo",
     };
     if (kind === "combo") props.pay = { stage: 1, amount: fmtReviewMoney(358, "eur"), n: 2 };

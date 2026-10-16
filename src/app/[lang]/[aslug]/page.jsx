@@ -106,9 +106,10 @@ export default function Page({ params }) {
           serviceType: "Removal of individual Google reviews",
           provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
           areaServed: "Worldwide (outside Germany and Austria)",
-          offers: { "@type": "Offer", price: "179", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
-            priceSpecification: { "@type": "PriceSpecification", price: "179", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
-            description: "Per removed review, excl. VAT; charged only after successful removal" } },
+          // Zwei Preise je gelöschter Bewertung: 99 (≤ 4 Wochen + Text) / 250 (alle anderen).
+          offers: { "@type": "AggregateOffer", lowPrice: "99", highPrice: "250", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
+            priceSpecification: { "@type": "UnitPriceSpecification", minPrice: "99", maxPrice: "250", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
+            description: "Per removed review, excl. VAT: 99 for reviews with text up to 4 weeks old, 250 for all others; charged only after successful removal" } },
         { "@type": "FAQPage", mainEntity: [...(r.faq || []), ...(r.faqMore || [])].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
         { "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },

@@ -7,7 +7,7 @@ import { Receipt, Loader, Check, CreditCard, Mail } from "lucide-react";
 import { reviewsBillInfoApi, reviewsBillApi, sendReviewsInvoice, setOrderStatus } from "@/lib/admin-api";
 import { reviewDiscountPct, REVIEW_NOTEXT_PRICE, REVIEW_OLD_SURCHARGE } from "@/lib/pricing";
 import { Nav, keyOf, RStars, rvStars } from "./OrdersScreens";
-import { money, payPrefOf } from "./model";
+import { money, payPrefOf, expressOk } from "./model";
 
 const BASE = 179;
 const PT_L = { new: "Beim Partner · nicht gestartet", working: "Partner arbeitet", removed: "Partner: gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde" };
@@ -34,7 +34,10 @@ export default function Bill({ ctx, id }) {
   if (!o) return <Nav back={back} isDesk={isDesk} />;
   const c = o.country === "US" ? "$" : "€";
   const pct = reviewDiscountPct(items.length);
-  const priceOf = (it) => (Number(it.cp) > 0 ? Number(it.cp) : Math.round(((it.nt || it.sw ? REVIEW_NOTEXT_PRICE : it.old ? BASE + REVIEW_OLD_SURCHARGE : BASE) * (100 - pct)) / 100));
+  // Preismodell 2: lp (99/250) rabattiert + Express (+100, nur wenn in 30 Std. gelöscht); Bestandsaufträge wie bisher.
+  const lpOf = (it) => { const v = Number(it.lp); return v === 99 || v === 250 ? v : 0; };
+  const priceOf = (it) => (Number(it.cp) > 0 ? Number(it.cp) : Math.round(((lpOf(it) || (it.nt || it.sw ? REVIEW_NOTEXT_PRICE : it.old ? BASE + REVIEW_OLD_SURCHARGE : BASE)) * (100 - pct)) / 100)
+    + (lpOf(it) === 250 && it.x && expressOk(ptBy[keyOf(it)]) ? 100 : 0));
   const chosen = rows.filter((r) => r.ok && sel[r.k]);
   const total = chosen.reduce((s, r) => s + priceOf(r.it), 0);
   const pref = payPrefOf(o);

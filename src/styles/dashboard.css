@@ -956,3 +956,9 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .ph-card p{font-size:13.5px;color:#5a4a2a;margin:2px 0 8px;line-height:1.45}
 .rra .no-or{display:flex;align-items:center;gap:12px;margin:22px 0 12px;color:var(--g3);font-size:13px;font-weight:600}
 .rra .no-or::before,.rra .no-or::after{content:"";flex:1;height:1px;background:var(--g2)}
+
+/* Preismodell 2 · Express-Etikett je Bewertung */
+.rra .xtag{display:flex;width:fit-content;align-items:center;gap:4px;margin-top:6px;padding:3px 9px;border-radius:10px;background:#fff4ea;color:#c25400;font-size:12px;font-weight:700}
+.rra .xtag svg{width:12px;height:12px}
+.rra .xtag.met{background:#eaf6ee;color:#15803d}
+.rra .xtag.miss{background:var(--g1);color:var(--g3)}

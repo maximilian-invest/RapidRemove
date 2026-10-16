@@ -24,7 +24,7 @@ export default function PriceEdit({ ctx, id }) {
   const c = o.country === "US" ? "$" : "€";
   const ptBy = Object.fromEntries((ptasks[o.id] || []).map((t) => [t.itemKey, t]));
   const priced = items.map((it) => { const v = num(map[keyOf(it)]) || num(all); const { cp, ...rest } = it; return v ? { ...rest, cp: v } : rest; });
-  const total = isRev ? reviewQuote(priced, "de").total : num(prof);
+  const total = isRev ? reviewQuote(priced, "de", { legacy: true }).total : num(prof); // Bestandsauftrag: je Bewertung das gespeicherte Preismodell
   const save = async () => {
     setBusy(true);
     try {
@@ -51,8 +51,8 @@ export default function PriceEdit({ ctx, id }) {
               const k = keyOf(it); const t = ptBy[k];
               return (
                 <div key={k} className="rlr cpr">
-                  <div className="t"><b>{t ? t.code + " · " : ""}{it.name || it.url || "Bewertung"} <RStars n={rvStars(it, t)} /></b><span>{it.nt || it.sw ? "Software · Preisliste 300" : it.old ? "älter 4 Wo. · Preisliste 229" : "Preisliste 179"}</span></div>
-                  <div className="cpin"><input inputMode="decimal" placeholder={all || (it.nt || it.sw ? "300" : it.old ? "229" : "179")} value={map[k] || ""} onChange={(e) => { const v = e.target.value; setMap((m) => ({ ...m, [k]: v })); }} /><span>{c}</span></div>
+                  <div className="t"><b>{t ? t.code + " · " : ""}{it.name || it.url || "Bewertung"} <RStars n={rvStars(it, t)} /></b><span>{Number(it.lp) === 99 || Number(it.lp) === 250 ? `Preisliste ${it.lp}${it.x ? " + Express 100" : ""}` : it.nt || it.sw ? "Software · Preisliste 300" : it.old ? "älter 4 Wo. · Preisliste 229" : "Preisliste 179"}</span></div>
+                  <div className="cpin"><input inputMode="decimal" placeholder={all || (Number(it.lp) === 99 || Number(it.lp) === 250 ? String(it.lp) : it.nt || it.sw ? "300" : it.old ? "229" : "179")} value={map[k] || ""} onChange={(e) => { const v = e.target.value; setMap((m) => ({ ...m, [k]: v })); }} /><span>{c}</span></div>
                 </div>
               );
             })}

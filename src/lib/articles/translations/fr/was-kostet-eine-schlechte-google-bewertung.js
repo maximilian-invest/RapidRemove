@@ -37,7 +37,7 @@ const article = {
       "**Effet conservateur** de 5 % → 1 500 € par mois.",
       "**Durée de visibilité** en multiplicateur : un avis reste souvent visible 12 mois ou plus → 18 000 € sur un an.",
     ] },
-    { t: "p", text: "Même avec des hypothèses prudentes, la perte cumulée dépasse largement le coût d'une solution professionnelle – la [suppression d'un avis isolé](/fr/supprimer-un-avis/) chez RapidRemove coûte par exemple 179 €, payés uniquement si l'avis disparaît. C'est précisément ce calcul que beaucoup ratent, parce que le préjudice s'installe lentement et de façon invisible – sous forme de chiffre d'affaires perdu, pas de facture reçue." },
+    { t: "p", text: "Même avec des hypothèses prudentes, la perte cumulée dépasse largement le coût d'une solution professionnelle – la [suppression d'un avis isolé](/fr/supprimer-un-avis/) chez RapidRemove coûte par exemple 99 € (250 € pour un avis de plus de 4 semaines ou sans texte), payés uniquement si l'avis disparaît. C'est précisément ce calcul que beaucoup ratent, parce que le préjudice s'installe lentement et de façon invisible – sous forme de chiffre d'affaires perdu, pas de facture reçue." },
 
     { t: "h2", id: "indirekt", text: "Les coûts indirects – souvent plus élevés que la perte directe", toc: "Coûts indirects" },
     { t: "ul", items: [

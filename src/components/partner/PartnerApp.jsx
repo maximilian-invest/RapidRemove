@@ -5,7 +5,7 @@
 import React from "react";
 import {
   Search, ArrowLeft, Check, ChevronRight, Sparkles, Loader, Copy, CheckCheck, X, StickyNote, ArrowUpRight,
-  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User, AlarmClock, ScanSearch,
+  Link as LinkIcon, Info, Hourglass, CheckCircle2, XCircle, Wallet, Banknote, MessageCircle, LogOut, Home, List, User, AlarmClock, ScanSearch, Zap,
 } from "lucide-react";
 import { BASE, STATUS, MARKS, canRemove, usd, since, call, dueOf, dueText, dueDate, span } from "./shared";
 import PartnerPush from "./PartnerPush";
@@ -24,10 +24,11 @@ const F = {
   wk: (t) => t.status === "working",
   late: (t) => { const d = dueOf(t); return !!d && d.state === "late"; },
   soon: (t) => { const d = dueOf(t); return !!d && d.state === "soon"; },
+  xp: (t) => { const d = dueOf(t); return !!d && !!d.express; },
   all: () => true,
 };
-const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", late: "Priority", soon: "Due within 24 h", all: "All tasks", pending: "Pending · waiting for customer" };
-const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw", late: "open", soon: "open" };
+const FL = { todo: "To do", removed: "Removed", closed: "Not possible", sw: "Software", nw: "New", wk: "Working", late: "Priority", soon: "Due within 24 h", xp: "Express · high priority", all: "All tasks", pending: "Pending · waiting for customer" };
+const CF_OF = { nw: "open", wk: "open", todo: "open", open: "open", removed: "removed", closed: "closed", sw: "sw", all: "open", pending: "sw", late: "open", soon: "open", xp: "open" };
 /** Fortschritt eines Kunden – überall gleich formuliert („2 of 9 done · 1 waiting for customer"). */
 const progressOf = (l) => {
   const todo = l.filter(isTodo).length, sw = l.filter(F.sw).length;
@@ -41,7 +42,7 @@ const byDue = (a, b) => { const x = dueOf(a), y = dueOf(b); return ((x ? x.due :
 function DueChip({ t }) {
   const d = dueOf(t);
   if (!d) return null;
-  return <em className={"due " + d.state}><AlarmClock />{dueText(d)}</em>;
+  return <em className={"due " + d.state}>{d.express ? <Zap /> : <AlarmClock />}{dueText(d)}</em>;
 }
 /** Laufzeit-Uhr: tickt jede Sekunde („4d 06:12:45"), ohne die ganze App neu zu zeichnen. */
 function RunClock({ since: t0 }) {
@@ -52,16 +53,28 @@ function RunClock({ since: t0 }) {
   const p2 = (n) => String(n).padStart(2, "0");
   return <span className="clk">{d ? <b>{d}<small>d</small></b> : null}<span>{p2(h)}:{p2(m)}<i>:{p2(sec)}</i></span></span>;
 }
+/** Express-Countdown 24 Std. → 0 („23:41:05"), tickt jede Sekunde. */
+function XClock({ due }) {
+  const [now, setNow] = React.useState(() => Date.now());
+  React.useEffect(() => { const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, []);
+  const s = Math.max(0, Math.floor((due - now) / 1000));
+  const p2 = (n) => String(n).padStart(2, "0");
+  return <span className="xclk">{p2(Math.floor(s / 3600))}:{p2(Math.floor((s % 3600) / 60))}<i>:{p2(s % 60)}</i></span>;
+}
 /** „1 priority" / „2 due today" je Kunde */
 function custDue(l) {
   const late = l.filter((t) => { const d = dueOf(t); return d && d.state === "late"; }).length;
   const soon = l.filter((t) => { const d = dueOf(t); return d && d.state === "soon"; }).length;
+  const xp = l.filter((t) => { const d = dueOf(t); return d && d.express; }).length;
+  if (xp) return <em className="due xp"><Zap />{xp} express</em>;
   return late ? <em className="due late"><AlarmClock />{late} priority</em> : soon ? <em className="due soon"><AlarmClock />{soon} due today</em> : null;
 }
 
 function stLabel(t) {
   if (t.hold && (t.status === "new" || t.status === "working")) return "On hold · waiting for customer payment";
-  if (t.status === "working" && t.sw === "paid") return "Software · customer paid – start now";
+  if (t.express && (t.status === "new" || t.status === "working")) return "Express · software removal approved – start now";
+  if (t.status === "working" && t.sw === "paid") return "Software · approved – start now";
+  if (t.status === "new" && t.sw === "paid") return "Software · approved – start now";
   if (t.status === "working" && t.workingSince) return "Working · " + since(t.workingSince);
   if (t.status === "removed" && t.paid) return "Removed · paid";
   if (t.status === "removed" && t.processing) return "Removed · payout on the way";
@@ -171,7 +184,15 @@ export default function PartnerApp({ api }) {
   );
   // Frist-Leiste oben: überfällig (rot) bzw. heute fällig (orange)
   const lateN = all.filter(F.late).length, soonN = all.filter(F.soon).length;
-  const dueBar = () => (lateN || soonN ? (
+  const xpL = all.filter(F.xp), xpNext = xpL.map((t) => dueOf(t)).sort((a, b) => a.due - b.due)[0];
+  const dueBar = () => (xpL.length ? (
+    <button type="button" className="duebar xp" onClick={() => go({ v: "list", k: "xp" })}>
+      <span className="di"><Zap /></span>
+      <span className="t"><b>{xpL.length} express review{xpL.length > 1 ? "s" : ""} · high priority</b>
+        <span>{xpNext && xpNext.left > 0 ? `Software removal approved · next one due in ${span(xpNext.left)}` : "Software removal approved · please finish these first"}</span></span>
+      <ChevronRight />
+    </button>
+  ) : lateN || soonN ? (
     <button type="button" className={"duebar " + (lateN ? "late" : "soon")} onClick={() => go({ v: "list", k: lateN ? "late" : "soon" })}>
       <span className="di"><AlarmClock /></span>
       <span className="t"><b>{lateN ? `${lateN} review${lateN > 1 ? "s" : ""} to prioritise` : `${soonN} review${soonN > 1 ? "s" : ""} due within 24 h`}</b>
@@ -400,7 +421,13 @@ export default function PartnerApp({ api }) {
         <div className="ps" style={{ margin: "8px 0 0" }}>{t.cust}</div>
         <div className="rvh"><b>{t.code}</b><span>{usd(t.price)}</span></div>
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
-        {dueOf(t) ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / (d.days * 864e5)) * 100)); return (
+        {dueOf(t) && dueOf(t).express ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / 864e5) * 100)); return (
+          <div className={"dueb " + d.state}>
+            <div className="h"><Zap /><b>{d.left < 0 ? "Express · 24 h are over" : "High priority · Express"}</b>{d.left >= 0 ? <XClock due={d.due} /> : null}</div>
+            <div className="bar"><i style={{ width: pct + "%" }} /></div>
+            <span>{d.left < 0 ? "Please finish this one as soon as you can." : "Remove within 24 hours"} · deadline {dueDate(d.due)} · software removal approved (included in the price)</span>
+          </div>
+        ); })() : dueOf(t) ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / (d.days * 864e5)) * 100)); return (
           <div className={"dueb " + d.state}>
             <div className="h"><AlarmClock /><b>{d.state === "late" ? "Priority" : `Deadline in ${span(d.left)}`}</b></div>
             <div className="bar"><i style={{ width: pct + "%" }} /></div>

@@ -21,7 +21,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
-import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, type PricedItem } from "./reviewsPricing";
+import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
 import { registerPricingRoutes } from "./bulkPricing";
@@ -411,7 +411,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   if (!internal) { delete (b as Record<string, unknown>).bulk; delete (b as Record<string, unknown>).pricing; }
   // Je Bewertung entweder der Teilen-Link ODER Name + Bewertungstext (Alternative,
   // wenn der Kunde den Link nicht findet). Beides wird bereinigt gespeichert.
-  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number; business?: string; cp?: number; pUsd?: number; swp?: number; pSw?: number };
+  type ReviewItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; rating?: number; days?: number; business?: string; cp?: number; pUsd?: number; swp?: number; pSw?: number; lp?: number; x?: boolean };
   const reviewItems: ReviewItem[] = Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, bulk ? 5000 : 40).map((raw) => {
         const o = (raw || {}) as Record<string, unknown>;
@@ -555,6 +555,20 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
     }
   }
+  // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (99 frisch / 250 alles andere). Nicht bei Bulk und
+  // nicht bei Kunden-Konditionen (cp). Express (+100, Ziel 30 Std.) nur für 250er und nur, wenn im Bestellprozess gewählt.
+  if (isReviews && !bulk) {
+    const wantX = b.reviewExpress === true;
+    let nx = 0;
+    for (const it of reviewItems) {
+      if (cpOf(it)) continue;
+      it.lp = listPriceV2(it);
+      if (wantX && it.lp === PRICE_V2_OTHER) { it.x = true; nx++; }
+    }
+    (b as Record<string, unknown>).priceV = 2;
+    if (nx) (b as Record<string, unknown>).revExpress = { n: nx, fee: EXPRESS_FEE, h: EXPRESS_CUSTOMER_H, at: new Date().toISOString() };
+  }
+  delete (b as Record<string, unknown>).reviewExpress;
   const reviewUrls = reviewItems.map((it) => it.url).filter(Boolean) as string[];
   // Bereinigte Items zurück ins raw-JSON — der Admin liest sie von dort.
   if (isReviews) (b as Record<string, unknown>).reviewItems = reviewItems;
@@ -841,7 +855,7 @@ app.post("/admin/orders/create", async (req, reply) => {
   const mapsUri = httpUrl(pl.mapsUrl, 400);
   const placeId = clip(pl.placeId, 200);
   const addr = clip(pl.address, 300);
-  type Item = { url?: string; name?: string; text?: string; old?: boolean; sw?: boolean; rating?: number; days?: number; cp?: number };
+  type Item = { url?: string; name?: string; text?: string; old?: boolean; sw?: boolean; rating?: number; days?: number; cp?: number; lp?: number };
   const ctryPre = String(c.country || "").toUpperCase();
   const items: Item[] = type === "reviews" && Array.isArray(b.reviewItems)
     ? (b.reviewItems as unknown[]).slice(0, 40).map((raw) => {
@@ -854,6 +868,7 @@ app.post("/admin/orders/create", async (req, reply) => {
         // Software-Fall (Partner-Regel): ältere Bewertung mit Text aus den USA → wie Website-Bestellungen.
         if (reviewMethod({ old: o.old === true, days: flags.days as number }, ctryPre) === "sw") { flags.sw = true; flags.old = true; }
         if (cpOf(o)) flags.cp = cpOf(o); // individueller Preis je Bewertung (wird so abgebucht + verrechnet)
+        else flags.lp = listPriceV2({ old: flags.old === true, sw: flags.sw === true, nt: o.nt === true || ((!tx || /^★+$/.test(tx)) && !!flags.rating), days: flags.days as number }); // Preismodell 2 (99/250): ohne Text (auch „★★★" als Platzhalter) = 250
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as Item;
         if (nm && tx) return { name: nm, text: tx, ...flags } as Item;
         return null;
@@ -1619,14 +1634,15 @@ app.post("/admin/reviews-start", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type StartItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
+  type StartItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; lp?: number; x?: boolean };
   const items: StartItem[] = (Array.isArray(b.items) ? (b.items as unknown[]) : []).slice(0, 40).map((raw) => {
     if (typeof raw === "string") { const u = httpUrl(raw, 400); return u ? { url: u } : null; }
     const o = (raw || {}) as Record<string, unknown>;
     const url = httpUrl(o.url, 400);
     const nm = clip(o.name, 80);
     const tx = clip(o.text, 400);
-    const flags = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software (Vorauszahlung) · old: älter als 4 Wochen
+    const flags: StartItem = o.nt === true ? { nt: true } : o.sw === true ? { old: true, sw: true } : o.old === true ? { old: true } : {}; // nt/sw: Software (Vorauszahlung) · old: älter als 4 Wochen
+    if (lpOf(o)) { flags.lp = lpOf(o); if (o.x === true) flags.x = true; } // Preismodell 2: Listenpreis (+ Express) mitnehmen
     if (url) return { url, ...flags };
     if (nm && tx) return { name: nm, text: tx, ...flags };
     if (nm && flags.nt) return { name: nm, ...flags };
@@ -1655,8 +1671,10 @@ app.post("/admin/reviews-start", async (req, reply) => {
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
     const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct, startPayPct);
-    const amountNum = Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // Betrag bei Erfolg
-    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: await swDash(), price: fmtReviewMoney(300, currency), amountNum };
+    // Preismodell 2 (Auftrag mit Listenpreisen): 99er mit Software = 250 fix; Bestandsaufträge: 300 rabattiert.
+    const v2 = items.some((it) => lpOf(it));
+    const amountNum = v2 ? swItems.length * PRICE_V2_OTHER : Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // Betrag bei Erfolg
+    software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: await swDash(), price: fmtReviewMoney(v2 ? PRICE_V2_OTHER : 300, currency), amountNum };
   }
   // Nicht angenommene Bewertungen (im Admin abgewählt): nur die Anzahl, für den Hinweis in der Mail.
   const declined = Math.max(0, Math.min(40, Number(b.declinedCount) || 0));

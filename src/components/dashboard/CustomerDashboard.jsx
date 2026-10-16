@@ -12,7 +12,7 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon,
+  BadgeCheck, Timer, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon,
 } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
@@ -98,7 +98,29 @@ const stOf = (status, pre) => { const k = ST_[status] ? status : "new"; const p 
 const OPEN = ["new", "reasons", "verify", "paygate", "working", "software", "sw_accepted"];
 const statusLine = (r, cur) => (r.swBulk ? T("st_swBulk") : stOf(r.status, r.pre).l)
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
-  + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: net(money(r.price, cur)) })) : "");
+  + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: net(money(r.price + (r.xOk ? r.xFee || 0 : 0), cur)) })) : "");
+/* Preismodell 2 · Express (nur 250er, +100, Ziel 30 Std.): Etikett je Bewertung. */
+const XD = {
+  de: { on: (t) => `Express · Ziel bis ${t}`, wait: "Express · startet mit dem Auftrag", met: (a) => `Express geschafft · +${a}`, miss: "Express nicht geschafft · kein Aufpreis" },
+  en: { on: (t) => `Express · target ${t}`, wait: "Express · starts with your order", met: (a) => `Express met · +${a}`, miss: "Express missed · no surcharge" },
+  es: { on: (t) => `Exprés · objetivo ${t}`, wait: "Exprés · empieza con tu pedido", met: (a) => `Exprés cumplido · +${a}`, miss: "Exprés no cumplido · sin recargo" },
+  fr: { on: (t) => `Express · objectif ${t}`, wait: "Express · démarre avec votre commande", met: (a) => `Express tenu · +${a}`, miss: "Express non tenu · sans supplément" },
+  it: { on: (t) => `Express · obiettivo ${t}`, wait: "Express · parte con il tuo ordine", met: (a) => `Express riuscito · +${a}`, miss: "Express non riuscito · nessun supplemento" },
+  nl: { on: (t) => `Express · doel ${t}`, wait: "Express · start met uw opdracht", met: (a) => `Express gehaald · +${a}`, miss: "Express niet gehaald · geen toeslag" },
+  pt: { on: (t) => `Expresso · objetivo ${t}`, wait: "Expresso · começa com a sua encomenda", met: (a) => `Expresso cumprido · +${a}`, miss: "Expresso não cumprido · sem taxa" },
+  ja: { on: (t) => `エクスプレス・目標 ${t}`, wait: "エクスプレス・ご注文の開始と同時にスタート", met: (a) => `エクスプレス達成・+${a}`, miss: "エクスプレス未達・追加料金なし" },
+  sv: { on: (t) => `Express · mål ${t}`, wait: "Express · startar med din order", met: (a) => `Express klarad · +${a}`, miss: "Express missad · inget tillägg" },
+  da: { on: (t) => `Ekspres · mål ${t}`, wait: "Ekspres · starter med din ordre", met: (a) => `Ekspres nået · +${a}`, miss: "Ekspres ikke nået · intet tillæg" },
+  no: { on: (t) => `Ekspress · mål ${t}`, wait: "Ekspress · starter med ordren din", met: (a) => `Ekspress nådd · +${a}`, miss: "Ekspress ikke nådd · ingen tillegg" },
+};
+const xTagOf = (r, cur) => {
+  if (!r.x) return null;
+  const X = XD[LANG] || XD.en;
+  if (r.status === "removed") return { t: r.xOk ? X.met(money(r.xFee || 100, cur)) : X.miss, k: r.xOk ? "met" : "miss" };
+  if (!r.xDue) return { t: X.wait, k: "on" };
+  let when = ""; try { when = new Date(r.xDue).toLocaleString(LOC, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { /* */ }
+  return { t: X.on(when), k: "on" };
+};
 
 function Ring({ r, n }) {
   const R = 24, p = n ? r / n : 0;
@@ -2009,6 +2031,7 @@ export default function CustomerDashboard() {
                 <span className="a">{x.name || T("googleReview")}</span>
                 <span className={"x" + (x.text ? "" : " none")}>{x.text || T("noText")}</span>
                 <span className={"st c-" + x.status}>{statusLine(x, o.cur)}</span>
+                {(() => { const xt = xTagOf(x, o.cur); return xt ? <span className={"xtag " + xt.k}><Zap />{xt.t}</span> : null; })()}
               </span>
             </button>
           );

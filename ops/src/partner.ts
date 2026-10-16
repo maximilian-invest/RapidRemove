@@ -15,7 +15,8 @@ import { checkRemoval, removalShot } from "./removalCheck";
 import { checkRemovalStrict } from "./removalScan";
 import { probeReviewLink } from "./linkProbe";
 import { notifyTeam } from "./notify";
-import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, partnerToDash, autopayHooks } from "./customers";
+import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, SW_NOTE_COVERED, swStartAllowed, partnerToDash, autopayHooks } from "./customers";
+import { lpOf, PRICE_V2_OTHER, EXPRESS_PARTNER_H } from "./reviewsPricing";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
@@ -110,6 +111,8 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND sw_price_usd IS NULL AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
+  // Express (Preismodell 2, nur 250er): Start des 24-Std.-Timers beim Partner (Kunde: 30 Std.). NULL = kein Express.
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS express_at timestamptz`);
   // Meldegrund des Partners beim „Removed" (reportReasons.ts).
   for (const c of ["report_reason text", "report_note text", "report_at timestamptz"]) await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS ${c}`);
   await pool.query(`CREATE UNIQUE INDEX IF NOT EXISTS partner_tasks_order_item ON partner_tasks (order_id, item_key)`);
@@ -188,7 +191,7 @@ type Row = {
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
   touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
-  report_reason?: string | null; report_note?: string | null; report_at?: string | null;
+  report_reason?: string | null; report_note?: string | null; report_at?: string | null; express_at?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -201,7 +204,9 @@ function partnerView(r: Row) {
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     reportReason: r.report_reason || null, reportNote: r.report_note || "", // womit der Partner gemeldet hat (beim „Removed")
-    sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : (r.status === "working" && ((r.admin_note || "").includes(SW_NOTE_PAID) || (r.admin_note || "").includes(SW_NOTE_APPROVED)) ? "paid" : null),
+    // Express (Preismodell 2): Priorität hoch, Timer läuft 24 Std. ab express_at.
+    express: r.express_at ? { at: r.express_at, due: new Date(new Date(r.express_at).getTime() + EXPRESS_PARTNER_H * 3600e3).toISOString() } : null,
+    sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : ((r.status === "working" && swStartAllowed(r.admin_note)) || (r.status === "new" && String(r.admin_note || "").includes(SW_NOTE_COVERED)) ? "paid" : null), // 250er: Software freigegeben (im Preis)
   };
 }
 function adminView(r: Row) {
@@ -285,14 +290,20 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     const kind: TaskKind = it.kind === "profile" ? "profile" : it.nt === true ? "nt" : it.old === true ? "old" : "normal";
     const key = url || `${name}|${text}`;
     // Partner: vorgegeben (Admin/Zuteilung) – sonst Zuteilung der Leistung bzw. erster aktiver Partner. Preis = Partnerpreis der Leistung.
-    const svc: ServiceId = serviceOf({ kind, sw: it.sw, nt: it.nt, old: it.old });
+    // Preismodell 2: Express (nur 250er) = Anweisung „Software-Löschung" mit Priorität + 24-Std.-Timer.
+    const v250 = kind !== "profile" && lpOf(it as { lp?: unknown }) === PRICE_V2_OTHER;
+    const xNow = v250 && it.x === true;
+    const svc: ServiceId = serviceOf({ kind, sw: it.sw || xNow, nt: it.nt, old: it.old });
     const pid = partnerIdIn ?? (await partnerIfApproved(cs?.partnerId, svc)) ?? (await defaultPartnerFor(svc));
     // Partnerpreis: bei der Bestellung festgeschrieben (pUsd) > vorgegeben (Admin, price) > Kunden-Konditionen > Preis der Leistung beim Partner.
     const swCase = svc === "sw";
     const csPrice = kind === "profile" ? 0 : swCase ? csSw : csTier;
     const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : csPrice > 0 ? csPrice : await partnerPrice(pid, svc);
     // Wird eine normale Bewertung später zum Software-Fall, bekommt der Partner dafür diesen Preis (null = wie bisher).
-    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : csSw > 0 ? csSw : null;
+    // Preismodell 2: 250er-Bewertungen decken Software ab → Software-Preis des Partners schon jetzt hinterlegen.
+    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : csSw > 0 ? csSw : v250 ? await partnerPrice(pid, "sw") : null;
+    // 250er: Software-Fall darf sofort starten (kein Warten auf den Kunden). Express: 24-Std.-Timer ab jetzt.
+    const covNote = v250 && (it.nt === true || it.sw === true || xNow) ? (xNow ? "EXPRESS · " : "") + SW_NOTE_COVERED : null;
     const cust = clip(it.business, 160) || customer; // Bulk (gemischte Profile): Partner-Board gruppiert nach Profilname der Bewertung
     // Ohne Auftrag (manuell, z. B. aus WhatsApp) greift der Unique-Index nicht (NULL) → selbst prüfen.
     if (!orderId) {
@@ -300,13 +311,13 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
       if (ex.rows[0]) { out.push(ex.rows[0] as Row); continue; }
     }
     const r = await pool.query(
-      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method, partner_id, sw_price_usd)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+      `INSERT INTO partner_tasks (order_id, item_key, url, name, text, kind, price_usd, customer, test, rating, age_days, method, partner_id, sw_price_usd, admin_note, express_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15, CASE WHEN $16::boolean THEN now() ELSE NULL END)
        ON CONFLICT (order_id, item_key) DO UPDATE SET customer = COALESCE(partner_tasks.customer, EXCLUDED.customer)
        RETURNING *`,
       [orderId, key, url || null, name || null, text || null, kind, price, cust, test,
         Number(it.rating) >= 1 && Number(it.rating) <= 5 ? Math.round(Number(it.rating)) : null, Number.isFinite(Number(it.days)) && it.days !== null && it.days !== undefined && Number(it.days) >= 0 ? Math.round(Number(it.days)) : null,
-        it.kind === "profile" ? null : it.nt === true || it.sw === true ? "sw" : it.old === true ? "legal" : null, pid, swPrice],
+        it.kind === "profile" ? null : it.nt === true || it.sw === true || xNow ? "sw" : it.old === true ? "legal" : null, pid, swPrice, covNote, xNow],
     );
     let row = r.rows[0] as Row;
     if (!row.code) {
@@ -383,6 +394,15 @@ export async function partnerOrderStatus(orderId: string, status: string): Promi
 }
 
 /** Sofort-Push an den Kunden (Sprache + Bewertungsname aus der Bestellung). */
+/** Preismodell 2: gehört die Aufgabe zu einer 250er-Bewertung (Software im Preis enthalten)? */
+async function isCovered250(orderId: string, itemKey: string | null): Promise<boolean> {
+  if (!pool || !itemKey) return false;
+  const r = await pool.query(`SELECT raw->'reviewItems' AS items FROM orders WHERE id=$1 AND service='reviews'`, [orderId]).catch(() => ({ rows: [] as { items: unknown }[] }));
+  const items = (Array.isArray(r.rows[0]?.items) ? r.rows[0].items : []) as Record<string, unknown>[];
+  const it = items.find((x) => (String(x.url || "") || `${x.name || ""}|${x.text || ""}`) === itemKey);
+  return !!it && lpOf(it as { lp?: unknown }) === PRICE_V2_OTHER;
+}
+
 async function pushCustomerNow(row: Row, from: string, to: string): Promise<void> {
   if (!pool || !row.order_id) return;
   const o = await pool.query(`SELECT email, lang FROM orders WHERE id=$1 AND service='reviews'`, [row.order_id]);
@@ -602,7 +622,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!opts.admin && !opts.preview && opts.pid && old.partner_id && Number(old.partner_id) !== opts.pid) return { error: "not found", code: 404 }; // nur eigene Aufgaben
     if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
     // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
-    const swPaid = String(old.admin_note || "").includes(SW_NOTE_PAID) || String(old.admin_note || "").includes(SW_NOTE_APPROVED); // bezahlt ODER freigegeben (zahlt bei Erfolg)
+    const swPaid = swStartAllowed(old.admin_note); // bezahlt, freigegeben (zahlt bei Erfolg) oder im 250er-Preis enthalten
     if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
     // Zwischenzahlung offen (Auftrag pausiert): nichts Neues starten, bis der Kunde bezahlt hat.
     if (!opts.admin && status === "working" && old.status === "new" && old.order_id) {
@@ -643,6 +663,16 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (changed && status === "software" && !row.paid_at && Number((row as Record<string, unknown>).sw_price_usd) > Number(row.price_usd || 0)) {
       const u = await pool.query(`UPDATE partner_tasks SET price_usd=sw_price_usd WHERE id=$1 AND paid_at IS NULL RETURNING *`, [id]).catch(() => ({ rows: [] as Row[] }));
       if (u.rows[0]) row = u.rows[0] as Row;
+    }
+    // Preismodell 2: „Software only" bei einer 250er-Bewertung → sofort freigegeben (im Preis enthalten), Kunde merkt nichts.
+    if (changed && status === "software" && row.order_id && await isCovered250(row.order_id, row.item_key)) {
+      await partnerStatusChanged(row.order_id, row.item_key, status, { prev: old.status }).catch((e) => app.log.error({ err: e }, "250er-Software-Freigabe fehlgeschlagen"));
+      const re = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id]).catch(() => ({ rows: [] as Row[] }));
+      if (re.rows[0]) row = re.rows[0] as Row;
+      bumpChange();
+      await insertEvent({ orderId: row.order_id || undefined, type: "note", title: `Partner: ${row.code} nur per Software → freigegeben (250er)`, detail: [row.url || row.name, note].filter(Boolean).join(" · ") }).catch(() => {});
+      if (!opts.quiet) void notifyTeam(`${row.test ? "TEST · " : ""}Software (250er, freigegeben) · ${row.customer || row.code}`, ["Partner", row.code, row.order_id ? `Auftrag ${row.order_id}` : ""].filter(Boolean).join(" · "), rvLink([row]), { kind: "partner" });
+      return { row, changed: true };
     }
     bumpChange(); // Live-Aktualisierung (Admin/Kunde/Partner)
     // Kunde: Push SOFORT bei jeder Änderung (Mail kommt gebündelt später, nur bei Wichtigem).

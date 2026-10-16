@@ -19,7 +19,7 @@ import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
-import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf } from "./reviewsPricing";
+import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, expressMet } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -234,6 +234,10 @@ export const SW_NOTE_PAID = "Kunde hat die Software-Vorauszahlung bezahlt (Dashb
 export const SW_NOTE_DECLINED = "Kunde hat die Spezial-Software abgelehnt (Dashboard)";
 /** Kunde mit hinterlegter Zahlungsart hat zugestimmt – keine Vorauszahlung, Abbuchung erst bei Erfolg. */
 export const SW_NOTE_APPROVED = "Kunde hat zugestimmt – zahlt bei Erfolg (hinterlegte Zahlungsart) → bitte starten";
+/** Preismodell 2: 250er-Bewertung – Software ist im Preis abgedeckt, keine Zustimmung des Kunden nötig. */
+export const SW_NOTE_COVERED = "Software im Preis enthalten (250er) → direkt starten";
+/** Freigabe-Vermerke, mit denen der Partner einen Software-Fall starten darf. */
+export const swStartAllowed = (note: unknown) => { const s = String(note || ""); return s.includes(SW_NOTE_PAID) || s.includes(SW_NOTE_APPROVED) || s.includes(SW_NOTE_COVERED); };
 const appendNote = (col: string, i: number) => `${col} = CASE WHEN COALESCE(${col},'')='' THEN $${i} ELSE ${col} || ' · ' || $${i} END`;
 
 async function rawOf(orderId: string): Promise<Record<string, unknown> | null> {
@@ -299,6 +303,24 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
   if (n) void notifyTeam(`Software bezahlt · ${p.amount} ${String(p.cur).toUpperCase()}`, `${n} Bewertung(en) · Auftrag ${orderId} · Partner startet (In Arbeit)`, `${SITE_URL}/admin?order=${encodeURIComponent(orderId)}`, { kind: "pay" });
 }
 
+/** Preismodell 2: Software-Fall einer 250er-Bewertung freigeben – im Preis enthalten, kein Kunde nötig, Partner startet sofort. */
+export async function approveCovered(orderId: string, keys: string[]): Promise<number> {
+  if (!pool || !keys.length) return 0;
+  const u = await pool.query(
+    `UPDATE partner_tasks SET status='working', working_since=COALESCE(working_since, now()), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL,
+        price_usd = CASE WHEN sw_price_usd IS NOT NULL AND sw_price_usd > price_usd AND paid_at IS NULL THEN sw_price_usd ELSE price_usd END,
+        ${appendNote("admin_note", 3)}
+      WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING code, test`,
+    [orderId, keys, SW_NOTE_COVERED],
+  ).catch(() => ({ rows: [] as { code: string; test: boolean }[] }));
+  const codes = u.rows.map((x) => x.code).filter(Boolean);
+  const test = u.rows.some((x) => x.test);
+  if (u.rows.length) {
+    await insertEvent({ orderId, type: "note", title: "Software freigegeben (im 250er-Preis enthalten)", detail: `${u.rows.length} Bewertung(en) · keine Zustimmung des Kunden nötig · Partner startet`, auto: true }).catch(() => {});
+    void notifyPartner(`${test ? "TEST · " : ""}Software approved`, `${codes.slice(0, 4).join(", ") || "Review"} · Software is covered – start now.`, undefined, test);
+  }
+  return u.rows.length;
+}
 /** Software-Fall OHNE Vorauszahlung freigeben (Kunde hat Zahlungsart hinterlegt): Partner startet sofort, abgebucht wird bei Erfolg. */
 export async function approveSoftwareDeferred(groups: Map<string, string[]>, why: string): Promise<number> {
   if (!pool) return 0;
@@ -451,11 +473,11 @@ export async function markOrderReviewsPaidManual(orderId: string): Promise<void>
 }
 
 /* ---- Status je Bewertung (für das Dashboard) ---- */
-type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean };
+type Item = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; lp?: number; x?: boolean };
 export const keyOf = (it: Item) => it.url || `${it.name || ""}|${it.text || ""}`;
 /** Kunden-Status (Design-Handoff „Customer Dashboard"). */
 export type ItemStatus = "new" | "working" | "removed" | "notpossible" | "software" | "sw_accepted" | "sw_declined" | "cancelled";
-type PT = { status: string; since: string | null; removedAt?: string | null; changedAt?: string | null; prev?: string | null };
+type PT = { status: string; since: string | null; removedAt?: string | null; changedAt?: string | null; prev?: string | null; expressAt?: string | null };
 /** Partner-Status → Kunden-Status (für „vorher → jetzt"). */
 export const partnerToDash = (s: string): ItemStatus => (({ new: "new", working: "working", removed: "removed", not_possible: "notpossible", software: "software", cancelled: "cancelled" } as Record<string, ItemStatus>)[s] || "new");
 type OrderRow = { id: string; created_at: string; status: string | null; pay: string | null; lang: string | null; country: string | null; profile: string | null; company: string | null; raw: Record<string, unknown> | null };
@@ -482,7 +504,8 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const disc = (v: number) => Math.round((Math.round((v * (100 - pct)) / 100) * (100 - payPct)) / 100);
   // Software-Preis (Maximilian 13.10.2026): schon bei der Bestellung als Software klar (ohne Text / als Software bestellt)
   // → Rabatte wie bei der Bestellung angezeigt. Erst später vom Partner festgestellt → fix 300, nur mit Freigabe des Kunden.
-  const swPriceOf = (it: Item) => (it.nt || it.sw ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE);
+  // Preismodell 2: als 99er bestellt, Partner sagt „nur Software" → 250 (Zustimmung des Kunden wie bisher).
+  const swPriceOf = (it: Item) => (lpOf(it) ? PRICE_V2_OTHER : it.nt || it.sw ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE);
   // Software vorab bezahlt (Zustimmung OHNE def = nach Zahlung). Zustimmung mit def (hinterlegte Zahlungsart) = gestartet, aber erst bei Erfolg fällig.
   const swPaidFor = (k: string) => (decisions[k]?.d === "accepted" && !decisions[k]?.def) || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
   // Spezialverfahren wird voll im Voraus bezahlt (Software-Zahlung oder Vorauszahlung „ohne Text" aus der Startbestätigung).
@@ -506,7 +529,9 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     const dec = decisions[k]?.d;
     let status: ItemStatus;
     const swBulk = !!bulkSw[k]; // Bulk: braucht Software → aus der Bulk-Bestellung storniert, einzeln beauftragen
+    const cov = lpOf(it) === PRICE_V2_OTHER; // 250er: Software ist im Preis – der Kunde sieht davon nichts („In Bearbeitung")
     if (rem.has(k) || ps === "removed") status = "removed";
+    else if (cov && !cancelled && !swBulk && (ps === "software" || sw.has(k) || dec === "accepted" || swPaidFor(k))) status = dec === "declined" ? "sw_declined" : "working";
     else if (cancelled || swBulk) status = "cancelled";
     else if (dec === "declined") status = "sw_declined";
     else if (swPaidFor(k) || decisions[k]?.d === "accepted") status = "sw_accepted";
@@ -516,11 +541,16 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else if (acc.has(k)) status = "working";
     else if (accepted) status = "notpossible";
     else status = "new";
-    const special = !!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted";
+    // Preismodell 2: 250er sind nie „Spezial" (normaler Preis, nach der Löschung); 99er werden es erst mit Zustimmung zur Software.
+    const special = lpOf(it) === PRICE_V2_OTHER ? false : lpOf(it) ? (sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted") : (!!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted");
     const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
     // Kunden-Konditionen (Admin → Kunden & Preise): fester Software-Preis, auch wenn der Partner erst später „Software" feststellt.
     const swp = cpOf({ cp: (it as { swp?: unknown }).swp });
-    const price = special && swp ? swp : cp || (special ? swPriceOf(it) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
+    const price = special && swp ? swp : cp || (special ? swPriceOf(it) : disc(lpOf(it) || (it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE)));
+    // Express (nur 250er): +100, nur wenn innerhalb von 30 Std. ab Start (Partner-Aufgabe) gelöscht – sonst entfällt er automatisch.
+    const xOn = lpOf(it) === PRICE_V2_OTHER && !!it.x;
+    const xRemovedAt = status === "removed" ? pt?.removedAt || null : null;
+    const xOk = xOn && !!xRemovedAt && expressMet(pt?.expressAt || null, xRemovedAt);
     return {
       cp: special && swp ? swp : cp,
       key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || (Number((it as { rating?: unknown }).rating) > 0 && !String(it.text || "").trim()), rating: Number((it as { rating?: unknown }).rating) || null,
@@ -529,9 +559,12 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
+      lp: lpOf(it) || null, // Preismodell 2 (99/250); null = Bestandsauftrag
+      x: xOn, xOk, xFee: xOn ? EXPRESS_FEE : 0, // Express: bestellt / eingehalten (wird nur dann abgerechnet)
+      xDue: xOn && pt?.expressAt ? new Date(new Date(pt.expressAt).getTime() + EXPRESS_CUSTOMER_H * 3600e3).toISOString() : null, // Zusage: gelöscht bis …
       swWant: status === "software" && !!swWant[k],
       swBulk: !!bulkSw[k],
-      pre: !!it.nt || !!it.sw, // Software-Fall laut Partner-Regel: Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
+      pre: !lpOf(it) && (!!it.nt || !!it.sw), // Software-Fall laut Partner-Regel (nur Preismodell 1): Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen
       // Bestätigter Software-Fall (bei Bestellung zugestimmt): Platz 5 Std. reserviert → Frist fürs Dashboard (Countdown).
       swDue: status === "software" && (it.nt || it.sw || swWant[k]) && (swConfirmed[k] || pt?.changedAt) ? new Date(new Date(String(swConfirmed[k] || pt?.changedAt)).getTime() + SW_HOLD_H * 3600e3).toISOString() : null,
       waived: cancelled && status === "removed" && !(special ? prepaidFor(k) || isPaid(k) : isPaid(k)), // storniert → nichts mehr zu zahlen
@@ -541,12 +574,12 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const swCps = [...new Set(view.filter((v) => v.special).map((v) => v.cp))];
   // Freigabe-Preis (Dashboard/Zahlung): später festgestellte Software-Fälle fix 300; nur bei der Bestellung bekannte → rabattiert.
   const swPend = items.filter((it) => { const v = view.find((x) => x.key === keyOf(it)); return v && v.special && v.status !== "removed"; });
-  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : swPend.length && swPend.every((it) => it.nt || it.sw) ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE;
+  const swUnit = swCps.length === 1 && swCps[0] > 0 ? swCps[0] : swPend.length && swPend.every((it) => lpOf(it)) ? PRICE_V2_OTHER : swPend.length && swPend.every((it) => it.nt || it.sw) ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE;
   // Ganz stornierter Auftrag → keine offenen Zahlungen mehr (auch nicht für vorher gelöschte Bewertungen).
   const unpaid = cancelled ? [] : view.filter((v) => v.status === "removed" && !v.paid);
   // Normale Bewertungen wie die Rechnung (Mengenrabatt), Spezialverfahren (falls ausnahmsweise nicht vorausbezahlt) voll.
   const unpaidN = unpaid.filter((v) => !v.special);
-  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old, cp: v.cp })), cur, items.length, "rest", chatPct, payPct).total : 0)
+  const toPay = (unpaidN.length ? quoteReviews(unpaidN.map((v) => ({ old: v.old, cp: v.cp, ...(v.lp ? { lp: v.lp } : {}), ...(v.x ? { x: true, xOk: v.xOk } : {}) })), cur, items.length, "rest", chatPct, payPct).total : 0)
     + unpaid.filter((v) => v.special).reduce((s, v) => s + v.price, 0);
   return {
     id: o.id, created: o.created_at, lang: o.lang, country: o.country, cur, business: o.company || o.profile || "", cancelled,
@@ -625,14 +658,14 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
   );
   const r = { rows: all.rows.filter((x) => x.service === "reviews") };
   const ids = r.rows.map((x) => x.id);
-  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null; prev_status: string | null };
+  type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null; prev_status: string | null; express_at?: string | null };
   const pt = ids.length
-    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at, prev_status FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
+    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at, prev_status, express_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
     : { rows: [] as PRow[] };
   const byOrder = new Map<string, Map<string, PT>>();
   for (const t of pt.rows as PRow[]) {
     if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, new Map());
-    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at, prev: t.prev_status });
+    byOrder.get(t.order_id)!.set(t.item_key, { status: t.status, since: t.working_since, removedAt: t.removed_at, changedAt: t.updated_at, prev: t.prev_status, expressAt: t.express_at });
   }
   const views = all.rows.map((o) => (o.service === "reviews" ? ({ ...orderView(o, byOrder.get(o.id)), kind: "reviews" } as OrderView) : profileView(o as ProfileRow)));
   return { name: all.rows[0]?.name || "", lang: all.rows[0]?.lang || "en", orders: views };
@@ -961,9 +994,17 @@ export async function partnerStatusChanged(
   const raw = (r.rows[0].raw || {}) as Record<string, unknown>;
   const sw: Item[] = Array.isArray(raw.reviewsSoftware) ? (raw.reviewsSoftware as Item[]) : [];
   let fast = false;
-  if (status === "software" && itemKey) {
-    const items: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
-    const it = items.find((x) => keyOf(x) === itemKey) || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
+  let custStatus = status; // was der Kunde in der Sammel-Mail sieht
+  const items0: Item[] = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Item[]) : [];
+  const it0 = itemKey ? items0.find((x) => keyOf(x) === itemKey) : undefined;
+  if (status === "software" && itemKey && it0 && lpOf(it0) === PRICE_V2_OTHER) {
+    // Preismodell 2 (16.10.2026): 250er – Software ist im Preis abgedeckt. Keine Zustimmung, keine Info an den Kunden:
+    // Partner bekommt sofort die Freigabe, die Aufgabe geht auf „Working", der Kunde sieht weiter „In Bearbeitung".
+    await approveCovered(orderId, [itemKey]);
+    custStatus = "working";
+  } else if (status === "software" && itemKey) {
+    const items: Item[] = items0;
+    const it = it0 || { url: /^https?:/.test(itemKey) ? itemKey : undefined };
     if (!sw.some((x) => keyOf(x) === itemKey)) await setOrderRawField(orderId, "reviewsSoftware", [...sw, { ...it, nt: true, sw: true }]);
     // Software-Fall laut Bestellung (ohne Text / ältere US-Bewertung, 300 schon bei der Bestellung angezeigt und angenommen):
     // keine weitere Zustimmung → startet sofort, sobald eine Zahlungsart hinterlegt ist (Abbuchung erst bei Erfolg).
@@ -997,7 +1038,8 @@ export async function partnerStatusChanged(
   // Änderungen dieser Sammel-Mail: erstes „von", letztes „nach" je Bewertung.
   const ex = await pool.query(`SELECT changes FROM cust_notify WHERE order_id=$1`, [orderId]);
   const changes = { ...((ex.rows[0]?.changes as Record<string, { from: string | null; to: string }>) || {}) };
-  if (itemKey) changes[itemKey] = { from: changes[itemKey]?.from ?? prev, to: status };
+  if (itemKey) changes[itemKey] = { from: changes[itemKey]?.from ?? prev, to: custStatus };
+  if (itemKey && custStatus === "working" && status === "software" && changes[itemKey].from === "working") delete changes[itemKey]; // nichts Neues für den Kunden
   // Sammel-Mail planen bzw. verschieben (Debounce).
   await pool.query(
     `INSERT INTO cust_notify (order_id, due_at, keys, changes) VALUES ($1, now() + ($2 || ' minutes')::interval, $3::jsonb, $4::jsonb)

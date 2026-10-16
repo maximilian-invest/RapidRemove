@@ -49,6 +49,11 @@ export const since = (ms) => {
 export const DUE_DAYS = { std: 3, old: 5 };
 const DAY = 864e5;
 export function dueOf(t, now = Date.now()) {
+  // Express (Preismodell 2): Priorität hoch, Timer 24 Std. ab Eingang – gilt auch für Software-Fälle.
+  if (t && t.express && (t.status === "new" || t.status === "working") && !t.hold) {
+    const left = t.express.due - now;
+    return { days: 1, due: t.express.due, left, express: true, state: left < 0 ? "xover" : "xp" };
+  }
   if (!t || !(t.status === "new" || t.status === "working") || t.hold || t.nt || t.method === "sw" || t.sw || !t.created) return null;
   const days = t.old ? DUE_DAYS.old : DUE_DAYS.std;
   const due = t.created + days * DAY, left = due - now;
@@ -62,7 +67,7 @@ export const span = (ms) => {
   if (h < 24) return h + " h";
   return Math.floor(h / 24) + " d" + (h % 24 ? " " + (h % 24) + " h" : "");
 };
-export const dueText = (d) => (!d ? "" : d.state === "late" ? "Priority" : "Due in " + span(d.left));
+export const dueText = (d) => (!d ? "" : d.express ? (d.left < 0 ? "Express · time over" : "Express · " + span(d.left) + " left") : d.state === "late" ? "Priority" : "Due in " + span(d.left));
 export const dueDate = (ms) => new Date(ms).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 export const pillLabel = (t) => {
   if (t.status === "removed" && t.paid) return "Paid";
@@ -88,6 +93,7 @@ export function norm(t) {
     custReason: t.custReason || null, custNote: t.custNote || "", // Grund des Kunden (Google-Richtlinie)
     reportReason: t.reportReason || null, reportNote: t.reportNote || "", // womit der Partner gemeldet hat
     profile: t.profile || "", bulk: t.bulk || null, // Bulk-Bestellung: Google-Profil der Bewertung + Bestell-Referenz
+    express: t.express && t.express.due ? { at: new Date(t.express.at).getTime(), due: new Date(t.express.due).getTime() } : null, // Express: Priorität hoch, 24 Std.
   };
 }
 

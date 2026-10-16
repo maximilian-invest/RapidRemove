@@ -113,8 +113,8 @@ export default function NewOrder({ ctx }) {
   const revList = (s.revs || []).filter((r) => s.rsf === "all" || (r.rating && r.rating <= 2));
   const items = s.type !== "reviews" ? [] : s.mode === "links"
     ? s.rl.map((r) => ({ url: r.url, old: !!r.old, ...(r.info ? { name: r.info.name, rating: r.info.rating, days: r.info.days, ...(r.info.text ? { text: r.info.text } : {}) } : {}) }))
-    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days }));
-  // US-Profil + älter als 4 Wochen → Software-Verfahren (300), wie im Backend
+    : (s.revs || []).filter((r) => s.sel.includes(r.id)).map((r) => ({ ...(r.link ? { url: r.link } : {}), name: r.name, text: r.text || "★".repeat(r.rating || 0), old: r.days > 28, rating: r.rating, days: r.days, ...(String(r.text || "").trim() ? {} : { nt: true }) }));
+  // US-Profil + älter als 4 Wochen → Software-Verfahren (intern), Preis 250 – wie im Backend (Preismodell 2)
   if (s.country === "US") for (const it of items) if (it.old) it.sw = true;
   // Individueller Preis je Bewertung (einzeln > für alle) – genau der wird abgebucht und verrechnet.
   for (const it of items) { const v = num(s.cpMap[rkey(it)]) || num(s.cpAll); if (v) it.cp = v; }
@@ -334,7 +334,7 @@ export default function NewOrder({ ctx }) {
           <div className="nsr tot"><span>{s.type === "reviews" ? "Betrag (max.)" : "Betrag"}</span><b>{fmt(shown)}</b></div>
         </div>
         <div className="sec3" style={{ marginTop: 20 }}><h2>Preis</h2></div>
-        <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(179)} / ${fmt(229)} älter, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
+        <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(99)} bis 4 Wo. mit Text / ${fmt(250)} alle anderen, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
           <div className="usrch nain"><Tag /><input inputMode="decimal" placeholder={s.type === "reviews" ? "Preisliste" : String(PROFILE_PRICE[cur])} value={s.type === "reviews" ? s.cpAll : s.profAmt}
             onChange={(e) => set(s.type === "reviews" ? { cpAll: e.target.value, cpMap: {} } : { profAmt: e.target.value })} /><b className="curx">{cur}</b></div></label>
         {s.type === "reviews" && items.length > 1 ? <button type="button" className="nasel" onClick={() => set((x) => ({ cpOpen: !x.cpOpen }))}>{s.cpOpen ? <><X />Einzelpreise schließen</> : <><Tag />Einzeln anpassen</>}</button> : null}
@@ -343,7 +343,7 @@ export default function NewOrder({ ctx }) {
             {items.map((it) => (
               <div key={rkey(it)} className="rlr cpr">
                 <div className="t"><b>{it.name || it.url}</b><span>{it.cp ? "individuell" : it.sw ? "Software · Preisliste" : it.old ? "älter 4 Wo. · Preisliste" : "Preisliste"}</span></div>
-                <div className="cpin"><input inputMode="decimal" placeholder={s.cpAll || (it.sw ? "300" : it.old ? "229" : "179")} value={s.cpMap[rkey(it)] || ""} onChange={(e) => { const v = e.target.value; set((x) => ({ cpMap: { ...x.cpMap, [rkey(it)]: v } })); }} /><span>{cur}</span></div>
+                <div className="cpin"><input inputMode="decimal" placeholder={s.cpAll || (it.sw || it.old || !it.text || /^★+$/.test(it.text || "") ? "250" : "99")} value={s.cpMap[rkey(it)] || ""} onChange={(e) => { const v = e.target.value; set((x) => ({ cpMap: { ...x.cpMap, [rkey(it)]: v } })); }} /><span>{cur}</span></div>
               </div>
             ))}
           </div>

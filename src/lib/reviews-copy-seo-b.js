@@ -3,7 +3,7 @@ export const RVW_SEO_B = {
   ja: {
     h1: "Googleの口コミを削除——消えたときだけお支払い。",
     faq: [
-      { q: "どのくらいかかりますか？", a: "通常は1〜2週間です（早まることも、まれに少し長くなることもあります）。星のみの口コミは専用ソフトウェアで約1〜3日です。進捗は随時ご連絡します。" },
+      { q: "どのくらいかかりますか？", a: "通常は1〜2週間です（早まることも、まれに少し長くなることもあります）。星のみの口コミは専用ソフトウェアで約1〜3日です。エクスプレス（$250の口コミのみ）なら30時間以内の削除が目標です。進捗は随時ご連絡します。" },
       { q: "削除できなかったら？", a: "その場合、お支払いはありません。見込みが低いと判断したときは、最初にそうお伝えします。" },
       { q: "投稿者に依頼者が知られますか？", a: "いいえ。誰が削除を依頼したかが投稿者に伝わることはありません。" },
       { q: "口コミが複数あります。", a: "料金は1件ごとです。何件でも選択できます。無料診断のうえ対応をお引き受けした口コミが3件以上なら−10%、5件以上で−15%、10件以上で−30%。割引は削除できたすべての口コミに適用され、お支払いは実際に削除できた分だけです。" },
@@ -32,7 +32,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "比較", compareH: "Googleの口コミを削除する方法を比較",
     compareHead: ["", "自分で報告", "弁護士", "RapidRemove"],
     compareRows: [
-      ["費用", "無料", "時間制の報酬、着手金が必要なことも多い", "削除1件あたり$179から"],
+      ["費用", "無料", "時間制の報酬、着手金が必要なことも多い", "削除1件あたり$99から"],
       ["成功報酬", "–", "いいえ", "はい"],
       ["期間の目安", "数日〜数週間、却下されることも多い", "数週間〜数か月", "通常1〜2週間"],
       ["あなたの手間", "大きい：ポリシー確認、証拠、再審査請求", "打ち合わせと書類準備", "リンクを貼るだけ"],
@@ -49,14 +49,14 @@ export const RVW_SEO_B = {
       { q: "削除できない口コミはありますか？", a: "あります。実際のお客様による、正直で事実に基づいた批判です。たとえ厳しい内容でも同じです。Googleは本物の体験を守っており、私たちも同じ考えです。ルール違反がない口コミなら、お金をいただく前にそうお伝えします。" },
       { q: "削除された口コミが復活することはありますか？", a: "まれです。同じ人が再投稿した場合は私たちにお送りください。削除された口コミの再投稿は、通常すぐにまた削除されます。" },
       { q: "口コミを報告すると、Googleプロフィールに悪影響はありますか？", a: "ありません。ポリシーに違反する口コミの報告は、Googleが想定している正規の手続きです。プロフィールや検索順位に悪影響が出ることはありません。" },
-      { q: "コメントなしの★1評価も削除できますか？", a: "はい。本文のない星だけの評価は複雑なケースにあたり、より手間のかかる手続きが必要なため、削除1件あたり$300です。まとめ割も適用されます。ほかの口コミと同じく、ご注文時にカードまたはPayPalをご登録いただき、事前の請求はありません。請求は評価が削除された後のみで、残った場合は料金はかかりません。" },
+      { q: "コメントなしの★1評価も削除できますか？", a: "はい。本文のない星だけの評価は、より手間のかかる手続きが必要なため、削除1件あたり$250です。まとめ割も適用されます。ほかの口コミと同じく、ご注文時にカードまたはPayPalをご登録いただき、事前の請求はありません。請求は評価が削除された後のみで、残った場合は料金はかかりません。" },
       { q: "支払い方法は？", a: "ご注文時にカードまたはPayPalをご登録いただきます。事前の請求はなく、口コミが削除された後にのみ自動で請求され、確認のご連絡をお送りします。削除されなかった口コミには料金はかかりません。" },
     ],
   },
   sv: {
     h1: "Ta bort en Google-recension – betala bara om den försvinner.",
     faq: [
-      { q: "Hur lång tid tar det?", a: "Oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Betyg utan text via vår specialprogramvara: ca 1–3 dagar. Vi håller dig uppdaterad." },
+      { q: "Hur lång tid tar det?", a: "Oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Betyg utan text via vår specialprogramvara: ca 1–3 dagar. Med Express (bara för omdömen à 250 €) är målet borttagning inom 30 timmar. Vi håller dig uppdaterad." },
       { q: "Och om omdömet inte kan tas bort?", a: "Då betalar du ingenting. Bedömer vi chanserna som små säger vi det från början." },
       { q: "Får recensenten veta att det var jag?", a: "Nej. Recensenten får inte veta vem som begärde borttagningen." },
       { q: "Jag har flera omdömen.", a: "Priset gäller per omdöme — välj så många du vill. Tar vi oss an 3 omdömen eller fler efter den kostnadsfria bedömningen får du −10 %, från 5 −15 % och från 10 −30 % – på varje omdöme som tas bort. Du betalar bara för dem som faktiskt tas bort." },
@@ -85,7 +85,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Jämförelse", compareH: "Dina alternativ för att få bort en Google-recension",
     compareHead: ["", "Anmäla själv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Kostnad", "Gratis", "Timarvode, ofta i förskott", "Från 179 € per borttagen recension"],
+      ["Kostnad", "Gratis", "Timarvode, ofta i förskott", "Från 99 € per borttagen recension"],
       ["Betala bara vid framgång", "–", "Nej", "Ja"],
       ["Typisk tid", "Dagar till veckor – ofta avslag", "Veckor till månader", "Oftast 1–2 veckor"],
       ["Din insats", "Hög: regler, bevis, överklaganden", "Genomgångar och dokument", "Klistra in länken – klart"],
@@ -102,14 +102,14 @@ export const RVW_SEO_B = {
       { q: "Vilka recensioner går inte att ta bort?", a: "Ärlig, saklig kritik från riktiga kunder – även när den är hård. Google skyddar äkta upplevelser, och det gör vi också. Bryter en recension inte mot någon regel säger vi det direkt i stället för att ta betalt." },
       { q: "Kan en borttagen recension komma tillbaka?", a: "Sällan. Om samma person lägger upp den igen, skicka den till oss – en ny publicering av en borttagen recension tas oftast bort snabbt igen." },
       { q: "Skadar det min Google-profil att anmäla recensioner?", a: "Nej. Att anmäla recensioner som bryter mot Googles regler är en normal och avsedd process och påverkar inte din profil eller din ranking negativt." },
-      { q: "Kan ni ta bort 1-stjärniga betyg utan text?", a: "Ja. Betyg utan text är ett komplext fall: de kräver ett mer omfattande förfarande och kostar 300 € per borttaget betyg; mängdrabatten gäller. Som för alla omdömen registrerar du ett kort eller PayPal när du beställer – inget dras i förväg, och betyget debiteras först när det har tagits bort. Ligger det kvar betalar du ingenting för det." },
+      { q: "Kan ni ta bort 1-stjärniga betyg utan text?", a: "Ja. Betyg utan text kräver ett mer omfattande förfarande och kostar 250 € per borttaget betyg; mängdrabatten gäller. Som för alla omdömen registrerar du ett kort eller PayPal när du beställer – inget dras i förväg, och betyget debiteras först när det har tagits bort. Ligger det kvar betalar du ingenting för det." },
       { q: "Hur betalar jag?", a: "När du beställer registrerar du ett kort eller PayPal. Inget dras i förväg: varje recension debiteras automatiskt först när den har tagits bort, och du får en bekräftelse. Ligger en recension kvar betalar du ingenting för den." },
     ],
   },
   da: {
     h1: "Fjern en Google-anmeldelse – betal kun, hvis den forsvinder.",
     faq: [
-      { q: "Hvor lang tid tager det?", a: "Som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Anmeldelser uden tekst via vores specialsoftware: ca. 1–3 dage. Vi holder dig opdateret." },
+      { q: "Hvor lang tid tager det?", a: "Som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Anmeldelser uden tekst via vores specialsoftware: ca. 1–3 dage. Med Express (kun for anmeldelser til 250 €) er målet fjernelse inden for 30 timer. Vi holder dig opdateret." },
       { q: "Hvad hvis anmeldelsen ikke kan fjernes?", a: "Så betaler du ingenting. Vurderer vi chancerne som små, siger vi det fra starten." },
       { q: "Finder anmelderen ud af, det var mig?", a: "Nej. Anmelderen får ikke at vide, hvem der bad om fjernelsen." },
       { q: "Jeg har flere anmeldelser.", a: "Prisen gælder pr. anmeldelse — vælg så mange du vil. Tager vi 3 anmeldelser eller flere på os efter den gratis vurdering, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse, der fjernes. Du betaler kun for dem, der faktisk fjernes." },
@@ -138,7 +138,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Sammenligning", compareH: "Dine muligheder for at få fjernet en Google-anmeldelse",
     compareHead: ["", "Anmeld selv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Pris", "Gratis", "Timehonorar, ofte betalt på forhånd", "Fra 179 € pr. fjernet anmeldelse"],
+      ["Pris", "Gratis", "Timehonorar, ofte betalt på forhånd", "Fra 99 € pr. fjernet anmeldelse"],
       ["Betal kun ved succes", "–", "Nej", "Ja"],
       ["Typisk varighed", "Dage til uger – ofte afvist", "Uger til måneder", "Som regel 1–2 uger"],
       ["Din indsats", "Høj: regler, beviser, klager", "Møder og dokumenter", "Indsæt linket – færdig"],
@@ -155,14 +155,14 @@ export const RVW_SEO_B = {
       { q: "Hvilke anmeldelser kan ikke fjernes?", a: "Ærlig, saglig kritik fra rigtige kunder – også når den er hård. Google beskytter ægte oplevelser, og det gør vi også. Bryder en anmeldelse ingen regler, siger vi det med det samme i stedet for at tage dine penge." },
       { q: "Kan en fjernet anmeldelse komme tilbage?", a: "Sjældent. Lægger den samme person den op igen, så send den til os – en genudgivelse af en fjernet anmeldelse bliver som regel hurtigt fjernet igen." },
       { q: "Skader det min Google-profil at indberette anmeldelser?", a: "Nej. At indberette anmeldelser, der bryder Googles regler, er en normal og tilsigtet proces og har ingen negativ effekt på din profil eller din placering." },
-      { q: "Kan I fjerne 1-stjernede bedømmelser uden tekst?", a: "Ja. Bedømmelser uden tekst er et komplekst tilfælde: de kræver en mere omfattende procedure og koster 300 € pr. fjernet bedømmelse; mængderabatten gælder. Som ved alle anmeldelser gemmer du et kort eller PayPal, når du bestiller – intet trækkes på forhånd, og bedømmelsen opkræves først, når den er fjernet. Bliver den stående, betaler du ingenting for den." },
+      { q: "Kan I fjerne 1-stjernede bedømmelser uden tekst?", a: "Ja. Bedømmelser uden tekst kræver en mere omfattende procedure og koster 250 € pr. fjernet bedømmelse; mængderabatten gælder. Som ved alle anmeldelser gemmer du et kort eller PayPal, når du bestiller – intet trækkes på forhånd, og bedømmelsen opkræves først, når den er fjernet. Bliver den stående, betaler du ingenting for den." },
       { q: "Hvordan betaler jeg?", a: "Når du bestiller, gemmer du et kort eller PayPal. Intet trækkes på forhånd: hver anmeldelse opkræves automatisk først, når den er fjernet, og du får en bekræftelse. Bliver en anmeldelse stående, betaler du ingenting for den." },
     ],
   },
   no: {
     h1: "Fjern en Google-anmeldelse – betal bare hvis den forsvinner.",
     faq: [
-      { q: "Hvor lang tid tar det?", a: "Vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Anmeldelser uten tekst via vår spesialprogramvare: ca. 1–3 dager. Vi holder deg oppdatert." },
+      { q: "Hvor lang tid tar det?", a: "Vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Anmeldelser uten tekst via vår spesialprogramvare: ca. 1–3 dager. Med Express (kun for anmeldelser til 250 €) er målet fjerning innen 30 timer. Vi holder deg oppdatert." },
       { q: "Hva om omtalen ikke kan fjernes?", a: "Da betaler du ingenting. Vurderer vi sjansene som små, sier vi det med en gang." },
       { q: "Får anmelderen vite at det var meg?", a: "Nei. Anmelderen får ikke vite hvem som ba om fjerningen." },
       { q: "Jeg har flere omtaler.", a: "Prisen gjelder per omtale — velg så mange du vil. Tar vi på oss 3 anmeldelser eller flere etter den gratis vurderingen, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse som fjernes. Du betaler bare for dem som faktisk fjernes." },
@@ -191,7 +191,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Sammenligning", compareH: "Dine muligheter for å få slettet en Google-anmeldelse",
     compareHead: ["", "Rapportere selv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Pris", "Gratis", "Timepris, ofte forskuddsbetalt", "Fra 179 € per fjernet anmeldelse"],
+      ["Pris", "Gratis", "Timepris, ofte forskuddsbetalt", "Fra 99 € per fjernet anmeldelse"],
       ["Betal kun ved suksess", "–", "Nei", "Ja"],
       ["Typisk varighet", "Dager til uker – ofte avvist", "Uker til måneder", "Vanligvis 1–2 uker"],
       ["Din innsats", "Høy: regler, bevis, klager", "Møter og dokumenter", "Lim inn lenken – ferdig"],
@@ -208,7 +208,7 @@ export const RVW_SEO_B = {
       { q: "Hvilke anmeldelser kan ikke fjernes?", a: "Ærlig, saklig kritikk fra ekte kunder – også når den er hard. Google beskytter ekte opplevelser, og det gjør vi også. Bryter en anmeldelse ingen regler, sier vi det med en gang i stedet for å ta pengene dine." },
       { q: "Kan en fjernet anmeldelse komme tilbake?", a: "Sjelden. Legger samme person den ut igjen, send den til oss – en ny publisering av en fjernet anmeldelse blir som regel raskt fjernet igjen." },
       { q: "Skader det Google-profilen min å rapportere anmeldelser?", a: "Nei. Å rapportere anmeldelser som bryter Googles regler, er en normal og tiltenkt prosess og har ingen negativ effekt på profilen eller rangeringen din." },
-      { q: "Kan dere fjerne 1-stjernes vurderinger uten tekst?", a: "Ja. Vurderinger uten tekst er et komplekst tilfelle: de krever en mer omfattende prosedyre og koster 300 € per fjernet vurdering; mengderabatten gjelder. Som for alle anmeldelser registrerer du et kort eller PayPal når du bestiller – ingenting trekkes på forhånd, og vurderingen belastes først når den er fjernet. Blir den liggende, betaler du ingenting for den." },
+      { q: "Kan dere fjerne 1-stjernes vurderinger uten tekst?", a: "Ja. Vurderinger uten tekst krever en mer omfattende prosedyre og koster 250 € per fjernet vurdering; mengderabatten gjelder. Som for alle anmeldelser registrerer du et kort eller PayPal når du bestiller – ingenting trekkes på forhånd, og vurderingen belastes først når den er fjernet. Blir den liggende, betaler du ingenting for den." },
       { q: "Hvordan betaler jeg?", a: "Når du bestiller, registrerer du et kort eller PayPal. Ingenting trekkes på forhånd: hver anmeldelse belastes automatisk først når den er fjernet, og du får en bekreftelse. Blir en anmeldelse liggende, betaler du ingenting for den." },
     ],
   },
@@ -216,19 +216,19 @@ export const RVW_SEO_B = {
 
 export const RVW_META_B = {
   ja: {
-    title: "Google口コミ削除｜1件$179から・削除できた分だけの成功報酬",
-    description: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$179からの完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
+    title: "Google口コミ削除｜1件$99から・削除できた分だけの成功報酬",
+    description: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$99からの完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
   },
   sv: {
-    title: "Ta bort Google-recension – från 179 €, betala bara vid framgång",
-    description: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – från 179 € per borttagen recension, debiteras först efter borttagning. Gratis bedömning först.",
+    title: "Ta bort Google-recension – från 99 €, betala bara vid framgång",
+    description: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – från 99 € per borttagen recension, debiteras först efter borttagning. Gratis bedömning först.",
   },
   da: {
-    title: "Fjern Google-anmeldelse – fra 179 €, betal kun ved succes",
-    description: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – fra 179 € pr. fjernet anmeldelse, opkræves først efter fjernelse. Gratis vurdering først.",
+    title: "Fjern Google-anmeldelse – fra 99 €, betal kun ved succes",
+    description: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – fra 99 € pr. fjernet anmeldelse, opkræves først efter fjernelse. Gratis vurdering først.",
   },
   no: {
-    title: "Slette Google-anmeldelse – fra 179 €, betal kun ved suksess",
-    description: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – fra 179 € per fjernet anmeldelse, belastes først etter fjerning. Gratis vurdering først.",
+    title: "Slette Google-anmeldelse – fra 99 €, betal kun ved suksess",
+    description: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – fra 99 € per fjernet anmeldelse, belastes først etter fjerning. Gratis vurdering først.",
   },
 };

@@ -37,7 +37,7 @@ const article = {
       "**Efeito conservador** de 5 % → 1.500 € por mês.",
       "**Multiplicar pela duração de visibilidade:** uma avaliação permanece visível com frequência durante 12 ou mais meses → 18.000 € ao longo de um ano.",
     ] },
-    { t: "p", text: "Mesmo com pressupostos cautelosos, a perda acumulada situa-se normalmente muito acima do custo de uma solução profissional — a [remoção de uma avaliação individual](/pt/revista/servico-remover-avaliacoes-google/) custa na RapidRemove, por exemplo, 179 € e só é paga se a avaliação desaparecer de facto. É exatamente este cálculo que muitos ignoram, porque o prejuízo surge de forma gradual e invisível — como receita que nunca chega, não como uma fatura." },
+    { t: "p", text: "Mesmo com pressupostos cautelosos, a perda acumulada situa-se normalmente muito acima do custo de uma solução profissional — a [remoção de uma avaliação individual](/pt/revista/servico-remover-avaliacoes-google/) custa na RapidRemove, por exemplo, desde 99 € e só é paga se a avaliação desaparecer de facto. É exatamente este cálculo que muitos ignoram, porque o prejuízo surge de forma gradual e invisível — como receita que nunca chega, não como uma fatura." },
 
     { t: "h2", id: "indirekt", text: "Os custos indiretos — muitas vezes maiores do que a perda direta", toc: "Custos indiretos" },
     { t: "ul", items: [

@@ -16,7 +16,7 @@ export const PAGE_TITLE = {
   widerruf: { de: "Widerrufsbelehrung", en: "Right of withdrawal", es: "Derecho de desistimiento", fr: "Droit de rétractation", it: "Diritto di recesso", nl: "Herroepingsrecht", pt: "Direito de retratação", ja: "撤回権について", sv: "Ångerrätt", da: "Fortrydelsesret", no: "Angrerett" },
   report: { de: "Google-Profil-Löschungen: Report 2026", en: "Google Business Profile Removal Report 2026" },
   // Bewertungs-Produkt: nicht in DACH — bewusst kein de-Eintrag (Seite existiert dort nicht).
-  reviews: { en: "Google Review Removal – $179, Pay Only on Success", es: "Eliminar reseña de Google – 179 €, pagas solo si se borra", fr: "Supprimer un avis Google – 179 €, payé seulement au résultat", it: "Eliminare recensione Google – 179 €, paghi solo a risultato", pt: "Remover avaliação do Google – 179 €, só paga se sair", nl: "Google review verwijderen – € 179, alleen betalen bij succes", ja: "Google口コミ削除｜1件$179・削除できた分だけの成功報酬", sv: "Ta bort Google-recension – 179 €, betala bara vid framgång", da: "Fjern Google-anmeldelse – 179 €, betal kun ved succes", no: "Slette Google-anmeldelse – 179 €, betal kun ved suksess" },
+  reviews: { en: "Google Review Removal – from $99, Pay Only on Success", es: "Eliminar reseña de Google – desde 99 €, pagas solo si se borra", fr: "Supprimer un avis Google – dès 99 €, payé seulement au résultat", it: "Eliminare recensione Google – da 99 €, paghi solo a risultato", pt: "Remover avaliação do Google – desde 99 €, só paga se sair", nl: "Google review verwijderen – vanaf € 99, alleen betalen bij succes", ja: "Google口コミ削除｜1件$99から・削除できた分だけの成功報酬", sv: "Ta bort Google-recension – från 99 €, betala bara vid framgång", da: "Fjern Google-anmeldelse – fra 99 €, betal kun ved succes", no: "Slette Google-anmeldelse – fra 99 €, betal kun ved suksess" },
 };
 
 const BRAND_BLURB = {
@@ -47,16 +47,16 @@ const PAGE_DESC = {
   },
   wizard: { en: "Check in seconds whether your Google Business Profile can be removed — free, no sign-up, pay only after successful removal." },
   reviews: {
-    en: "Get fake, abusive or policy-violating Google reviews removed through Google's official processes – $179 per removed review, charged only on success. Free assessment first.",
-    es: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. 179 € por reseña eliminada, solo si hay éxito.",
-    fr: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. 179 € par avis supprimé, au résultat.",
-    it: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. 179 € per recensione rimossa, solo a risultato.",
-    pt: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. 179 € por avaliação removida, só paga com sucesso.",
-    nl: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. € 179 per verwijderde review, alleen bij succes.",
-    ja: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$179の完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
-    sv: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – 179 € per borttagen recension, bara vid framgång. Gratis bedömning först.",
-    da: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – 179 € pr. fjernet anmeldelse, kun ved succes. Gratis vurdering først.",
-    no: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – 179 € per fjernet anmeldelse, kun ved suksess. Gratis vurdering først.",
+    en: "Get fake, abusive or policy-violating Google reviews removed through Google's official processes – from $99 per removed review, charged only on success. Free assessment first.",
+    es: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. Desde 99 € por reseña eliminada, solo si hay éxito.",
+    fr: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. Dès 99 € par avis supprimé, au résultat.",
+    it: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. Da 99 € per recensione rimossa, solo a risultato.",
+    pt: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. A partir de 99 € por avaliação removida, só paga com sucesso.",
+    nl: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. Vanaf € 99 per verwijderde review, alleen bij succes.",
+    ja: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$99からの完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
+    sv: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – från 99 € per borttagen recension, bara vid framgång. Gratis bedömning först.",
+    da: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – fra 99 € pr. fjernet anmeldelse, kun ved succes. Gratis vurdering først.",
+    no: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – fra 99 € per fjernet anmeldelse, kun ved suksess. Gratis vurdering først.",
   },
 };
 

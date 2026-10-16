@@ -46,7 +46,11 @@ export const inTile = (k, b) => (Array.isArray(b) ? b.some((x) => inTile(k, x)) 
  * jede Bewertung einzeln ab, gelöschte Bewertungen werden einzeln fällig. Deshalb leiten wir die
  * Kacheln aus den Partner-Aufgaben + raw-Feldern ab – dieselbe Logik wie das Kunden-Dashboard
  * (ops/src/customers.ts › orderView), damit Admin und Kunde dieselben Zahlen sehen. */
-const REVIEW_BASE = 179, REVIEW_OLD_SURCHARGE = 50, REVIEW_NOTEXT_PRICE = 300;
+const REVIEW_BASE = 179, REVIEW_OLD_SURCHARGE = 50, REVIEW_NOTEXT_PRICE = 300; // Preismodell 1 (Bestandsaufträge ohne lp)
+// Preismodell 2 (16.10.2026): Listenpreis je Bewertung (lp 99/250) + Express (+100, nur wenn in 30 Std. gelöscht) – wie ops/src/reviewsPricing.ts.
+const PRICE_V2_OTHER = 250, EXPRESS_FEE = 100, EXPRESS_H = 30;
+const lpOf = (it) => { const v = Number(it && it.lp); return v === 99 || v === 250 ? v : 0; };
+export const expressOk = (t) => !!(t && t.express && t.express.at && t.removed) && (new Date(t.removed).getTime() - new Date(t.express.at).getTime()) <= EXPRESS_H * 3600e3;
 const reviewDiscountPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 export const rvKey = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
 
@@ -85,9 +89,10 @@ export function revState(o, tasks) {
     if (s && s !== "new") started = true;
     if (billed.has(k) || s === "removed") {
       c.removed++;
-      const special = !!it.nt || swSet.has(k);
-      if (!(special && prepaid(k)) && !isPaid(k)) {
-        unpaid.push({ k, special, cp: Number(it.cp) > 0 ? Number(it.cp) : 0, old: !!it.old && !it.nt, billed: billed.has(k) || !!asked[k] || keyedInv.some((p) => p.keys.includes(k)), asked: asked[k] || null, at: t && t.removed ? new Date(t.removed).getTime() : null });
+      const lp = lpOf(it);
+      const special = lp === PRICE_V2_OTHER ? false : lp ? swSet.has(k) : !!it.nt || swSet.has(k);
+      if (!(special && prepaid(k) && !lp) && !isPaid(k)) {
+        unpaid.push({ k, special, lp, xOk: lp === PRICE_V2_OTHER && !!it.x && expressOk(t), cp: Number(it.cp) > 0 ? Number(it.cp) : 0, old: !!it.old && !it.nt, billed: billed.has(k) || !!asked[k] || keyedInv.some((p) => p.keys.includes(k)), asked: asked[k] || null, at: t && t.removed ? new Date(t.removed).getTime() : null });
       }
     } else if (s === "working") { c.open++; c.working++; }
     else if (s === "new") { c.open++; c.waiting++; }
@@ -97,10 +102,12 @@ export function revState(o, tasks) {
   // Rechnung wie im Backend (quoteReviews „rest"): Mengenrabatt nach Gesamtanzahl, Spezialverfahren voll (rabattiert).
   // Individueller Preis (cp) zählt fest, ohne Rabatt.
   const normal = unpaid.filter((u) => !u.special && !u.cp);
-  const sub = normal.reduce((s, u) => s + (u.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE), 0);
-  const unpaidRaw = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special && !u.cp).length * Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100)
+  const sub = normal.reduce((s, u) => s + (u.lp || (u.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE)), 0);
+  // Spezialverfahren: Modell 1 → 300 rabattiert; Modell 2 (99er mit Zustimmung zur Software) → 250 fix.
+  const unpaidRaw = Math.round((sub * (100 - pct)) / 100) + unpaid.filter((u) => u.special && !u.cp).reduce((s, u) => s + (u.lp ? PRICE_V2_OTHER : Math.round((REVIEW_NOTEXT_PRICE * (100 - pct)) / 100)), 0)
     + unpaid.filter((u) => u.cp).reduce((s, u) => s + u.cp, 0);
-  const unpaidAmt = payPct ? Math.round((unpaidRaw * (100 - payPct)) / 100) : unpaidRaw;
+  const xAmt = unpaid.filter((u) => u.xOk && !u.cp).length * EXPRESS_FEE; // Express ohne Rabatt
+  const unpaidAmt = (payPct ? Math.round((unpaidRaw * (100 - payPct)) / 100) : unpaidRaw) + xAmt;
   const ats = unpaid.map((u) => u.at).filter(Boolean);
   return {
     // Nenner für „x/y gelöscht": was beim Partner liegt (bzw. abgerechnet wurde) – nicht reviewsAccepted,

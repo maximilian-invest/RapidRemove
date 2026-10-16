@@ -53,6 +53,8 @@ export function kundenUpdatePush(lang: string | undefined, changed: KundenUpdate
   return { title: t.titleChanged, body: parts.join(" · ") + (changed.length > 3 ? ` · +${changed.length - 3}` : "") };
 }
 
+/* swPrice/swDeposit kommen vom Server (customers.ts orderView → swUnit): Preismodell 2 (99er, Software nötig) → 250,
+   Bestandsaufträge → 300 bzw. individuell. Die Defaults gelten nur für die Vorschau; der Text nutzt immer swPrice. */
 export default function KundenUpdateReviews({ lang = "en", name = "", dashUrl, orderId, changed, cur = "eur", swPrice = 300, swDeposit = 150, progress }: KundenUpdateProps) {
   const l = lang && T[lang] ? lang : "en";
   const t = T[l];

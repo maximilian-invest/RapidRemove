@@ -39,11 +39,11 @@ const article = {
     { t: "ul", items: [
       "**Avaliações falsas** sem relação comercial real (p. ex. de concorrentes),",
       "**Insultos, difamação, afirmações factualmente incorretas,**",
-      "**Avaliações de 1 estrela sem texto** sem referência reconhecível (também através da RapidRemove, com um procedimento mais extenso – 300 € por avaliação removida),",
+      "**Avaliações de 1 estrela sem texto** sem referência reconhecível (também através da RapidRemove, com um procedimento mais extenso – 250 € por avaliação removida),",
       "**Entradas sem pertinência ou com troca de pessoa.**",
     ] },
     { t: "p", text: "A exigência de uma **relação comercial efetiva** é jurisprudência consolidada na UE — o Tribunal Regional de Lübeck (proc. [9 O 59/17](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=9+O+59/17)) e o Tribunal Federal de Justiça alemão (BGH, proc. [VI ZR 34/15](https://dejure.org/dienste/vernetzung/rechtsprechung?Text=VI+ZR+34/15)) confirmaram-no; estes acórdãos alemães reflectem o enquadramento jurídico europeu vigente. Adicionalmente, o **RGPD Art. 17** (direito ao apagamento / direito a ser esquecido) pode ser invocado quando estão em causa dados pessoais." },
-    { t: "p", text: "Para a execução existem três caminhos: a **denúncia/via advogado** para uma avaliação individual, a **[remoção de avaliações individuais](/pt/remover-uma-avaliacao/)** pela RapidRemove (179 € por avaliação removida, só em caso de sucesso — [preços e probabilidades](/pt/revista/servico-remover-avaliacoes-google/)) e a **eliminação técnica do perfil** quando o perfil está globalmente comprometido. A comparação direta encontra-a em [Advogado ou eliminação técnica?](/pt/revista/avaliacao-negativa-google-advogado/) e os métodos e custos em [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/)." },
+    { t: "p", text: "Para a execução existem três caminhos: a **denúncia/via advogado** para uma avaliação individual, a **[remoção de avaliações individuais](/pt/remover-uma-avaliacao/)** pela RapidRemove (desde 99 € por avaliação removida, só em caso de sucesso — [preços e probabilidades](/pt/revista/servico-remover-avaliacoes-google/)) e a **eliminação técnica do perfil** quando o perfil está globalmente comprometido. A comparação direta encontra-a em [Advogado ou eliminação técnica?](/pt/revista/avaliacao-negativa-google-advogado/) e os métodos e custos em [Remover avaliações do Google](/pt/revista/remover-avaliacoes-google/)." },
     { t: "p", text: "**Pedir a remoção é o certo quando:** a avaliação é injustificada, falsa ou ilegal — ou o perfil já não tem salvação no seu conjunto." },
 
     { t: "h2", id: "schnell", text: "Decisão rápida", toc: "Decisão" },
