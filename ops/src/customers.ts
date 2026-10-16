@@ -523,7 +523,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     const price = special && swp ? swp : cp || (special ? swPriceOf(it) : disc(it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE));
     return {
       cp: special && swp ? swp : cp,
-      key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || !String(it.text || "").trim(), rating: Number((it as { rating?: unknown }).rating) || null,
+      key: k, url: it.url || null, name: it.name || null, text: it.text || null, noText: !!it.nt || (Number((it as { rating?: unknown }).rating) > 0 && !String(it.text || "").trim()), rating: Number((it as { rating?: unknown }).rating) || null,
       reason: (it as { reason?: string }).reason || null, days: Number.isFinite(Number((it as { days?: unknown }).days)) && (it as { days?: unknown }).days !== null && (it as { days?: unknown }).days !== undefined ? Number((it as { days?: unknown }).days) : null,
       status, since: ps === "working" ? pt?.since || null : null,
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,

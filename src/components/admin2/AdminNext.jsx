@@ -25,7 +25,7 @@ import PriceEdit from "./PriceEdit";
 import Bill from "./Bill";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
-import { DueSheet, MailHistSheet, MailsScreen } from "./PayFlow";
+import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon, Banknote } from "lucide-react";
@@ -308,7 +308,7 @@ export default function AdminNext() {
     loadPtasks, orders, checks, loaded, now, stripe, ptasks, shots, loadShots, mon, monLoad, monScan, auto, setAuto, partners, isDesk, spin, refreshing,
     f, setF, openOrder, pushReviews, back: isDesk && stack.length === 2 ? closeDrawer : back, openSheet, openViewer, act, refresh, goOrders,
     moreSub, setMoreSub, logout, toast, loadPartners: () => partnersList().then(setPartners).catch(() => {}), tplCount: tpls ? tpls.length : 0, selId: stack.length > 1 ? stack[1].id : null,
-    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving,
+    newOrder, scrollPush: () => scrollTop("push"), chk, setChk, patchOrder, pushAct, pushSub, loadPtasks, doStatus, ptAll, markPaid, leaving, reload, closeDrawer,
   };
 
   const top = stack[stack.length - 1];
@@ -408,7 +408,7 @@ function ConfirmRemoved({ t, toast, done }) {
 }
 
 function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
-  const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now } = ctx;
+  const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now, doStatus, reload, closeDrawer } = ctx; // doStatus/reload/closeDrawer: „Löschung abgeschlossen & abbuchen"
   const [cat, setCat] = React.useState(null);
   const [confirm, setConfirm] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
@@ -504,6 +504,8 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     body = <MahnSheet key={o.id + "|" + (sheet.stage || "")} o={o} ctx={ctx} close={close} initialStage={sheet.stage} direct={sheet.direct} />;
   } else if (sheet && sheet.kind === "due" && o) {
     body = <DueSheet key={o.id} o={o} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "dunpause" && o) {
+    body = <DunPauseSheet key={o.id} o={o} ctx={ctx} close={close} pause={sheet.pause || null} onDone={sheet.onDone} />;
   } else if (sheet && sheet.kind === "mailhist" && o) {
     body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} payOpen={!!sheet.payOpen} />;
 
@@ -524,7 +526,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
       <><h3>Löschung abgeschlossen?</h3>
         <p className="shp">Profil von <b>{o.name || o.email}</b> gelöscht. Wir buchen <b>{money(pp.total, pp.c)}</b> (netto, zzgl. Steuer laut Rechnung) automatisch von der hinterlegten Zahlungsart ab{sub ? <> und starten das Abo <b>{money(o.protAmount, pp.c)}/Monat</b> ({o.protection === "monitor" ? "Schutz + Monitoring" : "Schutz"})</> : null}. Der Kunde bekommt die Rechnung automatisch per Mail.</p>
         <p className="shp" style={{ fontSize: 13, color: "var(--g3)" }}>Klappt die Abbuchung nicht, bekommst du eine Push – dann wie gewohnt den Zahlungslink senden.</p>
-        <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Abschließen & abbuchen"}</button></div></>
+        <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button><button type="button" className="cta ok" disabled={busy} onClick={run}><CheckCircle2 />{busy ? "Läuft …" : "Jetzt abbuchen"}</button></div></>
     );
   } else if (sheet && sheet.kind === "paylink" && o) {
     body = <PayLinkSheet key={o.id} o={o} ctx={ctx} close={close} />;

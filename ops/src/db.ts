@@ -141,6 +141,8 @@ export async function initDb(): Promise<void> {
   `);
   // Verarbeitete Stripe-Zahlungen: jede Rechnung wird höchstens EINMAL einer Bestellung
   // gutgeschrieben (Schutz gegen wiederholte/fälschliche Auto-Zuordnung beim 10-Min-Abgleich).
+  // Auto-Mahnungen pro Kunde pausiert (dunPause.ts) – hier angelegt, weil listOrders sie mitliest.
+  await pool.query(`CREATE TABLE IF NOT EXISTS dun_pauses (email text PRIMARY KEY, until timestamptz, reason text, created_at timestamptz NOT NULL DEFAULT now())`);
   await pool.query(`
     CREATE TABLE IF NOT EXISTS reconciled_payments (
       invoice_id  text PRIMARY KEY,
@@ -774,7 +776,9 @@ export async function listOrders(limit = 200): Promise<Record<string, unknown>[]
   const r = await pool.query(
     `SELECT o.*,
             (SELECT count(*) FROM events e WHERE e.order_id = o.id AND e.type = 'pay' AND e.title LIKE 'Mahnung%')      AS mahnung_count,
-            (SELECT count(*) FROM events e WHERE e.order_id = o.id AND ((e.type = 'pay' AND e.title LIKE 'Zahlungslink%') OR (e.type = 'sms' AND e.detail ILIKE '%stripe.com%'))) AS paylink_count
+            (SELECT count(*) FROM events e WHERE e.order_id = o.id AND ((e.type = 'pay' AND e.title LIKE 'Zahlungslink%') OR (e.type = 'sms' AND e.detail ILIKE '%stripe.com%'))) AS paylink_count,
+            (SELECT jsonb_build_object('until', p.until, 'reason', p.reason, 'since', p.created_at) FROM dun_pauses p
+              WHERE p.email = lower(trim(o.email)) AND (p.until IS NULL OR p.until > now())) AS dun_pause
        FROM orders o ORDER BY o.created_at DESC LIMIT $1`,
     [limit],
   );
