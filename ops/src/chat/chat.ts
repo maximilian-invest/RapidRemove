@@ -200,9 +200,12 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
         const dup = dupOf(o, it);
         const twin = twinOf(o, it, dup);
         const txt = String(it.text || "");
+        // Nur per Link bestellt (Bulk/Admin): Name, Text, Sterne, Alter nicht gespeichert → nichts davon behaupten.
+        const linkOnly = !it.name && !txt && !rating && !it.noText && !(Number.isFinite(days) && days >= 0);
         const bits = [
-          `- "${clip(it.name, 80) || "Google review"}"${rating ? ` ${rating}★` : ""}${it.noText ? " (stars only, no text)" : txt ? ` – text: "${clip(txt, 160)}${txt.length > 160 ? "…" : ""}"` : ""}`,
-          Number.isFinite(days) && days >= 0 ? `review was about ${ageTxt(days)} old when ordered` : it.old ? "older than 4 weeks when ordered" : "up to 4 weeks old when ordered",
+          `- ${it.name ? `"${clip(it.name, 80)}"` : `review ${items.indexOf(it) + 1} of this order`}${rating ? ` ${rating}★` : ""}${it.noText ? " (stars only, no text)" : txt ? ` – text: "${clip(txt, 160)}${txt.length > 160 ? "…" : ""}"` : ""}`,
+          linkOnly ? "ordered by link only: reviewer name, text, stars and age are NOT stored – never state or guess them (not \"stars only\", not an age); if they matter, say our team checks the review via its link"
+            : Number.isFinite(days) && days >= 0 ? `review was about ${ageTxt(days)} old when ordered` : it.old ? "older than 4 weeks when ordered" : "up to 4 weeks old when ordered",
           `status: ${STATUS_L[st] || st}`,
           h != null ? `working on it for ${h} h` : "",
           t && t.updated && st !== "new" ? `last status change ${day(t.updated)}` : "",
@@ -216,7 +219,7 @@ export function contextOf(d: { name: string; lang: string; orders: Record<string
           st === "software" || st === "sw_accepted" ? "special software, charged only once removed, nothing to pay if it fails" : "",
           dup.length ? `SAME REVIEW ON THE SAME BUSINESS PROFILE ALSO IN ORDER ${dup.join(", ")} (real duplicate – the team merges it so it's only charged once)` : "",
           twin.length ? `same reviewer and text also in order ${twin.join(", ")}, but on a DIFFERENT business profile – that is a separate review: both are removed and each is charged only if removed` : "",
-          (() => { const rid = reviewIdOf(it.url); const code = t?.code; return rid || code ? `review ID: ${rid || code}${rid && code ? ` (ref ${code})` : ""}` : ""; })(),
+          (() => { const rid = reviewIdOf(it.url); return rid ? `Google review ID (only for a team handover, never as a name for the review): ${rid}` : ""; })(),
           (() => { const c = f.rc.get(oid + "\u0001" + String(it.key)); return st === "removed" && c && c.result === "gone" ? `removal verified ${c.at}: our system opened the direct link and Google shows the review as no longer available` : ""; })(),
           it.url ? `direct link: ${clip(it.url, 700)}` : "",
         ].filter(Boolean);
@@ -255,6 +258,8 @@ How to answer:
   Never use "Google cache" as the explanation. Do not bring up payments or charges in this answer unless the customer asks (see CHARGES). If the review has no direct link in the data, give only the explanation and the self-test.
   Still seeing it in the profile's review list, in incognito, on another device or in Google search is NOT a reason to hand over: that is exactly the delayed list – ask them to open the direct link (or do the self-test) and tell you what it shows.
   4. Only if the customer says the direct link (or their own shared link of that review) still shows the review: do not argue or explain again. Say the team checks it right away and replies by email, name the order number and the review ID from the data in your reply (e.g. "order RR-123456, review ID …") so the team knows which one, and end with [[TEAM]].
+- REVIEW DETAILS: describe a review's type (with text / stars only), stars, age or method ONLY if the order data states it for that review. Never derive it from a missing value. Refer to reviews by reviewer name; if there is none, by "review 1/2 … of order RR-…" (or its link) – never by internal codes.
+- CUSTOMER CORRECTS OUR DATA (e.g. "they are not star only", "it's older"): do not repeat or defend what the system says. Thank them, accept it, and say briefly what that means (e.g. reviews with text usually take 1–2 weeks); the agreed price stays as stated in the order data. If it changes price or method, or you are unsure, hand over ([[TEAM]]).
 - CHARGES: state payment facts ONLY exactly as the live payment line and the order data show them right now (paid, open amount, payment method saved or not). Never predict or promise future charging, e.g. never say "nothing will be charged", "nothing will be taken automatically" or "you don't need to pay while you're unsure". Fact to keep in mind: once a payment method is saved, every review marked Removed is charged automatically. If the payment line says UNKNOWN, say nothing about charges at all. When in doubt, leave payments out of the answer.
 - PayPal/Wise (10 % off, only businesses outside DE/AT/CH): mention it ONLY if the customer asks how to pay or about paying differently – never as an add-on to other answers.
 - Hand over to the team for: order problems you cannot answer from the data, payment problems, cancellation, invoice corrections, complaints, refunds, multiple profiles, agencies, press/links, phone or video calls, instalments, anything you are unsure about. When you hand over, say the team replies by email and end your reply with the exact token [[TEAM]].
