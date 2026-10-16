@@ -62,6 +62,7 @@ import { shotKey, queueOrderShots, retakeShots, listShots, getShot, shotsRunning
 import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend, pool } from "./db";
+import { getDunPause, setDunPause, clearDunPause } from "./dunPause";
 
 
 
@@ -2111,6 +2112,7 @@ async function payDueTick(): Promise<void> {
        AND (raw->'payDue'->>'at')::timestamptz <= now() AND COALESCE(pay,'') <> 'paid' AND COALESCE(status,'') <> 'storniert'
        AND COALESCE((raw->'payDue'->>'tries')::int, 0) < 3 LIMIT 20`);
   for (const o of r.rows as Record<string, any>[]) {
+    if (await getDunPause(o.email).catch(() => null)) continue;              // Auto-Mahnungen für diesen Kunden pausiert → nach der Pause
     const raw = (o.raw || {}) as Record<string, any>;
     const pd = { ...(raw.payDue || {}) } as { at: string; tries?: number; sent?: string | null };
     const lang = mailLang(o.lang);
@@ -2179,11 +2181,13 @@ app.post("/admin/next-mails", async (req, reply) => {
   const out: { at?: string; title: string; note?: string; stopped?: boolean }[] = [];
   const tz = tzOf(o.country, raw.addr);
   if (o.status === "storniert") return { ok: true, items: [], info: "Auftrag storniert – keine automatischen Mails" };
+  const pause = await getDunPause(String(o.email || "")).catch(() => null); // pro Kunde pausiert (Button im Mail-Verlauf)
   if (isTestEmail(o.email)) out.push({ title: "Testkonto", note: "Erinnerungen laufen im Minutentakt (Test)", stopped: true });
   if (o.service !== "reviews") {
     const pd = raw.payDue as { at?: string; sent?: string | null } | null;
-    if (["paid", "refunded"].includes(String(o.pay || ""))) return { ok: true, items: [], info: "Bezahlt – keine Zahlungs-Mails mehr" };
-    if (pd && pd.at && !pd.sent) out.push({ at: pd.at, title: "Zahlungsziel abgelaufen → Erinnerung mit Zahlungslink" });
+    if (["paid", "refunded"].includes(String(o.pay || ""))) return { ok: true, items: [], info: "Bezahlt – keine Zahlungs-Mails mehr", pause };
+    if (pause) { /* pausiert: weder Zahlungsziel-Mail noch Auto-Mahnung – steht im Bereich „Auto-Mahnungen" */ }
+    else if (pd && pd.at && !pd.sent) out.push({ at: pd.at, title: "Zahlungsziel abgelaufen → Erinnerung mit Zahlungslink" });
     else if (o.status === "done" && (process.env.AUTO_DUNNING || "on").toLowerCase() !== "off" && o.pay !== "inkasso") {
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [id]);
       const d = dunState(ev.rows, raw.autoDun);
@@ -2201,7 +2205,35 @@ app.post("/admin/next-mails", async (req, reply) => {
     for (const x of await followupNextFor(String(o.email || "")).catch(() => [])) out.push(x);
   }
   out.sort((a, b2) => (a.at ? new Date(a.at).getTime() : Infinity) - (b2.at ? new Date(b2.at).getTime() : Infinity));
-  return { ok: true, items: out, tz };
+  return { ok: true, items: out, tz, pause };
+});
+
+/** Admin (Mail-Verlauf → „Auto-Mahnungen pausieren"): Auto-Mahnungen für einen Kunden (E-Mail, alle Aufträge) pausieren
+ *  oder wieder aktivieren. days = 0/leer → bis auf Weiteres. Manuelle Mahnungen über den Hauptbutton gehen weiter (16.10.2026). */
+app.post("/admin/dun-pause", async (req, reply) => {
+  const b = (req.body || {}) as Record<string, unknown>;
+  if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
+  if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+  const id = String(b.orderId || "").slice(0, 40);
+  const r = await pool.query(`SELECT id, email FROM orders WHERE id=$1`, [id]);
+  const o = r.rows[0] as { id: string; email: string | null } | undefined;
+  if (!o) return reply.code(404).send({ ok: false, error: "Auftrag nicht gefunden" });
+  const email = String(o.email || "").trim();
+  if (!email) return reply.code(400).send({ ok: false, error: "Auftrag hat keine E-Mail" });
+  const fmt = (iso: string) => new Date(iso).toLocaleDateString("de-AT", { timeZone: "Europe/Vienna", day: "2-digit", month: "2-digit", year: "numeric" });
+  if (b.resume === true) {
+    await clearDunPause(email);
+    await insertEvent({ orderId: o.id, email, type: "note", title: "Mahnlauf wieder aktiv", detail: "Automatische Mahnungen für diesen Kunden laufen wieder (alle Aufträge)" }).catch(() => {});
+    return { ok: true, pause: null };
+  }
+  const days = Math.max(0, Math.min(365, Math.round(Number(b.days) || 0)));
+  let until: Date | null = null;
+  if (days) { until = new Date(Date.now() + days * 864e5); until.setUTCHours(21, 59, 0, 0); } // Ende des Tages (Wien)
+  const reason = String(b.reason || "").trim().slice(0, 300) || null;
+  const pause = await setDunPause(email, until, reason);
+  await insertEvent({ orderId: o.id, email, type: "note", title: "Mahnlauf pausiert" + (pause && pause.until ? " bis " + fmt(pause.until) : " bis auf Weiteres"),
+    detail: (reason ? "Grund: " + reason + " · " : "") + "keine automatischen Mahnungen für diesen Kunden (alle Aufträge), manuelle gehen weiter" }).catch(() => {});
+  return { ok: true, pause };
 });
 
 async function payDunTick(): Promise<void> {
@@ -2212,6 +2244,7 @@ async function payDunTick(): Promise<void> {
   for (const o of r.rows as Record<string, any>[]) {
     try {
       if (isTestEmail(o.email)) continue;
+      if (await getDunPause(o.email)) continue;                               // Auto-Mahnungen für diesen Kunden pausiert (Mail-Verlauf)
       const raw = (o.raw || {}) as Record<string, any>;
       const ev = await pool.query(`SELECT title, created_at FROM events WHERE order_id=$1 AND (title LIKE 'Mahnung%' OR title LIKE 'Zahlungslink gesendet%' OR title LIKE 'PayPal%gesendet%' OR title LIKE 'Wise%gesendet%')`, [o.id]);
       const d = dunState(ev.rows, raw.autoDun);

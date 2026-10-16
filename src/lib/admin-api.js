@@ -113,6 +113,7 @@ function mapOrder(r) {
     policyConsent: r.raw && r.raw.policyConsent && typeof r.raw.policyConsent === "object" ? r.raw.policyConsent : null, // Zusicherung „verstößt gegen Google-Richtlinien"
     policyConsentAdds: r.raw && Array.isArray(r.raw.policyConsentAdds) ? r.raw.policyConsentAdds : [], // Zwischenzahlung nötig (Partner pausiert)
     payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
+    dunPause: r.dun_pause && typeof r.dun_pause === "object" ? r.dun_pause : null, // Auto-Mahnungen für den Kunden pausiert
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)
     reasons: r.raw && r.raw.reasons && typeof r.raw.reasons === "object" ? r.raw.reasons : null, // Gründe je Bewertung (Dashboard): pending/ok
     reasonsLog: r.raw && Array.isArray(r.raw.reasonsLog) ? r.raw.reasonsLog : [],
@@ -694,6 +695,8 @@ async function adminPost(path, body) {
 export const partnersList = () => adminPost("/admin/partners");
 /** Geplante automatische Mails eines Auftrags (Mail-Verlauf „Als Nächstes"). */
 export const nextMailsApi = (orderId) => adminPost("/admin/next-mails", { orderId });
+/** Auto-Mahnungen pro Kunde pausieren ({ days: 0 = bis auf Weiteres, reason }) bzw. wieder aktivieren ({ resume: true }). */
+export const dunPauseApi = (orderId, p) => adminPost("/admin/dun-pause", { orderId, ...p });
 /* Partner-Auszahlungen (Payoneer + Gutschriften) */
 export const payoutsInfo = () => adminPost("/admin/payouts");
 export const payoutsSettings = (p) => adminPost("/admin/payouts/settings", p);

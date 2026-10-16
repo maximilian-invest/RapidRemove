@@ -24,6 +24,7 @@ import { render } from "@react-email/render";
 import type { FastifyInstance } from "fastify";
 import { pool } from "./db";
 import { insertEvent } from "./db";
+import { getDunPause } from "./dunPause";
 import { sendMail } from "./mailer";
 import { loadCustomerOrders, dashLink } from "./customers";
 import { logCustEvent } from "./custTrack";
@@ -129,7 +130,9 @@ async function analyze(email: string, now = Date.now(), horizon = 0): Promise<Pl
 
   /* Zahlung offen */
   const unpaid = items.filter((i) => i.status === "removed" && !i.paid);
-  if (unpaid.length) {
+  // Auto-Mahnungen für diesen Kunden pausiert (Admin → Mail-Verlauf, 16.10.2026): keine Zahlungs-Mails, auch keine Fortschritts-Updates mit Betrag.
+  const dunPaused = unpaid.length ? await getDunPause(email).catch(() => null) : null;
+  if (unpaid.length && !dunPaused) {
     const first = Math.min(...unpaid.map((i) => ts(i.removedAt) || ts(i.changedAt) || now));
     const payOrder = unpaid[0].o;
     const cur = String(payOrder.cur || "eur");

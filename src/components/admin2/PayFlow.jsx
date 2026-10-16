@@ -6,8 +6,8 @@
    Versand läuft über das bestehende Mahnungs-Sheet (Vorschau + „Jetzt senden"), Zahlungsziel über /admin/pay-due:
    läuft es ohne Zahlung ab, geht automatisch die Zahlungsziel-Mail raus. Weitere Mahnungen sendet ihr selbst. */
 import React from "react";
-import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard } from "lucide-react";
-import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi } from "@/lib/admin-api";
+import { ArrowLeft, Bell, Send, Gavel, CircleCheck, CheckCircle2, CalendarClock, Mail, ChevronRight, Clock, Check, Eye, Loader, Receipt, CreditCard, PauseCircle, PlayCircle } from "lucide-react";
+import { fetchEvents, fetchEmailPreview, setPayDue, setOrderStatus, nextMailsApi, dunPauseApi } from "@/lib/admin-api";
 import { PROFILE_STAGES, REVIEW_STAGES } from "./Mahnung";
 import { revState } from "./model";
 
@@ -47,9 +47,11 @@ export function nextStep(o, pm, ptasks) {
   if (o.pay === "inkasso") return { label: "An Inkasso übergeben", sub: "", auto: false };
   const isRev = o.service === "reviews";
   const pd = o.payDue && o.payDue.at ? o.payDue : null;
-  if (!isRev && pd && !pd.sent) { const d = new Date(Math.max(new Date(pd.at).getTime(), Date.now())); return { label: "Zahlungsziel-Mail", sub: `${dShort(d.toISOString())}, ca. ${d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })} Uhr`, auto: true }; }
+  const paused = o.dunPause ? "Auto-Mahnungen pausiert " + (o.dunPause.until ? "bis " + dShort(o.dunPause.until) : "bis auf Weiteres") : "";
+  if (!isRev && pd && !pd.sent && !paused) { const d = new Date(Math.max(new Date(pd.at).getTime(), Date.now())); return { label: "Zahlungsziel-Mail", sub: `${dShort(d.toISOString())}, ca. ${d.toLocaleTimeString("de-AT", { hour: "2-digit", minute: "2-digit" })} Uhr`, auto: true }; }
   if (pm.level >= pm.stages.length) return { label: "Übergabe an Inkasso", sub: "", auto: false };
   const label = pm.stages[pm.level][1];
+  if (paused) return { label, sub: "", auto: false, paused }; // pro Kunde pausiert (Mail-Verlauf) → nur manuell
   const ppw = o.payPref === "wise" || o.payPref === "paypal" || !!o.paypal;
   // Bewertungen, solange noch etwas beim Partner liegt: keine Mahnstufen, sondern Fortschritts-Updates (48 h, bei Zwischenzahlung 24 h).
   const inProg = isRev && ((ptasks || {})[o.id] || []).some((t) => t.status === "new" || t.status === "working");
@@ -207,7 +209,7 @@ export function PayRows({ o, ctx, pm }) {
 export function MailRow({ o, ctx, payOpen }) {
   const pm = usePayMails(o);
   const ns = payOpen ? nextStep(o, pm, ctx.ptasks) : null;
-  const next = !pm ? "…" : ns ? (o.pay === "inkasso" ? "bei Inkasso" : `Nächste: ${ns.label}${ns.auto ? ` · automatisch${ns.sub ? " " + (/^\D/.test(ns.sub) ? ns.sub : "am " + ns.sub) : ""}` : " · manuell"}`)
+  const next = !pm ? "…" : ns ? (o.pay === "inkasso" ? "bei Inkasso" : `Nächste: ${ns.label}${ns.paused ? " · Auto pausiert" : ns.auto ? ` · automatisch${ns.sub ? " " + (/^\D/.test(ns.sub) ? ns.sub : "am " + ns.sub) : ""}` : " · manuell"}`)
     : pm.mails.length ? `Zuletzt: ${pm.mails[0].label} · ${dShort(pm.mails[0].ts)}` : "Noch keine Mail";
   return (
     <button type="button" className="ir" onClick={() => ctx.pushSub("mails", o.id)}>
@@ -278,7 +280,7 @@ export function MailHistSheet({ o, ctx, payOpen }) {
     setBusy("");
   };
   const ns = payOpen ? nextStep(o, pm, ctx.ptasks) : null;
-  const plan = !ns ? null : o.pay === "inkasso" ? [ns.label, ""] : [ns.label, ns.auto ? "automatisch · " + (ns.sub || "geplant") : "als Nächstes · manuell"];
+  const plan = !ns ? null : o.pay === "inkasso" ? [ns.label, ""] : [ns.label, ns.paused ? "manuell · " + ns.paused : ns.auto ? "automatisch · " + (ns.sub || "geplant") : "als Nächstes · manuell"];
   return (
     <>
       <h3 style={{ paddingBottom: 2 }}>Mail-Verlauf</h3>
@@ -320,8 +322,11 @@ export function MailsScreen({ ctx, id, payOpen }) {
   const pm = usePayMails(o || { id });
   const [busy, setBusy] = React.useState("");
   const [nx, setNx] = React.useState(null); // geplante automatische Mails (Server)
-  React.useEffect(() => { if (id) nextMailsApi(id).then(setNx).catch(() => setNx({ items: [] })); }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
+  const loadNx = React.useCallback(() => { if (id) nextMailsApi(id).then(setNx).catch(() => setNx({ items: [] })); }, [id]);
+  React.useEffect(() => { loadNx(); }, [loadNx]);
   if (!o) return null;
+  const pause = nx && nx.pause ? nx.pause : null;
+  const payDone = ["paid", "refunded"].includes(String(o.pay || "")) || o.status === "storniert";
   const isOpen = payOpen ? payOpen(o) : false;
   const ns = isOpen ? nextStep(o, pm, ctx.ptasks) : null;
   const show = async (x) => {
@@ -347,6 +352,19 @@ export function MailsScreen({ ctx, id, payOpen }) {
         <div><b>{pm ? nAuto : "–"}</b><span>Automatisch</span></div>
         <div><b style={{ fontSize: 18, lineHeight: 1.6 }}>{mails[0] ? dShort(mails[0].ts) : "—"}</b><span>Zuletzt</span></div>
       </div>
+      {!payDone || pause ? (
+        <>
+          <div className="lbl" style={{ marginTop: 18 }}>Auto-Mahnungen</div>
+          <div className="card atl">
+            <button type="button" className="ae" disabled={!nx} onClick={() => ctx.openSheet({ kind: "dunpause", forId: o.id, pause, onDone: loadNx })} style={{ width: "100%", textAlign: "left" }}>
+              <span className="ad" style={{ color: pause ? "var(--danger)" : "var(--success)" }}>{pause ? <PauseCircle /> : <PlayCircle />}</span>
+              <div className="t"><b>{!nx ? "Lädt …" : pause ? "Pausiert " + (pause.until ? "bis " + dShort(pause.until) : "bis auf Weiteres") : "Aktiv"}</b>
+                <span>{pause ? (pause.reason ? pause.reason + " · " : "") + "tippen zum Ändern oder Aktivieren" : "Für diesen Kunden pausieren"}</span></div>
+              <ChevronRight style={{ width: 18, height: 18, color: "var(--g3)", flex: "none" }} />
+            </button>
+          </div>
+        </>
+      ) : null}
       <div className="lbl" style={{ marginTop: 18 }}>Nächste automatische Mail</div>
       <div className="card atl">
         {!nx ? <div className="ae"><span className="ad"><Loader className="spin" /></span><div className="t"><b>Lädt …</b></div></div>
@@ -354,14 +372,14 @@ export function MailsScreen({ ctx, id, payOpen }) {
             <div key={i} className="ae"><span className="ad" style={{ color: x.stopped ? "var(--g3)" : "var(--primary)" }}><Clock /></span>
               <div className="t"><b>{x.at ? dWhen(x.at) + " · " : ""}{x.title}</b>{x.note ? <span>{x.note}</span> : null}</div></div>
           ))
-          : <div className="ae"><span className="ad" style={{ color: "var(--g3)" }}><Clock /></span><div className="t"><b>Keine geplant</b><span>{nx.info || "Für diesen Auftrag ist gerade keine automatische Mail fällig."}</span></div></div>}
+          : <div className="ae"><span className="ad" style={{ color: "var(--g3)" }}><Clock /></span><div className="t"><b>Keine geplant</b><span>{nx.info || (pause ? "Auto-Mahnungen für diesen Kunden pausiert" : "Für diesen Auftrag ist gerade keine automatische Mail fällig.")}</span></div></div>}
       </div>
       {ns && !(ns.auto && nx && nx.items && nx.items.length) ? (
         <>
           <div className="lbl" style={{ marginTop: 18 }}>Als Nächstes</div>
           <div className="card atl">
             <div className="ae"><span className="ad" style={{ color: "var(--primary)" }}><Clock /></span>
-              <div className="t"><b>{ns.label}</b><span>{o.pay === "inkasso" ? "" : ns.auto ? "automatisch" + (ns.sub ? " · " + ns.sub : "") : "von euch (Hauptbutton im Auftrag)"}</span></div></div>
+              <div className="t"><b>{ns.label}</b><span>{o.pay === "inkasso" ? "" : ns.paused ? "von euch · Auto-Mahnungen pausiert" : ns.auto ? "automatisch" + (ns.sub ? " · " + ns.sub : "") : "von euch (Hauptbutton im Auftrag)"}</span></div></div>
           </div>
         </>
       ) : null}
@@ -381,6 +399,51 @@ export function MailsScreen({ ctx, id, payOpen }) {
         </React.Fragment>
       ))}
       {isDesk ? null : <div style={{ height: 8 }} />}
+    </>
+  );
+}
+
+
+/** Sheet „Auto-Mahnungen pausieren" (aus dem Mail-Verlauf): pro Kunde (E-Mail, alle Aufträge). Pausiert Auto-Mahnstufen,
+ *  Zahlungsziel-Mail und Zahlungserinnerungen bei Bewertungen. Manuelle Mahnungen gehen weiter (16.10.2026). */
+export function DunPauseSheet({ o, ctx, close, pause, onDone }) {
+  const [busy, setBusy] = React.useState(false);
+  const [reason, setReason] = React.useState(pause && pause.reason ? pause.reason : "");
+  const first = (o.name || o.email || "").split(/\s+/)[0];
+  const run = async (p, msg) => {
+    setBusy(true);
+    try {
+      const r = await dunPauseApi(o.id, p);
+      if (!r || !r.ok) throw new Error((r && r.error) || "Fehler");
+      // Pause gilt pro Kunde → alle Aufträge mit derselben E-Mail sofort aktualisieren (nächster Schritt, Mail-Zeile).
+      const em = String(o.email || "").trim().toLowerCase();
+      for (const x of ctx.orders || []) if (String(x.email || "").trim().toLowerCase() === em) ctx.patchOrder(x.id, { dunPause: r.pause || null });
+      ctx.toast(msg);
+      if (onDone) onDone();
+      close();
+    } catch (e) { ctx.toast("Fehler: " + e.message); setBusy(false); }
+  };
+  const until = (n) => dShort(new Date(Date.now() + n * 864e5).toISOString());
+  return (
+    <>
+      <h3 style={{ paddingBottom: 2 }}>Auto-Mahnungen {pause ? "pausiert" : "pausieren"}</h3>
+      <p className="shp">{pause
+        ? `Seit ${dShort(pause.since)} ${pause.until ? "bis " + dShort(pause.until) : "bis auf Weiteres"}. ${first} bekommt keine automatischen Zahlungs-Mails.`
+        : `${first} bekommt dann keine automatischen Zahlungserinnerungen und Mahnungen mehr – gilt für alle Aufträge von ${o.email}. Manuelle Mahnungen über den Hauptbutton gehen weiter.`}</p>
+      <div className="usrch in-sheet" style={{ marginTop: 4 }}><input placeholder="Grund (optional), z. B. zahlt Ende des Monats" value={reason} maxLength={300} disabled={busy} onChange={(e) => setReason(e.target.value)} /></div>
+      <div className="opts">
+        {[[0, "Bis auf Weiteres", "bis du sie wieder aktivierst"], [7, "7 Tage", "bis " + until(7)], [14, "14 Tage", "bis " + until(14)], [30, "30 Tage", "bis " + until(30)]].map(([n, l, sub]) => (
+          <button key={n} type="button" className="aopt" disabled={busy} onClick={() => run({ days: n, reason: reason.trim() }, n ? "Auto-Mahnungen pausiert bis " + until(n) : "Auto-Mahnungen pausiert")}>
+            <span className="ico"><PauseCircle /></span><span className="ol">{pause ? "Pause ändern: " : ""}{l}<br /><small>{sub}</small></span>
+          </button>
+        ))}
+        {pause ? (
+          <button type="button" className="aopt" disabled={busy} onClick={() => run({ resume: true }, "Auto-Mahnungen wieder aktiv")} style={{ color: "var(--success)" }}>
+            <span className="ico"><PlayCircle /></span><span className="ol">Wieder aktivieren<br /><small>Die nächste fällige Stufe geht dann raus (8–20 Uhr Ortszeit)</small></span>
+          </button>
+        ) : null}
+      </div>
+      {busy ? <p className="shp" style={{ marginTop: 10 }}><Loader className="spin" /> Speichert …</p> : null}
     </>
   );
 }

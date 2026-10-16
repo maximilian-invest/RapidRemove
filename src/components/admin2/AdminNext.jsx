@@ -25,7 +25,7 @@ import PriceEdit from "./PriceEdit";
 import Bill from "./Bill";
 import { CheckSheet } from "./Checks";
 import { MahnSheet } from "./Mahnung";
-import { DueSheet, MailHistSheet, MailsScreen } from "./PayFlow";
+import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
 import { AlertTriangle, Loader as LoaderIcon, Banknote } from "lucide-react";
@@ -504,6 +504,8 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     body = <MahnSheet key={o.id + "|" + (sheet.stage || "")} o={o} ctx={ctx} close={close} initialStage={sheet.stage} direct={sheet.direct} />;
   } else if (sheet && sheet.kind === "due" && o) {
     body = <DueSheet key={o.id} o={o} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "dunpause" && o) {
+    body = <DunPauseSheet key={o.id} o={o} ctx={ctx} close={close} pause={sheet.pause || null} onDone={sheet.onDone} />;
   } else if (sheet && sheet.kind === "mailhist" && o) {
     body = <MailHistSheet key={o.id} o={o} ctx={ctx} close={close} payOpen={!!sheet.payOpen} />;
 
