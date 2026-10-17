@@ -19,7 +19,7 @@ import { notifyPartner } from "./partnerNotify";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
-import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, expressMet } from "./reviewsPricing";
+import { quoteReviews, cpOf, reviewDiscountPct, REVIEW_BASE, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, chatPctOf, payPctOf, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, expressCustomerDue, EXPRESS_CUSTOMER_H, expressMet } from "./reviewsPricing";
 import { logCustEvent, deviceOf } from "./custTrack";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
@@ -547,7 +547,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     // Kunden-Konditionen (Admin → Kunden & Preise): fester Software-Preis, auch wenn der Partner erst später „Software" feststellt.
     const swp = cpOf({ cp: (it as { swp?: unknown }).swp });
     const price = special && swp ? swp : cp || (special ? swPriceOf(it) : disc(lpOf(it) || (it.old ? REVIEW_BASE + REVIEW_OLD_SURCHARGE : REVIEW_BASE)));
-    // Express (nur 250er): +100, nur wenn innerhalb von 30 Std. ab Start (Partner-Aufgabe) gelöscht – sonst entfällt er automatisch.
+    // Express (nur 250er): +100, nur wenn bis zur Zusage gelöscht (30 Std. ab Start; Start Fr 12:00–So → bis Di 24:00) – sonst entfällt er automatisch.
     const xOn = lpOf(it) === PRICE_V2_OTHER && !!it.x;
     const xRemovedAt = status === "removed" ? pt?.removedAt || null : null;
     const xOk = xOn && !!xRemovedAt && expressMet(pt?.expressAt || null, xRemovedAt);
@@ -561,7 +561,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
       lp: lpOf(it) || null, // Preismodell 2 (99/250); null = Bestandsauftrag
       x: xOn, xOk, xFee: xOn ? EXPRESS_FEE : 0, // Express: bestellt / eingehalten (wird nur dann abgerechnet)
-      xDue: xOn && pt?.expressAt ? new Date(new Date(pt.expressAt).getTime() + EXPRESS_CUSTOMER_H * 3600e3).toISOString() : null, // Zusage: gelöscht bis …
+      xDue: xOn && pt?.expressAt ? expressCustomerDue(pt.expressAt) : null, // Zusage: gelöscht bis … (30 Std. bzw. Di 24:00 Wiener Zeit bei Wochenend-Start)
       swWant: status === "software" && !!swWant[k],
       swBulk: !!bulkSw[k],
       pre: !lpOf(it) && (!!it.nt || !!it.sw), // Software-Fall laut Partner-Regel (nur Preismodell 1): Kunde hat bei der Bestellung schon zugestimmt → nur noch zahlen

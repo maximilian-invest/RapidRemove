@@ -130,6 +130,8 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       // Zahlungswunsch aus dem letzten Auftrag übernehmen (PayPal/Wise −10 %), sonst Karte/hinterlegte Zahlungsart.
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard", landing: "/my-reviews",
+      // Express (+100 je 250er) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026), Regeln wie im Website-Bestellprozess.
+      ...(b.express === true ? { reviewExpress: true } : {}),
     };
     // Eigene Staffel des Kunden (Admin → Kunden & Preise) gilt auch für Bestellungen von Hand (Standard-Staffel nur für Bulk);
     // Partner-Konditionen des Kunden gelten immer.
@@ -246,6 +248,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard (Links)", landing: "/my-reviews",
+      ...(b.express === true ? { reviewExpress: true } : {}), // Express-Zwischenschritt im Dashboard
     };
     const pr = await pricingFor(email).catch(() => null);
     const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;

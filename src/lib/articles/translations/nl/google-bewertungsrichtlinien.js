@@ -96,7 +96,7 @@ const article = {
       ["Met tekst, tot 4 weken", "ca. 90 %", "**€ 99**"],
       ["Alle andere (ouder dan 4 weken of alleen sterren)", "ca. 50 % (ouder dan 4 weken)", "**€ 250**"],
     ] },
-    { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: eveneens € 250 per verwijderde review. Meestal duurt het 1–2 weken, soms sneller, in enkele gevallen iets langer (alleen sterren: ca. 1–3 dagen). De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
+    { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: eveneens € 250 per verwijderde review. Reviews met tekst tot 4 weken oud zijn meestal binnen 3–5 dagen weg, alle andere (ook alleen sterren) meestal binnen 1–2 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
     { t: "cta", title: "Welke van uw reviews schenden de regels?", text: "Zoek uw profiel, vink de reviews aan en wij zeggen eerlijk welke verwijderbaar zijn. **Alleen betalen als de review echt weg is.**", btn: "Gratis laten beoordelen", href: "/nl/profiel-checken/?start=reviews", trust: ["Gratis beoordeling", "Alleen bij succes", "Alleen procedures van Google"] },
   ],
   faq: [
@@ -104,7 +104,7 @@ const article = {
     { q: "Verwijdert Google een review als ik het er niet mee eens ben?", a: "Nee. Onenigheid alleen is **geen schending**. Eerlijke kritiek van echte klanten blijft staan; dan is een beleefde openbare reactie de beste stap." },
     { q: "Is een 1-sterreview zonder tekst een schending?", a: "Niet automatisch. Was de reviewer nooit klant, of is de review deel van een nepgolf of een belangenconflict, dan zijn de kansen op verwijdering wel goed." },
     { q: "Hoe vaak kan ik in beroep gaan tegen „geen schending”?", a: "**Eén keer per review**, in de Reviewbeheertool van Google. Na dat beroep is de beslissing definitief; bij onwettige inhoud blijft een juridisch verzoek mogelijk." },
-    { q: "Hoe lang duurt het voordat Google een gemelde review beoordeelt?", a: "Dat varieert van dagen tot weken; Google geeft geen vaste termijn. Bij ons duurt een verwijdering meestal 1–2 weken, soms sneller, in enkele gevallen iets langer." },
+    { q: "Hoe lang duurt het voordat Google een gemelde review beoordeelt?", a: "Dat varieert van dagen tot weken; Google geeft geen vaste termijn. Bij ons duurt een verwijdering meestal 3–5 dagen bij reviews met tekst tot 4 weken oud, anders meestal 1–2 weken." },
     { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 99** per verwijderde review met tekst tot 4 weken oud, **€ 250** voor alle andere (ouder of alleen sterren). U betaalt alleen als de review echt weg is – niets vooraf." },
   ],
   related: [

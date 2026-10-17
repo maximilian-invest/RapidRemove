@@ -2,6 +2,7 @@
    Status-Buckets wie im alten Admin: Neu · In Bearbeitung · Zahlung offen · Inkasso · Gelöscht · Storniert. */
 import { ASSIGNEES } from "@/components/admin/AdminAssign";
 import { asset } from "@/lib/base";
+import { expressDueMs } from "@/lib/pricing";
 
 export const OPEN = ["new", "work", "nopm", "pay", "inkasso"];
 export const CLOSED = ["deleted", "cancel"];
@@ -48,9 +49,10 @@ export const inTile = (k, b) => (Array.isArray(b) ? b.some((x) => inTile(k, x)) 
  * (ops/src/customers.ts › orderView), damit Admin und Kunde dieselben Zahlen sehen. */
 const REVIEW_BASE = 179, REVIEW_OLD_SURCHARGE = 50, REVIEW_NOTEXT_PRICE = 300; // Preismodell 1 (Bestandsaufträge ohne lp)
 // Preismodell 2 (16.10.2026): Listenpreis je Bewertung (lp 99/250) + Express (+100, nur wenn in 30 Std. gelöscht) – wie ops/src/reviewsPricing.ts.
-const PRICE_V2_OTHER = 250, EXPRESS_FEE = 100, EXPRESS_H = 30;
+const PRICE_V2_OTHER = 250, EXPRESS_FEE = 100;
 const lpOf = (it) => { const v = Number(it && it.lp); return v === 99 || v === 250 ? v : 0; };
-export const expressOk = (t) => !!(t && t.express && t.express.at && t.removed) && (new Date(t.removed).getTime() - new Date(t.express.at).getTime()) <= EXPRESS_H * 3600e3;
+// Express eingehalten? Gelöscht bis zur Kunden-Zusage (30 Std.; Start Fr 12:00–So → Di 24:00 Wien) – wie ops/src/reviewsPricing.ts.
+export const expressOk = (t) => !!(t && t.express && t.express.at && t.removed) && new Date(t.removed).getTime() <= (t.express.custDue ? new Date(t.express.custDue).getTime() : expressDueMs(new Date(t.express.at).getTime()));
 const reviewDiscountPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 export const rvKey = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
 

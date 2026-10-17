@@ -40,7 +40,7 @@ const article = {
         ["Alla andra: äldre än 4 veckor eller stjärnbetyg utan text", "ca. 50 % (äldre än 4 veckor)", "**250 €**"],
       ] },
       { t: "p", text: "**Stjärnbetyg utan text** kostar **250 €** per borttaget betyg, oavsett ålder. Precis som för alla recensioner lägger du in ett kort eller PayPal när du beställer; dragningen sker automatiskt först när betyget har tagits bort. Ligger betyget kvar betalar du ingenting." },
-      { t: "p", text: "**Express** (tillval): för recensioner à 250 € kan du vid beställningen lägga till Express för **+100 € per recension**. Målet är att recensionen är borta inom 30 timmar; lyckas det inte dras Express-tillägget av automatiskt och du betalar bara 250 €. För recensioner à 99 € finns ingen Express." },
+      { t: "p", text: "**Express** (tillval): för recensioner à 250 € kan du vid beställningen lägga till Express för **+100 € per recension**. Startar arbetet mellan måndag och fredag 12:00 (Wientid) är recensionen borta inom 30 timmar; startar det från fredag 12:00 eller på helgen, senast tisdag midnatt (Express finns inte på helgen). Lyckas det inte dras Express-tillägget av automatiskt och du betalar bara 250 €. För recensioner à 99 € finns ingen Express." },
       { t: "p", text: "Ska flera recensioner bort gäller **mängdrabatten** automatiskt:" },
       { t: "table", head: ["Antal recensioner", "Rabatt"], rows: [
         ["1 – 2", "–"],
@@ -49,7 +49,7 @@ const article = {
         ["10 eller fler", "**−30 %**"],
       ] },
       { t: "p", text: "**Exempel:** 3 färska recensioner kostar 297 €, minus 10 % = **267,30 €**. 2 färska och 3 äldre recensioner kostar 948 €, minus 15 % = **805,80 €**. Rabattnivån avgörs av hur många recensioner **vi accepterar efter den kostnadsfria bedömningen**, och den gäller för varje sådan recension som tas bort. Du betalar fortfarande bara för recensioner som faktiskt försvinner: accepterar vi 3 och 2 tas bort, betalar du 2 × 99 € minus 10 % = **178,20 €**. Stjärnbetyg utan text räknas in i antalet och får samma rabatt. Exempel: 2 betyg utan text och 1 färsk recension med text = 3 recensioner, alltså −10 %. Betygen utan text kostar då **225 €** styck (250 € minus 10 %) och recensionen med text **89,10 €** – allt dras automatiskt först när respektive recension är borta." },
-      { t: "p", text: "**Betalning per recension:** hur lång tid borttagningen tar kan variera från recension till recension – oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Därför dras betalningen per recension, automatiskt när respektive recension har tagits bort. Recensioner som vi fortfarande arbetar med kostar dig ingenting än." },
+      { t: "p", text: "**Betalning per recension:** hur lång tid borttagningen tar kan variera från recension till recension – recensioner upp till 4 veckor gamla med text oftast 3–5 dagar, alla andra oftast 1–2 veckor. Därför dras betalningen per recension, automatiskt när respektive recension har tagits bort. Recensioner som vi fortfarande arbetar med kostar dig ingenting än." },
       { t: "tip", title: "Beställ tidigt", text: "Chansen att lyckas sjunker från ca. 90 % till ca. 50 % när en recension är äldre än fyra veckor – och priset stiger från 99 € till 250 €. En färsk falsk recension är alltså den billigaste och säkraste att ta bort. Som jämförelse: advokater tar oftast betalt per recension **i förskott**, och det tar ofta månader ([advokat eller teknisk borttagning?](/sv/magasin/negativ-google-recension-advokat/))." },
 
       { t: "h2", id: "bestellen", text: "Så beställer du – på ungefär två minuter", toc: "Så beställer du" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Välj de recensioner som ska bort", text: "Sök ditt företag, bocka i recensionerna – och se det exakta priset direkt. **Från 99 € per borttagen recension**, inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
       { t: "h2", id: "dauer", text: "Hur lång tid tar det?", toc: "Tidsåtgång" },
-      { t: "p", text: "Oftast **1–2 veckor**, ibland snabbare, i enstaka fall något längre, beroende på recensionen och skälet till borttagningen. Du behöver inte göra något under tiden – vi håller dig uppdaterad. Vad som händer hos Google under tiden – anmälans status, verktyget för hantering av recensioner och överklagande – förklarar vi i [hur lång tid det tar för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
+      { t: "p", text: "Recensioner upp till 4 veckor gamla med text: oftast **3–5 dagar**. Alla andra: oftast **1–2 veckor**, ibland snabbare, i enstaka fall något längre, beroende på recensionen och skälet till borttagningen. Med Express (bara recensioner à 250 €): inom 30 timmar om arbetet startar mellan måndag och fredag 12:00 (Wientid), annars senast tisdag midnatt. Du behöver inte göra något under tiden – vi håller dig uppdaterad. Vad som händer hos Google under tiden – anmälans status, verktyget för hantering av recensioner och överklagande – förklarar vi i [hur lång tid det tar för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
 
       { t: "h2", id: "vergleich", text: "Enskilda recensioner, hela profilen, advokat eller själv – en jämförelse", toc: "Jämförelse" },
       { t: "table", rrCol: 1, head: ["Kriterium", "Borttagning av enskilda recensioner", "Profilborttagning", "Advokat", "Anmäla själv"], rows: [
         ["Vad tas bort", "Utvalda recensioner", "Hela profilen + alla recensioner", "Enskild recension", "Enskild recension"],
         ["Bra recensioner blir kvar", "Ja", "Nej", "Ja", "Ja"],
-        ["Tidsåtgång", "Oftast 1–2 veckor", "Oftast 24 – 48 timmar", "3 – 9 månader", "Osäkert"],
+        ["Tidsåtgång", "Oftast 3–5 dagar (≤ 4 veckor, med text), annars 1–2 veckor", "Oftast 24 – 48 timmar", "3 – 9 månader", "Osäkert"],
         ["Kostnad", "Från 99 €, bara om den tas bort (äldre än 4 veckor/betyg utan text: 250 €)", "Fast pris, efter framgång", "Per recension, i förskott", "Gratis"],
         ["Din insats", "2 minuter", "Minimal", "Hög", "Medel"],
       ] },

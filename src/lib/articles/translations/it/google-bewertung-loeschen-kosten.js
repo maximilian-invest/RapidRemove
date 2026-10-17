@@ -29,7 +29,7 @@ const article = {
       ["Modello di costo", "Gratis", "A ore, di solito in anticipo", "Per tentativo o in anticipo; prezzi spesso nascosti", "**99 € per recensione rimossa** (250 € oltre le 4 settimane o senza testo)"],
       ["Se la recensione resta", "Hai perso tempo", "Paghi comunque", "I soldi di solito sono persi", "**Non paghi nulla**"],
       ["Rischio", "Costo basso, poche probabilità", "Costo alto, esito incerto", "Pagare per niente", "**Nessuno sul costo**"],
-      ["Tempi tipici", "Da giorni a settimane, nessun termine garantito", "Spesso mesi", "Variabili", "Di solito 1–2 settimane"],
+      ["Tempi tipici", "Da giorni a settimane, nessun termine garantito", "Spesso mesi", "Variabili", "Di solito 3–5 giorni (≤ 4 settimane, con testo), altrimenti 1–2 settimane"],
       ["Impegno per te", "Medio (segnalare, monitorare, ricorrere)", "Alto (spiegare il caso, documenti, solleciti)", "Medio", "Circa 2 minuti"],
     ] },
     { t: "p", text: "**Segnalarla da solo** è il primo passo giusto se hai tempo e la violazione è evidente. Segnali la recensione su Google Maps o dal tuo Profilo dell'attività e ne segui lo stato nello [strumento di gestione delle recensioni](https://support.google.com/business/workflow/9945796) di Google, dove puoi **fare ricorso una sola volta** se Google ritiene che non ci sia violazione. Passo per passo: [come eliminare una recensione Google da solo](/it/rivista/come-eliminare-una-recensione-google/)." },
@@ -44,7 +44,7 @@ const article = {
       ["Tutte le altre (oltre 4 settimane o solo stelle)", "ca. 50 % (oltre 4 settimane)", "**250 €**"],
     ] },
     { t: "p", text: "**Valutazioni senza testo (solo stelle):** passano per una procedura più approfondita e costano **250 € a valutazione**, indipendentemente dall'età. Come per tutte le recensioni, al momento dell'ordine salvi una carta o PayPal e l'addebito avviene automaticamente solo dopo che la valutazione è stata rimossa. Per lo sconto quantità contano insieme a tutte le altre recensioni accettate dell'ordine." },
-    { t: "p", text: "**Express (opzionale):** per le recensioni da 250 € puoi prenotare in fase d'ordine l'Express a **+100 € per recensione** – obiettivo: rimozione entro 30 ore. Se non ci riusciamo, il supplemento Express viene stornato automaticamente e paghi solo 250 €. Per le recensioni da 99 € l'Express non è disponibile." },
+    { t: "p", text: "**Express (opzionale):** per le recensioni da 250 € puoi prenotare in fase d'ordine l'Express a **+100 € per recensione**: se la lavorazione inizia tra lunedì e venerdì ore 12 (ora di Vienna), rimozione entro 30 ore; se inizia da venerdì ore 12 o nel weekend, al più tardi entro martedì a mezzanotte (nel weekend l'Express non è disponibile). Se non ci riusciamo, il supplemento Express viene stornato automaticamente e paghi solo 250 €. Per le recensioni da 99 € l'Express non è disponibile." },
     { t: "p", text: "Le recensioni più vecchie costano di più perché sono **più difficili da rimuovere**: la probabilità di successo scende da circa il 90 % a circa il 50 %. Prima dell'ordine ricevi una **valutazione gratuita** e ti diciamo onestamente se una recensione ha poche possibilità. Una recensione che non viene rimossa non ti costa nulla." },
     { t: "p", text: "Se le recensioni da eliminare sono più di una, lo **sconto quantità** si applica in automatico:" },
     { t: "table", head: ["Recensioni accettate dopo la valutazione", "Sconto su ogni recensione rimossa"], rows: [
@@ -71,7 +71,7 @@ const article = {
     { t: "h2", id: "pagamento", text: "Come si paga: per ogni recensione rimossa", toc: "Come paghi" },
     { t: "p", text: "Paghi **dopo** che le recensioni sono state rimosse, mai prima. Appena una sparisce, viene **addebitata automaticamente** sulla carta o PayPal salvati al momento dell'ordine." },
     { t: "ul", items: [
-      "**Ogni recensione viene rimossa in un momento diverso.** Di solito servono 1–2 settimane, a volte prima, in singoli casi un po' di più ([quanto tempo impiega Google](/it/rivista/quanto-tempo-google-rimuovere-recensione/)).",
+      "**Ogni recensione viene rimossa in un momento diverso.** Per le recensioni con testo fino a 4 settimane di solito servono 3–5 giorni, per tutte le altre 1–2 settimane ([quanto tempo impiega Google](/it/rivista/quanto-tempo-google-rimuovere-recensione/)).",
       "Per questo ogni recensione viene **addebitata separatamente** appena viene rimossa, non tutto il pacchetto in una volta.",
       "Lo **sconto quantità è già incluso** in ogni addebito.",
       "Puoi salvare una **carta o PayPal**.",

@@ -21,9 +21,47 @@ export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur n
 export const PRICE_V2_FRESH = 99;
 export const PRICE_V2_OTHER = 250;
 export const EXPRESS_FEE = 100;
-export const EXPRESS_CUSTOMER_H = 30; // Zusage an den Kunden
-export const EXPRESS_PARTNER_H = 24;  // Timer beim Partner (6 Std. Puffer)
-/** Listenpreis (Modell 2) aus den Bestell-Flags: frisch (≤ 28 Tage, mit Text) → 99, sonst 250. */
+export const EXPRESS_CUSTOMER_H = 30; // Zusage an den Kunden (Start Mo 0:00 – Fr 12:00 Wiener Zeit)
+export const EXPRESS_PARTNER_BUFFER_H = 6; // Partner hat immer 6 Std. weniger als dem Kunden zugesagt
+/** @deprecated nur noch für Altstellen – Partner-Frist kommt aus expressPartnerDue(). */
+export const EXPRESS_PARTNER_H = EXPRESS_CUSTOMER_H - EXPRESS_PARTNER_BUFFER_H;
+/* Express-Frist (Entscheidung Maximilian 17.10.2026): Express am Wochenende nicht verfügbar.
+ *  Start Mo 0:00 – Fr 12:00 (Wiener Zeit) → Kunde: gelöscht innerhalb von 30 Std.
+ *  Start Fr 12:00 – So 24:00 → Kunde: „sicher gelöscht bis Dienstag 24:00“ (= Mittwoch 0:00 Wiener Zeit).
+ *  Partner bekommt immer 6 Std. weniger. Start = Aufgabe beim Partner angelegt (partner_tasks.express_at). */
+const VIE = "Europe/Vienna";
+const vieFmt = new Intl.DateTimeFormat("en-US", { timeZone: VIE, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", weekday: "short" });
+const WD: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+function vieParts(ms: number) {
+  const o: Record<string, string> = {};
+  for (const x of vieFmt.formatToParts(new Date(ms))) o[x.type] = x.value;
+  return { y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute, s: +o.second, wd: WD[o.weekday] ?? 0 };
+}
+const vieOffset = (ms: number) => { const p = vieParts(ms); return Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000; };
+/** Wiener Ortszeit → UTC-Millisekunden (Sommer-/Winterzeit korrekt). */
+function vieToUtc(y: number, m: number, d: number, h = 0, mi = 0): number {
+  const guess = Date.UTC(y, m - 1, d, h, mi);
+  let t = guess - vieOffset(guess);
+  t = guess - vieOffset(t);
+  return t;
+}
+/** Wochenend-Regel aktiv? (Start Fr ab 12:00 bis So 24:00, Wiener Zeit) */
+export function expressWeekend(startMs: number): boolean {
+  const p = vieParts(startMs);
+  return p.wd === 6 || p.wd === 0 || (p.wd === 5 && p.h >= 12);
+}
+/** Zusage an den Kunden: gelöscht bis … (UTC-Millisekunden). */
+export function expressCustomerDueMs(startMs: number): number {
+  if (!expressWeekend(startMs)) return startMs + EXPRESS_CUSTOMER_H * 3600_000;
+  const p = vieParts(startMs);
+  const toWed = (3 - p.wd + 7) % 7; // Fr → 5, Sa → 4, So → 3 Tage bis Mittwoch 0:00 (= Dienstag 24:00)
+  return vieToUtc(p.y, p.m, p.d + toWed, 0, 0);
+}
+/** Frist beim Partner = Kunden-Zusage − 6 Std. */
+export const expressPartnerDueMs = (startMs: number): number => expressCustomerDueMs(startMs) - EXPRESS_PARTNER_BUFFER_H * 3600_000;
+const isoOrNull = (v: string | null | undefined, f: (ms: number) => number) => { const a = Date.parse(String(v || "")); return Number.isFinite(a) ? new Date(f(a)).toISOString() : null; };
+export const expressCustomerDue = (startIso: string | null | undefined) => isoOrNull(startIso, expressCustomerDueMs);
+export const expressPartnerDue = (startIso: string | null | undefined) => isoOrNull(startIso, expressPartnerDueMs);
 export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; text?: string | null; rating?: number | null; days?: number | null }): number => {
   const days = Number(it.days);
   const old = it.old === true || (Number.isFinite(days) && it.days !== null && it.days !== undefined && days > 28);
@@ -31,10 +69,10 @@ export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; tex
 };
 /** Listenpreis einer gespeicherten Bewertung (0 = Bestandsauftrag, Preismodell 1). */
 export const lpOf = (it: { lp?: unknown } | null | undefined): number => { const v = Number(it?.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_OTHER ? v : 0; };
-/** Express-Zusage eingehalten? (gelöscht ≤ 30 Std. nach Express-Start) */
+/** Express-Zusage eingehalten? (gelöscht bis zur Kunden-Frist: 30 Std. bzw. Di 24:00 bei Wochenend-Start) */
 export function expressMet(startIso: string | null | undefined, removedIso: string | null | undefined): boolean {
   const a = Date.parse(String(startIso || "")), b = Date.parse(String(removedIso || ""));
-  return Number.isFinite(a) && Number.isFinite(b) && b >= a - 60_000 && b - a <= EXPRESS_CUSTOMER_H * 3600_000;
+  return Number.isFinite(a) && Number.isFinite(b) && b >= a - 60_000 && b <= expressCustomerDueMs(a);
 }
 
 /** cp = individueller Nettopreis je Bewertung (im Admin festgelegt): ersetzt Grundpreis, Altersaufschlag und Mengenrabatt.

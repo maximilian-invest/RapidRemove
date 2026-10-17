@@ -13,7 +13,10 @@ const XP = {
     toCo: "Weiter zur Kasse", row: "Express-Löschung", rowSub: (f, h) => `+${f} je Bewertung · entfällt, wenn nicht in ${h} Std. gelöscht`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Bis 4 Wochen, mit Text", other: "Alle anderen Bewertungen", otherSub: "älter als 4 Wochen oder ohne Text",
     t1: ["Bis 4 Wochen alt, mit Text", "Direkte Meldung bei Google · ca. 90 % Erfolg"], t2: ["Alle anderen Bewertungen", "Älter als 4 Wochen oder ohne Text – das passende Verfahren ist inklusive"],
-    t3: ["Express", (h, p) => `Nur für Bewertungen zu ${p}: Ziel gelöscht in ${h} Std., sonst entfällt der Aufpreis automatisch`],
+    loc: "de-AT", tf99: "Meist in 3–5 Tagen gelöscht", d99: "3–5 Tage", tfH: "So lange dauert es", tfLine: (a, b) => `Bewertungen bis 4 Wochen mit Text: meist ${a}. Alle anderen: meist ${b}.`, xStd: "Ohne Express:",
+    xBy: (d) => `Höchste Priorität – spätestens bis ${d} gelöscht`, xWk: "Express gibt es am Wochenende nicht – darum gilt ab Freitag 12:00: spätestens bis Dienstag 24:00 gelöscht.", cmpXBy: (d) => `bis ${d}`,
+    g3By: (d) => `Nicht bis ${d} gelöscht? Der Express-Aufpreis wird automatisch abgezogen`, rowSubBy: (f, d) => `+${f} je Bewertung · entfällt, wenn nicht bis ${d} gelöscht`,
+    t3: ["Express", (h, p) => `Nur für Bewertungen zu ${p}: Mo–Fr 12:00 gelöscht in ${h} Std., danach und am Wochenende bis Dienstag 24:00 – sonst entfällt der Aufpreis automatisch`],
   },
   en: {
     label: "Speed", h: "How fast should it go?", sub: "Standard is enough for most cases. If it's urgent, your reviews jump to the front of the queue.",
@@ -27,7 +30,10 @@ const XP = {
     toCo: "Continue to checkout", row: "Express removal", rowSub: (f, h) => `+${f} per review · dropped if not removed within ${h} h`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Up to 4 weeks, with text", other: "All other reviews", otherSub: "older than 4 weeks or without text",
     t1: ["Up to 4 weeks old, with text", "Direct report to Google · approx. 90% success"], t2: ["All other reviews", "Older than 4 weeks or without text – the right method is included"],
-    t3: ["Express", (h, p) => `Only for reviews at ${p}: target removed within ${h} h, otherwise the surcharge is dropped automatically`],
+    loc: "en-US", tf99: "Usually removed within 3–5 days", d99: "3–5 days", tfH: "How long it takes", tfLine: (a, b) => `Reviews up to 4 weeks old with text: usually ${a}. All others: usually ${b}.`, xStd: "Without express:",
+    xBy: (d) => `Top priority – removed by ${d} at the latest`, xWk: "Express isn't available on weekends – so from Friday 12:00 (Vienna time) it's removed by Tuesday midnight at the latest.", cmpXBy: (d) => `by ${d}`,
+    g3By: (d) => `Not removed by ${d}? The express fee is deducted automatically`, rowSubBy: (f, d) => `+${f} per review · dropped if not removed by ${d}`,
+    t3: ["Express", (h, p) => `Only for reviews at ${p}: removed within ${h} h (Mon–Fri until 12:00), otherwise by Tuesday midnight – or the surcharge is dropped automatically`],
   },
   es: {
     label: "Rapidez", h: "¿Con qué rapidez?", sub: "El estándar basta en la mayoría de los casos. Si es urgente, tus reseñas pasan al primer lugar de la cola.",
@@ -41,7 +47,10 @@ const XP = {
     toCo: "Continuar al pago", row: "Eliminación exprés", rowSub: (f, h) => `+${f} por reseña · se anula si no se elimina en ${h} h`, line: (n, f) => `Exprés · ${n} × ${f}`,
     fresh: "Hasta 4 semanas, con texto", other: "Todas las demás reseñas", otherSub: "más de 4 semanas o sin texto",
     t1: ["Hasta 4 semanas, con texto", "Denuncia directa a Google · aprox. 90 % de éxito"], t2: ["Todas las demás reseñas", "Más de 4 semanas o sin texto – el método adecuado está incluido"],
-    t3: ["Exprés", (h, p) => `Solo para reseñas de ${p}: objetivo eliminada en ${h} h; si no, el recargo se anula automáticamente`],
+    loc: "es-ES", tf99: "Normalmente eliminadas en 3–5 días", d99: "3–5 días", tfH: "Cuánto tarda", tfLine: (a, b) => `Reseñas de hasta 4 semanas con texto: normalmente ${a}. Todas las demás: normalmente ${b}.`, xStd: "Sin exprés:",
+    xBy: (d) => `Máxima prioridad – eliminada como muy tarde el ${d}`, xWk: "El exprés no está disponible el fin de semana: desde el viernes a las 12:00 (hora de Viena) se elimina como muy tarde el martes a medianoche.", cmpXBy: (d) => `hasta ${d}`,
+    g3By: (d) => `¿No eliminada antes del ${d}? El recargo exprés se descuenta automáticamente`, rowSubBy: (f, d) => `+${f} por reseña · se anula si no se elimina antes del ${d}`,
+    t3: ["Exprés", (h, p) => `Solo para reseñas de ${p}: eliminada en ${h} h (lun–vie hasta las 12:00); si no, hasta el martes a medianoche – o el recargo se anula automáticamente`],
   },
   fr: {
     label: "Rapidité", h: "À quelle vitesse ?", sub: "La formule standard suffit dans la plupart des cas. En cas d'urgence, vos avis passent en tête de file.",
@@ -55,7 +64,10 @@ const XP = {
     toCo: "Continuer vers le paiement", row: "Suppression express", rowSub: (f, h) => `+${f} par avis · annulé si non supprimé en ${h} h`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Jusqu'à 4 semaines, avec texte", other: "Tous les autres avis", otherSub: "plus de 4 semaines ou sans texte",
     t1: ["Jusqu'à 4 semaines, avec texte", "Signalement direct à Google · env. 90 % de réussite"], t2: ["Tous les autres avis", "Plus de 4 semaines ou sans texte – la bonne méthode est incluse"],
-    t3: ["Express", (h, p) => `Uniquement pour les avis à ${p} : objectif supprimé en ${h} h, sinon le supplément est annulé automatiquement`],
+    loc: "fr-FR", tf99: "Généralement supprimé en 3–5 jours", d99: "3–5 jours", tfH: "Délais", tfLine: (a, b) => `Avis de 4 semaines max. avec texte : généralement ${a}. Tous les autres : généralement ${b}.`, xStd: "Sans Express :",
+    xBy: (d) => `Priorité maximale – supprimé au plus tard le ${d}`, xWk: "L'Express n'est pas disponible le week-end : à partir du vendredi 12h00 (heure de Vienne), l'avis est supprimé au plus tard le mardi à minuit.", cmpXBy: (d) => `d'ici ${d}`,
+    g3By: (d) => `Pas supprimé d'ici ${d} ? Le supplément Express est déduit automatiquement`, rowSubBy: (f, d) => `+${f} par avis · annulé si pas supprimé d'ici ${d}`,
+    t3: ["Express", (h, p) => `Uniquement pour les avis à ${p} : supprimé en ${h} h (lun–ven jusqu'à 12h00), sinon d'ici mardi minuit – ou le supplément est annulé automatiquement`],
   },
   it: {
     label: "Velocità", h: "Quanto in fretta?", sub: "Lo standard basta nella maggior parte dei casi. Se è urgente, le tue recensioni passano in testa alla coda.",
@@ -69,7 +81,10 @@ const XP = {
     toCo: "Vai al pagamento", row: "Rimozione express", rowSub: (f, h) => `+${f} per recensione · annullato se non rimossa entro ${h} h`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Fino a 4 settimane, con testo", other: "Tutte le altre recensioni", otherSub: "più di 4 settimane o senza testo",
     t1: ["Fino a 4 settimane, con testo", "Segnalazione diretta a Google · circa 90 % di successo"], t2: ["Tutte le altre recensioni", "Più di 4 settimane o senza testo – il metodo giusto è incluso"],
-    t3: ["Express", (h, p) => `Solo per recensioni da ${p}: obiettivo rimossa entro ${h} h, altrimenti il supplemento viene annullato automaticamente`],
+    loc: "it-IT", tf99: "Di solito rimosse in 3–5 giorni", d99: "3–5 giorni", tfH: "Quanto ci vuole", tfLine: (a, b) => `Recensioni fino a 4 settimane con testo: di solito ${a}. Tutte le altre: di solito ${b}.`, xStd: "Senza Express:",
+    xBy: (d) => `Massima priorità – rimossa al più tardi entro ${d}`, xWk: "L'Express non è disponibile nel fine settimana: dal venerdì alle 12:00 (ora di Vienna) la recensione viene rimossa al più tardi entro martedì a mezzanotte.", cmpXBy: (d) => `entro ${d}`,
+    g3By: (d) => `Non rimossa entro ${d}? Il supplemento Express viene detratto automaticamente`, rowSubBy: (f, d) => `+${f} a recensione · annullato se non rimossa entro ${d}`,
+    t3: ["Express", (h, p) => `Solo per recensioni da ${p}: rimossa entro ${h} h (lun–ven fino alle 12:00), altrimenti entro martedì a mezzanotte – o il supplemento viene annullato automaticamente`],
   },
   nl: {
     label: "Snelheid", h: "Hoe snel moet het?", sub: "Standaard volstaat in de meeste gevallen. Is het dringend, dan gaan uw reviews vooraan in de rij.",
@@ -83,7 +98,10 @@ const XP = {
     toCo: "Verder naar afrekenen", row: "Express-verwijdering", rowSub: (f, h) => `+${f} per review · vervalt als niet binnen ${h} u verwijderd`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Tot 4 weken, met tekst", other: "Alle andere reviews", otherSub: "ouder dan 4 weken of zonder tekst",
     t1: ["Tot 4 weken oud, met tekst", "Directe melding bij Google · ca. 90 % succes"], t2: ["Alle andere reviews", "Ouder dan 4 weken of zonder tekst – de juiste methode is inbegrepen"],
-    t3: ["Express", (h, p) => `Alleen voor reviews van ${p}: doel verwijderd binnen ${h} u, anders vervalt de toeslag automatisch`],
+    loc: "nl-NL", tf99: "Meestal binnen 3–5 dagen verwijderd", d99: "3–5 dagen", tfH: "Hoe lang het duurt", tfLine: (a, b) => `Reviews tot 4 weken oud met tekst: meestal ${a}. Alle andere: meestal ${b}.`, xStd: "Zonder express:",
+    xBy: (d) => `Hoogste prioriteit – uiterlijk ${d} verwijderd`, xWk: "Express is in het weekend niet beschikbaar – vanaf vrijdag 12:00 (Weense tijd) is de review uiterlijk dinsdag middernacht verwijderd.", cmpXBy: (d) => `tot ${d}`,
+    g3By: (d) => `Niet vóór ${d} verwijderd? De express-toeslag wordt automatisch afgetrokken`, rowSubBy: (f, d) => `+${f} per review · vervalt als niet vóór ${d} verwijderd`,
+    t3: ["Express", (h, p) => `Alleen voor reviews van ${p}: verwijderd binnen ${h} u (ma–vr tot 12:00), anders uiterlijk dinsdag middernacht – of de toeslag vervalt automatisch`],
   },
   pt: {
     label: "Rapidez", h: "Com que rapidez?", sub: "O padrão chega na maioria dos casos. Se for urgente, as suas avaliações passam para a frente da fila.",
@@ -97,7 +115,10 @@ const XP = {
     toCo: "Continuar para o pagamento", row: "Remoção expresso", rowSub: (f, h) => `+${f} por avaliação · anulado se não removida em ${h} h`, line: (n, f) => `Expresso · ${n} × ${f}`,
     fresh: "Até 4 semanas, com texto", other: "Todas as outras avaliações", otherSub: "mais de 4 semanas ou sem texto",
     t1: ["Até 4 semanas, com texto", "Denúncia direta à Google · cerca de 90 % de sucesso"], t2: ["Todas as outras avaliações", "Mais de 4 semanas ou sem texto – o método certo está incluído"],
-    t3: ["Expresso", (h, p) => `Só para avaliações de ${p}: objetivo removida em ${h} h; caso contrário, a taxa é anulada automaticamente`],
+    loc: "pt-PT", tf99: "Normalmente removidas em 3–5 dias", d99: "3–5 dias", tfH: "Quanto tempo demora", tfLine: (a, b) => `Avaliações até 4 semanas com texto: normalmente ${a}. Todas as outras: normalmente ${b}.`, xStd: "Sem expresso:",
+    xBy: (d) => `Prioridade máxima – removida o mais tardar até ${d}`, xWk: "O Expresso não está disponível ao fim de semana – a partir de sexta às 12:00 (hora de Viena), é removida o mais tardar até terça à meia-noite.", cmpXBy: (d) => `até ${d}`,
+    g3By: (d) => `Não removida até ${d}? A taxa expresso é descontada automaticamente`, rowSubBy: (f, d) => `+${f} por avaliação · anulada se não for removida até ${d}`,
+    t3: ["Expresso", (h, p) => `Só para avaliações de ${p}: removida em ${h} h (seg–sex até às 12:00), caso contrário até terça à meia-noite – ou a taxa é anulada automaticamente`],
   },
   ja: {
     label: "スピード", h: "どのくらい急ぎますか？", sub: "ほとんどの場合は標準で十分です。お急ぎの場合は、口コミを最優先で対応します。",
@@ -111,7 +132,10 @@ const XP = {
     toCo: "お支払いへ進む", row: "エクスプレス削除", rowSub: (f, h) => `口コミ1件あたり+${f}・${h}時間以内に削除できなければ不要`, line: (n, f) => `エクスプレス · ${n} × ${f}`,
     fresh: "投稿4週間以内・本文あり", other: "その他すべての口コミ", otherSub: "投稿4週間超または本文なし",
     t1: ["投稿4週間以内・本文あり", "Googleへ直接報告・成功率約90%"], t2: ["その他すべての口コミ", "投稿4週間超または本文なし – 最適な方法が料金に含まれます"],
-    t3: ["エクスプレス", (h, p) => `${p}の口コミのみ：${h}時間以内の削除が目標。達成できなければ追加料金は自動的に不要になります`],
+    loc: "ja-JP", tf99: "通常3〜5日で削除", d99: "3〜5日", tfH: "所要期間", tfLine: (a, b) => `投稿4週間以内・本文ありの口コミ：通常${a}。それ以外：通常${b}。`, xStd: "エクスプレスなし：",
+    xBy: (d) => `最優先 – 遅くとも${d}までに削除`, xWk: "エクスプレスは週末は対応していません。金曜12:00（ウィーン時間）以降のご注文は、遅くとも火曜24:00までに削除します。", cmpXBy: (d) => `${d}まで`,
+    g3By: (d) => `${d}までに削除できなかった場合、エクスプレス料金は自動的に差し引かれます`, rowSubBy: (f, d) => `1件あたり+${f} · ${d}までに削除できなければ不要`,
+    t3: ["エクスプレス", (h, p) => `${p}の口コミのみ：月〜金12:00までは${h}時間以内、それ以降と週末は火曜24:00までに削除。できなければ追加料金は自動的に不要`],
   },
   sv: {
     label: "Tempo", h: "Hur snabbt ska det gå?", sub: "Standard räcker i de flesta fall. Är det bråttom hamnar dina omdömen först i kön.",
@@ -125,7 +149,10 @@ const XP = {
     toCo: "Vidare till kassan", row: "Expressborttagning", rowSub: (f, h) => `+${f} per omdöme · stryks om det inte tas bort inom ${h} h`, line: (n, f) => `Express · ${n} × ${f}`,
     fresh: "Upp till 4 veckor, med text", other: "Alla andra omdömen", otherSub: "äldre än 4 veckor eller utan text",
     t1: ["Upp till 4 veckor, med text", "Direkt anmälan till Google · ca 90 % lyckas"], t2: ["Alla andra omdömen", "Äldre än 4 veckor eller utan text – rätt metod ingår"],
-    t3: ["Express", (h, p) => `Bara för omdömen à ${p}: mål borttaget inom ${h} h, annars stryks tillägget automatiskt`],
+    loc: "sv-SE", tf99: "Tas oftast bort inom 3–5 dagar", d99: "3–5 dagar", tfH: "Så lång tid tar det", tfLine: (a, b) => `Omdömen upp till 4 veckor med text: oftast ${a}. Alla andra: oftast ${b}.`, xStd: "Utan express:",
+    xBy: (d) => `Högsta prioritet – borttaget senast ${d}`, xWk: "Express finns inte på helger – från fredag 12:00 (Wientid) tas omdömet bort senast tisdag midnatt.", cmpXBy: (d) => `till ${d}`,
+    g3By: (d) => `Inte borttaget till ${d}? Expresstillägget dras av automatiskt`, rowSubBy: (f, d) => `+${f} per omdöme · stryks om det inte är borttaget till ${d}`,
+    t3: ["Express", (h, p) => `Bara för omdömen à ${p}: borttaget inom ${h} h (mån–fre till 12:00), annars senast tisdag midnatt – annars stryks tillägget automatiskt`],
   },
   da: {
     label: "Tempo", h: "Hvor hurtigt skal det gå?", sub: "Standard er nok i de fleste tilfælde. Haster det, kommer dine anmeldelser forrest i køen.",
@@ -139,7 +166,10 @@ const XP = {
     toCo: "Videre til kassen", row: "Ekspresfjernelse", rowSub: (f, h) => `+${f} pr. anmeldelse · bortfalder, hvis ikke fjernet inden for ${h} t`, line: (n, f) => `Ekspres · ${n} × ${f}`,
     fresh: "Op til 4 uger, med tekst", other: "Alle andre anmeldelser", otherSub: "ældre end 4 uger eller uden tekst",
     t1: ["Op til 4 uger, med tekst", "Direkte anmeldelse til Google · ca. 90 % succes"], t2: ["Alle andre anmeldelser", "Ældre end 4 uger eller uden tekst – den rette metode er inkluderet"],
-    t3: ["Ekspres", (h, p) => `Kun for anmeldelser til ${p}: mål fjernet inden for ${h} t, ellers bortfalder tillægget automatisk`],
+    loc: "da-DK", tf99: "Fjernes oftest inden for 3–5 dage", d99: "3–5 dage", tfH: "Så lang tid tager det", tfLine: (a, b) => `Anmeldelser op til 4 uger med tekst: oftest ${a}. Alle andre: oftest ${b}.`, xStd: "Uden ekspres:",
+    xBy: (d) => `Højeste prioritet – fjernet senest ${d}`, xWk: "Ekspres findes ikke i weekenden – fra fredag kl. 12:00 (Wien-tid) er anmeldelsen fjernet senest tirsdag kl. 24:00.", cmpXBy: (d) => `inden ${d}`,
+    g3By: (d) => `Ikke fjernet inden ${d}? Ekspres-tillægget trækkes automatisk fra`, rowSubBy: (f, d) => `+${f} pr. anmeldelse · bortfalder, hvis ikke fjernet inden ${d}`,
+    t3: ["Ekspres", (h, p) => `Kun for anmeldelser til ${p}: fjernet inden for ${h} t (man–fre til kl. 12:00), ellers senest tirsdag kl. 24:00 – ellers bortfalder tillægget automatisk`],
   },
   no: {
     label: "Tempo", h: "Hvor raskt skal det gå?", sub: "Standard holder i de fleste tilfeller. Haster det, kommer omtalene dine først i køen.",
@@ -153,7 +183,21 @@ const XP = {
     toCo: "Videre til kassen", row: "Ekspressfjerning", rowSub: (f, h) => `+${f} per omtale · faller bort hvis ikke fjernet innen ${h} t`, line: (n, f) => `Ekspress · ${n} × ${f}`,
     fresh: "Opptil 4 uker, med tekst", other: "Alle andre omtaler", otherSub: "eldre enn 4 uker eller uten tekst",
     t1: ["Opptil 4 uker, med tekst", "Direkte melding til Google · ca. 90 % suksess"], t2: ["Alle andre omtaler", "Eldre enn 4 uker eller uten tekst – riktig metode er inkludert"],
-    t3: ["Ekspress", (h, p) => `Kun for omtaler til ${p}: mål fjernet innen ${h} t, ellers faller tillegget automatisk bort`],
+    loc: "nb-NO", tf99: "Fjernes oftest innen 3–5 dager", d99: "3–5 dager", tfH: "Så lang tid tar det", tfLine: (a, b) => `Omtaler opptil 4 uker med tekst: oftest ${a}. Alle andre: oftest ${b}.`, xStd: "Uten ekspress:",
+    xBy: (d) => `Høyeste prioritet – fjernet senest ${d}`, xWk: "Ekspress finnes ikke i helgene – fra fredag kl. 12:00 (Wien-tid) er omtalen fjernet senest tirsdag kl. 24:00.", cmpXBy: (d) => `innen ${d}`,
+    g3By: (d) => `Ikke fjernet innen ${d}? Ekspresstillegget trekkes automatisk fra`, rowSubBy: (f, d) => `+${f} per omtale · faller bort hvis ikke fjernet innen ${d}`,
+    t3: ["Ekspress", (h, p) => `Kun for omtaler til ${p}: fjernet innen ${h} t (man–fre til kl. 12:00), ellers senest tirsdag kl. 24:00 – ellers faller tillegget automatisk bort`],
   },
 };
 export const xpCopy = (lang) => XP[lang] || XP.en;
+/** Express-Frist als Text in der Ortszeit des Kunden. Dienstag 24:00 Wiener Zeit wird als „Di … 23:59" gezeigt (nicht „Mi 0:00"). */
+export function fmtXDueShort(ms, lang) {
+  const c = xpCopy(lang);
+  try { return new Date(ms - 60_000).toLocaleString(c.loc, { weekday: "short", hour: "2-digit", minute: "2-digit" }); }
+  catch (e) { return fmtXDue(ms, lang); }
+}
+export function fmtXDue(ms, lang) {
+  const c = xpCopy(lang);
+  try { return new Date(ms - 60_000).toLocaleString(c.loc, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+  catch (e) { return new Date(ms - 60_000).toISOString().slice(0, 16).replace("T", " "); }
+}

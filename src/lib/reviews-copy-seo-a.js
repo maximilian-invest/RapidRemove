@@ -3,7 +3,7 @@ export const RVW_SEO_A = {
   es: {
     h1: "Eliminar una reseña de Google – pagas solo si desaparece.",
     faq: [
-      { q: "¿Cuánto tarda?", a: "Normalmente 1–2 semanas; a veces más rápido y en casos puntuales algo más. Reseñas solo con estrellas mediante nuestro software especial: aprox. 1–3 días. Con Express (solo para reseñas de 250 €), el objetivo es eliminarla en 30 horas. Te mantenemos informado." },
+      { q: "¿Cuánto tarda?", a: "Reseñas de hasta 4 semanas con texto: normalmente eliminadas en 3–5 días. Todas las demás: normalmente 1–2 semanas; a veces más rápido y en casos puntuales algo más. Express (solo para reseñas de 250 €, +100 € por reseña): si la tramitación empieza entre el lunes y el viernes a las 12:00 (hora de Viena), se elimina en 30 horas; si empieza a partir del viernes a las 12:00 o en fin de semana, como tarde el martes a medianoche. Si no, el recargo se anula automáticamente. Te mantenemos informado." },
       { q: "¿Y si no se puede eliminar?", a: "Entonces no pagas nada. Si vemos pocas posibilidades, te lo decimos desde el principio." },
       { q: "¿Sabrá el autor que fui yo?", a: "No. Al autor no se le comunica quién solicitó la eliminación." },
       { q: "Tengo varias reseñas.", a: "El precio es por reseña: selecciona tantas como quieras. A partir de 3 reseñas aceptadas tienes un 10 % de descuento, desde 5 un 15 % y desde 10 un 30 %, aplicado a cada reseña que eliminemos. Solo pagas las que realmente se eliminan." },
@@ -56,7 +56,7 @@ export const RVW_SEO_A = {
   fr: {
     h1: "Supprimer un avis Google – vous ne payez que s'il disparaît.",
     faq: [
-      { q: "Combien de temps cela prend-il ?", a: "En général 1 à 2 semaines, parfois moins, dans certains cas un peu plus. Avis sans texte via notre logiciel spécial : env. 1 à 3 jours. Avec Express (uniquement pour les avis à 250 €), l'objectif est une suppression en 30 heures. Nous vous tenons informé." },
+      { q: "Combien de temps cela prend-il ?", a: "Avis avec texte de 4 semaines maximum : en général supprimés en 3 à 5 jours. Tous les autres : en général 1 à 2 semaines, parfois moins, dans certains cas un peu plus. Express (uniquement pour les avis à 250 €, +100 € par avis) : si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), l'avis est supprimé en 30 heures ; s'il démarre à partir du vendredi 12 h ou le week-end, au plus tard le mardi à minuit. Sinon, le supplément est annulé automatiquement. Nous vous tenons informé." },
       { q: "Et si l'avis ne peut pas être supprimé ?", a: "Alors vous ne payez rien. Si les chances nous semblent faibles, nous vous le disons d'emblée." },
       { q: "L'auteur saura-t-il que c'est moi ?", a: "Non. L'auteur n'est pas informé de qui a demandé la suppression." },
       { q: "J'ai plusieurs avis.", a: "Le prix est par avis — sélectionnez-en autant que vous voulez. Dès 3 avis acceptés, vous bénéficiez de −10 %, dès 5 de −15 % et dès 10 de −30 %, appliqués à chaque avis supprimé. Vous ne payez que ceux réellement supprimés." },
@@ -109,7 +109,7 @@ export const RVW_SEO_A = {
   it: {
     h1: "Eliminare una recensione Google – paghi solo se sparisce.",
     faq: [
-      { q: "Quanto ci vuole?", a: "Di solito 1–2 settimane, a volte meno, in singoli casi un po' di più. Recensioni solo stelle con il nostro software speciale: ca. 1–3 giorni. Con Express (solo per le recensioni da 250 €) l'obiettivo è la rimozione entro 30 ore. Ti teniamo aggiornato." },
+      { q: "Quanto ci vuole?", a: "Recensioni con testo fino a 4 settimane: di solito rimosse in 3–5 giorni. Tutte le altre: di solito 1–2 settimane, a volte meno, in singoli casi un po' di più. Express (solo per le recensioni da 250 €, +100 € a recensione): se la lavorazione inizia tra lunedì e venerdì ore 12 (ora di Vienna), rimozione entro 30 ore; se inizia da venerdì ore 12 o nel weekend, al più tardi entro martedì a mezzanotte. Altrimenti il supplemento viene annullato automaticamente. Ti teniamo aggiornato." },
       { q: "E se non si può eliminare?", a: "Allora non paghi nulla. Se le probabilità ci sembrano basse, te lo diciamo subito." },
       { q: "L'autore saprà che sono stato io?", a: "No. All'autore non viene comunicato chi ha chiesto la rimozione." },
       { q: "Ho più recensioni.", a: "Il prezzo è per recensione: selezionane quante vuoi. Da 3 recensioni accettate hai il 10 % di sconto, da 5 il 15 % e da 10 il 30 %, applicato a ogni recensione rimossa. Paghi solo quelle davvero rimosse." },
@@ -162,7 +162,7 @@ export const RVW_SEO_A = {
   pt: {
     h1: "Remover uma avaliação do Google – só paga se desaparecer.",
     faq: [
-      { q: "Quanto tempo demora?", a: "Normalmente 1–2 semanas, por vezes menos, em casos pontuais um pouco mais. Avaliações só com estrelas através do nosso software especial: cerca de 1–3 dias. Com Express (só para avaliações de 250 €), o objetivo é a remoção em 30 horas. Vamos mantendo-o informado." },
+      { q: "Quanto tempo demora?", a: "Avaliações com texto até 4 semanas: normalmente removidas em 3–5 dias. Todas as outras: normalmente 1–2 semanas, por vezes menos, em casos pontuais um pouco mais. Express (só para avaliações de 250 €, +100 € por avaliação): se o tratamento começar entre segunda e sexta às 12h (hora de Viena), a avaliação é removida em 30 horas; se começar a partir de sexta às 12h ou ao fim de semana, o mais tardar até terça à meia-noite. Caso contrário, a taxa é anulada automaticamente. Vamos mantendo-o informado." },
       { q: "E se não for possível remover?", a: "Então não paga nada. Se as hipóteses nos parecerem baixas, dizemos logo no início." },
       { q: "O autor saberá que fui eu?", a: "Não. O autor não é informado de quem pediu a remoção." },
       { q: "Tenho várias avaliações.", a: "O preço é por avaliação — selecione quantas quiser. A partir de 3 avaliações aceites tem 10 % de desconto, a partir de 5 15 % e a partir de 10 30 %, aplicado a cada avaliação removida. Só paga as que forem mesmo removidas." },
@@ -215,7 +215,7 @@ export const RVW_SEO_A = {
   nl: {
     h1: "Google-review laten verwijderen – u betaalt pas als hij weg is.",
     faq: [
-      { q: "Hoe lang duurt het?", a: "Meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Reviews met alleen sterren via onze speciale software: ca. 1–3 dagen. Met Express (alleen voor reviews van € 250) is het doel verwijdering binnen 30 uur. We houden u op de hoogte." },
+      { q: "Hoe lang duurt het?", a: "Reviews met tekst tot 4 weken oud: meestal binnen 3–5 dagen verwijderd. Alle andere: meestal 1–2 weken, soms sneller, in enkele gevallen iets langer. Express (alleen voor reviews van € 250, +€ 100 per review): start de behandeling tussen maandag en vrijdag 12:00 (Weense tijd), dan is de review binnen 30 uur verwijderd; vanaf vrijdag 12:00 en in het weekend uiterlijk dinsdag middernacht. Anders vervalt de toeslag automatisch. We houden u op de hoogte." },
       { q: "En als de review niet weg kan?", a: "Dan betaalt u niets. Schatten we de kans laag in, dan zeggen we dat vooraf." },
       { q: "Weet de schrijver dat ik het was?", a: "Nee. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
       { q: "Ik heb meerdere reviews.", a: "De prijs geldt per review — selecteer er zoveel als u wilt. Vanaf 3 geaccepteerde reviews krijgt u 10 % korting, vanaf 5 15 % en vanaf 10 30 % – op elke review die we verwijderen. U betaalt alleen voor wat echt verwijderd is." },

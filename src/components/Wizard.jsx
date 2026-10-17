@@ -4,8 +4,8 @@ import { asset } from "@/lib/base";
 import { Icon } from "@/components/Icons";
 import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
-import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS } from "@/lib/pricing";
-import { xpCopy } from "@/lib/express-copy";
+import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -3728,12 +3728,12 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="pf"><div className="ph"><LMapPin /></div><div><b>{nm}</b><span>{revFlow ? bp.delN(reviewCount) : svcLabel}</span></div></div>
               <div className="lines">
                 {revFlow ? (<React.Fragment>
-                  {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, PRICE_V2_FRESH)}<small>{xp.fresh}</small></span><b>{fmtMoney(cur, rq.n99 * PRICE_V2_FRESH)}</b></div> : null}
-                  {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
+                  {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, PRICE_V2_FRESH)}<small>{xp.fresh} · {xp.tf99}</small></span><b>{fmtMoney(cur, rq.n99 * PRICE_V2_FRESH)}</b></div> : null}
+                  {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}{rvx ? "" : " · " + xp.stdD}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
                   {hasX ? (
                     <div className={"ln xo" + (rvx ? " on" : "")}>
-                      <span><LZap className="bpx-z" />{xp.row}<small>{(() => { const sub = xp.rowSub(money(cur, EXPRESS_FEE), EXPRESS_HOURS); const pt = sub.split(" · "); return rvx ? `${rq.n250} × ${money(cur, EXPRESS_FEE)} · ${pt.length > 1 ? pt.slice(1).join(" · ") : sub}` : sub; })()}</small></span>
+                      <span><LZap className="bpx-z" />{xp.row}<small>{(() => { const xd0 = expressWeekend() ? fmtXDue(expressDueMs(), t.code) : ""; const sub = xd0 ? xp.rowSubBy(money(cur, EXPRESS_FEE), xd0) : xp.rowSub(money(cur, EXPRESS_FEE), EXPRESS_HOURS); const pt = sub.split(" · "); return rvx ? `${rq.n250} × ${money(cur, EXPRESS_FEE)} · ${pt.length > 1 ? pt.slice(1).join(" · ") : sub}` : sub; })()}</small></span>
                       <button type="button" className={"bpr-sw" + (rvx ? " on" : "")} role="switch" aria-checked={rvx} aria-label={xp.row} onClick={() => setRvx(!rvx)}><b>+{fmtMoney(cur, rq.n250 * EXPRESS_FEE)}</b><i /></button>
                     </div>
                   ) : null}
@@ -3800,6 +3800,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const back = () => { setTempoOn(false); go(4); };
     const goCo = () => setTempoOn(false);
     const f = money(rl, EXPRESS_FEE);
+    // Express-Frist (17.10.2026): Start Mo–Fr 12:00 → 30 Std., sonst spätestens Dienstag 24:00 (Wiener Zeit) – Anzeige in Ortszeit.
+    const xwk = expressWeekend();
+    const xd = xwk ? fmtXDue(expressDueMs(), t.code) : "";
     return (
       <div className="bpr bpr-s1" ref={bodyRef} key="tempo">
         <main className="bpr-main">
@@ -3815,7 +3818,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <button type="button" className={"bpr-rop bpx-xop bpr-fade" + (rvx ? " sel" : "")} style={{ animationDelay: ".13s" }} onClick={() => setRvx(true)} aria-pressed={rvx}>
                 <span className="bpr-bdg bpx-bdg"><LZap />{xp.xBadge}</span>
                 <span className="rd" />
-                <span className="tx"><b>{xp.xT}</b><span>{xp.xD(EXPRESS_HOURS)}</span></span>
+                <span className="tx"><b>{xp.xT}</b><span>{xwk ? xp.xBy(xd) : xp.xD(EXPRESS_HOURS)}</span></span>
                 <span className="pr"><strong>+{f}</strong><small>{xp.xS}</small></span>
               </button>
             </div>
@@ -3823,15 +3826,16 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <ul className="bpr-swf bpx-g bpr-fade">
                 <li><LCircleCheck />{xp.g1}</li>
                 <li><LCircleCheck />{xp.g2}</li>
-                <li><LCircleCheck />{xp.g3(EXPRESS_HOURS)}</li>
+                <li><LCircleCheck />{xwk ? xp.g3By(xd) : xp.g3(EXPRESS_HOURS)}</li>
               </ul>
             ) : null}
             <div className="bpx-cmp bpr-fade" style={{ animationDelay: ".16s" }}>
               <div className="h"><LClock />{xp.cmpH}</div>
-              <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}</span><div className="bar"><i style={{ width: "100%" }} /></div><b>{xp.cmpStdV}</b></div>
-              <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xp.cmpXV(EXPRESS_HOURS)}</b></div>
+              <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}{rq.n99 ? " · " + money(rl, PRICE_V2_OTHER) : ""}</span><div className="bar"><i style={{ width: "100%" }} /></div><b>{xp.cmpStdV}</b></div>
+              {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, PRICE_V2_FRESH)}</span><div className="bar"><i style={{ width: "35%" }} /></div><b>{xp.d99}</b></div> : null}
+              <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xwk ? xp.cmpXBy(fmtXDueShort(expressDueMs(), t.code)) : xp.cmpXV(EXPRESS_HOURS)}</b></div>
             </div>
-            <p className="bpr-fpn bpx-swn"><LInfo /><span>{xp.startNote}{rq.n99 ? " " + xp.only(rq.n99) : ""}</span></p>
+            <p className="bpr-fpn bpx-swn"><LInfo /><span>{xp.startNote}{xwk ? " " + xp.xWk : ""}{rq.n99 ? " " + xp.only(rq.n99) : ""}</span></p>
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
               <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>
               <button type="button" className="bpr-go" onClick={goCo}>{xp.toCo}<LArrowRight /></button>
@@ -4282,8 +4286,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
             <div className="hd"><h3 id="pi-sheet-t">{pk.infoH}</h3><button type="button" className="x" onClick={() => setPriceInfo(false)} aria-label="×"><LX /></button></div>
             <div className="bpr-tiers">
               {(() => { const xp = xpCopy(t.code); return (<React.Fragment>
-                <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{money(rl, PRICE_V2_FRESH)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span></div>
-                <div className="bpr-tier"><b>{xp.t2[0]}</b><div className="p">{money(rl, PRICE_V2_OTHER)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t2[1]}</span></div>
+                <div className="bpr-tier"><b>{xp.t1[0]}</b><div className="p">{money(rl, PRICE_V2_FRESH)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t1[1]}</span><span className="q"><LClock />{xp.tf99}</span></div>
+                <div className="bpr-tier"><b>{xp.t2[0]}</b><div className="p">{money(rl, PRICE_V2_OTHER)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t2[1]}</span><span className="q"><LClock />{xp.stdD}</span></div>
                 <div className="bpr-tier"><b><LZap className="bpx-z" />{xp.t3[0]}</b><div className="p">+{money(rl, EXPRESS_FEE)}<small>{bp.sheet.per} · {vatNote(lang)}</small></div><span>{xp.t3[1](EXPRESS_HOURS, money(rl, PRICE_V2_OTHER))}</span></div>
               </React.Fragment>); })()}
             </div>

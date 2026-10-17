@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Route", "What is removed", "Duration", "Success", "Cost"], rows: [
       ["Report yourself", "single review", "uncertain", "low", "free"],
       ["Lawyer", "single review", "3 – 9 months", "approx. 90%", "per review, upfront"],
-      ["RapidRemove single-review removal", "**selected reviews incl. star-only**", "usually 1–2 weeks (star-only: approx. 1–3 days)", "Google decides", "$250 per removed review"],
+      ["RapidRemove single-review removal", "**selected reviews incl. star-only**", "usually 1–2 weeks (reviews with text up to 4 weeks old: usually 3–5 days)", "Google decides", "$250 per removed review"],
       ["RapidRemove profile removal", "**whole profile + all reviews**", "24 – 48 h", "pay only on success", "fixed price after success"],
     ] },
     { t: "p", text: "With profile removal you only pay **after success**, and thanks to the guarantee a reappearing profile is removed for free." },
@@ -61,7 +61,7 @@ const article = {
     { q: "How do I report a star rating without a comment?", a: "Click the three-dot menu next to the review, choose “Report review” and give the missing service connection as the reason. Track the status via the Google tool for managing reviews." },
     { q: "What if Google doesn't remove the review?", a: "For a single star-only rating, you can use a specifically reasoned objection via a lawyer or hand it to RapidRemove's [single-review removal](/en/remove-single-reviews/) – with a more extensive procedure, $250, charged only after removal. If your profile is damaged overall and you want a fresh start, profile removal via RapidRemove is the most reliable route – all reviews disappear with the profile." },
     { q: "Does RapidRemove delete the single 1-star review?", a: "Yes, even without text. With [single-review removal](/en/remove-single-reviews/) you can select star-only ratings in the order form; they're removed with a more extensive procedure. Price: **$250 per review**, no surcharge for older ones. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. The volume discount applies (from 3 reviews −10 %, from 5 −15 %, from 10 −30 %), counted together with all reviews in your order. Reviews with text cost $99 if they're up to 4 weeks old ($250 if older) and are only paid if removed. More on prices and the process: [Google review removal service](/en/magazine/google-review-removal-service/). If your whole profile is damaged, profile removal takes all reviews down at once." },
-    { q: "How fast are the reviews gone?", a: "Via profile removal often within 24 to 48 hours; single-review removal usually takes 1–2 weeks, sometimes faster, occasionally a little longer (star-only ratings: approx. 1–3 days) – both far faster than the months-long legal route for a single review." },
+    { q: "How fast are the reviews gone?", a: "Via profile removal often within 24 to 48 hours; single-review removal usually takes 3–5 days for reviews with text up to 4 weeks old and 1–2 weeks for all others, including star-only ratings – both far faster than the months-long legal route for a single review." },
   ],
   related: [
     { label: "Lawyer or technical removal – what's really worth it?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

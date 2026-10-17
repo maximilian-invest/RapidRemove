@@ -89,6 +89,28 @@ export const PRICE_V2_FRESH = 99;
 export const PRICE_V2_OTHER = 250;
 export const EXPRESS_FEE = 100;
 export const EXPRESS_HOURS = 30;
+/* Express-Frist (17.10.2026, synchron mit ops/src/reviewsPricing.ts): Start Mo 0:00 – Fr 12:00 Wiener Zeit → 30 Std.;
+   Start Fr 12:00 – So 24:00 → spätestens Dienstag 24:00 Wiener Zeit (Express am Wochenende nicht verfügbar). */
+const VIE_FMT = (() => { try { return new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Vienna", hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", weekday: "short" }); } catch (e) { return null; } })();
+const VIE_WD = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+function vieParts(ms) {
+  const o = {};
+  if (VIE_FMT) for (const x of VIE_FMT.formatToParts(new Date(ms))) o[x.type] = x.value;
+  else { const d = new Date(ms + 3600e3); return { y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes(), s: d.getUTCSeconds(), wd: d.getUTCDay() }; }
+  return { y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute, s: +o.second, wd: VIE_WD[o.weekday] ?? 0 };
+}
+const vieOffset = (ms) => { const p = vieParts(ms); return Date.UTC(p.y, p.m - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000; };
+const vieToUtc = (y, m, d, h = 0, mi = 0) => { const g = Date.UTC(y, m - 1, d, h, mi); let t = g - vieOffset(g); return g - vieOffset(t); };
+/** Wochenend-Regel (Start Fr ab 12:00 bis So 24:00, Wiener Zeit)? */
+export const expressWeekend = (startMs = Date.now()) => { const p = vieParts(startMs); return p.wd === 6 || p.wd === 0 || (p.wd === 5 && p.h >= 12); };
+/** Zusage an den Kunden (ms): 30 Std. bzw. Dienstag 24:00 Wiener Zeit. */
+export function expressDueMs(startMs = Date.now()) {
+  if (!expressWeekend(startMs)) return startMs + EXPRESS_HOURS * 3600e3;
+  const p = vieParts(startMs);
+  return vieToUtc(p.y, p.m, p.d + ((3 - p.wd + 7) % 7), 0, 0);
+}
+/** Zeiträume Standard (Kundenanzeige): 99er meist 3–5 Tage, 250er meist 1–2 Wochen. */
+export const STD_DAYS = { fresh: [3, 5], other: [1, 2] };
 export const listPriceV2 = (it) => {
   const d = Number(it && it.days);
   const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);

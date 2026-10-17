@@ -76,7 +76,7 @@ const article = {
       { t: "h2", id: "vergleich", text: "The methods compared directly", toc: "Direct comparison" },
       { t: "table", rrCol: 1, head: ["Criterion", "RapidRemove (profile removal)", "RapidRemove (single reviews)", "Lawyer (legal route)", "Report yourself"], rows: [
         ["What is removed", "Whole profile + all reviews", "Selected reviews", "Single review", "Single review"],
-        ["Speed", "24 – 48 hours", "Usually 1–2 weeks", "3 – 9 months", "Indeterminate"],
+        ["Speed", "24 – 48 hours", "Usually 3–5 days (≤ 4 weeks, with text), otherwise 1–2 weeks", "3 – 9 months", "Indeterminate"],
         ["Cost", "Fixed price (on success)", "From $99 per removed review", "Hourly rates (upfront)", "Free"],
         ["Success", "Pay only on success", "Pay only per removed review", "Uncertain", "Rare"],
         ["Effort", "None", "2 minutes", "High", "Medium"],
@@ -86,7 +86,7 @@ const article = {
     faq: [
       { q: "Does RapidRemove delete individual reviews?", a: "Yes: [remove a single Google review](/en/remove-single-reviews/). You pay only on success; star-only ratings without text are removed with a more extensive procedure ($250 per removed review). Reviews with text up to 4 weeks old: approx. 90 % success chance, $99 each; older ones: approx. 50 %, $250 each. Volume discount: 3+ reviews −10 %, 5+ −15 %, 10+ −30 %. If the profile is damaged across the board, removing the entire profile with all its reviews remains the more thorough route." },
       { q: "Can I delete a Google review myself?", a: "As a business you can only report a third-party review, not delete it yourself. Whether Google removes it is up to the company – often declined. Your own, self-written reviews you can delete at any time." },
-      { q: "How long does it take to remove a Google review?", a: "Via the report function it takes days to weeks with an uncertain outcome, via a lawyer often several months, via RapidRemove's single-review removal usually 1–2 weeks (sometimes faster, occasionally a little longer), via profile removal usually 24 to 48 hours." },
+      { q: "How long does it take to remove a Google review?", a: "Via the report function it takes days to weeks with an uncertain outcome, via a lawyer often several months, via RapidRemove's single-review removal usually 3–5 days for reviews with text up to 4 weeks old, otherwise 1–2 weeks, via profile removal usually 24 to 48 hours." },
       { q: "What does it cost to remove a negative Google review?", a: "Depending on the method, between around $20 (cheap, uncertain services) and $175 per review (lawyer). With RapidRemove's single-review removal it's $99 per removed review ($250 if older than 4 weeks or without text), with profile removal a fixed price – in both cases only after successful removal." },
       { q: "Can genuine negative reviews be removed too?", a: "Factual accounts of real experiences are protected by freedom of expression and hard to remove. If a review violates Google's guidelines (fake, insult, no connection), the chances are good." },
       { q: "What is the Streisand effect?", a: "When legal steps against a review provoke the reviewer into further negative reviews. Technical removal avoids this risk because it works without direct confrontation." },
