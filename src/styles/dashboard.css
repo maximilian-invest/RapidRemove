@@ -962,3 +962,22 @@ html:has(.rra .app),html:has(.rra .app) body{overflow:hidden;overscroll-behavior
 .rra .xtag svg{width:12px;height:12px}
 .rra .xtag.met{background:#eaf6ee;color:#15803d}
 .rra .xtag.miss{background:var(--g1);color:var(--g3)}
+/* 17.10.2026: Zeitraum je Bewertung (Standard) */
+.rra .xtag.tf{background:var(--g1);color:var(--g4,#555);font-weight:600}
+/* 17.10.2026: Zwischenschritt „Wie schnell?" + Zeitraum-Zeile (Dashboard-Bestellung) */
+.rra .sp-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.rra .ar-row.sp .cb.rd{border-radius:50%}
+.rra .ar-row.sp .t{flex:1}
+.rra .ar-row.sp .a{justify-content:space-between;width:100%}
+.rra .ar-row.sp .sp-p{font-style:normal;font-weight:800;font-size:14px;margin-left:auto}
+.rra .ar-row.sp .x{color:var(--g4,#555);font-size:14px;line-height:1.4}
+.rra .ar-row.sp .x.sm{font-size:12px;color:var(--g3)}
+.rra .ar-row.sp.x.on{border-color:#ff7a00;background:#fffaf4}
+.rra .ar-row.sp.x.on .cb{background:#ff7a00;border-color:#ff7a00}
+.rra .ar-row.sp .sp-z{width:15px;height:15px;color:#ff7a00;margin-right:-4px}
+.rra .sp-g{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.rra .sp-g li{display:flex;gap:8px;align-items:flex-start}
+.rra .sp-g svg{width:15px;height:15px;color:#15803d;flex:none;margin-top:2px}
+.rra .sp-n{margin-top:12px;font-size:13px;font-weight:400;color:var(--g3);line-height:1.45}
+.rra .sp-tf{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12.5px;color:var(--g3);margin:-2px 0 10px;text-align:center}
+.rra .sp-tf svg{width:13px;height:13px;flex:none}

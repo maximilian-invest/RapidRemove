@@ -29,7 +29,7 @@ const article = {
       ["Mode de facturation", "Gratuit", "À l'heure, le plus souvent d'avance", "Par tentative ou d'avance ; prix souvent cachés", "**99 € par avis supprimé** (jusqu'à 4 semaines, avec texte) ; 250 € pour tous les autres"],
       ["Si l'avis reste", "Du temps perdu", "Vous payez quand même", "L'argent est généralement perdu", "**Vous ne payez rien**"],
       ["Risque", "Coût faible, peu de succès", "Coût élevé, issue incertaine", "Payer pour rien", "**Aucun sur le coût**"],
-      ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "En général 1 à 2 semaines"],
+      ["Délai habituel", "De quelques jours à quelques semaines, sans délai garanti", "Souvent plusieurs mois", "Variable", "En général 3 à 5 jours (≤ 4 semaines, avec texte), sinon 1 à 2 semaines"],
       ["Effort pour vous", "Moyen (signalement, suivi, recours)", "Élevé (briefing, pièces, relances)", "Moyen", "Environ 2 minutes"],
     ] },
     { t: "p", text: "**Signaler l'avis vous-même** est la bonne première étape si vous avez du temps et une infraction évidente. Vous signalez l'avis dans Google Maps ou depuis votre fiche d'établissement, puis suivez son statut dans l'[outil de gestion des avis](https://support.google.com/business/workflow/9945796) de Google, où vous pouvez **faire appel une seule fois** si Google estime qu'il n'y a pas d'infraction. Pas à pas : [comment supprimer un avis Google vous-même](/fr/magazine/comment-supprimer-un-avis-google/)." },
@@ -43,7 +43,7 @@ const article = {
       ["Jusqu'à 4 semaines, avec texte", "env. 90 %", "**99 €**"],
       ["Plus de 4 semaines ou sans texte", "env. 50 %", "**250 €**"],
     ] },
-    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie et coûtent **250 € par note**, comme tout avis de plus de 4 semaines, sans autre supplément. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande. **Express :** pour les avis à 250 €, vous pouvez ajouter l'option Express lors de la commande – +100 € par avis, avec l'objectif d'une suppression en 30 heures. Si cela n'aboutit pas, le supplément Express est automatiquement déduit et vous ne payez que les 250 €." },
+    { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie et coûtent **250 € par note**, comme tout avis de plus de 4 semaines, sans autre supplément. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. Elles comptent pour la remise sur volume avec tous les autres avis acceptés de la commande. **Express :** pour les avis à 250 €, vous pouvez ajouter l'option Express lors de la commande – +100 € par avis. Si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), l'avis est supprimé en 30 heures ; s'il démarre à partir du vendredi 12 h ou le week-end, au plus tard le mardi à minuit (l'Express n'est pas disponible le week-end). Si cela n'aboutit pas, le supplément Express est automatiquement déduit et vous ne payez que les 250 €." },
     { t: "p", text: "Les avis plus anciens coûtent plus cher parce qu'ils sont **plus difficiles à faire supprimer** : les chances de succès passent d'environ 90 % à environ 50 %. Avant toute commande, vous recevez une **évaluation gratuite** et nous vous disons honnêtement si un avis a peu de chances. Un avis qui n'est pas supprimé ne vous coûte rien." },
     { t: "p", text: "Si plusieurs avis doivent disparaître, la **remise sur volume** s'applique automatiquement :" },
     { t: "table", head: ["Avis acceptés après l'évaluation", "Remise sur chaque avis supprimé"], rows: [
@@ -70,7 +70,7 @@ const article = {
     { t: "h2", id: "paiement", text: "Comment se passe le paiement : avis par avis", toc: "Paiement" },
     { t: "p", text: "Vous payez **après** la suppression, jamais avant. Dès qu'un avis a disparu, il est **prélevé automatiquement** sur la carte ou le compte PayPal enregistré lors de la commande." },
     { t: "ul", items: [
-      "**Chaque avis tombe à un moment différent.** La suppression prend généralement 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus ([délai de suppression chez Google](/fr/magazine/delai-suppression-avis-google/)).",
+      "**Chaque avis tombe à un moment différent.** Les avis de moins de 4 semaines avec texte prennent généralement 3 à 5 jours, tous les autres 1 à 2 semaines ([délai de suppression chez Google](/fr/magazine/delai-suppression-avis-google/)).",
       "Chaque avis est donc **prélevé séparément** dès qu'il est supprimé, pas tout le lot d'un coup.",
       "Votre **remise sur volume est déjà incluse** dans chaque prélèvement.",
       "Vous pouvez enregistrer une **carte ou PayPal**.",

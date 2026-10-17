@@ -29,7 +29,7 @@ const article = {
       ["Modelo de custo", "Grátis", "À hora, normalmente adiantado", "Por tentativa ou adiantado; preços muitas vezes ocultos", "**99 € por avaliação removida** (com texto, até 4 semanas); acima de 4 semanas ou só estrelas: 250 € por avaliação removida"],
       ["Se a avaliação fica", "Perdeu tempo", "Paga na mesma", "O dinheiro normalmente perde-se", "**Não paga nada**"],
       ["Risco", "Custo baixo, poucas hipóteses", "Custo alto, resultado incerto", "Pagar por nada", "**Nenhum no custo**"],
-      ["Prazo habitual", "De dias a semanas, sem prazo garantido", "Muitas vezes meses", "Variável", "Normalmente 1–2 semanas (só estrelas: aprox. 1–3 dias)"],
+      ["Prazo habitual", "De dias a semanas, sem prazo garantido", "Muitas vezes meses", "Variável", "Normalmente 3–5 dias (≤ 4 semanas, com texto); as restantes, 1–2 semanas"],
       ["Esforço para si", "Médio (denunciar, acompanhar, recorrer)", "Alto (explicar o caso, documentos, seguimento)", "Médio", "Cerca de 2 minutos"],
     ] },
     { t: "p", text: "**Denunciar por conta própria** é o primeiro passo certo se tiver tempo e a violação for clara. Denuncia a avaliação no Google Maps ou no seu Perfil da Empresa e acompanha o estado na [ferramenta de gestão de avaliações](https://support.google.com/business/workflow/9945796) do Google, onde pode **recorrer uma única vez** se o Google decidir que não há violação. Passo a passo: [como remover uma avaliação do Google sozinho](/pt/revista/como-remover-avaliacao-google/)." },
@@ -45,7 +45,7 @@ const article = {
     ] },
     { t: "p", text: "As avaliações mais antigas custam mais porque são **mais difíceis de remover**: a probabilidade de sucesso desce de cerca de 90 % para cerca de 50 %. Antes de encomendar, recebe uma **análise gratuita** e dizemos-lhe com honestidade se uma avaliação tem poucas hipóteses. Se não for removível, não lhe custa nada." },
     { t: "p", text: "**Classificações só com estrelas, sem texto:** exigem um **procedimento mais extenso**. Custam **250 € por avaliação removida**, independentemente da idade. Como em todas as avaliações, ao encomendar regista um cartão ou PayPal; a cobrança só é feita automaticamente depois de a avaliação ser removida. No formulário de encomenda aparecem com a sua própria linha de preço. O desconto por quantidade também se aplica e conta em conjunto com todas as avaliações aceites da encomenda." },
-    { t: "p", text: "**Express (opcional):** para avaliações de 250 € pode reservar o Express na encomenda, por **+100 € por avaliação** – objetivo: removida em 30 horas. Se não conseguirmos, o acréscimo Express é descontado automaticamente e paga só 250 €. Para avaliações de 99 € não há Express." },
+    { t: "p", text: "**Express (opcional):** para avaliações de 250 € pode reservar o Express na encomenda, por **+100 € por avaliação**: se o tratamento começar entre segunda e sexta às 12h (hora de Viena), removida em 30 horas; se começar a partir de sexta às 12h ou ao fim de semana, o mais tardar até terça à meia-noite (ao fim de semana o Express não está disponível). Se não conseguirmos, o acréscimo Express é descontado automaticamente e paga só 250 €. Para avaliações de 99 € não há Express." },
     { t: "p", text: "Se houver várias avaliações a remover, o **desconto por quantidade** aplica-se automaticamente:" },
     { t: "table", head: ["Avaliações aceites após a análise", "Desconto em cada avaliação removida"], rows: [
       ["1 – 2", "–"],
@@ -72,7 +72,7 @@ const article = {
     { t: "h2", id: "pagamento", text: "Como se paga: por cada avaliação removida", toc: "Como paga" },
     { t: "p", text: "Paga **depois** de a avaliação ter sido removida, nunca antes. Ao encomendar regista um cartão ou PayPal; assim que a avaliação desaparece, o valor é **cobrado automaticamente**." },
     { t: "ul", items: [
-      "**Cada avaliação sai num momento diferente.** A remoção demora normalmente 1–2 semanas, por vezes mais rápido, em casos pontuais um pouco mais ([quanto tempo o Google demora](/pt/revista/quanto-tempo-google-remover-avaliacao/)).",
+      "**Cada avaliação sai num momento diferente.** As avaliações com texto até 4 semanas demoram normalmente 3–5 dias; todas as outras, normalmente 1–2 semanas ([quanto tempo o Google demora](/pt/revista/quanto-tempo-google-remover-avaliacao/)).",
       "Por isso cada avaliação é **cobrada em separado**, assim que é removida, não o lote inteiro de uma vez.",
       "O seu **desconto por quantidade já está incluído** em cada cobrança.",
       "**Classificações só com estrelas:** exatamente igual – 250 €, cobrados só depois de a avaliação ser removida.",

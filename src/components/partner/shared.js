@@ -49,7 +49,7 @@ export const since = (ms) => {
 export const DUE_DAYS = { std: 3, old: 5 };
 const DAY = 864e5;
 export function dueOf(t, now = Date.now()) {
-  // Express (Preismodell 2): Priorität hoch, Timer 24 Std. ab Eingang – gilt auch für Software-Fälle.
+  // Express (Preismodell 2): Priorität hoch, Frist vom Server (Kunden-Zusage − 6 Std.; Mo–Fr 12:00: 24 Std., sonst Di 18:00 Wien) – gilt auch für Software-Fälle.
   if (t && t.express && (t.status === "new" || t.status === "working") && !t.hold) {
     const left = t.express.due - now;
     return { days: 1, due: t.express.due, left, express: true, state: left < 0 ? "xover" : "xp" };
@@ -93,7 +93,7 @@ export function norm(t) {
     custReason: t.custReason || null, custNote: t.custNote || "", // Grund des Kunden (Google-Richtlinie)
     reportReason: t.reportReason || null, reportNote: t.reportNote || "", // womit der Partner gemeldet hat
     profile: t.profile || "", bulk: t.bulk || null, // Bulk-Bestellung: Google-Profil der Bewertung + Bestell-Referenz
-    express: t.express && t.express.due ? { at: new Date(t.express.at).getTime(), due: new Date(t.express.due).getTime() } : null, // Express: Priorität hoch, 24 Std.
+    express: t.express && t.express.due ? { at: new Date(t.express.at).getTime(), due: new Date(t.express.due).getTime() } : null, // Express: Priorität hoch, Frist = Kunden-Zusage − 6 Std.
   };
 }
 

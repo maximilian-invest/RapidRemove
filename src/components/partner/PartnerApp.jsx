@@ -423,9 +423,9 @@ export default function PartnerApp({ api }) {
         <div className={"stl c-" + t.status}><S.I />{stLabel(t)}</div>
         {dueOf(t) && dueOf(t).express ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / 864e5) * 100)); return (
           <div className={"dueb " + d.state}>
-            <div className="h"><Zap /><b>{d.left < 0 ? "Express · 24 h are over" : "High priority · Express"}</b>{d.left >= 0 ? <XClock due={d.due} /> : null}</div>
+            <div className="h"><Zap /><b>{d.left < 0 ? "Express · deadline is over" : "High priority · Express"}</b>{d.left >= 0 ? <XClock due={d.due} /> : null}</div>
             <div className="bar"><i style={{ width: pct + "%" }} /></div>
-            <span>{d.left < 0 ? "Please finish this one as soon as you can." : "Remove within 24 hours"} · deadline {dueDate(d.due)} · software removal approved (included in the price)</span>
+            <span>{d.left < 0 ? "Please finish this one as soon as you can." : "Remove by the deadline"} · deadline {dueDate(d.due)} · software removal approved (included in the price)</span>
           </div>
         ); })() : dueOf(t) ? (() => { const d = dueOf(t); const pct = Math.min(100, Math.max(0, 100 - (d.left / (d.days * 864e5)) * 100)); return (
           <div className={"dueb " + d.state}>

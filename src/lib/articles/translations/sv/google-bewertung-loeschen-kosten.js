@@ -36,7 +36,7 @@ const article = {
       ["Kostnadsmodell", "Gratis", "Timarvode, ofta förskott", "Per försök eller fast belopp i förväg", "**99 € per borttagen recension** (upp till 4 veckor, med text); alla andra 250 €"],
       ["Betalar du om recensionen blir kvar?", "–", "Ja", "Ofta ja", "**Nej**"],
       ["Risk för dig", "Förlorad tid, avvisas ofta", "Hög: kostnad oavsett utfall", "Hög: pengarna redan betalda", "**Ingen**: bara vid resultat"],
-      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast 1–2 veckor (betyg utan text: ca 1–3 dagar)"],
+      ["Tid", "Dagar till veckor, ingen fast tidsram", "Ofta månader", "Varierar", "Oftast 3–5 dagar (≤ 4 veckor, med text), annars 1–2 veckor"],
       ["Insats för dig", "Medel (anmäla, följa upp, överklaga)", "Hög (underlag, möten)", "Varierar", "Ca 2 minuter"],
     ] },
     { t: "p", text: "Hur lång tid Google själv tar och hur överklagandet fungerar läser du i [hur lång tid tar det för Google att ta bort en recension](/sv/magasin/hur-lang-tid-tar-google-ta-bort-recension/)." },
@@ -48,7 +48,7 @@ const article = {
       ["Alla andra: äldre än 4 veckor eller stjärnbetyg utan text", "ca. 50 % (äldre än 4 veckor)", "**250 €**"],
     ] },
     { t: "p", text: "**Stjärnbetyg utan text** kostar **250 €** per borttaget betyg, oavsett ålder. Precis som för alla recensioner lägger du in ett kort eller PayPal när du beställer; dragningen sker automatiskt först när betyget har tagits bort. Ligger betyget kvar betalar du ingenting." },
-    { t: "p", text: "**Express** (tillval): för recensioner à 250 € kan du vid beställningen lägga till Express för **+100 € per recension**. Målet är att recensionen är borta inom 30 timmar; lyckas det inte dras Express-tillägget av automatiskt och du betalar bara 250 €. För recensioner à 99 € finns ingen Express." },
+    { t: "p", text: "**Express** (tillval): för recensioner à 250 € kan du vid beställningen lägga till Express för **+100 € per recension**. Startar arbetet mellan måndag och fredag 12:00 (Wientid) är recensionen borta inom 30 timmar; startar det från fredag 12:00 eller på helgen, senast tisdag midnatt (Express finns inte på helgen). Lyckas det inte dras Express-tillägget av automatiskt och du betalar bara 250 €. För recensioner à 99 € finns ingen Express." },
     { t: "p", text: "Efter den kostnadsfria bedömningen får du **mängdrabatt** baserat på hur många recensioner vi accepterar – stjärnbetyg utan text räknas in. Rabatten gäller varje recension och varje betyg utan text som tas bort:" },
     { t: "table", head: ["Accepterade recensioner", "Rabatt"], rows: [
       ["1 – 2", "–"],
@@ -79,7 +79,7 @@ const article = {
       "**Vi sätter igång** via Googles egna procedurer, för din räkning som ägare.",
       "**Recensionen borta?** Då dras beloppet automatiskt – **per recension**, så att du bara betalar för det som redan är borta.",
     ] },
-    { t: "p", text: "Oftast tar det **1–2 veckor**, ibland snabbare, i enstaka fall något längre. Skribenten får inte veta vem som begärt borttagningen." },
+    { t: "p", text: "Recensioner upp till 4 veckor gamla med text tar oftast **3–5 dagar**, alla andra oftast **1–2 veckor**. Skribenten får inte veta vem som begärt borttagningen." },
 
     { t: "h2", id: "varningssignaler", text: "Varningssignaler hos leverantörer", toc: "Varningssignaler" },
     { t: "p", text: "Ett lågt pris är värdelöst om metoden inte håller. Håll utkik efter de här signalerna:" },

@@ -18,7 +18,7 @@ import { expandShortLink } from "./monitor";
 import { applySwTariff } from "./swTariff";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, SW_NOTE_COVERED, swStartAllowed, partnerToDash, autopayHooks } from "./customers";
-import { lpOf, PRICE_V2_OTHER, EXPRESS_PARTNER_H } from "./reviewsPricing";
+import { lpOf, PRICE_V2_OTHER, expressPartnerDue, expressCustomerDue } from "./reviewsPricing";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey } from "./integrations/stripe";
 import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./partnerAuth";
@@ -117,7 +117,7 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND sw_price_usd IS NULL AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1 AND sw_at IS NULL`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
-  // Express (Preismodell 2, nur 250er): Start des 24-Std.-Timers beim Partner (Kunde: 30 Std.). NULL = kein Express.
+  // Express (Preismodell 2, nur 250er): Start der Express-Frist (Partner: Kunden-Zusage − 6 Std.). NULL = kein Express.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS express_at timestamptz`);
   // Meldegrund des Partners beim „Removed" (reportReasons.ts).
   for (const c of ["report_reason text", "report_note text", "report_at timestamptz"]) await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS ${c}`);
@@ -211,8 +211,8 @@ function partnerView(r: Row) {
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     reportReason: r.report_reason || null, reportNote: r.report_note || "", // womit der Partner gemeldet hat (beim „Removed")
-    // Express (Preismodell 2): Priorität hoch, Timer läuft 24 Std. ab express_at.
-    express: r.express_at ? { at: r.express_at, due: new Date(new Date(r.express_at).getTime() + EXPRESS_PARTNER_H * 3600e3).toISOString() } : null,
+    // Express (Preismodell 2): Priorität hoch. Frist = Kunden-Zusage − 6 Std. (Mo–Fr 12:00: 24 Std.; Fr 12:00–So: Di 18:00 Wiener Zeit).
+    express: r.express_at ? { at: r.express_at, due: expressPartnerDue(r.express_at), custDue: expressCustomerDue(r.express_at) } : null,
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : ((r.status === "working" && swStartAllowed(r.admin_note)) || (r.status === "new" && String(r.admin_note || "").includes(SW_NOTE_COVERED)) ? "paid" : null), // 250er: Software freigegeben (im Preis)
   };
 }

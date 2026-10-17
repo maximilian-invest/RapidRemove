@@ -95,7 +95,7 @@ const article = {
       "**$99 per removed review** up to 4 weeks old with text, $250 for older reviews and star-only ratings. You pay only once the review is gone.",
       "**Success chance:** approx. **90 %** for reviews up to 4 weeks old, approx. **50 %** for older ones.",
       "**Volume discount** on accepted reviews: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Duration:** usually 1–2 weeks, sometimes faster, occasionally a little longer.",
+      "**Duration:** reviews with text up to 4 weeks old usually 3–5 days, all others usually 1–2 weeks.",
     ] },
     { t: "p", text: "Since 2023 we have removed 1,600+ Google Business Profiles ([how to delete a Google Business Profile](/en/magazine/delete-google-business-profile/)) and run 20,000+ free profile checks for clients in 50+ countries. More on prices and the order flow: [Google review removal service](/en/remove-single-reviews/)." },
     { t: "cta", title: "Pick the reviews that break the rules", text: "Load your latest Google reviews, tick the ones to remove and see the exact price. Takes about 2 minutes, and you pay only for reviews that are actually removed.", btn: "Check my reviews", href: "/en/check-profile/?start=reviews", trust: ["Pay only on success", "Only Google's own procedures", "Free assessment"] },

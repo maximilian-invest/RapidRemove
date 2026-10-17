@@ -40,7 +40,7 @@ const article = {
         ["4 semaines maximum, avec texte", "env. 90 %", "**99 €**"],
         ["Plus de 4 semaines ou sans texte", "env. 50 %", "**250 €**"],
       ] },
-      { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie et coûtent **250 € par note**, comme tout avis de plus de 4 semaines, sans autre supplément. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. **Express :** pour les avis à 250 €, vous pouvez ajouter l'option Express lors de la commande – +100 € par avis, avec l'objectif d'une suppression en 30 heures. Si cela n'aboutit pas, le supplément Express est automatiquement déduit et vous ne payez que les 250 €." },
+      { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie et coûtent **250 € par note**, comme tout avis de plus de 4 semaines, sans autre supplément. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. **Express :** pour les avis à 250 €, vous pouvez ajouter l'option Express lors de la commande – +100 € par avis. Si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), l'avis est supprimé en 30 heures ; s'il démarre à partir du vendredi 12 h ou le week-end, au plus tard le mardi à minuit (l'Express n'est pas disponible le week-end). Si cela n'aboutit pas, le supplément Express est automatiquement déduit et vous ne payez que les 250 €." },
       { t: "p", text: "Si plusieurs avis doivent disparaître, la **remise sur quantité** s'applique automatiquement :" },
       { t: "table", head: ["Nombre d'avis", "Remise"], rows: [
         ["1 – 2", "–"],
@@ -49,7 +49,7 @@ const article = {
         ["10 et plus", "**−30 %**"],
       ] },
       { t: "p", text: "**Exemples :** 3 avis récents coûtent 297 €, moins 10 % = **267 €**. 2 avis récents et 3 plus anciens coûtent 948 €, moins 15 % = **806 €**. Le palier de remise dépend du nombre d'avis **que nous acceptons après l'évaluation gratuite**, et il s'applique à chacun de ces avis qui est supprimé. Vous ne payez toujours que les avis réellement supprimés : si nous en acceptons 3 et que 2 disparaissent, vous payez 2 × 99 € moins 10 % = **178,20 €**. Les notes sans texte comptent pour la remise avec tous les autres avis acceptés : 1 avis récent + 2 notes sans texte = 3 avis, donc −10 % – les deux notes coûtent **225 €** chacune et l'avis avec texte 89,10 €, chacun facturé uniquement après suppression." },
-      { t: "p", text: "**Paiement avis par avis :** le délai de suppression peut varier d'un avis à l'autre – en général 1 à 2 semaines, parfois plus vite, dans certains cas un peu plus. Le paiement se fait donc avis par avis : chacun est prélevé automatiquement sur votre carte ou PayPal enregistrés dès qu'il est supprimé. Les avis sur lesquels nous travaillons encore ne vous coûtent rien pour l'instant." },
+      { t: "p", text: "**Paiement avis par avis :** le délai de suppression peut varier d'un avis à l'autre – en général 3 à 5 jours pour les avis de moins de 4 semaines avec texte, 1 à 2 semaines pour tous les autres. Le paiement se fait donc avis par avis : chacun est prélevé automatiquement sur votre carte ou PayPal enregistrés dès qu'il est supprimé. Les avis sur lesquels nous travaillons encore ne vous coûtent rien pour l'instant." },
       { t: "tip", title: "Agissez tôt", text: "Les chances de réussite passent d'environ 90 % à environ 50 % dès qu'un avis a plus de quatre semaines – et le prix passe de 99 € à 250 €. Un faux avis récent est le moins cher et le plus sûr à faire supprimer. À titre de comparaison : un avocat facture en général par avis et **à l'avance**, et cela prend souvent des mois ([avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/))." },
 
       { t: "h2", id: "bestellen", text: "Comment commander – en deux minutes environ", toc: "Commander" },
@@ -65,13 +65,13 @@ const article = {
       { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis – et voyez immédiatement le prix exact. **À partir de 99 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
 
       { t: "h2", id: "dauer", text: "Combien de temps cela prend-il ?", toc: "Délai" },
-      { t: "p", text: "En général **1 à 2 semaines**, parfois plus vite, dans certains cas un peu plus, selon l'avis et le motif de suppression. Vous n'avez rien à faire entre-temps – nous vous tenons informé. Ce qui se passe entre-temps côté Google – statut du signalement, outil de gestion des avis et recours – est expliqué dans notre article sur le [délai de suppression d'un avis Google](/fr/magazine/delai-suppression-avis-google/)." },
+      { t: "p", text: "Avis de moins de 4 semaines avec texte : en général **3 à 5 jours**. Tous les autres : en général **1 à 2 semaines**, parfois plus vite, dans certains cas un peu plus, selon l'avis et le motif de suppression. Avec Express (avis à 250 € uniquement) : en 30 heures si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), sinon au plus tard le mardi à minuit. Vous n'avez rien à faire entre-temps – nous vous tenons informé. Ce qui se passe entre-temps côté Google – statut du signalement, outil de gestion des avis et recours – est expliqué dans notre article sur le [délai de suppression d'un avis Google](/fr/magazine/delai-suppression-avis-google/)." },
 
       { t: "h2", id: "vergleich", text: "Avis isolés, fiche entière, avocat ou signalement – le comparatif", toc: "Comparatif" },
       { t: "table", rrCol: 1, head: ["Critère", "Suppression d'avis isolés", "Suppression de la fiche", "Avocat", "Signaler soi-même"], rows: [
         ["Ce qui est supprimé", "Les avis sélectionnés (y compris notes sans texte)", "Toute la fiche + tous les avis", "Un avis isolé", "Un avis isolé"],
         ["Les bons avis restent", "Oui", "Non", "Oui", "Oui"],
-        ["Délai", "En général 1 à 2 semaines", "En général 24 – 48 heures", "3 – 9 mois", "Incertain"],
+        ["Délai", "En général 3 à 5 jours (≤ 4 semaines, avec texte), sinon 1 à 2 semaines", "En général 24 – 48 heures", "3 – 9 mois", "Incertain"],
         ["Coût", "Dès 99 €, uniquement si supprimé (notes sans texte : 250 €)", "Prix fixe, après succès", "Par avis, à l'avance", "Gratuit"],
         ["Effort pour vous", "2 minutes", "Minimal", "Élevé", "Moyen"],
       ] },

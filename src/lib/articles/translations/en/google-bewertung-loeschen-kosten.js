@@ -29,7 +29,7 @@ const article = {
       ["Cost model", "Free", "Hourly, usually upfront", "Per attempt or in advance; prices often hidden", "**$99 per removed review** (up to 4 weeks old, with text); all others $250 per removed review"],
       ["If the review stays", "You've lost time", "You still pay", "Money is usually gone", "**You pay nothing**"],
       ["Risk", "Low cost, low success rate", "High cost, uncertain outcome", "Paying for nothing", "**None on cost**"],
-      ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "Usually 1–2 weeks (star-only: approx. 1–3 days)"],
+      ["Typical duration", "Days to weeks, no fixed timeline", "Often months", "Varies", "Usually 3–5 days (≤ 4 weeks, with text), otherwise 1–2 weeks"],
       ["Effort for you", "Medium (reporting, tracking, appeal)", "High (briefing, documents, follow-up)", "Medium", "About 2 minutes"],
     ] },
     { t: "p", text: "**Reporting yourself** is the right first step if you have time and a clear policy violation. You report the review in Google Maps or your Business Profile, then track the status in Google's [Reviews Management Tool](https://support.google.com/business/workflow/9945796), where you can **appeal once** if Google decides there's no violation. Step by step: [how to delete a Google review yourself](/en/magazine/how-to-delete-a-google-review/)." },
@@ -44,7 +44,7 @@ const article = {
       ["Older than 4 weeks", "approx. 50 %", "**$250** per removed review"],
       ["Star-only rating (no text, any age)", "Google decides", "**$250** per removed review"],
     ] },
-    { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure** at **$250 per review**, with no surcharge for older ones. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. They count towards the volume discount together with all other reviews in the order. **Express:** for reviews at $250 you can add Express when ordering – +$100 per review, with the goal of removal within 30 hours. If that doesn't work out, the Express surcharge is deducted automatically and you pay the regular $250." },
+    { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure** at **$250 per review**, with no surcharge for older ones. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. They count towards the volume discount together with all other reviews in the order. **Express:** for reviews at $250 you can add Express when ordering – +$100 per review. If processing starts between Monday and Friday 12:00 (Vienna time), the review is removed within 30 hours; if it starts from Friday 12:00 or at the weekend, by Tuesday midnight at the latest (Express isn't available at weekends). If that doesn't work out, the Express surcharge is deducted automatically and you pay the regular $250." },
     { t: "p", text: "Older reviews cost more because they're **harder to remove**: the success chance drops from around 90 % to around 50 %. Before you order, we give you a **free assessment** and tell you honestly if a review has poor chances. If a review isn't removed, it costs you nothing." },
     { t: "p", text: "If several reviews need to go, the **volume discount** applies automatically:" },
     { t: "table", head: ["Reviews accepted after the assessment", "Discount on every removed review"], rows: [
@@ -73,7 +73,7 @@ const article = {
     { t: "p", text: "You pay **after** a review has been removed, never before. Once it's gone, that review is **charged automatically** to the card or PayPal you stored when ordering." },
     { t: "ul", items: [
       "**Star-only ratings too:** $250 per rating, charged only after it has been removed.",
-      "**Different reviews come down at different times.** Removal usually takes 1–2 weeks, sometimes faster, occasionally a little longer ([how long Google takes](/en/magazine/how-long-does-google-take-to-remove-a-review/)).",
+      "**Different reviews come down at different times.** Reviews up to 4 weeks old with text usually take 3–5 days, all others usually 1–2 weeks ([how long Google takes](/en/magazine/how-long-does-google-take-to-remove-a-review/)).",
       "That's why each review is **charged separately** as soon as it's removed, not the whole batch at once.",
       "Your **volume discount is already included** in every charge.",
       "You can store a **card or PayPal**.",

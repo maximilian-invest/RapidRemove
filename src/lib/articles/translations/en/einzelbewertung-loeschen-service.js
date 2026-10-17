@@ -41,7 +41,7 @@ const article = {
         ["Older than 4 weeks", "approx. 50 %", "**$250**"],
         ["Star-only rating (no text, any age)", "Google decides", "**$250** per removed review"],
       ] },
-      { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure**. They cost **$250 per review** – the same as any review older than 4 weeks, with no extra surcharge. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. **Express:** for reviews at $250 you can add Express when ordering – +$100 per review, with the goal of removal within 30 hours. If that doesn't work out, the Express surcharge is deducted automatically and you pay the regular $250." },
+      { t: "p", text: "**Star-only ratings** (stars, no text) are removed with a **more extensive procedure**. They cost **$250 per review** – the same as any review older than 4 weeks, with no extra surcharge. As with all reviews, you store a card or PayPal when ordering and it is charged automatically only after the rating has been removed. **Express:** for reviews at $250 you can add Express when ordering – +$100 per review. If processing starts between Monday and Friday 12:00 (Vienna time), the review is removed within 30 hours; if it starts from Friday 12:00 or at the weekend, by Tuesday midnight at the latest (Express isn't available at weekends). If that doesn't work out, the Express surcharge is deducted automatically and you pay the regular $250." },
       { t: "p", text: "If several reviews need to go, the **volume discount** applies automatically:" },
       { t: "table", head: ["Number of reviews", "Discount"], rows: [
         ["1 – 2", "–"],
@@ -50,7 +50,7 @@ const article = {
         ["10 or more", "**−30 %**"],
       ] },
       { t: "p", text: "**Examples:** 3 recent reviews cost $297, minus 10 % = **$267**. 2 recent and 3 older reviews cost $948, minus 15 % = **$806**. The discount level is set by the number of reviews **we accept after the free assessment** – star-only ratings count too – and applies to every one of them. You still only pay for reviews that are actually removed: if we accept 3 and 2 come down, you pay 2 × $99 minus 10 % = **$178.20**. Mixed order: 2 recent reviews with text plus 1 star-only rating = 3 reviews, so 10 % off – the star-only rating costs **$225**, the two others $89.10 each – each charged only after removal." },
-      { t: "p", text: "**Payment per review:** removal times can differ from review to review – usually 1–2 weeks, sometimes faster, occasionally a little longer. That's why payment can happen per review, each charged automatically to your stored card or PayPal once it's removed. Reviews that we're still working on don't cost you anything yet." },
+      { t: "p", text: "**Payment per review:** removal times can differ from review to review – reviews up to 4 weeks old with text usually take 3–5 days, all others usually 1–2 weeks. That's why payment can happen per review, each charged automatically to your stored card or PayPal once it's removed. Reviews that we're still working on don't cost you anything yet." },
       { t: "tip", title: "Order early", text: "The success chance drops from around 90 % to around 50 % once a review is older than four weeks – and the price rises from $99 to $250. A fresh fake review is the cheapest and safest one to remove. For comparison: lawyers typically charge per review **upfront**, and it often takes months ([lawyer or technical removal?](/en/magazine/negative-google-review-lawyer-or-removal/))." },
 
       { t: "h2", id: "bestellen", text: "How to order – in about two minutes", toc: "How to order" },
@@ -66,13 +66,13 @@ const article = {
       { t: "cta", title: "Select the reviews that should go", text: "Search your business, tick the reviews – and see the exact price instantly. **From $99 per removed review**, nothing upfront.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
 
       { t: "h2", id: "dauer", text: "How long does it take?", toc: "Duration" },
-      { t: "p", text: "Usually **1–2 weeks**, sometimes faster, occasionally a little longer, depending on the review and the reason for removal. You don't have to do anything in the meantime – we keep you posted. What happens on Google's side in the meantime – report status, the Reviews Management Tool and appeals – is explained in [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
+      { t: "p", text: "Reviews up to 4 weeks old with text: usually **3–5 days**. All others: usually **1–2 weeks** – sometimes faster, occasionally a little longer, depending on the review and the reason for removal. With Express ($250 reviews only): within 30 hours if processing starts Monday to Friday 12:00 (Vienna time), otherwise by Tuesday midnight at the latest. You don't have to do anything in the meantime – we keep you posted. What happens on Google's side in the meantime – report status, the Reviews Management Tool and appeals – is explained in [how long Google takes to remove a review](/en/magazine/how-long-does-google-take-to-remove-a-review/)." },
 
       { t: "h2", id: "vergleich", text: "Single reviews, whole profile, lawyer or DIY – compared", toc: "Comparison" },
       { t: "table", rrCol: 1, head: ["Criterion", "Single-review removal", "Profile removal", "Lawyer", "Report yourself"], rows: [
         ["What is removed", "Selected reviews", "Whole profile + all reviews", "Single review", "Single review"],
         ["Good reviews stay", "Yes", "No", "Yes", "Yes"],
-        ["Duration", "Usually 1–2 weeks", "Usually 24 – 48 hours", "3 – 9 months", "Uncertain"],
+        ["Duration", "Usually 3–5 days (≤ 4 weeks, with text), otherwise 1–2 weeks", "Usually 24 – 48 hours", "3 – 9 months", "Uncertain"],
         ["Cost", "From $99, only if removed", "Fixed price, after success", "Per review, upfront", "Free"],
         ["Effort for you", "2 minutes", "Minimal", "High", "Medium"],
       ] },

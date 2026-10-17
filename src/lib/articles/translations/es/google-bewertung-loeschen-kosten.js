@@ -29,7 +29,7 @@ const article = {
       ["Modelo de coste", "Gratis", "Por horas, normalmente por adelantado", "Por intento o por adelantado; precios a menudo ocultos", "**99 € por reseña eliminada** (hasta 4 semanas, con texto); el resto, 250 € por reseña eliminada"],
       ["Si la reseña se queda", "Has perdido tiempo", "Pagas igualmente", "El dinero suele estar perdido", "**No pagas nada**"],
       ["Riesgo", "Coste bajo, pocas probabilidades", "Coste alto, resultado incierto", "Pagar por nada", "**Ninguno en el coste**"],
-      ["Duración habitual", "De días a semanas, sin plazo fijo", "A menudo meses", "Variable", "Normalmente 1–2 semanas (solo estrellas: aprox. 1–3 días)"],
+      ["Duración habitual", "De días a semanas, sin plazo fijo", "A menudo meses", "Variable", "Normalmente 3–5 días (≤ 4 semanas, con texto); el resto, 1–2 semanas"],
       ["Esfuerzo para ti", "Medio (denunciar, seguir, apelar)", "Alto (explicar el caso, documentos, seguimiento)", "Medio", "Unos 2 minutos"],
     ] },
     { t: "p", text: "**Denunciarla tú mismo** es el primer paso lógico si tienes tiempo y la infracción es clara. Denuncias la reseña en Google Maps o desde tu Perfil de Empresa y sigues el estado en la [herramienta de gestión de reseñas](https://support.google.com/business/workflow/9945796) de Google, donde puedes **apelar una sola vez** si Google decide que no hay infracción. Paso a paso: [cómo eliminar una reseña de Google tú mismo](/es/revista/como-eliminar-una-resena-de-google/)." },
@@ -44,7 +44,7 @@ const article = {
       ["Más de 4 semanas", "aprox. 50 %", "**250 €** por reseña eliminada"],
       ["Valoración solo de estrellas (sin texto, cualquier antigüedad)", "decide Google", "**250 €** por valoración eliminada"],
     ] },
-    { t: "p", text: "Las **valoraciones solo de estrellas** (sin texto) las eliminamos con un **procedimiento más exhaustivo** por **250 € cada una**, sin recargo por antigüedad. Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. Cuentan para el descuento por volumen junto con todas las demás reseñas del pedido. **Express:** para las reseñas de 250 € puedes añadir Express al hacer el pedido: +100 € por reseña, con el objetivo de eliminarla en 30 horas. Si no se consigue, el recargo Express se descuenta automáticamente y pagas solo los 250 €." },
+    { t: "p", text: "Las **valoraciones solo de estrellas** (sin texto) las eliminamos con un **procedimiento más exhaustivo** por **250 € cada una**, sin recargo por antigüedad. Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. Cuentan para el descuento por volumen junto con todas las demás reseñas del pedido. **Express:** para las reseñas de 250 € puedes añadir Express al hacer el pedido: +100 € por reseña. Si la tramitación empieza entre el lunes y el viernes a las 12:00 (hora de Viena), se elimina en 30 horas; si empieza a partir del viernes a las 12:00 o en fin de semana, como tarde el martes a medianoche (Express no está disponible el fin de semana). Si no se consigue, el recargo Express se descuenta automáticamente y pagas solo los 250 €." },
     { t: "p", text: "Las reseñas antiguas cuestan más porque son **más difíciles de eliminar**: la probabilidad de éxito baja de alrededor del 90 % a alrededor del 50 %. Antes de encargar nada, recibes una **valoración gratuita** y te decimos con honestidad si una reseña tiene pocas opciones. Si una reseña no se elimina, no te cuesta nada." },
     { t: "p", text: "Si hay que eliminar varias reseñas, el **descuento por volumen** se aplica automáticamente:" },
     { t: "table", head: ["Reseñas aceptadas tras la valoración", "Descuento en cada reseña eliminada"], rows: [
@@ -73,7 +73,7 @@ const article = {
     { t: "p", text: "Pagas **después** de que la reseña se haya eliminado, nunca antes. En cuanto desaparece, esa reseña se **cobra automáticamente** en la tarjeta o PayPal que guardaste al hacer el pedido." },
     { t: "ul", items: [
       "**También las valoraciones solo de estrellas:** 250 € por valoración, que se cobran solo cuando se ha eliminado.",
-      "**Cada reseña cae en un momento distinto.** La eliminación suele tardar 1–2 semanas, a veces más rápido, en casos puntuales algo más ([cuánto tarda Google](/es/revista/cuanto-tarda-google-eliminar-resena/)).",
+      "**Cada reseña cae en un momento distinto.** Las de hasta 4 semanas con texto suelen tardar 3–5 días; todas las demás, normalmente 1–2 semanas ([cuánto tarda Google](/es/revista/cuanto-tarda-google-eliminar-resena/)).",
       "Por eso cada reseña se **cobra por separado** en cuanto se elimina, no todo el lote de golpe.",
       "Tu **descuento por volumen ya está incluido** en cada cobro.",
       "Puedes guardar una **tarjeta o PayPal**.",

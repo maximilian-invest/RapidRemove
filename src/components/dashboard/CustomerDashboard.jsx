@@ -12,11 +12,12 @@ import useLive from "@/lib/useLive";
 import {
   Home, List, Wallet, User, AlertTriangle, ArrowRight, ArrowLeft, X, Check, CheckCircle2, Search, Loader, Ban,
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
-  BadgeCheck, Timer, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon,
+  BadgeCheck, Timer, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon, Clock,
 } from "lucide-react";
 import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
-import { reviewQuote, vatNote } from "@/lib/pricing";
+import { reviewQuote, vatNote, listPriceV2, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
+import { xpCopy, fmtXDue } from "@/lib/express-copy";
 import { searchProfiles } from "@/lib/places";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -99,27 +100,34 @@ const OPEN = ["new", "reasons", "verify", "paygate", "working", "software", "sw_
 const statusLine = (r, cur) => (r.swBulk ? T("st_swBulk") : stOf(r.status, r.pre).l)
   + (r.status === "working" && r.since ? " · " + dur(r.since) : "")
   + (r.status === "removed" && !r.waived ? (r.paid ? " · " + T("paidSuffix") : " · " + T("toPaySuffix", { amount: net(money(r.price + (r.xOk ? r.xFee || 0 : 0), cur)) })) : "");
-/* Preismodell 2 · Express (nur 250er, +100, Ziel 30 Std.): Etikett je Bewertung. */
+/* Preismodell 2 · Express (nur 250er, +100; Frist 30 Std. bzw. Di 24:00 bei Wochenend-Start): Etikett je Bewertung. */
 const XD = {
-  de: { on: (t) => `Express · Ziel bis ${t}`, wait: "Express · startet mit dem Auftrag", met: (a) => `Express geschafft · +${a}`, miss: "Express nicht geschafft · kein Aufpreis" },
-  en: { on: (t) => `Express · target ${t}`, wait: "Express · starts with your order", met: (a) => `Express met · +${a}`, miss: "Express missed · no surcharge" },
-  es: { on: (t) => `Exprés · objetivo ${t}`, wait: "Exprés · empieza con tu pedido", met: (a) => `Exprés cumplido · +${a}`, miss: "Exprés no cumplido · sin recargo" },
-  fr: { on: (t) => `Express · objectif ${t}`, wait: "Express · démarre avec votre commande", met: (a) => `Express tenu · +${a}`, miss: "Express non tenu · sans supplément" },
-  it: { on: (t) => `Express · obiettivo ${t}`, wait: "Express · parte con il tuo ordine", met: (a) => `Express riuscito · +${a}`, miss: "Express non riuscito · nessun supplemento" },
-  nl: { on: (t) => `Express · doel ${t}`, wait: "Express · start met uw opdracht", met: (a) => `Express gehaald · +${a}`, miss: "Express niet gehaald · geen toeslag" },
-  pt: { on: (t) => `Expresso · objetivo ${t}`, wait: "Expresso · começa com a sua encomenda", met: (a) => `Expresso cumprido · +${a}`, miss: "Expresso não cumprido · sem taxa" },
-  ja: { on: (t) => `エクスプレス・目標 ${t}`, wait: "エクスプレス・ご注文の開始と同時にスタート", met: (a) => `エクスプレス達成・+${a}`, miss: "エクスプレス未達・追加料金なし" },
-  sv: { on: (t) => `Express · mål ${t}`, wait: "Express · startar med din order", met: (a) => `Express klarad · +${a}`, miss: "Express missad · inget tillägg" },
-  da: { on: (t) => `Ekspres · mål ${t}`, wait: "Ekspres · starter med din ordre", met: (a) => `Ekspres nået · +${a}`, miss: "Ekspres ikke nået · intet tillæg" },
-  no: { on: (t) => `Ekspress · mål ${t}`, wait: "Ekspress · starter med ordren din", met: (a) => `Ekspress nådd · +${a}`, miss: "Ekspress ikke nådd · ingen tillegg" },
+  de: { on: (t) => `Express · gelöscht bis ${t}`, wait: "Express · startet mit dem Auftrag", met: (a) => `Express geschafft · +${a}`, miss: "Express nicht geschafft · kein Aufpreis" },
+  en: { on: (t) => `Express · removed by ${t}`, wait: "Express · starts with your order", met: (a) => `Express met · +${a}`, miss: "Express missed · no surcharge" },
+  es: { on: (t) => `Exprés · eliminada antes del ${t}`, wait: "Exprés · empieza con tu pedido", met: (a) => `Exprés cumplido · +${a}`, miss: "Exprés no cumplido · sin recargo" },
+  fr: { on: (t) => `Express · supprimé d'ici ${t}`, wait: "Express · démarre avec votre commande", met: (a) => `Express tenu · +${a}`, miss: "Express non tenu · sans supplément" },
+  it: { on: (t) => `Express · rimossa entro ${t}`, wait: "Express · parte con il tuo ordine", met: (a) => `Express riuscito · +${a}`, miss: "Express non riuscito · nessun supplemento" },
+  nl: { on: (t) => `Express · verwijderd vóór ${t}`, wait: "Express · start met uw opdracht", met: (a) => `Express gehaald · +${a}`, miss: "Express niet gehaald · geen toeslag" },
+  pt: { on: (t) => `Expresso · removida até ${t}`, wait: "Expresso · começa com a sua encomenda", met: (a) => `Expresso cumprido · +${a}`, miss: "Expresso não cumprido · sem taxa" },
+  ja: { on: (t) => `エクスプレス・${t}までに削除`, wait: "エクスプレス・ご注文の開始と同時にスタート", met: (a) => `エクスプレス達成・+${a}`, miss: "エクスプレス未達・追加料金なし" },
+  sv: { on: (t) => `Express · borttaget senast ${t}`, wait: "Express · startar med din order", met: (a) => `Express klarad · +${a}`, miss: "Express missad · inget tillägg" },
+  da: { on: (t) => `Ekspres · fjernet senest ${t}`, wait: "Ekspres · starter med din ordre", met: (a) => `Ekspres nået · +${a}`, miss: "Ekspres ikke nået · intet tillæg" },
+  no: { on: (t) => `Ekspress · fjernet senest ${t}`, wait: "Ekspress · starter med ordren din", met: (a) => `Ekspress nådd · +${a}`, miss: "Ekspress ikke nådd · ingen tillegg" },
 };
 const xTagOf = (r, cur) => {
   if (!r.x) return null;
   const X = XD[LANG] || XD.en;
   if (r.status === "removed") return { t: r.xOk ? X.met(money(r.xFee || 100, cur)) : X.miss, k: r.xOk ? "met" : "miss" };
   if (!r.xDue) return { t: X.wait, k: "on" };
-  let when = ""; try { when = new Date(r.xDue).toLocaleString(LOC, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { /* */ }
+  // −1 Min.: „Di 23:59" statt „Mi 0:00" (Zusage Dienstag 24:00)
+  let when = ""; try { when = new Date(Date.parse(r.xDue) - 60000).toLocaleString(LOC, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); } catch (e) { /* */ }
   return { t: X.on(when), k: "on" };
+};
+/* Zeitraum je Bewertung (17.10.2026: alle Kunden sehen Zeiträume) – nur Preismodell 2, nur solange offen, nicht bei Express. */
+const tfOf = (r) => {
+  if (!r.lp || r.x || !["new", "working", "sw_accepted"].includes(r.status)) return null;
+  const xp = xpCopy(LANG);
+  return r.lp === PRICE_V2_OTHER || r.status === "sw_accepted" ? xp.stdD : xp.tf99;
 };
 
 function Ring({ r, n }) {
@@ -677,6 +685,42 @@ const tierPrice = (tiers, n) => { let p = null; for (const t of tiersFrom(tiers)
 const tierIdx = (tiers, n) => { let k = -1; tiersFrom(tiers).forEach((t, i) => { if (n >= t.from) k = i; }); return k; };
 const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result || "").split(",")[1] || ""); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
 
+/* 17.10.2026: Zwischenschritt „Wie schnell?" auch im Dashboard (wie im Website-Bestellprozess) – nur wenn 250er gewählt sind.
+   Express +100 je 250er: Start Mo–Fr 12:00 → 30 Std., sonst spätestens Dienstag 24:00 (Wiener Zeit, angezeigt in Ortszeit). */
+function SpeedPick({ xOn, setXOn, n99, n250, cur }) {
+  const xp = xpCopy(LANG);
+  const xwk = expressWeekend();
+  const xd = xwk ? fmtXDue(expressDueMs(), LANG) : "";
+  return (
+    <>
+      <div className="ar-list sp-list">
+        <button type="button" className={"ar-row sp" + (!xOn ? " on" : "")} onClick={() => setXOn(false)} aria-pressed={!xOn}>
+          <span className="cb rd">{!xOn ? <Check /> : null}</span>
+          <span className="t"><span className="a">{xp.stdT}<em className="sp-p">{xp.stdP}</em></span><span className="x">{n250 && n99 ? xp.tfLine(xp.d99, xp.cmpStdV) : xp.stdD}</span></span>
+        </button>
+        <button type="button" className={"ar-row sp x" + (xOn ? " on" : "")} onClick={() => setXOn(true)} aria-pressed={xOn}>
+          <span className="cb rd">{xOn ? <Check /> : null}</span>
+          <span className="t"><span className="a"><Zap className="sp-z" />{xp.xT}<em className="sp-p">+{money(EXPRESS_FEE, cur)}</em></span><span className="x">{xwk ? xp.xBy(xd) : xp.xD(EXPRESS_HOURS)}</span><span className="x sm">{xp.xS}</span></span>
+        </button>
+      </div>
+      {xOn ? (
+        <ul className="sp-g">
+          <li><Check />{xp.g1}</li>
+          <li><Check />{xwk ? xp.g3By(xd) : xp.g3(EXPRESS_HOURS)}</li>
+        </ul>
+      ) : null}
+      <div className="note sp-n">{xp.startNote}{xwk ? " " + xp.xWk : ""}{n99 ? " " + xp.only(n99) : ""}</div>
+    </>
+  );
+}
+/** Zeitraum-Zeile unter der Auswahl (alle Kunden): 99er meist 3–5 Tage, 250er meist 1–2 Wochen. */
+const TfLine = ({ n99, n250 }) => {
+  if (!n99 && !n250) return null;
+  const xp = xpCopy(LANG);
+  return <div className="sp-tf"><Clock />{n99 && n250 ? xp.tfLine(xp.d99, xp.cmpStdV) : n99 ? xp.tf99 : xp.stdD}</div>;
+};
+const lpCount = (items) => { let n99 = 0, n250 = 0; for (const it of items) { if (listPriceV2(it) === PRICE_V2_OTHER) n250++; else n99++; } return { n99, n250 }; };
+
 function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, modes, presetLinks }) {
   const both = !!(modes && modes.hand && modes.bulk);
   // 15.10.2026: Start = Google-Profil suchen → Bewertungen anhaken. Darunter: „Links einfügen" und „Bulk-Upload".
@@ -695,6 +739,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const [fagg, setFagg] = React.useState(false);
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
+  const [xOn, setXOn] = React.useState(false); // Express (Zwischenschritt „Wie schnell?")
+  const [spFrom, setSpFrom] = React.useState("pick"); // pick | links – woher der Tempo-Schritt kam
   // Von Hand (14.10.2026): Bewertungs-Links einzeln einfügen, jeder wird geprüft → Preis sofort.
   const rowSeq = React.useRef(0);
   const newRow = (url = "") => ({ id: ++rowSeq.current, url, st: "idle", r: null, err: "" }); // st: idle | scan | ok | err
@@ -727,7 +773,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     const r0 = pre[0] || newRow();
     setQ(""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]);
     setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows(pre.length ? pre : [r0]); setTack(false); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
-    setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0);
+    setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0); setXOn(false);
     if (pre.length) setTimeout(() => pre.forEach((r) => scanRow(r.id, r.url)), 50);
     else if (f0 === "links") focusRow(r0.id, 380);
     else if (f0 === "search") { let fine = false; try { fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches; } catch (e) { /* */ } if (fine) setTimeout(() => { try { inRef.current && inRef.current.focus({ preventScroll: true }); } catch (e) { /* */ } }, 380); }
@@ -807,9 +853,10 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const order = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg) { setCErr(true); return; }
+    if (canX && step !== "speed") { setSpFrom("pick"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, express: canX && xOn, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
       setOid(r.orderId); setDoneN(pick.length); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -817,7 +864,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const okRows = rows.filter((r) => r.st === "ok");
   const scanning = rows.some((r) => r.st === "scan");
   const cc0 = ((okRows.find((r) => r.r.place && r.r.place.cc) || {}).r || {}).place;
-  const isPick = step === "pick";
+  const isPick = step === "pick" || (step === "speed" && spFrom === "pick");
   const usd = isPick ? !!place && place.cc === "US" : !!cc0 && cc0.cc === "US";
   const selQ = isPick
     ? sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (usd && old) }; })
@@ -838,13 +885,18 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     const swN = selQ.filter((x) => x.sw), flat = selQ.length - swN.length;
     return flat * flatP + (swN.length ? (own.sw ? swN.length * own.sw : reviewQuote(swN, LANG).total) : 0);
   })() : q2.total;
+  // Tempo-Schritt nur bei 250ern und normalen Preisen (eigene Kunden-Staffel → kein Express, wie im Backend).
+  const lpc = lpCount(selQ);
+  const canX = lpc.n250 > 0 && flatP == null;
+  const xMax = canX && xOn ? lpc.n250 * EXPRESS_FEE : 0;
   const lOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg) { setCErr(true); return; }
     if (scanning || !okRows.length) return;
+    if (canX && step !== "speed") { setSpFrom("links"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, links: okRows.map((x) => x.url) });
+      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, express: canX && xOn, links: okRows.map((x) => x.url) });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : T("noErr"), true); }
     setBusy(false);
@@ -855,7 +907,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
       {open ? (
         <div className="fl-card">
           <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button>
-            {(() => { const seq = [...(hasHand ? ["search"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : step === "links" ? ["links"] : ["pick"]), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
+            {(() => { const seq = [...(hasHand ? ["search"] : []), ...(kind === "bulk" ? ["bulk", "bpre"] : step === "links" || (step === "speed" && spFrom === "links") ? ["links"] : ["pick"]), ...(canX && kind !== "bulk" ? ["speed"] : []), "done"]; const at = seq.indexOf(step); return <div className="fl-bar sf-bar">{seq.map((k, i) => <i key={k}><b style={{ width: at >= i ? "100%" : "0%" }} /></i>)}</div>; })()}</div>
           {step === "search" ? (
             <div className="fl-body">
               <div className="fl-k">{T("noK")}</div>
@@ -1004,6 +1056,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                 {sel.length ? (
                   <>
                     <div className="ar-max">{T("noMax", { amount: net(money(handMax, handCur)) })}</div>
+                    <TfLine {...lpc} />
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
@@ -1012,6 +1065,19 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                   </>
                 ) : null}
                 <button className="cta" disabled={!sel.length || busy} onClick={order}>{busy ? <Loader className="spin" /> : <Check />}{sel.length === 1 ? T("noOrder1") : sel.length ? T("noOrderN", { n: sel.length }) : T("noH2")}</button>
+              </div>
+            </>
+          ) : step === "speed" ? (
+            <>
+              <div className="fl-body">
+                <button type="button" className="bu-back" onClick={() => setStep(spFrom)}><ArrowLeft />{xpCopy(LANG).label}</button>
+                <h2>{xpCopy(LANG).h}</h2>
+                <p>{xpCopy(LANG).sub}</p>
+                <SpeedPick xOn={xOn} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={handCur} />
+              </div>
+              <div className="fl-foot pgf">
+                <div className="ar-max">{T("noMax", { amount: net(money(handMax + xMax, handCur)) })}</div>
+                <button className="cta" disabled={busy || (spFrom === "links" && (scanning || !okRows.length))} onClick={spFrom === "links" ? lOrder : order}>{busy ? <Loader className="spin" /> : <Check />}{selQ.length === 1 ? T("noOrder1") : T("noOrderN", { n: selQ.length })}</button>
               </div>
             </>
           ) : step === "links" ? (
@@ -1059,6 +1125,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                 {okRows.length ? (
                   <>
                     <div className="ar-max">{T("noMax", { amount: net(money(handMax, handCur)) })}</div>
+                    <TfLine {...lpc} />
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
@@ -1090,19 +1157,25 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [err, setErr] = React.useState(false);
   const [pick, setPick] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
+  const [spd, setSpd] = React.useState(false); // Zwischenschritt „Wie schnell?" (nur bei 250ern)
+  const [xOn, setXOn] = React.useState(false);
   const oid = order && order.id;
   React.useEffect(() => {
     if (!oid) return;
-    setList(null); setErr(false); setPick([]);
+    setList(null); setErr(false); setPick([]); setSpd(false); setXOn(false);
     call("orders/reviews", { token, orderId: oid }).then((r) => setList(r.enabled ? r.reviews || [] : [])).catch(() => { setList([]); setErr(true); });
   }, [oid, token]);
   const sel = (list || []).filter((r) => pick.includes(r.id));
   const us = order && order.country === "US";
-  const q = reviewQuote(sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; }), LANG);
+  const selQ = sel.map((r) => { const old = r.days > 28, nt = !String(r.text || "").trim(); return { old, nt, sw: nt || (us && old) }; });
+  const q = reviewQuote(selQ, LANG);
+  const lpc = lpCount(selQ);
+  const canX = lpc.n250 > 0;
   const add = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (canX && !spd) { setSpd(true); return; }
     setBusy(true);
-    try { const r = await call("orders/add", { token, orderId: oid, ids: pick }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
+    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
     catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
@@ -1113,6 +1186,14 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
           <div className="fl-top"><button className="x" onClick={onClose} disabled={busy} aria-label="Close"><X /></button><div className="fl-bar" /></div>
           <div className="fl-body">
             <div className="fl-k">{order.business || T("orderN", { id: order.id })}</div>
+            {spd ? (
+              <>
+                <button type="button" className="bu-back" onClick={() => setSpd(false)}><ArrowLeft />{xpCopy(LANG).label}</button>
+                <h2>{xpCopy(LANG).h}</h2>
+                <p>{xpCopy(LANG).sub}</p>
+                <SpeedPick xOn={xOn} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={order.cur} />
+              </>
+            ) : <>
             <h2>{T("arH")}</h2>
             <p>{T("arP")}</p>
             {list === null ? <div className="ar-load"><Loader className="spin" /></div>
@@ -1135,9 +1216,11 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
                   })}
                 </div>
               )}
+            </>}
           </div>
           <div className="fl-foot pgf">
-            {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total, order.cur)) })}</div> : null}
+            {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total + (spd && xOn ? lpc.n250 * EXPRESS_FEE : 0), order.cur)) })}</div> : null}
+            {sel.length && !spd ? <TfLine {...lpc} /> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>
         </div>
@@ -2032,6 +2115,7 @@ export default function CustomerDashboard() {
                 <span className={"x" + (x.text ? "" : " none")}>{x.text || T("noText")}</span>
                 <span className={"st c-" + x.status}>{statusLine(x, o.cur)}</span>
                 {(() => { const xt = xTagOf(x, o.cur); return xt ? <span className={"xtag " + xt.k}><Zap />{xt.t}</span> : null; })()}
+                {(() => { const tf = tfOf(x); return tf ? <span className="xtag tf"><Clock />{tf}</span> : null; })()}
               </span>
             </button>
           );

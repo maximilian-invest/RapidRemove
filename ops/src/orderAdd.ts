@@ -14,7 +14,7 @@ import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
-import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2 } from "./reviewsPricing";
+import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, PRICE_V2_OTHER } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
 import { notifyTeam } from "./notify";
@@ -28,7 +28,7 @@ const httpUrl = (v: unknown) => { const s = clip(v, 600); return /^https?:\/\/\S
 const normU = (u?: string) => String(u || "").trim().toLowerCase().replace(/[?#].*$/, "").replace(/\/+$/, "");
 const normT = (t?: string) => String(t || "").toLowerCase().replace(/\s+/g, " ").trim();
 
-export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; lp?: number };
+export type AddItem = { url?: string; name?: string; text?: string; rating?: number; days?: number; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; lp?: number; x?: boolean };
 type OrderRow = { id: string; email: string; name: string | null; lang: string | null; country: string | null; company: string | null; profile: string | null; status: string | null; service: string | null; raw: Record<string, unknown> | null };
 export type AddResult =
   | { ok: true; added: number; skipped: string[]; gate: boolean; reasons: boolean; partner: number; mailed: boolean; keys: string[] }
@@ -59,7 +59,7 @@ const isSeen = (seen: { u: string; nt: string }[], it: AddItem) =>
   seen.some((x) => (it.url && x.u && x.u === normU(it.url)) || (it.name && it.text && x.nt && x.nt === normT(it.name) + "|" + normT(it.text).slice(0, 80)));
 
 /** Bewertungen anhängen. gate: "auto" = Zahlungsart nötig, wenn Abbuchung verfügbar und noch keine hinterlegt; "off" = nie. */
-export async function addReviewsToOrder(orderId: string, input: AddItem[], opts: { by: "admin" | "customer"; gate?: "auto" | "off"; reasons?: "ask" | "off"; mail?: boolean }): Promise<AddResult> {
+export async function addReviewsToOrder(orderId: string, input: AddItem[], opts: { by: "admin" | "customer"; gate?: "auto" | "off"; reasons?: "ask" | "off"; mail?: boolean; express?: boolean }): Promise<AddResult> {
   if (!pool) return { ok: false, error: "db" };
   const o = await loadOrder(orderId);
   if (!o || o.service !== "reviews") return { ok: false, error: "order" };
@@ -83,6 +83,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
     // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 99 (frisch) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
     if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
+    if (opts.express && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
     clean.push(it);
   }
   if (!clean.length) return { ok: false, error: "empty" };
@@ -223,7 +224,7 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     // Nur Bewertungen aus der Liste des eigenen Profils (Server-Daten, nicht vom Browser), 1–3 ★, noch nicht beauftragt.
     const picks = (list || []).filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
-    const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true });
+    const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true, express: b.express === true });
     if (r.ok && b.policyConsent === true) {
       // (alt) Zusicherung direkt bei der Nachbestellung – seit 10/2026 kommt sie im Start-Ablauf (Gründe je Bewertung, reasons.ts).
       const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim().slice(0, 60);

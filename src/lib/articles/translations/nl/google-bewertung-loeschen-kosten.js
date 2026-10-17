@@ -36,7 +36,7 @@ const article = {
       ["Kostenmodel", "Gratis", "Uurtarief, vaak voorschot", "Per poging of vast bedrag vooraf", "**€ 99 per verwijderde review** (met tekst, tot 4 weken); ouder of alleen sterren: € 250 per verwijderde review"],
       ["Betalen als de review blijft?", "–", "Ja", "Vaak ja", "**Nee**"],
       ["Risico voor u", "Tijd kwijt, vaak afgewezen", "Hoog: kosten ongeacht uitkomst", "Hoog: geld vooraf weg", "**Geen**: alleen bij succes"],
-      ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal 1–2 weken (alleen sterren: ca. 1–3 dagen)"],
+      ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal 3–5 dagen (≤ 4 weken, met tekst), anders 1–2 weken"],
       ["Inspanning voor u", "Gemiddeld (melden, volgen, beroep)", "Hoog (dossier, overleg)", "Wisselend", "Ongeveer 2 minuten"],
     ] },
     { t: "p", text: "Hoe lang Google er zelf over doet en hoe het beroep werkt, leest u in [hoe lang duurt het om een Google review te laten verwijderen](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
@@ -48,7 +48,7 @@ const article = {
       ["Alle andere (ouder dan 4 weken of alleen sterren)", "ca. 50 % (ouder dan 4 weken)", "**€ 250**"],
     ] },
     { t: "p", text: "**Beoordelingen met alleen sterren, zonder tekst:** die vereisen een **uitgebreidere procedure**. Ze kosten **€ 250 per verwijderde review**, ongeacht de leeftijd. Zoals bij alle reviews legt u bij het bestellen een kaart of PayPal vast; er wordt pas automatisch afgeschreven nadat de review verwijderd is. In het bestelformulier krijgen ze een eigen prijsregel. De staffelkorting geldt ook hier en telt mee met alle geaccepteerde reviews van de bestelling." },
-    { t: "p", text: "**Express (optioneel):** voor reviews van € 250 kunt u bij het bestellen Express boeken, **+ € 100 per review** – doel: verwijderd binnen 30 uur. Lukt dat niet, dan wordt de Express-toeslag automatisch in mindering gebracht en betaalt u alleen € 250. Voor reviews van € 99 is Express niet beschikbaar." },
+    { t: "p", text: "**Express (optioneel):** voor reviews van € 250 kunt u bij het bestellen Express boeken, **+ € 100 per review**: start de behandeling tussen maandag en vrijdag 12:00 (Weense tijd), dan verwijderd binnen 30 uur; start die vanaf vrijdag 12:00 of in het weekend, dan uiterlijk dinsdag middernacht (in het weekend is Express niet beschikbaar). Lukt dat niet, dan wordt de Express-toeslag automatisch in mindering gebracht en betaalt u alleen € 250. Voor reviews van € 99 is Express niet beschikbaar." },
     { t: "p", text: "Na de gratis inschatting geldt een **staffelkorting** op het aantal reviews dat wij accepteren. De korting geldt voor elke review die verwijderd wordt:" },
     { t: "table", head: ["Geaccepteerde reviews", "Korting"], rows: [
       ["1 – 2", "–"],
@@ -80,7 +80,7 @@ const article = {
       "**Review verdwenen?** Dan wordt het bedrag automatisch afgeschreven – **per review**, zodat u steeds alleen betaalt wat al weg is.",
       "**Beoordelingen met alleen sterren:** precies hetzelfde – € 250, pas afgeschreven nadat de review verwijderd is.",
     ] },
-    { t: "p", text: "Meestal duurt het **1–2 weken**, soms sneller, in enkele gevallen iets langer. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
+    { t: "p", text: "Reviews tot 4 weken oud met tekst zijn meestal binnen **3–5 dagen** weg, alle andere meestal binnen **1–2 weken**. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
 
     { t: "h2", id: "waarschuwingssignalen", text: "Waarschuwingssignalen bij aanbieders", toc: "Waarschuwingssignalen" },
     { t: "p", text: "Een lage prijs is niets waard als de methode niet deugt. Let bij elke aanbieder op deze signalen:" },
