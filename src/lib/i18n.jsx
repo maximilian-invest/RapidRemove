@@ -439,7 +439,7 @@ const I18N = {
       rights: "All rights reserved.",
     },
     wa: "Ask via WhatsApp",
-    sticky: { t: "Can your profile be deleted?", s: "Check free · no upfront payment", b: "Free check" },
+    sticky: { t: "Check profile or reviews", s: "Check free · no upfront payment", b: "Free check" },
     blog: {
       kicker: "The Magazine",
       h1: "Insight from the reputation agency specialized in Google profile removal.",

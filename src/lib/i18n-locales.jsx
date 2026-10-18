@@ -158,7 +158,7 @@ import { PRICES } from "@/lib/pricing";
       rights: "Todos los derechos reservados.",
     },
     wa: "Pregunta por WhatsApp",
-    sticky: { t: "¿Se puede borrar tu perfil?", s: "Analiza gratis · sin pago previo", b: "Análisis gratis" },
+    sticky: { t: "Comprobar perfil o reseñas", s: "Analiza gratis · sin pago previo", b: "Análisis gratis" },
     blog: {
       kicker: "La Revista",
       h1: "Conocimiento de la agencia especializada en la eliminación de perfiles de Google.",
@@ -363,7 +363,7 @@ import { PRICES } from "@/lib/pricing";
       rights: "Tous droits réservés.",
     },
     wa: "Une question sur WhatsApp",
-    sticky: { t: "Votre fiche est-elle supprimable ?", s: "Analyse gratuite · sans avance", b: "Analyse gratuite" },
+    sticky: { t: "Vérifier fiche ou avis", s: "Analyse gratuite · sans avance", b: "Analyse gratuite" },
     blog: {
       kicker: "Le Magazine",
       h1: "Le savoir de l'agence spécialisée dans la suppression de fiches Google.",

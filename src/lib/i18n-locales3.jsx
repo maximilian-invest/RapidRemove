@@ -159,7 +159,7 @@ const ja = {
     rights: "全権利を留保します。",
   },
   wa: "WhatsAppで質問する",
-  sticky: { t: "プロフィールは削除できますか？", s: "無料チェック・前払い不要", b: "無料チェック" },
+  sticky: { t: "プロフィール・口コミをチェック", s: "無料チェック・前払い不要", b: "無料チェック" },
   blog: {
     kicker: "マガジン",
     h1: "Googleプロフィール削除を専門とするエージェンシーによる知見。",
@@ -364,7 +364,7 @@ const sv = {
     rights: "Alla rättigheter förbehållna.",
   },
   wa: "Fråga via WhatsApp",
-  sticky: { t: "Kan din profil tas bort?", s: "Kolla gratis · ingen förskottsbetalning", b: "Gratis koll" },
+  sticky: { t: "Kolla profil eller omdömen", s: "Kolla gratis · ingen förskottsbetalning", b: "Gratis koll" },
   blog: {
     kicker: "Magasinet",
     h1: "Insikter från byrån specialiserad på borttagning av Google-profiler.",
@@ -569,7 +569,7 @@ const da = {
     rights: "Alle rettigheder forbeholdes.",
   },
   wa: "Spørg via WhatsApp",
-  sticky: { t: "Kan din profil slettes?", s: "Tjek gratis · ingen forudbetaling", b: "Gratis tjek" },
+  sticky: { t: "Tjek profil eller anmeldelser", s: "Tjek gratis · ingen forudbetaling", b: "Gratis tjek" },
   blog: {
     kicker: "Magasinet",
     h1: "Indsigt fra specialisterne i fjernelse af Google-profiler.",
@@ -774,7 +774,7 @@ const no = {
     rights: "Alle rettigheter forbeholdt.",
   },
   wa: "Spør via WhatsApp",
-  sticky: { t: "Kan profilen din slettes?", s: "Sjekk gratis · ingen forskuddsbetaling", b: "Gratis sjekk" },
+  sticky: { t: "Sjekk profil eller omtaler", s: "Sjekk gratis · ingen forskuddsbetaling", b: "Gratis sjekk" },
   blog: {
     kicker: "Magasinet",
     h1: "Innsikt fra spesialistene innen fjerning av Google-profiler.",

@@ -713,12 +713,8 @@ a.tb-item:hover{color:var(--primary);}
 /* Netto-Hinweis beim Preis (AGB 6.1: alle Preise zzgl. USt) */
 .vat-n{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--fg-muted);letter-spacing:0;white-space:nowrap;text-decoration:none;}
 .hero-pricetag .vat-n{margin-left:5px;}
-/* Hero außerhalb DACH: zwei Einstiege (Bewertungen / ganzes Profil) */
-.hero-dual{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px;}
-.hero-dual .btn{padding:15px 26px;font-size:16px;text-decoration:none;}
-@media(max-width:920px){
-  .hero-pricetag{border-radius:16px;font-size:13.5px;line-height:1.45;}
-  .hero-dual{margin-top:16px;gap:8px;}
-  .hero-dual .btn{flex:1 1 0;justify-content:center;padding:12px 14px;font-size:14.5px;text-align:center;white-space:normal;line-height:1.2;}
-}
+/* Hero außerhalb DACH: Preiszeile Bewertungen + Profile immer einzeilig */
+.hero-pricetag.one-line{white-space:nowrap;}
+/* Mobil: „Zahlung erst nach Erfolg" fällt weg (steht in der Check-Karte), damit beide Preise in eine Zeile passen */
+@media(max-width:920px){.hero-pricetag.one-line{font-size:clamp(11.5px,3.5vw,14px);padding:6px 12px;gap:7px;}.hero-pricetag.one-line .sep{margin:0 6px;}.hero-pricetag.one-line .pay-after{display:none;}}
 .value-anchor .va-new .vat-n{display:block;margin-top:2px;}

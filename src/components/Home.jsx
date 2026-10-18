@@ -51,19 +51,19 @@ const HERO_PRICE_FROM = { de: "ab", en: "from", es: "desde", fr: "à partir de",
 const HERO_PAY_AFTER = { de: "Zahlung erst nach Erfolg", en: "pay only after success", es: "pagas solo tras el éxito", fr: "paiement après succès", it: "paghi solo dopo il successo", nl: "betalen pas na succes", pt: "paga só após o sucesso", ja: "成功後にのみお支払い", sv: "betala först efter framgång", da: "betal først efter succes", no: "betal først etter suksess" };
 
 /* Außerhalb DACH (alle Sprachen außer DE): Hero verkauft beide Produkte —
-   Einzelbewertungen + ganzes Profil. Preiszeile nennt beide Einstiegspreise,
-   darunter zwei Buttons. DE bleibt reines Profil-Produkt (Bewertungen dort nicht verfügbar). */
+   Einzelbewertungen + ganzes Profil. Preiszeile nennt beide Einstiegspreise
+   (ohne USt-Hinweis, einzeilig). DE bleibt reines Profil-Produkt (Bewertungen dort nicht verfügbar). */
 const HERO_DUAL = {
-  en: { rev: "Reviews from", prof: "Profiles from", bRev: "Remove reviews", bProf: "Delete my profile" },
-  es: { rev: "Reseñas desde", prof: "Perfiles desde", bRev: "Eliminar reseñas", bProf: "Eliminar mi perfil" },
-  fr: { rev: "Avis dès", prof: "Fiches dès", bRev: "Supprimer des avis", bProf: "Supprimer ma fiche" },
-  it: { rev: "Recensioni da", prof: "Profili da", bRev: "Rimuovi recensioni", bProf: "Elimina il mio profilo" },
-  nl: { rev: "Reviews vanaf", prof: "Profielen vanaf", bRev: "Reviews verwijderen", bProf: "Mijn profiel verwijderen" },
-  pt: { rev: "Avaliações desde", prof: "Perfis desde", bRev: "Remover avaliações", bProf: "Eliminar o meu perfil" },
-  ja: { rev: "口コミ", prof: "プロフィール", bRev: "口コミを削除", bProf: "プロフィールを削除" },
-  sv: { rev: "Omdömen från", prof: "Profiler från", bRev: "Ta bort omdömen", bProf: "Ta bort min profil" },
-  da: { rev: "Anmeldelser fra", prof: "Profiler fra", bRev: "Fjern anmeldelser", bProf: "Slet min profil" },
-  no: { rev: "Omtaler fra", prof: "Profiler fra", bRev: "Fjern omtaler", bProf: "Slett profilen min" },
+  en: { rev: "Reviews from", prof: "Profiles from" },
+  es: { rev: "Reseñas desde", prof: "Perfiles desde" },
+  fr: { rev: "Avis dès", prof: "Fiches dès" },
+  it: { rev: "Recensioni da", prof: "Profili da" },
+  nl: { rev: "Reviews vanaf", prof: "Profielen vanaf" },
+  pt: { rev: "Avaliações desde", prof: "Perfis desde" },
+  ja: { rev: "口コミ", prof: "プロフィール" },
+  sv: { rev: "Omdömen från", prof: "Profiler från" },
+  da: { rev: "Anmeldelser fra", prof: "Profiler fra" },
+  no: { rev: "Omtaler fra", prof: "Profiler fra" },
 };
 
 /* Nur Deutsch: außerhalb von DACH verkaufen wir das Löschen einzelner
@@ -176,15 +176,6 @@ function Hero({ onStart }) {
   const showResume = !!(resume && resume.placeId && !name.trim());
   const goResume = () => { window.location.href = asset(pagePath("wizard", lang)) + "?resume=1"; };
   const dual = lang !== "de" ? HERO_DUAL[lang] : null;
-  // „Delete my profile": zur Check-Karte daneben/darunter und ins Suchfeld springen
-  // (der eigentliche Check läuft dann wie gewohnt mit source „hero").
-  const inputRef = React.useRef(null);
-  const focusCheck = () => {
-    const el = inputRef.current;
-    if (!el) return;
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    setTimeout(() => { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }, 350);
-  };
   return (
     <section className="hero">
       <div className="hero-glow"></div>
@@ -192,24 +183,19 @@ function Hero({ onStart }) {
       <div className="container hero-grid">
         <div>
           <h1 className="hs hs2">{t.hero.h1a} <span className="hl">{t.hero.h1b}</span></h1>
-          <div className="hero-pricetag hs hs3">
+          <div className={"hero-pricetag hs hs3" + (dual ? " one-line" : "")}>
             <Icon.shieldCheck size={15} />
             <span>
               {dual
                 ? (lang === "ja"
-                  ? <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b>〜<span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b>〜<span className="vat-n">{vatNote(lang)}</span></>
-                  : <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b><span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>)
+                  ? <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b>〜<span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b>〜</>
+                  : <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b><span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b></>)
                 : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>}
-              <span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}
+              <span className="pay-after"><span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}</span>
             </span>
           </div>
           <p className="lead hs hs3">{t.hero.lead}</p>
-          {dual && (
-            <div className="hero-dual hs hs4">
-              <a className="btn btn-primary" href={asset(pagePath("wizard", lang)) + "?start=reviews"}>{dual.bRev} <Icon.arrowRight size={17} /></a>
-              <button type="button" className="btn btn-secondary" onClick={focusCheck}>{dual.bProf}</button>
-            </div>
-          )}
+
           <div className="hero-proof hs hs5">
             <div style={{ width: "100%" }}>
               <TrustpilotLive />
@@ -218,7 +204,7 @@ function Hero({ onStart }) {
         </div>
 
         <div className="hero-card-col hs hs4">
-          <HeroPressBadge lang={lang} />
+          {lang === "de" && <HeroPressBadge lang={lang} />}
         <div className="check-card">
           <div className="cc-head">
             <span className="eyebrow" style={{ margin: 0 }}>{t.hero.cardEyebrow}</span>
@@ -229,7 +215,7 @@ function Hero({ onStart }) {
           <div className="hero-ac" ref={acRef}>
             <div className="field">
               <Icon.googleG />
-              <input ref={inputRef} className="input" placeholder={t.hero.placeholder} value={name}
+              <input className="input" placeholder={t.hero.placeholder} value={name}
                 onChange={(e) => { setName(e.target.value); setAcOpen(true); }}
                 onFocus={() => setAcOpen(true)}
                 onKeyDown={(e) => e.key === "Enter" && go()} />
@@ -272,11 +258,12 @@ function TrustBar() {
   const tpUrl = t.code === "de" ? "https://de.trustpilot.com/review/rapid-remove.com" : "https://trustpilot.com/review/rapid-remove.com";
   const items = [
     <a key="tp" className="tb-item" href={tpUrl} target="_blank" rel="noopener noreferrer"><Icon.star className="tp" size={20} style={{ color: "#00b67a" }} /> <span>{t.trustbar.reviews} <b>Trustpilot</b></span></a>,
-    <a key="heise" className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>,
+    // „As seen in"/Presse nur auf DE (DE/AT/CH)
+    t.code === "de" && <a key="heise" className="tb-item" href="https://www.heise.de/tipps-tricks/Google-My-Business-loeschen-so-klappt-s-6159832.html" target="_blank" rel="noopener noreferrer"><Icon.check size={20} /> {t.trustbar.heise}</a>,
     <div key="legal" className="tb-item"><Icon.shieldCheck size={20} /> {t.trustbar.legal}</div>,
     <div key="eu" className="tb-item"><Icon.globe size={20} /> {t.trustbar.eu}</div>,
     <div key="pay" className="tb-item"><Icon.lock size={20} /> {t.trustbar.pay}</div>,
-  ];
+  ].filter(Boolean);
   const COPIES = 2; // nahtloses Marquee (nur mobil, rein dekorativ — Inhalt steht in .trustbar-inner)
   return (
     <div className="trustbar">

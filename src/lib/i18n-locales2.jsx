@@ -156,7 +156,7 @@ import { PRICES } from "@/lib/pricing";
       rights: "Tutti i diritti riservati.",
     },
     wa: "Chiedi su WhatsApp",
-    sticky: { t: "Il tuo profilo è eliminabile?", s: "Analisi gratis · senza anticipo", b: "Analisi gratis" },
+    sticky: { t: "Verifica profilo o recensioni", s: "Analisi gratis · senza anticipo", b: "Analisi gratis" },
     blog: {
       kicker: "Il Magazine",
       h1: "Il sapere dell'agenzia specializzata nella rimozione dei profili Google.",
@@ -361,7 +361,7 @@ import { PRICES } from "@/lib/pricing";
       rights: "Alle rechten voorbehouden.",
     },
     wa: "Vraag via WhatsApp",
-    sticky: { t: "Is uw profiel te verwijderen?", s: "Gratis checken · geen vooruitbetaling", b: "Gratis check" },
+    sticky: { t: "Profiel of reviews checken", s: "Gratis checken · geen vooruitbetaling", b: "Gratis check" },
     blog: {
       kicker: "Het Magazine",
       h1: "Kennis van het reputatiebureau gespecialiseerd in het verwijderen van Google-profielen.",
@@ -566,7 +566,7 @@ import { PRICES } from "@/lib/pricing";
       rights: "Todos os direitos reservados.",
     },
     wa: "Pergunte pelo WhatsApp",
-    sticky: { t: "O seu perfil pode ser eliminado?", s: "Analise grátis · sem pagamento antecipado", b: "Análise grátis" },
+    sticky: { t: "Verificar perfil ou avaliações", s: "Analise grátis · sem pagamento antecipado", b: "Análise grátis" },
     blog: {
       kicker: "A Revista",
       h1: "Conhecimento da agência especializada na remoção de perfis do Google.",
