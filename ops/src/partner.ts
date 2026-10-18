@@ -14,6 +14,7 @@ import { pool, insertEvent, bumpChange } from "./db";
 import { checkRemoval, removalShot } from "./removalCheck";
 import { checkRemovalStrict } from "./removalScan";
 import { probeReviewLink } from "./linkProbe";
+import { expandShortLink } from "./monitor";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, SW_NOTE_COVERED, swStartAllowed, partnerToDash, autopayHooks } from "./customers";
 import { lpOf, PRICE_V2_OTHER, EXPRESS_PARTNER_H } from "./reviewsPricing";
@@ -91,6 +92,8 @@ export async function initPartnerTables(): Promise<void> {
   `);
   // Kunde = Name des Unternehmensprofils (Gliederung im Board).
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS customer text`);
+  // 18.10.2026: Kurzlink (maps.app.goo.gl …) aufgelöst → iPhone öffnet die echte Adresse in Safari statt in der Maps-App („Nicht unterstützter Link").
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS long_url text`);
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
   // Früher abgelehnte Software-Aufgaben (storniert) wieder unter „Software" zeigen – mit „Customer declined deletion".
@@ -190,6 +193,7 @@ type Row = {
   id: string; code: string; order_id: string | null; item_key: string | null; customer: string | null; url: string | null; name: string | null; text: string | null;
   kind: TaskKind; price_usd: string; status: TaskStatus; partner_note: string | null; admin_note: string | null;
   created_at: string; updated_at: string; removed_at: string | null; paid_at: string | null; payout_id: string | null;
+  long_url?: string | null;
   touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
   report_reason?: string | null; report_note?: string | null; report_at?: string | null; express_at?: string | null;
 };
@@ -198,7 +202,7 @@ const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 /** Für den Partner: keine Besteller-Daten (kein Auftrag, keine Kontaktdaten) — nur der öffentliche Profilname. */
 function partnerView(r: Row) {
   return {
-    id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
+    id: Number(r.id), code: r.code, customer: r.customer || "", url: r.url, gurl: r.long_url || null, reviewer: r.name, text: r.text, // öffentliche Bewertungsdaten, keine Kundendaten
     kind: r.kind, price: num(r.price_usd), status: r.status, note: r.partner_note || "",
     created: r.created_at, updated: r.updated_at, removed: r.removed_at, paid: r.paid_at, processing: !!r.payout_id && !r.paid_at, touched: !!r.touched_at, workingSince: r.working_since,
     // Software-Fluss: „software" = wartet auf die Entscheidung des Kunden; bezahlt → Aufgabe steht wieder auf „working".
@@ -211,6 +215,22 @@ function partnerView(r: Row) {
 }
 function adminView(r: Row) {
   return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test, partnerId: r.partner_id ? Number(r.partner_id) : null };
+}
+
+const SHORT_LINK = /^https?:\/\/(share\.google|maps\.app\.goo\.gl|goo\.gl|g\.co)\//i;
+let filling = false;
+/** Kurzlinks der Aufgaben im Hintergrund auflösen (long_url) – beim nächsten Laden öffnet das iPhone dann direkt die echte Google-Adresse. */
+export function fillLongUrls(rows: Row[]): void {
+  if (!pool || filling) return;
+  const todo = rows.filter((r) => r.url && SHORT_LINK.test(r.url) && !r.long_url).slice(0, 25);
+  if (!todo.length) return;
+  filling = true;
+  (async () => {
+    for (const r of todo) {
+      const u = await expandShortLink(r.url as string).catch(() => "");
+      if (u && !SHORT_LINK.test(u) && /^https:\/\/(www\.)?google\./i.test(u)) await pool!.query(`UPDATE partner_tasks SET long_url=$1 WHERE url=$2 AND long_url IS NULL`, [u, r.url]).catch(() => {});
+    }
+  })().finally(() => { filling = false; });
 }
 
 /** Grund des Kunden je Bewertung (orders.raw.reviewItems[].reason) → Map „orderId|itemKey" → { custReason, custNote }. */
@@ -455,6 +475,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const rows = orderId ? await listTasks("WHERE order_id=$1", [orderId]) : await listTasks();
     const all = orderId ? await listTasks() : rows;
     const p = await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts ORDER BY id DESC LIMIT 50`);
+    fillLongUrls(rows);
     return { ok: true, tasks: rows.map(adminView), totals: totals(all), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, note: x.note, created: x.created_at })) };
   });
 
@@ -579,6 +600,7 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
         bulk.set(x.id, { label: `Bulk order ${ref} · ${Number(x.n || 0)} reviews`, ref, n, tiers, sw: Number(pr.partnerSw) > 0 ? Number(pr.partnerSw) : null, idx: t ? t.idx : -1, price: t ? t.price : null });
       }
     }
+    fillLongUrls(rows);
     return { ok: true, preview, paused: pst === "paused", reasons: REPORT_REASONS.map((x) => ({ id: x.id, label: x.en })), bulks: Object.fromEntries([...bulk.values()].map((v) => [v.label, v])),
       tasks: rows.map((r) => ({ ...partnerView(r), ...(r.order_id && bulk.has(r.order_id as string) ? { customer: bulk.get(r.order_id as string)!.label, profile: r.customer || "", bulk: bulk.get(r.order_id as string)!.ref } : {}), ...(custR.get(`${r.order_id}|${r.item_key}`) || {}), hold: !!(r.order_id && held.has(r.order_id as string) && (r.status === "new" || r.status === "working")), shot: r.order_id && r.url ? shots.get(`${r.order_id}|${r.url}`) || null : null })), totals: totals(rows), payouts: p.rows.map((x) => ({ id: Number(x.id), amount: num(x.amount_usd), tasks: x.tasks, created: x.created_at })) };
   });

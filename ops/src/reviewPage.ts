@@ -28,7 +28,9 @@ export function classify(s: Snap | null, nameNorm: string, wantId: string): "gon
   if (GONE.test(s.text) && !hasCard) return "gone";
   if (GONE.test(s.text)) return "unknown"; // widersprüchlich (Hinweis UND Bewertung) → nie „gone"
   if (wantId && s.reviewIds.includes(wantId)) return "visible";          // genau diese Bewertung wird angezeigt
-  if (hasCard && s.stars) return "visible";                                // eine Bewertung mit Sternen wird angezeigt
+  // 18.10.2026 (RV-0154): Link enthält eine Review-ID, angezeigt werden aber nur ANDERE Bewertungen (gelöschte Bewertung →
+  // Google zeigt Profil/Verfasser mit fremden Bewertungen) → das ist KEIN Beweis für „sichtbar".
+  if (hasCard && s.stars && !wantId) return "visible";                     // eine Bewertung mit Sternen wird angezeigt (Link ohne Review-ID)
   if (nameNorm.length >= 3 && norm(s.text).includes(nameNorm)) return "visible"; // Verfassername auf der Seite (wie bisher)
   return "unknown";
 }

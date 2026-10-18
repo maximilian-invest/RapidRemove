@@ -287,7 +287,7 @@ export default function PartnerBoard() {
   const openReview = React.useCallback((t) => {
     if (!t) return;
     // iPhone: Bewertungslinks in Safari statt in der Maps-App (die zeigt „Nicht unterstützter Link")
-    if (t.url) openGoogleLink(t.url, () => showToast("Link copied – paste it into Safari to open the review"));
+    if (t.url) openGoogleLink(t.gurl || t.url, () => showToast("Link copied – paste it into Safari to open the review"));
     touch([t.id]); // nur ansehen – Status ändert sich ausschließlich per Status-Button
   }, [touch, showToast]);
 

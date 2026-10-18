@@ -17,6 +17,7 @@ ok("Verfasser-Profilseite ohne Bewertung (RV-0005) → unknown", () => assert.eq
 ok("leere/ladende Seite → unknown", () => assert.equal(classify(S(" "), "", ""), "unknown"));
 ok("Consent-Seite → unknown", () => assert.equal(classify(S("Before you continue to Google"), "", ""), "unknown"));
 ok("Bewertungs-Element ohne Sterne und fremde ID → unknown", () => assert.equal(classify(S("…", ["Cother"], false), "", ID), "unknown"));
+ok("Link mit Review-ID, aber nur FREMDE Bewertungen angezeigt (RV-0154) → unknown, nie visible", () => assert.equal(classify(S("Profile · Reviews · Someone · a year ago", ["Cother1", "Cother2"], true), "", ID), "unknown"));
 ok("null → unknown", () => assert.equal(classify(null, "", ""), "unknown"));
 
 ok("HTML: sichtbare Bewertung erkannt", () => {

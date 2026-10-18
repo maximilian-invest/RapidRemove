@@ -9,9 +9,12 @@ export function isIOS() {
 }
 
 const MAPS_ONLY = /^https:\/\/(www\.)?google\.[a-z.]+\/maps\/(reviews|contrib)\//i;
+// Kurzlinks (maps.app.goo.gl, share.google, goo.gl/maps, g.co) springen auf dem iPhone ebenfalls in die Maps-App → auch in Safari öffnen.
+const SHORT = /^https:\/\/(maps\.app\.goo\.gl|share\.google|goo\.gl\/maps|g\.co\/kgs)\//i;
 
 export function needsSafari(url) {
-  return isIOS() && MAPS_ONLY.test(String(url || "").replace(/^http:/i, "https:"));
+  const u = String(url || "").replace(/^http:/i, "https:");
+  return isIOS() && (MAPS_ONLY.test(u) || SHORT.test(u));
 }
 
 export function openGoogleLink(url, onFallback) {

@@ -117,6 +117,7 @@ export async function checkRemoval(t: Task): Promise<RemovalResult & { why?: str
   // Kurzlinks (share.google, maps.app.goo.gl …) auflösen: die echte Adresse enthält Profil-CID + Review-ID – auch wenn die Bewertung gelöscht ist
   // (Google zeigt dann beim Öffnen „Nicht unterstützter Link").
   const longUrl = await expandShortLink(t.url).catch(() => t.url as string);
+  if (longUrl !== t.url && /^https:\/\/(www\.)?google\./i.test(longUrl)) await pool.query(`UPDATE partner_tasks SET long_url=$1 WHERE id=$2 AND long_url IS NULL`, [longUrl, Number(t.id)]).catch(() => {});
   // Sterne + Profil aus der Bestellung (für Methode 1)
   let rating: number | null = null, placeId: string | null = null;
   if (t.order_id) {
