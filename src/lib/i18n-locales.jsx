@@ -9,14 +9,17 @@ import { PRICES } from "@/lib/pricing";
   /* ============ ESPAÑOL ============ */
   const es = {
     code: "es",
+    // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+    seoHomeTitle: "Elimina tu perfil de empresa de Google: de forma permanente, legal y en 24 horas. — RapidRemove",
+    seoHomeDesc: "Google no te deja borrar tu propio perfil. Nosotros sí. Incluidas todas las reseñas, y solo pagas tras la eliminación con éxito.",
     riskReversal: "Cero riesgo · Paga solo tras la eliminación con éxito",
     riskShort: "Pagas SOLO tras la eliminación con éxito",
     nav: { how: "Cómo funciona", why: "Por qué nosotros", pricing: "Precios", reviews: "Opiniones", faq: "FAQ", magazin: "Revista", about: "Quiénes somos", login: "Portal de cliente", cta: "Análisis gratis", ctaResume: "Continuar" },
     hero: {
       chip: "Conforme al RGPD · Servidores en la UE · 100 % legal",
-      h1a: "Elimina tu perfil de empresa de Google:",
-      h1b: "de forma permanente, legal y en 24 horas.",
-      lead: "Google no te deja borrar tu propio perfil. Nosotros sí. Incluidas todas las reseñas, y solo pagas tras la eliminación con éxito.",
+      h1a: "¿Reseñas negativas en Google? Las eliminamos.",
+      h1b: "O el perfil entero.",
+      lead: "Reseñas falsas, de venganza o que incumplen las políticas de Google, retiradas en 1–5 días. ¿Quieres salir de Google Maps por completo? Eliminamos tu perfil de empresa con todas sus reseñas.",
       trust: ["4,9", "260+ opiniones", "Conocidos por heise.de", "Sin pago por adelantado", "Más de 1.000 perfiles eliminados"],
       assure: ["Sin éxito, sin coste", "Sin acceso a tu cuenta", "Respuesta en minutos"],
       cardEyebrow: "Compruebe gratis",
@@ -211,15 +214,17 @@ import { PRICES } from "@/lib/pricing";
   /* ============ FRANÇAIS ============ */
   const fr = {
     code: "fr",
+    // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+    seoHomeTitle: "Supprimez votre fiche d'établissement Google : définitivement, légalement, en 24 heures. — RapidRemove",
     seoHomeDesc: "Google ne vous laisse pas supprimer votre fiche d'établissement. Nous, si — définitivement, légalement, en 24 h, tous les avis inclus. Paiement après succès.",
     riskReversal: "Zéro risque · Paiement seulement après suppression réussie",
     riskShort: "Vous payez UNIQUEMENT après la suppression réussie",
     nav: { how: "Comment ça marche", why: "Pourquoi nous", pricing: "Tarifs", reviews: "Avis", faq: "FAQ", magazin: "Magazine", about: "À propos", login: "Espace client", cta: "Analyse gratuite", ctaResume: "Continuer" },
     hero: {
       chip: "Conforme au RGPD · Serveurs dans l'UE · 100 % légal",
-      h1a: "Supprimez votre fiche d'établissement Google :",
-      h1b: "définitivement, légalement, en 24 heures.",
-      lead: "Google ne vous laisse pas supprimer votre propre fiche. Nous, si. Avec tous les avis, et vous ne payez qu'après la suppression réussie.",
+      h1a: "Mauvais avis Google ? Nous les supprimons.",
+      h1b: "Ou toute la fiche.",
+      lead: "Faux avis, avis de vengeance ou contraires aux règles de Google retirés en 1 à 5 jours. Vous voulez disparaître complètement de Google Maps ? Nous supprimons votre fiche d'établissement avec tous ses avis.",
       trust: ["4,9", "260+ avis", "Vu sur heise.de", "Sans paiement d'avance", "Plus de 1 000 fiches supprimées"],
       assure: ["Sans succès, sans frais", "Aucun accès à votre compte", "Réponse en quelques minutes"],
       cardEyebrow: "Vérifiez gratuitement",

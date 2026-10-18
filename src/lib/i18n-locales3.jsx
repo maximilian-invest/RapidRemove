@@ -10,14 +10,17 @@ const PJ = PRICES.en; // $-Profil — Japan ist Nicht-EU-Markt (Geo-Logik: non-E
 /* ===================== 日本語 (JA) ===================== */
 const ja = {
   code: "ja",
+  // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+  seoHomeTitle: "Googleビジネスプロフィールを削除 ― 永久に、合法的に、24時間以内に。 — RapidRemove",
+  seoHomeDesc: "Googleでは自分のプロフィールを自分で削除できません。私たちなら可能です。すべての口コミを含めて削除し、お支払いは削除に成功した後のみです。",
   riskReversal: "リスクゼロ・削除成功後にのみお支払い",
   riskShort: "削除成功後にのみお支払い",
   nav: { how: "ご利用の流れ", why: "選ばれる理由", pricing: "料金", reviews: "口コミ", faq: "よくある質問", magazin: "マガジン", about: "会社概要", login: "お客様ポータル", cta: "無料チェック", ctaResume: "続ける" },
   hero: {
     chip: "GDPR準拠・EUサーバー・100% 合法",
-    h1a: "Googleビジネスプロフィールを削除 ―",
-    h1b: "永久に、合法的に、24時間以内に。",
-    lead: "Googleでは自分のプロフィールを自分で削除できません。私たちなら可能です。すべての口コミを含めて削除し、お支払いは削除に成功した後のみです。",
+    h1a: "Googleの悪い口コミ、削除します。",
+    h1b: "プロフィールごとの削除も。",
+    lead: "偽の口コミ、嫌がらせの口コミ、ガイドライン違反の口コミを1〜5日で削除します。Googleマップから完全に消えたい場合は、すべての口コミを含めてビジネスプロフィールごと削除します。",
     trust: ["4.9", "260件以上のレビュー", "heise.de掲載", "前払い不要", "1,000件以上のプロフィールを削除"],
     assure: ["成功しなければ費用なし", "アカウントへのアクセスなし", "多くの場合、数分で返信"],
     cardEyebrow: "無料でチェック",
@@ -212,14 +215,17 @@ const ja = {
 /* ===================== SVENSKA (SV) ===================== */
 const sv = {
   code: "sv",
+  // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+  seoHomeTitle: "Ta bort din Google-företagsprofil permanent, lagligt, på 24 timmar. — RapidRemove",
+  seoHomeDesc: "Google låter dig inte ta bort din egen profil. Det gör vi. Inklusive alla omdömen – och du betalar först när den är borttagen.",
   riskReversal: "Noll risk · Betala först efter lyckad borttagning",
   riskShort: "Betala ENDAST efter lyckad borttagning",
   nav: { how: "Så funkar det", why: "Varför oss", pricing: "Priser", reviews: "Omdömen", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundportal", cta: "Gratis koll", ctaResume: "Fortsätt" },
   hero: {
     chip: "GDPR-anpassad · EU-servrar · 100 % lagligt",
-    h1a: "Ta bort din Google-företagsprofil –",
-    h1b: "permanent, lagligt, på 24 timmar.",
-    lead: "Google låter dig inte ta bort din egen profil. Det gör vi. Inklusive alla omdömen – och du betalar först när den är borttagen.",
+    h1a: "Dåliga Google-omdömen? Vi tar bort dem.",
+    h1b: "Eller hela profilen.",
+    lead: "Falska omdömen, hämndomdömen eller omdömen som bryter mot Googles regler tas bort på 1–5 dagar. Vill du bort från Google Maps helt? Vi tar bort din företagsprofil med alla omdömen.",
     trust: ["4,9", "260+ omdömen", "Omnämnda i heise.de", "Ingen förskottsbetalning", "1 000+ profiler borttagna"],
     assure: ["Ingen framgång, ingen kostnad", "Ingen åtkomst till ditt konto", "Svar oftast inom minuter"],
     cardEyebrow: "Kolla gratis",
@@ -414,14 +420,17 @@ const sv = {
 /* ===================== DANSK (DA) ===================== */
 const da = {
   code: "da",
+  // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+  seoHomeTitle: "Slet din Google-virksomhedsprofil permanent, lovligt, på 24 timer. — RapidRemove",
+  seoHomeDesc: "Google lader dig ikke slette din egen profil. Det gør vi. Inklusive alle anmeldelser – og du betaler først, når den er fjernet.",
   riskReversal: "Nul risiko · Betal først efter vellykket fjernelse",
   riskShort: "Betal KUN efter vellykket fjernelse",
   nav: { how: "Sådan virker det", why: "Hvorfor os", pricing: "Priser", reviews: "Anmeldelser", faq: "FAQ", magazin: "Magasin", about: "Om os", login: "Kundeportal", cta: "Gratis tjek", ctaResume: "Fortsæt" },
   hero: {
     chip: "GDPR-overholdende · EU-servere · 100 % lovligt",
-    h1a: "Slet din Google-virksomhedsprofil –",
-    h1b: "permanent, lovligt, på 24 timer.",
-    lead: "Google lader dig ikke slette din egen profil. Det gør vi. Inklusive alle anmeldelser – og du betaler først, når den er fjernet.",
+    h1a: "Dårlige Google-anmeldelser? Vi fjerner dem.",
+    h1b: "Eller hele profilen.",
+    lead: "Falske anmeldelser, hævnanmeldelser eller anmeldelser, der bryder Googles regler, fjernes på 1–5 dage. Vil du helt væk fra Google Maps? Vi sletter din virksomhedsprofil med alle anmeldelser.",
     trust: ["4,9", "260+ anmeldelser", "Kendt fra heise.de", "Ingen forudbetaling", "1.000+ profiler fjernet"],
     assure: ["Ingen succes, ingen omkostning", "Ingen adgang til din konto", "Svar oftest inden for minutter"],
     cardEyebrow: "Tjek gratis",
@@ -616,14 +625,17 @@ const da = {
 /* ===================== NORSK (NO) ===================== */
 const no = {
   code: "no",
+  // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+  seoHomeTitle: "Slett din Google-bedriftsprofil permanent, lovlig, på 24 timer. — RapidRemove",
+  seoHomeDesc: "Google lar deg ikke slette din egen profil. Det gjør vi. Inkludert alle omtaler – og du betaler først når den er fjernet.",
   riskReversal: "Null risiko · Betal først etter vellykket fjerning",
   riskShort: "Betal KUN etter vellykket fjerning",
   nav: { how: "Slik fungerer det", why: "Hvorfor oss", pricing: "Priser", reviews: "Omtaler", faq: "FAQ", magazin: "Magasin", about: "Om oss", login: "Kundeportal", cta: "Gratis sjekk", ctaResume: "Fortsett" },
   hero: {
     chip: "GDPR-tilpasset · EU-servere · 100 % lovlig",
-    h1a: "Slett din Google-bedriftsprofil –",
-    h1b: "permanent, lovlig, på 24 timer.",
-    lead: "Google lar deg ikke slette din egen profil. Det gjør vi. Inkludert alle omtaler – og du betaler først når den er fjernet.",
+    h1a: "Dårlige Google-omtaler? Vi fjerner dem.",
+    h1b: "Eller hele profilen.",
+    lead: "Falske omtaler, hevnomtaler eller omtaler som bryter Googles regler, fjernes på 1–5 dager. Vil du helt ut av Google Maps? Vi sletter bedriftsprofilen din med alle omtaler.",
     trust: ["4,9", "260+ omtaler", "Omtalt i heise.de", "Ingen forskuddsbetaling", "1 000+ profiler fjernet"],
     assure: ["Ingen suksess, ingen kostnad", "Ingen tilgang til kontoen din", "Svar oftest i løpet av minutter"],
     cardEyebrow: "Sjekk gratis",

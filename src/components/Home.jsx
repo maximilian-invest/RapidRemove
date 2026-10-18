@@ -50,6 +50,22 @@ const HERO_FLOAT = {
 const HERO_PRICE_FROM = { de: "ab", en: "from", es: "desde", fr: "à partir de", it: "da", nl: "vanaf", pt: "a partir de", ja: "", sv: "från", da: "fra", no: "fra" };
 const HERO_PAY_AFTER = { de: "Zahlung erst nach Erfolg", en: "pay only after success", es: "pagas solo tras el éxito", fr: "paiement après succès", it: "paghi solo dopo il successo", nl: "betalen pas na succes", pt: "paga só após o sucesso", ja: "成功後にのみお支払い", sv: "betala först efter framgång", da: "betal først efter succes", no: "betal først etter suksess" };
 
+/* Außerhalb DACH (alle Sprachen außer DE): Hero verkauft beide Produkte —
+   Einzelbewertungen + ganzes Profil. Preiszeile nennt beide Einstiegspreise,
+   darunter zwei Buttons. DE bleibt reines Profil-Produkt (Bewertungen dort nicht verfügbar). */
+const HERO_DUAL = {
+  en: { rev: "Reviews from", prof: "Profiles from", bRev: "Remove reviews", bProf: "Delete my profile" },
+  es: { rev: "Reseñas desde", prof: "Perfiles desde", bRev: "Eliminar reseñas", bProf: "Eliminar mi perfil" },
+  fr: { rev: "Avis dès", prof: "Fiches dès", bRev: "Supprimer des avis", bProf: "Supprimer ma fiche" },
+  it: { rev: "Recensioni da", prof: "Profili da", bRev: "Rimuovi recensioni", bProf: "Elimina il mio profilo" },
+  nl: { rev: "Reviews vanaf", prof: "Profielen vanaf", bRev: "Reviews verwijderen", bProf: "Mijn profiel verwijderen" },
+  pt: { rev: "Avaliações desde", prof: "Perfis desde", bRev: "Remover avaliações", bProf: "Eliminar o meu perfil" },
+  ja: { rev: "口コミ", prof: "プロフィール", bRev: "口コミを削除", bProf: "プロフィールを削除" },
+  sv: { rev: "Omdömen från", prof: "Profiler från", bRev: "Ta bort omdömen", bProf: "Ta bort min profil" },
+  da: { rev: "Anmeldelser fra", prof: "Profiler fra", bRev: "Fjern anmeldelser", bProf: "Slet min profil" },
+  no: { rev: "Omtaler fra", prof: "Profiler fra", bRev: "Fjern omtaler", bProf: "Slett profilen min" },
+};
+
 /* Nur Deutsch: außerhalb von DACH verkaufen wir das Löschen einzelner
    Bewertungen inzwischen selbst (Landingpage + Wizard) — dort wäre diese
    Argumentation ein Widerspruch. Auf Deutsch (Produkt dort nicht verfügbar)
@@ -159,6 +175,16 @@ function Hero({ onStart }) {
   React.useEffect(() => { setResume(getResumeProfile()); }, []);
   const showResume = !!(resume && resume.placeId && !name.trim());
   const goResume = () => { window.location.href = asset(pagePath("wizard", lang)) + "?resume=1"; };
+  const dual = lang !== "de" ? HERO_DUAL[lang] : null;
+  // „Delete my profile": zur Check-Karte daneben/darunter und ins Suchfeld springen
+  // (der eigentliche Check läuft dann wie gewohnt mit source „hero").
+  const inputRef = React.useRef(null);
+  const focusCheck = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }, 350);
+  };
   return (
     <section className="hero">
       <div className="hero-glow"></div>
@@ -169,13 +195,21 @@ function Hero({ onStart }) {
           <div className="hero-pricetag hs hs3">
             <Icon.shieldCheck size={15} />
             <span>
-              {lang === "ja"
-                ? <><b>{money(lang, profileFor(lang).deletion)}</b>から<span className="vat-n">{vatNote(lang)}</span></>
+              {dual
+                ? (lang === "ja"
+                  ? <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b>〜<span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b>〜<span className="vat-n">{vatNote(lang)}</span></>
+                  : <>{dual.rev} <b>{money(lang, profileFor(lang).review)}</b><span className="sep">·</span>{dual.prof} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>)
                 : <>{HERO_PRICE_FROM[lang] || "from"} <b>{money(lang, profileFor(lang).deletion)}</b><span className="vat-n">{vatNote(lang)}</span></>}
               <span className="sep">·</span>{HERO_PAY_AFTER[lang] || HERO_PAY_AFTER.en}
             </span>
           </div>
           <p className="lead hs hs3">{t.hero.lead}</p>
+          {dual && (
+            <div className="hero-dual hs hs4">
+              <a className="btn btn-primary" href={asset(pagePath("wizard", lang)) + "?start=reviews"}>{dual.bRev} <Icon.arrowRight size={17} /></a>
+              <button type="button" className="btn btn-secondary" onClick={focusCheck}>{dual.bProf}</button>
+            </div>
+          )}
           <div className="hero-proof hs hs5">
             <div style={{ width: "100%" }}>
               <TrustpilotLive />
@@ -195,7 +229,7 @@ function Hero({ onStart }) {
           <div className="hero-ac" ref={acRef}>
             <div className="field">
               <Icon.googleG />
-              <input className="input" placeholder={t.hero.placeholder} value={name}
+              <input ref={inputRef} className="input" placeholder={t.hero.placeholder} value={name}
                 onChange={(e) => { setName(e.target.value); setAcOpen(true); }}
                 onFocus={() => setAcOpen(true)}
                 onKeyDown={(e) => e.key === "Enter" && go()} />

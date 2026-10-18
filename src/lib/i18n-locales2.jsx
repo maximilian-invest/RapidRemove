@@ -7,14 +7,17 @@ import { PRICES } from "@/lib/pricing";
   /* ============ ITALIANO ============ */
   const it = {
     code: "it",
+    // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+    seoHomeTitle: "Elimina il tuo profilo aziendale Google: in modo permanente, legale, in 24 ore. — RapidRemove",
+    seoHomeDesc: "Google non ti lascia eliminare il tuo profilo. Noi sì. Incluse tutte le recensioni, e paghi solo dopo la rimozione riuscita.",
     riskReversal: "Rischio zero · Paghi solo dopo la rimozione riuscita",
     riskShort: "Paghi SOLO dopo la rimozione riuscita",
     nav: { how: "Come funziona", why: "Perché noi", pricing: "Prezzi", reviews: "Recensioni", faq: "FAQ", magazin: "Magazine", about: "Chi siamo", login: "Area clienti", cta: "Analisi gratis", ctaResume: "Continua" },
     hero: {
       chip: "Conforme al GDPR · Server nell'UE · 100 % legale",
-      h1a: "Elimina il tuo profilo aziendale Google:",
-      h1b: "in modo permanente, legale, in 24 ore.",
-      lead: "Google non ti lascia eliminare il tuo profilo. Noi sì. Incluse tutte le recensioni, e paghi solo dopo la rimozione riuscita.",
+      h1a: "Recensioni Google negative? Le rimuoviamo noi.",
+      h1b: "O l'intero profilo.",
+      lead: "Recensioni false, per vendetta o contrarie alle norme di Google rimosse in 1–5 giorni. Vuoi sparire del tutto da Google Maps? Eliminiamo il tuo profilo aziendale con tutte le recensioni.",
       trust: ["4,9", "260+ recensioni", "Noti da heise.de", "Senza anticipo", "Oltre 1.000 profili rimossi"],
       assure: ["Senza successo, nessun costo", "Nessun accesso al tuo account", "Risposta in pochi minuti"],
       cardEyebrow: "Verifica gratuita",
@@ -209,14 +212,17 @@ import { PRICES } from "@/lib/pricing";
   /* ============ NEDERLANDS ============ */
   const nl = {
     code: "nl",
+    // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+    seoHomeTitle: "Verwijder uw Google-bedrijfsprofiel: permanent, legaal, binnen 24 uur. — RapidRemove",
+    seoHomeDesc: "Google laat u uw eigen profiel niet verwijderen. Wij wel. Inclusief alle reviews, en u betaalt pas na succesvolle verwijdering.",
     riskReversal: "Geen risico · Betaal pas na succesvolle verwijdering",
     riskShort: "U betaalt ALLEEN na succesvolle verwijdering",
     nav: { how: "Hoe het werkt", why: "Waarom wij", pricing: "Prijzen", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "Over ons", login: "Klantportaal", cta: "Gratis check", ctaResume: "Doorgaan" },
     hero: {
       chip: "AVG-conform · Servers in de EU · 100 % legaal",
-      h1a: "Verwijder uw Google-bedrijfsprofiel:",
-      h1b: "permanent, legaal, binnen 24 uur.",
-      lead: "Google laat u uw eigen profiel niet verwijderen. Wij wel. Inclusief alle reviews, en u betaalt pas na succesvolle verwijdering.",
+      h1a: "Slechte Google-reviews? Wij verwijderen ze.",
+      h1b: "Of het hele profiel.",
+      lead: "Nepreviews, wraakreviews of reviews die de regels van Google schenden: verwijderd binnen 1–5 dagen. Wilt u helemaal weg uit Google Maps? Wij verwijderen uw bedrijfsprofiel, inclusief alle reviews.",
       trust: ["4,9", "260+ reviews", "Bekend van heise.de", "Geen vooruitbetaling", "Meer dan 1.000 profielen verwijderd"],
       assure: ["Geen succes, geen kosten", "Geen toegang tot uw account", "Antwoord binnen minuten"],
       cardEyebrow: "Gratis checken",
@@ -411,14 +417,17 @@ import { PRICES } from "@/lib/pricing";
   /* ============ PORTUGUÊS ============ */
   const pt = {
     code: "pt",
+    // Title/Description fixiert (vorher aus der Hero-Überschrift abgeleitet) – Hero-Text 18.10.2026 geändert, SEO-Snippet bewusst nicht
+    seoHomeTitle: "Elimine o seu perfil de empresa do Google: de forma permanente, legal e em 24 horas. — RapidRemove",
+    seoHomeDesc: "O Google não deixa você apagar o seu próprio perfil. Nós deixamos. Incluindo todas as avaliações, e você só paga após a remoção bem-sucedida.",
     riskReversal: "Risco zero · Pague apenas após a remoção bem-sucedida",
     riskShort: "Você paga APENAS após a remoção bem-sucedida",
     nav: { how: "Como funciona", why: "Porquê nós", pricing: "Preços", reviews: "Avaliações", faq: "FAQ", magazin: "Revista", about: "Sobre nós", login: "Portal do cliente", cta: "Análise grátis", ctaResume: "Continuar" },
     hero: {
       chip: "Conforme o RGPD · Servidores na UE · 100 % legal",
-      h1a: "Elimine o seu perfil de empresa do Google:",
-      h1b: "de forma permanente, legal e em 24 horas.",
-      lead: "O Google não deixa você apagar o seu próprio perfil. Nós deixamos. Incluindo todas as avaliações, e você só paga após a remoção bem-sucedida.",
+      h1a: "Avaliações negativas no Google? Nós removemos.",
+      h1b: "Ou o perfil inteiro.",
+      lead: "Avaliações falsas, por vingança ou que violam as regras do Google, removidas em 1–5 dias. Quer sair do Google Maps de vez? Eliminamos o seu perfil de empresa com todas as avaliações.",
       trust: ["4,9", "260+ avaliações", "Conhecidos da heise.de", "Sem pagamento antecipado", "Mais de 1.000 perfis removidos"],
       assure: ["Sem sucesso, sem custo", "Sem acesso à sua conta", "Resposta em minutos"],
       cardEyebrow: "Verifique grátis",

@@ -213,7 +213,7 @@ section{position:relative;}
 /* Preis-Hinweis direkt unter der Headline */
 .hero-pricetag{display:inline-flex;align-items:center;gap:9px;margin:16px 0 0;padding:7px 14px;background:var(--neutral-50);border:1px solid var(--hairline);border-radius:var(--r-pill);font-size:14.5px;font-weight:700;color:var(--fg-2);max-width:100%;}
 .hero-pricetag svg{color:var(--success);flex:none;}
-.hero-pricetag b{color:var(--fg);font-weight:800;}
+.hero-pricetag b{color:var(--fg);font-weight:800;white-space:nowrap;}
 .hero-pricetag .sep{margin:0 8px;color:var(--fg-muted);}
 .hero-trustline{display:flex;align-items:center;gap:14px 18px;margin-top:28px;flex-wrap:wrap;font-size:13.5px;font-weight:700;color:var(--fg-2);}
 .hero-trustline .dot{width:4px;height:4px;border-radius:50%;background:var(--hairline-strong);}
@@ -713,4 +713,12 @@ a.tb-item:hover{color:var(--primary);}
 /* Netto-Hinweis beim Preis (AGB 6.1: alle Preise zzgl. USt) */
 .vat-n{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--fg-muted);letter-spacing:0;white-space:nowrap;text-decoration:none;}
 .hero-pricetag .vat-n{margin-left:5px;}
+/* Hero außerhalb DACH: zwei Einstiege (Bewertungen / ganzes Profil) */
+.hero-dual{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px;}
+.hero-dual .btn{padding:15px 26px;font-size:16px;text-decoration:none;}
+@media(max-width:920px){
+  .hero-pricetag{border-radius:16px;font-size:13.5px;line-height:1.45;}
+  .hero-dual{margin-top:16px;gap:8px;}
+  .hero-dual .btn{flex:1 1 0;justify-content:center;padding:12px 14px;font-size:14.5px;text-align:center;white-space:normal;line-height:1.2;}
+}
 .value-anchor .va-new .vat-n{display:block;margin-top:2px;}

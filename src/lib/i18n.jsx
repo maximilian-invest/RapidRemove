@@ -297,9 +297,9 @@ const I18N = {
     nav: { how: "How it works", why: "Why us", pricing: "Pricing", reviews: "Reviews", faq: "FAQ", magazin: "Magazine", about: "About us", login: "Customer portal", cta: "Free check", ctaResume: "Continue" },
     hero: {
       chip: "GDPR-compliant · EU servers · 100% legal",
-      h1a: "Delete your Google Business Profile –",
-      h1b: "permanently, legally, in 24 hours.",
-      lead: "Google won't let you delete your own profile. We will. Including every review – and you only pay after it's successfully removed.",
+      h1a: "Bad Google reviews? We remove them.",
+      h1b: "Or the whole profile.",
+      lead: "Fake, revenge or policy-violating reviews taken down in 1–5 days. Want out of Google Maps entirely? We delete your Business Profile, every review included.",
       trust: ["4.9", "260+ reviews", "As seen on heise.de", "No upfront payment", "1,000+ profiles removed"],
       assure: ["No success, no cost", "No access to your account", "Reply usually in minutes"],
       cardEyebrow: "Check for free",
