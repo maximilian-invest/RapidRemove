@@ -15,6 +15,7 @@ import { checkRemoval, removalShot } from "./removalCheck";
 import { checkRemovalStrict } from "./removalScan";
 import { probeReviewLink } from "./linkProbe";
 import { expandShortLink } from "./monitor";
+import { applySwTariff } from "./swTariff";
 import { notifyTeam } from "./notify";
 import { partnerStatusChanged, SW_NOTE_PAID, SW_NOTE_DECLINED, SW_NOTE_APPROVED, SW_NOTE_COVERED, swStartAllowed, partnerToDash, autopayHooks } from "./customers";
 import { lpOf, PRICE_V2_OTHER, EXPRESS_PARTNER_H } from "./reviewsPricing";
@@ -111,7 +112,9 @@ export async function initPartnerTables(): Promise<void> {
   // Software-Fälle bekommt der Partner mit dem Software-Preis bezahlt (offene, noch nicht ausgezahlte Aufgaben).
   // Kunden mit eigenem Partner-Software-Preis (sw_price_usd, Admin → Kunden & Preise) ausgenommen.
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS sw_price_usd numeric`);
-  await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND sw_price_usd IS NULL AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1`, [PARTNER_PRICES.nt]).catch(() => {});
+  // 18.10.2026: Software-Tarif (swTariff.ts) – sw_at = seit wann freigegeben (Wochenzählung 150/110). Diese Aufgaben nicht mehr anheben.
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS sw_at timestamptz`);
+  await pool.query(`UPDATE partner_tasks SET price_usd=$1 WHERE method='sw' AND sw_price_usd IS NULL AND status IN ('new','software','working') AND paid_at IS NULL AND price_usd < $1 AND sw_at IS NULL`, [PARTNER_PRICES.nt]).catch(() => {});
   // Seit wann „Working" (Mobil-Board zeigt „Working · 3 h 20 min").
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS working_since timestamptz`);
   // Express (Preismodell 2, nur 250er): Start des 24-Std.-Timers beim Partner (Kunde: 30 Std.). NULL = kein Express.
@@ -321,7 +324,8 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
     const price = Number(it.pUsd) > 0 ? Number(it.pUsd) : Number.isFinite(Number(it.price)) && Number(it.price) > 0 ? Number(it.price) : csPrice > 0 ? csPrice : await partnerPrice(pid, svc);
     // Wird eine normale Bewertung später zum Software-Fall, bekommt der Partner dafür diesen Preis (null = wie bisher).
     // Preismodell 2: 250er-Bewertungen decken Software ab → Software-Preis des Partners schon jetzt hinterlegen.
-    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : csSw > 0 ? csSw : v250 ? await partnerPrice(pid, "sw") : null;
+    // 18.10.2026: nur noch AUSDRÜCKLICHE Partner-Software-Preise – sonst entscheidet der Software-Tarif (150 / ab dem 11. Fall der Woche 110).
+    const swPrice = kind === "profile" ? null : Number(it.pSw) > 0 ? Number(it.pSw) : csSw > 0 ? csSw : null;
     // 250er: Software-Fall darf sofort starten (kein Warten auf den Kunden). Express: 24-Std.-Timer ab jetzt.
     const covNote = v250 && (it.nt === true || it.sw === true || xNow) ? (xNow ? "EXPRESS · " : "") + SW_NOTE_COVERED : null;
     const cust = clip(it.business, 160) || customer; // Bulk (gemischte Profile): Partner-Board gruppiert nach Profilname der Bewertung
@@ -340,10 +344,17 @@ async function insertPartnerTasks(orderId: string | null, customer: string | nul
         it.kind === "profile" ? null : it.nt === true || it.sw === true || xNow ? "sw" : it.old === true ? "legal" : null, pid, swPrice, covNote, xNow],
     );
     let row = r.rows[0] as Row;
+    const isNew = !row.code;
     if (!row.code) {
       const u = await pool.query(`UPDATE partner_tasks SET code = 'RV-' || lpad(id::text, 4, '0') WHERE id=$1 RETURNING *`, [row.id]);
       row = u.rows[0] as Row;
       fresh.push({ code: row.code, kind: row.kind, price: num(row.price_usd), pid: row.partner_id ? Number(row.partner_id) : pid }); // neu angelegt → Partner benachrichtigen
+    }
+    // Schon als Software bestellt (ohne Text / Software / Express / 250er) → Software-Tarif gilt ab jetzt.
+    if (isNew && row.code && kind !== "profile" && (it.nt === true || it.sw === true || xNow)) {
+      await applySwTariff([row.id]).catch(() => {});
+      const re = await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [row.id]).catch(() => ({ rows: [] as Row[] }));
+      if (re.rows[0]) { row = re.rows[0] as Row; const f = fresh.find((x) => x.code === row.code); if (f) f.price = num(row.price_usd); }
     }
     out.push(row);
   }

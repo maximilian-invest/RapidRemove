@@ -16,6 +16,7 @@ import type { FastifyInstance } from "fastify";
 import { pool, setOrderRawField, insertEvent } from "./db";
 import { notifyTeam } from "./notify";
 import { notifyPartner } from "./partnerNotify";
+import { applySwTariff } from "./swTariff";
 import { ensureReviewsAmountLink } from "./reviewsSetup";
 import { hasSecretKey, stripeList } from "./integrations/stripe";
 import { wiseAccounts, wiseBankFor } from "./wiseAccounts";
@@ -285,9 +286,10 @@ async function applyPaid(orderId: string, p: CustPayment): Promise<void> {
     await setDecisions(o, ks, "accepted");
     const u = await pool.query(
       `UPDATE partner_tasks SET status='working', working_since=now(), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL, ${appendNote("admin_note", 3)}
-        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible','cancelled')`,
+        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible','cancelled') RETURNING id`,
       [o, ks, SW_NOTE_PAID],
-    ).catch(() => ({ rowCount: 0 }));
+    ).catch(() => ({ rowCount: 0, rows: [] as { id: string }[] }));
+    await applySwTariff((u.rows || []).map((x) => x.id)).catch(() => {}); // Partner: 150 USD (ab dem 11. Software-Fall der Woche 110)
     n += ks.length;
     await insertEvent({ orderId: o, type: "note", title: "Kunde: Software-Vorauszahlung bezahlt", detail: `${ks.length} Bewertung(en) · Partner-Aufgabe(n) → Working (${u.rowCount ?? 0})`, auto: true }).catch(() => {});
   }
@@ -308,11 +310,11 @@ export async function approveCovered(orderId: string, keys: string[]): Promise<n
   if (!pool || !keys.length) return 0;
   const u = await pool.query(
     `UPDATE partner_tasks SET status='working', working_since=COALESCE(working_since, now()), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL,
-        price_usd = CASE WHEN sw_price_usd IS NOT NULL AND sw_price_usd > price_usd AND paid_at IS NULL THEN sw_price_usd ELSE price_usd END,
         ${appendNote("admin_note", 3)}
-      WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING code, test`,
+      WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING id, code, test`,
     [orderId, keys, SW_NOTE_COVERED],
-  ).catch(() => ({ rows: [] as { code: string; test: boolean }[] }));
+  ).catch(() => ({ rows: [] as { id: string; code: string; test: boolean }[] }));
+  await applySwTariff(u.rows.map((x) => x.id)).catch(() => {}); // Partner: 150 USD (ab dem 11. Software-Fall der Woche 110)
   const codes = u.rows.map((x) => x.code).filter(Boolean);
   const test = u.rows.some((x) => x.test);
   if (u.rows.length) {
@@ -331,9 +333,10 @@ export async function approveSoftwareDeferred(groups: Map<string, string[]>, why
     await setDecisions(o, ks, "accepted", true);
     const u = await pool.query(
       `UPDATE partner_tasks SET status='working', working_since=now(), touched_at=COALESCE(touched_at, now()), updated_at=now(), removed_at=NULL, ${appendNote("admin_note", 3)}
-        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING code, test`,
+        WHERE order_id=$1 AND item_key = ANY($2::text[]) AND status IN ('new','software','not_possible') RETURNING id, code, test`,
       [o, ks, SW_NOTE_APPROVED],
-    ).catch(() => ({ rows: [] as { code: string; test: boolean }[], rowCount: 0 }));
+    ).catch(() => ({ rows: [] as { id: string; code: string; test: boolean }[], rowCount: 0 }));
+    await applySwTariff(u.rows.map((x) => x.id)).catch(() => {}); // Partner: 150 USD (ab dem 11. Software-Fall der Woche 110)
     u.rows.forEach((x) => { if (x.code) codes.push(x.code); if (x.test) test = true; });
     n += ks.length;
     await insertEvent({ orderId: o, type: "note", title: `Software freigegeben ohne Vorauszahlung (${why})`, detail: `${ks.length} Bewertung(en) · Partner startet · Abbuchung von der hinterlegten Zahlungsart erst bei Erfolg`, auto: true }).catch(() => {});
