@@ -9,7 +9,7 @@ import { IMG, ageMin, fmtAge, orderMoney, money, ST, bucketsOf, mainBucket, SERV
 import { Avatar, KTag } from "./OrdersScreens";
 import { ChecksScreen } from "./Checks";
 import { GlobalActivityScreen } from "./Activity";
-import { monitorShotUrl, testPurgeApi } from "@/lib/admin-api";
+import { monitorShotUrl, testPurgeApi, expressStatus, expressSet } from "@/lib/admin-api";
 import PartnerStatsScreen from "./PartnerStats";
 import SiteChatsScreen from "./SiteChats";
 import PayoutsScreen from "./Payouts";
@@ -217,6 +217,7 @@ function SettingsScreen({ ctx }) {
     <>
       <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
+      <ExpressToggle ctx={ctx} />
       <RoutesBlock ctx={ctx} />
       <div className="sec3"><h2>PayPal / Wise −10 %</h2></div>
       <p className="sh">Rabatt-Angebot am Ende des Checkouts (nur außerhalb DACH), im Website-Chat und vom Chatbot. Aus = Kunden zahlen normal per Karte/Zahlungsart.</p>
@@ -229,6 +230,34 @@ function SettingsScreen({ ctx }) {
         ))}
       </div>
       <TestPurge ctx={ctx} />
+    </>
+  );
+}
+
+/* Express-Löschung an/aus (20.10.2026): aus = Website, Dashboard-Bestellung und Chat zeigen „Gerade nicht verfügbar – schauen Sie
+   zu einem späteren Zeitpunkt nochmal vorbei." Laufende Express-Aufträge bleiben unverändert. */
+function ExpressToggle({ ctx }) {
+  const { toast } = ctx;
+  const [on, setOn] = React.useState(null);
+  const [busy, setBusy] = React.useState(false);
+  React.useEffect(() => { expressStatus().then((j) => setOn(j.on !== false)).catch(() => setOn(null)); }, []);
+  const flip = async () => {
+    if (on === null) return;
+    setBusy(true);
+    try { const j = await expressSet(!on); setOn(j.on !== false); toast(j.on ? "Express ist wieder buchbar" : "Express ausgeschaltet – Kunden sehen „Gerade nicht verfügbar\""); }
+    catch (e) { toast("Fehler: " + e.message); }
+    setBusy(false);
+  };
+  return (
+    <>
+      <div className="sec3"><h2>Express-Löschung</h2></div>
+      <p className="sh">Aus = Kunden können Express nicht buchen (Website, Dashboard-Bestellung, Chat). Dort steht dann „Gerade nicht verfügbar – schauen Sie zu einem späteren Zeitpunkt nochmal vorbei.“ Laufende Express-Aufträge laufen normal weiter.</p>
+      <div className="info">
+        <button type="button" className="ir" disabled={on === null || busy} onClick={flip}>
+          <span className="ico"><Zap /></span><span className="t"><b>Express buchbar</b><span>{on === null ? "…" : on ? "An – Kunden können Express (+100 je 250er) wählen" : "Aus – „Gerade nicht verfügbar“"}</span></span>
+          <span className={"tg" + (on ? " on" : "")}><i /></span>
+        </button>
+      </div>
     </>
   );
 }

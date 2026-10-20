@@ -2,6 +2,7 @@
    Preis-Blatt, Kasse). Preise kommen aus pricing.js (PRICE_V2_FRESH / PRICE_V2_OTHER / EXPRESS_FEE / EXPRESS_HOURS). */
 const XP = {
   de: {
+    na: "Gerade nicht verfügbar – schauen Sie zu einem späteren Zeitpunkt nochmal vorbei.", naS: "Nicht verfügbar",
     label: "Tempo", h: "Wie schnell soll es gehen?", sub: "Standard reicht in den meisten Fällen. Wenn es eilt, kommen Ihre Bewertungen ganz nach vorne.",
     stdT: "Standard", stdD: "Meist innerhalb von 1–2 Wochen gelöscht", stdP: "Inklusive", stdS: "ohne Aufpreis",
     xT: "Express", xD: (h) => `Höchste Priorität – Ziel: gelöscht innerhalb von ${h} Stunden`, xS: "je Bewertung · entfällt, wenn wir es nicht schaffen", xBadge: "Am schnellsten",
@@ -19,6 +20,7 @@ const XP = {
     t3: ["Express", (h, p) => `Nur für Bewertungen zu ${p}: Mo–Fr 12:00 gelöscht in ${h} Std., danach und am Wochenende bis Dienstag 24:00 – sonst entfällt der Aufpreis automatisch`],
   },
   en: {
+    na: "Currently unavailable – please check back later.", naS: "Unavailable",
     label: "Speed", h: "How fast should it go?", sub: "Standard is enough for most cases. If it's urgent, your reviews jump to the front of the queue.",
     stdT: "Standard", stdD: "Usually removed within 1–2 weeks", stdP: "Included", stdS: "no extra cost",
     xT: "Express", xD: (h) => `Top priority – target: removed within ${h} hours`, xS: "per review · dropped if we miss it", xBadge: "Fastest",
@@ -36,6 +38,7 @@ const XP = {
     t3: ["Express", (h, p) => `Only for reviews at ${p}: removed within ${h} h (Mon–Fri until 12:00), otherwise by Tuesday midnight – or the surcharge is dropped automatically`],
   },
   es: {
+    na: "No disponible en este momento – vuelva a consultarlo más tarde.", naS: "No disponible",
     label: "Rapidez", h: "¿Con qué rapidez?", sub: "El estándar basta en la mayoría de los casos. Si es urgente, tus reseñas pasan al primer lugar de la cola.",
     stdT: "Estándar", stdD: "Normalmente eliminadas en 1–2 semanas", stdP: "Incluido", stdS: "sin coste extra",
     xT: "Exprés", xD: (h) => `Máxima prioridad – objetivo: eliminada en ${h} horas`, xS: "por reseña · se anula si no lo logramos", xBadge: "La más rápida",
@@ -53,6 +56,7 @@ const XP = {
     t3: ["Exprés", (h, p) => `Solo para reseñas de ${p}: eliminada en ${h} h (lun–vie hasta las 12:00); si no, hasta el martes a medianoche – o el recargo se anula automáticamente`],
   },
   fr: {
+    na: "Actuellement indisponible – revenez un peu plus tard.", naS: "Indisponible",
     label: "Rapidité", h: "À quelle vitesse ?", sub: "La formule standard suffit dans la plupart des cas. En cas d'urgence, vos avis passent en tête de file.",
     stdT: "Standard", stdD: "Généralement supprimés en 1 à 2 semaines", stdP: "Inclus", stdS: "sans supplément",
     xT: "Express", xD: (h) => `Priorité maximale – objectif : supprimé en ${h} heures`, xS: "par avis · annulé si nous n'y arrivons pas", xBadge: "Le plus rapide",
@@ -70,6 +74,7 @@ const XP = {
     t3: ["Express", (h, p) => `Uniquement pour les avis à ${p} : supprimé en ${h} h (lun–ven jusqu'à 12h00), sinon d'ici mardi minuit – ou le supplément est annulé automatiquement`],
   },
   it: {
+    na: "Al momento non disponibile – riprova più tardi.", naS: "Non disponibile",
     label: "Velocità", h: "Quanto in fretta?", sub: "Lo standard basta nella maggior parte dei casi. Se è urgente, le tue recensioni passano in testa alla coda.",
     stdT: "Standard", stdD: "Di solito rimosse in 1–2 settimane", stdP: "Incluso", stdS: "senza supplemento",
     xT: "Express", xD: (h) => `Massima priorità – obiettivo: rimossa entro ${h} ore`, xS: "per recensione · annullato se non ci riusciamo", xBadge: "La più veloce",
@@ -87,6 +92,7 @@ const XP = {
     t3: ["Express", (h, p) => `Solo per recensioni da ${p}: rimossa entro ${h} h (lun–ven fino alle 12:00), altrimenti entro martedì a mezzanotte – o il supplemento viene annullato automaticamente`],
   },
   nl: {
+    na: "Op dit moment niet beschikbaar – kom later nog eens terug.", naS: "Niet beschikbaar",
     label: "Snelheid", h: "Hoe snel moet het?", sub: "Standaard volstaat in de meeste gevallen. Is het dringend, dan gaan uw reviews vooraan in de rij.",
     stdT: "Standaard", stdD: "Meestal binnen 1–2 weken verwijderd", stdP: "Inbegrepen", stdS: "geen meerprijs",
     xT: "Express", xD: (h) => `Hoogste prioriteit – doel: verwijderd binnen ${h} uur`, xS: "per review · vervalt als het ons niet lukt", xBadge: "Snelst",
@@ -104,6 +110,7 @@ const XP = {
     t3: ["Express", (h, p) => `Alleen voor reviews van ${p}: verwijderd binnen ${h} u (ma–vr tot 12:00), anders uiterlijk dinsdag middernacht – of de toeslag vervalt automatisch`],
   },
   pt: {
+    na: "De momento indisponível – volte a verificar mais tarde.", naS: "Indisponível",
     label: "Rapidez", h: "Com que rapidez?", sub: "O padrão chega na maioria dos casos. Se for urgente, as suas avaliações passam para a frente da fila.",
     stdT: "Padrão", stdD: "Normalmente removidas em 1–2 semanas", stdP: "Incluído", stdS: "sem custo extra",
     xT: "Expresso", xD: (h) => `Prioridade máxima – objetivo: removida em ${h} horas`, xS: "por avaliação · anulado se não conseguirmos", xBadge: "Mais rápido",
@@ -121,6 +128,7 @@ const XP = {
     t3: ["Expresso", (h, p) => `Só para avaliações de ${p}: removida em ${h} h (seg–sex até às 12:00), caso contrário até terça à meia-noite – ou a taxa é anulada automaticamente`],
   },
   ja: {
+    na: "現在ご利用いただけません。時間をおいて再度ご確認ください。", naS: "利用不可",
     label: "スピード", h: "どのくらい急ぎますか？", sub: "ほとんどの場合は標準で十分です。お急ぎの場合は、口コミを最優先で対応します。",
     stdT: "標準", stdD: "通常1〜2週間で削除", stdP: "込み", stdS: "追加料金なし",
     xT: "エクスプレス", xD: (h) => `最優先対応 – 目標：${h}時間以内に削除`, xS: "口コミ1件あたり・達成できなければ不要", xBadge: "最速",
@@ -138,6 +146,7 @@ const XP = {
     t3: ["エクスプレス", (h, p) => `${p}の口コミのみ：月〜金12:00までは${h}時間以内、それ以降と週末は火曜24:00までに削除。できなければ追加料金は自動的に不要`],
   },
   sv: {
+    na: "Inte tillgängligt just nu – titta in igen senare.", naS: "Ej tillgängligt",
     label: "Tempo", h: "Hur snabbt ska det gå?", sub: "Standard räcker i de flesta fall. Är det bråttom hamnar dina omdömen först i kön.",
     stdT: "Standard", stdD: "Tas oftast bort inom 1–2 veckor", stdP: "Ingår", stdS: "utan extra kostnad",
     xT: "Express", xD: (h) => `Högsta prioritet – mål: borttaget inom ${h} timmar`, xS: "per omdöme · stryks om vi inte hinner", xBadge: "Snabbast",
@@ -155,6 +164,7 @@ const XP = {
     t3: ["Express", (h, p) => `Bara för omdömen à ${p}: borttaget inom ${h} h (mån–fre till 12:00), annars senast tisdag midnatt – annars stryks tillägget automatiskt`],
   },
   da: {
+    na: "Ikke tilgængelig lige nu – kig forbi igen senere.", naS: "Ikke tilgængelig",
     label: "Tempo", h: "Hvor hurtigt skal det gå?", sub: "Standard er nok i de fleste tilfælde. Haster det, kommer dine anmeldelser forrest i køen.",
     stdT: "Standard", stdD: "Fjernes oftest inden for 1–2 uger", stdP: "Inkluderet", stdS: "uden merpris",
     xT: "Ekspres", xD: (h) => `Højeste prioritet – mål: fjernet inden for ${h} timer`, xS: "pr. anmeldelse · bortfalder, hvis vi ikke når det", xBadge: "Hurtigst",
@@ -172,6 +182,7 @@ const XP = {
     t3: ["Ekspres", (h, p) => `Kun for anmeldelser til ${p}: fjernet inden for ${h} t (man–fre til kl. 12:00), ellers senest tirsdag kl. 24:00 – ellers bortfalder tillægget automatisk`],
   },
   no: {
+    na: "Ikke tilgjengelig akkurat nå – se innom igjen senere.", naS: "Ikke tilgjengelig",
     label: "Tempo", h: "Hvor raskt skal det gå?", sub: "Standard holder i de fleste tilfeller. Haster det, kommer omtalene dine først i køen.",
     stdT: "Standard", stdD: "Fjernes oftest innen 1–2 uker", stdP: "Inkludert", stdS: "uten tillegg",
     xT: "Ekspress", xD: (h) => `Høyeste prioritet – mål: fjernet innen ${h} timer`, xS: "per omtale · faller bort hvis vi ikke rekker det", xBadge: "Raskest",

@@ -1644,3 +1644,8 @@ a.pb-rec:hover{background:var(--orange-100);border-color:var(--orange-300);}
 .bpx-cmp .r.x.on .bar i{background:var(--primary)}
 .bpx-swn{margin-top:16px}
 @media (max-width:600px){.bpx-cmp .r{grid-template-columns:62px minmax(0,1fr) 70px}}
+/* 20.10.2026: Express im Admin ausgeschaltet → „Gerade nicht verfügbar" */
+.bpx-na{cursor:default;opacity:.7;background:var(--g1,#f4f4f4)!important;box-shadow:none!important;border-style:dashed!important}
+.bpx-na .rd{opacity:.35}
+.bpx-na .pr strong{font-size:14px;color:var(--muted,#777)}
+.bpr-cos .ln.xo.na b.na{font-size:13px;opacity:.7;font-weight:600}

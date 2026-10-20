@@ -16,6 +16,7 @@ import type { FastifyInstance } from "fastify";
 import { pool } from "../db";
 import { logCustEvent } from "../custTrack";
 import { KNOWLEDGE } from "./knowledge";
+import { expressOn } from "../expressSwitch";
 import { quoteReviews, listPriceV2 } from "../reviewsPricing";
 import { resolveReviewLink } from "../monitor";
 import { fetchPlaceReviews, findPlaceReview, serpKey } from "../reviewsFetch";
@@ -25,6 +26,11 @@ import { payDiscountEnabled } from "../partner";
 import { newOrderEnabled } from "../custNewOrder";
 /** Aktuelle Einstellung PayPal/Wise −10 % (Admin → Einstellungen) als Zusatz zum System-Prompt – überschreibt alles darüber. */
 async function discLine(): Promise<string> {
+  const x = await expressOn().catch(() => true);
+  const xl = x ? "" : `\n\nCURRENT SETTING (overrides everything above): Express removal is currently NOT available. If asked, say Express is unavailable right now and to check back later; never offer or book Express. Standard timeframes still apply.`;
+  return (await discLine0()) + xl;
+}
+async function discLine0(): Promise<string> {
   const [p, r] = await Promise.all([payDiscountEnabled("profiles").catch(() => true), payDiscountEnabled("reviews").catch(() => true)]);
   if (p && r) return "";
   const off = [!p ? "profile removals (remove/reset)" : "", !r ? "single reviews" : ""].filter(Boolean).join(" and ");

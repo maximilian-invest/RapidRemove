@@ -763,3 +763,7 @@ export const pricingDefault = (cur, tiers, sw, partnerTiers, partnerSw, tol) => 
 export const pricingInvite = (email) => adminPost("/admin/pricing/invite", { email });
 export const pricingCustomer = (p) => adminPost("/admin/pricing/customer", p);
 export const pricingNewOrder = (on) => adminPost("/admin/pricing/new-order", { on });
+
+/* Express-Löschung an/aus (20.10.2026) – Status öffentlich, Schalten nur Admin. */
+export const expressStatus = async () => { const r = await fetch(OPS + "/express-status", { cache: "no-store" }); return r.json(); };
+export const expressSet = (on) => adminPost("/admin/express", { on });

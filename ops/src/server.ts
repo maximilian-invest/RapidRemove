@@ -21,6 +21,7 @@ import { payLinkFor, reviewsLinkFor } from "./paymentLinks";
 import { runExpressSetup } from "./expressSetup";
 import { runReviewsSetup, ensureReviewsLink, ensureReviewsAmountLink, upgradeReviewLinks, linkUpgrade, enableInvoicesAllLinks, invoiceUpgrade } from "./reviewsSetup";
 import { registerCustNewOrder } from "./custNewOrder";
+import { registerExpressSwitch, expressOn } from "./expressSwitch";
 import { quoteReviews, fmtReviewMoney, chatPctOf, payPctOf, reviewMethod, cpOf, listPriceV2, lpOf, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_CUSTOMER_H, type PricedItem } from "./reviewsPricing";
 import { CHAT_INTERNAL } from "./chat/chat";
 import { BULK_INTERNAL, registerCustBulk } from "./custBulk";
@@ -201,6 +202,7 @@ function normRedirectDest(input: string): string {
 app.register(stripeWebhook);
 // Partner-Board (Übergabe einzelner Bewertungen an den Lösch-Partner, geheimer Link).
 registerPartnerRoutes(app, ADMIN_TOKEN);
+registerExpressSwitch(app, ADMIN_TOKEN); // Express-Löschung an/aus (Admin → Einstellungen)
 registerVerifyRoutes(app, ADMIN_TOKEN); // Inhaber-Nachweis bei 4–5-Sterne-Bewertungen (KI-Prüfung)
 registerReasonsRoutes(app, ADMIN_TOKEN); // Gründe je Bewertung + Zusicherung im Dashboard (Start erst danach)
 registerAutopayRoutes(app); // Automatisch bezahlen (hinterlegte Zahlungsart) – Test-Konten: STRIPE_TEST_SECRET_KEY, live nur mit AUTOPAY_LIVE=on
@@ -558,7 +560,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
   // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (99 frisch / 250 alles andere). Nicht bei Bulk und
   // nicht bei Kunden-Konditionen (cp). Express (+100, Ziel 30 Std.) nur für 250er und nur, wenn im Bestellprozess gewählt.
   if (isReviews && !bulk) {
-    const wantX = b.reviewExpress === true;
+    const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren
     let nx = 0;
     for (const it of reviewItems) {
       if (cpOf(it)) continue;

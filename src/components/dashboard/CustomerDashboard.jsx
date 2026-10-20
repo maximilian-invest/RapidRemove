@@ -18,6 +18,7 @@ import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
 import { reviewQuote, vatNote, listPriceV2, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue } from "@/lib/express-copy";
+import { useExpressOn } from "@/lib/express-status";
 import { searchProfiles } from "@/lib/places";
 import "@/styles/dashboard.css";
 import PasskeyOffer, { PasskeyLoginButton } from "@/components/PasskeyOffer";
@@ -687,7 +688,7 @@ const fileB64 = (f) => new Promise((res, rej) => { const r = new FileReader(); r
 
 /* 17.10.2026: Zwischenschritt „Wie schnell?" auch im Dashboard (wie im Website-Bestellprozess) – nur wenn 250er gewählt sind.
    Express +100 je 250er: Start Mo–Fr 12:00 → 30 Std., sonst spätestens Dienstag 24:00 (Wiener Zeit, angezeigt in Ortszeit). */
-function SpeedPick({ xOn, setXOn, n99, n250, cur }) {
+function SpeedPick({ xOn, setXOn, n99, n250, cur, avail = true }) {
   const xp = xpCopy(LANG);
   const xwk = expressWeekend();
   const xd = xwk ? fmtXDue(expressDueMs(), LANG) : "";
@@ -698,18 +699,25 @@ function SpeedPick({ xOn, setXOn, n99, n250, cur }) {
           <span className="cb rd">{!xOn ? <Check /> : null}</span>
           <span className="t"><span className="a">{xp.stdT}<em className="sp-p">{xp.stdP}</em></span><span className="x">{n250 && n99 ? xp.tfLine(xp.d99, xp.cmpStdV) : xp.stdD}</span></span>
         </button>
+        {avail ? (
         <button type="button" className={"ar-row sp x" + (xOn ? " on" : "")} onClick={() => setXOn(true)} aria-pressed={xOn}>
           <span className="cb rd">{xOn ? <Check /> : null}</span>
           <span className="t"><span className="a"><Zap className="sp-z" />{xp.xT}<em className="sp-p">+{money(EXPRESS_FEE, cur)}</em></span><span className="x">{xwk ? xp.xBy(xd) : xp.xD(EXPRESS_HOURS)}</span><span className="x sm">{xp.xS}</span></span>
         </button>
+        ) : (
+        <div className="ar-row sp x na" aria-disabled="true">
+          <span className="cb rd" />
+          <span className="t"><span className="a"><Zap className="sp-z" />{xp.xT}<em className="sp-p">{xp.naS}</em></span><span className="x">{xp.na}</span></span>
+        </div>
+        )}
       </div>
-      {xOn ? (
+      {xOn && avail ? (
         <ul className="sp-g">
           <li><Check />{xp.g1}</li>
           <li><Check />{xwk ? xp.g3By(xd) : xp.g3(EXPRESS_HOURS)}</li>
         </ul>
       ) : null}
-      <div className="note sp-n">{xp.startNote}{xwk ? " " + xp.xWk : ""}{n99 ? " " + xp.only(n99) : ""}</div>
+      {avail || n99 ? <div className="note sp-n">{avail ? xp.startNote + (xwk ? " " + xp.xWk : "") + " " : ""}{n99 ? xp.only(n99) : ""}</div> : null}
     </>
   );
 }
@@ -740,6 +748,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
   const [xOn, setXOn] = React.useState(false); // Express (Zwischenschritt „Wie schnell?")
+  const xAvail = useExpressOn() !== false; // Admin-Schalter Express
   const [spFrom, setSpFrom] = React.useState("pick"); // pick | links – woher der Tempo-Schritt kam
   // Von Hand (14.10.2026): Bewertungs-Links einzeln einfügen, jeder wird geprüft → Preis sofort.
   const rowSeq = React.useRef(0);
@@ -856,7 +865,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     if (canX && step !== "speed") { setSpFrom("pick"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, express: canX && xOn, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, express: canX && xOn && xAvail, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
       setOid(r.orderId); setDoneN(pick.length); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -888,7 +897,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   // Tempo-Schritt nur bei 250ern und normalen Preisen (eigene Kunden-Staffel → kein Express, wie im Backend).
   const lpc = lpCount(selQ);
   const canX = lpc.n250 > 0 && flatP == null;
-  const xMax = canX && xOn ? lpc.n250 * EXPRESS_FEE : 0;
+  const xMax = canX && xOn && xAvail ? lpc.n250 * EXPRESS_FEE : 0;
   const lOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (!agb || !fagg) { setCErr(true); return; }
@@ -896,7 +905,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     if (canX && step !== "speed") { setSpFrom("links"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, express: canX && xOn, links: okRows.map((x) => x.url) });
+      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, express: canX && xOn && xAvail, links: okRows.map((x) => x.url) });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : T("noErr"), true); }
     setBusy(false);
@@ -1073,7 +1082,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                 <button type="button" className="bu-back" onClick={() => setStep(spFrom)}><ArrowLeft />{xpCopy(LANG).label}</button>
                 <h2>{xpCopy(LANG).h}</h2>
                 <p>{xpCopy(LANG).sub}</p>
-                <SpeedPick xOn={xOn} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={handCur} />
+                <SpeedPick xOn={xOn && xAvail} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={handCur} avail={xAvail} />
               </div>
               <div className="fl-foot pgf">
                 <div className="ar-max">{T("noMax", { amount: net(money(handMax + xMax, handCur)) })}</div>
@@ -1158,6 +1167,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [pick, setPick] = React.useState([]);
   const [busy, setBusy] = React.useState(false);
   const [spd, setSpd] = React.useState(false); // Zwischenschritt „Wie schnell?" (nur bei 250ern)
+  const xAvail = useExpressOn() !== false; // Admin-Schalter Express
   const [xOn, setXOn] = React.useState(false);
   const oid = order && order.id;
   React.useEffect(() => {
@@ -1175,7 +1185,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
     if (canX && !spd) { setSpd(true); return; }
     setBusy(true);
-    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
+    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn && xAvail }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
     catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
@@ -1191,7 +1201,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
                 <button type="button" className="bu-back" onClick={() => setSpd(false)}><ArrowLeft />{xpCopy(LANG).label}</button>
                 <h2>{xpCopy(LANG).h}</h2>
                 <p>{xpCopy(LANG).sub}</p>
-                <SpeedPick xOn={xOn} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={order.cur} />
+                <SpeedPick xOn={xOn && xAvail} setXOn={setXOn} n99={lpc.n99} n250={lpc.n250} cur={order.cur} avail={xAvail} />
               </>
             ) : <>
             <h2>{T("arH")}</h2>
@@ -1219,7 +1229,7 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
             </>}
           </div>
           <div className="fl-foot pgf">
-            {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total + (spd && xOn ? lpc.n250 * EXPRESS_FEE : 0), order.cur)) })}</div> : null}
+            {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total + (spd && xOn && xAvail ? lpc.n250 * EXPRESS_FEE : 0), order.cur)) })}</div> : null}
             {sel.length && !spd ? <TfLine {...lpc} /> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>

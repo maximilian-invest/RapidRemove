@@ -6,6 +6,7 @@ import useSwipeClose from "@/components/dashboard/useSwipeClose";
 import { useLang } from "@/lib/lang-context";
 import { money, profileFor, reviewQuote, reviewMethod, addrCountry, vatNote, REVIEW_OLD_DAYS, REVIEW_OLD_SURCHARGE, REVIEW_NOTEXT_PRICE, listPriceV2, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue, fmtXDueShort } from "@/lib/express-copy";
+import { useExpressOn } from "@/lib/express-status";
 import { searchProfiles, placesEnabled, manualCandidate } from "@/lib/places";
 import { submitOrder, submitCheck, reviewsPickerEnabled, fetchProfileReviews, findReviewByLink, fetchPayDiscount } from "@/lib/order";
 import { readAttribution, readLastTouch, attributionPayload } from "@/lib/attribution";
@@ -1846,6 +1847,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   // Preismodell 2: Express für die 250er-Bewertungen (eigener Schritt „Wie schnell?" zwischen Bewertungen und Kasse).
   const [rvx, setRvx] = React.useState(R ? !!R.rvx : false);
   const [tempoOn, setTempoOn] = React.useState(false);
+  // Admin-Schalter (20.10.2026): Express aus → Option „Gerade nicht verfügbar …", Auswahl zurücksetzen.
+  const xAvail = useExpressOn() !== false;
+  React.useEffect(() => { if (!xAvail && rvx) setRvx(false); }, [xAvail]); // eslint-disable-line react-hooks/exhaustive-deps
   const [protection, setProtection] = React.useState(R ? (R.protection ?? null) : "monthly"); // null | monthly | monitor | lifetime — Schutz default ON
   // Schutz-Schritt: offener Info-Tooltip. Hier auf Komponentenebene (Steps werden via Body() inline gerendert → Hooks müssen stabil sein).
   const [ptInfo, setPtInfo] = React.useState(null);
@@ -2175,7 +2179,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     }),
   ].filter((it) => it.url || (it.name && (it.text || it.nt)));
   const reviewCount = reviewList.length;
-  const rq = reviewQuote(reviewList, lang, { express: rvx });
+  const rq = reviewQuote(reviewList, lang, { express: rvx && xAvail });
   const hasX = rq.n250 > 0; // Express nur, wenn mindestens eine 250er-Bewertung im Warenkorb ist
   const servicePriceNum = revFlow
     ? rq.total
@@ -2380,7 +2384,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // die Bewertungen vor sich, die der Kunde bezahlt hat.
       ...(revFlow ? {
         note: `${rv.service} (${[rq.n99 ? `${rq.n99} × ${money(rl, PRICE_V2_FRESH)}` : "", rq.n250 ? `${rq.n250} × ${money(rl, PRICE_V2_OTHER)}` : ""].filter(Boolean).join(" + ")}${rq.pct ? `, −${rq.pct} % Mengenrabatt` : ""}${rq.nX ? `, EXPRESS ${rq.nX} × ${money(rl, EXPRESS_FEE)}` : ""} = ${fmtMoney(rl, rq.total)}):\n${reviewList.map((it) => (it.url || `${it.name} — "${it.text}"`) + (listPriceV2(it) === PRICE_V2_OTHER ? `  [${money(rl, PRICE_V2_OTHER)}${rq.nX ? " · EXPRESS" : ""}]` : "")).join("\n")}`,
-        reviewExpress: !!(rvx && hasX), // Server setzt Express nur auf die 250er
+        reviewExpress: !!(rvx && hasX && xAvail), // Server setzt Express nur auf die 250er (und nur, wenn im Admin an)
         reviewItems: reviewList,
         reviewUrls: reviewList.map((it) => it.url).filter(Boolean),
         reviewCount,
@@ -3731,7 +3735,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                   {rq.n99 ? <div className="ln"><span>{rq.n99} × {money(cur, PRICE_V2_FRESH)}<small>{xp.fresh} · {xp.tf99}</small></span><b>{fmtMoney(cur, rq.n99 * PRICE_V2_FRESH)}</b></div> : null}
                   {rq.n250 ? <div className="ln"><span>{rq.n250} × {money(cur, PRICE_V2_OTHER)}<small>{xp.other} · {xp.otherSub}{rvx ? "" : " · " + xp.stdD}</small></span><b>{fmtMoney(cur, rq.n250 * PRICE_V2_OTHER)}</b></div> : null}
                   {rq.pct ? <div className="ln dc"><span>{pk.discLbl} −{rq.pct} %</span><b>−{fmtMoney(cur, rq.discount)}</b></div> : null}
-                  {hasX ? (
+                  {hasX && !xAvail ? (
+                    <div className="ln xo na"><span><LZap className="bpx-z" />{xp.row}<small>{xp.na}</small></span><b className="na">{xp.naS}</b></div>
+                  ) : hasX ? (
                     <div className={"ln xo" + (rvx ? " on" : "")}>
                       <span><LZap className="bpx-z" />{xp.row}<small>{(() => { const xd0 = expressWeekend() ? fmtXDue(expressDueMs(), t.code) : ""; const sub = xd0 ? xp.rowSubBy(money(cur, EXPRESS_FEE), xd0) : xp.rowSub(money(cur, EXPRESS_FEE), EXPRESS_HOURS); const pt = sub.split(" · "); return rvx ? `${rq.n250} × ${money(cur, EXPRESS_FEE)} · ${pt.length > 1 ? pt.slice(1).join(" · ") : sub}` : sub; })()}</small></span>
                       <button type="button" className={"bpr-sw" + (rvx ? " on" : "")} role="switch" aria-checked={rvx} aria-label={xp.row} onClick={() => setRvx(!rvx)}><b>+{fmtMoney(cur, rq.n250 * EXPRESS_FEE)}</b><i /></button>
@@ -3815,12 +3821,20 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 <span className="tx"><b>{xp.stdT}</b><span>{xp.stdD}</span></span>
                 <span className="pr"><strong>{xp.stdP}</strong><small>{xp.stdS}</small></span>
               </button>
+              {xAvail ? (
               <button type="button" className={"bpr-rop bpx-xop bpr-fade" + (rvx ? " sel" : "")} style={{ animationDelay: ".13s" }} onClick={() => setRvx(true)} aria-pressed={rvx}>
                 <span className="bpr-bdg bpx-bdg"><LZap />{xp.xBadge}</span>
                 <span className="rd" />
                 <span className="tx"><b>{xp.xT}</b><span>{xwk ? xp.xBy(xd) : xp.xD(EXPRESS_HOURS)}</span></span>
                 <span className="pr"><strong>+{f}</strong><small>{xp.xS}</small></span>
               </button>
+              ) : (
+              <div className="bpr-rop bpx-xop bpx-na bpr-fade" style={{ animationDelay: ".13s" }} aria-disabled="true">
+                <span className="rd" />
+                <span className="tx"><b>{xp.xT}</b><span>{xp.na}</span></span>
+                <span className="pr"><strong>{xp.naS}</strong></span>
+              </div>
+              )}
             </div>
             {rvx ? (
               <ul className="bpr-swf bpx-g bpr-fade">
@@ -3833,9 +3847,9 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <div className="h"><LClock />{xp.cmpH}</div>
               <div className={"r" + (!rvx ? " on" : "")}><span>{xp.cmpStd}{rq.n99 ? " · " + money(rl, PRICE_V2_OTHER) : ""}</span><div className="bar"><i style={{ width: "100%" }} /></div><b>{xp.cmpStdV}</b></div>
               {rq.n99 ? <div className="r"><span>{xp.cmpStd} · {money(rl, PRICE_V2_FRESH)}</span><div className="bar"><i style={{ width: "35%" }} /></div><b>{xp.d99}</b></div> : null}
-              <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xwk ? xp.cmpXBy(fmtXDueShort(expressDueMs(), t.code)) : xp.cmpXV(EXPRESS_HOURS)}</b></div>
+              {xAvail ? <div className={"r x" + (rvx ? " on" : "")}><span>{xp.cmpX}</span><div className="bar"><i style={{ width: "12%" }} /></div><b>{xwk ? xp.cmpXBy(fmtXDueShort(expressDueMs(), t.code)) : xp.cmpXV(EXPRESS_HOURS)}</b></div> : null}
             </div>
-            <p className="bpr-fpn bpx-swn"><LInfo /><span>{xp.startNote}{xwk ? " " + xp.xWk : ""}{rq.n99 ? " " + xp.only(rq.n99) : ""}</span></p>
+            <p className="bpr-fpn bpx-swn"><LInfo /><span>{xAvail ? xp.startNote + (xwk ? " " + xp.xWk : "") + " " : ""}{rq.n99 ? xp.only(rq.n99) : ""}</span></p>
             <div className="bpr-acts bpr-fade" style={{ animationDelay: ".22s" }}>
               <button type="button" className="bpr-back" onClick={back}><LArrowLeft /><span>{w.back}</span></button>
               <button type="button" className="bpr-go" onClick={goCo}>{xp.toCo}<LArrowRight /></button>

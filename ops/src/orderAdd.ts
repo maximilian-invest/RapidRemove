@@ -14,6 +14,7 @@ import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
+import { expressOn } from "./expressSwitch";
 import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, PRICE_V2_OTHER } from "./reviewsPricing";
 import { TEMPLATES } from "./emails/index";
 import { sendMail } from "./mailer";
@@ -69,6 +70,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
   const country = String(o.country || raw.profileCountry || "").toUpperCase();
 
   // 1) säubern
+  const xAllowed = !!opts.express && await expressOn().catch(() => true); // Admin-Schalter Express
   const clean: AddItem[] = [];
   for (const x of input.slice(0, 30)) {
     const url = httpUrl(x.url), name = clip(x.name, 80), text = clip(x.text, 400);
@@ -83,7 +85,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
     // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 99 (frisch) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
     if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
-    if (opts.express && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
+    if (xAllowed && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
     clean.push(it);
   }
   if (!clean.length) return { ok: false, error: "empty" };
