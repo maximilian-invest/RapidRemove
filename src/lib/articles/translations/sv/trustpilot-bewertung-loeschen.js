@@ -91,6 +91,7 @@ const article = {
       "**Bevakning:** fånga upp nya recensioner tidigt för att inte missa enmånadsfristen för den snabba rättsliga vägen.",
     ] },
 
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Osäker på om din Trustpilot-recension kan tas bort?", text: "Skicka oss länken – vi bedömer kostnadsfritt och utan förpliktelser om en borttagning är realistisk och säger ärligt vilken väg som är värd att ta.", btn: "Gratis bedömning", href: "https://www.rapid-remove.com/", trust: ["Gratis bedömning", "rättsliga åtgärder via partnerbyrå", "inga tomma garantier"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "Får jag be kunder om Trustpilot-recensioner?", a: "Ja, att aktivt samla in äkta recensioner är tillåtet och klokt – vad som är förbjudet är köpta eller fabricerade recensioner." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Negativ recension: ignorera, svara eller ta bort?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Vad kostar en dålig Google-recension egentligen?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online-rykteshantering – den kompletta guiden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

@@ -100,6 +100,7 @@ const article = {
       "**Ved en ny bølge** gentager du de samme trin: betal ikke, dokumentér, anmeld, få fjernet. Læs også, hvordan du genkender [falske Google-anmeldelser](/da/magasin/fjern-falske-google-anmeldelser/).",
     ] },
     { t: "p", text: "Har du ikke tid til at klare det selv? På vores side [fjern en Google-anmeldelse](/da/fjern-anmeldelse/) ser du på to minutter, hvad det koster for din bølge." },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Skal jeg betale for at få anmeldelserne fjernet?", a: "Nej. Betaling stopper sjældent afpresningen – ofte kommer der et nyt krav, eller anmeldelserne bliver stående. **Betal ikke, forhandl ikke**, dokumentér alt, og anmeld det til Google." },
@@ -111,6 +112,7 @@ const article = {
     { q: "Hvad koster det at få afpresningsanmeldelser fjernet?", a: "Anmeldelser med tekst: **99 € pr. fjernet anmeldelse** (ældre end 4 uger 250 €), intet på forhånd. Rene stjernebedømmelser uden tekst: **250 € pr. fjernet anmeldelse** med en mere omfattende procedure. Du gemmer et kort eller PayPal ved bestillingen, og der trækkes automatisk først efter fjernelsen. Mængderabat på alle accepterede anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Fjern en Google-anmeldelse: pris, chance og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Genkend, anmeld og fjern falske Google-anmeldelser", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

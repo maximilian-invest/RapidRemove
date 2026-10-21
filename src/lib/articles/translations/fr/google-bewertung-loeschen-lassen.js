@@ -82,6 +82,7 @@ const article = {
       ["Effort", "Nul", "Élevé", "Moyen"],
       ["Tous les avis partis", "Oui (avec la fiche)", "Non (cas isolés)", "Non (un par un)"],
     ] },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "RapidRemove supprime-t-il des avis isolés ?", a: "Oui : [supprimer un avis Google](/fr/supprimer-un-avis/) – dès 99 € par avis supprimé, payé uniquement en cas de succès. Avis avec texte de 4 semaines maximum : env. 90 % de réussite, 99 € ; plus anciens : env. 50 %, 250 € par avis. Les notes sans texte peuvent aussi être sélectionnées (procédure plus approfondie : 250 € par note supprimée). Dès 3 avis, une remise sur quantité s'applique (−10 %, dès 5 −15 %, dès 10 −30 %). Si la fiche est endommagée dans son ensemble, la suppression de la fiche complète avec tous ses avis reste la voie la plus complète." },
@@ -92,6 +93,7 @@ const article = {
     { q: "Qu'est-ce que l'effet Streisand ?", a: "Lorsque les démarches juridiques contre un avis provoquent l'auteur et entraînent d'autres avis négatifs. La suppression technique évite ce risque car elle travaille sans confrontation directe." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Supprimer un avis 1 étoile sans texte", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

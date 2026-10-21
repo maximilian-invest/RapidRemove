@@ -98,6 +98,7 @@ const article = {
       "**Délai :** avis avec texte de moins de 4 semaines, généralement 3 à 5 jours ; tous les autres, généralement 1 à 2 semaines.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google et réalisé plus de 20 000 vérifications gratuites pour des clients dans plus de 50 pays. Prix et commande : [service de suppression d'avis Google](/fr/supprimer-un-avis/)." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Choisissez les avis qui enfreignent le règlement", text: "Chargez vos derniers avis Google, cochez ceux à supprimer et voyez le prix exact. Environ 2 minutes, et vous ne payez que les avis réellement supprimés.", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Paiement au succès", "Procédures Google uniquement", "Évaluation gratuite"] },
   ],
   faq: [
@@ -109,6 +110,7 @@ const article = {
     { q: "Combien coûte la suppression d'un avis contraire au règlement ?", a: "Avec RapidRemove, **99 € par avis supprimé** (250 € pour les avis de plus de 4 semaines ou sans texte), payés uniquement une fois l'avis disparu. L'évaluation préalable est gratuite." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },
     { label: "Supprimer les faux avis Google", url: "/fr/magazine/supprimer-faux-avis-google/" },
     { label: "Avis 1 étoile sans texte", url: "/fr/magazine/supprimer-avis-1-etoile-sans-texte/" },

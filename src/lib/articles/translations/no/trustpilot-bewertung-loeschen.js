@@ -91,6 +91,7 @@ const article = {
       "**Overvåking:** oppdag nye anmeldelser tidlig for ikke å la 1-månedersfristen for hasteveien løpe ut.",
     ] },
 
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Usikker på om Trustpilot-anmeldelsen din kan slettes?", text: "Send oss lenken – vi vurderer gratis og uforpliktende om fjerning er realistisk, og sier deg ærlig hvilken vei som lønner seg.", btn: "Gratis vurdering", href: "https://www.rapid-remove.com/", trust: ["Gratis vurdering", "juridiske skritt via partnerkontor", "ingen tomme garantier"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "Kan jeg be kunder om Trustpilot-anmeldelser?", a: "Ja, aktiv innhenting av ekte anmeldelser er tillatt og fornuftig – forbudt er kjøpte eller forfalskede anmeldelser." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Negativ anmeldelse: ignorere, svare eller fjerne?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Hva koster en dårlig Google-anmeldelse egentlig?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online-omdømmehåndtering – veiledningen", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

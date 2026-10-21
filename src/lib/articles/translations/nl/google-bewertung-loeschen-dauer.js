@@ -92,6 +92,7 @@ const article = {
     { t: "p", text: "Elke review wordt **afzonderlijk** beoordeeld – met een eigen categorie, eigen bewijs en een eigen leeftijd. Daarom kan de ene review na twee dagen weg zijn en de andere pas na drie weken." },
     { t: "p", text: "Precies daarom rekenen wij **per review** af: u betaalt alleen voor reviews die echt verwijderd zijn – er wordt per review automatisch afgeschreven, pas na de verwijdering. Bij meerdere geaccepteerde reviews krijgt u staffelkorting: **vanaf 3 −10 %, vanaf 5 −15 %, vanaf 10 −30 %** – op elke review die verwijderd wordt. Alle details staan op de pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/)." },
     { t: "p", text: "Twijfelt u of een advocaat sneller is? In onze vergelijking [advocaat of technische verwijdering](/nl/magazine/negatieve-google-review-verwijderen-advocaat/) ziet u waarom de juridische route meestal maanden duurt." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
     { q: "Hoe lang duurt het voordat Google een gemelde review verwijdert?", a: "Daar is geen vaste termijn voor. Duidelijke schendingen verdwijnen vaak binnen uren of dagen, twijfelgevallen en bezwaren kunnen **meerdere weken** duren. Via RapidRemove is het bij reviews met tekst tot 4 weken oud meestal 3–5 dagen, bij alle andere meestal 1–2 weken." },
@@ -102,6 +103,7 @@ const article = {
     { q: "Betaal ik meer als het langer duurt?", a: "Nee. De prijs is **€ 99 per verwijderde review** (€ 250 bij reviews ouder dan 4 weken of zonder tekst), ongeacht hoe lang het duurt – en u betaalt alleen als de review echt weg is." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Google review richtlijnen: welke schendingen tellen", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
     { label: "Een Google review zelf melden: zo werkt het", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

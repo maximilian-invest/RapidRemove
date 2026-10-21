@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "Den avgjørende fordelen: du betaler først **etter vellykket fjerning**, og dukker profilen opp igjen via tredjepart, fjernes den uten kostnad innenfor rammene av garantien." },
     { t: "warn", title: "Viktig", text: "Profilfjerningen fjerner **hele bedriftsprofilen**, ikke en enkelt falsk anmeldelse. Vil du bare fjerne én anmeldelse og beholde profilen din, kan du rapportere den til Google, gå via advokat – eller bruke RapidRemoves [fjerning av enkeltanmeldelser](/no/fjern-omtale/): ca. 90 % sjanse for anmeldelser opptil 4 uker gamle, betaling kun ved suksess." },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Falskt angrep? Sjekk muligheten for fjerning – gratis.", text: "Skriv inn bedriftsnavnet – vi sjekker på sekunder om og hvor raskt profilen din inkludert alle falske anmeldelser kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "Hvor raskt blir man kvitt de falske anmeldelsene?", a: "Via profilfjerning er det ofte resultater innen 24 til 48 timer, ved fjerning av enkeltanmeldelser vanligvis innen 3–5 dager for anmeldelser med tekst opptil 4 uker gamle, ellers vanligvis innen 1–2 uker – begge deler betydelig raskere enn den flere måneder lange rettslige veien." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Fjerne Google-anmeldelser: pris og metoder sammenlignet", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Fjerne en 1-stjerners anmeldelse uten tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

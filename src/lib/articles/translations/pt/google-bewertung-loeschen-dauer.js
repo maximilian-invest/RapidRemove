@@ -101,6 +101,7 @@ const article = {
     { t: "h2", id: "different-times", text: "Porque é que várias avaliações desaparecem em momentos diferentes", toc: "Momentos diferentes" },
     { t: "p", text: "**Cada avaliação é analisada separadamente, por isso, se denunciar cinco, raramente desaparecem no mesmo dia.** Uma pode sair em dois dias, outra precisa de recurso e uma terceira continua pendente ao fim de duas semanas." },
     { t: "p", text: "É por isso que **cobramos por avaliação**: paga cada uma quando é efetivamente removida – a cobrança é feita automaticamente, avaliação a avaliação. As que ainda estamos a tratar não lhe custam nada e, com 3, 5 ou 10 avaliações aceites, o desconto por volume (−10 %, −15 %, −30 %) aplica-se a cada uma que é removida. Todos os preços e comparações estão em [preço para remover uma avaliação do Google](/pt/revista/preco-remover-avaliacao-google/), e a encomenda faz-se na nossa página para [remover uma avaliação do Google específica](/pt/remover-uma-avaliacao/)." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
     { t: "cta", title: "Veja que avaliações têm hipóteses reais", text: "Primeiro uma análise gratuita: dizemos-lhe com honestidade se uma avaliação pode ser removida. A encomenda demora cerca de dois minutos – normalmente resolvido em 3–5 dias em avaliações com texto até 4 semanas, caso contrário em 1–2 semanas.", btn: "Iniciar verificação gratuita", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só procedimentos oficiais do Google", "O autor não sabe quem pediu", "Mais de 1.600 perfis removidos desde 2023"] },
   ],
   faq: [
@@ -113,6 +114,7 @@ const article = {
     { q: "Responder à avaliação prejudica as minhas hipóteses?", a: "Não. Uma resposta pública curta e calma é sempre permitida e não influencia a análise. Evite apenas insultos e dados de clientes." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Serviço de remoção de avaliações do Google", url: "/pt/remover-uma-avaliacao/" },
     { label: "Preço para remover uma avaliação do Google", url: "/pt/revista/preco-remover-avaliacao-google/" },
     { label: "Violações das políticas de avaliações do Google", url: "/pt/revista/politicas-avaliacoes-google-violacoes/" },

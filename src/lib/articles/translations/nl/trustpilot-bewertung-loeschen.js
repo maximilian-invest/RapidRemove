@@ -91,6 +91,7 @@ const article = {
       "**Monitoring:** nieuwe reviews vroeg signaleren, zodat u de termijn van circa een maand voor de spoedprocedure niet laat verstrijken.",
     ] },
 
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Weet u niet zeker of uw Trustpilot-review verwijderbaar is?", text: "Stuur ons de link – wij beoordelen kosteloos en vrijblijvend of verwijdering realistisch is, en vertellen u eerlijk welke route de moeite waard is.", btn: "Gratis laten beoordelen", href: "https://www.rapid-remove.com/", trust: ["Gratis inschatting", "juridische stappen via partnerkantoor", "geen loze garanties"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "Mag ik klanten vragen om een Trustpilot-review te schrijven?", a: "Ja, het actief verzamelen van echte reviews is toegestaan en zinvol – verboden zijn gekochte of vervalste reviews." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Negatieve review: negeren, reageren of verwijderen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Wat kost een slechte Google-review echt?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online reputatiemanagement – de complete gids", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove（プロフィール削除）", "**プロフィール全体＋全クチコミ**", "24〜48時間", "成功時のみ支払い", "成功後の定額"],
     ] },
     { t: "p", text: "プロフィール削除では**成功後にのみ**支払い、保証のおかげで、再表示されたプロフィールは無料で削除されます。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "あなたの星1つのクチコミが削除できるか、無料で確認。", text: "会社名を入力すれば、私たちがプロフィールを見つけ、削除できるか、どれだけ早くできるかを数秒で確認します。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "クチコミはどれくらい早く片づきますか？", a: "プロフィール削除なら多くは24〜48時間、クチコミ個別削除なら投稿4週間以内・本文ありのクチコミは通常3〜5日、それ以外（星だけの評価を含む）は通常1〜2週間——クチコミ1件に数か月かかる法的手段よりはるかに速いです。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Googleの悪いクチコミ——どうする？", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

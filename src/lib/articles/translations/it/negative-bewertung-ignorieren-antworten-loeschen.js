@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Non sai se la tua recensione può essere rimossa?", text: "Inserisci il nome dell'attività – verifichiamo gratuitamente in pochi secondi se e con quale rapidità è possibile rimuovere la recensione o il profilo.", btn: "Inizia l'analisi gratuita", href: "https://www.rapid-remove.com/", trust: ["Analisi gratuita", "Con garanzia", "Senza rischi"] },
 
     { t: "p", text: "Questo articolo è un orientamento pratico e non costituisce consulenza legale." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "Devo rispondere a ogni recensione negativa?", a: "No. A critiche reali e circostanziate vale la pena rispondere con compostezza (per chi legge). Le voci isolate e innocue in una buona media si possono ignorare; quelle infondate o illegali è meglio farle rimuovere." },
@@ -66,6 +67,7 @@ const article = {
     { q: "E se ci sono già molte recensioni negative?", a: "In quel caso combattere ogni singola recensione è spesso senza sbocco. Più sensata può essere la cancellazione completa del profilo con successivo nuovo inizio pulito." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Quanto costa davvero una recensione negativa su Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Avvocato o rimozione tecnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Eliminare le recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

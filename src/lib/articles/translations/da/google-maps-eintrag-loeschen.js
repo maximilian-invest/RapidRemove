@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "Konklusion", toc: "Konklusion" },
     { t: "p", text: "En Google Maps-profil lader sig kun begrænset påvirke via Googles egne værktøjer: »Fjern fra konto« betyder oftest blot »lukket«, fremmede profiler kan kun indberettes, og duplikater bør sammenlægges frem for slettes. Handler det om en **fuldstændig, permanent** fjernelse inkl. alle anmeldelser, er komplet profilsletning den pålidelige vej – hurtig, forudsigelig og med betaling først ved succes." },
 
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Undersøg nu gratis, om din profil kan fjernes.", text: "På få sekunder ser du din reelle profil og får at vide, om og hvor hurtigt vi kan fjerne den. Ingen forudbetaling, ingen forpligtelse.", btn: "Start gratis tjek", href: "/da/?start=1", trust: ["Nul risiko", "Betaling kun efter vellykket sletning"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Hvad koster det at fjerne en Maps-profil?", a: "Hos RapidRemove gælder en transparent fastpris, som betales udelukkende efter vellykket sletning. Du løber altså ingen økonomisk risiko." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Fjern Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

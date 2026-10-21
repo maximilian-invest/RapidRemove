@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Quale articolo vi pesa – e può essere deindicizzato?", text: "Indicate il risultato – verifichiamo gratuitamente e senza impegno se una deindicizzazione o uno spostamento è possibile.", btn: "Verifica gratuita", href: "https://www.rapid-remove.com/", trust: ["Analisi gratuita", "Discreta", "Senza rischi"] },
 
     { t: "p", text: "Questo articolo è un orientamento pratico e non costituisce consulenza legale." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "Si può cancellare un articolo di stampa da Google?", a: "Cancellare l'articolo dalla testata stessa riesce raramente a causa della libertà di stampa. È invece spesso possibile deindicizzarlo dai risultati di ricerca Google – l'articolo rimane online, ma non compare più nella ricerca per nome." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Come evito che tutto peggiori?", a: "Non esercitando pubblicamente pressione sulla testata. Una deindicizzazione discreta, condotta attraverso le procedure ufficiali, evita l'effetto Streisand." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Gestione della reputazione online per aziende – la guida", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Rimuovere i risultati Google negativi", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Eliminare il profilo aziendale Google – come si fa?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

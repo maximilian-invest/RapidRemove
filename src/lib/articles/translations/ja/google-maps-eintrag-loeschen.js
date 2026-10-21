@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "まとめ", toc: "まとめ" },
     { t: "p", text: "Googleの標準機能では、Googleマップの掲載に対してできることは限られています。「アカウントから削除」は「閉業」への変更に過ぎず、他人の掲載は報告しかできません。重複掲載は削除より統合が正解です。口コミも含めた**完全かつ永続的な削除**を実現するには、プロフィール全体の完全削除が最も確実な方法です。迅速で計画的、そして成功後にのみお支払いという安心の体制で対応します。" },
 
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "今すぐ無料で、あなたの掲載が削除可能か確認してください。", text: "数秒で実際のプロフィールが見つかり、削除できるかどうかと所要時間がわかります。前払い不要、費用負担なし。", btn: "無料診断を始める", href: "/ja/?start=1", trust: ["リスクゼロ", "削除完了後にのみお支払い"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Googleマップ掲載の削除費用はいくらですか？", a: "RapidRemoveでは透明性のある固定料金を設定しており、削除が成功した場合にのみお支払いいただきます。費用リスクは一切ありません。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Googleのクチコミを削除：費用と手段", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

@@ -91,6 +91,7 @@ const article = {
       "**Monitoraggio:** rilevare tempestivamente le nuove recensioni per non perdere il termine di un mese per la procedura d'urgenza.",
     ] },
 
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Non siete sicuri se la vostra recensione Trustpilot possa essere eliminata?", text: "Inviateci il link – valutiamo gratuitamente e senza impegno se una rimozione è realistica e vi diciamo onestamente quale percorso vale la pena intraprendere.", btn: "Valutazione gratuita", href: "https://www.rapid-remove.com/", trust: ["Valutazione gratuita", "procedura legale tramite studio partner", "nessuna garanzia vuota"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "Posso chiedere ai clienti di lasciare recensioni su Trustpilot?", a: "Sì, raccogliere attivamente recensioni autentiche è consentito e opportuno – vietate sono le recensioni acquistate o false." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Recensione negativa: ignorare, rispondere o eliminare?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Quanto costa davvero una recensione negativa su Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Gestione della reputazione online – la guida completa", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

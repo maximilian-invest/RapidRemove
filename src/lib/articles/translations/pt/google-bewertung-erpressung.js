@@ -96,6 +96,7 @@ const article = {
       "**Peça avaliações a clientes satisfeitos** como hábito, para que um ataque pese menos na sua média.",
     ] },
     { t: "p", text: "Não sabe se deve responder a uma avaliação concreta? O nosso guia sobre [quando ignorar, responder ou remover uma avaliação negativa](/pt/revista/avaliacao-negativa-ignorar-responder-remover/) ajuda a decidir." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
   ],
   faq: [
     { q: "Devo pagar ao extorsionário?", a: "Não. Pagar não garante a remoção das avaliações e marca-o como uma empresa que paga, por isso as exigências costumam voltar. **Não pague, não negoceie**, documente tudo e denuncie à Google." },
@@ -107,6 +108,7 @@ const article = {
     { q: "O extorsionário vai saber que pedi a remoção?", a: "Por nós, não. O autor da avaliação não é informado de quem pediu a remoção." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Serviço para remover avaliações do Google", url: "/pt/remover-uma-avaliacao/" },
     { label: "Identificar, denunciar e remover avaliações falsas", url: "/pt/revista/remover-avaliacoes-falsas-google/" },
     { label: "Remover uma avaliação de 1 estrela sem texto", url: "/pt/revista/remover-avaliacao-1-estrela-sem-texto/" },

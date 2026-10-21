@@ -82,6 +82,7 @@ const article = {
       ["手間", "なし", "大", "中"],
       ["全クチコミ消去", "はい（プロフィールと共に）", "いいえ（個別案件）", "いいえ（1件ずつ）"],
     ] },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "RapidRemoveは個々のクチコミを削除しますか？", a: "はい：[Googleのクチコミを1件から削除](/ja/remove-review/)できます。投稿から4週間以内で本文のあるクチコミは成功率約90%で削除1件につき$99、それより古いクチコミも成功率約50%で対応可能です（削除1件あたり$250）。本文のない星だけの評価も削除1件$250で対応します。3件以上で−10%、5件以上で−15%、10件以上で−30%のまとめ割があり、お支払いは実際に削除できた分だけです。プロフィール全体が傷ついている場合は、すべてのクチコミごとプロフィール全体を削除する方が確実です。" },
@@ -92,6 +93,7 @@ const article = {
     { q: "ストライサンド効果とは？", a: "クチコミへの法的手段がかえって投稿者を刺激し、さらなる悪評を招くことです。技術的削除は直接対決なしに機能するため、このリスクを避けられます。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Googleビジネスプロフィールを削除するには？", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

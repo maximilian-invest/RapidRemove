@@ -60,6 +60,7 @@ const article = {
       "**nuevo comienzo opcional** con un perfil limpio",
     ] },
     { t: "warn", title: "Importante", text: "La eliminación del perfil quita el **perfil completo**, no una reseña individual. Quien solo quiera eliminar una reseña y conservar el perfil tiene la denuncia, la vía del abogado o la [eliminación de reseñas individuales](/es/eliminar-una-resena/) de RapidRemove: 99 € por reseña eliminada (250 € si tiene más de 4 semanas o no tiene texto), solo tras el éxito." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
     { t: "cta", title: "¿Perfil dañado de forma permanente? Comprueba la eliminabilidad gratis.", text: "En segundos verás si tu perfil y todas sus reseñas se pueden eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://www.rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },
   ],
   faq: [
@@ -71,6 +72,7 @@ const article = {
     { q: "¿RapidRemove elimina reseñas individuales?", a: "Sí. Con la [eliminación de reseñas individuales](/es/eliminar-una-resena/) eliges exactamente las reseñas que deben desaparecer, también valoraciones solo de estrellas, sin texto (procedimiento más exhaustivo: 250 € por valoración eliminada). Reseñas con texto de hasta 4 semanas: aprox. 90 % de éxito, 99 € por reseña eliminada; más antiguas: aprox. 50 %, 250 € cada una. Descuento por volumen: desde 3 reseñas −10 %, desde 5 −15 %, desde 10 −30 %. Nada por adelantado: pagas solo por las que realmente desaparecen. Si el perfil está dañado en su conjunto, eliminar el perfil completo con todas sus reseñas sigue siendo la vía más completa." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Eliminar reseñas de Google: costes y métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Denunciar y eliminar una reseña falsa de Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Abogado o eliminación técnica: ¿qué merece la pena?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

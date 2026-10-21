@@ -96,6 +96,7 @@ const article = {
       "**Chiedi recensioni ai clienti soddisfatti** come abitudine, così un attacco pesa meno sulla tua media.",
     ] },
     { t: "p", text: "Non sai se rispondere a una recensione specifica? La nostra guida su [quando ignorare, rispondere o eliminare una recensione negativa](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/) ti aiuta a decidere." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "Devo pagare il ricattatore?", a: "No. Pagare non garantisce la rimozione delle recensioni e ti segnala come un'attività che paga, quindi le richieste spesso tornano. **Non pagare, non trattare**, documenta tutto e segnala a Google." },
@@ -107,6 +108,7 @@ const article = {
     { q: "Il ricattatore saprà che ho fatto rimuovere le recensioni?", a: "Non da noi. L'autore della recensione non viene informato su chi ha chiesto la rimozione." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },
     { label: "Riconoscere, segnalare ed eliminare recensioni false", url: "/it/rivista/eliminare-recensioni-false-google/" },
     { label: "Eliminare una recensione a 1 stella senza testo", url: "/it/rivista/eliminare-recensione-1-stella-senza-testo/" },

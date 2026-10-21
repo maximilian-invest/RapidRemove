@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Prévenir : plus de vrais bons avis", toc: "Prévenir" },
     { t: "p", text: "La meilleure défense est une moyenne solide. Demandez activement un avis aux clients satisfaits (p. ex. par QR code, lien dans la signature e-mail ou après une prestation réussie). De nombreux vrais avis positifs diluent l'influence des négatifs isolés – et protègent durablement votre moyenne." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "Que faire face à un mauvais avis Google ?", a: "D'abord rester calme et documenter. Face à une critique justifiée, répondre de façon professionnelle et publique. Face à une infraction aux règles, signaler l'avis – et si Google ne réagit pas, le faire supprimer." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Le signalement à Google en vaut-il la peine ?", a: "Comme première étape gratuite oui, surtout pour du spam évident. Mais Google rejetant beaucoup de signalements de façon automatisée, la suppression d'avis isolés de RapidRemove ou l'avocat restent pour les cas isolés tenaces, et la suppression de la fiche pour une fiche gravement endommagée." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

@@ -60,6 +60,7 @@ const article = {
       "**optionele nieuwe start** met een schoon profiel",
     ] },
     { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **hele profiel**, niet één review. Wie alleen één of enkele reviews wil verwijderen en het profiel wil behouden, heeft naast rapporteren en de advocaat een derde optie: RapidRemove biedt ook [losse reviews verwijderen](/nl/review-laten-verwijderen/) aan. Reviews met tekst tot 4 weken oud: ca. 90 % slagingskans, € 99 per verwijderde review; oudere: ca. 50 %, € 250. U betaalt alleen voor reviews die echt weg zijn; beoordelingen met alleen sterren kosten eveneens € 250 per verwijderde review. Meer over prijzen en staffelkorting leest u in het artikel over de [Google-review-verwijderservice](/nl/magazine/google-review-verwijderen-service/)." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Profiel blijvend beschadigd? Controleer gratis de verwijderbaarheid.", text: "Binnen seconden ziet u of en hoe snel uw profiel inclusief alle reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
@@ -71,6 +72,7 @@ const article = {
     { q: "Verwijdert RapidRemove losse reviews?", a: "Ja. Naast de profielverwijdering kunt u bij RapidRemove ook [losse Google-reviews laten verwijderen](/nl/review-laten-verwijderen/): reviews met tekst tot 4 weken oud hebben ca. 90 % slagingskans en kosten € 99 per verwijderde review, oudere reviews ca. 50 % slagingskans en € 250. Ook beoordelingen met alleen sterren en geen tekst kunt u selecteren (uitgebreidere procedure, eveneens € 250 per verwijderde review). Staffelkorting: vanaf 3 reviews −10 %, vanaf 5 −15 %, vanaf 10 −30 %. U betaalt alleen voor reviews die echt verwijderd zijn. Is het profiel als geheel beschadigd, dan blijft het verwijderen van het volledige profiel met alle reviews de grondigste weg." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Slechte Google review – wat te doen?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

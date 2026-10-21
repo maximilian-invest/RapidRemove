@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Förebygg: fler äkta bra recensioner", toc: "Förebygg" },
     { t: "p", text: "Det bästa försvaret är ett robust snitt. Be aktivt nöjda kunder om en recension (t.ex. via QR-kod, länk i e-postsignaturen eller efter ett lyckat avslut). Många äkta positiva recensioner späder ut inflytandet från enskilda negativa röster – och skyddar ditt snitt på lång sikt." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Vad ska jag göra vid en dålig Google-recension?", a: "Håll dig först lugn och dokumentera. Vid berättigad kritik, svara professionellt och offentligt. Vid ett brott mot riktlinjerna, anmäl recensionen – och om Google inte agerar, få den borttagen." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Lönar det sig överhuvudtaget att anmäla till Google?", a: "Som ett första, kostnadsfritt steg ja – särskilt vid uppenbart skräp. Men eftersom Google avvisar många anmälningar automatiserat återstår vid envisa enskilda fall advokaten eller RapidRemoves borttagning av enskilda recensioner, och vid en i grunden skadad profil profilborttagningen." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Ta bort en Google-recension: formulär, kostnad och guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

@@ -100,6 +100,7 @@ const article = {
       "**再び攻撃されたら**同じ手順を繰り返す：払わない、記録する、報告する、削除する。[Googleのやらせ口コミの見分け方](/ja/magazine/google-nise-kuchikomi-sakujo/)も参考にしてください。",
     ] },
     { t: "p", text: "自分で対応する時間がない場合は、[Google口コミ削除のご依頼ページ](/ja/remove-review/)から、攻撃された口コミの削除費用を2分で確認できます。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "口コミを消してもらうために、お金を払うべきですか？", a: "いいえ。払っても恐喝が止まることはまれで、二度目の要求が来たり口コミが残ったりすることがよくあります。**払わない、交渉しない**、すべて記録してGoogleに報告しましょう。" },
@@ -111,6 +112,7 @@ const article = {
     { q: "恐喝目的の口コミの削除にはいくらかかりますか？", a: "**削除1件$99**（投稿から4週間超・星だけの評価は$250）。まとめ割は3件以上で−10%、5件以上で−15%、10件以上で−30%です。前払いはありません。注文時にカードまたはPayPalを登録していただき、削除できた後に自動で決済されます。まとめ割はすべての口コミを合わせた件数で計算します。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Google口コミ削除代行：料金・成功率・依頼方法", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Googleのやらせ口コミを見分けて報告・削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "本文なしの星1口コミを削除する方法", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

@@ -91,6 +91,7 @@ const article = {
       "**Monitorización:** detectar nuevas reseñas a tiempo para no perder el plazo de un mes para la vía cautelar.",
     ] },
 
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
     { t: "cta", title: "¿No está seguro de si su reseña de Trustpilot se puede eliminar?", text: "Envíenos el enlace — lo evaluamos de forma gratuita y sin compromiso, le decimos con honestidad si la eliminación es realista y qué vía merece la pena.", btn: "Evaluación gratuita", href: "https://www.rapid-remove.com/", trust: ["Evaluación gratuita", "pasos legales a través de despacho colaborador", "sin garantías vacías"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "¿Puedo pedir a los clientes que dejen reseñas en Trustpilot?", a: "Sí, solicitar activamente reseñas auténticas está permitido y es recomendable — lo que está prohibido son las reseñas compradas o falsificadas." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Reseña negativa de Google: ¿ignorar, responder o eliminar?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "¿Cuánto cuesta realmente una mala reseña de Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Gestión de reputación online — la guía", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

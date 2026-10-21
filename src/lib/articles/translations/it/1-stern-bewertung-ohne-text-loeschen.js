@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove: rimozione profilo", "**tutto il profilo + tutte le recensioni**", "24 – 48 h", "pagamento in caso di successo", "prezzo fisso dopo il successo"],
     ] },
     { t: "p", text: "Con la rimozione del profilo paghi solo **dopo il successo** e, grazie alla garanzia, un profilo che riappare viene rimosso gratis." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Profilo danneggiato? Verifica gratis se si può eliminare.", text: "Inserisci il nome della tua azienda: troviamo il tuo profilo e verifichiamo in pochi secondi se si può eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "In quanto tempo si eliminano le recensioni?", a: "Tramite la rimozione del profilo spesso in 24–48 ore; con la rimozione di singole recensioni di solito in 3–5 giorni per le recensioni con testo fino a 4 settimane e in 1–2 settimane per tutte le altre, comprese quelle solo stelle. Una segnalazione a Google richiede da pochi giorni a diverse settimane, senza garanzia di risultato; la via legale per una singola recensione richiede spesso diversi mesi." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Come eliminare una recensione Google: modulo e costi", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Recensione negativa su Google: cosa fare?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

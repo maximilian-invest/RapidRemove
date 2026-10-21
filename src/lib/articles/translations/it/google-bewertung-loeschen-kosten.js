@@ -99,6 +99,7 @@ const article = {
       "**Non è un caso di rimozione:** la critica onesta di clienti veri. Rispondi pubblicamente e con cortesia ([ignorare, rispondere o eliminare?](/it/rivista/recensione-negativa-ignorare-rispondere-eliminare/)).",
     ] },
     { t: "p", text: "Per confrontare 99 € o 250 € con il danno che la recensione fa alla tua attività, leggi [quanto costa davvero una recensione negativa su Google](/it/rivista/quanto-costa-recensione-negativa-google/). Dal 2023 il nostro team ha rimosso oltre **1.600 profili dell'attività Google** per clienti in più di 50 paesi, e applichiamo lo stesso approccio alle singole recensioni con il nostro [servizio per rimuovere una recensione Google](/it/rimuovere-una-recensione/)." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "Rimuovere una recensione Google è gratis?", a: "Segnalare da solo una recensione a Google è gratis, e puoi fare ricorso una volta nello strumento di gestione delle recensioni. Però Google respinge molte segnalazioni. Con RapidRemove paghi **da 99 € per recensione, solo se viene rimossa**." },
@@ -111,6 +112,7 @@ const article = {
     { q: "Quanto chiede un avvocato per rimuovere una recensione Google?", a: "Gli avvocati di solito fatturano a ore, spesso con un fondo spese anticipato, e paghi sia che la recensione venga rimossa sia che no. L'importo esatto dipende dallo studio e dal caso." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Servizio di rimozione recensioni Google: prezzo e ordine", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Quanto costa una recensione negativa su Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Avvocato o rimozione tecnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

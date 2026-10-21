@@ -92,6 +92,7 @@ const article = {
     { t: "p", text: "Varje recension granskas **för sig** – med egen kategori, egna bevis och egen ålder. Därför kan en recension vara borta efter två dagar och en annan först efter tre veckor." },
     { t: "p", text: "Just därför tar vi betalt **per recension**: du betalar bara för recensioner som faktiskt tagits bort – dragningen sker automatiskt per recension, efter borttagningen. Har du flera recensioner som vi accepterar får du mängdrabatt: **från 3 −10 %, från 5 −15 %, från 10 −30 %** – på varje recension som tas bort. Alla detaljer finns på sidan [ta bort en Google-recension](/sv/ta-bort-omdome/)." },
     { t: "p", text: "Funderar du på om en advokat går snabbare? I vår jämförelse [advokat eller teknisk borttagning](/sv/magasin/negativ-google-recension-advokat/) ser du varför den juridiska vägen oftast tar månader." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Hur lång tid tar det innan Google tar bort en rapporterad recension?", a: "Det finns ingen fast tid. Tydliga överträdelser försvinner ofta inom timmar eller dagar, medan gränsfall och överklaganden kan ta **flera veckor**. Via RapidRemove tar det oftast 3–5 dagar för recensioner med text upp till 4 veckor gamla, annars oftast 1–2 veckor." },
@@ -102,6 +103,7 @@ const article = {
     { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **99 € per borttagen recension** (250 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Stjärnbetyg utan text kostar oavsett ålder 250 € per borttaget betyg." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort en Google-recension: pris, chans och beställning", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Googles recensionsregler: vilka överträdelser som räknas", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
     { label: "Rapportera en Google-recension själv: så går det till", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

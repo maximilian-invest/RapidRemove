@@ -101,6 +101,7 @@ const article = {
       "**Bij een nieuwe golf** dezelfde stappen herhalen: niet betalen, vastleggen, melden, laten verwijderen. Meer over het herkennen van [valse Google reviews](/nl/magazine/valse-google-reviews-verwijderen/).",
     ] },
     { t: "p", text: "Wilt u het niet zelf uitzoeken? Via onze pagina [Google review laten verwijderen](/nl/review-laten-verwijderen/) ziet u in twee minuten wat het kost voor uw golf." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
     { q: "Moet ik betalen om de reviews te laten verdwijnen?", a: "Nee. Betalen stopt de afpersing zelden – vaak volgt een tweede eis of blijven de reviews staan. **Niet betalen, niet onderhandelen**, alles vastleggen en melden bij Google." },
@@ -112,6 +113,7 @@ const article = {
     { q: "Wat kost het om afpersingsreviews te laten verwijderen?", a: "**€ 99 per verwijderde review** (ouder dan 4 weken € 250), met staffelkorting vanaf 3 reviews −10 %, vanaf 5 −15 % en vanaf 10 −30 %. Niets vooraf. Beoordelingen met alleen sterren kosten eveneens € 250 per verwijderde review. Afgeschreven wordt telkens pas automatisch na de verwijdering. Dien daarnaast het afpersingsformulier van Google in." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Valse Google reviews herkennen, melden en verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

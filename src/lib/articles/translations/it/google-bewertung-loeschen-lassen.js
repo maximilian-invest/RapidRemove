@@ -82,6 +82,7 @@ const article = {
       ["Impegno", "Nullo", "Alto", "Medio"],
       ["Tutte le recensioni via", "Sì (con il profilo)", "No (casi singoli)", "No (una a una)"],
     ] },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "RapidRemove elimina singole recensioni?", a: "Sì: [rimuovere una recensione Google](/it/rimuovere-una-recensione/) – 99 € per recensione rimossa se ha un testo e al massimo 4 settimane (ca. 90 % di successo); per le recensioni più vecchie ca. 50 % di successo, 250 €. Anche le valutazioni senza testo si possono selezionare (procedura più approfondita: anch'esse 250 € per valutazione rimossa). Sconto quantità da 3 recensioni (−10 %), 5 (−15 %) e 10 (−30 %). Si paga solo se vengono rimosse. Se il profilo è danneggiato nel suo insieme, rimuovere l'intero profilo con tutte le recensioni resta la via più completa." },
@@ -92,6 +93,7 @@ const article = {
     { q: "Cos'è l'effetto Streisand?", a: "Quando le azioni legali contro una recensione provocano l'autore e portano ad altre recensioni negative. La rimozione tecnica evita questo rischio perché lavora senza confronto diretto." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Eliminare una recensione a 1 stella senza testo", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

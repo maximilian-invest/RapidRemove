@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "あなたの口コミが削除できるかどうか不明ですか？", text: "店舗名を入力するだけで、口コミやプロフィールが削除できるか、どのくらいの期間がかかるかを無料で数秒以内に確認できます。", btn: "無料チェックを始める", href: "https://www.rapid-remove.com/", trust: ["無料分析", "保証付き", "リスクなし"] },
 
     { t: "p", text: "本記事は実践的な参考情報であり、法律的なアドバイスではありません。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "低評価の口コミすべてに返答すべきですか？", a: "いいえ。誠実で具体的な批判には落ち着いた返答が効果的です（閲覧者に向けて）。全体的に良い評価の中に埋もれる無難な口コミは無視できます。不当または違法なものは削除を依頼する方が適切です。" },
@@ -66,6 +67,7 @@ const article = {
     { q: "低評価口コミがすでに多数ある場合はどうすればよいですか？", a: "その場合、1件ずつ対応するのは難しいことが多いです。完全なプロフィール削除とその後のクリーンな再スタートの方が現実的な解決策になる場合があります。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Googleの低評価口コミは実際いくらの損失になるか", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google口コミを削除する方法：費用と手順", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

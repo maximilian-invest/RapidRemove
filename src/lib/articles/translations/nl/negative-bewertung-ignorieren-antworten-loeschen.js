@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Twijfelt u of uw review verwijderd kan worden?", text: "Voer uw bedrijfsnaam in – wij controleren binnen seconden gratis of en hoe snel de review of het profiel verwijderd kan worden.", btn: "Gratis check starten", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inclusief garantie", "Zonder risico"] },
 
     { t: "p", text: "Dit artikel biedt praktische oriëntatie en is geen juridisch advies." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
     { q: "Moet ik op elke negatieve review reageren?", a: "Nee. Op echte, zakelijke kritiek loont een zelfverzekerd antwoord (voor de medelezers). Onschuldige enkelvoudige stemmen in een goed gemiddelde kunt u negeren; onterechte of onrechtmatige laat u beter verwijderen." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Wat als er al veel slechte reviews staan?", a: "Dan is de strijd om elke afzonderlijke review vaak kansloos. Zinvoller kan de volledige profielverwijdering zijn met aansluitend een schone doorstart." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Wat kost een slechte Google-review werkelijk?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google reviews verwijderen: kosten & methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

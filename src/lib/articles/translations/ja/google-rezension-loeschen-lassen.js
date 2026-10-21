@@ -60,6 +60,7 @@ const article = {
       "クリーンなプロフィールで**任意の再出発**",
     ] },
     { t: "warn", title: "重要", text: "プロフィール削除は**プロフィール全体**を取り除くもので、クチコミ1件ではありません。クチコミを1件〜数件だけ削除してプロフィールを残したい場合は、Googleへの報告や弁護士に加えて、第三の選択肢があります：RapidRemoveの[クチコミ個別削除](/ja/remove-review/)です。投稿から4週間以内で本文のあるクチコミは成功率約90%で1件$99、それより古いクチコミも約50%の成功率で対応できます（1件$250）。お支払いは実際に削除できた分だけです。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "プロフィールが恒久的に傷ついた？削除可能性を無料で確認。", text: "数秒で、プロフィールと全クチコミを削除できるか、どれだけ早くできるかが分かります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
@@ -71,6 +72,7 @@ const article = {
     { q: "RapidRemoveは個々のクチコミを削除しますか？", a: "はい：[Googleのクチコミを1件から削除](/ja/remove-review/)できます。投稿から4週間以内で本文のあるクチコミは成功率約90%で削除1件につき$99、それより古いクチコミも成功率約50%で対応可能です（削除1件あたり$250）。本文のない星だけの評価も削除1件$250で対応します。3件以上で−10%、5件以上で−15%、10件以上で−30%のまとめ割があり、お支払いは実際に削除できた分だけです。プロフィール全体が傷ついている場合は、すべてのクチコミごとプロフィール全体を削除する方が確実です。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Googleのクチコミを削除：費用と手段", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Googleの偽クチコミを報告して削除する", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

@@ -82,6 +82,7 @@ const article = {
       ["Indsats", "Ingen", "Høj", "Middel"],
       ["Alle anmeldelser væk", "Ja (med profilen)", "Nej (enkeltsager)", "Nej (én ad gangen)"],
     ] },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja. Med [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) vælger du præcis de Google-anmeldelser, der skal væk – også rene stjernebedømmelser uden tekst. Anmeldelser med tekst op til 4 uger gamle: ca. 90 % succesrate, 99 € pr. fjernet anmeldelse; ældre: ca. 50 %, 250 € pr. fjernet anmeldelse – du betaler kun, hvis de faktisk fjernes. Stjernebedømmelser uden tekst fjerner vi med en mere omfattende procedure: 250 € pr. fjernet anmeldelse – også her trækkes der først efter fjernelsen. Mængderabat: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
@@ -92,6 +93,7 @@ const article = {
     { q: "Hvad er Streisand-effekten?", a: "Når juridiske skridt mod en anmeldelse netop provokerer ophavspersonen og fører til flere negative anmeldelser. Teknisk fjernelse undgår den risiko, fordi den arbejder uden direkte konfrontation." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Fjern Google-virksomhedsprofilen: hvordan gør man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

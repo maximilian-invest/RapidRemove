@@ -92,6 +92,7 @@ const article = {
     { t: "p", text: "Hver anmeldelse vurderes **for seg** – med egen kategori, egen dokumentasjon og egen alder. Derfor kan én anmeldelse være borte etter to dager og en annen først etter tre uker." },
     { t: "p", text: "Nettopp derfor tar vi betalt **per anmeldelse**: du betaler bare for anmeldelser som faktisk er fjernet, og hver anmeldelse trekkes automatisk fra det lagrede kortet eller PayPal når den er fjernet. Har du flere anmeldelser som vi aksepterer, får du mengderabatt: **fra 3 −10 %, fra 5 −15 %, fra 10 −30 %** – på hver anmeldelse som blir fjernet. Alle detaljer finner du på siden [fjern en Google-anmeldelse](/no/fjern-omtale/)." },
     { t: "p", text: "Lurer du på om en advokat går raskere? I vår sammenligning [advokat eller teknisk fjerning](/no/magasin/negativ-google-anmeldelse-advokat/) ser du hvorfor den juridiske veien som regel tar måneder." },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Hvor lang tid tar det før Google fjerner en rapportert anmeldelse?", a: "Det finnes ingen fast frist. Tydelige brudd forsvinner ofte i løpet av timer eller dager, mens grensetilfeller og klager kan ta **flere uker**. Via RapidRemove tar det som regel 3–5 dager for anmeldelser med tekst opptil 4 uker gamle, ellers som regel 1–2 uker." },
@@ -102,6 +103,7 @@ const article = {
     { q: "Betaler jeg mer hvis det tar lengre tid?", a: "Nei. Prisen er **99 € per fjernet anmeldelse** (250 € for anmeldelser eldre enn 4 uker eller uten tekst), uansett hvor lang tid det tar – og du betaler bare hvis anmeldelsen faktisk er borte. Rene stjernevurderinger uten tekst fjerner vi med en mer omfattende prosedyre til 250 € per fjernet anmeldelse – også her uten tillegg for tid." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Fjern en Google-anmeldelse: pris, sjanse og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Googles anmeldelsesregler: hvilke brudd som teller", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
     { label: "Rapporter en Google-anmeldelse selv: slik gjør du det", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "¿Qué artículo te perjudica — y puede desindexarse?", text: "Indícanos el resultado — evaluamos de forma gratuita y sin compromiso si es posible la desindexación o el desplazamiento.", btn: "Consulta gratuita", href: "https://www.rapid-remove.com/", trust: ["Análisis gratuito", "Discreto", "Sin riesgo"] },
 
     { t: "p", text: "Este artículo es una orientación práctica y no constituye asesoramiento jurídico." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
   ],
   faq: [
     { q: "¿Se puede eliminar un artículo de prensa de Google?", a: "Borrar el artículo en el propio medio raramente es posible por la libertad de prensa. Lo que sí es posible con frecuencia es desindexarlo de los resultados de búsqueda de Google — el artículo sigue en línea, pero ya no aparece al buscar tu nombre." },
@@ -66,6 +67,7 @@ const article = {
     { q: "¿Cómo evito que todo empeore?", a: "No ejerciendo presión pública sobre el medio. Una desindexación discreta, a través de los procedimientos oficiales, evita el efecto Streisand." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Gestión de reputación online para empresas — la guía", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Eliminar y desplazar resultados negativos de Google", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Eliminar perfil de empresa de Google — ¿cómo funciona?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

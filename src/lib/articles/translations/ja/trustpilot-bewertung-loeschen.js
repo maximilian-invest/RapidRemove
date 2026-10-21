@@ -93,6 +93,7 @@ const article = {
       "**モニタリング：** 新しい口コミを早期に把握し、仮処分申請の1ヶ月の期限を逃さないようにしましょう。",
     ] },
 
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "あなたのTrustpilot口コミが削除できるか不安ですか？", text: "口コミのリンクをお送りください。削除が現実的かどうかを**無料・無義務**でご確認し、どの方法が最も効果的かを正直にお伝えします。", btn: "無料で確認する", href: "https://www.rapid-remove.com/", trust: ["無料アドバイス", "弁護士との連携による法的対応", "根拠のない保証は行いません"] },
   ],
   faq: [
@@ -107,6 +108,7 @@ const article = {
     { q: "顧客にTrustpilotの口コミをお願いしてもいいですか？", a: "はい、正規の口コミを積極的に集めることは認められています。購入や取引後に顧客に感想を求めることは推奨される方法です。禁止されているのは、購入した口コミや偽造した口コミです。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "ネガティブな口コミ：無視・返信・削除、どれが正解？", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "悪い口コミが実際にビジネスに与えるコストとは？", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "オンライン評判管理の完全ガイド", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

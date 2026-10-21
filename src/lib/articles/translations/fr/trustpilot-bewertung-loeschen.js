@@ -91,6 +91,7 @@ const article = {
       "**Veille :** détecter les nouveaux avis tôt pour ne pas manquer le délai d'un mois ouvrant droit à la procédure d'urgence.",
     ] },
 
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Vous ne savez pas si votre avis Trustpilot peut être supprimé ?", text: "Envoyez-nous le lien — nous examinons gratuitement et sans engagement si une suppression est réaliste, et nous vous disons honnêtement quelle voie vaut la peine d'être empruntée.", btn: "Analyse gratuite", href: "https://www.rapid-remove.com/", trust: ["Évaluation gratuite", "démarches juridiques via cabinet partenaire", "aucune garantie en l'air"] },
   ],
   faq: [
@@ -105,6 +106,7 @@ const article = {
     { q: "A-t-on le droit de solliciter des avis Trustpilot auprès de ses clients ?", a: "Oui, solliciter activement de vrais avis est autorisé et utile — ce qui est interdit, ce sont les avis achetés ou fabriqués." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Avis négatif : ignorer, répondre ou supprimer ?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Combien coûte vraiment un mauvais avis Google ?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Gestion de réputation en ligne — le guide", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

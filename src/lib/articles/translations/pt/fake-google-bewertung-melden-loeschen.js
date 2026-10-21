@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "A vantagem decisiva: só paga **após a remoção bem-sucedida** e, se o perfil reaparecer através de terceiros, é removido gratuitamente ao abrigo da garantia." },
     { t: "warn", title: "Importante", text: "A remoção do perfil retira o **perfil de empresa completo**, não uma avaliação falsa isolada. Se quiser apenas remover uma ou poucas avaliações falsas e manter o perfil, a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) da RapidRemove é a opção adequada – além da denúncia ao Google ou da via do advogado. Preços, probabilidades e encomenda: [serviço para remover avaliações do Google](/pt/revista/servico-remover-avaliacoes-google/)." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
     { t: "cta", title: "Ataque de avaliações falsas? Verifique a removibilidade – grátis.", text: "Introduza o nome da empresa – verificamos em segundos se e com que rapidez o seu perfil e todas as avaliações falsas podem ser removidos.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "Com que rapidez nos livramos das avaliações falsas?", a: "Pela remoção do perfil, há muitas vezes resultados em 24 a 48 horas; avaliações individuais demoram normalmente 3–5 dias se tiverem texto e até 4 semanas, e normalmente 1–2 semanas nos restantes casos – em ambos os casos bastante mais rápido do que a via jurídica de vários meses." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Remover avaliações do Google: custos e métodos comparados", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Avaliação negativa no Google – o que fazer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

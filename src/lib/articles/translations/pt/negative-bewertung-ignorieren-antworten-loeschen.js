@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Não tem a certeza se a sua avaliação pode ser removida?", text: "Introduza o nome da empresa — verificamos gratuitamente em segundos se é possível remover a avaliação ou o perfil, e com que rapidez.", btn: "Iniciar análise gratuita", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Com garantia", "Sem risco"] },
 
     { t: "p", text: "Este artigo é uma orientação prática e não constitui aconselhamento jurídico." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
   ],
   faq: [
     { q: "Devo responder a todas as avaliações negativas?", a: "Não. A uma crítica genuína e factual compensa dar uma resposta serena (para os outros leitores). As vozes isoladas e inofensivas numa boa média podem ignorar-se; as injustificadas ou ilegais é melhor pedir a remoção." },
@@ -66,6 +67,7 @@ const article = {
     { q: "E se já existem muitas avaliações negativas?", a: "Nesse caso, lutar por cada uma individualmente é frequentemente uma batalha perdida. Pode ser mais sensato optar pela eliminação completa do perfil seguida de um recomeço limpo." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Quanto custa uma avaliação negativa no Google?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Advogado ou eliminação técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Remover avaliações do Google: custos e métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

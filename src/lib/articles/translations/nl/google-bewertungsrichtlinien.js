@@ -97,6 +97,7 @@ const article = {
       ["Alle andere (ouder dan 4 weken of alleen sterren)", "ca. 50 % (ouder dan 4 weken)", "**€ 250**"],
     ] },
     { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: eveneens € 250 per verwijderde review. Reviews met tekst tot 4 weken oud zijn meestal binnen 3–5 dagen weg, alle andere (ook alleen sterren) meestal binnen 1–2 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Welke van uw reviews schenden de regels?", text: "Zoek uw profiel, vink de reviews aan en wij zeggen eerlijk welke verwijderbaar zijn. **Alleen betalen als de review echt weg is.**", btn: "Gratis laten beoordelen", href: "/nl/profiel-checken/?start=reviews", trust: ["Gratis beoordeling", "Alleen bij succes", "Alleen procedures van Google"] },
   ],
   faq: [
@@ -108,6 +109,7 @@ const article = {
     { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 99** per verwijderde review met tekst tot 4 weken oud, **€ 250** voor alle andere (ouder of alleen sterren). U betaalt alleen als de review echt weg is – niets vooraf." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google review laten verwijderen – prijs en bestellen", url: "/nl/review-laten-verwijderen/" },
     { label: "Valse Google reviews herkennen, melden en verwijderen", url: "/nl/magazine/valse-google-reviews-verwijderen/" },
     { label: "Een 1-sterreview zonder tekst verwijderen", url: "/nl/magazine/1-ster-review-zonder-tekst-verwijderen/" },

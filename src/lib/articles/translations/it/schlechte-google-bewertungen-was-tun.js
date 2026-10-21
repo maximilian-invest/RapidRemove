@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Prevenire: più recensioni positive autentiche", toc: "Prevenire" },
     { t: "p", text: "La miglior difesa è una media solida. Chiedi attivamente una recensione ai clienti soddisfatti (es. con un QR code, un link nella firma e-mail o dopo una conclusione riuscita). Molte recensioni positive autentiche diluiscono l'influenza delle negative singole e proteggono la tua media nel tempo." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
   ],
   faq: [
     { q: "Cosa faccio di fronte a una recensione negativa su Google?", a: "Prima resta calmo e documenta. Di fronte a una critica giustificata, rispondi in modo professionale e pubblico. Di fronte a una violazione delle linee guida, segnala la recensione e, se Google non reagisce, falla eliminare." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Conviene davvero segnalare a Google?", a: "Come primo passo gratuito sì, soprattutto con spam evidente. Ma poiché Google rifiuta molte segnalazioni in modo automatizzato, per i casi singoli ostinati restano l'avvocato o la rimozione di singole recensioni di RapidRemove, e la rimozione del profilo per un profilo gravemente danneggiato." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Avvocato o rimozione tecnica: cosa conviene davvero?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

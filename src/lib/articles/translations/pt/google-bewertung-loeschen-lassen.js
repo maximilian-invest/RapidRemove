@@ -81,6 +81,7 @@ const article = {
       ["Esforço", "Nenhum", "Elevado", "Médio"],
       ["Todas as avaliações fora", "Sim (com o perfil)", "Não (casos isolados)", "Não (uma a uma)"],
     ] },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
   ],
   faq: [
     { q: "A RapidRemove remove avaliações isoladas?", a: "Sim, entretanto sim: [remover uma avaliação do Google](/pt/remover-uma-avaliacao/) – 99 € por avaliação removida (com texto, até 4 semanas), paga só em caso de sucesso; nessas avaliações a probabilidade de sucesso é de aprox. 90 %; as mais antigas também são possíveis (aprox. 50 %, 250 € cada); também podem ser selecionadas classificações só com estrelas, sem texto (procedimento mais extenso, também 250 € por avaliação removida). A partir de 3 avaliações aplica-se desconto por quantidade (−10 %, de 5 −15 %, de 10 −30 %). Se o perfil está danificado no seu conjunto, remover o perfil completo com todas as avaliações continua a ser o caminho mais completo." },
@@ -91,6 +92,7 @@ const article = {
     { q: "O que é o efeito Streisand?", a: "Quando passos jurídicos contra uma avaliação provocam justamente o autor e levam a mais avaliações negativas. A remoção técnica evita esse risco porque atua sem confronto direto." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Remover o perfil de empresa do Google: como se faz?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Denunciar e remover uma avaliação falsa do Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

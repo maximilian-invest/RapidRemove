@@ -107,6 +107,7 @@ const article = {
       ["Esfuerzo", "Nulo", "Alto", "Medio"],
       ["Todas las reseñas fuera", "Sí (con el perfil)", "No (casos sueltos)", "No (una a una)"],
     ] },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
   ],
   faq: [
     { q: "¿Se pueden eliminar reseñas de Google?", a: "Sí, pero solo el autor puede borrar su reseña. Como empresa puedes denunciar las reseñas que infringen las políticas de Google, y Google decide si las retira. Las reseñas auténticas y objetivas normalmente se quedan." },
@@ -122,6 +123,7 @@ const article = {
     { q: "¿Qué es el efecto Streisand?", a: "Cuando las acciones legales contra una reseña provocan al autor y dan lugar a más reseñas negativas. La eliminación técnica evita ese riesgo porque trabaja sin confrontación directa." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Eliminar el perfil de empresa de Google: ¿cómo se hace?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Denunciar y eliminar una reseña falsa de Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Eliminar una reseña de 1 estrella sin texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

@@ -98,6 +98,7 @@ const article = {
       "**Prazo:** avaliações com texto até 4 semanas, normalmente 3–5 dias; todas as outras, normalmente 1–2 semanas.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis de Empresa no Google e fizemos mais de 20.000 verificações gratuitas para clientes em mais de 50 países. Preços e encomenda: [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/)." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
     { t: "cta", title: "Escolha as avaliações que violam as regras", text: "Carregue as suas avaliações mais recentes do Google, marque as que quer remover e veja o preço exato. Demora cerca de 2 minutos e só paga as avaliações realmente removidas.", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Só paga com sucesso", "Só procedimentos do Google", "Análise gratuita"] },
   ],
   faq: [
@@ -109,6 +110,7 @@ const article = {
     { q: "Quanto custa remover uma avaliação que viola as políticas?", a: "Com a RapidRemove, **99 € por avaliação removida** (250 € se tiver mais de 4 semanas ou não tiver texto), pagos só depois de a avaliação desaparecer. A análise prévia é gratuita." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Serviço de remoção de avaliações do Google", url: "/pt/remover-uma-avaliacao/" },
     { label: "Remover avaliações falsas do Google", url: "/pt/revista/remover-avaliacoes-falsas-google/" },
     { label: "Avaliação de 1 estrela sem texto", url: "/pt/revista/remover-avaliacao-1-estrela-sem-texto/" },

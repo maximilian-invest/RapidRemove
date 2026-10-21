@@ -96,6 +96,7 @@ const article = {
       "**Pide reseñas a tus clientes satisfechos** como parte de tu rutina, para que un ataque pese menos en tu media.",
     ] },
     { t: "p", text: "¿No sabes si responder a una reseña concreta? Nuestra guía sobre [cuándo ignorar, responder o eliminar una reseña negativa](/es/revista/resena-negativa-ignorar-responder-eliminar/) te ayuda a decidir." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
   ],
   faq: [
     { q: "¿Debo pagar al extorsionador?", a: "No. Pagar no garantiza que se borren las reseñas y te señala como un negocio que paga, así que las exigencias suelen volver. **No pagues, no negocies**, documéntalo todo y denúncialo a Google." },
@@ -107,6 +108,7 @@ const article = {
     { q: "¿Sabrá el extorsionador que pedí la eliminación?", a: "Por nosotros, no. El autor de la reseña no sabe quién solicitó la eliminación." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Servicio para eliminar reseñas de Google", url: "/es/eliminar-una-resena/" },
     { label: "Detectar, denunciar y eliminar reseñas falsas", url: "/es/revista/eliminar-resenas-falsas-de-google/" },
     { label: "Eliminar una reseña de 1 estrella sin texto", url: "/es/revista/eliminar-resena-1-estrella-sin-texto/" },

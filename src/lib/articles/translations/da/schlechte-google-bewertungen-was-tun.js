@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Forebyg: flere ægte gode anmeldelser", toc: "Forebyg" },
     { t: "p", text: "Det bedste forsvar er et robust gennemsnit. Bed aktivt tilfredse kunder om en anmeldelse (f.eks. via QR-kode, link i e-mailsignaturen eller efter en vellykket afslutning). Mange ægte positive anmeldelser udvander indflydelsen fra enkelte negative røster – og beskytter dit gennemsnit på lang sigt." },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Hvad skal jeg gøre ved en dårlig Google-anmeldelse?", a: "Forbliv først rolig og dokumentér. Ved berettiget kritik, svar professionelt og offentligt. Ved en overtrædelse af retningslinjerne, anmeld anmeldelsen – og hvis Google ikke reagerer, få den fjernet." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Betaler det sig overhovedet at anmelde til Google?", a: "Som et første, gratis skridt ja – især ved åbenlyst spam. Men da Google afviser mange anmeldelser automatiseret, er der ved vedholdende enkeltsager advokaten eller RapidRemoves fjernelse af enkelte anmeldelser tilbage, og ved en grundlæggende beskadiget profil profilfjernelsen." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Fjern en 1-stjernet anmeldelse uden tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Få fjernet en Google-anmeldelse: formular, pris og guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

@@ -60,6 +60,7 @@ const article = {
       "**valfri nystart** med en ren profil",
     ] },
     { t: "warn", title: "Viktigt", text: "Profilborttagningen tar bort **hela profilen**, inte en enskild recension. Den som bara vill ta bort en eller några enskilda recensioner och behålla profilen kan anmäla dem, gå advokatvägen – eller använda RapidRemoves [borttagning av enskilda recensioner](/sv/ta-bort-omdome/): 99 € per borttagen recension (äldre än 4 veckor eller utan text: 250 €), bara vid framgång." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Profilen varaktigt skadad? Kontrollera borttagbarheten – gratis.", text: "På sekunder ser du om och hur snabbt din profil inklusive alla recensioner kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
@@ -71,6 +72,7 @@ const article = {
     { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) väljer du själv vilka recensioner som ska bort – även rena stjärnbetyg utan text (250 € per borttaget betyg). Recensioner med text upp till 4 veckor gamla har ca. 90 % chans att lyckas (99 € per borttagen recension), äldre ca. 50 % (250 € per recension). Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Du betalar bara för dem som faktiskt tas bort. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort Google-recensioner: kostnad och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Anmäla och ta bort en falsk Google-recension", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

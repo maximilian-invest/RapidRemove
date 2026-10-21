@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Prevenir: más reseñas buenas auténticas", toc: "Prevenir" },
     { t: "p", text: "La mejor defensa es una media sólida. Pide activamente una reseña a los clientes satisfechos (p. ej. con un código QR, un enlace en la firma del correo o tras un cierre con éxito). Muchas reseñas positivas auténticas diluyen el impacto de las negativas sueltas y protegen tu media de forma duradera." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
   ],
   faq: [
     { q: "¿Qué hago ante una mala reseña de Google?", a: "Primero mantén la calma y documenta. Ante una crítica justificada, responde de forma profesional y pública. Ante una infracción de las directrices, denuncia la reseña y, si Google no reacciona, hazla eliminar." },
@@ -66,6 +67,7 @@ const article = {
     { q: "¿Merece la pena denunciar a Google?", a: "Como primer paso gratuito sí, sobre todo ante spam evidente. Pero como Google rechaza muchas denuncias de forma automatizada, quedan el abogado o la eliminación de reseñas individuales de RapidRemove para casos sueltos persistentes y la eliminación del perfil para un perfil gravemente dañado." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Eliminar reseñas de Google: costes y métodos", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Abogado o eliminación técnica: ¿qué merece la pena?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Denunciar y eliminar una reseña falsa de Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (profilborttagning)", "**hela profilen + alla recensioner**", "24–48 tim", "betalning vid framgång", "fast pris efter framgång"],
     ] },
     { t: "p", text: "Vid profilborttagningen betalar du först **efter framgång**, och tack vare garantin tas en profil som dyker upp igen bort utan kostnad." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Kontrollera gratis om din 1-stjärniga recension går att ta bort.", text: "Ange företagsnamnet – vi hittar din profil och kontrollerar på sekunder om och hur snabbt den kan tas bort.", btn: "Kontrollera borttagbarhet", href: "https://www.rapid-remove.com/", trust: ["Gratis analys", "Garanti", "Utan risk"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar, en enskild recension via RapidRemove oftast på 3–5 dagar om den har text och är högst 4 veckor gammal, annars oftast på 1–2 veckor (även betyg utan text) – betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Negativ recension: advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Ta bort en Google-recension: formulär, kostnad och guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Dålig Google-recension – vad göra?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

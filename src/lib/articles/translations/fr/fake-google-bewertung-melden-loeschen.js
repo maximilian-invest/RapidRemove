@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "L'avantage décisif : vous ne payez qu'**après une suppression réussie**, et si la fiche réapparaît via des tiers, elle est de nouveau supprimée gratuitement dans le cadre de la garantie." },
     { t: "warn", title: "Important", text: "La suppression de la fiche retire la **fiche d'établissement complète**, pas un faux avis isolé. Si vous voulez seulement supprimer un ou quelques faux avis et conserver votre fiche, optez pour la [suppression d'avis isolés](/fr/supprimer-un-avis/) – ou pour le signalement à Google ou la voie de l'avocat. Prix, chances de réussite et remises sur quantité : voir notre article sur le [service de suppression d'avis Google](/fr/magazine/service-suppression-avis-google/)." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Attaque de faux avis ? Vérifiez gratuitement la faisabilité.", text: "Saisissez le nom de votre entreprise : nous vérifions en quelques secondes si votre fiche et tous ses faux avis peuvent être supprimés, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "En combien de temps les faux avis disparaissent-ils ?", a: "Via la suppression de la fiche, souvent en 24 à 48 heures – bien plus vite que la voie juridique de plusieurs mois." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Supprimer un avis Google : coûts et méthodes comparés", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Supprimer un avis 1 étoile sans texte", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Mauvais avis Google : que faire ?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

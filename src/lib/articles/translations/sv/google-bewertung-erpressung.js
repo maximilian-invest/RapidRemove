@@ -100,6 +100,7 @@ const article = {
       "**Vid en ny våg** upprepar du samma steg: betala inte, dokumentera, anmäl, låt ta bort. Läs också hur du känner igen [falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/).",
     ] },
     { t: "p", text: "Vill du inte reda ut det själv? På vår sida [ta bort en Google-recension](/sv/ta-bort-omdome/) ser du på två minuter vad det kostar för din våg." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Ska jag betala för att recensionerna ska försvinna?", a: "Nej. Att betala stoppar sällan utpressningen – ofta kommer ett nytt krav, eller så ligger recensionerna kvar. **Betala inte, förhandla inte**, dokumentera allt och anmäl till Google." },
@@ -111,6 +112,7 @@ const article = {
     { q: "Vad kostar det att ta bort utpressningsrecensioner?", a: "**99 € per borttagen recension** (äldre än 4 veckor eller utan text 250 €), med mängdrabatt från 3 recensioner −10 %, från 5 −15 % och från 10 −30 %. Inget i förskott. Dragningen sker alltid automatiskt först efter borttagningen. Mängdrabatten räknas på alla recensioner tillsammans." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort en Google-recension: pris, chans och beställning", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Känna igen, anmäla och ta bort falska Google-recensioner", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

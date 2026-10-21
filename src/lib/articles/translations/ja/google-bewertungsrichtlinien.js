@@ -97,6 +97,7 @@ const article = {
       ["4週間超", "約50%", "**$250**"],
     ] },
     { t: "p", text: "無料診断のあとにお引き受けした口コミには、まとめ割が適用されます。3件以上で**10%オフ**、5件以上で**15%オフ**、10件以上で**30%オフ**。削除できた口コミすべてに適用されます。投稿4週間以内・本文ありの口コミは通常3〜5日、それ以外は通常1〜2週間で、投稿者に依頼主が伝わることはありません。料金の詳細は[Google口コミ削除の費用](/ja/magazine/google-kuchikomi-sakujo-hiyo/)をご覧ください。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "どの口コミがルール違反か、確かめてみませんか？", text: "プロフィールを検索して口コミを選ぶだけ。削除できるものを正直にお伝えします。**お支払いは口コミが本当に消えてから。**", btn: "無料で診断する", href: "/ja/check/?start=reviews", trust: ["無料診断", "成功報酬のみ", "Google公式の手続きのみ"] },
   ],
   faq: [
@@ -108,6 +109,7 @@ const article = {
     { q: "口コミ削除を依頼するといくらかかりますか？", a: "投稿から4週間以内で本文があれば削除1件**$99**、それより古いものは**$250**です。お支払いは口コミが実際に消えた場合のみで、前払いはありません。本文のない星だけの評価は削除1件$250です。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Google口コミ削除代行：料金と依頼方法", url: "/ja/remove-review/" },
     { label: "Googleのやらせ口コミを見分けて削除する方法", url: "/ja/magazine/google-nise-kuchikomi-sakujo/" },
     { label: "星1つ・本文なしの口コミを削除する方法", url: "/ja/magazine/hoshi1-kuchikomi-sakujo/" },

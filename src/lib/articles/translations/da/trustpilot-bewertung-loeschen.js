@@ -93,6 +93,7 @@ const article = {
       "**Overvågning:** Opdag nye anmeldelser tidligt, så du ikke misser én-måneds-fristen for nødproceduren.",
     ] },
 
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Usikker på, om din Trustpilot-anmeldelse kan slettes?", text: "Send os linket – vi vurderer gratis og uforpligtende, om en fjernelse er realistisk, og fortæller dig ærligt, hvilken vej der kan betale sig.", btn: "Gratis vurdering", href: "https://www.rapid-remove.com/", trust: ["Gratis vurdering", "juridiske skridt via partnerkontor", "ingen tomme garantier"] },
   ],
   faq: [
@@ -107,6 +108,7 @@ const article = {
     { q: "Må jeg bede kunder om Trustpilot-anmeldelser?", a: "Ja, det er tilladt og fornuftigt aktivt at indhente ægte anmeldelser – det er forbudt at købe eller forfalske anmeldelser." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Negativ anmeldelse: ignorere, svare eller fjerne?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Hvad koster en dårlig Google-anmeldelse egentlig?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online omdømmestyring – den komplette guide", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

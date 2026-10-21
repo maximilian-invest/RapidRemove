@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (profielverwijdering)", "**heel profiel + alle reviews**", "24 – 48 uur", "betaling alleen bij succes", "vaste prijs na succes"],
     ] },
     { t: "p", text: "Bij de profielverwijdering betaalt u pas **na succes**, en dankzij de garantie wordt een opnieuw opduikend profiel gratis verwijderd." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Controleer gratis of uw profiel verwijderd kan worden.", text: "Voer uw bedrijfsnaam in – we vinden uw profiel en controleren binnen seconden of en hoe snel het verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "Hoe snel ben je de reviews kwijt?", a: "Via profielverwijdering vaak binnen 24 tot 48 uur, een losse review via RapidRemove meestal binnen 3–5 dagen als die tekst heeft en hooguit 4 weken oud is, anders meestal binnen 1–2 weken (ook bij alleen sterren) – aanzienlijk sneller dan de juridische weg van meerdere maanden." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Een Google review verwijderen: formulier, kosten en gids", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Slechte Google review – wat te doen?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

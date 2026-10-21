@@ -92,6 +92,7 @@ const article = {
     { t: "p", text: "口コミは**1件ずつ個別に**審査されます。違反の種類も、根拠も、投稿からの期間もそれぞれ違うためです。そのため、ある口コミは2日で消え、別の口コミは3週間かかる、ということが普通に起こります。" },
     { t: "p", text: "だからこそRapidRemoveでは**口コミ1件ごと**に精算します。お支払いは実際に削除できた口コミの分だけで、1件ごとに登録したカードまたはPayPalから自動で決済されます。受け付けた口コミが複数ある場合は割引があります：**3件以上で10%、5件以上で15%、10件以上で30%**。割引は削除できたすべての口コミに適用されます。詳しくは[Google口コミ削除代行のページ](/ja/remove-review/)をご覧ください。" },
     { t: "p", text: "弁護士に頼んだほうが早いのでは、と迷っている方は、[弁護士と技術的な削除の比較](/ja/magazine/google-teihyoka-kuchikomi-bengoshi/)もご覧ください。法的な手続きは通常、数か月単位になります。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "報告したGoogle口コミが削除されるまで何日かかりますか？", a: "決まった期間はありません。明らかな違反なら数時間〜数日で消えることが多く、判断が分かれるケースや異議申し立てでは**数週間**かかることもあります。RapidRemoveにご依頼いただいた場合は、投稿4週間以内・本文ありの口コミは通常3〜5日、それ以外は通常1〜2週間です。" },
@@ -102,6 +103,7 @@ const article = {
     { q: "時間がかかると料金は高くなりますか？", a: "いいえ。料金は期間に関係なく**削除1件あたり$99**（投稿から4週間を過ぎた口コミは$250）で、お支払いは口コミが実際に消えた場合だけです。本文のない星だけの評価は時期に関係なく削除1件$250で、こちらもお支払いは削除できた後です。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Google口コミ削除代行：料金・成功率・依頼方法", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Google口コミのポリシー違反まとめ", url: "https://www.rapid-remove.com/google-bewertungsrichtlinien" },
     { label: "Google口コミを自分で報告する方法", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

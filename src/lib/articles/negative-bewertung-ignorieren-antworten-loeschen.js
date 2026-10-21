@@ -62,6 +62,7 @@ const article = {
     { t: "cta", title: "Unsicher, ob Ihre Bewertung löschbar ist?", text: "Firmennamen eingeben – wir prüfen in Sekunden kostenlos, ob und wie schnell sich die Bewertung bzw. das Profil entfernen lässt.", btn: "Gratis-Check starten", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Analyse", "Inkl. Garantie", "Ohne Risiko"] },
 
     { t: "p", text: "Dieser Beitrag ist eine praktische Orientierung und keine Rechtsberatung." },
+    { t: "note", title: "Ist Ihr Google-Profil selbst das Problem?", text: "Wenn das gesamte Google-Unternehmensprofil verschwinden soll, lesen Sie unseren Ratgeber [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/): was Googles offizielle Schritte wirklich bewirken und wie das Profil samt aller Bewertungen verschwindet." },
   ],
   faq: [
     { q: "Soll ich auf jede negative Bewertung antworten?", a: "Nein. Auf echte, sachliche Kritik lohnt sich eine souveräne Antwort (für die Mitleser). Harmlose Einzelstimmen im guten Schnitt kann man ignorieren; unberechtigte oder rechtswidrige besser entfernen lassen." },
@@ -70,6 +71,7 @@ const article = {
     { q: "Was, wenn schon viele schlechte Bewertungen da sind?", a: "Dann ist der Kampf um jede einzelne oft aussichtslos. Sinnvoller kann die vollständige Profil-Löschung mit anschließendem sauberen Neustart sein." },
   ],
   related: [
+    { label: "Google-Unternehmensprofil löschen", url: "/magazin/google-unternehmensprofil-loeschen/" },
     { label: "Was kostet eine schlechte Google-Bewertung wirklich?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Google Bewertung löschen lassen: Kosten & Methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

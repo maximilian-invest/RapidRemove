@@ -100,6 +100,7 @@ const article = {
       "**Ved en ny bølge** gjentar du de samme stegene: ikke betal, dokumenter, meld fra, få fjernet. Les også hvordan du kjenner igjen [falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/).",
     ] },
     { t: "p", text: "Har du ikke tid til å ordne det selv? På siden vår [fjern en Google-anmeldelse](/no/fjern-omtale/) ser du på to minutter hva det koster for din bølge." },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Bør jeg betale for å få anmeldelsene fjernet?", a: "Nei. Betaling stopper sjelden utpressingen – ofte kommer det et nytt krav, eller anmeldelsene blir stående. **Ikke betal, ikke forhandle**, dokumenter alt og meld fra til Google." },
@@ -111,6 +112,7 @@ const article = {
     { q: "Hva koster det å fjerne utpressingsanmeldelser?", a: "Anmeldelser med tekst: **99 € per fjernet anmeldelse** (eldre enn 4 uker 250 €), ingenting på forskudd. Rene stjernevurderinger uten tekst: **250 € per fjernet anmeldelse** med en mer omfattende prosedyre. Du lagrer et kort eller PayPal ved bestillingen, og beløpet trekkes automatisk først etter fjerningen. Mengderabatt på alle aksepterte anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Fjern en Google-anmeldelse: pris, sjanse og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Kjenn igjen, rapporter og fjern falske Google-anmeldelser", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Fjern en 1-stjerners anmeldelse uten tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

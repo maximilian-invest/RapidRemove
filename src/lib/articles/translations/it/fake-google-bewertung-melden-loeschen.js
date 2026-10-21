@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "Il vantaggio decisivo: paghi solo **dopo la rimozione riuscita** e, se il profilo riappare tramite terzi, viene rimosso di nuovo gratis nell'ambito della garanzia." },
     { t: "warn", title: "Importante", text: "La rimozione del profilo elimina il **profilo dell'attività completo**, non una singola recensione falsa. Se vuoi solo eliminare una o poche recensioni false e mantenere il profilo, oltre alla segnalazione a Google e alla via dell'avvocato c'è la [rimozione di singole recensioni](/it/rimuovere-una-recensione/) di RapidRemove: paghi solo per le recensioni effettivamente rimosse. Tutti i dettagli su prezzi e tempi: [servizio di rimozione recensioni Google](/it/rivista/servizio-rimozione-recensioni-google/)." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Attacco di recensioni false? Verifica gratis la fattibilità.", text: "Inserisci il nome della tua azienda: verifichiamo in pochi secondi se il tuo profilo e tutte le sue recensioni false si possono eliminare, e con quanta rapidità.", btn: "Verifica la fattibilità", href: "https://www.rapid-remove.com/", trust: ["Analisi gratis", "Garanzia", "Senza rischio"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "In quanto tempo si eliminano le recensioni false?", a: "Con la rimozione di singole recensioni di RapidRemove di solito in 3–5 giorni per le recensioni con testo fino a 4 settimane, altrimenti di solito in 1–2 settimane; tramite la rimozione del profilo spesso in 24–48 ore. Entrambe molto più rapide della via legale di diversi mesi." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Eliminare recensioni Google: costi e metodi a confronto", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Eliminare una recensione a 1 stella senza testo", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Recensione negativa su Google: cosa fare?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

@@ -97,6 +97,7 @@ const article = {
       ["Alle andre (ældre end 4 uger eller uden tekst)", "ca. 50 % (ældre end 4 uger)", "**250 €**"],
     ] },
     { t: "p", text: "For de anmeldelser, vi accepterer efter den gratis vurdering, gælder mængderabat: fra 3 anmeldelser **−10 %**, fra 5 **−15 %**, fra 10 **−30 %** – på hver fjernet anmeldelse. For anmeldelser med tekst op til 4 uger gamle tager det som regel 3–5 dage, for alle andre som regel 1–2 uger. Anmelderen får ikke at vide, hvem der bad om fjernelsen. Mere om priser: [hvad koster det at fjerne en Google-anmeldelse?](/da/magasin/pris-fjerne-google-anmeldelse/)." },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Hvilke af dine anmeldelser bryder reglerne?", text: "Søg din profil, sæt flueben ved anmeldelserne, så fortæller vi ærligt, hvilke der kan fjernes. **Du betaler kun, når anmeldelsen faktisk er væk.**", btn: "Få gratis vurdering", href: "/da/tjek-profil/?start=reviews", trust: ["Gratis vurdering", "Kun ved succes", "Kun Googles procedurer"] },
   ],
   faq: [
@@ -108,6 +109,7 @@ const article = {
     { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**99 €** pr. fjernet anmeldelse op til 4 uger gammel med tekst, **250 €** for alle andre (ældre eller uden tekst). Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd, heller ikke ved rene stjernebedømmelser uden tekst." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Fjern en Google-anmeldelse – pris og bestilling", url: "/da/fjern-anmeldelse/" },
     { label: "Genkend, rapportér og fjern falske Google-anmeldelser", url: "/da/magasin/fjern-falske-google-anmeldelser/" },
     { label: "Fjern en 1-stjerne-anmeldelse uden tekst", url: "/da/magasin/fjern-1-stjerne-anmeldelse-uden-tekst/" },

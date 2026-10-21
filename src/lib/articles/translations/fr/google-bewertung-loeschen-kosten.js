@@ -98,6 +98,7 @@ const article = {
       "**Pas un cas de suppression :** une critique honnête d'un vrai client. Répondez publiquement et poliment ([ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/)).",
     ] },
     { t: "p", text: "Pour mettre 99 € ou 250 € en regard de ce que l'avis coûte à votre activité, lisez [combien coûte réellement un mauvais avis Google](/fr/magazine/combien-coute-mauvais-avis-google/). Depuis 2023, notre équipe a supprimé plus de **1 600 fiches d'établissement Google** pour des clients dans plus de 50 pays, et nous appliquons la même méthode aux avis individuels avec notre [service pour supprimer un avis Google](/fr/supprimer-un-avis/)." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "Est-ce gratuit de supprimer un avis Google ?", a: "Signaler un avis à Google vous-même est gratuit, et vous pouvez faire appel une fois dans l'outil de gestion des avis. Mais Google refuse souvent les signalements. Avec RapidRemove, vous payez **dès 99 € par avis, uniquement s'il est supprimé**." },
@@ -110,6 +111,7 @@ const article = {
     { q: "Combien coûte un avocat pour supprimer un avis Google ?", a: "Les avocats facturent généralement à l'heure, souvent avec une provision d'avance, et vous payez que l'avis soit supprimé ou non. Le montant exact dépend du cabinet et du dossier." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Service de suppression d'avis Google : prix et commande", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Combien coûte un mauvais avis Google ?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Avocat ou suppression technique ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

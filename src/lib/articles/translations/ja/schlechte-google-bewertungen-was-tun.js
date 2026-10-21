@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "予防：本物の良いクチコミを増やす", toc: "予防" },
     { t: "p", text: "最良の防御は、堅実な平均点です。満足した客に積極的にクチコミを依頼しましょう（例：QRコード、メール署名のリンク、取引成立後）。本物の良いクチコミが多ければ、個々の悪評の影響は薄まり、平均点を長く守れます。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "Googleの悪いクチコミにはどう対処すべき？", a: "まず落ち着いて記録します。正当な批判にはプロフェッショナルに公開で返信します。ガイドライン違反なら報告し、Googleが動かなければ削除してもらいます。" },
@@ -66,6 +67,7 @@ const article = {
     { q: "Googleへの報告は本当に意味がある？", a: "最初の無料の一歩としては、特に明白なスパムには意味があります。ただGoogleは多くの報告を自動で却下するため、しつこい個別案件には弁護士かRapidRemoveのクチコミ個別削除、根本的に傷ついたプロフィールにはプロフィール削除が残ります。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "低評価クチコミ：弁護士か技術的削除か？", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Googleのクチコミを削除してもらう：フォーム・費用・ガイド", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

@@ -87,6 +87,7 @@ const article = {
       "**Negative Treffer in der Google-Suche verdrängen** – siehe [Online-Reputationsmanagement](/magazin/online-reputationsmanagement/) und [negative Suchergebnisse verdrängen](/magazin/negative-google-suchergebnisse-verdraengen/).",
     ] },
 
+    { t: "note", title: "Ist Ihr Google-Profil selbst das Problem?", text: "Wenn das gesamte Google-Unternehmensprofil verschwinden soll, lesen Sie unseren Ratgeber [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/): was Googles offizielle Schritte wirklich bewirken und wie das Profil samt aller Bewertungen verschwindet." },
     { t: "cta", title: "Unfaire jameda-Bewertung? Kostenlos prüfen lassen.", text: "Schicken Sie uns den Link – wir prüfen kostenlos und unverbindlich, ob eine Löschung realistisch ist, und sagen Ihnen ehrlich, welcher Weg sich lohnt.", btn: "Kostenlos prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Einschätzung", "rechtliche Schritte über Partnerkanzlei", "ehrliche Empfehlung"] },
   ],
   faq: [
@@ -101,6 +102,7 @@ const article = {
     { q: "Hilft das auch bei Zahnärzten/anderen Heilberufen?", a: "Ja, die BGH-Grundsätze zum Behandlungskontakt gelten entsprechend für Zahnärzte und andere bewertbare Heilberufler." },
   ],
   related: [
+    { label: "Google-Unternehmensprofil löschen", url: "/magazin/google-unternehmensprofil-loeschen/" },
     { label: "1-Stern-Bewertung ohne Text löschen lassen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Google-Bewertung löschen: Anwalt oder Agentur?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Online-Reputationsmanagement – der Leitfaden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

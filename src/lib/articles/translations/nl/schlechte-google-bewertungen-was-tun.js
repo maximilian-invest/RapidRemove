@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Voorkomen: meer echte goede reviews", toc: "Voorkomen" },
     { t: "p", text: "De beste verdediging is een robuust gemiddelde. Vraag tevreden klanten actief om een review (bv. via een QR-code, een link in de e-mailhandtekening of na een geslaagde afronding). Veel echte positieve reviews verdunnen de invloed van losse negatieve stemmen – en beschermen uw gemiddelde duurzaam." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
     { q: "Wat moet ik doen bij een slechte Google review?", a: "Blijf eerst rustig en documenteer. Bij terechte kritiek reageert u professioneel en openbaar. Bij een richtlijnschending rapporteert u de review – en als Google niet reageert, laat u ze verwijderen." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Loont rapporteren bij Google eigenlijk wel?", a: "Als eerste, gratis stap ja – vooral bij overduidelijke spam. Maar omdat Google veel meldingen geautomatiseerd afwijst, zijn er voor hardnekkige losse gevallen de verwijdering van losse reviews via RapidRemove of de advocaat, en voor een fundamenteel beschadigd profiel de profielverwijdering." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Negatieve review: advocaat of technische verwijdering?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Een Google review verwijderen: formulier, kosten en gids", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

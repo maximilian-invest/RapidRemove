@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (remoção do perfil)", "**perfil inteiro + todas as avaliações**", "24 – 48 h", "pagamento em caso de êxito", "preço fixo após sucesso"],
     ] },
     { t: "p", text: "Na remoção do perfil só paga **após o sucesso** e, graças à garantia, um perfil que reapareça é removido gratuitamente." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
     { t: "cta", title: "Verifique gratuitamente se o seu perfil pode ser removido.", text: "Introduza o nome da empresa – encontramos o seu perfil e verificamos em segundos se e com que rapidez pode ser removido.", btn: "Verificar removibilidade", href: "https://www.rapid-remove.com/", trust: ["Análise gratuita", "Garantia", "Sem risco"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "Com que rapidez nos livramos das avaliações?", a: "Pela remoção do perfil, muitas vezes em 24 a 48 horas; uma avaliação individual demora normalmente 3–5 dias se tiver texto e até 4 semanas, e 1–2 semanas nos restantes casos, incluindo as só com estrelas – bastante mais rápido do que a via jurídica de vários meses para uma avaliação isolada." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Avaliação negativa no Google – o que fazer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

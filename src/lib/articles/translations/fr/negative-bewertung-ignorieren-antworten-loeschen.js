@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Vous ne savez pas si votre avis est supprimable ?", text: "Entrez le nom de votre entreprise – nous vérifions en quelques secondes et gratuitement si l'avis ou le profil peut être supprimé.", btn: "Démarrer l'analyse gratuite", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Avec garantie", "Sans risque"] },
 
     { t: "p", text: "Cet article est un guide pratique et ne constitue pas un conseil juridique." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "Faut-il répondre à chaque avis négatif ?", a: "Non. Une réponse posée vaut la peine pour une critique authentique et factuelle (pour les lecteurs). Les voix isolées et anodines dans une bonne moyenne peuvent s'ignorer ; les avis non fondés ou illicites méritent plutôt une demande de suppression." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Que faire si l'on a déjà beaucoup de mauvais avis ?", a: "Dans ce cas, le combat avis par avis est souvent sans issue. La suppression complète du profil suivie d'un redémarrage propre peut être plus judicieuse." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Combien coûte vraiment un mauvais avis Google ?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Avocat ou suppression technique ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

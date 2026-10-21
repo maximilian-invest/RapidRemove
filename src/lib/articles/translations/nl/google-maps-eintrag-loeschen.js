@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "Conclusie", toc: "Conclusie" },
     { t: "p", text: "Een Google Maps-vermelding is met de standaard Google-tools slechts beperkt te beïnvloeden: „uit het account verwijderen” betekent doorgaans alleen „gesloten”, vreemde vermeldingen kunnen alleen worden gemeld en duplicaten worden beter samengevoegd dan verwijderd. Gaat het om een **volledige, definitieve** verwijdering inclusief alle reviews, dan is profielverwijdering de betrouwbare route — snel, transparant en met betaling pas na succes." },
 
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Controleer nu gratis of uw vermelding verwijderd kan worden.", text: "In enkele seconden ziet u uw daadwerkelijke profiel en hoort u of en hoe snel wij het kunnen verwijderen. Geen vooruitbetaling, geen verplichting.", btn: "Gratis check starten", href: "/nl/?start=1", trust: ["Nul risico", "Betaling alleen na succesvolle verwijdering"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Wat kost de verwijdering van een Maps-vermelding?", a: "Bij RapidRemove geldt een transparante vaste prijs, uitsluitend betaalbaar na succesvolle verwijdering. U loopt dus geen financieel risico." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google-bedrijfsprofiel verwijderen: hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Google reviews verwijderen: kosten en methoden", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Een valse Google review rapporteren en verwijderen", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

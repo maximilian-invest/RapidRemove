@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "Conclusione", toc: "Conclusione" },
     { t: "p", text: "Una scheda Google Maps può essere influenzata solo in modo limitato tramite gli strumenti nativi di Google: «rimuovere dall'account» significa quasi sempre solo «chiusa», le schede altrui possono essere soltanto segnalate, e i duplicati andrebbero uniti invece di cancellati. Se hai bisogno di una **rimozione completa e definitiva** comprensiva di tutte le recensioni, l'eliminazione totale del profilo è la strada più sicura — rapida, prevedibile e con pagamento solo a risultato ottenuto." },
 
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Verifica subito gratuitamente se la tua scheda può essere rimossa.", text: "In pochi secondi vedi il tuo profilo reale e scopri se e quanto velocemente possiamo eliminarlo. Nessun pagamento anticipato, nessun impegno.", btn: "Avvia il check gratuito", href: "/it/?start=1", trust: ["Rischio zero", "Pagamento solo dopo la rimozione completata"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Quanto costa eliminare una scheda Maps?", a: "Con RapidRemove si applica un prezzo fisso trasparente, pagabile esclusivamente dopo la rimozione completata con successo. Non corri quindi alcun rischio economico." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Eliminare il profilo dell'attività su Google: come si fa?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Eliminare recensioni Google: costi e metodi", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Segnalare ed eliminare una recensione Google falsa", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

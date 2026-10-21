@@ -97,6 +97,7 @@ const article = {
       ["Äldre än 4 veckor", "ca. 50 %", "**250 €**"],
     ] },
     { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. För recensioner med text upp till 4 veckor gamla tar det oftast 3–5 dagar, för alla andra oftast 1–2 veckor. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Vilka av dina recensioner bryter mot reglerna?", text: "Sök din profil, bocka i recensionerna så säger vi ärligt vilka som kan tas bort. **Du betalar bara när recensionen faktiskt är borta.**", btn: "Få gratis bedömning", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Gratis bedömning", "Bara vid framgång", "Bara Googles procedurer"] },
   ],
   faq: [
@@ -108,6 +109,7 @@ const article = {
     { q: "Vad kostar det att få en recension borttagen?", a: "**99 €** per borttagen recension med text upp till 4 veckor gammal, **250 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 250 € per borttaget betyg." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort en Google-recension – pris och beställning", url: "/sv/ta-bort-omdome/" },
     { label: "Känna igen, anmäla och ta bort falska Google-recensioner", url: "/sv/magasin/ta-bort-falska-google-recensioner/" },
     { label: "Ta bort en 1-stjärnig recension utan text", url: "/sv/magasin/ta-bort-1-stjarnig-recension-utan-text/" },

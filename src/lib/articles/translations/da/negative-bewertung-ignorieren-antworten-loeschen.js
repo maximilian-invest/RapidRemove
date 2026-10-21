@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Usikker på, om jeres anmeldelse kan fjernes?", text: "Skriv virksomhedens navn – vi tjekker på sekunder gratis, om og hvor hurtigt anmeldelsen eller profilen kan fjernes.", btn: "Start gratis tjek", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Inkl. garanti", "Uden risiko"] },
 
     { t: "p", text: "Dette indlæg er en praktisk vejledning og ikke juridisk rådgivning." },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Skal jeg svare på enhver negativ anmeldelse?", a: "Nej. Ægte, saglig kritik fortjener et suverænt svar (for medlæserne). Harmløse enkeltstemmer i et godt gennemsnit kan man ignorere; uberettigede eller retsstridige anmeldelser bør man hellere have fjernet." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Hvad gør man, hvis der allerede er mange dårlige anmeldelser?", a: "Så er kampen om hver enkelt ofte udsigtsløs. Det kan være mere fornuftigt at slette hele profilen og begynde frisk." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Hvad koster en dårlig Google-anmeldelse egentlig?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Fjern Google-anmeldelser", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "Slutsats", toc: "Slutsats" },
     { t: "p", text: "En Google Maps-post kan man bara begränsat påverka via Googles egna verktyg: »ta bort från kontot» innebär i regel bara »stängd», andras poster kan man bara anmäla, och duplikat bör slås samman i stället för att raderas. Handlar det om en **fullständig, permanent** borttagning inklusive alla recensioner är en komplett profilradering den tillförlitliga vägen – snabb, förutsägbar och med betalning först efter lyckat resultat." },
 
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Kontrollera nu gratis om din post kan tas bort.", text: "På några sekunder ser du din faktiska profil och får veta om och hur snabbt vi kan ta bort den. Ingen förskottsbetalning, ingen förpliktelse.", btn: "Starta gratis kontroll", href: "/sv/?start=1", trust: ["Noll risk", "Betalning sker bara efter lyckad borttagning"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Vad kostar det att ta bort en Maps-post?", a: "Hos RapidRemove gäller ett transparent fast pris, betalbart uteslutande efter lyckad borttagning. Du bär alltså inget ekonomiskt risk." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Ta bort Google-recensioner: kostnad och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Anmäla och ta bort en falsk Google-recension", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

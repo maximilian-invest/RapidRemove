@@ -102,6 +102,7 @@ const article = {
     { t: "h2", id: "fazit", text: "Conclusion", toc: "Conclusion" },
     { t: "p", text: "Les outils natifs de Google n'offrent qu'une maîtrise limitée sur une fiche Google Maps : « supprimer du compte » se traduit le plus souvent par « fermé », les fiches de tiers ne peuvent être que signalées, et les doublons devraient être fusionnés plutôt que supprimés. Lorsqu'il s'agit d'une **suppression totale et définitive**, avis compris, la suppression complète du profil est la voie fiable — rapide, prévisible et avec paiement uniquement après succès." },
 
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Vérifiez maintenant gratuitement si votre fiche peut être supprimée.", text: "En quelques secondes, vous voyez votre vrai profil et savez si et dans quel délai nous pouvons le supprimer. Pas de paiement anticipé, pas d'engagement.", btn: "Démarrer la vérification gratuite", href: "/fr/?start=1", trust: ["Zéro risque", "Paiement uniquement après suppression réussie"] },
   ],
   faq: [
@@ -114,6 +115,7 @@ const article = {
     { q: "Quel est le coût de la suppression d'une fiche Maps ?", a: "Chez RapidRemove, un prix fixe transparent s'applique, payable uniquement après la suppression effective. Vous ne prenez donc aucun risque financier." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Supprimer la fiche d'établissement Google : comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Supprimer un avis Google : coûts et méthodes", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Signaler et supprimer un faux avis Google", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },

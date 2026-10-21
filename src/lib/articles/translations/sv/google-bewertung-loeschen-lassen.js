@@ -82,6 +82,7 @@ const article = {
       ["Insats", "Ingen", "Hög", "Medel"],
       ["Alla recensioner borta", "Ja (med profilen)", "Nej (enskilda ärenden)", "Nej (en i taget)"],
     ] },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Tar RapidRemove bort enskilda recensioner?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) väljer du själv vilka recensioner som ska bort – även rena stjärnbetyg utan text (250 € per borttaget betyg). Recensioner med text upp till 4 veckor gamla har ca. 90 % chans att lyckas (99 € per borttagen recension), äldre ca. 50 % (250 € per recension). Mängdrabatt: från 3 recensioner −10 %, från 5 −15 %, från 10 −30 %. Du betalar bara för dem som faktiskt tas bort. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner fortfarande den grundligaste vägen." },
@@ -92,6 +93,7 @@ const article = {
     { q: "Vad är Streisandeffekten?", a: "När juridiska steg mot en recension just provocerar upphovspersonen och leder till fler negativa recensioner. Teknisk borttagning undviker den risken eftersom den arbetar utan direkt konfrontation." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort Google-företagsprofilen: hur gör man?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Anmäla och ta bort en falsk Google-recension", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Ta bort en 1-stjärnig recension utan text", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },

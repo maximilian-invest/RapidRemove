@@ -101,6 +101,7 @@ const article = {
     { t: "h2", id: "different-times", text: "Perché più recensioni spariscono in momenti diversi", toc: "Momenti diversi" },
     { t: "p", text: "**Ogni recensione viene esaminata singolarmente, quindi se ne segnali cinque raramente spariscono lo stesso giorno.** Una può andarsene in due giorni, un'altra richiede un ricorso, una terza è ancora in sospeso dopo due settimane." },
     { t: "p", text: "Per questo **fatturiamo per recensione**: paghi ciascuna quando è stata davvero rimossa – ciascuna viene addebitata separatamente sulla carta o PayPal salvati. Quelle su cui stiamo ancora lavorando non ti costano nulla, e con 3, 5 o 10 recensioni accettate lo sconto quantità (−10 %, −15 %, −30 %) vale per ognuna che viene rimossa. Tutti i prezzi e i confronti sono in [costo della rimozione di una recensione Google](/it/rivista/costo-rimozione-recensione-google/), e l'ordine si fa dalla nostra pagina per [rimuovere una singola recensione Google](/it/rimuovere-una-recensione/)." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Scopri quali recensioni hanno davvero una possibilità", text: "Prima una valutazione gratuita: ti diciamo onestamente se una recensione è rimovibile. L'ordine richiede circa due minuti – di solito risolto in 3–5 giorni per le recensioni con testo fino a 4 settimane, altrimenti in 1–2 settimane.", btn: "Avvia la verifica gratuita", href: "/it/verifica-profilo/?start=reviews", trust: ["Solo procedure ufficiali di Google", "L'autore non sa chi l'ha richiesto", "Oltre 1.600 profili rimossi dal 2023"] },
   ],
   faq: [
@@ -113,6 +114,7 @@ const article = {
     { q: "Rispondere alla recensione peggiora le mie probabilità?", a: "No. Una risposta pubblica breve e calma è sempre consentita e non influisce sul controllo. Evita solo insulti e dati dei clienti." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },
     { label: "Costo della rimozione di una recensione Google", url: "/it/rivista/costo-rimozione-recensione-google/" },
     { label: "Violazioni delle norme sulle recensioni Google", url: "/it/rivista/norme-recensioni-google-violazioni/" },

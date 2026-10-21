@@ -59,6 +59,7 @@ const article = {
     { t: "cta", title: "どの記事が問題になっていますか——非表示化できますか？", text: "対象の検索結果を教えてください。非表示化または押し下げが可能かどうかを無料でご確認します。", btn: "無料で確認する", href: "https://www.rapid-remove.com/", trust: ["無料分析", "慎重な対応", "リスクなし"] },
 
     { t: "p", text: "本記事は実践的な参考情報であり、法律的なアドバイスではありません。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
   ],
   faq: [
     { q: "プレス記事をGoogleから削除できますか？", a: "メディア側で記事を削除することは報道の自由によって守られているため、ほとんどの場合困難です。一方、Google検索結果からの非表示化は多くの場合で可能です——記事はサイト上に残りますが、名前検索で表示されなくなります。" },
@@ -67,6 +68,7 @@ const article = {
     { q: "状況を悪化させないためにはどうすればよいですか？", a: "メディアに公に圧力をかけないことです。正規の手続きを通じた慎重な非表示化がシュトライザント効果を避ける唯一の方法です。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "企業のためのオンライン評判管理（ORM）ガイド", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Googleのネガティブな検索結果を押し下げる・削除する方法", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "GoogleビジネスプロフィールとGoogleマップ情報の削除方法", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

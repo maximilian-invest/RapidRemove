@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Quel article vous pèse – et peut-il être désindexé ?", text: "Indiquez le résultat en question – nous vérifions gratuitement et sans engagement si une désindexation ou un repoussement est possible.", btn: "Vérification gratuite", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Discret", "Sans risque"] },
 
     { t: "p", text: "Cet article est un guide pratique et ne constitue pas un conseil juridique." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "Peut-on supprimer un article de presse de Google ?", a: "Faire supprimer l'article par le média lui-même réussit rarement en raison de la liberté de la presse. La désindexation des résultats Google est en revanche souvent possible – l'article reste en ligne, mais n'apparaît plus dans la recherche par nom." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Comment éviter d'aggraver la situation ?", a: "En ne faisant pas pression publiquement sur le média. Une désindexation discrète, passant par les procédures officielles, évite l'effet Streisand." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Gestion de réputation en ligne pour les entreprises – le guide", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Repousser ou supprimer les résultats Google négatifs", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Supprimer un profil Google My Business – comment faire ?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

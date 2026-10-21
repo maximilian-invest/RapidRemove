@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "決定的な利点は、**削除成功後にのみ**支払う点です。第三者経由でプロフィールが再表示されても、保証の範囲で無料で削除されます。" },
     { t: "warn", title: "重要", text: "プロフィール削除は**ビジネスプロフィール全体**を取り除くもので、偽クチコミ1件ではありません。クチコミを1件〜数件だけ削除してプロフィールを残したい場合は、Googleへの報告や弁護士に加えて、第三の選択肢があります：RapidRemoveの[クチコミ個別削除](/ja/remove-review/)です。投稿から4週間以内で本文のあるクチコミは成功率約90%で1件$99、それより古いクチコミも約50%の成功率で対応できます（1件$250）。お支払いは実際に削除できた分だけです。" },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "偽クチコミ攻撃？削除可能性を無料で確認。", text: "会社名を入力すれば、プロフィールと全偽クチコミを削除できるか、どれだけ早くできるかが数秒でわかります。", btn: "削除可能性をチェック", href: "https://www.rapid-remove.com/", trust: ["無料診断", "保証", "リスクなし"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "偽クチコミはどれくらい早く片づきますか？", a: "プロフィール削除なら多くは24〜48時間、クチコミ個別削除なら投稿4週間以内・本文ありのクチコミは通常3〜5日、それ以外は通常1〜2週間で結果が出ます——数か月かかる法的手段よりはるかに速いです。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Googleのクチコミを削除：費用と手段の比較", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "コメントなしの星1つのクチコミを削除する", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Googleの悪いクチコミ——どうする？", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

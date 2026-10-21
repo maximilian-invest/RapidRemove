@@ -98,6 +98,7 @@ const article = {
       "**Plazo:** reseñas con texto de hasta 4 semanas, normalmente 3–5 días; todas las demás, normalmente 1–2 semanas.",
     ] },
     { t: "p", text: "Desde 2023 hemos eliminado más de 1.600 Perfiles de Empresa de Google y realizado más de 20.000 comprobaciones gratuitas para clientes de más de 50 países. Precios y proceso de pedido: [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/)." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
     { t: "cta", title: "Elige las reseñas que infringen las normas", text: "Carga tus últimas reseñas de Google, marca las que quieres eliminar y ve el precio exacto. Son unos 2 minutos y solo pagas por las reseñas que realmente se eliminan.", btn: "Revisar mis reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Pago solo si hay éxito", "Solo procedimientos de Google", "Valoración gratuita"] },
   ],
   faq: [
@@ -109,6 +110,7 @@ const article = {
     { q: "¿Cuánto cuesta eliminar una reseña que infringe las políticas?", a: "Con RapidRemove, **99 € por reseña eliminada** (250 € si tiene más de 4 semanas o no tiene texto), solo cuando la reseña ha desaparecido. La valoración previa es gratuita." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Servicio para eliminar reseñas de Google", url: "/es/eliminar-una-resena/" },
     { label: "Eliminar reseñas falsas de Google", url: "/es/revista/eliminar-resenas-falsas-de-google/" },
     { label: "Reseña de 1 estrella sin texto", url: "/es/revista/eliminar-resena-1-estrella-sin-texto/" },

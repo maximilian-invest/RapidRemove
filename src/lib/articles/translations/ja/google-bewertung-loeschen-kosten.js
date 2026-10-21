@@ -109,6 +109,7 @@ const article = {
       "**正規の方法のみ：** Google自身の手続きだけを使用。偽アカウント、ボット、虚偽の法的通知は一切使いません。",
       "**実績：** 2023年以降、1,600件以上のGoogleビジネスプロフィールを削除。20,000件以上の無料プロフィールチェック、50か国以上のお客様、Trustpilot評価5.0。",
     ] },
+    { t: "note", title: "Googleのプロフィール自体が問題ですか？", text: "Googleビジネスプロフィールごと消したい場合は、[Googleビジネスプロフィールを削除する方法](/ja/magazine/google-business-profile-sakujo/)をご覧ください。Google公式の手順で実際に何が起きるのか、そしてすべてのクチコミとともにプロフィールを削除する方法を解説しています。" },
     { t: "cta", title: "2分で料金がわかります", text: "お店を選び、削除したい口コミにチェックを入れれば、割引込みの正確な料金が表示されます。お支払いは**実際に削除できた口コミの分だけ**です。", btn: "口コミを選ぶ", href: "/ja/check/?start=reviews", trust: ["削除1件$99〜", "前払いなし", "削除後に自動決済"] },
   ],
   faq: [
@@ -121,6 +122,7 @@ const article = {
     { q: "削除を保証してくれる業者はありますか？", a: "削除を決めるのはGoogleなので、誠実な業者が保証することはできません。だからこそRapidRemoveは成功報酬型を採用しています。" },
   ],
   related: [
+    { label: "Googleビジネスプロフィールを削除する方法", url: "/ja/magazine/google-business-profile-sakujo/" },
     { label: "Google口コミ削除代行：料金・成功率・依頼方法", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "低評価の口コミがもたらす損失", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Google口コミ削除にかかる期間", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },

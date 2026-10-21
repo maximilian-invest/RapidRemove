@@ -95,6 +95,7 @@ const article = {
       "**Monitoring:** neue Bewertungen früh erkennen, um die 1-Monats-Frist für den Eilweg nicht zu verpassen.",
     ] },
 
+    { t: "note", title: "Ist Ihr Google-Profil selbst das Problem?", text: "Wenn das gesamte Google-Unternehmensprofil verschwinden soll, lesen Sie unseren Ratgeber [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/): was Googles offizielle Schritte wirklich bewirken und wie das Profil samt aller Bewertungen verschwindet." },
     { t: "cta", title: "Unsicher, ob Ihre Trustpilot-Bewertung löschbar ist?", text: "Schicken Sie uns den Link – wir prüfen kostenlos und unverbindlich, ob eine Entfernung realistisch ist, und sagen Ihnen ehrlich, welcher Weg sich lohnt.", btn: "Kostenlos prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Einschätzung", "rechtliche Schritte über Partnerkanzlei", "keine leeren Garantien"] },
   ],
   faq: [
@@ -109,6 +110,7 @@ const article = {
     { q: "Darf ich Kunden um Trustpilot-Bewertungen bitten?", a: "Ja, das aktive Einholen echter Bewertungen ist erlaubt und sinnvoll – verboten sind gekaufte oder gefälschte Bewertungen." },
   ],
   related: [
+    { label: "Google-Unternehmensprofil löschen", url: "/magazin/google-unternehmensprofil-loeschen/" },
     { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Was kostet eine schlechte Google-Bewertung wirklich?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Online-Reputationsmanagement – der Leitfaden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },

@@ -110,6 +110,7 @@ const article = {
       "**Bare offisielle veier:** utelukkende Googles egne prosedyrer – ingen falske kontoer, ingen roboter, ingen falske juridiske henvendelser.",
       "**Erfaring:** siden 2023 over 1 600 fjernede Google-bedriftsprofiler, over 20 000 gratis profilsjekker, kunder i over 50 land og 5,0 på Trustpilot.",
     ] },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Få prisen på 2 minutter", text: "Velg bedriften din, kryss av for anmeldelsene og se nøyaktig pris inkludert rabatt. Du betaler **bare for anmeldelser som faktisk fjernes**.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Fra 99 € per fjernet anmeldelse", "Ingenting på forskudd", "Trekkes automatisk etter fjerning"] },
   ],
   faq: [
@@ -122,6 +123,7 @@ const article = {
     { q: "Kan noen garantere at en anmeldelse blir fjernet?", a: "Nei. Det er Google som avgjør. Den som lover en garanti, er ikke ærlig – derfor tar vi bare betalt ved suksess." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Fjerne en Google-anmeldelse: pris, sjanser og bestilling", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Hva koster en dårlig Google-anmeldelse?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Hvor lang tid tar det for Google å fjerne en anmeldelse?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },

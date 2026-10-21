@@ -59,6 +59,7 @@ const article = {
     { t: "cta", title: "Welk artikel belast u – en laat het zich deïndexeren?", text: "Noem de treffer – wij controleren gratis en vrijblijvend of deïndexering of verdringing mogelijk is.", btn: "Gratis controleren", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Discreet", "Zonder risico"] },
 
     { t: "p", text: "Dit artikel biedt praktische oriëntatie en is geen juridisch advies." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
   ],
   faq: [
     { q: "Kan men een persartikel uit Google verwijderen?", a: "Het artikel bij het medium zelf verwijderen lukt vanwege de persvrijheid zelden. Wel vaak mogelijk is het deïndexeren uit de Google-zoekresultaten – het artikel blijft online, maar verschijnt bij een naamzoekopdracht niet meer." },
@@ -67,6 +68,7 @@ const article = {
     { q: "Hoe voorkom ik dat alles erger wordt?", a: "Door het medium niet publiekelijk onder druk te zetten. Een discrete deïndexering via de officiële procedures vermijdt het Streisand-effect." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Online reputatiemanagement voor bedrijven – de gids", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Negatieve Google-zoekresultaten verdringen of verwijderen", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Google-bedrijfsprofiel verwijderen – hoe werkt dat?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

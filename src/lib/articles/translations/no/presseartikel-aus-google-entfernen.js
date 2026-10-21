@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Hvilken artikkel belaster deg – og kan den avindekseres?", text: "Nevn treffet – vi sjekker gratis og uforpliktende om avindeksering eller fortrenging er mulig.", btn: "Sjekk gratis", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Diskret", "Uten risiko"] },
 
     { t: "p", text: "Dette innlegget er praktisk veiledning og ikke juridisk rådgivning." },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Kan man slette en presseartikkel fra Google?", a: "Å slette artikkelen hos mediet lykkes sjelden på grunn av pressefriheten. Det som derimot ofte er mulig, er å avindeksere den fra Google-søkeresultatene – artikkelen er fortsatt tilgjengelig online, men dukker ikke opp ved søk på navn." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Hvordan unngår jeg at alt blir verre?", a: "Ved ikke å utøve offentlig press mot mediet. En diskret avindeksering via offisielle prosedyrer unngår Streisand-effekten." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Online omdømmehåndtering for bedrifter – den komplette guiden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Fjern negative Google-søkeresultater", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Slett Google-bedriftsprofil – hvordan går du frem?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

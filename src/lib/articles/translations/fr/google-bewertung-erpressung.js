@@ -96,6 +96,7 @@ const article = {
       "**Demandez des avis à vos clients satisfaits** de façon régulière, pour qu'une attaque pèse moins sur votre note moyenne.",
     ] },
     { t: "p", text: "Vous hésitez à répondre à un avis précis ? Notre guide [ignorer, répondre ou supprimer un avis négatif](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/) vous aide à trancher." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
   ],
   faq: [
     { q: "Faut-il payer le maître chanteur ?", a: "Non. Payer ne garantit pas la suppression des avis et vous désigne comme une entreprise qui cède : les demandes reviennent souvent. **Ne payez pas, ne négociez pas**, documentez tout et signalez-le à Google." },
@@ -107,6 +108,7 @@ const article = {
     { q: "Le maître chanteur saura-t-il que j'ai fait supprimer les avis ?", a: "Pas par nous. L'auteur de l'avis n'est pas informé de l'identité de celui qui a demandé la suppression." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },
     { label: "Repérer, signaler et supprimer les faux avis", url: "/fr/magazine/supprimer-faux-avis-google/" },
     { label: "Supprimer un avis 1 étoile sans texte", url: "/fr/magazine/supprimer-avis-1-etoile-sans-texte/" },

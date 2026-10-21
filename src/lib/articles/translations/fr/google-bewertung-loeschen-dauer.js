@@ -101,6 +101,7 @@ const article = {
     { t: "h2", id: "different-times", text: "Pourquoi plusieurs avis disparaissent à des moments différents", toc: "Moments différents" },
     { t: "p", text: "**Chaque avis est examiné séparément : si vous en signalez cinq, ils disparaissent rarement le même jour.** L'un peut partir en deux jours, un autre nécessite un recours, un troisième est encore en attente après deux semaines." },
     { t: "p", text: "C'est pourquoi nous **facturons par avis** : vous payez chaque avis une fois qu'il est réellement supprimé – chacun est prélevé séparément sur votre carte ou PayPal enregistrés. Les avis encore en cours ne vous coûtent rien, et à partir de 3, 5 ou 10 avis acceptés la remise sur volume (−10 %, −15 %, −30 %) s'applique à chaque avis supprimé. Tous les tarifs et comparaisons sont dans [prix de la suppression d'un avis Google](/fr/magazine/prix-suppression-avis-google/), et la commande se fait sur notre page pour [supprimer un avis Google précis](/fr/supprimer-un-avis/)." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Vérifiez quels avis ont une vraie chance", text: "D'abord une évaluation gratuite : nous vous disons honnêtement si un avis peut être supprimé. La commande prend environ deux minutes – en général réglé en 3 à 5 jours pour les avis avec texte de moins de 4 semaines, sinon en 1 à 2 semaines.", btn: "Lancer la vérification gratuite", href: "/fr/verifier-profil/?start=reviews", trust: ["Uniquement les procédures de Google", "L'auteur ne sait pas qui l'a demandé", "Plus de 1 600 fiches supprimées depuis 2023"] },
   ],
   faq: [
@@ -113,6 +114,7 @@ const article = {
     { q: "Répondre à l'avis réduit-il mes chances ?", a: "Non. Une réponse publique courte et calme est toujours autorisée et n'influence pas l'examen. Évitez seulement les insultes et les données clients." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Service de suppression d'avis Google", url: "/fr/supprimer-un-avis/" },
     { label: "Prix de la suppression d'un avis Google", url: "/fr/magazine/prix-suppression-avis-google/" },
     { label: "Infractions aux règles des avis Google", url: "/fr/magazine/regles-avis-google-infractions/" },

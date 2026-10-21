@@ -98,6 +98,7 @@ const article = {
       "**Tempi:** recensioni con testo fino a 4 settimane di solito 3–5 giorni, tutte le altre di solito 1–2 settimane.",
     ] },
     { t: "p", text: "Dal 2023 abbiamo rimosso oltre 1.600 Profili dell'attività Google ed eseguito oltre 20.000 verifiche gratuite per clienti in più di 50 paesi. Prezzi e ordine: [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/)." },
+    { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },
     { t: "cta", title: "Scegli le recensioni che violano le norme", text: "Carica le tue ultime recensioni Google, spunta quelle da rimuovere e vedi il prezzo esatto. Bastano circa 2 minuti e paghi solo le recensioni davvero rimosse.", btn: "Controlla le mie recensioni", href: "/it/verifica-profilo/?start=reviews", trust: ["Paghi solo a successo", "Solo procedure Google", "Valutazione gratuita"] },
   ],
   faq: [
@@ -109,6 +110,7 @@ const article = {
     { q: "Quanto costa far rimuovere una recensione che viola le norme?", a: "Con RapidRemove, **99 € per recensione rimossa** (250 € se ha più di 4 settimane o è senza testo), solo quando la recensione è sparita. La valutazione iniziale è gratuita." },
   ],
   related: [
+    { label: "Eliminare la scheda Google My Business", url: "/it/rivista/eliminare-profilo-attivita-google/" },
     { label: "Servizio di rimozione recensioni Google", url: "/it/rimuovere-una-recensione/" },
     { label: "Eliminare recensioni false su Google", url: "/it/rivista/eliminare-recensioni-false-google/" },
     { label: "Recensione a 1 stella senza testo", url: "/it/rivista/eliminare-recensione-1-stella-senza-testo/" },

@@ -56,6 +56,7 @@ const article = {
 
     { t: "h2", id: "vorbeugen", text: "Prevenir: mais avaliações positivas autênticas", toc: "Prevenir" },
     { t: "p", text: "A melhor defesa é uma média sólida. Peça ativamente uma avaliação a clientes satisfeitos (p. ex. por código QR, link na assinatura de e-mail ou após uma conclusão bem-sucedida). Muitas avaliações positivas autênticas diluem a influência de vozes negativas isoladas – e protegem a sua média de forma duradoura." },
+    { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },
   ],
   faq: [
     { q: "O que devo fazer perante uma avaliação negativa no Google?", a: "Primeiro mantenha a calma e documente. Perante uma crítica justificada, responda de forma profissional e pública. Perante uma violação das diretrizes, denuncie a avaliação – e se o Google não reagir, mande-a remover." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Vale mesmo a pena denunciar ao Google?", a: "Como primeiro passo gratuito, sim – sobretudo perante spam evidente. Mas como o Google rejeita muitas denúncias de forma automatizada, restam o advogado ou a remoção de avaliações individuais da RapidRemove para casos isolados persistentes, e a remoção do perfil para um perfil fundamentalmente danificado." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa no Google", url: "/pt/revista/eliminar-perfil-empresa-google/" },
     { label: "Avaliação negativa: advogado ou remoção técnica?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Remover uma avaliação de 1 estrela sem texto", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Mandar remover uma avaliação do Google: formulário, custos e guia", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },

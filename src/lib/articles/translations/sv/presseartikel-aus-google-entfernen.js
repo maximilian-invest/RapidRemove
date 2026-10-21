@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Vilken artikel belastar er – och kan den avindexeras?", text: "Ange träffen – vi kontrollerar kostnadsfritt och utan förbindelser om avindexering eller undanträngning är möjlig.", btn: "Kontrollera kostnadsfritt", href: "https://www.rapid-remove.com/", trust: ["Kostnadsfri analys", "Diskret", "Utan risk"] },
 
     { t: "p", text: "Den här artikeln är praktisk vägledning och utgör inte juridisk rådgivning." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Kan man ta bort en pressartikel från Google?", a: "Att få mediet att ta bort artikeln lyckas sällan på grund av pressfriheten. Däremot är avindexering ur Googles sökresultat ofta möjlig – artikeln finns kvar online, men dyker inte upp vid namnsökning." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Hur undviker jag att det förvärras?", a: "Genom att inte sätta mediet under offentlig press. En diskret avindexering via de officiella rutinerna undviker Streisand-effekten." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Online-rykteshantering för företag – den kompletta guiden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Negativa Google-sökresultat – ta bort eller tränga undan", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },
     { label: "Radera Google-företagsprofil – hur går det till?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

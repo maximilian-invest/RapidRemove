@@ -80,6 +80,7 @@ const article = {
       "**Negative Treffer verdrängen:** Wie man die Google-Sichtbarkeit steuert, steht im [Leitfaden Online-Reputationsmanagement](/magazin/online-reputationsmanagement/) und unter [negative Suchergebnisse verdrängen](/magazin/negative-google-suchergebnisse-verdraengen/).",
     ] },
 
+    { t: "note", title: "Ist Ihr Google-Profil selbst das Problem?", text: "Wenn das gesamte Google-Unternehmensprofil verschwinden soll, lesen Sie unseren Ratgeber [Google-Unternehmensprofil löschen](/magazin/google-unternehmensprofil-loeschen/): was Googles offizielle Schritte wirklich bewirken und wie das Profil samt aller Bewertungen verschwindet." },
     { t: "cta", title: "Unsicher, ob Ihre kununu-Bewertung löschbar ist?", text: "Schicken Sie uns den Link – wir prüfen kostenlos, ob eine Entfernung realistisch ist, und sagen Ihnen ehrlich, welcher Weg sich lohnt.", btn: "Kostenlos prüfen", href: "https://www.rapid-remove.com/", trust: ["Kostenlose Einschätzung", "rechtliche Schritte über Partnerkanzlei", "keine leeren Garantien"] },
   ],
   faq: [
@@ -94,6 +95,7 @@ const article = {
     { q: "Wie verhindere ich künftige Negativbewertungen?", a: "Durch echte Mitarbeiterzufriedenheit, aktives Einholen ehrlicher Bewertungen und schnelle Reaktion auf Kritik – ein stabiler, glaubwürdiger Schnitt ist der beste Schutz." },
   ],
   related: [
+    { label: "Google-Unternehmensprofil löschen", url: "/magazin/google-unternehmensprofil-loeschen/" },
     { label: "Negative Bewertung: ignorieren, antworten oder löschen?", url: "https://www.rapid-remove.com/negative-bewertung-ignorieren-antworten-loeschen" },
     { label: "Online-Reputationsmanagement – der Leitfaden", url: "https://www.rapid-remove.com/online-reputationsmanagement" },
     { label: "Negative Google-Suchergebnisse verdrängen", url: "https://www.rapid-remove.com/negative-google-suchergebnisse-verdraengen" },

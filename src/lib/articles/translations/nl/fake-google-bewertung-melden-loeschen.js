@@ -65,6 +65,7 @@ const article = {
     ] },
     { t: "p", text: "Het beslissende voordeel: u betaalt pas **na geslaagde verwijdering**, en mocht het profiel via derden weer opduiken, dan wordt het in het kader van de garantie gratis verwijderd." },
     { t: "warn", title: "Belangrijk", text: "De profielverwijdering verwijdert het **volledige bedrijfsprofiel**, niet één valse review. Gaat het maar om één of enkele valse reviews en wilt u uw profiel behouden, dan is de [verwijdering van losse reviews](/nl/review-laten-verwijderen/) de betere keuze: u selecteert de reviews, ziet direct de prijs en betaalt alleen voor reviews die echt weg zijn. Hoe dat werkt en wat het kost, leest u in ons artikel over de [Google-review-verwijderservice](/nl/magazine/google-review-verwijderen-service/)." },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Valse aanval? Controleer gratis de verwijderbaarheid.", text: "Voer uw bedrijfsnaam in – we controleren binnen seconden of en hoe snel uw profiel inclusief alle valse reviews verwijderd kan worden.", btn: "Verwijderbaarheid checken", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Met garantie", "Zonder risico"] },
   ],
   faq: [
@@ -76,6 +77,7 @@ const article = {
     { q: "Hoe snel ben je de valse reviews kwijt?", a: "Via profielverwijdering zijn resultaten vaak binnen 24 tot 48 uur mogelijk – aanzienlijk sneller dan de juridische weg van meerdere maanden. Losse valse reviews zijn via RapidRemove meestal binnen 3–5 dagen weg als ze tekst hebben en hooguit 4 weken oud zijn, anders meestal binnen 1–2 weken." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google reviews verwijderen: kosten en methoden vergeleken", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Een 1-sterreview zonder tekst verwijderen", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
     { label: "Slechte Google review – wat te doen?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

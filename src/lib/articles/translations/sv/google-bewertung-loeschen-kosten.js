@@ -109,6 +109,7 @@ const article = {
       "**Bara officiella vägar:** enbart Googles egna procedurer – inga falska konton, inga bottar, inga falska juridiska anmälningar.",
       "**Erfarenhet:** sedan 2023 över 1 600 borttagna Google-företagsprofiler, över 20 000 kostnadsfria profilkontroller, kunder i över 50 länder och betyget 5,0 på Trustpilot.",
     ] },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
     { t: "cta", title: "Vet på 2 minuter vad det kostar", text: "Välj ditt företag, bocka i recensionerna och se exakt pris inklusive rabatt. Du betalar **bara för recensioner som faktiskt tas bort**.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Från 99 € per borttagen recension", "Inget i förskott", "Dragning först efter borttagning"] },
   ],
   faq: [
@@ -121,6 +122,7 @@ const article = {
     { q: "Kan någon garantera att en recension tas bort?", a: "Nej. Det är Google som beslutar. Den som lovar en garanti är inte ärlig – därför tar vi bara betalt vid resultat." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Ta bort en Google-recension: pris, chans och beställning", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Vad kostar en dålig Google-recension?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Hur lång tid tar det för Google att ta bort en recension?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },

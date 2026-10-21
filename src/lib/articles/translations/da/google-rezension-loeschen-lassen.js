@@ -60,6 +60,7 @@ const article = {
       "**valgfri ny start** med en ren profil",
     ] },
     { t: "warn", title: "Vigtigt", text: "Profilfjernelsen fjerner **hele profilen**, ikke en enkelt anmeldelse. Den, der kun vil fjerne en enkelt anmeldelse og beholde profilen, bruger anmeldelsen, advokatvejen eller RapidRemoves [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) – priser og succesrater: [Få fjernet en Google-anmeldelse](/da/magasin/fjern-google-anmeldelse-service/)." },
+    { t: "note", title: "Er din Google-profil selve problemet?", text: "Skal hele Google-virksomhedsprofilen forsvinde? Læs vores guide [slet Google-virksomhedsprofil](/da/magasin/slet-google-virksomhedsprofil/): hvad Googles officielle trin faktisk gør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Profil varigt beskadiget? Tjek muligheden for fjernelse – gratis.", text: "På sekunder ser du, om og hvor hurtigt din profil inklusive alle anmeldelser kan fjernes.", btn: "Tjek mulighed for fjernelse", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uden risiko"] },
   ],
   faq: [
@@ -71,6 +72,7 @@ const article = {
     { q: "Fjerner RapidRemove enkelte anmeldelser?", a: "Ja. Med [fjernelse af enkelte anmeldelser](/da/fjern-anmeldelse/) vælger du præcis de Google-anmeldelser, der skal væk – også rene stjernebedømmelser uden tekst. Anmeldelser med tekst op til 4 uger gamle: ca. 90 % succesrate, 99 € pr. fjernet anmeldelse; ældre: ca. 50 %, 250 € pr. fjernet anmeldelse – du betaler kun, hvis de faktisk fjernes. Stjernebedømmelser uden tekst fjerner vi med en mere omfattende procedure: 250 € pr. fjernet anmeldelse – også her trækkes der først efter fjernelsen. Mængderabat: fra 3 anmeldelser −10 %, fra 5 −15 %, fra 10 −30 %. Er profilen skadet som helhed, er fjernelse af hele profilen med alle anmeldelser stadig den grundigste vej." },
   ],
   related: [
+    { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },
     { label: "Fjern Google-anmeldelser: pris og metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },
     { label: "Anmeld og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Negativ anmeldelse: advokat eller teknisk fjernelse?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },

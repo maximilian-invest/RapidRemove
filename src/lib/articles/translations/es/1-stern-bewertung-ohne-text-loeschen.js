@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (perfil)", "**todo el perfil + todas las reseñas**", "24 – 48 h", "pago solo si hay éxito", "precio fijo tras el éxito"],
     ] },
     { t: "p", text: "Con la eliminación del perfil solo pagas **tras el éxito** y, gracias a la garantía, un perfil que reaparezca se elimina gratis." },
+    { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },
     { t: "cta", title: "Comprueba gratis si tu reseña de 1 estrella se puede eliminar.", text: "Introduce el nombre de tu empresa: encontramos tu perfil y comprobamos en segundos si se puede eliminar, y con qué rapidez.", btn: "Comprobar eliminabilidad", href: "https://www.rapid-remove.com/", trust: ["Análisis gratis", "Garantía", "Sin riesgo"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "¿En cuánto tiempo desaparecen las reseñas?", a: "Mediante la eliminación del perfil, a menudo en 24 a 48 horas, mucho más rápido que la vía legal de varios meses para una reseña suelta." },
   ],
   related: [
+    { label: "Eliminar perfil de empresa de Google", url: "/es/revista/eliminar-perfil-de-empresa-google/" },
     { label: "Abogado o eliminación técnica: ¿qué merece la pena?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Cómo eliminar una reseña de Google: formulario y costes", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Mala reseña de Google: ¿qué hacer?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

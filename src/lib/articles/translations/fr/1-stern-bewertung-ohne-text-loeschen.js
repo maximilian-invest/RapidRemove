@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (suppression de fiche)", "**toute la fiche + tous les avis**", "24 – 48 h", "paiement en cas de succès", "prix fixe après succès"],
     ] },
     { t: "p", text: "Avec la suppression de la fiche, vous ne payez qu'**après succès**, et grâce à la garantie une fiche qui réapparaît est supprimée gratuitement." },
+    { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },
     { t: "cta", title: "Fiche endommagée ? Vérifiez gratuitement si elle peut être supprimée.", text: "Saisissez le nom de votre entreprise : nous trouvons votre fiche et vérifions en quelques secondes si elle peut être supprimée, et à quelle vitesse.", btn: "Vérifier la faisabilité", href: "https://www.rapid-remove.com/", trust: ["Analyse gratuite", "Garantie", "Sans risque"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "En combien de temps les avis disparaissent-ils ?", a: "Via la suppression de la fiche, souvent en 24 à 48 heures ; via la suppression d'avis isolés, en général en 3 à 5 jours pour les avis avec texte de moins de 4 semaines et en 1 à 2 semaines pour tous les autres, notes sans texte comprises. Un signalement à Google prend de quelques jours à plusieurs semaines, sans garantie de résultat ; la voie juridique pour un avis isolé prend souvent plusieurs mois." },
   ],
   related: [
+    { label: "Supprimer une fiche Google My Business", url: "/fr/magazine/supprimer-profil-etablissement-google/" },
     { label: "Avocat ou suppression technique : qu'est-ce qui vaut le coup ?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Comment supprimer un avis Google : formulaire et coûts", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Mauvais avis Google : que faire ?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

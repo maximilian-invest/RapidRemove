@@ -110,6 +110,7 @@ const article = {
       "**Alleen officiële wegen:** uitsluitend de eigen procedures van Google – geen nepaccounts, geen bots, geen valse juridische meldingen.",
       "**Ervaring:** sinds 2023 meer dan 1.600 Google-bedrijfsprofielen verwijderd, meer dan 20.000 gratis profielchecks, klanten in meer dan 50 landen en een Trustpilot-score van 5,0.",
     ] },
+    { t: "note", title: "Is uw Google-profiel zelf het probleem?", text: "Moet het hele Google-bedrijfsprofiel verdwijnen? Lees dan onze handleiding [Google-bedrijfsprofiel verwijderen](/nl/magazine/google-bedrijfsprofiel-verwijderen/): wat de officiële stappen van Google echt doen en hoe het profiel met alle reviews verdwijnt." },
     { t: "cta", title: "Weet in 2 minuten wat het u kost", text: "Kies uw bedrijf, vink de reviews aan en zie uw exacte prijs inclusief korting. U betaalt **alleen voor reviews die echt verwijderd zijn**.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Vanaf € 99 per verwijderde review", "Niets vooraf", "Afschrijving pas na verwijdering"] },
   ],
   faq: [
@@ -123,6 +124,7 @@ const article = {
     { q: "Kan iemand garanderen dat een review verwijderd wordt?", a: "Nee. Google beslist zelf. Wie een garantie belooft, is niet eerlijk – daarom werken wij met betalen alleen bij succes." },
   ],
   related: [
+    { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },
     { label: "Google review laten verwijderen: prijs, slagingskans en bestellen", url: "https://www.rapid-remove.com/einzelbewertung-loeschen-service" },
     { label: "Wat kost een slechte Google review?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Hoe lang duurt het om een Google review te laten verwijderen?", url: "https://www.rapid-remove.com/google-bewertung-loeschen-dauer" },

@@ -53,6 +53,7 @@ const article = {
       ["RapidRemove (profilfjerning)", "**hele profilen + alle anmeldelser**", "24-48 t", "betaling ved suksess", "fast pris etter suksess"],
     ] },
     { t: "p", text: "Ved profilfjerningen betaler du først **etter suksess**, og takket være garantien fjernes en profil som dukker opp igjen, uten kostnad." },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
     { t: "cta", title: "Sjekk gratis om din 1-stjerners anmeldelse kan fjernes.", text: "Skriv inn bedriftsnavnet – vi finner profilen din og sjekker på sekunder om og hvor raskt den kan fjernes.", btn: "Sjekk muligheten for fjerning", href: "https://www.rapid-remove.com/", trust: ["Gratis analyse", "Garanti", "Uten risiko"] },
   ],
   faq: [
@@ -64,6 +65,7 @@ const article = {
     { q: "Hvor raskt blir man kvitt anmeldelsene?", a: "Via profilfjerning ofte innen 24 til 48 timer, ved fjerning av en enkeltanmeldelse vanligvis 3–5 dager for anmeldelser med tekst opptil 4 uker gamle og 1–2 uker for alle andre, også rene stjernevurderinger uten tekst – betydelig raskere enn den flere måneder lange rettslige veien for en enkelt anmeldelse." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Negativ anmeldelse: advokat eller teknisk fjerning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Få fjernet en Google-anmeldelse: skjema, pris og guide", url: "https://www.rapid-remove.com/google-rezension-loeschen-lassen" },
     { label: "Dårlig Google-anmeldelse – hva gjør man?", url: "https://www.rapid-remove.com/schlechte-google-bewertungen-was-tun" },

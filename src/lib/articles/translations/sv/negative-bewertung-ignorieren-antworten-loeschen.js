@@ -58,6 +58,7 @@ const article = {
     { t: "cta", title: "Osäker på om er recension kan tas bort?", text: "Ange företagsnamnet – vi kontrollerar kostnadsfritt på sekunder om och hur snabbt recensionen eller profilen kan tas bort.", btn: "Starta gratis analys", href: "https://www.rapid-remove.com/", trust: ["Kostnadsfri analys", "Inkl. garanti", "Utan risk"] },
 
     { t: "p", text: "Den här artikeln är praktisk vägledning och utgör inte juridisk rådgivning." },
+    { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
     { q: "Ska jag svara på varje negativ recension?", a: "Nej. På genuin, saklig kritik lönar sig ett samlat svar (för de som läser med). Harmlösa enstaka röster i ett bra snitt kan man ignorera; obefogade eller rättsstridiga bör man hellre låta ta bort." },
@@ -66,6 +67,7 @@ const article = {
     { q: "Vad gör man om det redan finns många dåliga recensioner?", a: "Då är kampen om varje enskild ofta utsiktslös. Mer meningsfullt kan vara den fullständiga profilraderingen med efterföljande ren nystart." },
   ],
   related: [
+    { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
     { label: "Vad kostar en dålig Google-recension egentligen?", url: "https://www.rapid-remove.com/was-kostet-eine-schlechte-google-bewertung" },
     { label: "Advokat eller teknisk borttagning?", url: "https://www.rapid-remove.com/negative-google-bewertung-anwalt-oder-technische-loeschung" },
     { label: "Ta bort Google-recensioner: kostnader och metoder", url: "https://www.rapid-remove.com/google-bewertung-loeschen-lassen" },

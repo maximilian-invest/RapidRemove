@@ -82,6 +82,7 @@ const article = {
       ["Innsats", "Ingen", "Høy", "Middels"],
       ["Alle anmeldelser borte", "Ja (med profilen)", "Nei (enkeltsaker)", "Nei (én om gangen)"],
     ] },
+    { t: "note", title: "Er Google-profilen din selve problemet?", text: "Skal hele Google-bedriftsprofilen forsvinne? Les guiden vår [slette Google-bedriftsprofil](/no/magasin/slett-google-bedriftsprofil/): hva Googles offisielle steg faktisk gjør, og hvordan profilen fjernes med alle anmeldelser." },
   ],
   faq: [
     { q: "Fjerner RapidRemove enkeltanmeldelser?", a: "Ja, nå gjør vi det: [fjerning av enkeltanmeldelser](/no/fjern-omtale/) – 99 € per fjernet anmeldelse med tekst opptil 4 uker gammel (ca. 90 % sjanse for å lykkes). Eldre anmeldelser er også mulige (ca. 50 %, 250 € per fjernet anmeldelse). Også rene stjernevurderinger uten tekst kan fjernes med en mer omfattende prosedyre: 250 € per fjernet anmeldelse. Mengderabatt fra 3 anmeldelser; ingenting på forskudd – du betaler bare for dem som faktisk fjernes. Er profilen skadet som helhet, er fjerning av hele profilen med alle anmeldelser fortsatt den grundigste veien." },
@@ -92,6 +93,7 @@ const article = {
     { q: "Hva er Streisand-effekten?", a: "Når juridiske skritt mot en anmeldelse nettopp provoserer opphavspersonen og fører til flere negative anmeldelser. Teknisk fjerning unngår den risikoen fordi den arbeider uten direkte konfrontasjon." },
   ],
   related: [
+    { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },
     { label: "Fjerne Google-bedriftsprofilen: hvordan gjør man det?", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },
     { label: "Rapporter og fjern en falsk Google-anmeldelse", url: "https://www.rapid-remove.com/fake-google-bewertung-melden-loeschen" },
     { label: "Fjerne en 1-stjerners anmeldelse uten tekst", url: "https://www.rapid-remove.com/1-stern-bewertung-ohne-text-loeschen" },
