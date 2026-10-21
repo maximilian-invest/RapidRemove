@@ -1,29 +1,154 @@
-/* PT hub: "Eliminar perfil de empresa do Google" (lead article, MagArticle format) */
+/* PT hub: "Eliminar perfil de empresa do Google" (lead article, MagArticle format)
+
+   SEO-Ausbau 21.10.2026 nach EN-Muster (en-hub-delete-google-business-profile):
+   Kurzantwort, Googles offizielle Schritte (Menübezeichnungen laut Google-Hilfe
+   answer/4669092, hl=pt und hl=pt-BR), Vergleichstabelle, eigene Abschnitte je
+   Suchintention (o que acontece / começar de novo / Google Maps / sem opção de
+   eliminar) + erweiterte FAQ. Variante: pt-PT, BR-Suchbegriffe („excluir",
+   „Google Meu Negócio", BR-Menünamen) eingebaut. Herkunft ans Ende verschoben.
+   KERNBOTSCHAFT: „encerrado permanentemente" bzw. „aus dem Konto entfernen" ist
+   kein Löschen — Profil und alle Bewertungen bleiben öffentlich; die vollständige
+   Entfernung läuft über die von Google vorgesehenen Verfahren (RapidRemove). */
 const article = {
   meta: {
     slug: "eliminar-perfil-empresa-google",
-    title: "Eliminar perfil de empresa do Google: guia completo (como fazer)",
-    h1: "Eliminar perfil de empresa do Google — como se faz realmente?",
-    description: "O Google não deixa eliminar facilmente o perfil da sua empresa. Este guia explica por que «encerrado definitivamente» não é o mesmo que eliminar — e como consegui-lo realmente.",
+    title: "Eliminar perfil de empresa do Google: 4 opções (2026)",
+    h1: "Como eliminar (ou excluir) o perfil de empresa do Google de vez",
+    description:
+      "Os passos do Google só removem o seu acesso – a ficha e as avaliações ficam no Maps. O que faz cada uma das 4 opções e como eliminar o perfil de vez.",
     author: "Maximilian Hölzl",
     authorRole: "Especialista Google e fundador",
     authorHref: "/autor/maximilian-hoelzl/",
     date: "2026-06-04",
-    keywords: [],
+    updated: "2026-10-21",
+    keywords: [
+      "eliminar perfil de empresa google",
+      "excluir perfil da empresa no google",
+      "excluir google meu negócio",
+      "remover empresa do google maps",
+      "apagar empresa do google",
+      "remover perfil de empresa google",
+      "eliminar google meu negócio",
+      "eliminar perfil de empresa google definitivamente",
+    ],
   },
   category: "Políticas do Google",
   iconKey: "trash",
-  readingMin: 11,
-  dek: "O Google não permite eliminar o perfil da sua empresa de forma simples. Este guia explica por que «encerrado definitivamente» não é uma eliminação — e como consegui-lo de verdade.",
+  readingMin: 14,
+  dek: "«Encerrado permanentemente» não é o mesmo que eliminado — e remover o perfil da sua conta também não: a ficha, o nome, a morada e todas as avaliações continuam visíveis no Google. Este guia mostra as opções oficiais do Google, o que cada uma faz realmente e o que funciona para eliminar um perfil de empresa do Google por completo.",
   blocks: [
-    { t: "h2", id: "kurz", text: "Em resumo", toc: "Em resumo" },
-    { t: "ul", items: [
-      "**Eliminar sozinho é praticamente impossível:** o Google não oferece um botão real de «eliminar perfil» — apenas a opção «encerrado definitivamente».",
-      "**«Encerrado» ≠ eliminado:** o registo, o nome, a morada e **todas as avaliações ficam publicamente visíveis.**",
-      "**O único caminho fiável** é a remoção completa do perfil pelos procedimentos oficiais — de forma legal e permanente.",
-      "**A RapidRemove** elimina o perfil e todas as avaliações, em regra, em **24 a 48 horas** — **só paga após o sucesso**.",
+    { t: "note", title: "Nota", text: "Este guia é uma visão geral prática e não constitui aconselhamento jurídico. Para uma avaliação vinculativa do seu caso, consulte um profissional qualificado." },
+
+    { t: "lead", text: "Quer **eliminar o perfil de empresa do Google** — ou, como se diz no Brasil, **excluir o perfil da empresa no Google** (o antigo «Google Meu Negócio»)? Encontrou uma ficha cheia de avaliações falsas ou de vingança, com dados errados, ou simplesmente quer sair de vez. A resposta honesta é mais complicada do que o Google faz crer. Este guia mostra o que cada opção faz realmente — passo a passo, sem rodeios." },
+
+    { t: "tip", title: "Resposta curta", text: "Não é possível simplesmente apagar uma empresa do Google. Como proprietário, o Google só lhe permite **remover o perfil da sua conta** (Definições do Perfil de empresa → Remover Perfil de empresa) ou **marcar a empresa como encerrada permanentemente**. Em ambos os casos, a ficha pública e **todas as avaliações continuam na Pesquisa Google e no Google Maps**. A remoção completa da ficha — incluindo todas as avaliações — só é possível através dos procedimentos oficiais que o Google disponibiliza. É exatamente isso que a RapidRemove trata por si, em nome do proprietário, com pagamento só após a remoção com sucesso." },
+
+    { t: "h2", id: "why", text: "Porque é que não existe um botão simples para eliminar", toc: "Sem botão de eliminar" },
+    { t: "p", text: "Quem pesquisa como eliminar um perfil de empresa do Google bate rapidamente numa parede. Pode marcar a empresa como **«encerrada permanentemente»** ou removê-la da sua própria conta — mas um botão claro que diga **«eliminar esta ficha e todas as avaliações»** simplesmente não existe para os proprietários. Não é um esquecimento: o Google considera o perfil e as suas avaliações informação útil para quem pesquisa e mantém o controlo do seu lado. O perfil descreve um local real no mundo — por isso, na lógica do Google, não lhe pertence a si, mesmo que seja você a geri-lo." },
+    { t: "p", text: "O Google separa ainda rigorosamente a sua **Conta Google** pessoal do **Perfil de empresa** público (antes «Google O Meu Negócio» / «Google Meu Negócio»). Pode reivindicar a titularidade e editar dados — mas apagar o registo público não está previsto na interface normal." },
+    { t: "warn", title: "«Encerrado permanentemente» ≠ eliminado", text: "Marcar a empresa como encerrada **não** a remove. A ficha, o nome, a morada, as fotos e **todas as avaliações continuam publicamente visíveis** na Pesquisa Google e no Google Maps — agora com o rótulo «Encerrado permanentemente» por cima. Para potenciais clientes, isso muitas vezes parece *pior* do que antes." },
+
+    { t: "h2", id: "official-steps", text: "Como eliminar o perfil de empresa do Google: os passos oficiais", toc: "Passos oficiais" },
+    { t: "p", text: "Na terminologia do próprio Google, a opção para proprietários chama-se **«Remover Perfil de empresa»** (no Brasil: **«Remover o Perfil da Empresa»**). Ela existe — mas remove o perfil da *sua conta*, não a ficha do Google. Eis como funciona, para saber exatamente o que está (e o que não está) a fazer." },
+    { t: "h3", text: "No computador" },
+    { t: "ol", items: [
+      "Aceda a business.google.com (ou pesquise o nome da sua empresa) e inicie sessão com a Conta Google associada ao Perfil de empresa.",
+      "Selecione **Mais** → **Definições do Perfil de empresa** (no Brasil: *Configurações do Perfil da Empresa*).",
+      "Escolha **Remover Perfil de empresa** → **Remover gestores e conteúdo do perfil** (no Brasil: *Remover o Perfil da Empresa* → *Remover gerentes e conteúdo do perfil*).",
+      "Opcional: assinale **«Marcar a sua empresa como encerrada permanentemente»** (no Brasil: *«Marcar sua empresa como permanentemente fechada»*).",
+      "Confirme com **Continuar** → **Remover** → **Concluído**.",
     ] },
-    { t: "p", text: "Pesquisa a sua empresa no Google e depara-se com um perfil que já não quer: cheio de avaliações falsas ou de vingança, com dados errados, ou simplesmente uma ficha da qual quer sair de vez. A pergunta óbvia é: **Como posso eliminar o meu perfil de empresa do Google?** A resposta honesta é, infelizmente, mais complicada do que o Google faz crer. Este guia mostra-lhe o que realmente funciona — passo a passo, sem rodeios." },
+    { t: "h3", text: "Na aplicação Google Maps" },
+    { t: "p", text: "Abra a aplicação Google Maps com a conta de proprietário, vá ao seu Perfil de empresa (separador **Empresa**) e escolha **Mais** → **Definições do Perfil de empresa** → **Remover Perfil de empresa**. Os nomes dos menus podem variar ligeiramente consoante a versão da aplicação — o resultado é o mesmo que no computador." },
+    { t: "h3", text: "Vários perfis de uma só vez" },
+    { t: "p", text: "Se gere vários estabelecimentos, abra o **Gestor de Perfis de empresas** (no Brasil: *Gerenciador de Perfis de Empresas*), selecione os perfis e escolha, no canto superior direito, **Ações** → **Remover empresas** → **Remover**. Se surgir um erro, o Google indica que tem de remover os gestores e o conteúdo de cada perfil individualmente." },
+    { t: "warn", title: "O que o próprio Google diz que acontece a seguir", text: "Segundo as páginas de ajuda do Google, **as avaliações e o conteúdo gerado por utilizadores permanecem**, e a empresa **pode continuar a aparecer na Pesquisa e no Maps**. Só o *seu* conteúdo é eliminado: publicações, fotos, vídeos e respostas a avaliações dos proprietários e gestores. Só o **proprietário principal** pode fazê-lo, e novos proprietários e gestores têm de aguardar **7 dias**. Em resumo: a opção oficial termina a *sua* gestão do perfil — não elimina o perfil." },
+
+    { t: "h2", id: "options", text: "Eliminar, encerrar, remover ou excluir: o que cada opção faz realmente", toc: "Todas as opções comparadas" },
+    { t: "p", text: "Pesquisa-se «excluir Google Meu Negócio», «apagar empresa do Google», «fechar empresa no Google» ou «remover empresa do Google Maps» — mas, do lado do Google, são ações muito diferentes. Eis o que cada uma faz à ficha pública e às avaliações:" },
+    { t: "table", head: ["Opção", "O que faz", "A ficha continua visível?", "As avaliações continuam visíveis?"], rows: [
+      ["Remover Perfil de empresa (da sua conta)", "Termina a gestão; apaga publicações, fotos e respostas dos proprietários", "Sim, agora sem gestão", "Sim"],
+      ["Marcar como encerrado permanentemente", "Coloca o rótulo «Encerrado permanentemente» na ficha", "Sim, com o rótulo «Encerrado»", "Sim"],
+      ["Remover-se como gestor / sair do perfil", "Só retira o seu acesso; o restante conteúdo mantém-se", "Sim, inalterada", "Sim"],
+      ["Eliminar a sua Conta Google", "Apaga a conta pessoal; o perfil fica sem dono", "Sim, como perfil não reivindicado", "Sim"],
+      ["Sugerir uma edição → «Fechar ou remover» (qualquer pessoa)", "Pede ao Google que feche ou remova o local; o Google decide", "Normalmente sim – muitas vezes recusado", "Sim, salvo se a ficha for removida"],
+      ["Remoção completa (RapidRemove)", "Remove a ficha através dos procedimentos oficiais do Google, em nome do proprietário", "Não – desaparece da Pesquisa e do Maps", "Não – todas desaparecem com ela"],
+    ] },
+    { t: "p", text: "Mais uma fonte de confusão: **Google Meu Negócio** (em Portugal, «Google O Meu Negócio») é simplesmente o nome antigo do **Perfil de Empresa do Google**. Quer lhe chame conta, página, ficha ou perfil da empresa no Google — é o mesmo registo, e aplicam-se as mesmas regras." },
+
+    { t: "h2", id: "what-happens", text: "O que acontece se eliminar o perfil de empresa do Google?", toc: "O que acontece depois" },
+    { t: "p", text: "Muitos proprietários esperam que a ficha desapareça assim que a removem da conta. Eis o que acontece de facto:" },
+    { t: "ul", items: [
+      "**O seu acesso termina:** você e todos os gestores perdem o controlo do perfil. Para o voltar a gerir, é preciso reivindicá-lo e validá-lo de novo.",
+      "**O seu conteúdo desaparece:** publicações, fotos e vídeos que carregou e as suas respostas a avaliações são eliminados definitivamente e não podem ser recuperados.",
+      "**A ficha fica:** nome, morada, categoria e horário continuam, em regra, visíveis na Pesquisa Google e no Google Maps.",
+      "**As avaliações ficam:** todas as avaliações de clientes — incluindo as falsas ou injustas — continuam públicas, agora **sem as suas respostas** ao lado.",
+      "**Qualquer pessoa pode editá-la:** um perfil sem gestão pode ser alterado por utilizadores e pelo próprio Google, e você deixa de ser notificado.",
+    ] },
+    { t: "p", text: "E se marcar «encerrado permanentemente»? Segundo o Google, a empresa não desaparece de imediato do Maps — vai saindo gradualmente dos resultados de pesquisa. Não há prazo para isso, e até lá a ficha continua a ser encontrada pelo nome, com todas as avaliações e o rótulo «Encerrado». É por isso que remover o perfil da conta muitas vezes piora a situação: as avaliações negativas continuam lá, mas a sua versão dos factos desapareceu." },
+
+    { t: "h2", id: "start-over", text: "Posso excluir o perfil da empresa no Google e começar de novo?", toc: "Começar com um perfil novo" },
+    { t: "p", text: "Não simplesmente criando um novo. Se a ficha antiga ainda existe — e depois de «Remover Perfil de empresa» existe — o Google vê um **segundo perfil para a mesma empresa na mesma morada**. Os duplicados são normalmente fundidos de volta na ficha antiga (avaliações incluídas) ou o perfil novo é suspenso. De uma forma ou de outra, as avaliações antigas voltam a persegui-lo." },
+    { t: "p", text: "Um verdadeiro recomeço funciona em dois passos: primeiro, o **perfil antigo é removido por completo**, incluindo todas as avaliações; depois, se quiser, cria e valida um **perfil novo e limpo**. A RapidRemove trata do primeiro passo — preço fixo, pago só após o sucesso — e o seu site e o seu posicionamento na pesquisa ficam intocados." },
+
+    { t: "h2", id: "google-maps", text: "Como remover uma empresa do Google Maps", toc: "Remover do Google Maps" },
+    { t: "p", text: "No Google Maps, qualquer pessoa — proprietária ou não — pode pedir ao Google que feche ou remova um local:" },
+    { t: "ol", items: [
+      "Abra o local no Google Maps ou na Pesquisa Google.",
+      "Escolha **Sugerir uma edição** (no Brasil: *Sugerir uma alteração*) → **Fechar ou remover**.",
+      "Indique um motivo, por exemplo encerrado permanentemente, não existe, duplicado ou spam.",
+      "Envie — o Google analisa a sugestão e decide por si.",
+    ] },
+    { t: "p", text: "Em empresas reais e existentes, estas sugestões são normalmente recusadas ou convertidas num rótulo «Encerrado permanentemente» — a ficha e as avaliações ficam. Mais sobre fichas próprias, de terceiros e duplicadas: [remover uma ficha do Google Maps](/pt/revista/remover-ficha-google-maps/)." },
+
+    { t: "h2", id: "no-delete-option", text: "Porque é que não aparece a opção de eliminar", toc: "Sem opção de eliminar?" },
+    { t: "p", text: "Se «Remover Perfil de empresa» não aparece nas suas definições, é quase sempre por um destes motivos:" },
+    { t: "ul", items: [
+      "**É gestor, não proprietário principal.** Só o proprietário principal pode remover gestores e conteúdo do perfil.",
+      "**Tornou-se proprietário há pouco tempo.** Novos proprietários e gestores têm de aguardar 7 dias até a opção ficar disponível.",
+      "**O perfil não está validado nem reivindicado por si.** Nesse caso não pertence a ninguém — ou pertence a outra Conta Google.",
+      "**Tem sessão iniciada com a Conta Google errada.** Muitas empresas têm várias; verifique qual é a dona do perfil.",
+    ] },
+    { t: "p", text: "E mesmo que encontre o botão, lembre-se do resultado: remove o perfil da sua conta, não do Google." },
+
+    { t: "h2", id: "how", text: "Como funciona realmente a remoção completa do perfil", toc: "Como funciona a remoção" },
+    { t: "p", text: "A única forma fiável de fazer desaparecer um perfil e as suas avaliações é a **remoção completa do Perfil de empresa** através dos procedimentos oficiais que o Google disponibiliza — e não apagar avaliações uma a uma. Quando o perfil inteiro é removido, **todas as avaliações desaparecem com ele**, incluindo as falsas. É a diferença entre combater sintomas e eliminar a causa." },
+    { t: "p", text: "É exatamente isto que a RapidRemove faz, em nome do proprietário. As principais vantagens:" },
+    { t: "ul", items: [
+      "**Rapidez:** remoção do perfil, em regra, em 24 a 48 horas, em vez de meses",
+      "**Completa:** o perfil inteiro, incluindo **todas** as avaliações, de uma só vez",
+      "**Previsível:** preço fixo, pago **só após a remoção com sucesso** — sem honorários à hora em aberto",
+      "**Sem tocar na sua conta:** a sua Conta Google, o Gmail e eventuais contas Google Ads ficam intocados",
+      "**Amigo do SEO:** o seu site e o seu posicionamento mantêm-se; um perfil novo e limpo é opcional",
+      "**Discreta:** sem contacto com os autores das avaliações, sem risco de efeito Streisand",
+    ] },
+    { t: "h3", text: "O processo em três passos" },
+    { t: "ol", items: [
+      "**Verificação gratuita:** introduza o nome da empresa. Encontramos o seu perfil e verificamos imediatamente se a eliminação é possível — sem compromisso e sem custo.",
+      "**Confirmar e autorizar:** confirma o perfil correto e concede-nos autorização para agir em seu nome. Sem acesso ao Gmail, Ads ou dados pessoais.",
+      "**Remoção em 24–48 horas:** tratamos da remoção do perfil com todas as avaliações através dos procedimentos oficiais do Google. O pagamento só é feito depois.",
+    ] },
+    { t: "p", text: "Reconhece um fornecedor sério pelo facto de indicar uma empresa real com morada e número de identificação fiscal, falar de forma transparente sobre o método e **só cobrar após o sucesso** — e não por promessas vagas de «acessos secretos ao Google»." },
+    { t: "warn", title: "Importante", text: "A remoção completa elimina o **perfil inteiro**, não uma avaliação isolada. Se só quer ver desaparecer uma ou poucas avaliações e manter o perfil, a RapidRemove também oferece a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/): a partir de 99 € por avaliação removida (com texto e até 4 semanas; as restantes 250 €), cobrados só após a remoção." },
+
+    { t: "cta", title: "Prefere verificar diretamente se o seu perfil pode ser eliminado?", text: "Introduza o nome da sua empresa — encontramos o seu perfil real do Google e verificamos em segundos se e com que rapidez pode ser removido. Sem compromisso e sem custo.", btn: "Iniciar verificação gratuita", href: "/pt/?start=1", trust: ["Análise gratuita", "Pagamento só após a remoção"] },
+
+    { t: "h2", id: "single-vs-profile", text: "Eliminar avaliações individuais ou remover o perfil completo?", toc: "Avaliações ou perfil?" },
+    { t: "p", text: "Muitos começam por tentar [denunciar](/pt/revista/remover-avaliacoes-falsas-google/) avaliações negativas individuais ao Google. É trabalhoso e incerto: o Google recusa frequentemente as denúncias, cada avaliação tem de ser justificada separadamente — e por cada avaliação removida surgem rapidamente novas. Está a combater sintomas." },
+    { t: "p", text: "A abordagem sustentável atua na raiz: **se o perfil completo for removido, todas as avaliações desaparecem de uma só vez** — incluindo avaliações falsas. Se, pelo contrário, o seu perfil estiver saudável no geral e o problema forem apenas uma ou poucas avaliações, não precisa de o fazer sozinho: com a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) assinala as avaliações que devem sair e paga só pelas que forem efetivamente removidas ([preços e probabilidades de sucesso em detalhe](/pt/revista/servico-remover-avaliacoes-google/)). Quem quiser primeiro [remover avaliações do Google](/pt/revista/remover-avaliacoes-google/) individualmente encontrará aí os métodos e os custos comparados." },
+    { t: "tip", title: "A vantagem decisiva", text: "Um perfil removido não pode exibir nem avaliações antigas nem novas. O problema não fica adiado — fica resolvido." },
+
+    { t: "h2", id: "cost", text: "Quanto tempo demora — e quanto custa?", toc: "Tempo e custo" },
+    { t: "p", text: "Uma remoção profissional fica concluída em regra **dentro de 24 a 48 horas** — em vez dos meses que o caminho do advogado consome. Quanto aos custos: um advogado cobra por hora (muitas vezes 300 € e mais) sem certeza de resultado — e não raramente desencadeia o [efeito Streisand](/pt/revista/avaliacao-negativa-google-advogado/), em que a atenção aumenta precisamente por causa da tentativa de remoção. A RapidRemove trabalha com um **preço fixo transparente a partir de 450 €** — e só paga **após a eliminação com sucesso**." },
+    { t: "table", rrCol: 3, head: ["Critério", "Por conta própria (DIY)", "Advogado", "RapidRemove"], rows: [
+      ["Eliminação completa possível?", "Praticamente não", "Incerto", "Sim"],
+      ["Duração", "—", "3–9 meses", "24–48 horas"],
+      ["Custo", "—", "300 €+ / hora", "Preço fixo a partir de 450 €"],
+      ["Todas as avaliações removidas", "Não", "Uma a uma, com esforço", "Todas de uma vez"],
+      ["Pagamento", "—", "Por hora, independentemente do resultado", "Só após a remoção com sucesso"],
+      ["O seu esforço", "Elevado", "Elevado", "Praticamente nulo"],
+    ] },
+    { t: "p", text: "O preço parece elevado? Faça as contas: uma única avaliação falsa visível pode baixar significativamente a taxa de cliques e custar-lhe muito mais ao longo de vários meses." },
 
     { t: "h2", id: "herkunft", text: "Afinal, quem criou este perfil?", toc: "Quem criou o perfil?" },
     { t: "p", text: "A maioria dos empresários que nos contacta nunca criou o seu perfil — e fica sinceramente surpreendida por ele existir. Não é a exceção, é a regra. Um perfil de empresa do Google raramente é criado ativamente pelo proprietário. Muito mais frequentemente é outra pessoa que o adiciona, ou é o Google que o gera de forma totalmente automática. Para perceber por que motivo uma ficha destas é tão difícil de eliminar depois, convém saber primeiro como é que ela ali foi parar. Há, no essencial, três caminhos." },
@@ -53,72 +178,25 @@ const article = {
       "**Listas profissionais:** o Google confronta os seus mapas com as Páginas Amarelas e as listas telefónicas de cada país. Uma nova entrada aí pode despoletar automaticamente um novo ponto no Maps.",
     ] },
     { t: "p", text: "É assim que um perfil pode surgir pouco depois de registar a sua empresa — sem que alguma vez tenha ido ao Google." },
-    { t: "p", text: "**Por que é que isto importa** Independentemente de como o perfil surgiu, a consequência é a mesma: assim que existe, recolhe avaliações e aparece na Pesquisa e no Maps. Não precisa de o ter criado nem de o gerir para ser afetado — e é precisamente por isso que ignorá-lo não chega. Mesmo assim, é preciso removê-lo ativamente." },
+    { t: "p", text: "**Porque é que isto importa:** independentemente de como o perfil surgiu, a consequência é a mesma: assim que existe, recolhe avaliações e aparece na Pesquisa e no Maps. Não precisa de o ter criado nem de o gerir para ser afetado — e é precisamente por isso que ignorá-lo não chega. É preciso removê-lo ativamente." },
 
-    { t: "h2", id: "selbst", text: "É possível eliminar um perfil de empresa do Google por conta própria?", toc: "Eliminar sozinho?" },
-    { t: "p", text: "Em resumo: **não da forma que esperaria.** O Google separa rigorosamente a sua conta pessoal do Google do perfil de empresa público (antes chamado «Google Meu Negócio», hoje «Perfil de Empresa do Google»). Pode reclamar a titularidade e editar alguns dados — mas um botão claro de «remover este registo e todas as avaliações definitivamente» simplesmente não existe para os empresários." },
-    { t: "p", text: "Não é um esquecimento — é uma decisão deliberada: o perfil com as suas avaliações faz parte da Pesquisa Google e do Google Maps. O Google considera esta informação útil para os utilizadores e não cede facilmente o controlo sobre ela. É por isso que a maioria dos empresários bate numa parede quando tenta eliminar o perfil por conta própria." },
-
-    { t: "h2", id: "geschlossen", text: "«Encerrado definitivamente» não é uma eliminação", toc: "«Encerrado» ≠ eliminado" },
-    { t: "p", text: "A opção que o Google disponibiliza chama-se «Marcar como encerrado definitivamente». Muitos pensam que isto equivale a eliminar — mas não é assim. É apenas um **rótulo de estado**." },
-    { t: "warn", title: "O que acontece realmente com «encerrado»", text: "O seu perfil continua visível na Pesquisa Google e no Google Maps — incluindo nome, morada, fotos e **todas as avaliações**. Por cima aparece apenas um «Encerrado definitivamente» riscado. Para potenciais clientes, isso muitas vezes parece *pior* do que antes." },
-    { t: "p", text: "Por outras palavras: quem «encerra» não livra o registo das avaliações — e pode até tornar o problema mais visível. Uma **verdadeira eliminação**, por outro lado, remove a [ficha do Google Maps](/pt/revista/remover-ficha-google-maps/) completa e todas as avaliações da visualização." },
-
-    { t: "h2", id: "optionen", text: "Quais são as opções reais", toc: "As opções reais" },
-    { t: "p", text: "Na prática existem três caminhos para se livrar de um perfil indesejado — com resultados muito diferentes:" },
-    { t: "table", rrCol: 3, head: ["Critério", "Por conta própria (DIY)", "Advogado", "RapidRemove"], rows: [
-      ["Eliminação completa possível?", "Praticamente não", "Incerto", "Sim"],
-      ["Duração", "—", "3–9 meses", "24–48 horas"],
-      ["Custo", "—", "300 €+ / hora", "Preço fixo a partir de 450 €"],
-      ["Todas as avaliações removidas", "Não", "Uma a uma, com esforço", "Todas de uma vez"],
-      ["Sucesso", "Não", "Incerto", "Garantido (No Cure, No Pay)"],
-      ["O seu esforço", "Elevado", "Elevado", "Praticamente nulo"],
-    ] },
-    { t: "p", text: "O caminho DIY acaba quase sempre em «encerrado definitivamente». O caminho do advogado é caro, lento e incerto — e não raramente desencadeia o [efeito Streisand](/pt/revista/avaliacao-negativa-google-advogado/), em que a atenção aumenta precisamente por causa da tentativa de remoção. Resta o terceiro caminho: a remoção profissional e completa." },
-
-    { t: "h2", id: "anleitung", text: "Guia: editar o perfil pelo próprio Google", toc: "Guia passo a passo" },
-    { t: "p", text: "Se quiser tentar primeiro por conta própria, aqui está o processo real. Prepare-se para que o resultado seja, na melhor das hipóteses, «encerrado» — não «eliminado»." },
-    { t: "ol", items: [
-      "**Reclamar a titularidade:** pesquise a sua empresa no Google e selecione «É o proprietário desta empresa?». O Google exige verificação (por cartão postal, telefone, e-mail ou vídeo) — o que pode demorar dias a semanas.",
-      "**Aceder ao perfil de empresa:** após confirmação da titularidade, gira o perfil diretamente a partir da Pesquisa Google.",
-      "**Procurar «Remover perfil»:** nas definições encontrará opções como «Marcar empresa como encerrada definitivamente» ou «Remover perfil». Esta última remove apenas a ligação de gestão, não o registo público.",
-      "**Verificar o resultado:** em regra, o registo continua visível com todas as avaliações — agora com o rótulo «Encerrado definitivamente». O problema de fundo não fica resolvido.",
-    ] },
-    { t: "note", title: "Importante saber", text: "Sem titularidade confirmada, dificilmente pode fazer algo. E mesmo com titularidade, a remoção completa do registo público através da interface padrão não está prevista." },
-    { t: "cta", title: "Prefere verificar diretamente se o seu perfil pode ser eliminado?", text: "Introduza o nome da sua empresa — encontramos o seu perfil real do Google e verificamos em segundos se e com que rapidez pode ser removido. Sem compromisso e sem custo.", btn: "Iniciar verificação gratuita", href: "/pt/?start=1", trust: ["Pagamento só após eliminação com sucesso"] },
-
-    { t: "h2", id: "einzeln", text: "Eliminar avaliações individuais ou remover o perfil completo?", toc: "Avaliações ou perfil?" },
-    { t: "p", text: "Muitos começam por tentar [denunciar](/pt/revista/remover-avaliacoes-falsas-google/) avaliações negativas individuais ao Google. É trabalhoso e incerto: o Google recusa frequentemente as denúncias, cada avaliação tem de ser justificada separadamente — e por cada avaliação removida surgem rapidamente novas. Está a combater sintomas." },
-    { t: "p", text: "A abordagem sustentável atua na raiz: **se o perfil completo for removido, todas as avaliações desaparecem de uma só vez** — incluindo avaliações falsas. De forma definitiva, em vez de remendos. É precisamente por isso que o nosso método de remoção de perfil não vai avaliação a avaliação, mas remove o perfil completo. Se, pelo contrário, o seu perfil estiver saudável no geral e o problema forem apenas uma ou poucas avaliações, a RapidRemove também oferece a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/): a partir de 99 € por avaliação removida (com texto e até 4 semanas; as restantes 250 €), cobrados só após a remoção ([preços e probabilidades de sucesso em detalhe](/pt/revista/servico-remover-avaliacoes-google/)). Quem quiser primeiro [remover avaliações do Google](/pt/revista/remover-avaliacoes-google/) individualmente encontrará aí os métodos e os custos comparados." },
-    { t: "tip", title: "A vantagem decisiva", text: "Um perfil removido não pode exibir nem avaliações antigas nem novas. O problema não fica adiado — fica resolvido." },
-
-    { t: "h2", id: "legal", text: "É legal eliminar?", toc: "É legal?" },
-    { t: "p", text: "Sim. Uma remoção profissional funciona exclusivamente através dos **procedimentos oficiais previstos pelo Google** e foi verificada juridicamente. Trabalha-se exclusivamente através dos processos oficiais do Google, sem qualquer acesso não autorizado. A sua conta Google, o Gmail e eventuais contas Google Ads ficam completamente intocados — bem como o seu site, o seu posicionamento orgânico e as suas campanhas." },
-    { t: "p", text: "Reconhece um fornecedor sério pelo facto de indicar uma empresa real com morada e número de identificação fiscal, falar de forma transparente sobre o método e **só cobrar após o sucesso** — e não por promessas vagas de «acessos secretos ao Google»." },
-
-    { t: "h2", id: "kosten", text: "Quanto tempo demora — e quanto custa?", toc: "Tempo e custo" },
-    { t: "p", text: "Uma eliminação profissional fica concluída em regra **dentro de 24 a 48 horas** — em vez dos meses que o caminho do advogado consome. Quanto aos custos: um advogado cobra por hora (muitas vezes 300 € e mais) sem garantia de sucesso. A RapidRemove trabalha com um **preço fixo transparente a partir de 450 €** — e só paga **após a eliminação com sucesso**." },
-    { t: "p", text: "O preço parece elevado? Faça as contas: uma única avaliação falsa visível pode baixar significativamente a taxa de cliques e custar-lhe muito mais ao longo de vários meses." },
-
-    { t: "h2", id: "ablauf", text: "Como funciona a eliminação com a RapidRemove", toc: "Como funciona" },
-    { t: "ol", items: [
-      "**Verificação gratuita:** introduza o nome da empresa. Encontramos o seu perfil e verificamos imediatamente se a eliminação é possível — sem compromisso e sem custo.",
-      "**Confirmar e autorizar:** confirma o perfil correto e concede autorização de tratamento. Sem acesso ao Gmail, Ads ou dados pessoais.",
-      "**Eliminação em 24–48 horas:** a nossa equipa remove o perfil com todas as avaliações — de forma permanente. O pagamento só é feito depois.",
-    ] },
-
-    { t: "h2", id: "fazit", text: "Conclusão: o caminho mais rápido e seguro para um resultado de pesquisa limpo", toc: "Conclusão" },
-    { t: "p", text: "Eliminar um perfil de empresa do Google por conta própria falha na prática quase sempre por causa do próprio sistema do Google — «encerrado definitivamente» não resolve o problema. O caminho fiável é a remoção completa e legal do perfil inteiro com todas as avaliações. Rápido, permanente, previsível — e sem qualquer risco, com pagamento só após o sucesso." },
-    { t: "cta", title: "Verifique agora gratuitamente se o seu perfil pode ser eliminado", text: "Em poucos segundos vê o seu perfil real e fica a saber se e com que rapidez o podemos remover. Sem pré-pagamento, sem compromisso.", btn: "Iniciar verificação gratuita", href: "/pt/?start=1", trust: ["Risco zero", "Pagamento só após eliminação com sucesso"] },
+    { t: "cta", title: "Verifique agora gratuitamente se o seu perfil pode ser eliminado", text: "Em poucos segundos vê o seu perfil real e fica a saber se e com que rapidez o podemos remover. Sem pré-pagamento, sem compromisso.", btn: "Iniciar verificação gratuita", href: "/pt/?start=1", trust: ["Análise gratuita", "Pagamento só após a remoção"] },
   ],
   faq: [
-    { q: "Posso eliminar o meu perfil de empresa do Google por conta própria?", a: "Apenas de forma limitada. O Google não oferece um botão simples de «eliminar perfil». Pode reclamar a titularidade e marcar o perfil como «encerrado definitivamente» — mas o registo com todas as avaliações continua publicamente visível." },
-    { q: "Qual é a diferença entre «encerrado definitivamente» e «eliminado»?", a: "«Encerrado definitivamente» é apenas um estado. O perfil continua visível na Pesquisa e no Maps, incluindo nome, morada e todas as avaliações. Uma verdadeira eliminação remove o registo e todas as avaliações completamente." },
-    { q: "É legal mandar eliminar um perfil de empresa do Google?", a: "Sim. A remoção é feita através dos procedimentos oficiais previstos pelo Google e foi verificada juridicamente. A sua conta Google, o Gmail e eventuais contas Ads ficam completamente intocados." },
-    { q: "As avaliações também são todas removidas?", a: "Sim. Se o perfil de empresa completo for removido, todas as avaliações associadas desaparecem de uma só vez — incluindo avaliações falsas e de vingança." },
-    { q: "Quanto tempo demora a eliminação?", a: "Em regra, o perfil é removido em cerca de 24 horas. Pode acompanhar o estado exato a qualquer momento no portal do cliente." },
-    { q: "A eliminação afeta o meu SEO, o meu site ou o Google Ads?", a: "Não. O que é removido é exclusivamente o perfil de empresa (Google Maps / Perfil de Empresa do Google). O seu site, o seu posicionamento e as suas campanhas mantêm-se inalterados." },
-    { q: "Quanto custa mandar eliminar um perfil de empresa do Google?", a: "Na RapidRemove aplica-se um preço fixo transparente a partir de 450 € — e só paga após a eliminação com sucesso (No Cure, No Pay)." },
+    { q: "Como eliminar o perfil de empresa do Google?", a: "No seu Perfil de empresa, escolha Mais → Definições do Perfil de empresa → Remover Perfil de empresa → Remover gestores e conteúdo do perfil, e confirme com Continuar → Remover → Concluído. Isto termina a sua gestão e apaga as suas publicações, fotos e respostas — mas a ficha pública e as avaliações ficam, em regra, no Google. Para eliminar a própria ficha, é preciso removê-la através dos procedimentos oficiais do Google." },
+    { q: "Como excluir o perfil da empresa no Google (Google Meu Negócio)?", a: "No Brasil, os menus chamam-se Mais → Configurações do Perfil da Empresa → Remover o Perfil da Empresa → Remover gerentes e conteúdo do perfil. O resultado é o mesmo: você perde o acesso, mas a empresa e as avaliações continuam visíveis na Pesquisa e no Maps. Google Meu Negócio é apenas o nome antigo do Perfil da Empresa no Google." },
+    { q: "Posso eliminar o meu perfil de empresa do Google por conta própria?", a: "Apenas de forma limitada. Pode marcá-lo como «encerrado permanentemente» ou removê-lo da sua conta, mas nenhuma das opções elimina a ficha pública — ela continua na Pesquisa e no Maps com todas as avaliações. A remoção completa passa pelos procedimentos oficiais do Google." },
+    { q: "«Encerrado permanentemente» é o mesmo que eliminado?", a: "Não. A ficha, o nome, a morada e todas as avaliações continuam públicos; apenas é acrescentado o rótulo «Encerrado permanentemente». Segundo o Google, a empresa vai saindo dos resultados de forma gradual, sem prazo definido — até lá, muitas vezes parece pior do que antes." },
+    { q: "O que acontece se eu eliminar o perfil de empresa do Google?", a: "Perde o acesso, e as suas publicações, fotos e respostas a avaliações são eliminadas. A ficha em si, as avaliações e os dados continuam, em regra, visíveis na Pesquisa Google e no Maps — e qualquer pessoa pode sugerir alterações." },
+    { q: "Posso apagar o perfil e criar um novo do zero?", a: "Só se o perfil antigo for removido por completo primeiro. Um perfil novo para a mesma empresa na mesma morada é tratado como duplicado e normalmente é fundido de volta no antigo — avaliações incluídas — ou suspenso." },
+    { q: "Como remover uma empresa do Google Maps?", a: "Qualquer pessoa pode escolher «Sugerir uma edição» (no Brasil: «Sugerir uma alteração») → «Fechar ou remover» no local do Google Maps. O Google decide por si e, em empresas reais, normalmente mantém a ficha ou só a marca como encerrada. A remoção completa da ficha e das avaliações passa pelos procedimentos oficiais do Google." },
+    { q: "Porque é que não vejo a opção de eliminar ou excluir o perfil?", a: "Normalmente porque é gestor e não proprietário principal, porque se tornou proprietário há menos de 7 dias, porque o perfil não está validado na sua conta ou porque tem sessão iniciada noutra Conta Google." },
+    { q: "Google Meu Negócio e Perfil de Empresa do Google são a mesma coisa?", a: "Sim. Google Meu Negócio (em Portugal, «Google O Meu Negócio») é o nome antigo do Perfil de Empresa do Google. Conta, página, ficha ou perfil da empresa no Google referem-se todos ao mesmo registo." },
+    { q: "Como apagar uma empresa do Google que eu nunca criei?", a: "Muitos perfis são adicionados por terceiros ou criados automaticamente pelo Google a partir de dados da web e de registos oficiais. Como proprietário da empresa, pode reivindicar o perfil — mas mesmo assim só o consegue remover da sua conta. A remoção completa da ficha é feita através dos procedimentos oficiais do Google, em nome do proprietário." },
+    { q: "As avaliações também são todas removidas?", a: "Sim, na remoção completa. Se o perfil de empresa inteiro for removido, todas as avaliações associadas desaparecem de uma só vez — incluindo avaliações falsas e de vingança." },
+    { q: "Quanto tempo demora a eliminação?", a: "Em regra, o perfil é removido em 24 a 48 horas. Pode acompanhar o estado a qualquer momento no portal do cliente." },
+    { q: "A minha Conta Google, o meu site ou o Google Ads são afetados?", a: "Não. A remoção é feita através dos procedimentos que o Google disponibiliza, em nome do proprietário, e incide exclusivamente sobre o Perfil de empresa (Google Maps). A sua Conta Google, o Gmail, o seu site, o seu posicionamento e as suas campanhas mantêm-se inalterados." },
+    { q: "Quanto custa mandar eliminar um perfil de empresa do Google?", a: "Na RapidRemove aplica-se um preço fixo transparente a partir de 450 € — e só paga após a eliminação com sucesso. Se só precisa de remover avaliações individuais, a [remoção de avaliações individuais](/pt/remover-uma-avaliacao/) custa a partir de 99 € por avaliação removida (com texto e até 4 semanas; as restantes 250 €), cobrados só após a remoção." },
     { q: "O perfil pode voltar a aparecer depois?", a: "Terceiros podem, teoricamente, criar um novo perfil. Com a proteção opcional, monitorizamos o seu registo e removemos gratuitamente um perfil que volte a aparecer durante o período de proteção." },
   ],
 };
