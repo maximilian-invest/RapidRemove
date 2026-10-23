@@ -297,7 +297,7 @@ function ReviewsLiga({ rv }) {
     <div className="gm-wrap">
       <div className="rvl-note">
         ⭐ <b>Bewertungs-Aufträge</b> — wir vergeben die Aufträge: je Bestellung gehen <b>{rv.fee} $/€</b> an die Vergabe.
-        Die Liga zählt deshalb den <b>Netto-Erlös</b> (Bestellwert − {rv.fee}); der Kundenpreis bleibt 99 bzw. 250 je Bewertung (Bestandsaufträge 179/229/300).
+        Die Liga zählt deshalb den <b>Netto-Erlös</b> (Bestellwert − {rv.fee}); der Kundenpreis ist 179 bzw. 250 je Bewertung (bis 23.10.2026 bestellt: 99/250; ältere Bestandsaufträge 179/229/300).
       </div>
       <div className="lb-grid">
         <ReviewsCard person={people.max} fee={rv.fee} isLeader={rv.h2h.leader === "max"} delay="0s" />

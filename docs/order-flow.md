@@ -143,7 +143,7 @@ Key fields stored in the `raw` JSONB column:
   - `old` – Boolean, older than 4 weeks
   - `nt` – Boolean, no text
   - `sw` – Boolean, requires software deletion
-  - `lp` – List price (99 or 250)
+  - `lp` – List price (179 or 250; orders placed before 23 Oct 2026 keep 99)
   - `x` – Boolean, express
 - `reviewsAccepted[]` – Reviews confirmed by customer
 - `reviewsRemoved[]` – Removed reviews (for billing)

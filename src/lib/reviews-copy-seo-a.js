@@ -32,7 +32,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparativa", compareH: "Tus opciones para eliminar una reseña de Google",
     compareHead: ["", "Denunciarla tú mismo", "Abogado", "RapidRemove"],
     compareRows: [
-      ["Coste", "Gratis", "Honorarios por hora, a menudo por adelantado", "Desde 99 € por reseña eliminada"],
+      ["Coste", "Gratis", "Honorarios por hora, a menudo por adelantado", "Desde 179 € por reseña eliminada"],
       ["Pago solo si hay éxito", "–", "No", "Sí"],
       ["Duración habitual", "De días a semanas, a menudo rechazada", "De semanas a meses", "Normalmente 1–2 semanas"],
       ["Tu esfuerzo", "Alto: políticas, pruebas, apelaciones", "Reuniones y documentos", "Pegar el enlace, y listo"],
@@ -85,7 +85,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparatif", compareH: "Vos options pour faire supprimer un avis Google",
     compareHead: ["", "Le signaler vous-même", "Avocat", "RapidRemove"],
     compareRows: [
-      ["Coût", "Gratuit", "Honoraires horaires, souvent payés d'avance", "À partir de 99 € par avis supprimé"],
+      ["Coût", "Gratuit", "Honoraires horaires, souvent payés d'avance", "À partir de 179 € par avis supprimé"],
       ["Paiement au résultat uniquement", "–", "Non", "Oui"],
       ["Durée habituelle", "De quelques jours à plusieurs semaines – souvent refusé", "Des semaines, voire des mois", "En général 1 à 2 semaines"],
       ["Votre effort", "Élevé : règles, preuves, recours", "Rendez-vous et documents", "Coller le lien – c'est tout"],
@@ -138,7 +138,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "A confronto", compareH: "Le tue opzioni per far rimuovere una recensione Google",
     compareHead: ["", "Segnalarla da solo", "Avvocato", "RapidRemove"],
     compareRows: [
-      ["Costo", "Gratis", "Tariffe orarie, spesso pagate in anticipo", "Da 99 € per recensione rimossa"],
+      ["Costo", "Gratis", "Tariffe orarie, spesso pagate in anticipo", "Da 179 € per recensione rimossa"],
       ["Paghi solo a risultato ottenuto", "–", "No", "Sì"],
       ["Durata tipica", "Da giorni a settimane – spesso respinta", "Da settimane a mesi", "Di solito 1–2 settimane"],
       ["Il tuo impegno", "Alto: norme, prove, ricorsi", "Incontri e documenti", "Incolli il link – fatto"],
@@ -191,7 +191,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Comparação", compareH: "As suas opções para remover uma avaliação do Google",
     compareHead: ["", "Denunciar sozinho", "Advogado", "RapidRemove"],
     compareRows: [
-      ["Custo", "Grátis", "Honorários à hora, muitas vezes pagos adiantados", "A partir de 99 € por avaliação removida"],
+      ["Custo", "Grátis", "Honorários à hora, muitas vezes pagos adiantados", "A partir de 179 € por avaliação removida"],
       ["Só paga com sucesso", "–", "Não", "Sim"],
       ["Duração típica", "Dias a semanas – muitas vezes recusada", "Semanas a meses", "Normalmente 1–2 semanas"],
       ["O seu esforço", "Elevado: políticas, provas, recursos", "Reuniões e documentos", "Colar o link – e pronto"],
@@ -244,7 +244,7 @@ export const RVW_SEO_A = {
     compareEyebrow: "Vergelijking", compareH: "Uw opties om een Google-review te laten verwijderen",
     compareHead: ["", "Zelf melden", "Advocaat", "RapidRemove"],
     compareRows: [
-      ["Kosten", "Gratis", "Uurtarief, vaak vooraf te betalen", "Vanaf € 99 per verwijderde review"],
+      ["Kosten", "Gratis", "Uurtarief, vaak vooraf te betalen", "Vanaf € 179 per verwijderde review"],
       ["Alleen betalen bij succes", "–", "Nee", "Ja"],
       ["Gebruikelijke duur", "Dagen tot weken – vaak afgewezen", "Weken tot maanden", "Meestal 1–2 weken"],
       ["Uw inspanning", "Hoog: richtlijnen, bewijs, bezwaar", "Overleg en documenten", "Link plakken – klaar"],
@@ -269,23 +269,23 @@ export const RVW_SEO_A = {
 
 export const RVW_META_A = {
   es: {
-    title: "Eliminar reseña de Google – desde 99 €, pagas solo si se borra",
-    description: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. Desde 99 € por reseña eliminada, cobrado solo tras la eliminación.",
+    title: "Eliminar reseña de Google – desde 179 €, pagas solo si se borra",
+    description: "Eliminamos reseñas de Google falsas, ofensivas o que incumplen sus normas por las vías oficiales. Desde 179 € por reseña eliminada, cobrado solo tras la eliminación.",
   },
   fr: {
-    title: "Supprimer un avis Google – dès 99 €, payé seulement au résultat",
-    description: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. Dès 99 € par avis supprimé, facturé uniquement après suppression.",
+    title: "Supprimer un avis Google – dès 179 €, payé seulement au résultat",
+    description: "Faux avis, insultes ou avis contraires aux règles de Google : nous les faisons supprimer par les voies officielles. Dès 179 € par avis supprimé, facturé uniquement après suppression.",
   },
   it: {
-    title: "Eliminare recensione Google – da 99 €, paghi solo a risultato",
-    description: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. Da 99 € per recensione rimossa, addebitati solo dopo la rimozione.",
+    title: "Eliminare recensione Google – da 179 €, paghi solo a risultato",
+    description: "Rimuoviamo recensioni Google false, offensive o contrarie alle regole con le procedure ufficiali di Google. Da 179 € per recensione rimossa, addebitati solo dopo la rimozione.",
   },
   pt: {
-    title: "Remover avaliação do Google – desde 99 €, só paga se sair",
-    description: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. A partir de 99 € por avaliação removida, cobrado só após a remoção.",
+    title: "Remover avaliação do Google – desde 179 €, só paga se sair",
+    description: "Removemos avaliações do Google falsas, ofensivas ou que violam as regras, pelas vias oficiais do Google. A partir de 179 € por avaliação removida, cobrado só após a remoção.",
   },
   nl: {
-    title: "Google review verwijderen – vanaf € 99, alleen bij succes",
-    description: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. Vanaf € 99 per verwijderde review, pas afgerekend na verwijdering.",
+    title: "Google review verwijderen – vanaf € 179, alleen bij succes",
+    description: "Nep-, beledigende of regelschendende Google-reviews laten verwijderen via de officiële procedures van Google. Vanaf € 179 per verwijderde review, pas afgerekend na verwijdering.",
   },
 };

@@ -5,7 +5,7 @@ const article = {
     slug: "utpressning-google-recensioner",
     title: "Utpressning med Google-recensioner: så gör du (2026)",
     h1: "Utpressning med Google-recensioner: så hanterar du en våg av 1-stjärniga omdömen och ett krav på pengar",
-    description: "Våg av 1-stjärniga recensioner och krav på pengar? Betala inte. Så anmäler du utpressningen till Google och får dem borttagna – från 99 €, bara om det lyckas.",
+    description: "Våg av 1-stjärniga recensioner och krav på pengar? Betala inte. Så anmäler du utpressningen till Google och får dem borttagna – från 179 €, bara om det lyckas.",
     keywords: ["utpressning google recensioner", "google recensioner utpressning", "falska recensioner utpressning", "många 1 stjärniga recensioner", "betala för att ta bort recensioner", "anmäla utpressning google", "ta bort falska google recensioner", "google omdömen hot"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert",
@@ -75,7 +75,7 @@ const article = {
     { t: "h2", id: "rapidremove", text: "Så hjälper RapidRemove vid recensionsutpressning", toc: "Så hjälper vi" },
     { t: "p", text: "Vi sköter borttagningen åt dig – enbart via **Googles egna förfaranden**, för din räkning som ägare. Utpressningsrecensioner hör till dem som Google **tar bort mest tillförlitligt**, eftersom de så tydligt bryter mot reglerna. Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) betalar du **bara för recensioner som faktiskt är borta**. Även de **rena stjärnbetygen utan text**, som ofta utgör vågen, kan du lämna över till oss: de kostar 250 € per borttaget betyg. Precis som för alla recensioner lägger du in ett kort eller PayPal när du beställer; dragningen sker automatiskt först när ett betyg har tagits bort. Googles [formulär för recensionsutpressning](https://support.google.com/business/answer/16404809) rekommenderar vi ändå att du som ägare skickar in parallellt." },
     { t: "table", rrCol: 1, head: ["", "RapidRemove", "Betala utpressaren"], rows: [
-      ["Kostnad", "**99 € per borttagen recension** (upp till 4 veckor, med text), alla andra 250 €", "Det utpressaren kräver – utan garanti"],
+      ["Kostnad", "**179 € per borttagen recension** (upp till 4 veckor, med text), alla andra 250 €", "Det utpressaren kräver – utan garanti"],
       ["Om inget händer", "Du betalar ingenting", "Pengarna är borta"],
       ["Risk för ny våg", "Ingen signal om att du betalar", "Hög: du är en som betalar"],
       ["Metod", "Endast Googles egna förfaranden", "Okänd"],
@@ -87,7 +87,7 @@ const article = {
       "**Diskret:** recensenten får inte veta vem som begärt borttagningen. Inga falska konton, inga bottar, inga falska juridiska skrivelser.",
       "**Betala per recension:** recensionerna kan försvinna vid olika tidpunkter; du lägger in ett kort eller PayPal när du beställer, och dragningen sker automatiskt per borttagen recension.",
     ] },
-    { t: "cta", title: "Ta bort utpressningsrecensioner", text: "Bocka i recensionerna från vågen och se priset direkt. **Från 99 € per borttagen recension**, inget i förskott – och ingenting om en recension ligger kvar. Äldre än 4 veckor eller utan text: 250 € per borttaget betyg.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Kostnadsfri bedömning först"] },
+    { t: "cta", title: "Ta bort utpressningsrecensioner", text: "Bocka i recensionerna från vågen och se priset direkt. **Från 179 € per borttagen recension**, inget i förskott – och ingenting om en recension ligger kvar. Äldre än 4 veckor eller utan text: 250 € per borttaget betyg.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Kostnadsfri bedömning först"] },
 
     { t: "h2", id: "skydda", text: "Så skyddar du profilen efteråt", toc: "Skydda profilen" },
     { t: "p", text: "Utpressare kommer ibland tillbaka – särskilt om de märker att du reagerar. Med några fasta rutiner upptäcker du en ny våg direkt och har anmälan klar snabbare." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Vad gör jag om utpressarna kommer tillbaka med nya recensioner?", a: "Upprepa samma steg: svara inte, dokumentera, anmäl via utpressningsformuläret och anmäl varje recension för sig. Hänvisa till den tidigare vågen och din bevismapp." },
     { q: "Hur lång tid tar det innan recensionerna är borta?", a: "Google lovar ingen fast tid; det kan ta dagar till veckor. Via RapidRemove tar det oftast **3–5 dagar** för recensioner med text upp till 4 veckor gamla och oftast **1–2 veckor** för alla andra, och enskilda recensioner kan försvinna vid olika tidpunkter." },
     { q: "Ska jag svara på recensionerna?", a: "Det är inget måste. Om du svarar, gör det kort och neutralt – till exempel att du inte kan koppla omdömet till något kundbesök och har anmält det till Google. Svara aldrig på själva utpressningsmeddelandet." },
-    { q: "Vad kostar det att ta bort utpressningsrecensioner?", a: "**99 € per borttagen recension** (äldre än 4 veckor eller utan text 250 €), med mängdrabatt från 3 recensioner −10 %, från 5 −15 % och från 10 −30 %. Inget i förskott. Dragningen sker alltid automatiskt först efter borttagningen. Mängdrabatten räknas på alla recensioner tillsammans." },
+    { q: "Vad kostar det att ta bort utpressningsrecensioner?", a: "**179 € per borttagen recension** (äldre än 4 veckor eller utan text 250 €), med mängdrabatt från 3 recensioner −10 %, från 5 −15 % och från 10 −30 %. Inget i förskott. Dragningen sker alltid automatiskt först efter borttagningen. Mängdrabatten räknas på alla recensioner tillsammans." },
   ],
   related: [
     { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },

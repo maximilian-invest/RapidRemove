@@ -4,9 +4,9 @@
    deutschen Oberfläche. en/es/fr/it/nl/pt sind freigegebene Handoff-Texte
    (Design-Paket rapid_new_launch_2); ja/sv/da/no im selben Ton ergänzt.
    Abweichungen vom Handoff — bewusst an beschlossene Lösungen angepasst:
-   · Preis „ab 99" (gleicher Zahlenwert in $ und €): 99 je Bewertung ≤ 4 Wochen + Text,
+   · Preis „ab 179" (gleicher Zahlenwert in $ und €): 179 je Bewertung ≤ 4 Wochen + Text,
      250 für alle anderen; Express +100 nur für 250er (Details in condNote)
-   · Bedingungen im Hero sichtbar (99 nur bei max. 4 Wochen alt + Text)
+   · Bedingungen im Hero sichtbar (179 nur bei max. 4 Wochen alt + Text)
    · FAQ „bis zu drei Wochen" statt zwei (Löschung kann bis zu 3 Wochen dauern)
    · mehrere Bewertungen laufen über das „+" im Wizard, nicht über „schreib uns"
    · alle CTAs öffnen den Wizard direkt in der Bewertungs-Eingabe (?start=reviews) */

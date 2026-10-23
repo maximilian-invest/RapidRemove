@@ -62,7 +62,7 @@ const article = {
     { q: "Hvor lang tid tager fjernelsen?", a: "Via professionel sletning typisk 24-48 timer – markant hurtigere end den månedlange juridiske proces for enkeltanmeldelser." },
     { q: "Bevarer jeg min hjemmeside og mit ranking?", a: "Ja. Fjernelse af virksomhedsopslaget påvirker hverken din hjemmeside, din Google-konto eller dit ranking. En ny, ren profil er efterfølgende valgfri." },
     { q: "Forsvinder falske anmeldelser også?", a: "Ja. Eftersom hele opslaget fjernes, forsvinder alle anmeldelser med – herunder falske og uberettigede." },
-    { q: "Hvad koster det at slette virksomhedsopslaget?", a: "RapidRemove arbejder med en fast pris, der betales først efter succes. Advokater og mange udbydere for enkeltanmeldelser afregner typisk pr. anmeldelse, ofte uden garanti for resultatet. Skal kun enkelte anmeldelser væk, koster det hos RapidRemove 99 € pr. fjernet anmeldelse (op til 4 uger, med tekst) eller 250 € for alle andre – kun ved succes." },
+    { q: "Hvad koster det at slette virksomhedsopslaget?", a: "RapidRemove arbejder med en fast pris, der betales først efter succes. Advokater og mange udbydere for enkeltanmeldelser afregner typisk pr. anmeldelse, ofte uden garanti for resultatet. Skal kun enkelte anmeldelser væk, koster det hos RapidRemove 179 € pr. fjernet anmeldelse (op til 4 uger, med tekst) eller 250 € for alle andre – kun ved succes." },
   ],
   related: [
     { label: "Slet Google-virksomhedsprofil – den komplette vejledning", url: "https://www.rapid-remove.com/google-unternehmensprofil-loeschen-wie-geht-das" },

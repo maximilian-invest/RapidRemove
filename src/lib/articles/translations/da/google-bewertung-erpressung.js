@@ -5,7 +5,7 @@ const article = {
     slug: "afpresning-google-anmeldelser",
     title: "Afpresning med Google-anmeldelser: det skal du gøre (2026)",
     h1: "Afpresning med Google-anmeldelser: sådan håndterer du en bølge af 1-stjernede anmeldelser og et krav om penge",
-    description: "Bølge af 1-stjernede anmeldelser og krav om penge? Betal ikke. Sådan anmelder du afpresningen til Google og får anmeldelserne fjernet – fra 99 €, kun ved succes.",
+    description: "Bølge af 1-stjernede anmeldelser og krav om penge? Betal ikke. Sådan anmelder du afpresningen til Google og får anmeldelserne fjernet – fra 179 €, kun ved succes.",
     keywords: ["afpresning google anmeldelser", "google anmeldelser afpresning", "falske anmeldelser afpresning", "mange 1 stjernede anmeldelser", "betale for at fjerne anmeldelser", "anmelde afpresning google", "fjerne falske google anmeldelser", "trusler google anmeldelser"],
     author: "Maximilian Hölzl",
     authorRole: "Google-ekspert og grundlægger",
@@ -75,7 +75,7 @@ const article = {
     { t: "h2", id: "rapidremove", text: "Sådan hjælper RapidRemove ved afpresning med anmeldelser", toc: "Sådan hjælper vi" },
     { t: "p", text: "Vi står for fjernelsen for dig – udelukkende via **Googles egne procedurer** og på dine vegne som ejer. Afpresningsanmeldelser hører til dem, Google **fjerner mest pålideligt**, fordi de så tydeligt bryder reglerne. Med vores [service til at fjerne Google-anmeldelser](/da/fjern-anmeldelse/) betaler du **kun, når anmeldelserne faktisk er væk**. Også rene stjernebedømmelser uden tekst – som ofte udgør en stor del af en afpresningsbølge – kan du overlade til os: dem fjerner vi med en **mere omfattende procedure** til **250 € pr. fjernet bedømmelse**. Som ved alle anmeldelser gemmer du et kort eller PayPal ved bestillingen, og **der trækkes automatisk først efter fjernelsen**. Afpresningsindberetningen via Googles formular, som du som ejer selv indsender, anbefaler vi fortsat parallelt." },
     { t: "table", rrCol: 1, head: ["", "RapidRemove", "Betale afpresseren"], rows: [
-      ["Pris", "**99 € pr. fjernet anmeldelse** (op til 4 uger, med tekst; ellers 250 €)", "Det, afpresseren kræver – uden garanti"],
+      ["Pris", "**179 € pr. fjernet anmeldelse** (op til 4 uger, med tekst; ellers 250 €)", "Det, afpresseren kræver – uden garanti"],
       ["Hvis intet sker", "Du betaler ingenting", "Pengene er tabt"],
       ["Risiko for ny bølge", "Intet signal om, at du betaler", "Høj: du er en, der betaler"],
       ["Metode", "Kun Googles egne procedurer", "Ukendt"],
@@ -87,7 +87,7 @@ const article = {
       "**Diskret:** anmelderen får ikke at vide, hvem der har bedt om fjernelsen. Ingen falske konti, ingen bots, ingen falske juridiske breve.",
       "**Betal pr. anmeldelse:** anmeldelserne kan forsvinde på forskellige tidspunkter; hver fjernet anmeldelse trækkes automatisk fra det kort eller den PayPal-konto, du gemte ved bestillingen.",
     ] },
-    { t: "cta", title: "Få afpresningsanmeldelser fjernet", text: "Sæt flueben ved anmeldelserne fra bølgen, og se prisen med det samme. **99 € pr. fjernet anmeldelse med tekst** (op til 4 uger), intet på forhånd – og ingenting, hvis den bliver stående. Ældre eller uden tekst: 250 € pr. fjernet anmeldelse.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Gratis vurdering først"] },
+    { t: "cta", title: "Få afpresningsanmeldelser fjernet", text: "Sæt flueben ved anmeldelserne fra bølgen, og se prisen med det samme. **179 € pr. fjernet anmeldelse med tekst** (op til 4 uger), intet på forhånd – og ingenting, hvis den bliver stående. Ældre eller uden tekst: 250 € pr. fjernet anmeldelse.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Gratis vurdering først"] },
 
     { t: "h2", id: "beskyt", text: "Sådan beskytter du profilen bagefter", toc: "Beskyt profilen" },
     { t: "p", text: "Afpressere vender nogle gange tilbage – især hvis de kan se, at du reagerer. Med nogle faste rutiner opdager du en ny bølge med det samme og har din indberetning klar hurtigere." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Hvad gør jeg, hvis afpresserne kommer igen med nye anmeldelser?", a: "Gentag de samme trin: svar ikke, dokumentér, anmeld via afpresningsformularen, og anmeld hver anmeldelse for sig. Henvis til den tidligere bølge og din bevismappe." },
     { q: "Hvor lang tid går der, før anmeldelserne er væk?", a: "Google lover ingen fast tid; det kan tage dage til uger. Gennem RapidRemove tager det som regel **3–5 dage** for anmeldelser med tekst op til 4 uger gamle og som regel **1–2 uger** for alle andre, og de enkelte anmeldelser kan forsvinde på forskellige tidspunkter." },
     { q: "Skal jeg svare på anmeldelserne?", a: "Det er ikke et krav. Hvis du svarer, så gør det kort og neutralt – fx at du ikke kan koble anmeldelsen til et kundebesøg og har indberettet den til Google. Svar aldrig på selve afpresningsbeskeden." },
-    { q: "Hvad koster det at få afpresningsanmeldelser fjernet?", a: "Anmeldelser med tekst: **99 € pr. fjernet anmeldelse** (ældre end 4 uger 250 €), intet på forhånd. Rene stjernebedømmelser uden tekst: **250 € pr. fjernet anmeldelse** med en mere omfattende procedure. Du gemmer et kort eller PayPal ved bestillingen, og der trækkes automatisk først efter fjernelsen. Mængderabat på alle accepterede anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
+    { q: "Hvad koster det at få afpresningsanmeldelser fjernet?", a: "Anmeldelser med tekst: **179 € pr. fjernet anmeldelse** (ældre end 4 uger 250 €), intet på forhånd. Rene stjernebedømmelser uden tekst: **250 € pr. fjernet anmeldelse** med en mere omfattende procedure. Du gemmer et kort eller PayPal ved bestillingen, og der trækkes automatisk først efter fjernelsen. Mængderabat på alle accepterede anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
   ],
   related: [
     { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },

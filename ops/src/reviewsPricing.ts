@@ -12,13 +12,17 @@ export const REVIEW_NOTEXT_PRICE = 300;
 export const REVIEW_NOTEXT_HALF = REVIEW_NOTEXT_PRICE / 2; // alt (50/50), nur noch für Bestandsfälle
 
 /* ---- Preismodell 2 (16.10.2026, Maximilian): nur noch ZWEI Preise je Bewertung, gleicher Zahlenwert in € und $ ----
- *  99  = frisch: höchstens 28 Tage alt UND mit Text
+ *  179 = frisch: höchstens 28 Tage alt UND mit Text (16.–22.10.2026 bestellt: 99 – siehe PRICE_V2_FRESH_LEGACY)
  *  250 = alles andere (älter, ohne Text, Software) – der Kunde sieht keinen eigenen Software-Preis mehr.
  *  Intern bleibt die Einstufung std/legal/sw (Partnerpreis!). Neue Bewertungen bekommen bei der Bestellung lp (Listenpreis)
  *  festgeschrieben; Bestandsaufträge ohne lp laufen unverändert nach Preismodell 1 (179/+50/300).
  *  Mengenrabatt gilt auf lp wie bisher. Express (+100 je Bewertung, nur 250er): x = bestellt; abgerechnet nur, wenn die
  *  Bewertung innerhalb von EXPRESS_CUSTOMER_H Stunden ab Express-Start gelöscht wurde (xOk) – sonst entfällt der Aufschlag. */
-export const PRICE_V2_FRESH = 99;
+/* Preisänderung (23.10.2026, Maximilian): frisch wieder 179 (€ und $). Bereits bestellte Bewertungen behalten ihr
+ *  festgeschriebenes lp = 99 und werden beim Einzug (autopay, Ersatz-Zahlungslinks) weiter mit 99 abgerechnet. */
+export const PRICE_V2_FRESH = 179;
+/** Alter Frisch-Preis (bestellt 16.–22.10.2026): nur noch für gespeicherte lp von Bestandsaufträgen gültig, nie für neue Bestellungen. */
+export const PRICE_V2_FRESH_LEGACY = 99;
 export const PRICE_V2_OTHER = 250;
 export const EXPRESS_FEE = 100;
 export const EXPRESS_CUSTOMER_H = 30; // Zusage an den Kunden (Start Mo 0:00 – Fr 12:00 Wiener Zeit)
@@ -67,8 +71,10 @@ export const listPriceV2 = (it: { old?: boolean; nt?: boolean; sw?: boolean; tex
   const old = it.old === true || (Number.isFinite(days) && it.days !== null && it.days !== undefined && days > 28);
   return it.nt || it.sw || old ? PRICE_V2_OTHER : PRICE_V2_FRESH;
 };
-/** Listenpreis einer gespeicherten Bewertung (0 = Bestandsauftrag, Preismodell 1). */
-export const lpOf = (it: { lp?: unknown } | null | undefined): number => { const v = Number(it?.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_OTHER ? v : 0; };
+/** Listenpreis einer gespeicherten Bewertung (0 = Bestandsauftrag, Preismodell 1). 99 bleibt für Bestandsaufträge gültig. */
+export const lpOf = (it: { lp?: unknown } | null | undefined): number => { const v = Number(it?.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY || v === PRICE_V2_OTHER ? v : 0; };
+/** Frisch-Preis (179 neu oder 99 Bestand)? */
+export const isFreshLp = (v: number): boolean => v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY;
 /** Express-Zusage eingehalten? (gelöscht bis zur Kunden-Frist: 30 Std. bzw. Di 24:00 bei Wochenend-Start) */
 export function expressMet(startIso: string | null | undefined, removedIso: string | null | undefined): boolean {
   const a = Date.parse(String(startIso || "")), b = Date.parse(String(removedIso || ""));
@@ -128,13 +134,15 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   const nNt = v1.filter(isSwItem).length; // Software-Fälle (ohne Text + alte US-Bewertungen), Name historisch
   const nOld = v1.filter((it) => it && it.old && !isSwItem(it)).length;
   const nNew = v1.length - nOld - nNt;
-  const n99 = v2.filter((it) => lpOf(it) === PRICE_V2_FRESH).length, n250 = v2.length - n99;
+  // n99 = Anzahl frischer Bewertungen (Name historisch): 179 neu, 99 Bestand – jede mit IHREM gespeicherten lp.
+  const n99 = v2.filter((it) => isFreshLp(lpOf(it))).length, n250 = v2.length - n99;
+  const nFreshNew = v2.filter((it) => lpOf(it) === PRICE_V2_FRESH).length, nFreshOld = n99 - nFreshNew;
   // Express: „full" = bestellt (Maximalbetrag), „rest" = nur eingehaltene (xOk). Ohne Rabatt.
   const nX = v2.filter((it) => lpOf(it) === PRICE_V2_OTHER && it.x && (mode === "full" || it.xOk)).length;
   const xTotal = nX * EXPRESS_FEE;
   const ntUnit = mode === "rest" ? 0 : REVIEW_NOTEXT_PRICE;
   const nNtDue = mode === "rest" ? std.filter((it) => isSwItem(it) && it.due).length : 0; // nicht vorab bezahlt → jetzt fällig
-  const subStd = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit + nNtDue * REVIEW_NOTEXT_PRICE + n99 * PRICE_V2_FRESH + n250 * PRICE_V2_OTHER;
+  const subStd = nNew * REVIEW_BASE + nOld * (REVIEW_BASE + REVIEW_OLD_SURCHARGE) + nNt * ntUnit + nNtDue * REVIEW_NOTEXT_PRICE + nFreshNew * PRICE_V2_FRESH + nFreshOld * PRICE_V2_FRESH_LEGACY + n250 * PRICE_V2_OTHER;
   const pct = std.length ? Math.max(reviewDiscountPct(Math.max(n, rateBasis || 0)), Math.max(0, Math.min(10, minPct || 0))) : 0; // Mengen- oder Chat-Rabatt, der höhere
   // Software-Fälle mit eigenem Preis sind (wie alle Software-Fälle) vorab bezahlt → in „rest" 0.
   const cpLines = new Map<number, number>();
@@ -150,9 +158,9 @@ export function quoteReviews(items: PricedItem[], cur: string, rateBasis?: numbe
   const total = (pay ? Math.round(((Math.round((subStd * (100 - pct)) / 100) + cpTotal) * (100 - pay)) / 100) : Math.round((subStd * (100 - pct)) / 100) + cpTotal) + xTotal;
   // Vorauszahlung (voller Betrag) für Bewertungen ohne Text, bereits rabattiert. (Name „Deposit“ historisch.)
   const ntDeposit = Math.round(((Math.round((nNt * REVIEW_NOTEXT_PRICE * (100 - pct)) / 100) + cpSw) * (100 - pay)) / 100);
-  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && (ntUnit || nNtDue) ? fmt(REVIEW_NOTEXT_PRICE) : "", n99 ? fmt(PRICE_V2_FRESH) : "", n250 ? fmt(PRICE_V2_OTHER) : "", ...[...cpLines.keys()].map(fmt)].filter(Boolean);
+  const prices = [nNew ? fmt(REVIEW_BASE) : "", nOld ? fmt(REVIEW_BASE + REVIEW_OLD_SURCHARGE) : "", nNt && (ntUnit || nNtDue) ? fmt(REVIEW_NOTEXT_PRICE) : "", nFreshOld ? fmt(PRICE_V2_FRESH_LEGACY) : "", nFreshNew ? fmt(PRICE_V2_FRESH) : "", n250 ? fmt(PRICE_V2_OTHER) : "", ...[...cpLines.keys()].map(fmt)].filter(Boolean);
   let per = prices.length ? [...new Set(prices)].join(" / ") : fmt(v2.length || !v1.length ? PRICE_V2_FRESH : REVIEW_BASE);
   if (pct) per += ` (−${pct} %)`;
   if (pay) per += ` (−${pay} %)`;
-  return { n, nOld, nNew, nNt, n99, n250, nX, xTotal, xFee: EXPRESS_FEE, nCp: fixed.length, cpLines: [...cpLines.entries()].map(([price, k]) => ({ price, n: k })), cpTotal, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: Math.round((subtotal - total) * 100) / 100, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: new Set(prices).size <= 1 && pct === 0 && !pay && !v2.length && !xTotal, payPct: pay };
+  return { n, nOld, nNew, nNt, n99, n250, nX, xTotal, xFee: EXPRESS_FEE, nCp: fixed.length, cpLines: [...cpLines.entries()].map(([price, k]) => ({ price, n: k })), cpTotal, base: REVIEW_BASE, oldPrice: REVIEW_BASE + REVIEW_OLD_SURCHARGE, ntPrice: ntUnit, subtotal, pct, total, discount: Math.round((subtotal - total) * 100) / 100, ntDeposit, ntDepositStr: fmt(ntDeposit), per, totalStr: fmt(total), simple: nNew > 0 && nNew === n && pct === 0 && !pay && !xTotal, payPct: pay, nFreshNew, nFreshOld };
 }

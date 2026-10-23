@@ -5,7 +5,7 @@ const article = {
     slug: "google-recensionsregler-overtradelser",
     title: "Googles recensionsregler: vilka recensioner tas bort? (2026)",
     h1: "Googles recensionsregler: vilka överträdelser leder till borttagning?",
-    description: "Vilka Google-recensioner bryter mot reglerna och tas bort? Kategorier, exempel, rätt anmälan och överklagande. Från 99 €, betala bara om den tas bort.",
+    description: "Vilka Google-recensioner bryter mot reglerna och tas bort? Kategorier, exempel, rätt anmälan och överklagande. Från 179 €, betala bara om den tas bort.",
     keywords: ["googles regler för recensioner", "google recension bryter mot riktlinjer", "anmäla google recension", "vilka google recensioner tas bort", "ta bort google recension regler", "google recension policy", "google recension ingen överträdelse", "olämplig google recension"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert",
@@ -58,7 +58,7 @@ const article = {
       "**Meddelanden** med krav på betalning eller hot.",
       "Vid osanna påståenden: **dokument** som visar motsatsen.",
     ] },
-    { t: "cta", title: "Få dina recensioner bedömda gratis", text: "Sök ditt företag, bocka i de recensioner som du tycker bryter mot reglerna och se priset direkt. **Från 99 € per borttagen recension**, bara om den tas bort – inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
+    { t: "cta", title: "Få dina recensioner bedömda gratis", text: "Sök ditt företag, bocka i de recensioner som du tycker bryter mot reglerna och se priset direkt. **Från 179 € per borttagen recension**, bara om den tas bort – inget i förskott.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
     { t: "h2", id: "grazon", text: "Gråzoner: stjärnor utan text, tidigare anställda, konkurrenter, prisklagomål", toc: "Gråzoner" },
     { t: "p", text: "Alla jobbiga recensioner passar inte snyggt in i en kategori. I de här fyra fallen avgör detaljerna – och vad du kan visa." },
@@ -93,7 +93,7 @@ const article = {
     { t: "h2", id: "hjalp", text: "När professionell hjälp lönar sig – och vad det kostar", toc: "Pris" },
     { t: "p", text: "Hjälp lönar sig mest för **färska recensioner**: upp till 4 veckor gamla är chansen ca **90 %**, därefter ca **50 %**. Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) betalar du bara för recensioner som faktiskt försvinner." },
     { t: "table", rrCol: 2, head: ["Recensionens ålder", "Chans att lyckas", "Pris per borttagen recension"], rows: [
-      ["Upp till 4 veckor (med text)", "ca. 90 %", "**99 €**"],
+      ["Upp till 4 veckor (med text)", "ca. 90 %", "**179 €**"],
       ["Äldre än 4 veckor", "ca. 50 %", "**250 €**"],
     ] },
     { t: "p", text: "För de recensioner vi accepterar efter den kostnadsfria bedömningen gäller mängdrabatt: från 3 recensioner **−10 %**, från 5 **−15 %**, från 10 **−30 %** – på varje borttagen recension. För recensioner med text upp till 4 veckor gamla tar det oftast 3–5 dagar, för alla andra oftast 1–2 veckor. Recensenten får inte veta vem som begärde borttagningen. Mer om priser: [vad kostar det att ta bort en Google-recension?](/sv/magasin/kostnad-ta-bort-google-recension/)." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Är en 1-stjärnig recension utan text en överträdelse?", a: "Inte automatiskt. Har recensenten aldrig varit kund, eller ingår betyget i en falsk våg eller en intressekonflikt, är chanserna att få bort den däremot goda." },
     { q: "Hur många gånger kan jag överklaga ”ingen överträdelse”?", a: "**En gång per recension**, i Googles verktyg för hantering av recensioner. Därefter är beslutet slutgiltigt; vid olagligt innehåll kan du fortfarande skicka en juridisk begäran." },
     { q: "Hur lång tid tar det innan Google granskar en anmäld recension?", a: "Allt från dagar till veckor; Google lovar ingen tidsram. Hos oss tar en borttagning oftast 3–5 dagar för recensioner med text upp till 4 veckor gamla, annars oftast 1–2 veckor." },
-    { q: "Vad kostar det att få en recension borttagen?", a: "**99 €** per borttagen recension med text upp till 4 veckor gammal, **250 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 250 € per borttaget betyg." },
+    { q: "Vad kostar det att få en recension borttagen?", a: "**179 €** per borttagen recension med text upp till 4 veckor gammal, **250 €** för äldre. Du betalar bara när recensionen faktiskt är borta – inget i förskott. Stjärnbetyg utan text kostar 250 € per borttaget betyg." },
   ],
   related: [
     { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },

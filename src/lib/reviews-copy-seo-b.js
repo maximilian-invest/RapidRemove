@@ -32,7 +32,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "比較", compareH: "Googleの口コミを削除する方法を比較",
     compareHead: ["", "自分で報告", "弁護士", "RapidRemove"],
     compareRows: [
-      ["費用", "無料", "時間制の報酬、着手金が必要なことも多い", "削除1件あたり$99から"],
+      ["費用", "無料", "時間制の報酬、着手金が必要なことも多い", "削除1件あたり$179から"],
       ["成功報酬", "–", "いいえ", "はい"],
       ["期間の目安", "数日〜数週間、却下されることも多い", "数週間〜数か月", "通常1〜2週間"],
       ["あなたの手間", "大きい：ポリシー確認、証拠、再審査請求", "打ち合わせと書類準備", "リンクを貼るだけ"],
@@ -85,7 +85,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Jämförelse", compareH: "Dina alternativ för att få bort en Google-recension",
     compareHead: ["", "Anmäla själv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Kostnad", "Gratis", "Timarvode, ofta i förskott", "Från 99 € per borttagen recension"],
+      ["Kostnad", "Gratis", "Timarvode, ofta i förskott", "Från 179 € per borttagen recension"],
       ["Betala bara vid framgång", "–", "Nej", "Ja"],
       ["Typisk tid", "Dagar till veckor – ofta avslag", "Veckor till månader", "Oftast 1–2 veckor"],
       ["Din insats", "Hög: regler, bevis, överklaganden", "Genomgångar och dokument", "Klistra in länken – klart"],
@@ -138,7 +138,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Sammenligning", compareH: "Dine muligheder for at få fjernet en Google-anmeldelse",
     compareHead: ["", "Anmeld selv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Pris", "Gratis", "Timehonorar, ofte betalt på forhånd", "Fra 99 € pr. fjernet anmeldelse"],
+      ["Pris", "Gratis", "Timehonorar, ofte betalt på forhånd", "Fra 179 € pr. fjernet anmeldelse"],
       ["Betal kun ved succes", "–", "Nej", "Ja"],
       ["Typisk varighed", "Dage til uger – ofte afvist", "Uger til måneder", "Som regel 1–2 uger"],
       ["Din indsats", "Høj: regler, beviser, klager", "Møder og dokumenter", "Indsæt linket – færdig"],
@@ -191,7 +191,7 @@ export const RVW_SEO_B = {
     compareEyebrow: "Sammenligning", compareH: "Dine muligheter for å få slettet en Google-anmeldelse",
     compareHead: ["", "Rapportere selv", "Advokat", "RapidRemove"],
     compareRows: [
-      ["Pris", "Gratis", "Timepris, ofte forskuddsbetalt", "Fra 99 € per fjernet anmeldelse"],
+      ["Pris", "Gratis", "Timepris, ofte forskuddsbetalt", "Fra 179 € per fjernet anmeldelse"],
       ["Betal kun ved suksess", "–", "Nei", "Ja"],
       ["Typisk varighet", "Dager til uker – ofte avvist", "Uker til måneder", "Vanligvis 1–2 uker"],
       ["Din innsats", "Høy: regler, bevis, klager", "Møter og dokumenter", "Lim inn lenken – ferdig"],
@@ -216,19 +216,19 @@ export const RVW_SEO_B = {
 
 export const RVW_META_B = {
   ja: {
-    title: "Google口コミ削除｜1件$99から・削除できた分だけの成功報酬",
-    description: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$99からの完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
+    title: "Google口コミ削除｜1件$179から・削除できた分だけの成功報酬",
+    description: "Googleの悪質な口コミ・やらせ口コミを、Google公式の手続きだけで削除します。料金は削除1件あたり$179からの完全成功報酬で、消えなければお支払いなし。まずは無料で、削除できるかを正直に診断します。",
   },
   sv: {
-    title: "Ta bort Google-recension – från 99 €, betala bara vid framgång",
-    description: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – från 99 € per borttagen recension, debiteras först efter borttagning. Gratis bedömning först.",
+    title: "Ta bort Google-recension – från 179 €, betala bara vid framgång",
+    description: "Ta bort falska eller kränkande Google-recensioner via Googles officiella processer – från 179 € per borttagen recension, debiteras först efter borttagning. Gratis bedömning först.",
   },
   da: {
-    title: "Fjern Google-anmeldelse – fra 99 €, betal kun ved succes",
-    description: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – fra 99 € pr. fjernet anmeldelse, opkræves først efter fjernelse. Gratis vurdering først.",
+    title: "Fjern Google-anmeldelse – fra 179 €, betal kun ved succes",
+    description: "Få falske eller krænkende Google-anmeldelser fjernet via Googles officielle processer – fra 179 € pr. fjernet anmeldelse, opkræves først efter fjernelse. Gratis vurdering først.",
   },
   no: {
-    title: "Slette Google-anmeldelse – fra 99 €, betal kun ved suksess",
-    description: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – fra 99 € per fjernet anmeldelse, belastes først etter fjerning. Gratis vurdering først.",
+    title: "Slette Google-anmeldelse – fra 179 €, betal kun ved suksess",
+    description: "Få falske eller krenkende Google-anmeldelser slettet via Googles offisielle prosesser – fra 179 € per fjernet anmeldelse, belastes først etter fjerning. Gratis vurdering først.",
   },
 };

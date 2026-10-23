@@ -5,7 +5,7 @@ const article = {
     slug: "google-review-richtlijnen-schendingen",
     title: "Google review richtlijnen: wat wordt verwijderd? (2026)",
     h1: "Google review richtlijnen: welke schendingen leiden tot verwijdering?",
-    description: "Welke Google reviews schenden de richtlijnen en worden verwijderd? Categorieën, voorbeelden, juist melden en bezwaar maken. Vanaf € 99, alleen bij succes.",
+    description: "Welke Google reviews schenden de richtlijnen en worden verwijderd? Categorieën, voorbeelden, juist melden en bezwaar maken. Vanaf € 179, alleen bij succes.",
     keywords: ["google review richtlijnen", "google review verwijderen regels", "google review melden reden", "welke google reviews worden verwijderd", "google review schendt richtlijnen", "google review beleid", "ongepaste google review melden", "google review melden geen schending"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert en oprichter",
@@ -58,7 +58,7 @@ const article = {
       "**Berichten** met een betalingseis of bedreiging.",
       "Bij onware beweringen: **documenten** die het tegendeel aantonen.",
     ] },
-    { t: "cta", title: "Laat uw reviews gratis beoordelen", text: "Zoek uw bedrijf, vink de reviews aan die volgens u de regels schenden en zie direct de prijs. **Vanaf € 99 per verwijderde review**, alleen bij succes – niets vooraf.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
+    { t: "cta", title: "Laat uw reviews gratis beoordelen", text: "Zoek uw bedrijf, vink de reviews aan die volgens u de regels schenden en zie direct de prijs. **Vanaf € 179 per verwijderde review**, alleen bij succes – niets vooraf.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Eerst een eerlijke inschatting"] },
 
     { t: "h2", id: "grijs", text: "Grijze gebieden: sterren zonder tekst, oud-medewerkers, concurrenten, prijsklachten", toc: "Grijze gebieden" },
     { t: "p", text: "Niet elke vervelende review valt netjes in één categorie. Bij deze vier gevallen hangt het af van de details – en van wat u kunt aantonen." },
@@ -93,7 +93,7 @@ const article = {
     { t: "h2", id: "hulp", text: "Wanneer professionele hulp loont – en wat het kost", toc: "Prijs" },
     { t: "p", text: "Hulp loont vooral bij **verse reviews**: tot 4 weken oud is de slagingskans ca. **90 %**, daarna ca. **50 %**. Via onze [Google review verwijderservice](/nl/review-laten-verwijderen/) betaalt u alleen voor reviews die echt verdwijnen." },
     { t: "table", rrCol: 2, head: ["Leeftijd van de review", "Slagingskans", "Prijs per verwijderde review"], rows: [
-      ["Met tekst, tot 4 weken", "ca. 90 %", "**€ 99**"],
+      ["Met tekst, tot 4 weken", "ca. 90 %", "**€ 179**"],
       ["Alle andere (ouder dan 4 weken of alleen sterren)", "ca. 50 % (ouder dan 4 weken)", "**€ 250**"],
     ] },
     { t: "p", text: "Voor de reviews die we na de gratis beoordeling accepteren, geldt een staffelkorting: vanaf 3 reviews **−10 %**, vanaf 5 **−15 %**, vanaf 10 **−30 %** – op elke verwijderde review. Beoordelingen met alleen sterren, zonder tekst: eveneens € 250 per verwijderde review. Reviews met tekst tot 4 weken oud zijn meestal binnen 3–5 dagen weg, alle andere (ook alleen sterren) meestal binnen 1–2 weken. De schrijver hoort niet wie om verwijdering vroeg. Meer over prijzen: [wat kost het om een Google review te verwijderen?](/nl/magazine/kosten-google-review-verwijderen/)." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Is een 1-sterreview zonder tekst een schending?", a: "Niet automatisch. Was de reviewer nooit klant, of is de review deel van een nepgolf of een belangenconflict, dan zijn de kansen op verwijdering wel goed." },
     { q: "Hoe vaak kan ik in beroep gaan tegen „geen schending”?", a: "**Eén keer per review**, in de Reviewbeheertool van Google. Na dat beroep is de beslissing definitief; bij onwettige inhoud blijft een juridisch verzoek mogelijk." },
     { q: "Hoe lang duurt het voordat Google een gemelde review beoordeelt?", a: "Dat varieert van dagen tot weken; Google geeft geen vaste termijn. Bij ons duurt een verwijdering meestal 3–5 dagen bij reviews met tekst tot 4 weken oud, anders meestal 1–2 weken." },
-    { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 99** per verwijderde review met tekst tot 4 weken oud, **€ 250** voor alle andere (ouder of alleen sterren). U betaalt alleen als de review echt weg is – niets vooraf." },
+    { q: "Wat kost het om een review te laten verwijderen?", a: "**€ 179** per verwijderde review met tekst tot 4 weken oud, **€ 250** voor alle andere (ouder of alleen sterren). U betaalt alleen als de review echt weg is – niets vooraf." },
   ],
   related: [
     { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },

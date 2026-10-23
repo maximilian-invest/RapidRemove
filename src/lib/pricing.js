@@ -7,16 +7,16 @@ export const PRICES = {
   de: {
     cur: "€", sym: "€", suffix: true, // "450 €"
     deletion: "450", reset: "850", express: "149",
-    // Einzelne Bewertungen löschen — Preis JE Bewertung (Preismodell 2: 99 frisch / 250 alle anderen).
+    // Einzelne Bewertungen löschen — Preis JE Bewertung (Preismodell 2: 179 frisch / 250 alle anderen).
     // Produkt ist außerhalb DACH verfügbar (siehe REVIEW_COPY/Router-Kachel im Wizard).
-    review: "99",
+    review: "179",
     protMonthly: "24,90", protMonitor: "69,90", protLifetime: "990",
   },
   en: {
     cur: "$", sym: "$", suffix: false, // "$495"
     deletion: "495", reset: "950", express: "149",
     // Wie bei „express" bewusst derselbe Zahlenwert in beiden Währungen.
-    review: "99",
+    review: "179",
     protMonthly: "24.90", protMonitor: "69.90", protLifetime: "990",
   },
 };
@@ -83,9 +83,12 @@ export const REVIEW_NOTEXT_PRICE = 300;
 /** cp = individueller Nettopreis je Bewertung (Admin): ohne Altersaufschlag und Mengenrabatt – synchron mit ops/src/reviewsPricing.ts. */
 export const cpOf = (it) => { const v = Number(it && it.cp); return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : 0; };
 /* ---- Preismodell 2 (16.10.2026) – synchron mit ops/src/reviewsPricing.ts ----
-   99 = höchstens 28 Tage alt UND mit Text, 250 = alle anderen (älter, ohne Text, Software). Kein eigener Software-Preis.
+   179 = höchstens 28 Tage alt UND mit Text, 250 = alle anderen (älter, ohne Text, Software). Kein eigener Software-Preis.
+   23.10.2026: frisch von 99 zurück auf 179. Bestandsaufträge behalten ihr gespeichertes lp = 99 (PRICE_V2_FRESH_LEGACY).
    Express (+100 je Bewertung, nur 250er, nur bei der Bestellung): Ziel gelöscht in 30 Std. ab Start, sonst entfällt er. */
-export const PRICE_V2_FRESH = 99;
+export const PRICE_V2_FRESH = 179;
+/** Alter Frisch-Preis (bestellt 16.–22.10.2026): nur für gespeicherte lp von Bestandsaufträgen, nie für neue Bestellungen. */
+export const PRICE_V2_FRESH_LEGACY = 99;
 export const PRICE_V2_OTHER = 250;
 export const EXPRESS_FEE = 100;
 export const EXPRESS_HOURS = 30;
@@ -109,14 +112,15 @@ export function expressDueMs(startMs = Date.now()) {
   const p = vieParts(startMs);
   return vieToUtc(p.y, p.m, p.d + ((3 - p.wd + 7) % 7), 0, 0);
 }
-/** Zeiträume Standard (Kundenanzeige): 99er meist 3–5 Tage, 250er meist 1–2 Wochen. */
+/** Zeiträume Standard (Kundenanzeige): 179er (frisch) meist 3–5 Tage, 250er meist 1–2 Wochen. */
 export const STD_DAYS = { fresh: [3, 5], other: [1, 2] };
 export const listPriceV2 = (it) => {
   const d = Number(it && it.days);
   const old = !!(it && it.old) || (it && it.days != null && Number.isFinite(d) && d > REVIEW_OLD_DAYS);
   return it && (it.nt || it.sw || old) ? PRICE_V2_OTHER : PRICE_V2_FRESH;
 };
-export const lpOf = (it) => { const v = Number(it && it.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_OTHER ? v : 0; };
+export const lpOf = (it) => { const v = Number(it && it.lp); return v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY || v === PRICE_V2_OTHER ? v : 0; };
+export const isFreshLp = (v) => v === PRICE_V2_FRESH || v === PRICE_V2_FRESH_LEGACY;
 /** Bestellung (neu): Preismodell 2. items: [{ old?, nt?, sw?, days?, cp?, lp?, x? }]. opts.legacy = Bestandsauftrag:
  *  Bewertungen ohne lp nach Preismodell 1 rechnen (179/+50/300). opts.express = Express für alle 250er (Bestellprozess). */
 export function reviewQuote(items, lang, opts = {}) {
@@ -125,16 +129,18 @@ export function reviewQuote(items, lang, opts = {}) {
   const v2 = list.filter((it) => !cpOf(it) && lpOf(it));
   if (!v2.length) return reviewQuoteV1(list, lang);
   const v1 = reviewQuoteV1(list.filter((it) => cpOf(it) || !lpOf(it)), lang);
-  const n99 = v2.filter((it) => lpOf(it) === PRICE_V2_FRESH).length, n250 = v2.length - n99;
+  // n99 = frische Bewertungen (Name historisch): 179 neu bzw. 99 aus Bestandsaufträgen – jeweils mit gespeichertem lp.
+  const n99 = v2.filter((it) => isFreshLp(lpOf(it))).length, n250 = v2.length - n99;
+  const nFreshNew = v2.filter((it) => lpOf(it) === PRICE_V2_FRESH).length, nFreshOld = n99 - nFreshNew;
   const nX = v2.filter((it) => lpOf(it) === PRICE_V2_OTHER && (opts.express || it.x)).length;
   const xTotal = nX * EXPRESS_FEE;
   const n = list.length;
   const pct = reviewDiscountPct(n);
-  const subV2 = n99 * PRICE_V2_FRESH + n250 * PRICE_V2_OTHER;
+  const subV2 = nFreshNew * PRICE_V2_FRESH + nFreshOld * PRICE_V2_FRESH_LEGACY + n250 * PRICE_V2_OTHER;
   const subStd = subV2 + (v1.subtotal - v1.cpTotal);
   const total = Math.round(subStd * (100 - pct) / 100) + v1.cpTotal + xTotal;
   const subtotal = subStd + v1.cpTotal + xTotal;
-  return { ...v1, n, pct, subtotal, total, discount: subtotal - total, n99, n250, nX, xTotal, xFee: EXPRESS_FEE, p99: PRICE_V2_FRESH, p250: PRICE_V2_OTHER, v2: true,
+  return { ...v1, n, pct, subtotal, total, discount: subtotal - total, n99, n250, nFreshNew, nFreshOld, nX, xTotal, xFee: EXPRESS_FEE, p99: PRICE_V2_FRESH, p99Old: PRICE_V2_FRESH_LEGACY, p250: PRICE_V2_OTHER, v2: true,
     base: PRICE_V2_FRESH, ntTotal: v1.ntTotal };
 }
 function reviewQuoteV1(items, lang) {

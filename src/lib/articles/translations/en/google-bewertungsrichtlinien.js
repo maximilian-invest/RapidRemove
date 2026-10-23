@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "short-answer", text: "Short answer: which reviews does Google remove?", toc: "Short answer" },
     { t: "p", text: "Google removes reviews that violate its [Prohibited and restricted content policy](https://support.google.com/contributionpolicy/answer/7400114) for Maps or that are unlawful. In practice, that means reviews that are **not based on a real experience**, reviews written with a **conflict of interest**, and reviews containing **harassment, hate, profanity, personal information, spam or off-topic content**." },
     { t: "p", text: "What Google does not remove: honest negative experiences, even harsh ones. Google says explicitly that you should not report a review just because you disagree with it. Business owners also cannot delete reviews themselves; only the reviewer can edit or delete their own review. Your options are reporting a violation, appealing once, a legal request for unlawful content, and replying publicly." },
-    { t: "p", text: "If you'd rather have someone check which of your reviews actually qualify, our [Google review removal service](/en/remove-single-reviews/) starts with a free, honest assessment, and you pay **from $99 per review only once it's removed**." },
+    { t: "p", text: "If you'd rather have someone check which of your reviews actually qualify, our [Google review removal service](/en/remove-single-reviews/) starts with a free, honest assessment, and you pay **from $179 per review only once it's removed**." },
 
     { t: "h2", id: "categories", text: "All Google review policy categories at a glance", toc: "Policy categories" },
     { t: "p", text: "Each reported review is checked against these categories. The most important column for you is the last one: it shows what looks similar but is **not** a violation." },
@@ -57,7 +57,7 @@ const article = {
       "**Messages** if someone demands money to remove reviews. That is [review extortion](/en/magazine/google-review-extortion/), and Google has a [separate form for it](https://support.google.com/business/answer/16404809).",
     ] },
     { t: "warn", title: "Don't misuse customer data", text: "Use your records only to check whether the reviewer was a customer. **Never post a customer's details, order history or health information in your public reply**, and don't try to unmask anonymous reviewers. That can itself break Google's personal-information rule and data-protection law." },
-    { t: "cta", title: "Find out which of your reviews are removable", text: "Search your business, tick the reviews that break the rules and see the price instantly. **From $99 per removed review**, nothing upfront, honest assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
+    { t: "cta", title: "Find out which of your reviews are removable", text: "Search your business, tick the reviews that break the rules and see the price instantly. **From $179 per removed review**, nothing upfront, honest assessment first.", btn: "Select reviews", href: "/en/check-profile/?start=reviews", trust: ["Nothing upfront", "Pay per removed review", "Honest assessment first"] },
 
     { t: "h2", id: "grey-areas", text: "Grey areas: star-only ratings, ex-employees, competitors, prices", toc: "Grey areas" },
     { t: "p", text: "These cases are not automatically removable or automatically safe. The outcome depends on whether you can show a policy breach, not on how unfair the review feels." },
@@ -92,7 +92,7 @@ const article = {
     { t: "p", text: "Getting help makes sense when several reviews are involved, a report was already rejected, or you simply don't have the time. RapidRemove works only through Google's own procedures, on behalf of the business owner: no fake accounts, no bots, no fake legal notices, and the reviewer is not told who requested the removal." },
     { t: "ul", items: [
       "**Free assessment first:** we tell you honestly whether a review is removable. If not, it costs nothing.",
-      "**$99 per removed review** up to 4 weeks old with text, $250 for older reviews and star-only ratings. You pay only once the review is gone.",
+      "**$179 per removed review** up to 4 weeks old with text, $250 for older reviews and star-only ratings. You pay only once the review is gone.",
       "**Success chance:** approx. **90 %** for reviews up to 4 weeks old, approx. **50 %** for older ones.",
       "**Volume discount** on accepted reviews: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
       "**Duration:** reviews with text up to 4 weeks old usually 3–5 days, all others usually 1–2 weeks.",
@@ -106,7 +106,7 @@ const article = {
     { q: "Can I delete a Google review myself as the business owner?", a: "No. Only the reviewer can edit or delete their own review. As the owner you can report it, appeal once, file a legal request for unlawful content, and reply publicly." },
     { q: "Is a 1-star rating without text a policy violation?", a: "Not by itself. It is removable when there are signs it is fake, for example no customer record and a profile with suspicious activity, or a wave of similar ratings." },
     { q: "What happens if Google says there's no policy violation?", a: "You can **appeal once per review** in the Reviews Management Tool; the appeal may be escalated and gets a final decision. For defamation or other unlawful content, a legal removal request is a separate option." },
-    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$99 per removed review** ($250 for reviews older than 4 weeks or without text), paid only once the review is gone. The assessment beforehand is free." },
+    { q: "How much does it cost to have a policy-violating review removed?", a: "With RapidRemove, **$179 per removed review** ($250 for reviews older than 4 weeks or without text), paid only once the review is gone. The assessment beforehand is free." },
   ],
   related: [
     { label: "Google review removal service", url: "/en/remove-single-reviews/" },

@@ -5,7 +5,7 @@ const article = {
     slug: "empresa-pode-apagar-avaliacoes-google",
     title: "Uma empresa pode apagar avaliações do Google? (2026)",
     h1: "Uma empresa pode apagar avaliações do Google? O que é possível",
-    description: "Não: uma empresa não pode apagar avaliações do Google, mas o Google remove as que violam as regras. Opções legítimas, mitos e desde 99 € só com sucesso.",
+    description: "Não: uma empresa não pode apagar avaliações do Google, mas o Google remove as que violam as regras. Opções legítimas, mitos e desde 179 € só com sucesso.",
     keywords: ["empresa pode apagar avaliações do google", "apagar avaliação google da minha empresa", "como remover avaliações do google sendo proprietário", "o google pode remover uma avaliação", "apagar avaliação negativa google", "remover avaliações perfil da empresa google", "eliminar avaliações google"],
     author: "Maximilian Hölzl",
     authorRole: "Fundador",
@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "resposta-curta", text: "Resposta curta: a empresa não pode apagar avaliações, o Google pode", toc: "Resposta curta" },
     { t: "p", text: "**Os proprietários não têm um botão de apagar.** No seu Perfil da Empresa no Google pode ler, responder e denunciar avaliações, mas não as pode eliminar, por mais injustas que sejam. O Google fez isto de propósito: se as empresas pudessem apagar avaliações, as classificações deixariam de ter valor para os clientes." },
     { t: "p", text: "O que **pode** fazer é levar o Google a remover uma avaliação que viola as suas regras. Avaliações falsas, insultos, avaliações de pessoas que nunca foram clientes, spam, conflitos de interesse ou conteúdo ilegal são casos de remoção. Uma crítica honesta de um cliente real não é, mesmo que doa." },
-    { t: "p", text: "Se preferir não tratar de denúncias e recursos, um **[serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/)** faz isso por si, usando apenas os procedimentos do próprio Google. Com a RapidRemove paga **desde 99 € por avaliação removida**, e só quando ela desaparece de facto." },
+    { t: "p", text: "Se preferir não tratar de denúncias e recursos, um **[serviço para remover avaliações do Google](/pt/remover-uma-avaliacao/)** faz isso por si, usando apenas os procedimentos do próprio Google. Com a RapidRemove paga **desde 179 € por avaliação removida**, e só quando ela desaparece de facto." },
 
     { t: "h2", id: "quem-pode-remover", text: "Quem pode remover o quê: autor, empresa, Google e tribunal", toc: "Quem pode remover o quê" },
     { t: "p", text: "Há quatro partes com uma palavra a dizer sobre uma avaliação do Google, mas só duas a conseguem fazer desaparecer. A tabela resume quem pode fazer o quê." },
@@ -49,12 +49,12 @@ const article = {
     { t: "p", text: "**5. Responder publicamente.** Uma resposta calma e factual é sempre possível e mostra aos potenciais clientes como lida com os problemas. *Pró:* gratuita, imediata e útil mesmo que a avaliação fique. *Contra:* a avaliação não desaparece, e uma resposta irritada pode fazer mais estragos do que a própria avaliação. Orientações: [avaliação negativa: ignorar, responder ou remover?](/pt/revista/avaliacao-negativa-ignorar-responder-remover/)." },
     { t: "p", text: "**6. Remoção profissional com pagamento só em caso de sucesso.** Um especialista apresenta denúncias e recursos em seu nome, usando apenas os procedimentos do Google. *Pró:* experiência no que o Google aceita, zero tempo da sua parte e, com a RapidRemove, **não paga nada se a avaliação não for removida**. *Contra:* tem um custo e só funciona com avaliações que violam mesmo as regras." },
     { t: "table", rrCol: 5, head: ["", "Denunciar", "Recurso", "Pedido legal", "Pedir ao cliente", "Remoção profissional"], rows: [
-      ["Custo", "Gratuito", "Gratuito", "Gratuito (advogado à parte)", "Gratuito", "**Desde 99 € por avaliação removida**"],
+      ["Custo", "Gratuito", "Gratuito", "Gratuito (advogado à parte)", "Gratuito", "**Desde 179 € por avaliação removida**"],
       ["A avaliação desaparece?", "Se o Google concordar", "Se o Google concordar", "Se houver fundamento legal", "Só se o autor agir", "Só paga se sim"],
       ["Esforço para si", "Baixo", "Médio", "Alto", "Baixo", "Cerca de 2 minutos"],
       ["Duração habitual", "Dias a semanas", "Dias a semanas", "Semanas ou mais", "Incerta", "Normalmente 3–5 dias (≤ 4 semanas, com texto); caso contrário 1–2 semanas"],
     ] },
-    { t: "cta", title: "Selecione as avaliações que devem sair", text: "Pesquise a sua empresa, marque as avaliações e veja de imediato o preço exato. **Desde 99 € por avaliação removida**, nada adiantado e avaliação gratuita primeiro.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só com sucesso", "Primeiro uma opinião honesta"] },
+    { t: "cta", title: "Selecione as avaliações que devem sair", text: "Pesquise a sua empresa, marque as avaliações e veja de imediato o preço exato. **Desde 179 € por avaliação removida**, nada adiantado e avaliação gratuita primeiro.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só com sucesso", "Primeiro uma opinião honesta"] },
 
     { t: "h2", id: "mitos", text: "Mitos: o que não funciona (ou lhe traz problemas)", toc: "Mitos" },
     { t: "p", text: "A maioria dos «truques» para se livrar de avaliações do Google não funciona ou viola as regras do Google. Estes são os que ouvimos mais vezes." },
@@ -81,13 +81,13 @@ const article = {
     { t: "p", text: "Usamos **apenas os procedimentos do próprio Google**, em nome do proprietário da empresa: sem contas falsas, sem bots e sem falsas notificações legais. O autor da avaliação não fica a saber quem pediu a remoção." },
     { t: "ul", items: [
       "**Primeiro, análise gratuita:** dizemos-lhe com honestidade se uma avaliação pode ser removida. Se não puder, não paga nada.",
-      "**Preço:** 99 € por avaliação com texto removida até 4 semanas; avaliações com mais de 4 semanas custam 250 €. Classificações só com estrelas, sem texto: procedimento mais extenso, também 250 € por avaliação removida.",
+      "**Preço:** 179 € por avaliação com texto removida até 4 semanas; avaliações com mais de 4 semanas custam 250 €. Classificações só com estrelas, sem texto: procedimento mais extenso, também 250 € por avaliação removida.",
       "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas.",
       "**Desconto de volume** nas avaliações que aceitamos: a partir de 3, −10 %; a partir de 5, −15 %; a partir de 10, −30 %.",
       "**Duração:** avaliações com texto até 4 semanas, normalmente 3–5 dias; todas as outras, normalmente 1–2 semanas. Cada avaliação é cobrada automaticamente depois de removida, no cartão ou PayPal registado ao encomendar.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis da Empresa no Google, fizemos mais de 20.000 verificações gratuitas e trabalhámos para clientes em mais de 50 países. Com avaliações falsas compensa agir depressa: [como detetar e remover avaliações falsas do Google](/pt/revista/remover-avaliacoes-falsas-google/)." },
-    { t: "cta", title: "Descubra que avaliações podem sair", text: "Pesquise o seu perfil, marque as avaliações e o preço aparece de imediato. **Só paga pelas avaliações efetivamente removidas.**", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Análise gratuita", "Desde 99 € por avaliação", "Discreto"] },
+    { t: "cta", title: "Descubra que avaliações podem sair", text: "Pesquise o seu perfil, marque as avaliações e o preço aparece de imediato. **Só paga pelas avaliações efetivamente removidas.**", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Análise gratuita", "Desde 179 € por avaliação", "Discreto"] },
   ],
   faq: [
     { q: "Posso apagar uma avaliação do meu próprio Perfil da Empresa no Google?", a: "Não. Os proprietários não podem apagar avaliações: só o autor pode editar ou eliminar a sua. Pode denunciar uma avaliação que viole as políticas do Google, e o Google pode então removê-la." },
@@ -95,7 +95,7 @@ const article = {
     { q: "Responder a uma avaliação negativa prejudica?", a: "Não: uma resposta calma e factual não prejudica e mostra aos potenciais clientes como lida com os problemas. Evite respostas a quente e nunca revele dados pessoais do cliente." },
     { q: "Posso descobrir quem escreveu uma avaliação anónima?", a: "Em geral, não. O Google não revela quem está por trás de uma avaliação. Perante conteúdo claramente ilícito, podem existir vias legais consoante o país; é uma questão para um advogado." },
     { q: "Se eliminar o Perfil da Empresa, as avaliações desaparecem?", a: "Sim, eliminar o perfil inteiro remove todas as avaliações, incluindo as boas. Se o problema forem só algumas, normalmente é melhor removê-las uma a uma." },
-    { q: "Posso pagar para remover uma avaliação do Google?", a: "Sim, desde que se usem apenas os procedimentos do próprio Google. Com a RapidRemove são **99 € por avaliação removida** (250 € se tiver mais de 4 semanas ou não tiver texto), e não paga nada se a avaliação ficar." },
+    { q: "Posso pagar para remover uma avaliação do Google?", a: "Sim, desde que se usem apenas os procedimentos do próprio Google. Com a RapidRemove são **179 € por avaliação removida** (250 € se tiver mais de 4 semanas ou não tiver texto), e não paga nada se a avaliação ficar." },
     { q: "Posso pedir a um cliente que apague a avaliação?", a: "Pode pedir com educação a um cliente real que atualize a avaliação se tiver resolvido o problema. Oferecer descontos, reembolsos ou ofertas em troca viola a política do Google." },
   ],
   related: [

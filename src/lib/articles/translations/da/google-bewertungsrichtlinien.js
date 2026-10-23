@@ -5,7 +5,7 @@ const article = {
     slug: "google-anmeldelsesregler-overtraedelser",
     title: "Googles regler for anmeldelser: hvad bliver fjernet? (2026)",
     h1: "Googles regler for anmeldelser: hvilke overtrædelser fører til fjernelse?",
-    description: "Hvilke Google-anmeldelser bryder reglerne og bliver fjernet? Kategorier, eksempler, korrekt rapportering og klage. Fra 99 €, du betaler kun ved fjernelse.",
+    description: "Hvilke Google-anmeldelser bryder reglerne og bliver fjernet? Kategorier, eksempler, korrekt rapportering og klage. Fra 179 €, du betaler kun ved fjernelse.",
     keywords: ["googles regler for anmeldelser", "google anmeldelse overtræder retningslinjer", "rapportere google anmeldelse", "hvilke google anmeldelser bliver fjernet", "fjerne google anmeldelse regler", "google anmeldelse politik", "google anmeldelse ingen overtrædelse", "upassende google anmeldelse"],
     author: "Maximilian Hölzl",
     authorRole: "Google-ekspert og grundlægger",
@@ -58,7 +58,7 @@ const article = {
       "**Beskeder** med krav om betaling eller trusler.",
       "Ved usande påstande: **dokumenter**, der viser det modsatte.",
     ] },
-    { t: "cta", title: "Få dine anmeldelser vurderet gratis", text: "Søg din virksomhed, sæt flueben ved de anmeldelser, du mener bryder reglerne, og se prisen med det samme. **Fra 99 € pr. fjernet anmeldelse**, kun ved succes – intet på forhånd.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
+    { t: "cta", title: "Få dine anmeldelser vurderet gratis", text: "Søg din virksomhed, sæt flueben ved de anmeldelser, du mener bryder reglerne, og se prisen med det samme. **Fra 179 € pr. fjernet anmeldelse**, kun ved succes – intet på forhånd.", btn: "Vælg anmeldelser", href: "/da/tjek-profil/?start=reviews", trust: ["Intet på forhånd", "Betaling pr. fjernet anmeldelse", "Ærlig vurdering først"] },
 
     { t: "h2", id: "graazone", text: "Gråzoner: stjerner uden tekst, tidligere ansatte, konkurrenter, prisklager", toc: "Gråzoner" },
     { t: "p", text: "Ikke alle irriterende anmeldelser passer pænt ind i én kategori. I disse fire tilfælde afhænger det af detaljerne – og af, hvad du kan dokumentere." },
@@ -93,7 +93,7 @@ const article = {
     { t: "h2", id: "hjaelp", text: "Hvornår professionel hjælp betaler sig – og hvad det koster", toc: "Pris" },
     { t: "p", text: "Hjælp betaler sig mest ved **friske anmeldelser**: Op til 4 uger gamle er chancen ca. **90 %**, derefter ca. **50 %**. Med vores [service til fjernelse af Google-anmeldelser](/da/fjern-anmeldelse/) betaler du kun for anmeldelser, der faktisk forsvinder." },
     { t: "table", rrCol: 2, head: ["Anmeldelsens alder", "Succesrate", "Pris pr. fjernet anmeldelse"], rows: [
-      ["Op til 4 uger, med tekst", "ca. 90 %", "**99 €**"],
+      ["Op til 4 uger, med tekst", "ca. 90 %", "**179 €**"],
       ["Alle andre (ældre end 4 uger eller uden tekst)", "ca. 50 % (ældre end 4 uger)", "**250 €**"],
     ] },
     { t: "p", text: "For de anmeldelser, vi accepterer efter den gratis vurdering, gælder mængderabat: fra 3 anmeldelser **−10 %**, fra 5 **−15 %**, fra 10 **−30 %** – på hver fjernet anmeldelse. For anmeldelser med tekst op til 4 uger gamle tager det som regel 3–5 dage, for alle andre som regel 1–2 uger. Anmelderen får ikke at vide, hvem der bad om fjernelsen. Mere om priser: [hvad koster det at fjerne en Google-anmeldelse?](/da/magasin/pris-fjerne-google-anmeldelse/)." },
@@ -106,7 +106,7 @@ const article = {
     { q: "Er en 1-stjerne-anmeldelse uden tekst en overtrædelse?", a: "Ikke automatisk. Har anmelderen aldrig været kunde, eller er bedømmelsen en del af en falsk bølge eller en interessekonflikt, er chancerne for fjernelse derimod gode." },
     { q: "Hvor mange gange kan jeg klage over ”ingen overtrædelse”?", a: "**Én gang pr. anmeldelse** i Googles værktøj til administration af anmeldelser. Derefter er afgørelsen endelig; ved ulovligt indhold kan du stadig sende en juridisk anmodning." },
     { q: "Hvor lang tid går der, før Google vurderer en rapporteret anmeldelse?", a: "Alt fra dage til uger; Google lover ingen tidsramme. Hos os tager en fjernelse som regel 3–5 dage for anmeldelser med tekst op til 4 uger gamle, ellers som regel 1–2 uger." },
-    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**99 €** pr. fjernet anmeldelse op til 4 uger gammel med tekst, **250 €** for alle andre (ældre eller uden tekst). Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd, heller ikke ved rene stjernebedømmelser uden tekst." },
+    { q: "Hvad koster det at få fjernet en anmeldelse?", a: "**179 €** pr. fjernet anmeldelse op til 4 uger gammel med tekst, **250 €** for alle andre (ældre eller uden tekst). Du betaler kun, når anmeldelsen faktisk er væk – intet på forhånd, heller ikke ved rene stjernebedømmelser uden tekst." },
   ],
   related: [
     { label: "Slet Google-virksomhedsprofil", url: "/da/magasin/slet-google-virksomhedsprofil/" },

@@ -473,7 +473,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const sym = o.country === "US" ? "$" : "€";
     const OPTS = [
       ["working", "Löschbar, in Bearbeitung", "Kunde sieht „In Bearbeitung“"],
-      ["software", `Nur mit Spezialsoftware`, `250er: sofort freigegeben (Kunde merkt nichts) · 99er: Kunde entscheidet (250 ${sym}) · alte Aufträge: 300 ${sym}`],
+      ["software", `Nur mit Spezialsoftware`, `250er: sofort freigegeben (Kunde merkt nichts) · 179er (Bestand: 99er): Kunde entscheidet (250 ${sym}) · alte Aufträge: 300 ${sym}`],
       ["not_possible", "Nicht löschbar", "Kunde wird informiert: Löschung nicht möglich"],
     ];
     const pick = confirm && confirm.rv;

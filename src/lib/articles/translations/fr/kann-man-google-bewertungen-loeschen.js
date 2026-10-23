@@ -5,7 +5,7 @@ const article = {
     slug: "une-entreprise-peut-elle-supprimer-avis-google",
     title: "Une entreprise peut-elle supprimer un avis Google ? (2026)",
     h1: "Une entreprise peut-elle supprimer ses avis Google ? Ce qui est possible",
-    description: "Non, une entreprise ne peut pas supprimer un avis Google, mais Google retire ceux qui enfreignent ses règles. Options, idées reçues et dès 99 € au succès.",
+    description: "Non, une entreprise ne peut pas supprimer un avis Google, mais Google retire ceux qui enfreignent ses règles. Options, idées reçues et dès 179 € au succès.",
     keywords: ["une entreprise peut-elle supprimer un avis google", "supprimer un avis google sur ma fiche", "comment supprimer un avis google en tant que propriétaire", "google peut-il supprimer un avis", "supprimer avis négatif google", "supprimer avis fiche établissement google", "faire retirer un avis google"],
     author: "Maximilian Hölzl",
     authorRole: "Expert Google et fondateur",
@@ -16,7 +16,7 @@ const article = {
     { t: "h2", id: "reponse-courte", text: "La réponse courte : vous ne pouvez pas supprimer un avis, Google oui", toc: "Réponse courte" },
     { t: "p", text: "**Il n'existe aucun bouton « Supprimer » pour les propriétaires.** Dans votre fiche d'établissement Google, vous pouvez lire les avis, y répondre et les signaler, mais pas les effacer, même s'ils sont injustes. C'est voulu : si les entreprises pouvaient supprimer les avis, les notes n'auraient plus aucune valeur pour les clients." },
     { t: "p", text: "En revanche, vous **pouvez** obtenir de Google qu'il retire un avis contraire à ses règles. Faux avis, insultes, avis de personnes qui n'ont jamais été clientes, spam, conflits d'intérêts ou contenus illicites : tous ces cas justifient une suppression. Une critique honnête d'un vrai client, non, même si elle fait mal." },
-    { t: "p", text: "Si vous préférez ne pas gérer vous-même signalements et recours, un **[service de suppression d'avis Google](/fr/supprimer-un-avis/)** s'en charge pour vous, uniquement via les procédures de Google. Avec RapidRemove, vous payez **dès 99 € par avis supprimé**, et seulement une fois l'avis réellement disparu." },
+    { t: "p", text: "Si vous préférez ne pas gérer vous-même signalements et recours, un **[service de suppression d'avis Google](/fr/supprimer-un-avis/)** s'en charge pour vous, uniquement via les procédures de Google. Avec RapidRemove, vous payez **dès 179 € par avis supprimé**, et seulement une fois l'avis réellement disparu." },
 
     { t: "h2", id: "qui-peut-supprimer", text: "Qui peut supprimer quoi : auteur, entreprise, Google, tribunal", toc: "Qui peut supprimer quoi" },
     { t: "p", text: "Quatre acteurs ont leur mot à dire sur un avis Google, mais deux seulement peuvent le faire disparaître. Le tableau résume qui peut faire quoi." },
@@ -49,12 +49,12 @@ const article = {
     { t: "p", text: "**5. Répondre publiquement.** Une réponse calme et factuelle est toujours possible et montre aux prospects comment vous gérez les problèmes. *Avantage :* gratuite, immédiate et utile même si l'avis reste. *Limite :* l'avis ne disparaît pas, et une réponse agacée peut faire plus de dégâts que l'avis lui-même. Conseils : [avis négatif : ignorer, répondre ou supprimer ?](/fr/magazine/avis-negatif-ignorer-repondre-supprimer/)." },
     { t: "p", text: "**6. Suppression professionnelle au succès.** Un spécialiste signale et fait appel en votre nom, uniquement via les procédures de Google. *Avantage :* l'expérience de ce que Google accepte, aucun temps passé de votre côté et, avec RapidRemove, **rien à payer si l'avis reste en ligne**. *Limite :* c'est payant, et cela ne fonctionne que pour des avis qui enfreignent réellement les règles." },
     { t: "table", rrCol: 5, head: ["", "Signaler", "Recours", "Demande juridique", "Demander au client", "Suppression professionnelle"], rows: [
-      ["Coût", "Gratuit", "Gratuit", "Gratuit (avocat en plus)", "Gratuit", "**Dès 99 € par avis supprimé**"],
+      ["Coût", "Gratuit", "Gratuit", "Gratuit (avocat en plus)", "Gratuit", "**Dès 179 € par avis supprimé**"],
       ["L'avis disparaît ?", "Si Google l'accepte", "Si Google l'accepte", "Si c'est juridiquement fondé", "Seulement si l'auteur agit", "Facturé seulement si oui"],
       ["Effort pour vous", "Faible", "Moyen", "Élevé", "Faible", "Environ 2 minutes"],
       ["Durée habituelle", "Jours à semaines", "Jours à semaines", "Semaines ou plus", "Incertaine", "En général 3 à 5 jours (≤ 4 semaines, avec texte), sinon 1 à 2 semaines"],
     ] },
-    { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis et voyez immédiatement le prix exact. **Dès 99 € par avis supprimé**, rien d'avance, évaluation gratuite d'abord.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "D'abord un avis honnête"] },
+    { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis et voyez immédiatement le prix exact. **Dès 179 € par avis supprimé**, rien d'avance, évaluation gratuite d'abord.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès", "D'abord un avis honnête"] },
 
     { t: "h2", id: "idees-recues", text: "Idées reçues : ce qui ne marche pas (ou vous attire des ennuis)", toc: "Idées reçues" },
     { t: "p", text: "La plupart des « astuces » pour se débarrasser d'avis Google ne fonctionnent pas ou enfreignent les règles de Google. Voici celles qu'on entend le plus souvent." },
@@ -81,13 +81,13 @@ const article = {
     { t: "p", text: "Nous utilisons **uniquement les procédures de Google**, au nom du propriétaire de l'établissement : pas de faux comptes, pas de bots, pas de fausses mises en demeure. L'auteur de l'avis n'apprend pas qui a demandé la suppression." },
     { t: "ul", items: [
       "**D'abord une évaluation gratuite :** nous vous disons honnêtement si un avis est supprimable. Sinon, cela ne vous coûte rien.",
-      "**Prix :** 99 € par avis supprimé avec texte jusqu'à 4 semaines ; tous les autres coûtent 250 € – avis de plus de 4 semaines et notes sans texte (procédure plus approfondie). Comme pour tous les avis, vous enregistrez une carte lors de la commande, et elle n'est débitée automatiquement qu'après la suppression de l'avis.",
+      "**Prix :** 179 € par avis supprimé avec texte jusqu'à 4 semaines ; tous les autres coûtent 250 € – avis de plus de 4 semaines et notes sans texte (procédure plus approfondie). Comme pour tous les avis, vous enregistrez une carte lors de la commande, et elle n'est débitée automatiquement qu'après la suppression de l'avis.",
       "**Chances de succès :** env. 90 % pour les avis de moins de 4 semaines, env. 50 % pour les plus anciens.",
       "**Remise sur volume** pour les avis que nous acceptons : dès 3, −10 % ; dès 5, −15 % ; dès 10, −30 %.",
       "**Durée :** avis avec texte de moins de 4 semaines, en général 3 à 5 jours ; tous les autres, en général 1 à 2 semaines. Chaque avis est prélevé automatiquement sur votre carte ou PayPal enregistrés une fois supprimé.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google, réalisé plus de 20 000 vérifications gratuites et accompagné des clients dans plus de 50 pays. Pour les faux avis, mieux vaut agir vite : [repérer et supprimer les faux avis Google](/fr/magazine/supprimer-faux-avis-google/)." },
-    { t: "cta", title: "Découvrez quels avis peuvent disparaître", text: "Recherchez votre fiche, cochez les avis : le prix s'affiche aussitôt. **Vous ne payez que les avis réellement supprimés.**", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Évaluation gratuite", "Dès 99 € par avis", "Discret"] },
+    { t: "cta", title: "Découvrez quels avis peuvent disparaître", text: "Recherchez votre fiche, cochez les avis : le prix s'affiche aussitôt. **Vous ne payez que les avis réellement supprimés.**", btn: "Vérifier mes avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Évaluation gratuite", "Dès 179 € par avis", "Discret"] },
   ],
   faq: [
     { q: "Puis-je supprimer un avis sur ma propre fiche d'établissement Google ?", a: "Non. Les propriétaires ne peuvent pas supprimer d'avis : seul l'auteur peut modifier ou supprimer le sien. Vous pouvez signaler un avis contraire au règlement de Google, qui peut alors le retirer." },
@@ -95,7 +95,7 @@ const article = {
     { q: "Répondre à un avis négatif, est-ce que ça nuit ?", a: "Non : une réponse calme et factuelle ne nuit pas et montre aux prospects comment vous gérez les problèmes. Évitez les réponses à chaud et ne divulguez jamais de données personnelles du client." },
     { q: "Peut-on savoir qui a écrit un avis anonyme ?", a: "En général, non. Google ne révèle pas qui se cache derrière un avis. En cas de contenu manifestement illicite, des démarches juridiques peuvent exister selon le pays ; c'est une question à poser à un avocat." },
     { q: "Supprimer ma fiche d'établissement efface-t-il les avis ?", a: "Oui, supprimer toute la fiche efface tous les avis, y compris les bons. Si seuls quelques avis posent problème, il vaut généralement mieux les supprimer un par un." },
-    { q: "Peut-on payer pour faire supprimer un avis Google ?", a: "Oui, à condition que seules les procédures de Google soient utilisées. Chez RapidRemove, c'est **99 € par avis supprimé** (250 € s'il a plus de 4 semaines ou s'il est sans texte), et rien à payer si l'avis reste." },
+    { q: "Peut-on payer pour faire supprimer un avis Google ?", a: "Oui, à condition que seules les procédures de Google soient utilisées. Chez RapidRemove, c'est **179 € par avis supprimé** (250 € s'il a plus de 4 semaines ou s'il est sans texte), et rien à payer si l'avis reste." },
     { q: "Puis-je demander à un client de supprimer son avis ?", a: "Vous pouvez demander poliment à un vrai client de mettre à jour son avis si vous avez réglé le problème. Offrir une remise, un remboursement ou un cadeau en échange enfreint le règlement de Google." },
   ],
   related: [

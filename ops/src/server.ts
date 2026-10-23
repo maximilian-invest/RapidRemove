@@ -558,7 +558,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       else if (pricing.cur === "eur" && (!b.country || String(b.country).toUpperCase() === "US")) (b as Record<string, unknown>).country = "XX";
     }
   }
-  // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (99 frisch / 250 alles andere). Nicht bei Bulk und
+  // Preismodell 2 (16.10.2026): Listenpreis je Bewertung festschreiben (179 frisch / 250 alles andere; bis 23.10.2026: 99). Nicht bei Bulk und
   // nicht bei Kunden-Konditionen (cp). Express (+100, Ziel 30 Std.) nur für 250er und nur, wenn im Bestellprozess gewählt.
   if (isReviews && !bulk) {
     const wantX = b.reviewExpress === true && await expressOn().catch(() => true); // Admin-Schalter: Express aus → Wunsch ignorieren
@@ -873,7 +873,7 @@ app.post("/admin/orders/create", async (req, reply) => {
         // Software-Fall (Partner-Regel): ältere Bewertung mit Text aus den USA → wie Website-Bestellungen.
         if (reviewMethod({ old: o.old === true, days: flags.days as number }, ctryPre) === "sw") { flags.sw = true; flags.old = true; }
         if (cpOf(o)) flags.cp = cpOf(o); // individueller Preis je Bewertung (wird so abgebucht + verrechnet)
-        else flags.lp = listPriceV2({ old: flags.old === true, sw: flags.sw === true, nt: o.nt === true || ((!tx || /^★+$/.test(tx)) && !!flags.rating), days: flags.days as number }); // Preismodell 2 (99/250): ohne Text (auch „★★★" als Platzhalter) = 250
+        else flags.lp = listPriceV2({ old: flags.old === true, sw: flags.sw === true, nt: o.nt === true || ((!tx || /^★+$/.test(tx)) && !!flags.rating), days: flags.days as number }); // Preismodell 2 (179/250): ohne Text (auch „★★★" als Platzhalter) = 250
         if (url) return { url, ...(nm ? { name: nm } : {}), ...(tx ? { text: tx } : {}), ...flags } as Item;
         if (nm && tx) return { name: nm, text: tx, ...flags } as Item;
         return null;
@@ -1678,7 +1678,7 @@ app.post("/admin/reviews-start", async (req, reply) => {
   let software: { items: StartItem[]; amount: string; url: string; price: string; amountNum: number } | undefined;
   if (swItems.length) {
     const swQ = quoteReviews([...items, ...swItems], currency, undefined, "full", startChatPct, startPayPct);
-    // Preismodell 2 (Auftrag mit Listenpreisen): 99er mit Software = 250 fix; Bestandsaufträge: 300 rabattiert.
+    // Preismodell 2 (Auftrag mit Listenpreisen): Frische (179er/99er) mit Software = 250 fix; Bestandsaufträge: 300 rabattiert.
     const v2 = items.some((it) => lpOf(it));
     const amountNum = v2 ? swItems.length * PRICE_V2_OTHER : Math.round((swItems.length * 300 * (100 - swQ.pct)) / 100); // Betrag bei Erfolg
     software = { items: swItems, amount: fmtReviewMoney(amountNum, currency), url: await swDash(), price: fmtReviewMoney(v2 ? PRICE_V2_OTHER : 300, currency), amountNum };
@@ -1803,14 +1803,22 @@ app.get("/admin/review-shot/:id", async (req, reply) => {
 });
 
 /** Individuelle Preise (cp) kommen IMMER aus dem Auftrag (nicht aus dem Browser): je Bewertung per Schlüssel übernehmen. */
-async function withOrderCp<T extends { url?: string; name?: string; text?: string; cp?: number }>(orderId: unknown, items: T[]): Promise<T[]> {
+async function withOrderCp<T extends { url?: string; name?: string; text?: string; cp?: number; lp?: number }>(orderId: unknown, items: T[]): Promise<T[]> {
   const id = clip(orderId, 40);
   if (!id || !pool) return items;
   const r = await pool.query(`SELECT raw->'reviewItems' AS a FROM orders WHERE id=$1`, [id]).catch(() => null);
-  const all = (Array.isArray(r?.rows[0]?.a) ? r!.rows[0].a : []) as { url?: string; name?: string; text?: string; cp?: number }[];
+  const all = (Array.isArray(r?.rows[0]?.a) ? r!.rows[0].a : []) as { url?: string; name?: string; text?: string; cp?: number; lp?: number }[];
   const key = (it: { url?: string; name?: string; text?: string }) => it.url || `${it.name || ""}|${it.text || ""}`;
   const by = new Map(all.filter((x) => cpOf(x) > 0).map((x) => [key(x), cpOf(x)]));
-  return items.map((it) => (by.has(key(it)) ? { ...it, cp: by.get(key(it)) } : it));
+  // Preismodell 2: festgeschriebenen Listenpreis (lp) der Bestellung mitnehmen – sonst fiele ein 99er-Bestandsauftrag
+  // in Preismodell 1 (179) und würde über den Mengen-Link mit 179 abgerechnet (Fix 23.10.2026).
+  const lpBy = new Map(all.filter((x) => lpOf(x) > 0).map((x) => [key(x), lpOf(x)]));
+  return items.map((it) => {
+    const k = key(it);
+    if (by.has(k)) return { ...it, cp: by.get(k) };
+    if (lpBy.has(k) && !lpOf(it)) return { ...it, lp: lpBy.get(k) };
+    return it;
+  });
 }
 /** Software-Fälle, die NICHT vorab bezahlt wurden (Standard seit 10/2026: Abbuchung erst bei Erfolg) → due:true, damit sie in der
  *  Abrechnung nach der Löschung („rest") voll zählen. Gleiche Regel wie orderView/prepaidFor (customers.ts). */
@@ -1831,7 +1839,7 @@ app.post("/admin/reviews-invoice", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean; lp?: number };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {
@@ -1934,7 +1942,7 @@ app.post("/admin/reviews-mahnung", async (req, reply) => {
   if (!ADMIN_TOKEN || String(b.token || "") !== ADMIN_TOKEN) return reply.code(401).send({ ok: false, error: "unauthorized" });
   const to = String(b.email || "").trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(to)) return reply.code(400).send({ ok: false, error: "invalid recipient" });
-  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean };
+  type RemovedItem = { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number; due?: boolean; lp?: number };
   const rawRemoved: unknown[] = Array.isArray(b.removedItems) ? (b.removedItems as unknown[])
     : Array.isArray(b.removedUrls) ? (b.removedUrls as unknown[]) : [];
   const removedItems: RemovedItem[] = rawRemoved.slice(0, 40).map((raw) => {

@@ -9,6 +9,7 @@ import { Agb, Widerruf } from "@/components/Terms";
 import { OrmRoute, DeindexRoute, SeoRoute } from "@/components/ServicePages";
 import { ReviewsRoute } from "@/components/ReviewsServicePage";
 import { RVW } from "@/lib/reviews-copy";
+import { PRICE_V2_FRESH, PRICE_V2_OTHER } from "@/lib/pricing";
 import Kontakt from "@/components/Kontakt";
 import ReportPage from "@/components/ReportPage";
 import { REPORT, reportJsonLd } from "@/lib/report-data";
@@ -106,10 +107,10 @@ export default function Page({ params }) {
           serviceType: "Removal of individual Google reviews",
           provider: { "@type": "Organization", name: "RapidRemove", url: SITE_URL },
           areaServed: "Worldwide (outside Germany and Austria)",
-          // Zwei Preise je gelöschter Bewertung: 99 (≤ 4 Wochen + Text) / 250 (alle anderen).
-          offers: { "@type": "AggregateOffer", lowPrice: "99", highPrice: "250", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
-            priceSpecification: { "@type": "UnitPriceSpecification", minPrice: "99", maxPrice: "250", priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
-            description: "Per removed review, excl. VAT: 99 for reviews with text up to 4 weeks old, 250 for all others; charged only after successful removal" } },
+          // Zwei Preise je gelöschter Bewertung: 179 (≤ 4 Wochen + Text) / 250 (alle anderen) – Werte aus pricing.js.
+          offers: { "@type": "AggregateOffer", lowPrice: String(PRICE_V2_FRESH), highPrice: String(PRICE_V2_OTHER), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", url,
+            priceSpecification: { "@type": "UnitPriceSpecification", minPrice: String(PRICE_V2_FRESH), maxPrice: String(PRICE_V2_OTHER), priceCurrency: ["en", "ja"].includes(params.lang) ? "USD" : "EUR", valueAddedTaxIncluded: false },
+            description: `Per removed review, excl. VAT: ${PRICE_V2_FRESH} for reviews with text up to 4 weeks old, ${PRICE_V2_OTHER} for all others; charged only after successful removal` } },
         { "@type": "FAQPage", mainEntity: [...(r.faq || []), ...(r.faqMore || [])].map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
         { "@type": "BreadcrumbList", itemListElement: [
           { "@type": "ListItem", position: 1, name: "Start", item: `${SITE_URL}/${params.lang}/` },

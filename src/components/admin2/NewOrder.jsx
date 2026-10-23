@@ -334,7 +334,7 @@ export default function NewOrder({ ctx }) {
           <div className="nsr tot"><span>{s.type === "reviews" ? "Betrag (max.)" : "Betrag"}</span><b>{fmt(shown)}</b></div>
         </div>
         <div className="sec3" style={{ marginTop: 20 }}><h2>Preis</h2></div>
-        <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(99)} bis 4 Wo. mit Text / ${fmt(250)} alle anderen, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
+        <label className="naf"><span>{s.type === "reviews" ? `Preis pro Bewertung · leer = Preisliste (${fmt(179)} bis 4 Wo. mit Text / ${fmt(250)} alle anderen, Mengenrabatt)` : `Preis · leer = Preisliste (${fmt(PROFILE_PRICE[cur])})`}</span>
           <div className="usrch nain"><Tag /><input inputMode="decimal" placeholder={s.type === "reviews" ? "Preisliste" : String(PROFILE_PRICE[cur])} value={s.type === "reviews" ? s.cpAll : s.profAmt}
             onChange={(e) => set(s.type === "reviews" ? { cpAll: e.target.value, cpMap: {} } : { profAmt: e.target.value })} /><b className="curx">{cur}</b></div></label>
         {s.type === "reviews" && items.length > 1 ? <button type="button" className="nasel" onClick={() => set((x) => ({ cpOpen: !x.cpOpen }))}>{s.cpOpen ? <><X />Einzelpreise schließen</> : <><Tag />Einzeln anpassen</>}</button> : null}
@@ -343,7 +343,7 @@ export default function NewOrder({ ctx }) {
             {items.map((it) => (
               <div key={rkey(it)} className="rlr cpr">
                 <div className="t"><b>{it.name || it.url}</b><span>{it.cp ? "individuell" : it.sw ? "Software · Preisliste" : it.old ? "älter 4 Wo. · Preisliste" : "Preisliste"}</span></div>
-                <div className="cpin"><input inputMode="decimal" placeholder={s.cpAll || (it.sw || it.old || !it.text || /^★+$/.test(it.text || "") ? "250" : "99")} value={s.cpMap[rkey(it)] || ""} onChange={(e) => { const v = e.target.value; set((x) => ({ cpMap: { ...x.cpMap, [rkey(it)]: v } })); }} /><span>{cur}</span></div>
+                <div className="cpin"><input inputMode="decimal" placeholder={s.cpAll || (it.sw || it.old || !it.text || /^★+$/.test(it.text || "") ? "250" : "179")} value={s.cpMap[rkey(it)] || ""} onChange={(e) => { const v = e.target.value; set((x) => ({ cpMap: { ...x.cpMap, [rkey(it)]: v } })); }} /><span>{cur}</span></div>
               </div>
             ))}
           </div>

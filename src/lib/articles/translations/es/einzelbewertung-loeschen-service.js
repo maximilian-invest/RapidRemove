@@ -7,7 +7,7 @@ const article = {
       slug: "servicio-eliminar-resenas-google",
       title: "Eliminar reseñas de Google: precios, tasa de éxito y cómo encargarlo (2026)",
       h1: "Eliminar una sola reseña de Google: precios, probabilidades y cómo se encarga",
-      description: "¿Cuánto cuesta eliminar una reseña de Google? 99 € por reseña eliminada (≤ 4 semanas, con texto), si no 250 €, solo si desaparece. Éxito, descuentos, pedido.",
+      description: "¿Cuánto cuesta eliminar una reseña de Google? 179 € por reseña eliminada (≤ 4 semanas, con texto), si no 250 €, solo si desaparece. Éxito, descuentos, pedido.",
       keywords: ["cuánto cuesta eliminar una reseña de google", "precio eliminar reseña google", "pagar para eliminar reseña google", "cómo encargar la eliminación de una reseña de google", "probabilidad de eliminar una reseña de google", "eliminar una reseña de google precio por reseña"],
       author: "Maximilian Hölzl",
       authorRole: "Experto en Google y fundador",
@@ -37,7 +37,7 @@ const article = {
       { t: "h2", id: "preis", text: "Cuánto cuesta eliminar una reseña de Google", toc: "Precio" },
       { t: "p", text: "El precio depende de dos cosas: **si la reseña tiene texto** y **su antigüedad**. Las reseñas recientes son mucho más fáciles de eliminar que las que llevan meses publicadas. Cómo quedan estos precios frente a un abogado u otros proveedores lo explicamos en [el precio de eliminar una reseña de Google](/es/revista/precio-eliminar-resena-google/)." },
       { t: "table", rrCol: 2, head: ["Antigüedad de la reseña", "Probabilidad de éxito", "Precio por reseña eliminada"], rows: [
-        ["Hasta 4 semanas, con texto", "aprox. 90 %", "**99 €**"],
+        ["Hasta 4 semanas, con texto", "aprox. 90 %", "**179 €**"],
         ["Más de 4 semanas", "aprox. 50 %", "**250 €**"],
         ["Valoración solo de estrellas (sin texto, cualquier antigüedad)", "decide Google", "**250 €** por valoración eliminada"],
       ] },
@@ -49,9 +49,9 @@ const article = {
         ["5 – 9", "**−15 %**"],
         ["10 o más", "**−30 %**"],
       ] },
-      { t: "p", text: "**Ejemplos:** 3 reseñas recientes cuestan 297 €; menos un 10 %, **267 €**. 2 reseñas recientes y 3 más antiguas cuestan 948 €; menos un 15 %, **806 €**. El nivel de descuento depende del número de reseñas **que aceptamos tras la valoración gratuita** (las valoraciones solo de estrellas también cuentan) y se aplica a cada una de ellas. Aun así, solo pagas las reseñas que realmente se eliminan: si aceptamos 3 y desaparecen 2, pagas 2 × 99 € menos un 10 % = **178,20 €**. Pedido mixto: 2 reseñas recientes con texto y 1 valoración solo de estrellas son 3 reseñas, es decir, un 10 % de descuento: la valoración sin texto cuesta **225 €** y las otras dos 89,10 € cada una; cada una se cobra solo tras la eliminación." },
+      { t: "p", text: "**Ejemplos:** 3 reseñas recientes cuestan 537 €; menos un 10 %, **483 €**. 2 reseñas recientes y 3 más antiguas cuestan 1.108 €; menos un 15 %, **942 €**. El nivel de descuento depende del número de reseñas **que aceptamos tras la valoración gratuita** (las valoraciones solo de estrellas también cuentan) y se aplica a cada una de ellas. Aun así, solo pagas las reseñas que realmente se eliminan: si aceptamos 3 y desaparecen 2, pagas 2 × 179 € menos un 10 % = **322,20 €**. Pedido mixto: 2 reseñas recientes con texto y 1 valoración solo de estrellas son 3 reseñas, es decir, un 10 % de descuento: la valoración sin texto cuesta **225 €** y las otras dos 161,10 € cada una; cada una se cobra solo tras la eliminación." },
       { t: "p", text: "**Pago por reseña:** el plazo de eliminación puede variar de una reseña a otra; las de hasta 4 semanas con texto suelen tardar 3–5 días; todas las demás, normalmente 1–2 semanas. Por eso el pago puede hacerse reseña a reseña, y cada una se cobra automáticamente en tu tarjeta o PayPal guardados en cuanto se elimina. Las reseñas en las que aún estamos trabajando no te cuestan nada todavía." },
-      { t: "tip", title: "Encárgalo pronto", text: "La probabilidad de éxito baja de aprox. un 90 % a aprox. un 50 % en cuanto una reseña supera las cuatro semanas, y el precio sube de 99 € a 250 €. Una reseña falsa reciente es la más barata y la más segura de eliminar. Para comparar: los abogados suelen cobrar por reseña **por adelantado**, y el proceso dura a menudo meses ([¿abogado o eliminación técnica?](/es/revista/eliminar-resena-negativa-de-google-abogado/))." },
+      { t: "tip", title: "Encárgalo pronto", text: "La probabilidad de éxito baja de aprox. un 90 % a aprox. un 50 % en cuanto una reseña supera las cuatro semanas, y el precio sube de 179 € a 250 €. Una reseña falsa reciente es la más barata y la más segura de eliminar. Para comparar: los abogados suelen cobrar por reseña **por adelantado**, y el proceso dura a menudo meses ([¿abogado o eliminación técnica?](/es/revista/eliminar-resena-negativa-de-google-abogado/))." },
 
       { t: "h2", id: "bestellen", text: "Cómo encargarlo, en unos dos minutos", toc: "Cómo encargarlo" },
       { t: "ol", items: [
@@ -63,7 +63,7 @@ const article = {
         "Nos encargamos de la eliminación y te mantenemos informado. **Solo pagas las reseñas que realmente se eliminan.**",
       ] },
       { t: "p", text: "¿No encuentras una reseña en la lista? En el mismo paso también puedes pegar manualmente el enlace de la reseña." },
-      { t: "cta", title: "Elige las reseñas que deben desaparecer", text: "Busca tu empresa, marca las reseñas y ve el precio exacto al instante. **Desde 99 € por reseña eliminada**, nada por adelantado.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago por reseña eliminada", "Valoración honesta antes"] },
+      { t: "cta", title: "Elige las reseñas que deben desaparecer", text: "Busca tu empresa, marca las reseñas y ve el precio exacto al instante. **Desde 179 € por reseña eliminada**, nada por adelantado.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago por reseña eliminada", "Valoración honesta antes"] },
 
       { t: "h2", id: "dauer", text: "¿Cuánto tarda?", toc: "Plazo" },
       { t: "p", text: "Reseñas de hasta 4 semanas con texto: normalmente **3–5 días**. Todas las demás: normalmente **1–2 semanas**, a veces más rápido, en casos puntuales algo más, según la reseña y el motivo de la eliminación. Con Express (solo reseñas de 250 €): en 30 horas si la tramitación empieza entre el lunes y el viernes a las 12:00 (hora de Viena); si no, como tarde el martes a medianoche. Mientras tanto no tienes que hacer nada: te mantenemos al tanto. Qué ocurre mientras tanto en Google (estado de la denuncia, la herramienta de gestión de reseñas y la apelación) lo explicamos en [cuánto tarda Google en eliminar una reseña](/es/revista/cuanto-tarda-google-eliminar-resena/)." },
@@ -73,7 +73,7 @@ const article = {
         ["Qué se elimina", "Las reseñas que elijas", "Todo el perfil + todas las reseñas", "Reseña individual", "Reseña individual"],
         ["Las reseñas buenas se quedan", "Sí", "No", "Sí", "Sí"],
         ["Plazo", "Normalmente 3–5 días (≤ 4 semanas, con texto); el resto, 1–2 semanas", "Normalmente 24 – 48 horas", "3 – 9 meses", "Incierto"],
-        ["Coste", "Desde 99 €, solo si se elimina", "Precio fijo, tras el éxito", "Por reseña, por adelantado", "Gratis"],
+        ["Coste", "Desde 179 €, solo si se elimina", "Precio fijo, tras el éxito", "Por reseña, por adelantado", "Gratis"],
         ["Esfuerzo para ti", "2 minutos", "Mínimo", "Alto", "Medio"],
       ] },
       { t: "p", text: "Si antes quieres conocer la vía gratuita: [cómo denunciar tú mismo una reseña de Google](/es/revista/como-eliminar-una-resena-de-google/), y por qué Google rechaza a menudo las denuncias con una respuesta estándar. Y si te preguntas si merece la pena actuar: [lo que cuesta de verdad una reseña negativa en Google](/es/revista/cuanto-cuesta-resena-negativa-google/)." },
@@ -88,7 +88,7 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "¿Cuánto cuesta eliminar una reseña de Google?", a: "99 € por reseña eliminada si tiene hasta 4 semanas y texto; 250 € en todos los demás casos (reseñas más antiguas o valoraciones sin texto). Desde 3 reseñas aceptadas tienes un 10 % de descuento, desde 5 un 15 % y desde 10 un 30 %, aplicado a cada reseña que se elimine. Solo pagas por las reseñas que realmente se eliminan." },
+      { q: "¿Cuánto cuesta eliminar una reseña de Google?", a: "179 € por reseña eliminada si tiene hasta 4 semanas y texto; 250 € en todos los demás casos (reseñas más antiguas o valoraciones sin texto). Desde 3 reseñas aceptadas tienes un 10 % de descuento, desde 5 un 15 % y desde 10 un 30 %, aplicado a cada reseña que se elimine. Solo pagas por las reseñas que realmente se eliminan." },
       { q: "¿Qué pasa si una reseña no se puede eliminar?", a: "No pagas nada por ella: no hay pago por adelantado ni ninguna tarifa por los intentos. Esto también vale para las valoraciones solo de estrellas." },
       { q: "¿Se pueden eliminar reseñas de más de 4 semanas?", a: "Sí. La probabilidad de éxito es menor (aprox. 50 % en lugar de aprox. 90 %) y el precio es de 250 € por reseña. Por eso conviene actuar rápido ante reseñas falsas recientes." },
       { q: "¿Se pueden eliminar reseñas de 1 estrella sin texto?", a: "Sí, con un procedimiento más exhaustivo. Las valoraciones solo de estrellas cuestan **250 € cada una** (sin recargo por antigüedad). Como en todas las reseñas, al hacer el pedido guardas una tarjeta o PayPal y el cargo se hace automáticamente solo cuando la valoración se ha eliminado. El descuento por volumen se aplica, contando todas las reseñas del pedido." },

@@ -5,7 +5,7 @@ const article = {
     slug: "delai-suppression-avis-google",
     title: "Délai de suppression d'un avis Google : statuts et recours",
     h1: "Combien de temps Google met-il pour supprimer un avis ? Délais, statuts et recours",
-    description: "Google ne fixe aucun délai : de quelques heures à plusieurs semaines. Étapes, statuts, recours – et suppression dès 99 €, payée uniquement en cas de succès.",
+    description: "Google ne fixe aucun délai : de quelques heures à plusieurs semaines. Étapes, statuts, recours – et suppression dès 179 €, payée uniquement en cas de succès.",
     keywords: [
       "délai suppression avis google",
       "combien de temps pour supprimer un avis google",
@@ -28,7 +28,7 @@ const article = {
       "**Infractions évidentes** (spam, insultes, faux engagement manifeste) : souvent de quelques heures à quelques jours.",
       "**Cas limites** qui demandent un examen humain : souvent d'une à quelques semaines.",
       "**Recours et remontées** : ajoutent du temps, parfois plusieurs semaines.",
-      "**Avec nous** : avis avec texte de moins de 4 semaines, en général 3 à 5 jours ; tous les autres, en général 1 à 2 semaines. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **dès 99 € par avis supprimé**, rien d'avance. Les notes sans texte aussi – procédure plus approfondie, 250 € par note supprimée.",
+      "**Avec nous** : avis avec texte de moins de 4 semaines, en général 3 à 5 jours ; tous les autres, en général 1 à 2 semaines. Si vous préférez confier le dossier, notre [service de suppression d'avis Google](/fr/supprimer-un-avis/) passe uniquement par les procédures officielles de Google et facture **dès 179 € par avis supprimé**, rien d'avance. Les notes sans texte aussi – procédure plus approfondie, 250 € par note supprimée.",
     ] },
     { t: "warn", title: "Des délais typiques, pas garantis", text: "Toutes les durées de cet article sont des fourchettes observées en pratique, pas des engagements de Google. Le délai de traitement varie, et personne ne peut promettre une date – ni une suppression." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**La bonne catégorie dès le départ** – un premier signalement précis vous évite le recours.",
       "**Des preuves prêtes** – captures de l'avis et du profil de l'auteur, une note expliquant l'absence de contact client, des dates.",
-      "**Agir sous quatre semaines** – les avis récents ont de bien meilleures chances, et chez nous, s'ils comportent un texte, ils coûtent 99 € au lieu de 250 €.",
+      "**Agir sous quatre semaines** – les avis récents ont de bien meilleures chances, et chez nous, s'ils comportent un texte, ils coûtent 179 € au lieu de 250 €.",
       "**Un signalement propre, pas dix** – signaler plusieurs fois le même avis ne fait pas gagner de place dans la file.",
       "**Vagues de faux avis et chantage** – si des avis 1 étoile arrivent avec une demande d'argent, utilisez le formulaire dédié de Google et lisez notre guide sur le [chantage aux avis Google](/fr/magazine/chantage-avis-google/). Ne payez pas, n'entrez pas en discussion, gardez des captures.",
     ] },
-    { t: "cta", title: "N'attendez pas des semaines une réponse type", text: "Recherchez votre entreprise, cochez les avis à faire supprimer et voyez le prix immédiatement. **99 € par avis supprimé**, 250 € au-delà de 4 semaines ou sans texte – facturé uniquement une fois l'avis disparu.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès uniquement", "Avis honnête et gratuit"] },
+    { t: "cta", title: "N'attendez pas des semaines une réponse type", text: "Recherchez votre entreprise, cochez les avis à faire supprimer et voyez le prix immédiatement. **179 € par avis supprimé**, 250 € au-delà de 4 semaines ou sans texte – facturé uniquement une fois l'avis disparu.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement au succès uniquement", "Avis honnête et gratuit"] },
 
     { t: "h2", id: "while-waiting", text: "Que faire en attendant ?", toc: "En attendant" },
     { t: "p", text: "**Répondez publiquement, brièvement et calmement – c'est la seule chose toujours possible, et les futurs clients la lisent.** Une bonne réponse ne polémique pas et ne révèle aucune donnée client." },
@@ -110,7 +110,7 @@ const article = {
     { q: "Peut-on faire plusieurs recours ?", a: "Non. L'outil de gestion des avis permet **un seul recours par avis**. Après la décision finale, la seule autre voie officielle est une demande de suppression pour raisons légales – uniquement si le contenu est illicite." },
     { q: "Google prévient-il l'auteur de l'avis ?", a: "L'auteur **n'apprend pas qui a signalé l'avis ni qui a demandé sa suppression** – ni quand vous signalez vous-même, ni quand nous nous en chargeons. Il peut simplement constater que son avis n'est plus visible." },
     { q: "Un avis supprimé peut-il réapparaître ?", a: "Un avis supprimé par Google pour infraction au règlement reste normalement supprimé. La même personne peut toutefois publier un nouvel avis, qui est examiné séparément et peut à nouveau être signalé." },
-    { q: "Combien de temps avec RapidRemove ?", a: "Les avis avec texte de moins de 4 semaines prennent en général **3 à 5 jours**, tous les autres en général **1 à 2 semaines**. Vous payez **99 € par avis supprimé** (250 € au-delà de 4 semaines ou sans texte) – uniquement une fois qu'il a disparu." },
+    { q: "Combien de temps avec RapidRemove ?", a: "Les avis avec texte de moins de 4 semaines prennent en général **3 à 5 jours**, tous les autres en général **1 à 2 semaines**. Vous payez **179 € par avis supprimé** (250 € au-delà de 4 semaines ou sans texte) – uniquement une fois qu'il a disparu." },
     { q: "Répondre à l'avis réduit-il mes chances ?", a: "Non. Une réponse publique courte et calme est toujours autorisée et n'influence pas l'examen. Évitez seulement les insultes et les données clients." },
   ],
   related: [

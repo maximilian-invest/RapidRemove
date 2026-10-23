@@ -34,8 +34,8 @@ export default function Bill({ ctx, id }) {
   if (!o) return <Nav back={back} isDesk={isDesk} />;
   const c = o.country === "US" ? "$" : "€";
   const pct = reviewDiscountPct(items.length);
-  // Preismodell 2: lp (99/250) rabattiert + Express (+100, nur wenn in 30 Std. gelöscht); Bestandsaufträge wie bisher.
-  const lpOf = (it) => { const v = Number(it.lp); return v === 99 || v === 250 ? v : 0; };
+  // Preismodell 2: lp (179/250, Bestand 99) rabattiert + Express (+100, nur wenn in 30 Std. gelöscht); Bestandsaufträge wie bisher.
+  const lpOf = (it) => { const v = Number(it.lp); return v === 179 || v === 99 || v === 250 ? v : 0; /* 179 neu, 99 Bestand (bis 23.10.2026), 250 */ };
   const priceOf = (it) => (Number(it.cp) > 0 ? Number(it.cp) : Math.round(((lpOf(it) || (it.nt || it.sw ? REVIEW_NOTEXT_PRICE : it.old ? BASE + REVIEW_OLD_SURCHARGE : BASE)) * (100 - pct)) / 100)
     + (lpOf(it) === 250 && it.x && expressOk(ptBy[keyOf(it)]) ? 100 : 0));
   const chosen = rows.filter((r) => r.ok && sel[r.k]);

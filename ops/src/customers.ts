@@ -507,7 +507,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
   const disc = (v: number) => Math.round((Math.round((v * (100 - pct)) / 100) * (100 - payPct)) / 100);
   // Software-Preis (Maximilian 13.10.2026): schon bei der Bestellung als Software klar (ohne Text / als Software bestellt)
   // → Rabatte wie bei der Bestellung angezeigt. Erst später vom Partner festgestellt → fix 300, nur mit Freigabe des Kunden.
-  // Preismodell 2: als 99er bestellt, Partner sagt „nur Software" → 250 (Zustimmung des Kunden wie bisher).
+  // Preismodell 2: als Frisch-Preis-Bewertungen (179er; Bestand 99er) bestellt, Partner sagt „nur Software" → 250 (Zustimmung des Kunden wie bisher).
   const swPriceOf = (it: Item) => (lpOf(it) ? PRICE_V2_OTHER : it.nt || it.sw ? disc(REVIEW_NOTEXT_PRICE) : REVIEW_NOTEXT_PRICE);
   // Software vorab bezahlt (Zustimmung OHNE def = nach Zahlung). Zustimmung mit def (hinterlegte Zahlungsart) = gestartet, aber erst bei Erfolg fällig.
   const swPaidFor = (k: string) => (decisions[k]?.d === "accepted" && !decisions[k]?.def) || payments.some((p) => p.kind === "software" && p.paid && (p.keys && p.keys.length ? p.keys.includes(k) : sw.has(k)));
@@ -544,7 +544,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
     else if (acc.has(k)) status = "working";
     else if (accepted) status = "notpossible";
     else status = "new";
-    // Preismodell 2: 250er sind nie „Spezial" (normaler Preis, nach der Löschung); 99er werden es erst mit Zustimmung zur Software.
+    // Preismodell 2: 250er sind nie „Spezial" (normaler Preis, nach der Löschung); Frisch-Preis-Bewertungen (179er; Bestand 99er) werden es erst mit Zustimmung zur Software.
     const special = lpOf(it) === PRICE_V2_OTHER ? false : lpOf(it) ? (sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted") : (!!it.nt || !!it.sw || sw.has(k) || swPaidFor(k) || decisions[k]?.d === "accepted");
     const cp = cpOf(it as { cp?: unknown }); // individueller Preis (Admin) – genau der wird abgebucht/verrechnet
     // Kunden-Konditionen (Admin → Kunden & Preise): fester Software-Preis, auch wenn der Partner erst später „Software" feststellt.
@@ -562,7 +562,7 @@ function orderView(o: OrderRow, partner: Map<string, PT> = new Map()) {
       removedAt: status === "removed" ? pt?.removedAt || null : null, changedAt: pt?.changedAt || null,
       prevStatus: pt?.prev && partnerToDash(pt.prev) !== status ? partnerToDash(pt.prev) : null,
       price, paid: status === "removed" ? (special ? prepaidFor(k) || isPaid(k) : isPaid(k)) : false, special, old: !!it.old,
-      lp: lpOf(it) || null, // Preismodell 2 (99/250); null = Bestandsauftrag
+      lp: lpOf(it) || null, // Preismodell 2 (179/250, Bestand 99); null = Bestandsauftrag
       x: xOn, xOk, xFee: xOn ? EXPRESS_FEE : 0, // Express: bestellt / eingehalten (wird nur dann abgerechnet)
       xDue: xOn && pt?.expressAt ? expressCustomerDue(pt.expressAt) : null, // Zusage: gelöscht bis … (30 Std. bzw. Di 24:00 Wiener Zeit bei Wochenend-Start)
       swWant: status === "software" && !!swWant[k],

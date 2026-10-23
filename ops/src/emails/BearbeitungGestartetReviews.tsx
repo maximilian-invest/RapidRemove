@@ -10,16 +10,16 @@ import * as React from "react";
 import { DashButton } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, CtaButton, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
-import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, lpOf, PRICE_V2_FRESH, PRICE_V2_OTHER } from "../reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, lpOf, isFreshLp, PRICE_V2_OTHER } from "../reviewsPricing";
 
 /** Spezial-Software (ausgelagert) für nicht annehmbare Bewertungen: Preis je Bewertung, abgebucht erst bei Erfolg.
  *  Nur Preismodell 1 (Bestandsaufträge ohne lp). Preismodell 2: kein eigener Software-Preis – 250er enthalten das
- *  Spezialverfahren, 99er kosten mit Zustimmung des Kunden PRICE_V2_OTHER (250). */
+ *  Spezialverfahren, Frisch-Preis-Bewertungen (179er; Bestand 99er) kosten mit Zustimmung des Kunden PRICE_V2_OTHER (250). */
 export const SPECIAL_REVIEW_PRICE = REVIEW_NOTEXT_PRICE;
 
 /** Eine Bewertung: Teilen-Link ODER Name + Bewertungstext (Wizard-Alternative). */
 export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number;
-  /** Preismodell 2: Listenpreis 99/250 (fehlt bei Bestandsaufträgen) · x = Express gebucht. */
+  /** Preismodell 2: Listenpreis 179/250 bzw. 99 bei Aufträgen bis 23.10.2026 (fehlt bei Bestandsaufträgen) · x = Express gebucht. */
   lp?: number; x?: boolean }
 
 export interface BearbeitungGestartetReviewsProps {
@@ -361,9 +361,9 @@ export default function BearbeitungGestartetReviews({ lang = "en", name = "", it
   const v2 = list.some((it) => lpOf(it) > 0);
   const pre = prepay && prepay.n > 0 && !v2 ? prepay : undefined;
   // Software-Angebot für abgelehnte Bewertungen: 250er haben das Spezialverfahren schon im Preis (nicht anbieten);
-  // 99er kosten mit Zustimmung 250 (ohne Rabatt, wie customers.ts swPriceOf). Bestandsaufträge: Preis vom Server.
+  // Frische (179er, Bestand 99er) kosten mit Zustimmung 250 (ohne Rabatt, wie customers.ts swPriceOf). Bestandsaufträge: Preis vom Server.
   const swV2 = !!software && software.items.length > 0 && software.items.every((it) => lpOf(it) > 0);
-  const swList = software ? (swV2 ? software.items.filter((it) => lpOf(it) === PRICE_V2_FRESH) : software.items) : [];
+  const swList = software ? (swV2 ? software.items.filter((it) => isFreshLp(lpOf(it))) : software.items) : [];
   const sw = software && swList.length
     ? (swV2 ? { ...software, items: swList, price: fmtReviewMoney(PRICE_V2_OTHER, cur), amount: fmtReviewMoney(swList.length * PRICE_V2_OTHER, cur) } : software)
     : undefined;

@@ -151,20 +151,20 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
     sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1" }, { url: "https://maps.app.goo.gl/example2" }, { name: "John D.", text: "Terrible service, would not recommend.", old: true }], per: "$179 / $229 (−10 %)", currency: "usd", orderId: "RR-123456" },
     texts: bearbeitungGestartetReviewsTexts,
   },
-  // Vorschau Preismodell 2 (99/250 + Express) – gleiche Vorlage, nur andere Beispieldaten (Texte bearbeitet man in der Hauptvorlage).
+  // Vorschau Preismodell 2 (179/250 + Express) – gleiche Vorlage, nur andere Beispieldaten (Texte bearbeitet man in der Hauptvorlage).
   "auftragsbestaetigung-reviews-v2": {
-    label: "Auftragsbestätigung Bewertungs-Löschung · Preismodell 2 (99/250 + Express) – Vorschau",
+    label: "Auftragsbestätigung Bewertungs-Löschung · Preismodell 2 (179/250 + Express) – Vorschau",
     group: "Bestellung",
     component: AuftragsbestaetigungReviews,
     subject: auftragsbestaetigungReviewsSubject,
-    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1", lp: 99 }, { url: "https://maps.app.goo.gl/example2", old: true, lp: 250, x: true }, { name: "John D.", nt: true, lp: 250 }], per: "$99 / $250 (−10 %)", total: "$639", currency: "usd", orderId: "RR-123457" },
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1", lp: 179 }, { url: "https://maps.app.goo.gl/example2", old: true, lp: 250, x: true }, { name: "John D.", nt: true, lp: 250 }], per: "$179 / $250 (−10 %)", total: "$711", currency: "usd", orderId: "RR-123457" },
   },
   "bearbeitung-gestartet-reviews-v2": {
-    label: "Bearbeitung gestartet (Bewertungen) · Preismodell 2 (99/250 + Express) – Vorschau",
+    label: "Bearbeitung gestartet (Bewertungen) · Preismodell 2 (179/250 + Express) – Vorschau",
     group: "Bestellung",
     component: BearbeitungGestartetReviews,
     subject: bearbeitungGestartetReviewsSubject,
-    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1", lp: 99 }, { url: "https://maps.app.goo.gl/example2", old: true, lp: 250, x: true }, { name: "John D.", nt: true, lp: 250 }], per: "$99 / $250 (−10 %)", currency: "usd", orderId: "RR-123457" },
+    sample: { lang: "en", name: "Alex", items: [{ url: "https://maps.app.goo.gl/example1", lp: 179 }, { url: "https://maps.app.goo.gl/example2", old: true, lp: 250, x: true }, { name: "John D.", nt: true, lp: 250 }], per: "$179 / $250 (−10 %)", currency: "usd", orderId: "RR-123457" },
   },
   "storno-reviews": {
     label: "Storno Bewertungen (zu alt / kein Text, außerhalb DACH)",

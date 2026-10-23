@@ -8,12 +8,12 @@ import * as React from "react";
 import { DashBox, type DashInfo } from "./DashBox";
 import { EmailShell, P, NoteBox, Bullets, brand, type MailLang } from "./components";
 import { ReviewPriceLines, reviewCurrency } from "./ReviewPriceLines";
-import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, quoteReviews, isSwItem, lpOf, cpOf, PRICE_V2_FRESH, PRICE_V2_OTHER, EXPRESS_CUSTOMER_H } from "../reviewsPricing";
+import { fmtReviewMoney, REVIEW_NOTEXT_PRICE, quoteReviews, isSwItem, lpOf, cpOf, PRICE_V2_FRESH, PRICE_V2_FRESH_LEGACY, PRICE_V2_OTHER, EXPRESS_CUSTOMER_H } from "../reviewsPricing";
 
 /** Eine eingereichte Bewertung: Teilen-Link ODER Name + Bewertungstext
    (Wizard-Alternative, wenn der Kunde den Link nicht findet). */
 export interface ReviewRef { url?: string; name?: string; text?: string; old?: boolean; nt?: boolean; sw?: boolean; cp?: number;
-  /** Preismodell 2: Listenpreis 99/250 (fehlt bei Bestandsaufträgen) · x = Express gebucht (nur 250er). */
+  /** Preismodell 2: Listenpreis 179/250 bzw. 99 bei Aufträgen bis 23.10.2026 (fehlt bei Bestandsaufträgen) · x = Express gebucht (nur 250er). */
   lp?: number; x?: boolean }
 
 export interface AuftragsbestaetigungReviewsProps {
@@ -55,7 +55,7 @@ interface Entry {
   listH: string;
   termsH: string; term1: string; term2: string; term3: string;
   condH: string; cond1: string; cond2: string;
-  /** Preismodell 2 (alle Bewertungen mit lp): {fresh} = 99, {other} = 250 in der Währung der Bestellung. */
+  /** Preismodell 2 (alle Bewertungen mit lp): {fresh} = 179 (Bestand: 99), {other} = 250 in der Währung der Bestellung. */
   cond1v2: string; cond2v2: string;
   /** Preismodell 2: übliche Dauer (bis 4 Wochen mit Text meist 3–5 Tage, alle anderen meist 1–2 Wochen). Label bis zum ersten Doppelpunkt wird fett. */
   durV2: string;
@@ -453,10 +453,12 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
   const n = list.length || 1;
   const cur = reviewCurrency(currency, per);
   // Zwei Verfahren: „Zahlung nach Löschung" (Standard / rechtliche Meldung) und Software-Fälle (erst nach unserer Prüfung; abgebucht ebenfalls erst bei Erfolg).
-  // Preismodell 2 (lp 99/250): kein eigener Software-Preis – ohne Text/Software sind normale 250er (Zahlung nach Löschung).
+  // Preismodell 2 (lp 179/250, Bestand 99): kein eigener Software-Preis – ohne Text/Software sind normale 250er (Zahlung nach Löschung).
   const sw = list.filter((it) => isSwItem(it) && !lpOf(it)), rest = list.filter((it) => !(isSwItem(it) && !lpOf(it)));
   const v2 = list.some((it) => lpOf(it) > 0) && list.every((it) => lpOf(it) > 0 || cpOf(it) > 0);
   const nX = list.filter((it) => lpOf(it) === PRICE_V2_OTHER && it.x).length;
+  // Frisch-Preis in den Bedingungen = der in diesem Auftrag festgeschriebene (Bestand 99 bleibt 99, neu 179).
+  const freshShown = list.some((it) => lpOf(it) === PRICE_V2_FRESH_LEGACY) && !list.some((it) => lpOf(it) === PRICE_V2_FRESH) ? PRICE_V2_FRESH_LEGACY : PRICE_V2_FRESH;
   const all = quoteReviews(list, cur, undefined, "full", chatPct);
   const perRest = rest.length ? quoteReviews(rest, cur, list.length, "full", chatPct).per : per;
   const swUnit = fmtReviewMoney(Math.round((REVIEW_NOTEXT_PRICE * (100 - all.pct)) / 100), cur);
@@ -535,7 +537,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       {v2 ? (
         <React.Fragment>
           {t.durV2 ? (() => { const i = t.durV2.search(/[:：]/); return <P>{i > 0 ? <><strong>{t.durV2.slice(0, i + 1)}</strong>{t.durV2.slice(i + 1)}</> : t.durV2}</P>; })() : null}
-          <P><strong>{t.condH}:</strong> {t.cond1v2} {(t.cond2v2 || "").replace(/\{fresh\}/g, fmtReviewMoney(PRICE_V2_FRESH, cur)).replace(/\{other\}/g, fmtReviewMoney(PRICE_V2_OTHER, cur))}</P>
+          <P><strong>{t.condH}:</strong> {t.cond1v2} {(t.cond2v2 || "").replace(/\{fresh\}/g, fmtReviewMoney(freshShown, cur)).replace(/\{other\}/g, fmtReviewMoney(PRICE_V2_OTHER, cur))}</P>
         </React.Fragment>
       ) : rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
 

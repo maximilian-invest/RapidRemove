@@ -8,7 +8,7 @@
    KERNBOTSCHAFT UNVERÄNDERT: „permanent stengt" bzw. „Fjern bedriftsprofil" ist kein
    Löschen — Profil und alle Bewertungen bleiben öffentlich; die vollständige Entfernung
    läuft über die von Google angebotenen Verfahren, im Auftrag des Inhabers.
-   Preise unverändert (ab 450 € Profil; Einzelbewertung 99 € / 250 €). */
+   Preise unverändert (ab 450 € Profil; Einzelbewertung 179 € / 250 €). */
 const article = {
   meta: {
     slug: "slett-google-bedriftsprofil",
@@ -131,7 +131,7 @@ const article = {
     { t: "h2", id: "single-vs-profile", text: "Slette enkeltanmeldelser eller fjerne hele profilen?", toc: "Anmeldelser eller profil?" },
     { t: "p", text: "Mange starter med å forsøke å [melde inn](/no/magasin/fjern-falske-google-anmeldelser/) enkeltanmeldelser til Google. Det er møysommelig og usikkert: Google avviser innmeldinger ofte, hver anmeldelse må begrunnes separat – og for hver anmeldelse som fjernes, kan det raskt dukke opp nye. Du kjemper mot symptomene." },
     { t: "p", text: "Den bærekraftige tilnærmingen går til roten av problemet: **Fjernes hele profilen, forsvinner alle anmeldelser på én gang** – inkludert falske anmeldelser. Ved profilfjerning går vi derfor bevisst ikke anmeldelse for anmeldelse, men fjerner hele profilen." },
-    { t: "warn", title: "Viktig", text: "Full fjerning sletter **hele profilen**, ikke én enkelt anmeldelse. Er profilen din ellers sunn, og det bare er én eller noen få urettferdige anmeldelser som plager deg, tilbyr RapidRemove også [fjerning av enkeltomtaler](/no/fjern-omtale/): fra 99 € per fjernet anmeldelse (med tekst, maks. 4 uker gammel; ellers 250 €), betaling kun ved suksess ([pris og sjanser forklart](/no/magasin/fjern-google-anmeldelse-tjeneste/)). Alle metoder og kostnader for å [fjerne Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/) finner du sammenlignet her." },
+    { t: "warn", title: "Viktig", text: "Full fjerning sletter **hele profilen**, ikke én enkelt anmeldelse. Er profilen din ellers sunn, og det bare er én eller noen få urettferdige anmeldelser som plager deg, tilbyr RapidRemove også [fjerning av enkeltomtaler](/no/fjern-omtale/): fra 179 € per fjernet anmeldelse (med tekst, maks. 4 uker gammel; ellers 250 €), betaling kun ved suksess ([pris og sjanser forklart](/no/magasin/fjern-google-anmeldelse-tjeneste/)). Alle metoder og kostnader for å [fjerne Google-anmeldelser](/no/magasin/fjern-google-anmeldelser/) finner du sammenlignet her." },
     { t: "tip", title: "Den avgjørende fordelen", text: "En fjernet profil kan ikke vise frem gamle eller nye anmeldelser. Problemet er dermed ikke utsatt, men løst." },
 
     { t: "h2", id: "kosten", text: "Hvor lang tid tar det – og hva koster det?", toc: "Tid og kostnad" },
@@ -196,7 +196,7 @@ const article = {
     { q: "Blir alle anmeldelser fjernet også?", a: "Ja. Når hele bedriftsprofilen fjernes, forsvinner alle tilknyttede anmeldelser på én gang – inkludert falske anmeldelser og hevnanmeldelser." },
     { q: "Hvor lang tid tar det å fjerne profilen?", a: "Normalt 24–48 timer ved profesjonell fjerning, mot månedene advokatveien kan ta. Du kan følge statusen løpende i kundeportalen." },
     { q: "Påvirker fjerningen nettstedet mitt, SEO eller Google Ads?", a: "Nei. Det som fjernes, er utelukkende bedriftsprofilen (Google Maps / Google-bedriftsprofil). Nettstedet ditt, Google-kontoen din, rangeringen og kampanjene dine forblir uendret. En ren ny profil kan opprettes etterpå om du ønsker det." },
-    { q: "Hva koster det å fjerne en Google-bedriftsprofil?", a: "RapidRemove opererer med en transparent fastpris fra 450 € – og du betaler først etter fjerning. Trenger du bare å få fjernet enkelte anmeldelser, koster [fjerning av enkeltomtaler](/no/fjern-omtale/) fra 99 € per fjernet anmeldelse (med tekst, maks. 4 uker gammel; ellers 250 €), betaling kun ved suksess." },
+    { q: "Hva koster det å fjerne en Google-bedriftsprofil?", a: "RapidRemove opererer med en transparent fastpris fra 450 € – og du betaler først etter fjerning. Trenger du bare å få fjernet enkelte anmeldelser, koster [fjerning av enkeltomtaler](/no/fjern-omtale/) fra 179 € per fjernet anmeldelse (med tekst, maks. 4 uker gammel; ellers 250 €), betaling kun ved suksess." },
     { q: "Kan profilen dukke opp igjen etterpå?", a: "Tredjeparter kan i teorien opprette en ny profil. Med den valgfrie overvåkingstjenesten holder vi øye med oppføringen din og fjerner en ny profil uten tilleggskostnad i beskyttelsesperioden, dersom den skulle dukke opp igjen." },
   ],
 };

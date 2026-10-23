@@ -83,7 +83,7 @@ export async function addReviewsToOrder(orderId: string, input: AddItem[], opts:
     if (x.nt === true) it.nt = true;
     if (opts.by === "admin" && cpOf(x as { cp?: unknown })) it.cp = cpOf(x as { cp?: unknown }); // individueller Preis nur vom Admin
     if (!it.nt && reviewMethod(it, country) === "sw") { it.sw = true; it.old = true; } // Partner-Regel wie bei Website-Bestellungen
-    // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 99 (frisch) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
+    // Preismodell 2 (16.10.2026): neu beauftragte Bewertungen kosten 179 (frisch, seit 23.10.2026; davor 99) bzw. 250 – auch in Bestandsaufträgen (Bulk: Staffel).
     if (!it.cp && raw.bulk !== true) it.lp = listPriceV2(it);
     if (xAllowed && it.lp === PRICE_V2_OTHER) it.x = true; // Express (+100) – Zwischenschritt „Wie schnell?" im Dashboard (17.10.2026)
     clean.push(it);

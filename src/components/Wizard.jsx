@@ -3903,7 +3903,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     const hint = discountNudge(n, pk);
     const cont = () => { if (!n) { setReviewErr(rv.need); return; } setReviewErr(""); setTempoOn(hasX); go(5); };
     const back = () => go(manualOnly ? 1 : 3);
-    const priceOf = (r) => listPriceV2({ nt: !reviewHasText(r), days: r.days }); // Preismodell 2: 99 / 250
+    const priceOf = (r) => listPriceV2({ nt: !reviewHasText(r), days: r.days }); // Preismodell 2: 179 / 250
     const row = (r, k) => {
       const on = pickSel.some((x) => x.id === r.id);
       const m = revMethod(r);

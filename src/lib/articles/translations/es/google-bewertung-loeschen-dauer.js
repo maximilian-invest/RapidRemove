@@ -5,7 +5,7 @@ const article = {
     slug: "cuanto-tarda-google-eliminar-resena",
     title: "¿Cuánto tarda Google en eliminar una reseña? (2026)",
     h1: "¿Cuánto tarda Google en eliminar una reseña? Plazos, estados y apelación",
-    description: "Google no fija plazos: de horas a varias semanas. Fases, estados en la herramienta de gestión de reseñas, apelación y eliminación desde 99 €, solo con éxito.",
+    description: "Google no fija plazos: de horas a varias semanas. Fases, estados en la herramienta de gestión de reseñas, apelación y eliminación desde 179 €, solo con éxito.",
     keywords: [
       "cuánto tarda google en eliminar una reseña",
       "cuánto tarda en eliminarse una reseña de google",
@@ -28,7 +28,7 @@ const article = {
       "**Infracciones evidentes** (spam, insultos, interacción falsa clara): a menudo entre unas horas y pocos días.",
       "**Casos dudosos** que necesitan revisión humana: a menudo de una a varias semanas.",
       "**Apelaciones y escalaciones**: suman tiempo, a veces varias semanas más.",
-      "**Con nosotros**: reseñas con texto de hasta 4 semanas, normalmente 3–5 días; todas las demás, normalmente 1–2 semanas. Si prefieres delegarlo, nuestro [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/) trabaja solo con los procedimientos oficiales de Google y cobra **desde 99 € por reseña eliminada**, nada por adelantado.",
+      "**Con nosotros**: reseñas con texto de hasta 4 semanas, normalmente 3–5 días; todas las demás, normalmente 1–2 semanas. Si prefieres delegarlo, nuestro [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/) trabaja solo con los procedimientos oficiales de Google y cobra **desde 179 € por reseña eliminada**, nada por adelantado.",
     ] },
     { t: "warn", title: "Plazos típicos, no garantizados", text: "Todas las duraciones de este artículo son rangos habituales en la práctica, no compromisos de Google. El tiempo de tramitación varía y nadie puede prometer una fecha, ni una eliminación." },
 
@@ -82,11 +82,11 @@ const article = {
     { t: "ul", items: [
       "**La categoría correcta desde el principio**: una primera denuncia precisa te ahorra la apelación.",
       "**Pruebas preparadas**: capturas de la reseña y del perfil del autor, una nota de por qué no hubo contacto con el cliente, fechas.",
-      "**Actúa en menos de cuatro semanas**: las reseñas recientes tienen muchas más opciones y con nosotros, si tienen texto, cuestan 99 € en lugar de 250 €.",
+      "**Actúa en menos de cuatro semanas**: las reseñas recientes tienen muchas más opciones y con nosotros, si tienen texto, cuestan 179 € en lugar de 250 €.",
       "**Una denuncia limpia, no diez**: denunciar varias veces la misma reseña no te adelanta en la cola.",
       "**Oleadas falsas y chantaje**: si llegan reseñas de 1 estrella junto con una exigencia de dinero, usa el formulario específico de Google y lee nuestra guía sobre [extorsión con reseñas de Google](/es/revista/extorsion-resenas-google/). No pagues, no entres al trapo y guarda capturas.",
     ] },
-    { t: "cta", title: "No esperes semanas a una respuesta estándar", text: "Busca tu empresa, marca las reseñas que deben desaparecer y ve el precio al instante. **99 € por reseña eliminada**, 250 € si tiene más de 4 semanas o no tiene texto, y solo se cobra cuando la reseña ya no está.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago solo si se elimina", "Valoración honesta y gratuita"] },
+    { t: "cta", title: "No esperes semanas a una respuesta estándar", text: "Busca tu empresa, marca las reseñas que deben desaparecer y ve el precio al instante. **179 € por reseña eliminada**, 250 € si tiene más de 4 semanas o no tiene texto, y solo se cobra cuando la reseña ya no está.", btn: "Elegir reseñas", href: "/es/comprobar-perfil/?start=reviews", trust: ["Nada por adelantado", "Pago solo si se elimina", "Valoración honesta y gratuita"] },
 
     { t: "h2", id: "while-waiting", text: "Qué hacer mientras esperas", toc: "Mientras esperas" },
     { t: "p", text: "**Responde en público, breve y con calma: es lo único que siempre puedes hacer y los futuros clientes lo leen.** Una buena respuesta no discute ni revela datos de clientes." },
@@ -110,7 +110,7 @@ const article = {
     { q: "¿Puedo apelar más de una vez?", a: "No. En la herramienta de gestión de reseñas tienes **una sola apelación por reseña**. Tras la decisión final, la única otra vía oficial es una solicitud legal de retirada, y solo si el contenido es ilícito." },
     { q: "¿Google avisa al autor de la reseña?", a: "Al autor **no se le dice quién denunció la reseña ni quién pidió su eliminación**, ni cuando denuncias tú ni cuando lo gestionamos nosotros. Como mucho notará que su reseña ya no se ve." },
     { q: "¿Puede volver a aparecer una reseña eliminada?", a: "Una reseña que Google elimina por infringir sus políticas normalmente no vuelve. Pero la misma persona puede escribir una reseña nueva, que se revisa por separado y también se puede denunciar." },
-    { q: "¿Cuánto se tarda con RapidRemove?", a: "Las reseñas con texto de hasta 4 semanas suelen tardar **3–5 días**; todas las demás, normalmente **1–2 semanas**. Pagas **99 € por reseña eliminada** (250 € si tiene más de 4 semanas o no tiene texto), solo cuando ya no está." },
+    { q: "¿Cuánto se tarda con RapidRemove?", a: "Las reseñas con texto de hasta 4 semanas suelen tardar **3–5 días**; todas las demás, normalmente **1–2 semanas**. Pagas **179 € por reseña eliminada** (250 € si tiene más de 4 semanas o no tiene texto), solo cuando ya no está." },
     { q: "¿Responder a la reseña empeora mis opciones?", a: "No. Una respuesta pública breve y tranquila siempre está permitida y no afecta a la revisión. Solo evita insultos y datos de clientes." },
   ],
   related: [

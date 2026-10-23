@@ -7,7 +7,7 @@ const article = {
       slug: "service-suppression-avis-google",
       title: "Suppression d'avis Google : prix, taux de réussite et commande (2026)",
       h1: "Faire supprimer un seul avis Google : prix, chances et déroulement de la commande",
-      description: "Combien coûte la suppression d'un avis Google ? 99 € par avis supprimé (≤ 4 semaines, avec texte), sinon 250 €, payé au succès. Chances, remises, commande.",
+      description: "Combien coûte la suppression d'un avis Google ? 179 € par avis supprimé (≤ 4 semaines, avec texte), sinon 250 €, payé au succès. Chances, remises, commande.",
       keywords: ["combien coûte la suppression d'un avis google", "prix suppression avis google", "supprimer un avis google prix", "payer pour supprimer un avis google", "commander la suppression d'un avis google", "taux de réussite suppression avis google"],
       author: "Maximilian Hölzl",
       authorRole: "Expert Google et fondateur",
@@ -37,7 +37,7 @@ const article = {
       { t: "h2", id: "preis", text: "Combien coûte la suppression d'un avis Google ?", toc: "Prix" },
       { t: "p", text: "Le prix dépend de deux choses : **l'âge de l'avis** et **la présence d'un texte**. Un avis récent est bien plus facile à faire supprimer qu'un avis en ligne depuis des mois. La comparaison avec un avocat et d'autres prestataires se trouve dans notre article sur le [prix de la suppression d'un avis Google](/fr/magazine/prix-suppression-avis-google/)." },
       { t: "table", rrCol: 2, head: ["Âge de l'avis", "Chances de réussite", "Prix par avis supprimé"], rows: [
-        ["4 semaines maximum, avec texte", "env. 90 %", "**99 €**"],
+        ["4 semaines maximum, avec texte", "env. 90 %", "**179 €**"],
         ["Plus de 4 semaines ou sans texte", "env. 50 %", "**250 €**"],
       ] },
       { t: "p", text: "**Notes sans texte (étoiles seulement) :** elles passent par une procédure plus approfondie et coûtent **250 € par note**, comme tout avis de plus de 4 semaines, sans autre supplément. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée. **Express :** pour les avis à 250 €, vous pouvez ajouter l'option Express lors de la commande – +100 € par avis. Si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), l'avis est supprimé en 30 heures ; s'il démarre à partir du vendredi 12 h ou le week-end, au plus tard le mardi à minuit (l'Express n'est pas disponible le week-end). Si cela n'aboutit pas, le supplément Express est automatiquement déduit et vous ne payez que les 250 €." },
@@ -48,9 +48,9 @@ const article = {
         ["5 – 9", "**−15 %**"],
         ["10 et plus", "**−30 %**"],
       ] },
-      { t: "p", text: "**Exemples :** 3 avis récents coûtent 297 €, moins 10 % = **267 €**. 2 avis récents et 3 plus anciens coûtent 948 €, moins 15 % = **806 €**. Le palier de remise dépend du nombre d'avis **que nous acceptons après l'évaluation gratuite**, et il s'applique à chacun de ces avis qui est supprimé. Vous ne payez toujours que les avis réellement supprimés : si nous en acceptons 3 et que 2 disparaissent, vous payez 2 × 99 € moins 10 % = **178,20 €**. Les notes sans texte comptent pour la remise avec tous les autres avis acceptés : 1 avis récent + 2 notes sans texte = 3 avis, donc −10 % – les deux notes coûtent **225 €** chacune et l'avis avec texte 89,10 €, chacun facturé uniquement après suppression." },
+      { t: "p", text: "**Exemples :** 3 avis récents coûtent 537 €, moins 10 % = **483 €**. 2 avis récents et 3 plus anciens coûtent 1 108 €, moins 15 % = **942 €**. Le palier de remise dépend du nombre d'avis **que nous acceptons après l'évaluation gratuite**, et il s'applique à chacun de ces avis qui est supprimé. Vous ne payez toujours que les avis réellement supprimés : si nous en acceptons 3 et que 2 disparaissent, vous payez 2 × 179 € moins 10 % = **322,20 €**. Les notes sans texte comptent pour la remise avec tous les autres avis acceptés : 1 avis récent + 2 notes sans texte = 3 avis, donc −10 % – les deux notes coûtent **225 €** chacune et l'avis avec texte 161,10 €, chacun facturé uniquement après suppression." },
       { t: "p", text: "**Paiement avis par avis :** le délai de suppression peut varier d'un avis à l'autre – en général 3 à 5 jours pour les avis de moins de 4 semaines avec texte, 1 à 2 semaines pour tous les autres. Le paiement se fait donc avis par avis : chacun est prélevé automatiquement sur votre carte ou PayPal enregistrés dès qu'il est supprimé. Les avis sur lesquels nous travaillons encore ne vous coûtent rien pour l'instant." },
-      { t: "tip", title: "Agissez tôt", text: "Les chances de réussite passent d'environ 90 % à environ 50 % dès qu'un avis a plus de quatre semaines – et le prix passe de 99 € à 250 €. Un faux avis récent est le moins cher et le plus sûr à faire supprimer. À titre de comparaison : un avocat facture en général par avis et **à l'avance**, et cela prend souvent des mois ([avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/))." },
+      { t: "tip", title: "Agissez tôt", text: "Les chances de réussite passent d'environ 90 % à environ 50 % dès qu'un avis a plus de quatre semaines – et le prix passe de 179 € à 250 €. Un faux avis récent est le moins cher et le plus sûr à faire supprimer. À titre de comparaison : un avocat facture en général par avis et **à l'avance**, et cela prend souvent des mois ([avocat ou suppression technique ?](/fr/magazine/supprimer-avis-negatif-google-avocat-ou-technique/))." },
 
       { t: "h2", id: "bestellen", text: "Comment commander – en deux minutes environ", toc: "Commander" },
       { t: "ol", items: [
@@ -62,7 +62,7 @@ const article = {
         "Nous nous occupons de la suppression et vous tenons informé. **Vous ne payez que les avis réellement supprimés**, notes sans texte comprises.",
       ] },
       { t: "p", text: "Un avis n'apparaît pas dans la liste ? Vous pouvez aussi coller le lien de l'avis manuellement à la même étape." },
-      { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis – et voyez immédiatement le prix exact. **À partir de 99 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
+      { t: "cta", title: "Sélectionnez les avis à supprimer", text: "Recherchez votre entreprise, cochez les avis – et voyez immédiatement le prix exact. **À partir de 179 € par avis supprimé**, rien d'avance.", btn: "Choisir les avis", href: "/fr/verifier-profil/?start=reviews", trust: ["Rien d'avance", "Paiement par avis supprimé", "D'abord un avis honnête"] },
 
       { t: "h2", id: "dauer", text: "Combien de temps cela prend-il ?", toc: "Délai" },
       { t: "p", text: "Avis de moins de 4 semaines avec texte : en général **3 à 5 jours**. Tous les autres : en général **1 à 2 semaines**, parfois plus vite, dans certains cas un peu plus, selon l'avis et le motif de suppression. Avec Express (avis à 250 € uniquement) : en 30 heures si le traitement démarre entre le lundi et le vendredi 12 h (heure de Vienne), sinon au plus tard le mardi à minuit. Vous n'avez rien à faire entre-temps – nous vous tenons informé. Ce qui se passe entre-temps côté Google – statut du signalement, outil de gestion des avis et recours – est expliqué dans notre article sur le [délai de suppression d'un avis Google](/fr/magazine/delai-suppression-avis-google/)." },
@@ -72,7 +72,7 @@ const article = {
         ["Ce qui est supprimé", "Les avis sélectionnés (y compris notes sans texte)", "Toute la fiche + tous les avis", "Un avis isolé", "Un avis isolé"],
         ["Les bons avis restent", "Oui", "Non", "Oui", "Oui"],
         ["Délai", "En général 3 à 5 jours (≤ 4 semaines, avec texte), sinon 1 à 2 semaines", "En général 24 – 48 heures", "3 – 9 mois", "Incertain"],
-        ["Coût", "Dès 99 €, uniquement si supprimé (notes sans texte : 250 €)", "Prix fixe, après succès", "Par avis, à l'avance", "Gratuit"],
+        ["Coût", "Dès 179 €, uniquement si supprimé (notes sans texte : 250 €)", "Prix fixe, après succès", "Par avis, à l'avance", "Gratuit"],
         ["Effort pour vous", "2 minutes", "Minimal", "Élevé", "Moyen"],
       ] },
       { t: "p", text: "Si vous voulez d'abord comprendre la voie gratuite : [comment signaler vous-même un avis Google](/fr/magazine/comment-supprimer-un-avis-google/) – et pourquoi Google rejette souvent les signalements avec une réponse type. Et si vous vous demandez si agir en vaut vraiment la peine : [ce que coûte réellement un mauvais avis Google](/fr/magazine/combien-coute-mauvais-avis-google/)." },
@@ -87,7 +87,7 @@ const article = {
       ] },
     ],
     faq: [
-      { q: "Combien coûte la suppression d'un avis Google ?", a: "99 € par avis supprimé si l'avis date de 4 semaines maximum et comporte un texte, 250 € dans tous les autres cas (avis plus anciens, notes sans texte). Dès 3 avis acceptés, vous bénéficiez de 10 % de remise, dès 5 de 15 % et dès 10 de 30 %, appliqués à chaque avis supprimé. Vous ne payez que les avis réellement supprimés." },
+      { q: "Combien coûte la suppression d'un avis Google ?", a: "179 € par avis supprimé si l'avis date de 4 semaines maximum et comporte un texte, 250 € dans tous les autres cas (avis plus anciens, notes sans texte). Dès 3 avis acceptés, vous bénéficiez de 10 % de remise, dès 5 de 15 % et dès 10 de 30 %, appliqués à chaque avis supprimé. Vous ne payez que les avis réellement supprimés." },
       { q: "Que se passe-t-il si un avis ne peut pas être supprimé ?", a: "Vous ne payez rien : ni paiement d'avance ni frais pour les tentatives. Cela vaut aussi pour les notes sans texte." },
       { q: "Peut-on supprimer des avis de plus de 4 semaines ?", a: "Oui. Les chances de réussite sont plus faibles (env. 50 % au lieu d'env. 90 %) et le prix est de 250 € par avis. C'est pourquoi il vaut la peine d'agir vite face à un faux avis récent." },
       { q: "Peut-on supprimer des avis 1 étoile sans texte ?", a: "Oui, grâce à une procédure plus approfondie. Vous les sélectionnez dans le formulaire de commande comme les autres avis. Prix : **250 € par note**, sans supplément pour les notes anciennes ; la remise sur quantité s'applique, comptée avec tous les avis acceptés de la commande. Comme pour tous les avis, vous enregistrez une carte ou PayPal lors de la commande, et le prélèvement n'a lieu automatiquement qu'une fois la note supprimée." },

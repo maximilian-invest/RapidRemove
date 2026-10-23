@@ -5,7 +5,7 @@ const article = {
     slug: "utpressing-google-anmeldelser",
     title: "Utpressing med Google-anmeldelser: dette gjør du (2026)",
     h1: "Utpressing med Google-anmeldelser: slik håndterer du en bølge av 1-stjerners anmeldelser og et krav om penger",
-    description: "Bølge av 1-stjerners anmeldelser og så krav om penger? Ikke betal. Slik melder du utpressingen til Google og får anmeldelsene fjernet – fra 99 €, kun ved suksess.",
+    description: "Bølge av 1-stjerners anmeldelser og så krav om penger? Ikke betal. Slik melder du utpressingen til Google og får anmeldelsene fjernet – fra 179 €, kun ved suksess.",
     keywords: ["utpressing google anmeldelser", "google anmeldelser utpressing", "falske anmeldelser utpressing", "mange 1 stjerne anmeldelser", "betale for å fjerne anmeldelser", "melde utpressing google", "fjerne falske google anmeldelser", "trusler google anmeldelser"],
     author: "Maximilian Hölzl",
     authorRole: "Google-ekspert",
@@ -75,7 +75,7 @@ const article = {
     { t: "h2", id: "rapidremove", text: "Slik hjelper RapidRemove ved utpressing med anmeldelser", toc: "Slik hjelper vi" },
     { t: "p", text: "Vi tar oss av fjerningen for deg – utelukkende via **Googles egne prosedyrer**, på vegne av deg som eier. Utpressingsanmeldelser hører til dem Google **fjerner mest pålitelig**, fordi de så tydelig bryter reglene. Med vår [tjeneste for å fjerne Google-anmeldelser](/no/fjern-omtale/) betaler du **kun når anmeldelsene faktisk er borte**. Også rene stjernevurderinger uten tekst – som ofte utgjør en stor del av en utpressingsbølge – kan du overlate til oss: dem fjerner vi med en **mer omfattende prosedyre** til **250 € per fjernet vurdering**. Som ved alle anmeldelser lagrer du et kort eller PayPal ved bestillingen, og **beløpet trekkes automatisk først etter fjerningen**. Utpressingsrapporten via Googles skjema, som du som eier sender inn selv, anbefaler vi fortsatt parallelt." },
     { t: "table", rrCol: 1, head: ["", "RapidRemove", "Betale utpresseren"], rows: [
-      ["Pris", "**99 € per fjernet anmeldelse** (opptil 4 uker, med tekst; ellers 250 €)", "Det utpresseren krever – uten garanti"],
+      ["Pris", "**179 € per fjernet anmeldelse** (opptil 4 uker, med tekst; ellers 250 €)", "Det utpresseren krever – uten garanti"],
       ["Hvis ingenting skjer", "Du betaler ingenting", "Pengene er tapt"],
       ["Risiko for ny bølge", "Ingen signal om at du betaler", "Høy: du er en som betaler"],
       ["Metode", "Kun Googles egne prosedyrer", "Ukjent"],
@@ -87,7 +87,7 @@ const article = {
       "**Diskret:** anmelderen får ikke vite hvem som ba om fjerningen. Ingen falske kontoer, ingen roboter, ingen falske juridiske brev.",
       "**Betal per anmeldelse:** anmeldelsene kan forsvinne til ulike tider; hver fjernet anmeldelse trekkes automatisk fra kortet eller PayPal-kontoen du lagret ved bestillingen.",
     ] },
-    { t: "cta", title: "Få fjernet utpressingsanmeldelser", text: "Kryss av for anmeldelsene fra bølgen og se prisen med en gang. **99 € per fjernet anmeldelse med tekst** (opptil 4 uker), ingenting på forskudd – og ingenting hvis den blir stående. Eldre eller uten tekst: 250 € per fjernet anmeldelse.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Gratis vurdering først"] },
+    { t: "cta", title: "Få fjernet utpressingsanmeldelser", text: "Kryss av for anmeldelsene fra bølgen og se prisen med en gang. **179 € per fjernet anmeldelse med tekst** (opptil 4 uker), ingenting på forskudd – og ingenting hvis den blir stående. Eldre eller uten tekst: 250 € per fjernet anmeldelse.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Gratis vurdering først"] },
 
     { t: "h2", id: "beskytt", text: "Slik beskytter du profilen etterpå", toc: "Beskytt profilen" },
     { t: "p", text: "Utpressere kommer noen ganger tilbake – særlig hvis de ser at du reagerer. Med noen faste rutiner oppdager du en ny bølge med en gang og har rapporten klar raskere." },
@@ -109,7 +109,7 @@ const article = {
     { q: "Hva gjør jeg hvis utpresserne kommer tilbake med nye anmeldelser?", a: "Gjenta de samme stegene: ikke svar, dokumenter, meld fra via utpressingsskjemaet og rapporter hver anmeldelse for seg. Vis til den forrige bølgen og bevismappen din." },
     { q: "Hvor lang tid tar det før anmeldelsene er borte?", a: "Google lover ingen fast tid; det kan ta fra dager til uker. Gjennom RapidRemove tar det som regel **3–5 dager** for anmeldelser med tekst opptil 4 uker gamle og som regel **1–2 uker** for alle andre, og de enkelte anmeldelsene kan forsvinne til ulike tider." },
     { q: "Bør jeg svare på anmeldelsene?", a: "Det er ikke et krav. Hvis du svarer, hold det kort og nøytralt – for eksempel at du ikke kan knytte anmeldelsen til noe kundebesøk og har rapportert den til Google. Svar aldri på selve utpressingsmeldingen." },
-    { q: "Hva koster det å fjerne utpressingsanmeldelser?", a: "Anmeldelser med tekst: **99 € per fjernet anmeldelse** (eldre enn 4 uker 250 €), ingenting på forskudd. Rene stjernevurderinger uten tekst: **250 € per fjernet anmeldelse** med en mer omfattende prosedyre. Du lagrer et kort eller PayPal ved bestillingen, og beløpet trekkes automatisk først etter fjerningen. Mengderabatt på alle aksepterte anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
+    { q: "Hva koster det å fjerne utpressingsanmeldelser?", a: "Anmeldelser med tekst: **179 € per fjernet anmeldelse** (eldre enn 4 uker 250 €), ingenting på forskudd. Rene stjernevurderinger uten tekst: **250 € per fjernet anmeldelse** med en mer omfattende prosedyre. Du lagrer et kort eller PayPal ved bestillingen, og beløpet trekkes automatisk først etter fjerningen. Mengderabatt på alle aksepterte anmeldelser: fra 3 −10 %, fra 5 −15 %, fra 10 −30 %." },
   ],
   related: [
     { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },

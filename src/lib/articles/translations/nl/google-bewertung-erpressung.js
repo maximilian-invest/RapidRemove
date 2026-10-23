@@ -5,7 +5,7 @@ const article = {
     slug: "afpersing-google-reviews",
     title: "Afpersing via Google reviews: wat nu te doen? (2026)",
     h1: "Afpersing via Google reviews: zo reageert u op een golf van 1-sterreviews en een betaalverzoek",
-    description: "Golf van 1-sterreviews en een betaalverzoek? Niet betalen. Zo meldt u reviewafpersing bij Google en laat u de reviews verwijderen – vanaf € 99, alleen bij succes.",
+    description: "Golf van 1-sterreviews en een betaalverzoek? Niet betalen. Zo meldt u reviewafpersing bij Google en laat u de reviews verwijderen – vanaf € 179, alleen bij succes.",
     keywords: ["afpersing google reviews", "google reviews afpersing", "nepreviews afpersing", "golf van 1 ster reviews", "google review chantage", "google review verwijderen afpersing", "valse reviews betalen om te verwijderen", "reviewafpersing melden"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert en oprichter",
@@ -75,7 +75,7 @@ const article = {
     { t: "h2", id: "rapidremove", text: "Hoe RapidRemove helpt bij reviewafpersing", toc: "Hoe wij helpen" },
     { t: "p", text: "Wij nemen het verwijderen van u over – uitsluitend via **Google's eigen procedures**, namens u als eigenaar. Afpersingsreviews horen bij de reviews die Google het **meest betrouwbaar verwijdert**, omdat ze duidelijk tegen de regels ingaan. Met onze [service om Google reviews te laten verwijderen](/nl/review-laten-verwijderen/) betaalt u **alleen voor reviews die echt weg zijn**." },
     { t: "table", rrCol: 1, head: ["", "RapidRemove", "Afperser betalen"], rows: [
-      ["Kosten", "**€ 99 per verwijderde review** (met tekst, tot 4 weken); ouder of alleen sterren: € 250 per verwijderde review", "Wat de afperser eist – zonder garantie"],
+      ["Kosten", "**€ 179 per verwijderde review** (met tekst, tot 4 weken); ouder of alleen sterren: € 250 per verwijderde review", "Wat de afperser eist – zonder garantie"],
       ["Bij geen resultaat", "U betaalt niets", "Geld kwijt"],
       ["Risico op nieuwe golf", "Geen signaal dat u betaalt", "Groot: u bent een betaler"],
       ["Methode", "Alleen Google's eigen procedures", "Onbekend"],
@@ -88,7 +88,7 @@ const article = {
       "**Discreet:** de reviewer krijgt niet te horen wie de verwijdering heeft aangevraagd. Geen nepaccounts, geen bots, geen nep-juridische brieven.",
       "**Betalen per review:** reviews kunnen op verschillende momenten verdwijnen; u legt bij het bestellen een kaart of PayPal vast en er wordt per verwijderde review automatisch afgeschreven.",
     ] },
-    { t: "cta", title: "Afpersingsreviews laten verwijderen", text: "Vink de reviews van de golf aan en zie direct de prijs. Met tekst (tot 4 weken): **€ 99 per verwijderde review**, niets vooraf – en niets als een review blijft staan. Ouder of alleen sterren: € 250 per verwijderde review.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Gratis inschatting eerst"] },
+    { t: "cta", title: "Afpersingsreviews laten verwijderen", text: "Vink de reviews van de golf aan en zie direct de prijs. Met tekst (tot 4 weken): **€ 179 per verwijderde review**, niets vooraf – en niets als een review blijft staan. Ouder of alleen sterren: € 250 per verwijderde review.", btn: "Reviews selecteren", href: "/nl/profiel-checken/?start=reviews", trust: ["Niets vooraf", "Betalen per verwijderde review", "Gratis inschatting eerst"] },
 
     { t: "h2", id: "beschermen", text: "Uw profiel daarna beschermen", toc: "Daarna beschermen" },
     { t: "p", text: "Afpersers komen soms terug – vooral als ze merken dat u reageert. Met een paar vaste gewoontes merkt u een nieuwe golf direct op en staat uw melding sneller klaar." },
@@ -110,7 +110,7 @@ const article = {
     { q: "Wat als de afpersers terugkomen met nieuwe reviews?", a: "Herhaal dezelfde stappen: niet reageren, vastleggen, melden via het afpersingsformulier en elke review afzonderlijk melden. Verwijs daarbij naar de eerdere golf en uw bewijsmap." },
     { q: "Hoe lang duurt het voordat de reviews weg zijn?", a: "Google geeft geen vaste termijn; het kan dagen tot weken duren. Via RapidRemove duurt het bij reviews met tekst tot 4 weken oud meestal **3–5 dagen**, bij alle andere meestal **1–2 weken**, en losse reviews kunnen op verschillende momenten verdwijnen." },
     { q: "Moet ik op de reviews reageren?", a: "Niet verplicht. Als u reageert, doe het kort en neutraal, bijvoorbeeld dat u de beoordeling niet aan een klantbezoek kunt koppelen en haar bij Google hebt gemeld. Reageer nooit op het afpersingsbericht zelf." },
-    { q: "Wat kost het om afpersingsreviews te laten verwijderen?", a: "**€ 99 per verwijderde review** (ouder dan 4 weken € 250), met staffelkorting vanaf 3 reviews −10 %, vanaf 5 −15 % en vanaf 10 −30 %. Niets vooraf. Beoordelingen met alleen sterren kosten eveneens € 250 per verwijderde review. Afgeschreven wordt telkens pas automatisch na de verwijdering. Dien daarnaast het afpersingsformulier van Google in." },
+    { q: "Wat kost het om afpersingsreviews te laten verwijderen?", a: "**€ 179 per verwijderde review** (ouder dan 4 weken € 250), met staffelkorting vanaf 3 reviews −10 %, vanaf 5 −15 % en vanaf 10 −30 %. Niets vooraf. Beoordelingen met alleen sterren kosten eveneens € 250 per verwijderde review. Afgeschreven wordt telkens pas automatisch na de verwijdering. Dien daarnaast het afpersingsformulier van Google in." },
   ],
   related: [
     { label: "Google-bedrijfsprofiel (Mijn Bedrijf) verwijderen", url: "/nl/magazine/google-bedrijfsprofiel-verwijderen/" },

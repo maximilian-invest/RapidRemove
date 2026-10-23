@@ -5,7 +5,7 @@ const article = {
     slug: "hvor-lang-tid-google-fjerne-anmeldelse",
     title: "Hvor lang tid tar det å fjerne en Google-anmeldelse? (2026)",
     h1: "Hvor lang tid tar det før Google fjerner en anmeldelse?",
-    description: "Hvor lang tid tar det å fjerne en Google-anmeldelse? Fra timer til uker. Tidslinje, status, klage – hos oss fra 99 €, og du betaler først når den er borte.",
+    description: "Hvor lang tid tar det å fjerne en Google-anmeldelse? Fra timer til uker. Tidslinje, status, klage – hos oss fra 179 €, og du betaler først når den er borte.",
     keywords: ["hvor lang tid tar det å fjerne google anmeldelse", "rapportert google anmeldelse hvor lang tid", "fjerne google anmeldelse tid", "reviews management tool google", "klage på google anmeldelse", "rapportert google anmeldelse skjer ingenting", "status rapportert anmeldelse google"],
     author: "Maximilian Hölzl",
     authorRole: "Google-ekspert",
@@ -58,7 +58,7 @@ const article = {
       "**Endelig avgjørelse** – etter klagen er veien i verktøyet slutt. Bare ved ulovlig innhold gjenstår en [juridisk forespørsel om fjerning](https://support.google.com/legal/answer/3110420).",
     ] },
 
-    { t: "cta", title: "Ikke lyst til å vente i ukevis og håpe?", text: "Velg anmeldelsene som skal bort, og se prisen med en gang. **Fra 99 € per fjernet anmeldelse**, som regel ferdig på 3–5 dager (opptil 4 uker, med tekst) eller 1–2 uker – og du betaler først når anmeldelsen faktisk er borte.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Først en ærlig vurdering"] },
+    { t: "cta", title: "Ikke lyst til å vente i ukevis og håpe?", text: "Velg anmeldelsene som skal bort, og se prisen med en gang. **Fra 179 € per fjernet anmeldelse**, som regel ferdig på 3–5 dager (opptil 4 uker, med tekst) eller 1–2 uker – og du betaler først når anmeldelsen faktisk er borte.", btn: "Velg anmeldelser", href: "/no/sjekk-profil/?start=reviews", trust: ["Ingenting på forskudd", "Betal per fjernet anmeldelse", "Først en ærlig vurdering"] },
 
     { t: "h2", id: "rejected", text: "Hvorfor Google avviser rapporter", toc: "Hvorfor avslag?" },
     { t: "p", text: "De fleste avslag har én av tre årsaker. Alle kan unngås – bortsett fra den siste." },
@@ -76,7 +76,7 @@ const article = {
       "**Dokumentasjon og kontekst:** hva som mangler i kunderegisteret ditt, hva som skiller seg ut på anmelderens profil, hvilke formuleringer som er krenkende eller usanne.",
       "**Handle raskt:** ferske anmeldelser er mye lettere å fjerne. Hos oss er sjansen **ca. 90 % for anmeldelser opptil 4 uker gamle** og **ca. 50 % for eldre anmeldelser**.",
     ] },
-    { t: "p", text: "Derfor koster en anmeldelse som er eldre enn 4 uker, hos oss **250 €** i stedet for 99 € – jobben er større og sjansen mindre. Ved en bølge av [falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/) lønner det seg altså å reagere innen dager, ikke måneder." },
+    { t: "p", text: "Derfor koster en anmeldelse som er eldre enn 4 uker, hos oss **250 €** i stedet for 179 € – jobben er større og sjansen mindre. Ved en bølge av [falske Google-anmeldelser](/no/magasin/fjern-falske-google-anmeldelser/) lønner det seg altså å reagere innen dager, ikke måneder." },
 
     { t: "h2", id: "waiting", text: "Dette kan du gjøre mens du venter", toc: "Mens du venter" },
     { t: "p", text: "Å vente betyr ikke å sitte stille. Slik begrenser du skaden mens Google tar en avgjørelse:" },
@@ -100,7 +100,7 @@ const article = {
     { q: "Hvorfor har rapporten min stått på «Decision pending» i flere uker?", a: "Noen rapporter vurderes manuelt, og det kan ta lengre tid; Google oppgir ingen frist. Sjekk at du har valgt riktig kategori – en sterk og korrekt rapport er den beste måten å få fart på saken." },
     { q: "Får anmelderen vite hvem som rapporterte anmeldelsen?", a: "Nei. Når vi ber om en fjerning, får anmelderen ikke vite hvem som ba om den." },
     { q: "Kan en fjernet anmeldelse komme tilbake?", a: "En anmeldelse som er fjernet på grunn av et brudd, kommer normalt ikke tilbake. Personen kan likevel skrive en ny anmeldelse; den vurderes da for seg og kan rapporteres på nytt hvis den også bryter reglene." },
-    { q: "Betaler jeg mer hvis det tar lengre tid?", a: "Nei. Prisen er **99 € per fjernet anmeldelse** (250 € for anmeldelser eldre enn 4 uker eller uten tekst), uansett hvor lang tid det tar – og du betaler bare hvis anmeldelsen faktisk er borte. Rene stjernevurderinger uten tekst fjerner vi med en mer omfattende prosedyre til 250 € per fjernet anmeldelse – også her uten tillegg for tid." },
+    { q: "Betaler jeg mer hvis det tar lengre tid?", a: "Nei. Prisen er **179 € per fjernet anmeldelse** (250 € for anmeldelser eldre enn 4 uker eller uten tekst), uansett hvor lang tid det tar – og du betaler bare hvis anmeldelsen faktisk er borte. Rene stjernevurderinger uten tekst fjerner vi med en mer omfattende prosedyre til 250 € per fjernet anmeldelse – også her uten tillegg for tid." },
   ],
   related: [
     { label: "Slette Google-bedriftsprofil", url: "/no/magasin/slett-google-bedriftsprofil/" },

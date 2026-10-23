@@ -5,14 +5,14 @@ import React from "react";
 import { ShieldCheck, Sparkles, Check, Plus, X, Store, Star, ArrowRight, Loader2, Lock, Trash2 } from "lucide-react";
 import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
-import { vatNote } from "@/lib/pricing";
+import { vatNote, PRICE_V2_FRESH, PRICE_V2_OTHER } from "@/lib/pricing";
 import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
 const fmt = (v, usd) => { const n = Math.round(v * 100) / 100; const s = Number.isInteger(n) ? String(n) : n.toFixed(2); return usd ? "$" + s : s.replace(".", ",") + " €"; };
 
-/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – Preismodell 2: 99 bis 4 Wochen mit Text / 250 alle anderen,
+/** Preisrechnung wie am Server (Profil: Festpreis; Bewertungen – Preismodell 2: 179 bis 4 Wochen mit Text / 250 alle anderen (Werte aus pricing.js),
  *  Mengen- oder Chat-Rabatt, der höhere; PayPal/Wise −10 % statt Chat-Rabatt). */
 export function priceOf({ service, country, pct = 0, reviews = [], payPref = "none" }) {
   const usd = country === "US";
@@ -22,13 +22,13 @@ export function priceOf({ service, country, pct = 0, reviews = [], payPref = "no
     const n250 = reviews.filter((r) => r.sw || r.age === "old").length; // älter als 4 Wochen oder ohne Text (Software inklusive)
     const nSw = 0; // kein eigener Software-Preis mehr
     const nOld = n250;
-    const sub = (n - n250) * 99 + n250 * 250;
+    const sub = (n - n250) * PRICE_V2_FRESH + n250 * PRICE_V2_OTHER;
     const vp = volPct(n), cp = pp ? 0 : pct;
     const d = Math.max(vp, cp);
     let total = Math.round((sub * (100 - d)) / 100);
     const payD = pp ? Math.round(total * 0.1) : 0;
     total -= payD;
-    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: 99, unitOld: 250, nSw, n250 };
+    return { usd, sub, d, dKind: d === 0 ? "" : cp >= vp ? "chat" : "vol", payD, total, unit: PRICE_V2_FRESH, unitOld: PRICE_V2_OTHER, nSw, n250 };
   }
   const base = service === "reset" ? (usd ? 950 : 850) : (usd ? 495 : 450);
   const cp = pp ? 0 : pct;
@@ -48,7 +48,7 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
       <div className="so-h"><span className="so-ic"><Icon /></span><b>{c.svc[co.service]}</b></div>
       <div className="so-p">
         {co.service === "reviews"
-          ? <><s className={co.pct ? "" : "hide"}>{fmt(99, p.usd)}</s><b>{fmt(Math.round(99 * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
+          ? <><s className={co.pct ? "" : "hide"}>{fmt(PRICE_V2_FRESH, p.usd)}</s><b>{fmt(Math.round(PRICE_V2_FRESH * (100 - (co.pct || 0)) / 100), p.usd)}</b><span>{c.perRev} · {vatNote(lang)}</span></>
           : <>{co.pct ? <s>{fmt(p.sub, p.usd)}</s> : null}<b>{fmt(p.total, p.usd)}</b><span>{vatNote(lang)}</span></>}
       </div>
       <div className="so-f"><ShieldCheck />{c.after}</div>
@@ -138,7 +138,7 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
       <div className="co-body">
         <div className="co-sum">
           <div className="cs-h"><span>{c.svc[co.service]}</span>{co.pct && payPref === "none" ? <em><Sparkles />−{co.pct} %</em> : null}</div>
-          {isRev ? <div className="cs-r"><span>{[revs.length - p.n250 ? `${revs.length - p.n250} × ${fmt(99, p.usd)}` : "", p.n250 ? `${p.n250} × ${fmt(250, p.usd)}` : ""].filter(Boolean).join(" + ")}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
+          {isRev ? <div className="cs-r"><span>{[revs.length - p.n250 ? `${revs.length - p.n250} × ${fmt(PRICE_V2_FRESH, p.usd)}` : "", p.n250 ? `${p.n250} × ${fmt(PRICE_V2_OTHER, p.usd)}` : ""].filter(Boolean).join(" + ")}</span><span>{fmt(p.sub, p.usd)}</span></div> : <div className="cs-r"><span>{c.svc[co.service]}</span><span>{fmt(p.sub, p.usd)}</span></div>}
           {p.d ? <div className="cs-r dc"><span>{p.dKind === "vol" ? c.volDisc : c.chatDisc} −{p.d} %</span><span>−{fmt(p.sub - (isRev ? Math.round((p.sub * (100 - p.d)) / 100) : Math.round(p.sub * (100 - p.d)) / 100), p.usd)}</span></div> : null}
           {p.payD ? <div className="cs-r dc"><span>{c.payDisc} −10 %</span><span>−{fmt(p.payD, p.usd)}</span></div> : null}
           <div className="cs-t"><span>{isRev ? c.maxTotal : c.total} · {vatNote(lang)}</span><b key={p.total}>{fmt(p.total, p.usd)}</b></div>

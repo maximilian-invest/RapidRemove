@@ -721,7 +721,7 @@ function SpeedPick({ xOn, setXOn, n99, n250, cur, avail = true }) {
     </>
   );
 }
-/** Zeitraum-Zeile unter der Auswahl (alle Kunden): 99er meist 3–5 Tage, 250er meist 1–2 Wochen. */
+/** Zeitraum-Zeile unter der Auswahl (alle Kunden): Frisch-Preis-Bewertungen (179er; Bestand 99er) meist 3–5 Tage, 250er meist 1–2 Wochen. */
 const TfLine = ({ n99, n250 }) => {
   if (!n99 && !n250) return null;
   const xp = xpCopy(LANG);

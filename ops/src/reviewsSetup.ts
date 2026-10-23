@@ -14,10 +14,15 @@
  * Setup-Lauf ist damit optional, nicht mehr Voraussetzung.
  */
 
+import { REVIEW_BASE } from "./reviewsPricing";
+
 export type ReviewsCur = "eur" | "usd";
 type Cur = ReviewsCur;
 
-const PRICE_MAJOR: Record<Cur, number> = { eur: 179, usd: 179 };
+/* Stückpreis der Mengen-Links = REVIEW_BASE (179). Diese Links werden NUR genutzt, wenn quoteReviews(...).simple:
+ * alle Bewertungen zu genau diesem Stückpreis, ohne Rabatt/Express. Bewertungen mit lp (99 Bestand, 179 neu, 250)
+ * gehen immer über ensureReviewsAmountLink (exakter Betrag) – so wird ein 99er-Auftrag nie mit 179 abgerechnet. */
+const PRICE_MAJOR: Record<Cur, number> = { eur: REVIEW_BASE, usd: REVIEW_BASE };
 const MAX_QTY = 10;
 const MARK = "rapidremove_reviews";
 const PRODUCT_NAME = "Removal of an individual Google review";

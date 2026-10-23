@@ -4,9 +4,9 @@
    Wizard und Rechnung (reviewsPricing.ts). Wird in eine NoteBox eingesetzt. */
 import * as React from "react";
 import { brand } from "./components";
-import { quoteReviews, fmtReviewMoney, EXPRESS_CUSTOMER_H, PRICE_V2_FRESH, PRICE_V2_OTHER, type PricedItem } from "../reviewsPricing";
+import { quoteReviews, fmtReviewMoney, EXPRESS_CUSTOMER_H, PRICE_V2_FRESH, PRICE_V2_FRESH_LEGACY, PRICE_V2_OTHER, type PricedItem } from "../reviewsPricing";
 
-/** freshL/otherL/xL/max: Preismodell 2 (99/250 + Express); {h} = Express-Zusage in Stunden (Start Mo 0:00 – Fr 12:00 Wiener Zeit;
+/** freshL/otherL/xL/max: Preismodell 2 (179/250 + Express; Bestand 99); {h} = Express-Zusage in Stunden (Start Mo 0:00 – Fr 12:00 Wiener Zeit;
  *  Start Fr 12:00 – So 24:00 → gelöscht bis Dienstag 24:00). */
 interface Labels { freshL: string; otherL: string; xL: string; max: string; cpL: string; h: string; newL: string; oldL: string; ntL: string; subA: string; subS: string; disc: string; total: string; note: string }
 
@@ -46,7 +46,8 @@ export function ReviewPriceLines({ lang = "en", items, currency, minPct = 0 }: {
       {q.nNew ? <span style={row}>{q.nNew} × {f(q.base)} ({l.newL}) = {f(q.nNew * q.base)}</span> : null}
       {q.nOld ? <span style={row}>{q.nOld} × {f(q.oldPrice)} ({l.oldL}) = {f(q.nOld * q.oldPrice)}</span> : null}
       {q.nNt ? <span style={row}>{q.nNt} × {f(q.ntPrice)} ({l.ntL}) = {f(q.nNt * q.ntPrice)}</span> : null}
-      {q.n99 ? <span style={row}>{q.n99} × {f(PRICE_V2_FRESH)} ({l.freshL}) = {f(q.n99 * PRICE_V2_FRESH)}</span> : null}
+      {q.nFreshOld ? <span style={row}>{q.nFreshOld} × {f(PRICE_V2_FRESH_LEGACY)} ({l.freshL}) = {f(q.nFreshOld * PRICE_V2_FRESH_LEGACY)}</span> : null}
+      {q.nFreshNew ? <span style={row}>{q.nFreshNew} × {f(PRICE_V2_FRESH)} ({l.freshL}) = {f(q.nFreshNew * PRICE_V2_FRESH)}</span> : null}
       {q.n250 ? <span style={row}>{q.n250} × {f(PRICE_V2_OTHER)} ({l.otherL}) = {f(q.n250 * PRICE_V2_OTHER)}</span> : null}
       {q.nX ? <span style={row}>{q.nX} × +{f(q.xFee)} Express ({l.xL.replace("{h}", String(EXPRESS_CUSTOMER_H))}) = {f(q.xTotal)}</span> : null}
       {q.cpLines.map((c) => <span key={c.price} style={row}>{c.n} × {f(c.price)} ({l.cpL}) = {f(c.n * c.price)}</span>)}

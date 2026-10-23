@@ -5,7 +5,7 @@ const article = {
     slug: "hur-lang-tid-tar-google-ta-bort-recension",
     title: "Hur lång tid tar det att ta bort en Google-recension? (2026)",
     h1: "Hur lång tid tar det innan Google tar bort en recension?",
-    description: "Hur lång tid tar det att ta bort en Google-recension? Från timmar till veckor. Tidslinje, status, överklagande – hos oss från 99 €, betala först när den är borta.",
+    description: "Hur lång tid tar det att ta bort en Google-recension? Från timmar till veckor. Tidslinje, status, överklagande – hos oss från 179 €, betala först när den är borta.",
     keywords: ["hur lång tid tar det att ta bort google recension", "google recension rapporterad hur lång tid", "ta bort google recension tid", "reviews management tool google", "överklaga google recension", "rapporterat google recension inget händer", "status rapporterad recension google"],
     author: "Maximilian Hölzl",
     authorRole: "Google-expert",
@@ -58,7 +58,7 @@ const article = {
       "**Slutligt beslut** – efter överklagandet är vägen i verktyget slut. Bara vid olagligt innehåll återstår en [juridisk begäran om borttagning](https://support.google.com/legal/answer/3110420).",
     ] },
 
-    { t: "cta", title: "Ingen lust att vänta i veckor och hoppas?", text: "Välj de recensioner som ska bort och se priset direkt. **Från 99 € per borttagen recension**, oftast klart inom 3–5 dagar (upp till 4 veckor, med text) eller 1–2 veckor – och du betalar först när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
+    { t: "cta", title: "Ingen lust att vänta i veckor och hoppas?", text: "Välj de recensioner som ska bort och se priset direkt. **Från 179 € per borttagen recension**, oftast klart inom 3–5 dagar (upp till 4 veckor, med text) eller 1–2 veckor – och du betalar först när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
     { t: "h2", id: "rejected", text: "Varför Google avslår rapporter", toc: "Varför avslag?" },
     { t: "p", text: "De flesta avslag har en av tre orsaker. Alla går att undvika – utom den sista." },
@@ -76,7 +76,7 @@ const article = {
       "**Bevis och sammanhang:** vad som saknas i dina kundregister, vad som sticker ut i skribentens profil, vilka formuleringar som är kränkande eller osanna.",
       "**Agera snabbt:** färska recensioner är mycket lättare att ta bort. Hos oss är chansen **ca 90 % för recensioner upp till 4 veckor gamla** och **ca 50 % för äldre recensioner**.",
     ] },
-    { t: "p", text: "Därför kostar en recension som är äldre än 4 veckor hos oss **250 €** i stället för 99 € – arbetet är större och chansen mindre. Vid en våg av [falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) lönar det sig alltså att agera inom dagar, inte månader." },
+    { t: "p", text: "Därför kostar en recension som är äldre än 4 veckor hos oss **250 €** i stället för 179 € – arbetet är större och chansen mindre. Vid en våg av [falska Google-recensioner](/sv/magasin/ta-bort-falska-google-recensioner/) lönar det sig alltså att agera inom dagar, inte månader." },
 
     { t: "h2", id: "waiting", text: "Det här kan du göra medan du väntar", toc: "Medan du väntar" },
     { t: "p", text: "Att vänta betyder inte att sitta still. Så begränsar du skadan medan Google beslutar:" },
@@ -100,7 +100,7 @@ const article = {
     { q: "Varför har min rapport stått på ”Decision pending” i flera veckor?", a: "Vissa rapporter granskas manuellt och det kan ta längre tid; Google anger ingen tidsgräns. Kontrollera att du valt rätt kategori – en stark och korrekt rapport är det bästa sättet att snabba på." },
     { q: "Får skribenten veta vem som rapporterade recensionen?", a: "Nej. När vi begär en borttagning får skribenten inte veta vem som bad om den." },
     { q: "Kan en borttagen recension komma tillbaka?", a: "En recension som tagits bort på grund av en överträdelse kommer normalt inte tillbaka. Personen kan däremot skriva en ny recension; den granskas då på nytt för sig och kan rapporteras igen om den också bryter mot reglerna." },
-    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **99 € per borttagen recension** (250 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Stjärnbetyg utan text kostar oavsett ålder 250 € per borttaget betyg." },
+    { q: "Betalar jag mer om det tar längre tid?", a: "Nej. Priset är **179 € per borttagen recension** (250 € för recensioner äldre än 4 veckor), oavsett hur lång tid det tar – och du betalar bara om recensionen verkligen är borta. Stjärnbetyg utan text kostar oavsett ålder 250 € per borttaget betyg." },
   ],
   related: [
     { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },
