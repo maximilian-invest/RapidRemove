@@ -64,6 +64,7 @@ import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend, pool } from "./db";
 import { getDunPause, setDunPause, clearDunPause } from "./dunPause";
+import { sendOrderWebhook } from "./orderWebhook";
 
 
 
@@ -819,6 +820,8 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
       await insertEvent({ orderId: id, type: "order", title: isPress ? "Presse-Prüfung angefragt" : "Bestellung eingegangen", detail: `${id} erstellt` });
       if (result.customer) await insertEvent({ orderId: id, type: "mail", title: isPress ? "Eingangsbestätigung Presse gesendet" : "Bestellbestätigung gesendet", detail: `an ${email}`, auto: true, html, subject: t.subject(props) });
       result.saved = true;
+      // Outgoing webhook notification (fire-and-forget)
+      void sendOrderWebhook(id, { name, email, company, profile, country: clip(b.country, 6) || "DE", service, amount: Number(b.amount) || 0, raw: b as Record<string, unknown> }, (msg, extra) => app.log.info({ orderId: id, ...extra }, `orderWebhook: ${msg}`)).catch(() => {});
     }
   } catch (e) {
     app.log.error({ err: e }, "Bestellung speichern fehlgeschlagen");
@@ -910,6 +913,8 @@ app.post("/admin/orders/create", async (req, reply) => {
     });
     if (staff) await setOrderAssignee(id, staff).catch(() => false);
     await insertEvent({ orderId: id, type: "order", title: "Auftrag manuell angelegt (Admin)", detail: `${id} · ${type === "reviews" ? items.length + " Bewertung(en)" : "Profil löschen" + (reason ? " · " + reason : "")} · ${autoPay ? "automatische Abbuchung" + (gate ? " (wartet auf Zahlungsart)" : "") : pay === "paypal" ? "PayPal (−10 %)" : pay === "invoice" ? "Rechnung" : "Zahlungslink"}` });
+    // Outgoing webhook notification (fire-and-forget)
+    void sendOrderWebhook(id, { name, email, company, profile: company || mapsUri, country, service, amount, raw }, (msg, extra) => app.log.info({ orderId: id, ...extra }, `orderWebhook: ${msg}`)).catch(() => {});
   } catch (e) {
     app.log.error({ err: e }, "Admin-Auftrag anlegen fehlgeschlagen");
     return reply.code(500).send({ ok: false, error: String((e as Error)?.message || e).slice(0, 200) });
