@@ -16,9 +16,9 @@ import {
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
-import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf, orderParts, money } from "./model";
+import { STAFF, staffOf, computeOffer, readTplUsage, bumpTplUsage, STORNO_KEYS, AUTO_KEYS, isOffen, revState, cur, payPrefOf, bucketsOf, orderParts, money, pendingWhy } from "./model";
 import PaidCelebration from "./Celebrate";
-import { OrdersList, OrderDetail, ReviewsScreen, keyOf, OrderInfoScreen, isPayOpen, RStars, rvStars } from "./OrdersScreens";
+import { OrdersList, OrderDetail, ReviewsScreen, keyOf, freeItems, OrderInfoScreen, isPayOpen, RStars, rvStars } from "./OrdersScreens";
 import NewOrder from "./NewOrder";
 import AddReviews from "./AddReviews";
 import PriceEdit from "./PriceEdit";
@@ -474,25 +474,25 @@ function RefundBox({ t, ctx, done }) {
   );
 }
 
-/** „Dem Partner zuweisen" – entzogene Bewertung(en) wieder an einen Partner (Auswahl). Gleicher Partner → gleiche RV-Nummer
- *  wird wieder aktiv; anderer Partner → neue Aufgabe zu seinen Preisen. Kunde merkt nichts. */
+/** „Dem Partner zuweisen" – Bewertung(en) ohne aktive Partner-Aufgabe an einen Partner (Auswahl): entzogene (gleicher Partner →
+ *  gleiche RV-Nummer wieder aktiv; anderer → neue Aufgabe zu seinen Preisen) und nie übergebene (z. B. Weiterleitung aus). */
 function AssignSheet({ o, keys, ctx, close }) {
   const { ptasks, toast, partners } = ctx;
   const [busy, setBusy] = React.useState(false);
   const pt = ptasks[o.id] || [];
-  const active = new Set(pt.filter((t) => t.status !== "cancelled").map((t) => t.itemKey));
-  const last = new Map();
-  for (const t of pt) if (t.withdrawn && t.origKey && !active.has(t.origKey) && (!last.has(t.origKey) || String(t.withdrawn) > String(last.get(t.origKey).withdrawn))) last.set(t.origKey, t);
-  const list = [...last.values()].filter((t) => !keys || keys.includes(t.origKey));
+  const free = freeItems(o, pt, keys);
+  const list = free.filter((x) => x.wt).map((x) => x.wt); // entzogene (mit RV-Nummer)
+  const fresh = free.filter((x) => !x.wt); // noch nie beim Partner
   const opts = ((partners && partners.partners) || []).filter((p) => p.active && (p.status || "active") === "active");
   const prev = list[0] && list[0].partnerId;
+  const gates = pendingWhy(o);
   const [pid, setPid] = React.useState(() => (opts.some((p) => p.id === prev) ? prev : opts[0] ? opts[0].id : null));
   React.useEffect(() => { if (!partners && ctx.loadPartners) ctx.loadPartners(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   React.useEffect(() => { if (pid == null && opts.length) setPid(opts.some((p) => p.id === prev) ? prev : opts[0].id); }, [opts.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const run = async () => {
     setBusy(true);
     try {
-      const r = await partnerAssign({ orderId: o.id, partnerId: pid, keys: list.map((t) => t.origKey) });
+      const r = await partnerAssign({ orderId: o.id, partnerId: pid, keys: free.map((x) => x.key) });
       const n = (r.assigned || []).length, nm = (opts.find((p) => p.id === pid) || {}).name || "Partner";
       toast(`${n === 1 ? r.assigned[0].code : n + " Bewertungen"} → ${nm}${(r.skipped || []).length ? ` · ${r.skipped.length} übersprungen` : ""}`);
       if (ctx.loadPtasks) await ctx.loadPtasks();
@@ -501,22 +501,23 @@ function AssignSheet({ o, keys, ctx, close }) {
   };
   return (
     <><span className="shx"><Redo2 /></span>
-      <h3 style={{ paddingBottom: 6 }}>{list.length === 1 ? `${list[0].code} dem Partner zuweisen` : `${list.length} Bewertungen dem Partner zuweisen`}</h3>
-      {!list.length ? <p className="shp">Hier ist nichts entzogen – alles liegt schon beim Partner.</p> : (
+      <h3 style={{ paddingBottom: 6 }}>{free.length === 1 ? `${list[0] ? list[0].code : free[0].it.name || "Bewertung"} dem Partner zuweisen` : `${free.length} Bewertungen dem Partner zuweisen`}</h3>
+      {!free.length ? <p className="shp">Alles liegt schon beim Partner.</p> : (
         <>
-          <p className="shp">Der Job ist danach beim Partner wieder aktiv. Gleicher Partner wie vorher: gleiche RV-Nummer. Anderer Partner: neue Nummer zu seinen Preisen.</p>
+          <p className="shp">{list.length ? "Entzogene Jobs sind danach wieder aktiv – gleicher Partner wie vorher: gleiche RV-Nummer, anderer Partner: neue Nummer zu seinen Preisen. " : ""}{fresh.length ? `${fresh.length === 1 ? "1 Bewertung war" : fresh.length + " Bewertungen waren"} noch nie beim Partner und ${fresh.length === 1 ? "bekommt" : "bekommen"} eine neue RV-Nummer.` : ""}</p>
+          {gates.length ? <p className="shn warn"><AlertTriangle />Auftrag wartet noch auf: {gates.join(", ")}. Zuweisen startet die Bewertungen trotzdem beim Partner.</p> : null}
           <p className="shl">Partner</p>
           <div className="opts" style={{ marginBottom: 12 }}>
             {!opts.length ? <p className="shp">{partners ? "Kein aktiver Partner." : "Lädt …"}</p> : opts.map((p) => (
               <button key={p.id} type="button" className="aopt" onClick={() => setPid(p.id)}><span className="ico"><Handshake /></span><span className="ol">{p.name}{p.id === prev ? <><br /><small>hatte den Job vorher</small></> : null}</span>{pid === p.id ? <span className="ck"><Check /></span> : null}</button>
             ))}
           </div>
-          <p className="shn"><CheckCircle2 />Kunde merkt nichts – keine Belastung, keine Nachricht. Der Partner bekommt eine E-Mail (Englisch), dass der Job wieder bei ihm ist.</p>
+          <p className="shn"><CheckCircle2 />Kunde merkt nichts – keine Belastung, keine Nachricht. Der Partner bekommt eine E-Mail (Englisch) mit Job-Nummer und Link.</p>
           {list.some((t) => t.refund && !t.refund.settled && t.partnerId === pid) ? <p className="shn warn"><AlertTriangle />Offene Rückforderung entfällt, weil der Job wieder zum selben Partner geht.</p> : null}
         </>
       )}
       <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
-        <button type="button" className="cta or" disabled={busy || !list.length || !pid} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Redo2 />}{busy ? "Wird zugewiesen …" : "Zuweisen"}</button></div></>
+        <button type="button" className="cta or" disabled={busy || !free.length || !pid} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Redo2 />}{busy ? "Wird zugewiesen …" : "Zuweisen"}</button></div></>
   );
 }
 
@@ -714,7 +715,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         </div>
         {t && ["new", "working", "not_possible"].includes(t.status) ? <ConfirmRemoved t={t} toast={toast} done={() => { ctx.loadPtasks && ctx.loadPtasks(); close(); }} /> : null}
         {t && WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta gh" onClick={() => ctx.openSheet({ kind: "rvwithdraw", forId: o.id, ids: [t.id] })}><Undo2 />Dem Partner entziehen</button></div> : null}
-        {wt && o.status !== "storniert" ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta or" onClick={() => ctx.openSheet({ kind: "rvassign", forId: o.id, keys: [wt.origKey] })}><Redo2 />Dem Partner zuweisen</button></div> : null}
+        {it && !t && o.service === "reviews" && o.status !== "storniert" ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta or" onClick={() => ctx.openSheet({ kind: "rvassign", forId: o.id, keys: [keyOf(it)] })}><Redo2 />Dem Partner zuweisen</button></div> : null}
         {wt && wt.refund && !wt.refund.settled ? <RefundBox t={wt} ctx={ctx} done={close} /> : null}
         {wt && wt.adminNote ? <p className="shp" style={{ marginTop: 10, fontSize: 13, color: "var(--g3)" }}>{wt.code}: {wt.adminNote.split(" · ").filter((x) => x.startsWith("Dem Partner entzogen")).pop()}</p> : null}
         {it ? <p className="shp" style={{ marginTop: 12 }}>Annehmen / Ablehnen und Abrechnung laufen vorerst noch im bisherigen Admin.</p> : null}</>
