@@ -203,7 +203,7 @@ export function RoutesBlock({ ctx }) {
   };
   return (
     <>
-      <div className="sec3"><h2>Automatische Weiterleitung</h2></div>
+      <div className="sec3"><h2>Zuteilung je Leistung</h2></div>
       <p className="sh">Neue Aufträge gehen je Leistung direkt an den gewählten Partner (nur freigegebene, aktive Partner). „Aus“ = bleibt bei dir, du übergibst manuell.</p>
       <div className="info">
         {svc.map((s) => {

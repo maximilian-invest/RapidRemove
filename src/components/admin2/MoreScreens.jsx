@@ -218,6 +218,7 @@ function SettingsScreen({ ctx }) {
       <div className="anav"><button type="button" className="circ mbk" aria-label="Zurück" onClick={() => setMoreSub(null)}><ArrowLeft /></button></div>
       <div className="ttl">Einstellungen</div>
       <ExpressToggle ctx={ctx} />
+      <AutoMaster ctx={ctx} />
       <RoutesBlock ctx={ctx} />
       <div className="sec3"><h2>PayPal / Wise −10 %</h2></div>
       <p className="sh">Rabatt-Angebot am Ende des Checkouts (nur außerhalb DACH), im Website-Chat und vom Chatbot. Aus = Kunden zahlen normal per Karte/Zahlungsart.</p>
@@ -230,6 +231,34 @@ function SettingsScreen({ ctx }) {
         ))}
       </div>
       <TestPurge ctx={ctx} />
+    </>
+  );
+}
+
+/* Hauptschalter „Bewertungen automatisch an Partner" (auto_reviews, 26.10.2026). Aus = neue Bewertungs-Aufträge (Website, Admin,
+   Nachbestellung, verzögerter Start) gehen an KEINEN Partner – auch nicht an feste Partner aus „Kunden & Preise". Zuweisen dann
+   je Auftrag mit „Dem Partner zuweisen". Ausschalten nur mit zweitem Tippen. Der Wert wird nur hier geändert, nie beim Laden. */
+function AutoMaster({ ctx }) {
+  const { auto, setAuto } = ctx;
+  const [arm, setArm] = React.useState(false);
+  React.useEffect(() => { if (!arm) return undefined; const x = setTimeout(() => setArm(false), 4000); return () => clearTimeout(x); }, [arm]);
+  const on = auto ? auto.autoReviews !== false : null;
+  const tap = () => {
+    if (on === null) return;
+    if (on && !arm) { setArm(true); return; }
+    setArm(false); setAuto("autoReviews", !on);
+  };
+  return (
+    <>
+      <div className="sec3"><h2>Bewertungen automatisch an Partner</h2></div>
+      <p className="sh">Hauptschalter für alle neuen Bewertungs-Aufträge (Website, Admin, Nachbestellungen). Aus = nichts geht automatisch an einen Partner, auch nicht an feste Partner aus „Kunden & Preise“ – du weist im Auftrag mit „Dem Partner zuweisen“ zu. Laufende Jobs bleiben unverändert.</p>
+      <div className="info">
+        <button type="button" className="ir" disabled={on === null} onClick={tap}>
+          <span className="ico"><Zap /></span>
+          <span className="t"><b>Hauptschalter</b><span style={arm ? { color: "var(--danger)", fontWeight: 600 } : undefined}>{on === null ? "…" : arm ? "Nochmal tippen: ausschalten" : on ? "An · neue Aufträge gehen laut Zuteilung an den Partner" : "Aus · neue Aufträge bleiben bei dir"}</span></span>
+          <span className={"tg" + (on ? " on" : "")}><i /></span>
+        </button>
+      </div>
     </>
   );
 }

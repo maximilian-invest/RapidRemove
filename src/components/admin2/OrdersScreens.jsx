@@ -146,6 +146,7 @@ export function OrderDetail({ ctx, id }) {
   // „Dem Partner entziehen": was beim Partner noch offen ist (nicht gelöscht, nicht abgerechnet) bzw. schon zurückgezogen wurde.
   const wdOpen = pt.filter((t) => ["new", "working", "software", "not_possible"].includes(t.status) && !t.paid && !t.payoutId);
   const wdDone = withdrawnFree(pt).length;
+  const freeN = isRev && o.service === "reviews" ? freeItems(o, pt).length : 0;
   const refOpen = Math.round(pt.filter((t) => t.refund && !t.refund.settled).reduce((a, t) => a + Number(t.refund.usd || 0), 0) * 100) / 100;
   const accN = o.reviewsAccepted ? o.reviewsAccepted.length : items.length;
   const f = o.form || {};
@@ -265,7 +266,7 @@ export function OrderDetail({ ctx, id }) {
       {isRev ? (
         <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button>
           {wdOpen.length && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvwithdraw", forId: o.id })}><span className="ico"><Undo2 /></span><span className="t"><span>Dem Partner entziehen</span><b>{wdOpen.length === 1 ? `${wdOpen[0].code} · offen beim Partner` : `${wdOpen.length} offen beim Partner`}</b></span><ChevronRight /></button> : null}
-          {wdDone && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvassign", forId: o.id })}><span className="ico"><Redo2 /></span><span className="t"><span>Dem Partner zuweisen</span><b>{wdDone === 1 ? "1 Bewertung entzogen · wieder zuweisen" : `${wdDone} entzogen · wieder zuweisen`}</b></span><ChevronRight /></button> : null}
+          {freeN && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvassign", forId: o.id })}><span className="ico"><Redo2 /></span><span className="t"><span>Dem Partner zuweisen</span><b>{freeN === 1 ? "1 Bewertung nicht beim Partner" : `${freeN} nicht beim Partner`}{wdDone ? ` · ${wdDone} entzogen` : ""}</b></span><ChevronRight /></button> : null}
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("bill", o.id)}><span className="ico"><Receipt /></span><span className="t"><span>Abrechnung</span><b>Gelöschte Bewertungen abrechnen</b></span><ChevronRight /></button> : null}</div>
       ) : null}
@@ -468,6 +469,16 @@ export const withdrawnFree = (pt) => {
   const m = new Map();
   for (const t of pt || []) if (t.withdrawn && t.origKey && !active.has(t.origKey) && (!m.has(t.origKey) || String(t.withdrawn) > String(m.get(t.origKey).withdrawn))) m.set(t.origKey, t);
   return [...m.values()];
+};
+/** Bewertungen ohne aktive Partner-Aufgabe (entzogen oder nie übergeben) → „Dem Partner zuweisen".
+ *  keys = gewählte Bewertungen; ohne keys alle freien, vom Admin abgelehnte (nicht in reviewsAccepted) ausgenommen. */
+export const freeItems = (o, pt, keys) => {
+  const items = (o && o.reviewItems) || [];
+  const active = new Set((pt || []).filter((t) => t.status !== "cancelled").map((t) => t.itemKey));
+  const wd = Object.fromEntries(withdrawnFree(pt).map((t) => [t.origKey, t]));
+  const acc = o && o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
+  return items.map((it) => ({ it, key: keyOf(it), wt: wd[keyOf(it)] || null }))
+    .filter((x) => !active.has(x.key) && (keys ? keys.includes(x.key) : !acc || acc.has(x.key)));
 };
 /** Sterne einer Bewertung (aus der Bestellung bzw. der Partner-Aufgabe). */
 export const rvStars = (it, t) => { const n = Math.round(Number((it && it.rating) || (t && t.rating)) || 0); return n >= 1 && n <= 5 ? n : 0; };

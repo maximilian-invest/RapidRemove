@@ -499,7 +499,7 @@ export async function withdrawTasks(ids: number[], noteIn: unknown, refundsIn: u
   return { done, skipped };
 }
 
-/** Entzogene Bewertungen wieder einem Partner zuweisen (Gegenstück zu withdrawTasks).
+/** Bewertungen einem Partner zuweisen: entzogene (Gegenstück zu withdrawTasks) und noch nie übergebene.
  *  Gleicher Partner → dieselbe Aufgabe (gleiche RV-Nummer, gleicher Preis) wird wieder aktiv („new").
  *  Anderer Partner → neue Aufgabe für diesen Partner (seine Preise); die alte bleibt beim alten Partner unter „Cancelled".
  *  keys = ursprüngliche Bewertungs-Schlüssel; ohne keys: alle entzogenen, freien Bewertungen des Auftrags. */
@@ -515,15 +515,27 @@ export async function assignWithdrawn(orderId: string, keysIn: string[] | null, 
   const active = new Set(tasks.filter((t) => t.status !== "cancelled").map((t) => t.item_key));
   const lastW = new Map<string, Row>(); // je Bewertung die zuletzt entzogene Aufgabe
   for (const t of tasks) if (t.withdrawn_at && t.orig_item_key) { const c = lastW.get(t.orig_item_key); if (!c || String(t.withdrawn_at) > String(c.withdrawn_at)) lastW.set(t.orig_item_key, t); }
-  const keys = keysIn && keysIn.length ? [...new Set(keysIn)] : [...lastW.keys()].filter((k) => !active.has(k));
   const items = (Array.isArray(o.raw?.reviewItems) ? o.raw!.reviewItems : []) as Record<string, unknown>[];
   const keyOfIt = (it: Record<string, unknown>) => String(it.url || "") || `${it.name || ""}|${it.text || ""}`;
+  // Ohne keys: alle Bewertungen ohne aktive Partner-Aufgabe – entzogene und (z. B. bei ausgeschalteter Weiterleitung) nie übergebene;
+  // vom Admin abgelehnte (nicht in reviewsAccepted) nur, wenn ausdrücklich gewählt.
+  const accepted = Array.isArray(o.raw?.reviewsAccepted) ? new Set((o.raw!.reviewsAccepted as Record<string, unknown>[]).map(keyOfIt)) : null;
+  const keys = keysIn && keysIn.length ? [...new Set(keysIn)]
+    : [...new Set([...lastW.keys(), ...items.map(keyOfIt).filter((k) => !accepted || accepted.has(k))])].filter((k) => !active.has(k));
   const customer = clip(o.profile || o.company || o.name, 160) || null;
   const reactivated: Row[] = []; const refundCancelled: Row[] = [];
   for (const k of keys) {
     const w = lastW.get(k) || null;
     if (active.has(k)) { skipped.push({ key: k, code: w?.code || null, why: "liegt schon beim Partner" }); continue; }
-    if (!w) { skipped.push({ key: k, code: null, why: "war nicht entzogen" }); continue; }
+    if (!w) {
+      // Noch nie beim Partner (Weiterleitung aus / manuell) → neue Aufgabe aus der Bestellung (Mail „New order"/„Review added").
+      const it = items.find((x) => keyOfIt(x) === k);
+      if (!it) { skipped.push({ key: k, code: null, why: "Bewertung nicht im Auftrag" }); continue; }
+      const rows = await insertPartnerTasks(orderId, customer, [it], partnerId);
+      if (!rows[0] || rows[0].status === "cancelled") { skipped.push({ key: k, code: null, why: "konnte nicht angelegt werden" }); continue; }
+      done.push(rows[0]); active.add(k);
+      continue;
+    }
     if (w.partner_id && Number(w.partner_id) === partnerId) {
       // Gleicher Partner: dieselbe Aufgabe wieder aktiv (Schlüssel zurück, Status „new"). Offene Rückforderung entfällt
       // (er hat das Geld schon und arbeitet den Job jetzt wieder; eine bezahlte Aufgabe wird nicht nochmal ausgezahlt).
