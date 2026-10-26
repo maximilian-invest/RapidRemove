@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerConfirmRemoved, partnerSettings, partnersList,
-  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
+  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, partnerWithdraw, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
@@ -28,7 +28,7 @@ import { MahnSheet } from "./Mahnung";
 import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
-import { AlertTriangle, Loader as LoaderIcon, Banknote } from "lucide-react";
+import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 import { useHistState, useHardLeave } from "./navHistory";
 import { openGoogleLink, needsSafari } from "@/lib/open-google";
@@ -407,6 +407,51 @@ function ConfirmRemoved({ t, toast, done }) {
   );
 }
 
+/** Datum (TT.MM.) für Hinweise. */
+const t0Date = (v) => (v ? new Date(v).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" }) : "");
+/** Partner-Status, aus denen der Admin zurückziehen kann (wie ops/src/partner.ts › WITHDRAWABLE). */
+const WITHDRAWABLE = ["new", "working", "software", "not_possible"];
+const WD_ST = { new: "nicht gestartet", working: "Partner arbeitet", software: "Software", not_possible: "nicht möglich" };
+
+/** „Vom Partner zurückziehen" – einzelne Bewertung (ids) oder alle offenen des Auftrags (ids = null).
+ *  Partner: Aufgabe → „Cancelled" (kein Working/Removed/Software/Not possible mehr, nicht abrechenbar).
+ *  Kunde: nichts – keine Belastung, keine Nachricht, Auftrag bleibt In Bearbeitung. Bewertung ist danach wieder frei. */
+function WithdrawSheet({ o, ids, ctx, close }) {
+  const { ptasks, toast } = ctx;
+  const [note, setNote] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const list = (ptasks[o.id] || []).filter((t) => WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId && (!ids || ids.includes(t.id)));
+  const sw = list.filter((t) => t.status === "software").length;
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await partnerWithdraw(ids ? { ids: list.map((t) => t.id), note } : { orderId: o.id, note });
+      const n = (r.withdrawn || []).length, sk = r.skipped || [];
+      toast(n ? `${n === 1 ? r.withdrawn[0].code : n + " Bewertungen"} vom Partner zurückgezogen${sk.length ? ` · ${sk.length} übersprungen` : ""}` : `Nichts zurückgezogen${sk[0] ? " – " + sk[0].why : ""}`);
+      if (ctx.loadPtasks) await ctx.loadPtasks();
+      close();
+    } catch (e) { toast("Fehler: " + e.message); setBusy(false); }
+  };
+  return (
+    <><span className="shx"><Undo2 /></span>
+      <h3 style={{ paddingBottom: 6 }}>{ids && list.length === 1 ? `${list[0].code} vom Partner zurückziehen?` : "Vom Partner zurückziehen?"}</h3>
+      {!list.length ? <p className="shp">Beim Partner ist nichts mehr offen (gelöschte oder abgerechnete Bewertungen kann man nicht zurückziehen).</p> : (
+        <>
+          <p className="shp">{list.length === 1 ? "Diese Bewertung" : `Diese ${list.length} Bewertungen`} {list.length === 1 ? "geht" : "gehen"} beim Partner auf „Cancelled“. Er kann sie nicht mehr bearbeiten oder abrechnen. Danach {list.length === 1 ? "ist sie" : "sind sie"} im Admin wieder frei.</p>
+          <div className="opts" style={{ marginBottom: 12 }}>
+            {list.slice(0, 8).map((t) => <div key={t.id} className="aopt"><span className="ico"><Handshake /></span><span className="ol"><b>{t.code}</b> · {t.name || t.reviewer || "Bewertung"}<br /><small>{WD_ST[t.status] || t.status}</small></span></div>)}
+            {list.length > 8 ? <p className="shp" style={{ margin: "6px 4px 0" }}>+ {list.length - 8} weitere</p> : null}
+          </div>
+          <p className="shn"><CheckCircle2 />Kunde merkt nichts: keine Belastung, keine Nachricht, der Auftrag bleibt „In Bearbeitung“.</p>
+          {sw ? <p className="shn warn"><AlertTriangle />{sw === 1 ? "1 Bewertung steht" : sw + " Bewertungen stehen"} auf Software. Hat der Kunde die Software-Entscheidung noch offen, bitte selbst mit ihm klären.</p> : null}
+          <div className="usrch in-sheet" style={{ margin: "4px 0 14px" }}><ClipboardList /><input placeholder="Notiz (optional, nur intern)" maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} /></div>
+        </>
+      )}
+      <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
+        <button type="button" className="cta red" disabled={busy || !list.length} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Undo2 />}{busy ? "Wird zurückgezogen …" : "Zurückziehen"}</button></div></>
+  );
+}
+
 function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doStorno, doReactivate }) {
   const { f, setF, act, toast, ptasks, shots, openViewer, mon, monLoad, monScan, now, doStatus, reload, closeDrawer } = ctx; // doStatus/reload/closeDrawer: „Löschung abgeschlossen & abbuchen"
   const [cat, setCat] = React.useState(null);
@@ -583,13 +628,15 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const items = o.reviewItems || [];
     const it = sheet.idx >= 0 ? items[sheet.idx] : null;
     const t = it ? (ptasks[o.id] || []).find((x) => x.itemKey === keyOf(it)) : null;
+    // Vom Partner zurückgezogen (Schlüssel umbenannt, origKey = Bewertung) – nur Info, solange keine neue Aufgabe läuft.
+    const wt = it && !t ? (ptasks[o.id] || []).filter((x) => x.withdrawn && x.origKey === keyOf(it)).sort((a, b) => String(b.withdrawn).localeCompare(String(a.withdrawn)))[0] || null : null;
     const sh = (shots[o.id] && shots[o.id].shots || []).find((s) => s.idx === sheet.idx && s.status === "ok");
     const acc = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
     const dec = it && acc ? (acc.has(keyOf(it)) ? (it.old ? "Angenommen · älter 4 Wo." : "Angenommen") : "Abgelehnt") : null;
     const title = it ? (t ? t.code + " · " : "#" + (sheet.idx + 1) + " · ") + (it.name || "Bewertung") : "Profil";
     body = (
       <><h3 style={{ paddingBottom: 2 }}>{title} <RStars n={rvStars(it, t)} /></h3>
-        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
+        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : wt ? `Vom Partner zurückgezogen (${t0Date(wt.withdrawn)}) · frei` : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
         {it && it.text ? <p className="shq">„{it.text}“</p> : null}
         <div className="opts" style={{ marginTop: 12 }}>
           <Opt onClick={() => (sh ? openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title, sub: "Screenshot", open: it && it.url }) : toast("Noch kein Screenshot vorhanden"))} right={<ChevronRight className="chev" />}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
@@ -598,8 +645,12 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
           {sh ? <a className="aopt" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span>Herunterladen<ChevronRight className="chev" /></a> : null}
         </div>
         {t && ["new", "working", "not_possible"].includes(t.status) ? <ConfirmRemoved t={t} toast={toast} done={() => { ctx.loadPtasks && ctx.loadPtasks(); close(); }} /> : null}
+        {t && WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta gh" onClick={() => ctx.openSheet({ kind: "rvwithdraw", forId: o.id, ids: [t.id] })}><Undo2 />Vom Partner zurückziehen</button></div> : null}
+        {wt && wt.adminNote ? <p className="shp" style={{ marginTop: 10, fontSize: 13, color: "var(--g3)" }}>{wt.code}: {wt.adminNote.split(" · ").filter((x) => x.startsWith("Vom Partner zurückgezogen")).pop()}</p> : null}
         {it ? <p className="shp" style={{ marginTop: 12 }}>Annehmen / Ablehnen und Abrechnung laufen vorerst noch im bisherigen Admin.</p> : null}</>
     );
+  } else if (sheet && sheet.kind === "rvwithdraw" && o) {
+    body = <WithdrawSheet key={o.id + "|" + (sheet.ids || []).join(",")} o={o} ids={sheet.ids || null} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "mon") {
     const p = mon && (mon.profiles || []).find((x) => x.id === sheet.id);
     if (p) {

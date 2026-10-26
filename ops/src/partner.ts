@@ -97,8 +97,13 @@ export async function initPartnerTables(): Promise<void> {
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS long_url text`);
   // Erste Partner-Aktion (Status, Notiz, Öffnen, Link kopieren) → Kunde gilt nicht mehr als „NEW".
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS touched_at timestamptz`);
+  // 26.10.2026: Admin zieht Aufgaben vom Partner zurück (withdrawTasks) → Status „cancelled", Kunde unberührt.
+  // orig_item_key = ursprünglicher Schlüssel der Bewertung; item_key wird umbenannt, damit die Bewertung wieder frei ist
+  // (neu übergeben möglich, Kunden-/Software-Updates und Reaktivierungen treffen die zurückgezogene Aufgabe nicht mehr).
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS withdrawn_at timestamptz`);
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS orig_item_key text`);
   // Früher abgelehnte Software-Aufgaben (storniert) wieder unter „Software" zeigen – mit „Customer declined deletion".
-  await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%'
+  await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%' AND withdrawn_at IS NULL
     AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.id = partner_tasks.order_id AND o.status = 'storniert')`).catch(() => {});
   // Stornierte Aufträge: offene Aufgaben bleiben storniert (auch wenn eine ältere Regel sie zurückgeholt hat).
   await pool.query(`UPDATE partner_tasks SET status='cancelled', updated_at=now() WHERE status IN ('new','working','not_possible','software') AND paid_at IS NULL
@@ -199,6 +204,7 @@ type Row = {
   long_url?: string | null;
   touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
   report_reason?: string | null; report_note?: string | null; report_at?: string | null; express_at?: string | null;
+  withdrawn_at?: string | null; orig_item_key?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -212,12 +218,13 @@ function partnerView(r: Row) {
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     reportReason: r.report_reason || null, reportNote: r.report_note || "", // womit der Partner gemeldet hat (beim „Removed")
     // Express (Preismodell 2): Priorität hoch. Frist = Kunden-Zusage − 6 Std. (Mo–Fr 12:00: 24 Std.; Fr 12:00–So: Di 18:00 Wiener Zeit).
+    withdrawn: r.withdrawn_at || null, // vom Admin zurückgezogen (steht beim Partner unter „Cancelled")
     express: r.express_at ? { at: r.express_at, due: expressPartnerDue(r.express_at), custDue: expressCustomerDue(r.express_at) } : null,
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : ((r.status === "working" && swStartAllowed(r.admin_note)) || (r.status === "new" && String(r.admin_note || "").includes(SW_NOTE_COVERED)) ? "paid" : null), // 250er: Software freigegeben (im Preis)
   };
 }
 function adminView(r: Row) {
-  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test, partnerId: r.partner_id ? Number(r.partner_id) : null };
+  return { ...partnerView(r), orderId: r.order_id, itemKey: r.item_key, name: r.name, text: r.text, rating: (r as Row & { rating?: number | null }).rating ? Number((r as Row & { rating?: number | null }).rating) : null, adminNote: r.admin_note || "", origKey: r.orig_item_key || r.item_key, payoutId: r.payout_id ? Number(r.payout_id) : null, test: !!r.test, partnerId: r.partner_id ? Number(r.partner_id) : null };
 }
 
 const SHORT_LINK = /^https?:\/\/(share\.google|maps\.app\.goo\.gl|goo\.gl|g\.co)\//i;
@@ -420,8 +427,60 @@ export async function partnerOrderStatus(orderId: string, status: string): Promi
       void notifyPartner(`${test ? "TEST · " : ""}Order cancelled`, `RapidRemove cancelled the order for ${cust} · ${n} review${n > 1 ? "s" : ""} (${r.rows.slice(0, 4).map((x) => x.code).join(", ")}). No need to work on it.`, undefined, test);
     }
   } else if (status === "progress" || status === "new") { // Reaktivierung eines stornierten Auftrags
-    await pool.query(`UPDATE partner_tasks SET status='new', updated_at=now() WHERE order_id=$1 AND status='cancelled'`, [orderId]);
+    await pool.query(`UPDATE partner_tasks SET status='new', updated_at=now() WHERE order_id=$1 AND status='cancelled' AND withdrawn_at IS NULL`, [orderId]); // zurückgezogene bleiben beim Admin
   }
+}
+
+/* ---- Vom Partner zurückziehen (Admin, 26.10.2026) ----
+ * Der Partner gibt die Aufgabe ab: Status „cancelled" (steht bei ihm unter „Cancelled", kein Working/Removed/Software/
+ * Not possible mehr möglich, kommt nie in „To be paid"). Der Kunde merkt nichts: keine Belastung, kein Push, keine Mail,
+ * der Auftrag bleibt wie er ist (In Bearbeitung). Die Bewertung ist danach im Admin wieder frei (nicht mehr „beim Partner"). */
+export const WITHDRAWABLE = ["new", "working", "software", "not_possible"] as const;
+const STATUS_DE: Record<string, string> = { new: "nicht gestartet", working: "in Arbeit", software: "Software", not_possible: "nicht möglich", removed: "gelöscht", cancelled: "storniert" };
+export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ done: Row[]; skipped: { id: number; code: string | null; why: string }[] }> {
+  const done: Row[] = []; const skipped: { id: number; code: string | null; why: string }[] = [];
+  if (!pool) return { done, skipped };
+  const note = clip(noteIn, 300);
+  for (const id of [...new Set(ids)]) {
+    const cur = (await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id])).rows[0] as Row | undefined;
+    if (!cur) { skipped.push({ id, code: null, why: "nicht gefunden" }); continue; }
+    if (cur.status === "removed") { skipped.push({ id, code: cur.code, why: "schon gelöscht (Kunde wird dafür belastet)" }); continue; }
+    if (cur.status === "cancelled") { skipped.push({ id, code: cur.code, why: cur.withdrawn_at ? "schon zurückgezogen" : "schon storniert" }); continue; }
+    if (cur.paid_at || cur.payout_id) { skipped.push({ id, code: cur.code, why: "schon abgerechnet/ausbezahlt" }); continue; }
+    if (!(WITHDRAWABLE as readonly string[]).includes(cur.status)) { skipped.push({ id, code: cur.code, why: "Status " + cur.status }); continue; }
+    // Nur wenn sich der Status seit dem Lesen nicht geändert hat (Partner klickt gleichzeitig „Removed", Auto-Scan …).
+    const r = await pool.query(
+      `UPDATE partner_tasks SET status='cancelled', withdrawn_at=now(), updated_at=now(),
+         orig_item_key = COALESCE(orig_item_key, item_key),
+         item_key = CASE WHEN item_key IS NULL THEN NULL ELSE item_key || '#withdrawn-' || id END,
+         admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''),
+           'Vom Partner zurückgezogen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI') || ' (vorher: ' || $3::text || ')' || CASE WHEN $4::text <> '' THEN ' – ' || $4::text ELSE '' END)
+       WHERE id=$1 AND status=$2 AND paid_at IS NULL AND payout_id IS NULL RETURNING *`,
+      [id, cur.status, STATUS_DE[cur.status] || cur.status, note],
+    );
+    if (!r.rows[0]) { skipped.push({ id, code: cur.code, why: "inzwischen geändert – neu laden" }); continue; }
+    done.push(r.rows[0] as Row);
+  }
+  if (!done.length) return { done, skipped };
+  bumpChange(); // Admin + Partner-Board sofort aktualisieren
+  // Verlauf je Auftrag (nur intern).
+  const byOrder = new Map<string, Row[]>();
+  for (const t of done) if (t.order_id) { if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, []); byOrder.get(t.order_id)!.push(t); }
+  for (const [orderId, list] of byOrder) {
+    await insertEvent({ orderId, type: "note", title: `Vom Partner zurückgezogen: ${list.map((t) => t.code).join(", ")}`,
+      detail: ["Partner-Aufgabe(n) → Cancelled, Bewertung(en) wieder frei", "Kunde unverändert (keine Belastung, keine Nachricht)", note ? `Notiz: ${note}` : ""].filter(Boolean).join(" · ") }).catch(() => {});
+  }
+  // Partner ruhig informieren („Wir stressen unsere Partner nicht") – je Partner eine Nachricht.
+  const byPartner = new Map<string, Row[]>();
+  for (const t of done) { const k = `${t.partner_id ?? ""}|${t.test ? 1 : 0}`; if (!byPartner.has(k)) byPartner.set(k, []); byPartner.get(k)!.push(t); }
+  for (const [k, list] of byPartner) {
+    const [pid, test] = k.split("|");
+    const n = list.length, custs = [...new Set(list.map((t) => t.customer).filter(Boolean))];
+    void notifyPartner(`${test === "1" ? "TEST · " : ""}Review${n > 1 ? "s" : ""} withdrawn`,
+      `RapidRemove took back ${list.slice(0, 4).map((t) => t.code).join(", ")}${n > 4 ? ` +${n - 4}` : ""}${custs.length === 1 ? ` (${custs[0]})` : ""}. No need to work on ${n > 1 ? "them" : "it"} – thank you!`,
+      undefined, test === "1", pid ? [Number(pid)] : null);
+  }
+  return { done, skipped };
 }
 
 /** Sofort-Push an den Kunden (Sprache + Bewertungsname aus der Bestellung). */
@@ -510,6 +569,22 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     const r = await pool.query(`UPDATE partner_tasks SET ${sets.join(", ")}, updated_at=now() WHERE id=$${args.length} RETURNING *`, args);
     if (!r.rows[0]) return reply.code(404).send({ ok: false, error: "nicht gefunden" });
     return { ok: true, task: adminView(r.rows[0] as Row) };
+  });
+
+  // Admin: Aufgaben vom Partner zurückziehen – einzelne (ids) oder alle offenen eines Auftrags (orderId). Siehe withdrawTasks.
+  app.post("/admin/partner/withdraw", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const orderId = clip(b.orderId, 40);
+    let ids = (Array.isArray(b.ids) ? b.ids : []).map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 500);
+    if (!ids.length && orderId) {
+      const r = await pool.query(`SELECT id FROM partner_tasks WHERE order_id=$1 AND status = ANY($2::text[]) AND paid_at IS NULL AND payout_id IS NULL ORDER BY id`, [orderId, [...WITHDRAWABLE]]);
+      ids = r.rows.map((x) => Number(x.id));
+    }
+    if (!ids.length) return reply.code(400).send({ ok: false, error: "nichts offen beim Partner" });
+    const x = await withdrawTasks(ids, b.note);
+    return { ok: true, withdrawn: x.done.map(adminView), skipped: x.skipped };
   });
 
   // Admin: gelöschte, unbezahlte Aufgaben als bezahlt markieren (Sammelposten).

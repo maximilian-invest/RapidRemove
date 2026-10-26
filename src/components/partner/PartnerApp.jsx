@@ -312,7 +312,7 @@ export default function PartnerApp({ api }) {
           <div key={c} className="cxg">
             <div className="cxh"><b>{c}</b><span>{l.length} review{l.length > 1 ? "s" : ""}</span></div>
             {l.map((t) => (
-              <div key={t.id} className="cxr"><XCircle /><span className="t"><b>{t.code}</b><span>{t.who}{t.text ? " · “" + (t.text.length > 70 ? t.text.slice(0, 70) + "…" : t.text) + "”" : ""}</span></span></div>
+              <div key={t.id} className="cxr"><XCircle /><span className="t"><b>{t.code}</b><span>{t.who}{t.text ? " · “" + (t.text.length > 70 ? t.text.slice(0, 70) + "…" : t.text) + "”" : ""}</span>{t.withdrawn ? <span>Taken back by RapidRemove · {new Date(t.withdrawn).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span> : null}</span></div>
             ))}
           </div>
         ))}

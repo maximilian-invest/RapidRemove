@@ -47,8 +47,9 @@ export async function startOrderIfReady(orderId: string): Promise<number> {
   }
   const all = Array.isArray(raw.reviewItems) ? (raw.reviewItems as Record<string, unknown>[]) : [];
   if (!all.length || !(await partnerAutoEnabled("reviews").catch(() => true))) return 0;
+  // Vom Partner zurückgezogene Bewertungen (orig_item_key) zählen als „schon übergeben" → nicht automatisch wieder ans Board.
   // Teilstart: Bewertungen, die noch auf etwas warten (z. B. Inhaber-Nachweis für 4–5 ★), bleiben zurück; schon übergebene nicht nochmal.
-  const on = new Set((await pool.query(`SELECT item_key FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [] as { item_key: string }[] }))).rows.map((x) => x.item_key));
+  const on = new Set((await pool.query(`SELECT COALESCE(orig_item_key, item_key) AS item_key FROM partner_tasks WHERE order_id=$1`, [orderId]).catch(() => ({ rows: [] as { item_key: string }[] }))).rows.map((x) => x.item_key));
   const items = all.filter((it) => !bl.keys.has(kOf(it)) && !on.has(kOf(it)));
   if (bl.keys.size) {
     const waitN = all.filter((it) => bl.keys.has(kOf(it)) && !on.has(kOf(it))).length;

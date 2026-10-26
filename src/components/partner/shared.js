@@ -88,6 +88,7 @@ export function norm(t) {
     note: t.note || "", created: t.created ? new Date(t.created).getTime() : 0, touched: !!t.touched,
     workingSince: t.workingSince ? new Date(t.workingSince).getTime() : null,
     sw: t.sw || null, // 'pending' = waiting for the customer · 'paid' = customer prepaid, start now
+    withdrawn: t.withdrawn ? new Date(t.withdrawn).getTime() : null, // von RapidRemove zurückgenommen (steht unter „Cancelled")
     hold: !!t.hold, // Auftrag pausiert: Kunde muss erst eine Zwischenzahlung leisten
     method: t.method || null, // 'sw' = Software-Fall (erst bestätigen, Kunde zahlt vorab) · 'legal' = erst rechtliche Meldung
     custReason: t.custReason || null, custNote: t.custNote || "", // Grund des Kunden (Google-Richtlinie)
