@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Handshake, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
@@ -12,7 +12,7 @@ import { usePayMails, PayActions, PayRows, MailRow } from "./PayFlow";
 
 const SCOPE_TILES = { open: ["new", "work", "nopm", "pay", "inkasso"], closed: ["deleted", "cancel"] };
 import { ActivityRow } from "./Activity";
-import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl } from "@/lib/admin-api";
+import { custImpersonate, verifyDoc, verifySet, reasonsSet, reviewShotUrl, fetchEvents } from "@/lib/admin-api";
 const TILE_ICON = { new: Sparkles, work: Loader, nopm: CalendarClock, pay: CreditCard, inkasso: Gavel, deleted: CheckCircle2, cancel: XCircle };
 
 export function Avatar({ o, big }) {
@@ -164,7 +164,7 @@ export function OrderDetail({ ctx, id }) {
     // Zahlung offen / Inkasso → eigener Block (PayActions: eskalierender Hauptbutton + „Zahlung bereits erhalten?").
     : payOpen(o, now, ptasks) && (b === "pay" || b === "inkasso") ? null
     // Partner arbeitet schon, wir haben aber noch nicht übernommen → Übernehmen bleibt sichtbar.
-    : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />Übernehmen · Partner arbeitet schon</button> : null)
+    : r && b === "work" ? (o.status === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{r.open || r.software ? "Übernehmen · Partner arbeitet schon" : "Übernehmen · Bewertungen liegen bei uns"}</button> : null)
     : b === "new" ? <button type="button" className="cta or" onClick={() => act.start(o)}><Hand />{o.assignee ? "Bearbeitung starten" : "Übernehmen & starten"}</button>
     : b === "pay" || b === "inkasso" ? <button type="button" className={"cta" + (b === "inkasso" ? " red" : "")} onClick={() => act.remind(o)}>{b === "inkasso" ? <Gavel /> : <Send />}Mahnung senden{o.mahnungCount ? ` · ${o.mahnungCount} bisher` : ""}</button>
     // Zahlungsart im Dashboard hinterlegt → kein Zahlungslink: „Löschung abgeschlossen" bucht automatisch ab (Schutz als Abo).
@@ -270,6 +270,7 @@ export function OrderDetail({ ctx, id }) {
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("bill", o.id)}><span className="ico"><Receipt /></span><span className="t"><span>Abrechnung</span><b>Gelöschte Bewertungen abrechnen</b></span><ChevronRight /></button> : null}</div>
       ) : null}
+      {isRev ? <PartnerLog o={o} pt={pt} /> : null}
       <ActivityRow o={o} onOpen={() => ctx.pushAct(o.id)} />
       {stepIx >= 0 ? (
         <>
@@ -463,6 +464,24 @@ export const profLoc = (o) => {
   return [(o && (o.profile || o.company)) || "", a].filter(Boolean).join(" · ");
 };
 const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
+/** Partner-Verlauf des Auftrags (interne Einträge: Übergabe, Entziehen, Zuweisen, Partner-Mails inkl. Empfänger, Rückforderungen). */
+const PARTNER_EV = /^(Dem Partner|Partner-Mail|Rückforderung|An Partner|Automatisch ans Partner-Board|Admin: .*(gelöscht|alle Bewertungen))/;
+function PartnerLog({ o, pt }) {
+  const [ev, setEv] = React.useState(null);
+  const sig = (pt || []).map((t) => t.id + t.status).join(",");
+  React.useEffect(() => { let off = false; fetchEvents(o.id).then((x) => { if (!off) setEv(x.filter((e) => e.oid === o.id && PARTNER_EV.test(e.t))); }).catch(() => { if (!off) setEv([]); }); return () => { off = true; }; }, [o.id, sig]);
+  if (!ev || !ev.length) return null;
+  return (
+    <>
+      <div className="lbl">Partner-Verlauf</div>
+      <div className="card ls">{ev.slice(0, 8).map((e) => (
+        <div key={e.id} className="rvr" style={{ cursor: "default" }}><span className="th">{/NICHT gesendet/.test(e.t) ? <XCircle /> : /^Partner-Mail/.test(e.t) ? <Mail /> : <Handshake />}</span>
+          <span className="t"><b style={{ whiteSpace: "normal", ...(/NICHT gesendet/.test(e.t) ? { color: "var(--danger)" } : {}) }}>{e.t}</b><span style={{ color: "var(--g3)", fontSize: 12 }}>{e.time}{e.d ? " · " + e.d : ""}</span></span></div>
+      ))}</div>
+    </>
+  );
+}
+
 /** Dem Partner entzogene Aufgaben, deren Bewertung keine neue (aktive) Aufgabe hat → im Admin wieder frei. */
 export const withdrawnFree = (pt) => {
   const active = new Set((pt || []).filter((t) => t.status !== "cancelled").map((t) => t.itemKey));

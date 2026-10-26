@@ -493,8 +493,10 @@ export async function withdrawTasks(ids: number[], noteIn: unknown, refundsIn: u
       undefined, test === "1", pid ? [Number(pid)] : null);
     const sent = await partnerJobsMail("withdrawn", list.map((t) => ({ code: t.code, customer: t.customer, url: t.long_url || t.url, refundUsd: Number(t.refund_usd) || 0 })), test === "1", pid ? Number(pid) : null);
     for (const oid of [...new Set(list.map((t) => t.order_id).filter(Boolean))] as string[]) {
-      await insertEvent({ orderId: oid, type: "mail", title: sent.length ? "Partner-Mail: Job(s) entzogen" : "Partner-Mail: Job(s) entzogen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${list.filter((t) => t.order_id === oid).map((t) => t.code).join(", ")}` : "", auto: true }).catch(() => {});
+      await insertEvent({ orderId: oid, type: "mail", title: sent.length ? "Partner-Mail: Job(s) entzogen" : "Partner-Mail: Job(s) entzogen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${list.filter((t) => t.order_id === oid).map((t) => t.code).join(", ")}` : list.filter((t) => t.order_id === oid).map((t) => t.code).join(", "), auto: true }).catch(() => {});
     }
+    console.log(`[partner-mail] entzogen ${list.map((t) => t.code).join(",")} → ${sent.length ? sent.join(",") : "NICHT gesendet"}`);
+    if (!sent.length) void notifyTeam(`${test === "1" ? "TEST · " : ""}Partner-Mail NICHT gesendet`, `Entzug ${list.slice(0, 4).map((t) => t.code).join(", ")} – bitte Partner direkt informieren`, rvLink(list), { kind: "partner" });
   }
   return { done, skipped };
 }
@@ -569,7 +571,9 @@ export async function assignWithdrawn(orderId: string, keysIn: string[] | null, 
     // E-Mail: „A review that was withdrawn earlier has been assigned to you again" (Job-Nummer + Link). Anderer Partner: normale „Review added"-Mail (insertPartnerTasks).
     const sent = await partnerJobsMail("reassigned", reactivated.map((t) => ({ code: t.code, customer: t.customer, url: t.long_url || t.url })), test, partnerId,
       { refundCancelled: refundCancelled.map((t) => ({ code: t.code, customer: t.customer, url: t.url, refundUsd: num(t.refund_usd) })) });
-    await insertEvent({ orderId, type: "mail", title: sent.length ? "Partner-Mail: Job(s) wieder zugewiesen" : "Partner-Mail: Job(s) wieder zugewiesen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${reactivated.map((t) => t.code).join(", ")}` : "", auto: true }).catch(() => {});
+    await insertEvent({ orderId, type: "mail", title: sent.length ? "Partner-Mail: Job(s) wieder zugewiesen" : "Partner-Mail: Job(s) wieder zugewiesen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${reactivated.map((t) => t.code).join(", ")}` : reactivated.map((t) => t.code).join(", "), auto: true }).catch(() => {});
+    console.log(`[partner-mail] zugewiesen ${reactivated.map((t) => t.code).join(",")} → ${sent.length ? sent.join(",") : "NICHT gesendet"}`);
+    if (!sent.length) void notifyTeam(`${test ? "TEST · " : ""}Partner-Mail NICHT gesendet`, `Wieder zugewiesen ${reactivated.slice(0, 4).map((t) => t.code).join(", ")} – bitte Partner direkt informieren`, rvLink(reactivated), { kind: "partner" });
   }
   return { done, skipped };
 }

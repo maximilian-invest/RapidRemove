@@ -63,7 +63,11 @@ export function revState(o, tasks) {
   const pt = (tasks || []).filter((t) => t.status !== "cancelled");
   const billed = new Set([...(o.reviewsRemovedAll || []), ...(o.reviewsRemoved || [])].map(rvKey));
   const asked = o.reviewsPayReq || {}; // per Sammel-Mail automatisch zur Zahlung aufgefordert → zählt wie abgerechnet
-  if (!pt.length && !billed.size) return null;
+  // Dem Partner entzogen (26.10.2026) und nicht neu vergeben → wir bearbeiten sie selbst: Auftrag bleibt „In Bearbeitung"
+  // (sonst fiele er auf den DB-Status „new" zurück, wenn der Partner ihn ohne Übernahme bearbeitet hatte).
+  const activeKeys = new Set(pt.map((t) => t.itemKey));
+  const wd = new Set((tasks || []).filter((t) => t.status === "cancelled" && t.withdrawn && t.origKey && !activeKeys.has(t.origKey)).map((t) => t.origKey));
+  if (!pt.length && !billed.size && !wd.size) return null;
   const byKey = new Map(pt.map((t) => [t.itemKey, t]));
   const pays = o.reviewsPayments || [];
   const paidKeys = new Set(o.reviewsPaidKeys || []);
@@ -83,9 +87,9 @@ export function revState(o, tasks) {
   const payPct = o.payPref === "wise" || o.payPref === "paypal" ? 10 : 0;
   const chatPct = payPct ? 0 : Math.max(0, Math.min(10, Math.round(Number(o.chatPct) || 0)));
   const pct = Math.max(reviewDiscountPct(items.length), chatPct);
-  const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0 };
+  const c = { removed: 0, open: 0, working: 0, waiting: 0, software: 0, notPossible: 0, own: 0 };
   const unpaid = [];
-  let started = o.status !== "new";
+  let started = o.status !== "new" || wd.size > 0;
   for (const it of items) {
     const k = rvKey(it); const t = byKey.get(k); const s = t ? t.status : null;
     if (s && s !== "new") started = true;
@@ -100,6 +104,7 @@ export function revState(o, tasks) {
     else if (s === "new") { c.open++; c.waiting++; }
     else if (s === "software") c.software++;
     else if (s === "not_possible") c.notPossible++;
+    else if (!s && wd.has(k)) c.own++; // entzogen → bei uns
   }
   // Rechnung wie im Backend (quoteReviews „rest"): Mengenrabatt nach Gesamtanzahl, Spezialverfahren voll (rabattiert).
   // Individueller Preis (cp) zählt fest, ohne Rabatt.
@@ -114,7 +119,7 @@ export function revState(o, tasks) {
   return {
     // Nenner für „x/y gelöscht": was beim Partner liegt (bzw. abgerechnet wurde) – nicht reviewsAccepted,
     // das kann bei später nachgereichten Bewertungen kleiner sein als die tatsächlich bearbeiteten.
-    total: Math.max(pt.length, c.removed) || items.length,
+    total: Math.max(pt.length + c.own, c.removed) || items.length,
     ...c, started, pct,
     unpaidN: unpaid.length, unpaidAmt, unbilledN: unpaid.filter((u) => !u.billed).length, unpaidKeys: unpaid.map((u) => u.k),
     unpaidSince: ats.length ? Math.min(...ats) : null,
@@ -150,7 +155,7 @@ export function bucketsOf(o, now = Date.now(), tasks) {
   if (!r) return [base];
   if (!r.started && base === "new") return ["new"];
   const out = [];
-  if (r.open || r.software) out.push("work");
+  if (r.open || r.software || r.own) out.push("work");
   if (r.unpaidN) out.push(o.pay === "inkasso" || (r.unpaidSince && now - r.unpaidSince > INKASSO_MS) ? "inkasso" : "pay");
   if (out.length) return out;
   if (r.removed) return ["deleted"]; // alles gelöscht und bezahlt
