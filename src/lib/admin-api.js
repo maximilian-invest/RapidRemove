@@ -652,6 +652,13 @@ export const partnerTasks = (orderId) => partnerPost("tasks", orderId ? { orderI
 /** Admin: Bewertung als gelöscht bestätigen (übersteuert Lenas Prüfung). */
 export const partnerConfirmRemoved = (id) => partnerPost("confirm-removed", { id });
 export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fields || {}) });
+/** Dem Partner entziehen: { ids } (einzelne Aufgaben) oder { orderId } (alle offenen des Auftrags), optional { note }.
+ *  Partner → „Cancelled", Kunde unverändert (keine Belastung). → { withdrawn: [...], skipped: [{ id, code, why }] } */
+export const partnerWithdraw = (p) => partnerPost("withdraw", p || {});
+/** Entzogene Bewertungen wieder einem Partner zuweisen: { orderId, partnerId, keys? } (keys = Bewertungs-Schlüssel; ohne = alle entzogenen). */
+export const partnerAssign = (p) => partnerPost("assign", p || {});
+/** Rückforderung an den Partner als erstattet markieren (Partner hat das Geld zurückgezahlt). */
+export const partnerRefundSettled = (id) => partnerPost("refund-settled", { id });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
 export const siteChats = (days) => adminPost("/admin/chat/site", { days: days || 60 });
 export const siteChatThread = (sid) => adminPost("/admin/chat/site/thread", { sid });

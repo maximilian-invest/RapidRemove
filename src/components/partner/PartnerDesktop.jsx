@@ -55,7 +55,7 @@ const Row = React.memo(function Row({ t, isCur, isSel, onRow, onCheck, onSet, on
 });
 
 export default function PartnerDesktop({ api }) {
-  const { tasks, all, err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
+  const { tasks, all, cancelled = [], err, visible, groups, isNewC, tab, setTab, q, setQ, sortOld, setSortOld, expanded, setExpanded, sel, setSel,
     toast, closeToast, showToast, setMany, copyLinks, openReview, setNoteLive, load, flush } = api;
   const [cur, setCur] = React.useState(null);
   const [anchor, setAnchor] = React.useState(null);
@@ -185,6 +185,7 @@ export default function PartnerDesktop({ api }) {
             <div className="kpi"><b>{rem.length}</b><span>Removed</span></div>
             <div className="kpi pay"><b>{usd(sum(due))}</b><span>To be paid</span></div>
             <div className="kpi"><b>{usd(sum(paid))}</b><span>Paid</span></div>
+            {cancelled.some((t) => t.refund > 0) ? <div className="kpi" title="Withdrawn jobs you were already paid for – please refund to RapidRemove"><b style={{ color: "#c0392b" }}>−{usd(cancelled.reduce((a, t) => a + (t.refund || 0), 0))}</b><span>Refund due</span></div> : null}
           </div>
           <span className="vsep" />
           <button type="button" className={"ib" + (spin ? " spin" : "")} data-tip="Refresh list" onClick={() => { setSpin(false); requestAnimationFrame(() => setSpin(true)); setTimeout(() => setSpin(false), 700); flush(); load(true).then(() => showToast("List is up to date")); }}><RefreshCw /></button>

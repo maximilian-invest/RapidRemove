@@ -7,7 +7,7 @@ import { pool } from "./db";
 import { hasWebPush, sendWebPushAll, type PushSub } from "./integrations/webpush";
 import { sendMail } from "./mailer";
 import { isTestEmail } from "./testAccounts";
-import { EmailShell, P, Bullets, CtaButton } from "./emails/components";
+import { EmailShell, P, Bullets, CtaButton, A, NoteBox } from "./emails/components";
 
 const SITE_URL = (process.env.SITE_URL || "https://www.rapid-remove.com").replace(/\/+$/, "");
 
@@ -125,4 +125,63 @@ export function startPartnerReminders(log?: (o: object, m: string) => void): voi
   const run = () => { remindWaiting().catch((e) => log && log({ err: String((e as Error)?.message || e) }, "Partner-Erinnerung fehlgeschlagen")); };
   setTimeout(run, 60_000);
   setInterval(run, 5 * 60_000);
+}
+
+/* ---- Dem Partner entzogen / wieder zugewiesen (26.10.2026) ----
+ * E-Mail an den Partner (Englisch): Job-Nummer + Link zur Bewertung. Bereits an den Partner gezahlt (z. B. Software-Vorauszahlung)
+ * → Rückforderung mit Betrag. Test ↔ echt strikt getrennt (wie partnerNewOrder). Gibt die Empfänger zurück (für den Verlauf). */
+async function partnerEmails(partnerId: number | null, test: boolean): Promise<string[]> {
+  if (!pool) return [];
+  const acc = test || !partnerId ? await pool.query(`SELECT email FROM partner_accounts`) : await pool.query(`SELECT email FROM partner_accounts WHERE partner_id=$1`, [partnerId]);
+  let to = (acc.rows as { email?: string }[]).map((x) => String(x.email || "").trim()).filter((e) => e && isTestEmail(e) === test);
+  // Kein Login (z. B. alter Partner nur mit Kontakt-Adresse) → Kontakt-Adresse aus „Partner".
+  if (!to.length && !test && partnerId) {
+    const e = String((await pool.query(`SELECT email FROM partners WHERE id=$1`, [partnerId]).catch(() => ({ rows: [] as { email?: string }[] }))).rows[0]?.email || "").trim();
+    if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e) && !isTestEmail(e)) to = [e];
+  }
+  return [...new Set(to.map((e) => e.toLowerCase()))];
+}
+export type JobMailTask = { code: string; customer: string | null; url: string | null; refundUsd?: number | null };
+const money = (v: number) => `${Math.round(v * 100) / 100} USD`;
+export async function partnerJobsMail(kind: "withdrawn" | "reassigned", tasks: JobMailTask[], test: boolean, partnerId: number | null, opts: { refundCancelled?: JobMailTask[] } = {}): Promise<string[]> {
+  if (!tasks.length) return [];
+  try {
+    const to = await partnerEmails(partnerId, test);
+    if (!to.length) return [];
+    const n = tasks.length;
+    const codes = tasks.slice(0, 3).map((t) => t.code).join(", ") + (n > 3 ? ` +${n - 3}` : "");
+    const refunds = kind === "withdrawn" ? tasks.filter((t) => Number(t.refundUsd) > 0) : [];
+    const refundSum = refunds.reduce((a, t) => a + Number(t.refundUsd || 0), 0);
+    const items = tasks.slice(0, 30).map((t) => React.createElement(React.Fragment, null,
+      React.createElement("strong", null, t.code), t.customer ? ` · ${t.customer}` : "",
+      t.url ? React.createElement(React.Fragment, null, " · ", React.createElement(A as any, { href: t.url }, "open review")) : null,
+      kind === "withdrawn" && Number(t.refundUsd) > 0 ? ` · refund ${money(Number(t.refundUsd))}` : ""));
+    const subj = kind === "withdrawn"
+      ? `${test ? "TEST · " : ""}Withdrawn: ${codes} – please don't work on ${n > 1 ? "them" : "it"} anymore${refundSum ? ` · refund ${money(refundSum)}` : ""}`
+      : `${test ? "TEST · " : ""}Back on your board: ${codes}`;
+    const body = kind === "withdrawn" ? [
+      React.createElement(P as any, null, React.createElement("strong", null, "Hi,")),
+      React.createElement(P as any, null, `RapidRemove has withdrawn ${n > 1 ? `these ${n} reviews` : "this review"} from your board. Please don't work on ${n > 1 ? "them" : "it"} anymore – ${n > 1 ? "they" : "it"} can no longer be marked as Working, Removed, Not possible or Software only, and can't be billed.`),
+      React.createElement(Bullets as any, { items }),
+      refundSum ? React.createElement(NoteBox as any, null, React.createElement("strong", null, `Refund due: ${money(refundSum)}. `),
+        `You were already paid for ${refunds.map((t) => `${t.code} (${money(Number(t.refundUsd))})`).join(", ")}. Since ${refunds.length > 1 ? "these jobs were" : "this job was"} withdrawn, please refund ${money(refundSum)} to RapidRemove. It's listed as an open refund under Earnings on your board.`) : null,
+      React.createElement("div", { style: { textAlign: "center", margin: "10px 0 20px" } }, React.createElement(CtaButton as any, { href: `${SITE_URL}/partner` }, "Open my board")),
+      React.createElement(P as any, { muted: true }, `You'll find ${n > 1 ? "them" : "it"} under Cancelled. Thanks for your work!`),
+    ] : [
+      React.createElement(P as any, null, React.createElement("strong", null, "Hi,")),
+      React.createElement(P as any, null, `${n > 1 ? `${n} reviews that were` : "A review that was"} withdrawn earlier ${n > 1 ? "have" : "has"} been assigned to you again. You can work on ${n > 1 ? "them" : "it"} as usual.`),
+      React.createElement(Bullets as any, { items }),
+      opts.refundCancelled && opts.refundCancelled.length ? React.createElement(NoteBox as any, null, `The open refund for ${opts.refundCancelled.map((t) => `${t.code} (${money(Number(t.refundUsd))})`).join(", ")} is cancelled – no need to pay it back.`) : null,
+      React.createElement("div", { style: { textAlign: "center", margin: "10px 0 20px" } }, React.createElement(CtaButton as any, { href: `${SITE_URL}/partner` }, "Open my board")),
+      React.createElement(P as any, { muted: true }, `Please set ${n > 1 ? "each review" : "it"} to Working when you start, and to Removed once it's gone.`),
+    ];
+    const el = React.createElement(EmailShell as any, { preview: subj, title: kind === "withdrawn" ? (n > 1 ? "Reviews withdrawn" : "Review withdrawn") : "Assigned to you again", lang: "en" }, ...body.filter(Boolean));
+    const html = await render(el);
+    const sent: string[] = [];
+    for (const email of to) {
+      try { await sendMail({ to: email, subject: subj, html, replyTo: process.env.MAIL_REPLY_TO }); sent.push(email); }
+      catch (e) { console.error("Partner-Mail (" + kind + ") an " + email + " fehlgeschlagen", e); }
+    }
+    return sent;
+  } catch { return []; }
 }

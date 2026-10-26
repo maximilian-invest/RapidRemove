@@ -663,7 +663,9 @@ export async function loadCustomerOrders(email: string): Promise<{ name: string;
   const ids = r.rows.map((x) => x.id);
   type PRow = { order_id: string; item_key: string; status: string; working_since: string | null; removed_at: string | null; updated_at: string | null; prev_status: string | null; express_at?: string | null };
   const pt = ids.length
-    ? await pool.query(`SELECT order_id, item_key, status, working_since, removed_at, updated_at, prev_status, express_at FROM partner_tasks WHERE order_id = ANY($1::text[]) AND status <> 'cancelled'`, [ids]).catch(() => ({ rows: [] as PRow[] }))
+    // Vom Partner zurückgezogen (Admin) → für den Kunden weiter „In Bearbeitung" (wir machen selbst weiter); aktive Aufgabe hat Vorrang (zuletzt).
+    ? await pool.query(`SELECT order_id, COALESCE(orig_item_key, item_key) AS item_key, CASE WHEN withdrawn_at IS NOT NULL THEN 'working' ELSE status END AS status, working_since, removed_at, updated_at, prev_status, express_at
+        FROM partner_tasks WHERE order_id = ANY($1::text[]) AND (status <> 'cancelled' OR withdrawn_at IS NOT NULL) ORDER BY (withdrawn_at IS NULL), id`, [ids]).catch(() => ({ rows: [] as PRow[] }))
     : { rows: [] as PRow[] };
   const byOrder = new Map<string, Map<string, PT>>();
   for (const t of pt.rows as PRow[]) {

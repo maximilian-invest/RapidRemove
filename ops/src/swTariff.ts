@@ -20,7 +20,7 @@ export function applySwTariff(ids: (number | string)[]): Promise<{ id: number; c
       const t = (await pool.query(`SELECT id, code, order_id, partner_id, test, kind, sw_price_usd, paid_at, sw_at FROM partner_tasks WHERE id=$1`, [id]).catch(() => ({ rows: [] as Record<string, any>[] }))).rows[0];
       if (!t || t.sw_at || t.paid_at || t.kind === "profile") continue;
       const c = await pool.query(
-        `SELECT count(*)::int AS n FROM partner_tasks WHERE sw_at >= ${WEEK_START} AND test = $2 AND id <> $3 AND ${t.partner_id ? "partner_id = $1" : "partner_id IS NULL AND $1::bigint IS NULL"}`,
+        `SELECT count(*)::int AS n FROM partner_tasks WHERE sw_at >= ${WEEK_START} AND test = $2 AND id <> $3 AND withdrawn_at IS NULL AND ${t.partner_id ? "partner_id = $1" : "partner_id IS NULL AND $1::bigint IS NULL"}`,
         [t.partner_id, !!t.test, id],
       ).catch(() => ({ rows: [{ n: 0 }] }));
       const n = Number(c.rows[0]?.n || 0) + 1; // dieser Fall ist der n-te der Woche
