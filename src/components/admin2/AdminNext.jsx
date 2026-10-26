@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerConfirmRemoved, partnerSettings, partnersList,
-  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, partnerWithdraw, partnerAssign, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
+  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, partnerWithdraw, partnerAssign, partnerRefundSettled, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
@@ -420,12 +420,17 @@ function WithdrawSheet({ o, ids, ctx, close }) {
   const { ptasks, toast } = ctx;
   const [note, setNote] = React.useState("");
   const [busy, setBusy] = React.useState(false);
-  const list = (ptasks[o.id] || []).filter((t) => WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId && (!ids || ids.includes(t.id)));
+  const list = (ptasks[o.id] || []).filter((t) => WITHDRAWABLE.includes(t.status) && !(t.payoutId && !t.paid) && (!ids || ids.includes(t.id)));
+  // Schon an den Partner gezahlt (Board-Auszahlung → vorausgefüllt; Vorauszahlung außerhalb → hier eintragen) → Rückforderung, steht in der Partner-Mail.
+  const [paidUsd, setPaidUsd] = React.useState(() => Object.fromEntries(list.filter((t) => t.paid).map((t) => [t.id, String(t.price)])));
+  const refundOf = (t) => { const v = Number(String(paidUsd[t.id] || "").replace(",", ".")); return Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : 0; };
+  const refundSum = list.reduce((a, t) => a + refundOf(t), 0);
   const sw = list.filter((t) => t.status === "software").length;
   const run = async () => {
     setBusy(true);
     try {
-      const r = await partnerWithdraw(ids ? { ids: list.map((t) => t.id), note } : { orderId: o.id, note });
+      const refunds = Object.fromEntries(list.map((t) => [t.id, refundOf(t)]));
+      const r = await partnerWithdraw(ids ? { ids: list.map((t) => t.id), note, refunds } : { orderId: o.id, note, refunds });
       const n = (r.withdrawn || []).length, sk = r.skipped || [];
       toast(n ? `${n === 1 ? r.withdrawn[0].code : n + " Bewertungen"} dem Partner entzogen${sk.length ? ` · ${sk.length} übersprungen` : ""}` : `Nichts entzogen${sk[0] ? " – " + sk[0].why : ""}`);
       if (ctx.loadPtasks) await ctx.loadPtasks();
@@ -439,16 +444,33 @@ function WithdrawSheet({ o, ids, ctx, close }) {
         <>
           <p className="shp">{list.length === 1 ? "Diese Bewertung" : `Diese ${list.length} Bewertungen`} {list.length === 1 ? "geht" : "gehen"} beim Partner auf „Cancelled“. Er kann sie nicht mehr bearbeiten oder abrechnen. Danach {list.length === 1 ? "ist sie" : "sind sie"} im Admin wieder frei – mit „Dem Partner zuweisen“ jederzeit zurück.</p>
           <div className="opts" style={{ marginBottom: 12 }}>
-            {list.slice(0, 8).map((t) => <div key={t.id} className="aopt"><span className="ico"><Handshake /></span><span className="ol"><b>{t.code}</b> · {t.name || t.reviewer || "Bewertung"}<br /><small>{WD_ST[t.status] || t.status}</small></span></div>)}
-            {list.length > 8 ? <p className="shp" style={{ margin: "6px 4px 0" }}>+ {list.length - 8} weitere</p> : null}
+            {list.slice(0, 20).map((t) => <div key={t.id} className="aopt"><span className="ico"><Handshake /></span><span className="ol"><b>{t.code}</b> · {t.name || t.reviewer || "Bewertung"}<br /><small>{WD_ST[t.status] || t.status}{t.paid ? ` · an Partner ausbezahlt ($${t.price})` : ""}</small></span>
+              <label className="cpin" title="Schon an den Partner gezahlt (USD) – wird zurückgefordert" style={{ marginLeft: "auto" }}><span>bezahlt $</span><input inputMode="decimal" placeholder="0" value={paidUsd[t.id] || ""} onChange={(e) => { const v = e.target.value; setPaidUsd((m) => ({ ...m, [t.id]: v })); }} style={{ width: 54 }} /></label></div>)}
+            {list.length > 20 ? <p className="shp" style={{ margin: "6px 4px 0" }}>+ {list.length - 20} weitere{ids ? "" : " (Rückforderung nur bei ausbezahlten automatisch)"}</p> : null}
           </div>
-          <p className="shn"><CheckCircle2 />Kunde merkt nichts: keine Belastung, keine Nachricht, der Auftrag bleibt „In Bearbeitung“.</p>
+          <p className="shp" style={{ fontSize: 13, color: "var(--g3)", marginTop: -4 }}>„bezahlt $“ nur ausfüllen, wenn der Partner für den Job schon Geld bekommen hat (z. B. Software-Vorauszahlung). Der Betrag steht dann als Rückforderung in seiner Mail und im Partner-Board.</p>
+          {refundSum ? <p className="shn warn"><AlertTriangle />Rückforderung an den Partner: <b>&nbsp;${Math.round(refundSum * 100) / 100}</b></p> : null}
+          <p className="shn"><CheckCircle2 />Kunde merkt nichts: keine Belastung, keine Nachricht, der Auftrag bleibt „In Bearbeitung“. Der Partner bekommt eine E-Mail (Englisch) mit Job-Nummer und Link.</p>
           {sw ? <p className="shn warn"><AlertTriangle />{sw === 1 ? "1 Bewertung steht" : sw + " Bewertungen stehen"} auf Software. Hat der Kunde die Software-Entscheidung noch offen, bitte selbst mit ihm klären.</p> : null}
           <div className="usrch in-sheet" style={{ margin: "4px 0 14px" }}><ClipboardList /><input placeholder="Notiz (optional, nur intern)" maxLength={300} value={note} onChange={(e) => setNote(e.target.value)} /></div>
         </>
       )}
       <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
         <button type="button" className="cta red" disabled={busy || !list.length} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Undo2 />}{busy ? "Wird entzogen …" : "Entziehen"}</button></div></>
+  );
+}
+
+/** Offene Rückforderung an den Partner (entzogener, schon bezahlter Job) – „Erstattet" markiert sie als erledigt. */
+function RefundBox({ t, ctx, done }) {
+  const [busy, setBusy] = React.useState(false);
+  const go = async () => {
+    setBusy(true);
+    try { await partnerRefundSettled(t.id); ctx.toast(`${t.code}: Rückforderung als erstattet markiert`); if (ctx.loadPtasks) await ctx.loadPtasks(); if (done) done(); }
+    catch (e) { ctx.toast("Fehler: " + e.message); setBusy(false); }
+  };
+  return (
+    <div className="shn warn" style={{ marginTop: 12, alignItems: "center" }}><AlertTriangle /><span style={{ flex: 1 }}>Offene Rückforderung an den Partner: <b>${t.refund.usd}</b> ({t.code})</span>
+      <button type="button" className="cta gh" style={{ width: "auto", height: 36, padding: "0 12px", fontSize: 13 }} disabled={busy} onClick={go}>{busy ? "…" : "Erstattet"}</button></div>
   );
 }
 
@@ -489,7 +511,8 @@ function AssignSheet({ o, keys, ctx, close }) {
               <button key={p.id} type="button" className="aopt" onClick={() => setPid(p.id)}><span className="ico"><Handshake /></span><span className="ol">{p.name}{p.id === prev ? <><br /><small>hatte den Job vorher</small></> : null}</span>{pid === p.id ? <span className="ck"><Check /></span> : null}</button>
             ))}
           </div>
-          <p className="shn"><CheckCircle2 />Kunde merkt nichts – keine Belastung, keine Nachricht.</p>
+          <p className="shn"><CheckCircle2 />Kunde merkt nichts – keine Belastung, keine Nachricht. Der Partner bekommt eine E-Mail (Englisch), dass der Job wieder bei ihm ist.</p>
+          {list.some((t) => t.refund && !t.refund.settled && t.partnerId === pid) ? <p className="shn warn"><AlertTriangle />Offene Rückforderung entfällt, weil der Job wieder zum selben Partner geht.</p> : null}
         </>
       )}
       <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
@@ -692,6 +715,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
         {t && ["new", "working", "not_possible"].includes(t.status) ? <ConfirmRemoved t={t} toast={toast} done={() => { ctx.loadPtasks && ctx.loadPtasks(); close(); }} /> : null}
         {t && WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta gh" onClick={() => ctx.openSheet({ kind: "rvwithdraw", forId: o.id, ids: [t.id] })}><Undo2 />Dem Partner entziehen</button></div> : null}
         {wt && o.status !== "storniert" ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta or" onClick={() => ctx.openSheet({ kind: "rvassign", forId: o.id, keys: [wt.origKey] })}><Redo2 />Dem Partner zuweisen</button></div> : null}
+        {wt && wt.refund && !wt.refund.settled ? <RefundBox t={wt} ctx={ctx} done={close} /> : null}
         {wt && wt.adminNote ? <p className="shp" style={{ marginTop: 10, fontSize: 13, color: "var(--g3)" }}>{wt.code}: {wt.adminNote.split(" · ").filter((x) => x.startsWith("Dem Partner entzogen")).pop()}</p> : null}
         {it ? <p className="shp" style={{ marginTop: 12 }}>Annehmen / Ablehnen und Abrechnung laufen vorerst noch im bisherigen Admin.</p> : null}</>
     );

@@ -52,7 +52,7 @@ export function PartnersScreen({ ctx }) {
                   <span className="ico" style={{ fontSize: 16 }}>{FLAG(p.country) || <Handshake />}</span>
                   <span className="t"><b>{p.name}{p.company ? " · " + p.company : ""}</b>
                     <span>{k === "pending" ? `Beworben ${dt(p.applied)} · ${(p.services || []).map((s) => (svc.find((x) => x.id === s.id) || {}).label || s.id).join(", ")}`
-                      : `${Object.keys(p.approved || {}).length} Leistungen · ${p.stats.open} in Arbeit · ${p.stats.removed} gelöscht${p.stats.owedUsd ? " · " + usd(p.stats.owedUsd) + " offen" : ""}`}</span></span>
+                      : `${Object.keys(p.approved || {}).length} Leistungen · ${p.stats.open} in Arbeit · ${p.stats.removed} gelöscht${p.stats.owedUsd ? " · " + usd(p.stats.owedUsd) + " offen" : ""}${p.stats.refundUsd ? " · Rückforderung " + usd(p.stats.refundUsd) : ""}`}</span></span>
                   <ChevronRight />
                 </button>
               ))}

@@ -323,6 +323,7 @@
 .pra .er .t b{font-weight:700}
 .pra .er .t span{font-size:13px;color:var(--g3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pra .er .a{font-weight:800;font-variant-numeric:tabular-nums}
+.pra .er .a.refund,.pra .cxr .t span.refund{color:#c0392b;font-weight:700}
 .pra .ico{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--g1)}
 .pra .ico svg{width:19px;height:19px}
 .pra .ico.working{color:var(--orange-800)}.pra .ico.removed{color:var(--success)}.pra .ico.notpossible{color:var(--danger)}.pra .ico.software{color:var(--g3)}.pra .ico.note{color:var(--orange-600)}

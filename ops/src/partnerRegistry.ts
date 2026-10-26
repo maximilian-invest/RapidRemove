@@ -322,15 +322,16 @@ export function registerPartnerRegistry(app: FastifyInstance, adminToken: string
     const st = await pool.query(`SELECT COALESCE(partner_id, $1) AS pid,
         count(*) FILTER (WHERE status IN ('new','working','software'))::int AS open,
         count(*) FILTER (WHERE status='removed')::int AS removed,
-        COALESCE(sum(price_usd) FILTER (WHERE status='removed' AND paid_at IS NULL),0)::float AS owed
+        COALESCE(sum(price_usd) FILTER (WHERE status='removed' AND paid_at IS NULL),0)::float AS owed,
+        COALESCE(sum(refund_usd) FILTER (WHERE refund_usd > 0 AND refund_settled_at IS NULL),0)::float AS refund
       FROM partner_tasks WHERE NOT test GROUP BY 1`, [first]);
-    const by = new Map((st.rows as { pid: string; open: number; removed: number; owed: number }[]).map((x) => [String(x.pid), x]));
+    const by = new Map((st.rows as { pid: string; open: number; removed: number; owed: number; refund: number }[]).map((x) => [String(x.pid), x]));
     const acc = await pool.query(`SELECT email, partner_id FROM partner_accounts WHERE partner_id IS NOT NULL ORDER BY created_at`);
     const login = new Map<string, string>(); for (const a of acc.rows as { email: string; partner_id: string }[]) if (!login.has(String(a.partner_id))) login.set(String(a.partner_id), a.email);
     const all = { open: 0, removed: 0 };
     const partners = (r.rows as PRow[]).map((p) => {
       const s = by.get(String(p.id)); if (s) { all.open += s.open; all.removed += s.removed; }
-      return adminPartnerView(p, { open: s?.open || 0, removed: s?.removed || 0, owedUsd: Math.round((s?.owed || 0) * 100) / 100 }, login.get(String(p.id)));
+      return adminPartnerView(p, { open: s?.open || 0, removed: s?.removed || 0, owedUsd: Math.round((s?.owed || 0) * 100) / 100, refundUsd: Math.round((s?.refund || 0) * 100) / 100 }, login.get(String(p.id)));
     });
     return { ok: true, partners, board: all, routes: await getRoutes(), services: SERVICES.map((s) => ({ id: s.id, label: s.de, price: s.price })) };
   });

@@ -146,6 +146,7 @@ export function OrderDetail({ ctx, id }) {
   // „Dem Partner entziehen": was beim Partner noch offen ist (nicht gelöscht, nicht abgerechnet) bzw. schon zurückgezogen wurde.
   const wdOpen = pt.filter((t) => ["new", "working", "software", "not_possible"].includes(t.status) && !t.paid && !t.payoutId);
   const wdDone = withdrawnFree(pt).length;
+  const refOpen = Math.round(pt.filter((t) => t.refund && !t.refund.settled).reduce((a, t) => a + Number(t.refund.usd || 0), 0) * 100) / 100;
   const accN = o.reviewsAccepted ? o.reviewsAccepted.length : items.length;
   const f = o.form || {};
   // Weitere offene Zahlungen desselben Kunden (gleiche E-Mail) – gleiche Methode = Sammelzahlung möglich.
@@ -191,6 +192,7 @@ export function OrderDetail({ ctx, id }) {
             {o.payHold ? <span className="due"><b>Pausiert</b> · Zwischenzahlung offen</span> : null}
             {r.notPossible ? <span><b>{r.notPossible}</b> nicht möglich</span> : null}
             {wdDone ? <span><b>{wdDone}</b> dem Partner entzogen · frei</span> : null}
+            {refOpen ? <span className="due"><b>${refOpen}</b> Rückforderung an Partner offen</span> : null}
             {r.unpaidN ? <span className="due"><b>{money(r.unpaidAmt, cur(o))}</b> offen · {r.unpaidN} Bew.{r.unbilledN ? ` · ${r.unbilledN} noch nicht abgerechnet` : ""}</span> : null}
           </div>
         ) : null}</div>
@@ -522,7 +524,7 @@ export function ReviewsScreen({ ctx, id, focus }) {
       <div className="card ls">
         <button type="button" className="rvr" onClick={() => openSheet({ kind: "rv", forId: o.id, idx: -1 })}><span className="th"><Store /></span><span className="t"><b>Profil</b><span style={{ color: "var(--g3)" }}>{profShot ? "Screenshot vorhanden" : o.profile || o.company || "Google-Profil"}</span></span><ChevronRight /></button>
         {rows.filter(F2[rf]).map((r) => {
-          const ps = r.t ? PS[r.t.status] || PS.new : r.wt ? [`Dem Partner entzogen (${new Date(r.wt.withdrawn).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}) · frei`, "var(--g3)"] : ["Nicht beim Partner", "var(--g3)"];
+          const ps = r.t ? PS[r.t.status] || PS.new : r.wt ? [`Dem Partner entzogen (${new Date(r.wt.withdrawn).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}) · frei${r.wt.refund && !r.wt.refund.settled ? ` · Rückforderung $${r.wt.refund.usd}` : ""}`, r.wt.refund && !r.wt.refund.settled ? "var(--orange-800)" : "var(--g3)"] : ["Nicht beim Partner", "var(--g3)"];
           return (
             <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "") + (r.t && fCodes.includes(String(r.t.code).toUpperCase()) ? " hl" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>

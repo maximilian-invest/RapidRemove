@@ -657,6 +657,8 @@ export const partnerUpdate = (id, fields) => partnerPost("update", { id, ...(fie
 export const partnerWithdraw = (p) => partnerPost("withdraw", p || {});
 /** Entzogene Bewertungen wieder einem Partner zuweisen: { orderId, partnerId, keys? } (keys = Bewertungs-Schlüssel; ohne = alle entzogenen). */
 export const partnerAssign = (p) => partnerPost("assign", p || {});
+/** Rückforderung an den Partner als erstattet markieren (Partner hat das Geld zurückgezahlt). */
+export const partnerRefundSettled = (id) => partnerPost("refund-settled", { id });
 export const partnerPay = (ids, note) => partnerPost("pay", { ids, note });
 export const siteChats = (days) => adminPost("/admin/chat/site", { days: days || 60 });
 export const siteChatThread = (sid) => adminPost("/admin/chat/site/thread", { sid });

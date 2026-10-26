@@ -25,7 +25,7 @@ import { isPartnerSession, partnerSessionEmail, createPreviewSession } from "./p
 import { isTestEmail } from "./testAccounts";
 import { notifyCustomer } from "./custPush";
 import { customerPush } from "./pushTexts";
-import { partnerNewOrder, notifyPartner } from "./partnerNotify";
+import { partnerNewOrder, notifyPartner, partnerJobsMail } from "./partnerNotify";
 import { REPORT_REASONS, REPORT_IDS, reportDe } from "./reportReasons";
 import { initPayoutTables, registerPayoutRoutes, recordManualPayout, payoutSetupMissing } from "./payouts";
 import { serviceOf, routeFor, partnerPrice, defaultPartnerFor, partnerIdOf, partnerStatus, registerPartnerRegistry, partnerIfApproved, type ServiceId } from "./partnerRegistry";
@@ -102,6 +102,9 @@ export async function initPartnerTables(): Promise<void> {
   // (neu übergeben möglich, Kunden-/Software-Updates und Reaktivierungen treffen die zurückgezogene Aufgabe nicht mehr).
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS withdrawn_at timestamptz`);
   await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS orig_item_key text`);
+  // War für einen entzogenen Job schon an den Partner gezahlt (Board-Auszahlung oder z. B. Software-Vorauszahlung außerhalb) → offene Rückforderung (USD).
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS refund_usd numeric`);
+  await pool.query(`ALTER TABLE partner_tasks ADD COLUMN IF NOT EXISTS refund_settled_at timestamptz`);
   // Früher abgelehnte Software-Aufgaben (storniert) wieder unter „Software" zeigen – mit „Customer declined deletion".
   await pool.query(`UPDATE partner_tasks SET status='software' WHERE status='cancelled' AND paid_at IS NULL AND admin_note LIKE '%Spezial-Software abgelehnt (Dashboard)%' AND withdrawn_at IS NULL
     AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.id = partner_tasks.order_id AND o.status = 'storniert')`).catch(() => {});
@@ -204,7 +207,7 @@ type Row = {
   long_url?: string | null;
   touched_at: string | null; working_since: string | null; test?: boolean; method?: string | null; partner_id?: string | null;
   report_reason?: string | null; report_note?: string | null; report_at?: string | null; express_at?: string | null;
-  withdrawn_at?: string | null; orig_item_key?: string | null;
+  withdrawn_at?: string | null; orig_item_key?: string | null; refund_usd?: string | null; refund_settled_at?: string | null;
 };
 const num = (v: unknown) => Math.round(Number(v || 0) * 100) / 100;
 
@@ -218,7 +221,8 @@ function partnerView(r: Row) {
     method: r.method || null, // sw | legal | null (Hinweis beim Partner: Software prüfen bzw. erst rechtliche Meldung)
     reportReason: r.report_reason || null, reportNote: r.report_note || "", // womit der Partner gemeldet hat (beim „Removed")
     // Express (Preismodell 2): Priorität hoch. Frist = Kunden-Zusage − 6 Std. (Mo–Fr 12:00: 24 Std.; Fr 12:00–So: Di 18:00 Wiener Zeit).
-    withdrawn: r.withdrawn_at || null, // vom Admin zurückgezogen (steht beim Partner unter „Cancelled")
+    withdrawn: r.withdrawn_at || null, // vom Admin entzogen (steht beim Partner unter „Cancelled")
+    refund: Number(r.refund_usd) > 0 ? { usd: num(r.refund_usd), settled: r.refund_settled_at || null } : null, // Rückforderung an den Partner
     express: r.express_at ? { at: r.express_at, due: expressPartnerDue(r.express_at), custDue: expressCustomerDue(r.express_at) } : null,
     sw: r.status === "software" ? ((r.admin_note || "").includes(SW_NOTE_DECLINED) ? "declined" : "pending") : ((r.status === "working" && swStartAllowed(r.admin_note)) || (r.status === "new" && String(r.admin_note || "").includes(SW_NOTE_COVERED)) ? "paid" : null), // 250er: Software freigegeben (im Preis)
   };
@@ -291,6 +295,7 @@ function totals(rows: Row[]) {
     owedUsd: num(open.reduce((s, r) => s + Number(r.price_usd || 0), 0)),
     owedCount: open.length,
     paidUsd: num(removed.filter((r) => r.paid_at).reduce((s, r) => s + Number(r.price_usd || 0), 0)),
+    refundUsd: num(rows.filter((r) => !r.test && Number(r.refund_usd) > 0 && !r.refund_settled_at).reduce((s, r) => s + Number(r.refund_usd || 0), 0)), // offene Rückforderungen
   };
 }
 
@@ -437,26 +442,32 @@ export async function partnerOrderStatus(orderId: string, status: string): Promi
  * der Auftrag bleibt wie er ist (In Bearbeitung). Die Bewertung ist danach im Admin wieder frei (nicht mehr „beim Partner"). */
 export const WITHDRAWABLE = ["new", "working", "software", "not_possible"] as const;
 const STATUS_DE: Record<string, string> = { new: "nicht gestartet", working: "in Arbeit", software: "Software", not_possible: "nicht möglich", removed: "gelöscht", cancelled: "storniert" };
-export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ done: Row[]; skipped: { id: number; code: string | null; why: string }[] }> {
+export async function withdrawTasks(ids: number[], noteIn: unknown, refundsIn: unknown = null): Promise<{ done: Row[]; skipped: { id: number; code: string | null; why: string }[] }> {
   const done: Row[] = []; const skipped: { id: number; code: string | null; why: string }[] = [];
   if (!pool) return { done, skipped };
   const note = clip(noteIn, 300);
+  // Rückforderung je Aufgabe (USD): vom Admin angegeben (z. B. Software-Vorauszahlung außerhalb des Boards), sonst = Partnerpreis, wenn schon ausbezahlt.
+  const refundsGiven = (refundsIn && typeof refundsIn === "object" ? refundsIn : {}) as Record<string, unknown>;
   for (const id of [...new Set(ids)]) {
     const cur = (await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id])).rows[0] as Row | undefined;
     if (!cur) { skipped.push({ id, code: null, why: "nicht gefunden" }); continue; }
     if (cur.status === "removed") { skipped.push({ id, code: cur.code, why: "schon gelöscht (Kunde wird dafür belastet)" }); continue; }
     if (cur.status === "cancelled") { skipped.push({ id, code: cur.code, why: cur.withdrawn_at ? "schon entzogen" : "schon storniert" }); continue; }
-    if (cur.paid_at || cur.payout_id) { skipped.push({ id, code: cur.code, why: "schon abgerechnet/ausbezahlt" }); continue; }
+    if (cur.payout_id && !cur.paid_at) { skipped.push({ id, code: cur.code, why: "Auszahlung läuft gerade – kurz warten" }); continue; }
     if (!(WITHDRAWABLE as readonly string[]).includes(cur.status)) { skipped.push({ id, code: cur.code, why: "Status " + cur.status }); continue; }
+    const rg = refundsGiven[String(id)];
+    const refund = rg != null && rg !== "" && Number.isFinite(Number(rg)) && Number(rg) >= 0 ? Math.round(Number(rg) * 100) / 100 : cur.paid_at ? num(cur.price_usd) : 0;
     // Nur wenn sich der Status seit dem Lesen nicht geändert hat (Partner klickt gleichzeitig „Removed", Auto-Scan …).
     const r = await pool.query(
       `UPDATE partner_tasks SET status='cancelled', withdrawn_at=now(), updated_at=now(),
+         refund_usd = CASE WHEN $5::numeric > 0 THEN $5::numeric ELSE NULL END, refund_settled_at = NULL,
          orig_item_key = COALESCE(orig_item_key, item_key),
          item_key = CASE WHEN item_key IS NULL THEN NULL ELSE item_key || '#withdrawn-' || id END,
          admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''),
-           'Dem Partner entzogen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI') || ' (vorher: ' || $3::text || ')' || CASE WHEN $4::text <> '' THEN ' – ' || $4::text ELSE '' END)
-       WHERE id=$1 AND status=$2 AND paid_at IS NULL AND payout_id IS NULL RETURNING *`,
-      [id, cur.status, STATUS_DE[cur.status] || cur.status, note],
+           'Dem Partner entzogen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI') || ' (vorher: ' || $3::text || ')' || CASE WHEN $4::text <> '' THEN ' – ' || $4::text ELSE '' END
+           || CASE WHEN $5::numeric > 0 THEN ' · Rückforderung ' || $5::text || ' USD' ELSE '' END)
+       WHERE id=$1 AND status=$2 AND (payout_id IS NULL OR paid_at IS NOT NULL) RETURNING *`,
+      [id, cur.status, STATUS_DE[cur.status] || cur.status, note, refund],
     );
     if (!r.rows[0]) { skipped.push({ id, code: cur.code, why: "inzwischen geändert – neu laden" }); continue; }
     done.push(r.rows[0] as Row);
@@ -468,9 +479,10 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
   for (const t of done) if (t.order_id) { if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, []); byOrder.get(t.order_id)!.push(t); }
   for (const [orderId, list] of byOrder) {
     await insertEvent({ orderId, type: "note", title: `Dem Partner entzogen: ${list.map((t) => t.code).join(", ")}`,
-      detail: ["Partner-Aufgabe(n) → Cancelled, Bewertung(en) wieder frei", "Kunde unverändert (keine Belastung, keine Nachricht)", note ? `Notiz: ${note}` : ""].filter(Boolean).join(" · ") }).catch(() => {});
+      detail: ["Partner-Aufgabe(n) → Cancelled, Bewertung(en) wieder frei", "Kunde unverändert (keine Belastung, keine Nachricht)",
+        ...list.filter((t) => Number(t.refund_usd) > 0).map((t) => `Rückforderung ${t.code}: ${num(t.refund_usd)} USD`), note ? `Notiz: ${note}` : ""].filter(Boolean).join(" · ") }).catch(() => {});
   }
-  // Partner ruhig informieren („Wir stressen unsere Partner nicht") – je Partner eine Nachricht.
+  // Partner informieren: Push + E-Mail (Englisch, Job-Nummer + Link, ggf. Rückforderung) – je Partner eine Nachricht.
   const byPartner = new Map<string, Row[]>();
   for (const t of done) { const k = `${t.partner_id ?? ""}|${t.test ? 1 : 0}`; if (!byPartner.has(k)) byPartner.set(k, []); byPartner.get(k)!.push(t); }
   for (const [k, list] of byPartner) {
@@ -479,6 +491,10 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
     void notifyPartner(`${test === "1" ? "TEST · " : ""}Review${n > 1 ? "s" : ""} withdrawn`,
       `RapidRemove took back ${list.slice(0, 4).map((t) => t.code).join(", ")}${n > 4 ? ` +${n - 4}` : ""}${custs.length === 1 ? ` (${custs[0]})` : ""}. No need to work on ${n > 1 ? "them" : "it"} – thank you!`,
       undefined, test === "1", pid ? [Number(pid)] : null);
+    const sent = await partnerJobsMail("withdrawn", list.map((t) => ({ code: t.code, customer: t.customer, url: t.long_url || t.url, refundUsd: Number(t.refund_usd) || 0 })), test === "1", pid ? Number(pid) : null);
+    for (const oid of [...new Set(list.map((t) => t.order_id).filter(Boolean))] as string[]) {
+      await insertEvent({ orderId: oid, type: "mail", title: sent.length ? "Partner-Mail: Job(s) entzogen" : "Partner-Mail: Job(s) entzogen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${list.filter((t) => t.order_id === oid).map((t) => t.code).join(", ")}` : "", auto: true }).catch(() => {});
+    }
   }
   return { done, skipped };
 }
@@ -503,19 +519,24 @@ export async function assignWithdrawn(orderId: string, keysIn: string[] | null, 
   const items = (Array.isArray(o.raw?.reviewItems) ? o.raw!.reviewItems : []) as Record<string, unknown>[];
   const keyOfIt = (it: Record<string, unknown>) => String(it.url || "") || `${it.name || ""}|${it.text || ""}`;
   const customer = clip(o.profile || o.company || o.name, 160) || null;
-  const reactivated: Row[] = [];
+  const reactivated: Row[] = []; const refundCancelled: Row[] = [];
   for (const k of keys) {
     const w = lastW.get(k) || null;
     if (active.has(k)) { skipped.push({ key: k, code: w?.code || null, why: "liegt schon beim Partner" }); continue; }
     if (!w) { skipped.push({ key: k, code: null, why: "war nicht entzogen" }); continue; }
-    if (w.partner_id && Number(w.partner_id) === partnerId && !w.paid_at && !w.payout_id) {
-      // Gleicher Partner: dieselbe Aufgabe wieder aktiv (Schlüssel zurück, Status „new").
+    if (w.partner_id && Number(w.partner_id) === partnerId) {
+      // Gleicher Partner: dieselbe Aufgabe wieder aktiv (Schlüssel zurück, Status „new"). Offene Rückforderung entfällt
+      // (er hat das Geld schon und arbeitet den Job jetzt wieder; eine bezahlte Aufgabe wird nicht nochmal ausgezahlt).
+      const openRefund = Number(w.refund_usd) > 0 && !w.refund_settled_at;
       const r = await pool.query(
         `UPDATE partner_tasks SET status='new', item_key=orig_item_key, withdrawn_at=NULL, working_since=NULL, updated_at=now(),
-           admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''), 'Wieder dem Partner zugewiesen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI'))
-         WHERE id=$1 AND status='cancelled' AND withdrawn_at IS NOT NULL RETURNING *`, [w.id],
+           refund_usd = CASE WHEN refund_settled_at IS NULL THEN NULL ELSE refund_usd END,
+           admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''), 'Wieder dem Partner zugewiesen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI')
+             || CASE WHEN $2::boolean THEN ' (Rückforderung aufgehoben)' ELSE '' END)
+         WHERE id=$1 AND status='cancelled' AND withdrawn_at IS NOT NULL RETURNING *`, [w.id, openRefund],
       ).catch(() => ({ rows: [] as Row[] }));
       if (!r.rows[0]) { skipped.push({ key: k, code: w.code, why: "inzwischen geändert – neu laden" }); continue; }
+      if (openRefund) refundCancelled.push(w);
       reactivated.push(r.rows[0] as Row); done.push(r.rows[0] as Row); active.add(k);
       continue;
     }
@@ -533,6 +554,10 @@ export async function assignWithdrawn(orderId: string, keysIn: string[] | null, 
     const test = !!reactivated[0].test, n = reactivated.length;
     void notifyPartner(`${test ? "TEST · " : ""}Review${n > 1 ? "s" : ""} back on your board`,
       `RapidRemove assigned ${reactivated.slice(0, 4).map((t) => t.code).join(", ")}${n > 4 ? ` +${n - 4}` : ""}${customer ? ` (${customer})` : ""} to you again.`, undefined, test, [partnerId]);
+    // E-Mail: „A review that was withdrawn earlier has been assigned to you again" (Job-Nummer + Link). Anderer Partner: normale „Review added"-Mail (insertPartnerTasks).
+    const sent = await partnerJobsMail("reassigned", reactivated.map((t) => ({ code: t.code, customer: t.customer, url: t.long_url || t.url })), test, partnerId,
+      { refundCancelled: refundCancelled.map((t) => ({ code: t.code, customer: t.customer, url: t.url, refundUsd: num(t.refund_usd) })) });
+    await insertEvent({ orderId, type: "mail", title: sent.length ? "Partner-Mail: Job(s) wieder zugewiesen" : "Partner-Mail: Job(s) wieder zugewiesen – NICHT gesendet (keine Adresse/Versand fehlgeschlagen)", detail: sent.length ? `an ${sent.join(", ")} · ${reactivated.map((t) => t.code).join(", ")}` : "", auto: true }).catch(() => {});
   }
   return { done, skipped };
 }
@@ -637,8 +662,27 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
       ids = r.rows.map((x) => Number(x.id));
     }
     if (!ids.length) return reply.code(400).send({ ok: false, error: "nichts offen beim Partner" });
-    const x = await withdrawTasks(ids, b.note);
+    const x = await withdrawTasks(ids, b.note, b.refunds);
     return { ok: true, withdrawn: x.done.map(adminView), skipped: x.skipped };
+  });
+
+  // Admin: Rückforderung als erstattet markieren (Partner hat das Geld zurückgezahlt) → Job gilt als nicht bezahlt.
+  app.post("/admin/partner/refund-settled", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const id = Number(b.id);
+    if (!Number.isInteger(id) || id <= 0) return reply.code(400).send({ ok: false, error: "id fehlt" });
+    const r = await pool.query(
+      `UPDATE partner_tasks SET refund_settled_at=now(), paid_at=NULL, payout_id=NULL, updated_at=now(),
+         admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''), 'Rückforderung ' || refund_usd::text || ' USD erstattet ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY'))
+       WHERE id=$1 AND refund_usd > 0 AND refund_settled_at IS NULL RETURNING *`, [id]);
+    const t = r.rows[0] as Row | undefined;
+    if (!t) return reply.code(404).send({ ok: false, error: "keine offene Rückforderung" });
+    bumpChange();
+    if (t.order_id) await insertEvent({ orderId: t.order_id, type: "note", title: `Rückforderung erstattet: ${t.code} (${num(t.refund_usd)} USD)`, detail: "Vom Admin als erstattet markiert" }).catch(() => {});
+    void notifyPartner(`${t.test ? "TEST · " : ""}Refund received`, `${t.code} · ${num(t.refund_usd)} USD – thank you!`, undefined, !!t.test, t.partner_id ? [Number(t.partner_id)] : null);
+    return { ok: true, task: adminView(t) };
   });
 
   // Admin: entzogene Bewertungen wieder einem Partner zuweisen ({ orderId, partnerId, keys? }). Siehe assignWithdrawn.
@@ -722,8 +766,9 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     // Neuer Partner (Stripe-Land): erst Auszahlung einrichten (Stripe Connect), dann Aufträge.
     if (!preview && (await payoutSetupMissing(pid))) return { ok: true, gate: "payout", preview: false, tasks: [], totals: totals([]), payouts: [] };
     // Stornierte der letzten 30 Tage mitschicken → Partner sieht sie unter „Cancelled" (nicht mehr in der Arbeit).
-    const rows = preview ? await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND test")
-      : await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days') AND NOT test AND partner_id = $1", [pid]);
+    // Offene Rückforderungen (entzogene, schon bezahlte Jobs) bleiben sichtbar, bis sie erledigt sind.
+    const rows = preview ? await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days' OR (refund_usd > 0 AND refund_settled_at IS NULL)) AND test")
+      : await listTasks("WHERE (status <> 'cancelled' OR updated_at > now() - interval '30 days' OR (refund_usd > 0 AND refund_settled_at IS NULL)) AND NOT test AND partner_id = $1", [pid]);
     const p = preview ? { rows: [] as Record<string, unknown>[] } : pool ? await pool.query(`SELECT id, amount_usd, tasks, note, created_at FROM partner_payouts WHERE partner_id = $1 OR (partner_id IS NULL AND $1 = (SELECT min(id) FROM partners)) ORDER BY id DESC LIMIT 20`, [pid]) : { rows: [] as Record<string, unknown>[] };
     // Screenshot der Bewertung (automatisch bei der Bestellung aufgenommen) → Vorschau statt nur Link.
     const shots = new Map<string, number>();
@@ -797,7 +842,8 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!old || old.status === "cancelled") return { error: "not found", code: 404 };
     if (opts.preview !== undefined && !!old.test !== opts.preview) return { error: "not found", code: 404 }; // Test ↔ echt strikt getrennt
     if (!opts.admin && !opts.preview && opts.pid && old.partner_id && Number(old.partner_id) !== opts.pid) return { error: "not found", code: 404 }; // nur eigene Aufgaben
-    if (old.paid_at && status && status !== "removed") return { error: "already paid", code: 400 };
+    // Bezahlte Löschung nicht mehr ändern. (Wieder zugewiesener, schon bezahlter Job – z. B. Vorauszahlung – darf bearbeitet werden; wird nicht nochmal ausgezahlt.)
+    if (old.paid_at && old.status === "removed" && status && status !== "removed") return { error: "already paid", code: 400 };
     // Software-Fall (Partner-Regel): erst „Software deletion confirmed" → Kunde zahlt → dann starten. Vorher kein Working/Removed.
     const swPaid = swStartAllowed(old.admin_note); // bezahlt, freigegeben (zahlt bei Erfolg) oder im 250er-Preis enthalten
     if (!opts.admin && old.method === "sw" && !swPaid && (status === "working" || status === "removed")) return { error: "confirm software first – start after customer paid", code: 400 };
