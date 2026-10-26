@@ -431,7 +431,7 @@ export async function partnerOrderStatus(orderId: string, status: string): Promi
   }
 }
 
-/* ---- Vom Partner zurückziehen (Admin, 26.10.2026) ----
+/* ---- Dem Partner entziehen / wieder zuweisen (Admin, 26.10.2026 – Umschalter) ----
  * Der Partner gibt die Aufgabe ab: Status „cancelled" (steht bei ihm unter „Cancelled", kein Working/Removed/Software/
  * Not possible mehr möglich, kommt nie in „To be paid"). Der Kunde merkt nichts: keine Belastung, kein Push, keine Mail,
  * der Auftrag bleibt wie er ist (In Bearbeitung). Die Bewertung ist danach im Admin wieder frei (nicht mehr „beim Partner"). */
@@ -445,7 +445,7 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
     const cur = (await pool.query(`SELECT * FROM partner_tasks WHERE id=$1`, [id])).rows[0] as Row | undefined;
     if (!cur) { skipped.push({ id, code: null, why: "nicht gefunden" }); continue; }
     if (cur.status === "removed") { skipped.push({ id, code: cur.code, why: "schon gelöscht (Kunde wird dafür belastet)" }); continue; }
-    if (cur.status === "cancelled") { skipped.push({ id, code: cur.code, why: cur.withdrawn_at ? "schon zurückgezogen" : "schon storniert" }); continue; }
+    if (cur.status === "cancelled") { skipped.push({ id, code: cur.code, why: cur.withdrawn_at ? "schon entzogen" : "schon storniert" }); continue; }
     if (cur.paid_at || cur.payout_id) { skipped.push({ id, code: cur.code, why: "schon abgerechnet/ausbezahlt" }); continue; }
     if (!(WITHDRAWABLE as readonly string[]).includes(cur.status)) { skipped.push({ id, code: cur.code, why: "Status " + cur.status }); continue; }
     // Nur wenn sich der Status seit dem Lesen nicht geändert hat (Partner klickt gleichzeitig „Removed", Auto-Scan …).
@@ -454,7 +454,7 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
          orig_item_key = COALESCE(orig_item_key, item_key),
          item_key = CASE WHEN item_key IS NULL THEN NULL ELSE item_key || '#withdrawn-' || id END,
          admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''),
-           'Vom Partner zurückgezogen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI') || ' (vorher: ' || $3::text || ')' || CASE WHEN $4::text <> '' THEN ' – ' || $4::text ELSE '' END)
+           'Dem Partner entzogen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI') || ' (vorher: ' || $3::text || ')' || CASE WHEN $4::text <> '' THEN ' – ' || $4::text ELSE '' END)
        WHERE id=$1 AND status=$2 AND paid_at IS NULL AND payout_id IS NULL RETURNING *`,
       [id, cur.status, STATUS_DE[cur.status] || cur.status, note],
     );
@@ -467,7 +467,7 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
   const byOrder = new Map<string, Row[]>();
   for (const t of done) if (t.order_id) { if (!byOrder.has(t.order_id)) byOrder.set(t.order_id, []); byOrder.get(t.order_id)!.push(t); }
   for (const [orderId, list] of byOrder) {
-    await insertEvent({ orderId, type: "note", title: `Vom Partner zurückgezogen: ${list.map((t) => t.code).join(", ")}`,
+    await insertEvent({ orderId, type: "note", title: `Dem Partner entzogen: ${list.map((t) => t.code).join(", ")}`,
       detail: ["Partner-Aufgabe(n) → Cancelled, Bewertung(en) wieder frei", "Kunde unverändert (keine Belastung, keine Nachricht)", note ? `Notiz: ${note}` : ""].filter(Boolean).join(" · ") }).catch(() => {});
   }
   // Partner ruhig informieren („Wir stressen unsere Partner nicht") – je Partner eine Nachricht.
@@ -479,6 +479,60 @@ export async function withdrawTasks(ids: number[], noteIn: unknown): Promise<{ d
     void notifyPartner(`${test === "1" ? "TEST · " : ""}Review${n > 1 ? "s" : ""} withdrawn`,
       `RapidRemove took back ${list.slice(0, 4).map((t) => t.code).join(", ")}${n > 4 ? ` +${n - 4}` : ""}${custs.length === 1 ? ` (${custs[0]})` : ""}. No need to work on ${n > 1 ? "them" : "it"} – thank you!`,
       undefined, test === "1", pid ? [Number(pid)] : null);
+  }
+  return { done, skipped };
+}
+
+/** Entzogene Bewertungen wieder einem Partner zuweisen (Gegenstück zu withdrawTasks).
+ *  Gleicher Partner → dieselbe Aufgabe (gleiche RV-Nummer, gleicher Preis) wird wieder aktiv („new").
+ *  Anderer Partner → neue Aufgabe für diesen Partner (seine Preise); die alte bleibt beim alten Partner unter „Cancelled".
+ *  keys = ursprüngliche Bewertungs-Schlüssel; ohne keys: alle entzogenen, freien Bewertungen des Auftrags. */
+export async function assignWithdrawn(orderId: string, keysIn: string[] | null, partnerId: number): Promise<{ done: Row[]; skipped: { key: string; code: string | null; why: string }[]; error?: string }> {
+  const done: Row[] = []; const skipped: { key: string; code: string | null; why: string }[] = [];
+  if (!pool) return { done, skipped, error: "keine Datenbank" };
+  const pr = (await pool.query(`SELECT id, name FROM partners WHERE id=$1 AND active AND COALESCE(status,'active')='active'`, [partnerId]).catch(() => ({ rows: [] as { id: string; name: string }[] }))).rows[0];
+  if (!pr) return { done, skipped, error: "Partner nicht aktiv" };
+  const o = (await pool.query(`SELECT id, status, profile, company, name, raw FROM orders WHERE id=$1`, [orderId])).rows[0] as { id: string; status: string | null; profile: string | null; company: string | null; name: string | null; raw: Record<string, unknown> | null } | undefined;
+  if (!o) return { done, skipped, error: "Auftrag nicht gefunden" };
+  if (o.status === "storniert") return { done, skipped, error: "Auftrag ist storniert" };
+  const tasks = (await pool.query(`SELECT * FROM partner_tasks WHERE order_id=$1 ORDER BY id`, [orderId])).rows as Row[];
+  const active = new Set(tasks.filter((t) => t.status !== "cancelled").map((t) => t.item_key));
+  const lastW = new Map<string, Row>(); // je Bewertung die zuletzt entzogene Aufgabe
+  for (const t of tasks) if (t.withdrawn_at && t.orig_item_key) { const c = lastW.get(t.orig_item_key); if (!c || String(t.withdrawn_at) > String(c.withdrawn_at)) lastW.set(t.orig_item_key, t); }
+  const keys = keysIn && keysIn.length ? [...new Set(keysIn)] : [...lastW.keys()].filter((k) => !active.has(k));
+  const items = (Array.isArray(o.raw?.reviewItems) ? o.raw!.reviewItems : []) as Record<string, unknown>[];
+  const keyOfIt = (it: Record<string, unknown>) => String(it.url || "") || `${it.name || ""}|${it.text || ""}`;
+  const customer = clip(o.profile || o.company || o.name, 160) || null;
+  const reactivated: Row[] = [];
+  for (const k of keys) {
+    const w = lastW.get(k) || null;
+    if (active.has(k)) { skipped.push({ key: k, code: w?.code || null, why: "liegt schon beim Partner" }); continue; }
+    if (!w) { skipped.push({ key: k, code: null, why: "war nicht entzogen" }); continue; }
+    if (w.partner_id && Number(w.partner_id) === partnerId && !w.paid_at && !w.payout_id) {
+      // Gleicher Partner: dieselbe Aufgabe wieder aktiv (Schlüssel zurück, Status „new").
+      const r = await pool.query(
+        `UPDATE partner_tasks SET status='new', item_key=orig_item_key, withdrawn_at=NULL, working_since=NULL, updated_at=now(),
+           admin_note = concat_ws(' · ', NULLIF(trim(COALESCE(admin_note,'')), ''), 'Wieder dem Partner zugewiesen ' || to_char(now() AT TIME ZONE 'Europe/Vienna', 'DD.MM.YYYY HH24:MI'))
+         WHERE id=$1 AND status='cancelled' AND withdrawn_at IS NOT NULL RETURNING *`, [w.id],
+      ).catch(() => ({ rows: [] as Row[] }));
+      if (!r.rows[0]) { skipped.push({ key: k, code: w.code, why: "inzwischen geändert – neu laden" }); continue; }
+      reactivated.push(r.rows[0] as Row); done.push(r.rows[0] as Row); active.add(k);
+      continue;
+    }
+    // Anderer Partner: neue Aufgabe aus der Bestellung (Preis/Verfahren wie bei der normalen Übergabe).
+    const it = items.find((x) => keyOfIt(x) === k) || { url: w.url, name: w.name, text: w.text, kind: w.kind === "profile" ? "profile" : undefined, nt: w.kind === "nt", old: w.kind === "old" };
+    const rows = await insertPartnerTasks(orderId, customer, [it], partnerId);
+    if (!rows[0] || rows[0].status === "cancelled") { skipped.push({ key: k, code: w.code, why: "konnte nicht angelegt werden" }); continue; }
+    done.push(rows[0]); active.add(k);
+  }
+  if (!done.length) return { done, skipped };
+  bumpChange();
+  await insertEvent({ orderId, type: "note", title: `Dem Partner zugewiesen (${pr.name}): ${done.map((t) => t.code).join(", ")}`,
+    detail: [reactivated.length ? `${reactivated.length} wieder aktiv (gleiche Nummer)` : "", done.length - reactivated.length ? `${done.length - reactivated.length} neu angelegt` : ""].filter(Boolean).join(" · ") }).catch(() => {});
+  if (reactivated.length) {
+    const test = !!reactivated[0].test, n = reactivated.length;
+    void notifyPartner(`${test ? "TEST · " : ""}Review${n > 1 ? "s" : ""} back on your board`,
+      `RapidRemove assigned ${reactivated.slice(0, 4).map((t) => t.code).join(", ")}${n > 4 ? ` +${n - 4}` : ""}${customer ? ` (${customer})` : ""} to you again.`, undefined, test, [partnerId]);
   }
   return { done, skipped };
 }
@@ -585,6 +639,21 @@ export function registerPartnerRoutes(app: FastifyInstance, adminToken: string):
     if (!ids.length) return reply.code(400).send({ ok: false, error: "nichts offen beim Partner" });
     const x = await withdrawTasks(ids, b.note);
     return { ok: true, withdrawn: x.done.map(adminView), skipped: x.skipped };
+  });
+
+  // Admin: entzogene Bewertungen wieder einem Partner zuweisen ({ orderId, partnerId, keys? }). Siehe assignWithdrawn.
+  app.post("/admin/partner/assign", async (req, reply) => {
+    const b = (req.body || {}) as Record<string, unknown>;
+    if (!isAdmin(b)) return reply.code(401).send({ ok: false, error: "unauthorized" });
+    if (!pool) return reply.code(503).send({ ok: false, error: "keine Datenbank" });
+    const orderId = clip(b.orderId, 40);
+    const pid = Number(b.partnerId);
+    if (!orderId || !Number.isInteger(pid) || pid <= 0) return reply.code(400).send({ ok: false, error: "orderId/partnerId fehlt" });
+    const keys = Array.isArray(b.keys) ? b.keys.map((k) => String(k || "").slice(0, 800)).filter(Boolean).slice(0, 500) : null;
+    const x = await assignWithdrawn(orderId, keys, pid);
+    if (x.error) return reply.code(400).send({ ok: false, error: x.error });
+    if (!x.done.length) return reply.code(400).send({ ok: false, error: x.skipped[0]?.why || "nichts zuzuweisen", skipped: x.skipped });
+    return { ok: true, assigned: x.done.map(adminView), skipped: x.skipped };
   });
 
   // Admin: gelöschte, unbezahlte Aufgaben als bezahlt markieren (Sammelposten).

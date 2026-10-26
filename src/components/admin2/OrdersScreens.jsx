@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
@@ -143,7 +143,7 @@ export function OrderDetail({ ctx, id }) {
   const isRev = o.service === "reviews";
   const items = o.reviewItems || [];
   const removedN = pt.filter((t) => t.status === "removed").length;
-  // „Vom Partner zurückziehen": was beim Partner noch offen ist (nicht gelöscht, nicht abgerechnet) bzw. schon zurückgezogen wurde.
+  // „Dem Partner entziehen": was beim Partner noch offen ist (nicht gelöscht, nicht abgerechnet) bzw. schon zurückgezogen wurde.
   const wdOpen = pt.filter((t) => ["new", "working", "software", "not_possible"].includes(t.status) && !t.paid && !t.payoutId);
   const wdDone = withdrawnFree(pt).length;
   const accN = o.reviewsAccepted ? o.reviewsAccepted.length : items.length;
@@ -190,7 +190,7 @@ export function OrderDetail({ ctx, id }) {
             {r.software ? <span><b>{r.software}</b> Software · wartet auf Kunde</span> : null}
             {o.payHold ? <span className="due"><b>Pausiert</b> · Zwischenzahlung offen</span> : null}
             {r.notPossible ? <span><b>{r.notPossible}</b> nicht möglich</span> : null}
-            {wdDone ? <span><b>{wdDone}</b> vom Partner zurückgezogen · frei</span> : null}
+            {wdDone ? <span><b>{wdDone}</b> dem Partner entzogen · frei</span> : null}
             {r.unpaidN ? <span className="due"><b>{money(r.unpaidAmt, cur(o))}</b> offen · {r.unpaidN} Bew.{r.unbilledN ? ` · ${r.unbilledN} noch nicht abgerechnet` : ""}</span> : null}
           </div>
         ) : null}</div>
@@ -262,7 +262,8 @@ export function OrderDetail({ ctx, id }) {
       </div>
       {isRev ? (
         <div className="info"><button type="button" className="ir" onClick={() => pushReviews(o.id)}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen</span><b>{items.length} eingereicht · {accN} angenommen · {removedN} gelöscht</b></span><ChevronRight /></button>
-          {wdOpen.length && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvwithdraw", forId: o.id })}><span className="ico"><Undo2 /></span><span className="t"><span>Vom Partner zurückziehen</span><b>{wdOpen.length === 1 ? `${wdOpen[0].code} · offen beim Partner` : `${wdOpen.length} offen beim Partner`}</b></span><ChevronRight /></button> : null}
+          {wdOpen.length && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvwithdraw", forId: o.id })}><span className="ico"><Undo2 /></span><span className="t"><span>Dem Partner entziehen</span><b>{wdOpen.length === 1 ? `${wdOpen[0].code} · offen beim Partner` : `${wdOpen.length} offen beim Partner`}</b></span><ChevronRight /></button> : null}
+          {wdDone && o.status !== "storniert" ? <button type="button" className="ir" onClick={() => openSheet({ kind: "rvassign", forId: o.id })}><span className="ico"><Redo2 /></span><span className="t"><span>Dem Partner zuweisen</span><b>{wdDone === 1 ? "1 Bewertung entzogen · wieder zuweisen" : `${wdDone} entzogen · wieder zuweisen`}</b></span><ChevronRight /></button> : null}
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("addrev", o.id)}><span className="ico"><Plus /></span><span className="t"><span>Nachbestellung</span><b>Bewertung hinzufügen</b></span><ChevronRight /></button> : null}
           {o.status !== "storniert" ? <button type="button" className="ir" onClick={() => ctx.pushSub("bill", o.id)}><span className="ico"><Receipt /></span><span className="t"><span>Abrechnung</span><b>Gelöschte Bewertungen abrechnen</b></span><ChevronRight /></button> : null}</div>
       ) : null}
@@ -459,7 +460,7 @@ export const profLoc = (o) => {
   return [(o && (o.profile || o.company)) || "", a].filter(Boolean).join(" · ");
 };
 const keyOf = (it) => it.url || ((it.name || "") + "|" + (it.text || ""));
-/** Vom Partner zurückgezogene Aufgaben, deren Bewertung keine neue (aktive) Aufgabe hat → im Admin wieder frei. */
+/** Dem Partner entzogene Aufgaben, deren Bewertung keine neue (aktive) Aufgabe hat → im Admin wieder frei. */
 export const withdrawnFree = (pt) => {
   const active = new Set((pt || []).filter((t) => t.status !== "cancelled").map((t) => t.itemKey));
   const m = new Map();
@@ -495,7 +496,7 @@ export function ReviewsScreen({ ctx, id, focus }) {
   const items = o.reviewItems || [];
   const acc = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
   const ptBy = Object.fromEntries((ptasks[o.id] || []).map((t) => [t.itemKey, t]));
-  const wdBy = Object.fromEntries(withdrawnFree(ptasks[o.id] || []).map((t) => [t.origKey, t])); // vom Partner zurückgezogen, wieder frei
+  const wdBy = Object.fromEntries(withdrawnFree(ptasks[o.id] || []).map((t) => [t.origKey, t])); // dem Partner entzogen, wieder frei
   const sh = shots[o.id] || null;
   const profShot = sh && sh.shots ? sh.shots.find((s) => s.idx === -1 && s.status === "ok") : null;
   const rows = items.map((it, i) => {
@@ -521,7 +522,7 @@ export function ReviewsScreen({ ctx, id, focus }) {
       <div className="card ls">
         <button type="button" className="rvr" onClick={() => openSheet({ kind: "rv", forId: o.id, idx: -1 })}><span className="th"><Store /></span><span className="t"><b>Profil</b><span style={{ color: "var(--g3)" }}>{profShot ? "Screenshot vorhanden" : o.profile || o.company || "Google-Profil"}</span></span><ChevronRight /></button>
         {rows.filter(F2[rf]).map((r) => {
-          const ps = r.t ? PS[r.t.status] || PS.new : r.wt ? [`Vom Partner zurückgezogen (${new Date(r.wt.withdrawn).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}) · frei`, "var(--g3)"] : ["Nicht beim Partner", "var(--g3)"];
+          const ps = r.t ? PS[r.t.status] || PS.new : r.wt ? [`Dem Partner entzogen (${new Date(r.wt.withdrawn).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit" })}) · frei`, "var(--g3)"] : ["Nicht beim Partner", "var(--g3)"];
           return (
             <button key={r.i} type="button" className={"rvr" + (r.dec === "notext" ? " off" : "") + (r.t && fCodes.includes(String(r.t.code).toUpperCase()) ? " hl" : "")} onClick={() => openSheet({ kind: "rv", forId: o.id, idx: r.i })}>
               <span className="th">{r.dec === "notext" ? <Ban /> : r.dec ? <Check /> : <MessageSquareText />}</span>

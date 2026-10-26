@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import {
   fetchAdminData, fetchStripe, fetchTemplates, sendTemplate, setOrderStatus, setOrderAssignee, partnerTasks, partnerConfirmRemoved, partnerSettings, partnersList,
-  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, partnerWithdraw, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
+  fetchReviewShots, reviewShotUrl, sendReviewsStorno, partnerOrderStatus, partnerWithdraw, partnerAssign, monitorList, monitorScan, monitorAction, monitorInform, monitorLookup, monitorAdd, monitorShotUrl,
 } from "@/lib/admin-api";
 import { FORM_QUESTIONS } from "@/lib/order-form";
 import { asset } from "@/lib/base";
@@ -28,7 +28,7 @@ import { MahnSheet } from "./Mahnung";
 import { DueSheet, MailHistSheet, MailsScreen, DunPauseSheet } from "./PayFlow";
 import { PayLinkSheet } from "./Paylink";
 import { ActivityScreen } from "./Activity";
-import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList } from "lucide-react";
+import { AlertTriangle, Loader as LoaderIcon, Banknote, Undo2, ClipboardList, Redo2 } from "lucide-react";
 import { Overview, MonitorScreen, Account, MS, fmtDT } from "./MoreScreens";
 import { useHistState, useHardLeave } from "./navHistory";
 import { openGoogleLink, needsSafari } from "@/lib/open-google";
@@ -409,11 +409,11 @@ function ConfirmRemoved({ t, toast, done }) {
 
 /** Datum (TT.MM.) für Hinweise. */
 const t0Date = (v) => (v ? new Date(v).toLocaleDateString("de-AT", { day: "2-digit", month: "2-digit", year: "numeric" }) : "");
-/** Partner-Status, aus denen der Admin zurückziehen kann (wie ops/src/partner.ts › WITHDRAWABLE). */
+/** Partner-Status, aus denen der Admin entziehen kann (wie ops/src/partner.ts › WITHDRAWABLE). */
 const WITHDRAWABLE = ["new", "working", "software", "not_possible"];
 const WD_ST = { new: "nicht gestartet", working: "Partner arbeitet", software: "Software", not_possible: "nicht möglich" };
 
-/** „Vom Partner zurückziehen" – einzelne Bewertung (ids) oder alle offenen des Auftrags (ids = null).
+/** „Dem Partner entziehen" – einzelne Bewertung (ids) oder alle offenen des Auftrags (ids = null).
  *  Partner: Aufgabe → „Cancelled" (kein Working/Removed/Software/Not possible mehr, nicht abrechenbar).
  *  Kunde: nichts – keine Belastung, keine Nachricht, Auftrag bleibt In Bearbeitung. Bewertung ist danach wieder frei. */
 function WithdrawSheet({ o, ids, ctx, close }) {
@@ -427,17 +427,17 @@ function WithdrawSheet({ o, ids, ctx, close }) {
     try {
       const r = await partnerWithdraw(ids ? { ids: list.map((t) => t.id), note } : { orderId: o.id, note });
       const n = (r.withdrawn || []).length, sk = r.skipped || [];
-      toast(n ? `${n === 1 ? r.withdrawn[0].code : n + " Bewertungen"} vom Partner zurückgezogen${sk.length ? ` · ${sk.length} übersprungen` : ""}` : `Nichts zurückgezogen${sk[0] ? " – " + sk[0].why : ""}`);
+      toast(n ? `${n === 1 ? r.withdrawn[0].code : n + " Bewertungen"} dem Partner entzogen${sk.length ? ` · ${sk.length} übersprungen` : ""}` : `Nichts entzogen${sk[0] ? " – " + sk[0].why : ""}`);
       if (ctx.loadPtasks) await ctx.loadPtasks();
       close();
     } catch (e) { toast("Fehler: " + e.message); setBusy(false); }
   };
   return (
     <><span className="shx"><Undo2 /></span>
-      <h3 style={{ paddingBottom: 6 }}>{ids && list.length === 1 ? `${list[0].code} vom Partner zurückziehen?` : "Vom Partner zurückziehen?"}</h3>
-      {!list.length ? <p className="shp">Beim Partner ist nichts mehr offen (gelöschte oder abgerechnete Bewertungen kann man nicht zurückziehen).</p> : (
+      <h3 style={{ paddingBottom: 6 }}>{ids && list.length === 1 ? `${list[0].code} dem Partner entziehen?` : "Dem Partner entziehen?"}</h3>
+      {!list.length ? <p className="shp">Beim Partner ist nichts mehr offen (gelöschte oder abgerechnete Bewertungen kann man nicht entziehen).</p> : (
         <>
-          <p className="shp">{list.length === 1 ? "Diese Bewertung" : `Diese ${list.length} Bewertungen`} {list.length === 1 ? "geht" : "gehen"} beim Partner auf „Cancelled“. Er kann sie nicht mehr bearbeiten oder abrechnen. Danach {list.length === 1 ? "ist sie" : "sind sie"} im Admin wieder frei.</p>
+          <p className="shp">{list.length === 1 ? "Diese Bewertung" : `Diese ${list.length} Bewertungen`} {list.length === 1 ? "geht" : "gehen"} beim Partner auf „Cancelled“. Er kann sie nicht mehr bearbeiten oder abrechnen. Danach {list.length === 1 ? "ist sie" : "sind sie"} im Admin wieder frei – mit „Dem Partner zuweisen“ jederzeit zurück.</p>
           <div className="opts" style={{ marginBottom: 12 }}>
             {list.slice(0, 8).map((t) => <div key={t.id} className="aopt"><span className="ico"><Handshake /></span><span className="ol"><b>{t.code}</b> · {t.name || t.reviewer || "Bewertung"}<br /><small>{WD_ST[t.status] || t.status}</small></span></div>)}
             {list.length > 8 ? <p className="shp" style={{ margin: "6px 4px 0" }}>+ {list.length - 8} weitere</p> : null}
@@ -448,7 +448,52 @@ function WithdrawSheet({ o, ids, ctx, close }) {
         </>
       )}
       <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
-        <button type="button" className="cta red" disabled={busy || !list.length} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Undo2 />}{busy ? "Wird zurückgezogen …" : "Zurückziehen"}</button></div></>
+        <button type="button" className="cta red" disabled={busy || !list.length} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Undo2 />}{busy ? "Wird entzogen …" : "Entziehen"}</button></div></>
+  );
+}
+
+/** „Dem Partner zuweisen" – entzogene Bewertung(en) wieder an einen Partner (Auswahl). Gleicher Partner → gleiche RV-Nummer
+ *  wird wieder aktiv; anderer Partner → neue Aufgabe zu seinen Preisen. Kunde merkt nichts. */
+function AssignSheet({ o, keys, ctx, close }) {
+  const { ptasks, toast, partners } = ctx;
+  const [busy, setBusy] = React.useState(false);
+  const pt = ptasks[o.id] || [];
+  const active = new Set(pt.filter((t) => t.status !== "cancelled").map((t) => t.itemKey));
+  const last = new Map();
+  for (const t of pt) if (t.withdrawn && t.origKey && !active.has(t.origKey) && (!last.has(t.origKey) || String(t.withdrawn) > String(last.get(t.origKey).withdrawn))) last.set(t.origKey, t);
+  const list = [...last.values()].filter((t) => !keys || keys.includes(t.origKey));
+  const opts = ((partners && partners.partners) || []).filter((p) => p.active && (p.status || "active") === "active");
+  const prev = list[0] && list[0].partnerId;
+  const [pid, setPid] = React.useState(() => (opts.some((p) => p.id === prev) ? prev : opts[0] ? opts[0].id : null));
+  React.useEffect(() => { if (!partners && ctx.loadPartners) ctx.loadPartners(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => { if (pid == null && opts.length) setPid(opts.some((p) => p.id === prev) ? prev : opts[0].id); }, [opts.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await partnerAssign({ orderId: o.id, partnerId: pid, keys: list.map((t) => t.origKey) });
+      const n = (r.assigned || []).length, nm = (opts.find((p) => p.id === pid) || {}).name || "Partner";
+      toast(`${n === 1 ? r.assigned[0].code : n + " Bewertungen"} → ${nm}${(r.skipped || []).length ? ` · ${r.skipped.length} übersprungen` : ""}`);
+      if (ctx.loadPtasks) await ctx.loadPtasks();
+      close();
+    } catch (e) { toast("Fehler: " + e.message); setBusy(false); }
+  };
+  return (
+    <><span className="shx"><Redo2 /></span>
+      <h3 style={{ paddingBottom: 6 }}>{list.length === 1 ? `${list[0].code} dem Partner zuweisen` : `${list.length} Bewertungen dem Partner zuweisen`}</h3>
+      {!list.length ? <p className="shp">Hier ist nichts entzogen – alles liegt schon beim Partner.</p> : (
+        <>
+          <p className="shp">Der Job ist danach beim Partner wieder aktiv. Gleicher Partner wie vorher: gleiche RV-Nummer. Anderer Partner: neue Nummer zu seinen Preisen.</p>
+          <p className="shl">Partner</p>
+          <div className="opts" style={{ marginBottom: 12 }}>
+            {!opts.length ? <p className="shp">{partners ? "Kein aktiver Partner." : "Lädt …"}</p> : opts.map((p) => (
+              <button key={p.id} type="button" className="aopt" onClick={() => setPid(p.id)}><span className="ico"><Handshake /></span><span className="ol">{p.name}{p.id === prev ? <><br /><small>hatte den Job vorher</small></> : null}</span>{pid === p.id ? <span className="ck"><Check /></span> : null}</button>
+            ))}
+          </div>
+          <p className="shn"><CheckCircle2 />Kunde merkt nichts – keine Belastung, keine Nachricht.</p>
+        </>
+      )}
+      <div className="ctas2"><button type="button" className="cta gh" onClick={close}>Abbrechen</button>
+        <button type="button" className="cta or" disabled={busy || !list.length || !pid} onClick={run}>{busy ? <LoaderIcon className="spin" /> : <Redo2 />}{busy ? "Wird zugewiesen …" : "Zuweisen"}</button></div></>
   );
 }
 
@@ -628,7 +673,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const items = o.reviewItems || [];
     const it = sheet.idx >= 0 ? items[sheet.idx] : null;
     const t = it ? (ptasks[o.id] || []).find((x) => x.itemKey === keyOf(it)) : null;
-    // Vom Partner zurückgezogen (Schlüssel umbenannt, origKey = Bewertung) – nur Info, solange keine neue Aufgabe läuft.
+    // Dem Partner entzogen (Schlüssel umbenannt, origKey = Bewertung) – frei, bis sie wieder zugewiesen wird.
     const wt = it && !t ? (ptasks[o.id] || []).filter((x) => x.withdrawn && x.origKey === keyOf(it)).sort((a, b) => String(b.withdrawn).localeCompare(String(a.withdrawn)))[0] || null : null;
     const sh = (shots[o.id] && shots[o.id].shots || []).find((s) => s.idx === sheet.idx && s.status === "ok");
     const acc = o.reviewsAccepted ? new Set(o.reviewsAccepted.map(keyOf)) : null;
@@ -636,7 +681,7 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
     const title = it ? (t ? t.code + " · " : "#" + (sheet.idx + 1) + " · ") + (it.name || "Bewertung") : "Profil";
     body = (
       <><h3 style={{ paddingBottom: 2 }}>{title} <RStars n={rvStars(it, t)} /></h3>
-        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : wt ? `Vom Partner zurückgezogen (${t0Date(wt.withdrawn)}) · frei` : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
+        <p className="shp" style={{ fontWeight: 600 }}>{it ? [t ? ({ new: "Beim Partner · noch nicht gestartet", working: "Partner arbeitet", removed: "Gelöscht", not_possible: "Partner: nicht möglich", software: "Software · wartet auf Kunde", cancelled: "Storniert" })[t.status] : wt ? `Dem Partner entzogen (${t0Date(wt.withdrawn)}) · frei` : "Nicht beim Partner", dec].filter(Boolean).join(" · ") : (o.profile || o.company || "Google-Profil")}</p>
         {it && it.text ? <p className="shq">„{it.text}“</p> : null}
         <div className="opts" style={{ marginTop: 12 }}>
           <Opt onClick={() => (sh ? openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title, sub: "Screenshot", open: it && it.url }) : toast("Noch kein Screenshot vorhanden"))} right={<ChevronRight className="chev" />}><span className="ico"><ImageIcon /></span>Screenshot ansehen</Opt>
@@ -645,12 +690,15 @@ function Sheet({ ctx, sheet, close, tpls, sendTpl, assign, isDesk, orders, doSto
           {sh ? <a className="aopt" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span>Herunterladen<ChevronRight className="chev" /></a> : null}
         </div>
         {t && ["new", "working", "not_possible"].includes(t.status) ? <ConfirmRemoved t={t} toast={toast} done={() => { ctx.loadPtasks && ctx.loadPtasks(); close(); }} /> : null}
-        {t && WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta gh" onClick={() => ctx.openSheet({ kind: "rvwithdraw", forId: o.id, ids: [t.id] })}><Undo2 />Vom Partner zurückziehen</button></div> : null}
-        {wt && wt.adminNote ? <p className="shp" style={{ marginTop: 10, fontSize: 13, color: "var(--g3)" }}>{wt.code}: {wt.adminNote.split(" · ").filter((x) => x.startsWith("Vom Partner zurückgezogen")).pop()}</p> : null}
+        {t && WITHDRAWABLE.includes(t.status) && !t.paid && !t.payoutId ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta gh" onClick={() => ctx.openSheet({ kind: "rvwithdraw", forId: o.id, ids: [t.id] })}><Undo2 />Dem Partner entziehen</button></div> : null}
+        {wt && o.status !== "storniert" ? <div className="ctas" style={{ marginTop: 8 }}><button type="button" className="cta or" onClick={() => ctx.openSheet({ kind: "rvassign", forId: o.id, keys: [wt.origKey] })}><Redo2 />Dem Partner zuweisen</button></div> : null}
+        {wt && wt.adminNote ? <p className="shp" style={{ marginTop: 10, fontSize: 13, color: "var(--g3)" }}>{wt.code}: {wt.adminNote.split(" · ").filter((x) => x.startsWith("Dem Partner entzogen")).pop()}</p> : null}
         {it ? <p className="shp" style={{ marginTop: 12 }}>Annehmen / Ablehnen und Abrechnung laufen vorerst noch im bisherigen Admin.</p> : null}</>
     );
   } else if (sheet && sheet.kind === "rvwithdraw" && o) {
     body = <WithdrawSheet key={o.id + "|" + (sheet.ids || []).join(",")} o={o} ids={sheet.ids || null} ctx={ctx} close={close} />;
+  } else if (sheet && sheet.kind === "rvassign" && o) {
+    body = <AssignSheet key={o.id + "|" + (sheet.keys || []).join(",")} o={o} keys={sheet.keys || null} ctx={ctx} close={close} />;
   } else if (sheet && sheet.kind === "mon") {
     const p = mon && (mon.profiles || []).find((x) => x.id === sheet.id);
     if (p) {
