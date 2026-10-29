@@ -15,52 +15,52 @@
 const REPORT_TYPES = {
   temporarily_closed: {
     id: 'temporarily_closed',
-    labelDE: 'Vorübergehend geschlossen',
-    labelEN: 'Temporarily closed',
+    de: 'Vorübergehend geschlossen',
+    en: 'Temporarily closed',
     hasFollowUp: false,
   },
   permanently_closed: {
     id: 'permanently_closed',
-    labelDE: 'Dauerhaft geschlossen',
-    labelEN: 'Permanently closed',
+    de: 'Dauerhaft geschlossen',
+    en: 'Permanently closed',
     hasFollowUp: false,
   },
   doesnt_exist: {
     id: 'doesnt_exist',
-    labelDE: 'Existiert hier nicht',
-    labelEN: "Doesn't exist here",
+    de: 'Existiert hier nicht',
+    en: "Doesn't exist here",
     hasFollowUp: false,
   },
   duplicate: {
     id: 'duplicate',
-    labelDE: 'Duplikat eines anderen Orts',
-    labelEN: 'Duplicate of another place',
+    de: 'Duplikat eines anderen Orts',
+    en: 'Duplicate of another place',
     hasFollowUp: true,
     followUpHint: 'Bitte das Duplikat-Ziel auswählen',
   },
   offensive: {
     id: 'offensive',
-    labelDE: 'Anstößig, schädlich oder irreführend',
-    labelEN: 'Offensive, harmful or misleading',
+    de: 'Anstößig, schädlich oder irreführend',
+    en: 'Offensive, harmful or misleading',
     hasFollowUp: false,
   },
   not_public: {
     id: 'not_public',
-    labelDE: 'Nicht öffentlich zugänglich',
-    labelEN: 'Not open to the public',
+    de: 'Nicht öffentlich zugänglich',
+    en: 'Not open to the public',
     hasFollowUp: false,
   },
   moved: {
     id: 'moved',
-    labelDE: 'An einen neuen Standort umgezogen',
-    labelEN: 'Moved to a new location',
+    de: 'An einen neuen Standort umgezogen',
+    en: 'Moved to a new location',
     hasFollowUp: true,
     followUpHint: 'Bitte den neuen Standort eingeben',
   },
   other: {
     id: 'other',
-    labelDE: 'Sonstiges',
-    labelEN: 'Other',
+    de: 'Sonstiges',
+    en: 'Other',
     hasFollowUp: true,
     followUpHint: 'Bitte den Grund eingeben',
   },
@@ -74,17 +74,21 @@ const DEFAULT_REPORT_TYPE = 'doesnt_exist';
 // ============================================================================
 
 const TEXT_PATTERNS = {
-  suggestEdit: [
+  suggest_edit: [
     'suggest an edit',
     'änderung vorschlagen',
+    'edit information',
+    'informationen bearbeiten',
   ],
 
-  closedOrNotHere: [
+  place_closed: [
     'place is closed or not here',
     'closed or not here',
     'close or remove',
     'geschlossen oder nicht vorhanden',
     'schließen oder entfernen',
+    'operating status',
+    'betriebsstatus',
   ],
 
   // Operating Status Optionen
@@ -178,7 +182,7 @@ const TEXT_PATTERNS = {
 // ============================================================================
 
 const SELECTORS = {
-  suggestEditButton: [
+  suggestEdit: [
     'button[aria-label*="Suggest an edit" i]',
     'button[aria-label*="Änderung vorschlagen" i]',
     'a[aria-label*="Suggest an edit" i]',
@@ -189,7 +193,7 @@ const SELECTORS = {
     '[data-item-id="suggest_edit"]',
   ],
 
-  closedOrNotHereOption: [
+  placeClosedOption: [
     '[role="menuitemradio"][data-value*="CLOSED"]',
     '[role="menuitemradio"][data-value*="REMOVE"]',
     '[role="listitem"]:last-child button',

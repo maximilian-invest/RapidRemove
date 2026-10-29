@@ -96,29 +96,29 @@ document.addEventListener('DOMContentLoaded', () => {
     return patterns.some(p => p.test(url));
   }
 
-  // Injiziere Content-Scripts in einen Tab
+  // Injiziere Content-Scripts in einen Tab (inkl. alle Frames)
   async function injectContentScripts(tabId) {
-    console.log('[Popup] Injiziere Content-Scripts in Tab', tabId);
+    console.log('[Popup] Injiziere Content-Scripts in Tab', tabId, '(alle Frames)');
     
     try {
-      // Erst CSS injizieren
+      // Erst CSS injizieren (alle Frames)
       await chrome.scripting.insertCSS({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: ['styles.css']
       });
       
       // Dann JS injizieren (Reihenfolge wichtig: selectors.js vor content.js)
       await chrome.scripting.executeScript({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: ['selectors.js']
       });
       
       await chrome.scripting.executeScript({
-        target: { tabId },
+        target: { tabId, allFrames: true },
         files: ['content.js']
       });
       
-      console.log('[Popup] Content-Scripts erfolgreich injiziert');
+      console.log('[Popup] Content-Scripts erfolgreich in alle Frames injiziert');
       return true;
     } catch (error) {
       console.error('[Popup] Script-Injection fehlgeschlagen:', error);
@@ -243,16 +243,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       
-      // Sende Nachricht mit automatischer Script-Injection bei Bedarf
-      const response = await sendMessageWithRetry(tab.id, {
+      // Erst sicherstellen, dass Scripts in allen Frames geladen sind
+      try {
+        await chrome.tabs.sendMessage(tab.id, { type: 'PING' });
+      } catch (e) {
+        console.log('[Popup] PING fehlgeschlagen, injiziere Scripts...');
+        await injectContentScripts(tab.id);
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+      
+      // Sende Nachricht an Background, der an den Tab weiterleitet
+      const response = await chrome.runtime.sendMessage({
         type: 'START_REPORT',
+        targetTabId: tab.id,
         reportType,
         reason,
         orderId,
         testMode,
       });
       
-      if (response && response.status === 'started') {
+      if (response && (response.status === 'started' || !response.error)) {
         showStatus(
           testMode 
             ? `Test gestartet (${TYPE_LABELS[reportType]})` 
@@ -265,7 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.close();
         }, 800);
       } else {
-        showStatus('Konnte nicht starten – bitte Seite neu laden', 'error');
+        showStatus(response?.error || 'Konnte nicht starten – bitte Seite neu laden', 'error');
         startBtn.disabled = false;
       }
       

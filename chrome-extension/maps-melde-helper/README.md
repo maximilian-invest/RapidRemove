@@ -201,14 +201,21 @@ maps-melde-helper/
 
 1. Öffne die Browser-Konsole (F12)
 2. Suche nach `[RR-MeldeHelper]` Logs
-3. Nutze `window.rrDebugButtons()` um alle sichtbaren Buttons aufzulisten
-4. Prüfe die Text-Patterns in `selectors.js` → `TEXT_PATTERNS`
+3. Prüfe die Text-Patterns in `selectors.js` → `TEXT_PATTERNS`
+
+**Wichtig:** Der Edit-Dialog von Google Maps lädt oft in einem **Iframe**. 
+Die Extension unterstützt Multi-Frame-Koordination:
+- `[RR-MeldeHelper] [TOP]` = Logs aus dem Hauptfenster
+- `[RR-MeldeHelper] [IFRAME]` = Logs aus einem Iframe
+
+Die Extension sucht automatisch in allen Frames nach den Radio-Optionen.
 
 ### Dialog erscheint nicht
 
-1. Prüfe ob Content-Script geladen wurde: `[RR-MeldeHelper] Maps Melde-Helper initialisiert`
+1. Prüfe ob Content-Script geladen wurde: `[RR-MeldeHelper] [TOP] Content script loaded in: ...`
 2. Seite neu laden
 3. Extension aktiviert?
+4. Prüfe ob Iframes erkannt werden: `[RR-MeldeHelper] [IFRAME] Content script loaded in: ...`
 
 ### Testmodus zum Debuggen
 
@@ -216,6 +223,13 @@ Der Testmodus zeigt:
 - Welche Schritte erfolgreich waren
 - Den gewählten Typ
 - Stoppt sicher vor Submit
+
+### Cross-Origin Iframe Probleme
+
+Falls der Dialog in einem Cross-Origin Iframe lädt, den die Extension nicht erreicht:
+1. Prüfe `manifest.json` `host_permissions` für die Iframe-Origin
+2. Der Debug-Log zeigt: `[RR-MeldeHelper] [TOP] === DEBUG: All interactive elements ===`
+3. Wenn nur Haupt-UI-Elemente (Zoom, Street View...) gelistet werden, ist der Dialog in einem nicht erreichten Frame
 
 ## Sicherheitshinweise
 
@@ -229,6 +243,14 @@ Der Testmodus zeigt:
 Intern für RapidRemove. Nicht zur Veröffentlichung im Chrome Web Store vorgesehen.
 
 ## Änderungshistorie
+
+- **v1.2.3** (Oktober 2026):
+  - **Multi-Frame Support**: Dialog-Erkennung auch in Iframes
+  - Frame-zu-Frame-Koordination via Background Service Worker
+  - Erweiterte `host_permissions` für alle Google-Domains
+  - `all_frames: true`, `match_about_blank: true`, `match_origin_as_fallback: true`
+  - Ausführliches Frame-Debugging (`[TOP]` vs `[IFRAME]` Logs)
+  - Shadow DOM Traversal für versteckte Elemente
 
 - **v1.2.0** (Oktober 2026):
   - Alle 8 Operating Status Optionen

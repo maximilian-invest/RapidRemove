@@ -1,554 +1,814 @@
 /**
- * RapidRemove Maps Melde-Helper
- * Automatisiert den Google Maps "Operating Status" Melde-Flow.
- * 
- * Unterstützte Sprachen: Englisch, Deutsch
- * Unterstützte Report-Typen: Alle 8 Operating Status Optionen
- * 
- * v1.2.2: Verbessertes Text-Matching (Apostrophe), iframe-Support, Polling
+ * RapidRemove Maps Melde-Helper - Content Script
+ * Läuft in allen Frames (Top + Iframes) und koordiniert via Background
  */
 
-(function() {
+(() => {
   'use strict';
-
-  // Verhindere Mehrfach-Initialisierung (wichtig bei all_frames: true)
+  
+  const FRAME_URL = window.location.href;
+  const IS_TOP = window === window.top;
+  const FRAME_ID = IS_TOP ? 'TOP' : 'IFRAME';
+  
+  console.log(`[RR-MeldeHelper] [${FRAME_ID}] Content script loaded in: ${FRAME_URL}`);
+  console.log(`[RR-MeldeHelper] [${FRAME_ID}] Document readyState: ${document.readyState}`);
+  console.log(`[RR-MeldeHelper] [${FRAME_ID}] Document title: "${document.title}"`);
+  
+  // Verhindere mehrfache Initialisierung
   if (window.__RR_MELDE_HELPER_LOADED__) {
-    console.log('[RR-MeldeHelper] Bereits geladen, überspringe');
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Already loaded, skipping`);
     return;
   }
   window.__RR_MELDE_HELPER_LOADED__ = true;
-
-  // Status-Tracking
-  let isRunning = false;
-  let currentReason = '';
-  let currentOrderId = '';
-  let currentReportType = '';
-  let isDryRun = false;
-
-  // UI-Strings (Deutsch)
-  const UI = {
-    confirmTitle: 'RapidRemove: Meldung absenden?',
-    confirmMessage: 'Du bist dabei, folgende Meldung zu senden:',
-    confirmType: 'Typ:',
-    confirmOrderId: 'Auftrag:',
-    confirmReason: 'Grund:',
-    confirmYes: 'Ja, absenden',
-    confirmNo: 'Abbrechen',
-    
-    testTitle: 'RapidRemove: Testmodus',
-    testMessage: 'Der Flow wurde erfolgreich durchlaufen. Im Echtmodus würde jetzt "Senden" geklickt werden.',
-    testClose: 'Test beenden',
-    
-    pauseTitle: 'RapidRemove: Eingabe erforderlich',
-    pauseMessage: 'Bitte fülle das Feld manuell aus und klicke dann auf "Weiter":',
-    pauseContinue: 'Weiter',
-    pauseCancel: 'Abbrechen',
-    
-    statusSearching: 'Suche "Suggest an edit"...',
-    statusOpening: 'Öffne Bearbeitungsdialog...',
-    statusSelectingClosed: 'Wähle "Place is closed or not here"...',
-    statusSelectingType: 'Wähle Melde-Typ...',
-    statusFillingReason: 'Fülle Grund aus...',
-    statusWaitingInput: 'Warte auf manuelle Eingabe...',
-    statusWaitingConfirm: 'Warte auf Bestätigung...',
-    statusSubmitting: 'Sende Meldung...',
-    statusDone: 'Meldung erfolgreich gesendet!',
-    statusTestDone: 'Testmodus: Flow erfolgreich, nicht gesendet.',
-    statusError: 'Fehler:',
-    statusAborted: 'Abgebrochen.',
-  };
-
-  function getTypeLabel(typeId) {
-    const type = window.MAPS_REPORT_TYPES?.[typeId];
-    if (!type) return typeId;
-    return `${type.labelDE} / ${type.labelEN}`;
-  }
-
-  function log(msg, ...args) {
-    console.log(`[RR-MeldeHelper] ${msg}`, ...args);
-  }
-
-  function logError(msg, ...args) {
-    console.error(`[RR-MeldeHelper] ${msg}`, ...args);
-  }
-
-  // Status-Anzeige
+  
+  let currentReport = null;
   let statusOverlay = null;
-
-  function showStatus(message, isError = false, isTest = false) {
-    if (!statusOverlay) {
-      statusOverlay = document.createElement('div');
-      statusOverlay.id = 'rr-melde-status';
-      document.body.appendChild(statusOverlay);
+  
+  // ==========================================
+  // Status Overlay
+  // ==========================================
+  
+  function showStatus(text, isError = false) {
+    removeStatus();
+    statusOverlay = document.createElement('div');
+    statusOverlay.className = `rr-status-overlay ${isError ? 'rr-error' : ''}`;
+    statusOverlay.textContent = text;
+    document.body.appendChild(statusOverlay);
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Status:`, text, isError ? '(ERROR)' : '');
+    return statusOverlay;
+  }
+  
+  function removeStatus() {
+    if (statusOverlay && statusOverlay.parentNode) {
+      statusOverlay.remove();
     }
-    statusOverlay.textContent = (isDryRun ? '🧪 TEST: ' : '') + message;
-    statusOverlay.className = isError ? 'error' : (isTest ? 'test' : '');
-    statusOverlay.style.display = 'block';
-    log(message);
+    statusOverlay = null;
+    document.querySelectorAll('.rr-status-overlay').forEach(el => el.remove());
   }
-
-  function hideStatus() {
-    if (statusOverlay) {
-      statusOverlay.style.display = 'none';
-    }
-  }
-
-  // Dialoge
-  function showConfirmDialog(reportType, reason, orderId) {
-    return new Promise((resolve) => {
-      const existing = document.getElementById('rr-confirm-dialog');
-      if (existing) existing.remove();
-
-      const overlay = document.createElement('div');
-      overlay.id = 'rr-confirm-dialog';
-      overlay.innerHTML = `
-        <div class="rr-dialog-content">
-          <h2>${UI.confirmTitle}</h2>
-          <p>${UI.confirmMessage}</p>
-          <p><strong>${UI.confirmType}</strong> ${escapeHtml(getTypeLabel(reportType))}</p>
-          ${orderId ? `<p><strong>${UI.confirmOrderId}</strong> ${escapeHtml(orderId)}</p>` : ''}
-          ${reason ? `<p><strong>${UI.confirmReason}</strong> ${escapeHtml(reason)}</p>` : ''}
-          <div class="rr-dialog-buttons">
-            <button id="rr-confirm-no" class="rr-btn rr-btn-secondary">${UI.confirmNo}</button>
-            <button id="rr-confirm-yes" class="rr-btn rr-btn-primary">${UI.confirmYes}</button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-
-      document.getElementById('rr-confirm-yes').onclick = () => { overlay.remove(); resolve(true); };
-      document.getElementById('rr-confirm-no').onclick = () => { overlay.remove(); resolve(false); };
-
-      const escHandler = (e) => {
-        if (e.key === 'Escape') {
-          overlay.remove();
-          document.removeEventListener('keydown', escHandler);
-          resolve(false);
-        }
-      };
-      document.addEventListener('keydown', escHandler);
-    });
-  }
-
-  function showTestCompleteDialog(reportType, reason, orderId) {
-    return new Promise((resolve) => {
-      const existing = document.getElementById('rr-confirm-dialog');
-      if (existing) existing.remove();
-
-      const overlay = document.createElement('div');
-      overlay.id = 'rr-confirm-dialog';
-      overlay.className = 'test-mode';
-      overlay.innerHTML = `
-        <div class="rr-dialog-content rr-test-dialog">
-          <h2>🧪 ${UI.testTitle}</h2>
-          <p>${UI.testMessage}</p>
-          <p><strong>${UI.confirmType}</strong> ${escapeHtml(getTypeLabel(reportType))}</p>
-          ${orderId ? `<p><strong>${UI.confirmOrderId}</strong> ${escapeHtml(orderId)}</p>` : ''}
-          ${reason ? `<p><strong>${UI.confirmReason}</strong> ${escapeHtml(reason)}</p>` : ''}
-          <div class="rr-test-success">✅ Alle Schritte erfolgreich durchlaufen</div>
-          <div class="rr-dialog-buttons">
-            <button id="rr-test-close" class="rr-btn rr-btn-secondary">${UI.testClose}</button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-      document.getElementById('rr-test-close').onclick = () => { overlay.remove(); resolve(false); };
-
-      const escHandler = (e) => {
-        if (e.key === 'Escape') {
-          overlay.remove();
-          document.removeEventListener('keydown', escHandler);
-          resolve(false);
-        }
-      };
-      document.addEventListener('keydown', escHandler);
-    });
-  }
-
-  function showPauseDialog(hint) {
-    return new Promise((resolve) => {
-      const existing = document.getElementById('rr-confirm-dialog');
-      if (existing) existing.remove();
-
-      const overlay = document.createElement('div');
-      overlay.id = 'rr-confirm-dialog';
-      overlay.className = 'pause-mode';
-      overlay.innerHTML = `
-        <div class="rr-dialog-content rr-pause-dialog">
-          <h2>⏸️ ${UI.pauseTitle}</h2>
-          <p>${UI.pauseMessage}</p>
-          <div class="rr-pause-hint">📝 ${escapeHtml(hint)}</div>
-          <div class="rr-dialog-buttons">
-            <button id="rr-pause-cancel" class="rr-btn rr-btn-secondary">${UI.pauseCancel}</button>
-            <button id="rr-pause-continue" class="rr-btn rr-btn-primary">${UI.pauseContinue}</button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-      document.getElementById('rr-pause-continue').onclick = () => { overlay.remove(); resolve(true); };
-      document.getElementById('rr-pause-cancel').onclick = () => { overlay.remove(); resolve(false); };
-
-      const escHandler = (e) => {
-        if (e.key === 'Escape') {
-          overlay.remove();
-          document.removeEventListener('keydown', escHandler);
-          resolve(false);
-        }
-      };
-      document.addEventListener('keydown', escHandler);
-    });
-  }
-
-  function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  async function simulateClick(element) {
-    if (!element) return false;
+  
+  // ==========================================
+  // Shadow DOM Traversal
+  // ==========================================
+  
+  function querySelectorAllDeep(selector, root = document) {
+    const results = [...root.querySelectorAll(selector)];
     
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    await sleep(150);
-    
-    const rect = element.getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top + rect.height / 2;
-
-    element.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: x, clientY: y }));
-    element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, clientX: x, clientY: y }));
-    
-    await sleep(50);
-    
-    ['mousedown', 'mouseup', 'click'].forEach(type => {
-      element.dispatchEvent(new MouseEvent(type, {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-        clientX: x,
-        clientY: y,
-      }));
-    });
-
-    if (element.focus) element.focus();
-    return true;
-  }
-
-  function setInputValue(element, value) {
-    if (!element) return false;
-    
-    element.focus();
-    element.value = value;
-    element.dispatchEvent(new Event('input', { bubbles: true }));
-    element.dispatchEvent(new Event('change', { bubbles: true }));
-    
-    const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype, 'value'
-    )?.set || Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype, 'value'
-    )?.set;
-    
-    if (nativeInputValueSetter) {
-      nativeInputValueSetter.call(element, value);
-      element.dispatchEvent(new Event('input', { bubbles: true }));
+    // Traverse shadow roots
+    const allElements = root.querySelectorAll('*');
+    for (const el of allElements) {
+      if (el.shadowRoot) {
+        console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found shadow root in:`, el.tagName, el.className);
+        results.push(...querySelectorAllDeep(selector, el.shadowRoot));
+      }
     }
     
-    return true;
+    return results;
   }
-
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-
-  function debugLogButtons() {
-    console.log('[RR-MeldeHelper] === Sichtbare interaktive Elemente ===');
-    const els = document.querySelectorAll('button, [role="button"], [role="menuitemradio"], [role="radio"], [aria-checked]');
-    els.forEach(el => {
-      if (window.isVisible && window.isVisible(el)) {
-        const text = window.getFullText ? window.getFullText(el).substring(0, 60) : (el.textContent || '').trim().substring(0, 60);
-        const aria = el.getAttribute('aria-label') || '';
-        const role = el.getAttribute('role') || el.tagName;
-        const checked = el.getAttribute('aria-checked');
-        console.log(`[RR-MeldeHelper]   [${role}] checked=${checked} text="${text}" aria="${aria}"`);
-      }
-    });
-    console.log('[RR-MeldeHelper] === END ===');
-  }
-
-  // ============================================================================
-  // HAUPTFUNKTION
-  // ============================================================================
-
-  async function runReportFlow(reportType, reason, orderId, testMode = false) {
-    if (isRunning) {
-      log('Flow läuft bereits');
-      return;
-    }
-
-    const type = window.MAPS_REPORT_TYPES?.[reportType];
-    if (!type) {
-      logError(`Unbekannter Report-Typ: ${reportType}`);
-      showStatus(`${UI.statusError} Unbekannter Typ: ${reportType}`, true);
-      return;
-    }
-
-    isRunning = true;
-    isDryRun = testMode;
-    currentReason = reason || '';
-    currentOrderId = orderId || '';
-    currentReportType = reportType;
-
-    log(`Starte Flow: Typ="${reportType}", Test=${testMode}`);
-
-    try {
-      // Schritt 1: Suggest an edit
-      showStatus(UI.statusSearching);
-      
-      let suggestBtn = window.findElement(window.MAPS_SELECTORS.suggestEditButton);
-      if (!suggestBtn) {
-        suggestBtn = window.findClickableByText(window.MAPS_TEXT_PATTERNS.suggestEdit);
-      }
-
-      if (!suggestBtn) {
-        debugLogButtons();
-        throw new Error('Button "Suggest an edit" nicht gefunden. Ist ein Unternehmensprofil geöffnet?');
-      }
-
-      log('Gefunden: Suggest an edit Button');
-
-      // Schritt 2: Dialog öffnen
-      showStatus(UI.statusOpening);
-      await simulateClick(suggestBtn);
-      await sleep(2000);
-
-      // Schritt 3: "Place is closed or not here"
-      showStatus(UI.statusSelectingClosed);
-      await sleep(500);
-      
-      let closedOption = window.findElement(window.MAPS_SELECTORS.closedOrNotHereOption);
-      if (!closedOption) {
-        closedOption = window.findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
-      }
-
-      if (!closedOption) {
-        log('Suche weiter nach "closed" Option...');
-        debugLogButtons();
-        await sleep(1500);
-        closedOption = window.findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
-      }
-
-      if (!closedOption) {
-        throw new Error('"Place is closed or not here" nicht gefunden. Dialog geöffnet?');
-      }
-
-      log('Gefunden: Closed/Not here Option');
-      await simulateClick(closedOption);
-      await sleep(2000); // Längere Wartezeit für Dialog-Transition
-
-      // Schritt 4: Status-Typ auswählen (mit Polling)
-      showStatus(`${UI.statusSelectingType} "${type.labelEN}"`);
-      
-      let statusOption;
+  
+  function queryAllInteractive(root = document) {
+    const selectors = [
+      '[role="radio"]',
+      '[role="radiogroup"]',
+      '[role="option"]',
+      '[role="listbox"]',
+      '[role="menuitemradio"]',
+      'input[type="radio"]',
+      '[data-value]',
+      '[aria-checked]',
+    ];
+    
+    const results = [];
+    for (const sel of selectors) {
       try {
-        // Nutze waitForStatusOption mit Polling
-        statusOption = await window.waitForStatusOption(reportType, 10000, 500);
-      } catch (e) {
-        log('waitForStatusOption fehlgeschlagen, versuche nochmal...');
-        await sleep(1000);
-        statusOption = window.findStatusOption(reportType);
+        results.push(...querySelectorAllDeep(sel, root));
+      } catch (e) {}
+    }
+    
+    // Also get all clickable elements in potential dialog areas
+    const dialogSelectors = '[role="dialog"], [role="main"], .modal, [class*="dialog"], [class*="modal"], [class*="panel"], [class*="overlay"], [aria-modal="true"]';
+    try {
+      const dialogs = querySelectorAllDeep(dialogSelectors, root);
+      for (const dialog of dialogs) {
+        const items = dialog.querySelectorAll('[role="radio"], [role="option"], [role="menuitem"], [role="menuitemradio"], [tabindex], [aria-checked]');
+        results.push(...items);
       }
-
-      if (!statusOption) {
-        // Debug: Zeige alle Radio-Optionen
-        if (window.debugLogRadioOptions) {
-          window.debugLogRadioOptions();
-        }
-        debugLogButtons();
-        throw new Error(`"${type.labelEN}" / "${type.labelDE}" Option nicht gefunden`);
+    } catch (e) {}
+    
+    return [...new Set(results)];
+  }
+  
+  // ==========================================
+  // Radio Option Detection
+  // ==========================================
+  
+  function debugLogAllElements() {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] === DEBUG: All interactive elements in frame ===`);
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Frame URL: ${FRAME_URL}`);
+    
+    // Log ALL buttons in this frame
+    const buttons = document.querySelectorAll('button');
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found ${buttons.length} buttons`);
+    buttons.forEach((btn, i) => {
+      const text = normalizeText(getFullText(btn));
+      const aria = normalizeText(btn.getAttribute('aria-label') || '');
+      const dataValue = btn.getAttribute('data-value') || '';
+      if (text.length > 0 || aria.length > 0) {
+        console.log(`[RR-MeldeHelper] [${FRAME_ID}] - [BUTTON ${i}] Text: "${text.substring(0, 60)}" | aria: "${aria}" | data-value: "${dataValue}"`);
       }
-
-      log(`Gefunden: ${reportType} Option`);
-      await simulateClick(statusOption);
-      await sleep(1500);
-
-      // Schritt 5: Follow-up Felder
-      if (type.hasFollowUp) {
-        log(`Typ "${reportType}" hat Follow-up Felder`);
-        await sleep(500);
-        
-        let inputField = window.findElement(window.MAPS_SELECTORS.reasonInput);
-        
-        if (inputField) {
-          if (currentReason) {
-            showStatus(UI.statusFillingReason);
-            setInputValue(inputField, currentReason);
-            log('Grund/Zusatzinfo eingetragen');
-            await sleep(500);
-          } else {
-            hideStatus();
-            const shouldContinue = await showPauseDialog(type.followUpHint || 'Bitte das Feld ausfüllen');
-            
-            if (!shouldContinue) {
-              showStatus(UI.statusAborted, true);
-              await closeDialog();
-              return;
-            }
-            await sleep(500);
-          }
-        } else {
-          log('Kein Follow-up Eingabefeld gefunden');
-        }
-      } else if (currentReason) {
-        showStatus(UI.statusFillingReason);
-        await sleep(500);
-        
-        let reasonInput = window.findElement(window.MAPS_SELECTORS.reasonInput);
-        if (reasonInput) {
-          setInputValue(reasonInput, currentReason);
-          log('Optionaler Grund eingetragen');
-          await sleep(500);
+    });
+    
+    // Log role="radio" and similar
+    const radios = document.querySelectorAll('[role="radio"], [role="menuitemradio"], [role="option"], [aria-checked]');
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found ${radios.length} radio-like elements`);
+    radios.forEach((el, i) => {
+      const text = normalizeText(getFullText(el));
+      const aria = normalizeText(el.getAttribute('aria-label') || '');
+      const role = el.getAttribute('role');
+      const checked = el.getAttribute('aria-checked');
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] - [${role}] Text: "${text.substring(0, 60)}" | aria: "${aria}" | checked: ${checked}`);
+    });
+    
+    // Log any elements containing key words
+    const keywords = ['closed', 'exist', 'duplicate', 'moved', 'offensive', 'public', 'other', 'geschlossen', 'existiert', 'duplikat'];
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Searching for keywords: ${keywords.join(', ')}`);
+    
+    const allElements = document.querySelectorAll('*');
+    let foundCount = 0;
+    allElements.forEach(el => {
+      const text = (el.textContent || '').toLowerCase();
+      const shortText = text.substring(0, 200);
+      for (const kw of keywords) {
+        if (shortText.includes(kw) && el.children.length === 0) {
+          console.log(`[RR-MeldeHelper] [${FRAME_ID}] - [${el.tagName}] Contains "${kw}": "${shortText.substring(0, 80)}"`);
+          foundCount++;
+          if (foundCount > 30) return;
         }
       }
-
-      // Schritt 6: Bestätigung
-      hideStatus();
-
-      let shouldSubmit = false;
+    });
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] === END DEBUG ===`);
+  }
+  
+  function findRadioOptionsInFrame() {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Searching for radio options in: ${FRAME_URL}`);
+    
+    const candidates = queryAllInteractive();
+    const radioOptions = [];
+    
+    for (const el of candidates) {
+      const role = el.getAttribute('role');
+      const text = normalizeText(getFullText(el));
+      const ariaLabel = normalizeText(el.getAttribute('aria-label') || '');
+      const dataValue = el.getAttribute('data-value') || '';
       
-      if (isDryRun) {
-        showStatus(UI.statusTestDone, false, true);
-        await showTestCompleteDialog(reportType, currentReason, currentOrderId);
-        shouldSubmit = false;
-      } else {
-        showStatus(UI.statusWaitingConfirm);
-        shouldSubmit = await showConfirmDialog(reportType, currentReason, currentOrderId);
+      // Only consider elements that look like radio options
+      if (role === 'radio' || role === 'menuitemradio' || role === 'option' || el.type === 'radio' || el.hasAttribute('aria-checked')) {
+        radioOptions.push({
+          element: el,
+          text,
+          ariaLabel,
+          dataValue,
+          role,
+        });
       }
-
-      if (!shouldSubmit) {
-        showStatus(UI.statusAborted, true);
-        await closeDialog();
-        
-        try {
+    }
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found ${radioOptions.length} radio-like elements`);
+    
+    // Debug: Log all found options
+    for (const opt of radioOptions) {
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] - [${opt.role}] Text: "${opt.text}" | aria: "${opt.ariaLabel}" | data-value: "${opt.dataValue}"`);
+    }
+    
+    return radioOptions;
+  }
+  
+  function findOperatingStatusOption(targetType) {
+    const patterns = TEXT_PATTERNS[targetType];
+    if (!patterns) {
+      console.error(`[RR-MeldeHelper] Unknown report type: ${targetType}`);
+      return null;
+    }
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Looking for: ${targetType} with patterns:`, patterns);
+    
+    const radioOptions = findRadioOptionsInFrame();
+    
+    for (const opt of radioOptions) {
+      const textLower = opt.text.toLowerCase();
+      const ariaLower = opt.ariaLabel.toLowerCase();
+      
+      for (const pattern of patterns) {
+        const patternLower = normalizeText(pattern).toLowerCase();
+        if (textLower.includes(patternLower) || ariaLower.includes(patternLower)) {
+          console.log(`[RR-MeldeHelper] [${FRAME_ID}] FOUND matching option: "${opt.text}" for pattern "${pattern}"`);
+          return opt.element;
+        }
+      }
+    }
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] No match found for ${targetType}`);
+    return null;
+  }
+  
+  async function waitForRadioOption(targetType, timeout = 8000) {
+    const startTime = Date.now();
+    const interval = 300;
+    
+    while (Date.now() - startTime < timeout) {
+      const option = findOperatingStatusOption(targetType);
+      if (option) return option;
+      await sleep(interval);
+    }
+    
+    return null;
+  }
+  
+  // ==========================================
+  // Click & Interaction Helpers
+  // ==========================================
+  
+  function clickElement(el) {
+    if (!el) return false;
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Clicking element:`, el.tagName, el.className);
+    
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+    
+    // Try multiple click methods
+    el.focus && el.focus();
+    el.click();
+    
+    // Also dispatch events
+    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: window }));
+    el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, view: window }));
+    el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+    
+    // For radio buttons, also try setting checked
+    if (el.type === 'radio' || el.getAttribute('role') === 'radio') {
+      el.checked = true;
+      el.setAttribute('aria-checked', 'true');
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
+    return true;
+  }
+  
+  function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+  }
+  
+  // ==========================================
+  // Confirmation Dialog
+  // ==========================================
+  
+  function showConfirmDialog(reportType, testMode) {
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.className = 'rr-confirm-overlay';
+      
+      const dialog = document.createElement('div');
+      dialog.className = 'rr-confirm-dialog';
+      
+      const typeLabel = REPORT_TYPES[reportType]?.de || reportType;
+      
+      if (testMode) {
+        dialog.innerHTML = `
+          <div class="rr-confirm-title">🧪 Test-Modus abgeschlossen</div>
+          <div class="rr-confirm-text">
+            Die Meldung "<strong>${typeLabel}</strong>" wurde bis zum Submit-Schritt durchgeführt.<br>
+            <em>Im Test-Modus wird NICHT abgesendet.</em>
+          </div>
+          <div class="rr-confirm-buttons">
+            <button class="rr-btn rr-btn-primary" data-action="ok">OK</button>
+          </div>
+        `;
+      } else {
+        dialog.innerHTML = `
+          <div class="rr-confirm-title">⚠️ Meldung absenden?</div>
+          <div class="rr-confirm-text">
+            Soll die Meldung "<strong>${typeLabel}</strong>" jetzt an Google gesendet werden?<br>
+            <em>Diese Aktion kann nicht rückgängig gemacht werden.</em>
+          </div>
+          <div class="rr-confirm-buttons">
+            <button class="rr-btn rr-btn-cancel" data-action="no">Abbrechen</button>
+            <button class="rr-btn rr-btn-danger" data-action="yes">Ja, absenden</button>
+          </div>
+        `;
+      }
+      
+      overlay.appendChild(dialog);
+      document.body.appendChild(overlay);
+      
+      const handleClick = (e) => {
+        const action = e.target.dataset.action;
+        if (action) {
+          overlay.remove();
+          resolve(action === 'yes' || action === 'ok');
+        }
+      };
+      
+      dialog.addEventListener('click', handleClick);
+    });
+  }
+  
+  // ==========================================
+  // Follow-up Field Handling
+  // ==========================================
+  
+  async function handleFollowUpFields(reportType, reason) {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Handling follow-up for: ${reportType}`);
+    
+    await sleep(500);
+    
+    // Check for text input fields
+    const textInputs = querySelectorAllDeep('textarea, input[type="text"]');
+    for (const input of textInputs) {
+      if (input.offsetParent !== null && reason) {
+        console.log(`[RR-MeldeHelper] [${FRAME_ID}] Filling text input with reason`);
+        input.value = reason;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+    
+    // For "Moved" - look for location input
+    if (reportType === 'moved') {
+      const locationInputs = querySelectorAllDeep('input[placeholder*="location"], input[placeholder*="address"], input[placeholder*="Standort"], input[placeholder*="Adresse"]');
+      for (const input of locationInputs) {
+        if (input.offsetParent !== null && reason) {
+          input.value = reason;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    }
+    
+    // For "Duplicate" - may need to select a place
+    if (reportType === 'duplicate') {
+      // This typically requires user interaction to search/select
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] Duplicate requires manual place selection`);
+    }
+  }
+  
+  // ==========================================
+  // Submit Button
+  // ==========================================
+  
+  function findSubmitButton() {
+    const submitPatterns = ['submit', 'senden', 'absenden', 'send', 'done', 'fertig'];
+    
+    const buttons = querySelectorAllDeep('button');
+    
+    for (const btn of buttons) {
+      const text = normalizeText(getFullText(btn)).toLowerCase();
+      const ariaLabel = normalizeText(btn.getAttribute('aria-label') || '').toLowerCase();
+      
+      for (const pattern of submitPatterns) {
+        if (text.includes(pattern) || ariaLabel.includes(pattern)) {
+          // Make sure it's not Cancel/Abbrechen
+          if (!text.includes('cancel') && !text.includes('abbrechen')) {
+            console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found submit button: "${text}"`);
+            return btn;
+          }
+        }
+      }
+    }
+    
+    // Fallback: look for primary/action buttons
+    const primaryButtons = querySelectorAllDeep('[class*="primary"], [class*="action"], [data-mdc-dialog-action="accept"]');
+    for (const btn of primaryButtons) {
+      if (btn.tagName === 'BUTTON') {
+        const text = normalizeText(getFullText(btn)).toLowerCase();
+        if (!text.includes('cancel') && !text.includes('abbrechen')) {
+          console.log(`[RR-MeldeHelper] [${FRAME_ID}] Found primary button: "${text}"`);
+          return btn;
+        }
+      }
+    }
+    
+    return null;
+  }
+  
+  // ==========================================
+  // Main Report Flow (runs in any frame)
+  // ==========================================
+  
+  async function executeRadioSelection(reportType, reason, orderId, testMode) {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Executing radio selection for: ${reportType}`);
+    
+    showStatus(`Suche Option "${REPORT_TYPES[reportType]?.de || reportType}"...`);
+    
+    // Debug: Log all elements first
+    debugLogAllElements();
+    
+    // Wait for the radio option to appear
+    const option = await waitForRadioOption(reportType, 10000);
+    
+    if (!option) {
+      // Debug: list what we found
+      const found = findRadioOptionsInFrame();
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] Available options:`, found.map(o => o.text));
+      
+      showStatus(`Fehler: "${REPORT_TYPES[reportType]?.de}" Option nicht gefunden`, true);
+      chrome.runtime.sendMessage({
+        type: 'REPORT_ERROR',
+        reportType,
+        orderId,
+        error: `Option "${reportType}" nicht gefunden in Frame: ${FRAME_URL}`,
+        url: FRAME_URL,
+        testMode,
+      });
+      return false;
+    }
+    
+    // Click the radio option
+    showStatus(`Wähle: ${REPORT_TYPES[reportType]?.de || reportType}`);
+    clickElement(option);
+    await sleep(800);
+    
+    // Handle follow-up fields
+    await handleFollowUpFields(reportType, reason);
+    await sleep(500);
+    
+    // Find submit button
+    const submitBtn = findSubmitButton();
+    
+    if (testMode) {
+      // Test mode: show completion dialog, don't submit
+      showStatus('🧪 Test-Modus: Submit-Button gefunden, NICHT absenden');
+      
+      const acknowledged = await showConfirmDialog(reportType, true);
+      removeStatus();
+      
+      chrome.runtime.sendMessage({
+        type: 'TEST_COMPLETE',
+        reportType,
+        orderId,
+        url: window.location.href,
+      });
+      
+      return true;
+    }
+    
+    // Real mode: confirm before submit
+    const confirmed = await showConfirmDialog(reportType, false);
+    
+    if (!confirmed) {
+      showStatus('Meldung abgebrochen', false);
+      chrome.runtime.sendMessage({
+        type: 'REPORT_ABORTED',
+        reportType,
+        orderId,
+        url: window.location.href,
+      });
+      await sleep(2000);
+      removeStatus();
+      return false;
+    }
+    
+    // Submit
+    if (submitBtn) {
+      showStatus('Sende Meldung...');
+      clickElement(submitBtn);
+      await sleep(1500);
+      
+      showStatus('✓ Meldung gesendet!');
+      chrome.runtime.sendMessage({
+        type: 'REPORT_SUCCESS',
+        reportType,
+        orderId,
+        url: window.location.href,
+      });
+      
+      await sleep(3000);
+      removeStatus();
+      return true;
+    } else {
+      showStatus('Fehler: Submit-Button nicht gefunden', true);
+      chrome.runtime.sendMessage({
+        type: 'REPORT_ERROR',
+        reportType,
+        orderId,
+        error: 'Submit-Button nicht gefunden',
+        url: window.location.href,
+      });
+      return false;
+    }
+  }
+  
+  // ==========================================
+  // Top Frame: Initial Navigation
+  // ==========================================
+  
+  async function startReportFromTop(reportType, reason, orderId, testMode) {
+    console.log(`[RR-MeldeHelper] [TOP] Starting report: ${reportType}`);
+    
+    showStatus('Suche "Änderung vorschlagen" / "Suggest an edit"...');
+    
+    // Find "Suggest an edit" / "Änderung vorschlagen"
+    const suggestBtn = await waitForElement(() => {
+      return findClickableByText(TEXT_PATTERNS.suggest_edit) ||
+             findElement(SELECTORS.suggestEdit);
+    }, 5000);
+    
+    if (!suggestBtn) {
+      showStatus('Fehler: "Änderung vorschlagen" nicht gefunden', true);
+      chrome.runtime.sendMessage({
+        type: 'REPORT_ERROR',
+        reportType,
+        orderId,
+        error: '"Änderung vorschlagen" nicht gefunden',
+        url: window.location.href,
+        testMode,
+      });
+      return;
+    }
+    
+    // Click "Suggest an edit"
+    showStatus('Klicke "Änderung vorschlagen"...');
+    clickElement(suggestBtn);
+    await sleep(1200);
+    
+    // Find "Place is closed or not here" / "Geschlossen oder nicht vorhanden"
+    showStatus('Suche "Geschlossen oder nicht vorhanden"...');
+    
+    const closedBtn = await waitForElement(() => {
+      return findClickableByText(TEXT_PATTERNS.place_closed) ||
+             findElement(SELECTORS.placeClosedOption);
+    }, 5000);
+    
+    if (!closedBtn) {
+      showStatus('Fehler: "Geschlossen oder nicht vorhanden" nicht gefunden', true);
+      chrome.runtime.sendMessage({
+        type: 'REPORT_ERROR',
+        reportType,
+        orderId,
+        error: '"Geschlossen oder nicht vorhanden" nicht gefunden',
+        url: window.location.href,
+        testMode,
+      });
+      return;
+    }
+    
+    // Click it
+    showStatus('Klicke "Geschlossen oder nicht vorhanden"...');
+    clickElement(closedBtn);
+    await sleep(1500);
+    
+    // Now signal that we need to find the radio options
+    // They might be in this frame or in an iframe
+    currentReport = { reportType, reason, orderId, testMode, step: 'find_radios' };
+    
+    // Try to find radios in this frame first
+    showStatus('Suche Operating-Status Optionen...');
+    
+    // Broadcast to background that we need to find radios
+    chrome.runtime.sendMessage({
+      type: 'STEP_COMPLETED',
+      step: 'clicked_closed',
+      nextStep: 'find_radios',
+    });
+    
+    const foundInTop = await tryFindAndSelectRadio(reportType, reason, orderId, testMode);
+    
+    if (!foundInTop) {
+      // Radios not in top frame - an iframe should handle it
+      console.log(`[RR-MeldeHelper] [TOP] Radios not found in top frame, waiting for iframe...`);
+      showStatus('Warte auf Dialog...');
+      
+      // Set a timeout for iframe to respond
+      setTimeout(() => {
+        if (currentReport && currentReport.step === 'find_radios') {
+          showStatus('Fehler: Radio-Optionen nicht gefunden', true);
           chrome.runtime.sendMessage({
-            type: isDryRun ? 'TEST_COMPLETE' : 'REPORT_ABORTED',
+            type: 'REPORT_ERROR',
             reportType,
-            orderId: currentOrderId,
+            orderId,
+            error: 'Radio-Optionen weder im Top-Frame noch in Iframe gefunden',
             url: window.location.href,
+            testMode,
           });
-        } catch (e) {}
+        }
+      }, 15000);
+    }
+  }
+  
+  async function tryFindAndSelectRadio(reportType, reason, orderId, testMode) {
+    // Wait a bit for DOM updates
+    await sleep(1000);
+    
+    // Debug log all elements
+    debugLogAllElements();
+    
+    // Check if radios are visible in this frame
+    const radioOptions = findRadioOptionsInFrame();
+    
+    // Check if we have Operating Status options
+    const operatingStatusOptions = radioOptions.filter(opt => {
+      const text = opt.text.toLowerCase();
+      return text.includes('closed') || text.includes('geschlossen') ||
+             text.includes('exist') || text.includes('existiert') ||
+             text.includes('duplicate') || text.includes('duplikat') ||
+             text.includes('moved') || text.includes('umgezogen') ||
+             text.includes('offensive') || text.includes('anstößig') ||
+             text.includes('public') || text.includes('öffentlich') ||
+             text.includes('other') || text.includes('sonstiges');
+    });
+    
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Operating status options found: ${operatingStatusOptions.length}`);
+    
+    if (operatingStatusOptions.length >= 3) {
+      // We have the dialog content in this frame!
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] Dialog detected in this frame, proceeding with selection`);
+      currentReport.step = 'selecting';
+      return await executeRadioSelection(reportType, reason, orderId, testMode);
+    }
+    
+    return false;
+  }
+  
+  async function waitForElement(finder, timeout = 5000) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+      const el = finder();
+      if (el) return el;
+      await sleep(200);
+    }
+    return null;
+  }
+  
+  // ==========================================
+  // Iframe: Monitor for Radio Options
+  // ==========================================
+  
+  async function monitorForRadioOptions() {
+    if (IS_TOP) return; // Only for iframes
+    
+    console.log(`[RR-MeldeHelper] [IFRAME] Monitoring for radio options in: ${FRAME_URL}`);
+    
+    // Poll for radio options
+    let attempts = 0;
+    const maxAttempts = 40; // 40 * 500ms = 20 seconds
+    
+    while (attempts < maxAttempts) {
+      attempts++;
+      
+      // Debug on first few attempts
+      if (attempts <= 3 || attempts % 10 === 0) {
+        console.log(`[RR-MeldeHelper] [IFRAME] Attempt ${attempts}...`);
+        debugLogAllElements();
+      }
+      
+      const radioOptions = findRadioOptionsInFrame();
+      
+      // Check if we have Operating Status options
+      const operatingStatusOptions = radioOptions.filter(opt => {
+        const text = opt.text.toLowerCase();
+        return text.includes('closed') || text.includes('geschlossen') ||
+               text.includes('exist') || text.includes('existiert') ||
+               text.includes('duplicate') || text.includes('duplikat') ||
+               text.includes('moved') || text.includes('umgezogen') ||
+               text.includes('offensive') || text.includes('anstößig') ||
+               text.includes('public') || text.includes('öffentlich') ||
+               text.includes('other') || text.includes('sonstiges');
+      });
+      
+      if (operatingStatusOptions.length >= 3) {
+        console.log(`[RR-MeldeHelper] [IFRAME] Found ${operatingStatusOptions.length} operating status options!`);
+        
+        // Notify background that we found the options
+        chrome.runtime.sendMessage({
+          type: 'FOUND_RADIO_OPTIONS',
+          frameUrl: FRAME_URL,
+        });
+        
+        // Get the active report config
+        const reportConfig = await new Promise(resolve => {
+          chrome.runtime.sendMessage({ type: 'GET_ACTIVE_REPORT' }, resolve);
+        });
+        
+        if (reportConfig) {
+          console.log(`[RR-MeldeHelper] [IFRAME] Active report found, executing selection`);
+          await executeRadioSelection(
+            reportConfig.reportType,
+            reportConfig.reason,
+            reportConfig.orderId,
+            reportConfig.testMode
+          );
+        } else {
+          console.log(`[RR-MeldeHelper] [IFRAME] No active report config, waiting...`);
+        }
         
         return;
       }
-
-      // Schritt 7: Submit
-      showStatus(UI.statusSubmitting);
       
-      let submitBtn = window.findElement(window.MAPS_SELECTORS.submitButton);
-      if (!submitBtn) {
-        submitBtn = window.findClickableByText(window.MAPS_TEXT_PATTERNS.submit);
-      }
-
-      if (!submitBtn) {
-        throw new Error('"Submit" Button nicht gefunden');
-      }
-
-      log('Gefunden: Submit Button - klicke...');
-      await simulateClick(submitBtn);
-      await sleep(2000);
-
-      showStatus(UI.statusDone);
-      await sleep(3000);
-      hideStatus();
-
-      try {
-        chrome.runtime.sendMessage({
-          type: 'REPORT_SUCCESS',
-          reportType,
-          orderId: currentOrderId,
-          url: window.location.href,
-        });
-      } catch (e) {}
-
-    } catch (error) {
-      logError(error.message);
-      showStatus(`${UI.statusError} ${error.message}`, true);
-      
-      try {
-        chrome.runtime.sendMessage({
-          type: 'REPORT_ERROR',
-          reportType: currentReportType,
-          orderId: currentOrderId,
-          error: error.message,
-          url: window.location.href,
-          testMode: isDryRun,
-        });
-      } catch (e) {}
-
-    } finally {
-      isRunning = false;
-      isDryRun = false;
+      await sleep(500);
     }
-  }
-
-  async function closeDialog() {
-    const closeBtn = window.findElement(window.MAPS_SELECTORS.closeButton) ||
-                     window.findClickableByText(window.MAPS_TEXT_PATTERNS.cancel);
-    if (closeBtn) {
-      await simulateClick(closeBtn);
-    }
-    await sleep(1500);
-    hideStatus();
-  }
-
-  // ============================================================================
-  // INITIALISIERUNG
-  // ============================================================================
-
-  function checkUrlParams() {
-    const params = new URLSearchParams(window.location.search);
     
-    if (params.get('rr_melden') === '1') {
-      const reportType = params.get('rr_type') || window.MAPS_DEFAULT_TYPE || 'doesnt_exist';
-      const reason = params.get('rr_reason') || '';
-      const orderId = params.get('rr_order') || '';
-      const testMode = params.get('rr_test') === '1';
-      
-      log(`URL-Parameter: Typ=${reportType}, Test=${testMode}`);
-
+    console.log(`[RR-MeldeHelper] [IFRAME] No operating status options found after ${maxAttempts} attempts`);
+  }
+  
+  // ==========================================
+  // Message Handling
+  // ==========================================
+  
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Received message:`, message.type);
+    
+    switch (message.type) {
+      case 'REPORT_START':
+        if (IS_TOP) {
+          currentReport = {
+            reportType: message.reportType,
+            reason: message.reason,
+            orderId: message.orderId,
+            testMode: message.testMode,
+            step: 'starting',
+          };
+          startReportFromTop(message.reportType, message.reason, message.orderId, message.testMode);
+        }
+        sendResponse({ received: true });
+        return true;
+        
+      case 'CONTINUE_REPORT':
+        if (message.step === 'find_radios' && !IS_TOP) {
+          // Iframe should look for radios
+          monitorForRadioOptions();
+        }
+        sendResponse({ received: true });
+        return true;
+        
+      case 'START_MELDE_FLOW':
+        // Legacy direct message from popup
+        if (IS_TOP) {
+          startReportFromTop(message.reportType, message.reason, message.orderId, message.testMode);
+        }
+        sendResponse({ received: true });
+        return true;
+        
+      case 'PING':
+        sendResponse({ pong: true, frameUrl: FRAME_URL, isTop: IS_TOP });
+        return true;
+    }
+    
+    return true;
+  });
+  
+  // ==========================================
+  // Initialization
+  // ==========================================
+  
+  function init() {
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Initializing in: ${FRAME_URL}`);
+    console.log(`[RR-MeldeHelper] [${FRAME_ID}] Body element: ${document.body ? 'present' : 'missing'}, children: ${document.body?.children?.length || 0}`);
+    
+    // Check URL params (only in top frame)
+    if (IS_TOP) {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('rr_melden') === '1') {
+        const reportType = params.get('rr_type') || 'doesnt_exist';
+        const reason = params.get('rr_reason') || '';
+        const orderId = params.get('rr_order') || '';
+        const testMode = params.get('rr_test') === '1';
+        
+        console.log(`[RR-MeldeHelper] [TOP] Auto-start from URL params: ${reportType}`);
+        
+        setTimeout(() => {
+          startReportFromTop(reportType, reason, orderId, testMode);
+        }, 2000);
+      }
+    }
+    
+    // Notify background that this frame is ready
+    chrome.runtime.sendMessage({
+      type: 'FRAME_READY',
+      frameUrl: FRAME_URL,
+      isTop: IS_TOP,
+    }).then(response => {
+      if (response?.activeReport) {
+        console.log(`[RR-MeldeHelper] [${FRAME_ID}] Active report found on frame ready`);
+        if (!IS_TOP && response.step === 'find_radios') {
+          // We're an iframe and need to look for radios
+          monitorForRadioOptions();
+        }
+      }
+    }).catch(err => {
+      console.log(`[RR-MeldeHelper] [${FRAME_ID}] Frame ready notification failed:`, err.message);
+    });
+    
+    // If we're an iframe, start monitoring for radio options
+    if (!IS_TOP) {
+      // Give some time for the dialog to load
       setTimeout(() => {
-        runReportFlow(reportType, reason, orderId, testMode);
-      }, 3000);
+        monitorForRadioOptions();
+      }, 1000);
     }
   }
-
-  if (typeof chrome !== 'undefined' && chrome.runtime && chrome.runtime.onMessage) {
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'START_REPORT') {
-        const reportType = message.reportType || window.MAPS_DEFAULT_TYPE || 'doesnt_exist';
-        log(`Extension-Message: Typ="${reportType}", Test=${message.testMode}`);
-        runReportFlow(reportType, message.reason || '', message.orderId || '', message.testMode || false);
-        sendResponse({ status: 'started' });
-      } else if (message.type === 'GET_STATUS') {
-        sendResponse({ isRunning, currentOrderId, currentReportType, isDryRun });
-      }
-      return true;
-    });
-  }
-
-  function init() {
-    log(`Initialisiert v1.2.2 (Frame: ${window === window.top ? 'top' : 'iframe'})`);
-    checkUrlParams();
-    window.rrStartReport = runReportFlow;
-    window.rrDebugButtons = debugLogButtons;
-  }
-
-  if (document.readyState === 'complete') {
-    init();
+  
+  // Wait for DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    window.addEventListener('load', init);
+    init();
   }
-
 })();
