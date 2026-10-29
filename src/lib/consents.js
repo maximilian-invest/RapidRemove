@@ -27,3 +27,75 @@ export const FAGG_CONSENT = {
   da: { txt: "Jeg anmoder udtrykkeligt om, at RapidRemove påbegynder tjenesten, inden fortrydelsesfristen udløber. Jeg er bekendt med, at jeg mister min fortrydelsesret, så snart tjenesten er fuldt udført.", err: "Bekræft den tidlige start af tjenesten." },
   no: { txt: "Jeg ber uttrykkelig om at RapidRemove starter tjenesten før angrefristen utløper. Jeg er innforstått med at jeg mister angreretten min så snart tjenesten er fullt utført.", err: "Bekreft tidlig oppstart av tjenesten." },
 };
+
+/* Checkbox 3 (nur Bewertungs-Aufträge): Risikohinweis – Google kann entfernte Bewertungen nach Einspruch des Verfassers wieder anzeigen.
+   Kein kostenloser erneuter Löschversuch, keine Erstattung. Pflichtfeld bei Website-Bestellung und Dashboard-Nachbestellung. */
+export const RISK_CONSENT_VERSION = "2026-10-29";
+export const RISK_CONSENT = {
+  de: {
+    pre: "Ich verstehe, dass ich auf eigenes Risiko bestelle: Google kann eine gelöschte Bewertung jederzeit wieder anzeigen. RapidRemove hat darauf keinen Einfluss; eine wiederhergestellte Bewertung wird nicht kostenlos erneut gelöscht oder erstattet (",
+    link: "§ 7.5 AGB",
+    post: ").",
+    err: "Bitte bestätigen Sie den Risikohinweis.",
+  },
+  en: {
+    pre: "I understand that I am ordering at my own risk: Google may restore a removed review at any time. RapidRemove has no influence on this, and a restored review is not removed again for free or refunded (",
+    link: "§ 7.5 T&C",
+    post: ").",
+    err: "Please confirm the risk notice.",
+  },
+  es: {
+    pre: "Entiendo que estoy haciendo el pedido bajo mi propia responsabilidad: Google puede volver a mostrar una reseña eliminada en cualquier momento. RapidRemove no tiene influencia sobre esto; una reseña restaurada no se elimina de nuevo de forma gratuita ni se reembolsa (",
+    link: "§ 7.5 T&C",
+    post: ").",
+    err: "Por favor, confirme el aviso de riesgo.",
+  },
+  fr: {
+    pre: "Je comprends que je commande à mes propres risques : Google peut réafficher un avis supprimé à tout moment. RapidRemove n'a aucune influence là-dessus ; un avis restauré n'est pas supprimé à nouveau gratuitement ni remboursé (",
+    link: "§ 7.5 CGV",
+    post: ").",
+    err: "Veuillez confirmer l'avis de risque.",
+  },
+  it: {
+    pre: "Capisco che sto ordinando a mio rischio: Google può ripristinare una recensione rimossa in qualsiasi momento. RapidRemove non ha alcuna influenza su questo; una recensione ripristinata non viene rimossa nuovamente gratuitamente né rimborsata (",
+    link: "§ 7.5 T&C",
+    post: ").",
+    err: "Si prega di confermare l'avviso di rischio.",
+  },
+  nl: {
+    pre: "Ik begrijp dat ik op eigen risico bestel: Google kan een verwijderde review op elk moment opnieuw tonen. RapidRemove heeft hierop geen invloed; een herstelde review wordt niet gratis opnieuw verwijderd of terugbetaald (",
+    link: "§ 7.5 AV",
+    post: ").",
+    err: "Bevestig de risico-aanwijzing.",
+  },
+  pt: {
+    pre: "Compreendo que estou a encomendar por minha conta e risco: a Google pode restaurar uma avaliação removida a qualquer momento. A RapidRemove não tem qualquer influência sobre isso; uma avaliação restaurada não é removida novamente de forma gratuita nem reembolsada (",
+    link: "§ 7.5 T&C",
+    post: ").",
+    err: "Por favor, confirme o aviso de risco.",
+  },
+  ja: {
+    pre: "私は自己責任で注文することを理解しています：Googleは削除された口コミをいつでも復元する可能性があります。RapidRemoveはこれに影響を与えることができず、復元された口コミは無料で再度削除されたり、返金されたりしません（",
+    link: "§ 7.5 利用規約",
+    post: "）。",
+    err: "リスクに関する注意事項を確認してください。",
+  },
+  sv: {
+    pre: "Jag förstår att jag beställer på egen risk: Google kan återställa ett borttaget omdöme när som helst. RapidRemove har ingen påverkan på detta; ett återställt omdöme tas inte bort igen gratis eller återbetalas (",
+    link: "§ 7.5 AGB",
+    post: ").",
+    err: "Vänligen bekräfta riskmeddelandet.",
+  },
+  da: {
+    pre: "Jeg forstår, at jeg bestiller på egen risiko: Google kan gendanne en fjernet anmeldelse når som helst. RapidRemove har ingen indflydelse på dette; en gendannet anmeldelse fjernes ikke igen gratis eller refunderes (",
+    link: "§ 7.5 AGB",
+    post: ").",
+    err: "Bekræft venligst risikooplysningen.",
+  },
+  no: {
+    pre: "Jeg forstår at jeg bestiller på egen risiko: Google kan gjenopprette en fjernet omtale når som helst. RapidRemove har ingen innflytelse på dette; en gjenopprettet omtale fjernes ikke på nytt gratis eller refunderes (",
+    link: "§ 7.5 AGB",
+    post: ").",
+    err: "Bekreft risikoinformasjonen.",
+  },
+};

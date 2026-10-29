@@ -96,6 +96,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const email = s.email.toLowerCase();
     if (!(await newOrderEnabled(email))) return reply.code(403).send({ ok: false, error: "disabled" });
     if (b.agb !== true) return reply.code(400).send({ ok: false, error: "agb" });
+    if (b.riskConsent !== true) return reply.code(400).send({ ok: false, error: "risk" });
     if (limited("o:" + email, 10)) return reply.code(429).send({ ok: false, error: "rate" });
     const p = (b.place && typeof b.place === "object" ? b.place : {}) as Record<string, unknown>;
     const placeId = clip(p.placeId, 200);
@@ -139,6 +140,8 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;
     if (op) payload.pricing = op;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    // Risikohinweis: detaillierte Consent-Info (§ 7.5 AGB)
+    payload.riskConsent = { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: "2026-10-29", via: "dashboard" };
     const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-bulk": BULK_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;
     if (res.statusCode >= 400 || j.ok === false) return reply.code(res.statusCode >= 400 ? res.statusCode : 400).send({ ok: false, error: String(j.error || "order") });
@@ -210,6 +213,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const email = s.email.toLowerCase();
     if (!(await newOrderEnabled(email))) return reply.code(403).send({ ok: false, error: "disabled" });
     if (b.agb !== true || b.fagg !== true) return reply.code(400).send({ ok: false, error: "agb" });
+    if (b.riskConsent !== true) return reply.code(400).send({ ok: false, error: "risk" });
     if (limited("o:" + email, 10)) return reply.code(429).send({ ok: false, error: "rate" });
     const lang = LANGS.includes(clip(b.lang, 5)) ? clip(b.lang, 5) : "en";
     const links = [...new Set((Array.isArray(b.links) ? b.links : []).map((x) => String(x || "").trim()).filter(Boolean))].slice(0, 50);
@@ -254,6 +258,8 @@ export function registerCustNewOrder(app: FastifyInstance): void {
     const op = pr ? orderPricing(pr, items.length, { flat: pr.source === "custom" }) : null;
     if (op) payload.pricing = op;
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    // Risikohinweis: detaillierte Consent-Info (§ 7.5 AGB)
+    payload.riskConsent = { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: "2026-10-29", via: "dashboard" };
     const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-bulk": BULK_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;
     if (res.statusCode >= 400 || j.ok === false) return reply.code(res.statusCode >= 400 ? res.statusCode : 400).send({ ok: false, error: String(j.error || "order") });

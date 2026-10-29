@@ -219,6 +219,7 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const c = await custOrder(b.token, b.orderId);
     if (!c) return reply.code(401).send({ ok: false, error: "session" });
     if (c.imp) return reply.code(403).send({ ok: false, error: "imp" });
+    if (b.riskConsent !== true) return reply.code(400).send({ ok: false, error: "risk" });
     const ids = Array.isArray(b.ids) ? (b.ids as unknown[]).map((x) => clip(x, 200)).filter(Boolean).slice(0, 20) : [];
     if (!ids.length) return reply.code(400).send({ ok: false, error: "empty" });
     let list: Awaited<ReturnType<typeof profileReviews>> = null;
@@ -227,14 +228,18 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const picks = (list || []).filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
     const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true, express: b.express === true });
-    if (r.ok && b.policyConsent === true) {
-      // (alt) Zusicherung direkt bei der Nachbestellung – seit 10/2026 kommt sie im Start-Ablauf (Gründe je Bewertung, reasons.ts).
+    if (r.ok) {
+      // Einwilligungen zur Nachbestellung speichern: Risikohinweis + ggf. alte Richtlinien-Zusicherung.
       const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim().slice(0, 60);
       const cur = await loadOrder(c.o.id);
-      const prev = (Array.isArray(cur?.raw?.policyConsentAdds) ? cur!.raw!.policyConsentAdds : []) as unknown[];
-      await setOrderRawField(c.o.id, "policyConsentAdds", [...prev, b.policyConsent === true
-        ? { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: clip(b.policyV, 20) || "2026-10-09", n: picks.length, names: picks.map((p) => clip(p.name, 60)) }
-        : { at: new Date().toISOString(), missing: true, n: picks.length }].slice(-30)).catch(() => {});
+      // Risikohinweis bei jeder Nachbestellung erfassen
+      const riskPrev = (Array.isArray(cur?.raw?.riskConsentAdds) ? cur!.raw!.riskConsentAdds : []) as unknown[];
+      await setOrderRawField(c.o.id, "riskConsentAdds", [...riskPrev, { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: "2026-10-29", n: picks.length }].slice(-30)).catch(() => {});
+      // (alt) Richtlinien-Zusicherung – seit 10/2026 kommt sie im Start-Ablauf (Gründe je Bewertung, reasons.ts).
+      if (b.policyConsent === true) {
+        const prev = (Array.isArray(cur?.raw?.policyConsentAdds) ? cur!.raw!.policyConsentAdds : []) as unknown[];
+        await setOrderRawField(c.o.id, "policyConsentAdds", [...prev, { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: clip(b.policyV, 20) || "2026-10-09", n: picks.length, names: picks.map((p) => clip(p.name, 60)) }].slice(-30)).catch(() => {});
+      }
     }
     return r.ok ? { ok: true, added: r.added, gate: r.gate, reasons: r.reasons } : reply.code(r.error === "already_ordered" ? 409 : 400).send({ ok: false, error: r.error });
   });

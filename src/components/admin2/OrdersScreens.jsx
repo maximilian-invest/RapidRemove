@@ -394,6 +394,7 @@ export function OrderInfoScreen({ ctx, id }) {
         <div className="ir"><span className="ico">{isRev ? <MessageSquareText /> : <Store />}</span><span className="t"><span>{isRev ? "Leistung" : "Profil"}</span><b>{isRev ? `${SERVICE_L.reviews} · ${items.length} Bewertungen` : (o.profile || o.company || "—")}</b></span></div>
         {o.addr || o.mapsUri ? <a className="ir" href={o.mapsUri || `https://www.google.com/maps/search/${encodeURIComponent((o.profile || "") + " " + o.addr)}`} target="_blank" rel="noopener noreferrer"><span className="ico"><MapPin /></span><span className="t"><span>Adresse</span><b>{o.addr || "In Google Maps öffnen"}</b></span><ChevronRight /></a> : null}
         {isRev ? <PolicyRow o={o} /> : null}
+        {isRev ? <RiskConsentRow o={o} /> : null}
         {isRev ? <button type="button" className="ir" onClick={() => { close(); ctx.pushReviews(o.id); }}><span className="ico"><StarOff /></span><span className="t"><span>Bewertungen & Screenshots</span><b>{items.length} eingereicht</b></span><ChevronRight /></button> : (
           <>
             <button type="button" className="ir" onClick={() => (sh ? ctx.openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title: o.profile || o.company || "Profil", sub: "Screenshot" }) : ctx.toast("Noch kein Screenshot vorhanden"))}>
@@ -420,6 +421,21 @@ function PolicyRow({ o }) {
         {adds.length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Nachbestellung bestätigt: {adds.map((x) => fmtDT2(x.at)).join(", ")}</span> : null}
         {(o.reasonsLog || []).length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Gründe im Dashboard bestätigt: {o.reasonsLog.map((x) => `${fmtDT2(x.at)} (${x.n})`).join(", ")}</span> : null}
         {!o.reasons && o.status !== "storniert" && (o.reviewItems || []).some((it) => !it.reason) ? <ReasonsRequest o={o} /> : null}
+      </span></div>
+  );
+}
+
+/** Risiko-Zusicherung des Kunden: Google kann gelöschte Bewertungen wiederherstellen (§ 7.5 AGB). */
+function RiskConsentRow({ o }) {
+  const r = o.raw && o.raw.riskConsent;
+  const adds = Array.isArray(o.raw && o.raw.riskConsentAdds) ? o.raw.riskConsentAdds : [];
+  const ua = (s) => { const v = String(s || ""); return /iPhone|iPad/.test(v) ? "iPhone/iPad" : /Android/.test(v) ? "Android" : /Mac OS X/.test(v) ? "Mac" : /Windows/.test(v) ? "Windows" : v ? "Browser" : ""; };
+  return (
+    <div className="ir"><span className="ico" style={{ color: r ? "var(--success)" : "var(--g3)" }}><ShieldCheck /></span>
+      <span className="t"><span>Bestellung auf eigenes Risiko · § 7.5 AGB</span>
+        <b>{r ? `Bestätigt ${fmtDT2(r.at)}${r.via === "chat" ? " · Chat" : r.via === "dashboard" ? " · Dashboard" : ""}` : "Nicht bestätigt (vor 29.10.2026 oder im Admin angelegt)"}</b>
+        {r ? <span style={{ fontSize: 12, color: "var(--g3)" }}>IP {r.ip || "—"} · {ua(r.ua)} · Text {r.v}</span> : null}
+        {adds.length ? <span style={{ fontSize: 12, color: "var(--g3)" }}>Nachbestellung bestätigt: {adds.map((x) => fmtDT2(x.at)).join(", ")}</span> : null}
       </span></div>
   );
 }

@@ -45,6 +45,8 @@ export interface AuftragsbestaetigungReviewsProps {
   added?: boolean;
   /** Zeitpunkt der Zusicherung „Bewertungen verstoßen gegen die Google-Richtlinien" (ISO) → Bestätigungszeile in der Mail. */
   policyAt?: string;
+  /** Zeitpunkt der Zusicherung „Bestellung auf eigenes Risiko" (ISO) → Bestätigungszeile in der Mail. */
+  riskAt?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -433,6 +435,20 @@ const POL: Record<string, (w: string) => string> = {
   da: (w) => `Den ${w} bekræftede du, at de bestilte anmeldelser efter din bedste overbevisning overtræder Googles retningslinjer.`,
   no: (w) => `${w} bekreftet du at de bestilte omtalene etter din beste overbevisning bryter med Googles retningslinjer.`,
 };
+/* Bestätigungszeile: Bestellung auf eigenes Risiko (Google kann gelöschte Bewertung wiederherstellen, § 7.5 AGB). */
+const RISK: Record<string, (w: string) => string> = {
+  de: (w) => `Sie haben am ${w} bestätigt, dass Sie auf eigenes Risiko bestellen: Sollte Google eine gelöschte Bewertung wiederherstellen, wird diese nicht kostenlos erneut gelöscht oder erstattet (§ 7.5 AGB).`,
+  en: (w) => `On ${w} you confirmed that you are ordering at your own risk: if Google restores a removed review, it will not be removed again for free or refunded (§ 7.5 T&C).`,
+  es: (w) => `El ${w} confirmaste que encargas bajo tu propio riesgo: si Google restaura una reseña eliminada, no se eliminará de nuevo gratis ni se reembolsará (§ 7.5 CGV).`,
+  fr: (w) => `Le ${w}, tu as confirmé que tu commandes à tes risques : si Google restaure un avis supprimé, il ne sera pas supprimé à nouveau gratuitement ni remboursé (§ 7.5 CGV).`,
+  it: (w) => `Il ${w} hai confermato di ordinare a tuo rischio: se Google ripristina una recensione rimossa, non verrà rimossa di nuovo gratuitamente né rimborsata (§ 7.5 CGC).`,
+  nl: (w) => `Op ${w} heeft u bevestigd dat u op eigen risico bestelt: als Google een verwijderde review herstelt, wordt deze niet opnieuw gratis verwijderd of terugbetaald (§ 7.5 AV).`,
+  pt: (w) => `Em ${w} confirmaste que encomendas por tua conta e risco: se a Google restaurar uma avaliação removida, não será removida novamente de graça nem reembolsada (§ 7.5 CGV).`,
+  ja: (w) => `${w}に、お客様自身のリスクでご注文されることをご確認いただきました。Googleが削除済みの口コミを復元した場合、無料での再削除や返金は行われません（利用規約 § 7.5）。`,
+  sv: (w) => `Den ${w} intygade du att du beställer på egen risk: om Google återställer ett borttaget omdöme, tas det inte bort igen gratis och återbetalas inte (§ 7.5 AV).`,
+  da: (w) => `Den ${w} bekræftede du, at du bestiller på egen risiko: hvis Google genopretter en fjernet anmeldelse, fjernes den ikke igen gratis og refunderes ikke (§ 7.5 AGB).`,
+  no: (w) => `${w} bekreftet du at du bestiller på egen risiko: hvis Google gjenoppretter en fjernet omtale, fjernes den ikke på nytt gratis og refunderes ikke (§ 7.5 AV).`,
+};
 const polWhen = (iso: string, lang: string) => {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return "";
@@ -446,7 +462,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, reasons = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, reasons = false, dash, added = false, policyAt = "", riskAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
@@ -542,6 +558,7 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       ) : rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
 
       {policyAt ? <P><span style={{ color: brand.muted, fontSize: 13 }}>✓ {(POL[lang] || POL.en)(polWhen(policyAt, lang))}</span></P> : null}
+      {riskAt ? <P><span style={{ color: brand.muted, fontSize: 13 }}>✓ {(RISK[lang] || RISK.en)(polWhen(riskAt, lang))}</span></P> : null}
 
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>

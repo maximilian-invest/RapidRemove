@@ -118,6 +118,7 @@ export function registerCustBulk(app: FastifyInstance): void {
     if (!(await bulkEnabled(email))) return reply.code(403).send({ ok: false, error: "disabled" });
     // tierAck: Kunde bestätigt, dass sich die Stufe (und damit der Preis) ändern kann, wenn sich die Anzahl ändert (14.10.2026).
     if (b.agb !== true || b.fagg !== true || b.policy !== true || b.tierAck !== true) return reply.code(400).send({ ok: false, error: "agb" });
+    if (b.riskConsent !== true) return reply.code(400).send({ ok: false, error: "risk" });
     if (limited("bo:" + email, 10)) return reply.code(429).send({ ok: false, error: "rate" });
     const seen = await orderedSet(email);
     const items = sanitize(b.items).filter((it) => !isOrdered(seen, it));
@@ -145,6 +146,8 @@ export function registerCustBulk(app: FastifyInstance): void {
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard (Bulk)", landing: "/my-reviews",
     };
     const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim();
+    // Risikohinweis: detaillierte Consent-Info (§ 7.5 AGB)
+    payload.riskConsent = { at: new Date().toISOString(), ip, ua: clip(req.headers["user-agent"], 240), v: "2026-10-29", via: "dashboard" };
     const res = await app.inject({ method: "POST", url: "/order", payload, headers: { "content-type": "application/json", "x-rr-bulk": BULK_INTERNAL, "x-forwarded-for": ip, "user-agent": String(req.headers["user-agent"] || "").slice(0, 240) } });
     const j = (() => { try { return JSON.parse(res.body); } catch { return {}; } })() as Record<string, unknown>;
     if (res.statusCode >= 400 || j.ok === false) return reply.code(res.statusCode >= 400 ? res.statusCode : 400).send({ ok: false, error: String(j.error || "order") });
