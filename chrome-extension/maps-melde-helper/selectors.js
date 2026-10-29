@@ -1,5 +1,5 @@
 /**
- * Google Maps UI-Selektoren für den "Änderung vorschlagen" → "Existiert nicht"-Flow.
+ * Google Maps UI-Selektoren für den "Änderung vorschlagen" → Operating Status Flow.
  * 
  * WICHTIG: Google Maps ist eine SPA und ändert die UI regelmäßig.
  * Bei Problemen diese Selektoren aktualisieren!
@@ -15,6 +15,67 @@
  */
 
 // ============================================================================
+// REPORT-TYPEN (alle 8 Operating Status Optionen)
+// ============================================================================
+
+const REPORT_TYPES = {
+  temporarily_closed: {
+    id: 'temporarily_closed',
+    labelDE: 'Vorübergehend geschlossen',
+    labelEN: 'Temporarily closed',
+    hasFollowUp: false,
+  },
+  permanently_closed: {
+    id: 'permanently_closed',
+    labelDE: 'Dauerhaft geschlossen',
+    labelEN: 'Permanently closed',
+    hasFollowUp: false,
+  },
+  doesnt_exist: {
+    id: 'doesnt_exist',
+    labelDE: 'Existiert hier nicht',
+    labelEN: "Doesn't exist here",
+    hasFollowUp: false,
+  },
+  duplicate: {
+    id: 'duplicate',
+    labelDE: 'Duplikat eines anderen Orts',
+    labelEN: 'Duplicate of another place',
+    hasFollowUp: true, // Needs target place
+    followUpHint: 'Bitte das Duplikat-Ziel auswählen',
+  },
+  offensive: {
+    id: 'offensive',
+    labelDE: 'Anstößig, schädlich oder irreführend',
+    labelEN: 'Offensive, harmful or misleading',
+    hasFollowUp: false,
+  },
+  not_public: {
+    id: 'not_public',
+    labelDE: 'Nicht öffentlich zugänglich',
+    labelEN: 'Not open to the public',
+    hasFollowUp: false,
+  },
+  moved: {
+    id: 'moved',
+    labelDE: 'An einen neuen Standort umgezogen',
+    labelEN: 'Moved to a new location',
+    hasFollowUp: true, // Needs new location
+    followUpHint: 'Bitte den neuen Standort eingeben',
+  },
+  other: {
+    id: 'other',
+    labelDE: 'Sonstiges',
+    labelEN: 'Other',
+    hasFollowUp: true, // Needs free text
+    followUpHint: 'Bitte den Grund eingeben',
+  },
+};
+
+// Default type for backwards compatibility
+const DEFAULT_REPORT_TYPE = 'doesnt_exist';
+
+// ============================================================================
 // TEXT-PATTERNS FÜR VERSCHIEDENE SPRACHEN
 // ============================================================================
 
@@ -28,26 +89,78 @@ const TEXT_PATTERNS = {
   // "Geschlossen oder nicht vorhanden" / "Place is closed or not here"
   // Dies ist die ERSTE Option die geklickt werden muss
   closedOrNotHere: [
-    'place is closed or not here',      // EN - exact text from Max's screenshot
-    'closed or not here',                // EN - partial match
-    'close or remove',                   // EN - alternative wording
-    'geschlossen oder nicht vorhanden',  // DE
-    'schließen oder entfernen',          // DE - alternative
+    'place is closed or not here',
+    'closed or not here',
+    'close or remove',
+    'geschlossen oder nicht vorhanden',
+    'schließen oder entfernen',
   ],
 
-  // "Existiert nicht" / "Doesn't exist here" / "Never existed"
-  // Dies sind die Optionen auf dem ZWEITEN Screen
-  doesntExist: [
-    "doesn't exist here",                // EN - primary
-    'does not exist here',               // EN - alternative
-    'never existed',                     // EN - alternative option
-    "doesn't exist",                     // EN - short form
-    'does not exist',                    // EN - short form
-    'place does not exist',              // EN - full form
-    'existiert nicht',                   // DE
-    'existiert hier nicht',              // DE
-    'ort existiert nicht',               // DE
-    'nie existiert',                     // DE - "never existed"
+  // === Operating Status Optionen (8 Typen) ===
+  
+  temporarily_closed: [
+    'temporarily closed',
+    'vorübergehend geschlossen',
+  ],
+  
+  permanently_closed: [
+    'permanently closed',
+    'dauerhaft geschlossen',
+  ],
+  
+  doesnt_exist: [
+    "doesn't exist here",
+    'does not exist here',
+    'never existed',
+    "doesn't exist",
+    'does not exist',
+    'place does not exist',
+    'existiert hier nicht',
+    'existiert nicht',
+    'ort existiert nicht',
+    'nie existiert',
+  ],
+  
+  duplicate: [
+    'duplicate of another place',
+    'duplicate',
+    'duplikat eines anderen orts',
+    'duplikat',
+  ],
+  
+  offensive: [
+    'offensive, harmful or misleading',
+    'offensive',
+    'harmful',
+    'misleading',
+    'anstößig, schädlich oder irreführend',
+    'anstößig',
+    'schädlich',
+    'irreführend',
+  ],
+  
+  not_public: [
+    'not open to the public',
+    'not public',
+    'private',
+    'nicht öffentlich zugänglich',
+    'nicht öffentlich',
+    'privat',
+  ],
+  
+  moved: [
+    'moved to a new location',
+    'moved',
+    'relocated',
+    'an einen neuen standort umgezogen',
+    'umgezogen',
+    'neuer standort',
+  ],
+  
+  other: [
+    'other',
+    'sonstiges',
+    'anderer grund',
   ],
 
   // "Senden" / "Submit" / "Send" Button
@@ -74,50 +187,38 @@ const TEXT_PATTERNS = {
 const SELECTORS = {
   // "Änderung vorschlagen" / "Suggest an edit" Button im Profil-Panel
   suggestEditButton: [
-    // Aria-labels (sprachunabhängig wenn möglich)
     'button[aria-label*="Suggest an edit" i]',
     'button[aria-label*="Änderung vorschlagen" i]',
     'a[aria-label*="Suggest an edit" i]',
     'a[aria-label*="Änderung vorschlagen" i]',
-    // Data-values
     'button[data-value="Suggest an edit"]',
     'button[data-value="Änderung vorschlagen"]',
-    // Item-ID (strukturell, sprachunabhängig)
     '[data-item-id="suggest_edit"] button',
     '[data-item-id="suggest_edit"]',
   ],
 
   // "Geschlossen oder nicht vorhanden" - erste Option
-  // Google zeigt dies oft als letzten Eintrag in einer Liste
   closedOrNotHereOption: [
-    // Strukturelle Selektoren (sprachunabhängig)
     '[role="menuitemradio"][data-value*="CLOSED"]',
     '[role="menuitemradio"][data-value*="REMOVE"]',
     '[role="listitem"]:last-child button',
-    // Aria-labels
     'button[aria-label*="closed" i]',
     'button[aria-label*="not here" i]',
     'button[aria-label*="remove" i]',
     'button[aria-label*="geschlossen" i]',
-    // Data-values
     'button[data-value*="close" i]',
     'button[data-value*="remove" i]',
   ],
 
-  // "Existiert nicht" / "Doesn't exist" - zweiter Screen
-  doesntExistOption: [
-    // Strukturelle Selektoren
-    '[role="menuitemradio"][data-value*="NOT_EXIST"]',
-    '[role="menuitemradio"][data-value*="DOES_NOT"]',
-    '[role="menuitemradio"][data-value*="NEVER"]',
-    '[role="radio"][data-value*="NOT_EXIST"]',
-    // Aria-labels
-    'button[aria-label*="exist" i]',
-    'label[aria-label*="exist" i]',
-    '[role="menuitemradio"][aria-label*="exist" i]',
+  // Radio-Buttons für Operating Status (strukturell)
+  statusRadioButtons: [
+    '[role="menuitemradio"]',
+    '[role="radio"]',
+    'input[type="radio"]',
+    '[role="option"]',
   ],
 
-  // Textfeld für den Grund
+  // Textfeld für den Grund / Follow-up Input
   reasonInput: [
     'textarea[aria-label*="reason" i]',
     'textarea[aria-label*="Grund" i]',
@@ -127,9 +228,13 @@ const SELECTORS = {
     'textarea[placeholder*="Optional" i]',
     'input[aria-label*="reason" i]',
     'input[aria-label*="Grund" i]',
-    // Fallback: Textarea im Dialog
+    'input[aria-label*="location" i]',
+    'input[aria-label*="Standort" i]',
+    'input[aria-label*="place" i]',
     '[role="dialog"] textarea',
+    '[role="dialog"] input[type="text"]',
     'form textarea',
+    'form input[type="text"]',
   ],
 
   // "Senden" / "Submit" Button
@@ -140,7 +245,6 @@ const SELECTORS = {
     'button[data-value="Submit"]',
     'button[data-value="Send"]',
     'button[data-value="Senden"]',
-    // Strukturell: Primary button im Dialog
     '[role="dialog"] button[class*="primary" i]',
     'form button[type="submit"]',
   ],
@@ -163,7 +267,6 @@ const SELECTORS = {
     'button[aria-label*="Abbrechen" i]',
     'button[aria-label*="Back" i]',
     'button[aria-label*="Zurück" i]',
-    // X-Button in Dialogen
     '[role="dialog"] button[aria-label*="close" i]',
     '[role="dialog"] button:first-child',
   ],
@@ -188,6 +291,26 @@ function findElement(selectorArray, context = document) {
     }
   }
   return null;
+}
+
+/**
+ * Findet alle Elemente mit mehreren möglichen CSS-Selektoren
+ */
+function findAllElements(selectorArray, context = document) {
+  const results = [];
+  for (const selector of selectorArray) {
+    try {
+      const els = context.querySelectorAll(selector);
+      els.forEach(el => {
+        if (isVisible(el) && !results.includes(el)) {
+          results.push(el);
+        }
+      });
+    } catch (e) {
+      // Ungültiger Selektor, überspringen
+    }
+  }
+  return results;
 }
 
 /**
@@ -254,12 +377,55 @@ function findClickableByText(textPatterns, context = document) {
   el = findByAnyText(textPatterns, '[role="radio"]', context);
   if (el) return el;
   
+  el = findByAnyText(textPatterns, '[role="option"]', context);
+  if (el) return el;
+  
   // Fallback: irgendein klickbares Element
   el = findByAnyText(textPatterns, '[tabindex]', context);
   if (el) return el;
   
+  // Label-Elemente (oft bei Radio-Buttons)
+  el = findByAnyText(textPatterns, 'label', context);
+  if (el) return el;
+  
+  // Span/Div mit dem Text (und dann den Parent-Button finden)
+  el = findByAnyText(textPatterns, 'span', context);
+  if (el) {
+    // Suche nach klickbarem Parent
+    let parent = el.parentElement;
+    while (parent) {
+      if (parent.tagName === 'BUTTON' || 
+          parent.getAttribute('role') === 'menuitemradio' ||
+          parent.getAttribute('role') === 'radio' ||
+          parent.getAttribute('role') === 'button') {
+        return parent;
+      }
+      parent = parent.parentElement;
+    }
+    return el; // Gib das Span zurück wenn kein Button-Parent gefunden
+  }
+  
   // Letzter Fallback: beliebiges Element
   return findByAnyText(textPatterns, '*', context);
+}
+
+/**
+ * Findet eine spezifische Operating-Status-Option anhand des Typs
+ */
+function findStatusOption(reportType) {
+  const type = REPORT_TYPES[reportType];
+  if (!type) {
+    console.error(`[RR-MeldeHelper] Unbekannter Report-Typ: ${reportType}`);
+    return null;
+  }
+  
+  const patterns = TEXT_PATTERNS[reportType];
+  if (!patterns) {
+    console.error(`[RR-MeldeHelper] Keine Text-Patterns für: ${reportType}`);
+    return null;
+  }
+  
+  return findClickableByText(patterns);
 }
 
 /**
@@ -314,6 +480,33 @@ function waitForAnyText(textPatterns, timeout = 10000, interval = 300) {
   });
 }
 
+/**
+ * Wartet auf eine Status-Option
+ */
+function waitForStatusOption(reportType, timeout = 10000, interval = 300) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    
+    const check = () => {
+      const el = findStatusOption(reportType);
+      if (el) {
+        resolve(el);
+        return;
+      }
+      
+      if (Date.now() - startTime > timeout) {
+        const type = REPORT_TYPES[reportType];
+        reject(new Error(`Option nicht gefunden: "${type?.labelEN}" / "${type?.labelDE}"`));
+        return;
+      }
+      
+      setTimeout(check, interval);
+    };
+    
+    check();
+  });
+}
+
 // ============================================================================
 // EXPORT
 // ============================================================================
@@ -321,11 +514,16 @@ function waitForAnyText(textPatterns, timeout = 10000, interval = 300) {
 if (typeof window !== 'undefined') {
   window.MAPS_SELECTORS = SELECTORS;
   window.MAPS_TEXT_PATTERNS = TEXT_PATTERNS;
+  window.MAPS_REPORT_TYPES = REPORT_TYPES;
+  window.MAPS_DEFAULT_TYPE = DEFAULT_REPORT_TYPE;
   window.findElement = findElement;
+  window.findAllElements = findAllElements;
   window.findByText = findByText;
   window.findByAnyText = findByAnyText;
   window.findClickableByText = findClickableByText;
+  window.findStatusOption = findStatusOption;
   window.waitForElement = waitForElement;
   window.waitForAnyText = waitForAnyText;
+  window.waitForStatusOption = waitForStatusOption;
   window.isVisible = isVisible;
 }

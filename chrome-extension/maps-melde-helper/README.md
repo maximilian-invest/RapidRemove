@@ -1,21 +1,41 @@
 # RapidRemove Maps Melde-Helper
 
-Chrome-Extension zur Automatisierung der Google Maps "Existiert nicht"-Meldung für den RapidRemove Admin-Workflow.
+Chrome-Extension zur Automatisierung aller Google Maps "Operating Status"-Meldungen für den RapidRemove Admin-Workflow.
 
-**Unterstützte Sprachen:** Englisch, Deutsch
+**Unterstützte Sprachen:** Englisch 🇬🇧 + Deutsch 🇩🇪
+
+## Unterstützte Melde-Typen
+
+Alle 8 Operating Status Optionen werden unterstützt:
+
+| Typ-ID | Deutsch | English |
+|--------|---------|---------|
+| `doesnt_exist` | Existiert hier nicht | Doesn't exist here |
+| `temporarily_closed` | Vorübergehend geschlossen | Temporarily closed |
+| `permanently_closed` | Dauerhaft geschlossen | Permanently closed |
+| `duplicate` | Duplikat eines anderen Orts | Duplicate of another place |
+| `moved` | An einen neuen Standort umgezogen | Moved to a new location |
+| `offensive` | Anstößig, schädlich oder irreführend | Offensive, harmful or misleading |
+| `not_public` | Nicht öffentlich zugänglich | Not open to the public |
+| `other` | Sonstiges | Other |
 
 ## Funktionsweise
 
-Die Extension automatisiert den legalen "Änderung vorschlagen"-Flow in Google Maps:
+Die Extension automatisiert den "Suggest an edit"-Flow in Google Maps:
 
-1. Öffnet "Suggest an edit" / "Änderung vorschlagen" im Google Maps Profil
+1. Öffnet "Suggest an edit" / "Änderung vorschlagen"
 2. Wählt "Place is closed or not here" / "Geschlossen oder nicht vorhanden"
-3. Wählt "Doesn't exist here" / "Never existed" / "Existiert nicht"
-4. Füllt einen optionalen Grund-Text aus
+3. Wählt die gewählte Operating-Status-Option
+4. Handhabt Follow-up-Felder (Duplikat-Ziel, neuer Standort, etc.):
+   - Füllt automatisch aus wenn `rr_reason` angegeben
+   - **Pausiert** und lässt den Benutzer manuell ausfüllen wenn nicht
 5. **Zeigt einen Bestätigungsdialog** ("Meldung absenden?")
-6. Erst nach Bestätigung wird "Submit" / "Senden" geklickt
+6. Erst nach Bestätigung wird "Submit" geklickt
 
-**Wichtig:** Der finale Submit erfolgt nur nach manueller Bestätigung. Dies ist ein legaler Suggest-Edit-Flow, keine Automatisierung von Reviews oder CAPTCHA-Umgehung.
+**Wichtig:** 
+- Der finale Submit erfolgt nur nach manueller Bestätigung
+- Genau EINE Meldung pro Durchlauf (keine Verkettung)
+- Kein Auto-Start weiterer Meldungen
 
 ## 🧪 Testmodus
 
@@ -29,7 +49,7 @@ Der **Testmodus** ermöglicht sicheres Testen auf beliebigen Profilen:
 ### Testmodus aktivieren:
 - **Popup:** Toggle "🧪 Testmodus" einschalten
 - **URL-Parameter:** `&rr_test=1` hinzufügen
-- **Konsole:** `window.rrStartReport('grund', 'order-id', true)`
+- **Konsole:** `window.rrStartReport('doesnt_exist', 'grund', 'order-id', true)`
 
 ## Installation (Chrome)
 
@@ -45,131 +65,118 @@ Der **Testmodus** ermöglicht sicheres Testen auf beliebigen Profilen:
 
 1. Öffne ein Google Maps Unternehmensprofil
 2. Klicke auf das Extension-Icon in der Toolbar
-3. Optional: Aktiviere den Testmodus
-4. Optional: Gib einen Grund und Auftrags-ID ein
-5. Klicke "Meldung starten" bzw. "🧪 Test starten"
-6. Im Echtmodus: Bestätige im Dialog mit "Ja, absenden"
+3. Wähle den gewünschten **Melde-Typ** (Radio-Buttons)
+4. Optional: Aktiviere den Testmodus
+5. Optional: Gib Zusatzinfos und Auftrags-ID ein
+6. Klicke "Meldung starten"
+7. Im Echtmodus: Bestätige im Dialog mit "Ja, absenden"
 
 ### Methode 2: URL-Parameter (vom Admin aus)
 
-Füge diese Parameter an die Google Maps URL an:
+```
+?rr_melden=1&rr_type=TYPE&rr_reason=TEXT&rr_order=ID&rr_test=1
+```
 
-```
-?rr_melden=1&rr_reason=GRUND&rr_order=AUFTRAGS-ID&rr_test=1
-```
+**Parameter:**
+- `rr_melden=1` - Aktiviert den Melde-Flow (erforderlich)
+- `rr_type=TYPE` - Melde-Typ (siehe Tabelle oben)
+- `rr_reason=TEXT` - Zusatzinfo/Grund
+- `rr_order=ID` - Auftrags-ID
+- `rr_test=1` - Testmodus aktivieren
 
 **Beispiele:**
 
-Echtmodus:
 ```
-https://www.google.com/maps/place/...?rr_melden=1&rr_reason=Firma+existiert+nicht+mehr&rr_order=RR-12345
-```
+# Existiert nicht melden
+https://www.google.com/maps/place/...?rr_melden=1&rr_type=doesnt_exist&rr_order=RR-12345
 
-Testmodus:
-```
-https://www.google.com/maps/place/...?rr_melden=1&rr_reason=Test&rr_test=1
+# Duplikat melden (mit Grund)
+https://www.google.com/maps/place/...?rr_melden=1&rr_type=duplicate&rr_reason=Duplikat+von+XYZ
+
+# Testmodus: Umgezogen
+https://www.google.com/maps/place/...?rr_melden=1&rr_type=moved&rr_test=1
 ```
 
 ### Methode 3: Konsolen-Befehl (Debug)
 
-In der Browser-Konsole (F12):
-
 ```javascript
-// Echtmodus
-window.rrStartReport('Firma existiert nicht mehr', 'RR-12345', false);
+// Syntax: window.rrStartReport(reportType, reason, orderId, testMode)
 
-// Testmodus
-window.rrStartReport('Test', 'RR-TEST', true);
+// Existiert nicht (Echtmodus)
+window.rrStartReport('doesnt_exist', '', 'RR-12345', false);
 
-// Debug: Alle sichtbaren Buttons anzeigen
+// Duplikat (Testmodus)
+window.rrStartReport('duplicate', 'Duplikat von Place XYZ', '', true);
+
+// Debug: Alle sichtbaren Buttons
 window.rrDebugButtons();
 ```
 
-## Sprachunterstützung
-
-Die Extension erkennt automatisch die UI-Sprache anhand von Text-Patterns:
-
-| Schritt | Englisch | Deutsch |
-|---------|----------|---------|
-| Dialog öffnen | "Suggest an edit" | "Änderung vorschlagen" |
-| Option 1 | "Place is closed or not here" | "Geschlossen oder nicht vorhanden" |
-| Option 2 | "Doesn't exist here" / "Never existed" | "Existiert nicht" |
-| Absenden | "Submit" / "Send" | "Senden" |
-
-Die Text-Patterns sind in `selectors.js` unter `TEXT_PATTERNS` definiert.
-
 ## Integration ins RapidRemove Admin
 
-### Option A: Deep-Link Button
+### Deep-Link Button
 
 ```javascript
-function openMeldeLink(order, testMode = false) {
+function openMeldeLink(order, reportType = 'doesnt_exist', testMode = false) {
   const mapsUrl = order.mapsUri;
-  const reason = encodeURIComponent('Profil existiert nicht mehr');
+  const type = encodeURIComponent(reportType);
+  const reason = encodeURIComponent('...');
   const orderId = encodeURIComponent(order.id);
   const test = testMode ? '&rr_test=1' : '';
   
-  const meldeUrl = `${mapsUrl}${mapsUrl.includes('?') ? '&' : '?'}rr_melden=1&rr_reason=${reason}&rr_order=${orderId}${test}`;
+  const url = `${mapsUrl}${mapsUrl.includes('?') ? '&' : '?'}rr_melden=1&rr_type=${type}&rr_reason=${reason}&rr_order=${orderId}${test}`;
   
-  window.open(meldeUrl, '_blank');
+  window.open(url, '_blank');
 }
 ```
 
-### Option B: Beispiel-Integration in OrdersScreens.jsx
+### Bereits integriert in OrdersScreens.jsx
 
-Der "Melden"-Button ist bereits in `OrderInfoScreen` integriert:
-
-```jsx
-{o.mapsUri ? (
-  <a 
-    className="ir" 
-    href={`${o.mapsUri}?rr_melden=1&rr_reason=...&rr_order=${o.id}`}
-    target="_blank"
-  >
-    <Flag /> Als „existiert nicht" melden
-  </a>
-) : null}
+Der "Melden"-Button in `OrderInfoScreen` öffnet:
+```
+{mapsUri}?rr_melden=1&rr_type=doesnt_exist&rr_reason=...&rr_order={orderId}
 ```
 
-## Bekannte Einschränkungen
+## Follow-up-Felder
 
-### Google Maps UI kann sich ändern
+Einige Melde-Typen benötigen zusätzliche Informationen:
 
-Google Maps ist eine Single-Page-Application und ändert regelmäßig ihre Oberfläche.
+| Typ | Follow-up |
+|-----|-----------|
+| `duplicate` | Ziel-Ort auswählen |
+| `moved` | Neuen Standort eingeben |
+| `other` | Freitext-Grund eingeben |
 
-**Wenn die Extension nicht funktioniert:**
+**Verhalten:**
+- Wenn `rr_reason` angegeben: Feld wird automatisch ausgefüllt
+- Wenn nicht: Extension **pausiert** und zeigt Dialog "Bitte das Feld ausfüllen"
+- Nach manueller Eingabe: "Weiter" klicken
 
-1. Öffne die Browser-Konsole (F12)
-2. Suche nach `[RR-MeldeHelper]` Logs
-3. Nutze `window.rrDebugButtons()` um alle sichtbaren Buttons aufzulisten
-4. Aktualisiere die Patterns in `selectors.js`
-
-### So findest du die richtigen Selektoren
-
-1. Öffne ein Google Maps Profil
-2. Öffne Chrome DevTools (F12)
-3. Klicke manuell durch den "Suggest an edit"-Flow
-4. Inspiziere jedes Element und notiere:
-   - Den **exakten Text** (für `TEXT_PATTERNS`)
-   - `aria-label` Attribute
-   - `data-value` Attribute
-5. Aktualisiere `selectors.js`
-
-### Struktur von selectors.js
+## Struktur von selectors.js
 
 ```javascript
-// Text-Patterns für verschiedene Sprachen
-const TEXT_PATTERNS = {
-  suggestEdit: ['suggest an edit', 'änderung vorschlagen'],
-  closedOrNotHere: ['place is closed or not here', 'geschlossen oder nicht vorhanden'],
-  doesntExist: ["doesn't exist here", 'never existed', 'existiert nicht'],
-  submit: ['submit', 'send', 'senden'],
+// Report-Typen mit Metadaten
+const REPORT_TYPES = {
+  doesnt_exist: {
+    id: 'doesnt_exist',
+    labelDE: 'Existiert hier nicht',
+    labelEN: "Doesn't exist here",
+    hasFollowUp: false,
+  },
+  duplicate: {
+    id: 'duplicate',
+    labelDE: 'Duplikat eines anderen Orts',
+    labelEN: 'Duplicate of another place',
+    hasFollowUp: true,
+    followUpHint: 'Bitte das Duplikat-Ziel auswählen',
+  },
   // ...
 };
 
-// CSS-Selektoren (strukturell, sprachunabhängig wenn möglich)
-const SELECTORS = {
-  suggestEditButton: ['button[aria-label*="Suggest" i]', ...],
+// Text-Patterns für verschiedene Sprachen
+const TEXT_PATTERNS = {
+  doesnt_exist: ["doesn't exist here", 'existiert hier nicht', ...],
+  duplicate: ['duplicate of another place', 'duplikat', ...],
   // ...
 };
 ```
@@ -181,44 +188,41 @@ maps-melde-helper/
 ├── manifest.json      # Extension-Konfiguration (Manifest V3)
 ├── background.js      # Service Worker
 ├── content.js         # Hauptlogik (injiziert in Maps)
-├── selectors.js       # UI-Selektoren + Text-Patterns (HIER ANPASSEN!)
+├── selectors.js       # UI-Selektoren, Text-Patterns, Report-Typen
 ├── styles.css         # Dialog-Styles
-├── popup.html         # Popup-UI mit Testmodus-Toggle
-├── popup.js           # Popup-Logik
+├── popup.html/js      # Popup-UI mit Typ-Auswahl + Testmodus
 ├── icons/             # Extension-Icons
 └── README.md          # Diese Datei
 ```
 
-## Sicherheitshinweise
-
-- Die Extension funktioniert nur mit dem bereits in Chrome angemeldeten Google-Konto
-- Keine Speicherung von Anmeldedaten
-- Keine Netzwerkanfragen außer zu Google Maps
-- Alle Aktionen sind im Suggest-Edit-Flow von Google Maps sichtbar
-- Der finale Submit erfordert immer manuelle Bestätigung (außer im Testmodus, wo gar nicht submitted wird)
-
 ## Fehlerbehebung
 
-### "Button nicht gefunden"
+### "Option nicht gefunden"
 
-1. Ist ein Google Maps Profil geöffnet (nicht nur die Karte)?
-2. Ist das Profil vollständig geladen?
-3. Welche Sprache hat deine Maps-UI? (EN/DE werden unterstützt)
-4. Nutze `window.rrDebugButtons()` in der Konsole
-5. Sind die Text-Patterns in `selectors.js` aktuell?
+1. Öffne die Browser-Konsole (F12)
+2. Suche nach `[RR-MeldeHelper]` Logs
+3. Nutze `window.rrDebugButtons()` um alle sichtbaren Buttons aufzulisten
+4. Prüfe die Text-Patterns in `selectors.js` → `TEXT_PATTERNS`
 
 ### Dialog erscheint nicht
 
-1. Prüfe ob der Content-Script geladen wurde (Konsole: `[RR-MeldeHelper] Maps Melde-Helper initialisiert`)
-2. Versuche die Seite neu zu laden
-3. Prüfe ob die Extension aktiviert ist
+1. Prüfe ob Content-Script geladen wurde: `[RR-MeldeHelper] Maps Melde-Helper initialisiert`
+2. Seite neu laden
+3. Extension aktiviert?
 
 ### Testmodus zum Debuggen
 
-Aktiviere den Testmodus um den Flow sicher zu testen ohne etwas zu melden:
-- Der Flow läuft komplett durch
-- Stoppt vor dem Submit
-- Zeigt welche Schritte erfolgreich waren
+Der Testmodus zeigt:
+- Welche Schritte erfolgreich waren
+- Den gewählten Typ
+- Stoppt sicher vor Submit
+
+## Sicherheitshinweise
+
+- Funktioniert nur mit dem angemeldeten Google-Konto
+- Keine Speicherung von Credentials
+- Alle Aktionen manuell bestätigbar
+- Genau EINE Meldung pro Durchlauf
 
 ## Lizenz
 
@@ -226,10 +230,16 @@ Intern für RapidRemove. Nicht zur Veröffentlichung im Chrome Web Store vorgese
 
 ## Änderungshistorie
 
+- **v1.2.0** (Oktober 2026):
+  - Alle 8 Operating Status Optionen
+  - Radio-Button Auswahl im Popup
+  - URL-Parameter `rr_type` für Typ-Auswahl
+  - Follow-up-Feld Handling mit Pause-Dialog
+  - Speichert zuletzt gewählten Typ
+
 - **v1.1.0** (Oktober 2026): 
   - Englisch + Deutsch Support
-  - Testmodus (stoppt vor Submit)
-  - Verbesserte Text-Pattern-Erkennung
+  - Testmodus
   - Debug-Funktion `rrDebugButtons()`
   
 - **v1.0.0** (Oktober 2026): Initiale Version

@@ -7,7 +7,7 @@
  * 3. Speichert Erfolgs-/Fehler-Logs
  */
 
-// Log-Speicher (wird bei Extension-Neustart geleert)
+// Log-Speicher
 const reportLogs = [];
 
 // Hilfsfunktion: Logs speichern
@@ -15,14 +15,11 @@ function logReport(entry) {
   entry.timestamp = new Date().toISOString();
   reportLogs.push(entry);
   
-  // Behalte nur die letzten 100 Einträge
   if (reportLogs.length > 100) {
     reportLogs.shift();
   }
   
-  // Speichere in chrome.storage für Persistenz
   chrome.storage.local.set({ reportLogs: reportLogs.slice(-50) });
-  
   console.log('[RR-MeldeHelper BG]', entry);
 }
 
@@ -31,6 +28,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'REPORT_SUCCESS') {
     logReport({
       status: 'success',
+      reportType: message.reportType,
       orderId: message.orderId,
       url: message.url,
       testMode: false,
@@ -40,6 +38,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'REPORT_ERROR') {
     logReport({
       status: 'error',
+      reportType: message.reportType,
       orderId: message.orderId,
       error: message.error,
       url: message.url,
@@ -50,6 +49,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'TEST_COMPLETE') {
     logReport({
       status: 'test',
+      reportType: message.reportType,
       orderId: message.orderId,
       url: message.url,
       testMode: true,
@@ -59,6 +59,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   } else if (message.type === 'REPORT_ABORTED') {
     logReport({
       status: 'aborted',
+      reportType: message.reportType,
       orderId: message.orderId,
       url: message.url,
       testMode: false,
@@ -69,25 +70,24 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sendResponse({ logs: reportLogs });
     
   } else if (message.type === 'OPEN_AND_REPORT') {
-    // Öffne Google Maps URL mit Melde-Parametern
-    const { mapsUrl, reason, orderId, testMode } = message;
+    const { mapsUrl, reportType, reason, orderId, testMode } = message;
     
     if (!mapsUrl) {
       sendResponse({ error: 'Keine Maps-URL angegeben' });
       return true;
     }
     
-    // Füge Parameter hinzu
     const url = new URL(mapsUrl);
     url.searchParams.set('rr_melden', '1');
+    if (reportType) url.searchParams.set('rr_type', reportType);
     if (reason) url.searchParams.set('rr_reason', reason);
     if (orderId) url.searchParams.set('rr_order', orderId);
     if (testMode) url.searchParams.set('rr_test', '1');
     
-    // Öffne in neuem Tab
     chrome.tabs.create({ url: url.toString() }, (tab) => {
       logReport({
         status: 'opened',
+        reportType,
         orderId,
         url: mapsUrl,
         tabId: tab.id,
@@ -96,14 +96,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ success: true, tabId: tab.id });
     });
     
-    return true; // async response
+    return true;
     
   } else if (message.type === 'START_REPORT_IN_TAB') {
-    // Starte Report in einem spezifischen Tab
-    const { tabId, reason, orderId, testMode } = message;
+    const { tabId, reportType, reason, orderId, testMode } = message;
     
     chrome.tabs.sendMessage(tabId, {
       type: 'START_REPORT',
+      reportType: reportType || 'doesnt_exist',
       reason,
       orderId,
       testMode: testMode || false,
@@ -115,7 +115,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
     });
     
-    return true; // async response
+    return true;
   }
   
   return true;
@@ -129,4 +129,4 @@ chrome.storage.local.get('reportLogs', (data) => {
   }
 });
 
-console.log('[RR-MeldeHelper BG] Service Worker gestartet (v1.1 - EN+DE Support, Testmodus)');
+console.log('[RR-MeldeHelper BG] Service Worker gestartet (v1.2 - Alle 8 Operating Status Optionen)');
