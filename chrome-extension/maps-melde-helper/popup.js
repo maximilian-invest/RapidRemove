@@ -6,8 +6,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('startBtn');
   const reasonInput = document.getElementById('reason');
   const orderIdInput = document.getElementById('orderId');
+  const testModeToggle = document.getElementById('testMode');
+  const testModeRow = document.getElementById('testModeRow');
   const statusDiv = document.getElementById('status');
   const logsDiv = document.getElementById('logs');
+
+  // Testmodus-Toggle UI aktualisieren
+  function updateTestModeUI() {
+    const isTest = testModeToggle.checked;
+    testModeRow.classList.toggle('test-mode', isTest);
+    startBtn.textContent = isTest ? '🧪 Test starten' : 'Meldung starten';
+    startBtn.classList.toggle('btn-test', isTest);
+    startBtn.classList.toggle('btn-primary', !isTest);
+  }
+
+  testModeToggle.addEventListener('change', () => {
+    updateTestModeUI();
+    // Speichere Einstellung
+    chrome.storage.local.set({ testMode: testModeToggle.checked });
+  });
+
+  // Lade gespeicherte Einstellung
+  chrome.storage.local.get('testMode', (data) => {
+    testModeToggle.checked = data.testMode || false;
+    updateTestModeUI();
+  });
 
   // Status anzeigen
   function showStatus(message, type = 'info') {
@@ -22,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const logs = response.logs || [];
       
       if (logs.length === 0) {
-        logsDiv.innerHTML = '<em>Noch keine Meldungen</em>';
+        logsDiv.innerHTML = '<em>Noch keine Aktionen</em>';
         return;
       }
       
@@ -32,11 +55,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const statusText = {
           success: '✓ Gesendet',
           error: '✗ Fehler',
-          opened: '→ Geöffnet'
+          opened: '→ Geöffnet',
+          test: '🧪 Test OK',
+          aborted: '⊘ Abgebrochen'
         }[log.status] || log.status;
         
+        const testBadge = log.testMode ? '<span class="badge badge-test">TEST</span>' : '';
+        
         return `<div class="log-entry ${statusClass}">
-          <strong>${statusText}</strong> ${log.orderId || ''} 
+          <strong>${statusText}</strong>${testBadge} ${log.orderId || ''} 
           <small>(${time})</small>
           ${log.error ? `<br><small>${log.error}</small>` : ''}
         </div>`;
@@ -55,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (!isMapsPage) {
         startBtn.disabled = true;
-        showStatus('Öffne zuerst ein Google Maps Profil', 'info');
+        showStatus('Öffne zuerst ein Google Maps Profil', 'warning');
       }
       
       return { tab, isMapsPage };
@@ -69,9 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
   startBtn.addEventListener('click', async () => {
     const reason = reasonInput.value.trim();
     const orderId = orderIdInput.value.trim();
+    const testMode = testModeToggle.checked;
     
     startBtn.disabled = true;
-    showStatus('Starte Meldung...', 'info');
+    showStatus(testMode ? 'Starte Test...' : 'Starte Meldung...', 'info');
     
     try {
       const { tab, isMapsPage } = await checkCurrentTab();
@@ -87,10 +115,16 @@ document.addEventListener('DOMContentLoaded', () => {
         type: 'START_REPORT',
         reason,
         orderId,
+        testMode,
       });
       
       if (response && response.status === 'started') {
-        showStatus('Meldung gestartet! Wechsle zum Tab...', 'success');
+        showStatus(
+          testMode 
+            ? 'Test gestartet! Wechsle zum Tab...' 
+            : 'Meldung gestartet! Wechsle zum Tab...', 
+          'success'
+        );
         
         // Schließe Popup und wechsle zum Tab
         setTimeout(() => {
@@ -98,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
           window.close();
         }, 1000);
       } else {
-        showStatus('Konnte Meldung nicht starten', 'error');
+        showStatus('Konnte nicht starten', 'error');
         startBtn.disabled = false;
       }
       

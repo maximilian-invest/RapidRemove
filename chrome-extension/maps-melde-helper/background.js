@@ -33,6 +33,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       status: 'success',
       orderId: message.orderId,
       url: message.url,
+      testMode: false,
     });
     sendResponse({ received: true });
     
@@ -42,6 +43,25 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       orderId: message.orderId,
       error: message.error,
       url: message.url,
+      testMode: message.testMode || false,
+    });
+    sendResponse({ received: true });
+    
+  } else if (message.type === 'TEST_COMPLETE') {
+    logReport({
+      status: 'test',
+      orderId: message.orderId,
+      url: message.url,
+      testMode: true,
+    });
+    sendResponse({ received: true });
+    
+  } else if (message.type === 'REPORT_ABORTED') {
+    logReport({
+      status: 'aborted',
+      orderId: message.orderId,
+      url: message.url,
+      testMode: false,
     });
     sendResponse({ received: true });
     
@@ -50,7 +70,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
   } else if (message.type === 'OPEN_AND_REPORT') {
     // Öffne Google Maps URL mit Melde-Parametern
-    const { mapsUrl, reason, orderId } = message;
+    const { mapsUrl, reason, orderId, testMode } = message;
     
     if (!mapsUrl) {
       sendResponse({ error: 'Keine Maps-URL angegeben' });
@@ -62,6 +82,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     url.searchParams.set('rr_melden', '1');
     if (reason) url.searchParams.set('rr_reason', reason);
     if (orderId) url.searchParams.set('rr_order', orderId);
+    if (testMode) url.searchParams.set('rr_test', '1');
     
     // Öffne in neuem Tab
     chrome.tabs.create({ url: url.toString() }, (tab) => {
@@ -70,6 +91,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         orderId,
         url: mapsUrl,
         tabId: tab.id,
+        testMode: testMode || false,
       });
       sendResponse({ success: true, tabId: tab.id });
     });
@@ -78,12 +100,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     
   } else if (message.type === 'START_REPORT_IN_TAB') {
     // Starte Report in einem spezifischen Tab
-    const { tabId, reason, orderId } = message;
+    const { tabId, reason, orderId, testMode } = message;
     
     chrome.tabs.sendMessage(tabId, {
       type: 'START_REPORT',
       reason,
       orderId,
+      testMode: testMode || false,
     }, (response) => {
       if (chrome.runtime.lastError) {
         sendResponse({ error: chrome.runtime.lastError.message });
@@ -98,11 +121,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-// Extension-Icon-Klick (wenn kein Popup definiert) - optional
-// chrome.action.onClicked.addListener((tab) => {
-//   // Popup wird verwendet
-// });
-
 // Beim Start: Lade gespeicherte Logs
 chrome.storage.local.get('reportLogs', (data) => {
   if (data.reportLogs) {
@@ -111,4 +129,4 @@ chrome.storage.local.get('reportLogs', (data) => {
   }
 });
 
-console.log('[RR-MeldeHelper BG] Service Worker gestartet');
+console.log('[RR-MeldeHelper BG] Service Worker gestartet (v1.1 - EN+DE Support, Testmodus)');

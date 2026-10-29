@@ -2,6 +2,8 @@
  * RapidRemove Maps Melde-Helper
  * Automatisiert den Google Maps "Existiert nicht"-Melde-Flow.
  * 
+ * Unterstützte Sprachen: Englisch, Deutsch
+ * 
  * Aktivierung:
  * 1. Via URL-Parameter: ?rr_melden=1&rr_reason=...
  * 2. Via Chrome Extension Message vom Background-Script
@@ -15,6 +17,7 @@
   let isRunning = false;
   let currentReason = '';
   let currentOrderId = '';
+  let isDryRun = false; // Testmodus: stoppt vor dem Submit
 
   // UI-Strings (Deutsch)
   const UI = {
@@ -24,14 +27,22 @@
     confirmReason: 'Grund:',
     confirmYes: 'Ja, absenden',
     confirmNo: 'Abbrechen',
-    statusSearching: 'Suche "Änderung vorschlagen"...',
+    
+    // Testmodus
+    testTitle: 'RapidRemove: Testmodus',
+    testMessage: 'Der Flow wurde erfolgreich durchlaufen. Im Echtmodus würde jetzt "Senden" geklickt werden.',
+    testClose: 'Test beenden',
+    
+    // Status-Meldungen
+    statusSearching: 'Suche "Suggest an edit"...',
     statusOpening: 'Öffne Bearbeitungsdialog...',
-    statusSelectingClosed: 'Wähle "Geschlossen oder nicht vorhanden"...',
-    statusSelectingDoesntExist: 'Wähle "Existiert nicht"...',
+    statusSelectingClosed: 'Wähle "Place is closed or not here"...',
+    statusSelectingDoesntExist: 'Wähle "Doesn\'t exist"...',
     statusFillingReason: 'Fülle Grund aus...',
     statusWaitingConfirm: 'Warte auf Bestätigung...',
     statusSubmitting: 'Sende Meldung...',
     statusDone: 'Meldung erfolgreich gesendet!',
+    statusTestDone: 'Testmodus: Flow erfolgreich, nicht gesendet.',
     statusError: 'Fehler:',
     statusAborted: 'Abgebrochen.',
   };
@@ -48,14 +59,14 @@
   // Status-Anzeige
   let statusOverlay = null;
 
-  function showStatus(message, isError = false) {
+  function showStatus(message, isError = false, isTest = false) {
     if (!statusOverlay) {
       statusOverlay = document.createElement('div');
       statusOverlay.id = 'rr-melde-status';
       document.body.appendChild(statusOverlay);
     }
-    statusOverlay.textContent = message;
-    statusOverlay.className = isError ? 'error' : '';
+    statusOverlay.textContent = (isDryRun ? '🧪 TEST: ' : '') + message;
+    statusOverlay.className = isError ? 'error' : (isTest ? 'test' : '');
     statusOverlay.style.display = 'block';
     log(message);
   }
@@ -66,10 +77,9 @@
     }
   }
 
-  // Bestätigungsdialog
+  // Bestätigungsdialog (Echtmodus)
   function showConfirmDialog(reason, orderId) {
     return new Promise((resolve) => {
-      // Entferne existierenden Dialog
       const existing = document.getElementById('rr-confirm-dialog');
       if (existing) existing.remove();
 
@@ -100,7 +110,48 @@
         resolve(false);
       });
 
-      // ESC zum Abbrechen
+      const escHandler = (e) => {
+        if (e.key === 'Escape') {
+          overlay.remove();
+          document.removeEventListener('keydown', escHandler);
+          resolve(false);
+        }
+      };
+      document.addEventListener('keydown', escHandler);
+    });
+  }
+
+  // Testmodus-Dialog (kein Submit-Button)
+  function showTestCompleteDialog(reason, orderId) {
+    return new Promise((resolve) => {
+      const existing = document.getElementById('rr-confirm-dialog');
+      if (existing) existing.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'rr-confirm-dialog';
+      overlay.className = 'test-mode';
+      overlay.innerHTML = `
+        <div class="rr-dialog-content rr-test-dialog">
+          <h2>🧪 ${UI.testTitle}</h2>
+          <p>${UI.testMessage}</p>
+          ${orderId ? `<p><strong>${UI.confirmOrderId}</strong> ${escapeHtml(orderId)}</p>` : ''}
+          <p><strong>${UI.confirmReason}</strong> ${escapeHtml(reason || '(kein Grund angegeben)')}</p>
+          <div class="rr-test-success">
+            ✅ Alle Schritte erfolgreich durchlaufen
+          </div>
+          <div class="rr-dialog-buttons">
+            <button id="rr-test-close" class="rr-btn rr-btn-secondary">${UI.testClose}</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      document.getElementById('rr-test-close').addEventListener('click', () => {
+        overlay.remove();
+        resolve(false); // Im Testmodus nie submitten
+      });
+
       const escHandler = (e) => {
         if (e.key === 'Escape') {
           overlay.remove();
@@ -119,34 +170,41 @@
   }
 
   // Simuliere einen echten Klick
-  function simulateClick(element) {
+  async function simulateClick(element) {
     if (!element) return false;
     
     // Scroll element into view
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
     
-    // Kurze Pause
-    return new Promise(resolve => {
-      setTimeout(() => {
-        // Verschiedene Klick-Methoden
-        const rect = element.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
+    await sleep(150);
+    
+    const rect = element.getBoundingClientRect();
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
 
-        ['mousedown', 'mouseup', 'click'].forEach(type => {
-          const event = new MouseEvent(type, {
-            view: window,
-            bubbles: true,
-            cancelable: true,
-            clientX: x,
-            clientY: y,
-          });
-          element.dispatchEvent(event);
-        });
-
-        resolve(true);
-      }, 100);
+    // Hover zuerst
+    element.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, clientX: x, clientY: y }));
+    element.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, clientX: x, clientY: y }));
+    
+    await sleep(50);
+    
+    // Dann klicken
+    ['mousedown', 'mouseup', 'click'].forEach(type => {
+      element.dispatchEvent(new MouseEvent(type, {
+        view: window,
+        bubbles: true,
+        cancelable: true,
+        clientX: x,
+        clientY: y,
+      }));
     });
+
+    // Auch focus setzen falls es ein Button ist
+    if (element.focus) {
+      element.focus();
+    }
+
+    return true;
   }
 
   // Setze Text in ein Eingabefeld
@@ -180,90 +238,135 @@
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Hauptfunktion: Führt den Melde-Flow aus
-  async function runReportFlow(reason, orderId) {
+  // Debug: Zeige alle sichtbaren Buttons
+  function debugLogButtons() {
+    const buttons = document.querySelectorAll('button, [role="button"], [role="menuitemradio"]');
+    log('Sichtbare interaktive Elemente:');
+    buttons.forEach(btn => {
+      if (window.isVisible && window.isVisible(btn)) {
+        const text = (btn.textContent || '').trim().substring(0, 50);
+        const aria = btn.getAttribute('aria-label') || '';
+        const dataValue = btn.getAttribute('data-value') || '';
+        log(`  - Text: "${text}" | aria-label: "${aria}" | data-value: "${dataValue}"`);
+      }
+    });
+  }
+
+  // ============================================================================
+  // HAUPTFUNKTION
+  // ============================================================================
+
+  async function runReportFlow(reason, orderId, testMode = false) {
     if (isRunning) {
       log('Flow läuft bereits');
       return;
     }
 
     isRunning = true;
+    isDryRun = testMode;
     currentReason = reason || '';
     currentOrderId = orderId || '';
 
+    log(`Starte Flow (Testmodus: ${testMode})`);
+
     try {
-      // Schritt 1: Finde "Änderung vorschlagen" Button
+      // ========================================
+      // Schritt 1: Finde "Suggest an edit" Button
+      // ========================================
       showStatus(UI.statusSearching);
       
       let suggestBtn = findElement(window.MAPS_SELECTORS.suggestEditButton);
       if (!suggestBtn) {
-        // Fallback: Suche nach Text
-        suggestBtn = findByText('Änderung vorschlagen', 'button') ||
-                     findByText('Suggest an edit', 'button') ||
-                     findByText('Änderung vorschlagen', 'a') ||
-                     findByText('Suggest an edit', 'a');
+        suggestBtn = findClickableByText(window.MAPS_TEXT_PATTERNS.suggestEdit);
       }
 
       if (!suggestBtn) {
-        throw new Error('Button "Änderung vorschlagen" nicht gefunden. Ist ein Profil geöffnet?');
+        debugLogButtons();
+        throw new Error('Button "Suggest an edit" nicht gefunden. Ist ein Unternehmensprofil geöffnet?');
       }
 
+      log('Gefunden: Suggest an edit Button');
+
+      // ========================================
       // Schritt 2: Öffne den Dialog
+      // ========================================
       showStatus(UI.statusOpening);
       await simulateClick(suggestBtn);
-      await sleep(1500);
+      await sleep(2000); // Warte auf Dialog
 
-      // Schritt 3: Wähle "Geschlossen oder nicht vorhanden"
+      // ========================================
+      // Schritt 3: Wähle "Place is closed or not here"
+      // ========================================
       showStatus(UI.statusSelectingClosed);
       
-      let closedOption = findElement(window.MAPS_SELECTORS.closedOrDoesntExistOption);
+      // Warte kurz und versuche dann zu finden
+      await sleep(500);
+      
+      let closedOption = findElement(window.MAPS_SELECTORS.closedOrNotHereOption);
       if (!closedOption) {
-        closedOption = findByText('Geschlossen oder nicht vorhanden', 'button') ||
-                       findByText('Close or remove', 'button') ||
-                       findByText('Schließen oder entfernen', 'button');
+        closedOption = findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
       }
 
       if (!closedOption) {
-        // Manchmal ist es ein div oder span
-        closedOption = findByText('Geschlossen', '*') ||
-                       findByText('Close', '*');
+        log('Suche weiter nach "closed" Option...');
+        debugLogButtons();
+        
+        // Nochmal warten und versuchen
+        await sleep(1000);
+        closedOption = findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
       }
 
       if (!closedOption) {
-        throw new Error('"Geschlossen oder nicht vorhanden" nicht gefunden');
+        throw new Error('"Place is closed or not here" Option nicht gefunden. Ist der Dialog geöffnet?');
       }
 
+      log('Gefunden: Closed/Not here Option');
       await simulateClick(closedOption);
-      await sleep(1000);
+      await sleep(1500); // Warte auf nächsten Screen
 
-      // Schritt 4: Wähle "Existiert nicht"
+      // ========================================
+      // Schritt 4: Wähle "Doesn't exist" / "Never existed"
+      // ========================================
       showStatus(UI.statusSelectingDoesntExist);
+      
+      await sleep(500);
       
       let doesntExist = findElement(window.MAPS_SELECTORS.doesntExistOption);
       if (!doesntExist) {
-        doesntExist = findByText('Existiert nicht', '*') ||
-                      findByText("Doesn't exist", '*') ||
-                      findByText('Place does not exist', '*') ||
-                      findByText('Ort existiert nicht', '*');
+        doesntExist = findClickableByText(window.MAPS_TEXT_PATTERNS.doesntExist);
       }
 
       if (!doesntExist) {
-        throw new Error('"Existiert nicht" Option nicht gefunden');
+        log('Suche weiter nach "doesn\'t exist" Option...');
+        debugLogButtons();
+        
+        // Nochmal warten und versuchen
+        await sleep(1000);
+        doesntExist = findClickableByText(window.MAPS_TEXT_PATTERNS.doesntExist);
       }
 
+      if (!doesntExist) {
+        throw new Error('"Doesn\'t exist" Option nicht gefunden.');
+      }
+
+      log('Gefunden: Doesn\'t exist Option');
       await simulateClick(doesntExist);
       await sleep(1000);
 
+      // ========================================
       // Schritt 5: Fülle den Grund aus (falls vorhanden)
+      // ========================================
       if (currentReason) {
         showStatus(UI.statusFillingReason);
+        
+        await sleep(500);
         
         let reasonInput = findElement(window.MAPS_SELECTORS.reasonInput);
         if (!reasonInput) {
           // Suche nach dem ersten sichtbaren Textarea
           const textareas = document.querySelectorAll('textarea');
           for (const ta of textareas) {
-            if (ta.offsetParent !== null) {
+            if (window.isVisible && window.isVisible(ta)) {
               reasonInput = ta;
               break;
             }
@@ -272,48 +375,71 @@
 
         if (reasonInput) {
           setInputValue(reasonInput, currentReason);
+          log('Grund eingetragen');
           await sleep(500);
         } else {
           log('Kein Grund-Eingabefeld gefunden, überspringe...');
         }
       }
 
-      // Schritt 6: Zeige Bestätigungsdialog
-      showStatus(UI.statusWaitingConfirm);
+      // ========================================
+      // Schritt 6: Bestätigung / Testmodus-Dialog
+      // ========================================
       hideStatus();
 
-      const confirmed = await showConfirmDialog(currentReason, currentOrderId);
+      let shouldSubmit = false;
+      
+      if (isDryRun) {
+        // TESTMODUS: Zeige Erfolgs-Dialog ohne Submit-Option
+        showStatus(UI.statusTestDone, false, true);
+        await showTestCompleteDialog(currentReason, currentOrderId);
+        shouldSubmit = false;
+      } else {
+        // ECHTMODUS: Zeige Bestätigungsdialog
+        showStatus(UI.statusWaitingConfirm);
+        shouldSubmit = await showConfirmDialog(currentReason, currentOrderId);
+      }
 
-      if (!confirmed) {
+      if (!shouldSubmit) {
         showStatus(UI.statusAborted, true);
         
         // Schließe den Dialog
         const closeBtn = findElement(window.MAPS_SELECTORS.closeButton) ||
-                         findByText('Abbrechen', 'button') ||
-                         findByText('Cancel', 'button');
+                         findClickableByText(window.MAPS_TEXT_PATTERNS.cancel);
         if (closeBtn) {
           await simulateClick(closeBtn);
         }
         
         await sleep(1500);
         hideStatus();
+        
+        // Sende Status an Background
+        try {
+          chrome.runtime.sendMessage({
+            type: isDryRun ? 'TEST_COMPLETE' : 'REPORT_ABORTED',
+            orderId: currentOrderId,
+            url: window.location.href,
+          });
+        } catch (e) {}
+        
         return;
       }
 
-      // Schritt 7: Klicke auf Senden
+      // ========================================
+      // Schritt 7: Klicke auf Senden (NUR wenn bestätigt und KEIN Testmodus)
+      // ========================================
       showStatus(UI.statusSubmitting);
       
       let submitBtn = findElement(window.MAPS_SELECTORS.submitButton);
       if (!submitBtn) {
-        submitBtn = findByText('Senden', 'button') ||
-                    findByText('Submit', 'button') ||
-                    findByText('Send', 'button');
+        submitBtn = findClickableByText(window.MAPS_TEXT_PATTERNS.submit);
       }
 
       if (!submitBtn) {
-        throw new Error('"Senden" Button nicht gefunden');
+        throw new Error('"Submit" Button nicht gefunden');
       }
 
+      log('Gefunden: Submit Button - klicke...');
       await simulateClick(submitBtn);
       await sleep(2000);
 
@@ -329,9 +455,7 @@
           orderId: currentOrderId,
           url: window.location.href,
         });
-      } catch (e) {
-        // Extension-Kontext möglicherweise nicht verfügbar
-      }
+      } catch (e) {}
 
     } catch (error) {
       logError(error.message);
@@ -344,15 +468,19 @@
           orderId: currentOrderId,
           error: error.message,
           url: window.location.href,
+          testMode: isDryRun,
         });
-      } catch (e) {
-        // Extension-Kontext möglicherweise nicht verfügbar
-      }
+      } catch (e) {}
 
     } finally {
       isRunning = false;
+      isDryRun = false;
     }
   }
+
+  // ============================================================================
+  // INITIALISIERUNG
+  // ============================================================================
 
   // Prüfe URL-Parameter beim Laden
   function checkUrlParams() {
@@ -361,13 +489,14 @@
     if (params.get('rr_melden') === '1') {
       const reason = params.get('rr_reason') || '';
       const orderId = params.get('rr_order') || '';
+      const testMode = params.get('rr_test') === '1';
       
       log('Melde-Modus via URL-Parameter aktiviert');
-      log(`Grund: ${reason}, Auftrag: ${orderId}`);
+      log(`Grund: ${reason}, Auftrag: ${orderId}, Testmodus: ${testMode}`);
 
       // Warte bis die Seite vollständig geladen ist
       setTimeout(() => {
-        runReportFlow(reason, orderId);
+        runReportFlow(reason, orderId, testMode);
       }, 3000);
     }
   }
@@ -377,10 +506,11 @@
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === 'START_REPORT') {
         log('Melde-Modus via Extension-Message aktiviert');
-        runReportFlow(message.reason || '', message.orderId || '');
+        log(`Testmodus: ${message.testMode || false}`);
+        runReportFlow(message.reason || '', message.orderId || '', message.testMode || false);
         sendResponse({ status: 'started' });
       } else if (message.type === 'GET_STATUS') {
-        sendResponse({ isRunning, currentOrderId });
+        sendResponse({ isRunning, currentOrderId, isDryRun });
       }
       return true; // async response
     });
@@ -388,13 +518,14 @@
 
   // Initialisierung
   function init() {
-    log('Maps Melde-Helper initialisiert');
+    log('Maps Melde-Helper initialisiert (EN+DE Support, Testmodus verfügbar)');
     
     // Prüfe URL-Parameter
     checkUrlParams();
 
-    // Exponiere Funktion global für Debug-Zwecke
+    // Exponiere Funktionen global für Debug-Zwecke
     window.rrStartReport = runReportFlow;
+    window.rrDebugButtons = debugLogButtons;
   }
 
   // Starte nach DOM-Ready
