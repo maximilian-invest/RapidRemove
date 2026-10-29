@@ -244,18 +244,23 @@ Intern für RapidRemove. Nicht zur Veröffentlichung im Chrome Web Store vorgese
 
 ## Änderungshistorie
 
+- **v1.2.5** (Oktober 2026):
+  - **Closed Shadow DOM**: Status-Overlay in geschlossenem Shadow Root (nicht von Suche erreichbar)
+  - **Eigene UI ausgeschlossen**: `isOurElement()` Filter für alle Suchmethoden
+  - **Explizites Step-Handling**: Edit Info → "Operating status" klicken → Option wählen
+  - **Dialog-State-Detection**: `hasOperatingStatusOptions()`, `isOnEditInformationScreen()`
+  - **Besseres Logging**: Zeigt Text + Icon aller gefundenen span.GoAIrd
+  - **Sicherheit**: Klick wird verweigert wenn Ziel eigenes Element ist
+
 - **v1.2.4** (Oktober 2026):
-  - **DOM-Struktur erkannt**: span.GoAIrd für Optionstext, div[jsaction] als klickbarer Container
-  - Material Icon Namen als sprach-unabhängiger Fallback (z.B. `wrong_location` = Doesn't exist)
-  - Irrelevante Frames werden übersprungen (accounts.google.com, RotateCookiesPage)
+  - DOM-Struktur erkannt: span.GoAIrd für Optionstext, div[jsaction] als klickbarer Container
+  - Material Icon Namen als sprach-unabhängiger Fallback
+  - Irrelevante Frames werden übersprungen
   - Timeout statt Endlosschleife bei Suche
-  - Debug-Logging: outerHTML von Elementen mit Optionstext
 
 - **v1.2.3** (Oktober 2026):
   - Multi-Frame Support: Dialog-Erkennung in Iframes
   - Frame-zu-Frame-Koordination via Background Service Worker
-  - Erweiterte `host_permissions` für alle Google-Domains
-  - `all_frames: true`, `match_about_blank: true`, `match_origin_as_fallback: true`
 
 - **v1.2.0** (Oktober 2026):
   - Alle 8 Operating Status Optionen

@@ -226,4 +226,4 @@ chrome.storage.local.get('reportLogs', (data) => {
   }
 });
 
-console.log('[RR-BG] Service Worker started v1.2.4');
+console.log('[RR-BG] Service Worker started v1.2.5');
