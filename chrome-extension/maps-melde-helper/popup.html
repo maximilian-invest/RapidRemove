@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RapidRemove Melde-Helper</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      width: 320px;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      color: #333;
+      background: #fff;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px;
+    }
+    
+    .header h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .header p {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+    
+    .content {
+      padding: 16px;
+    }
+    
+    .section {
+      margin-bottom: 16px;
+    }
+    
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+    }
+    
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: #444;
+    }
+    
+    input, textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+    
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-secondary {
+      background: #f5f5f5;
+      color: #666;
+      margin-top: 8px;
+    }
+    
+    .btn-secondary:hover {
+      background: #eee;
+    }
+    
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      display: none;
+    }
+    
+    .status.success {
+      display: block;
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .status.error {
+      display: block;
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .status.info {
+      display: block;
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+    
+    .divider {
+      height: 1px;
+      background: #eee;
+      margin: 16px 0;
+    }
+    
+    .help-text {
+      font-size: 11px;
+      color: #888;
+      line-height: 1.4;
+    }
+    
+    .help-text code {
+      background: #f5f5f5;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Consolas', monospace;
+      font-size: 10px;
+    }
+    
+    .logs {
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 11px;
+      background: #fafafa;
+      border-radius: 6px;
+      padding: 8px;
+    }
+    
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .log-entry:last-child {
+      border-bottom: none;
+    }
+    
+    .log-success { color: #2e7d32; }
+    .log-error { color: #c62828; }
+    .log-opened { color: #1565c0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🗺️ RapidRemove Melde-Helper</h1>
+    <p>Google Maps "Existiert nicht" Automation</p>
+  </div>
+  
+  <div class="content">
+    <div class="section">
+      <div class="section-title">Aktuelle Seite melden</div>
+      
+      <label for="reason">Grund (optional)</label>
+      <textarea id="reason" placeholder="z.B. Firma existiert nicht mehr, wurde nie eröffnet..."></textarea>
+      
+      <label for="orderId">Auftrag-ID (optional)</label>
+      <input type="text" id="orderId" placeholder="z.B. RR-12345">
+      
+      <button class="btn btn-primary" id="startBtn">
+        Meldung starten
+      </button>
+      
+      <div id="status" class="status"></div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="section">
+      <div class="section-title">Letzte Meldungen</div>
+      <div id="logs" class="logs">
+        <em>Noch keine Meldungen</em>
+      </div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <div class="section">
+      <div class="section-title">Integration</div>
+      <p class="help-text">
+        Aus dem Admin: Füge <code>?rr_melden=1&rr_reason=TEXT</code> an eine Maps-URL an.
+        <br><br>
+        Beispiel-Link:<br>
+        <code>maps.google.com/...?rr_melden=1&rr_reason=Firma+geschlossen</code>
+      </p>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>

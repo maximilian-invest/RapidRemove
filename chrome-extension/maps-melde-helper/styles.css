@@ -1,0 +1,139 @@
+/* RapidRemove Maps Melde-Helper Styles */
+
+/* Status-Overlay */
+#rr-melde-status {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 999999;
+  background: #1a73e8;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: rr-slide-in 0.3s ease-out;
+}
+
+#rr-melde-status.error {
+  background: #d93025;
+}
+
+@keyframes rr-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Bestätigungsdialog */
+#rr-confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999999;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rr-fade-in 0.2s ease-out;
+}
+
+@keyframes rr-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.rr-dialog-content {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: rr-scale-in 0.2s ease-out;
+}
+
+@keyframes rr-scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.rr-dialog-content h2 {
+  margin: 0 0 16px 0;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  color: #202124;
+}
+
+.rr-dialog-content p {
+  margin: 0 0 12px 0;
+  font-family: Roboto, Arial, sans-serif;
+  font-size: 14px;
+  color: #5f6368;
+  line-height: 1.5;
+}
+
+.rr-dialog-content p strong {
+  color: #202124;
+}
+
+.rr-dialog-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.rr-btn {
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-family: 'Google Sans', Roboto, Arial, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.rr-btn:hover {
+  transform: translateY(-1px);
+}
+
+.rr-btn:active {
+  transform: translateY(0);
+}
+
+.rr-btn-primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.rr-btn-primary:hover {
+  background: #1557b0;
+  box-shadow: 0 2px 8px rgba(26, 115, 232, 0.4);
+}
+
+.rr-btn-secondary {
+  background: #f1f3f4;
+  color: #5f6368;
+}
+
+.rr-btn-secondary:hover {
+  background: #e8eaed;
+}
