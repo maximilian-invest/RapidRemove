@@ -5,14 +5,18 @@
  * Unterstützte Sprachen: Englisch, Deutsch
  * Unterstützte Report-Typen: Alle 8 Operating Status Optionen
  * 
- * Aktivierung:
- * 1. Via URL-Parameter: ?rr_melden=1&rr_type=doesnt_exist&rr_reason=...
- * 2. Via Chrome Extension Message vom Background-Script
- * 3. Via Popup-Button (manuell)
+ * v1.2.2: Verbessertes Text-Matching (Apostrophe), iframe-Support, Polling
  */
 
 (function() {
   'use strict';
+
+  // Verhindere Mehrfach-Initialisierung (wichtig bei all_frames: true)
+  if (window.__RR_MELDE_HELPER_LOADED__) {
+    console.log('[RR-MeldeHelper] Bereits geladen, überspringe');
+    return;
+  }
+  window.__RR_MELDE_HELPER_LOADED__ = true;
 
   // Status-Tracking
   let isRunning = false;
@@ -31,18 +35,15 @@
     confirmYes: 'Ja, absenden',
     confirmNo: 'Abbrechen',
     
-    // Testmodus
     testTitle: 'RapidRemove: Testmodus',
     testMessage: 'Der Flow wurde erfolgreich durchlaufen. Im Echtmodus würde jetzt "Senden" geklickt werden.',
     testClose: 'Test beenden',
     
-    // Follow-up Pause
     pauseTitle: 'RapidRemove: Eingabe erforderlich',
     pauseMessage: 'Bitte fülle das Feld manuell aus und klicke dann auf "Weiter":',
     pauseContinue: 'Weiter',
     pauseCancel: 'Abbrechen',
     
-    // Status-Meldungen
     statusSearching: 'Suche "Suggest an edit"...',
     statusOpening: 'Öffne Bearbeitungsdialog...',
     statusSelectingClosed: 'Wähle "Place is closed or not here"...',
@@ -57,14 +58,12 @@
     statusAborted: 'Abgebrochen.',
   };
 
-  // Report-Typ Labels für Dialog
   function getTypeLabel(typeId) {
     const type = window.MAPS_REPORT_TYPES?.[typeId];
     if (!type) return typeId;
     return `${type.labelDE} / ${type.labelEN}`;
   }
 
-  // Logging
   function log(msg, ...args) {
     console.log(`[RR-MeldeHelper] ${msg}`, ...args);
   }
@@ -94,7 +93,7 @@
     }
   }
 
-  // Bestätigungsdialog (Echtmodus)
+  // Dialoge
   function showConfirmDialog(reportType, reason, orderId) {
     return new Promise((resolve) => {
       const existing = document.getElementById('rr-confirm-dialog');
@@ -118,15 +117,8 @@
 
       document.body.appendChild(overlay);
 
-      document.getElementById('rr-confirm-yes').addEventListener('click', () => {
-        overlay.remove();
-        resolve(true);
-      });
-
-      document.getElementById('rr-confirm-no').addEventListener('click', () => {
-        overlay.remove();
-        resolve(false);
-      });
+      document.getElementById('rr-confirm-yes').onclick = () => { overlay.remove(); resolve(true); };
+      document.getElementById('rr-confirm-no').onclick = () => { overlay.remove(); resolve(false); };
 
       const escHandler = (e) => {
         if (e.key === 'Escape') {
@@ -139,7 +131,6 @@
     });
   }
 
-  // Testmodus-Dialog (kein Submit-Button)
   function showTestCompleteDialog(reportType, reason, orderId) {
     return new Promise((resolve) => {
       const existing = document.getElementById('rr-confirm-dialog');
@@ -155,9 +146,7 @@
           <p><strong>${UI.confirmType}</strong> ${escapeHtml(getTypeLabel(reportType))}</p>
           ${orderId ? `<p><strong>${UI.confirmOrderId}</strong> ${escapeHtml(orderId)}</p>` : ''}
           ${reason ? `<p><strong>${UI.confirmReason}</strong> ${escapeHtml(reason)}</p>` : ''}
-          <div class="rr-test-success">
-            ✅ Alle Schritte erfolgreich durchlaufen
-          </div>
+          <div class="rr-test-success">✅ Alle Schritte erfolgreich durchlaufen</div>
           <div class="rr-dialog-buttons">
             <button id="rr-test-close" class="rr-btn rr-btn-secondary">${UI.testClose}</button>
           </div>
@@ -165,11 +154,7 @@
       `;
 
       document.body.appendChild(overlay);
-
-      document.getElementById('rr-test-close').addEventListener('click', () => {
-        overlay.remove();
-        resolve(false);
-      });
+      document.getElementById('rr-test-close').onclick = () => { overlay.remove(); resolve(false); };
 
       const escHandler = (e) => {
         if (e.key === 'Escape') {
@@ -182,7 +167,6 @@
     });
   }
 
-  // Pause-Dialog für Follow-up-Felder
   function showPauseDialog(hint) {
     return new Promise((resolve) => {
       const existing = document.getElementById('rr-confirm-dialog');
@@ -195,9 +179,7 @@
         <div class="rr-dialog-content rr-pause-dialog">
           <h2>⏸️ ${UI.pauseTitle}</h2>
           <p>${UI.pauseMessage}</p>
-          <div class="rr-pause-hint">
-            📝 ${escapeHtml(hint)}
-          </div>
+          <div class="rr-pause-hint">📝 ${escapeHtml(hint)}</div>
           <div class="rr-dialog-buttons">
             <button id="rr-pause-cancel" class="rr-btn rr-btn-secondary">${UI.pauseCancel}</button>
             <button id="rr-pause-continue" class="rr-btn rr-btn-primary">${UI.pauseContinue}</button>
@@ -206,16 +188,8 @@
       `;
 
       document.body.appendChild(overlay);
-
-      document.getElementById('rr-pause-continue').addEventListener('click', () => {
-        overlay.remove();
-        resolve(true);
-      });
-
-      document.getElementById('rr-pause-cancel').addEventListener('click', () => {
-        overlay.remove();
-        resolve(false);
-      });
+      document.getElementById('rr-pause-continue').onclick = () => { overlay.remove(); resolve(true); };
+      document.getElementById('rr-pause-cancel').onclick = () => { overlay.remove(); resolve(false); };
 
       const escHandler = (e) => {
         if (e.key === 'Escape') {
@@ -234,12 +208,10 @@
     return div.innerHTML;
   }
 
-  // Simuliere einen echten Klick
   async function simulateClick(element) {
     if (!element) return false;
     
     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    
     await sleep(150);
     
     const rect = element.getBoundingClientRect();
@@ -261,20 +233,15 @@
       }));
     });
 
-    if (element.focus) {
-      element.focus();
-    }
-
+    if (element.focus) element.focus();
     return true;
   }
 
-  // Setze Text in ein Eingabefeld
   function setInputValue(element, value) {
     if (!element) return false;
     
     element.focus();
     element.value = value;
-    
     element.dispatchEvent(new Event('input', { bubbles: true }));
     element.dispatchEvent(new Event('change', { bubbles: true }));
     
@@ -296,19 +263,19 @@
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  // Debug: Zeige alle sichtbaren Buttons
   function debugLogButtons() {
-    const buttons = document.querySelectorAll('button, [role="button"], [role="menuitemradio"], [role="radio"]');
-    log('Sichtbare interaktive Elemente:');
-    buttons.forEach(btn => {
-      if (window.isVisible && window.isVisible(btn)) {
-        const text = (btn.textContent || '').trim().substring(0, 60);
-        const aria = btn.getAttribute('aria-label') || '';
-        const dataValue = btn.getAttribute('data-value') || '';
-        const role = btn.getAttribute('role') || btn.tagName;
-        log(`  - [${role}] Text: "${text}" | aria: "${aria}" | data-value: "${dataValue}"`);
+    console.log('[RR-MeldeHelper] === Sichtbare interaktive Elemente ===');
+    const els = document.querySelectorAll('button, [role="button"], [role="menuitemradio"], [role="radio"], [aria-checked]');
+    els.forEach(el => {
+      if (window.isVisible && window.isVisible(el)) {
+        const text = window.getFullText ? window.getFullText(el).substring(0, 60) : (el.textContent || '').trim().substring(0, 60);
+        const aria = el.getAttribute('aria-label') || '';
+        const role = el.getAttribute('role') || el.tagName;
+        const checked = el.getAttribute('aria-checked');
+        console.log(`[RR-MeldeHelper]   [${role}] checked=${checked} text="${text}" aria="${aria}"`);
       }
     });
+    console.log('[RR-MeldeHelper] === END ===');
   }
 
   // ============================================================================
@@ -321,7 +288,6 @@
       return;
     }
 
-    // Validiere Report-Typ
     const type = window.MAPS_REPORT_TYPES?.[reportType];
     if (!type) {
       logError(`Unbekannter Report-Typ: ${reportType}`);
@@ -335,17 +301,15 @@
     currentOrderId = orderId || '';
     currentReportType = reportType;
 
-    log(`Starte Flow: Typ="${reportType}", Testmodus=${testMode}`);
+    log(`Starte Flow: Typ="${reportType}", Test=${testMode}`);
 
     try {
-      // ========================================
-      // Schritt 1: Finde "Suggest an edit" Button
-      // ========================================
+      // Schritt 1: Suggest an edit
       showStatus(UI.statusSearching);
       
-      let suggestBtn = findElement(window.MAPS_SELECTORS.suggestEditButton);
+      let suggestBtn = window.findElement(window.MAPS_SELECTORS.suggestEditButton);
       if (!suggestBtn) {
-        suggestBtn = findClickableByText(window.MAPS_TEXT_PATTERNS.suggestEdit);
+        suggestBtn = window.findClickableByText(window.MAPS_TEXT_PATTERNS.suggestEdit);
       }
 
       if (!suggestBtn) {
@@ -355,86 +319,75 @@
 
       log('Gefunden: Suggest an edit Button');
 
-      // ========================================
-      // Schritt 2: Öffne den Dialog
-      // ========================================
+      // Schritt 2: Dialog öffnen
       showStatus(UI.statusOpening);
       await simulateClick(suggestBtn);
       await sleep(2000);
 
-      // ========================================
-      // Schritt 3: Wähle "Place is closed or not here"
-      // ========================================
+      // Schritt 3: "Place is closed or not here"
       showStatus(UI.statusSelectingClosed);
-      
       await sleep(500);
       
-      let closedOption = findElement(window.MAPS_SELECTORS.closedOrNotHereOption);
+      let closedOption = window.findElement(window.MAPS_SELECTORS.closedOrNotHereOption);
       if (!closedOption) {
-        closedOption = findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
+        closedOption = window.findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
       }
 
       if (!closedOption) {
         log('Suche weiter nach "closed" Option...');
         debugLogButtons();
-        await sleep(1000);
-        closedOption = findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
+        await sleep(1500);
+        closedOption = window.findClickableByText(window.MAPS_TEXT_PATTERNS.closedOrNotHere);
       }
 
       if (!closedOption) {
-        throw new Error('"Place is closed or not here" Option nicht gefunden. Ist der Dialog geöffnet?');
+        throw new Error('"Place is closed or not here" nicht gefunden. Dialog geöffnet?');
       }
 
       log('Gefunden: Closed/Not here Option');
       await simulateClick(closedOption);
-      await sleep(1500);
+      await sleep(2000); // Längere Wartezeit für Dialog-Transition
 
-      // ========================================
-      // Schritt 4: Wähle den spezifischen Status-Typ
-      // ========================================
+      // Schritt 4: Status-Typ auswählen (mit Polling)
       showStatus(`${UI.statusSelectingType} "${type.labelEN}"`);
       
-      await sleep(500);
-      
-      let statusOption = window.findStatusOption(reportType);
-
-      if (!statusOption) {
-        log(`Suche weiter nach "${reportType}" Option...`);
-        debugLogButtons();
+      let statusOption;
+      try {
+        // Nutze waitForStatusOption mit Polling
+        statusOption = await window.waitForStatusOption(reportType, 10000, 500);
+      } catch (e) {
+        log('waitForStatusOption fehlgeschlagen, versuche nochmal...');
         await sleep(1000);
         statusOption = window.findStatusOption(reportType);
       }
 
       if (!statusOption) {
-        throw new Error(`"${type.labelEN}" / "${type.labelDE}" Option nicht gefunden.`);
+        // Debug: Zeige alle Radio-Optionen
+        if (window.debugLogRadioOptions) {
+          window.debugLogRadioOptions();
+        }
+        debugLogButtons();
+        throw new Error(`"${type.labelEN}" / "${type.labelDE}" Option nicht gefunden`);
       }
 
       log(`Gefunden: ${reportType} Option`);
       await simulateClick(statusOption);
-      await sleep(1000);
+      await sleep(1500);
 
-      // ========================================
-      // Schritt 5: Follow-up Felder behandeln
-      // ========================================
-      
-      // Prüfe ob dieser Typ Follow-up-Felder hat
+      // Schritt 5: Follow-up Felder
       if (type.hasFollowUp) {
         log(`Typ "${reportType}" hat Follow-up Felder`);
-        
         await sleep(500);
         
-        // Suche nach Eingabefeld
-        let inputField = findElement(window.MAPS_SELECTORS.reasonInput);
+        let inputField = window.findElement(window.MAPS_SELECTORS.reasonInput);
         
         if (inputField) {
-          // Wenn wir einen Grund haben, versuche ihn einzutragen
           if (currentReason) {
             showStatus(UI.statusFillingReason);
             setInputValue(inputField, currentReason);
             log('Grund/Zusatzinfo eingetragen');
             await sleep(500);
           } else {
-            // Kein Grund angegeben, aber Feld ist da -> Benutzer muss ausfüllen
             hideStatus();
             const shouldContinue = await showPauseDialog(type.followUpHint || 'Bitte das Feld ausfüllen');
             
@@ -443,31 +396,24 @@
               await closeDialog();
               return;
             }
-            
             await sleep(500);
           }
         } else {
-          log('Kein Follow-up Eingabefeld gefunden, überspringe...');
+          log('Kein Follow-up Eingabefeld gefunden');
         }
       } else if (currentReason) {
-        // Typ hat keine Follow-up-Felder, aber wir haben einen Grund
-        // Versuche trotzdem ein Feld zu finden (optional)
         showStatus(UI.statusFillingReason);
         await sleep(500);
         
-        let reasonInput = findElement(window.MAPS_SELECTORS.reasonInput);
+        let reasonInput = window.findElement(window.MAPS_SELECTORS.reasonInput);
         if (reasonInput) {
           setInputValue(reasonInput, currentReason);
           log('Optionaler Grund eingetragen');
           await sleep(500);
-        } else {
-          log('Kein Grund-Eingabefeld gefunden, überspringe...');
         }
       }
 
-      // ========================================
-      // Schritt 6: Bestätigung / Testmodus-Dialog
-      // ========================================
+      // Schritt 6: Bestätigung
       hideStatus();
 
       let shouldSubmit = false;
@@ -497,14 +443,12 @@
         return;
       }
 
-      // ========================================
-      // Schritt 7: Klicke auf Senden
-      // ========================================
+      // Schritt 7: Submit
       showStatus(UI.statusSubmitting);
       
-      let submitBtn = findElement(window.MAPS_SELECTORS.submitButton);
+      let submitBtn = window.findElement(window.MAPS_SELECTORS.submitButton);
       if (!submitBtn) {
-        submitBtn = findClickableByText(window.MAPS_TEXT_PATTERNS.submit);
+        submitBtn = window.findClickableByText(window.MAPS_TEXT_PATTERNS.submit);
       }
 
       if (!submitBtn) {
@@ -515,7 +459,6 @@
       await simulateClick(submitBtn);
       await sleep(2000);
 
-      // Erfolg!
       showStatus(UI.statusDone);
       await sleep(3000);
       hideStatus();
@@ -550,10 +493,9 @@
     }
   }
 
-  // Hilfsfunktion zum Schließen des Dialogs
   async function closeDialog() {
-    const closeBtn = findElement(window.MAPS_SELECTORS.closeButton) ||
-                     findClickableByText(window.MAPS_TEXT_PATTERNS.cancel);
+    const closeBtn = window.findElement(window.MAPS_SELECTORS.closeButton) ||
+                     window.findClickableByText(window.MAPS_TEXT_PATTERNS.cancel);
     if (closeBtn) {
       await simulateClick(closeBtn);
     }
@@ -574,8 +516,7 @@
       const orderId = params.get('rr_order') || '';
       const testMode = params.get('rr_test') === '1';
       
-      log('Melde-Modus via URL-Parameter aktiviert');
-      log(`Typ: ${reportType}, Grund: ${reason}, Auftrag: ${orderId}, Test: ${testMode}`);
+      log(`URL-Parameter: Typ=${reportType}, Test=${testMode}`);
 
       setTimeout(() => {
         runReportFlow(reportType, reason, orderId, testMode);
@@ -587,7 +528,7 @@
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === 'START_REPORT') {
         const reportType = message.reportType || window.MAPS_DEFAULT_TYPE || 'doesnt_exist';
-        log(`Melde-Modus via Extension-Message: Typ="${reportType}", Test=${message.testMode}`);
+        log(`Extension-Message: Typ="${reportType}", Test=${message.testMode}`);
         runReportFlow(reportType, message.reason || '', message.orderId || '', message.testMode || false);
         sendResponse({ status: 'started' });
       } else if (message.type === 'GET_STATUS') {
@@ -598,10 +539,8 @@
   }
 
   function init() {
-    log('Maps Melde-Helper initialisiert (v1.2 - Alle 8 Operating Status Optionen)');
-    
+    log(`Initialisiert v1.2.2 (Frame: ${window === window.top ? 'top' : 'iframe'})`);
     checkUrlParams();
-
     window.rrStartReport = runReportFlow;
     window.rrDebugButtons = debugLogButtons;
   }

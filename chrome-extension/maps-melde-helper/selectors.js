@@ -6,12 +6,6 @@
  * 
  * Letzte Aktualisierung: Oktober 2026
  * Unterstützte Sprachen: Englisch, Deutsch
- * 
- * So findest du die richtigen Selektoren:
- * 1. Öffne ein Google Maps Profil
- * 2. Öffne Chrome DevTools (F12)
- * 3. Klicke auf das Element und inspiziere den HTML-Code
- * 4. Suche nach stabilen Attributen wie data-value, aria-label, role
  */
 
 // ============================================================================
@@ -41,7 +35,7 @@ const REPORT_TYPES = {
     id: 'duplicate',
     labelDE: 'Duplikat eines anderen Orts',
     labelEN: 'Duplicate of another place',
-    hasFollowUp: true, // Needs target place
+    hasFollowUp: true,
     followUpHint: 'Bitte das Duplikat-Ziel auswählen',
   },
   offensive: {
@@ -60,34 +54,31 @@ const REPORT_TYPES = {
     id: 'moved',
     labelDE: 'An einen neuen Standort umgezogen',
     labelEN: 'Moved to a new location',
-    hasFollowUp: true, // Needs new location
+    hasFollowUp: true,
     followUpHint: 'Bitte den neuen Standort eingeben',
   },
   other: {
     id: 'other',
     labelDE: 'Sonstiges',
     labelEN: 'Other',
-    hasFollowUp: true, // Needs free text
+    hasFollowUp: true,
     followUpHint: 'Bitte den Grund eingeben',
   },
 };
 
-// Default type for backwards compatibility
 const DEFAULT_REPORT_TYPE = 'doesnt_exist';
 
 // ============================================================================
 // TEXT-PATTERNS FÜR VERSCHIEDENE SPRACHEN
+// Alle Patterns werden normalisiert (lowercase, apostrophe-unified)
 // ============================================================================
 
 const TEXT_PATTERNS = {
-  // "Änderung vorschlagen" / "Suggest an edit" Button
   suggestEdit: [
     'suggest an edit',
     'änderung vorschlagen',
   ],
 
-  // "Geschlossen oder nicht vorhanden" / "Place is closed or not here"
-  // Dies ist die ERSTE Option die geklickt werden muss
   closedOrNotHere: [
     'place is closed or not here',
     'closed or not here',
@@ -96,8 +87,7 @@ const TEXT_PATTERNS = {
     'schließen oder entfernen',
   ],
 
-  // === Operating Status Optionen (8 Typen) ===
-  
+  // Operating Status Optionen
   temporarily_closed: [
     'temporarily closed',
     'vorübergehend geschlossen',
@@ -110,9 +100,12 @@ const TEXT_PATTERNS = {
   
   doesnt_exist: [
     "doesn't exist here",
+    "doesnt exist here",
+    "doesn t exist here",
     'does not exist here',
     'never existed',
     "doesn't exist",
+    "doesnt exist",
     'does not exist',
     'place does not exist',
     'existiert hier nicht',
@@ -130,10 +123,12 @@ const TEXT_PATTERNS = {
   
   offensive: [
     'offensive, harmful or misleading',
+    'offensive harmful or misleading',
     'offensive',
     'harmful',
     'misleading',
     'anstößig, schädlich oder irreführend',
+    'anstößig schädlich oder irreführend',
     'anstößig',
     'schädlich',
     'irreführend',
@@ -163,7 +158,6 @@ const TEXT_PATTERNS = {
     'anderer grund',
   ],
 
-  // "Senden" / "Submit" / "Send" Button
   submit: [
     'submit',
     'send',
@@ -171,7 +165,6 @@ const TEXT_PATTERNS = {
     'absenden',
   ],
 
-  // "Abbrechen" / "Cancel" / "Close"
   cancel: [
     'cancel',
     'close',
@@ -185,7 +178,6 @@ const TEXT_PATTERNS = {
 // ============================================================================
 
 const SELECTORS = {
-  // "Änderung vorschlagen" / "Suggest an edit" Button im Profil-Panel
   suggestEditButton: [
     'button[aria-label*="Suggest an edit" i]',
     'button[aria-label*="Änderung vorschlagen" i]',
@@ -197,7 +189,6 @@ const SELECTORS = {
     '[data-item-id="suggest_edit"]',
   ],
 
-  // "Geschlossen oder nicht vorhanden" - erste Option
   closedOrNotHereOption: [
     '[role="menuitemradio"][data-value*="CLOSED"]',
     '[role="menuitemradio"][data-value*="REMOVE"]',
@@ -210,15 +201,15 @@ const SELECTORS = {
     'button[data-value*="remove" i]',
   ],
 
-  // Radio-Buttons für Operating Status (strukturell)
+  // Radio-Buttons für Operating Status
   statusRadioButtons: [
-    '[role="menuitemradio"]',
     '[role="radio"]',
-    'input[type="radio"]',
+    '[role="menuitemradio"]',
     '[role="option"]',
+    'input[type="radio"]',
+    '[role="radiogroup"] > *',
   ],
 
-  // Textfeld für den Grund / Follow-up Input
   reasonInput: [
     'textarea[aria-label*="reason" i]',
     'textarea[aria-label*="Grund" i]',
@@ -237,7 +228,6 @@ const SELECTORS = {
     'form input[type="text"]',
   ],
 
-  // "Senden" / "Submit" Button
   submitButton: [
     'button[aria-label*="Submit" i]',
     'button[aria-label*="Send" i]',
@@ -249,7 +239,6 @@ const SELECTORS = {
     'form button[type="submit"]',
   ],
 
-  // Dialog/Modal Container
   editDialog: [
     '[role="dialog"]',
     '[aria-modal="true"]',
@@ -259,7 +248,6 @@ const SELECTORS = {
     '[aria-label*="edit" i][role="dialog"]',
   ],
 
-  // Schließen/Abbrechen Button
   closeButton: [
     'button[aria-label*="Close" i]',
     'button[aria-label*="Cancel" i]',
@@ -268,17 +256,63 @@ const SELECTORS = {
     'button[aria-label*="Back" i]',
     'button[aria-label*="Zurück" i]',
     '[role="dialog"] button[aria-label*="close" i]',
-    '[role="dialog"] button:first-child',
   ],
 };
+
+// ============================================================================
+// TEXT-NORMALISIERUNG
+// ============================================================================
+
+/**
+ * Normalisiert Text für Vergleiche:
+ * - Lowercase
+ * - Ersetzt typografische Apostrophe (', ʻ, ʼ, ʽ, ʾ, ʿ, ˈ, ˊ, ʹ, ′) durch normale
+ * - Kollabiert mehrere Leerzeichen
+ * - Trimmt
+ */
+function normalizeText(text) {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .replace(/[\u2018\u2019\u201A\u201B\u02BB\u02BC\u02BD\u02BE\u02BF\u02C8\u02CA\u0027\u0060\u00B4\u2032\u2035]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB]/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Extrahiert den gesamten sichtbaren Text aus einem Element (inkl. Kinder)
+ */
+function getFullText(el) {
+  if (!el) return '';
+  // textContent holt alles, auch aus verschachtelten Spans
+  return normalizeText(el.textContent || el.innerText || '');
+}
+
+/**
+ * Holt aria-label falls vorhanden
+ */
+function getAriaLabel(el) {
+  if (!el) return '';
+  return normalizeText(el.getAttribute('aria-label') || '');
+}
 
 // ============================================================================
 // HILFSFUNKTIONEN
 // ============================================================================
 
-/**
- * Findet ein Element mit mehreren möglichen CSS-Selektoren
- */
+function isVisible(el) {
+  if (!el) return false;
+  // offsetParent null check first (most common case)
+  if (el.offsetParent === null && el.style?.position !== 'fixed') {
+    return false;
+  }
+  const style = window.getComputedStyle(el);
+  return style.display !== 'none' && 
+         style.visibility !== 'hidden' && 
+         parseFloat(style.opacity) > 0;
+}
+
 function findElement(selectorArray, context = document) {
   for (const selector of selectorArray) {
     try {
@@ -287,53 +321,64 @@ function findElement(selectorArray, context = document) {
         return el;
       }
     } catch (e) {
-      // Ungültiger Selektor, überspringen
+      // Invalid selector
     }
   }
   return null;
 }
 
-/**
- * Findet alle Elemente mit mehreren möglichen CSS-Selektoren
- */
 function findAllElements(selectorArray, context = document) {
   const results = [];
+  const seen = new Set();
+  
   for (const selector of selectorArray) {
     try {
       const els = context.querySelectorAll(selector);
       els.forEach(el => {
-        if (isVisible(el) && !results.includes(el)) {
+        if (isVisible(el) && !seen.has(el)) {
+          seen.add(el);
           results.push(el);
         }
       });
     } catch (e) {
-      // Ungültiger Selektor, überspringen
+      // Invalid selector
     }
   }
   return results;
 }
 
 /**
- * Prüft ob ein Element sichtbar ist
+ * Prüft ob ein normalisierter Text eines der Patterns enthält
  */
-function isVisible(el) {
-  if (!el) return false;
-  const style = window.getComputedStyle(el);
-  return style.display !== 'none' && 
-         style.visibility !== 'hidden' && 
-         style.opacity !== '0' &&
-         el.offsetParent !== null;
+function textMatchesAnyPattern(text, patterns) {
+  const normalizedText = normalizeText(text);
+  for (const pattern of patterns) {
+    const normalizedPattern = normalizeText(pattern);
+    if (normalizedText.includes(normalizedPattern)) {
+      return pattern; // Return matched pattern for debugging
+    }
+  }
+  return null;
 }
 
 /**
- * Findet ein Element anhand von Text-Inhalt (case-insensitive)
+ * Findet ein Element anhand von Text-Patterns (normalisiert)
  */
 function findByText(text, tagName = '*', context = document) {
-  const normalizedText = text.toLowerCase().trim();
+  const normalizedSearch = normalizeText(text);
   const elements = context.querySelectorAll(tagName);
+  
   for (const el of elements) {
-    const elText = (el.textContent || el.innerText || '').toLowerCase().trim();
-    if (elText.includes(normalizedText) && isVisible(el)) {
+    if (!isVisible(el)) continue;
+    
+    const fullText = getFullText(el);
+    if (fullText.includes(normalizedSearch)) {
+      return el;
+    }
+    
+    // Auch aria-label prüfen
+    const ariaLabel = getAriaLabel(el);
+    if (ariaLabel.includes(normalizedSearch)) {
       return el;
     }
   }
@@ -341,8 +386,7 @@ function findByText(text, tagName = '*', context = document) {
 }
 
 /**
- * Findet ein Element anhand eines Arrays von möglichen Text-Patterns
- * Gibt das erste gefundene Element zurück
+ * Findet ein Element anhand mehrerer Text-Patterns
  */
 function findByAnyText(textPatterns, tagName = '*', context = document) {
   for (const text of textPatterns) {
@@ -356,63 +400,169 @@ function findByAnyText(textPatterns, tagName = '*', context = document) {
 }
 
 /**
- * Findet ein klickbares Element (button, a, [role="button"]) anhand von Text-Patterns
+ * Debug: Loggt alle Radio-Buttons und deren Text
  */
-function findClickableByText(textPatterns, context = document) {
-  // Erst in Buttons suchen
-  let el = findByAnyText(textPatterns, 'button', context);
-  if (el) return el;
+function debugLogRadioOptions(context = document) {
+  console.log('[RR-MeldeHelper] === DEBUG: Suche Radio-Optionen ===');
   
-  // Dann in Links
-  el = findByAnyText(textPatterns, 'a', context);
-  if (el) return el;
+  // Alle möglichen Radio-Elemente finden
+  const selectors = [
+    '[role="radio"]',
+    '[role="menuitemradio"]',
+    '[role="option"]',
+    'input[type="radio"]',
+    '[role="radiogroup"] > *',
+    '[aria-checked]',
+  ];
   
-  // Dann in divs mit role="button" oder role="menuitemradio"
-  el = findByAnyText(textPatterns, '[role="button"]', context);
-  if (el) return el;
+  const seen = new Set();
   
-  el = findByAnyText(textPatterns, '[role="menuitemradio"]', context);
-  if (el) return el;
+  selectors.forEach(sel => {
+    try {
+      const els = context.querySelectorAll(sel);
+      els.forEach(el => {
+        if (seen.has(el)) return;
+        seen.add(el);
+        
+        const fullText = getFullText(el);
+        const ariaLabel = getAriaLabel(el);
+        const checked = el.getAttribute('aria-checked');
+        const role = el.getAttribute('role');
+        const visible = isVisible(el);
+        
+        console.log(`[RR-MeldeHelper]   [${sel}] visible=${visible} role=${role} checked=${checked}`);
+        console.log(`[RR-MeldeHelper]     text: "${fullText.substring(0, 80)}"`);
+        if (ariaLabel) {
+          console.log(`[RR-MeldeHelper]     aria-label: "${ariaLabel}"`);
+        }
+      });
+    } catch (e) {}
+  });
   
-  el = findByAnyText(textPatterns, '[role="radio"]', context);
-  if (el) return el;
-  
-  el = findByAnyText(textPatterns, '[role="option"]', context);
-  if (el) return el;
-  
-  // Fallback: irgendein klickbares Element
-  el = findByAnyText(textPatterns, '[tabindex]', context);
-  if (el) return el;
-  
-  // Label-Elemente (oft bei Radio-Buttons)
-  el = findByAnyText(textPatterns, 'label', context);
-  if (el) return el;
-  
-  // Span/Div mit dem Text (und dann den Parent-Button finden)
-  el = findByAnyText(textPatterns, 'span', context);
-  if (el) {
-    // Suche nach klickbarem Parent
-    let parent = el.parentElement;
-    while (parent) {
-      if (parent.tagName === 'BUTTON' || 
-          parent.getAttribute('role') === 'menuitemradio' ||
-          parent.getAttribute('role') === 'radio' ||
-          parent.getAttribute('role') === 'button') {
-        return parent;
-      }
-      parent = parent.parentElement;
-    }
-    return el; // Gib das Span zurück wenn kein Button-Parent gefunden
-  }
-  
-  // Letzter Fallback: beliebiges Element
-  return findByAnyText(textPatterns, '*', context);
+  console.log('[RR-MeldeHelper] === END DEBUG ===');
 }
 
 /**
- * Findet eine spezifische Operating-Status-Option anhand des Typs
+ * Findet ein klickbares Element anhand von Text-Patterns
+ * Sucht in Radio-Buttons, Buttons, Links, etc.
  */
-function findStatusOption(reportType) {
+function findClickableByText(textPatterns, context = document) {
+  // Normalisiere alle Patterns
+  const normalizedPatterns = textPatterns.map(p => normalizeText(p));
+  
+  // 1. Suche in Radio-Elementen (häufigster Fall bei Operating Status)
+  const radioSelectors = [
+    '[role="radio"]',
+    '[role="menuitemradio"]',
+    '[role="option"]',
+    '[aria-checked]',
+  ];
+  
+  for (const selector of radioSelectors) {
+    try {
+      const radios = context.querySelectorAll(selector);
+      for (const radio of radios) {
+        if (!isVisible(radio)) continue;
+        
+        const fullText = getFullText(radio);
+        const ariaLabel = getAriaLabel(radio);
+        
+        for (const pattern of normalizedPatterns) {
+          if (fullText.includes(pattern) || ariaLabel.includes(pattern)) {
+            console.log(`[RR-MeldeHelper] Gefunden via ${selector}: "${pattern}" in "${fullText.substring(0, 50)}"`);
+            return radio;
+          }
+        }
+      }
+    } catch (e) {}
+  }
+  
+  // 2. Suche in Buttons
+  const buttons = context.querySelectorAll('button');
+  for (const btn of buttons) {
+    if (!isVisible(btn)) continue;
+    
+    const fullText = getFullText(btn);
+    const ariaLabel = getAriaLabel(btn);
+    
+    for (const pattern of normalizedPatterns) {
+      if (fullText.includes(pattern) || ariaLabel.includes(pattern)) {
+        console.log(`[RR-MeldeHelper] Gefunden via button: "${pattern}"`);
+        return btn;
+      }
+    }
+  }
+  
+  // 3. Suche in Links
+  const links = context.querySelectorAll('a');
+  for (const link of links) {
+    if (!isVisible(link)) continue;
+    
+    const fullText = getFullText(link);
+    const ariaLabel = getAriaLabel(link);
+    
+    for (const pattern of normalizedPatterns) {
+      if (fullText.includes(pattern) || ariaLabel.includes(pattern)) {
+        console.log(`[RR-MeldeHelper] Gefunden via a: "${pattern}"`);
+        return link;
+      }
+    }
+  }
+  
+  // 4. Suche in beliebigen klickbaren Elementen
+  const clickables = context.querySelectorAll('[tabindex], [role="button"], label');
+  for (const el of clickables) {
+    if (!isVisible(el)) continue;
+    
+    const fullText = getFullText(el);
+    const ariaLabel = getAriaLabel(el);
+    
+    for (const pattern of normalizedPatterns) {
+      if (fullText.includes(pattern) || ariaLabel.includes(pattern)) {
+        console.log(`[RR-MeldeHelper] Gefunden via clickable: "${pattern}"`);
+        return el;
+      }
+    }
+  }
+  
+  // 5. Suche in Spans/Divs und finde klickbaren Parent
+  const spans = context.querySelectorAll('span, div');
+  for (const span of spans) {
+    if (!isVisible(span)) continue;
+    
+    const fullText = getFullText(span);
+    
+    for (const pattern of normalizedPatterns) {
+      if (fullText.includes(pattern)) {
+        // Suche klickbaren Parent
+        let parent = span.parentElement;
+        for (let i = 0; i < 5 && parent; i++) {
+          const role = parent.getAttribute('role');
+          if (parent.tagName === 'BUTTON' || 
+              role === 'radio' || 
+              role === 'menuitemradio' ||
+              role === 'button' ||
+              role === 'option' ||
+              parent.hasAttribute('aria-checked')) {
+            console.log(`[RR-MeldeHelper] Gefunden via span-parent: "${pattern}"`);
+            return parent;
+          }
+          parent = parent.parentElement;
+        }
+        // Kein klickbarer Parent, aber Text gefunden - gib das Element zurück
+        console.log(`[RR-MeldeHelper] Gefunden via span (kein parent): "${pattern}"`);
+        return span;
+      }
+    }
+  }
+  
+  return null;
+}
+
+/**
+ * Findet eine spezifische Operating-Status-Option
+ */
+function findStatusOption(reportType, context = document) {
   const type = REPORT_TYPES[reportType];
   if (!type) {
     console.error(`[RR-MeldeHelper] Unbekannter Report-Typ: ${reportType}`);
@@ -425,11 +575,21 @@ function findStatusOption(reportType) {
     return null;
   }
   
-  return findClickableByText(patterns);
+  console.log(`[RR-MeldeHelper] Suche Option: ${type.labelEN} / ${type.labelDE}`);
+  console.log(`[RR-MeldeHelper] Patterns: ${patterns.slice(0, 3).join(', ')}...`);
+  
+  const el = findClickableByText(patterns, context);
+  
+  if (!el) {
+    console.log(`[RR-MeldeHelper] Option nicht gefunden, debug Radio-Optionen:`);
+    debugLogRadioOptions(context);
+  }
+  
+  return el;
 }
 
 /**
- * Wartet auf ein Element (Selektoren oder Text-Patterns)
+ * Wartet auf ein Element mit Polling
  */
 function waitForElement(selectorArray, timeout = 10000, interval = 300) {
   return new Promise((resolve, reject) => {
@@ -443,7 +603,7 @@ function waitForElement(selectorArray, timeout = 10000, interval = 300) {
       }
       
       if (Date.now() - startTime > timeout) {
-        reject(new Error(`Element nicht gefunden (Selektoren): ${selectorArray.slice(0, 3).join(', ')}...`));
+        reject(new Error(`Element nicht gefunden: ${selectorArray.slice(0, 2).join(', ')}...`));
         return;
       }
       
@@ -455,7 +615,41 @@ function waitForElement(selectorArray, timeout = 10000, interval = 300) {
 }
 
 /**
- * Wartet auf ein Element anhand von Text-Patterns
+ * Wartet auf eine Status-Option mit Polling und Debug-Output
+ */
+function waitForStatusOption(reportType, timeout = 8000, interval = 400) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    const type = REPORT_TYPES[reportType];
+    let attempts = 0;
+    
+    const check = () => {
+      attempts++;
+      console.log(`[RR-MeldeHelper] Suche Option "${reportType}" (Versuch ${attempts})...`);
+      
+      const el = findStatusOption(reportType);
+      if (el) {
+        console.log(`[RR-MeldeHelper] Option gefunden nach ${attempts} Versuchen`);
+        resolve(el);
+        return;
+      }
+      
+      if (Date.now() - startTime > timeout) {
+        console.error(`[RR-MeldeHelper] Timeout nach ${attempts} Versuchen`);
+        reject(new Error(`"${type?.labelEN}" / "${type?.labelDE}" Option nicht gefunden`));
+        return;
+      }
+      
+      setTimeout(check, interval);
+    };
+    
+    // Erste Prüfung nach kurzem Delay (Dialog muss rendern)
+    setTimeout(check, 200);
+  });
+}
+
+/**
+ * Wartet auf Text-Pattern mit Polling
  */
 function waitForAnyText(textPatterns, timeout = 10000, interval = 300) {
   return new Promise((resolve, reject) => {
@@ -469,34 +663,7 @@ function waitForAnyText(textPatterns, timeout = 10000, interval = 300) {
       }
       
       if (Date.now() - startTime > timeout) {
-        reject(new Error(`Element nicht gefunden (Texte): ${textPatterns.slice(0, 3).join(', ')}...`));
-        return;
-      }
-      
-      setTimeout(check, interval);
-    };
-    
-    check();
-  });
-}
-
-/**
- * Wartet auf eine Status-Option
- */
-function waitForStatusOption(reportType, timeout = 10000, interval = 300) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    
-    const check = () => {
-      const el = findStatusOption(reportType);
-      if (el) {
-        resolve(el);
-        return;
-      }
-      
-      if (Date.now() - startTime > timeout) {
-        const type = REPORT_TYPES[reportType];
-        reject(new Error(`Option nicht gefunden: "${type?.labelEN}" / "${type?.labelDE}"`));
+        reject(new Error(`Element nicht gefunden: ${textPatterns.slice(0, 2).join(', ')}...`));
         return;
       }
       
@@ -516,14 +683,22 @@ if (typeof window !== 'undefined') {
   window.MAPS_TEXT_PATTERNS = TEXT_PATTERNS;
   window.MAPS_REPORT_TYPES = REPORT_TYPES;
   window.MAPS_DEFAULT_TYPE = DEFAULT_REPORT_TYPE;
+  
+  window.normalizeText = normalizeText;
+  window.getFullText = getFullText;
+  window.getAriaLabel = getAriaLabel;
+  window.isVisible = isVisible;
+  
   window.findElement = findElement;
   window.findAllElements = findAllElements;
   window.findByText = findByText;
   window.findByAnyText = findByAnyText;
   window.findClickableByText = findClickableByText;
   window.findStatusOption = findStatusOption;
+  
   window.waitForElement = waitForElement;
   window.waitForAnyText = waitForAnyText;
   window.waitForStatusOption = waitForStatusOption;
-  window.isVisible = isVisible;
+  
+  window.debugLogRadioOptions = debugLogRadioOptions;
 }

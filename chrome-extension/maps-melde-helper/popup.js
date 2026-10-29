@@ -1,5 +1,6 @@
 /**
  * RapidRemove Maps Melde-Helper - Popup Script
+ * Mit robuster Script-Injection für bereits geöffnete Tabs
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -30,11 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Radio-Button Handling
   typeGroup.querySelectorAll('.radio-option').forEach(option => {
     option.addEventListener('click', () => {
-      // Entferne "selected" von allen
       typeGroup.querySelectorAll('.radio-option').forEach(o => o.classList.remove('selected'));
-      // Setze "selected" auf geklicktes
       option.classList.add('selected');
-      // Radio-Input aktivieren
       const radio = option.querySelector('input[type="radio"]');
       if (radio) {
         radio.checked = true;
@@ -87,6 +85,81 @@ document.addEventListener('DOMContentLoaded', () => {
     statusDiv.className = `status ${type}`;
   }
 
+  // Prüfe ob URL eine Google Maps Seite ist
+  function isGoogleMapsUrl(url) {
+    if (!url) return false;
+    // Alle möglichen Google Maps URL-Patterns
+    const patterns = [
+      /^https:\/\/(www\.)?google\.[a-z.]+\/maps/i,
+      /^https:\/\/maps\.google\.[a-z.]+\//i,
+    ];
+    return patterns.some(p => p.test(url));
+  }
+
+  // Injiziere Content-Scripts in einen Tab
+  async function injectContentScripts(tabId) {
+    console.log('[Popup] Injiziere Content-Scripts in Tab', tabId);
+    
+    try {
+      // Erst CSS injizieren
+      await chrome.scripting.insertCSS({
+        target: { tabId },
+        files: ['styles.css']
+      });
+      
+      // Dann JS injizieren (Reihenfolge wichtig: selectors.js vor content.js)
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['selectors.js']
+      });
+      
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['content.js']
+      });
+      
+      console.log('[Popup] Content-Scripts erfolgreich injiziert');
+      return true;
+    } catch (error) {
+      console.error('[Popup] Script-Injection fehlgeschlagen:', error);
+      return false;
+    }
+  }
+
+  // Sende Nachricht an Content-Script mit Retry und Auto-Injection
+  async function sendMessageWithRetry(tabId, message, maxRetries = 2) {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[Popup] Sende Nachricht (Versuch ${attempt + 1})`);
+        const response = await chrome.tabs.sendMessage(tabId, message);
+        return response;
+      } catch (error) {
+        console.log(`[Popup] sendMessage fehlgeschlagen:`, error.message);
+        
+        // "Receiving end does not exist" = Content-Script nicht geladen
+        if (error.message.includes('Receiving end does not exist') || 
+            error.message.includes('Could not establish connection')) {
+          
+          if (attempt < maxRetries) {
+            console.log('[Popup] Content-Script nicht geladen, injiziere...');
+            const injected = await injectContentScripts(tabId);
+            
+            if (injected) {
+              // Warte kurz, damit das Script initialisiert wird
+              await new Promise(resolve => setTimeout(resolve, 500));
+              continue; // Nächster Versuch
+            }
+          }
+        }
+        
+        // Letzter Versuch oder anderer Fehler
+        if (attempt === maxRetries) {
+          throw error;
+        }
+      }
+    }
+  }
+
   // Logs laden und anzeigen
   async function loadLogs() {
     try {
@@ -128,11 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       const url = tab?.url || '';
-      const isMapsPage = url.includes('google.com/maps') || url.includes('google.de/maps');
+      const isMapsPage = isGoogleMapsUrl(url);
       
       if (!isMapsPage) {
         startBtn.disabled = true;
-        showStatus('Öffne zuerst ein Google Maps Profil', 'warning');
+        showStatus('Bitte öffne zuerst ein Google Maps Profil', 'warning');
       }
       
       return { tab, isMapsPage };
@@ -158,14 +231,20 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const { tab, isMapsPage } = await checkCurrentTab();
       
-      if (!isMapsPage) {
-        showStatus('Öffne zuerst ein Google Maps Profil', 'error');
+      if (!tab) {
+        showStatus('Kein aktiver Tab gefunden', 'error');
         startBtn.disabled = false;
         return;
       }
       
-      // Sende Nachricht an Content-Script
-      const response = await chrome.tabs.sendMessage(tab.id, {
+      if (!isMapsPage) {
+        showStatus('Bitte öffne zuerst ein Google Maps Unternehmensprofil', 'error');
+        startBtn.disabled = false;
+        return;
+      }
+      
+      // Sende Nachricht mit automatischer Script-Injection bei Bedarf
+      const response = await sendMessageWithRetry(tab.id, {
         type: 'START_REPORT',
         reportType,
         reason,
@@ -186,13 +265,27 @@ document.addEventListener('DOMContentLoaded', () => {
           window.close();
         }, 800);
       } else {
-        showStatus('Konnte nicht starten', 'error');
+        showStatus('Konnte nicht starten – bitte Seite neu laden', 'error');
         startBtn.disabled = false;
       }
       
     } catch (e) {
       console.error('Fehler:', e);
-      showStatus(`Fehler: ${e.message || 'Content-Script nicht geladen'}`, 'error');
+      
+      // Benutzerfreundliche Fehlermeldungen auf Deutsch
+      let errorMsg = 'Unbekannter Fehler';
+      
+      if (e.message.includes('Cannot access') || e.message.includes('chrome://')) {
+        errorMsg = 'Diese Seite kann nicht automatisiert werden (Browser-interne Seite)';
+      } else if (e.message.includes('Receiving end') || e.message.includes('Could not establish')) {
+        errorMsg = 'Content-Script konnte nicht geladen werden – bitte Seite neu laden und erneut versuchen';
+      } else if (e.message.includes('permission')) {
+        errorMsg = 'Keine Berechtigung für diese Seite – ist es Google Maps?';
+      } else {
+        errorMsg = e.message || 'Unbekannter Fehler';
+      }
+      
+      showStatus(errorMsg, 'error');
       startBtn.disabled = false;
     }
   });
