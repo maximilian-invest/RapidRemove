@@ -244,13 +244,18 @@ Intern für RapidRemove. Nicht zur Veröffentlichung im Chrome Web Store vorgese
 
 ## Änderungshistorie
 
+- **v1.2.4** (Oktober 2026):
+  - **DOM-Struktur erkannt**: span.GoAIrd für Optionstext, div[jsaction] als klickbarer Container
+  - Material Icon Namen als sprach-unabhängiger Fallback (z.B. `wrong_location` = Doesn't exist)
+  - Irrelevante Frames werden übersprungen (accounts.google.com, RotateCookiesPage)
+  - Timeout statt Endlosschleife bei Suche
+  - Debug-Logging: outerHTML von Elementen mit Optionstext
+
 - **v1.2.3** (Oktober 2026):
-  - **Multi-Frame Support**: Dialog-Erkennung auch in Iframes
+  - Multi-Frame Support: Dialog-Erkennung in Iframes
   - Frame-zu-Frame-Koordination via Background Service Worker
   - Erweiterte `host_permissions` für alle Google-Domains
   - `all_frames: true`, `match_about_blank: true`, `match_origin_as_fallback: true`
-  - Ausführliches Frame-Debugging (`[TOP]` vs `[IFRAME]` Logs)
-  - Shadow DOM Traversal für versteckte Elemente
 
 - **v1.2.0** (Oktober 2026):
   - Alle 8 Operating Status Optionen
