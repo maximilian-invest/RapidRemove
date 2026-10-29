@@ -112,6 +112,9 @@ function mapOrder(r) {
     payHold: r.raw && r.raw.payHold && typeof r.raw.payHold === "object" ? r.raw.payHold : null,
     policyConsent: r.raw && r.raw.policyConsent && typeof r.raw.policyConsent === "object" ? r.raw.policyConsent : null, // Zusicherung „verstößt gegen Google-Richtlinien"
     policyConsentAdds: r.raw && Array.isArray(r.raw.policyConsentAdds) ? r.raw.policyConsentAdds : [], // Zwischenzahlung nötig (Partner pausiert)
+    riskConsent: r.raw && r.raw.riskConsent && typeof r.raw.riskConsent === "object" ? r.raw.riskConsent : null, // „Bestellung auf eigenes Risiko" (29.10.2026)
+    riskConsentAdds: r.raw && Array.isArray(r.raw.riskConsentAdds) ? r.raw.riskConsentAdds : [],
+    createdBy: r.raw && r.raw.createdBy ? r.raw.createdBy : null, // „admin" = im Admin angelegt
     payDue: r.raw && r.raw.payDue && typeof r.raw.payDue === "object" ? r.raw.payDue : null, // Zahlungsziel (Profil-Aufträge)
     dunPause: r.dun_pause && typeof r.dun_pause === "object" ? r.dun_pause : null, // Auto-Mahnungen für den Kunden pausiert
     verify: r.raw && r.raw.verify && typeof r.raw.verify === "object" ? r.raw.verify : null, // Inhaber-Nachweis (4–5 Sterne)

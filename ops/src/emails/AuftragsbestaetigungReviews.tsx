@@ -45,6 +45,8 @@ export interface AuftragsbestaetigungReviewsProps {
   added?: boolean;
   /** Zeitpunkt der Zusicherung „Bewertungen verstoßen gegen die Google-Richtlinien" (ISO) → Bestätigungszeile in der Mail. */
   policyAt?: string;
+  /** Zeitpunkt der Checkbox „Bestellung auf eigenes Risiko" (ISO, 29.10.2026) → Zusatz „Bestätigt am …" beim Risiko-Hinweis. */
+  riskAt?: string;
   _overrides?: Record<string, string>;
 }
 
@@ -433,6 +435,20 @@ const POL: Record<string, (w: string) => string> = {
   da: (w) => `Den ${w} bekræftede du, at de bestilte anmeldelser efter din bedste overbevisning overtræder Googles retningslinjer.`,
   no: (w) => `${w} bekreftet du at de bestilte omtalene etter din beste overbevisning bryter med Googles retningslinjer.`,
 };
+/** Hinweis „Bestellung auf eigenes Risiko" (29.10.2026) – steht in JEDER Bestätigung (auch Admin-Aufträge und Nachbestellungen). [Hinweis, „Bestätigt am {w}"] */
+const RISK: Record<string, [string, string]> = {
+  de: ["Hinweis: Google kann eine Löschung nachträglich rückgängig machen (z. B. nach einem Einspruch des Verfassers). Das entscheidet allein Google, wir haben darauf keinen Einfluss. Die Bestellung erfolgt auf eigenes Risiko – bereits erfolgte und abgerechnete Löschungen werden dadurch nicht erstattet.", "Bestätigt bei der Bestellung am {w}."],
+  en: ["Please note: Google may reverse a removal at a later point (e.g. after an appeal by the author). This is solely Google's decision and we have no influence over it. You order at your own risk – removals that have already been completed and charged are not refunded in that case.", "Confirmed when ordering on {w}."],
+  es: ["Ten en cuenta: Google puede revertir una eliminación más adelante (p. ej., tras una reclamación del autor). Lo decide únicamente Google y no tenemos ninguna influencia sobre ello. Encargas bajo tu propio riesgo: las eliminaciones ya realizadas y cobradas no se reembolsan en ese caso.", "Confirmado al hacer el pedido el {w}."],
+  fr: ["À noter : Google peut annuler une suppression ultérieurement (p. ex. après un recours de l'auteur). C'est Google seul qui en décide, nous n'avons aucune influence là-dessus. Tu commandes à tes propres risques – les suppressions déjà effectuées et facturées ne sont pas remboursées dans ce cas.", "Confirmé lors de la commande le {w}."],
+  it: ["Nota bene: Google può annullare una rimozione in un secondo momento (ad es. dopo un ricorso dell'autore). Lo decide solo Google e non abbiamo alcuna influenza al riguardo. Ordini a tuo rischio: le rimozioni già effettuate e addebitate non vengono rimborsate in questo caso.", "Confermato al momento dell'ordine il {w}."],
+  nl: ["Let op: Google kan een verwijdering later terugdraaien (bijv. na bezwaar van de schrijver). Dat beslist alleen Google, wij hebben daar geen invloed op. U bestelt op eigen risico – reeds uitgevoerde en afgerekende verwijderingen worden in dat geval niet terugbetaald.", "Bevestigd bij de bestelling op {w}."],
+  pt: ["Atenção: a Google pode reverter uma remoção mais tarde (p. ex. após um recurso do autor). Só a Google decide isso e não temos qualquer influência sobre isso. Encomendas por tua conta e risco – as remoções já realizadas e cobradas não são reembolsadas nesse caso.", "Confirmado na encomenda em {w}."],
+  ja: ["ご注意：Googleは、削除を後から取り消すことがあります（例：投稿者による異議申し立ての後）。これはGoogleのみが判断し、私たちには影響を及ぼすことができません。ご注文はお客様ご自身のリスクとなり、この場合、すでに完了・請求済みの削除の返金はありません。", "{w}のご注文時にご確認いただきました。"],
+  sv: ["Observera: Google kan i efterhand häva en borttagning (t.ex. efter en överklagan från skribenten). Det avgör enbart Google och vi har inget inflytande över det. Du beställer på egen risk – redan genomförda och debiterade borttagningar återbetalas inte i så fall.", "Bekräftat vid beställningen den {w}."],
+  da: ["Bemærk: Google kan senere omgøre en fjernelse (fx efter en klage fra forfatteren). Det afgør Google alene, og vi har ingen indflydelse på det. Du bestiller på egen risiko – allerede gennemførte og opkrævede fjernelser refunderes ikke i så fald.", "Bekræftet ved bestillingen den {w}."],
+  no: ["Merk: Google kan i ettertid omgjøre en fjerning (f.eks. etter en klage fra forfatteren). Det avgjør Google alene, og vi har ingen innflytelse på det. Du bestiller på egen risiko – allerede gjennomførte og belastede fjerninger refunderes ikke i så fall.", "Bekreftet ved bestillingen den {w}."],
+};
 const polWhen = (iso: string, lang: string) => {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return "";
@@ -446,7 +462,7 @@ export function subject(p: AuftragsbestaetigungReviewsProps): string {
   return t.subject(n);
 }
 
-export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, reasons = false, dash, added = false, policyAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
+export default function AuftragsbestaetigungReviews({ lang = "en", name = "", items = [], urls = [], per = "", total = "", currency = "", orderId = "", chatPct = 0, verify = false, verifyN = 0, payGate = false, reasons = false, dash, added = false, policyAt = "", riskAt = "", _overrides }: AuftragsbestaetigungReviewsProps = {}) {
   const t = { ...(T[lang] || T.en), ...(_overrides || {}) } as Entry;
   const ad = added ? ADD[lang] || ADD.en : null;
   const list: ReviewRef[] = items.length ? items : urls.map((u) => ({ url: u }));
@@ -542,6 +558,8 @@ export default function AuftragsbestaetigungReviews({ lang = "en", name = "", it
       ) : rest.length || !sw.length ? <P><strong>{t.condH}:</strong> {t.cond1} {!sw.length ? (t.cond2 || "").replace("{nt}", fmtReviewMoney(REVIEW_NOTEXT_PRICE, cur)) : ""}</P> : null}
 
       {policyAt ? <P><span style={{ color: brand.muted, fontSize: 13 }}>✓ {(POL[lang] || POL.en)(polWhen(policyAt, lang))}</span></P> : null}
+
+      <P><span style={{ color: brand.muted, fontSize: 13 }}>{(RISK[lang] || RISK.en)[0]}{riskAt ? <> ✓ {(RISK[lang] || RISK.en)[1].replace("{w}", polWhen(riskAt, lang))}</> : null}</span></P>
 
       <P>{t.close}</P>
       <P>{t.signoff}<br />RapidRemove</P>

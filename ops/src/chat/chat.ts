@@ -11,6 +11,7 @@
  * - Admin-Ansicht (Impersonation): echte KI-Antworten zum Testen, aber nichts gespeichert, nichts getrackt, kein Ticket.
  * - Tabelle chat_messages (12 Monate), Events chat_message / chat_ticket in der Dashboard-Aktivität.
  */
+import { riskPass } from "../riskConsent";
 import crypto from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import { pool } from "../db";
@@ -642,6 +643,7 @@ export function registerSiteChat(app: FastifyInstance, adminOk: (t: unknown) => 
       email, name, phone, company, service, protection: "", country, lang, orderId, chatSid: sid, chatPct: pct || undefined,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(), payPref,
       ...(b.policyConsent === true ? { policyConsent: true, policyV: clip(b.policyV, 20) } : {}),
+      ...riskPass(b), // „Bestellung auf eigenes Risiko" (Bewertungen) – Nachweis baut /order
       source: "chat", sourceFirst: "chat", landing: clip(b.page, 200), referrer: "Website-Chat (Lena)",
     };
     if (service === "reviews") {

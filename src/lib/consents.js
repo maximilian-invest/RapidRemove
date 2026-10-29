@@ -27,3 +27,21 @@ export const FAGG_CONSENT = {
   da: { txt: "Jeg anmoder udtrykkeligt om, at RapidRemove påbegynder tjenesten, inden fortrydelsesfristen udløber. Jeg er bekendt med, at jeg mister min fortrydelsesret, så snart tjenesten er fuldt udført.", err: "Bekræft den tidlige start af tjenesten." },
   no: { txt: "Jeg ber uttrykkelig om at RapidRemove starter tjenesten før angrefristen utløper. Jeg er innforstått med at jeg mister angreretten min så snart tjenesten er fullt utført.", err: "Bekreft tidlig oppstart av tjenesten." },
 };
+
+/* Checkbox 3 (nur Bewertungs-Bestellungen, 29.10.2026): „Bestellung auf eigenes Risiko" – Google kann Löschungen nachträglich
+   rückgängig machen. Pflicht vor dem Bestell-Button (Website, Website-Chat, Kunden-Dashboard inkl. „Weitere Bewertung hinzufügen").
+   RISK_V bei jeder inhaltlichen Textänderung hochzählen (Nachweis je Auftrag, ops/src/riskConsent.ts). */
+export const RISK_V = "2026-10-29";
+export const RISK_CONSENT = {
+  de: { txt: "Mir ist bewusst, dass Google eine Löschung nachträglich rückgängig machen kann. Ob das passiert, entscheidet allein Google, RapidRemove hat darauf keinen Einfluss. Ich bestelle auf eigenes Risiko.", err: "Bitte bestätigen Sie, dass Sie auf eigenes Risiko bestellen." },
+  en: { txt: "I understand that Google may reverse a removal at a later point. Whether this happens is solely Google's decision and RapidRemove has no influence over it. I am ordering at my own risk.", err: "Please confirm that you are ordering at your own risk." },
+  es: { txt: "Soy consciente de que Google puede revertir una eliminación más adelante. Si esto ocurre lo decide únicamente Google y RapidRemove no tiene ninguna influencia sobre ello. Hago el pedido bajo mi propio riesgo.", err: "Confirma que haces el pedido bajo tu propio riesgo." },
+  fr: { txt: "Je suis conscient(e) que Google peut annuler une suppression ultérieurement. C'est Google seul qui en décide, RapidRemove n'a aucune influence là-dessus. Je commande à mes propres risques.", err: "Veuillez confirmer que vous commandez à vos propres risques." },
+  it: { txt: "Sono consapevole che Google può annullare una rimozione in un secondo momento. Se ciò accade lo decide esclusivamente Google e RapidRemove non ha alcuna influenza al riguardo. Ordino a mio rischio.", err: "Conferma che ordini a tuo rischio." },
+  nl: { txt: "Ik ben mij ervan bewust dat Google een verwijdering later kan terugdraaien. Of dat gebeurt, beslist alleen Google; RapidRemove heeft daar geen invloed op. Ik bestel op eigen risico.", err: "Bevestig dat u op eigen risico bestelt." },
+  pt: { txt: "Estou ciente de que a Google pode reverter uma remoção mais tarde. Se isso acontece é decidido exclusivamente pela Google e a RapidRemove não tem qualquer influência sobre isso. Faço a encomenda por minha conta e risco.", err: "Confirme que faz a encomenda por sua conta e risco." },
+  ja: { txt: "Googleが削除を後から取り消す場合があることを理解しています。取り消すかどうかはGoogleのみが判断し、RapidRemoveはこれに影響を及ぼすことができません。自己責任で注文します。", err: "自己責任で注文することを確認してください。" },
+  sv: { txt: "Jag är medveten om att Google i efterhand kan häva en borttagning. Om det sker avgör enbart Google och RapidRemove har inget inflytande över det. Jag beställer på egen risk.", err: "Bekräfta att du beställer på egen risk." },
+  da: { txt: "Jeg er klar over, at Google senere kan omgøre en fjernelse. Om det sker, afgør Google alene, og RapidRemove har ingen indflydelse på det. Jeg bestiller på egen risiko.", err: "Bekræft, at du bestiller på egen risiko." },
+  no: { txt: "Jeg er klar over at Google i ettertid kan omgjøre en fjerning. Om det skjer, avgjør Google alene, og RapidRemove har ingen innflytelse på det. Jeg bestiller på egen risiko.", err: "Bekreft at du bestiller på egen risiko." },
+};

@@ -14,7 +14,7 @@ import {
   XCircle, AlertCircle, Cpu, Receipt, MessageCircle, FileText, ShieldCheck, LogOut, ChevronRight, ExternalLink, ScanFace, KeyRound, Eye, EyeOff, Info,
   BadgeCheck, Timer, Lock, CreditCard, Zap, Smartphone, Store, Copy, Upload, Building2, Plus, Star, ListChecks, MapPin, Link as LinkIcon, Clock,
 } from "lucide-react";
-import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
+import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_V } from "@/lib/consents";
 import { pagePath } from "@/lib/page-routes";
 import { reviewQuote, vatNote, listPriceV2, PRICE_V2_OTHER, EXPRESS_FEE, EXPRESS_HOURS, expressWeekend, expressDueMs } from "@/lib/pricing";
 import { xpCopy, fmtXDue } from "@/lib/express-copy";
@@ -745,6 +745,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const [busy, setBusy] = React.useState(false);
   const [agb, setAgb] = React.useState(false);
   const [fagg, setFagg] = React.useState(false);
+  const [risk, setRisk] = React.useState(false); // „Bestellung auf eigenes Risiko" (Pflicht, 29.10.2026)
   const [cErr, setCErr] = React.useState(false);
   const [oid, setOid] = React.useState("");
   const [xOn, setXOn] = React.useState(false); // Express (Zwischenschritt „Wie schnell?")
@@ -781,7 +782,7 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     const pre = (presetLinks || []).filter(Boolean).slice(0, 50).map((u) => newRow(u));
     const r0 = pre[0] || newRow();
     setQ(""); setRes(null); setPlace(null); setList(null); setErr(""); setPick([]);
-    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows(pre.length ? pre : [r0]); setTack(false); setAgb(false); setFagg(false); setCErr(false); setOid(""); setBusy(false);
+    setStep(f0); setKind(f0 === "bulk" ? "bulk" : "hand"); setRows(pre.length ? pre : [r0]); setTack(false); setAgb(false); setFagg(false); setRisk(false); setCErr(false); setOid(""); setBusy(false);
     setFiles([]); setPaste(""); setPrev(null); setPol(false); setDoneN(0); setXOn(false);
     if (pre.length) setTimeout(() => pre.forEach((r) => scanRow(r.id, r.url)), 50);
     else if (f0 === "links") focusRow(r0.id, 380);
@@ -794,16 +795,16 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
     try {
       const fs = await Promise.all(files.map(async (f) => ({ name: f.name, b64: await fileB64(f) })));
       const r = await call("bulk/parse", { token, files: fs, text: paste });
-      setPrev(r); setAgb(false); setFagg(false); setPol(false); setTack(false); setCErr(false); setStep("bpre");
+      setPrev(r); setAgb(false); setFagg(false); setRisk(false); setPol(false); setTack(false); setCErr(false); setStep("bpre");
     } catch (e) { showToast(e.code === "disabled" ? T("noErr") : T("buErr"), true); }
     setBusy(false);
   };
   const bOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!agb || !fagg || !pol) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
+    if (!agb || !fagg || !pol || !risk) { setCErr(true); try { consRef.current && consRef.current.scrollIntoView({ behavior: "smooth", block: "center" }); } catch (e) { /* */ } return; }
     setBusy(true);
     try {
-      const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, tierAck: true, policyV: POLICY_V, items: prev.items });
+      const r = await call("bulk/order", { token, lang: LANG, agb: true, fagg: true, policy: true, tierAck: true, policyV: POLICY_V, riskConsent: true, riskV: RISK_V, items: prev.items });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -854,18 +855,18 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const dach = (p) => p && (p.cc === "DE" || p.cc === "AT");
   const choose = async (p) => {
     if (dach(p)) return;
-    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setCErr(false);
+    setPlace(p); setStep("pick"); setList(null); setErr(""); setPick([]); setAgb(false); setFagg(false); setRisk(false); setCErr(false);
     try { const r = await call("new-order/reviews", { token, placeId: p.placeId, lang: LANG }); setList(r.reviews || []); }
     catch (e) { setList([]); setErr(T("arErr")); }
   };
   const sel = (list || []).filter((r) => pick.includes(r.id));
   const order = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!agb || !fagg) { setCErr(true); return; }
+    if (!agb || !fagg || !risk) { setCErr(true); return; }
     if (canX && step !== "speed") { setSpFrom("pick"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order", { token, lang: LANG, agb: true, ids: pick, express: canX && xOn && xAvail, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
+      const r = await call("new-order", { token, lang: LANG, agb: true, riskConsent: true, riskV: RISK_V, ids: pick, express: canX && xOn && xAvail, place: { placeId: place.placeId, name: place.name, addr: place.addr, cc: place.cc, mapsUri: place.mapsUri } });
       setOid(r.orderId); setDoneN(pick.length); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("noErr"), true); }
     setBusy(false);
@@ -900,12 +901,12 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
   const xMax = canX && xOn && xAvail ? lpc.n250 * EXPRESS_FEE : 0;
   const lOrder = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
-    if (!agb || !fagg) { setCErr(true); return; }
+    if (!agb || !fagg || !risk) { setCErr(true); return; }
     if (scanning || !okRows.length) return;
     if (canX && step !== "speed") { setSpFrom("links"); setStep("speed"); return; }
     setBusy(true);
     try {
-      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, express: canX && xOn && xAvail, links: okRows.map((x) => x.url) });
+      const r = await call("new-order/links", { token, lang: LANG, agb: true, fagg: true, riskConsent: true, riskV: RISK_V, express: canX && xOn && xAvail, links: okRows.map((x) => x.url) });
       setOid(r.orderId); setDoneN(r.n); setStep("done");
     } catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : e.code === "reviews_dach" ? T("noDach") : T("noErr"), true); }
     setBusy(false);
@@ -1021,6 +1022,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post} {T("buTierAck", { tol: (binfo && binfo.tol != null ? binfo.tol : 10) })}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    <label className={"no-ck" + (cErr && !risk ? " bad" : "")}><input type="checkbox" checked={risk} onChange={(e) => { setRisk(e.target.checked); setCErr(false); }} /><span>{(RISK_CONSENT[LANG] || RISK_CONSENT.en).txt}</span></label>
+                    {cErr && !risk && agb && fagg ? <div className="no-err">{(RISK_CONSENT[LANG] || RISK_CONSENT.en).err}</div> : null}
                     <PolicyConsent lang={LANG} checked={pol} error={cErr && !pol} className="no-pol"
                       style={{ width: "100%", fontSize: 13, lineHeight: 1.45, margin: "0 0 10px", textAlign: "left", background: cErr && !pol ? "#fff5f5" : "var(--g1, #f4f4f4)", borderRadius: 14, padding: 12, boxSizing: "border-box" }}
                       onChange={(v) => { setPol(v); setCErr(false); }} />
@@ -1069,6 +1072,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    <label className={"no-ck" + (cErr && !risk ? " bad" : "")}><input type="checkbox" checked={risk} onChange={(e) => { setRisk(e.target.checked); setCErr(false); }} /><span>{(RISK_CONSENT[LANG] || RISK_CONSENT.en).txt}</span></label>
+                    {cErr && !risk && agb && fagg ? <div className="no-err">{(RISK_CONSENT[LANG] || RISK_CONSENT.en).err}</div> : null}
                     {cErr ? <div className="no-err">{T("noAgbErr")}</div> : null}
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </>
@@ -1138,6 +1143,8 @@ function NewOrderFlow({ open, token, imp, autopay, onClose, onDone, showToast, m
                     <label className={"no-ck" + (cErr && !agb ? " bad" : "")}><input type="checkbox" checked={agb} onChange={(e) => { setAgb(e.target.checked); setCErr(false); }} />
                       <span>{ag.pre}<a href={pagePath("agb", LANG)} target="_blank" rel="noopener noreferrer">{ag.agb}</a>{ag.mid}<a href={pagePath("widerruf", LANG)} target="_blank" rel="noopener noreferrer">{ag.wid}</a>{ag.post}</span></label>
                     <label className={"no-ck" + (cErr && !fagg ? " bad" : "")}><input type="checkbox" checked={fagg} onChange={(e) => { setFagg(e.target.checked); setCErr(false); }} /><span>{fg.txt}</span></label>
+                    <label className={"no-ck" + (cErr && !risk ? " bad" : "")}><input type="checkbox" checked={risk} onChange={(e) => { setRisk(e.target.checked); setCErr(false); }} /><span>{(RISK_CONSENT[LANG] || RISK_CONSENT.en).txt}</span></label>
+                    {cErr && !risk && agb && fagg ? <div className="no-err">{(RISK_CONSENT[LANG] || RISK_CONSENT.en).err}</div> : null}
                     {cErr ? <div className="no-err">{T("noAgbErr")}</div> : null}
                     {autopay ? <div className="secure"><Lock />{T("noPay")}</div> : null}
                   </>
@@ -1169,10 +1176,12 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const [spd, setSpd] = React.useState(false); // Zwischenschritt „Wie schnell?" (nur bei 250ern)
   const xAvail = useExpressOn() !== false; // Admin-Schalter Express
   const [xOn, setXOn] = React.useState(false);
+  const [risk, setRisk] = React.useState(false); // „Bestellung auf eigenes Risiko" – auch bei „Weitere Bewertung hinzufügen" Pflicht
+  const [rErr, setRErr] = React.useState(false);
   const oid = order && order.id;
   React.useEffect(() => {
     if (!oid) return;
-    setList(null); setErr(false); setPick([]); setSpd(false); setXOn(false);
+    setList(null); setErr(false); setPick([]); setSpd(false); setXOn(false); setRisk(false); setRErr(false);
     call("orders/reviews", { token, orderId: oid }).then((r) => setList(r.enabled ? r.reviews || [] : [])).catch(() => { setList([]); setErr(true); });
   }, [oid, token]);
   const sel = (list || []).filter((r) => pick.includes(r.id));
@@ -1183,9 +1192,10 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
   const canX = lpc.n250 > 0;
   const add = async () => {
     if (imp) { showToast("In der Admin-Ansicht nicht möglich", true); return; }
+    if (!risk) { setRErr(true); return; }
     if (canX && !spd) { setSpd(true); return; }
     setBusy(true);
-    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn && xAvail }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
+    try { const r = await call("orders/add", { token, orderId: oid, ids: pick, express: canX && xOn && xAvail, riskConsent: true, riskV: RISK_V }); showToast(T("arDone")); onDone(!!(r.gate || r.reasons)); }
     catch (e) { showToast(e.code === "already_ordered" ? T("arIn") : T("genericErr"), true); setBusy(false); }
   };
   React.useEffect(() => { if (!oid) setBusy(false); }, [oid]);
@@ -1231,6 +1241,8 @@ function AddRevFlow({ order, token, imp, onClose, onDone, showToast }) {
           <div className="fl-foot pgf">
             {sel.length ? <div className="ar-max">{T("arMax", { amount: net(money(q.total + (spd && xOn && xAvail ? lpc.n250 * EXPRESS_FEE : 0), order.cur)) })}</div> : null}
             {sel.length && !spd ? <TfLine {...lpc} /> : null}
+            {sel.length ? <label className={"no-ck" + (rErr && !risk ? " bad" : "")}><input type="checkbox" checked={risk} onChange={(e) => { setRisk(e.target.checked); setRErr(false); }} /><span>{(RISK_CONSENT[LANG] || RISK_CONSENT.en).txt}</span></label> : null}
+            {rErr && !risk ? <div className="no-err">{(RISK_CONSENT[LANG] || RISK_CONSENT.en).err}</div> : null}
             <button className="cta" disabled={!sel.length || busy} onClick={add}>{busy ? <Loader className="spin" /> : <Plus />}{sel.length === 1 ? T("arAdd1") : sel.length ? T("arAddN", { n: sel.length }) : T("arH")}</button>
           </div>
         </div>

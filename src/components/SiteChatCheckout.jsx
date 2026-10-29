@@ -7,6 +7,7 @@ import { CO, COUNTRIES } from "@/components/sitechat-co-i18n";
 import { pagePath } from "@/lib/page-routes";
 import { vatNote, PRICE_V2_FRESH, PRICE_V2_OTHER } from "@/lib/pricing";
 import { fetchPayDiscount, findReviewByLink } from "@/lib/order";
+import { RISK_CONSENT, RISK_V } from "@/lib/consents";
 
 const OPS = (process.env.NEXT_PUBLIC_OPS_URL || "").replace(/\/+$/, "");
 const volPct = (n) => (n >= 10 ? 30 : n >= 5 ? 15 : n >= 3 ? 10 : 0);
@@ -61,7 +62,7 @@ export function OfferCard({ co, lang, onOrder, ordered }) {
 
 export function Checkout({ co, lang, sid, onClose, onDone }) {
   const c = CO[lang] || CO.en;
-  const [f, setF] = React.useState({ name: "", email: "", phone: "", company: co.company || "", profileLink: "", country: co.country || "", payPref: "none", agb: false, pol: false });
+  const [f, setF] = React.useState({ name: "", email: "", phone: "", company: co.company || "", profileLink: "", country: co.country || "", payPref: "none", agb: false, pol: false, risk: false });
   const [revs, setRevs] = React.useState(() => (co.items && co.items.length
     ? co.items.map((r) => ({ url: r.link || r.url || "", age: r.days > 28 ? "old" : "new", name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days, fixed: true }))
     : [{ url: "", age: "new" }]));
@@ -102,13 +103,14 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
     if (isRev) { if (!revs.some((r) => /^https?:\/\//i.test(r.url.trim()))) b.revs = 1; if (f.country === "DE" || f.country === "AT") { setErr(c.errDach); setBad({ ...b, country: 1 }); return; } }
     else if (!/^https?:\/\//i.test(f.profileLink.trim()) && f.company.trim().length < 2) b.profileLink = 1;
     if (!f.agb) b.agb = 1;
+    if (isRev && !f.risk) b.risk = 1; // Bewertungen: „Bestellung auf eigenes Risiko" (Pflicht)
     setBad(b);
     if (Object.keys(b).length) { setErr(c.errFill); return; }
     setErr(""); setBusy(true);
     try {
       const res = await fetch(OPS + "/chat/site/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
         sid, service: co.service, name: f.name.trim(), email: f.email.trim(), phone: f.phone.trim(), company: f.company.trim(), profileLink: f.profileLink.trim(),
-        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, page: window.location.pathname, placeCountry: co.placeCountry || "",
+        country: f.country === "OTHER" ? "XX" : f.country, lang, payPref, agb: true, ...(isRev ? { riskConsent: f.risk === true, riskV: RISK_V } : {}), page: window.location.pathname, placeCountry: co.placeCountry || "",
         reviews: isRev ? revs.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), age: r.age, name: r.name || "", text: r.text || "", rating: r.rating || 0, days: r.days })) : [],
       }) });
       const j = await res.json().catch(() => ({}));
@@ -186,6 +188,10 @@ export function Checkout({ co, lang, sid, onClose, onDone }) {
           <input type="checkbox" checked={f.agb} onChange={set("agb")} />
           <span>{c.agb1} <a href={legal("agb")} target="_blank" rel="noopener noreferrer">{c.agbL}</a> {c.agb2} <a href={legal("datenschutz")} target="_blank" rel="noopener noreferrer">{c.dsL}</a> {c.agb3}</span>
         </label>
+        {isRev ? <label className={"co-agb" + (bad.risk ? " bad" : "")}>
+          <input type="checkbox" checked={f.risk} onChange={set("risk")} />
+          <span>{(RISK_CONSENT[lang] || RISK_CONSENT.en).txt}</span>
+        </label> : null}
         {err ? <div className="co-err">{err}</div> : null}
       </div>
       <div className="co-foot">

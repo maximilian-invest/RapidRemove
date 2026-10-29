@@ -7,6 +7,7 @@
  *
  * Gemischte Profile erlaubt. Keine Gründe je Bewertung; der Kunde sichert per Häkchen zu, dass die Bewertungen gegen die
  * Google-Richtlinien verstoßen (policyConsent, mit Zeitpunkt/IP). Abgebucht wird wie immer erst je gelöschter Bewertung. */
+import { riskPass } from "./riskConsent";
 import type { FastifyInstance } from "fastify";
 import crypto from "node:crypto";
 import { pool } from "./db";
@@ -141,6 +142,7 @@ export function registerCustBulk(app: FastifyInstance): void {
       reviewItems: items.map(({ key: _k, ...x }) => x), reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
       note: `Bulk-Upload im Kunden-Dashboard: ${items.length} Bewertung(en)${tier ? ` · Stufe ${tier.from}${tier.to ? "–" + tier.to : "+"} → ${tier.price} ${p.cur.toUpperCase()} je gelöschter Bewertung (${p.source === "custom" ? "eigene Staffel" : "Standard-Staffel"})` : ""}`,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(), policyConsent: true, policyV: clip(b.policyV, 20) || "bulk-2026-10-14",
+      ...riskPass(b), // „Bestellung auf eigenes Risiko" – Nachweis baut /order
       tierAck: { at: new Date().toISOString(), v: "2026-10-14", tol }, // Bulk: immer Zahlungsart (kein PayPal/Wise-Wunsch übernehmen)
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard (Bulk)", landing: "/my-reviews",
     };

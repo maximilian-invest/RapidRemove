@@ -13,6 +13,7 @@ import { autopayAvailable, hasSavedMethod, chargeDue } from "./autopay";
 import { customerSessionInfo, dashLink, keyOf } from "./customers";
 import { blockedOf } from "./orderStart";
 import { reasonsGateAdd } from "./reasons";
+import { riskProof } from "./riskConsent";
 import { fetchPlaceReviews, serpKey } from "./reviewsFetch";
 import { expressOn } from "./expressSwitch";
 import { quoteReviews, reviewMethod, cpOf, chatPctOf, payPctOf, listPriceV2, PRICE_V2_OTHER } from "./reviewsPricing";
@@ -227,6 +228,12 @@ export function registerOrderAddRoutes(app: FastifyInstance, adminToken: string)
     const picks = (list || []).filter((r) => ids.includes(r.id) && !r.ordered);
     if (!picks.length) return reply.code(409).send({ ok: false, error: "already_ordered" });
     const r = await addReviewsToOrder(c.o.id, picks.map((p) => ({ ...(p.link ? { url: p.link } : {}), name: p.name, text: p.text || "", rating: p.rating, days: p.days >= 0 ? p.days : undefined, ...(p.text ? {} : { nt: true }) })), { by: "customer", gate: "auto", mail: true, express: b.express === true });
+    // 29.10.2026: „Bestellung auf eigenes Risiko" auch bei „Weitere Bewertung hinzufügen" – Nachweis je Nachbestellung.
+    if (r.ok) {
+      const cur = await loadOrder(c.o.id);
+      const prev = (Array.isArray(cur?.raw?.riskConsentAdds) ? cur!.raw!.riskConsentAdds : []) as unknown[];
+      await setOrderRawField(c.o.id, "riskConsentAdds", [...prev, { ...riskProof(req, b, "dashboard", picks.length), names: picks.map((p) => clip(p.name, 60)) }].slice(-30)).catch(() => {});
+    }
     if (r.ok && b.policyConsent === true) {
       // (alt) Zusicherung direkt bei der Nachbestellung – seit 10/2026 kommt sie im Start-Ablauf (Gründe je Bewertung, reasons.ts).
       const ip = String((req.headers["x-forwarded-for"] as string) || req.ip || "").split(",")[0].trim().slice(0, 60);

@@ -12,6 +12,7 @@
  *      (POST /order intern): Preise, Mails, Gründe-Schritt, Zahlungsart-Pflicht, Partner-Zuteilung – alles wie gewohnt.
  * Kundendaten (Name, E-Mail, Telefon, Firma) kommen aus dem Konto, nicht aus dem Browser.
  * Sichtbar: Test-Konten immer; alle Kunden, sobald partner_settings „dash_new_order" = "1" (Admin-Freigabe). */
+import { riskPass } from "./riskConsent";
 import type { FastifyInstance } from "fastify";
 import crypto from "node:crypto";
 import { pool } from "./db";
@@ -127,6 +128,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       reviewItems: items, reviewUrls: items.map((x) => x.url).filter(Boolean), reviewCount: items.length,
       note: `Neue Bestellung im Kunden-Dashboard (${items.length} Bewertung${items.length === 1 ? "" : "en"})\n${items.map((x) => x.url || `${x.name} — "${x.text || ""}"`).join("\n")}`,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      ...riskPass(b), // „Bestellung auf eigenes Risiko" – Nachweis baut /order
       // Zahlungswunsch aus dem letzten Auftrag übernehmen (PayPal/Wise −10 %), sonst Karte/hinterlegte Zahlungsart.
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard", landing: "/my-reviews",
@@ -246,6 +248,7 @@ export function registerCustNewOrder(app: FastifyInstance): void {
       reviewItems: items, reviewUrls: items.map((x) => x.url), reviewCount: items.length,
       note: `Neue Bestellung im Kunden-Dashboard per Link (${items.length} Bewertung${items.length === 1 ? "" : "en"})\n${items.map((x) => x.url).join("\n")}`,
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      ...riskPass(b), // „Bestellung auf eigenes Risiko" – Nachweis baut /order
       ...(last.pp === "paypal" || last.pp === "wise" ? { payPref: last.pp } : {}),
       source: "dashboard", sourceFirst: "dashboard", referrer: "Kunden-Dashboard (Links)", landing: "/my-reviews",
       ...(b.express === true ? { reviewExpress: true } : {}), // Express-Zwischenschritt im Dashboard

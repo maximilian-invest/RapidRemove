@@ -64,6 +64,7 @@ import { reconcilePaymentsOnce, startPaymentReconciler } from "./reconcile";
 import { sendEvent as capiSend, capiEnabled, sendPurchaseForOrder } from "./integrations/metaCapi";
 import { claimCapiSend, releaseCapiSend, pool } from "./db";
 import { getDunPause, setDunPause, clearDunPause } from "./dunPause";
+import { riskProof } from "./riskConsent";
 import { sendOrderWebhook } from "./orderWebhook";
 
 
@@ -529,6 +530,12 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     // Seit 09.10.2026 keine Checkbox im Checkout mehr: die Zusicherung gibt der Kunde im Dashboard (reasons.ts → policyConsent).
   } else delete (b as Record<string, unknown>).policyConsent;
   delete (b as Record<string, unknown>).policyV;
+  // 29.10.2026: Pflicht-Checkbox „Bestellung auf eigenes Risiko" (Google kann Löschungen rückgängig machen) – Nachweis je Auftrag (riskConsent.ts).
+  if (isReviews) {
+    const via = req.headers["x-rr-chat"] === CHAT_INTERNAL ? "chat" : req.headers["x-rr-bulk"] === BULK_INTERNAL ? "dashboard" : "web";
+    (b as Record<string, unknown>).riskConsent = riskProof(req, b as Record<string, unknown>, via, reviewItems.length);
+  } else delete (b as Record<string, unknown>).riskConsent;
+  delete (b as Record<string, unknown>).riskV;
   // Bulk: Software-Fälle stellt der Partner fest (→ Storno aus der Bulk-Bestellung, bulkRules.ts) – hier nichts vorab markieren.
   if (isReviews && !bulk) for (const it of reviewItems) {
     // Bewertung bekannt (Sterne aus der Google-Suche/Link-Auflösung), aber ohne Text → immer Software (300), auch wenn der Browser es nicht markiert hat
@@ -618,7 +625,7 @@ app.post("/order", { bodyLimit: 20 * 1024 * 1024 }, async (req, reply) => { // g
     } catch (e) { app.log.error({ err: e }, "Dashboard-Link (Profil, Bestandskunde) fehlgeschlagen"); }
   }
   const props = isReviews
-    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "" }
+    ? { lang: tlang, name, items: reviewItems, per: revPer, total: revTotal, currency: revCur, orderId, dash, chatPct: revChatPct, verify: verifyNeeded, verifyN: verifyNeeded ? (((b as Record<string, unknown>).verify as { keys?: string[] } | undefined)?.keys?.length || 0) : 0, payGate, reasons: reasonsGate, policyAt: ((b as Record<string, unknown>).policyConsent as { at?: string } | null)?.at || "", riskAt: ((b as Record<string, unknown>).riskConsent as { at?: string; missing?: boolean } | undefined)?.missing ? "" : ((b as Record<string, unknown>).riskConsent as { at?: string } | undefined)?.at || "" }
     : { lang: tlang, anrede, ...(dash && !isPress ? { dash, profile: true } : {}), ...(profGate ? { payGate: true } : {}), ...(profAuto && !profGate ? { savedPm: profPm || "" } : {}) };
   const html = await render(React.createElement(t.component, props as any));
 

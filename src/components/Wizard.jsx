@@ -39,7 +39,7 @@ const DUP_TXT = {
   da: { t: "Du har allerede bestilt denne anmeldelse", p: (o) => `Vi arbejder allerede på den i din ordre ${o} – du behøver ikke bestille igen.`, l: "Åbn mit dashboard" },
   no: { t: "Du har allerede bestilt denne omtalen", p: (o) => `Vi jobber allerede med den i bestillingen din ${o} – du trenger ikke bestille på nytt.`, l: "Åpne dashbordet mitt" },
 };
-import { AGB_CONSENT, FAGG_CONSENT } from "@/lib/consents";
+import { AGB_CONSENT, FAGG_CONSENT, RISK_CONSENT, RISK_V } from "@/lib/consents";
 /* ---- numeric helpers ---- */
 const num = (v) => parseFloat(String(v).replace(/\s/g, "").replace(/\.(?=\d{3}\b)/g, "").replace(",", ".")) || 0;
 function fmtMoney(lang, n) {
@@ -1868,6 +1868,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
   const [dupOrder, setDupOrder] = React.useState(null); // Bewertung(en) bereits beauftragt → { orders, items }
   const [agbOk, setAgbOk] = React.useState(false);
   const [faggOk, setFaggOk] = React.useState(false); // § 18 FAGG: vorzeitiger Leistungsbeginn / Widerrufsverzicht
+  const [riskOk, setRiskOk] = React.useState(false); // Bewertungen: „Bestellung auf eigenes Risiko" (Google kann Löschungen rückgängig machen)
   const [orderId] = React.useState(() => "RR-" + Math.floor(100000 + Math.random() * 899999));
   const [checkId] = React.useState(() => "CHK-" + Math.floor(100000 + Math.random() * 899999));
   // EINE Ereignis-ID für den Gratis-Check, geteilt zwischen Browser-Pixel und
@@ -2354,6 +2355,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
     if (!contact.company.trim()) er.company = w.s5.errCompany;
     if (!agbOk) er.agb = (AGB_CONSENT[t.code] || AGB_CONSENT.en).err;
     if (!faggOk) er.fagg = (FAGG_CONSENT[t.code] || FAGG_CONSENT.en).err;
+    if (revFlow && !riskOk) er.risk = (RISK_CONSENT[t.code] || RISK_CONSENT.en).err;
     setErrors(er);
     return !Object.keys(er).length;
   };
@@ -2411,6 +2413,7 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
       // Einwilligungen (Nachweis): AGB/Widerruf akzeptiert + ausdrückliches Verlangen
       // auf vorzeitigen Leistungsbeginn (§ 18 Abs 1 Z 1 FAGG), inkl. Zeitstempel.
       agbConsent: true, faggConsent: true, consentAt: new Date().toISOString(),
+      ...(revFlow ? { riskConsent: riskOk === true, riskV: RISK_V } : {}), // Bewertungen: „auf eigenes Risiko" (Nachweis je Auftrag)
       // Richtlinien-Zusicherung kommt im Dashboard (Gründe je Bewertung + Bestätigung) – nicht mehr im Checkout.
       // Rabatt-Abfrage: "wise" | "paypal" = 10 % Rabatt gewünscht, "none" = abgelehnt.
       ...(payPref ? { payPref } : {}),
@@ -2942,6 +2945,13 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
               <span style={{ color: errors.fagg ? "var(--danger)" : "inherit" }}>{fg.txt}</span>
             </label>
             {errors.fagg && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.fagg}</div>}
+            {revFlow ? <label className={"agb-consent" + (errors.risk ? " err" : "")} style={{ display: "flex", gap: 11, alignItems: "flex-start", marginTop: 12, fontSize: 13, lineHeight: 1.5, cursor: "pointer" }}>
+              <input type="checkbox" checked={riskOk}
+                onChange={(e) => { setRiskOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { risk, ...r } = x; return r; }); }}
+                style={{ marginTop: 2, width: 18, height: 18, flexShrink: 0, accentColor: "var(--primary)", cursor: "pointer" }} />
+              <span style={{ color: errors.risk ? "var(--danger)" : "inherit" }}>{(RISK_CONSENT[t.code] || RISK_CONSENT.en).txt}</span>
+            </label> : null}
+            {revFlow && errors.risk && <div className="emsg" style={{ marginTop: 7, color: "var(--danger)", fontSize: 12, fontWeight: 700 }}>{errors.risk}</div>}
             <button type="submit" className="btn btn-primary btn-block lg co-submit-desktop" style={{ marginTop: 16 }}>
               <Icon.lock size={18} /> {w.s5.button}
             </button>
@@ -3722,6 +3732,8 @@ function Wizard({ initialName, initialProfile, initialResume, leadSource, initia
                 {errors.agb ? <div className="emsg">{errors.agb}</div> : null}
                 {ck(faggOk, (e) => { setFaggOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { fagg, ...r } = x; return r; }); }, errors.fagg, fg.txt)}
                 {errors.fagg ? <div className="emsg">{errors.fagg}</div> : null}
+                {revFlow ? ck(riskOk, (e) => { setRiskOk(e.target.checked); if (e.target.checked) setErrors((x) => { const { risk, ...r } = x; return r; }); }, errors.risk, (RISK_CONSENT[t.code] || RISK_CONSENT.en).txt) : null}
+                {revFlow && errors.risk ? <div className="emsg">{errors.risk}</div> : null}
               </div>
               <div className="bpr-acts" style={{ marginTop: 14 }}>{backBtn}{orderBtn}</div>
               <div className="bpr-sec"><LShieldCheck />{bp.nothingToday}</div>
