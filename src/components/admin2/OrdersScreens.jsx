@@ -4,7 +4,7 @@ import React from "react";
 import {
   Bell, Sparkles, ChevronRight, ChevronDown, Search, Users, UserX, ArrowLeft, MoreHorizontal, Hand, Send, Gavel, Check, Clock,
   AlarmClock, UserPlus, Mail, Store, MessageSquareText, MessageCircle, Phone, StarOff, Ban, Receipt,
-  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound,
+  CheckCircle2, XCircle, CreditCard, Loader, MapPin, X, RotateCcw, Undo2, Redo2, Plus, Star, LayoutDashboard, Percent, RefreshCw, Layers, ShieldCheck, CalendarClock, ClipboardList, Image as ImageIcon, Download, KeyRound, Flag,
 } from "lucide-react";
 import { ST, inTile, IMG, typeOf, ageMin, fmtAge, isLate, orderMoney, avatarOf, staffOf, SERVICE_L, payPrefOf, computeOffer, money, cur, revState, bucketsOf, mainBucket, isOpenB, aboOf, orderParts, pendingWhy } from "./model";
 import { SourceTag } from "./Source";
@@ -400,6 +400,7 @@ export function OrderInfoScreen({ ctx, id }) {
             <button type="button" className="ir" onClick={() => (sh ? ctx.openViewer({ src: reviewShotUrl(sh.id), dl: reviewShotUrl(sh.id, true), title: o.profile || o.company || "Profil", sub: "Screenshot" }) : ctx.toast("Noch kein Screenshot vorhanden"))}>
               <span className="ico"><ImageIcon /></span><span className="t"><span>Screenshot</span><b>{sh ? "Screenshot ansehen" : "Noch kein Screenshot"}</b></span><ChevronRight /></button>
             {sh ? <a className="ir" href={reviewShotUrl(sh.id, true)}><span className="ico"><Download /></span><span className="t"><span>Screenshot</span><b>Herunterladen</b></span><ChevronRight /></a> : null}
+            {o.mapsUri ? <a className="ir" href={`${o.mapsUri}${o.mapsUri.includes("?") ? "&" : "?"}rr_melden=1&rr_type=doesnt_exist&rr_reason=${encodeURIComponent("Profil existiert nicht")}&rr_order=${encodeURIComponent(o.id)}`} target="_blank" rel="noopener noreferrer" title="Öffnet Maps mit RapidRemove Melde-Helper Extension"><span className="ico"><Flag /></span><span className="t"><span>Melden</span><b>Als „existiert nicht" melden</b></span><ChevronRight /></a> : null}
           </>
         )}
       </div>

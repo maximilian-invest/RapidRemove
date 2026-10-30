@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "RapidRemove Maps Melde-Helper",
+  "version": "1.2.5",
+  "description": "Automatisiert die Google Maps Operating-Status-Meldungen für den RapidRemove Admin-Workflow.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.google.com/*",
+    "https://*.google.de/*",
+    "https://*.google.at/*",
+    "https://*.google.ch/*",
+    "https://*.google.co.uk/*",
+    "https://*.google.fr/*",
+    "https://*.google.it/*",
+    "https://*.google.es/*",
+    "https://*.google.nl/*",
+    "https://*.google.be/*",
+    "https://*.google.pl/*",
+    "https://*.google.se/*",
+    "https://*.google.no/*",
+    "https://*.google.dk/*",
+    "https://*.google.fi/*",
+    "https://*.google.pt/*",
+    "https://*.google.cz/*",
+    "https://*.google.hu/*",
+    "https://*.google.ro/*",
+    "https://*.google.gr/*",
+    "https://*.google.ie/*",
+    "https://*.google.lu/*",
+    "https://*.gstatic.com/*",
+    "https://*.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.google.com/*",
+        "https://*.google.de/*",
+        "https://*.google.at/*",
+        "https://*.google.ch/*",
+        "https://*.google.co.uk/*",
+        "https://*.google.fr/*",
+        "https://*.google.it/*",
+        "https://*.google.es/*",
+        "https://*.google.nl/*",
+        "https://*.gstatic.com/*",
+        "https://*.googleapis.com/*"
+      ],
+      "js": ["selectors.js", "content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_about_blank": true,
+      "match_origin_as_fallback": true
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["selectors.js", "content.js", "styles.css"],
+      "matches": ["https://*.google.com/*", "https://*.google.de/*", "https://*.google.at/*", "https://*.gstatic.com/*", "https://*.googleapis.com/*"]
+    }
+  ]
+}
