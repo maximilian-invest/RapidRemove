@@ -3,7 +3,7 @@ export const RVW_SEO_B = {
   ja: {
     h1: "Googleの口コミを削除——消えたときだけお支払い。",
     faq: [
-      { q: "どのくらいかかりますか？", a: "投稿4週間以内・本文ありの口コミは通常3〜5日で削除されます。それ以外は通常1〜2週間です（早まることも、まれに少し長くなることもあります）。エクスプレス（$250の口コミのみ、1件あたり+$100）：月曜〜金曜12時（ウィーン時間）に作業開始なら30時間以内、金曜12時以降または週末に開始の場合は遅くとも火曜24時までに削除します。間に合わなければ追加料金は自動的にかかりません。進捗は随時ご連絡します。" },
+      { q: "どのくらいかかりますか？", a: "投稿4週間以内・本文ありの口コミは通常1〜2週間で削除されます。それ以外は通常1〜2週間です（早まることも、まれに少し長くなることもあります）。エクスプレス（$250の口コミのみ、1件あたり+$100）：月曜〜金曜12時（ウィーン時間）に作業開始なら30時間以内、金曜12時以降または週末に開始の場合は遅くとも火曜24時までに削除します。間に合わなければ追加料金は自動的にかかりません。進捗は随時ご連絡します。" },
       { q: "削除できなかったら？", a: "その場合、お支払いはありません。見込みが低いと判断したときは、最初にそうお伝えします。" },
       { q: "投稿者に依頼者が知られますか？", a: "いいえ。誰が削除を依頼したかが投稿者に伝わることはありません。" },
       { q: "口コミが複数あります。", a: "料金は1件ごとです。何件でも選択できます。無料診断のうえ対応をお引き受けした口コミが3件以上なら−10%、5件以上で−15%、10件以上で−30%。割引は削除できたすべての口コミに適用され、お支払いは実際に削除できた分だけです。" },
@@ -56,7 +56,7 @@ export const RVW_SEO_B = {
   sv: {
     h1: "Ta bort en Google-recension – betala bara om den försvinner.",
     faq: [
-      { q: "Hur lång tid tar det?", a: "Omdömen med text upp till 4 veckor gamla: tas oftast bort inom 3–5 dagar. Alla andra: oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Express (bara för omdömen à 250 €, +100 € per omdöme): startar arbetet mellan måndag och fredag 12:00 (Wientid) tas omdömet bort inom 30 timmar; från fredag 12:00 och på helgen senast tisdag midnatt. Annars stryks tillägget automatiskt. Vi håller dig uppdaterad." },
+      { q: "Hur lång tid tar det?", a: "Omdömen med text upp till 4 veckor gamla: tas oftast bort inom 1–2 veckor. Alla andra: oftast 1–2 veckor, ibland snabbare, i enstaka fall något längre. Express (bara för omdömen à 250 €, +100 € per omdöme): startar arbetet mellan måndag och fredag 12:00 (Wientid) tas omdömet bort inom 30 timmar; från fredag 12:00 och på helgen senast tisdag midnatt. Annars stryks tillägget automatiskt. Vi håller dig uppdaterad." },
       { q: "Och om omdömet inte kan tas bort?", a: "Då betalar du ingenting. Bedömer vi chanserna som små säger vi det från början." },
       { q: "Får recensenten veta att det var jag?", a: "Nej. Recensenten får inte veta vem som begärde borttagningen." },
       { q: "Jag har flera omdömen.", a: "Priset gäller per omdöme — välj så många du vill. Tar vi oss an 3 omdömen eller fler efter den kostnadsfria bedömningen får du −10 %, från 5 −15 % och från 10 −30 % – på varje omdöme som tas bort. Du betalar bara för dem som faktiskt tas bort." },
@@ -109,7 +109,7 @@ export const RVW_SEO_B = {
   da: {
     h1: "Fjern en Google-anmeldelse – betal kun, hvis den forsvinder.",
     faq: [
-      { q: "Hvor lang tid tager det?", a: "Anmeldelser med tekst op til 4 uger gamle: fjernes som regel inden for 3–5 dage. Alle andre: som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Express (kun for anmeldelser til 250 €, +100 € pr. anmeldelse): starter behandlingen mellem mandag og fredag kl. 12 (wienertid), fjernes anmeldelsen inden for 30 timer; fra fredag kl. 12 og i weekenden senest tirsdag midnat. Ellers bortfalder tillægget automatisk. Vi holder dig opdateret." },
+      { q: "Hvor lang tid tager det?", a: "Anmeldelser med tekst op til 4 uger gamle: fjernes som regel inden for 1–2 uger. Alle andre: som regel 1–2 uger, nogle gange hurtigere, i enkelte tilfælde lidt længere. Express (kun for anmeldelser til 250 €, +100 € pr. anmeldelse): starter behandlingen mellem mandag og fredag kl. 12 (wienertid), fjernes anmeldelsen inden for 30 timer; fra fredag kl. 12 og i weekenden senest tirsdag midnat. Ellers bortfalder tillægget automatisk. Vi holder dig opdateret." },
       { q: "Hvad hvis anmeldelsen ikke kan fjernes?", a: "Så betaler du ingenting. Vurderer vi chancerne som små, siger vi det fra starten." },
       { q: "Finder anmelderen ud af, det var mig?", a: "Nej. Anmelderen får ikke at vide, hvem der bad om fjernelsen." },
       { q: "Jeg har flere anmeldelser.", a: "Prisen gælder pr. anmeldelse — vælg så mange du vil. Tager vi 3 anmeldelser eller flere på os efter den gratis vurdering, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse, der fjernes. Du betaler kun for dem, der faktisk fjernes." },
@@ -162,7 +162,7 @@ export const RVW_SEO_B = {
   no: {
     h1: "Fjern en Google-anmeldelse – betal bare hvis den forsvinner.",
     faq: [
-      { q: "Hvor lang tid tar det?", a: "Anmeldelser med tekst opptil 4 uker gamle: fjernes vanligvis innen 3–5 dager. Alle andre: vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Express (kun for anmeldelser til 250 €, +100 € per anmeldelse): starter behandlingen mellom mandag og fredag kl. 12 (Wien-tid), fjernes anmeldelsen innen 30 timer; fra fredag kl. 12 og i helgen senest tirsdag midnatt. Ellers faller tillegget bort automatisk. Vi holder deg oppdatert." },
+      { q: "Hvor lang tid tar det?", a: "Anmeldelser med tekst opptil 4 uker gamle: fjernes vanligvis innen 1–2 uker. Alle andre: vanligvis 1–2 uker, noen ganger raskere, i enkelte tilfeller litt lenger. Express (kun for anmeldelser til 250 €, +100 € per anmeldelse): starter behandlingen mellom mandag og fredag kl. 12 (Wien-tid), fjernes anmeldelsen innen 30 timer; fra fredag kl. 12 og i helgen senest tirsdag midnatt. Ellers faller tillegget bort automatisk. Vi holder deg oppdatert." },
       { q: "Hva om omtalen ikke kan fjernes?", a: "Da betaler du ingenting. Vurderer vi sjansene som små, sier vi det med en gang." },
       { q: "Får anmelderen vite at det var meg?", a: "Nei. Anmelderen får ikke vite hvem som ba om fjerningen." },
       { q: "Jeg har flere omtaler.", a: "Prisen gjelder per omtale — velg så mange du vil. Tar vi på oss 3 anmeldelser eller flere etter den gratis vurderingen, får du −10 %, fra 5 −15 % og fra 10 −30 % – på hver anmeldelse som fjernes. Du betaler bare for dem som faktisk fjernes." },

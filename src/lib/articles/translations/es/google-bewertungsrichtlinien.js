@@ -95,7 +95,7 @@ const article = {
       "**179 € por reseña eliminada** con texto de hasta 4 semanas, 250 € para las más antiguas y las valoraciones sin texto. Solo pagas cuando la reseña ha desaparecido.",
       "**Probabilidad de éxito:** aprox. **90 %** en reseñas de hasta 4 semanas, aprox. **50 %** en las más antiguas.",
       "**Descuento por volumen** en las reseñas aceptadas: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Plazo:** reseñas con texto de hasta 4 semanas, normalmente 3–5 días; todas las demás, normalmente 1–2 semanas.",
+      "**Plazo:** reseñas con texto de hasta 4 semanas, normalmente 1–2 semanas; todas las demás, normalmente 1–2 semanas.",
     ] },
     { t: "p", text: "Desde 2023 hemos eliminado más de 1.600 Perfiles de Empresa de Google y realizado más de 20.000 comprobaciones gratuitas para clientes de más de 50 países. Precios y proceso de pedido: [servicio para eliminar reseñas de Google](/es/eliminar-una-resena/)." },
     { t: "note", title: "¿El problema es el perfil de Google entero?", text: "Si lo que debe desaparecer es el perfil de empresa de Google entero, la guía [eliminar perfil de empresa de Google](/es/revista/eliminar-perfil-de-empresa-google/) explica qué hacen realmente los pasos oficiales de Google y cómo se elimina la ficha con todas sus reseñas." },

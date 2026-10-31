@@ -95,7 +95,7 @@ const article = {
       "**179 € per recensione rimossa**, 250 € per quelle più vecchie di 4 settimane o senza testo. Paghi solo quando la recensione è sparita.",
       "**Probabilità di successo:** circa il **90 %** per recensioni fino a 4 settimane, circa il **50 %** per quelle più vecchie.",
       "**Sconto quantità** sulle recensioni accettate: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Tempi:** recensioni con testo fino a 4 settimane di solito 3–5 giorni, tutte le altre di solito 1–2 settimane.",
+      "**Tempi:** recensioni con testo fino a 4 settimane di solito 1–2 settimane, tutte le altre di solito 1–2 settimane.",
     ] },
     { t: "p", text: "Dal 2023 abbiamo rimosso oltre 1.600 Profili dell'attività Google ed eseguito oltre 20.000 verifiche gratuite per clienti in più di 50 paesi. Prezzi e ordine: [servizio di rimozione recensioni Google](/it/rimuovere-una-recensione/)." },
     { t: "note", title: "Il problema è l'intera scheda Google?", text: "Se deve sparire l'intero profilo dell'attività su Google, la guida [eliminare il profilo dell'attività su Google](/it/rivista/eliminare-profilo-attivita-google/) spiega cosa fanno davvero i passaggi ufficiali di Google e come si rimuove la scheda con tutte le recensioni." },

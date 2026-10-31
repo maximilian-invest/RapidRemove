@@ -95,7 +95,7 @@ const article = {
       "**179 € por avaliação removida** com texto até 4 semanas, 250 € para avaliações com mais de 4 semanas. Só paga quando a avaliação desaparecer. Classificações só com estrelas: também 250 € por avaliação removida.",
       "**Probabilidade de sucesso:** cerca de **90 %** em avaliações até 4 semanas, cerca de **50 %** nas mais antigas.",
       "**Desconto de volume** nas avaliações aceites: 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Prazo:** avaliações com texto até 4 semanas, normalmente 3–5 dias; todas as outras, normalmente 1–2 semanas.",
+      "**Prazo:** avaliações com texto até 4 semanas, normalmente 1–2 semanas; todas as outras, normalmente 1–2 semanas.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis de Empresa no Google e fizemos mais de 20.000 verificações gratuitas para clientes em mais de 50 países. Preços e encomenda: [serviço de remoção de avaliações do Google](/pt/remover-uma-avaliacao/)." },
     { t: "note", title: "O problema é o perfil inteiro no Google?", text: "Se o que deve desaparecer é o perfil de empresa inteiro no Google, o guia [eliminar perfil de empresa no Google](/pt/revista/eliminar-perfil-empresa-google/) explica o que os passos oficiais do Google fazem realmente e como a ficha é removida com todas as avaliações." },

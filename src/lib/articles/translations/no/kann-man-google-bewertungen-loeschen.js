@@ -106,7 +106,7 @@ const article = {
     { q: "Kan jeg be en kunde om å endre anmeldelsen sin?", a: "Ja, hvis det er en ekte kunde og du har løst problemet. Tilby **ingen rabatt, gave eller annen belønning** – det bryter Googles retningslinjer." },
     { q: "Forsvinner anmeldelsene hvis jeg markerer profilen som permanent stengt?", a: "Nei. Ved «permanent stengt» er både opplysningene og anmeldelsene fortsatt synlige. Bare hvis hele bedriftsprofilen slettes, forsvinner alle anmeldelser – også de gode." },
     { q: "Hva koster det å få fjernet en Google-anmeldelse?", a: "Hos RapidRemove **179 € per fjernet anmeldelse** hvis anmeldelsen er høyst 4 uker gammel og har tekst, ellers 250 €. Du betaler bare hvis anmeldelsen faktisk forsvinner; kan den ikke fjernes, koster det ingenting. Også rene stjernevurderinger uten tekst kan fjernes – 250 € per fjernet anmeldelse." },
-    { q: "Hvor lang tid tar det før en anmeldelse er borte?", a: "For anmeldelser med tekst opptil 4 uker gamle som regel 3–5 dager, for alle andre som regel 1–2 uker. Google lover ikke selv noen fast behandlingstid – vurderingen kan ta alt fra dager til uker." },
+    { q: "Hvor lang tid tar det før en anmeldelse er borte?", a: "For anmeldelser med tekst opptil 4 uker gamle som regel 1–2 uker, for alle andre som regel 1–2 uker. Google lover ikke selv noen fast behandlingstid – vurderingen kan ta alt fra dager til uker." },
   ],
   related: [
     { label: "Få fjernet enkelte Google-anmeldelser", url: "/no/fjern-omtale/" },
