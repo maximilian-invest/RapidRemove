@@ -95,7 +95,7 @@ const article = {
       "**179 € par avis supprimé** avec texte jusqu'à 4 semaines, 250 € pour les avis plus anciens et les notes sans texte. Vous payez seulement une fois l'avis disparu.",
       "**Chances de succès :** environ **90 %** pour les avis de moins de 4 semaines, environ **50 %** pour les plus anciens.",
       "**Remise sur volume** pour les avis acceptés : 3+ −10 %, 5+ −15 %, 10+ −30 %.",
-      "**Délai :** avis avec texte de moins de 4 semaines, généralement 3 à 5 jours ; tous les autres, généralement 1 à 2 semaines.",
+      "**Délai :** avis avec texte de moins de 4 semaines, généralement 1 à 2 semaines ; tous les autres, généralement 1 à 2 semaines.",
     ] },
     { t: "p", text: "Depuis 2023, nous avons supprimé plus de 1 600 fiches d'établissement Google et réalisé plus de 20 000 vérifications gratuites pour des clients dans plus de 50 pays. Prix et commande : [service de suppression d'avis Google](/fr/supprimer-un-avis/)." },
     { t: "note", title: "Le problème, c'est votre fiche Google ?", text: "Si c'est toute la fiche d'établissement Google qui doit disparaître, lisez notre guide [supprimer une fiche d'établissement Google](/fr/magazine/supprimer-profil-etablissement-google/) : ce que font vraiment les étapes officielles de Google et comment la fiche est retirée avec tous ses avis." },

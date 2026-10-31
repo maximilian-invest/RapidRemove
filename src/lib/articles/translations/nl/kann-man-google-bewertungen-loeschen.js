@@ -106,7 +106,7 @@ const article = {
     { q: "Mag ik een klant vragen zijn review aan te passen?", a: "Ja, als het een echte klant is en u het probleem heeft opgelost. Bied daarvoor **geen korting, cadeau of andere beloning** aan – dat schendt Googles beleid." },
     { q: "Verdwijnen reviews als ik mijn profiel op „permanent gesloten” zet?", a: "Nee. Bij „permanent gesloten” blijven vermelding en reviews zichtbaar. Alleen als het volledige bedrijfsprofiel wordt verwijderd, verdwijnen alle reviews – ook de goede." },
     { q: "Wat kost het om een Google-review te laten verwijderen?", a: "Bij RapidRemove **€ 179 per verwijderde review** met tekst tot 4 weken oud, € 250 als de review ouder is dan 4 weken. U betaalt alleen als de review echt weg is; is hij niet verwijderbaar, dan kost het niets. Beoordelingen met alleen sterren, zonder tekst: eveneens € 250 per verwijderde review." },
-    { q: "Hoe lang duurt het voordat een review weg is?", a: "Reviews met tekst tot 4 weken oud meestal 3–5 dagen, alle andere meestal 1–2 weken. Google geeft zelf geen gegarandeerde termijn – de beoordeling kan dagen tot weken duren." },
+    { q: "Hoe lang duurt het voordat een review weg is?", a: "Reviews met tekst tot 4 weken oud meestal 1–2 weken, alle andere meestal 1–2 weken. Google geeft zelf geen gegarandeerde termijn – de beoordeling kan dagen tot weken duren." },
   ],
   related: [
     { label: "Losse Google-reviews laten verwijderen", url: "/nl/review-laten-verwijderen/" },

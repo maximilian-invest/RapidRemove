@@ -11,7 +11,7 @@ const article = {
     authorRole: "Google-expert",
     date: "2026-10-05",
   },
-  dek: "**Google anger ingen fast tidsgräns.** En tydlig regelöverträdelse kan försvinna inom några timmar eller dagar, medan ett gränsfall eller ett överklagande kan ta **flera veckor**. När vi tar bort en recension åt dig tar det **oftast 3–5 dagar** för recensioner med text upp till 4 veckor gamla och **oftast 1–2 veckor** för alla andra. Här ser du alla steg, hur du kollar status i Reviews Management Tool och vad som faktiskt gör processen snabbare.",
+  dek: "**Google anger ingen fast tidsgräns.** En tydlig regelöverträdelse kan försvinna inom några timmar eller dagar, medan ett gränsfall eller ett överklagande kan ta **flera veckor**. När vi tar bort en recension åt dig tar det **oftast 1–2 veckor** för recensioner med text upp till 4 veckor gamla och **oftast 1–2 veckor** för alla andra. Här ser du alla steg, hur du kollar status i Reviews Management Tool och vad som faktiskt gör processen snabbare.",
   blocks: [
     { t: "h2", id: "short-answer", text: "Det korta svaret: ingen fast tid, men ett tydligt mönster", toc: "Kort svar" },
     { t: "p", text: "Google garanterar ingen handläggningstid för rapporterade recensioner. Rapporterade recensioner granskas av både automatiska system och människor, och tiden varierar från dagar till veckor." },
@@ -20,7 +20,7 @@ const article = {
       "**Gränsfall** (någon som kanske aldrig varit kund, vaga anklagelser): snarare **dagar till veckor**, ofta med ett avslag och sedan ett överklagande.",
       "**Olagligt innehåll** via en juridisk begäran (t.ex. förtal): oftast den längsta vägen, ofta **flera veckor**.",
     ] },
-    { t: "p", text: "Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) är en recension med text upp till 4 veckor gammal **oftast borta inom 3–5 dagar**, alla andra **oftast inom 1–2 veckor**. Du behöver inte göra något under tiden – och du betalar först när recensionen verkligen är borta." },
+    { t: "p", text: "Med vår [tjänst för att ta bort Google-recensioner](/sv/ta-bort-omdome/) är en recension med text upp till 4 veckor gammal **oftast borta inom 1–2 veckor**, alla andra **oftast inom 1–2 veckor**. Du behöver inte göra något under tiden – och du betalar först när recensionen verkligen är borta." },
 
     { t: "h2", id: "timeline", text: "Tidslinje: alla steg från rapport till slutligt beslut", toc: "Tidslinje" },
     { t: "p", text: "Att ta bort en recension sker i fasta steg. Tiderna nedan är **typiska värden från praktiken, ingen garanti** – Google kan vara snabbare eller långsammare i varje steg." },
@@ -58,7 +58,7 @@ const article = {
       "**Slutligt beslut** – efter överklagandet är vägen i verktyget slut. Bara vid olagligt innehåll återstår en [juridisk begäran om borttagning](https://support.google.com/legal/answer/3110420).",
     ] },
 
-    { t: "cta", title: "Ingen lust att vänta i veckor och hoppas?", text: "Välj de recensioner som ska bort och se priset direkt. **Från 179 € per borttagen recension**, oftast klart inom 3–5 dagar (upp till 4 veckor, med text) eller 1–2 veckor – och du betalar först när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
+    { t: "cta", title: "Ingen lust att vänta i veckor och hoppas?", text: "Välj de recensioner som ska bort och se priset direkt. **Från 179 € per borttagen recension**, oftast klart inom 1–2 veckor (upp till 4 veckor, med text) eller 1–2 veckor – och du betalar först när recensionen verkligen är borta.", btn: "Välj recensioner", href: "/sv/kontrollera-profil/?start=reviews", trust: ["Inget i förskott", "Betala per borttagen recension", "Först en ärlig bedömning"] },
 
     { t: "h2", id: "rejected", text: "Varför Google avslår rapporter", toc: "Varför avslag?" },
     { t: "p", text: "De flesta avslag har en av tre orsaker. Alla går att undvika – utom den sista." },
@@ -95,7 +95,7 @@ const article = {
     { t: "note", title: "Är din Google-profil själva problemet?", text: "Ska hela Google-företagsprofilen försvinna? Läs vår guide [radera Google-företagsprofil](/sv/magasin/radera-google-foretagsprofil/): vad Googles officiella steg faktiskt gör och hur profilen tas bort med alla recensioner." },
   ],
   faq: [
-    { q: "Hur lång tid tar det innan Google tar bort en rapporterad recension?", a: "Det finns ingen fast tid. Tydliga överträdelser försvinner ofta inom timmar eller dagar, medan gränsfall och överklaganden kan ta **flera veckor**. Via RapidRemove tar det oftast 3–5 dagar för recensioner med text upp till 4 veckor gamla, annars oftast 1–2 veckor." },
+    { q: "Hur lång tid tar det innan Google tar bort en rapporterad recension?", a: "Det finns ingen fast tid. Tydliga överträdelser försvinner ofta inom timmar eller dagar, medan gränsfall och överklaganden kan ta **flera veckor**. Via RapidRemove tar det oftast 1–2 veckor för recensioner med text upp till 4 veckor gamla, annars oftast 1–2 veckor." },
     { q: "Kan jag överklaga mer än en gång?", a: "Nej. I Reviews Management Tool kan du överklaga **en gång per recension**. Efter det slutliga beslutet återstår bara en juridisk begäran om borttagning, och den gäller bara olagligt innehåll." },
     { q: "Varför har min rapport stått på ”Decision pending” i flera veckor?", a: "Vissa rapporter granskas manuellt och det kan ta längre tid; Google anger ingen tidsgräns. Kontrollera att du valt rätt kategori – en stark och korrekt rapport är det bästa sättet att snabba på." },
     { q: "Får skribenten veta vem som rapporterade recensionen?", a: "Nej. När vi begär en borttagning får skribenten inte veta vem som bad om den." },

@@ -52,7 +52,7 @@ const article = {
       ["Custo", "Gratuito", "Gratuito", "Gratuito (advogado à parte)", "Gratuito", "**Desde 179 € por avaliação removida**"],
       ["A avaliação desaparece?", "Se o Google concordar", "Se o Google concordar", "Se houver fundamento legal", "Só se o autor agir", "Só paga se sim"],
       ["Esforço para si", "Baixo", "Médio", "Alto", "Baixo", "Cerca de 2 minutos"],
-      ["Duração habitual", "Dias a semanas", "Dias a semanas", "Semanas ou mais", "Incerta", "Normalmente 3–5 dias (≤ 4 semanas, com texto); caso contrário 1–2 semanas"],
+      ["Duração habitual", "Dias a semanas", "Dias a semanas", "Semanas ou mais", "Incerta", "Normalmente 1–2 semanas (≤ 4 semanas, com texto); caso contrário 1–2 semanas"],
     ] },
     { t: "cta", title: "Selecione as avaliações que devem sair", text: "Pesquise a sua empresa, marque as avaliações e veja de imediato o preço exato. **Desde 179 € por avaliação removida**, nada adiantado e avaliação gratuita primeiro.", btn: "Selecionar avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Nada adiantado", "Paga só com sucesso", "Primeiro uma opinião honesta"] },
 
@@ -84,7 +84,7 @@ const article = {
       "**Preço:** 179 € por avaliação com texto removida até 4 semanas; avaliações com mais de 4 semanas custam 250 €. Classificações só com estrelas, sem texto: procedimento mais extenso, também 250 € por avaliação removida.",
       "**Probabilidade de sucesso:** cerca de 90 % para avaliações até 4 semanas, cerca de 50 % para as mais antigas.",
       "**Desconto de volume** nas avaliações que aceitamos: a partir de 3, −10 %; a partir de 5, −15 %; a partir de 10, −30 %.",
-      "**Duração:** avaliações com texto até 4 semanas, normalmente 3–5 dias; todas as outras, normalmente 1–2 semanas. Cada avaliação é cobrada automaticamente depois de removida, no cartão ou PayPal registado ao encomendar.",
+      "**Duração:** avaliações com texto até 4 semanas, normalmente 1–2 semanas; todas as outras, normalmente 1–2 semanas. Cada avaliação é cobrada automaticamente depois de removida, no cartão ou PayPal registado ao encomendar.",
     ] },
     { t: "p", text: "Desde 2023 removemos mais de 1.600 Perfis da Empresa no Google, fizemos mais de 20.000 verificações gratuitas e trabalhámos para clientes em mais de 50 países. Com avaliações falsas compensa agir depressa: [como detetar e remover avaliações falsas do Google](/pt/revista/remover-avaliacoes-falsas-google/)." },
     { t: "cta", title: "Descubra que avaliações podem sair", text: "Pesquise o seu perfil, marque as avaliações e o preço aparece de imediato. **Só paga pelas avaliações efetivamente removidas.**", btn: "Verificar as minhas avaliações", href: "/pt/verificar-perfil/?start=reviews", trust: ["Análise gratuita", "Desde 179 € por avaliação", "Discreto"] },

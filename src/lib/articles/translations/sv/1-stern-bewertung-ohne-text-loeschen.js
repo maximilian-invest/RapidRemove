@@ -49,7 +49,7 @@ const article = {
     { t: "table", head: ["Väg", "Vad tas bort", "Tid", "Framgång", "Kostnad"], rows: [
       ["Rapportera själv", "enskild recension", "osäkert", "låg", "gratis"],
       ["Advokat", "enskild recension", "3–9 månader", "ca 90 %", "per recension, förskott"],
-      ["RapidRemove (enskilda recensioner)", "utvalda recensioner, även betyg utan text", "oftast 1–2 veckor (recensioner med text upp till 4 veckor gamla: oftast 3–5 dagar)", "Google avgör", "250 € per borttaget betyg"],
+      ["RapidRemove (enskilda recensioner)", "utvalda recensioner, även betyg utan text", "oftast 1–2 veckor (recensioner med text upp till 4 veckor gamla: oftast 1–2 veckor)", "Google avgör", "250 € per borttaget betyg"],
       ["RapidRemove (profilborttagning)", "**hela profilen + alla recensioner**", "24–48 tim", "betalning vid framgång", "fast pris efter framgång"],
     ] },
     { t: "p", text: "Vid profilborttagningen betalar du först **efter framgång**, och tack vare garantin tas en profil som dyker upp igen bort utan kostnad." },
@@ -62,7 +62,7 @@ const article = {
     { q: "Hur anmäler jag ett stjärnbetyg utan kommentar?", a: "Via trepunktsmenyn bredvid recensionen, klicka på Rapportera recension och ange som skäl den saknade kopplingen till tjänsten. Statusen följer du via Googles verktyg för hantering av recensioner." },
     { q: "Vad gör jag om Google inte tar bort recensionen?", a: "För en enskild recension hjälper en konkret motiverad invändning från en advokat – eller RapidRemoves borttagning av enskilda recensioner; ett stjärnbetyg utan text kostar där 250 € per borttaget betyg. Är din profil skadad som helhet och du vill ha en nystart är profilborttagning via RapidRemove den mest tillförlitliga vägen – då försvinner alla recensioner med profilen." },
     { q: "Tar RapidRemove bort den enskilda 1-stjärniga recensionen?", a: "Ja. Med [borttagning av enskilda recensioner](/sv/ta-bort-omdome/) kan du välja även stjärnbetyg utan text. De kostar 250 € per borttaget betyg, oavsett ålder. Precis som för alla recensioner lägger du in ett kort eller PayPal när du beställer; dragningen sker automatiskt först när betyget har tagits bort. Ligger betyget kvar betalar du ingenting. Mängdrabatten räknas tillsammans med övriga recensioner i beställningen. Är profilen skadad som helhet är borttagning av hela profilen med alla recensioner den grundligaste vägen. Priser och mängdrabatter i detalj hittar du i vår guide om [tjänsten för att ta bort Google-recensioner](/sv/magasin/ta-bort-google-recension-tjanst/)." },
-    { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar, en enskild recension via RapidRemove oftast på 3–5 dagar om den har text och är högst 4 veckor gammal, annars oftast på 1–2 veckor (även betyg utan text) – betydligt snabbare än den flera månader långa rättsliga vägen." },
+    { q: "Hur snabbt blir man av med recensionerna?", a: "Via profilborttagning ofta inom 24 till 48 timmar, en enskild recension via RapidRemove oftast på 1–2 veckor om den har text och är högst 4 veckor gammal, annars oftast på 1–2 veckor (även betyg utan text) – betydligt snabbare än den flera månader långa rättsliga vägen." },
   ],
   related: [
     { label: "Radera Google-företagsprofil", url: "/sv/magasin/radera-google-foretagsprofil/" },

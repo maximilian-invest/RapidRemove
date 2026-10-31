@@ -36,7 +36,7 @@ const article = {
       ["Kostenmodel", "Gratis", "Uurtarief, vaak voorschot", "Per poging of vast bedrag vooraf", "**€ 179 per verwijderde review** (met tekst, tot 4 weken); ouder of alleen sterren: € 250 per verwijderde review"],
       ["Betalen als de review blijft?", "–", "Ja", "Vaak ja", "**Nee**"],
       ["Risico voor u", "Tijd kwijt, vaak afgewezen", "Hoog: kosten ongeacht uitkomst", "Hoog: geld vooraf weg", "**Geen**: alleen bij succes"],
-      ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal 3–5 dagen (≤ 4 weken, met tekst), anders 1–2 weken"],
+      ["Duur", "Dagen tot weken, geen vaste termijn", "Vaak maanden", "Wisselend", "Meestal 1–2 weken (≤ 4 weken, met tekst), anders 1–2 weken"],
       ["Inspanning voor u", "Gemiddeld (melden, volgen, beroep)", "Hoog (dossier, overleg)", "Wisselend", "Ongeveer 2 minuten"],
     ] },
     { t: "p", text: "Hoe lang Google er zelf over doet en hoe het beroep werkt, leest u in [hoe lang duurt het om een Google review te laten verwijderen](/nl/magazine/hoe-lang-duurt-google-review-verwijderen/)." },
@@ -80,7 +80,7 @@ const article = {
       "**Review verdwenen?** Dan wordt het bedrag automatisch afgeschreven – **per review**, zodat u steeds alleen betaalt wat al weg is.",
       "**Beoordelingen met alleen sterren:** precies hetzelfde – € 250, pas afgeschreven nadat de review verwijderd is.",
     ] },
-    { t: "p", text: "Reviews tot 4 weken oud met tekst zijn meestal binnen **3–5 dagen** weg, alle andere meestal binnen **1–2 weken**. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
+    { t: "p", text: "Reviews tot 4 weken oud met tekst zijn meestal binnen **1–2 weken** weg, alle andere meestal binnen **1–2 weken**. De schrijver krijgt niet te horen wie om verwijdering heeft gevraagd." },
 
     { t: "h2", id: "waarschuwingssignalen", text: "Waarschuwingssignalen bij aanbieders", toc: "Waarschuwingssignalen" },
     { t: "p", text: "Een lage prijs is niets waard als de methode niet deugt. Let bij elke aanbieder op deze signalen:" },

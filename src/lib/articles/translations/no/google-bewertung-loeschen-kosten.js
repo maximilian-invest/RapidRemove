@@ -36,7 +36,7 @@ const article = {
       ["Prismodell", "Gratis", "Timepris, ofte forskudd", "Per forsøk eller fast beløp på forhånd", "**179 € per fjernet anmeldelse** (opptil 4 uker, med tekst); alle andre 250 €"],
       ["Betaler du hvis anmeldelsen blir?", "–", "Ja", "Ofte ja", "**Nei**"],
       ["Risiko for deg", "Tapt tid, avvises ofte", "Høy: kostnad uansett utfall", "Høy: pengene er allerede betalt", "**Ingen**: bare ved suksess"],
-      ["Varighet", "Dager til uker, ingen fast frist", "Ofte måneder", "Varierer", "Som regel 3–5 dager (≤ 4 uker, med tekst), ellers 1–2 uker"],
+      ["Varighet", "Dager til uker, ingen fast frist", "Ofte måneder", "Varierer", "Som regel 1–2 uker (≤ 4 uker, med tekst), ellers 1–2 uker"],
       ["Innsats for deg", "Middels (rapportere, følge opp, klage)", "Høy (dokumentasjon, møter)", "Varierer", "Ca. 2 minutter"],
     ] },
     { t: "p", text: "Hvor lang tid Google selv bruker, og hvordan klagen fungerer, kan du lese i [hvor lang tid tar det for Google å fjerne en anmeldelse](/no/magasin/hvor-lang-tid-google-fjerne-anmeldelse/)." },
@@ -80,7 +80,7 @@ const article = {
       "**Vi setter i gang** via Googles egne prosedyrer, på vegne av deg som eier.",
       "**Er anmeldelsen borte?** Da trekkes beløpet automatisk fra kortet eller PayPal-kontoen du lagret ved bestillingen – **per anmeldelse**, slik at du bare betaler for det som allerede er borte.",
     ] },
-    { t: "p", text: "Anmeldelser opptil 4 uker gamle med tekst tar som regel **3–5 dager**, alle andre som regel **1–2 uker**. Den som skrev anmeldelsen, får ikke vite hvem som ba om fjerningen." },
+    { t: "p", text: "Anmeldelser opptil 4 uker gamle med tekst tar som regel **1–2 uker**, alle andre som regel **1–2 uker**. Den som skrev anmeldelsen, får ikke vite hvem som ba om fjerningen." },
 
     { t: "h2", id: "varselsignaler", text: "Varselsignaler hos tilbydere", toc: "Varselsignaler" },
     { t: "p", text: "En lav pris er ingenting verdt hvis metoden ikke holder. Se etter disse signalene:" },
